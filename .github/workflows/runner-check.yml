@@ -1,0 +1,19 @@
+name: SIGNAL 47 runner check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tools:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 5
+    steps:
+      - name: Verify tools without opening a project
+        shell: bash
+        run: |
+          set -euo pipefail
+          uname -sm
+          git --version
+          python3 --version
+          "$UNITY_EDITOR" -version
+          "$BLENDER_BIN" --background --factory-startup --python-expr 'import bpy; print("SIGNAL47_BLENDER_OK", bpy.app.version_string)'
