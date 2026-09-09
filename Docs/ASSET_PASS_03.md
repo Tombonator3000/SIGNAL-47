@@ -51,3 +51,13 @@ Build logs: `Artifacts/imported-assets-build.log`, `Artifacts/imported-assets-pl
 tar -czf Artifacts/SIGNAL-47-Linux.tar.gz -C Artifacts/Linux .
 sha256sum Artifacts/SIGNAL-47-Linux.tar.gz > Artifacts/SIGNAL-47-Linux.sha256
 ```
+
+## GitHub verification
+
+[Run 34403502258](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/34403502258) completed successfully on commit `580ccbac7b3cb74ea0174ac97eca685a2f589a4c`. The dedicated `signal47-kubuntu` runner built the project from GitHub, passed all 54 headless assertions with SIGNAL47_SMOKE_PASS, and created the Linux archive. This run had artifact upload disabled under the existing account storage limit. The downloadable package in the local checkout is the graphically checked build; the runner has its own build in `/home/tombonator3000t/signal47-tools/actions-runner/_work/SIGNAL-47/SIGNAL-47/Artifacts/`.
+
+```sh
+gh workflow run build-linux.yml --repo Tombonator3000/SIGNAL-47 -f upload_artifact=false
+gh run watch 34403502258 --repo Tombonator3000/SIGNAL-47 --interval 30 --exit-status
+gh run view 34403502258 --repo Tombonator3000/SIGNAL-47 --json status,conclusion,headSha,url
+```
