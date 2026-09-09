@@ -33,10 +33,16 @@ Generated scene: `Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity`. P
 
 ## Runner environment repair
 
-GitHub run 34397231080 compiled successfully but stalled in native FMOD initialization, before the managed watchdog. Its systemd process lacked XDG_RUNTIME_DIR and PULSE_SERVER. It was canceled. A local headless launch with `/run/user/1000/pulse/native` explicitly selected reached the test immediately. The build script now discovers this same-user socket if present and supplies its environment; a 240-second process timeout with a 10-second termination grace period also bounds hangs before Unity scripting starts. No system sound configuration or other runner was modified.
+GitHub run 34397231080 compiled successfully but stalled in native FMOD initialization, before the managed watchdog. Its systemd process lacked XDG_RUNTIME_DIR and PULSE_SERVER. It was canceled. A local headless launch with `/run/user/1000/pulse/native` explicitly selected reached the test immediately and passed all 45 assertions with exit 0. The build script now discovers this same-user socket if present and supplies its environment; a 240-second process timeout with a 10-second termination grace period also bounds hangs before Unity scripting starts. No system sound configuration or other runner was modified.
 
 ```sh
 gh workflow run build-linux.yml -f upload_artifact=false
 gh run cancel 34397231080
 SDL_VIDEODRIVER=dummy PULSE_SERVER=unix:/run/user/1000/pulse/native XDG_RUNTIME_DIR=/run/user/1000 ./Artifacts/Linux/Signal47.x86_64 -batchmode -nographics -noaudio --signal47-smoke -logFile "$PWD/Artifacts/story-headless.log"
 ```
+
+## Final GitHub verification
+
+[Run 34397712654](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/34397712654) completed successfully on commit `9737357`. Unity built the Linux player, the headless scenario passed all 45 assertions, and the Linux archive was created. The dedicated `signal47-kubuntu` runner was verified online and idle afterward. GitHub artifact upload remained off because of the existing account storage limit; both local and runner copies remain available on the PC.
+
+Final local artifact: `Artifacts/SIGNAL-47-Linux.tar.gz` (62 MiB), executable permission verified in the archive. Its checksum is in `Artifacts/SIGNAL-47-Linux.sha256`. Graphical and headless local logs both contain `SIGNAL47_SMOKE_PASS`.
