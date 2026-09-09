@@ -1,0 +1,9 @@
+Unity/[Ll]ibrary/
+Unity/[Tt]emp/
+Unity/[Oo]bj/
+Unity/[Ll]ogs/
+Unity/[Uu]ser[Ss]ettings/
+Unity/[Bb]uilds/
+Artifacts/
+*.zip
+__pycache__/
