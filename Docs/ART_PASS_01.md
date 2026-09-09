@@ -15,3 +15,7 @@ Local Unity Linux build succeeded. The graphical smoke scenario now includes 21 
 This is still a prototype art pass. It does not claim final sound mixing, exhaustive manual movement tests or a 60 FPS performance guarantee. The automated scenario invokes interaction methods and uses fixed instrument values; the user's previous manual play confirmation applies to the preceding build.
 
 GitHub workflow validation is recorded separately below once the run completes.
+
+First runner run 34393426649 compiled successfully but the Linux player crashed in SDL mouse initialization because a service has no display backend. A reproduction with DISPLAY/WAYLAND_DISPLAY/XDG_RUNTIME_DIR unset confirmed that explicitly selecting `SDL_VIDEODRIVER=dummy` avoids that startup crash. The headless test also disables audio output. This only changes the automation launcher; interactive players retain graphics and audio. SDL driver selection is documented at https://wiki.libsdl.org/SDL2/SDL_HINT_VIDEODRIVER .
+
+The same run hit the GitHub account artifact-storage quota. No existing artifacts were deleted. Upload is now an optional workflow input, off by default; the build and logs remain on the local runner. The interactive Linux package is also available in this working copy's Artifacts directory.
