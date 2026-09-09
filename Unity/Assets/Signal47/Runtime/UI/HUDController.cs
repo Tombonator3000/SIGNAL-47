@@ -14,6 +14,7 @@ namespace Signal47.UI
         public string InteractionPrompt { get; set; } = "";
         string toast=""; bool paperOpen,notebookOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
+        Vector2 noteScroll,paperScroll;bool returnToNotebook;
         void Update()
         {
             if (!Started || TitleVisible) return;
@@ -22,7 +23,7 @@ namespace Signal47.UI
             { notebookOpen=!notebookOpen; SetCursor(!notebookOpen); }
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                if (paperOpen) { paperOpen=false; SetCursor(true); }
+                if (paperOpen) { ClosePaper(); }
                 else if (notebookOpen) { notebookOpen=false; SetCursor(true); }
                 else { SetPaused(!Paused); }
             }
@@ -30,9 +31,11 @@ namespace Signal47.UI
         public void SetPaused(bool value){Paused=value;Time.timeScale=value?0:1;AudioListener.pause=value;SetCursor(!value);}
         public void StartShift(){Started=true;SetPaused(false);SetCursor(true);Toast("SHIFT LOG // 23:41 LOCAL",2f);}
         public void Toast(string msg,float seconds=1.8f){toast=msg;toastUntil=Time.unscaledTime+seconds;}
-        public void ShowPaper(string content){paper=content;paperOpen=true;SetCursor(false);}
-        public void ShowTitle(){TitleVisible=true;SetCursor(false);}
-        public void CloseModal(){paperOpen=false;notebookOpen=false;SetPaused(false);SetCursor(true);}
+        public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;SetCursor(false);}
+        void ClosePaper(){paperOpen=false;notebookOpen=returnToNotebook;returnToNotebook=false;SetCursor(!notebookOpen);}
+        public void ShowNotebook(){notebookOpen=true;SetCursor(false);}
+        public void ShowTitle(){paperOpen=false;notebookOpen=false;Paused=false;Time.timeScale=1;AudioListener.pause=false;TitleVisible=true;Signals.SignalConsole console=FindFirstObjectByType<Signals.SignalConsole>();if(console)console.Close();SetCursor(false);}
+        public void CloseModal(){paperOpen=false;notebookOpen=false;returnToNotebook=false;SetPaused(false);SetCursor(true);}
         public void SetCursor(bool lockIt){Cursor.lockState=lockIt?CursorLockMode.Locked:CursorLockMode.None;Cursor.visible=!lockIt;}
         void Styles()
         {
@@ -58,15 +61,27 @@ namespace Signal47.UI
             if(Time.unscaledTime<toastUntil) GUI.Label(new Rect(24,24,600,35),toast,mono);
             if(paperOpen)
             {
-                var r=new Rect(Screen.width*.5f-290,Screen.height*.5f-270,580,540); GUI.color=new Color(.88f,.84f,.70f);GUI.DrawTexture(r,Texture2D.whiteTexture);GUI.color=Color.white;GUI.Label(new Rect(r.x+24,r.y+24,r.width-48,r.height-105),paper,new GUIStyle(paperStyle){normal={background=null,textColor=new Color(.15f,.13f,.10f)}});
-                if(GUI.Button(new Rect(r.x+190,r.yMax-58,200,42),"CLOSE",button)){paperOpen=false;SetCursor(true);}
+                float height=Mathf.Min(540,Screen.height-40);var r=new Rect(Screen.width*.5f-290,(Screen.height-height)/2,580,height);
+                GUI.color=new Color(.88f,.84f,.70f);GUI.DrawTexture(r,Texture2D.whiteTexture);GUI.color=Color.white;
+                var ink=new GUIStyle(mono){fontSize=17,normal={textColor=new Color(.15f,.13f,.10f)}};
+                float textHeight=ink.CalcHeight(new GUIContent(paper),r.width-70);
+                paperScroll=GUI.BeginScrollView(new Rect(r.x+24,r.y+24,r.width-48,r.height-100),paperScroll,new Rect(0,0,r.width-70,textHeight));
+                GUI.Label(new Rect(0,0,r.width-70,textHeight),paper,ink);GUI.EndScrollView();
+                if(GUI.Button(new Rect(r.x+190,r.yMax-58,200,42),returnToNotebook?"BACK TO NOTEBOOK":"CLOSE",button))ClosePaper();
             }
             if(notebookOpen)
             {
-                var r=new Rect(Screen.width-500,60,440,Screen.height-120); GUI.Box(r,"",GUI.skin.box);
-                GUI.Label(new Rect(r.x+22,r.y+18,r.width-44,35),"FIELD NOTEBOOK // RAW OBSERVATIONS",mono);
-                float y=r.y+65; int i=1;
-                foreach(var e in notebook.Entries){GUI.Label(new Rect(r.x+25,y,r.width-50,48),$"{i++:00} // {e}",mono);y+=52;}
+                var r=new Rect(Screen.width*.5f-330,40,660,Screen.height-80);GUI.color=new Color(.025f,.045f,.035f,.97f);GUI.DrawTexture(r,Texture2D.whiteTexture);GUI.color=Color.white;
+                GUI.Label(new Rect(r.x+24,r.y+18,r.width-48,35),"FIELD NOTEBOOK // NIGHT SHIFT",mono);
+                if(GUI.Button(new Rect(r.xMax-110,r.y+14,90,32),"CLOSE")){notebookOpen=false;SetCursor(true);}
+                float width=r.width-70,contentHeight=90+notebook.Evidence.Count*48;
+                foreach(var entry in notebook.Entries)contentHeight+=mono.CalcHeight(new GUIContent(entry),width)+16;
+                noteScroll=GUI.BeginScrollView(new Rect(r.x+24,r.y+65,r.width-48,r.height-90),noteScroll,new Rect(0,0,width,contentHeight));
+                float y=0;GUI.Label(new Rect(0,y,width,28),"DOCUMENTS // SELECT TO READ",mono);y+=38;
+                foreach(var item in notebook.Evidence){if(GUI.Button(new Rect(0,y,width,38),item.Title,button))ShowPaper(item.Body);y+=48;}
+                if(notebook.Evidence.Count==0){GUI.Label(new Rect(0,y,width,28),"No documents collected.",mono);y+=32;}
+                foreach(var entry in notebook.Entries){float h=mono.CalcHeight(new GUIContent(entry),width);GUI.Label(new Rect(0,y,width,h),entry,mono);y+=h+16;}
+                GUI.EndScrollView();
             }
             if(Paused)
             {

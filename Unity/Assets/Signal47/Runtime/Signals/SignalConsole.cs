@@ -24,7 +24,8 @@ namespace Signal47.Signals
         void OnDestroy(){if(spectrum)Destroy(spectrum);if(screenMaterial)Destroy(screenMaterial);if(carrier&&carrier.clip)Destroy(carrier.clip);}
         void Update(){
             bool powered=GameSession.Instance && GameSession.Instance.director.ReceiverPowered;
-            if(carrier){float pulse=1;if(stage>=3){float t=Time.time%5;int count=t<2?4:7;float local=t<2?t:t-2.5f;pulse=local>=0&&local<count*.22f&&local%.22f<.1f?1:.08f;}carrier.volume=powered?.075f*LockQuality*pulse:0;carrier.pitch=1+Mathf.Clamp((frequency-1420.405f)*.3f,-.2f,.2f);}
+            var director=GameSession.Instance?GameSession.Instance.director:null;if(director&&director.ArrayOverride)status=director.SignalAcquired?"SIGNAL ACQUIRED":"ARRAY CONTROL OVERRIDE // SOURCE UNKNOWN";
+            if(carrier){float pulse=1;if(stage>=3){float t=Time.time%5;int count=t<2?4:7;float local=t<2?t:t-2.5f;pulse=local>=0&&local<count*.22f&&local%.22f<.1f?1:.08f;}carrier.volume=powered&&!GameSession.Instance.hud.TitleVisible?.075f*LockQuality*pulse:0;carrier.pitch=1+Mathf.Clamp((frequency-1420.405f)*.3f,-.2f,.2f);}
             if(powered && Time.time>=nextSpectrum){nextSpectrum=Time.time+.1f;RenderSpectrum();}
         }
         void OnGUI()
@@ -43,9 +44,9 @@ namespace Signal47.Signals
             if(GUI.Button(new Rect(x+410,y+553,90,28),"+ 0.001"))frequency=Mathf.Min(1420.7f,frequency+.001f);
             float sy=y+380; frequency=SliderRow("FREQUENCY MHz",frequency,1419.5f,1420.7f,ref sy,x,w,green,"F3");
             gain=SliderRow("GAIN",gain,0,100,ref sy,x,w,green,"F0");bandwidth=SliderRow("BANDWIDTH kHz",bandwidth,4,100,ref sy,x,w,green,"F0");azimuth=SliderRow("ARRAY AZ",azimuth,0,180,ref sy,x,w,green,"F0");
-            if(GUI.Button(new Rect(x+28,y+h-62,260,38),solved?"PRINT COMPLETE":(stage<profiles.Length?profiles[stage].actionLabel:"DIRECTION SOLVE")))Action();
+            if(GUI.Button(new Rect(x+28,y+h-62,260,38),solved?"SENT TO PRINTER":(stage<profiles.Length?profiles[stage].actionLabel:"DIRECTION SOLVE")))Action();
             if(GUI.Button(new Rect(x+w-168,y+h-62,140,38),"EXIT"))Close();
-            if(solved)GUI.Label(new Rect(x+320,y+h-85,w-520,70),"SOURCE: UNKNOWN   1420.405 MHz\nRA 05h17m32s  DEC -05°23'14\"   S/N 4.71   DISTANCE SOLVE: -39 LY",green);
+            if(solved)GUI.Label(new Rect(x+320,y+h-85,w-520,70),"SOURCE: UNKNOWN   1420.405 MHz\nRA 05h17m32s  DEC -05°23'14\"   S/N 4.71   DISTANCE SOLVE: SEE PRINTOUT",green);
             GUI.matrix=previous;
         }
         float SliderRow(string label,float value,float min,float max,ref float y,float x,float w,GUIStyle s,string fmt)
@@ -62,7 +63,7 @@ namespace Signal47.Signals
                 else {status="PATTERN LOCK // PULSE GROUP 4 / 7";frequency=1420.405f;gain=82;bandwidth=12;azimuth=83;}
                 UpdatePhysicalScreen();return;
             }
-            solved=true;status="OUTPUT ROUTED TO PRINTER";GameSession.Instance.notebook.Add("1420.405 MHz — repeating 4 / 7 pulse grouping.");GameSession.Instance.notebook.Add("Direction solve returned -39 LY.");GameSession.Instance.director.OnSignalSolved();UpdatePhysicalScreen();
+            solved=true;status="OUTPUT ROUTED TO PRINTER";GameSession.Instance.notebook.Add("1420.405 MHz — repeating 4 / 7 pulse grouping.");GameSession.Instance.notebook.Add("Direction solve routed to printer.");GameSession.Instance.director.OnSignalSolved();UpdatePhysicalScreen();
         }
         public void Close(){AnyOpen=false;GameSession.Instance.hud.SetCursor(true);}
         void RenderSpectrum()
