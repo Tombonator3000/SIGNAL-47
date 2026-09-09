@@ -1,0 +1,17 @@
+{
+  "mesh_count": 33,
+  "triangle_count": 10711,
+  "legends": 12,
+  "handset_parts": 3,
+  "bounds_min": [
+    -0.42899999022483826,
+    -0.2865000069141388,
+    -4.4803186938224826e-08
+  ],
+  "bounds_max": [
+    0.37800002098083496,
+    0.28000006079673767,
+    0.4789585769176483
+  ],
+  "materials": "Uniform runtime materials; no texture-dependent UV requirement"
+}
