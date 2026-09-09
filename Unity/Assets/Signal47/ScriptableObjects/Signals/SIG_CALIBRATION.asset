@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa9070cd0796908683b4feb931f3b50, type: 3}
+  m_Name: SIG_CALIBRATION
+  m_EditorClassIdentifier: Assembly-CSharp::Signal47.Signals.SignalProfile
+  stageName: CALIBRATION
+  actionLabel: LOG CALIBRATION
+  referenceCard: "TAPED REF CARD // CAL 1419.900 MHz \xB7 AZ 042\xB0 \xB7 GAIN 55
+    \xB110 \xB7 BW 48 \xB114"
+  targetFrequency: 1419.9
+  frequencyTolerance: 0.025
+  gainRange: {x: 45, y: 65}
+  bandwidthRange: {x: 34, y: 62}
+  azimuthRange: {x: 35, y: 49}
+  successNote: Receiver calibration completed at 23:4x local.

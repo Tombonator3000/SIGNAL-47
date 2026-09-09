@@ -2,30 +2,24 @@
 
 First-person cosmic investigation at SARO, New Mexico, 1986.
 
-## Current status
+## Play on Linux
 
-Dedicated runner `signal47-kubuntu` is online. Unity 6000.3.22f1, Blender 4.5.13 LTS, Git and Python passed the manual runner check. A separate local Unity project-creation probe passed on 2026-09-09, confirming working editor licensing.
+Run `Artifacts/Linux/Signal47.x86_64` from the local checkout, or extract `SIGNAL-47-Linux.tar.gz` from a successful **Build and test SIGNAL 47 Linux** GitHub Actions run and launch `Signal47.x86_64`.
 
-The original project archive `SIGNAL_47_Unity_U1.zip` was found in the ChatGPT conversation “Idéer om kosmisk etterforskning”. Chrome blocked its download with `ERR_BLOCKED_BY_CLIENT`. The source project has not yet been imported or compiled. No replacement assets have been created.
+WASD moves, mouse looks, E interacts, Tab opens the notebook and Esc closes the console or pauses. Start with the shift clipboard and receiver bank. The CRT reference card explains calibration, interference rejection and the anomalous carrier. Finish the direction solve, inspect the printout, answer the phone and remain in the room for the ending.
 
-Once the original ZIP is available:
+## Source and tools
+
+`Unity/` contains the original `SIGNAL_47_Unity_U1.zip` project, retrieved by the user from the original ChatGPT conversation and imported on 2026-09-09. The nine original OBJ assets are reused. Blender successfully imported all nine and saved `Unity/Blender/SIGNAL47_prototype_assets.blend`.
+
+Unity 6000.3.22f1, URP 17.3.0, Input System 1.20.0; Blender 4.5.13 LTS. Open `Unity/` in Unity Hub and open `Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity`.
+
+## Build and test
 
 ```sh
-python3 Automation/import_unity.py /absolute/path/SIGNAL_47_Unity_U1.zip
+bash Automation/build-linux.sh
 ```
 
-This creates `Unity/`, preserves original source files and refuses to overwrite an existing project. Importing the original must precede project-specific changes.
+Requires the configured Unity editor and Linux build support. `UNITY_EDITOR` may override the local editor path. The manual GitHub workflow uses the dedicated `signal47-kubuntu` runner and uploads a compressed Linux build with logs. Builds are development builds; the automated scenario runs only when `--signal47-smoke` is supplied.
 
-## Next verification gate
-
-1. Inspect original scripts, scene builder and model assets.
-2. Import and compile with Unity 6000.3.22f1; repair actual compile errors.
-3. Build `SARO_Prologue` using the existing scene builder.
-4. Test movement, interactions, calibration, interference, anomaly, printer, phone and the 47-second sequence through the title card.
-5. Produce a Linux build and actual game screenshots before the first graphics pass.
-
-## Story constants from the original design
-
-Calibration 1419.900 MHz; interference 1420.110 MHz; anomaly 1420.405 MHz; pulse pattern 4 / 7; distance -39 LY; future sound followed by the corresponding impact 47 seconds later.
-
-Do not expand into driving, a large world or NPC systems before this prologue works end to end.
+See `Docs/VALIDATION.md` for test scope and remaining limitations. This is the recovered first playable prologue, not final art or a complete game.

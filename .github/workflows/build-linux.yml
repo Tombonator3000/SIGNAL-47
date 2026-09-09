@@ -1,0 +1,28 @@
+name: Build and test SIGNAL 47 Linux
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: signal47-linux
+  cancel-in-progress: false
+jobs:
+  prologue:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Compile, build and test prologue
+        run: bash Automation/build-linux.sh
+      - name: Upload Linux build and test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SIGNAL-47-Linux
+          retention-days: 14
+          path: |
+            Artifacts/SIGNAL-47-Linux.tar.gz
+            Artifacts/*.log
+            Artifacts/Screenshots/smoke-result.txt
