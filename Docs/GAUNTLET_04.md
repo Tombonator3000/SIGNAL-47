@@ -93,7 +93,7 @@ The tested source was the working tree based on `07eb27d0374236e37e5216475f3675e
 | Phone visual features and runtime import | PASS — inspected actual phone frame and exported geometry |
 | Full-room concept match | UNVERIFIED / future scope — [actual room](Evidence/Gauntlet04/control-room-final.png) retains simpler chairs, CRT housings and lighting detail |
 | Performance on the stated PC/preset | PASS — measured criteria above |
-| 54 existing regression assertions | UNVERIFIED — fresh branch CI pending |
+| 54 existing regression assertions | PASS — [CI 34408377787](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/34408377787), revision `123a88a`, all 54 assertions |
 | Subjective audio balance/listening | UNVERIFIED — no listening review claimed |
 | Independent review | N/A — sequential self-review selected |
 
@@ -117,4 +117,15 @@ The native driver requires a graphical XWayland session, one SIGNAL 47 window, P
 
 Playable package: `Artifacts/SIGNAL-47-Gauntlet-Linux.tar.gz`; extract into a new directory and launch `Signal47.x86_64`. The previous `Artifacts/Linux` output and original source assets remain available. The shipped package contains third-party notices and the font license. The repository branch remains separate and unmerged.
 
-This is a verified bounded prologue increment, with the regression gate pending below, not a complete game. The next bounded slice is improving the central CRT/keyboard/chair silhouettes against the existing full-room concept, followed by an actual sound-balance review and the same native-input/performance gates.
+This is a verified bounded prologue increment, not a complete game. The next bounded slice is improving the central CRT/keyboard/chair silhouettes against the existing full-room concept, followed by an actual sound-balance review and the same native-input/performance gates.
+
+
+### Final regression and package checkpoint
+
+[GitHub run 34408377787](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/34408377787) succeeded on source commit `123a88a4883c600c9e5ca935b3ecec88932ad649`; all 54 method-driven/physics regression assertions passed. This development/headless run is separate from the measured release journey. [Stored results](Evidence/Gauntlet04/ci-result.json) preserve the individual assertions, including handset lift/return, desk reachability and event timing. GitHub artifact upload was skipped as configured; the archive is available locally.
+
+A further native-input capture run on the unchanged release shows the handset [before answering](Evidence/Gauntlet04/phone-before-answer.png) and [lifted after E](Evidence/Gauntlet04/phone-lifted.png), from the same camera. Both frames were inspected unaltered: the three handset parts lift together, leaving the cradle exposed. The static coiled cord remains a simplified detail; hand animation and full cord deformation are not implemented.
+
+The raw CSV was independently recalculated and matched the reported frame counts, average and percentiles. The packaged archive was read back and its entire payload matched the stored build hash; executable permissions and both notice/license files were present. [Delivery verification](Evidence/Gauntlet04/delivery-validation.json) records the result and archive SHA-256 `8553d7d184c86065acc5b4cf87db9b566f4749ba23c4de58e3bd1beeb5a1254b` (58,583,792 bytes). The previous main archive remains untouched.
+
+The separate screenshot journey also passed all 14 checkpoints; [complete capture states and images](Evidence/Gauntlet04/Journey/journey-result.json) are preserved beside one another. The dedicated runner was verified `online`, `busy: false`, with its systemd service active after CI.

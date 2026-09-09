@@ -1,0 +1,11 @@
+{
+  "csv_independent_recalculation": "PASS",
+  "frames": 8294,
+  "average_fps": 59.985291472298165,
+  "p95_ms": 16.83202,
+  "p99_ms": 17.017937,
+  "archive_payload_matches_manifest": "PASS",
+  "archive_executable_and_licenses": "PASS",
+  "archive_sha256": "8553d7d184c86065acc5b4cf87db9b566f4749ba23c4de58e3bd1beeb5a1254b",
+  "archive_bytes": 58583792
+}
