@@ -8,15 +8,25 @@ namespace Signal47.Signals
         public SignalProfile[] profiles; public Renderer physicalScreen;
         public string Prompt=>"RX CONTROL CONSOLE";
         public float frequency=1419.620f,gain=27,bandwidth=82,azimuth=18;
-        int stage; bool solved; string status="CALIBRATION REQUIRED"; Texture2D spectrum; float nextSpectrum;
+        int stage; bool solved; string status="CALIBRATION REQUIRED"; Texture2D spectrum; float nextSpectrum; Color32[] pixels; Material screenMaterial; AudioSource carrier;
+        public float LockQuality=>SignalFeedback.Quality(profiles[Mathf.Min(stage,profiles.Length-1)],frequency,gain,bandwidth,azimuth);
         public void Interact()
         {
             var gs=GameSession.Instance;if(!gs.director.ReceiverPowered){gs.hud.Toast("No carrier. Receiver bank has no power.");return;}
             AnyOpen=true;gs.hud.SetCursor(false);RenderSpectrum();UpdatePhysicalScreen();
         }
-        void Start(){RenderSpectrum();UpdatePhysicalScreen();}
-        void OnDisable(){AnyOpen=false;if(spectrum)Destroy(spectrum);}
-        void Update(){if(AnyOpen && Time.unscaledTime>=nextSpectrum){nextSpectrum=Time.unscaledTime+.1f;RenderSpectrum();}}
+        void Start(){
+            if(physicalScreen)screenMaterial=physicalScreen.material;
+            carrier=gameObject.AddComponent<AudioSource>();carrier.playOnAwake=false;carrier.loop=true;carrier.spatialBlend=1;carrier.minDistance=1;carrier.maxDistance=6;carrier.clip=Signal47.Audio.ProceduralAudio.Carrier();carrier.volume=0;carrier.Play();
+            RenderSpectrum();UpdatePhysicalScreen();
+        }
+        void OnDisable(){AnyOpen=false;}
+        void OnDestroy(){if(spectrum)Destroy(spectrum);if(screenMaterial)Destroy(screenMaterial);if(carrier&&carrier.clip)Destroy(carrier.clip);}
+        void Update(){
+            bool powered=GameSession.Instance && GameSession.Instance.director.ReceiverPowered;
+            if(carrier){float pulse=1;if(stage>=3){float t=Time.time%5;int count=t<2?4:7;float local=t<2?t:t-2.5f;pulse=local>=0&&local<count*.22f&&local%.22f<.1f?1:.08f;}carrier.volume=powered?.075f*LockQuality*pulse:0;carrier.pitch=1+Mathf.Clamp((frequency-1420.405f)*.3f,-.2f,.2f);}
+            if(powered && Time.time>=nextSpectrum){nextSpectrum=Time.time+.1f;RenderSpectrum();}
+        }
         void OnGUI()
         {
             if(!AnyOpen)return;
@@ -25,9 +35,12 @@ namespace Signal47.Signals
             GUI.color=new Color(.03f,.09f,.055f,.98f);GUI.DrawTexture(new Rect(x,y,w,h),Texture2D.whiteTexture);GUI.color=Color.white;
             var green=new GUIStyle(GUI.skin.label){fontSize=16,normal={textColor=new Color(.55f,1f,.64f)},wordWrap=true};
             var head=new GUIStyle(green){fontSize=24,fontStyle=FontStyle.Bold};
-            GUI.Label(new Rect(x+28,y+20,w-56,36),"SARO / RX CONTROL 03",head);GUI.Label(new Rect(x+28,y+58,w-56,28),status,green);
+            GUI.Label(new Rect(x+28,y+20,w-56,36),"SARO / RX CONTROL 03",head);GUI.Label(new Rect(x+28,y+58,w-56,28),status,green);GUI.Label(new Rect(x+w-218,y+24,190,28),$"CARRIER {LockQuality*100:0}%",green);
             if(spectrum!=null)GUI.DrawTexture(new Rect(x+28,y+96,w-56,220),spectrum,ScaleMode.StretchToFill,false);
             GUI.Label(new Rect(x+28,y+326,w-56,48),profiles[Mathf.Min(stage,profiles.Length-1)].referenceCard,green);
+            GUI.Label(new Rect(x+28,y+553,310,30),"FINE TUNE / 1 kHz steps",green);
+            if(GUI.Button(new Rect(x+310,y+553,90,28),"− 0.001"))frequency=Mathf.Max(1419.5f,frequency-.001f);
+            if(GUI.Button(new Rect(x+410,y+553,90,28),"+ 0.001"))frequency=Mathf.Min(1420.7f,frequency+.001f);
             float sy=y+380; frequency=SliderRow("FREQUENCY MHz",frequency,1419.5f,1420.7f,ref sy,x,w,green,"F3");
             gain=SliderRow("GAIN",gain,0,100,ref sy,x,w,green,"F0");bandwidth=SliderRow("BANDWIDTH kHz",bandwidth,4,100,ref sy,x,w,green,"F0");azimuth=SliderRow("ARRAY AZ",azimuth,0,180,ref sy,x,w,green,"F0");
             if(GUI.Button(new Rect(x+28,y+h-62,260,38),solved?"PRINT COMPLETE":(stage<profiles.Length?profiles[stage].actionLabel:"DIRECTION SOLVE")))Action();
@@ -54,13 +67,28 @@ namespace Signal47.Signals
         public void Close(){AnyOpen=false;GameSession.Instance.hud.SetCursor(true);}
         void RenderSpectrum()
         {
-            if(spectrum==null){spectrum=new Texture2D(512,220,TextureFormat.RGBA32,false);spectrum.wrapMode=TextureWrapMode.Clamp;}
-            Color bg=new(.01f,.035f,.02f), grid=new(.05f,.18f,.09f), trace=new(.45f,1f,.57f);var px=new Color[512*220];for(int i=0;i<px.Length;i++)px[i]=bg;
-            for(int gx=0;gx<512;gx+=64)for(int yy=0;yy<220;yy++)px[yy*512+gx]=grid;for(int gy=30;gy<220;gy+=35)for(int xx=0;xx<512;xx++)px[gy*512+xx]=grid;
-            float peak=stage==0?1419.9f:stage==1?1420.11f:1420.405f;float peakX=(peak-1419.5f)/1.2f*511;
-            for(int xx=0;xx<512;xx++){float noise=Mathf.Sin(xx*.17f+Time.unscaledTime*4)*2+Mathf.Sin(xx*.043f)*3;float amp=stage>=2?58:50;float yy=158-amp*Mathf.Exp(-Mathf.Pow((xx-peakX)/14,2))+noise;int iy=Mathf.Clamp(Mathf.RoundToInt(yy),1,218);px[iy*512+xx]=trace;px[(iy+1)*512+xx]=trace;}
-            spectrum.SetPixels(px);spectrum.Apply(false,false);if(physicalScreen){physicalScreen.material.SetTexture("_BaseMap",spectrum);physicalScreen.material.SetColor("_BaseColor",Color.white);}
+            const int width=512,height=220;
+            if(spectrum==null){spectrum=new Texture2D(width,height,TextureFormat.RGBA32,false);spectrum.wrapMode=TextureWrapMode.Clamp;pixels=new Color32[width*height];}
+            bool powered=GameSession.Instance && GameSession.Instance.director.ReceiverPowered;
+            Color32 bg=new Color(.009f,.024f,.015f),grid=new Color(.04f,.13f,.065f),trace=new Color(.48f,1f,.58f),band=new Color(.023f,.08f,.043f);
+            float peak=profiles[Mathf.Min(stage,profiles.Length-1)].targetFrequency;
+            float peakX=(peak-1419.5f)/1.2f*(width-1),tunedX=(frequency-1419.5f)/1.2f*(width-1);
+            float halfWidth=bandwidth/1000f/1.2f*width*.5f;
+            for(int y=0;y<height;y++)for(int x=0;x<width;x++)pixels[y*width+x]=powered&&Mathf.Abs(x-tunedX)<halfWidth?band:bg;
+            for(int x=0;x<width;x+=64)for(int y=0;y<height;y++)pixels[y*width+x]=grid;
+            for(int y=30;y<height;y+=35)for(int x=0;x<width;x++)pixels[y*width+x]=grid;
+            if(powered){
+                for(int x=0;x<width;x++){
+                    float noise=(Mathf.Sin(x*.17f+Time.time*4)*2+Mathf.Sin(x*.71f+Time.time*7)*3)*(bandwidth/35f+.2f);
+                    float amp=12+110*LockQuality*gain/100;
+                    int y=Mathf.Clamp(Mathf.RoundToInt(35+amp*Mathf.Exp(-Mathf.Pow((x-peakX)/7,2))+noise),1,height-2);
+                    pixels[y*width+x]=trace;pixels[(y+1)*width+x]=trace;
+                }
+                int marker=Mathf.Clamp(Mathf.RoundToInt(tunedX),0,width-1);for(int y=0;y<height;y+=3)pixels[y*width+marker]=new Color(.85f,.70f,.28f);
+            }
+            spectrum.SetPixels32(pixels);spectrum.Apply(false,false);
+            if(screenMaterial){screenMaterial.SetTexture("_BaseMap",spectrum);screenMaterial.SetColor("_BaseColor",Color.white);}
         }
-        void UpdatePhysicalScreen(){if(physicalScreen==null)return;var m=physicalScreen.material;m.SetColor("_BaseColor",Color.white);if(m.HasProperty("_EmissionColor")){m.EnableKeyword("_EMISSION");m.SetColor("_EmissionColor",new Color(.08f,.9f,.22f)*(solved?2.5f:1.3f));}}
+        void UpdatePhysicalScreen(){if(physicalScreen==null)return;var m=screenMaterial;if(m==null)return;m.SetColor("_BaseColor",Color.white);if(m.HasProperty("_EmissionColor")){m.EnableKeyword("_EMISSION");m.SetColor("_EmissionColor",new Color(.08f,.9f,.22f)*(solved?2.5f:1.3f));}}
     }
 }

@@ -24,14 +24,26 @@ namespace Signal47.Debugging
             yield return Shot("01-start");g.hud.StartShift();yield return null;
             var console=FindFirstObjectByType<SignalConsole>();Check(console!=null,"console exists");
             console.Interact();Check(!SignalConsole.AnyOpen,"unpowered receiver blocks console");
-            g.director.PowerReceiver();console.Interact();Check(SignalConsole.AnyOpen,"powered receiver opens console");
+            FindFirstObjectByType<Signal47.Interaction.ReceiverBank>().Interact();console.Interact();Check(SignalConsole.AnyOpen,"powered receiver opens console");
             console.Action();Check(!g.director.PrintoutAvailable,"incorrect parameters cannot solve");
+            var anomaly=console.profiles[2];
+            float quality=SignalFeedback.Quality(anomaly,1420.405f,82,12,83);
+            Check(quality>.99f,"aligned instruments yield strong carrier");
+            Check(SignalFeedback.Quality(anomaly,1420.2f,82,12,83)<quality*.5f,"frequency detuning reduces carrier");
+            Check(SignalFeedback.Quality(anomaly,1420.405f,15,12,83)<quality*.5f,"low gain reduces carrier");
+            Check(SignalFeedback.Quality(anomaly,1420.405f,82,90,83)<quality*.5f,"wide bandwidth reduces carrier");
+            Check(SignalFeedback.Quality(anomaly,1420.405f,82,12,18)<quality*.5f,"wrong azimuth reduces carrier");
+            Check(FindFirstObjectByType<Signal47.Interaction.ReceiverBank>().leds.Length>0,"refined receiver retains controllable LEDs");
             foreach(var p in console.profiles){console.frequency=p.targetFrequency;console.gain=p.gainRange.x;console.bandwidth=p.bandwidthRange.x;console.azimuth=p.azimuthRange.x;console.Action();}
             yield return Shot("02-console");console.Action();Check(g.director.PrintoutAvailable,"three stages unlock printout");console.Close();
             yield return new WaitForSeconds(3.8f);Check(g.director.PhoneRinging,"phone rings after printout");
             g.director.AnswerPhone();Check(g.director.PhoneAnswered,"phone answered");
             g.hud.SetPaused(true);float pausedAt=Time.time;yield return new WaitForSecondsRealtime(.6f);Check(Mathf.Approximately(Time.time,pausedAt),"pause freezes sequence clock");g.hud.SetPaused(false);
-            g.player.transform.position=new Vector3(0,.05f,2.2f);g.player.transform.rotation=Quaternion.Euler(0,180,0);yield return Shot("03-control-room");
+            var controller=g.player.GetComponent<CharacterController>();controller.enabled=false;g.player.transform.position=new Vector3(-3.4f,.05f,1.2f);g.player.transform.rotation=Quaternion.Euler(0,145,0);controller.enabled=true;yield return Shot("03-control-room");
+            controller.enabled=false;g.player.transform.position=new Vector3(0,.05f,.6f);g.player.transform.rotation=Quaternion.Euler(0,180,0);controller.enabled=true;
+            Physics.SyncTransforms();bool hitConsole=Physics.Raycast(g.player.viewCamera.transform.position,(console.transform.position+Vector3.up*.65f-g.player.viewCamera.transform.position).normalized,out var hit,2.65f)&&hit.collider.GetComponentInParent<SignalConsole>()==console;
+            Check(hitConsole,"console remains reachable past furniture");
+            yield return Shot("05-crt");
             float start=Time.time;while(!g.hud.TitleVisible){yield return null;}
             Check(Time.time-start>=47,"future sequence retains hidden delay");Check(!g.director.mug.intact.activeSelf && g.director.mug.broken.activeSelf,"mug breaks before title");
             yield return Shot("04-title");console.Interact();g.Restart();yield return null;yield return null;

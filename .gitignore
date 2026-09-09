@@ -7,3 +7,5 @@ Unity/[Bb]uilds/
 Artifacts/
 *.zip
 __pycache__/
+
+*.blend1

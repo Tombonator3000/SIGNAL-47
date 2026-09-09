@@ -4,6 +4,7 @@ namespace Signal47.Audio
     public static class ProceduralAudio
     {
         const int Rate=44100;
+        public static AudioClip Carrier()=>Build("ReceiverCarrier",1f,t=>(Mathf.Sin(2*Mathf.PI*440*t)+.18f*Mathf.Sin(2*Mathf.PI*880*t))*.24f);
         public static AudioClip Ring()=>Build("PhoneRing",1.8f,(t)=>{float env=((t<.35f)||(t>.48f&&t<.83f))?1:0;return env*(Mathf.Sin(2*Mathf.PI*440*t)+.75f*Mathf.Sin(2*Mathf.PI*480*t))*.18f;});
         public static AudioClip Boom()=>Build("Boom",1.25f,t=>(Mathf.Sin(2*Mathf.PI*42*t)*Mathf.Exp(-2.2f*t)+Noise(t)*.18f*Mathf.Exp(-3*t))*.5f);
         public static AudioClip Smash()=>Build("Smash",.55f,t=>Noise(t)*Mathf.Exp(-7*t)*.42f + Mathf.Sin(2*Mathf.PI*(1450+2400*t)*t)*Mathf.Exp(-8*t)*.15f);
