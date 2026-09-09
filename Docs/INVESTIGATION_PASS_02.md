@@ -15,7 +15,7 @@ Original OBJ assets, source ZIP, other projects, and the separate runner are unc
 
 ## Verification
 
-The graphical Linux scenario passed 45 assertions with exit 0 and SIGNAL47_SMOKE_PASS. Coverage includes paper-feed readiness, evidence collection without duplicates, handset lift/return, mug pickup/return and both impact branches, the 47-second deadline (within a 0.25-second frame tolerance), pause, all eleven dish headings, and restart. A final paper-placement adjustment is being verified separately. Automated interactions are invoked programmatically, with screenshots from the actual Linux executable; this is not a manual keyboard/mouse playthrough or a performance benchmark.
+The graphical Linux scenario passed 45 assertions with exit 0 and SIGNAL47_SMOKE_PASS. Coverage includes paper-feed readiness, evidence collection without duplicates, handset lift/return, mug pickup/return and both impact branches, the 47-second deadline (within a 0.25-second frame tolerance), pause, all eleven dish headings, and restart. The final paper position and text orientation were checked in screenshots, and the final graphical build again passed all 45 assertions. Automated interactions are invoked programmatically, with screenshots from the actual Linux executable; this is not a manual keyboard/mouse playthrough or a performance benchmark.
 
 The first graphical attempt hit its watchdog while desktop presentation throttled the test. The QA harness now disables vertical synchronization, caps rendering at 60 FPS, and allows 180 seconds; normal game settings are unchanged. The subsequent graphical scenario passed.
 
@@ -30,3 +30,13 @@ tar -czf Artifacts/SIGNAL-47-Linux.tar.gz -C Artifacts/Linux .
 ```
 
 Generated scene: `Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity`. Playable executable: `Artifacts/Linux/Signal47.x86_64`. Screenshots and result: `Artifacts/Screenshots/`.
+
+## Runner environment repair
+
+GitHub run 34397231080 compiled successfully but stalled in native FMOD initialization, before the managed watchdog. Its systemd process lacked XDG_RUNTIME_DIR and PULSE_SERVER. It was canceled. A local headless launch with `/run/user/1000/pulse/native` explicitly selected reached the test immediately. The build script now discovers this same-user socket if present and supplies its environment; a 240-second process timeout with a 10-second termination grace period also bounds hangs before Unity scripting starts. No system sound configuration or other runner was modified.
+
+```sh
+gh workflow run build-linux.yml -f upload_artifact=false
+gh run cancel 34397231080
+SDL_VIDEODRIVER=dummy PULSE_SERVER=unix:/run/user/1000/pulse/native XDG_RUNTIME_DIR=/run/user/1000 ./Artifacts/Linux/Signal47.x86_64 -batchmode -nographics -noaudio --signal47-smoke -logFile "$PWD/Artifacts/story-headless.log"
+```
