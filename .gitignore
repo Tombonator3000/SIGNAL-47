@@ -9,3 +9,6 @@ Artifacts/
 __pycache__/
 
 *.blend1
+
+# Keep the licensed source pack used by the reproducible sound import.
+!Unity/Assets/Signal47/Art/ThirdParty/Kenney/interface-sounds.zip

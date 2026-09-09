@@ -6,7 +6,7 @@ namespace Signal47.UI
 {
     public sealed class HUDController : MonoBehaviour
     {
-        public Notebook notebook;
+        public Notebook notebook;public Font terminalFont;
         public bool Started { get; private set; }
         public bool Paused { get; private set; }
         public bool TitleVisible { get; private set; }
@@ -31,7 +31,7 @@ namespace Signal47.UI
         public void SetPaused(bool value){Paused=value;Time.timeScale=value?0:1;AudioListener.pause=value;SetCursor(!value);}
         public void StartShift(){Started=true;SetPaused(false);SetCursor(true);Toast("SHIFT LOG // 23:41 LOCAL",2f);}
         public void Toast(string msg,float seconds=1.8f){toast=msg;toastUntil=Time.unscaledTime+seconds;}
-        public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;SetCursor(false);}
+        public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;if(Core.GameSession.Instance.director.palette)Core.GameSession.Instance.director.palette.Click();SetCursor(false);}
         void ClosePaper(){paperOpen=false;notebookOpen=returnToNotebook;returnToNotebook=false;SetCursor(!notebookOpen);}
         public void ShowNotebook(){notebookOpen=true;SetCursor(false);}
         public void ShowTitle(){paperOpen=false;notebookOpen=false;Paused=false;Time.timeScale=1;AudioListener.pause=false;TitleVisible=true;Signals.SignalConsole console=FindFirstObjectByType<Signals.SignalConsole>();if(console)console.Close();SetCursor(false);}
@@ -41,7 +41,7 @@ namespace Signal47.UI
         {
             if(mono!=null)return;
             mono=new GUIStyle(GUI.skin.label){fontSize=16,normal={textColor=new Color(.62f,1f,.70f)},wordWrap=true};
-            big=new GUIStyle(mono){fontSize=42,alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+            big=new GUIStyle(mono){font=terminalFont,fontSize=42,alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
             button=new GUIStyle(GUI.skin.button){fontSize=18};
             paperStyle=new GUIStyle(GUI.skin.box){fontSize=17,alignment=TextAnchor.UpperLeft,wordWrap=true,normal={textColor=new Color(.15f,.13f,.10f)}};
         }
@@ -95,6 +95,7 @@ namespace Signal47.UI
                 GUI.color=new Color(0,0,0,.96f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(0,Screen.height*.5f-100,Screen.width,90),"SIGNAL / 47",new GUIStyle(big){fontSize=64,normal={textColor=Color.white}});
                 GUI.Label(new Rect(0,Screen.height*.5f,Screen.width,45),"NEW MEXICO — 1986",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter,fontSize=20,normal={textColor=new Color(.75f,.78f,.75f)}});
+                GUI.Label(new Rect(30,Screen.height-92,Screen.width-60,70),"Music: ‘Signal to Noise’ — Scott Buckley • CC BY 4.0\nNo-piano mix, excerpt with fades • scottbuckley.com.au\ncreativecommons.org/licenses/by/4.0/",new GUIStyle(mono){fontSize=13,alignment=TextAnchor.MiddleCenter});
                 if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+95,240,48),"RESTART SLICE",button)) Core.GameSession.Instance.Restart();
             }
         }

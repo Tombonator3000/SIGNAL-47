@@ -10,6 +10,8 @@ WASD moves, mouse looks, E interacts, Tab opens the notebook and Esc closes the 
 
 ## Latest pass
 
+The imported asset pass adds worn metal desks, an articulated lamp, a detailed reserve radio, linoleum and a night sky. Recorded printer, telephone, ceramic and wind effects join mechanical UI clicks; VT323 gives the terminal its typeface, and an attributed Scott Buckley excerpt accompanies the ending title. See [asset pass 03](Docs/ASSET_PASS_03.md) for the 54-check graphical validation and [third-party notices](Docs/THIRD_PARTY_NOTICES.md) for source licenses.
+
 The control room now has refined Blender meshes, differentiated materials, tile and ceiling detail, auxiliary screens and furniture. Signal strength, spectrum and a positional receiver tone respond to tuning; fine adjustment buttons step by 0.001 MHz. See `Docs/ART_PASS_01.md`. The investigation pass adds physical paper, an animated handset, a holdable mug, collected evidence and a synchronized 47-second event sequence; see `Docs/INVESTIGATION_PASS_02.md`.
 
 ## Source and tools

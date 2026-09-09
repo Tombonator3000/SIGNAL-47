@@ -5,7 +5,7 @@ namespace Signal47.Signals
     public sealed class SignalConsole : MonoBehaviour, IInteractable
     {
         public static bool AnyOpen { get; private set; }
-        public SignalProfile[] profiles; public Renderer physicalScreen;
+        public Font terminalFont;public SignalProfile[] profiles; public Renderer physicalScreen;
         public string Prompt=>"RX CONTROL CONSOLE";
         public float frequency=1419.620f,gain=27,bandwidth=82,azimuth=18;
         int stage; bool solved; string status="CALIBRATION REQUIRED"; Texture2D spectrum; float nextSpectrum; Color32[] pixels; Material screenMaterial; AudioSource carrier;
@@ -34,8 +34,8 @@ namespace Signal47.Signals
             float scale=Mathf.Min(Screen.width/960f,Screen.height/760f);var previous=GUI.matrix;GUI.matrix=Matrix4x4.TRS(Vector3.zero,Quaternion.identity,Vector3.one*scale);
             float w=880,h=700,x=(Screen.width/scale-w)/2,y=(Screen.height/scale-h)/2;
             GUI.color=new Color(.03f,.09f,.055f,.98f);GUI.DrawTexture(new Rect(x,y,w,h),Texture2D.whiteTexture);GUI.color=Color.white;
-            var green=new GUIStyle(GUI.skin.label){fontSize=16,normal={textColor=new Color(.55f,1f,.64f)},wordWrap=true};
-            var head=new GUIStyle(green){fontSize=24,fontStyle=FontStyle.Bold};
+            var green=new GUIStyle(GUI.skin.label){font=terminalFont,fontSize=22,normal={textColor=new Color(.55f,1f,.64f)},wordWrap=true};
+            var head=new GUIStyle(green){fontSize=28,fontStyle=FontStyle.Bold};
             GUI.Label(new Rect(x+28,y+20,w-56,36),"SARO / RX CONTROL 03",head);GUI.Label(new Rect(x+28,y+58,w-56,28),status,green);GUI.Label(new Rect(x+w-218,y+24,190,28),$"CARRIER {LockQuality*100:0}%",green);
             if(spectrum!=null)GUI.DrawTexture(new Rect(x+28,y+96,w-56,220),spectrum,ScaleMode.StretchToFill,false);
             GUI.Label(new Rect(x+28,y+326,w-56,48),profiles[Mathf.Min(stage,profiles.Length-1)].referenceCard,green);
@@ -53,6 +53,7 @@ namespace Signal47.Signals
         {GUI.Label(new Rect(x+28,y,270,30),$"{label}: {value.ToString(fmt)}",s);value=GUI.HorizontalSlider(new Rect(x+310,y+6,w-350,18),value,min,max);y+=42;return value;}
         public void Action()
         {
+            if(GameSession.Instance.director.palette)GameSession.Instance.director.palette.Click();
             if(solved)return;
             if(stage<profiles.Length)
             {

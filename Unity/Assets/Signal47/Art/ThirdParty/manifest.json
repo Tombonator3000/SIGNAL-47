@@ -1,0 +1,316 @@
+{
+  "downloaded": "2026-09-09",
+  "note": "Freesound inputs are public HQ MP3 previews, not original WAV masters.",
+  "files": [
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_linoleum_flooring_01/old_linoleum_flooring_01_diff_2k.jpg",
+      "path": "PolyHaven/old_linoleum_flooring_01/Diffuse.jpg",
+      "author": "Charlotte Baglioni",
+      "source": "https://polyhaven.com/a/old_linoleum_flooring_01",
+      "license": "CC0-1.0",
+      "expected_md5": "9d503eab059374f985e25210967ca816",
+      "sha256": "ef60d08efe91b2c79fa215affd73e2ba7e81ae175a61651e6bd9f2f3ff3607f5",
+      "bytes": 2702594
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/old_linoleum_flooring_01/old_linoleum_flooring_01_nor_gl_2k.png",
+      "path": "PolyHaven/old_linoleum_flooring_01/nor_gl.png",
+      "author": "Charlotte Baglioni",
+      "source": "https://polyhaven.com/a/old_linoleum_flooring_01",
+      "license": "CC0-1.0",
+      "expected_md5": "ac6b6d14fc77de9018ab6ffbabe3366a",
+      "sha256": "1cf18553b722498c59c9dc36bcf90deb1805028bb2cdabc189e45c3e5770312c",
+      "bytes": 19171838
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_linoleum_flooring_01/old_linoleum_flooring_01_rough_2k.jpg",
+      "path": "PolyHaven/old_linoleum_flooring_01/Rough.jpg",
+      "author": "Charlotte Baglioni",
+      "source": "https://polyhaven.com/a/old_linoleum_flooring_01",
+      "license": "CC0-1.0",
+      "expected_md5": "d37f6b6f5d84b2684d91f0a231cad9d3",
+      "sha256": "0db161143d8e0c49cfad5b56365b193486a72d4ba96af9b7ed7f6bd7e4f64b48",
+      "bytes": 1932827
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/metal_office_desk/metal_office_desk_1k.fbx",
+      "path": "PolyHaven/metal_office_desk/metal_office_desk.fbx",
+      "author": "Ulan Cabanilla",
+      "source": "https://polyhaven.com/a/metal_office_desk",
+      "license": "CC0-1.0",
+      "expected_md5": "0ed604020aaacc89c65eddb27d3354bc",
+      "sha256": "858d23fe96547b3c5d0d5d29db858598554b3d06e5af1e45f2f9c3e6be19cd91",
+      "bytes": 239676
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_office_desk/metal_office_desk_diff_1k.jpg",
+      "path": "PolyHaven/metal_office_desk/Diffuse.jpg",
+      "author": "Ulan Cabanilla",
+      "source": "https://polyhaven.com/a/metal_office_desk",
+      "license": "CC0-1.0",
+      "expected_md5": "6a27263c95811fa902ddea6476d610e9",
+      "sha256": "1f02e3e77e8f82a3600664c991bd45c1c187452d61e9ede4336c6f90f7fa3139",
+      "bytes": 470831
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/metal_office_desk/metal_office_desk_nor_gl_1k.png",
+      "path": "PolyHaven/metal_office_desk/nor_gl.png",
+      "author": "Ulan Cabanilla",
+      "source": "https://polyhaven.com/a/metal_office_desk",
+      "license": "CC0-1.0",
+      "expected_md5": "fecbb13a57e4b9e2814a946b3a02390f",
+      "sha256": "80a74e99ffd625da039fe2a058e3c4523ced69b5509abafe455136d153b583c1",
+      "bytes": 511193
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_office_desk/metal_office_desk_rough_1k.jpg",
+      "path": "PolyHaven/metal_office_desk/Rough.jpg",
+      "author": "Ulan Cabanilla",
+      "source": "https://polyhaven.com/a/metal_office_desk",
+      "license": "CC0-1.0",
+      "expected_md5": "42be1dadb1a2cc5726a4726b294dc8c4",
+      "sha256": "c5f2514647da7f380d9ac5f4824abf5a930730ef4dcdcaca78af7d437ad30bf7",
+      "bytes": 596337
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_office_desk/metal_office_desk_metal_1k.jpg",
+      "path": "PolyHaven/metal_office_desk/Metal.jpg",
+      "author": "Ulan Cabanilla",
+      "source": "https://polyhaven.com/a/metal_office_desk",
+      "license": "CC0-1.0",
+      "expected_md5": "f7e84b92e52e32fef60866181045ea4d",
+      "sha256": "53637ca828805bba0461926c20db040a7b2acc7cf9433ca15c604b75a7d215f9",
+      "bytes": 84883
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/vintage_radio_transceiver/vintage_radio_transceiver_1k.fbx",
+      "path": "PolyHaven/vintage_radio_transceiver/vintage_radio_transceiver.fbx",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "47d22f941fa46bf2d1f3c297ba5bc649",
+      "sha256": "2a21e638ecf4f83e7b44a377292c20b0a940c733142db12694c25fd5dcf8926f",
+      "bytes": 1530908
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_diff_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/Diffuse.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "368967f76872933710e77959659bda95",
+      "sha256": "a730d1fa041bdead966ed04d501638de839ebde0163a64becac2132d9268bfe6",
+      "bytes": 754292
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/vintage_radio_transceiver/vintage_radio_transceiver_nor_gl_1k.png",
+      "path": "PolyHaven/vintage_radio_transceiver/nor_gl.png",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "37d7a0e8afc5f02408ea9641e900d8cd",
+      "sha256": "de945267b746c8412e24cc07758039e2f1ac9b40111d6d1b0c462d5f1ee4fb65",
+      "bytes": 3916657
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_rough_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/Rough.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "4b59bd44b62ed61327b112527860f9f3",
+      "sha256": "fab4c55570d5e28ea633547fdee6b8cf470434e042f638bc0fb61c4f16dd9ccc",
+      "bytes": 774247
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_metal_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/Metal.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "e03c354bcf33c0f494f5a37726e785f1",
+      "sha256": "7f9b9e32b0dd55f95cb92f2fa09e08a7d1ad50548c2b314dbf7433c196417c89",
+      "bytes": 208007
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_diff_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/accessories_diff.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "858f7c7cf0c1ab38457b4dc70abbd82b",
+      "sha256": "54b544c6fd2e478ae75e1e5ac0361d95c423b6be393819e6df8965e119d53c3a",
+      "bytes": 739039
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_nor_gl_1k.png",
+      "path": "PolyHaven/vintage_radio_transceiver/accessories_nor_gl.png",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "16e6a8e1b7b437c785d50e82deaed64e",
+      "sha256": "d4ab8f4a6a921dc28883337823ebf69b80bd47c810754e33e4fc16101e140faf",
+      "bytes": 4030404
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_rough_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/accessories_rough.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "f0860a8799a98867e6ff4583ef7d136e",
+      "sha256": "f45eec14adfcced5f47f09b7a047c82e443afa879e91614666bd8371e1452e6c",
+      "bytes": 764802
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_metal_1k.jpg",
+      "path": "PolyHaven/vintage_radio_transceiver/accessories_metal.jpg",
+      "author": "Mateusz Sadek",
+      "source": "https://polyhaven.com/a/vintage_radio_transceiver",
+      "license": "CC0-1.0",
+      "expected_md5": "2132a667b1eb9236ea39e94a638f66ad",
+      "sha256": "84b355e76c402789ea6b7472f3d43f43abae8f45c83989f9f567a67f266292da",
+      "bytes": 371336
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/desk_lamp_arm_01/desk_lamp_arm_01_1k.fbx",
+      "path": "PolyHaven/desk_lamp_arm_01/desk_lamp_arm_01.fbx",
+      "author": "Kuutti Siitonen; Yann Kervran",
+      "source": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "license": "CC0-1.0",
+      "expected_md5": "21f20854b6f97a147bdb093afbc3dedb",
+      "sha256": "f8c7a9e2b09ce34349c40426574dd22416477ef3f0218291d19231c35503e443",
+      "bytes": 2304508
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/desk_lamp_arm_01/desk_lamp_arm_01_diff_1k.jpg",
+      "path": "PolyHaven/desk_lamp_arm_01/Diffuse.jpg",
+      "author": "Kuutti Siitonen; Yann Kervran",
+      "source": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "license": "CC0-1.0",
+      "expected_md5": "a5c1bf5465da39ca6ca9039dd4e3fd66",
+      "sha256": "159eb178aba3271bd555cbe07ca36431d8af9a006f0b8e9d8c67030cbdc9e4d3",
+      "bytes": 702522
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/desk_lamp_arm_01/desk_lamp_arm_01_nor_gl_1k.png",
+      "path": "PolyHaven/desk_lamp_arm_01/nor_gl.png",
+      "author": "Kuutti Siitonen; Yann Kervran",
+      "source": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "license": "CC0-1.0",
+      "expected_md5": "18ce7fd98be54f6cebfa7147c5a828ab",
+      "sha256": "e975db71bb68c6eead0b296796c6e9aa9519f51baf45fdf482ed184b859903f5",
+      "bytes": 4587188
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/desk_lamp_arm_01/desk_lamp_arm_01_rough_1k.jpg",
+      "path": "PolyHaven/desk_lamp_arm_01/Rough.jpg",
+      "author": "Kuutti Siitonen; Yann Kervran",
+      "source": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "license": "CC0-1.0",
+      "expected_md5": "f7a9eca0897b213082c37741d52ce093",
+      "sha256": "5a939cd7007a7268528aafc25143dfe48833618ce5b7229fcd8d5620b7aadf87",
+      "bytes": 578764
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/desk_lamp_arm_01/desk_lamp_arm_01_metal_1k.jpg",
+      "path": "PolyHaven/desk_lamp_arm_01/Metal.jpg",
+      "author": "Kuutti Siitonen; Yann Kervran",
+      "source": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "license": "CC0-1.0",
+      "expected_md5": "647d27e006f32de713242201df6eca69",
+      "sha256": "fc8464eb5728b2c85428ab97418fc07380e4fab660810bf1b4324735eb1e219d",
+      "bytes": 472609
+    },
+    {
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/qwantani_night_puresky_2k.hdr",
+      "path": "PolyHaven/qwantani_night_puresky/Sky.hdr",
+      "author": "Greg Zaal; Jarod Guest",
+      "source": "https://polyhaven.com/a/qwantani_night_puresky",
+      "license": "CC0-1.0",
+      "expected_md5": "a2ef5b92f49f77b5bad15add5dad4feb",
+      "sha256": "d458fe7f20969d89eedbb7ae12d346abf68c86d844235696e7d70baad3e04cf0",
+      "bytes": 5461210
+    },
+    {
+      "url": "https://cdn.freesound.org/previews/181/181420_2633921-hq.mp3",
+      "path": "Freesound/printer-hq-preview.mp3",
+      "author": "viertelnachvier",
+      "source": "https://freesound.org/people/viertelnachvier/sounds/181420/",
+      "license": "CC0-1.0",
+      "expected_md5": null,
+      "sha256": "499b9da96adc4fc1a5c0bf7593c3b961426b5d89d1a6054f0f096d2b443394ce",
+      "bytes": 1469107
+    },
+    {
+      "url": "https://cdn.freesound.org/previews/15/15826_31028-hq.mp3",
+      "path": "Freesound/phone-hq-preview.mp3",
+      "author": "transitking",
+      "source": "https://freesound.org/people/transitking/sounds/15826/",
+      "license": "CC0-1.0",
+      "expected_md5": null,
+      "sha256": "7b826e1be58c7e551098321d5bf7a3177f630597ca524b36119b15966d6a6e53",
+      "bytes": 1317144
+    },
+    {
+      "url": "https://cdn.freesound.org/previews/524/524999_4438201-hq.mp3",
+      "path": "Freesound/cup-hq-preview.mp3",
+      "author": "geraldfiebig",
+      "source": "https://freesound.org/people/geraldfiebig/sounds/524999/",
+      "license": "CC0-1.0",
+      "expected_md5": null,
+      "sha256": "bdddd8950ca6b37941a328ec436d5cb193ec01040b28ae2cfa3e1e3db948e69c",
+      "bytes": 142279
+    },
+    {
+      "url": "https://cdn.freesound.org/previews/645/645305_3139426-hq.mp3",
+      "path": "Freesound/wind-hq-preview.mp3",
+      "author": "DarkShroom",
+      "source": "https://freesound.org/people/DarkShroom/sounds/645305/",
+      "license": "CC0-1.0",
+      "expected_md5": null,
+      "sha256": "91c4b860d4cff6724df2f5b3694479934241b2c70f27002690463684775308cd",
+      "bytes": 1366275
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/VT323-Regular.ttf",
+      "path": "VT323/VT323-Regular.ttf",
+      "author": "Peter Hull",
+      "source": "https://github.com/google/fonts/tree/main/ofl/vt323",
+      "license": "OFL-1.1",
+      "expected_md5": null,
+      "sha256": "cf4de751ada78ceac033dbe16a687742939995b77bc2a052ae17a4957958594d",
+      "bytes": 153116
+    },
+    {
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/OFL.txt",
+      "path": "VT323/OFL.txt",
+      "author": "Peter Hull",
+      "source": "https://github.com/google/fonts/tree/main/ofl/vt323",
+      "license": "OFL-1.1",
+      "expected_md5": null,
+      "sha256": "27d9af34210253e7ca1251fbace86c6f65b40031d6ce1a75493a1b2093631298",
+      "bytes": 4367
+    },
+    {
+      "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/04/sb_signaltonoise_nomelody.mp3",
+      "path": "ScottBuckley/SignalToNoise-NoPiano.mp3",
+      "author": "Scott Buckley",
+      "source": "https://www.scottbuckley.com.au/library/signal-to-noise/",
+      "license": "CC-BY-4.0",
+      "expected_md5": null,
+      "sha256": "8e20b496b0614053565d4f43c80f469c84abd2aefb3ba01e29dfa813f49b9594",
+      "bytes": 14178456
+    },
+    {
+      "url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+      "path": "Kenney/interface-sounds.zip",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "expected_md5": null,
+      "sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232",
+      "bytes": 834536
+    }
+  ]
+}

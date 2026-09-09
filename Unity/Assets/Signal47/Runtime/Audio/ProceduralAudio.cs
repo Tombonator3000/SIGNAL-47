@@ -11,7 +11,15 @@ namespace Signal47.Audio
         public static AudioClip Boom()=>Build("Boom",1.25f,BoomSample);
         public static AudioClip Smash()=>Build("Smash",.55f,SmashSample);
         public static AudioClip Printer()=>Build("Printer",1.2f,t=>{float tick=(t*14)%1;return (tick<.18f?Noise(t)*.16f:0)+Mathf.Sin(2*Mathf.PI*(1600+(int)(t*14)%3*180)*t)*.035f;});
-        public static AudioClip FutureCall()=>Build("FutureCall",4.3f,t=>Noise(t)*.025f+Mathf.Sin(2*Mathf.PI*63*t)*.012f+BoomSample(t-1.75f)*.65f+SmashSample(t-2.45f)*.65f);
+        public static AudioClip FutureCall(AudioClip ceramic=null)
+        {
+            float[] data=null;if(ceramic){data=new float[ceramic.samples*ceramic.channels];if(!ceramic.GetData(data,0))data=null;}
+            return Build("FutureCall",4.3f,t=>{
+                float elapsed=t-2.45f,sample=SmashSample(elapsed);
+                if(data!=null){int index=(int)(elapsed*ceramic.frequency)*ceramic.channels;sample=elapsed>=0&&index>=0&&index<data.Length?data[index]:0;}
+                return Noise(t)*.025f+Mathf.Sin(2*Mathf.PI*63*t)*.012f+BoomSample(t-1.75f)*.65f+sample*.65f;
+            });
+        }
         public static AudioClip Hum()=>Build("RoomHum",2f,t=>Mathf.Sin(2*Mathf.PI*58*t)*.035f+Mathf.Sin(2*Mathf.PI*116*t)*.009f);
         static float Noise(float t){unchecked{int n=(int)(t*Rate);n=(n<<13)^n;return 1f-((n*(n*n*15731+789221)+1376312589)&0x7fffffff)/1073741824f;}}
         static AudioClip Build(string name,float seconds,System.Func<float,float> fn){int count=Mathf.CeilToInt(seconds*Rate);float[] data=new float[count];for(int i=0;i<count;i++)data[i]=Mathf.Clamp(fn(i/(float)Rate),-1,1);var c=AudioClip.Create(name,count,1,Rate,false);c.SetData(data,0);return c;}

@@ -1,0 +1,34 @@
+[
+  {
+    "file": "PreparedAudio/Printer.wav",
+    "source": "Freesound/printer-hq-preview.mp3",
+    "start_seconds": 0.2,
+    "length_seconds": 1.2,
+    "peak": 0.65,
+    "processing": "Mono 44.1kHz PCM; peak normalization and edge fades; wind crossfades its loop."
+  },
+  {
+    "file": "PreparedAudio/PhoneRing.wav",
+    "source": "Freesound/phone-hq-preview.mp3",
+    "start_seconds": 0.55,
+    "length_seconds": 5.95,
+    "peak": 0.7,
+    "processing": "Mono 44.1kHz PCM; peak normalization and edge fades; wind crossfades its loop."
+  },
+  {
+    "file": "PreparedAudio/CeramicBreak.wav",
+    "source": "Freesound/cup-hq-preview.mp3",
+    "start_seconds": 0.19,
+    "length_seconds": 1.45,
+    "peak": 0.9,
+    "processing": "Mono 44.1kHz PCM; peak normalization and edge fades; wind crossfades its loop."
+  },
+  {
+    "file": "PreparedAudio/DesertWind.wav",
+    "source": "Freesound/wind-hq-preview.mp3",
+    "start_seconds": 4,
+    "length_seconds": 23.25,
+    "peak": 0.3,
+    "processing": "Mono 44.1kHz PCM; peak normalization and edge fades; wind crossfades its loop."
+  }
+]

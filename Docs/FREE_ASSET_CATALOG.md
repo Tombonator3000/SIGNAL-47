@@ -1,6 +1,6 @@
 # Gratis ressurser til SIGNAL / 47
 
-Kontrollert 9. september 2026. 17 konkrete ressurser/pakker og 3 supplerende bibliotek. Dette er en anskaffelsesliste: ingen av filene er lastet ned eller importert i spillet i denne gjennomgangen. Leverandørenes egne sider og lisensopplysninger er kontrollert. Lyd er valgt etter beskrivelse og filmetadata, ikke etter prøvelytting. Foreslått bruk og prioritet er vår vurdering for prosjektet.
+Kontrollert 9. september 2026. 17 konkrete ressurser/pakker og 3 supplerende bibliotek. Utvalget er nå delvis implementert: ID 01, 03–06, 09–13, 16 og 17 er importert og koblet til spillet. Øvrige oppføringer er kandidater til senere arbeid. Se [import- og lisensloggen](THIRD_PARTY_NOTICES.md). Leverandørenes egne sider og lisensopplysninger er kontrollert. Lyd er valgt etter beskrivelse og filmetadata, ikke etter prøvelytting. Foreslått bruk og prioritet er vår vurdering for prosjektet.
 
 ## Førstevalg: modeller, overflater og uteområde
 
@@ -48,7 +48,7 @@ Kreditering ved eventuell bruk av musikken: «'Signal to Noise' by Scott Buckley
 | 19 | [Furniture Kit — Kenney](https://kenney.nl/assets/furniture-kit) | 140 møbelressurser som reserve for nye rom | CC0. Enklere stil enn Poly Haven; unngå synlig stilbrudd i samme kontrollrom. |
 | 20 | [Sonniss GameAudioGDC](https://sonniss.com/gameaudiogdc/) | Bredt arkiv for atmosfære, maskiner og effekter | [Egen gratis lisens](https://sonniss.com/gdc-bundle-license/), kommersiell bruk uten kreditering. Lydene kan inngå i spillet, men ikke gis videre som en frittstående lyd-/ressurspakke. Store nedlastinger; velg fra sporlister. |
 
-## Anbefalt rekkefølge i neste byggetrinn
+## Opprinnelig vurdering av byggetrinn
 
 1. Prøvelytt skriver, telefon, kopp og vind. Trim start/stopp og sett volum. Framtidslyden og den senere knusingen må bruke samme opptak uten at 47-sekundersfristen endres.
 2. Prøv linoleum og kontorpult i en egen testscene. Tilpass teksturkart, skala og kollisjon før eksisterende interaksjonsobjekter får ny visuell modell.
@@ -56,4 +56,4 @@ Kreditering ved eventuell bruk av musikken: «'Signal to Noise' by Scott Buckley
 4. Test natthimmel og steiner med lavere detaljnivå og moderate teksturstørrelser på denne PC-en.
 5. Vurder terminalfont og musikk til slutt, når lesbarhet og lydbildet kan bedømmes i sammenheng.
 
-Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og hvilke lokale filer som brukes. Ressursene over er kandidater; de er ikke ferdig testet i Unity.
+Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og hvilke lokale filer som brukes. Status for den gjennomførte importen og Unity-testene føres i [ASSET_PASS_03.md](ASSET_PASS_03.md).

@@ -16,13 +16,26 @@ namespace Signal47.Debugging
         void Log(string condition,string trace,LogType type){if(type==LogType.Exception||type==LogType.Error||type==LogType.Assert)failed=true;}
         void Update(){if(Time.realtimeSinceStartup>deadline){UnityEngine.Debug.LogError("SMOKE_TIMEOUT");Application.Quit(1);}}
         void Check(bool ok,string message){if(!ok){failed=true;UnityEngine.Debug.LogError("SMOKE_FAIL "+message);}else UnityEngine.Debug.Log("SMOKE_PASS "+message);}
+        void CheckReach<T>(T target,Vector3 aim,string message) where T:Component
+        {
+            var origin=GameSession.Instance.player.viewCamera.transform.position;
+            bool hit=Physics.Raycast(origin,(aim-origin).normalized,out var result,2.65f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+            UnityEngine.Debug.Log($"SMOKE_RAY {message}: origin={origin}, aim={aim}, hit={(hit?result.collider.name:"none")}, distance={result.distance}, target bounds={target.GetComponent<Collider>().bounds}");
+            Check(hit&&result.collider.GetComponentInParent<T>()==target,message);
+        }
         IEnumerator Shot(string name){if(SystemInfo.graphicsDeviceType!=UnityEngine.Rendering.GraphicsDeviceType.Null){yield return new WaitForSecondsRealtime(.2f);ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));yield return new WaitForSecondsRealtime(.3f);}}
         IEnumerator Start()
         {
             output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../Screenshots"));Directory.CreateDirectory(output);
             yield return null;var g=GameSession.Instance;Check(g!=null,"session exists");if(!g){Application.Quit(1);yield break;}
             yield return Shot("01-start");g.hud.StartShift();yield return null;
-            var console=FindFirstObjectByType<SignalConsole>();Check(console!=null,"console exists");
+            var palette=g.director.palette;
+            Check(palette && palette.printer && palette.phone && palette.smash && palette.wind && palette.titleMusic,"curated audio clips are included in player build");
+            Check(Mathf.Abs(palette.printer.length-1.2f)<.02f,"recorded printer audio matches paper feed duration");
+            Check(GameObject.Find("ImportedPhoneDesk") && GameObject.Find("ImportedBackupRadio") && GameObject.Find("ImportedDeskLamp"),"imported scene props are present");
+            Check(GameObject.Find("Floor").GetComponent<Renderer>().sharedMaterial.GetTexture("_BumpMap"),"floor uses imported surface detail");
+            Check(RenderSettings.skybox && RenderSettings.skybox.GetTexture("_MainTex"),"night sky texture is included");
+            var console=FindFirstObjectByType<SignalConsole>();Check(console!=null,"console exists");Check(console.terminalFont,"terminal font is included");
             console.Interact();Check(!SignalConsole.AnyOpen,"unpowered receiver blocks console");
             FindFirstObjectByType<Signal47.Interaction.ReceiverBank>().Interact();console.Interact();Check(SignalConsole.AnyOpen,"powered receiver opens console");
             console.Action();Check(!g.director.PrintoutAvailable,"incorrect parameters cannot solve");
@@ -45,10 +58,13 @@ namespace Signal47.Debugging
             yield return Shot("06-evidence");g.hud.CloseModal();
             var cc=g.player.GetComponent<CharacterController>();cc.enabled=false;g.player.transform.position=new Vector3(3.1f,.05f,-.55f);g.player.transform.rotation=Quaternion.Euler(0,180,0);g.player.enabled=false;g.player.viewCamera.transform.localRotation=Quaternion.Euler(18,0,0);cc.enabled=true;
             yield return Shot("09-physical-printout");g.player.viewCamera.transform.localRotation=Quaternion.identity;g.player.enabled=true;
+            Physics.SyncTransforms();
+            CheckReach(printout, printout.transform.position+Vector3.up*.35f, "printer is reachable after art import");
             var mug=g.director.mug;var rest=mug.transform.position;mug.Interact();Check(mug.Held && mug.transform.parent==g.player.viewCamera.transform,"mug can be held");mug.ReturnToDesk();Check(!mug.Held && Vector3.Distance(rest,mug.transform.position)<.001f && mug.GetComponent<Collider>().enabled,"mug returns to its desk");
             yield return new WaitForSeconds(3.8f);Check(g.director.PhoneRinging,"phone rings after printout");
-            var phone=FindFirstObjectByType<Signal47.Interaction.PhoneInteractable>();phone.Interact();Check(g.director.PhoneAnswered,"phone answered");
+            var phone=FindFirstObjectByType<Signal47.Interaction.PhoneInteractable>();phone.Interact();Check(g.director.PhoneAnswered,"phone answered");Check(Mathf.Abs(g.director.phoneSource.clip.length-4.3f)<.01f,"future call duration survives recorded ceramic substitution");
             cc.enabled=false;g.player.transform.position=new Vector3(4.5f,.05f,1.85f);g.player.transform.rotation=Quaternion.Euler(0,155,0);g.player.enabled=false;g.player.viewCamera.transform.localRotation=Quaternion.Euler(12,0,0);cc.enabled=true;
+            Physics.SyncTransforms();CheckReach(phone, phone.transform.position+Vector3.up*.2f, "phone is reachable on imported desk");
             yield return Shot("10-handset");g.player.viewCamera.transform.localRotation=Quaternion.identity;g.player.enabled=true;
             yield return new WaitForSeconds(.5f);Check(phone.OffHook && phone.handset.localPosition.y>.2f,"answering lifts physical handset");
             g.hud.SetPaused(true);float pausedAt=Time.time;yield return new WaitForSecondsRealtime(.6f);Check(Mathf.Approximately(Time.time,pausedAt),"pause freezes sequence clock");g.hud.SetPaused(false);
@@ -57,6 +73,9 @@ namespace Signal47.Debugging
             Physics.SyncTransforms();bool hitConsole=Physics.Raycast(g.player.viewCamera.transform.position,(console.transform.position+Vector3.up*.65f-g.player.viewCamera.transform.position).normalized,out var hit,2.65f)&&hit.collider.GetComponentInParent<SignalConsole>()==console;
             Check(hitConsole,"console remains reachable past furniture");
             yield return Shot("05-crt");
+            controller.enabled=false;g.player.transform.position=new Vector3(-3.7f,.05f,-2.3f);g.player.transform.rotation=Quaternion.Euler(0,235,0);g.player.enabled=false;g.player.viewCamera.transform.localRotation=Quaternion.Euler(12,0,0);controller.enabled=true;
+            yield return Shot("11-imported-radio");g.player.viewCamera.transform.localRotation=Quaternion.identity;g.player.enabled=true;
+            controller.enabled=false;g.player.transform.position=new Vector3(0,.05f,.6f);g.player.transform.rotation=Quaternion.Euler(0,180,0);controller.enabled=true;
             yield return new WaitUntil(()=>g.director.LineDead);yield return new WaitForSeconds(.5f);
             Check(!phone.OffHook && phone.handset.localPosition.y<.03f,"handset settles when connection ends");
             Check(g.notebook.Evidence.Count==2,"telephone observation is filed as written notes");

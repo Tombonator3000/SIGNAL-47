@@ -1,6 +1,6 @@
 # Current verification
 
-See [investigation pass 02](INVESTIGATION_PASS_02.md) for the latest event timing, evidence and interaction checks, and [art pass 01](ART_PASS_01.md) for the earlier CI results. The remainder of this file records the initial recovery checks.
+See [asset pass 03](ASSET_PASS_03.md) for the imported graphics/audio and current checks, [investigation pass 02](INVESTIGATION_PASS_02.md) for the latest event timing, evidence and interaction checks, and [art pass 01](ART_PASS_01.md) for the earlier CI results. The remainder of this file records the initial recovery checks.
 
 # Prologue verification — 2026-09-09
 

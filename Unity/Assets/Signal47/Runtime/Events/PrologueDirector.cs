@@ -21,9 +21,9 @@ namespace Signal47.Events
         public const double FutureDelay=47;
         public AudioSource printerSource,phoneSource,eventSource,ambienceSource;
         public MugBreakable mug;public DishArrayController dishes;public PrinterMechanism printer;
-        bool sequenceStarted;
-        void Start(){if(ambienceSource){ambienceSource.clip=ProceduralAudio.Hum();ambienceSource.loop=true;ambienceSource.Play();}if(phoneSource)phoneSource.clip=ProceduralAudio.Ring();}
-        public void PowerReceiver(){if(ReceiverPowered)return;ReceiverPowered=true;GameSession.Instance.notebook.Add("Receiver bank 3 powered on.");GameSession.Instance.hud.Toast("RECEIVER BANK 3 // ONLINE");}
+        public SoundPalette palette;bool sequenceStarted;AudioClip futureCall;
+        void Start(){if(ambienceSource){ambienceSource.clip=ProceduralAudio.Hum();ambienceSource.loop=true;ambienceSource.Play();}if(phoneSource)phoneSource.clip=palette?palette.phone:ProceduralAudio.Ring();futureCall=ProceduralAudio.FutureCall(palette?palette.smash:null);}
+        public void PowerReceiver(){if(ReceiverPowered)return;ReceiverPowered=true;if(palette)palette.Click(true);GameSession.Instance.notebook.Add("Receiver bank 3 powered on.");GameSession.Instance.hud.Toast("RECEIVER BANK 3 // ONLINE");}
         public void OnSignalSolved()
         {
             if(sequenceStarted)return;sequenceStarted=true;StartCoroutine(PrintAndRing());
@@ -31,7 +31,7 @@ namespace Signal47.Events
         IEnumerator PrintAndRing()
         {
             double ringAt=Time.timeAsDouble+3.6;
-            if(printerSource){printerSource.clip=ProceduralAudio.Printer();printerSource.Play();}
+            if(printerSource){printerSource.clip=palette?palette.printer:ProceduralAudio.Printer();printerSource.Play();}
             if(printer)yield return printer.Print();else yield return new WaitForSeconds(1.2f);
             PrintoutAvailable=true;GameSession.Instance.hud.Toast("The printer feeds out a sheet.");
             yield return Until(ringAt);PhoneRinging=true;
@@ -40,10 +40,11 @@ namespace Signal47.Events
         public void AnswerPhone()
         {
             if(!PhoneRinging)return;PhoneRinging=false;PhoneAnswered=true;
-            if(phoneSource){phoneSource.Stop();phoneSource.loop=false;phoneSource.clip=ProceduralAudio.FutureCall();phoneSource.Play();}
+            if(phoneSource){phoneSource.Stop();phoneSource.loop=false;phoneSource.clip=futureCall;phoneSource.Play();}
             GameSession.Instance.notebook.Add("Desk phone received an unlogged incoming call.");
             GameSession.Instance.hud.Toast("The handset carries only room tone and static…",2.8f);StartCoroutine(FutureSequence());
         }
+        void OnDestroy(){if(futureCall)Destroy(futureCall);}
         static IEnumerator Until(double deadline){while(Time.timeAsDouble<deadline)yield return null;}
         IEnumerator FutureSequence()
         {
@@ -55,7 +56,7 @@ namespace Signal47.Events
             yield return Until(LineDeadAt+FutureDelay);ImpactAt=Time.timeAsDouble;ImpactOccurred=true;
             if(eventSource){eventSource.volume=1;eventSource.clip=ProceduralAudio.Boom();eventSource.Play();}
             yield return mug.DropAndBreak();
-            if(eventSource){eventSource.transform.position=mug.transform.position;eventSource.clip=ProceduralAudio.Smash();eventSource.Play();}
+            if(palette)palette.BreakAt(mug.transform.position);else if(eventSource){eventSource.transform.position=mug.transform.position;eventSource.clip=ProceduralAudio.Smash();eventSource.Play();}
             GameSession.Instance.notebook.Add("Coffee mug broke immediately after a distant impact.");
             yield return new WaitForSeconds(3f);ArrayOverride=true;dishes.BeginTurn();
             yield return new WaitUntil(()=>dishes.Completed);SignalAcquired=true;
