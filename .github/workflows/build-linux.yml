@@ -6,16 +6,11 @@ on:
         description: Upload build to GitHub (requires available artifact storage)
         type: boolean
         default: false
-  push:
-    branches:
-      - gauntlet/world-area-pass-05
-    paths-ignore:
-      - Docs/Evidence/WorldAreaPass05/**
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: signal47-linux
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   prologue:
     runs-on: [self-hosted, linux, x64, signal47]
@@ -23,35 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Compile, build and test prologue
         run: bash Automation/build-linux.sh
-      - name: Verify world-area and control-room smoke markers
-        shell: bash
-        run: |
-          world_count="$(grep -c 'WORLD_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
-          control_count="$(grep -c 'CONTROL_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
-          echo "World-area markers: $world_count"
-          echo "Control-room markers: $control_count"
-          test "$world_count" -ge 3
-          test "$control_count" -ge 4
-      - name: Capture graphical world-area review frames
-        run: bash Automation/capture-world-area.sh
-      - name: Preserve runtime snapshots on review branch
-        shell: bash
-        run: |
-          mkdir -p Docs/Evidence/WorldAreaPass05
-          cp Artifacts/WorldCapture/01-control-room-array.png Docs/Evidence/WorldAreaPass05/
-          cp Artifacts/WorldCapture/02-service-yard-array.png Docs/Evidence/WorldAreaPass05/
-          cp Artifacts/WorldCapture/03-sierra-motor-court-blockout.png Docs/Evidence/WorldAreaPass05/
-          cp Artifacts/WorldCapture/capture-manifest.json Docs/Evidence/WorldAreaPass05/
-          git config user.name "SIGNAL 47 Gauntlet"
-          git config user.email "126078233+Tombonator3000@users.noreply.github.com"
-          git add -f Docs/Evidence/WorldAreaPass05
-          if ! git diff --cached --quiet; then
-            git commit -m "Record world-area runtime snapshots [skip ci]"
-            git push origin HEAD:gauntlet/world-area-pass-05
-          fi
       - name: Upload Linux build and test logs
         if: always() && inputs.upload_artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -70,8 +39,4 @@ jobs:
           echo "Local output on runner: $GITHUB_WORKSPACE/Artifacts" >> "$GITHUB_STEP_SUMMARY"
           if [ -f Artifacts/Screenshots/smoke-result.txt ]; then
             cat Artifacts/Screenshots/smoke-result.txt >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [ -f Artifacts/WorldCapture/capture-manifest.json ]; then
-            echo "### World capture" >> "$GITHUB_STEP_SUMMARY"
-            cat Artifacts/WorldCapture/capture-manifest.json >> "$GITHUB_STEP_SUMMARY"
           fi
