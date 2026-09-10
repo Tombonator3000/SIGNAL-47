@@ -1,0 +1,7 @@
+{
+  "method": "Actual ChapterSave.cs and ReceiverBank.cs compiled with mocked Unity scene/API, executed .NET contract checks. Not player/runtime or native-input evidence.",
+  "source_sha256": {
+    "Unity/Assets/Signal47/Runtime/Chapter/ChapterSave.cs": "7dc257f6cb55dc5a0b7f02aa38dc64baf514b4c7650404d8b12088aa4d0bfca5",
+    "Unity/Assets/Signal47/Runtime/Interaction/ReceiverBank.cs": "8f181c0c98150d62d69e5ed9fc6f51a6cf971b1c445f41f97a903dc94caabd95"
+  }
+}

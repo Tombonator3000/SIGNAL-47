@@ -45,6 +45,18 @@ namespace Signal47.Events
             GameSession.Instance.hud.Toast("The handset carries only room tone and static…",2.8f);StartCoroutine(FutureSequence());
         }
         void OnDestroy(){if(futureCall)Destroy(futureCall);}
+        public void RestoreCompleted(Vector3 brokenMugPosition)
+        {
+            // Chapter checkpoints are only taken after the live 47-second sequence.
+            // Loading restores its consequences without replaying timed events or audio.
+            StopAllCoroutines();sequenceStarted=true;
+            ReceiverPowered=true;PrintoutAvailable=true;PhoneRinging=false;PhoneAnswered=true;
+            LineDead=true;ImpactOccurred=true;ArrayOverride=true;SignalAcquired=true;
+            ImpactAt=Time.timeAsDouble;LineDeadAt=ImpactAt-FutureDelay;
+            if(phoneSource){phoneSource.Stop();phoneSource.loop=false;}
+            if(printerSource)printerSource.Stop();if(eventSource)eventSource.Stop();
+            if(dishes)dishes.RestoreAligned();if(printer)printer.RestoreReady();if(mug)mug.RestoreBroken(brokenMugPosition);
+        }
         static IEnumerator Until(double deadline){while(Time.timeAsDouble<deadline)yield return null;}
         IEnumerator FutureSequence()
         {

@@ -29,5 +29,10 @@ namespace Signal47.Interaction
             }
             leaf.localRotation=Quaternion.Euler(0,-90,0);Open=true;moving=false;
         }
+        public void RestoreState(bool open)
+        {
+            StopAllCoroutines();Open=open;moving=false;
+            if(leaf)leaf.localRotation=Quaternion.Euler(0,open?-90:0,0);
+        }
     }
 }

@@ -5,7 +5,7 @@ namespace Signal47.Audio
     public sealed class SoundPalette:MonoBehaviour
     {
         public AudioClip printer,phone,smash,wind,click,switchClick,titleMusic;
-        AudioSource ui,windSource,music,foley;bool titleStarted;
+        AudioSource ui,windSource,music,foley;bool titleStarted,chapterMusicStarted;
         void Awake()
         {
             ui=Source(gameObject,0,1);music=Source(gameObject,0,0);
@@ -20,8 +20,10 @@ namespace Signal47.Audio
         {
             var g=GameSession.Instance;if(!g)return;
             if(g.hud.TitleVisible&&!titleStarted){titleStarted=true;music.clip=titleMusic;music.Play();}
-            music.volume=Mathf.MoveTowards(music.volume,g.hud.TitleVisible?.24f:0,Time.unscaledDeltaTime*.12f);
-            windSource.volume=Mathf.MoveTowards(windSource.volume,g.hud.TitleVisible?0:.16f,Time.unscaledDeltaTime*.15f);
+            bool chapterEnd=g.chapter&&g.chapter.Complete;
+            if(chapterEnd&&!chapterMusicStarted){chapterMusicStarted=true;music.clip=titleMusic;music.Play();}
+            music.volume=Mathf.MoveTowards(music.volume,g.hud.TitleVisible||chapterEnd?.24f:0,Time.unscaledDeltaTime*.12f);
+            windSource.volume=Mathf.MoveTowards(windSource.volume,g.hud.TitleVisible||chapterEnd?0:.16f,Time.unscaledDeltaTime*.15f);
         }
     }
 }

@@ -35,5 +35,12 @@ namespace Signal47.Interaction
             transform.SetPositionAndRotation(end,Quaternion.identity);intact.SetActive(false);broken.SetActive(true);IsBroken=true;Falling=false;
             var box=GetComponent<BoxCollider>();box.size=new Vector3(.7f,.1f,.7f);box.center=new Vector3(0,.05f,0);box.enabled=true;
         }
+        public void RestoreBroken(Vector3 position)
+        {
+            StopAllCoroutines();Held=false;Falling=false;IsBroken=true;
+            transform.SetParent(originalParent,true);transform.SetPositionAndRotation(position,Quaternion.identity);
+            intact.SetActive(false);broken.SetActive(true);
+            var box=GetComponent<BoxCollider>();box.size=new Vector3(.7f,.1f,.7f);box.center=new Vector3(0,.05f,0);box.enabled=true;
+        }
     }
 }

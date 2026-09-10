@@ -13,6 +13,15 @@ namespace Signal47.Environment
             if(turning)return;turning=true;start=Time.time;initial=new Quaternion[dishPivots.Length];bowlInitial=new Quaternion[dishPivots.Length];
             for(int i=0;i<dishPivots.Length;i++){initial[i]=dishPivots[i].localRotation;bowlInitial[i]=dishPivots[i].GetChild(0).localRotation;}
         }
+        public void RestoreAligned()
+        {
+            BeginTurn();start=Time.time-duration-stagger*Mathf.Max(0,dishPivots.Length-1)-1;
+            for(int i=0;i<dishPivots.Length;i++)
+            {
+                dishPivots[i].localRotation=Quaternion.Euler(0,26,0);
+                dishPivots[i].GetChild(0).localRotation=Quaternion.Euler(38,0,0);
+            }
+        }
         void Update()
         {
             if(!turning)return;

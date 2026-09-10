@@ -17,6 +17,10 @@ namespace Signal47.Debugging
             public int width,height,evidence,observations,stages;public bool started,modal,paused,console,powered,printed,ringing,answered,lineDead,impact,title,focused;
             public bool cameraAcquired,cameraRaised,photoTaken,photoCompared,photoOpen;public int rejectedFrames;public string photoPath,photoSave,frameProblem;
             public bool yardActive,yardComplete,yardReturned,doorOpen;
+            public int frameCount,developedFrames;
+            public bool photoReady,chapterModal,chapterComplete,canSave,saveExists,saving,restoring;
+            public string chapterState,cameraState,saveStatus,savePath,objective,chapterStage,chapterPanel;
+            public float masterVolume,mouseSensitivity;public bool fullscreen,settingsOpen,quitPending,canQuitWithoutSaving;
             public string prompt;public float mouseX,mouseY;public bool mouseDown;
         }
         [Serializable] sealed class Report
@@ -53,6 +57,10 @@ namespace Signal47.Debugging
             var state=new State{elapsed=now,gameTime=Time.timeAsDouble,x=p.position.x,y=p.position.y,z=p.position.z,yaw=p.eulerAngles.y,pitch=Mathf.DeltaAngle(0,c.localEulerAngles.x),width=Screen.width,height=Screen.height,started=g.hud.Started,modal=g.hud.ModalOpen,paused=g.hud.Paused,console=SignalConsole.AnyOpen,powered=g.director.ReceiverPowered,printed=g.director.PrintoutAvailable,ringing=g.director.PhoneRinging,answered=g.director.PhoneAnswered,lineDead=g.director.LineDead,impact=g.director.ImpactOccurred,title=g.hud.TitleVisible,evidence=g.notebook.Evidence.Count,observations=g.notebook.Entries.Count,prompt=g.hud.InteractionPrompt,focused=Application.isFocused,frequency=console.frequency,gain=console.gain,bandwidth=console.bandwidth,azimuth=console.azimuth,stages=console.CompletedStages};
             if(g.yard){state.yardActive=g.yard.Active;state.yardComplete=g.yard.Completed;state.yardReturned=g.yard.Returned;state.doorOpen=g.yard.door.Open;}
             if(g.fieldCamera){var f=g.fieldCamera;state.cameraAcquired=f.Acquired;state.cameraRaised=f.Raised;state.photoTaken=f.HasPhoto;state.photoCompared=f.Compared;state.photoOpen=g.hud.PhotoOpen;state.rejectedFrames=f.RejectedFrames;state.photoPath=f.PhotoPath;state.photoSave=f.SaveStatus;state.frameProblem=f.FrameProblem();}
+            if(g.fieldCamera){state.frameCount=g.fieldCamera.FrameCount;state.developedFrames=g.fieldCamera.DevelopedCount;state.photoReady=g.fieldCamera.SaveReady;state.cameraState=g.fieldCamera.CaptureState();}
+            if(g.chapter){state.chapterState=g.chapter.CaptureState();state.chapterModal=g.chapter.ModalOpen;state.chapterComplete=g.chapter.Complete;state.objective=g.chapter.Objective;state.chapterStage=g.chapter.Stage;state.chapterPanel=g.chapter.CurrentPanel;}
+            state.masterVolume=AudioListener.volume;state.mouseSensitivity=g.player.lookSensitivity;state.fullscreen=Screen.fullScreen;state.settingsOpen=g.hud.SettingsOpen;state.quitPending=Signal47.Chapter.ChapterSave.QuitPending;state.canQuitWithoutSaving=Signal47.Chapter.ChapterSave.CanQuitWithoutSaving;
+            state.canSave=Signal47.Chapter.ChapterSave.CanSave;state.saveExists=Signal47.Chapter.ChapterSave.HasSave;state.saving=Signal47.Chapter.ChapterSave.Saving;state.restoring=Signal47.Chapter.ChapterSave.IsRestoring;state.saveStatus=Signal47.Chapter.ChapterSave.Status;state.savePath=Signal47.Chapter.ChapterSave.SavePath;
             var mouse=UnityEngine.InputSystem.Mouse.current;if(mouse!=null){state.mouseX=mouse.position.ReadValue().x;state.mouseY=mouse.position.ReadValue().y;state.mouseDown=mouse.leftButton.isPressed;}
             File.WriteAllText(Path.Combine(root,"state.tmp"),JsonUtility.ToJson(state));File.Delete(Path.Combine(root,"state.json"));File.Move(Path.Combine(root,"state.tmp"),Path.Combine(root,"state.json"));
             peakMemory=Math.Max(peakMemory,Profiler.GetTotalAllocatedMemoryLong());

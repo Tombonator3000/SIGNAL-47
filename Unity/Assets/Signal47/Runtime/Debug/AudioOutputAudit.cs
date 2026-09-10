@@ -34,6 +34,8 @@ namespace Signal47.Debugging
             if(Time.unscaledTime<next)return;next=Time.unscaledTime+.04f;
             var g=GameSession.Instance;if(!g)return;
             string state=!g.hud.Started?"start":g.hud.Paused?"paused":g.hud.TitleVisible?"title":g.director.ImpactOccurred?"impact":g.director.LineDead?"line-dead":g.director.PhoneAnswered?"call":g.director.PhoneRinging?"ring":g.director.printerSource.isPlaying?"printer":g.director.ReceiverPowered?"receiver":"room";
+            if(g.hud.Started&&!g.hud.Paused&&g.yard&&g.yard.Active&&g.chapter)
+                state="chapter-"+(g.chapter.ModalOpen?g.chapter.CurrentPanel:g.chapter.Stage);
             if(!levels.TryGetValue(state,out var level))levels[state]=level=new Level{state=state};
             AudioListener.GetOutputData(buffer,0);level.windows++;
             foreach(float sample in buffer){level.peak=Math.Max(level.peak,Math.Abs(sample));level.squares+=sample*sample;level.samples++;if(Math.Abs(sample)>=1)level.overFullScale++;}

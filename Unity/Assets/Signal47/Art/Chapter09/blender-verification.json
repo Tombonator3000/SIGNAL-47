@@ -1,0 +1,82 @@
+{
+  "blender": "4.5.13 LTS",
+  "units": "metres",
+  "axis_forward": "-Z",
+  "axis_up": "Y",
+  "source": "Blender/SIGNAL47_chapter09_lab.blend",
+  "original_authored_resources": true,
+  "assets": [
+    {
+      "file": "CH09_Enlarger.fbx",
+      "source_parts": 63,
+      "export_renderers": 6,
+      "triangles": 9944,
+      "blender_dimensions_m": [
+        0.7599999904632568,
+        0.699999988079071,
+        1.1299999952316284
+      ],
+      "uv_layers": true
+    },
+    {
+      "file": "CH09_ProcessingTrays.fbx",
+      "source_parts": 41,
+      "export_renderers": 6,
+      "triangles": 7772,
+      "blender_dimensions_m": [
+        1.5112624168395996,
+        0.39926230907440186,
+        0.11099999770522118
+      ],
+      "uv_layers": true
+    },
+    {
+      "file": "CH09_Sink.fbx",
+      "source_parts": 21,
+      "export_renderers": 3,
+      "triangles": 3620,
+      "blender_dimensions_m": [
+        1.590000033378601,
+        0.5984263718128204,
+        0.9801920652389526
+      ],
+      "uv_layers": true
+    },
+    {
+      "file": "CH09_ChemicalBottle.fbx",
+      "source_parts": 19,
+      "export_renderers": 3,
+      "triangles": 8180,
+      "blender_dimensions_m": [
+        0.14399999380111694,
+        0.14549999684095383,
+        0.2865000069141388
+      ],
+      "uv_layers": true
+    },
+    {
+      "file": "CH09_LabStool.fbx",
+      "source_parts": 11,
+      "export_renderers": 2,
+      "triangles": 2856,
+      "blender_dimensions_m": [
+        0.4399999976158142,
+        0.4399999976158142,
+        0.6355000138282776
+      ],
+      "uv_layers": true
+    },
+    {
+      "file": "CH09_FieldCabinet.fbx",
+      "source_parts": 24,
+      "export_renderers": 5,
+      "triangles": 4516,
+      "blender_dimensions_m": [
+        0.8599999845027924,
+        0.6100000143051147,
+        1.190999984741211
+      ],
+      "uv_layers": true
+    }
+  ]
+}
