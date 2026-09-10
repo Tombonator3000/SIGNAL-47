@@ -15,7 +15,7 @@ permissions:
   contents: write
 concurrency:
   group: signal47-linux
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   prologue:
     runs-on: [self-hosted, linux, x64, signal47]
@@ -26,12 +26,15 @@ jobs:
           persist-credentials: true
       - name: Compile, build and test prologue
         run: bash Automation/build-linux.sh
-      - name: Verify world-area smoke markers
+      - name: Verify world-area and control-room smoke markers
         shell: bash
         run: |
-          count="$(grep -c 'WORLD_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
-          echo "World-area markers: $count"
-          test "$count" -ge 3
+          world_count="$(grep -c 'WORLD_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
+          control_count="$(grep -c 'CONTROL_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
+          echo "World-area markers: $world_count"
+          echo "Control-room markers: $control_count"
+          test "$world_count" -ge 3
+          test "$control_count" -ge 4
       - name: Capture graphical world-area review frames
         run: bash Automation/capture-world-area.sh
       - name: Preserve runtime snapshots on review branch
@@ -51,7 +54,7 @@ jobs:
           fi
       - name: Upload Linux build and test logs
         if: always() && inputs.upload_artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b540449e92b4886f43607fa02
         with:
           name: SIGNAL-47-Linux
           retention-days: 14
