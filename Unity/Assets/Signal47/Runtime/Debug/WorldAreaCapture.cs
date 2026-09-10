@@ -65,12 +65,15 @@ namespace Signal47.Debugging
                 new Vector3(-17f, 1.62f, -11.5f),
                 new Vector3(7f, 3.0f, -37f));
 
-            var motel = GameObject.Find("RoadsideMotel_Blockout");
+            var motel = FindSceneObjectIncludingInactive("RoadsideMotel_Blockout");
             if (motel)
             {
+                motel.SetActive(true);
+                yield return null;
                 yield return Capture(camera, "03-sierra-motor-court-blockout.png",
                     motel.transform.TransformPoint(new Vector3(-34f, 1.65f, -18f)),
                     motel.transform.TransformPoint(new Vector3(-1f, 1.8f, 2f)));
+                motel.SetActive(false);
             }
             else Debug.LogError("WORLD_CAPTURE_FAIL RoadsideMotel_Blockout missing");
 
@@ -81,6 +84,7 @@ namespace Signal47.Debugging
                 $"  \"gpu\": \"{Escape(SystemInfo.graphicsDeviceName)}\",\n" +
                 $"  \"renderer\": \"{SystemInfo.graphicsDeviceType}\",\n" +
                 "  \"method\": \"fixed runtime camera review viewpoints; not player traversal\",\n" +
+                "  \"motelRuntimeState\": \"inactive in normal prologue; temporarily enabled only for motel review capture\",\n" +
                 "  \"mobilePreviews\": \"640x400 JPEG quality 55, derived from the same frames; raw PNG files are authoritative\"\n" +
                 "}\n";
             File.WriteAllText(Path.Combine(root, "capture-manifest.json"), manifest);
@@ -88,6 +92,13 @@ namespace Signal47.Debugging
             Debug.Log("WORLD_CAPTURE_PASS " + root);
             yield return new WaitForSecondsRealtime(.5f);
             Application.Quit(0);
+        }
+
+        static GameObject FindSceneObjectIncludingInactive(string name)
+        {
+            foreach(var t in Resources.FindObjectsOfTypeAll<Transform>())
+                if(t.name==name && t.gameObject.scene.IsValid())return t.gameObject;
+            return null;
         }
 
         IEnumerator Capture(Camera camera, string file, Vector3 position, Vector3 target)
