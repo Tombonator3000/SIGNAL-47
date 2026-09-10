@@ -1,0 +1,23 @@
+{
+    "unity": "6000.3.22f1",
+    "os": "Linux 7.0 Ubuntu 26.04 64bit",
+    "cpu": "Intel(R) Core(TM) Ultra 5 225U",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "resolution": "1280x800",
+    "preset": "Ultra",
+    "buildId": "9e0926ae132c1f0a2ddc81bf4fde8214f8c0f448 working-tree source-sha256:d6538aa4ebfee603bdc1bbd7b12ef49c617b1fdb876914c445ef24bb72a0291f",
+    "method": "Monotonic Unity realtime Update intervals; nearest-rank percentiles; no frames removed; FTM CPU/GPU averages only when reported >0",
+    "development": false,
+    "focusedThroughout": true,
+    "frames": 8225,
+    "stallsOver50ms": 1,
+    "seconds": 137.1170751580006,
+    "averageFps": 59.985235176015077,
+    "p95ms": 19.466661000002718,
+    "p99ms": 20.001247999999806,
+    "maxMs": 50.10745199999178,
+    "cpuMeanMs": 16.670756358905753,
+    "gpuMeanMs": 0.0,
+    "engineMemoryPeakMiB": 92.13289451599121
+}
