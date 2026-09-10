@@ -1,0 +1,91 @@
+name: Measure current SIGNAL 47 Gauntlet pass
+on:
+  push:
+    branches:
+      - gauntlet/world-area-pass-05
+    paths-ignore:
+      - Docs/Evidence/WorldAreaPass05/**
+permissions:
+  contents: write
+concurrency:
+  group: signal47-current-pass
+  cancel-in-progress: true
+jobs:
+  measure:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: true
+      - name: Build non-development Gauntlet player
+        run: bash Automation/build-gauntlet-linux.sh
+      - name: Native-input journey and performance gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if pgrep -f '/Signal47.x86_64' >/dev/null 2>&1; then
+            echo 'A SIGNAL 47 player is already running; refusing to inject input into an ambiguous desktop.'
+            pgrep -af '/Signal47.x86_64' || true
+            exit 2
+          fi
+          live_ok=0
+          for sock in /tmp/.X11-unix/X*; do
+            [[ -e "$sock" ]] || continue
+            d=":${sock##*X}"
+            for auth in "$HOME/.Xauthority" /run/user/"$(id -u)"/*xauth* /run/user/"$(id -u)"/xauth_*; do
+              [[ -f "$auth" ]] || continue
+              if DISPLAY="$d" XAUTHORITY="$auth" xdpyinfo >/dev/null 2>&1; then
+                export DISPLAY="$d" XAUTHORITY="$auth"
+                live_ok=1
+                break 2
+              fi
+            done
+          done
+          [[ "$live_ok" == 1 ]] || { echo 'No authenticated live X display for native-input benchmark'; exit 3; }
+          echo "GAUNTLET_DISPLAY $DISPLAY auth:$XAUTHORITY"
+          rm -rf Artifacts/Gauntlet
+          mkdir -p Artifacts/Gauntlet
+          ./Artifacts/GauntletLinux/Signal47.x86_64 --signal47-gauntlet -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/gauntlet-current-player.log" &
+          player_pid=$!
+          cleanup() { kill "$player_pid" >/dev/null 2>&1 || true; wait "$player_pid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for _ in $(seq 1 80); do
+            [[ -s Artifacts/Gauntlet/state.json ]] && break
+            sleep .25
+          done
+          [[ -s Artifacts/Gauntlet/state.json ]] || { tail -120 Artifacts/gauntlet-current-player.log || true; exit 4; }
+          python3 Automation/gauntlet-user-journey.py --measure
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('Artifacts/Gauntlet/performance.json')
+          d=json.loads(p.read_text())
+          checks={
+              'development_false': d.get('development') is False,
+              'focused': d.get('focusedThroughout') is True,
+              'duration': d.get('seconds',0)>=120,
+              'average_fps': d.get('averageFps',0)>=59,
+              'p95': d.get('p95ms',999)<=17.2,
+              'p99': d.get('p99ms',999)<20,
+              'stalls': d.get('stallsOver50ms',999)==0,
+          }
+          print(json.dumps({'checks':checks,'performance':d},indent=2))
+          failed=[k for k,v in checks.items() if not v]
+          if failed: raise SystemExit('GAUNTLET_PERF_FAIL '+','.join(failed))
+          print('GAUNTLET_PERF_PASS')
+          PY
+      - name: Preserve performance evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p Docs/Evidence/WorldAreaPass05/Performance
+          cp Artifacts/Gauntlet/performance.json Docs/Evidence/WorldAreaPass05/Performance/performance-control-room-06.json
+          cp Artifacts/Gauntlet/journey-result.json Docs/Evidence/WorldAreaPass05/Performance/journey-control-room-06.json
+          cp Artifacts/Gauntlet/frames.csv Docs/Evidence/WorldAreaPass05/Performance/frames-control-room-06.csv
+          git config user.name "SIGNAL 47 Gauntlet"
+          git config user.email "126078233+Tombonator3000@users.noreply.github.com"
+          git add -f Docs/Evidence/WorldAreaPass05/Performance
+          git commit -m "Record control-room pass performance [skip ci]"
+          git push origin HEAD:gauntlet/world-area-pass-05
