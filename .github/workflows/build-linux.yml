@@ -6,6 +6,9 @@ on:
         description: Upload build to GitHub (requires available artifact storage)
         type: boolean
         default: false
+  push:
+    branches:
+      - gauntlet/world-area-pass-05
 permissions:
   contents: read
 concurrency:
@@ -21,6 +24,24 @@ jobs:
           persist-credentials: false
       - name: Compile, build and test prologue
         run: bash Automation/build-linux.sh
+      - name: Verify world-area smoke markers
+        shell: bash
+        run: |
+          count="$(grep -c 'WORLD_PASS_SMOKE_PASS' Artifacts/smoke.log || true)"
+          echo "World-area markers: $count"
+          test "$count" -ge 3
+      - name: Capture graphical world-area review frames
+        run: bash Automation/capture-world-area.sh
+      - name: Upload world-area review frames
+        if: always() && hashFiles('Artifacts/WorldCapture/*.png') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SIGNAL-47-WorldCapture
+          retention-days: 1
+          path: |
+            Artifacts/WorldCapture/
+            Artifacts/world-capture.log
       - name: Upload Linux build and test logs
         if: always() && inputs.upload_artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -39,4 +60,8 @@ jobs:
           echo "Local output on runner: $GITHUB_WORKSPACE/Artifacts" >> "$GITHUB_STEP_SUMMARY"
           if [ -f Artifacts/Screenshots/smoke-result.txt ]; then
             cat Artifacts/Screenshots/smoke-result.txt >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -f Artifacts/WorldCapture/capture-manifest.json ]; then
+            echo "### World capture" >> "$GITHUB_STEP_SUMMARY"
+            cat Artifacts/WorldCapture/capture-manifest.json >> "$GITHUB_STEP_SUMMARY"
           fi
