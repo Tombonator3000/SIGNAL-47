@@ -34,6 +34,7 @@ namespace Signal47.Editor
             go.transform.SetParent(parent,false);
             go.transform.localPosition=localPosition;
             go.transform.localRotation=rotation==default?Quaternion.identity:rotation;
+            GameObjectUtility.SetStaticEditorFlags(go,StaticEditorFlags.BatchingStatic);
             return go;
         }
 
