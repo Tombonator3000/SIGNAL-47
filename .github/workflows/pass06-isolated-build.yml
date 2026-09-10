@@ -1,0 +1,83 @@
+name: SIGNAL47 pass06 isolated build
+# Read-only repository permissions. No native input, user display, or source/evidence push.
+on:
+  workflow_dispatch:
+  push:
+    branches: [gauntlet/control-room-06-verified]
+    paths: [.github/workflows/pass06-isolated-build.yml]
+permissions:
+  contents: read
+concurrency:
+  group: signal47-linux
+  cancel-in-progress: false
+jobs:
+  isolated:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pass06-isolated
+        shell: bash
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          path: pass06-isolated
+          persist-credentials: false
+      - name: Compile Unity and exercise existing headless smoke
+        run: |
+          set -euo pipefail
+          bash Automation/build-linux.sh
+          grep -q SIGNAL47_SMOKE_PASS Artifacts/smoke.log
+          ! grep -Eq '(SMOKE_FAIL|SMOKE_TIMEOUT)' Artifacts/smoke.log
+          grep -E 'CONTROL_PASS_SMOKE_|WORLD_PASS_SMOKE_|SIGNAL47_SMOKE_' Artifacts/smoke.log
+          test "$(grep -c CONTROL_PASS_SMOKE_PASS Artifacts/smoke.log)" -ge 10
+      - name: Build stamped release
+        run: bash Automation/build-gauntlet-linux.sh
+      - name: Capture only on a NEW isolated virtual display
+        run: |
+          set -euo pipefail
+          command -v xvfb-run
+          timeout --signal=TERM --kill-after=5s 150s xvfb-run -a -s '-screen 0 1280x800x24' env LIBGL_ALWAYS_SOFTWARE=1 ./Artifacts/GauntletLinux/Signal47.x86_64 --signal47-world-capture -noaudio -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/isolated-capture.log"
+          grep -q 'WORLD_CAPTURE_PASS 6' Artifacts/isolated-capture.log
+          cat Artifacts/WorldCapture/capture-manifest.json
+          python3 - <<'PY'
+          import base64,hashlib,json,shutil
+          from pathlib import Path
+          from PIL import Image
+          p=Path('Artifacts/WorldCapture');manifest=[]
+          for src in sorted(p.glob('*.png')):
+              with Image.open(src) as im:
+                  assert im.size==(1280,800)
+                  im.convert('RGB').resize((960,600),Image.Resampling.LANCZOS).save(p/('mobile-'+src.stem+'.jpg'),quality=82)
+                  im.convert('RGB').resize((384,240),Image.Resampling.LANCZOS).save(p/(src.stem+'.webp'),'WEBP',quality=42)
+              preview=p/(src.stem+'.webp');data=preview.read_bytes()
+              item={'file':src.name,'original_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'preview_sha256':hashlib.sha256(data).hexdigest(),'preview_base64':base64.b64encode(data).decode()}
+              manifest.append(item);print('ISOLATED_RUNTIME_PREVIEW '+json.dumps(item))
+          (p/'files.json').write_text(json.dumps(manifest,indent=2))
+          assert len(manifest)==6
+          PY
+      - name: Preserve only this run's outputs on runner
+        if: always()
+        run: |
+          set -euo pipefail
+          destination="$HOME/signal47-tools/evidence/pass06-isolated/$GITHUB_RUN_ID"
+          mkdir -p "$destination"
+          for f in Artifacts/build.log Artifacts/gauntlet-build.log Artifacts/smoke.log Artifacts/isolated-capture.log; do
+            [[ ! -f "$f" ]] || cp "$f" "$destination/"
+          done
+          [[ ! -d Artifacts/WorldCapture ]] || cp -a Artifacts/WorldCapture "$destination/"
+          [[ ! -f Artifacts/GauntletLinux/build-manifest.json ]] || cp Artifacts/GauntletLinux/build-manifest.json "$destination/"
+          printf '%s\n' "$GITHUB_SHA" > "$destination/tested-revision.txt"
+          echo "PRESERVED_RUNNER_EVIDENCE $destination"
+          grep -E 'error CS|Exception|FAIL|BUILD_OK' Artifacts/build.log Artifacts/isolated-capture.log 2>/dev/null || true
+      - name: Transfer this run's logs and true snapshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SIGNAL47-Pass06-Isolated-${{ github.run_id }}
+          path: |
+            pass06-isolated/Artifacts/*.log
+            pass06-isolated/Artifacts/WorldCapture/
+            pass06-isolated/Artifacts/GauntletLinux/build-manifest.json
+          if-no-files-found: error
+          retention-days: 1
