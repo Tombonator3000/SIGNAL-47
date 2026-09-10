@@ -41,6 +41,12 @@ namespace Signal47.Editor
             return go;
         }
 
+        static void MarkRenderersBatchingStatic(GameObject root)
+        {
+            foreach(var renderer in root.GetComponentsInChildren<Renderer>(true))
+                GameObjectUtility.SetStaticEditorFlags(renderer.gameObject,StaticEditorFlags.BatchingStatic);
+        }
+
         static void LocalLabel(Transform parent,string name,string text,Vector3 localPosition,float size,Color color,Quaternion rotation)
         {
             var go=new GameObject(name);
@@ -76,8 +82,6 @@ namespace Signal47.Editor
             var arrayRoot=new GameObject("ArrayNightArt");
             arrayRoot.transform.SetParent(world,false);
 
-            // Stronger, cleaner perspective rhythm from the control-room windows.
-            // The underlying DishPivot transforms remain untouched, so story movement and tests still use the same objects.
             Vector3[] heroPositions={
                 new Vector3(-10,0,-21),new Vector3(-2,0,-27),new Vector3(8,0,-34),new Vector3(18,0,-43),new Vector3(31,0,-55)
             };
@@ -90,8 +94,6 @@ namespace Signal47.Editor
                 dish.transform.localScale=Vector3.one*heroScales[i];
             }
 
-            // Amber maintenance light is the visual counterpoint to the cold star field.
-            // Only three shadowless real-time lights are added; the rest is emissive set dressing.
             Vector3[] floodPositions={new Vector3(-10,2.7f,-18),new Vector3(5,2.9f,-30),new Vector3(20,3.0f,-42)};
             for(int i=0;i<floodPositions.Length;i++)
             {
@@ -99,7 +101,6 @@ namespace Signal47.Editor
                 LocalBox(arrayRoot.transform,$"ArrayFloodHousing_{i}",floodPositions[i]+new Vector3(0,-2.45f,0),new Vector3(.28f,.16f,.22f),warmGlow);
             }
 
-            // Sparse red obstruction/service beacons; emissive only, no extra light sources.
             int[] beaconDish={0,2,4,6,9};
             for(int i=0;i<beaconDish.Length;i++)
             {
@@ -109,7 +110,6 @@ namespace Signal47.Editor
                 beacon.transform.localScale/=Mathf.Max(.01f,dish.transform.localScale.x);
             }
 
-            // Low-poly desert breakup: broad silhouettes and scrub clusters instead of dense texture detail.
             var scrubRoot=new GameObject("DesertScrubRoot");
             scrubRoot.transform.SetParent(arrayRoot.transform,false);
             var rng=new System.Random(47);
@@ -129,19 +129,21 @@ namespace Signal47.Editor
                 LocalBox(scrubRoot.transform,$"Rock_{i:00}",new Vector3(x,-.02f,z),new Vector3(.45f+(float)rng.NextDouble()*.9f,.16f+(float)rng.NextDouble()*.32f,.5f+(float)rng.NextDouble()*.8f),desertDark,false,Quaternion.Euler((float)rng.NextDouble()*8f,(float)rng.NextDouble()*180f,(float)rng.NextDouble()*7f));
             }
 
-            // Small service cabinets and cable-trench markers make the array read as infrastructure, not sculpture.
             for(int i=0;i<7;i++)
             {
                 float z=-18-i*11.2f;
                 LocalBox(arrayRoot.transform,$"ServiceCabinet_{i:00}",new Vector3(-4.6f,.44f,z),new Vector3(.58f,.88f,.34f),desertDark);
                 LocalBox(arrayRoot.transform,$"ServiceMarker_{i:00}",new Vector3(4.0f,.09f,z-2.4f),new Vector3(.07f,.18f,.07f),warmGlow);
             }
+
+            // These objects never move. Let Unity batch them at player-build time rather than
+            // paying one draw call per decorative cube on the integrated-GPU reference PC.
+            MarkRenderersBatchingStatic(arrayRoot);
         }
 
         static void BuildRoadsideMotelBlockout(Transform world,Material concrete,Material dark,Material cream,Material neonRed,Material neonGreen)
         {
             // This is a compressed spatial/art blockout for a later field location, not a claim that a motel sits beside SARO.
-            // It stays behind the current prologue building and outside the playable room, so existing story flow is unchanged.
             var root=new GameObject("RoadsideMotel_Blockout");
             root.transform.SetParent(world,false);
             root.transform.position=new Vector3(112f,0f,52f);
@@ -175,6 +177,12 @@ namespace Signal47.Editor
             LocalLabel(sign.transform,"SignLabelVacancy","VACANCY",new Vector3(0,3.06f,-.125f),.048f,new Color(1f,.83f,.73f),Quaternion.Euler(0,180,0));
             LocalLabel(sign.transform,"SignReaderText","KITCHENETTES  •  COLOR TV\nWEEKLY RATES",new Vector3(0,2.15f,-.115f),.037f,new Color(.12f,.15f,.12f),Quaternion.Euler(0,180,0));
             LocalLight(root.transform,"MotelOfficeLight",new Vector3(-18.5f,2.2f,-3.2f),new Color(1f,.67f,.38f),.75f,8f);
+
+            MarkRenderersBatchingStatic(root);
+            // The motel is a future-location prototype, not part of the playable prologue. Keep it
+            // out of the normal render/transform workload; the dedicated capture harness enables it
+            // only for its own review shot.
+            root.SetActive(false);
         }
 
         public static void Dress(DishArrayController dishes)
@@ -205,8 +213,6 @@ namespace Signal47.Editor
 
             RefineDishComposition(world.transform,warmGlow,redGlow,desertDark,scrub);
             BuildRoadsideMotelBlockout(world.transform,concrete,motelDark,motelCream,motelRed,motelGreen);
-
-            // One compact root makes it easy to disable/rebuild this pass during comparison.
             if(dishes)EditorUtility.SetDirty(dishes);
         }
     }
