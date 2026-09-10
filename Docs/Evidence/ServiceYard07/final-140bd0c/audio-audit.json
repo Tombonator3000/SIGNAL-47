@@ -1,0 +1,88 @@
+{
+    "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+    "buildId": "140bd0cf299af290882cb49a420375896929d81e working-tree source-sha256:c47dc1e198a4a8593c2e39bb8a9d0d334a23a2a902f83e0bc031f3b5e7b83708",
+    "sampleRate": 48000,
+    "dspAdvanced": true,
+    "levels": [
+        {
+            "state": "start",
+            "windows": 116,
+            "samples": 237568,
+            "overFullScale": 0,
+            "peak": 0.014126150868833065,
+            "rms": 0.0065853006507961679
+        },
+        {
+            "state": "room",
+            "windows": 166,
+            "samples": 339968,
+            "overFullScale": 0,
+            "peak": 0.1138063371181488,
+            "rms": 0.006816187849064014
+        },
+        {
+            "state": "receiver",
+            "windows": 1333,
+            "samples": 2729984,
+            "overFullScale": 0,
+            "peak": 0.11712273955345154,
+            "rms": 0.007215456914282014
+        },
+        {
+            "state": "printer",
+            "windows": 29,
+            "samples": 59392,
+            "overFullScale": 0,
+            "peak": 0.1004633828997612,
+            "rms": 0.010605895042847799
+        },
+        {
+            "state": "ring",
+            "windows": 201,
+            "samples": 411648,
+            "overFullScale": 0,
+            "peak": 0.17014949023723603,
+            "rms": 0.018723803550332913
+        },
+        {
+            "state": "call",
+            "windows": 104,
+            "samples": 212992,
+            "overFullScale": 0,
+            "peak": 0.22890277206897736,
+            "rms": 0.025297477513838756
+        },
+        {
+            "state": "line-dead",
+            "windows": 1148,
+            "samples": 2351104,
+            "overFullScale": 0,
+            "peak": 0.021393055096268655,
+            "rms": 0.006847383651109325
+        },
+        {
+            "state": "paused",
+            "windows": 78,
+            "samples": 159744,
+            "overFullScale": 0,
+            "peak": 0.01364596001803875,
+            "rms": 0.0008766521187644594
+        },
+        {
+            "state": "impact",
+            "windows": 1081,
+            "samples": 2213888,
+            "overFullScale": 0,
+            "peak": 0.11536828428506851,
+            "rms": 0.007447675482217537
+        },
+        {
+            "state": "title",
+            "windows": 41,
+            "samples": 83968,
+            "overFullScale": 0,
+            "peak": 0.01321587897837162,
+            "rms": 0.0065370451168466109
+        }
+    ]
+}

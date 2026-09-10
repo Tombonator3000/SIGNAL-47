@@ -1,0 +1,47 @@
+{
+  "performance": "PASS",
+  "checks": {
+    "duration_120s": true,
+    "average_59fps": true,
+    "p95_17_2ms": true,
+    "p99_below_20ms": true,
+    "no_stalls_over_50ms": true,
+    "focused": true,
+    "release": true,
+    "preset": true,
+    "hardware_renderer": true
+  },
+  "native_journey": "PASS",
+  "same_release_build_and_preset": true,
+  "gpu_timing": "UNVERIFIED",
+  "subjective_audio": "UNVERIFIED",
+  "visual_review": "PASS",
+  "source_build_id": "140bd0cf299af290882cb49a420375896929d81e working-tree source-sha256:c47dc1e198a4a8593c2e39bb8a9d0d334a23a2a902f83e0bc031f3b5e7b83708",
+  "sampled_audio_checks": {
+    "room": true,
+    "receiver": true,
+    "printer": true,
+    "ring": true,
+    "call": true,
+    "impact": true,
+    "title": true
+  },
+  "sampled_audio": "PASS",
+  "service_yard_checks": {
+    "Performance": true,
+    "Journey": true,
+    "exterior_screenshots": true
+  },
+  "service_yard": "PASS",
+  "review_method": "Self-review of original runtime PNGs; no independent reviewers",
+  "scope": "Bounded service-yard prototype criteria; not complete visual-target fidelity",
+  "inspected": [
+    "Journey/journey-13.png",
+    "Journey/journey-15.png",
+    "Journey/journey-16.png",
+    "Journey/journey-18.png",
+    "Journey/journey-20.png",
+    "Journey/journey-21.png"
+  ],
+  "source_matches_tested_build": true
+}
