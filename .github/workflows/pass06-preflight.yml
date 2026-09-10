@@ -5,44 +5,19 @@ on:
     branches: [gauntlet/control-room-06-verified]
     paths: [.github/workflows/pass06-preflight.yml]
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: signal47-linux
   cancel-in-progress: false
 jobs:
   inspect:
     runs-on: [self-hosted, linux, x64, signal47]
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
-        with:
-          path: pass06-preflight
-          persist-credentials: true
-      - name: Inspect only SIGNAL 47 processes and saved images
-        working-directory: pass06-preflight
+      - name: Read only the preserved failed game log
+        shell: bash
         run: |
-          mkdir -p Docs/Evidence/ControlRoomPass06/Preflight
-          ps -C Signal47.x86_64 -o pid,ppid,etimes,state,args | tee Docs/Evidence/ControlRoomPass06/Preflight/player-processes.txt || true
-          python3 - <<'PY'
-          import base64,hashlib,json
-          from pathlib import Path
-          from PIL import Image
-          root=Path('Docs/Evidence/ControlRoomPass06/Preflight');out=[]
-          for p in Path('Docs/Evidence/WorldAreaPass05').glob('0*.png'):
-              im=Image.open(p).convert('RGB');im.thumbnail((384,240),Image.Resampling.LANCZOS)
-              dest=root/(p.stem+'.webp');im.save(dest,'WEBP',quality=42)
-              dest.with_suffix('.b64.txt').write_text(base64.b64encode(dest.read_bytes()).decode()+'\n')
-              out.append({'source':str(p),'source_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'preview':dest.name,'preview_sha256':hashlib.sha256(dest.read_bytes()).hexdigest(),'method':'Resized stored pass05 capture, NOT a new runtime capture'})
-          (root/'files.json').write_text(json.dumps(out,indent=2))
-          PY
-          git config user.name 'SIGNAL 47 Gauntlet'
-          git config user.email '126078233+Tombonator3000@users.noreply.github.com'
-          git add Docs/Evidence/ControlRoomPass06/Preflight
-          git commit -m 'Record read-only pass06 preflight [skip ci]'
-          git push origin HEAD:gauntlet/control-room-06-verified
-      - name: Transfer existing preview binaries
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: SIGNAL47-pass06-preflight
-          path: pass06-preflight/Docs/Evidence/ControlRoomPass06/Preflight
-          retention-days: 1
+          file="$HOME/signal47-tools/evidence/pass06-isolated/34470666592/smoke.log"
+          test -f "$file"
+          grep -E -A 6 'CONTROL_PASS_SMOKE_|WORLD_PASS_SMOKE_|SMOKE_FAIL|Exception|Error|SIGNAL47_SMOKE_' "$file" || true
+          tail -n 24 "$file"
