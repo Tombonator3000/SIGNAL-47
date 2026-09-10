@@ -40,3 +40,9 @@ The complete supplied font license and copyright notice are included in VT323-OF
 Source: https://www.scottbuckley.com.au/library/signal-to-noise/
 License: https://creativecommons.org/licenses/by/4.0/
 This game uses a 45-second excerpt from the supplied No Piano Melody mix, with fade-in, fade-out and volume adjustment, for the ending title. The same credit appears on that title screen. Credit the composer and source in the description of videos featuring this music, including trailers.
+
+## Field camera 08 additions
+
+- **Camera_01**, Rajil Jose Macatangay, [Poly Haven](https://polyhaven.com/a/Camera_01), CC0-1.0. Imported body geometry and 1K body/lens-body/strap PBR textures. Prepared in Blender with base origin and metre scale; loose strap retained in the editable .blend and omitted from runtime FBX. URP metallic/smoothness maps pack source metallic and inverted roughness. 22,319 exported triangles. Powered by Poly Haven (asset metadata retrieval).
+- **Camera Shutter**, roachpowder, [Freesound 170229](https://freesound.org/people/roachpowder/sounds/170229/), CC0-1.0. Public HQ MP3 preview converted to mono 44.1 kHz WAV, high-pass 100 Hz and non-amplifying limiter at 0.85, played at 0.28 gain. This is not the original master recording.
+- Provenance, source hashes and downloaded variants: Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/source-manifest.json.

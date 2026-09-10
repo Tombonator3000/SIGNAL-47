@@ -1,0 +1,48 @@
+{
+  "performance": "PASS",
+  "checks": {
+    "duration_120s": true,
+    "average_59fps": true,
+    "p95_17_2ms": true,
+    "p99_below_20ms": true,
+    "no_stalls_over_50ms": true,
+    "focused": true,
+    "release": true,
+    "preset": true,
+    "hardware_renderer": true
+  },
+  "native_journey": "PASS",
+  "same_release_build_and_preset": true,
+  "gpu_timing": "UNVERIFIED",
+  "subjective_audio": "UNVERIFIED",
+  "visual_review": "PASS",
+  "source_build_id": "3d37c84d2b4f2bfabd3afff08448cdab68a2731e working-tree source-sha256:af5a85d7a25f43b2adcf8ee07d5b7dedf5935c921e9879c676288ee97decb396",
+  "sampled_audio_checks": {
+    "room": true,
+    "receiver": true,
+    "printer": true,
+    "ring": true,
+    "call": true,
+    "impact": true,
+    "title": true
+  },
+  "sampled_audio": "PASS",
+  "field_camera_checks": {
+    "Performance": true,
+    "Performance_jpg": true,
+    "Performance_negative": true,
+    "Performance_compared": true,
+    "Journey": true,
+    "Journey_jpg": true,
+    "Journey_negative": true,
+    "Journey_compared": true,
+    "screenshots": true
+  },
+  "field_camera": "PASS",
+  "source_revision": "64572651984c6c9fc1cd1a3bb77006633b822c12",
+  "unity_source_sha256": "af5a85d7a25f43b2adcf8ee07d5b7dedf5935c921e9879c676288ee97decb396",
+  "build_payload_sha256": "672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020",
+  "visual_review_method": "Fresh camera_final_critic subagent inspected original journey 15/25/28/31 against provisional targets; main-agent self-review also completed. No independent playtest claim.",
+  "delivery": "PASS: immutable local Linux release copy with verified identical original player bytes",
+  "scope": "Bounded field-camera prototype; full game art, other devices, GPU timing and subjective listening are not verified"
+}

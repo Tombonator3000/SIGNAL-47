@@ -1,0 +1,17 @@
+{
+    "subject": "S-03 / array profile",
+    "utc": "2026-09-10T13:54:58.0223250Z",
+    "build": "3d37c84d2b4f2bfabd3afff08448cdab68a2731e working-tree source-sha256:af5a85d7a25f43b2adcf8ee07d5b7dedf5935c921e9879c676288ee97decb396",
+    "position": {
+        "x": 10.702065467834473,
+        "y": 1.7899997234344483,
+        "z": -12.043546676635743
+    },
+    "forward": {
+        "x": -0.12067542970180512,
+        "y": 0.13459157943725587,
+        "z": -0.9835256338119507
+    },
+    "width": 960,
+    "height": 600
+}

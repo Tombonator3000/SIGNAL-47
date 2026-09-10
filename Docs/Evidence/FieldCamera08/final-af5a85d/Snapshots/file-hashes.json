@@ -1,0 +1,38 @@
+[
+  {
+    "file": "01-control-room-array.png",
+    "png_sha256": "08aaa0f2499af4b1b6d441dccfb67edf45bbf8baeb930f4d91bb64864d6e1b5d",
+    "review_sha256": "a7fb1b2ad3c07e10b9bb54d99c033b9d87a7a12ac33c40c7a9acaa90065dd973",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  },
+  {
+    "file": "02-workstation.png",
+    "png_sha256": "a0a1172e4481b5fdd43288c5d21a948e3d14da598aa344e2eff1c5eeea4ec411",
+    "review_sha256": "5a278c0f5f6cf125ebeaa85e1baadc10cfc8ab6b61247b936ec10ca1f91cf5fc",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  },
+  {
+    "file": "03-crt-detail.png",
+    "png_sha256": "2244f469f54587eec0666e0bb8e3f5a972a848092abb74ef82e88cf0b02d523e",
+    "review_sha256": "51abe054f7a0f95e9b63a929137ed9d2f1864ea7cc8d69192c9205e41d4f0a91",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  },
+  {
+    "file": "04-window-array.png",
+    "png_sha256": "f9bb67b6c80c4624ab3635dcbe65b185c31d5773a00e952d5b601bf8322fda09",
+    "review_sha256": "f58589ac1fc2fec793810be6ca270f203d692cd3b72f1e16e831785550c97fad",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  },
+  {
+    "file": "05-service-yard-array.png",
+    "png_sha256": "6c74e04a22e60cd1211491f403f11e377805a08caf0cbe9a7b9d0df6e756ba49",
+    "review_sha256": "650bf156e012648f0c43aec95e2cc61ff8e7a4002a82e5d13c74e5a428d9b070",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  },
+  {
+    "file": "06-sierra-motor-court-blockout.png",
+    "png_sha256": "5f81dff3d5ec01b6cc159cebcaa3b12fba0066d9d7d068e539a9ab5fda4956b1",
+    "review_sha256": "3a2797fe13dfcf47f860ce4145a8c75d8a743f186d5153ac1fa623889f922abb",
+    "method": "Original PNG unchanged; mobile JPEG and small WebP are resized copies only"
+  }
+]

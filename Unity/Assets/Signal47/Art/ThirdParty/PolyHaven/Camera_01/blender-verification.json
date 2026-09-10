@@ -1,0 +1,20 @@
+{
+  "blender": "4.5.13 LTS",
+  "source": "https://polyhaven.com/a/Camera_01",
+  "license": "CC0-1.0",
+  "objects": 1,
+  "triangles": 22319,
+  "uv_layers": 1,
+  "dimensions_m": [
+    0.14734002947807312,
+    0.08883751928806305,
+    0.07756741344928741
+  ],
+  "materials": [
+    "Camera_01_strap",
+    "Camera_01_lens_body",
+    "Camera_01_lens",
+    "Camera_01_body"
+  ],
+  "changes": "Base origin, metre scale; loose strap retained in editable source but omitted from runtime export. Original geometry and UVs preserved."
+}

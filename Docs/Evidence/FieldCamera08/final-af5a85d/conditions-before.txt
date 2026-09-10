@@ -1,0 +1,118 @@
+Thu Sep 10 13:49:43 UTC 2026
+Linux tom-travelmate 7.0.0-31-generic #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026 x86_64 GNU/Linux
+ 15:49:43 up 1 day,  1:31,  1 user,  load average: 0.37, 0.68, 0.60
+CPU scaling governor:
+powersave
+Power profile:
+performance
+Power supply:
+/sys/class/power_supply/ACAD/online:1
+/sys/class/power_supply/hidpp_battery_0/online:0
+/sys/class/power_supply/ucsi-source-psy-USBC000:001/online:1
+/sys/class/power_supply/ucsi-source-psy-USBC000:002/online:0
+/sys/class/power_supply/BAT1/status:Full
+/sys/class/power_supply/hidpp_battery_0/status:Unknown
+/sys/class/power_supply/ucsi-source-psy-USBC000:001/status:Charging
+/sys/class/power_supply/ucsi-source-psy-USBC000:002/status:Discharging
+Temperatures before:
+/sys/class/thermal/thermal_zone0/temp:59000
+/sys/class/thermal/thermal_zone1/temp:20000
+/sys/class/thermal/thermal_zone2/temp:41050
+/sys/class/thermal/thermal_zone3/temp:41050
+/sys/class/thermal/thermal_zone4/temp:59050
+/sys/class/thermal/thermal_zone5/temp:41050
+/sys/class/thermal/thermal_zone6/temp:62000
+/sys/class/thermal/thermal_zone7/temp:45050
+/sys/class/thermal/thermal_zone8/temp:34000
+/sys/class/thermal/thermal_zone9/temp:62000
+Display modes:
+Screen 0: minimum 16 x 16, current 5760 x 1080, maximum 32767 x 32767
+eDP-1 connected 1920x1080+3840+0 (normal left inverted right x axis y axis) 344mm x 194mm
+   1920x1080     59.96*+
+   1440x1080     59.99  
+   1400x1050     59.98  
+   1280x1024     59.89  
+   1280x960      59.94  
+   1152x864      59.96  
+   1024x768      59.92  
+   800x600       59.86  
+   640x480       59.38  
+   320x240       59.29  
+   1680x1050     59.95  
+   1440x900      59.89  
+   1280x800      59.81  
+   1152x720      59.75  
+   960x600       59.63  
+   928x580       59.88  
+   800x500       59.50  
+   768x480       59.90  
+   720x480       59.71  
+   640x400       59.95  
+   320x200       58.14  
+   1600x900      59.95  
+   1368x768      59.88  
+   1280x720      59.86  
+   1024x576      59.90  
+   864x486       59.92  
+   720x400       59.27  
+   640x350       59.28  
+DP-3 connected primary 1920x1080+1920+0 (normal left inverted right x axis y axis) 597mm x 336mm
+   1920x1080     74.82*+
+   1440x1080     74.80  
+   1400x1050     74.75  
+   1280x1024     74.77  
+   1280x960      74.86  
+   1152x864      74.82  
+   1024x768      74.67  
+   800x600       74.52  
+   640x480       74.77  
+   320x240       73.82  
+   1680x1050     74.79  
+   1440x900      74.85  
+   1280x800      74.76  
+   1152x720      74.72  
+   960x600       74.84  
+   928x580       74.58  
+   800x500       74.40  
+   768x480       74.71  
+   720x480       74.51  
+   640x400       74.23  
+   320x200       72.67  
+   1600x900      74.89  
+   1368x768      74.73  
+   1280x720      74.78  
+   1024x576      74.80  
+   864x486       74.45  
+   720x400       74.23  
+   640x350       74.53  
+HDMI-A-1 connected 1920x1080+0+0 (normal left inverted right x axis y axis) 598mm x 336mm
+   1920x1080     74.91*+
+   1440x1080     74.92  
+   1400x1050     74.87  
+   1280x1024     74.90  
+   1280x960      74.86  
+   1152x864      74.82  
+   1024x768      74.67  
+   800x600       74.91  
+   640x480       74.77  
+   320x240       73.82  
+   1680x1050     74.89  
+   1440x900      74.85  
+   1280x800      74.76  
+   1152x720      74.72  
+   960x600       74.84  
+   928x580       74.58  
+   800x500       74.87  
+   768x480       74.71  
+   720x480       74.51  
+   640x400       74.23  
+   320x200       72.67  
+   1600x900      74.89  
+   1368x768      74.73  
+   1280x720      74.78  
+   1024x576      74.80  
+   864x486       74.45  
+   720x400       74.23  
+   640x350       74.53  
+Unity editor process count:
+0

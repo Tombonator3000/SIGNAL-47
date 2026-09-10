@@ -1,0 +1,100 @@
+{
+  "date": "2026-09-10",
+  "model": {
+    "author": "Rajil Jose Macatangay",
+    "source": "https://polyhaven.com/a/Camera_01",
+    "license": "CC0-1.0"
+  },
+  "sound": {
+    "author": "roachpowder",
+    "source": "https://freesound.org/people/roachpowder/sounds/170229/",
+    "license": "CC0-1.0",
+    "note": "Public HQ MP3 preview, not original master"
+  },
+  "files": [
+    {
+      "path": "Artifacts/Research/Camera08/Camera_01-original.fbx",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/Camera_01/Camera_01_1k.fbx",
+      "sha256": "84733292eff701f03a1c51816e2b56c3eeedb1353653f1549c4c49a889f1cde8",
+      "bytes": 966796
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/body_diff.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_body_diff_1k.jpg",
+      "sha256": "89b77ec525e933f9f2702e2ccb0c8ba32ecef31dac241bc034e3eddc9481f4f7",
+      "bytes": 175778
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/body_roughness.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_body_roughness_1k.jpg",
+      "sha256": "e10e3242fdea1c8602aafa8963fc24fdaa62d17ba271a19662dc838e5bb5a478",
+      "bytes": 196730
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/body_metallic.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_body_metallic_1k.jpg",
+      "sha256": "89a57658526e8ddf351dc778f2a9760a76a15eb4c37607df15b627d91196c18f",
+      "bytes": 118167
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/body_nor_gl.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/Camera_01/Camera_01_body_nor_gl_1k.png",
+      "sha256": "8d6a662b6378296edce928cf6ba2e9618a915542800ec6d97887412399c4c762",
+      "bytes": 1523231
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/lens_body_diff.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_lens_body_diff_1k.jpg",
+      "sha256": "aafa05c5b106b960b21547ef9d4662083dfc7138261cbab1f10e143afe046b68",
+      "bytes": 106198
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/lens_body_roughness.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_lens_body_roughness_1k.jpg",
+      "sha256": "e705a2e20b56468bf36d17c4277ed83ffb530c25007cf7bc8561dba33297bcd9",
+      "bytes": 155670
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/lens_body_metallic.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_lens_body_metallic_1k.jpg",
+      "sha256": "c57e6b64694faad6b92f69339afd477b476846d6b78ddebb1eebcb412f2664b2",
+      "bytes": 41723
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/lens_body_nor_gl.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/Camera_01/Camera_01_lens_body_nor_gl_1k.png",
+      "sha256": "a0498789b28c5e4f6b85ed0e49d387c3d6a4cb6e474d7bf8bb05db266e26f87f",
+      "bytes": 932666
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/strap_diff.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_strap_diff_1k.jpg",
+      "sha256": "3d4c9cb463b330b7ea4fc713f6dc90a0c5e6d9d3ba707b6921fe0a2d1f9ab146",
+      "bytes": 132449
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/strap_roughness.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_strap_roughness_1k.jpg",
+      "sha256": "55f6b5a42dcfde88f18982916088534a5539fa9577adb87ac4ae47b425431326",
+      "bytes": 158511
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/strap_metallic.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/Camera_01/Camera_01_strap_metallic_1k.jpg",
+      "sha256": "b98e6e40cb8b9b40ed7ba4753c6c0b772524057978d00814d63abb33b9d1ab67",
+      "bytes": 19505
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/ThirdParty/PolyHaven/Camera_01/strap_nor_gl.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/Camera_01/Camera_01_strap_nor_gl_1k.png",
+      "sha256": "8d84009145fce867c96990d67ac84ecac6d70b26496c20a3938a420605612d4d",
+      "bytes": 1496358
+    },
+    {
+      "path": "Artifacts/Research/Camera08/Shutter-preview.mp3",
+      "url": "https://cdn.freesound.org/previews/170/170229_3133582-hq.mp3",
+      "sha256": "b5c29f81b6daedb089273859ce88575549154cbe33fb13d37c12795364f95a5f",
+      "bytes": 9707
+    }
+  ]
+}

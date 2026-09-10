@@ -6,6 +6,7 @@ phase="${REVIEW_PHASE:-candidate}"
 review_root=Artifacts/Pass06
 journey_args=()
 if [[ "${SERVICE_YARD_REVIEW:-0}" == 1 ]]; then review_root=Artifacts/Pass07; journey_args+=(--yard); fi
+if [[ "${FIELD_CAMERA_REVIEW:-0}" == 1 ]]; then review_root=Artifacts/Pass08; journey_args=(--yard --camera); fi
 mkdir -p "$review_root"
 exec 9>"/run/user/$(id -u)/signal47-gauntlet.lock"
 flock -n 9 || { echo 'SIGNAL47_BUSY: another verified test owns this desktop'; exit 3; }

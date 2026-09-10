@@ -8,7 +8,7 @@ namespace Signal47.Interaction
         public Camera viewCamera; public float distance=2.65f; IInteractable current;
         void Update()
         {
-            if(GameSession.Instance==null || !GameSession.Instance.CanControl){current=null;if(GameSession.Instance?.hud!=null)GameSession.Instance.hud.InteractionPrompt="";return;}
+            if(GameSession.Instance==null || !GameSession.Instance.CanControl || (GameSession.Instance.fieldCamera && GameSession.Instance.fieldCamera.Raised)){current=null;if(GameSession.Instance?.hud!=null)GameSession.Instance.hud.InteractionPrompt="";return;}
             var mug=GameSession.Instance.director.mug;
             if(mug&&mug.Held){GameSession.Instance.hud.InteractionPrompt="E — RETURN MUG TO DESK";if(Keyboard.current!=null&&Keyboard.current.eKey.wasPressedThisFrame)mug.ReturnToDesk();return;}
             current=null;

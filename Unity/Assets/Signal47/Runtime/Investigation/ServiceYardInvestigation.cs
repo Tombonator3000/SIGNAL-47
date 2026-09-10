@@ -9,7 +9,7 @@ namespace Signal47.Investigation
         public bool Completed { get; private set; }
         public bool Returned { get; private set; }
         public Signal47.Interaction.ServiceYardDoor door;
-        public string Objective => Returned ? "S-03 INVESTIGATION FILED // END OF CURRENT SLICE" : Completed ? "S-03 LOG FILED // RETURN TO THE CONTROL ROOM" : "CHECK MOTOR BUS S-03 // EAST SERVICE YARD";
+        public string Objective => GameSession.Instance.fieldCamera && (!GameSession.Instance.fieldCamera.Acquired || Completed) ? GameSession.Instance.fieldCamera.Objective : Returned ? "S-03 INVESTIGATION FILED // END OF CURRENT SLICE" : Completed ? "S-03 LOG FILED // RETURN TO THE CONTROL ROOM" : "CHECK MOTOR BUS S-03 // EAST SERVICE YARD";
         const string Log = "SIERRA ARRAY / MOTOR BUS S-03\nLOCAL CONTROLLER LOG // 23:44\n\nENCODER HEADING: 026 DEGREES\nSCHEDULED HEADING: 042 DEGREES\n\nCOMMANDS RECEIVED: 0\nLOCAL OVERRIDE: NONE\n\nThe antenna moved. The controller did not send a command.\n\nA thin line of condensation runs across the warm inspection glass.";
         void Update()
         {

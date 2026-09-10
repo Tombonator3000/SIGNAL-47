@@ -10,20 +10,21 @@ namespace Signal47.UI
         public bool Started { get; private set; }
         public bool Paused { get; private set; }
         public bool TitleVisible { get; private set; }
-        public bool ModalOpen => paperOpen || notebookOpen || Paused || TitleVisible;
+        public bool ModalOpen => photoOpen || paperOpen || notebookOpen || Paused || TitleVisible;
         public string InteractionPrompt { get; set; } = "";
-        string toast=""; bool paperOpen,notebookOpen; string paper=""; float toastUntil;
+        string toast=""; bool paperOpen,notebookOpen,photoOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
         Vector2 noteScroll,paperScroll;bool returnToNotebook;
         void Update()
         {
             if (!Started || TitleVisible) return;
             if (Signals.SignalConsole.AnyOpen) { if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) FindFirstObjectByType<Signals.SignalConsole>().Close(); return; }
-            if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame && !Paused && !paperOpen)
+            if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame && !Paused && !paperOpen && !photoOpen)
             { notebookOpen=!notebookOpen; SetCursor(!notebookOpen); }
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                if (paperOpen) { ClosePaper(); }
+                if (photoOpen) { ClosePhoto(); }
+                else if (paperOpen) { ClosePaper(); }
                 else if (notebookOpen) { notebookOpen=false; SetCursor(true); }
                 else { SetPaused(!Paused); }
             }
@@ -34,9 +35,12 @@ namespace Signal47.UI
         public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;if(Core.GameSession.Instance.director.palette)Core.GameSession.Instance.director.palette.Click();SetCursor(false);}
         void ClosePaper(){paperOpen=false;notebookOpen=returnToNotebook;returnToNotebook=false;SetCursor(!notebookOpen);}
         public void ContinueToServiceYard(){var g=Core.GameSession.Instance;if(!TitleVisible || !g.yard)return;g.yard.Begin();if(!g.yard.Active)return;TitleVisible=false;CloseModal();}
+        void ClosePhoto(){photoOpen=false;notebookOpen=true;SetCursor(false);}
+        void ShowEvidence(EvidenceRecord item){if(item.Id==FieldCamera.PhotoId && Core.GameSession.Instance.fieldCamera.HasPhoto){photoOpen=true;notebookOpen=false;SetCursor(false);}else ShowPaper(item.Body);}
+        public bool PhotoOpen=>photoOpen;
         public void ShowNotebook(){notebookOpen=true;SetCursor(false);}
         public void ShowTitle(){paperOpen=false;notebookOpen=false;Paused=false;Time.timeScale=1;AudioListener.pause=false;TitleVisible=true;Signals.SignalConsole console=FindFirstObjectByType<Signals.SignalConsole>();if(console)console.Close();SetCursor(false);}
-        public void CloseModal(){paperOpen=false;notebookOpen=false;returnToNotebook=false;SetPaused(false);SetCursor(true);}
+        public void CloseModal(){photoOpen=false;paperOpen=false;notebookOpen=false;returnToNotebook=false;SetPaused(false);SetCursor(true);}
         public void SetCursor(bool lockIt){Cursor.lockState=lockIt?CursorLockMode.Locked:CursorLockMode.None;Cursor.visible=!lockIt;}
         void Styles()
         {
@@ -48,6 +52,8 @@ namespace Signal47.UI
         }
         void OnGUI()
         {
+            var field=Core.GameSession.Instance.fieldCamera;
+            if(field && (field.Capturing || field.Raised))return;
             Styles();
             if(!Started)
             {
@@ -59,7 +65,7 @@ namespace Signal47.UI
             }
             if(!string.IsNullOrEmpty(InteractionPrompt) && !ModalOpen)
                 GUI.Label(new Rect(Screen.width*.5f-210,Screen.height-95,420,40),InteractionPrompt,new GUIStyle(mono){alignment=TextAnchor.MiddleCenter});
-            if(Time.unscaledTime<toastUntil) GUI.Label(new Rect(24,24,600,35),toast,mono);
+            if(!photoOpen && Time.unscaledTime<toastUntil) GUI.Label(new Rect(24,24,600,35),toast,mono);
             if(Core.GameSession.Instance.yard && Core.GameSession.Instance.yard.Active && !ModalOpen)
                 GUI.Label(new Rect(24,65,Screen.width-48,45),Core.GameSession.Instance.yard.Objective,mono);
             if(paperOpen)
@@ -81,11 +87,12 @@ namespace Signal47.UI
                 foreach(var entry in notebook.Entries)contentHeight+=mono.CalcHeight(new GUIContent(entry),width)+16;
                 noteScroll=GUI.BeginScrollView(new Rect(r.x+24,r.y+65,r.width-48,r.height-90),noteScroll,new Rect(0,0,width,contentHeight));
                 float y=0;GUI.Label(new Rect(0,y,width,28),"DOCUMENTS // SELECT TO READ",mono);y+=38;
-                foreach(var item in notebook.Evidence){if(GUI.Button(new Rect(0,y,width,38),item.Title,button))ShowPaper(item.Body);y+=48;}
+                foreach(var item in notebook.Evidence){if(GUI.Button(new Rect(0,y,width,38),item.Title,button))ShowEvidence(item);y+=48;}
                 if(notebook.Evidence.Count==0){GUI.Label(new Rect(0,y,width,28),"No documents collected.",mono);y+=32;}
                 foreach(var entry in notebook.Entries){float h=mono.CalcHeight(new GUIContent(entry),width);GUI.Label(new Rect(0,y,width,h),entry,mono);y+=h+16;}
                 GUI.EndScrollView();
             }
+            if(photoOpen && field && field.DrawPhotograph(button,mono))ClosePhoto();
             if(Paused)
             {
                 GUI.Box(new Rect(Screen.width*.5f-190,Screen.height*.5f-115,380,230),"");
