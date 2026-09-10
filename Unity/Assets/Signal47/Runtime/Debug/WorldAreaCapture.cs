@@ -19,7 +19,7 @@ namespace Signal47.Debugging
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
-            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-world-capture")>=0&&!FindFirstObjectByType<WorldAreaCapture>())new GameObject("WorldAreaCapture").AddComponent<WorldAreaCapture>();
+            if((Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-world-capture")>=0 || Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-yard-capture")>=0)&&!FindFirstObjectByType<WorldAreaCapture>())new GameObject("WorldAreaCapture").AddComponent<WorldAreaCapture>();
         }
         void Awake(){DontDestroyOnLoad(gameObject);Application.runInBackground=true;root=Path.GetFullPath(Path.Combine(Application.dataPath,"../../WorldCapture"));Directory.CreateDirectory(root);StartCoroutine(Run());}
         IEnumerator Run()
@@ -33,6 +33,12 @@ namespace Signal47.Debugging
             var interactor=session.player.GetComponent<Signal47.Interaction.PlayerInteractor>();if(interactor)interactor.enabled=false;
             yield return new WaitForSecondsRealtime(3);
             var camera=session.player.viewCamera;camera.fieldOfView=60;
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-yard-capture")>=0)
+            {
+                yield return Shot(camera,"yard-path.png",new Vector3(10.7f,1.78f,2),new Vector3(11,1,-13.2f),"fixed service path lighting review; NOT traversal");
+                yield return Shot(camera,"yard-cabinet.png",new Vector3(10.7f,1.78f,-12.2f),new Vector3(12.1f,1.1f,-13.2f),"fixed S-03 lighting review; NOT progression");
+                Debug.Log("YARD_CAPTURE_PASS 2");Application.Quit(0);yield break;
+            }
             yield return Shot(camera,"01-control-room-array.png",new Vector3(0,1.65f,4.55f),new Vector3(0,1.8f,-22),"receiver powered; calibration not solved; HUD hidden for review");
             yield return Shot(camera,"02-workstation.png",new Vector3(-3.0f,1.65f,.4f),new Vector3(.1f,1.3f,-2.15f),"same powered control room; fixed review camera");
             yield return Shot(camera,"03-crt-detail.png",new Vector3(0,1.61f,-.3f),new Vector3(0,1.34f,-1.95f),"same powered control room; fixed review camera");

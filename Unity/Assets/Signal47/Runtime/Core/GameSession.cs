@@ -12,6 +12,7 @@ namespace Signal47.Core
         public FirstPersonController player;
         public HUDController hud;
         public Notebook notebook;
+        public ServiceYardInvestigation yard;
         public PrologueDirector director;
         bool restarting;
         public bool CanControl => !restarting && hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;

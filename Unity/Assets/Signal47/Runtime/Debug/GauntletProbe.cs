@@ -15,6 +15,7 @@ namespace Signal47.Debugging
         {
             public double elapsed,gameTime;public float x,y,z,yaw,pitch,frequency,gain,bandwidth,azimuth;
             public int width,height,evidence,observations,stages;public bool started,modal,paused,console,powered,printed,ringing,answered,lineDead,impact,title,focused;
+            public bool yardActive,yardComplete,yardReturned,doorOpen;
             public string prompt;public float mouseX,mouseY;public bool mouseDown;
         }
         [Serializable] sealed class Report
@@ -49,6 +50,7 @@ namespace Signal47.Debugging
             var g=GameSession.Instance;if(!g)return;if(!console)console=FindFirstObjectByType<SignalConsole>();
             var p=g.player.transform;var c=g.player.viewCamera.transform;
             var state=new State{elapsed=now,gameTime=Time.timeAsDouble,x=p.position.x,y=p.position.y,z=p.position.z,yaw=p.eulerAngles.y,pitch=Mathf.DeltaAngle(0,c.localEulerAngles.x),width=Screen.width,height=Screen.height,started=g.hud.Started,modal=g.hud.ModalOpen,paused=g.hud.Paused,console=SignalConsole.AnyOpen,powered=g.director.ReceiverPowered,printed=g.director.PrintoutAvailable,ringing=g.director.PhoneRinging,answered=g.director.PhoneAnswered,lineDead=g.director.LineDead,impact=g.director.ImpactOccurred,title=g.hud.TitleVisible,evidence=g.notebook.Evidence.Count,observations=g.notebook.Entries.Count,prompt=g.hud.InteractionPrompt,focused=Application.isFocused,frequency=console.frequency,gain=console.gain,bandwidth=console.bandwidth,azimuth=console.azimuth,stages=console.CompletedStages};
+            if(g.yard){state.yardActive=g.yard.Active;state.yardComplete=g.yard.Completed;state.yardReturned=g.yard.Returned;state.doorOpen=g.yard.door.Open;}
             var mouse=UnityEngine.InputSystem.Mouse.current;if(mouse!=null){state.mouseX=mouse.position.ReadValue().x;state.mouseY=mouse.position.ReadValue().y;state.mouseDown=mouse.leftButton.isPressed;}
             File.WriteAllText(Path.Combine(root,"state.tmp"),JsonUtility.ToJson(state));File.Delete(Path.Combine(root,"state.json"));File.Move(Path.Combine(root,"state.tmp"),Path.Combine(root,"state.json"));
             peakMemory=Math.Max(peakMemory,Profiler.GetTotalAllocatedMemoryLong());

@@ -108,7 +108,7 @@ def wait_for(fn,timeout=8):
  raise RuntimeError('State wait timed out: '+json.dumps(state()))
 def angle(v):return (v+180)%360-180
 class Journey:
- def __init__(self,desktop,shots):self.d=desktop;self.shots=shots;self.events=[]
+ def __init__(self,desktop,shots,yard=False):self.d=desktop;self.shots=shots;self.yard=yard;self.events=[]
  def mark(self,name):
   s=state();self.events.append({'checkpoint':name,'wall':time.time(),'state':s});print(name,flush=True)
   if self.shots:
@@ -161,6 +161,19 @@ class Journey:
  def action(self):
   s=state();scale=min(s['width']/960,s['height']/760);left=(s['width']/scale-880)/2;top=(s['height']/scale-700)/2
   self.d.click((left+158)*scale,(top+657)*scale)
+ def exterior(self):
+  s=state();before=s['evidence'];self.d.click(s['width']/2,s['height']/2+66)
+  wait_for(lambda s:s['yardActive'] and not s['title']);self.mark('service-investigation-start')
+  self.walk(6.8,3.2);self.walk(8.0,3.2);self.interact(9.35,1.15,3.2,'OPEN SERVICE');wait_for(lambda s:s['doorOpen']);self.mark('service-door-open')
+  self.walk(10.7,3.2);assert state()['x']>9.6;self.aim(11,1,-13.2);self.mark('walked-outside')
+  self.walk(10.7,-2);self.walk(10.7,-7.8);self.aim(12.1,1.1,-13.2);self.mark('service-path')
+  self.walk(10.7,-12.2);self.interact(11.90,1.1,-13.2,'BUS S-03');wait_for(lambda s:s['yardComplete'] and s['evidence']==before+1 and s['modal']);self.mark('motor-log-filed');self.d.tap('Escape')
+  self.interact(11.90,1.1,-13.2,'BUS S-03');assert state()['evidence']==before+1;self.d.tap('Escape');self.mark('motor-log-deduplicated')
+  self.d.tap('Tab');wait_for(lambda s:s['modal']);self.mark('motor-log-in-notebook');self.d.tap('Escape')
+  self.walk(10.7,-7.8);self.walk(10.7,-2);self.walk(10.7,3.2);self.walk(8,3.2)
+  wait_for(lambda s:s['yardReturned']);self.mark('returned-to-control-room')
+  self.d.tap('Escape');wait_for(lambda s:s['paused']);s=state();self.d.click(s['width']/2,s['height']/2+64)
+  wait_for(lambda s:not s['started']);assert state()['evidence']==0 and not state()['yardActive'] and not state()['doorOpen'];self.mark('restart-clears-yard')
  def run(self):
   self.d.focus();s=state();assert not s['started'],'Start from a fresh player launch'
   self.mark('start');self.d.click(s['width']/2,s['height']/2+81);wait_for(lambda s:s['started'])
@@ -174,12 +187,13 @@ class Journey:
   self.d.tap('Escape');s=wait_for(lambda s:s['paused']);before=s['gameTime'];time.sleep(1);assert abs(state()['gameTime']-before)<.001;self.mark('pause-freezes-clock');self.d.tap('Escape');wait_for(lambda s:not s['paused'])
   self.walk(3.2,2.1);self.walk(0,2.1);self.aim(0,1.5,-15);self.mark('array-before-impact')
   wait_for(lambda s:s['impact'],60);wait_for(lambda s:s['title'],15);self.mark('ending-title')
+  if self.yard:self.exterior();return
   s=state();self.d.click(s['width']/2,s['height']/2+119);wait_for(lambda s:not s['started']);assert state()['evidence']==0;self.mark('restart-clears-evidence')
 if __name__=='__main__':
- args=argparse.ArgumentParser();args.add_argument('--measure',action='store_true');args.add_argument('--inspect',action='store_true');opt=args.parse_args()
+ args=argparse.ArgumentParser();args.add_argument('--measure',action='store_true');args.add_argument('--inspect',action='store_true');args.add_argument('--yard',action='store_true');opt=args.parse_args()
  d=Desktop();print('Verified SIGNAL 47 X11 window:',d.w,flush=True)
  if opt.inspect:print(json.dumps(state(),indent=2));raise SystemExit()
- d.inject_setup();j=Journey(d,not opt.measure);begin=None;outcome='FAIL';error=''
+ d.inject_setup();j=Journey(d,not opt.measure,opt.yard);begin=None;outcome='FAIL';error=''
  try:
   d.focus()
   if opt.measure:time.sleep(20);command('record');begin=time.monotonic();time.sleep(.3)
@@ -193,5 +207,5 @@ if __name__=='__main__':
   outcome='PASS'
  except Exception as e:error=str(e);print(error,flush=True)
  finally:
-  d.close();command('finish');(OUT/'journey-result.json').write_text(json.dumps({'outcome':outcome,'error':error,'method':'Native Linux uinput keyboard and mouse input, XWayland focus/position checks; observation-only game telemetry; no teleports or direct game method calls','measured':opt.measure,'events':j.events},indent=2))
+  d.close();command('finish');(OUT/'journey-result.json').write_text(json.dumps({'outcome':outcome,'error':error,'method':'Native Linux uinput keyboard and mouse input, XWayland focus/position checks; observation-only game telemetry; no teleports or direct game method calls','measured':opt.measure,'service_yard':opt.yard,'events':j.events},indent=2))
  if outcome!='PASS':raise SystemExit(1)

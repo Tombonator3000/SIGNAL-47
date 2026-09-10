@@ -20,8 +20,8 @@ namespace Signal47.Audio
         {
             var g=GameSession.Instance;if(!g)return;
             if(g.hud.TitleVisible&&!titleStarted){titleStarted=true;music.clip=titleMusic;music.Play();}
-            music.volume=Mathf.MoveTowards(music.volume,titleStarted?.24f:0,Time.unscaledDeltaTime*.12f);
-            windSource.volume=Mathf.MoveTowards(windSource.volume,titleStarted?0:.16f,Time.unscaledDeltaTime*.15f);
+            music.volume=Mathf.MoveTowards(music.volume,g.hud.TitleVisible?.24f:0,Time.unscaledDeltaTime*.12f);
+            windSource.volume=Mathf.MoveTowards(windSource.volume,g.hud.TitleVisible?0:.16f,Time.unscaledDeltaTime*.15f);
         }
     }
 }

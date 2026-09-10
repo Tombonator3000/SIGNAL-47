@@ -29,6 +29,9 @@ namespace Signal47.Debugging
             output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../Screenshots"));Directory.CreateDirectory(output);
             yield return null;var g=GameSession.Instance;Check(g!=null,"session exists");if(!g){Application.Quit(1);yield break;}
             yield return Shot("01-start");g.hud.StartShift();yield return null;
+            Check(g.yard && g.yard.door,"service yard and physical door are wired");
+            g.yard.Begin();g.yard.door.Interact();yield return new WaitForSeconds(.8f);
+            Check(!g.yard.Active && !g.yard.door.Open,"service door remains locked before the array event");
             var palette=g.director.palette;
             Check(palette && palette.printer && palette.phone && palette.smash && palette.wind && palette.titleMusic,"curated audio clips are included in player build");
             Check(Mathf.Abs(palette.printer.length-1.2f)<.02f,"recorded printer audio matches paper feed duration");
@@ -88,9 +91,14 @@ namespace Signal47.Debugging
             while(!g.hud.TitleVisible)yield return null;
             Check(g.director.dishes.Completed && g.director.SignalAcquired,"entire array finishes aligning before title");
             foreach(var pivot in g.director.dishes.dishPivots)Check(Quaternion.Angle(pivot.localRotation,Quaternion.Euler(0,26,0))<.1f,"dish reaches acquired heading");Check(!g.director.mug.intact.activeSelf && g.director.mug.broken.activeSelf,"mug breaks before title");
-            yield return Shot("04-title");console.Interact();g.Restart();yield return new WaitUntil(()=>GameSession.Instance && GameSession.Instance!=g);yield return null;
+            yield return Shot("04-title");g.hud.ContinueToServiceYard();Check(g.yard.Active && !g.hud.TitleVisible && g.CanControl,"ending continues into service investigation");
+            g.yard.door.Interact();yield return new WaitForSeconds(.9f);Check(g.yard.door.Open,"authorized service door opens");
+            int beforeCabinet=g.notebook.Evidence.Count;g.yard.InspectCabinet();g.yard.InspectCabinet();
+            Check(g.yard.Completed && g.notebook.Evidence.Count==beforeCabinet+1,"motor log files once and can be reread");g.hud.CloseModal();
+            console.Interact();g.Restart();yield return new WaitUntil(()=>GameSession.Instance && GameSession.Instance!=g);yield return null;
             Check(!SignalConsole.AnyOpen,"restart clears console state");Check(!GameSession.Instance.hud.Started,"restart returns to start");Check(Time.timeScale==1,"restart restores time");
             Check(GameSession.Instance.notebook.Evidence.Count==0,"restart clears evidence");
+            Check(!GameSession.Instance.yard.Active && !GameSession.Instance.yard.Completed && !GameSession.Instance.yard.Returned && !GameSession.Instance.yard.door.Open,"restart resets service investigation and door");
             var deskMug=GameSession.Instance.director.mug;yield return deskMug.DropAndBreak();Check(deskMug.IsBroken && deskMug.transform.position.z<-.025f,"unheld mug slides off the desk and breaks on floor");
             File.WriteAllText(Path.Combine(output,"smoke-result.txt"),failed?"FAIL":"PASS");UnityEngine.Debug.Log(failed?"SIGNAL47_SMOKE_FAIL":"SIGNAL47_SMOKE_PASS");Application.Quit(failed?1:0);
         }
