@@ -130,7 +130,7 @@ namespace Signal47.Editor
             var result=new Texture2D(image.width,image.height,TextureFormat.RGBA32,false);result.SetPixels32(colors);result.Apply();
             var bytes=result.EncodeToPNG();if(!File.Exists(quiet)||!File.ReadAllBytes(quiet).SequenceEqual(bytes))File.WriteAllBytes(quiet,bytes);
             Object.DestroyImmediate(result);AssetDatabase.ImportAsset(quiet);Map(source);Chapter("Linoleum").SetTexture("_BaseMap",Map(quiet));EditorUtility.SetDirty(Chapter("Linoleum"));
-            Chapter("Steel").SetColor("_BaseColor", new Color(.26f,.28f,.27f)); Chapter("Steel").SetFloat("_Smoothness", .27f); Chapter("Steel").SetFloat("_Metallic", .55f); EditorUtility.SetDirty(Chapter("Steel"));
+            Chapter("Steel").SetColor("_BaseColor", new Color(.60f,.63f,.61f)); Chapter("Steel").SetFloat("_Smoothness", .48f); Chapter("Steel").SetFloat("_Metallic", .65f); EditorUtility.SetDirty(Chapter("Steel"));
             Chapter("Stripe").SetColor("_BaseColor", new Color(.48f,.48f,.40f)); Chapter("Stripe").SetFloat("_Smoothness", .05f); Chapter("Stripe").SetColor("_EmissionColor", new Color(.025f,.025f,.018f)); EditorUtility.SetDirty(Chapter("Stripe"));
             var cabinet=NewMaterial("V10_CabinetEnamel","green_metal_rust",new Color(1.25f,1.20f,1.04f),.42f,.08f,.5f);
             var meterPaper=NewMaterial("V10_MeterPaper","painted_plaster_wall",new Color(.46f,.44f,.35f),.08f,0,.02f);
@@ -208,7 +208,7 @@ namespace Signal47.Editor
             Object.DestroyImmediate(atlas);AssetDatabase.ImportAsset(output);Map(dir+"grass_medium_02_dry_diff_1k.png");Map(dir+"grass_medium_02_alpha_1k.png",false,true);
             string materialPath=Root+"V10_DryGrass_Atlas.mat";var mat=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             if(!mat){mat=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(mat,materialPath);}
-            mat.SetTexture("_BaseMap",Map(output));mat.SetColor("_BaseColor",new Color(.68f,.66f,.58f));mat.SetFloat("_AlphaClip",1);mat.SetFloat("_Cutoff",.4f);mat.EnableKeyword("_ALPHATEST_ON");
+            mat.SetTexture("_BaseMap",Map(output));mat.SetColor("_BaseColor",new Color(.95f,.91f,.79f));mat.SetFloat("_AlphaClip",1);mat.SetFloat("_Cutoff",.4f);mat.EnableKeyword("_ALPHATEST_ON");
             mat.SetFloat("_Cull",0);mat.SetFloat("_Smoothness",.05f);mat.renderQueue=2450;mat.SetOverrideTag("RenderType","TransparentCutout");EditorUtility.SetDirty(mat);
             var rng=new System.Random(1047);
             for(int i=0;i<170;i++)
@@ -219,9 +219,14 @@ namespace Signal47.Editor
                 if(x>8.05f&&x<13.2f&&z>-24)continue;
                 string name="V10_DryTuft_"+(char)('A'+i%3);var asset=AssetDatabase.LoadAssetAtPath<GameObject>(Root+"Models/"+name+".fbx");
                 // Single-mesh FBX roots carry the centimetre/axis conversion. Preserve them.
-                var placement=new GameObject("V10.DryTuftPlacement").transform;placement.SetParent(root,false);placement.position=new Vector3(x,-.103f,z);placement.rotation=Quaternion.Euler(0,(float)rng.NextDouble()*360,0);placement.localScale=Vector3.one*(.75f+(float)rng.NextDouble()*.6f);
+                var placement=new GameObject("V10.DryTuftPlacement").transform;placement.SetParent(root,false);placement.position=new Vector3(x,-.103f,z);placement.rotation=Quaternion.Euler(0,(float)rng.NextDouble()*360,0);placement.localScale=Vector3.one*(.9f+(float)rng.NextDouble()*.75f);
                 var go=(GameObject)PrefabUtility.InstantiatePrefab(asset);go.transform.SetParent(placement,false);
-                foreach(var renderer in go.GetComponentsInChildren<Renderer>()){renderer.sharedMaterial=mat;renderer.shadowCastingMode=ShadowCastingMode.TwoSided;}
+                foreach(var renderer in go.GetComponentsInChildren<Renderer>())
+                {
+                    renderer.sharedMaterial=mat;renderer.shadowCastingMode=ShadowCastingMode.TwoSided;
+                    if(renderer.bounds.size.y<.10f||renderer.bounds.size.y>.8f)throw new InvalidDataException("Dry tuft imported height outside physical budget: "+renderer.bounds);
+                    if(i<5)Debug.Log("VISUAL10_TUFT_WORLD_BOUNDS "+renderer.bounds);
+                }
             }
         }
         static void ExteriorDetail()
@@ -272,7 +277,7 @@ namespace Signal47.Editor
             string path=Root+"V10_DryScrub.asset";var old=AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if(old){EditorUtility.CopySerialized(mesh,old);Object.DestroyImmediate(mesh);mesh=old;}else AssetDatabase.CreateAsset(mesh,path);
             var scrub=new GameObject("V10.DryDesertPlants");scrub.transform.SetParent(root);scrub.AddComponent<MeshFilter>().sharedMesh=mesh;
-            var stem=NewMaterial("V10_DryStem","painted_plaster_wall",new Color(.37f,.32f,.21f),.06f);stem.SetFloat("_Cull",0);EditorUtility.SetDirty(stem);scrub.AddComponent<MeshRenderer>().sharedMaterial=stem;
+            var stem=NewMaterial("V10_DryStem","painted_plaster_wall",new Color(.37f,.32f,.21f),.06f);stem.SetFloat("_Cull",0);EditorUtility.SetDirty(stem);var legacyScrubRenderer=scrub.AddComponent<MeshRenderer>();legacyScrubRenderer.sharedMaterial=stem;legacyScrubRenderer.enabled=false; // Replaced by photographed CC0 dry grass geometry; retain source mesh for history.
             var oldScrub=GameObject.Find("DesertScrubRoot");if(oldScrub)foreach(var r in oldScrub.GetComponentsInChildren<Renderer>())r.enabled=false;
             // Actual sky geometry, never a photographic overlay: deterministic dim stellar points.
             vertices.Clear();triangles.Clear();
@@ -339,7 +344,7 @@ namespace Signal47.Editor
             var stools=Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Where(t=>t.name=="CH09_LabStool").ToArray();
             foreach(var stool in stools)stool.position+=new Vector3(0,0,1.7f);
             Model("V10_MetalBin",new Vector3(1.27f,0,13.41f));
-            Model("V10_SinkCloth",new Vector3(-.50f,1.02f,13.19f));
+            Model("V10_SinkCloth",new Vector3(-.50f,1.02f,13.19f),180);
             foreach(float x in new[]{-3.9f,3.9f})Box("V10.CeilingCoving",new Vector3(x,3.14f,10.75f),new Vector3(.12f,.10f,6.5f),Chapter("Trim"));
             Box("V10.CeilingNorthCoving",new Vector3(0,3.14f,13.85f),new Vector3(7.85f,.10f,.12f),Chapter("Trim"));
             // Wall hardware and utility storage occupy only non-walkable margins.

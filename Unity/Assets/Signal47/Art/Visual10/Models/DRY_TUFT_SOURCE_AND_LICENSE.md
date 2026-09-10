@@ -14,7 +14,7 @@ Unity/Blender/SIGNAL47_visual10_dry_tufts.blend, with dry color and alpha packed
 Unity material slot V10_DryGrass_Atlas requires source dry_diff RGB and separate
 alpha combined into base-map alpha, alpha clipping (start at .4), double-sided
 rendering and rough nonmetal shading. Preserve atlas UVs, use local scale 1,
-floor pivot and Y-up import (-Z forward / Y up FBX). Heights are .17/.26/.38 m.
+floor pivot and Y-up import (-Z forward / Y up FBX). Heights are .20/.30/.45 m; two or three layered crowns retain 54/59/63 complete blade islands (2142/2464/2378 triangles).
 Use restrained small clumps, avoid dense carpet and verify alpha overdraw in
 runtime. No claim of a specific native New Mexico plant species is made.
 

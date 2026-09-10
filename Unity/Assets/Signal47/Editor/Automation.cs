@@ -10,9 +10,10 @@ namespace Signal47.Editor
     {
         public static void BuildLinux()=>Build(false);
         public static void BuildGauntletLinux()=>Build(true);
-        static void Build(bool release)
+        public static void BuildCurrentGauntletLinux()=>Build(true,false);
+        static void Build(bool release,bool regenerate=true)
         {
-            Signal47SceneBuilder.BuildVerticalSlice();
+            if(regenerate)Signal47SceneBuilder.BuildVerticalSlice();
             PlayerSettings.companyName="SARO";PlayerSettings.productName="SIGNAL 47";
             PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=800;
             PlayerSettings.fullScreenMode=FullScreenMode.Windowed;

@@ -4,22 +4,56 @@
   "author": "Rico Cilliers",
   "license": "CC0-1.0",
   "source_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
-  "method": "Subsets of actual source connected blade islands, exact UV corner copying, uniform scale/floor pivot",
+  "method": "Layered actual source blade islands at varied height/yaw/radial spread, exact UV corner copying, floor pivot",
   "geometry_nodes_evaluated": false,
   "material": "V10_DryGrass_Atlas",
   "assets": [
     {
       "name": "V10_DryTuft_A",
-      "source_object": "grass_medium_02_a",
-      "source_triangles": 714,
-      "source_blade_islands": 18,
-      "retained_blade_islands": 18,
-      "triangles": 714,
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.2,
+          "yaw_degrees": 0,
+          "radial_spread": 1.15,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.17,
+          "yaw_degrees": 117,
+          "radial_spread": 1.35,
+          "crown_offset_m": [
+            0.018,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.13,
+          "yaw_degrees": 243,
+          "radial_spread": 1.5,
+          "crown_offset_m": [
+            -0.015,
+            0.012
+          ]
+        }
+      ],
+      "triangles": 2142,
       "uv_corners_copied_exactly": true,
       "dimensions_blender_m": [
-        0.1290426795452885,
-        0.12973657913119963,
-        0.17
+        0.19718989326026304,
+        0.17865197162112673,
+        0.2
       ],
       "floor_z_m": 0.0,
       "roundtrip_scale_pass": true,
@@ -29,16 +63,50 @@
     },
     {
       "name": "V10_DryTuft_B",
-      "source_object": "grass_medium_02_c",
-      "source_triangles": 1215,
-      "source_blade_islands": 27,
-      "retained_blade_islands": 19,
-      "triangles": 870,
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_c",
+          "blade_islands": 27,
+          "triangles": 1215,
+          "height_m": 0.3,
+          "yaw_degrees": 0,
+          "radial_spread": 1.05,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.22,
+          "yaw_degrees": 91,
+          "radial_spread": 1.45,
+          "crown_offset_m": [
+            0.024,
+            0.015
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 14,
+          "triangles": 535,
+          "height_m": 0.16,
+          "yaw_degrees": 218,
+          "radial_spread": 1.65,
+          "crown_offset_m": [
+            -0.025,
+            -0.016
+          ]
+        }
+      ],
+      "triangles": 2464,
       "uv_corners_copied_exactly": true,
       "dimensions_blender_m": [
-        0.2936873749256944,
-        0.28003224624322054,
-        0.26
+        0.35581355039074514,
+        0.36507664202954576,
+        0.3
       ],
       "floor_z_m": 0.0,
       "roundtrip_scale_pass": true,
@@ -48,16 +116,38 @@
     },
     {
       "name": "V10_DryTuft_C",
-      "source_object": "grass_medium_02_e",
-      "source_triangles": 1664,
-      "source_blade_islands": 45,
-      "retained_blade_islands": 26,
-      "triangles": 926,
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_e",
+          "blade_islands": 45,
+          "triangles": 1664,
+          "height_m": 0.45,
+          "yaw_degrees": 0,
+          "radial_spread": 1.1,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.29,
+          "yaw_degrees": 139,
+          "radial_spread": 1.75,
+          "crown_offset_m": [
+            0.035,
+            -0.024
+          ]
+        }
+      ],
+      "triangles": 2378,
       "uv_corners_copied_exactly": true,
       "dimensions_blender_m": [
-        0.32271471690388,
-        0.29298561627466035,
-        0.38
+        0.4381364434162847,
+        0.5318398679602654,
+        0.45
       ],
       "floor_z_m": 0.0,
       "roundtrip_scale_pass": true,

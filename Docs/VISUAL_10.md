@@ -43,3 +43,15 @@ The final native comparison camera is reached by walking, including an adjusted 
 - More polished sealed-floor response and pale fluorescent tube emission require the next actual image comparison. Cabinet meter paper has a separate subdued material; etched graduations remain visible. Paved service road receives its own texture while retaining layout.
 
 All candidate images are original runtime captures from normal walking with a copied historical predevelopment checkpoint. They demonstrate visual appearance and routes, not the final new photographic journey. Final new-game, two real exposures, branch/restore, audio output and release performance checks still follow.
+
+## Baked-light and geometry correction
+
+The repeated dark/flat lab comparison prompted an architectural correction: four actual baked Rectangle area sources, 27 classic light probes and a Progressive CPU bake (10 texels/m, two 512 directional atlases). The editor must run with its graphics device, without `-nographics`; use `Automation/build-visual10-linux.sh`. Its BuildCurrentGauntletLinux entrypoint preserves the baked scene. Ordinary scene-generation builds regenerate an unbaked scene and are not the Visual10 release path.
+
+UV2 generation uses a verified two-pixel manual margin. Required surfaces are checked for degenerate UV area and valid baked atlas assignments. Tiny objects and open slender metal frames explicitly use probes. An earlier failing required-frame UV guard is retained in Artifacts/Visual10BakeFailures; it was not silently accepted. Bake02/Bake04 original native walks confirm softer lighting, active fluorescent emission and readable sink/stool steel. URP's installed material validator requires an emissive GI flag: RealtimeEmissive with realtime GI disabled retains visible emission without baked source contribution; keyword validation is checked before and after BuildPlayer.
+
+Independent review found the black procedural twig clusters visually worse than the reference. Their renderer is disabled; their mesh remains preserved. Actual CC0 grass geometry now uses layered crowns, under2500 triangles per model, with original atlas islands and FBX roundtrip checks. Walking-space exclusions remain unchanged.
+
+Known comparison limits remain explicit: the established multi-antenna array composition differs from the reference's single dominant dish; broad floor-reflection shapes and fine material/prop density still require judgment in the final captures. Full reference equivalence is not established by the narrower five production gates.
+
+The locally installed Gauntlet visual reference was updated through the read skill-creator workflow with tested FBX-root preservation, scene-pass overwrite, bowl-normal and derived-map lessons. Local validation passed; that skill directory is not a Git repository, and no sync to another machine is claimed. Dream Loop was read from the pinned original source and used as a comparison method, not newly installed. No paid asset service was used.

@@ -90,6 +90,7 @@ class ChapterJourney(legacy.Journey):
   self.click_panel(246 if method=='passive' else 624,542);wait_for(lambda s:bool(chapter(s)['hypothesis']));self.mark('testable-hypothesis-'+method);self.close_panel()
  def visit_control(self,method):
   for x,z in [(0,9.5),(0,6.5),(6,5.7),(8,3.2),(10.7,3.2),(10.7,-2),(10.7,-7.8),(10.7,-12.2),(10.7,-15.3),(10.75,-18.9)]:self.walk(x,z)
+  self.aim(13.8,.18,-20.8);self.mark('dry-grass-near-field-point')
   self.aim(10,1.6,-22);self.mark('new-field-point-before-control')
   self.interact(11.66,1.02,-20.10,'B-12');wait_for(lambda s:s['chapterPanel']=='experiment')
   self.click_panel(345 if method=='passive' else 907,512);wait_for(lambda s:chapter(s)['experimentMethod']==method and not s['chapterModal']);time.sleep(2)
