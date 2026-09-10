@@ -4,6 +4,8 @@ cd "$(dirname "$0")/.."
 phase="${REVIEW_PHASE:-candidate}"
 [[ "$phase" == baseline || "$phase" == candidate ]] || exit 2
 mkdir -p Artifacts/Pass06
+exec 9>"/run/user/$(id -u)/signal47-gauntlet.lock"
+flock -n 9 || { echo 'SIGNAL47_BUSY: another verified test owns this desktop'; exit 3; }
 # Only a runner checkout is used. Never open or overwrite the user's canonical Unity project.
 if pgrep -x Signal47.x86_64 >/dev/null; then echo 'SIGNAL47_BUSY: another player is running; no input injected'; exit 3; fi
 runtime="/run/user/$(id -u)"

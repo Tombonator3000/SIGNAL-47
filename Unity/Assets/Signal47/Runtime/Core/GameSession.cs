@@ -13,13 +13,22 @@ namespace Signal47.Core
         public HUDController hud;
         public Notebook notebook;
         public PrologueDirector director;
-        public bool CanControl => hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;
+        bool restarting;
+        public bool CanControl => !restarting && hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;
         void Awake(){Instance=this;
 #if UNITY_STANDALONE_LINUX
-            // Explicit pacing avoids the observed one-Hz GLX/vsync stall on KDE/XWayland.
-            QualitySettings.vSyncCount=0;Application.targetFrameRate=60;
+            // Keep the working GLX path without vsync. A 60 Hz software cap on the
+            // 75 Hz reference desktop spent ~15 ms waiting and produced 19.45 ms p95.
+            // Follow the display rate, with a bounded budget on high-refresh monitors.
+            QualitySettings.vSyncCount=0;
+            Application.targetFrameRate=Mathf.Clamp(Mathf.RoundToInt((float)Screen.currentResolution.refreshRateRatio.value),60,120);
 #endif
         }
-        public void Restart(){Time.timeScale=1;AudioListener.pause=false;SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);}
+        public void Restart()
+        {
+            if(restarting)return;
+            restarting=true;Time.timeScale=1;AudioListener.pause=false;
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 }

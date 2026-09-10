@@ -1,0 +1,44 @@
+[
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/Kenney/click_001.ogg",
+    "seconds": 0.097125,
+    "peakDbfs": -1.4297676708055111,
+    "rmsDbfs": -26.399464463779022
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/Kenney/switch_003.ogg",
+    "seconds": 0.5,
+    "peakDbfs": 2.106735135896228,
+    "rmsDbfs": -12.284990539646564
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/DesertWind.wav",
+    "seconds": 23.25,
+    "peakDbfs": -10.45860143119388,
+    "rmsDbfs": -24.179555738443735
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/TitleMusic.ogg",
+    "seconds": 45.0,
+    "peakDbfs": -10.297036698211294,
+    "rmsDbfs": -24.08748518027268
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/CeramicBreak.wav",
+    "seconds": 1.45,
+    "peakDbfs": -0.8779288004854147,
+    "rmsDbfs": -20.38189884721173
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/PhoneRing.wav",
+    "seconds": 5.95,
+    "peakDbfs": -2.8286694765961826,
+    "rmsDbfs": -19.797961371049084
+  },
+  {
+    "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/Printer.wav",
+    "seconds": 1.2,
+    "peakDbfs": -3.7350890071667537,
+    "rmsDbfs": -21.148217763824828
+  }
+]

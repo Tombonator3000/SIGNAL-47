@@ -1,19 +1,26 @@
 name: SIGNAL 47 pass 06 evidence
 on:
   workflow_dispatch:
-  push:
-    branches: [gauntlet/control-room-06-verified]
-    paths: [.github/workflows/pass06-check.yml]
+    inputs:
+      phase:
+        description: Baseline or candidate verification
+        type: choice
+        options: [candidate, baseline]
+        default: candidate
+      upload_artifact:
+        description: Also upload to GitHub artifact storage
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
   group: signal47-linux
   cancel-in-progress: false
 env:
-  REVIEW_PHASE: baseline
+  REVIEW_PHASE: ${{ inputs.phase }}
 jobs:
   pass06:
-    if: github.repository == 'Tombonator3000/SIGNAL-47' && github.ref == 'refs/heads/gauntlet/control-room-06-verified'
+    if: github.repository == 'Tombonator3000/SIGNAL-47' && startsWith(github.ref, 'refs/heads/gauntlet/')
     runs-on: [self-hosted, linux, x64, signal47]
     timeout-minutes: 30
     defaults:
@@ -43,10 +50,10 @@ jobs:
           git add -f "$target"
           if ! git diff --cached --quiet; then
             git commit -m "Record pass 06 $REVIEW_PHASE evidence [skip ci]"
-            git push origin HEAD:gauntlet/control-room-06-verified
+            git push origin "HEAD:$GITHUB_REF_NAME"
           fi
       - name: Transfer review images and measurements
-        if: always()
+        if: always() && inputs.upload_artifact
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -67,4 +74,7 @@ jobs:
           assert r['native_journey']=='PASS', 'Native user journey did not pass'
           assert r['same_release_build_and_preset'], 'Capture/performance build mismatch'
           assert r['performance']=='PASS', 'Frame-time requirement NOT met; keep the failed measurement'
+          import os
+          if os.environ['REVIEW_PHASE']=='candidate':
+              assert r['sampled_audio']=='PASS', 'Sampled audio evidence missing or failed'
           PY

@@ -81,9 +81,9 @@ namespace Signal47.Signals
             for(int x=0;x<width;x+=64)for(int y=0;y<height;y++)pixels[y*width+x]=grid;
             for(int y=30;y<height;y+=35)for(int x=0;x<width;x++)pixels[y*width+x]=grid;
             if(powered){
+                float amp=12+110*LockQuality*gain/100;
                 for(int x=0;x<width;x++){
                     float noise=(Mathf.Sin(x*.17f+Time.time*4)*2+Mathf.Sin(x*.71f+Time.time*7)*3)*(bandwidth/35f+.2f);
-                    float amp=12+110*LockQuality*gain/100;
                     int y=Mathf.Clamp(Mathf.RoundToInt(35+amp*Mathf.Exp(-Mathf.Pow((x-peakX)/7,2))+noise),1,height-2);
                     pixels[y*width+x]=trace;pixels[(y+1)*width+x]=trace;
                 }

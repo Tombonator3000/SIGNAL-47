@@ -61,6 +61,16 @@ def package(root):
               'gpu_timing':'MEASURED' if report.get('gpuTimingAvailable') else 'UNVERIFIED',
               'subjective_audio':'UNVERIFIED', 'visual_review':'UNVERIFIED until an agent or owner inspects the original/derived images',
               'source_build_id':report.get('buildId')}
+    audio_path = root/'audio-audit.json'
+    if audio_path.exists():
+        audit=json.loads(audio_path.read_text())
+        levels={level['state']:level for level in audit.get('levels',[])}
+        required=('room','receiver','printer','ring','call','impact','title')
+        audio_checks={state:state in levels and levels[state]['peak']>0.000001 and levels[state]['overFullScale']==0 for state in required}
+        result['sampled_audio_checks']=audio_checks
+        result['sampled_audio']='PASS' if audit.get('dspAdvanced') and all(audio_checks.values()) else 'FAIL'
+    else:
+        result['sampled_audio']='UNVERIFIED'
     (root/'quality-gates.json').write_text(json.dumps(result,indent=2)+'\n')
     (root/'Snapshots/file-hashes.json').write_text(json.dumps(records,indent=2)+'\n')
     print(json.dumps(result,indent=2))
