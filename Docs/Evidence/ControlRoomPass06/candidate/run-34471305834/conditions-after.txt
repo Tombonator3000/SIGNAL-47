@@ -1,0 +1,12 @@
+tor. 10. sep 11:35:51 +0000 UTC 2026
+ 13:35:51 up 23:17,  1 user,  load average: 1,08, 2,02, 2,29
+/sys/class/thermal/thermal_zone0/temp:66000
+/sys/class/thermal/thermal_zone1/temp:20000
+/sys/class/thermal/thermal_zone2/temp:43050
+/sys/class/thermal/thermal_zone3/temp:42050
+/sys/class/thermal/thermal_zone4/temp:66050
+/sys/class/thermal/thermal_zone5/temp:43050
+/sys/class/thermal/thermal_zone6/temp:66000
+/sys/class/thermal/thermal_zone7/temp:48050
+/sys/class/thermal/thermal_zone8/temp:32000
+/sys/class/thermal/thermal_zone9/temp:66000
