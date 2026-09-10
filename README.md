@@ -4,7 +4,9 @@ First-person cosmic investigation at SARO, New Mexico, 1986.
 
 ## Play on Linux
 
-Run `Artifacts/GauntletLinux/Signal47.x86_64` from the local checkout, or extract the local `Artifacts/SIGNAL-47-Gauntlet-Linux.tar.gz` into a new directory and launch `Signal47.x86_64`. The previous development build remains in `Artifacts/Linux/`.
+Run the verified field-camera release at `Artifacts/Releases/FieldCamera08-af5a85d/Signal47.x86_64` from the local checkout, or extract `Artifacts/Releases/SIGNAL47-FieldCamera08-Linux.tar.gz` into a new directory and launch `Signal47.x86_64`. These are local delivery artifacts, not tracked repository files. `Artifacts/GauntletLinux/` is a rebuild output and may contain an older milestone; the previous development build remains in `Artifacts/Linux/`.
+
+For current project continuity and the next bounded investigation, read [the handoff](Docs/CURRENT_HANDOFF.md).
 
 WASD moves, mouse looks, E interacts, Tab opens the notebook and Esc closes the console or pauses. Start with the shift clipboard and receiver bank. The CRT reference card explains calibration, interference rejection and the anomalous carrier. Finish the direction solve, wait for the physical paper feed, inspect the printout, answer the phone and remain in the room for the ending. Choose CONTINUE / SERVICE YARD to inspect S-03 outside the east door, then return to the control room. E picks up the coffee mug and returns it to the desk. Collected documents can be reopened from the scrollable notebook; observations carry local timestamps.
 
