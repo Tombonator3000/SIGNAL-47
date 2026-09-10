@@ -1,0 +1,8 @@
+{
+  "unity": "6000.3.22f1",
+  "resolution": "1280x800",
+  "quality": "Ultra",
+  "gpu": "Mesa Intel(R) Graphics (ARL)",
+  "renderer": "OpenGLCore",
+  "method": "fixed runtime camera review viewpoints; not player traversal"
+}
