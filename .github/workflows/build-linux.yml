@@ -6,6 +6,9 @@ on:
         description: Upload build to GitHub (requires available artifact storage)
         type: boolean
         default: false
+  push:
+    branches:
+      - gauntlet/world-area-pass-05
 permissions:
   contents: read
 concurrency:
