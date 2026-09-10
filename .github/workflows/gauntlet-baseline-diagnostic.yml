@@ -1,0 +1,78 @@
+name: SIGNAL 47 baseline pacing diagnostic
+on:
+  push:
+    branches:
+      - gauntlet/world-area-pass-05
+    paths-ignore:
+      - Docs/Evidence/WorldAreaPass05/**
+permissions:
+  contents: write
+concurrency:
+  group: signal47-baseline-diagnostic
+  cancel-in-progress: true
+jobs:
+  baseline:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout merged pre-pass baseline
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: c5b8d62bc44878e62ab2f784f025a0621b22ec24
+          persist-credentials: true
+      - name: Build baseline release player
+        run: bash Automation/build-gauntlet-linux.sh
+      - name: Run baseline with native input on the same desktop path
+        shell: bash
+        run: |
+          set -euo pipefail
+          if pgrep -f '/Signal47.x86_64' >/dev/null 2>&1; then
+            echo 'Existing SIGNAL 47 process found; refusing baseline diagnostic.'
+            pgrep -af '/Signal47.x86_64' || true
+            exit 2
+          fi
+          live_ok=0
+          for sock in /tmp/.X11-unix/X*; do
+            [[ -e "$sock" ]] || continue
+            d=":${sock##*X}"
+            for auth in "$HOME/.Xauthority" /run/user/"$(id -u)"/*xauth* /run/user/"$(id -u)"/xauth_*; do
+              [[ -f "$auth" ]] || continue
+              if DISPLAY="$d" XAUTHORITY="$auth" xdpyinfo >/dev/null 2>&1; then
+                export DISPLAY="$d" XAUTHORITY="$auth"
+                live_ok=1
+                break 2
+              fi
+            done
+          done
+          [[ "$live_ok" == 1 ]] || { echo 'No authenticated live X display'; exit 3; }
+          echo "BASELINE_DISPLAY $DISPLAY auth:$XAUTHORITY"
+          rm -rf Artifacts/Gauntlet
+          mkdir -p Artifacts/Gauntlet
+          ./Artifacts/GauntletLinux/Signal47.x86_64 --signal47-gauntlet -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/baseline-player.log" &
+          player_pid=$!
+          cleanup() { kill "$player_pid" >/dev/null 2>&1 || true; wait "$player_pid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for _ in $(seq 1 80); do [[ -s Artifacts/Gauntlet/state.json ]] && break; sleep .25; done
+          [[ -s Artifacts/Gauntlet/state.json ]] || exit 4
+          python3 Automation/gauntlet-user-journey.py --measure
+          cat Artifacts/Gauntlet/performance.json
+          mkdir -p /tmp/signal47-baseline-evidence
+          cp Artifacts/Gauntlet/performance.json /tmp/signal47-baseline-evidence/performance-baseline-actions.json
+          cp Artifacts/Gauntlet/journey-result.json /tmp/signal47-baseline-evidence/journey-baseline-actions.json
+          cp Artifacts/Gauntlet/frames.csv /tmp/signal47-baseline-evidence/frames-baseline-actions.csv
+      - name: Preserve baseline diagnostic on review branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard
+          git clean -ffdx
+          git fetch origin gauntlet/world-area-pass-05 --depth=1
+          git checkout -B gauntlet/world-area-pass-05 origin/gauntlet/world-area-pass-05
+          mkdir -p Docs/Evidence/WorldAreaPass05/Performance/BaselineActions
+          cp /tmp/signal47-baseline-evidence/* Docs/Evidence/WorldAreaPass05/Performance/BaselineActions/
+          git config user.name "SIGNAL 47 Gauntlet"
+          git config user.email "126078233+Tombonator3000@users.noreply.github.com"
+          git add -f Docs/Evidence/WorldAreaPass05/Performance/BaselineActions
+          git commit -m "Record baseline runner pacing diagnostic [skip ci]"
+          git push origin HEAD:gauntlet/world-area-pass-05
