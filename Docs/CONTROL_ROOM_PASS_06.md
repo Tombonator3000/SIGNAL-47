@@ -1,6 +1,6 @@
 # SIGNAL / 47 — control-room pass 06
 
-Status: IMPLEMENTED, final verification pending. This is a bounded prototype increment. Existing prologue interactions, signal constants, evidence and array sequence remain the acceptance baseline. Merge is authorized by the user after verification.
+Status: VERIFIED for the bounded criteria below. This is a bounded prototype increment. Existing prologue interactions, signal constants, evidence and array sequence remain the acceptance baseline. Merge is authorized by the user after verification.
 
 ## Scope and acceptance
 
@@ -20,14 +20,14 @@ Representation: full 3D, first-person free camera. Delivery: offline Linux deskt
 | --- | --- | --- | --- |
 | Game, build and runtime | Unity 6000.3.22f1, URP 17.3.0, Input System 1.20.0 | Existing C# and licensed assets → regenerated SARO_Prologue → Linux player | Local compilation and real input VERIFIED; preserves existing stack |
 | Editable art | Unity scene-generation code, existing VT323 font | Named furniture/text/light definitions → scene objects and materials | Actual screenshots inspected; no new raster concept required |
-| Audio | Existing licensed clips, ffmpeg and Unity AudioListener | PCM source-level analysis → separate gains → sampled output report | Source analysis VERIFIED; final output audit pending |
-| Verification | Existing signal47-kubuntu runner and local automation | Commit → smoke → release journey → six screenshots → raw timing CSV | Single desktop lock; full runner verification pending |
+| Audio | Existing licensed clips, ffmpeg and Unity AudioListener | PCM source-level analysis → separate gains → sampled output report | Source analysis VERIFIED; sampled output audit PASS |
+| Verification | Existing signal47-kubuntu runner and local automation | Commit → smoke → release journey → six screenshots → raw timing CSV | Single desktop lock; full runner verification PASS |
 
 Visual targets remain Docs/VisualTargets/control-room-v1.png and phone-desk-v1.png. These are concepts, not runtime proof; this increment does not claim the whole room matches their final detail level.
 
 ## Changes and review
 
-Text now uses the existing VT323 font and fits measured local bounds, replacing the previous arbitrary scale. The first visual trial overflowed the CRTs; it was rejected and corrected. Original trial images are retained locally under Artifacts/Pass06-Iteration01. Current captures are under Artifacts/WorldCapture until the immutable final evidence is saved.
+Text now uses the existing VT323 font and fits measured local bounds, replacing the previous arbitrary scale. The first visual trial overflowed the CRTs; it was rejected and corrected. Original trial images are retained locally under Artifacts/Pass06-Iteration01. Final immutable evidence is under Docs/Evidence/ControlRoomPass06/candidate/run-34471305834.
 
 Each keyboard now has separate key silhouettes; chair pads use a muted fabric material. Ceiling lamps are reduced from 2.0 to 0.20–0.45 intensity, and two shadowless task spots establish warm/cool desk areas. No interaction transforms or upgrade colliders changed.
 
@@ -57,4 +57,8 @@ Source-level measurements are in the final evidence package. AudioOutputAudit sa
 
 Run `REVIEW_PHASE=candidate bash Automation/run-pass06.sh` on the graphical desktop with no other SIGNAL 47 player. It acquires the desktop lock, builds development smoke and a release, exercises the real journey, collects a separate screenshot/audio journey, then six fixed review cameras. Fixed camera positions do not prove outdoor traversal. The inactive motel remains only a visual blockout.
 
-Final gate results, tested source/build identifiers and runtime screenshots will be added after validation. Next bounded scope: a playable route from the control room into the service yard with one concrete investigation task, followed by its own full verification. Motel gameplay is later.
+Final run [34471305834](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/34471305834) passed development smoke, 14 native journey checkpoints and sampled audio in seven required states. The same release measured 137.06 seconds / 10,277 frames: 74.980 fps average, p95 15.886 ms, p99 16.192 ms, maximum 40.520 ms and zero stalls above 50 ms. Conditions: Intel Core Ultra 5 225U / Intel ARL, OpenGLCore, 1280×800 Ultra, 75 Hz display, target 75 fps, vSync 0. No frames excluded.
+
+Visual self-review PASS for this increment: original 01-control-room-array, 02-workstation, 03-crt-detail, journey-09, journey-12 and journey-13 were inspected. CRT text fits the screens; key silhouettes, chair pads and suspended practical lamps are present; route and modal controls remain readable. This is still prototype art: exterior geometry/detail and complete concept fidelity are unfinished. GPU timing and subjective listening remain UNVERIFIED. The audio sample windows show nonzero output and no full-scale samples, not continuous audio verification.
+
+Tested source revision: 9022f203d755081cb6e4b6617b9a268b90223501 plus builder output. The generated scene has been copied byte-for-byte from that CI checkout into source. The complete Unity input hash is verified equal to the tested build: eb4d673036daa15bcee21be46ddce8532170892e47696c2becfd2be4cdedfbb9. Later evidence/documentation commits do not change that input. Next bounded scope: a playable route from the control room into the service yard with one concrete investigation task, followed by its own full verification. Motel gameplay is later.
