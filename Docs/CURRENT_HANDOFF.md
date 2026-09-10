@@ -1,5 +1,7 @@
 # SIGNAL / 47 — aktuell overlevering
 
+Ny designleveranse: [Konsept11 — Den slettede natten](CONCEPT_11.md), med åtte genererte bilder, forslag til rammehistorie, detaljert nattehimmel og undersøkbare himmellys. Ligger på `concept/story-sky-11` fra dokumentasjonscommit `08cb3c9`. **Forslag, ikke vedtatt kanon eller ny implementasjon.** Gjeldende spillutgave og verifisering nedenfor gjelder fortsatt Visual10.
+
 Oppdatert 10. september 2026. Grafikkpass10 er levert som en kontrollert, spillbar oppdatering av første kapittel. Fotolab, materialer, metall, lys, vegetasjon og fysiske lydeffekter er vesentlig løftet. **Hele referansebildenes kvalitetsnivå er fortsatt ikke nådd.** Nærdetalj, brede gulvreflekser, malingsavskalling og terrengvariasjon står åpne i [grafikkrapporten](VISUAL_10.md).
 
 ## Åpne utgaven
