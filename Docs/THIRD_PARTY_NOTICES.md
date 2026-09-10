@@ -52,3 +52,22 @@ This game uses a 45-second excerpt from the supplied No Piano Melody mix, with f
 The enlarger, processing trays, sink, stool, bottles and B-12 cabinet are original geometry authored for SIGNAL / 47 in Blender4.5.13. Reproducible source and editable .blend are kept in Unity/Blender; FBX meshes, UV/bounds verification and provenance are in Unity/Assets/Signal47/Art/Chapter09. Project ownership/license applies. The chapter also uses original procedural film-handling, paper-transfer and restrained discovery tones. No new third-party downloads or paid asset service were used for this chapter.
 
 The two generated pictures in Docs/VisualTargets/Chapter09 are design references only. The game's photographs are captured from the actual Unity scene, with authored film-response geometry rendered only during exposure. The reference images are not substituted for gameplay evidence. Existing original imported prototype meshes and all licensed resources above remain preserved.
+
+## Visual pass 10 additions
+
+- Concrete Floor 02 — Rob Tuytel, https://polyhaven.com/a/concrete_floor_02
+- Green Metal Rust — Rob Tuytel, https://polyhaven.com/a/green_metal_rust
+- Painted Plaster Wall — Amal Kumar, https://polyhaven.com/a/painted_plaster_wall
+
+All three PBR assets: CC0-1.0, https://polyhaven.com/license and https://creativecommons.org/publicdomain/zero/1.0/. Downloaded 2K diffuse/OpenGL normal/roughness textures through the public API; powered by Poly Haven. Colour tint, normal strength and surface-specific roughness remapping are adaptations. Green lakk remains primarily dielectric. Original source and SHA256 are recorded in Unity/Assets/Signal47/Art/Visual10/source-manifest.json. No website preview render is bundled.
+
+Kenney Impact Sounds 1.0 — https://kenney.nl/assets/impact-sounds, CC0-1.0. Used impactMetal_light_000.ogg, impactSoft_medium_000.ogg and footstep_concrete_000/001/002.ogg. Mono import, restrained gain and small step-pitch variation are adaptations. Soft impact is used as film handling contact, not claimed to be a field recording of photographic processing. Full pack license is preserved beside the imported audio.
+
+New drawer benches, rounded lamp shades, utility bin, sink cloth, twin-tube fluorescent fixtures, measuring jug, funnel and photographic tongs are original Blender geometry. Reproducible script, editable source, metric FBX roundtrip checks and license notes are retained under Unity/Blender and Art/Visual10/Models. Existing original models and prior licensed sources remain preserved. Existing Scott Buckley music and on-screen credit are unchanged.
+
+### Visual pass 10 terrain refinement
+
+- **Dry Ground Rocks** — Rob Tuytel, https://polyhaven.com/a/dry_ground_rocks, CC0-1.0. Original 2K diffuse, OpenGL normal and roughness maps are preserved under Unity/Assets/Signal47/Art/Visual10/Textures/dry_ground_rocks. The source surface spans 4 metres. Terrain material tint, tiling and roughness/smoothness adaptation are project modifications.
+- **Grass Medium 02** — Rico Cilliers, https://polyhaven.com/a/grass_medium_02, CC0-1.0. The original 1K Blender source is preserved under Unity/Blender/ThirdParty/grass_medium_02; original diffuse, dry diffuse, alpha, normal and roughness maps are preserved under Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02. The game's reduced tuft geometry and atlas-based dry-grass presentation are adaptations of this source; they must not be described as wholly original project assets. The original complete scatter configuration is distinct from the runtime tufts. No claim is made that the unspecified grass species is botanically verified as native to New Mexico.
+
+Both assets were retrieved through Poly Haven's public API; powered by Poly Haven. License: https://polyhaven.com/license and https://creativecommons.org/publicdomain/zero/1.0/. Source URLs, authors, original file sizes and SHA256 hashes for all nine added files are recorded in Unity/Assets/Signal47/Art/Visual10/source-manifest.json. Provider preview renders are not bundled as game resources.

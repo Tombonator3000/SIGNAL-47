@@ -1,0 +1,128 @@
+{
+  "blender": "4.5.13 LTS",
+  "units": "metres",
+  "axis_forward": "-Z",
+  "axis_up": "Y",
+  "source": "Blender/SIGNAL47_visual10_props.blend",
+  "original_authored_resources": true,
+  "assets": [
+    {
+      "file": "V10_LabBench.fbx",
+      "source_parts": 52,
+      "export_renderers": 4,
+      "triangles": 8936,
+      "blender_dimensions_m": [
+        1.159999966621399,
+        4.349999904632568,
+        0.9599999785423279
+      ],
+      "uv_layers": true,
+      "fbx_roundtrip_dimensions_m": [
+        1.159999966621399,
+        4.3500001430511475,
+        0.960000689300756
+      ],
+      "fbx_roundtrip_scale_pass": true,
+      "fbx_roundtrip_uv_pass": true,
+      "fbx_roundtrip_material_names": [
+        "CH09_Cream",
+        "CH09_Green",
+        "CH09_Rubber",
+        "CH09_Steel"
+      ]
+    },
+    {
+      "file": "V10_WallLamp.fbx",
+      "source_parts": 8,
+      "export_renderers": 3,
+      "triangles": 3656,
+      "blender_dimensions_m": [
+        0.3246031701564789,
+        0.5163015779107809,
+        0.29816383123397827
+      ],
+      "uv_layers": true,
+      "fbx_roundtrip_dimensions_m": [
+        0.3246031701564789,
+        0.5163015853613615,
+        0.29816386848688126
+      ],
+      "fbx_roundtrip_scale_pass": true,
+      "fbx_roundtrip_uv_pass": true,
+      "fbx_roundtrip_material_names": [
+        "CH09_Cream",
+        "CH09_Green",
+        "CH09_Steel"
+      ]
+    },
+    {
+      "file": "V10_FieldLampShade.fbx",
+      "source_parts": 9,
+      "export_renderers": 3,
+      "triangles": 3248,
+      "blender_dimensions_m": [
+        0.41439002752304077,
+        0.41439002752304077,
+        0.38600000739097595
+      ],
+      "uv_layers": true,
+      "fbx_roundtrip_dimensions_m": [
+        0.41439002752304077,
+        0.41439005732536316,
+        0.3860000669956207
+      ],
+      "fbx_roundtrip_scale_pass": true,
+      "fbx_roundtrip_uv_pass": true,
+      "fbx_roundtrip_material_names": [
+        "CH09_Cream",
+        "CH09_Green",
+        "CH09_Steel"
+      ]
+    },
+    {
+      "file": "V10_MetalBin.fbx",
+      "source_parts": 29,
+      "export_renderers": 2,
+      "triangles": 3880,
+      "blender_dimensions_m": [
+        0.4864782989025116,
+        0.4289955794811249,
+        0.5713640097528696
+      ],
+      "uv_layers": true,
+      "fbx_roundtrip_dimensions_m": [
+        0.4864782989025116,
+        0.42899566888809204,
+        0.5713640451431274
+      ],
+      "fbx_roundtrip_scale_pass": true,
+      "fbx_roundtrip_uv_pass": true,
+      "fbx_roundtrip_material_names": [
+        "CH09_Rubber",
+        "CH09_Steel"
+      ]
+    },
+    {
+      "file": "V10_SinkCloth.fbx",
+      "source_parts": 1,
+      "export_renderers": 1,
+      "triangles": 1496,
+      "blender_dimensions_m": [
+        0.321437269449234,
+        0.2290153130888939,
+        0.32901120372116566
+      ],
+      "uv_layers": true,
+      "fbx_roundtrip_dimensions_m": [
+        0.321437269449234,
+        0.22901536524295807,
+        0.3290112465620041
+      ],
+      "fbx_roundtrip_scale_pass": true,
+      "fbx_roundtrip_uv_pass": true,
+      "fbx_roundtrip_material_names": [
+        "CH09_Cream"
+      ]
+    }
+  ]
+}

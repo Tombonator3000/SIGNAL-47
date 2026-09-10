@@ -1,0 +1,69 @@
+{
+  "source": "Assets/Signal47/Art/Refined/SM_RadioDish_Bowl_A.fbx",
+  "geometry_equation_mesh_local": "y = (x*x + z*z) / 12",
+  "radius_m": 4.2,
+  "depth_m": 1.47,
+  "vertices": 673,
+  "polygons": 1296,
+  "original_polygon_normal_bounds": [
+    [
+      -0.559097409248352,
+      0.559097409248352
+    ],
+    [
+      -0.9996863007545471,
+      -0.8282917141914368
+    ],
+    [
+      -0.559097409248352,
+      0.559097409248352
+    ]
+  ],
+  "corrected_polygon_normal_bounds": [
+    [
+      -0.559097409248352,
+      0.559097409248352
+    ],
+    [
+      0.8282917141914368,
+      0.9996863007545471
+    ],
+    [
+      -0.559097409248352,
+      0.559097409248352
+    ]
+  ],
+  "analytic_custom_normals": "normalize(-x/6, 1, -z/6)",
+  "vertex_positions_unchanged": true,
+  "matrix_world": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      7.549790126404332e-08,
+      -1.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      7.549790126404332e-08,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "support_meshes": "not exported; retain original Feed and FeedSupport_0/1/2 in Unity",
+  "scope": "Bowl only, opposite winding. Runtime appearance and Unity import require verification.",
+  "fbx_roundtrip_bounds_pass": true,
+  "fbx_roundtrip_positive_concave_normal_pass": true,
+  "fbx_roundtrip_uv_pass": true
+}

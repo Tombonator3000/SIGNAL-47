@@ -1,0 +1,90 @@
+{
+  "blender": "4.5.13 LTS",
+  "units": "metres",
+  "axis_forward": "-Z",
+  "axis_up": "Y",
+  "source": "Blender/SIGNAL47_visual10_lab_details.blend",
+  "original_authored_resources": true,
+  "assets": [
+    {
+      "file": "V10_TwinFluorescent.fbx",
+      "source_parts": 28,
+      "export_renderers": 3,
+      "triangles": 7952,
+      "blender_dimensions_m": [
+        0.25037509202957153,
+        0.949999988079071,
+        0.1000000193243622
+      ],
+      "uv_layers": true,
+      "roundtrip_dimensions_m": [
+        0.25037509202957153,
+        0.949999988079071,
+        0.10000009934848464
+      ],
+      "roundtrip_bounds_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true
+    },
+    {
+      "file": "V10_MeasuringJug.fbx",
+      "source_parts": 9,
+      "export_renderers": 2,
+      "triangles": 3138,
+      "blender_dimensions_m": [
+        0.15986695140600204,
+        0.2371138110756874,
+        0.16756507754325867
+      ],
+      "uv_layers": true,
+      "roundtrip_dimensions_m": [
+        0.15986695140600204,
+        0.2371138408780098,
+        0.16756511465767332
+      ],
+      "roundtrip_bounds_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true
+    },
+    {
+      "file": "V10_ChemicalFunnel.fbx",
+      "source_parts": 2,
+      "export_renderers": 1,
+      "triangles": 1468,
+      "blender_dimensions_m": [
+        0.15049999952316284,
+        0.13199999928474426,
+        0.1340000033378601
+      ],
+      "uv_layers": true,
+      "roundtrip_dimensions_m": [
+        0.15049999952316284,
+        0.13200002163648605,
+        0.1340000289917853
+      ],
+      "roundtrip_bounds_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true
+    },
+    {
+      "file": "V10_PrintTongs.fbx",
+      "source_parts": 5,
+      "export_renderers": 2,
+      "triangles": 788,
+      "blender_dimensions_m": [
+        0.09514462947845459,
+        0.26473908871412277,
+        0.02499999850988388
+      ],
+      "uv_layers": true,
+      "roundtrip_dimensions_m": [
+        0.09514463320374489,
+        0.26473909616470337,
+        0.025000020395964384
+      ],
+      "roundtrip_bounds_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true
+    }
+  ]
+}

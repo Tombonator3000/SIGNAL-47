@@ -1,0 +1,69 @@
+{
+  "blender": "4.5.13 LTS",
+  "source": "https://polyhaven.com/a/grass_medium_02",
+  "author": "Rico Cilliers",
+  "license": "CC0-1.0",
+  "source_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+  "method": "Subsets of actual source connected blade islands, exact UV corner copying, uniform scale/floor pivot",
+  "geometry_nodes_evaluated": false,
+  "material": "V10_DryGrass_Atlas",
+  "assets": [
+    {
+      "name": "V10_DryTuft_A",
+      "source_object": "grass_medium_02_a",
+      "source_triangles": 714,
+      "source_blade_islands": 18,
+      "retained_blade_islands": 18,
+      "triangles": 714,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.1290426795452885,
+        0.12973657913119963,
+        0.17
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    },
+    {
+      "name": "V10_DryTuft_B",
+      "source_object": "grass_medium_02_c",
+      "source_triangles": 1215,
+      "source_blade_islands": 27,
+      "retained_blade_islands": 19,
+      "triangles": 870,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.2936873749256944,
+        0.28003224624322054,
+        0.26
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    },
+    {
+      "name": "V10_DryTuft_C",
+      "source_object": "grass_medium_02_e",
+      "source_triangles": 1664,
+      "source_blade_islands": 45,
+      "retained_blade_islands": 26,
+      "triangles": 926,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.32271471690388,
+        0.29298561627466035,
+        0.38
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    }
+  ]
+}
