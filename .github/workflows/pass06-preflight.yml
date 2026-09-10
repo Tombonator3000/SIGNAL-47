@@ -14,10 +14,16 @@ jobs:
     runs-on: [self-hosted, linux, x64, signal47]
     timeout-minutes: 3
     steps:
-      - name: Read only the preserved failed game log
+      - name: Inspect isolated display dependencies only
         shell: bash
         run: |
-          file="$HOME/signal47-tools/evidence/pass06-isolated/34470666592/smoke.log"
-          test -f "$file"
-          grep -E -A 6 'CONTROL_PASS_SMOKE_|WORLD_PASS_SMOKE_|SMOKE_FAIL|Exception|Error|SIGNAL47_SMOKE_' "$file" || true
-          tail -n 24 "$file"
+          for tool in Xvfb xvfb-run Xorg Xephyr weston xauth apt-get dpkg-deb; do command -v "$tool" || true; done
+          dpkg-query -W xvfb xserver-common libxfont2 libgl1-mesa-dri 2>/dev/null || true
+          apt-cache policy xvfb xserver-common libxfont2
+          printf '\nExisting stamped isolated player:\n'
+          file="$GITHUB_WORKSPACE/pass06-isolated/Artifacts/GauntletLinux/build-manifest.json"
+          test ! -f "$file" || cat "$file"
+          printf '\nSource smoke check count:\n'
+          file="$HOME/signal47-tools/evidence/pass06-isolated/34472079119/smoke.log"
+          grep -c '^SMOKE_PASS ' "$file" || true
+          grep -c '^CONTROL_PASS_SMOKE_PASS ' "$file" || true
