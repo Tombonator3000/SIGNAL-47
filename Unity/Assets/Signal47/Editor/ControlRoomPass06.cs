@@ -42,29 +42,24 @@ namespace Signal47.Editor
             var root=new GameObject("CRT_SilhouetteUpgrade");
             root.transform.SetParent(crt,false);
 
-            // Deep hood + bezel reads as a chunky late-70s/80s terminal from across the room.
             LocalBox(root.transform,"CRT_Brow",new Vector3(0,.93f,-.43f),new Vector3(1.08f,.075f,.13f),dark);
             LocalBox(root.transform,"CRT_BezelTop",new Vector3(0,.88f,-.455f),new Vector3(.94f,.055f,.055f),cream);
             LocalBox(root.transform,"CRT_BezelBottom",new Vector3(0,.315f,-.455f),new Vector3(.94f,.065f,.055f),cream);
             LocalBox(root.transform,"CRT_BezelLeft",new Vector3(-.49f,.60f,-.455f),new Vector3(.06f,.61f,.055f),cream);
             LocalBox(root.transform,"CRT_BezelRight",new Vector3(.49f,.60f,-.455f),new Vector3(.06f,.61f,.055f),cream);
 
-            // A few broad vent slots imply manufactured detail without dense geometry.
             for(int i=0;i<5;i++)
                 LocalBox(root.transform,$"CRT_Vent_{i}",new Vector3(-.30f+i*.15f,1.015f,-.04f),new Vector3(.085f,.012f,.32f),dark);
 
-            // Physical monitor controls stay visible but are not interactable puzzle controls.
             for(int i=0;i<3;i++)
                 LocalBox(root.transform,$"CRT_Control_{i}",new Vector3(.30f+i*.095f,.26f,-.47f),new Vector3(.06f,.04f,.035f),i==2?steel:dark);
 
-            // One low-cost keyboard shell and grouped key rows strengthen the foreground silhouette.
             LocalBox(root.transform,"KeyboardDeck",new Vector3(0,.095f,-.79f),new Vector3(1.12f,.055f,.52f),dark,Quaternion.Euler(-5,0,0));
             for(int row=0;row<4;row++)
                 LocalBox(root.transform,$"KeyboardRow_{row}",new Vector3(-.08f,.135f,-.92f+row*.105f),new Vector3(.76f,.025f,.065f),cream,Quaternion.Euler(-5,0,0));
             LocalBox(root.transform,"KeyboardFunctionBank",new Vector3(.43f,.135f,-.765f),new Vector3(.18f,.025f,.27f),steel,Quaternion.Euler(-5,0,0));
             LocalBox(root.transform,"KeyboardSpacebar",new Vector3(-.08f,.145f,-.535f),new Vector3(.42f,.026f,.055f),cream,Quaternion.Euler(-5,0,0));
 
-            // Hide the old 40-cube keycap field after the grouped replacement is in place.
             foreach(var child in crt.GetComponentsInChildren<Transform>(true))
                 if(child.name=="Keycap")
                 {
@@ -78,7 +73,6 @@ namespace Signal47.Editor
             var root=new GameObject($"ChairUpgrade_{index:00}");
             root.transform.position=seat.position;
 
-            // Soft institutional chair: padded seat/back, armrests, diagonal star base and small casters.
             LocalBox(root.transform,"ChairSeatCushion",new Vector3(0,.075f,0),new Vector3(.68f,.12f,.66f),dark);
             LocalBox(root.transform,"ChairBackPad",new Vector3(0,.50f,.36f),new Vector3(.68f,.70f,.13f),dark,Quaternion.Euler(-6,0,0));
             for(int side=-1;side<=1;side+=2)
@@ -91,7 +85,12 @@ namespace Signal47.Editor
                 float yaw=45f+spoke*45f;
                 LocalBox(root.transform,$"ChairSpoke_{spoke}",new Vector3(0,-.43f,0),new Vector3(.72f,.045f,.055f),steel,Quaternion.Euler(0,yaw,0));
             }
-            Vector3[] caster={{-.32f,-.46f,-.32f},{.32f,-.46f,-.32f},{-.32f,-.46f,.32f},{.32f,-.46f,.32f}};
+            Vector3[] caster={
+                new Vector3(-.32f,-.46f,-.32f),
+                new Vector3(.32f,-.46f,-.32f),
+                new Vector3(-.32f,-.46f,.32f),
+                new Vector3(.32f,-.46f,.32f)
+            };
             for(int i=0;i<caster.Length;i++)LocalBox(root.transform,$"ChairCaster_{i}",caster[i],new Vector3(.10f,.075f,.08f),dark);
         }
 
@@ -110,7 +109,6 @@ namespace Signal47.Editor
             foreach(var t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
                 if(t.name=="ChairSeat") DressChair(t,chairCount++,dark,steel);
 
-            // Restrain the interior fill slightly so CRTs/window view carry more contrast.
             RenderSettings.ambientLight=new Color(.205f,.235f,.225f);
 
             root.AddComponent<Signal47.Debugging.ControlRoomPassSmokeChecks>();
