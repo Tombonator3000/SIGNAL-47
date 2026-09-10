@@ -88,4 +88,4 @@ Testverktøyene krevde også rettelser, uten endring av spillet: feilprofilens k
 
 Gameplay, lagring, miljø og uavhengig kritikk hadde avklart filansvar. Hovedagenten integrerte, kjørte editor/bygg og alle eksklusive native inputtester. Subagentenes ferdigmeldinger ble kontrollert mot faktisk kjøring.
 
-Forrige FieldCamera08-pakke og originale 169 innholdsfiler matcher fortsatt payload `672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020`; den eksisterende ekstra LES_MEG-filen er skilt fra originalpayloaden. Synkroniserte `sources/` og andre prosjekter er urørt. Arbeidet ligger på `gauntlet/chapter-one-09`; ingen merge eller offentlig publisering er utført.
+Forrige FieldCamera08-pakke og originale 169 innholdsfiler matcher fortsatt payload `672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020`; den eksisterende ekstra LES_MEG-filen er skilt fra originalpayloaden. Synkroniserte `sources/` og andre prosjekter er urørt. Arbeidet ligger på `gauntlet/chapter-one-09` i [privat PR-utkast #6](https://github.com/Tombonator3000/SIGNAL-47/pull/6), med leveranse-/beviscommit `a795335`; ingen merge eller offentlig publisering er utført.

@@ -26,4 +26,4 @@ Behold Unity 6000.3.22f1 / URP 17.3.0 / Input System 1.20.0 / Blender 4.5.13 LTS
 
 Forrige fungerende pakke er beholdt: `Artifacts/Releases/FieldCamera08-af5a85d/` og `SIGNAL47-FieldCamera08-Linux.tar.gz`. `Artifacts/GauntletLinux/` er ordinær byggoutput; bruk den faste kapittelpakken for spilling. Synkroniserte filer under `sources/` og andre prosjekter er urørt.
 
-PR 1–5 var flettet før dette oppdraget. Denne leveransen skal ligge som et privat PR-utkast til gjennomgang; ingen ny merge eller offentlig publisering er autorisert. Ved videre endringer: behold fungerende pakke, bygg ny identitet og gjenta berørte kontroller. Ikke gjenbruk en gammel grønn rapport på endret gameplay.
+PR 1–5 var flettet før dette oppdraget. Denne leveransen ligger som [privat PR-utkast #6](https://github.com/Tombonator3000/SIGNAL-47/pull/6), med leveranse-/beviscommit `a795335`; ingen ny merge eller offentlig publisering er autorisert. Ved videre endringer: behold fungerende pakke, bygg ny identitet og gjenta berørte kontroller. Ikke gjenbruk en gammel grønn rapport på endret gameplay.
