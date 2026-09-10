@@ -1,0 +1,80 @@
+name: SIGNAL 47 pass 06 evidence
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Baseline or candidate verification
+        type: choice
+        options: [candidate, baseline]
+        default: candidate
+      upload_artifact:
+        description: Also upload to GitHub artifact storage
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: signal47-linux
+  cancel-in-progress: false
+env:
+  REVIEW_PHASE: ${{ inputs.phase }}
+jobs:
+  pass06:
+    if: github.repository == 'Tombonator3000/SIGNAL-47' && startsWith(github.ref, 'refs/heads/gauntlet/')
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pass06-job
+        shell: bash
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          path: pass06-job
+          persist-credentials: true
+      - name: Build, native journey, work timings and six release snapshots
+        run: bash Automation/run-pass06.sh
+      - name: Preserve immutable evidence on this review branch
+        if: always()
+        run: |
+          set -euo pipefail
+          target="Docs/Evidence/ControlRoomPass06/$REVIEW_PHASE/run-${GITHUB_RUN_ID}"
+          mkdir -p "$target"
+          if [[ -d Artifacts/Pass06 ]]; then cp -a Artifacts/Pass06/. "$target/"; fi
+          for file in Artifacts/build.log Artifacts/gauntlet-build.log; do
+            [[ ! -f "$file" ]] || cp "$file" "$target/"
+          done
+          printf '%s\n' "$GITHUB_SHA" > "$target/tested-revision.txt"
+          git config user.name 'SIGNAL 47 Gauntlet'
+          git config user.email '126078233+Tombonator3000@users.noreply.github.com'
+          git add -f "$target"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record pass 06 $REVIEW_PHASE evidence [skip ci]"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+      - name: Transfer review images and measurements
+        if: always() && inputs.upload_artifact
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SIGNAL47-Pass06-${{ env.REVIEW_PHASE }}-${{ github.run_id }}
+          path: pass06-job/Artifacts/Pass06/
+          if-no-files-found: error
+          retention-days: 2
+      - name: Enforce all recorded frame-time gates
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('Artifacts/Pass06/quality-gates.json')
+          if not p.exists():
+              raise SystemExit('FAIL: no complete evidence/gate report')
+          r=json.loads(p.read_text());print(json.dumps(r,indent=2))
+          assert r['native_journey']=='PASS', 'Native user journey did not pass'
+          assert r['same_release_build_and_preset'], 'Capture/performance build mismatch'
+          assert r['performance']=='PASS', 'Frame-time requirement NOT met; keep the failed measurement'
+          import os
+          if os.environ['REVIEW_PHASE']=='candidate':
+              assert r['sampled_audio']=='PASS', 'Sampled audio evidence missing or failed'
+          PY

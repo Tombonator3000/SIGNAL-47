@@ -88,7 +88,7 @@ namespace Signal47.Debugging
             while(!g.hud.TitleVisible)yield return null;
             Check(g.director.dishes.Completed && g.director.SignalAcquired,"entire array finishes aligning before title");
             foreach(var pivot in g.director.dishes.dishPivots)Check(Quaternion.Angle(pivot.localRotation,Quaternion.Euler(0,26,0))<.1f,"dish reaches acquired heading");Check(!g.director.mug.intact.activeSelf && g.director.mug.broken.activeSelf,"mug breaks before title");
-            yield return Shot("04-title");console.Interact();g.Restart();yield return null;yield return null;
+            yield return Shot("04-title");console.Interact();g.Restart();yield return new WaitUntil(()=>GameSession.Instance && GameSession.Instance!=g);yield return null;
             Check(!SignalConsole.AnyOpen,"restart clears console state");Check(!GameSession.Instance.hud.Started,"restart returns to start");Check(Time.timeScale==1,"restart restores time");
             Check(GameSession.Instance.notebook.Evidence.Count==0,"restart clears evidence");
             var deskMug=GameSession.Instance.director.mug;yield return deskMug.DropAndBreak();Check(deskMug.IsBroken && deskMug.transform.position.z<-.025f,"unheld mug slides off the desk and breaks on floor");

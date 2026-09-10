@@ -1,0 +1,30 @@
+{
+  "performance": "PASS",
+  "checks": {
+    "duration_120s": true,
+    "average_59fps": true,
+    "p95_17_2ms": true,
+    "p99_below_20ms": true,
+    "no_stalls_over_50ms": true,
+    "focused": true,
+    "release": true,
+    "preset": true,
+    "hardware_renderer": true
+  },
+  "native_journey": "PASS",
+  "same_release_build_and_preset": true,
+  "gpu_timing": "UNVERIFIED",
+  "subjective_audio": "UNVERIFIED",
+  "visual_review": "UNVERIFIED until an agent or owner inspects the original/derived images",
+  "source_build_id": "9022f203d755081cb6e4b6617b9a268b90223501 working-tree source-sha256:eb4d673036daa15bcee21be46ddce8532170892e47696c2becfd2be4cdedfbb9",
+  "sampled_audio_checks": {
+    "room": true,
+    "receiver": true,
+    "printer": true,
+    "ring": true,
+    "call": true,
+    "impact": true,
+    "title": true
+  },
+  "sampled_audio": "PASS"
+}

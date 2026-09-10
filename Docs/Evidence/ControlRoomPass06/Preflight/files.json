@@ -1,0 +1,23 @@
+[
+  {
+    "source": "Docs/Evidence/WorldAreaPass05/01-control-room-array.png",
+    "source_sha256": "af72510368540bad80d01615ba8bac07674ad36e955176aaecd107880fbae101",
+    "preview": "01-control-room-array.webp",
+    "preview_sha256": "8cdc0a29f2b13c3b8bf7a8293bc69db19e15a9ec8642ffe57913a09b12e97900",
+    "method": "Resized stored pass05 capture, NOT a new runtime capture"
+  },
+  {
+    "source": "Docs/Evidence/WorldAreaPass05/03-sierra-motor-court-blockout.png",
+    "source_sha256": "fa828de07b5417ae3d1b2f36bf12145abb8dcb8ab881e846cd91e15a3f6f3010",
+    "preview": "03-sierra-motor-court-blockout.webp",
+    "preview_sha256": "642bf2bf0fbf61d96a3385005ae0dbc7f3e709f6fb8eb28bd8e61c8e0a8f7849",
+    "method": "Resized stored pass05 capture, NOT a new runtime capture"
+  },
+  {
+    "source": "Docs/Evidence/WorldAreaPass05/02-service-yard-array.png",
+    "source_sha256": "699d1925f2fbbf828cc65ed1ed6d16ff1db5d26eeba2b992cfc6be2c524ff7ec",
+    "preview": "02-service-yard-array.webp",
+    "preview_sha256": "6f26d4715cd902bb59618c11c5b18fb44967fe357cd93f95e2fa8ae181f999b6",
+    "method": "Resized stored pass05 capture, NOT a new runtime capture"
+  }
+]

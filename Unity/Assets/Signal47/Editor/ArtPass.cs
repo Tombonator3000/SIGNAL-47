@@ -29,7 +29,13 @@ namespace Signal47.Editor
         static void Label(string name,string text,Vector3 p,float size,Color color,Quaternion rotation)
         {
             var go=new GameObject(name);go.transform.position=p;go.transform.rotation=rotation;
-            var t=go.AddComponent<TextMesh>();t.text=text;t.fontSize=64;t.characterSize=size/8f;t.anchor=TextAnchor.MiddleCenter;t.alignment=TextAlignment.Center;t.color=color;
+            var t=go.AddComponent<TextMesh>();t.text=text;t.fontSize=64;t.characterSize=size;t.anchor=TextAnchor.MiddleCenter;t.alignment=TextAlignment.Center;t.color=color;
+            var font=AssetDatabase.LoadAssetAtPath<Font>("Assets/Signal47/Art/ThirdParty/VT323/VT323-Regular.ttf");
+            if(font){t.font=font;go.GetComponent<Renderer>().sharedMaterial=font.material;}
+            Vector2 box=name=="StatusText"?new Vector2(.70f,.37f):name=="ConsoleLabel"?new Vector2(.86f,.06f):name=="RXLabel"?new Vector2(1.4f,.13f):name=="SAROLabel"?new Vector2(2.8f,.43f):new Vector2(.52f,.22f);
+            var bounds=go.GetComponent<Renderer>().localBounds.size;
+            if(bounds.x>.001f&&bounds.y>.001f)t.characterSize*=Mathf.Min(box.x/bounds.x,box.y/bounds.y);
+            Debug.Log($"LABEL_FIT {name} size={t.characterSize} bounds={go.GetComponent<Renderer>().localBounds.size}");
         }
         static void FloorMaterial()
         {
@@ -78,7 +84,7 @@ namespace Signal47.Editor
             // Label equipment at the object instead of adding quest arrows.
             Label("RXLabel","RECEIVER BANK 03",new Vector3(-6.3f,2.48f,2.02f),.065f,new Color(.88f,.91f,.75f),Quaternion.Euler(0,180,0));
             Label("SAROLabel","S I E R R A   A R R A Y\nRADIO OBSERVATORY",new Vector3(4.8f,2.45f,7.39f),.08f,new Color(.73f,.81f,.72f),Quaternion.identity);
-            Label("ConsoleLabel","RX 03    /    SIGNAL ANALYSIS",new Vector3(0,1.81f,-1.88f),.025f,new Color(.8f,.8f,.65f),Quaternion.Euler(0,180,0));
+            Label("ConsoleLabel","RX 03    /    SIGNAL ANALYSIS",new Vector3(0,1.76f,-1.805f),.025f,new Color(.8f,.8f,.65f),Quaternion.Euler(0,180,0));
             // Practical chairs, drawer pedestals, binders and night-shift documents.
             for(int i=-1;i<=1;i++){
                 float x=i==0?.8f:i*1.8f;

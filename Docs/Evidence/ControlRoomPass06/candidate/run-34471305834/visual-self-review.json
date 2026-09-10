@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "scope": "Control-room pass 06 explicit criteria; not complete visual-target fidelity",
+  "inspected": [
+    "Snapshots/01-control-room-array.png",
+    "Snapshots/02-workstation.png",
+    "Snapshots/03-crt-detail.png",
+    "Snapshots/05-service-yard-array.png",
+    "Journey/journey-09.png",
+    "Journey/journey-12.png",
+    "Journey/journey-13.png"
+  ],
+  "observations": [
+    "Text fits physical CRT screens",
+    "Warm/cool task light separates workstations",
+    "Keys, padded chairs and suspended fixtures present",
+    "Native phone and ending remain readable"
+  ],
+  "limits": [
+    "Self-review, no independent reviewer",
+    "Exterior remains blockout, traversal not yet implemented",
+    "Subjective listening and GPU timing unverified"
+  ],
+  "unity_source_sha256": "eb4d673036daa15bcee21be46ddce8532170892e47696c2becfd2be4cdedfbb9"
+}

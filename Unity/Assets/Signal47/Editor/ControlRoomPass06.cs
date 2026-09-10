@@ -56,10 +56,11 @@ namespace Signal47.Editor
                 LocalBox(root.transform,$"CRT_Control_{i}",new Vector3(.30f+i*.095f,.26f,-.47f),new Vector3(.06f,.04f,.035f),i==2?steel:dark);
 
             LocalBox(root.transform,"KeyboardDeck",new Vector3(0,.095f,-.79f),new Vector3(1.12f,.055f,.52f),dark,Quaternion.Euler(-5,0,0));
-            for(int row=0;row<4;row++)
-                LocalBox(root.transform,$"KeyboardRow_{row}",new Vector3(-.08f,.135f,-.92f+row*.105f),new Vector3(.76f,.025f,.065f),cream,Quaternion.Euler(-5,0,0));
-            LocalBox(root.transform,"KeyboardFunctionBank",new Vector3(.43f,.135f,-.765f),new Vector3(.18f,.025f,.27f),steel,Quaternion.Euler(-5,0,0));
-            LocalBox(root.transform,"KeyboardSpacebar",new Vector3(-.08f,.145f,-.535f),new Vector3(.42f,.026f,.055f),cream,Quaternion.Euler(-5,0,0));
+            for(int row=0;row<4;row++)for(int col=0;col<11;col++)
+                LocalBox(root.transform,$"KeyboardKey_{row}_{col}",new Vector3(-.46f+col*.073f+row*.007f,.145f,-.90f+row*.081f),new Vector3(.060f,.032f,.062f),cream);
+            for(int row=0;row<4;row++)for(int col=0;col<2;col++)
+                LocalBox(root.transform,$"KeyboardFunction_{row}_{col}",new Vector3(.40f+col*.075f,.145f,-.90f+row*.081f),new Vector3(.058f,.032f,.062f),steel);
+            LocalBox(root.transform,"KeyboardSpacebar",new Vector3(-.08f,.145f,-.99f),new Vector3(.42f,.032f,.055f),cream);
 
             foreach(var child in crt.GetComponentsInChildren<Transform>(true))
                 if(child.name=="Keycap")
@@ -74,8 +75,10 @@ namespace Signal47.Editor
             var root=new GameObject($"ChairUpgrade_{index:00}");
             root.transform.position=seat.position;
 
-            LocalBox(root.transform,"ChairSeatCushion",new Vector3(0,.075f,0),new Vector3(.68f,.12f,.66f),dark);
-            LocalBox(root.transform,"ChairBackPad",new Vector3(0,.50f,.36f),new Vector3(.68f,.70f,.13f),dark,Quaternion.Euler(-6,0,0));
+            var fabric=Mat("ChairFabric06",new Color(.10f,.13f,.135f),.92f);
+            LocalBox(root.transform,"ChairSeatCushion",new Vector3(0,.075f,0),new Vector3(.64f,.12f,.62f),fabric);
+            LocalBox(root.transform,"ChairBackPad",new Vector3(0,.50f,.36f),new Vector3(.62f,.66f,.11f),fabric,Quaternion.Euler(-6,0,0));
+            LocalBox(root.transform,"ChairBackSeam",new Vector3(0,.32f,.285f),new Vector3(.57f,.012f,.012f),dark);
             for(int side=-1;side<=1;side+=2)
             {
                 LocalBox(root.transform,$"ChairArmPost_{side}",new Vector3(side*.38f,.30f,.02f),new Vector3(.045f,.42f,.045f),steel);
@@ -110,10 +113,53 @@ namespace Signal47.Editor
             foreach(var t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
                 if(t.name=="ChairSeat") DressChair(t,chairCount++,dark,steel);
 
-            RenderSettings.ambientLight=new Color(.205f,.235f,.225f);
+            DressLightingAndScreens(root.transform);
 
             root.AddComponent<Signal47.Debugging.ControlRoomPassSmokeChecks>();
             Debug.Log($"CONTROL_ROOM_PASS_06_DRESSED crt={crtCount} chairs={chairCount}");
+        }
+
+        static void DressLightingAndScreens(Transform root)
+        {
+            RenderSettings.ambientLight=new Color(.16f,.19f,.20f);
+            foreach(var light in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
+                if(light.name=="FixtureLight")
+                {
+                    light.intensity=Mathf.Abs(light.transform.position.x)<1f?.45f:.20f;
+                    light.range=6f;
+                }
+            var diffuser=Mat("TubeDiffuser06",new Color(.32f,.40f,.37f),.9f,true,new Color(.25f,.38f,.31f));
+            foreach(var renderer in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+                if(renderer.name=="Diffuser")renderer.sharedMaterial=diffuser;
+
+            for(int i=-1;i<=1;i+=2)
+            {
+                var go=new GameObject(i<0?"AmberWorkLight06":"CoolWorkLight06");go.transform.SetParent(root,false);
+                go.transform.position=new Vector3(i*1.7f,2.55f,-1.55f);
+                go.transform.rotation=Quaternion.Euler(90,0,0);
+                var light=go.AddComponent<Light>();light.type=LightType.Spot;light.range=3.8f;
+                light.intensity=2.2f;light.spotAngle=88;light.innerSpotAngle=55;light.shadows=LightShadows.None;
+                light.color=i<0?new Color(1f,.63f,.29f):new Color(.48f,.72f,1f);
+                LocalBox(root,"WorkLightHousing",go.transform.position+Vector3.up*.10f,new Vector3(.48f,.08f,.22f),Mat("ControlRoomCharcoal06",Color.gray,.7f));
+                LocalBox(root,"WorkLightSuspension",new Vector3(i*1.7f,3.03f,-1.55f),new Vector3(.025f,.73f,.025f),Mat("ControlRoomSteel06",Color.gray,.7f));
+            }
+            foreach(var label in Object.FindObjectsByType<TextMesh>(FindObjectsSortMode.None))
+                if(label.name=="StatusText")
+                {
+                    bool amber=label.transform.position.x<0;
+                    label.text=amber?"ARRAY 03\nTRACK NOMINAL\n\n042 / ORION":"SARO NETWORK\n\nSTANDBY\n23:41 LOCAL";
+                    label.color=amber?new Color(1f,.70f,.28f):new Color(.36f,.60f,.72f);
+                }
+            foreach(var renderer in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+                if(renderer.name=="StatusDisplay")
+                {
+                    bool amber=renderer.transform.position.x<0;
+                    string path=$"Assets/Signal47/Art/PrototypePort/{(amber?"AmberDisplay06":"StandbyDisplay06")}.mat";
+                    var mat=AssetDatabase.LoadAssetAtPath<Material>(path);
+                    if(!mat){mat=new Material(Shader.Find("Universal Render Pipeline/Unlit"));AssetDatabase.CreateAsset(mat,path);}
+                    mat.SetColor("_BaseColor",amber?new Color(.035f,.020f,.007f):new Color(.006f,.012f,.020f));
+                    EditorUtility.SetDirty(mat);renderer.sharedMaterial=mat;
+                }
         }
     }
 }

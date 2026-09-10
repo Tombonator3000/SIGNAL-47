@@ -22,7 +22,7 @@ namespace Signal47.Events
         public AudioSource printerSource,phoneSource,eventSource,ambienceSource;
         public MugBreakable mug;public DishArrayController dishes;public PrinterMechanism printer;
         public SoundPalette palette;bool sequenceStarted;AudioClip futureCall;
-        void Start(){if(ambienceSource){ambienceSource.clip=ProceduralAudio.Hum();ambienceSource.loop=true;ambienceSource.Play();}if(phoneSource)phoneSource.clip=palette?palette.phone:ProceduralAudio.Ring();futureCall=ProceduralAudio.FutureCall(palette?palette.smash:null);}
+        void Start(){if(ambienceSource){ambienceSource.volume=.36f;ambienceSource.clip=ProceduralAudio.Hum();ambienceSource.loop=true;ambienceSource.Play();}if(printerSource)printerSource.volume=.42f;if(phoneSource){phoneSource.volume=.68f;phoneSource.clip=palette?palette.phone:ProceduralAudio.Ring();}futureCall=ProceduralAudio.FutureCall(palette?palette.smash:null);}
         public void PowerReceiver(){if(ReceiverPowered)return;ReceiverPowered=true;if(palette)palette.Click(true);GameSession.Instance.notebook.Add("Receiver bank 3 powered on.");GameSession.Instance.hud.Toast("RECEIVER BANK 3 // ONLINE");}
         public void OnSignalSolved()
         {
@@ -40,7 +40,7 @@ namespace Signal47.Events
         public void AnswerPhone()
         {
             if(!PhoneRinging)return;PhoneRinging=false;PhoneAnswered=true;
-            if(phoneSource){phoneSource.Stop();phoneSource.loop=false;phoneSource.clip=futureCall;phoneSource.Play();}
+            if(phoneSource){phoneSource.Stop();phoneSource.volume=.90f;phoneSource.loop=false;phoneSource.clip=futureCall;phoneSource.Play();}
             GameSession.Instance.notebook.Add("Desk phone received an unlogged incoming call.");
             GameSession.Instance.hud.Toast("The handset carries only room tone and static…",2.8f);StartCoroutine(FutureSequence());
         }
