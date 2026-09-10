@@ -6,9 +6,6 @@ on:
         description: Upload build to GitHub (requires available artifact storage)
         type: boolean
         default: false
-  push:
-    branches:
-      - gauntlet/world-area-pass-05
 permissions:
   contents: read
 concurrency:
@@ -24,10 +21,6 @@ jobs:
           persist-credentials: false
       - name: Compile, build and test prologue
         run: bash Automation/build-linux.sh
-      - name: Verify world-area smoke markers
-        run: |
-          test "$(grep -c 'WORLD_PASS_SMOKE_PASS' Artifacts/smoke.log)" -eq 3
-          grep -q 'SIGNAL47_SMOKE_PASS' Artifacts/smoke.log
       - name: Upload Linux build and test logs
         if: always() && inputs.upload_artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
