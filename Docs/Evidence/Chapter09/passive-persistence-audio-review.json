@@ -1,0 +1,1133 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-09-10T17:57:58.882600+00:00",
+  "reviewer": "chapter_persistence subagent",
+  "scope": "Read-only review of recorded final passive runs, immutable exported photos and isolated profile. No editor, input, new runtime run, copy or profile modification.",
+  "build_identity": {
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651",
+    "working_tree_changes": false,
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "6b0c99dc455267875ac836594e6f1478fb58515d337313032604325c2de6056b",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "build_stamp": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+  "identity_basis": "All three phase build manifests, both original photo sidecars and all three audio build IDs agree. Snapshot build=1.0 is generic application version, not exact source identity.",
+  "checks": [
+    {
+      "name": "Save envelope checksums and unique evidence IDs",
+      "status": "PASS"
+    },
+    {
+      "name": "Immutable S-03 and B-12 IDs, JPEG SHA256 and camera metadata across checkpoints",
+      "status": "PASS"
+    },
+    {
+      "name": "Three normal process exits and two new-process primary-save continuations",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored camera/chapter/world state and coherent final saved outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "Sampled engine audio output across prologue, film processing, field control and ending",
+      "status": "PASS"
+    },
+    {
+      "name": "Exact user-visible Continue latency in passive runs",
+      "status": "UNVERIFIED"
+    },
+    {
+      "name": "Continuous audio clipping, output-device playback, subjective listening and mix quality",
+      "status": "UNVERIFIED"
+    }
+  ],
+  "snapshots": [
+    {
+      "path": "Artifacts/Chapter09/Profiles/FinalPassive/before-development.fixture.json",
+      "file_sha256": "597bee3ee04e3bf4aaea284c89a20151868a083ec718994b9b2ee323adacbc59",
+      "format": "SIGNAL47-CHAPTER09",
+      "version": 1,
+      "payload_sha256": "fb28f4605ef4cd022b36c31253d6d10f641a781f8314b948d36a689b18884193",
+      "payload_checksum_status": "PASS",
+      "saved_utc": "2026-09-10T17:36:26.4010960Z",
+      "generic_application_version": "1.0",
+      "camera_acquired": true,
+      "camera_compared": false,
+      "frames": [
+        {
+          "id": "s03-field-photograph",
+          "sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+          "developed": false,
+          "inspected": false,
+          "exported": true
+        }
+      ],
+      "unique_frame_ids": true,
+      "notebook_entry_count": 18,
+      "evidence_ids": [
+        "shift-log",
+        "direction-solve",
+        "call-notes",
+        "motor-bus-s03"
+      ],
+      "unique_evidence_ids": true,
+      "photo_evidence_available_exactly_when_developed": true,
+      "chapter": {
+        "version": 1,
+        "archiveRead": false,
+        "archiveMatched": false,
+        "clueMarked": false,
+        "secondClueMarked": false,
+        "controlObserved": false,
+        "comparisonConfirmed": false,
+        "complete": false,
+        "hypothesis": "",
+        "experimentMethod": "",
+        "labFrameId": "",
+        "labStep": 0,
+        "wrongHypotheses": 0,
+        "wrongConclusions": 0,
+        "labRemaining": 0.0
+      },
+      "world": {
+        "postPrologue": true,
+        "yardCompleted": true,
+        "yardReturned": false,
+        "doorOpen": true,
+        "playerPosition": {
+          "x": 10.696220397949219,
+          "y": 0.15999971330165863,
+          "z": -11.994260787963867
+        },
+        "mugPosition": {
+          "x": 4.349999904632568,
+          "y": 0.02500000037252903,
+          "z": -0.550000011920929
+        },
+        "playerYaw": 186.9700164794922,
+        "playerPitch": -7.7350006103515625,
+        "frequency": 1420.405029296875,
+        "gain": 82.0,
+        "bandwidth": 12.0,
+        "azimuth": 83.0
+      }
+    },
+    {
+      "path": "Artifacts/Chapter09/Profiles/FinalPassive/after-control.fixture.json",
+      "file_sha256": "f9dcfa0e26569e58d65a0fb02a6f77eacc5e830544bb4a31e3a6340076310139",
+      "format": "SIGNAL47-CHAPTER09",
+      "version": 1,
+      "payload_sha256": "fc44f9ac79b68528ffb28bd1063c1f9b356aabc27ef6f6d46716f3ba9aec790a",
+      "payload_checksum_status": "PASS",
+      "saved_utc": "2026-09-10T17:40:01.1336650Z",
+      "generic_application_version": "1.0",
+      "camera_acquired": true,
+      "camera_compared": false,
+      "frames": [
+        {
+          "id": "s03-field-photograph",
+          "sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        },
+        {
+          "id": "b12-control-photograph",
+          "sha256": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+          "developed": false,
+          "inspected": false,
+          "exported": true
+        }
+      ],
+      "unique_frame_ids": true,
+      "notebook_entry_count": 30,
+      "evidence_ids": [
+        "shift-log",
+        "direction-solve",
+        "call-notes",
+        "motor-bus-s03",
+        "s03-field-photograph",
+        "b12-reference-sheet",
+        "b12-control-observation"
+      ],
+      "unique_evidence_ids": true,
+      "photo_evidence_available_exactly_when_developed": true,
+      "chapter": {
+        "version": 1,
+        "archiveRead": true,
+        "archiveMatched": true,
+        "clueMarked": true,
+        "secondClueMarked": false,
+        "controlObserved": true,
+        "comparisonConfirmed": false,
+        "complete": false,
+        "hypothesis": "stray-light",
+        "experimentMethod": "passive",
+        "labFrameId": "",
+        "labStep": 0,
+        "wrongHypotheses": 2,
+        "wrongConclusions": 0,
+        "labRemaining": 0.0
+      },
+      "world": {
+        "postPrologue": true,
+        "yardCompleted": true,
+        "yardReturned": true,
+        "doorOpen": true,
+        "playerPosition": {
+          "x": 10.745918273925781,
+          "y": 0.15999983251094818,
+          "z": -18.704998016357422
+        },
+        "mugPosition": {
+          "x": 4.349999904632568,
+          "y": 0.02500000037252903,
+          "z": -0.550000011920929
+        },
+        "playerYaw": 192.7249298095703,
+        "playerPitch": 3.230001449584961,
+        "frequency": 1420.405029296875,
+        "gain": 82.0,
+        "bandwidth": 12.0,
+        "azimuth": 83.0
+      }
+    },
+    {
+      "path": "Artifacts/Chapter09/Profiles/FinalPassive/case.json",
+      "file_sha256": "1cf501e5e9e1f792b08a96e3e45e486f3af995f2dcd9a5924cc83153bb19ca5e",
+      "format": "SIGNAL47-CHAPTER09",
+      "version": 1,
+      "payload_sha256": "167a7fe194f9599095bba6fa0181e58f4dbc9443dd91c998c57b4475b41e555e",
+      "payload_checksum_status": "PASS",
+      "saved_utc": "2026-09-10T17:42:13.9864780Z",
+      "generic_application_version": "1.0",
+      "camera_acquired": true,
+      "camera_compared": true,
+      "frames": [
+        {
+          "id": "s03-field-photograph",
+          "sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        },
+        {
+          "id": "b12-control-photograph",
+          "sha256": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        }
+      ],
+      "unique_frame_ids": true,
+      "notebook_entry_count": 35,
+      "evidence_ids": [
+        "shift-log",
+        "direction-solve",
+        "call-notes",
+        "motor-bus-s03",
+        "s03-field-photograph",
+        "b12-reference-sheet",
+        "b12-control-observation",
+        "b12-control-photograph",
+        "chapter09-local-conclusion"
+      ],
+      "unique_evidence_ids": true,
+      "photo_evidence_available_exactly_when_developed": true,
+      "chapter": {
+        "version": 1,
+        "archiveRead": true,
+        "archiveMatched": true,
+        "clueMarked": true,
+        "secondClueMarked": true,
+        "controlObserved": true,
+        "comparisonConfirmed": true,
+        "complete": true,
+        "hypothesis": "stray-light",
+        "experimentMethod": "passive",
+        "labFrameId": "",
+        "labStep": 0,
+        "wrongHypotheses": 2,
+        "wrongConclusions": 2,
+        "labRemaining": 0.0
+      },
+      "world": {
+        "postPrologue": true,
+        "yardCompleted": true,
+        "yardReturned": true,
+        "doorOpen": true,
+        "playerPosition": {
+          "x": 4.434387683868408,
+          "y": 0.07999978959560394,
+          "z": 1.8574681282043457
+        },
+        "mugPosition": {
+          "x": 4.349999904632568,
+          "y": 0.02500000037252903,
+          "z": -0.550000011920929
+        },
+        "playerYaw": 153.8898162841797,
+        "playerPitch": 22.610000610351562,
+        "frequency": 1420.405029296875,
+        "gain": 82.0,
+        "bandwidth": 12.0,
+        "azimuth": 83.0
+      }
+    }
+  ],
+  "photos": [
+    {
+      "id": "b12-control-photograph",
+      "image_path": "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.jpg",
+      "actual_image_sha256": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+      "sidecar_path": "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.json",
+      "sidecar_sha256": "5133ee8b11ccb54d1735c9b5158fe429103ea5976af66acd818c0689285a9168",
+      "decode_status": "PASS",
+      "decoded": {
+        "format": "JPEG",
+        "mode": "RGB",
+        "width": 960,
+        "height": 600
+      },
+      "immutable_capture_metadata": {
+        "id": "b12-control-photograph",
+        "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.jpg",
+        "utc": "2026-09-10T17:39:58.3482640Z",
+        "localTime": "23:45:01",
+        "build": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+        "method": "passive",
+        "subject": "B-12 / controlled reference",
+        "sha256": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+        "position": {
+          "x": 10.745918273925781,
+          "y": 1.7899998426437378,
+          "z": -18.704998016357422
+        },
+        "forward": {
+          "x": -0.2199208289384842,
+          "y": -0.05634431168437004,
+          "z": -0.9738896489143372
+        },
+        "referenceViewport": {
+          "x": 0.500288724899292,
+          "y": 0.5001675486564636
+        },
+        "echoViewport": {
+          "x": 0.42778849601745605,
+          "y": 0.49887794256210327
+        },
+        "width": 960,
+        "height": 600
+      },
+      "original_sidecar_lifecycle": {
+        "developed": false,
+        "inspected": false,
+        "exported": true
+      },
+      "snapshot_matches": [
+        {
+          "snapshot": "after-control.fixture.json",
+          "immutable_values_match_sidecar": true,
+          "camera_vectors_float32_match": true,
+          "maximum_parsed_numeric_delta": 0.0,
+          "developed": false,
+          "inspected": false,
+          "exported": true
+        },
+        {
+          "snapshot": "case.json",
+          "immutable_values_match_sidecar": true,
+          "camera_vectors_float32_match": true,
+          "maximum_parsed_numeric_delta": 0.0,
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "s03-field-photograph",
+      "image_path": "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.jpg",
+      "actual_image_sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+      "sidecar_path": "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.json",
+      "sidecar_sha256": "609342ea351e1c768b691fb31310382ae3d64de532fa0d86d95f7ecd59f925dd",
+      "decode_status": "PASS",
+      "decoded": {
+        "format": "JPEG",
+        "mode": "RGB",
+        "width": 960,
+        "height": 600
+      },
+      "immutable_capture_metadata": {
+        "id": "s03-field-photograph",
+        "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.jpg",
+        "utc": "2026-09-10T17:36:23.0287680Z",
+        "localTime": "23:43:46",
+        "build": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+        "method": "baseline",
+        "subject": "S-03 / array profile",
+        "sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+        "position": {
+          "x": 10.696220397949219,
+          "y": 1.7899997234344482,
+          "z": -11.994260787963867
+        },
+        "forward": {
+          "x": -0.12024595588445663,
+          "y": 0.13459153473377228,
+          "z": -0.9835783243179321
+        },
+        "referenceViewport": {
+          "x": 0.47139793634414673,
+          "y": 0.3655959963798523
+        },
+        "echoViewport": {
+          "x": 0.44666820764541626,
+          "y": 0.3655240535736084
+        },
+        "width": 960,
+        "height": 600
+      },
+      "original_sidecar_lifecycle": {
+        "developed": false,
+        "inspected": false,
+        "exported": true
+      },
+      "snapshot_matches": [
+        {
+          "snapshot": "before-development.fixture.json",
+          "immutable_values_match_sidecar": true,
+          "camera_vectors_float32_match": true,
+          "maximum_parsed_numeric_delta": 0.0,
+          "developed": false,
+          "inspected": false,
+          "exported": true
+        },
+        {
+          "snapshot": "after-control.fixture.json",
+          "immutable_values_match_sidecar": true,
+          "camera_vectors_float32_match": true,
+          "maximum_parsed_numeric_delta": 0.0,
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        },
+        {
+          "snapshot": "case.json",
+          "immutable_values_match_sidecar": true,
+          "camera_vectors_float32_match": true,
+          "maximum_parsed_numeric_delta": 0.0,
+          "developed": true,
+          "inspected": true,
+          "exported": true
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "Final-Passive-Opening",
+      "outcome": "PASS",
+      "method": "Native uinput keyboard/mouse, observation-only telemetry; no teleport/game method actions. Marker positions derived from read-only camera metadata; visual legibility requires separate human/critic image inspection.",
+      "resume": false,
+      "quantitative_performance_run": false,
+      "checkpoint_count": 22,
+      "checkpoints": [
+        "start",
+        "read-shift-log",
+        "receiver-powered",
+        "tuned-stage-1",
+        "tuned-stage-2",
+        "tuned-stage-3",
+        "read-physical-printout",
+        "phone-before-answer",
+        "answered-phone",
+        "notebook",
+        "pause-freezes-clock",
+        "array-before-impact",
+        "ending-title",
+        "chapter-begins-after-prologue",
+        "physical-camera-collected",
+        "premature-exposure-rejected",
+        "first-controller-record",
+        "wrong-subject-rejected",
+        "first-exposure-framed",
+        "immutable-undeveloped-frame",
+        "checkpoint-before-development",
+        "normal-save-and-quit"
+      ],
+      "process": {
+        "pid": 360464,
+        "processExit": 0,
+        "normalMenuQuit": true,
+        "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive",
+        "caseHashesBefore": {},
+        "caseHashesAfter": {
+          "case.json": "597bee3ee04e3bf4aaea284c89a20151868a083ec718994b9b2ee323adacbc59",
+          "case.backup.json": "6339f21b65e95c53f01e3fa849a89bc1473bb4c2bd38b54b1b7255bb77290fd6"
+        },
+        "journeyExit": 0
+      },
+      "log_path": "Artifacts/Chapter09/Final-Passive-Opening/player.log",
+      "relevant_log_lines": [
+        {
+          "line": 71,
+          "text": "CHAPTER_QUIT_DRAIN_OK"
+        }
+      ],
+      "assembly_load_seconds": 0.05,
+      "assembly_load_is_player_continue_latency": false
+    },
+    {
+      "phase": "Final-Passive-Control",
+      "outcome": "PASS",
+      "method": "Native uinput keyboard/mouse, observation-only telemetry; no teleport/game method actions. Marker positions derived from read-only camera metadata; visual legibility requires separate human/critic image inspection.",
+      "resume": true,
+      "quantitative_performance_run": false,
+      "checkpoint_count": 16,
+      "checkpoints": [
+        "continued-in-new-process",
+        "walked-into-photolab",
+        "physical-film-processing-1",
+        "pause-freezes-development",
+        "developed-print-1",
+        "marked-visible-reference-1",
+        "physical-reference-sheet",
+        "wrong-reference-gives-recoverable-feedback",
+        "motor-command-hypothesis-rejected",
+        "testable-hypothesis-passive",
+        "new-field-point-before-control",
+        "physical-control-changes-world-passive",
+        "direct-observation-filed",
+        "second-exposure-framed",
+        "checkpoint-after-control-exposure",
+        "normal-save-and-quit"
+      ],
+      "process": {
+        "pid": 361592,
+        "processExit": 0,
+        "normalMenuQuit": true,
+        "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive",
+        "caseHashesBefore": {
+          "case.json": "597bee3ee04e3bf4aaea284c89a20151868a083ec718994b9b2ee323adacbc59",
+          "case.backup.json": "6339f21b65e95c53f01e3fa849a89bc1473bb4c2bd38b54b1b7255bb77290fd6"
+        },
+        "caseHashesAfter": {
+          "case.json": "f9dcfa0e26569e58d65a0fb02a6f77eacc5e830544bb4a31e3a6340076310139",
+          "case.backup.json": "cdbab092fdb59e916bb9d1a89b77f92569300fb27e12c623373d540d17003472"
+        },
+        "journeyExit": 0
+      },
+      "log_path": "Artifacts/Chapter09/Final-Passive-Control/player.log",
+      "relevant_log_lines": [
+        {
+          "line": 71,
+          "text": "CHAPTER_CONTINUE_OK backup=False saved=2026-09-10T17:36:26.4010960Z"
+        },
+        {
+          "line": 116,
+          "text": "CHAPTER_QUIT_DRAIN_OK"
+        }
+      ],
+      "assembly_load_seconds": 0.047,
+      "assembly_load_is_player_continue_latency": false
+    },
+    {
+      "phase": "Final-Passive-Finish",
+      "outcome": "PASS",
+      "method": "Native uinput keyboard/mouse, observation-only telemetry; no teleport/game method actions. Marker positions derived from read-only camera metadata; visual legibility requires separate human/critic image inspection.",
+      "resume": true,
+      "quantitative_performance_run": false,
+      "checkpoint_count": 16,
+      "checkpoints": [
+        "continued-in-new-process",
+        "walked-into-photolab",
+        "physical-film-processing-2",
+        "developed-print-2",
+        "marked-visible-reference-2",
+        "wrong-light-conclusion-recoverable",
+        "supported-photographic-comparison",
+        "physical-case-report",
+        "chapter-completed",
+        "photolab-overview",
+        "photolab-enlarger-and-trays",
+        "photolab-archive-workplace",
+        "control-room-overview-after-light-correction",
+        "receiver-restored-powered-leds",
+        "phone-desk-after-light-correction",
+        "normal-save-and-quit"
+      ],
+      "process": {
+        "pid": 362411,
+        "processExit": 0,
+        "normalMenuQuit": true,
+        "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive",
+        "caseHashesBefore": {
+          "case.json": "f9dcfa0e26569e58d65a0fb02a6f77eacc5e830544bb4a31e3a6340076310139",
+          "case.backup.json": "cdbab092fdb59e916bb9d1a89b77f92569300fb27e12c623373d540d17003472"
+        },
+        "caseHashesAfter": {
+          "case.json": "1cf501e5e9e1f792b08a96e3e45e486f3af995f2dcd9a5924cc83153bb19ca5e",
+          "case.backup.json": "a66c6125031a04fd613a2e70d9f208158ed6de7823e1176dfcdd44bc6e0d74d8"
+        },
+        "journeyExit": 0
+      },
+      "log_path": "Artifacts/Chapter09/Final-Passive-Finish/player.log",
+      "relevant_log_lines": [
+        {
+          "line": 71,
+          "text": "CHAPTER_CONTINUE_OK backup=False saved=2026-09-10T17:40:01.1336650Z"
+        },
+        {
+          "line": 95,
+          "text": "CHAPTER_COMPARISON_CONFIRMED passive"
+        },
+        {
+          "line": 99,
+          "text": "CHAPTER_COMPLETED method=passive"
+        },
+        {
+          "line": 104,
+          "text": "CHAPTER_QUIT_DRAIN_OK"
+        }
+      ],
+      "assembly_load_seconds": 0.051,
+      "assembly_load_is_player_continue_latency": false
+    }
+  ],
+  "resume_checks": [
+    {
+      "phase": "Final-Passive-Control",
+      "fixture": "before-development.fixture.json",
+      "saved_utc": "2026-09-10T17:36:26.4010960Z",
+      "primary_not_backup": true,
+      "status": "PASS",
+      "checkpoint": "continued-in-new-process",
+      "observed_stage": "develop-first",
+      "camera_state_equal": true,
+      "chapter_state_equal": true,
+      "notebook_counts_equal": true,
+      "world_and_instruments_equal": true,
+      "player_position_delta_metres": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "player_angle_delta_degrees": {
+        "yaw": 0.0,
+        "pitch": -1.52587890625e-05
+      },
+      "pose_comparison_tolerance": {
+        "metres": 0.001,
+        "degrees": 0.001
+      },
+      "frame_count": 1,
+      "developed_frames": 0,
+      "continue_duration_seconds": null,
+      "continue_duration_status": "UNVERIFIED",
+      "duration_reason": "Event contains only completion wall time and seconds since process startup; no timed Continue click in this recorded run."
+    },
+    {
+      "phase": "Final-Passive-Finish",
+      "fixture": "after-control.fixture.json",
+      "saved_utc": "2026-09-10T17:40:01.1336650Z",
+      "primary_not_backup": true,
+      "status": "PASS",
+      "checkpoint": "continued-in-new-process",
+      "observed_stage": "develop-second",
+      "camera_state_equal": true,
+      "chapter_state_equal": true,
+      "notebook_counts_equal": true,
+      "world_and_instruments_equal": true,
+      "player_position_delta_metres": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "player_angle_delta_degrees": {
+        "yaw": 0.0,
+        "pitch": 0.0
+      },
+      "pose_comparison_tolerance": {
+        "metres": 0.001,
+        "degrees": 0.001
+      },
+      "frame_count": 2,
+      "developed_frames": 1,
+      "continue_duration_seconds": null,
+      "continue_duration_status": "UNVERIFIED",
+      "duration_reason": "Event contains only completion wall time and seconds since process startup; no timed Continue click in this recorded run."
+    }
+  ],
+  "process_chain": {
+    "distinct_processes": 3,
+    "normal_menu_quits": 3,
+    "new_process_continuations": 2,
+    "hash_chain_matches": true,
+    "original_start_had_no_active_case": true,
+    "final_case_complete": true
+  },
+  "loading_time": {
+    "status": "UNVERIFIED",
+    "reason": "Passive result events do not contain continueObservedSeconds or a paired click-start timestamp. CHAPTER_CONTINUE_OK proves success, not elapsed load time. Assembly-load and UnloadTime log entries are engine sub-operations, not click-to-control durations. Current later-added timing instrumentation cannot backfill earlier runs."
+  },
+  "audio": [
+    {
+      "phase": "Final-Passive-Opening",
+      "path": "Artifacts/Chapter09/Final-Passive-Opening/audio-audit.json",
+      "status": "PASS",
+      "scope": "Sampled Unity AudioListener channel 0 output exists; no sampled full-scale crossings.",
+      "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+      "build_id": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+      "sample_rate_hz": 48000,
+      "dsp_advanced": true,
+      "total_windows": 4071,
+      "total_samples_with_possible_overlap": 8337408,
+      "maximum_peak": 0.22273287177085876,
+      "maximum_peak_dbfs": -13.044314,
+      "maximum_peak_state": "call",
+      "sample_weighted_rms": 0.008827533814739434,
+      "sample_weighted_rms_dbfs": -41.083212,
+      "total_over_full_scale": 0,
+      "levels": [
+        {
+          "state": "start",
+          "windows": 90,
+          "samples": 184320,
+          "overFullScale": 0,
+          "peak": 0.014126150868833065,
+          "rms": 0.006594109984317596,
+          "peak_dbfs": -36.999523,
+          "rms_dbfs": -43.616876
+        },
+        {
+          "state": "room",
+          "windows": 162,
+          "samples": 331776,
+          "overFullScale": 0,
+          "peak": 0.10788635164499283,
+          "rms": 0.0068297490629435,
+          "peak_dbfs": -19.34067,
+          "rms_dbfs": -43.311905
+        },
+        {
+          "state": "receiver",
+          "windows": 1299,
+          "samples": 2660352,
+          "overFullScale": 0,
+          "peak": 0.114169180393219,
+          "rms": 0.007214634854322085,
+          "peak_dbfs": -18.849022,
+          "rms_dbfs": -42.835713
+        },
+        {
+          "state": "printer",
+          "windows": 30,
+          "samples": 61440,
+          "overFullScale": 0,
+          "peak": 0.09472468495368958,
+          "rms": 0.010868907126985142,
+          "peak_dbfs": -20.470737,
+          "rms_dbfs": -39.276282
+        },
+        {
+          "state": "ring",
+          "windows": 201,
+          "samples": 411648,
+          "overFullScale": 0,
+          "peak": 0.15612249076366425,
+          "rms": 0.017796499069152354,
+          "peak_dbfs": -16.130691,
+          "rms_dbfs": -34.993308
+        },
+        {
+          "state": "call",
+          "windows": 103,
+          "samples": 210944,
+          "overFullScale": 0,
+          "peak": 0.22273287177085876,
+          "rms": 0.024653888971866836,
+          "peak_dbfs": -13.044314,
+          "rms_dbfs": -32.162291
+        },
+        {
+          "state": "line-dead",
+          "windows": 1134,
+          "samples": 2322432,
+          "overFullScale": 0,
+          "peak": 0.019093381240963936,
+          "rms": 0.006852264098898913,
+          "peak_dbfs": -34.382343,
+          "rms_dbfs": -43.283318
+        },
+        {
+          "state": "paused",
+          "windows": 93,
+          "samples": 190464,
+          "overFullScale": 0,
+          "peak": 0.010141336359083652,
+          "rms": 0.0008044987650353752,
+          "peak_dbfs": -39.878096,
+          "rms_dbfs": -61.889492
+        },
+        {
+          "state": "impact",
+          "windows": 220,
+          "samples": 450560,
+          "overFullScale": 0,
+          "peak": 0.1226290836930275,
+          "rms": 0.00872285003383107,
+          "peak_dbfs": -18.22813,
+          "rms_dbfs": -41.186832
+        },
+        {
+          "state": "title",
+          "windows": 39,
+          "samples": 79872,
+          "overFullScale": 0,
+          "peak": 0.016057003289461136,
+          "rms": 0.006586074167422612,
+          "peak_dbfs": -35.88671,
+          "rms_dbfs": -43.627468
+        },
+        {
+          "state": "chapter-collect-camera",
+          "windows": 156,
+          "samples": 319488,
+          "overFullScale": 0,
+          "peak": 0.02032085880637169,
+          "rms": 0.006740518275913807,
+          "peak_dbfs": -33.841159,
+          "rms_dbfs": -43.426134
+        },
+        {
+          "state": "chapter-motor-log",
+          "windows": 388,
+          "samples": 794624,
+          "overFullScale": 0,
+          "peak": 0.1140420138835907,
+          "rms": 0.007502243466842685,
+          "peak_dbfs": -18.858702,
+          "rms_dbfs": -42.496177
+        },
+        {
+          "state": "chapter-first-exposure",
+          "windows": 119,
+          "samples": 243712,
+          "overFullScale": 0,
+          "peak": 0.1070045605301857,
+          "rms": 0.006633474938687147,
+          "peak_dbfs": -19.411954,
+          "rms_dbfs": -43.565178
+        },
+        {
+          "state": "chapter-develop-first",
+          "windows": 37,
+          "samples": 75776,
+          "overFullScale": 0,
+          "peak": 0.16325245797634125,
+          "rms": 0.008124930339059987,
+          "peak_dbfs": -15.742805,
+          "rms_dbfs": -41.803607
+        }
+      ]
+    },
+    {
+      "phase": "Final-Passive-Control",
+      "path": "Artifacts/Chapter09/Final-Passive-Control/audio-audit.json",
+      "status": "PASS",
+      "scope": "Sampled Unity AudioListener channel 0 output exists; no sampled full-scale crossings.",
+      "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+      "build_id": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+      "sample_rate_hz": 48000,
+      "dsp_advanced": true,
+      "total_windows": 1846,
+      "total_samples_with_possible_overlap": 3780608,
+      "maximum_peak": 0.157972052693367,
+      "maximum_peak_dbfs": -16.028395,
+      "maximum_peak_state": "chapter-develop-second",
+      "sample_weighted_rms": 0.007837982178730966,
+      "sample_weighted_rms_dbfs": -42.115915,
+      "total_over_full_scale": 0,
+      "levels": [
+        {
+          "state": "start",
+          "windows": 78,
+          "samples": 159744,
+          "overFullScale": 0,
+          "peak": 0.014126150868833065,
+          "rms": 0.006562732121557183,
+          "peak_dbfs": -36.999523,
+          "rms_dbfs": -43.658306
+        },
+        {
+          "state": "chapter-develop-first",
+          "windows": 521,
+          "samples": 1067008,
+          "overFullScale": 0,
+          "peak": 0.04741520434617996,
+          "rms": 0.006763296460910917,
+          "peak_dbfs": -26.481647,
+          "rms_dbfs": -43.396832
+        },
+        {
+          "state": "chapter-lab",
+          "windows": 116,
+          "samples": 237568,
+          "overFullScale": 0,
+          "peak": 0.10982063412666321,
+          "rms": 0.014083630327570125,
+          "peak_dbfs": -19.186321,
+          "rms_dbfs": -37.025708
+        },
+        {
+          "state": "paused",
+          "windows": 86,
+          "samples": 176128,
+          "overFullScale": 0,
+          "peak": 0.010956182144582272,
+          "rms": 0.0004481971719814229,
+          "peak_dbfs": -39.206815,
+          "rms_dbfs": -66.970618
+        },
+        {
+          "state": "chapter-first",
+          "windows": 63,
+          "samples": 129024,
+          "overFullScale": 0,
+          "peak": 0.08192941546440125,
+          "rms": 0.012680980561467445,
+          "peak_dbfs": -21.731203,
+          "rms_dbfs": -37.936943
+        },
+        {
+          "state": "chapter-interpret-first",
+          "windows": 38,
+          "samples": 77824,
+          "overFullScale": 0,
+          "peak": 0.014438001438975334,
+          "rms": 0.006554662074233182,
+          "peak_dbfs": -36.809858,
+          "rms_dbfs": -43.668994
+        },
+        {
+          "state": "chapter-archive",
+          "windows": 176,
+          "samples": 360448,
+          "overFullScale": 0,
+          "peak": 0.0815744549036026,
+          "rms": 0.007286265873921509,
+          "peak_dbfs": -21.768916,
+          "rms_dbfs": -42.7499
+        },
+        {
+          "state": "chapter-choose-control",
+          "windows": 539,
+          "samples": 1103872,
+          "overFullScale": 0,
+          "peak": 0.014325179159641266,
+          "rms": 0.0065234541927236085,
+          "peak_dbfs": -36.877999,
+          "rms_dbfs": -43.710448
+        },
+        {
+          "state": "chapter-experiment",
+          "windows": 67,
+          "samples": 137216,
+          "overFullScale": 0,
+          "peak": 0.08523745834827423,
+          "rms": 0.0105373474207407,
+          "peak_dbfs": -21.38739,
+          "rms_dbfs": -39.545374
+        },
+        {
+          "state": "chapter-observe-control",
+          "windows": 87,
+          "samples": 178176,
+          "overFullScale": 0,
+          "peak": 0.08244828134775162,
+          "rms": 0.009344727462479744,
+          "peak_dbfs": -21.676368,
+          "rms_dbfs": -40.588667
+        },
+        {
+          "state": "chapter-second-exposure",
+          "windows": 53,
+          "samples": 108544,
+          "overFullScale": 0,
+          "peak": 0.02506565861403942,
+          "rms": 0.006521325352815751,
+          "peak_dbfs": -32.018418,
+          "rms_dbfs": -43.713283
+        },
+        {
+          "state": "chapter-develop-second",
+          "windows": 22,
+          "samples": 45056,
+          "overFullScale": 0,
+          "peak": 0.157972052693367,
+          "rms": 0.009182742422345328,
+          "peak_dbfs": -16.028395,
+          "rms_dbfs": -40.740552
+        }
+      ]
+    },
+    {
+      "phase": "Final-Passive-Finish",
+      "path": "Artifacts/Chapter09/Final-Passive-Finish/audio-audit.json",
+      "status": "PASS",
+      "scope": "Sampled Unity AudioListener channel 0 output exists; no sampled full-scale crossings.",
+      "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+      "build_id": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+      "sample_rate_hz": 48000,
+      "dsp_advanced": true,
+      "total_windows": 1774,
+      "total_samples_with_possible_overlap": 3633152,
+      "maximum_peak": 0.13251157104969025,
+      "maximum_peak_dbfs": -17.554924,
+      "maximum_peak_state": "chapter-comparison",
+      "sample_weighted_rms": 0.011224849838951327,
+      "sample_weighted_rms_dbfs": -38.996389,
+      "total_over_full_scale": 0,
+      "levels": [
+        {
+          "state": "start",
+          "windows": 72,
+          "samples": 147456,
+          "overFullScale": 0,
+          "peak": 0.014126150868833065,
+          "rms": 0.0065475384842315545,
+          "peak_dbfs": -36.999523,
+          "rms_dbfs": -43.678439
+        },
+        {
+          "state": "chapter-develop-second",
+          "windows": 558,
+          "samples": 1142784,
+          "overFullScale": 0,
+          "peak": 0.018552109599113464,
+          "rms": 0.006840985340820208,
+          "peak_dbfs": -34.632134,
+          "rms_dbfs": -43.297627
+        },
+        {
+          "state": "chapter-lab",
+          "windows": 134,
+          "samples": 274432,
+          "overFullScale": 0,
+          "peak": 0.11129150539636612,
+          "rms": 0.012391507845409055,
+          "peak_dbfs": -19.07076,
+          "rms_dbfs": -38.137517
+        },
+        {
+          "state": "chapter-comparison",
+          "windows": 181,
+          "samples": 370688,
+          "overFullScale": 0,
+          "peak": 0.13251157104969025,
+          "rms": 0.01370928049014164,
+          "peak_dbfs": -17.554924,
+          "rms_dbfs": -37.259707
+        },
+        {
+          "state": "chapter-file-report",
+          "windows": 45,
+          "samples": 92160,
+          "overFullScale": 0,
+          "peak": 0.08652301877737045,
+          "rms": 0.018376054368313622,
+          "peak_dbfs": -21.257367,
+          "rms_dbfs": -34.714955
+        },
+        {
+          "state": "chapter-report",
+          "windows": 42,
+          "samples": 86016,
+          "overFullScale": 0,
+          "peak": 0.0734643042087555,
+          "rms": 0.008429624654447139,
+          "peak_dbfs": -22.678473,
+          "rms_dbfs": -41.483835
+        },
+        {
+          "state": "chapter-ending",
+          "windows": 21,
+          "samples": 43008,
+          "overFullScale": 0,
+          "peak": 0.08645294606685638,
+          "rms": 0.019133329168201804,
+          "peak_dbfs": -21.264404,
+          "rms_dbfs": -34.364189
+        },
+        {
+          "state": "chapter-complete",
+          "windows": 676,
+          "samples": 1384448,
+          "overFullScale": 0,
+          "peak": 0.055065006017684937,
+          "rms": 0.012973665402503196,
+          "peak_dbfs": -25.182486,
+          "rms_dbfs": -37.738746
+        },
+        {
+          "state": "paused",
+          "windows": 45,
+          "samples": 92160,
+          "overFullScale": 0,
+          "peak": 0.030682852491736412,
+          "rms": 0.0012962275206669475,
+          "peak_dbfs": -30.262085,
+          "rms_dbfs": -57.746375
+        }
+      ]
+    }
+  ],
+  "audio_limitations": [
+    "This is measured engine output, not listening. No speaker/headphone playback or subjective mix judgment was performed by this reviewer.",
+    "Only channel 0, 2048-sample windows about every 40 ms at 48000 Hz. Windows can overlap or leave gaps; total sampled values are not continuous duration or unique audio frames.",
+    "overFullScale=0 means no absolute sample >=1 in captured windows. It does not certify every channel or continuous freedom from clipping.",
+    "Paused groups have small nonzero RMS and peaks. These state buckets include transition windows; this review does not prove exact pause silence or explain the residue.",
+    "Native-input automation used read-only camera metadata to locate visible marks. It is not external player testing, a blind discovery test or a first-time 20–30 minute playtime measurement."
+  ],
+  "image_inspection": {
+    "method": "Both original exported JPEGs opened without editing. Integrity and decodability independently verified.",
+    "observations": [
+      "S-03 original shows the array and illuminated reference assembly in the service-yard framing.",
+      "B-12 original has a closer, different camera framing with the folded reference assembly; its two visible vertical strips are retained in the original JPEG."
+    ],
+    "limit": "No new in-game interaction or complete Dream Loop visual acceptance is claimed by this persistence review."
+  },
+  "profile_unchanged_during_review": true,
+  "source_evidence_sha256": {
+    "Artifacts/Chapter09/Profiles/FinalPassive/before-development.fixture.json": "597bee3ee04e3bf4aaea284c89a20151868a083ec718994b9b2ee323adacbc59",
+    "Artifacts/Chapter09/Profiles/FinalPassive/after-control.fixture.json": "f9dcfa0e26569e58d65a0fb02a6f77eacc5e830544bb4a31e3a6340076310139",
+    "Artifacts/Chapter09/Profiles/FinalPassive/case.json": "1cf501e5e9e1f792b08a96e3e45e486f3af995f2dcd9a5924cc83153bb19ca5e",
+    "Artifacts/Chapter09/Final-Passive-Opening/build-manifest.json": "0ad9111776eef085a369de013edda37ed8da88ae9785048e67fae9349449ff99",
+    "Artifacts/Chapter09/Final-Passive-Control/build-manifest.json": "0ad9111776eef085a369de013edda37ed8da88ae9785048e67fae9349449ff99",
+    "Artifacts/Chapter09/Final-Passive-Finish/build-manifest.json": "0ad9111776eef085a369de013edda37ed8da88ae9785048e67fae9349449ff99",
+    "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.json": "5133ee8b11ccb54d1735c9b5158fe429103ea5976af66acd818c0689285a9168",
+    "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.jpg": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+    "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.json": "609342ea351e1c768b691fb31310382ae3d64de532fa0d86d95f7ecd59f925dd",
+    "Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.jpg": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+    "Artifacts/Chapter09/Final-Passive-Opening/chapter09-result.json": "d7a42fda6cf750eef44742cd5f69a7c523536f43e8095782f14da0c10ff71891",
+    "Artifacts/Chapter09/Final-Passive-Opening/process.json": "d62e5a59eccf4b6302d2ec5f589372b2f4917199aed5bff66e093ab4d1ad1e9d",
+    "Artifacts/Chapter09/Final-Passive-Opening/player.log": "403de8709018af1793555b691dc00315816d5d6e1502b91da01bf3608b566d49",
+    "Artifacts/Chapter09/Final-Passive-Opening/audio-audit.json": "d43f5ede51cd12cc6dfa25ff1dc3c2bcd50e1aaf2f69f6b17482d1c43f4eac37",
+    "Artifacts/Chapter09/Final-Passive-Control/chapter09-result.json": "baf730a1dd1f262d37584d8cfc8c44d301747d0d518170d6efb2d74c42914e13",
+    "Artifacts/Chapter09/Final-Passive-Control/process.json": "00bffe74774f91787910d47207bba3d84600061f0da1bc9c8f34d68d3fa95647",
+    "Artifacts/Chapter09/Final-Passive-Control/player.log": "dca3725c65a76fa637d044ff6043c24ed89fe77e11be238c94080c465aea7bae",
+    "Artifacts/Chapter09/Final-Passive-Control/audio-audit.json": "62ab0308acc9828b0dea0d3e81bcb434adb00ceebe11692c7ae88ee0e7ea0986",
+    "Artifacts/Chapter09/Final-Passive-Finish/chapter09-result.json": "858ed251eaf9295e8e4ecc71d1729daa632754f0f70ced2dd4a2ad7a45ecff7d",
+    "Artifacts/Chapter09/Final-Passive-Finish/process.json": "5b19543d79117aa8f1e02533719fcf5718d11da6f92ba897a35c14cb4e5f6d2d",
+    "Artifacts/Chapter09/Final-Passive-Finish/player.log": "b8a6acc90e57969eb2b32a75b8bdd1842c8254da77daa94dd3191ddbf76740c3",
+    "Artifacts/Chapter09/Final-Passive-Finish/audio-audit.json": "a1f1abfae17a29d4ef50ed746b7c27846b6c32cadbae08598eb96604e92827d0",
+    "Unity/Assets/Signal47/Runtime/Debug/AudioOutputAudit.cs": "28d0cbcc30f8dd125478035b17f20d79011467024c0ca9a65db659867d822f34",
+    "Unity/Assets/Signal47/Runtime/Debug/GauntletProbe.cs": "ff8d48cf0df7d15dc7b270af81f5ba74e35ee5dbf9ed9dd7e7b5c302923b04d3",
+    "Artifacts/Chapter09/Profiles/FinalPassive/case.backup.json": "a66c6125031a04fd613a2e70d9f208158ed6de7823e1176dfcdd44bc6e0d74d8"
+  }
+}

@@ -11,5 +11,5 @@ if [[ -S "$task_runtime_dir/pulse/native" ]]; then
   export XDG_RUNTIME_DIR="$task_runtime_dir"
   export PULSE_SERVER="unix:$task_runtime_dir/pulse/native"
 fi
-SDL_VIDEODRIVER=dummy timeout --signal=TERM --kill-after=10s 240s ./Artifacts/Linux/Signal47.x86_64 -batchmode -nographics -noaudio --signal47-smoke -logFile "$PWD/Artifacts/smoke.log"
+SDL_VIDEODRIVER=dummy timeout --signal=TERM --kill-after=10s 240s ./Artifacts/Linux/Signal47.x86_64 -batchmode -nographics -noaudio --signal47-smoke --signal47-save-dir "$PWD/Artifacts/SmokeProfile" -logFile "$PWD/Artifacts/smoke.log"
 tar -czf Artifacts/SIGNAL-47-Linux.tar.gz -C Artifacts/Linux .

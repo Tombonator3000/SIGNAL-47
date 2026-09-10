@@ -1,0 +1,25 @@
+{
+  "scope": "One narrow reference added to the existing local gauntlet-loop skill after actual chapter work; identity retained. Local installation is not automatic synchronization to another machine. No separate Git repository exists at the skill directory.",
+  "files": [
+    {
+      "path": "/home/tombonator3000t/.codex/skills/gauntlet-loop/references/unity-linux-chapter-validation.md",
+      "sha256": "b440ce85e883480f90cb5a0ac06b27003efc74b96d256c4af880e87d1927bc6a"
+    },
+    {
+      "path": "/home/tombonator3000t/.codex/skills/gauntlet-loop/SKILL.md",
+      "sha256": "3222c2f2bb8ac470488c2e6312e91254c3fbb3606cc96fbfbfa2f73437dff4ed"
+    },
+    {
+      "path": "/home/tombonator3000t/.codex/skills/brainstorming/SKILL.md",
+      "sha256": "74edf03ea6d24ef53db48677b93558d14a979bdf052ca3f57ecdca0c66791608"
+    },
+    {
+      "path": "/home/tombonator3000t/.codex/skills/brainstorming/LICENSE",
+      "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400"
+    },
+    {
+      "path": "/home/tombonator3000t/.codex/skills/brainstorming/SOURCE.json",
+      "sha256": "0df27df25232c55cc4b52a06817dd7bb497260d5426321f0ac9c3b495d457cb5"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "outcome": "PASS",
+  "reviewer": "main agent, direct original-image inspection",
+  "source_result_sha256": "fb0630ff18562bd8754a29c856a6caef235b246e01429cbc35cddbd33c7a6758",
+  "checks": {
+    "menu": "PASS: readable normal Chapter One start menu; Continue correctly disabled for empty profile.",
+    "playing": "PASS: menu closed, real first-person control room and moved camera after native WASD/refocus; no overlapping app/window.",
+    "pause": "PASS: correct in-game pause menu and truthful pre-prologue save availability message; QUIT subsequently exited normally.",
+    "focus": "PASS: native Alt+Tab changes X input focus to another client and restores game focus before movement."
+  },
+  "screenshots": [
+    {
+      "file": "01-menu.png",
+      "sha256": "1ef6df3caae9289ab1a5c70f56f4826f2d5b2f189076246ee45ba145544ad66f"
+    },
+    {
+      "file": "02-playing.png",
+      "sha256": "c88d3f37d6c5c685cc14ae66d0e67abb6f0f3bbc4343160fb6fc12626b9d97ec"
+    },
+    {
+      "file": "03-pause.png",
+      "sha256": "a3bdafe5c404b0ebcf335898c8489db200e6a8e6ea7035c07e3dfa0716d5092b"
+    }
+  ]
+}

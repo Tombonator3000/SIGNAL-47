@@ -1,0 +1,137 @@
+{
+  "build": {
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651",
+    "working_tree_changes": false,
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "6b0c99dc455267875ac836594e6f1478fb58515d337313032604325c2de6056b",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "runs": [
+    {
+      "run": "Final-Passive-Opening",
+      "outcome": "PASS",
+      "events": 22,
+      "observedRouteSeconds": 167.89136481285095,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Passive-Control",
+      "outcome": "PASS",
+      "events": 16,
+      "observedRouteSeconds": 76.0619010925293,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Passive-Finish",
+      "outcome": "PASS",
+      "events": 16,
+      "observedRouteSeconds": 73.28136014938354,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Active",
+      "outcome": "PASS",
+      "events": 52,
+      "observedRouteSeconds": 311.0196318626404,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Performance",
+      "outcome": "PASS",
+      "events": 43,
+      "observedRouteSeconds": 300.26546001434326,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Backup-V2",
+      "outcome": "PASS",
+      "events": 3,
+      "observedRouteSeconds": 1.5221500396728516,
+      "normalQuit": true,
+      "continueTimes": [
+        {
+          "continueObservedSeconds": 0.4206686899997294,
+          "continueTimingScope": "Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement."
+        }
+      ]
+    },
+    {
+      "run": "Final-Invalid",
+      "outcome": "PASS",
+      "events": 2,
+      "observedRouteSeconds": 0.6008806228637695,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Duplicate",
+      "outcome": "PASS",
+      "events": 2,
+      "observedRouteSeconds": 0.6006267070770264,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Missing-Photo-V3",
+      "outcome": "PASS",
+      "events": 4,
+      "observedRouteSeconds": 28.532783269882202,
+      "normalQuit": true,
+      "continueTimes": [
+        {
+          "continueObservedSeconds": 0.42057752700929996,
+          "continueTimingScope": "Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement."
+        }
+      ]
+    },
+    {
+      "run": "Final-Write-Failure",
+      "outcome": "PASS",
+      "events": 3,
+      "observedRouteSeconds": 2.9048469066619873,
+      "normalQuit": true,
+      "continueTimes": [
+        {
+          "continueObservedSeconds": 0.4211117429949809,
+          "continueTimingScope": "Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement."
+        }
+      ]
+    },
+    {
+      "run": "Final-New-Case",
+      "outcome": "PASS",
+      "events": 3,
+      "observedRouteSeconds": 2.824885368347168,
+      "normalQuit": true,
+      "continueTimes": [
+        {
+          "continueObservedSeconds": 0.4207550909923157,
+          "continueTimingScope": "Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement."
+        }
+      ]
+    },
+    {
+      "run": "Final-Settings-Write",
+      "outcome": "PASS",
+      "events": 6,
+      "observedRouteSeconds": 15.88923954963684,
+      "normalQuit": true,
+      "continueTimes": []
+    },
+    {
+      "run": "Final-Settings-Read",
+      "outcome": "PASS",
+      "events": 4,
+      "observedRouteSeconds": 5.389906883239746,
+      "normalQuit": true,
+      "continueTimes": []
+    }
+  ],
+  "durationScope": "Wall time between first and last observation within each automation run. Known-answer input automation; not first-time player duration. Passive inspections/restarts and active loupe/negative actions add different overhead."
+}

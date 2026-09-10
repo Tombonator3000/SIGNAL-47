@@ -14,9 +14,11 @@ namespace Signal47.Core
         public Notebook notebook;
         public ServiceYardInvestigation yard;
         public FieldCamera fieldCamera;
+        public Signal47.Chapter.ChapterInvestigation chapter;
         public PrologueDirector director;
         bool restarting;
-        public bool CanControl => !restarting && !(fieldCamera && fieldCamera.Capturing) && hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;
+        public bool Transitioning => restarting;
+        public bool CanControl => !restarting && !Signal47.Chapter.ChapterSave.IsRestoring && !Signal47.Chapter.ChapterSave.QuitPending && !(fieldCamera && fieldCamera.Capturing) && hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;
         void Awake(){Instance=this;
 #if UNITY_STANDALONE_LINUX
             // Keep the working GLX path without vsync. A 60 Hz software cap on the

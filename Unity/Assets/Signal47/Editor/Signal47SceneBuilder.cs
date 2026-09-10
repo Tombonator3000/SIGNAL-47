@@ -62,7 +62,9 @@ namespace Signal47.Editor
             var session=systems.AddComponent<GameSession>();session.player=fps;session.hud=hud;session.notebook=notebook;session.director=director;
             // signal profiles ported verbatim from web prototype thresholds
             sc.profiles=new[]{Profile("SIG_CALIBRATION","CALIBRATION","LOG CALIBRATION","TAPED REF CARD // CAL 1419.900 MHz · AZ 042° · GAIN 55 ±10 · BW 48 ±14",1419.900f,.025f,new Vector2(45,65),new Vector2(34,62),new Vector2(35,49),"Receiver calibration completed at 23:4x local."),Profile("SIG_INTERFERENCE","INTERFERENCE","NOTCH INTERFERENCE","LOCAL SPIKE // center carrier near 1420.110 MHz. Narrow BW below 22 kHz while retaining nominal gain.",1420.110f,.03f,new Vector2(40,72),new Vector2(4,22),new Vector2(0,180),"Local carrier interference rejected."),Profile("SIG_0047_UNKNOWN","ANOMALY","ISOLATE PATTERN","UNLOGGED RESIDUAL // weak peak near 1420.4 MHz. Increase gain, narrow bandwidth, then search azimuth manually.",1420.405f,.008f,new Vector2(78,100),new Vector2(4,14),new Vector2(79,87),"Unlogged narrowband carrier isolated near hydrogen line.")};
-            ArtPass.Dress();StoryPass.Dress(printer,phone,director,matPaper);ExternalAssetsPass.Dress();ServiceYardPass.Dress(session);FieldCameraPass.Dress(session);EditorSceneManager.SaveScene(scene,ScenePath);EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(ScenePath,true)};AssetDatabase.SaveAssets();Debug.Log("SIGNAL / 47 vertical slice generated: "+ScenePath);
+            ArtPass.Dress();StoryPass.Dress(printer,phone,director,matPaper);ExternalAssetsPass.Dress();ServiceYardPass.Dress(session);FieldCameraPass.Dress(session);
+            Chapter09Pass.Dress(session);systems.AddComponent<Signal47.Chapter.ChapterSave>();
+            EditorSceneManager.SaveScene(scene,ScenePath);EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(ScenePath,true)};AssetDatabase.SaveAssets();Debug.Log("SIGNAL / 47 chapter generated: "+ScenePath);
         }
 
         static void EnsureURP()

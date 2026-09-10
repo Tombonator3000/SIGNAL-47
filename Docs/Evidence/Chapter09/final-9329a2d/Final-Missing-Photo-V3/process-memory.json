@@ -1,0 +1,385 @@
+{
+  "method": "Linux /proc/PID/status sampled every0.5s across entire player lifetime, including explicit loading; VmHWM is process resident peak, not Unity engine memory.",
+  "samples": [
+    {
+      "wall": 1789063072.9128437,
+      "rssKiB": 812,
+      "peakRssKiB": 812
+    },
+    {
+      "wall": 1789063073.4131274,
+      "rssKiB": 143068,
+      "peakRssKiB": 143068
+    },
+    {
+      "wall": 1789063073.9134011,
+      "rssKiB": 237200,
+      "peakRssKiB": 237200
+    },
+    {
+      "wall": 1789063074.4136617,
+      "rssKiB": 237256,
+      "peakRssKiB": 237256
+    },
+    {
+      "wall": 1789063074.9139228,
+      "rssKiB": 237312,
+      "peakRssKiB": 237312
+    },
+    {
+      "wall": 1789063075.4141812,
+      "rssKiB": 237364,
+      "peakRssKiB": 237364
+    },
+    {
+      "wall": 1789063075.9144886,
+      "rssKiB": 244264,
+      "peakRssKiB": 244264
+    },
+    {
+      "wall": 1789063076.41472,
+      "rssKiB": 260776,
+      "peakRssKiB": 260776
+    },
+    {
+      "wall": 1789063076.9149826,
+      "rssKiB": 274224,
+      "peakRssKiB": 274224
+    },
+    {
+      "wall": 1789063077.4152386,
+      "rssKiB": 275272,
+      "peakRssKiB": 275272
+    },
+    {
+      "wall": 1789063077.9155118,
+      "rssKiB": 276396,
+      "peakRssKiB": 276396
+    },
+    {
+      "wall": 1789063078.415822,
+      "rssKiB": 277032,
+      "peakRssKiB": 277032
+    },
+    {
+      "wall": 1789063078.9161015,
+      "rssKiB": 277620,
+      "peakRssKiB": 277620
+    },
+    {
+      "wall": 1789063079.4163728,
+      "rssKiB": 278224,
+      "peakRssKiB": 278224
+    },
+    {
+      "wall": 1789063079.9166322,
+      "rssKiB": 287912,
+      "peakRssKiB": 287912
+    },
+    {
+      "wall": 1789063080.4169486,
+      "rssKiB": 294940,
+      "peakRssKiB": 294940
+    },
+    {
+      "wall": 1789063080.917241,
+      "rssKiB": 295760,
+      "peakRssKiB": 295760
+    },
+    {
+      "wall": 1789063081.417521,
+      "rssKiB": 296524,
+      "peakRssKiB": 296524
+    },
+    {
+      "wall": 1789063081.9178126,
+      "rssKiB": 296848,
+      "peakRssKiB": 296848
+    },
+    {
+      "wall": 1789063082.4181678,
+      "rssKiB": 297124,
+      "peakRssKiB": 297124
+    },
+    {
+      "wall": 1789063082.918453,
+      "rssKiB": 297388,
+      "peakRssKiB": 297388
+    },
+    {
+      "wall": 1789063083.41874,
+      "rssKiB": 297644,
+      "peakRssKiB": 297644
+    },
+    {
+      "wall": 1789063083.9190836,
+      "rssKiB": 297944,
+      "peakRssKiB": 297944
+    },
+    {
+      "wall": 1789063084.4193425,
+      "rssKiB": 298200,
+      "peakRssKiB": 298200
+    },
+    {
+      "wall": 1789063084.919604,
+      "rssKiB": 298464,
+      "peakRssKiB": 298464
+    },
+    {
+      "wall": 1789063085.419875,
+      "rssKiB": 298716,
+      "peakRssKiB": 298716
+    },
+    {
+      "wall": 1789063085.9201603,
+      "rssKiB": 298984,
+      "peakRssKiB": 298984
+    },
+    {
+      "wall": 1789063086.4204245,
+      "rssKiB": 299240,
+      "peakRssKiB": 299240
+    },
+    {
+      "wall": 1789063086.9207034,
+      "rssKiB": 299040,
+      "peakRssKiB": 299040
+    },
+    {
+      "wall": 1789063087.420963,
+      "rssKiB": 299292,
+      "peakRssKiB": 299292
+    },
+    {
+      "wall": 1789063087.921251,
+      "rssKiB": 299640,
+      "peakRssKiB": 299640
+    },
+    {
+      "wall": 1789063088.421535,
+      "rssKiB": 299952,
+      "peakRssKiB": 299952
+    },
+    {
+      "wall": 1789063088.9218132,
+      "rssKiB": 300196,
+      "peakRssKiB": 300196
+    },
+    {
+      "wall": 1789063089.4220731,
+      "rssKiB": 300452,
+      "peakRssKiB": 300452
+    },
+    {
+      "wall": 1789063089.9223588,
+      "rssKiB": 300680,
+      "peakRssKiB": 300680
+    },
+    {
+      "wall": 1789063090.422633,
+      "rssKiB": 300908,
+      "peakRssKiB": 300908
+    },
+    {
+      "wall": 1789063090.922912,
+      "rssKiB": 301188,
+      "peakRssKiB": 301188
+    },
+    {
+      "wall": 1789063091.423224,
+      "rssKiB": 301488,
+      "peakRssKiB": 301488
+    },
+    {
+      "wall": 1789063091.9235408,
+      "rssKiB": 301744,
+      "peakRssKiB": 301744
+    },
+    {
+      "wall": 1789063092.4238164,
+      "rssKiB": 301992,
+      "peakRssKiB": 301992
+    },
+    {
+      "wall": 1789063092.9240837,
+      "rssKiB": 302228,
+      "peakRssKiB": 302228
+    },
+    {
+      "wall": 1789063093.4243345,
+      "rssKiB": 302456,
+      "peakRssKiB": 302456
+    },
+    {
+      "wall": 1789063093.924573,
+      "rssKiB": 302692,
+      "peakRssKiB": 302692
+    },
+    {
+      "wall": 1789063094.4248059,
+      "rssKiB": 302920,
+      "peakRssKiB": 302920
+    },
+    {
+      "wall": 1789063094.9250364,
+      "rssKiB": 303140,
+      "peakRssKiB": 303140
+    },
+    {
+      "wall": 1789063095.4252465,
+      "rssKiB": 303368,
+      "peakRssKiB": 303368
+    },
+    {
+      "wall": 1789063095.9254794,
+      "rssKiB": 303600,
+      "peakRssKiB": 303600
+    },
+    {
+      "wall": 1789063096.4257076,
+      "rssKiB": 303828,
+      "peakRssKiB": 303828
+    },
+    {
+      "wall": 1789063096.92594,
+      "rssKiB": 304064,
+      "peakRssKiB": 304064
+    },
+    {
+      "wall": 1789063097.426258,
+      "rssKiB": 304328,
+      "peakRssKiB": 304328
+    },
+    {
+      "wall": 1789063097.9265041,
+      "rssKiB": 304556,
+      "peakRssKiB": 304556
+    },
+    {
+      "wall": 1789063098.426822,
+      "rssKiB": 304732,
+      "peakRssKiB": 304732
+    },
+    {
+      "wall": 1789063098.9271014,
+      "rssKiB": 304740,
+      "peakRssKiB": 304740
+    },
+    {
+      "wall": 1789063099.4273763,
+      "rssKiB": 304752,
+      "peakRssKiB": 304752
+    },
+    {
+      "wall": 1789063099.9276426,
+      "rssKiB": 304760,
+      "peakRssKiB": 304760
+    },
+    {
+      "wall": 1789063100.4279244,
+      "rssKiB": 304768,
+      "peakRssKiB": 304768
+    },
+    {
+      "wall": 1789063100.928192,
+      "rssKiB": 304776,
+      "peakRssKiB": 304776
+    },
+    {
+      "wall": 1789063101.4284766,
+      "rssKiB": 304784,
+      "peakRssKiB": 304784
+    },
+    {
+      "wall": 1789063101.928743,
+      "rssKiB": 304796,
+      "peakRssKiB": 304796
+    },
+    {
+      "wall": 1789063102.4290032,
+      "rssKiB": 304804,
+      "peakRssKiB": 304804
+    },
+    {
+      "wall": 1789063102.9293506,
+      "rssKiB": 304812,
+      "peakRssKiB": 304812
+    },
+    {
+      "wall": 1789063103.4296145,
+      "rssKiB": 304816,
+      "peakRssKiB": 304816
+    },
+    {
+      "wall": 1789063103.9298792,
+      "rssKiB": 304832,
+      "peakRssKiB": 304832
+    },
+    {
+      "wall": 1789063104.4301696,
+      "rssKiB": 304840,
+      "peakRssKiB": 304840
+    },
+    {
+      "wall": 1789063104.9304338,
+      "rssKiB": 304852,
+      "peakRssKiB": 304852
+    },
+    {
+      "wall": 1789063105.4307003,
+      "rssKiB": 304860,
+      "peakRssKiB": 304860
+    },
+    {
+      "wall": 1789063105.9309893,
+      "rssKiB": 304872,
+      "peakRssKiB": 304872
+    },
+    {
+      "wall": 1789063106.4313192,
+      "rssKiB": 304880,
+      "peakRssKiB": 304880
+    },
+    {
+      "wall": 1789063106.9315953,
+      "rssKiB": 304888,
+      "peakRssKiB": 304888
+    },
+    {
+      "wall": 1789063107.4318614,
+      "rssKiB": 313008,
+      "peakRssKiB": 313008
+    },
+    {
+      "wall": 1789063107.9321516,
+      "rssKiB": 314072,
+      "peakRssKiB": 314072
+    },
+    {
+      "wall": 1789063108.432414,
+      "rssKiB": 314204,
+      "peakRssKiB": 314204
+    },
+    {
+      "wall": 1789063108.9326837,
+      "rssKiB": 314572,
+      "peakRssKiB": 314572
+    },
+    {
+      "wall": 1789063109.4329672,
+      "rssKiB": 314572,
+      "peakRssKiB": 314572
+    },
+    {
+      "wall": 1789063109.933251,
+      "rssKiB": 314572,
+      "peakRssKiB": 314572
+    },
+    {
+      "wall": 1789063110.4335637,
+      "rssKiB": 291648,
+      "peakRssKiB": 313904
+    }
+  ]
+}

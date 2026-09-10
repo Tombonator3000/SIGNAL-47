@@ -1,0 +1,232 @@
+{
+    "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+    "buildId": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "sampleRate": 48000,
+    "dspAdvanced": true,
+    "levels": [
+        {
+            "state": "start",
+            "windows": 84,
+            "samples": 172032,
+            "overFullScale": 0,
+            "peak": 0.014126150868833065,
+            "rms": 0.006583135038239636
+        },
+        {
+            "state": "room",
+            "windows": 161,
+            "samples": 329728,
+            "overFullScale": 0,
+            "peak": 0.11601848155260086,
+            "rms": 0.0068598027216955508
+        },
+        {
+            "state": "receiver",
+            "windows": 1309,
+            "samples": 2680832,
+            "overFullScale": 0,
+            "peak": 0.11999170482158661,
+            "rms": 0.007204174345264577
+        },
+        {
+            "state": "printer",
+            "windows": 28,
+            "samples": 57344,
+            "overFullScale": 0,
+            "peak": 0.11798325181007385,
+            "rms": 0.010910442309171109
+        },
+        {
+            "state": "ring",
+            "windows": 199,
+            "samples": 407552,
+            "overFullScale": 0,
+            "peak": 0.15733525156974793,
+            "rms": 0.018576370944312555
+        },
+        {
+            "state": "call",
+            "windows": 103,
+            "samples": 210944,
+            "overFullScale": 0,
+            "peak": 0.24004045128822328,
+            "rms": 0.02486485948646523
+        },
+        {
+            "state": "line-dead",
+            "windows": 1131,
+            "samples": 2316288,
+            "overFullScale": 0,
+            "peak": 0.01995711773633957,
+            "rms": 0.006842976127781433
+        },
+        {
+            "state": "paused",
+            "windows": 141,
+            "samples": 288768,
+            "overFullScale": 0,
+            "peak": 0.023433584719896318,
+            "rms": 0.0009229897098046389
+        },
+        {
+            "state": "impact",
+            "windows": 220,
+            "samples": 450560,
+            "overFullScale": 0,
+            "peak": 0.11053849756717682,
+            "rms": 0.008519107680368335
+        },
+        {
+            "state": "title",
+            "windows": 41,
+            "samples": 83968,
+            "overFullScale": 0,
+            "peak": 0.01640867441892624,
+            "rms": 0.006591185150259865
+        },
+        {
+            "state": "chapter-collect-camera",
+            "windows": 156,
+            "samples": 319488,
+            "overFullScale": 0,
+            "peak": 0.02129557728767395,
+            "rms": 0.006778009082091921
+        },
+        {
+            "state": "chapter-motor-log",
+            "windows": 386,
+            "samples": 790528,
+            "overFullScale": 0,
+            "peak": 0.1010797917842865,
+            "rms": 0.007466592762952485
+        },
+        {
+            "state": "chapter-first-exposure",
+            "windows": 121,
+            "samples": 247808,
+            "overFullScale": 0,
+            "peak": 0.11697743088006973,
+            "rms": 0.006638250828376048
+        },
+        {
+            "state": "chapter-develop-first",
+            "windows": 780,
+            "samples": 1597440,
+            "overFullScale": 0,
+            "peak": 0.14518867433071137,
+            "rms": 0.006921009428683159
+        },
+        {
+            "state": "chapter-experiment",
+            "windows": 120,
+            "samples": 245760,
+            "overFullScale": 0,
+            "peak": 0.08373722434043884,
+            "rms": 0.009564032323944485
+        },
+        {
+            "state": "chapter-lab",
+            "windows": 271,
+            "samples": 555008,
+            "overFullScale": 0,
+            "peak": 0.1127537190914154,
+            "rms": 0.013151424810842307
+        },
+        {
+            "state": "chapter-first",
+            "windows": 212,
+            "samples": 434176,
+            "overFullScale": 0,
+            "peak": 0.09706892818212509,
+            "rms": 0.013200244911502204
+        },
+        {
+            "state": "chapter-interpret-first",
+            "windows": 42,
+            "samples": 86016,
+            "overFullScale": 0,
+            "peak": 0.014092011377215386,
+            "rms": 0.0066607924624346478
+        },
+        {
+            "state": "chapter-archive",
+            "windows": 190,
+            "samples": 389120,
+            "overFullScale": 0,
+            "peak": 0.0856017917394638,
+            "rms": 0.007481429980639777
+        },
+        {
+            "state": "chapter-choose-control",
+            "windows": 597,
+            "samples": 1222656,
+            "overFullScale": 0,
+            "peak": 0.014584330841898919,
+            "rms": 0.006514091555409552
+        },
+        {
+            "state": "chapter-observe-control",
+            "windows": 91,
+            "samples": 186368,
+            "overFullScale": 0,
+            "peak": 0.08348799496889115,
+            "rms": 0.009222426935192034
+        },
+        {
+            "state": "chapter-second-exposure",
+            "windows": 55,
+            "samples": 112640,
+            "overFullScale": 0,
+            "peak": 0.02775704488158226,
+            "rms": 0.006586155683313256
+        },
+        {
+            "state": "chapter-develop-second",
+            "windows": 567,
+            "samples": 1161216,
+            "overFullScale": 0,
+            "peak": 0.15353503823280335,
+            "rms": 0.006901010712722893
+        },
+        {
+            "state": "chapter-comparison",
+            "windows": 226,
+            "samples": 462848,
+            "overFullScale": 0,
+            "peak": 0.12100052088499069,
+            "rms": 0.013876348195877143
+        },
+        {
+            "state": "chapter-file-report",
+            "windows": 48,
+            "samples": 98304,
+            "overFullScale": 0,
+            "peak": 0.08428926020860672,
+            "rms": 0.01789870074142556
+        },
+        {
+            "state": "chapter-report",
+            "windows": 43,
+            "samples": 88064,
+            "overFullScale": 0,
+            "peak": 0.08510227501392365,
+            "rms": 0.009972902106522044
+        },
+        {
+            "state": "chapter-ending",
+            "windows": 21,
+            "samples": 43008,
+            "overFullScale": 0,
+            "peak": 0.0856529176235199,
+            "rms": 0.019607612899256195
+        },
+        {
+            "state": "chapter-complete",
+            "windows": 165,
+            "samples": 337920,
+            "overFullScale": 0,
+            "peak": 0.04904366657137871,
+            "rms": 0.012385778784107581
+        }
+    ]
+}

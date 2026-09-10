@@ -1,0 +1,14 @@
+{
+  "pid": 369478,
+  "processExit": 0,
+  "normalMenuQuit": true,
+  "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Fixtures/FinalV3/MissingSecond",
+  "caseHashesBefore": {
+    "case.json": "d9d18726a7e9836f5cd5bf547db2a66ccd62bec498eb9d570bfbe74c7e9dcc21"
+  },
+  "caseHashesAfter": {
+    "case.json": "77165034acfb66f1cdc545b28c0a240b34ed6da6145933ed9027b0d415499536",
+    "case.backup.json": "d2e0617a5399c31a5d2d4f5a9735838b05c516eed3b78d8654705d7305efcc54"
+  },
+  "journeyExit": 0
+}

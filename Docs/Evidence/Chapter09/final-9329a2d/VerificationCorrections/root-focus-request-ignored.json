@@ -1,0 +1,225 @@
+{
+  "schema": "signal47-chapter09-package-startup-v1",
+  "started_utc": "2026-09-10T18:07:07Z",
+  "ended_utc": "2026-09-10T18:07:26Z",
+  "outcome": "AUTOMATION_PASS_VISUAL_UNVERIFIED",
+  "error": null,
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS",
+    "normal_extracted_launcher": "PASS",
+    "x11_focus_loss_and_return": "UNVERIFIED",
+    "native_input_sequence_issued": "PASS",
+    "zero_exit_after_quit_click": "PASS"
+  },
+  "input_events": [
+    {
+      "action": "mouse_click",
+      "utc": "2026-09-10T18:07:16Z",
+      "monotonic": 107322.278955749,
+      "target": "START NIGHT SHIFT",
+      "client_x": 640.0,
+      "client_y": 481.0,
+      "effect": "Input issued; actual menu transition requires screenshot review."
+    },
+    {
+      "action": "focus_loss_request",
+      "utc": "2026-09-10T18:07:19Z",
+      "monotonic": 107325.541413541,
+      "target_window": 1063,
+      "observed_focus_window": 20971528,
+      "loss_observed": false
+    },
+    {
+      "action": "focus_reactivation",
+      "utc": "2026-09-10T18:07:20Z",
+      "monotonic": 107326.241818765,
+      "observed_focus_window": 20971528,
+      "return_observed": true
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:07:20Z",
+      "monotonic": 107326.665404392,
+      "key": "w"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.01558694,
+      "key": "w"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.180489871,
+      "key": "a"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.360715081,
+      "key": "a"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.526048228,
+      "key": "s"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.676190344,
+      "key": "s"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:07:21Z",
+      "monotonic": 107327.838763411,
+      "key": "d"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:07:22Z",
+      "monotonic": 107327.958918314,
+      "key": "d"
+    },
+    {
+      "action": "key_tap",
+      "utc": "2026-09-10T18:07:23Z",
+      "monotonic": 107329.492775764,
+      "key": "Escape",
+      "intended_effect": "open pause menu"
+    },
+    {
+      "action": "mouse_click",
+      "utc": "2026-09-10T18:07:26Z",
+      "monotonic": 107332.055543139,
+      "target": "QUIT in pause menu",
+      "client_x": 702.0,
+      "client_y": 568.0,
+      "effect": "Input issued; subsequent exit code is checked separately."
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-menu.png",
+      "utc": "2026-09-10T18:07:15Z",
+      "window_id": 20971528,
+      "window_pid": 373595,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "3e646bd0377476d286c61d6456299e643b1e304782fa65a5d4eb4bd70bd95686",
+      "intended_state": "normal start menu",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    },
+    {
+      "file": "02-playing.png",
+      "utc": "2026-09-10T18:07:23Z",
+      "window_id": 20971528,
+      "window_pid": 373595,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "62587b70255d37d1152376b5516618dfe7d635fc97fe3a16140810bcdfe71f9a",
+      "intended_state": "first-person play after short WASD inputs",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    },
+    {
+      "file": "03-pause.png",
+      "utc": "2026-09-10T18:07:24Z",
+      "window_id": 20971528,
+      "window_pid": 373595,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "dd79a543ca5df66d83acf4694fc8e36d68af20e5ea0d568cec806510af55e19b",
+      "intended_state": "pause menu",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    }
+  ],
+  "verification_script_sha256": "7e9ba411af94c9f6bd6583d794a20ca76c1e86055310cb5ed70b5866a3ef4db2",
+  "desktop_source_sha256": "a0b23db90cce005c0f6ab84e5fe10448495fb8a391d580ca7c1a3382c6e79752",
+  "visual_review": {
+    "menu": "UNVERIFIED",
+    "playing": "UNVERIFIED",
+    "pause": "UNVERIFIED",
+    "requirement": "A reviewer must inspect the original captures for actual GUI state and any overlap. Issued input is not proof of the displayed state."
+  },
+  "exclusive_lock": "/run/user/1000/signal47-gauntlet.lock",
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz",
+    "bytes": 65422347,
+    "sha256": "bce4c4c7423a4e7f42792991553fb1ee3386d0f3a9918a2cdb14aee8ab9a1696",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz.sha256",
+    "sidecar_sha256": "a24adb80faf0622805279b4396bb0135cbb826cde12ec4e2121edce4cbd564e4"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV2/Chapter09-86a28b30ad94",
+    "manifest_sha256": "35a28d3101d83ec532b12d243c8ddfeb95e256aff5354495e2f1fd2de8f3c2fa",
+    "package_id": "Chapter09-86a28b30ad94",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 150891646,
+    "package_payload_sha256": "1a68b4d210a7a470e411105ca7e1dbbe5033d58bf0d5092657d7f43796b5dcdf",
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651"
+  },
+  "run": {
+    "arguments": [
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV2/Chapter09-86a28b30ad94/Start-SIGNAL47.sh",
+      "--signal47-save-dir",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV2/qa-profile",
+      "-screen-width",
+      "1280",
+      "-screen-height",
+      "800",
+      "-screen-fullscreen",
+      "0",
+      "-logFile",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV2/player.log"
+    ],
+    "cwd": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV2/Chapter09-86a28b30ad94",
+    "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV2/qa-profile",
+    "display": ":0",
+    "pulse_server": "unix:/run/user/1000/pulse/native",
+    "observer_mode": false,
+    "input_backend": "existing Desktop + Linux uinput",
+    "pid": 373595,
+    "exit_code": 0,
+    "forced_cleanup": false
+  },
+  "focus_check": {
+    "status": "UNVERIFIED",
+    "focus_before": 20971528,
+    "requested_target": 1063,
+    "focus_after_loss_request": 20971528,
+    "loss_observed": false,
+    "focus_after_reactivation": 20971528,
+    "return_observed": true,
+    "method": "XSetInputFocus to the X root window, then Desktop.focus; no keyboard or mouse input while unfocused.",
+    "limitation": "The compositor did not confirm both requested focus changes; the round trip remains UNVERIFIED."
+  }
+}

@@ -1,39 +1,40 @@
 # SIGNAL / 47
 
-First-person cosmic investigation at SARO, New Mexico, 1986.
+Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
-## Play on Linux
+## Spill på Kubuntu
 
-Run `Artifacts/GauntletLinux/Signal47.x86_64` from the local checkout, or extract the local `Artifacts/SIGNAL-47-Gauntlet-Linux.tar.gz` into a new directory and launch `Signal47.x86_64`. The previous development build remains in `Artifacts/Linux/`.
+Start `./Spill-SIGNAL47.sh` i denne prosjektmappen. Startfilen peker fast på kapittelpakken `Artifacts/Releases/Chapter09-86a28b30ad94/`, slik at et senere utviklingsbygg ikke endrer hva du åpner.
 
-WASD moves, mouse looks, E interacts, Tab opens the notebook and Esc closes the console or pauses. Start with the shift clipboard and receiver bank. The CRT reference card explains calibration, interference rejection and the anomalous carrier. Finish the direction solve, wait for the physical paper feed, inspect the printout, answer the phone and remain in the room for the ending. Choose CONTINUE / SERVICE YARD to inspect S-03 outside the east door, then return to the control room. E picks up the coffee mug and returns it to the desk. Collected documents can be reopened from the scrollable notebook; observations carry local timestamps.
+Pakken kan også flyttes: pakk ut `Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz` og kjør `./Start-SIGNAL47.sh` i den utpakkede mappen. Arkivet bevarer kjørerettigheter. Spillpakkene er lokale leveranser; de følger ikke med et rent Git-klon.
 
-## Latest pass
+Velg **START NIGHT SHIFT** eller **CONTINUE CHECKPOINT**. WASD beveger, mus ser rundt, E bruker fysiske ting, Tab åpner notatboken og Escape lukker eller pauser. C åpner kamerasøkeren; Space eksponerer. Filmen må framkalles i den nordlige fotolaben før bildet kan undersøkes. Lydnivå, musefølsomhet og fullskjerm finnes i SETTINGS og lagres. Fullskjerm bruker skjermens opprinnelige oppløsning; vindusstørrelsen huskes.
 
-The field-camera prototype extends the east service yard. Collect the physical camera beside the east door, read motor controller S-03, press C to frame the central antenna and Space to take its actual photograph. Open PHOTO 01 with Tab, return inside and compare the image with the motor log. Premature/wrong frames are rejected; photos and comparisons are filed once and can be reopened. Restart resets the round while preserving exported JPG/JSON files under `~/.config/unity3d/SARO/SIGNAL 47/FieldPhotos`. This is one survey subject, without film processing or full-game save/resume yet.
+## Første kapittel: Den andre eksponeringen
 
-Final release passed 34 native keyboard/mouse checkpoints in each of two runs and measured 74.987 fps over 185.832 seconds at 1280×800 Ultra / Intel ARL / OpenGLCore: p95 15.875 ms, p99 16.181 ms, maximum 43.051 ms, no frames above 50 ms. A fresh independent critic inspected the corrected original runtime images against the bounded prototype targets. See [field camera 08](Docs/FIELD_CAMERA_08.md), [service yard 07](Docs/SERVICE_YARD_07.md) and [control room 06](Docs/CONTROL_ROOM_PASS_06.md). GPU timing, subjective listening, final art and other devices remain unverified.
+Den eksisterende nattevakten fortsetter gjennom S-03, en fysisk fotolab, bildeundersøkelse, referansekart, hypotese, et kontrollforsøk ved B-12 og en ny lokal avslutning. To forsøksmetoder gir forskjellig fysisk oppsett, observasjon og begrunnet konklusjon. Feil forklaringer gir en vei videre. De to fotografiene kommer fra dine faktiske eksponeringer i spillscenen og kan åpnes igjen, forstørres og sammenlignes.
 
-The imported asset pass adds worn metal desks, an articulated lamp, a detailed reserve radio, linoleum and a night sky. Recorded printer, telephone, ceramic and wind effects join mechanical UI clicks; VT323 gives the terminal its typeface, and an attributed Scott Buckley excerpt accompanies the ending title. See [asset pass 03](Docs/ASSET_PASS_03.md) for the 54-check graphical validation and [third-party notices](Docs/THIRD_PARTY_NOTICES.md) for source licenses.
+Lagring blir tilgjengelig etter telefon-/antenneforløpet. Kapitlet lagrer ved sammenhengende kontrollpunkter; pausemenyen tilbyr SAVE CHECKPOINT og QUIT. Normal avslutning venter på lagringen. Saken ligger i `~/.config/unity3d/SARO/SIGNAL 47/Chapter09/`; det opprinnelige fotoarkivet ligger i `~/.config/unity3d/SARO/SIGNAL 47/FieldPhotos/`. Nytt spill nullstiller aktiv sak og bevarer eksportene. En skrivefeil viser status og lar deg velge å avslutte uten de siste endringene.
 
-The control room now has refined Blender meshes, differentiated materials, tile and ceiling detail, auxiliary screens and furniture. Signal strength, spectrum and a positional receiver tone respond to tuning; fine adjustment buttons step by 0.001 MHz. See `Docs/ART_PASS_01.md`. The investigation pass adds physical paper, an animated handset, a holdable mug, collected evidence and a synchronized 47-second event sequence; see `Docs/INVESTIGATION_PASS_02.md`.
+Dette er en spillbar alpha med første kapittels samlede forløp. Materialer og enkelte møbler har fortsatt et enkelt uttrykk; motell, bil og den større Roswell-historien er senere innhold. Førstegangsvarighet og subjektiv lydmiks er ikke bekreftet av ekstern spilltesting. Se [kapittelrapporten](Docs/CHAPTER_09.md) for bindende kontrollpunkter, faktiske målinger og begrensninger, og [overleveringen](Docs/CURRENT_HANDOFF.md) for kilde-/byggidentitet.
 
-## Source and tools
+Forrige fungerende feltkamera-utgave er beholdt i `Artifacts/Releases/FieldCamera08-af5a85d/` og `SIGNAL47-FieldCamera08-Linux.tar.gz`. Historiske resultater står i [pass08](Docs/FIELD_CAMERA_08.md), [servicegård07](Docs/SERVICE_YARD_07.md), [kontrollrom06](Docs/CONTROL_ROOM_PASS_06.md) og [verden05](Docs/WORLD_AREA_PASS_05.md).
 
-`Unity/` contains the original `SIGNAL_47_Unity_U1.zip` project, retrieved by the user from the original ChatGPT conversation and imported on 2026-09-09. The nine original OBJ assets are reused. Blender successfully imported all nine and saved `Unity/Blender/SIGNAL47_prototype_assets.blend`.
+## Kilde, bygg og kontroll
 
-Unity 6000.3.22f1, URP 17.3.0, Input System 1.20.0; Blender 4.5.13 LTS. Open `Unity/` in Unity Hub and open `Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity`.
-
-## Build and test
+Behold Unity 6000.3.22f1, URP 17.3.0, Input System 1.20.0 og Blender 4.5.13 LTS. Åpne `Unity/` i Unity Hub og scenen `Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity`. Originale modeller, redigerbare Blender-kilder og Unity-metadata er bevart. Se [kreditering og lisenser](Docs/THIRD_PARTY_NOTICES.md), inklusive VT323 og Scott Buckley.
 
 ```sh
+# Utviklingsbygg og eksisterende regresjon:
 bash Automation/build-linux.sh
-# Full service-yard verification on the graphical desktop:
-bash Automation/run-service-yard.sh
-# Non-development release, build stamp and separate playable archive:
+# Release-bygg og full kilde-/innholdsstempling:
 bash Automation/build-gauntlet-linux.sh
+# Eksempel: normal ny reise med virkelig tastatur/mus i isolert profil:
+python3 Automation/run-chapter09.py --name MyChapterRun --profile Artifacts/Chapter09/Profiles/MyChapterRun -- --phase all --method active --quit
+# Pakk bare kildene som er verifisert mot samme byggmanifest:
+python3 Automation/package-chapter09.py --expect-source 86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9
 ```
 
-Requires the configured Unity editor and Linux build support. `UNITY_EDITOR` may override the local editor path. The manual GitHub workflow uses the dedicated `signal47-kubuntu` runner and saves a compressed development build with logs on the PC. GitHub upload is optional (off by default because account artifact storage was full). The headless test uses SDL’s dummy video driver and disables audio output; graphical/audio runs remain separate. The regression scenario runs only when `--signal47-smoke` is supplied to a development build. The separate release supports an observation-only `--signal47-gauntlet` flag; ordinary play needs neither flag.
+Bygging krever den installerte Unity-editoren og Linux-støtte; `UNITY_EDITOR` kan angi editorbanen. Native input krever grafisk sesjon og `/dev/uinput`. Testløperen låser skjermstyringen og avviser en annen kjørende spiller. Bruk et nytt navn og en isolert profil for hvert nytt forsøk. `--signal47-gauntlet` gir observasjon, skjermbilder og målinger; normal spilling bruker ikke dette flagget. Direkte smoke-/tilstandstester og feilinjeksjonskopier er separate fra beviset for brukerreisen.
 
-See `Docs/VALIDATION.md` for test scope and remaining limitations. This is a verified prologue plus one service-yard investigation, with prototype art. The motel is not playable.
+`Artifacts/GauntletLinux/` er ordinær byggoutput. En ny endring krever berørt verifisering, ny kildeidentitet og ny entydig pakke. Eksisterende pakker skal bevares. Ingen ny merge eller offentlig publisering er gitt mandat i dette oppdraget.

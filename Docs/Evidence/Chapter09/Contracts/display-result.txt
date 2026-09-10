@@ -1,0 +1,23 @@
+PASS Stable initial window sends no resize request
+CHAPTER_DISPLAY_REQUEST 1920x1080 mode=FullScreenWindow
+PASS Fullscreen requests native compositor dimensions exactly once despite repeated IMGUI Apply
+PASS Completed native fullscreen causes no repeated SetResolution
+CHAPTER_DISPLAY_REQUEST 1280x800 mode=Windowed
+PASS Leaving fullscreen restores original 1280x800 window exactly once
+PASS New settings persist versioned window dimensions
+CHAPTER_DISPLAY_REQUEST 1920x1080 mode=FullScreenWindow
+PASS Manual window resizing survives saving while fullscreen
+CHAPTER_DISPLAY_REQUEST 1100x720 mode=Windowed
+PASS Return uses most recent manually selected window size
+CHAPTER_DISPLAY_REQUEST 1920x1080 mode=FullScreenWindow
+PASS Version-one fullscreen preference migrates to native fullscreen
+PASS Version-one migration preserves audio/mouse and captures initial window fallback
+CHAPTER_DISPLAY_REQUEST 1920x1080 mode=FullScreenWindow
+PASS Fullscreen startup preserves previous saved window instead of launcher dimensions
+CHAPTER_DISPLAY_REQUEST 1024x640 mode=Windowed
+PASS Saved prior window size restored after a fresh fullscreen launch
+CHAPTER_DISPLAY_REQUEST 1024x640 mode=Windowed
+PASS Saved window dimensions applied once at windowed startup
+CHAPTER_DISPLAY_REQUEST 1920x1080 mode=FullScreenWindow
+PASS Existing downscaled fullscreen corrected to native framebuffer
+Display decision and persistence checks complete; compositor/input are mocked and require actual Kubuntu verification.

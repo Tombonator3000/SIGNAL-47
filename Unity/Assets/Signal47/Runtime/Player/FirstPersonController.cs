@@ -8,7 +8,16 @@ namespace Signal47.Player
     {
         public Camera viewCamera; public float moveSpeed=3.15f; public float lookSensitivity=.085f;
         CharacterController cc; float pitch; float verticalVelocity;
+        public float ViewPitch=>pitch;
         void Awake(){cc=GetComponent<CharacterController>();}
+        public void RestorePose(Vector3 position,float yaw,float viewPitch)
+        {
+            bool wasEnabled=cc.enabled;cc.enabled=false;
+            transform.SetPositionAndRotation(position,Quaternion.Euler(0,yaw,0));
+            pitch=Mathf.Clamp(viewPitch,-70,70);verticalVelocity=0;
+            viewCamera.transform.localRotation=Quaternion.Euler(pitch,0,0);
+            cc.enabled=wasEnabled;Physics.SyncTransforms();
+        }
         void Update()
         {
             if(GameSession.Instance==null || !GameSession.Instance.CanControl) return;

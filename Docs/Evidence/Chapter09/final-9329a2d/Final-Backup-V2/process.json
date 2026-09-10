@@ -1,0 +1,15 @@
+{
+  "pid": 368386,
+  "processExit": 0,
+  "normalMenuQuit": true,
+  "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Fixtures/FinalV2/CorruptPrimary",
+  "caseHashesBefore": {
+    "case.json": "08c5c6eb12f0c66cc20cedb0a41c8a4513ac5b70379f49dda7a2cad0a5d7d7dc",
+    "case.backup.json": "6e5be143ea624b09a3c5cd2a3ed58eb4a63bdf362200b906dff24db523cc8397"
+  },
+  "caseHashesAfter": {
+    "case.json": "9aca93e725141f52fe87ce117428d2c85e4b0cd735dd9ae4cd1a36e01b352bfd",
+    "case.backup.json": "6e5be143ea624b09a3c5cd2a3ed58eb4a63bdf362200b906dff24db523cc8397"
+  },
+  "journeyExit": 0
+}

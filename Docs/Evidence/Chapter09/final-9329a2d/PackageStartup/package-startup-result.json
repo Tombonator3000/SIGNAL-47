@@ -1,0 +1,224 @@
+{
+  "schema": "signal47-chapter09-package-startup-v1",
+  "started_utc": "2026-09-10T18:09:05Z",
+  "ended_utc": "2026-09-10T18:09:24Z",
+  "outcome": "AUTOMATION_PASS_VISUAL_UNVERIFIED",
+  "error": null,
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS",
+    "normal_extracted_launcher": "PASS",
+    "x11_focus_loss_and_return": "PASS",
+    "native_input_sequence_issued": "PASS",
+    "zero_exit_after_quit_click": "PASS"
+  },
+  "input_events": [
+    {
+      "action": "mouse_click",
+      "utc": "2026-09-10T18:09:14Z",
+      "monotonic": 107440.173764304,
+      "target": "START NIGHT SHIFT",
+      "client_x": 640.0,
+      "client_y": 481.0,
+      "effect": "Input issued; actual menu transition requires screenshot review."
+    },
+    {
+      "action": "focus_loss_request",
+      "utc": "2026-09-10T18:09:17Z",
+      "monotonic": 107443.806262894,
+      "target": "native Alt+Tab",
+      "observed_focus_window": 16777220,
+      "loss_observed": true
+    },
+    {
+      "action": "focus_reactivation",
+      "utc": "2026-09-10T18:09:18Z",
+      "monotonic": 107444.506663852,
+      "observed_focus_window": 20971528,
+      "return_observed": true
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:09:19Z",
+      "monotonic": 107444.93502175,
+      "key": "w"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:09:19Z",
+      "monotonic": 107445.285183159,
+      "key": "w"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:09:19Z",
+      "monotonic": 107445.450334042,
+      "key": "a"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:09:19Z",
+      "monotonic": 107445.630504454,
+      "key": "a"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:09:19Z",
+      "monotonic": 107445.79470245,
+      "key": "s"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:09:20Z",
+      "monotonic": 107445.944887194,
+      "key": "s"
+    },
+    {
+      "action": "key_down",
+      "utc": "2026-09-10T18:09:20Z",
+      "monotonic": 107446.109330695,
+      "key": "d"
+    },
+    {
+      "action": "key_up",
+      "utc": "2026-09-10T18:09:20Z",
+      "monotonic": 107446.229481617,
+      "key": "d"
+    },
+    {
+      "action": "key_tap",
+      "utc": "2026-09-10T18:09:21Z",
+      "monotonic": 107447.816475907,
+      "key": "Escape",
+      "intended_effect": "open pause menu"
+    },
+    {
+      "action": "mouse_click",
+      "utc": "2026-09-10T18:09:24Z",
+      "monotonic": 107450.400527145,
+      "target": "QUIT in pause menu",
+      "client_x": 702.0,
+      "client_y": 568.0,
+      "effect": "Input issued; subsequent exit code is checked separately."
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-menu.png",
+      "utc": "2026-09-10T18:09:13Z",
+      "window_id": 20971528,
+      "window_pid": 374239,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "1ef6df3caae9289ab1a5c70f56f4826f2d5b2f189076246ee45ba145544ad66f",
+      "intended_state": "normal start menu",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    },
+    {
+      "file": "02-playing.png",
+      "utc": "2026-09-10T18:09:21Z",
+      "window_id": 20971528,
+      "window_pid": 374239,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "c88d3f37d6c5c685cc14ae66d0e67abb6f0f3bbc4343160fb6fc12626b9d97ec",
+      "intended_state": "first-person play after short WASD inputs",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    },
+    {
+      "file": "03-pause.png",
+      "utc": "2026-09-10T18:09:23Z",
+      "window_id": 20971528,
+      "window_pid": 374239,
+      "actual_client_bbox": [
+        1920,
+        56,
+        3200,
+        856
+      ],
+      "width": 1280,
+      "height": 800,
+      "sha256": "a3bdafe5c404b0ebcf335898c8489db200e6a8e6ea7035c07e3dfa0716d5092b",
+      "intended_state": "pause menu",
+      "visual_content": "UNVERIFIED",
+      "capture_method": "Installed KDE Spectacle active-window capture, no decorations/shadows/notification; exact native client size checked against XGetGeometry. No resizing, retouching or full-desktop capture."
+    }
+  ],
+  "verification_script_sha256": "9744f39bfa78d76bb010b6c3c67da3d146dfcb24e206abe8962f9d1188564681",
+  "desktop_source_sha256": "0a1d5ca2b20b0e9f6e580cea143db90db17f4add733539cc3bc224fa1efb7ed1",
+  "visual_review": {
+    "menu": "UNVERIFIED",
+    "playing": "UNVERIFIED",
+    "pause": "UNVERIFIED",
+    "requirement": "A reviewer must inspect the original captures for actual GUI state and any overlap. Issued input is not proof of the displayed state."
+  },
+  "exclusive_lock": "/run/user/1000/signal47-gauntlet.lock",
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz",
+    "bytes": 65422347,
+    "sha256": "bce4c4c7423a4e7f42792991553fb1ee3386d0f3a9918a2cdb14aee8ab9a1696",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz.sha256",
+    "sidecar_sha256": "a24adb80faf0622805279b4396bb0135cbb826cde12ec4e2121edce4cbd564e4"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV3/Chapter09-86a28b30ad94",
+    "manifest_sha256": "35a28d3101d83ec532b12d243c8ddfeb95e256aff5354495e2f1fd2de8f3c2fa",
+    "package_id": "Chapter09-86a28b30ad94",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 150891646,
+    "package_payload_sha256": "1a68b4d210a7a470e411105ca7e1dbbe5033d58bf0d5092657d7f43796b5dcdf",
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651"
+  },
+  "run": {
+    "arguments": [
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV3/Chapter09-86a28b30ad94/Start-SIGNAL47.sh",
+      "--signal47-save-dir",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV3/qa-profile",
+      "-screen-width",
+      "1280",
+      "-screen-height",
+      "800",
+      "-screen-fullscreen",
+      "0",
+      "-logFile",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV3/player.log"
+    ],
+    "cwd": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV3/Chapter09-86a28b30ad94",
+    "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartupV3/qa-profile",
+    "display": ":0",
+    "pulse_server": "unix:/run/user/1000/pulse/native",
+    "observer_mode": false,
+    "input_backend": "existing Desktop + Linux uinput",
+    "pid": 374239,
+    "exit_code": 0,
+    "forced_cleanup": false
+  },
+  "focus_check": {
+    "status": "PASS",
+    "focus_before": 20971528,
+    "requested_target": "next application through native Alt+Tab",
+    "focus_after_loss_request": 16777220,
+    "loss_observed": true,
+    "focus_after_reactivation": 20971528,
+    "return_observed": true,
+    "method": "Native Alt+Tab with both keys released, then Desktop.focus; no subsequent keyboard or mouse input to the other application."
+  }
+}

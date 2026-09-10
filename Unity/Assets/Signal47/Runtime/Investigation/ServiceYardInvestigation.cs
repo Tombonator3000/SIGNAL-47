@@ -28,6 +28,10 @@ namespace Signal47.Investigation
             g.notebook.Add("The array left its track. Check the local motor controller in the east service yard.");
             g.hud.Toast("SERVICE ACCESS RELEASED // EAST DOOR",3f);
         }
+        public void RestoreState(bool completed,bool returned)
+        {
+            Active=true;Completed=completed;Returned=completed&&returned;
+        }
         public void InspectCabinet()
         {
             var g=GameSession.Instance;

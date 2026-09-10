@@ -20,5 +20,10 @@ namespace Signal47.Interaction
             if(paper)paper.localPosition=paperPosition;
             Printing=false;Ready=true;
         }
+        public void RestoreReady()
+        {
+            StopAllCoroutines();Printing=false;Ready=true;
+            if(paper){paper.gameObject.SetActive(true);paper.localPosition=paperPosition;}
+        }
     }
 }

@@ -1,0 +1,20 @@
+PASS Quit defers while older write owns disk
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+CHAPTER_QUIT_DRAIN_OK
+PASS Quit permitted after queue drains
+PASS Queued newer completion snapshot survives slow older write
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+PASS Fallback OnApplicationQuit drains newer queued snapshot with shared budget
+CHAPTER_QUIT_CANCELED Exit canceled: saving did not finish within two seconds. The game remains open; wait for the archive, then retry Quit.
+PASS Slow disk cancels Quit within the two-second budget and keeps process alive
+PASS Timeout preserves latest live world and leaves readable pause
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+CHAPTER_SAVE_OK /tmp/signal47-quit-regression-84r6as2c/isolated-save/case.json
+PASS Latest snapshot finishes after timeout without unexpected exit
+CHAPTER_SAVE_FAILED deliberate failed write
+CHAPTER_QUIT_CANCELED Saving failed. The game remains open; retry Save or Quit after correcting the save location.
+PASS Write failure cancels Quit instead of losing active world
+PASS Receiver restored through same green base and emission state as power-on
+Focused quit-regression checks complete; Unity API/scene/input remain mocked.

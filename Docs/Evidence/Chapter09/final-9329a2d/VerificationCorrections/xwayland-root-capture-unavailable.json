@@ -1,0 +1,67 @@
+{
+  "schema": "signal47-chapter09-package-startup-v1",
+  "started_utc": "2026-09-10T18:05:48Z",
+  "ended_utc": "2026-09-10T18:05:56Z",
+  "outcome": "FAIL",
+  "error": "OSError: X get_image failed: error 8 (73, 0, 1063)",
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS",
+    "normal_extracted_launcher": "PASS"
+  },
+  "input_events": [],
+  "screenshots": [],
+  "verification_script_sha256": "12fd3f518f6124b509a1540d5a6448e0ffb1b6ba76472d88253280faa0b9f230",
+  "desktop_source_sha256": "a0b23db90cce005c0f6ab84e5fe10448495fb8a391d580ca7c1a3382c6e79752",
+  "visual_review": {
+    "menu": "UNVERIFIED",
+    "playing": "UNVERIFIED",
+    "pause": "UNVERIFIED",
+    "requirement": "A reviewer must inspect the original captures for actual GUI state and any overlap. Issued input is not proof of the displayed state."
+  },
+  "exclusive_lock": "/run/user/1000/signal47-gauntlet.lock",
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz",
+    "bytes": 65422347,
+    "sha256": "bce4c4c7423a4e7f42792991553fb1ee3386d0f3a9918a2cdb14aee8ab9a1696",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz.sha256",
+    "sidecar_sha256": "a24adb80faf0622805279b4396bb0135cbb826cde12ec4e2121edce4cbd564e4"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtracted/Chapter09-86a28b30ad94",
+    "manifest_sha256": "35a28d3101d83ec532b12d243c8ddfeb95e256aff5354495e2f1fd2de8f3c2fa",
+    "package_id": "Chapter09-86a28b30ad94",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 150891646,
+    "package_payload_sha256": "1a68b4d210a7a470e411105ca7e1dbbe5033d58bf0d5092657d7f43796b5dcdf",
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651"
+  },
+  "run": {
+    "arguments": [
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtracted/Chapter09-86a28b30ad94/Start-SIGNAL47.sh",
+      "--signal47-save-dir",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartup/qa-profile",
+      "-screen-width",
+      "1280",
+      "-screen-height",
+      "800",
+      "-screen-fullscreen",
+      "0",
+      "-logFile",
+      "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartup/player.log"
+    ],
+    "cwd": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtracted/Chapter09-86a28b30ad94",
+    "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageStartup/qa-profile",
+    "display": ":0",
+    "pulse_server": "unix:/run/user/1000/pulse/native",
+    "observer_mode": false,
+    "input_backend": "existing Desktop + Linux uinput",
+    "pid": 373086,
+    "exit_code": 0,
+    "forced_cleanup": true
+  }
+}

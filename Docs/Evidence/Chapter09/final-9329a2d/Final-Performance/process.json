@@ -1,0 +1,12 @@
+{
+  "pid": 370749,
+  "processExit": 0,
+  "normalMenuQuit": true,
+  "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Performance",
+  "caseHashesBefore": {},
+  "caseHashesAfter": {
+    "case.json": "aa8fd2d1f6dfc7996869fab5b5f63d4db9704cfef2633fe5d35802a9d25cda48",
+    "case.backup.json": "e53e3d539c2e6e5440a37f4fa5eacfed8e5c52145f83ceec0d06e783338a9375"
+  },
+  "journeyExit": 0
+}

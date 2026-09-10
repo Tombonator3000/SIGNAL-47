@@ -68,6 +68,12 @@ namespace Signal47.Signals
             solved=true;status="OUTPUT ROUTED TO PRINTER";GameSession.Instance.notebook.Add("1420.405 MHz — repeating 4 / 7 pulse grouping.");GameSession.Instance.notebook.Add("Direction solve routed to printer.");GameSession.Instance.director.OnSignalSolved();UpdatePhysicalScreen();
         }
         public void Close(){AnyOpen=false;GameSession.Instance.hud.SetCursor(true);}
+        public void RestoreCompleted(float savedFrequency,float savedGain,float savedBandwidth,float savedAzimuth)
+        {
+            AnyOpen=false;stage=profiles.Length;solved=true;status="SIGNAL ACQUIRED";
+            frequency=savedFrequency;gain=savedGain;bandwidth=savedBandwidth;azimuth=savedAzimuth;
+            RenderSpectrum();UpdatePhysicalScreen();
+        }
         void RenderSpectrum()
         {
             const int width=512,height=220;
