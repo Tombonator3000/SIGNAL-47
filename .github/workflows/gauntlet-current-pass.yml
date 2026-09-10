@@ -20,7 +20,7 @@ jobs:
           persist-credentials: true
       - name: Build non-development Gauntlet player
         run: bash Automation/build-gauntlet-linux.sh
-      - name: Native-input journey and performance gate
+      - name: Native-input journey and measurement
         shell: bash
         run: |
           set -euo pipefail
@@ -56,12 +56,38 @@ jobs:
           done
           [[ -s Artifacts/Gauntlet/state.json ]] || { tail -120 Artifacts/gauntlet-current-player.log || true; exit 4; }
           python3 Automation/gauntlet-user-journey.py --measure
+      - name: Preserve measurement evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -s Artifacts/Gauntlet/performance.json ]] || { echo 'No performance evidence to preserve'; exit 0; }
+          short="${GITHUB_SHA:0:7}"
+          mkdir -p Docs/Evidence/WorldAreaPass05/Performance
+          cp Artifacts/Gauntlet/performance.json "Docs/Evidence/WorldAreaPass05/Performance/performance-${short}.json"
+          [[ -s Artifacts/Gauntlet/journey-result.json ]] && cp Artifacts/Gauntlet/journey-result.json "Docs/Evidence/WorldAreaPass05/Performance/journey-${short}.json"
+          [[ -s Artifacts/Gauntlet/frames.csv ]] && cp Artifacts/Gauntlet/frames.csv "Docs/Evidence/WorldAreaPass05/Performance/frames-${short}.csv"
+          git config user.name "SIGNAL 47 Gauntlet"
+          git config user.email "126078233+Tombonator3000@users.noreply.github.com"
+          git add -f Docs/Evidence/WorldAreaPass05/Performance
+          if ! git diff --cached --quiet; then
+            git commit -m "Record current-pass performance ${short} [skip ci]"
+            git push origin HEAD:gauntlet/world-area-pass-05
+          fi
+      - name: Evaluate performance gates
+        if: always()
+        shell: bash
+        run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('Artifacts/Gauntlet/performance.json')
+          j=Path('Artifacts/Gauntlet/journey-result.json')
+          if not p.exists(): raise SystemExit('GAUNTLET_PERF_FAIL missing performance.json')
           d=json.loads(p.read_text())
+          journey=json.loads(j.read_text()) if j.exists() else {}
           checks={
+              'journey': journey.get('outcome')=='PASS',
               'development_false': d.get('development') is False,
               'focused': d.get('focusedThroughout') is True,
               'duration': d.get('seconds',0)>=120,
@@ -75,17 +101,3 @@ jobs:
           if failed: raise SystemExit('GAUNTLET_PERF_FAIL '+','.join(failed))
           print('GAUNTLET_PERF_PASS')
           PY
-      - name: Preserve performance evidence
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p Docs/Evidence/WorldAreaPass05/Performance
-          cp Artifacts/Gauntlet/performance.json Docs/Evidence/WorldAreaPass05/Performance/performance-control-room-06.json
-          cp Artifacts/Gauntlet/journey-result.json Docs/Evidence/WorldAreaPass05/Performance/journey-control-room-06.json
-          cp Artifacts/Gauntlet/frames.csv Docs/Evidence/WorldAreaPass05/Performance/frames-control-room-06.csv
-          git config user.name "SIGNAL 47 Gauntlet"
-          git config user.email "126078233+Tombonator3000@users.noreply.github.com"
-          git add -f Docs/Evidence/WorldAreaPass05/Performance
-          git commit -m "Record control-room pass performance [skip ci]"
-          git push origin HEAD:gauntlet/world-area-pass-05
