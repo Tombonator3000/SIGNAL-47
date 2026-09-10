@@ -4,5 +4,6 @@
   "quality": "Ultra",
   "gpu": "Mesa Intel(R) Graphics (ARL)",
   "renderer": "OpenGLCore",
-  "method": "fixed runtime camera review viewpoints; not player traversal"
+  "method": "fixed runtime camera review viewpoints; not player traversal",
+  "mobilePreviews": "640x400 JPEG quality 55, derived from the same frames; raw PNG files are authoritative"
 }
