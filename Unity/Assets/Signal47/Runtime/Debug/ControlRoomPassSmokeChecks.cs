@@ -7,11 +7,14 @@ namespace Signal47.Debugging
 {
     public sealed class ControlRoomPassSmokeChecks : MonoBehaviour
     {
+        // Keep the authored mesh reference: Unity may replace renderer meshes with a whole static batch.
+        public Mesh keyboardSource;
         IEnumerator Start()
         {
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-smoke")<0)yield break;
             yield return null;yield return null;
-            int crts=0,decks=0,chairs=0,cosmeticColliders=0,keyMeshes=0;bool geometry=true;
+            int crts=0,decks=0,chairs=0,cosmeticColliders=0,keyMeshes=0;
+            bool geometry=keyboardSource&&keyboardSource.bounds.size.x<1.1f&&keyboardSource.GetIndexCount(0)==52*36;
             foreach(var t in FindObjectsByType<Transform>(FindObjectsSortMode.None))
             {
                 if(t.name=="CRT_SilhouetteUpgrade"){crts++;cosmeticColliders+=t.GetComponentsInChildren<Collider>(true).Length;}
@@ -20,7 +23,8 @@ namespace Signal47.Debugging
                 if(t.name=="KeyboardKeysCombined")
                 {
                     keyMeshes++;var filter=t.GetComponent<MeshFilter>();
-                    geometry&=filter&&filter.sharedMesh&&filter.sharedMesh.vertexCount>400&&filter.sharedMesh.bounds.size.x<1.1f;
+                    var renderer=t.GetComponent<MeshRenderer>();geometry&=filter&&filter.sharedMesh&&renderer&&renderer.enabled;
+                    Debug.Log($"CONTROL_KEY_GEOMETRY staticBatch={(renderer&&renderer.isPartOfStaticBatch)} runtimeMeshWidth={(filter&&filter.sharedMesh?filter.sharedMesh.bounds.size.x:0)} rendererWidth={(renderer?renderer.bounds.size.x:0)} authoredWidth={(keyboardSource?keyboardSource.bounds.size.x:0)}");
                 }
             }
             Check(crts==3,$"CRT upgrades: {crts}");Check(decks==3,$"Keyboard decks: {decks}");
