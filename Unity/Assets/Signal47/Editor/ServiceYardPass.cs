@@ -43,7 +43,7 @@ namespace Signal47.Editor
             for(int i=0;i<6;i++)
                 Box(root,"ServiceRailPost",new Vector3(12,.59f,3.7f-i*2.5f),new Vector3(.07f,1.02f,.07f),steel,true);
             Box(root,"ServiceHandrail",new Vector3(12,1.08f,-2.55f),new Vector3(.07f,.07f,12.5f),steel,true);
-            Box(root,"ServiceEndRail",new Vector3(10.75f,.7f,4.15f),new Vector3(2.5f,.10f,.08f),steel,true);
+            Box(root,"ServiceEndRail",new Vector3(10.75f,.7f,4.25f),new Vector3(2.5f,.10f,.08f),steel,true);
 
             // Split existing trim at the doorway; retain the original objects disabled.
             foreach(var trim in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
@@ -56,9 +56,9 @@ namespace Signal47.Editor
             }
 
             var investigation=session.gameObject.AddComponent<ServiceYardInvestigation>();session.yard=investigation;
-            var door=new GameObject("ServiceDoor");door.transform.SetParent(root,true);door.transform.position=new Vector3(9.35f,0,2.25f);
+            var door=new GameObject("ServiceDoor");door.transform.SetParent(root,true);door.transform.position=new Vector3(9.35f,0,4.15f);
             Box(door.transform,"ServiceDoorPanel",new Vector3(9.35f,1.12f,3.2f),new Vector3(.12f,2.2f,1.9f),paint,true);
-            Box(door.transform,"ServiceDoorHandle",new Vector3(9.25f,1.0f,3.89f),new Vector3(.07f,.08f,.27f),steel);
+            Box(door.transform,"ServiceDoorHandle",new Vector3(9.25f,1.0f,2.51f),new Vector3(.07f,.08f,.27f),steel);
             Box(door.transform,"ServiceDoorSign",new Vector3(9.278f,1.69f,3.2f),new Vector3(.02f,.33f,1.22f),dark);
             Label(door.transform,"ServiceDoorText","SERVICE YARD\nAUTHORIZED PERSONNEL",new Vector3(9.261f,1.69f,3.2f),new Vector2(1.05f,.24f));
             var access=door.AddComponent<ServiceYardDoor>();access.leaf=door.transform;access.investigation=investigation;investigation.door=access;

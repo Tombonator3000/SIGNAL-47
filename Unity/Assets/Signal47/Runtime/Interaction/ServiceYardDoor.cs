@@ -24,10 +24,10 @@ namespace Signal47.Interaction
             moving=true;
             for(float t=0;t<.75f;t+=Time.deltaTime)
             {
-                leaf.localRotation=Quaternion.Euler(0,90*Mathf.SmoothStep(0,1,t/.75f),0);
+                leaf.localRotation=Quaternion.Euler(0,-90*Mathf.SmoothStep(0,1,t/.75f),0);
                 yield return null;
             }
-            leaf.localRotation=Quaternion.Euler(0,90,0);Open=true;moving=false;
+            leaf.localRotation=Quaternion.Euler(0,-90,0);Open=true;moving=false;
         }
     }
 }
