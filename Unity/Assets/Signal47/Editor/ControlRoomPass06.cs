@@ -132,7 +132,7 @@ namespace Signal47.Editor
                 }
             }
             RenderSettings.ambientLight=new Color(.18f,.215f,.21f);
-            root.AddComponent<Signal47.Debugging.ControlRoomPassSmokeChecks>();
+            root.AddComponent<Signal47.Debugging.ControlRoomPassSmokeChecks>().keyboardSource=keys;
             Debug.Log($"CONTROL_ROOM_PASS_06_DRESSED crt={crts} chairs={chairs} auxiliary=2 keys=52_per_mesh");
         }
     }
