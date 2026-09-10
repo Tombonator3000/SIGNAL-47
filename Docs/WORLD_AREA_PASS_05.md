@@ -34,6 +34,12 @@ At scene-save time the imported Qwantani sky exposure is raised from 0.025 to 0.
 - Existing regression journey must still pass after Unity rebuild. A separate `WorldAreaSmokeChecks` component checks world roots, lightweight array lighting and desert breakup while feeding failures into the existing smoke run.
 - Visual comparison and performance measurement remain required on the real graphical Linux player before this pass can be called visually verified.
 
+## Verification
+
+GitHub Actions run `34454251575` completed successfully on the dedicated `signal47-kubuntu` self-hosted runner at source commit `bd3cc5216fefa2c5af2784c0c52709eeda66af0e`. Unity compiled and built the Linux prologue and the existing smoke run completed successfully. A temporary verification step additionally required exactly three `WORLD_PASS_SMOKE_PASS` markers in `Artifacts/smoke.log` plus the existing `SIGNAL47_SMOKE_PASS`; that step passed. The workflow file was then restored to its previous manual-only form, so the final branch does not leave a permanent push trigger.
+
+This is **build/regression verification**, not visual verification. The runner smoke job uses the established display-free path, so no claim is made that the new night-array composition, brighter stars or motel blockout have been inspected in a graphical player yet. The prior 60 fps benchmark is only a baseline; this pass still needs a new graphical capture and performance measurement before its visual/performance gates can pass.
+
 ## Area direction after this pass
 
 The larger game should grow as a small number of dense, legible investigation zones joined by road, not a giant empty open world. The first route can be:
