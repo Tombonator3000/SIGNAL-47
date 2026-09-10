@@ -165,7 +165,7 @@ class Journey:
   s=state();before=s['evidence'];self.d.click(s['width']/2,s['height']/2+66)
   wait_for(lambda s:s['yardActive'] and not s['title']);self.mark('service-investigation-start')
   self.walk(6.8,3.2);self.walk(8.0,3.2);self.interact(9.35,1.15,3.2,'OPEN SERVICE');wait_for(lambda s:s['doorOpen']);self.mark('service-door-open')
-  self.walk(10.7,3.2);assert state()['x']>9.6;self.mark('walked-outside')
+  self.walk(10.7,3.2);assert state()['x']>9.6;self.aim(11,1,-13.2);self.mark('walked-outside')
   self.walk(10.7,-2);self.walk(10.7,-7.8);self.aim(12.1,1.1,-13.2);self.mark('service-path')
   self.walk(10.7,-12.2);self.interact(11.90,1.1,-13.2,'BUS S-03');wait_for(lambda s:s['yardComplete'] and s['evidence']==before+1 and s['modal']);self.mark('motor-log-filed');self.d.tap('Escape')
   self.interact(11.90,1.1,-13.2,'BUS S-03');assert state()['evidence']==before+1;self.d.tap('Escape');self.mark('motor-log-deduplicated')

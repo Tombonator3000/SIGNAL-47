@@ -33,13 +33,15 @@ namespace Signal47.Editor
             var concrete=Mat("ServiceWalkConcrete07",new Color(.24f,.28f,.29f),.95f);
             var paint=Mat("ServicePaint07",new Color(.27f,.34f,.31f),.8f);
             var glow=Mat("ServiceLamp07",new Color(.9f,.62f,.28f),.7f,true,new Color(1f,.52f,.14f)*1.2f);
+            glow.shader=Shader.Find("Universal Render Pipeline/Unlit");glow.SetColor("_BaseColor",new Color(1f,.72f,.36f));EditorUtility.SetDirty(glow);
             var oldWall=GameObject.Find("RightWall");oldWall.GetComponent<Renderer>().enabled=false;oldWall.GetComponent<Collider>().enabled=false;
             Box(root,"EastWallSouth",new Vector3(9.35f,1.725f,-2.65f),new Vector3(.12f,3.45f,9.7f),wall,true);
             Box(root,"EastWallNorth",new Vector3(9.35f,1.725f,5.85f),new Vector3(.12f,3.45f,3.3f),wall,true);
             Box(root,"ServiceDoorLintel",new Vector3(9.35f,2.88f,3.2f),new Vector3(.12f,1.14f,2),wall,true);
             Box(root,"ServiceThreshold",new Vector3(9.4f,0,3.2f),new Vector3(.55f,.16f,1.95f),steel,true);
-            Box(root,"EastServiceWalk",new Vector3(10.75f,0,-2.5f),new Vector3(2.5f,.16f,13.5f),concrete,true);
-            Box(root,"MotorCabinetApron",new Vector3(10.75f,0,-12),new Vector3(2.5f,.16f,6),concrete,true);
+            // Short slabs select nearby practical lights within URP's existing four-light object budget.
+            for(int i=0;i<9;i++)Box(root,"EastServiceWalk_"+i,new Vector3(10.75f,0,3.5f-i*1.5f),new Vector3(2.5f,.16f,1.5f),concrete,true);
+            Box(root,"MotorCabinetApron",new Vector3(10.75f,0,-12.125f),new Vector3(2.5f,.16f,5.75f),concrete,true);
             for(int i=0;i<6;i++)
                 Box(root,"ServiceRailPost",new Vector3(12,.59f,3.7f-i*2.5f),new Vector3(.07f,1.02f,.07f),steel,true);
             Box(root,"ServiceHandrail",new Vector3(12,1.08f,-2.55f),new Vector3(.07f,.07f,12.5f),steel,true);
@@ -71,7 +73,7 @@ namespace Signal47.Editor
                 Box(root,"ServiceLampHousing",new Vector3(11.1f,3.19f,z),new Vector3(.37f,.14f,.28f),dark);
                 Box(root,"ServiceLampDiffuser",new Vector3(11.1f,3.105f,z),new Vector3(.29f,.025f,.21f),glow);
                 var lamp=new GameObject("ServicePathLight");lamp.transform.SetParent(root,true);lamp.transform.position=new Vector3(11.1f,3.07f,z);lamp.transform.rotation=Quaternion.Euler(90,0,0);
-                var light=lamp.AddComponent<Light>();light.type=LightType.Spot;light.color=new Color(1f,.68f,.36f);light.intensity=4;light.range=7;light.spotAngle=110;light.innerSpotAngle=80;light.shadows=LightShadows.None;
+                var light=lamp.AddComponent<Light>();light.type=LightType.Spot;light.color=new Color(1f,.55f,.20f);light.intensity=14;light.range=6;light.spotAngle=90;light.innerSpotAngle=55;light.shadows=LightShadows.None;
             }
 
             var cabinet=new GameObject("MotorBusS03");cabinet.transform.SetParent(root,true);cabinet.transform.position=new Vector3(12.1f,0,-13.2f);
