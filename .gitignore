@@ -12,3 +12,5 @@ __pycache__/
 
 # Keep the licensed source pack used by the reproducible sound import.
 !Unity/Assets/Signal47/Art/ThirdParty/Kenney/interface-sounds.zip
+
+.dream-loop/

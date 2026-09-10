@@ -57,3 +57,12 @@ Kreditering ved eventuell bruk av musikken: «'Signal to Noise' by Scott Buckley
 5. Vurder terminalfont og musikk til slutt, når lesbarhet og lydbildet kan bedømmes i sammenheng.
 
 Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og hvilke lokale filer som brukes. Status for den gjennomførte importen og Unity-testene føres i [ASSET_PASS_03.md](ASSET_PASS_03.md).
+
+## Added in field camera 08
+
+| Resource | License | Actual use | Source |
+| --- | --- | --- | --- |
+| Camera_01 — Rajil Jose Macatangay | CC0 | Physical camera, Blender source and runtime FBX, three 1K PBR sets | https://polyhaven.com/a/Camera_01 |
+| Camera Shutter — roachpowder | CC0 | Photograph shutter feedback; processed public HQ preview | https://freesound.org/people/roachpowder/sounds/170229/ |
+| Kenney RPG Audio | CC0 | Researched; not imported in this slice | https://kenney.nl/assets/rpg-audio |
+| Plastered Wall 05 — Charlotte Baglioni | CC0 | Researched for later motel work; not imported | https://polyhaven.com/a/plastered_wall_05 |

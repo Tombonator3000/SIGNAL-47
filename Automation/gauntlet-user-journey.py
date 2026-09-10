@@ -35,7 +35,7 @@ class Desktop:
   walk(self.root,3);assert len(windows)==1,f'Expected one SIGNAL 47 window, found {windows}'
   self.w=windows[0]
  def inject_setup(self):
-  for name,keys,relative in [('Signal47 Gauntlet keyboard',[1,15,17,18,30,31,32],False),('Signal47 Gauntlet mouse',[272],True)]:
+  for name,keys,relative in [('Signal47 Gauntlet keyboard',[1,15,17,18,30,31,32,46,57],False),('Signal47 Gauntlet mouse',[272],True)]:
    fd=os.open('/dev/uinput',os.O_WRONLY|os.O_NONBLOCK);self.devices.append(fd)
    fcntl.ioctl(fd,0x40045564,1)
    for k in keys:fcntl.ioctl(fd,0x40045565,k)
@@ -62,7 +62,7 @@ class Desktop:
   f=C.c_ulong();r=C.c_int();self.x.XGetInputFocus(self.d,C.byref(f),C.byref(r));assert f.value==self.w,'Game lost native input focus; stopped to avoid typing into another app'
  def key(self,k,down):
   if down:self.guard()
-  code={'Escape':1,'Tab':15,'w':17,'e':18,'a':30,'s':31,'d':32}[k]
+  code={'Escape':1,'Tab':15,'w':17,'e':18,'a':30,'s':31,'d':32,'c':46,'space':57}[k]
   self.emit(0,[(1,code,int(down))])
   if down:self.held.add(k)
   else:self.held.discard(k)
@@ -108,7 +108,7 @@ def wait_for(fn,timeout=8):
  raise RuntimeError('State wait timed out: '+json.dumps(state()))
 def angle(v):return (v+180)%360-180
 class Journey:
- def __init__(self,desktop,shots,yard=False):self.d=desktop;self.shots=shots;self.yard=yard;self.events=[]
+ def __init__(self,desktop,shots,yard=False,camera=False):self.d=desktop;self.shots=shots;self.yard=yard;self.camera=camera;self.events=[]
  def mark(self,name):
   s=state();self.events.append({'checkpoint':name,'wall':time.time(),'state':s});print(name,flush=True)
   if self.shots:
@@ -164,16 +164,31 @@ class Journey:
  def exterior(self):
   s=state();before=s['evidence'];self.d.click(s['width']/2,s['height']/2+66)
   wait_for(lambda s:s['yardActive'] and not s['title']);self.mark('service-investigation-start')
+  if self.camera:
+   self.walk(6.8,3.2);self.walk(8.0,3.5);self.aim(8.25,.965,4.95);self.mark('camera-on-shelf');self.interact(8.25,.965,4.95,'COLLECT FIELD CAMERA');wait_for(lambda s:s['cameraAcquired']);self.mark('camera-collected')
+   self.d.tap('c');wait_for(lambda s:s['cameraRaised']);self.d.tap('space');assert not state()['photoTaken'];self.d.tap('c');self.mark('camera-rejects-before-motor-log')
   self.walk(6.8,3.2);self.walk(8.0,3.2);self.interact(9.35,1.15,3.2,'OPEN SERVICE');wait_for(lambda s:s['doorOpen']);self.mark('service-door-open')
   self.walk(10.7,3.2);assert state()['x']>9.6;self.aim(11,1,-13.2);self.mark('walked-outside')
   self.walk(10.7,-2);self.walk(10.7,-7.8);self.aim(12.1,1.1,-13.2);self.mark('service-path')
   self.walk(10.7,-12.2);self.interact(11.90,1.1,-13.2,'BUS S-03');wait_for(lambda s:s['yardComplete'] and s['evidence']==before+1 and s['modal']);self.mark('motor-log-filed');self.d.tap('Escape')
   self.interact(11.90,1.1,-13.2,'BUS S-03');assert state()['evidence']==before+1;self.d.tap('Escape');self.mark('motor-log-deduplicated')
   self.d.tap('Tab');wait_for(lambda s:s['modal']);self.mark('motor-log-in-notebook');self.d.tap('Escape')
+  if self.camera:self.photograph()
   self.walk(10.7,-7.8);self.walk(10.7,-2);self.walk(10.7,3.2);self.walk(8,3.2)
   wait_for(lambda s:s['yardReturned']);self.mark('returned-to-control-room')
+  if self.camera:
+   self.open_photo();self.d.click(362,686);wait_for(lambda s:s['photoCompared']);self.mark('photo-log-compared');count=state()['observations'];self.d.click(362,686);assert state()['observations']==count;self.d.tap('Escape');self.d.tap('Escape');self.open_photo();assert state()['photoCompared'];self.mark('photo-reopened-after-comparison');self.d.tap('Escape');self.d.tap('Escape')
   self.d.tap('Escape');wait_for(lambda s:s['paused']);s=state();self.d.click(s['width']/2,s['height']/2+64)
   wait_for(lambda s:not s['started']);assert state()['evidence']==0 and not state()['yardActive'] and not state()['doorOpen'];self.mark('restart-clears-yard')
+  if self.camera:assert not state()['cameraAcquired'] and not state()['photoTaken'] and not state()['photoCompared'];self.mark('restart-clears-camera-state')
+ def open_photo(self):
+  self.d.tap('Tab');wait_for(lambda s:s['modal']);s=state();self.d.click(s['width']/2,354);wait_for(lambda s:s['photoOpen'])
+ def photograph(self):
+  self.aim(10.7,.3,-13);self.d.tap('c');wait_for(lambda s:s['cameraRaised']);before=state()['rejectedFrames'];self.d.tap('space');wait_for(lambda s:s['rejectedFrames']>before);assert not state()['photoTaken'];self.mark('camera-rejects-wrong-subject')
+  self.aim(8,4.8,-34);wait_for(lambda s:s['frameProblem']=='');self.mark('camera-valid-viewfinder');self.d.tap('space');wait_for(lambda s:s['photoTaken'] and s['photoSave']=='SAVED',15);self.mark('photo-captured-and-saved')
+  photo=Path(state()['photoPath']);assert photo.is_file() and photo.stat().st_size>10000 and photo.with_suffix('.json').is_file()
+  self.d.tap('c');wait_for(lambda s:s['cameraRaised']);count=state()['evidence'];self.d.tap('space');assert state()['evidence']==count;self.d.tap('c');self.mark('photograph-deduplicated')
+  self.open_photo();self.mark('photograph-in-notebook');self.d.click(362,686);assert not state()['photoCompared'];self.mark('comparison-requires-control-room');self.d.tap('Escape');self.d.tap('Escape')
  def run(self):
   self.d.focus();s=state();assert not s['started'],'Start from a fresh player launch'
   self.mark('start');self.d.click(s['width']/2,s['height']/2+81);wait_for(lambda s:s['started'])
@@ -190,10 +205,10 @@ class Journey:
   if self.yard:self.exterior();return
   s=state();self.d.click(s['width']/2,s['height']/2+119);wait_for(lambda s:not s['started']);assert state()['evidence']==0;self.mark('restart-clears-evidence')
 if __name__=='__main__':
- args=argparse.ArgumentParser();args.add_argument('--measure',action='store_true');args.add_argument('--inspect',action='store_true');args.add_argument('--yard',action='store_true');opt=args.parse_args()
+ args=argparse.ArgumentParser();args.add_argument('--measure',action='store_true');args.add_argument('--inspect',action='store_true');args.add_argument('--yard',action='store_true');args.add_argument('--camera',action='store_true');opt=args.parse_args()
  d=Desktop();print('Verified SIGNAL 47 X11 window:',d.w,flush=True)
  if opt.inspect:print(json.dumps(state(),indent=2));raise SystemExit()
- d.inject_setup();j=Journey(d,not opt.measure,opt.yard);begin=None;outcome='FAIL';error=''
+ d.inject_setup();j=Journey(d,not opt.measure,opt.yard,opt.camera);begin=None;outcome='FAIL';error=''
  try:
   d.focus()
   if opt.measure:time.sleep(20);command('record');begin=time.monotonic();time.sleep(.3)
@@ -207,5 +222,5 @@ if __name__=='__main__':
   outcome='PASS'
  except Exception as e:error=str(e);print(error,flush=True)
  finally:
-  d.close();command('finish');(OUT/'journey-result.json').write_text(json.dumps({'outcome':outcome,'error':error,'method':'Native Linux uinput keyboard and mouse input, XWayland focus/position checks; observation-only game telemetry; no teleports or direct game method calls','measured':opt.measure,'service_yard':opt.yard,'events':j.events},indent=2))
+  d.close();command('finish');(OUT/'journey-result.json').write_text(json.dumps({'outcome':outcome,'error':error,'method':'Native Linux uinput keyboard and mouse input, XWayland focus/position checks; observation-only game telemetry; no teleports or direct game method calls','measured':opt.measure,'service_yard':opt.yard,'field_camera':opt.camera,'events':j.events},indent=2))
  if outcome!='PASS':raise SystemExit(1)
