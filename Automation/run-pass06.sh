@@ -3,7 +3,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 phase="${REVIEW_PHASE:-candidate}"
 [[ "$phase" == baseline || "$phase" == candidate ]] || exit 2
-mkdir -p Artifacts/Pass06
+review_root=Artifacts/Pass06
+journey_args=()
+if [[ "${SERVICE_YARD_REVIEW:-0}" == 1 ]]; then review_root=Artifacts/Pass07; journey_args+=(--yard); fi
+mkdir -p "$review_root"
 exec 9>"/run/user/$(id -u)/signal47-gauntlet.lock"
 flock -n 9 || { echo 'SIGNAL47_BUSY: another verified test owns this desktop'; exit 3; }
 # Only a runner checkout is used. Never open or overwrite the user's canonical Unity project.
@@ -29,15 +32,15 @@ done
   echo 'Temperatures before:'; grep -H . /sys/class/thermal/thermal_zone*/temp 2>/dev/null || true
   echo 'Display modes:'; xrandr --current 2>/dev/null || true
   echo 'Unity editor process count:'; pgrep -xc Unity || true
-} > Artifacts/Pass06/conditions-before.txt
+} > $review_root/conditions-before.txt
 bash Automation/build-linux.sh
 grep -q SIGNAL47_SMOKE_PASS Artifacts/smoke.log
 ! grep -Eq '(SMOKE_FAIL|SMOKE_TIMEOUT)' Artifacts/smoke.log
 [[ "$(grep -c WORLD_PASS_SMOKE_PASS Artifacts/smoke.log)" -ge 3 ]]
 [[ "$(grep -c CONTROL_PASS_SMOKE_PASS Artifacts/smoke.log)" -ge 4 ]]
-cp Artifacts/smoke.log Artifacts/Pass06/smoke.log
+cp Artifacts/smoke.log $review_root/smoke.log
 bash Automation/build-gauntlet-linux.sh
-cp Artifacts/GauntletLinux/build-manifest.json Artifacts/Pass06/
+cp Artifacts/GauntletLinux/build-manifest.json $review_root/
 player="$PWD/Artifacts/GauntletLinux/Signal47.x86_64"
 player_pid=''
 cleanup(){ if [[ -n "$player_pid" ]]; then kill "$player_pid" 2>/dev/null || true; wait "$player_pid" 2>/dev/null || true; player_pid=''; fi; }
@@ -45,30 +48,31 @@ trap cleanup EXIT
 launch(){
   # Fresh observer output prevents a previous run from satisfying any check.
   rm -f Artifacts/Gauntlet/state.json Artifacts/Gauntlet/command.txt Artifacts/Gauntlet/performance.json Artifacts/Gauntlet/journey-result.json
-  timeout --signal=TERM --kill-after=5s 300s "$player" --signal47-gauntlet "$@" -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/Pass06/$log" &
+  timeout --signal=TERM --kill-after=5s 420s "$player" --signal47-gauntlet "$@" -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/$review_root/$log" &
   player_pid=$!
   for _ in $(seq 1 120); do [[ -s Artifacts/Gauntlet/state.json ]] && return; kill -0 "$player_pid" 2>/dev/null || return 1; sleep .25; done
   echo 'No fresh observer state'; return 1
 }
 mkdir -p Artifacts/Gauntlet
 log=measure-player.log; launch
-python3 Automation/gauntlet-user-journey.py --measure
+python3 Automation/gauntlet-user-journey.py "${journey_args[@]}" --measure
 cleanup
-mkdir -p Artifacts/Pass06/Performance
-cp Artifacts/Gauntlet/{frames.csv,frame-work.csv,performance.json,journey-result.json} Artifacts/Pass06/Performance/
+mkdir -p $review_root/Performance
+cp Artifacts/Gauntlet/{frames.csv,frame-work.csv,performance.json,journey-result.json} $review_root/Performance/
 # Screenshots and sampled sound audit run separately; their overhead is not removed from a benchmark.
 if [[ "$phase" == candidate ]]; then
+  rm -f Artifacts/Gauntlet/journey-*.png Artifacts/Gauntlet/audio-audit.json
   log=journey-player.log; launch --signal47-audio-audit
-  python3 Automation/gauntlet-user-journey.py
+  python3 Automation/gauntlet-user-journey.py "${journey_args[@]}"
   cleanup
-  mkdir -p Artifacts/Pass06/Journey
-  cp Artifacts/Gauntlet/journey-*.png Artifacts/Gauntlet/journey-result.json Artifacts/Pass06/Journey/
-  [[ ! -f Artifacts/Gauntlet/audio-audit.json ]] || cp Artifacts/Gauntlet/audio-audit.json Artifacts/Pass06/
+  mkdir -p $review_root/Journey
+  cp Artifacts/Gauntlet/journey-*.png Artifacts/Gauntlet/journey-result.json $review_root/Journey/
+  [[ ! -f Artifacts/Gauntlet/audio-audit.json ]] || cp Artifacts/Gauntlet/audio-audit.json $review_root/
 fi
 rm -f Artifacts/WorldCapture/*.png Artifacts/WorldCapture/capture-manifest.json
-timeout --signal=TERM --kill-after=5s 90s "$player" --signal47-world-capture -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/Pass06/capture-player.log"
-grep -q 'WORLD_CAPTURE_PASS 6' Artifacts/Pass06/capture-player.log
-mkdir -p Artifacts/Pass06/Snapshots
-cp Artifacts/WorldCapture/*.png Artifacts/WorldCapture/capture-manifest.json Artifacts/Pass06/Snapshots/
-{ date -u; uptime; grep -H . /sys/class/thermal/thermal_zone*/temp 2>/dev/null || true; } > Artifacts/Pass06/conditions-after.txt
-python3 Automation/pass06-evidence.py Artifacts/Pass06
+timeout --signal=TERM --kill-after=5s 90s "$player" --signal47-world-capture -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/$review_root/capture-player.log"
+grep -q 'WORLD_CAPTURE_PASS 6' $review_root/capture-player.log
+mkdir -p $review_root/Snapshots
+cp Artifacts/WorldCapture/*.png Artifacts/WorldCapture/capture-manifest.json $review_root/Snapshots/
+{ date -u; uptime; grep -H . /sys/class/thermal/thermal_zone*/temp 2>/dev/null || true; } > $review_root/conditions-after.txt
+python3 Automation/pass06-evidence.py "$review_root"

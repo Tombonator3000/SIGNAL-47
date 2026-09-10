@@ -33,6 +33,7 @@ namespace Signal47.UI
         public void Toast(string msg,float seconds=1.8f){toast=msg;toastUntil=Time.unscaledTime+seconds;}
         public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;if(Core.GameSession.Instance.director.palette)Core.GameSession.Instance.director.palette.Click();SetCursor(false);}
         void ClosePaper(){paperOpen=false;notebookOpen=returnToNotebook;returnToNotebook=false;SetCursor(!notebookOpen);}
+        public void ContinueToServiceYard(){var g=Core.GameSession.Instance;if(!TitleVisible || !g.yard)return;g.yard.Begin();if(!g.yard.Active)return;TitleVisible=false;CloseModal();}
         public void ShowNotebook(){notebookOpen=true;SetCursor(false);}
         public void ShowTitle(){paperOpen=false;notebookOpen=false;Paused=false;Time.timeScale=1;AudioListener.pause=false;TitleVisible=true;Signals.SignalConsole console=FindFirstObjectByType<Signals.SignalConsole>();if(console)console.Close();SetCursor(false);}
         public void CloseModal(){paperOpen=false;notebookOpen=false;returnToNotebook=false;SetPaused(false);SetCursor(true);}
@@ -59,6 +60,8 @@ namespace Signal47.UI
             if(!string.IsNullOrEmpty(InteractionPrompt) && !ModalOpen)
                 GUI.Label(new Rect(Screen.width*.5f-210,Screen.height-95,420,40),InteractionPrompt,new GUIStyle(mono){alignment=TextAnchor.MiddleCenter});
             if(Time.unscaledTime<toastUntil) GUI.Label(new Rect(24,24,600,35),toast,mono);
+            if(Core.GameSession.Instance.yard && Core.GameSession.Instance.yard.Active && !ModalOpen)
+                GUI.Label(new Rect(24,65,Screen.width-48,45),Core.GameSession.Instance.yard.Objective,mono);
             if(paperOpen)
             {
                 float height=Mathf.Min(540,Screen.height-40);var r=new Rect(Screen.width*.5f-290,(Screen.height-height)/2,580,height);
@@ -94,8 +97,9 @@ namespace Signal47.UI
             {
                 GUI.color=new Color(0,0,0,.96f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(0,Screen.height*.5f-100,Screen.width,90),"SIGNAL / 47",new GUIStyle(big){fontSize=64,normal={textColor=Color.white}});
-                GUI.Label(new Rect(0,Screen.height*.5f,Screen.width,45),"NEW MEXICO — 1986",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter,fontSize=20,normal={textColor=new Color(.75f,.78f,.75f)}});
+                GUI.Label(new Rect(0,Screen.height*.5f,Screen.width,35),"NEW MEXICO — 1986",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter,fontSize=20,normal={textColor=new Color(.75f,.78f,.75f)}});
                 GUI.Label(new Rect(30,Screen.height-92,Screen.width-60,70),"Music: ‘Signal to Noise’ — Scott Buckley • CC BY 4.0\nNo-piano mix, excerpt with fades • scottbuckley.com.au\ncreativecommons.org/licenses/by/4.0/",new GUIStyle(mono){fontSize=13,alignment=TextAnchor.MiddleCenter});
+                if(Core.GameSession.Instance.yard && GUI.Button(new Rect(Screen.width*.5f-145,Screen.height*.5f+45,290,42),"CONTINUE / SERVICE YARD",button))ContinueToServiceYard();
                 if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+95,240,48),"RESTART SLICE",button)) Core.GameSession.Instance.Restart();
             }
         }
