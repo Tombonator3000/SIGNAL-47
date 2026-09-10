@@ -11,19 +11,19 @@ from pathlib import Path
 def performance_checks(report):
     def number(key):
         value = report.get(key)
-        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
-    checks = {
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
+    gpu = report.get('gpu')
+    return {
         'duration_120s': number('seconds') and report['seconds'] >= 120,
         'average_59fps': number('averageFps') and report['averageFps'] >= 59,
-        'p95_17_2ms': number('p95ms') and report['p95ms'] <= 17.2,
-        'p99_below_20ms': number('p99ms') and report['p99ms'] < 20,
-        'no_stalls_over_50ms': number('stallsOver50ms') and report['stallsOver50ms'] == 0,
+        'p95_17_2ms': number('p95ms') and 0 < report['p95ms'] <= 17.2,
+        'p99_below_20ms': number('p99ms') and 0 < report['p99ms'] < 20,
+        'no_stalls_over_50ms': number('stallsOver50ms') and report['stallsOver50ms'] == 0 and number('maxMs') and 0 < report['maxMs'] <= 50,
         'focused': report.get('focusedThroughout') is True,
         'release': report.get('development') is False,
         'preset': report.get('preset') == 'Ultra' and report.get('resolution') == '1280x800',
-        'hardware_renderer': bool(report.get('gpu')) and not any(x in report.get('gpu', '').lower() for x in ('llvmpipe','softpipe','software')),
+        'hardware_renderer': isinstance(gpu,str) and bool(gpu.strip()) and not any(x in gpu.lower() for x in ('llvmpipe','softpipe','software')),
     }
-    return checks
 
 
 def package(root):
@@ -32,35 +32,33 @@ def package(root):
     capture = json.loads((root/'Snapshots/capture-manifest.json').read_text())
     journey = json.loads((root/'Performance/journey-result.json').read_text())
     views = capture['views']
-    if len(views) != 6:
-        raise ValueError('Six original capture views are required')
+    if len(views) != 6 or len({v['file'] for v in views}) != 6:
+        raise ValueError('Six different original capture views are required')
     records = []
     for view in views:
         path = root/'Snapshots'/view['file']
-        if path.parent != root/'Snapshots' or not path.is_file():
+        if path.resolve().parent != (root/'Snapshots').resolve() or path.suffix != '.png' or not path.is_file():
             raise ValueError('Invalid/missing capture path')
         original = path.read_bytes()
         with Image.open(path) as im:
             if im.size != (1280,800):
                 raise ValueError(f'Unexpected screenshot dimensions: {path} {im.size}')
-            mobile = im.convert('RGB').resize((960,600), Image.Resampling.LANCZOS)
-            mobile.save(path.with_name('mobile-'+path.stem+'.jpg'), quality=82)
-            small = im.convert('RGB').resize((384,240), Image.Resampling.LANCZOS)
+            im.convert('RGB').resize((960,600),Image.Resampling.LANCZOS).save(path.with_name('mobile-'+path.stem+'.jpg'),quality=82)
             preview = path.with_suffix('.review.webp')
-            small.save(preview, 'WEBP', quality=42)
-            # Fallback inspection transport when the private connector cannot mount binaries.
+            im.convert('RGB').resize((384,240),Image.Resampling.LANCZOS).save(preview,'WEBP',quality=42)
             preview.with_suffix('.b64.txt').write_text(base64.b64encode(preview.read_bytes()).decode()+'\n')
             records.append({'file':view['file'],'png_sha256':hashlib.sha256(original).hexdigest(),'review_sha256':hashlib.sha256(preview.read_bytes()).hexdigest(),'method':'Original PNG unchanged; mobile JPEG and small WebP are resized copies only'})
         if path.read_bytes() != original:
             raise RuntimeError('Original capture unexpectedly changed')
     checks = performance_checks(report)
-    same_build = report.get('buildId') == capture.get('buildId') and report.get('buildId','unknown') != 'unknown'
+    build_id = report.get('buildId')
+    same_build = isinstance(build_id,str) and bool(build_id.strip()) and build_id != 'unknown' and build_id == capture.get('buildId')
     same_preset = report['preset'] == capture['quality'] and report['resolution'] == capture['resolution'] and capture.get('development') is False
     result = {'performance':'PASS' if all(checks.values()) else 'FAIL', 'checks':checks,
               'native_journey':journey.get('outcome','UNVERIFIED'), 'same_release_build_and_preset':same_build and same_preset,
               'gpu_timing':'MEASURED' if report.get('gpuTimingAvailable') else 'UNVERIFIED',
-              'subjective_audio':'UNVERIFIED', 'visual_review':'UNVERIFIED until an agent or owner inspects the original/derived images',
-              'source_build_id':report.get('buildId')}
+              'subjective_audio':'UNVERIFIED', 'visual_review':'UNVERIFIED until actual images are inspected',
+              'source_build_id':build_id}
     (root/'quality-gates.json').write_text(json.dumps(result,indent=2)+'\n')
     (root/'Snapshots/file-hashes.json').write_text(json.dumps(records,indent=2)+'\n')
     print(json.dumps(result,indent=2))
