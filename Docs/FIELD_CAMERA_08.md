@@ -34,3 +34,21 @@ The first evidence-sheet generation invented more detailed antenna geometry and 
 Free sources: [Poly Haven Camera_01 — Rajil Jose Macatangay](https://polyhaven.com/a/Camera_01), [roachpowder Camera Shutter](https://freesound.org/people/roachpowder/sounds/170229/), both CC0. Existing Kenney interface sounds, VT323 font, Poly Haven room assets and wind/music are reused. Additional candidate Kenney RPG Audio and plaster textures were researched but not imported because this slice does not need them.
 
 Reproduce: `bash Automation/run-field-camera.sh`. Source preparation: `python3 Automation/fetch-camera-assets.py`, then Blender `--background --python Unity/Blender/Source/prepare_field_camera.py`. The build regenerates the scene. Source/asset manifests retain provenance and hashes. Screenshots and performance are initially UNVERIFIED until their reports and review are recorded below.
+
+## Final verification — 10 September 2026
+
+PASS: development smoke, 34 native keyboard/mouse checkpoints in each of the measured and screenshot runs, camera pickup, premature/wrong-frame rejection, actual JPG and metadata, preserved earlier evidence, deduplication, comparison inside, reopening and reset. PASS: independent bounded visual review after correcting the FBX import scale, mirrored kit label and inverted top brackets. The sheet now uses the project font and flat controls. All original evidence is in `Docs/Evidence/FieldCamera08/final-af5a85d`; `final-verification.json` supersedes the automatic pre-review visual status in `quality-gates.json`.
+
+Final release: Intel Core Ultra 5 225U / Intel ARL / OpenGLCore, 1280×800 Ultra, 75 Hz display, target 75, vsync 0. After 20-second warm-up, **13,935 frames over 185.832 seconds**: **74.987 fps**, **p95 15.875 ms**, **p99 16.181 ms**, maximum 43.051 ms, **zero frames >50 ms**. No intervals removed; actual in-game photo capture, encoding and saving are included. Engine allocation peak 96.10 MiB, not OS process total. GPU timing and subjective listening remain UNVERIFIED. Existing seven audio-state samples pass; the new shutter asset itself has no full-scale samples, but its subjective mix was not heard.
+
+The checked-in Unity inputs match source SHA-256 `af5a85d7a25f43b2adcf8ee07d5b7dedf5935c921e9879c676288ee97decb396`; full player payload SHA-256 `672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020`. Source checkpoint `6457265` contains those exact inputs. The build was produced from base 3d37c84 plus the working changes; later documentation commits do not change tested inputs. No purchased asset or paid API was used.
+
+| Target feature | First observed difference | Correction | Final original evidence |
+| --- | --- | --- | --- |
+| Recognizable field camera | Imported body appeared absent because root unit transform was overwritten | Preserve imported transform below metre-scale wrapper | Journey/journey-15.png |
+| Readable physical instructions | Label mirrored | Face TextMesh toward south approach | Journey/journey-15.png |
+| Framing marks clear of title | Float comparison inverted upper brackets | Explicit top/bottom indexing | Journey/journey-25.png |
+| Calm photographic record | Generic glossy buttons/system font | VT323 typography, flat controls, pale paper and separated columns | Journey/journey-28.png and journey-31.png |
+| Actual visual evidence | None: exported image matches native scene, without interface | Preserve original JPG and capture metadata | Journey/ExportedPhoto/S03.jpg |
+
+Remaining limits: one survey subject, a still-prototype exterior and motel blockout, no whole-game resume or film-development mechanic. Exported photos survive restart; notebook state does not. Next bounded investigation: physical film processing and a second clue requiring visual interpretation of a photograph.

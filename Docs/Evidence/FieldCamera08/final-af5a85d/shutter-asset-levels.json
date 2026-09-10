@@ -1,0 +1,10 @@
+{
+  "scope": "Prepared shutter asset only; not subjective listening or runtime mix",
+  "sample_rate": 44100,
+  "channels": 1,
+  "seconds": 0.2953061224489796,
+  "peak": 0.850006103515625,
+  "rms": 0.06324146204875215,
+  "full_scale_samples": 0,
+  "runtime_gain": 0.28
+}
