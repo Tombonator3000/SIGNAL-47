@@ -1,0 +1,85 @@
+name: SIGNAL47 isolated capture of tested pass06 release
+on:
+  workflow_dispatch:
+  push:
+    branches: [gauntlet/control-room-06-verified]
+    paths: [.github/workflows/pass06-isolated-capture.yml]
+permissions:
+  contents: read
+concurrency:
+  group: signal47-linux
+  cancel-in-progress: false
+jobs:
+  capture:
+    runs-on: [self-hosted, linux, x64, signal47]
+    timeout-minutes: 8
+    steps:
+      - name: Verify immutable release and prepare temporary Xvfb without system installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/pass06-isolated"
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('Artifacts/GauntletLinux');m=json.loads((root/'build-manifest.json').read_text())
+          assert m['base_revision']=='8fbfe090856d42d2a31b6023dce5dc85dc2a7b08'
+          h=hashlib.sha256()
+          for p in sorted(root.rglob('*')):
+              if p.is_file() and p.name not in ('build-manifest.json','build-id.txt'):
+                  h.update(str(p.relative_to(root)).encode()+b'\0');h.update(p.read_bytes())
+          assert h.hexdigest()==m['build_payload_sha256'], 'Built payload changed since smoke/release build'
+          print('VERIFIED_TESTED_RELEASE '+json.dumps(m))
+          PY
+          temporary="$(mktemp -d "$RUNNER_TEMP/signal47-xvfb.XXXXXX")"
+          cd "$temporary"
+          # Exact candidate version was read from the existing Ubuntu package index.
+          # Download/extract only: no sudo, apt install, package database or global display changes.
+          apt-get download 'xvfb=2:21.1.22-1ubuntu1'
+          sha256sum ./*.deb
+          for package in ./*.deb; do dpkg-deb -x "$package" "$temporary/extracted"; done
+          ldd "$temporary/extracted/usr/bin/Xvfb"
+          ! ldd "$temporary/extracted/usr/bin/Xvfb" | grep -q 'not found'
+          printf 'PASS06_XVFB=%s\n' "$temporary/extracted/usr/bin" >> "$GITHUB_ENV"
+      - name: Render six true runtime views on a NEW authenticated virtual display
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/pass06-isolated"
+          export PATH="$PASS06_XVFB:$PATH"
+          export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+          if [[ -S "$XDG_RUNTIME_DIR/pulse/native" ]]; then export PULSE_SERVER="unix:$XDG_RUNTIME_DIR/pulse/native"; fi
+          timeout --signal=TERM --kill-after=5s 180s xvfb-run -a -s '-screen 0 1280x800x24 -nolisten tcp' env LIBGL_ALWAYS_SOFTWARE=1 ./Artifacts/GauntletLinux/Signal47.x86_64 --signal47-world-capture -noaudio -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$PWD/Artifacts/isolated-capture.log"
+          grep -q 'WORLD_CAPTURE_PASS 6' Artifacts/isolated-capture.log
+          cat Artifacts/WorldCapture/capture-manifest.json
+          python3 - <<'PY'
+          import base64,hashlib,json
+          from pathlib import Path
+          from PIL import Image
+          p=Path('Artifacts/WorldCapture');manifest=[]
+          for src in sorted(p.glob('*.png')):
+              with Image.open(src) as im:
+                  assert im.size==(1280,800)
+                  im.convert('RGB').resize((960,600),Image.Resampling.LANCZOS).save(p/('mobile-'+src.stem+'.jpg'),quality=82)
+                  im.convert('RGB').resize((384,240),Image.Resampling.LANCZOS).save(p/(src.stem+'.webp'),'WEBP',quality=42)
+              preview=p/(src.stem+'.webp');data=preview.read_bytes()
+              item={'file':src.name,'original_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'preview_sha256':hashlib.sha256(data).hexdigest(),'preview_base64':base64.b64encode(data).decode()}
+              manifest.append(item);print('ISOLATED_RUNTIME_PREVIEW '+json.dumps(item))
+          (p/'files.json').write_text(json.dumps(manifest,indent=2))
+          assert len(manifest)==6
+          PY
+      - name: Preserve original images, mobile copies and this exact release locally
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/pass06-isolated"
+          destination="$HOME/signal47-tools/evidence/pass06-isolated/$GITHUB_RUN_ID"
+          mkdir -p "$destination"
+          [[ ! -d Artifacts/WorldCapture ]] || cp -a Artifacts/WorldCapture "$destination/"
+          cp Artifacts/GauntletLinux/build-manifest.json "$destination/"
+          cp Artifacts/SIGNAL-47-Gauntlet-Linux.tar.gz "$destination/"
+          for f in Artifacts/isolated-capture.log Artifacts/smoke.log; do [[ ! -f "$f" ]] || cp "$f" "$destination/"; done
+          echo "PRESERVED_RUNNER_EVIDENCE $destination"
+          grep -E 'WORLD_CAPTURE_|Exception|Error|FAIL' Artifacts/isolated-capture.log 2>/dev/null || true
+          echo 'Software-renderer snapshots are NOT hardware frame-time or native-input verification.'
