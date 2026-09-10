@@ -21,13 +21,21 @@ namespace Signal47.Debugging
 
         IEnumerator Start()
         {
-            // Give the existing SmokeRun one frame to subscribe to log messages.
             yield return null;
-            Check(GameObject.Find("WorldAreaArt") && GameObject.Find("ArrayNightArt") && GameObject.Find("RoadsideMotel_Blockout"),"stylized world area blockout is present");
+            var motel=FindSceneObjectIncludingInactive("RoadsideMotel_Blockout");
+            Check(GameObject.Find("WorldAreaArt") && GameObject.Find("ArrayNightArt") && motel,"stylized world area blockout is present");
+            Check(motel && !motel.activeSelf,"future motel prototype stays inactive during the prologue");
             var flood=GameObject.Find("ArrayFlood_0");
             Check(flood && flood.GetComponent<Light>() && flood.GetComponent<Light>().shadows==LightShadows.None,"array mood lights are lightweight and shadowless");
             var scrub=GameObject.Find("DesertScrubRoot");
             Check(scrub && scrub.transform.childCount>=40,"desert silhouette breakup is populated");
+        }
+
+        static GameObject FindSceneObjectIncludingInactive(string name)
+        {
+            foreach(var t in Resources.FindObjectsOfTypeAll<Transform>())
+                if(t.name==name && t.gameObject.scene.IsValid())return t.gameObject;
+            return null;
         }
 
         static void Check(bool ok,string message)
