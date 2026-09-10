@@ -13,6 +13,9 @@ namespace Signal47.Editor
         static Material M(string n,Color c,float rough=.7f)=>Mat(n,c,rough);
         public static Material PropMaterial(string n,Material fallback)
         {
+            if(n.Contains("PhoneCream")||n.Contains("PhoneHandsetCream"))return M("PhoneCream",new Color(.62f,.59f,.49f),.55f);
+            if(n.Contains("PhoneLegend"))return M("PhoneLegend",new Color(.86f,.85f,.71f),.8f);
+            if(n.Contains("PhoneDark"))return M("Charcoal",new Color(.06f,.075f,.07f));
             if(n.Contains("Screen"))return M("DisplayBorder",new Color(.025f,.035f,.031f));
             if(n.Contains("Key_")||n.Contains("Button_")||n.Contains("Knob")||n.Contains("Handset")||n.Contains("Cable")||n.Contains("Perforation"))return M("Charcoal",new Color(.06f,.075f,.07f));
             if(n.Contains("Paper")||n.Contains("Meter"))return M("OldPaper",new Color(.84f,.81f,.65f));

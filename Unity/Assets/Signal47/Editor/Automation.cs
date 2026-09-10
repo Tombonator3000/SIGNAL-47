@@ -8,17 +8,20 @@ namespace Signal47.Editor
 {
     public static class Automation
     {
-        public static void BuildLinux()
+        public static void BuildLinux()=>Build(false);
+        public static void BuildGauntletLinux()=>Build(true);
+        static void Build(bool release)
         {
             Signal47SceneBuilder.BuildVerticalSlice();
             PlayerSettings.companyName="SARO";PlayerSettings.productName="SIGNAL 47";
             PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=800;
             PlayerSettings.fullScreenMode=FullScreenMode.Windowed;
-            string output=Path.GetFullPath("../Artifacts/Linux/Signal47.x86_64");
+            string output=Path.GetFullPath(release?"../Artifacts/GauntletLinux/Signal47.x86_64":"../Artifacts/Linux/Signal47.x86_64");
+            PlayerSettings.enableFrameTimingStats=true;
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
                 scenes=new[]{"Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity"},
-                locationPathName=output,target=BuildTarget.StandaloneLinux64,options=BuildOptions.Development});
+                locationPathName=output,target=BuildTarget.StandaloneLinux64,options=release?BuildOptions.None:BuildOptions.Development});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Linux build failed: "+report.summary.result);
             File.Copy("../Docs/THIRD_PARTY_NOTICES.md",Path.Combine(Path.GetDirectoryName(output),"THIRD_PARTY_NOTICES.md"),true);
             File.Copy("Assets/Signal47/Art/ThirdParty/VT323/OFL.txt",Path.Combine(Path.GetDirectoryName(output),"VT323-OFL.txt"),true);

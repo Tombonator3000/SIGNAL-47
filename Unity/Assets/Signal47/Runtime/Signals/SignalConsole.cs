@@ -9,6 +9,7 @@ namespace Signal47.Signals
         public string Prompt=>"RX CONTROL CONSOLE";
         public float frequency=1419.620f,gain=27,bandwidth=82,azimuth=18;
         int stage; bool solved; string status="CALIBRATION REQUIRED"; Texture2D spectrum; float nextSpectrum; Color32[] pixels; Material screenMaterial; AudioSource carrier;
+        public int CompletedStages=>stage;
         public float LockQuality=>SignalFeedback.Quality(profiles[Mathf.Min(stage,profiles.Length-1)],frequency,gain,bandwidth,azimuth);
         public void Interact()
         {
