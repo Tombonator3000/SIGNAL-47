@@ -1,0 +1,69 @@
+{
+  "method": "Decoded source audio files, all interleaved samples incl silence; sample peak and unweighted RMS; constant source gains applied mathematically. No Unity distance attenuation, concurrent-source sum, OS output, LUFS, true-peak or subjective listening evaluated. Vorbis decode may differ slightly from Unity FMOD.",
+  "clips": [
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/Kenney/click_001.ogg",
+      "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9",
+      "sample_rate": 44100, "channels": 1, "sample_frames": 4411,
+      "duration_s": 0.10002267573696146, "peak": 0.8557068109512329, "rms": 0.04718537358727075,
+      "source_peak_dbfs": -1.354, "source_rms_dbfs": -26.524, "samples_at_or_above_one": 0,
+      "old_gain": 0.35, "new_gain": 0.22, "gain_change_db": -4.033,
+      "old_isolated_peak_dbfs": -10.472, "new_isolated_peak_dbfs": -14.505, "new_isolated_rms_dbfs": -39.675
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/Kenney/switch_003.ogg",
+      "sha256": "ca12dd32103f401481d5aff56d5e9831174e99bb577139c09b07d046eb8b837e",
+      "sample_rate": 44100, "channels": 2, "sample_frames": 22050,
+      "duration_s": 0.5, "peak": 0.9005566835403442, "rms": 0.1718853504502965,
+      "source_peak_dbfs": -0.91, "source_rms_dbfs": -15.295, "samples_at_or_above_one": 0,
+      "old_gain": 0.35, "new_gain": 0.22, "gain_change_db": -4.033,
+      "old_isolated_peak_dbfs": -10.028, "new_isolated_peak_dbfs": -14.061, "new_isolated_rms_dbfs": -28.447
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/CeramicBreak.wav",
+      "sha256": "4b0e2b732177c4004acc4883e192df90c543515850ba3926b4c304f1239f1191",
+      "sample_rate": 44100, "channels": 1, "sample_frames": 63945,
+      "duration_s": 1.45, "peak": 0.89996337890625, "rms": 0.09569839097053422,
+      "source_peak_dbfs": -0.916, "source_rms_dbfs": -20.382, "samples_at_or_above_one": 0,
+      "old_gain": 0.85, "new_gain": 0.7, "gain_change_db": -1.686,
+      "old_isolated_peak_dbfs": -2.327, "new_isolated_peak_dbfs": -4.014, "new_isolated_rms_dbfs": -23.48
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/DesertWind.wav",
+      "sha256": "520da4efcb094824ab9a435ce639f6686f10dfbf418a252d1e562688751d94a9",
+      "sample_rate": 44100, "channels": 1, "sample_frames": 1025325,
+      "duration_s": 23.25, "peak": 0.29998779296875, "rms": 0.061805251738532095,
+      "source_peak_dbfs": -10.458, "source_rms_dbfs": -24.179, "samples_at_or_above_one": 0,
+      "old_gain": 0.24, "new_gain": 0.16, "gain_change_db": -3.522,
+      "old_isolated_peak_dbfs": -22.854, "new_isolated_peak_dbfs": -26.376, "new_isolated_rms_dbfs": -40.097
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/PhoneRing.wav",
+      "sha256": "6b7a326104566852f431257fad58355672de4e07c11d9e73329bfd5147f6c3c0",
+      "sample_rate": 44100, "channels": 1, "sample_frames": 262395,
+      "duration_s": 5.95, "peak": 0.699951171875, "rms": 0.1023535399964334,
+      "source_peak_dbfs": -3.099, "source_rms_dbfs": -19.798, "samples_at_or_above_one": 0,
+      "old_gain": 1, "new_gain": 1, "gain_change_db": 0.0,
+      "old_isolated_peak_dbfs": -3.099, "new_isolated_peak_dbfs": -3.099, "new_isolated_rms_dbfs": -19.798
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/Printer.wav",
+      "sha256": "a327492ad25d63160262eed58e8be561e3370d0ef492b308834ea9b173779270",
+      "sample_rate": 44100, "channels": 1, "sample_frames": 52920,
+      "duration_s": 1.2, "peak": 0.64996337890625, "rms": 0.08761724476461315,
+      "source_peak_dbfs": -3.742, "source_rms_dbfs": -21.148, "samples_at_or_above_one": 0,
+      "old_gain": 0.25, "new_gain": 0.25, "gain_change_db": 0.0,
+      "old_isolated_peak_dbfs": -15.783, "new_isolated_peak_dbfs": -15.783, "new_isolated_rms_dbfs": -33.189
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/ThirdParty/PreparedAudio/TitleMusic.ogg",
+      "sha256": "6ff1060a81d766267a8d6683261fd09e28851e15500725e6910f879e1acccab1",
+      "sample_rate": 44100, "channels": 2, "sample_frames": 1984500,
+      "duration_s": 45.0, "peak": 0.2686271667480469, "rms": 0.04842833843107707,
+      "source_peak_dbfs": -11.417, "source_rms_dbfs": -26.298, "samples_at_or_above_one": 0,
+      "old_gain": 0.28, "new_gain": 0.2, "gain_change_db": -2.923,
+      "old_isolated_peak_dbfs": -22.474, "new_isolated_peak_dbfs": -25.396, "new_isolated_rms_dbfs": -40.277
+    }
+  ],
+  "status": "SOURCE_LEVELS_MEASURED; RUNTIME_MIX_AND_LISTENING_UNVERIFIED"
+}
