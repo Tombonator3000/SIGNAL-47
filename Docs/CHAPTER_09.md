@@ -1,57 +1,91 @@
-# Chapter 09 — The second exposure
+# Chapter 09 — Den andre eksponeringen
 
-Status: BUILDING. This is the full first-chapter assignment, not a film-processing-only pass. The eight acceptance criteria in KUBUNTU_GAUNTLET_SPILL_MASTERPROMPT.md remain binding. Existing prologue and field-camera input were exercised again before integration: all 34 keyboard/mouse checkpoints passed, in Docs/Evidence/Chapter09/Baseline/native-journey.json. No new chapter runtime/performance gate is yet claimed.
+**Levert: spillbar alpha med hele første kapittels forløp.** De åtte avtalte kapittelkriteriene er PASS på den angitte Kubuntu-maskinen og utgaven. Dette er ikke hele det planlagte SIGNAL / 47-spillet eller ferdigpolert sluttgrafikk. GPU-tid, faktisk lytting og ekstern førstegangstesting er uttrykkelig uverifisert.
 
-## Chosen investigation
+## Spill og identitet
 
-Continue the established prologue into a physical north photolab and B-12 reference station beyond S-03. The first exposure preserves a second pale reference stripe that is absent from normal eyesight. The player develops and inspects the image, identifies the location from the field legend, proposes a mundane explanation and performs a controlled test. Shielded illumination and active vane calibration are distinct methods with different visible setup and observations. A second actual scene exposure preserves the unexplained companion mark. Compare the immutable exposures, reject unsupported claims and file a bounded local conclusion. The cause remains unknown.
+Kjør `./Spill-SIGNAL47.sh` fra prosjektroten, eller pakk ut `Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz` og kjør den utpakkede `./Start-SIGNAL47.sh`. Den faste lokale pakken er `Artifacts/Releases/Chapter09-86a28b30ad94/`. [README](../README.md) beskriver kontroller, lagringssted og gjenbygging.
 
-This is new chapter design, not a retcon claiming earlier canon. Larger motel/driving/Roswell content remains future scope. Prologue frequencies, 4/7, -39 LY and the exact existing 47-second event remain unchanged. First-time length is an untested 20–30 minute content ambition; real input automation duration is recorded separately.
+| Identitet | Verdi |
+| --- | --- |
+| Kildecommit for spillinnhold | `9329a2d819108796c6f731cc305f16dc3250c651` |
+| Unity-kilder SHA-256 | `86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9` |
+| Målt bygginnhold SHA-256 | `6b0c99dc455267875ac836594e6f1478fb58515d337313032604325c2de6056b` |
+| Pakket innhold SHA-256 | `1a68b4d210a7a470e411105ca7e1dbbe5033d58bf0d5092657d7f43796b5dcdf` |
+| Komprimert arkiv SHA-256 | `bce4c4c7423a4e7f42792991553fb1ee3386d0f3a9918a2cdb14aee8ab9a1696` |
 
-The image phenomenon is authored geometry present only in the photographic render. It must be captured from the player's actual camera/scene and frozen at exposure. Developing/reopening/restoring never re-photographs the current scene. Actual QA screenshots remain unedited runtime evidence.
+Byggmanifestet var rent ved stempling. Senere endringer gjelder testverktøy, launcher, dokumentasjon og bevis; spillets Unity-kilder og byggfiler er uendret og kontrollert på nytt ved pakking. Den lille Linux-startbinærens hash identifiserer ikke alene spillinnholdet. Pakkingens tillegg, filmodi og alle 173 filer er dokumentert i pakkemanifestet.
 
-## Delivery gates, fixed before final review
+## Valgt design og faktisk innhold
 
-| Gate | Observable requirement | Current status |
+Spilleren oppdager et avvik, undersøker det med fysiske verktøy, velger en vanlig forklaring og tester den. Et tett SARO-kapittel ble valgt: dette gjorde fungerende mottaker, telefon, servicegård og feltkamera til en sammenhengende etterforskning. Bil/motell ville krevd nye kjøretøy/steder før mysteriet fungerte; bare mer terminalanalyse ville gitt mindre fysisk og visuell variasjon. Instrumentanalysen støtter derfor fotoarbeidet.
+
+Åpningen beholder nattevaktens kalibrering, returlinje, fysiske utskrift, telefon og antennebevegelse. Det gamle sluttkortet fører videre til servicegården. Spilleren leser S-03s motorlogg og tar første bilde, går gjennom norddøren til en ny fotolab, laster forseglet film, overfører og samler kontaktkopien. Lupen og referansekartet lar spilleren finne den doble lyse stripen og identifisere B-12. S-07s trestripesystem og en ny antennekommando er prøvbare feilspor med nyttig tilbakemelding.
+
+Ved B-12 velger spilleren en passiv skjerming/folding med isolert motor, eller en aktiv lokal 042-graders referanseprøve. Lys og referansens stilling endres forskjellig; den direkte observasjonen har én fysisk stripe. Spillerens andre eksponering gjengir en ekstra stripe som beholder tidligere retning. Tilbake i laben framkalles og sammenlignes begge opptak, uriktige konklusjoner kan avvises, og spilleren leverer en lokal rapport ved arkivbordet. Rapporten avgrenser hva akkurat forsøket viser, mens det større spørsmålet om −39 LY står åpent.
+
+Dette er nytt kapitteldesign innenfor bestillingen. 1419.900/1420.110/1420.405 MHz, 4/7, −39 LY og hendelsen 47 spillsekunder etter død telefonlinje er bevart. Motellutkastet er fortsatt inaktivt; bil, kamp, crafting og økonomi er ikke brukt som fyll.
+
+## Åtte bindende kriterier
+
+Kriteriene ble registrert før sluttkontroll i kildehistorikken. Bevisene ligger samlet i [final-9329a2d](Evidence/Chapter09/final-9329a2d/); de gjelder dette kapitlet, ikke gamle pass08-rapporter.
+
+| Kriterium | Status | Konkret bevis |
 | --- | --- | --- |
-| Whole journey | Normal new game through original prologue, lab, hypothesis, field experiment, comparison and new ending | UNVERIFIED |
-| Space | Walkable connected control room, yard, north photolab and B-12 pad; reachable tools and return paths | UNVERIFIED |
-| Investigation | Different observations/actions for two experimental methods; wrong explanation recoverable | UNVERIFIED |
-| Photography | Two immutable actual exposures, physical processing, visible clue, inspection and stable evidence IDs | UNVERIFIED |
-| Signature/outcome | Player-driven paired-image discovery and justified local report; larger cause open | UNVERIFIED |
-| Persistence | Quit/relaunch before development and after field test; preserved images/state, fresh new game, robust invalid/missing data | UNVERIFIED |
-| Presentation | Detailed lab equipment and readable B-12 vane/cabinet; clear route, fitted editable UI, settings and audio transitions | UNVERIFIED |
-| Build/delivery | Regression + both actual input paths + same-release visual/performance checks and fresh archive launch | UNVERIFIED |
+| 1 Hel reise | PASS | Passiv normalstart gjennom alle deler i tre prosesser, 54 kontrollpunkter. Aktiv normalstart til ny avslutning i én sammenhengende kjøring, 52 kontrollpunkter. Ingen teleportering, direkte løsningskall eller redigerte hovedreiselagringer. |
+| 2 Spillbar romlig utvidelse | PASS | Kontrollrom, servicegård, nordlig fotolab og B-12 nås og forlates gjennom faktisk kollisjon og WASD/mus. Begge ruter og retur til lab/arkiv er gjennomført. |
+| 3 Etterforskning med konsekvens | PASS | Motorlogg, fotografisk analyse og to ulike kontrollmetoder; synlig endret lys/referanse og ulik observasjon/rapport. Feil kart, hypotese og konklusjoner er prøvd. For tidlig B-12-forsøk avvises uten lås. |
+| 4 Fotografisk beviskjede | PASS | To virkelige sceneopptak, fysisk tretrinns framkalling, markering, lupe/panorering og sammenligning. Uavhengig kritiker kan peke ut stripene uten metadata. SHA/ID/opptaksdata bevares ved gjenstart og gjentatt åpning. |
+| 5 Signatur og avslutning | PASS | Normal observasjon og framkalte kontrollbilder viser forskjellig antall referanser. Spillerens markering/sammenligning åpner en begrunnet lokal rapport og nytt kapittelutfall for begge metoder. Eksisterende tids-/signalkontrakter er regresjonskontrollert. |
+| 6 Varig og robust tilstand | PASS | Faktisk QUIT og ny prosess før første framkalling og etter kontrollfoto. Pause fryser framkalling. Backup, ugyldig/duplisert data, manglende foto med ny eksponering, skrivefeil og eksplisitt avslutning uten siste endringer er prøvd. Ny sak bevarer eksportarkivet. |
+| 7 Presentasjon og kontroll | PASS | Begge ruters originalbilder og lupe er inspisert; tidligere mørke rekvisitter, uleselig kart/kort og takglød er korrigert. Nye hendelser har målt lydutgang. Mus/volum/fullskjerm er prøvd og gjenlastet; vanlig Alt+Tab og retur virker i pakket spiller. |
+| 8 Verifisert leveranse | PASS | Utviklingsregresjon, begge native ruter, gjenopptakelse/feilprofiler, visuell kontroll og sluttbyggmåling. 173 filer/hash/størrelse/modus kontrollert etter ny utpakking. Vanlig start→spill→pause→QUIT med originalbilder og exit 0, uten observasjons- eller smoke-flagg. |
 
-Reference performance conditions: Intel Core Ultra 5 225U / Intel ARL / OpenGLCore / 1280×800 Ultra, current 75Hz screen if verified unchanged; release build; 20s warm-up then >=120s representative new gameplay. Average >=59 fps, p95 <=17.2ms (existing timer tolerance), p99 <20ms, zero intervals >50ms. No excluded frames. Photograph rendering/readback/encoding/saving is part of gameplay timing; QA screenshots occur in another run. Explicit full program restart is evaluated separately as load time, never silently dropped from a continuous recording. GPU timing and actual subjective listening remain separate evidence requirements.
+Native automatisering bruker bare tastatur/mus til handlinger. Observasjonsdata hjelper rute-/tilstandskontroll og plassering av fotomarkører. Dette dokumenterer betjening og sammenheng; det er ikke blind spilleroppdagelse. Direkte smoke-/kontrakttester og redigerte feilprofiler er merket separat. [Kjøringsoversikt](Evidence/Chapter09/final-9329a2d/run-summary.json), [visuell kritikk](Evidence/Chapter09/visual-final-review.md) og [lagrings-/lydgjennomgang](Evidence/Chapter09/passive-persistence-audio-review.md) beskriver avgrensningene.
 
-## Visual targets and assets
+Aktiv skriptet tur var 311,02 sekunder mellom første/siste kontrollpunkt, inklusive negative handlinger og gjentatt lupe-/notatbokbruk. Passiv tur var 317,23 sekunder summert over tre prosesser, med rominspeksjon og uten pausen mellom prosessene. Dette er kjent-løsning-automatisering. Ambisjonen 20–30 minutter for en førstegangsspiller er ikke målt eller dokumentert; ingen venting eller redusert gangfart er lagt til for å fylle tid.
 
-Existing control-room-v1 and phone-desk-v1 establish the retained style. New generated targets are Docs/VisualTargets/Chapter09/photolab-target-v1.png and field-target-v1.png. These are provisional concept targets, not user-approved runtime images. Their key criteria are an authored enlarger with bellows/trays/sink; cream/green architectural continuity; red localized safelight versus warm archive illumination; clear central path; a readable single reference stripe with ruler, an industrial B-12 panel and amber-lit walkable pad. Full material fidelity must be assessed honestly after runtime capture.
+## Faktisk ytelse og lyd
 
-New geometry is authored in Blender by reproducible scripts, retaining .blend and FBX. Existing licensed floor, room assets, font and effects are reused. No purchases or paid API calls are authorized. Current runtime/build stack stays Unity 6000.3.22f1 / URP 17.3.0 / Input System 1.20.0; Blender 4.5.13 is available at the established local tool path. Save-slot tests use --signal47-save-dir with a separate task directory.
+Release-bygg, Intel Core Ultra 5 225U, Intel ARL/Mesa 26.0.8, Kubuntu/Ubuntu 26.04.1, Linux 7.0.0-31, OpenGLCore, 1280×800 Ultra. Primærskjerm DP-3 var 75 Hz, strøm tilkoblet, `targetFrameRate=75`, `vSyncCount=0`. Ingen editor-/Blender-bygg kjørte parallelt. Spillet beholdt fokus hele målevinduet.
 
-## Skills and responsibility
+Etter normal prolog og første eksponering ble det ventet 20 ekstra sekunder før 121,397 sekunder med lab, referanse/hypotese, feltprøve, reell kontrollfoto-rendering/eksport, retur, andre framkalling, sammenligning og avslutning. QA-bilder og lydstikkprøver ble tatt i egne kjøringer. Samtlige 9104 bildeintervaller er beholdt i [frames.csv](Evidence/Chapter09/final-9329a2d/Final-Performance/frames.csv); tallene er regnet på nytt fra hele filen.
 
-- Local gauntlet-loop: read with visual/performance reference; governing workflow.
-- Brainstorming: original obra/superpowers commit b36e0829c6d0140e93cfef2ca599b1b07d4a7797, reviewed before installation through the bundled skill-installer into ~/.codex/skills/brainstorming. Context, options and choice applied with user's explicit routine-decision authorization; next-turn catalogue availability does not imply another machine is synced.
-- Dream Loop: original achimala/dream-loop commit 9bddb901f7d071cfefdd21e264267c757177a9df read during preparation; baseline-based generated targets and fresh critique adapted into Gauntlet. No paid image-to-3D path.
-- Imagegen: built-in tool generated the two provisional targets; editable labels and gameplay evidence stay in Unity.
-- Skill-creator: read for recording a reusable method only after it has actually worked.
-- Runtime, persistence and environment agents have separate file ownership; main agent owns integration, HUD, the single editor/build path, native input testing and final evidence. Their completion reports alone are not runtime verification.
+| Måling | Resultat | Avtalt grense |
+| --- | ---: | ---: |
+| Gjennomsnitt | 74,993 fps | minst 59 fps |
+| p95 bildetid | 15,897 ms | høyst 17,2 ms |
+| p99 bildetid | 16,187 ms | under 20 ms |
+| Lengste intervall | 20,087 ms | ingen intervaller over 50 ms |
+| Intervaller over 50 ms | 0 | 0 |
 
-## Integration notes
+Percentiler bruker nærmeste rang i sorterte monotone Unity Update-intervaller. Målt hovedtrådarbeid var 1,388 ms i snitt; presentasjonsventing 11,940 ms. GPU-tid var 0 fra verktøyet og er **UNVERIFIED**, ikke null GPU-belastning. Unitys målte minnetopp var 99,73 MiB; prosessens VmHWM var 314,41 MiB, målt separat over hele prosesslivet inklusive last. Dette er forskjellige mål. [Full rapport](Evidence/Chapter09/final-9329a2d/Final-Performance/performance.json) og [uavhengig CSV-kontroll](Evidence/Chapter09/final-9329a2d/Final-Performance/independent-csv-check.json) inneholder råbetingelser og terskler.
 
-Source branch gauntlet/chapter-one-09 starts from 1c572b1 (main 8a6b4d9 plus current handoff/masterprompt documentation). Old runtime is preserved in Artifacts/Releases/FieldCamera08-af5a85d. Building may replace only ordinary ignored build outputs, not that immutable release. Sources/ references remain unchanged. No merge or public publish is authorized.
+Eksplisitt Fortsett ligger utenfor dette kontinuerlige målevinduet. Senere native feil-/gjenstartskontroller observerte spilleklar tilstand innen 0,421 sekunder etter klikk; dette inkluderer 0,42 sekunders inputstabilisering og opptil 0,1 sekunders tilstandsutvalg, og er en øvre observasjonsgrense, ikke presis isolert disk-/lastetid. De to første passive gjenstartene hadde ikke dette tidsmålet og er ikke gitt et etterkonstruert tall.
 
-## First integrated runtime checkpoint — candidate 01
+Lydutgang er målt ved 48 kHz i relevante prolog-, kamera-, lab-, kontroll-, sammenlignings- og sluttfaser. Passive stikkprøver hadde høyeste peak 0,222733 (−13,04 dBFS) og ingen sampleverdier over full skala i det målte utvalget på kanal 0. Det beviser ikke kontinuerlig klippefrihet eller andre kanaler. Faktisk lytting, høyttalerlyd og subjektiv miks er **UNVERIFIED**. Eksakt stillhet under pause er heller ikke fastslått av de aggregerte overgangsvinduene. Mus-/voluminnstillinger er kontrollert gjennom faktisk UI og prosessgjenstart.
 
-Development build and existing smoke regression passed. Candidate release source SHA-256 `cd4038a37df99bf112c58922db8dc07aad7f1792ce4f9446d963de9729a61ef1` completed the passive chapter through native keyboard/mouse, including separate process exits/resumes before development and after the controlled exposure. Both exported scene images were loaded from their original files. Wrong reference, motor-command hypothesis and unsupported conclusions were recoverable. Lab pause froze processing. The middle runner initially expected the wrong archive prompt; it was corrected and the diagnostic journey continued without moving or solving through code. A clean final journey is still required.
+## Ressurser, metode og vesentlige rettelser
 
-Independent visual review confirmed the actual double stripe and fitted photograph UI. Presentation is FAIL pending correction: interior cream walls, enlarger and processing card are underlit, with an overly saturated red patch. Inspection traced existing ceiling light reductions to the control-room scene-saving hook; the chapter lighting must run after that dressing.
+Nye forstørrer-, kar-, vask-, flaske-, stol- og B-12-modeller er faktisk produsert i Blender 4.5.13 med redigerbare `.blend`, eksport og Unity-import. Eksisterende originale modeller og lisensressurser er bevart; [lisensoversikten](THIRD_PARTY_NOTICES.md) inkluderer kapittelressursene, VT323 og Scott Buckley. Ingen nye kjøp eller fakturerbar bilde-til-3D-tjeneste ble brukt.
 
-Independent code review found and triggered corrections to queued saves during Quit, powered receiver LED restoration and photo sidecar metadata. Nine focused checks using the actual save code with mocked Unity APIs passed; their scope and source hashes are in Evidence/Chapter09/Contracts. These do not certify actual player input or file recovery. New source changes invalidate related final checks until the next build.
+[Fotolabmålet](VisualTargets/Chapter09/photolab-target-v1.png) og [feltmålet](VisualTargets/Chapter09/field-target-v1.png) er **genererte, foreløpige målvisninger**, ikke implementasjonsbevis eller tidligere brukergodkjenning. Sammenligning og uavhengig kritikk førte til korrigert praktisk belysning, tydeligere kort/kart, leselig filmstripe, mindre takglød og sannferdig planlagt spor på CRT-en. Materialrikdom, kontaktlys og enkelte kantede silhuetter når fortsatt ikke hele målbildenes ambisjon. Nødvendige spor, rutemerker og nærinteraksjoner er lesbare i runtime; dette er alpha-grafikk.
 
-Current next run: corrected release build, fresh passive and active routes, corrupt/missing data and settings checks, then representative performance and archive startup. No finished-chapter claim is made at this checkpoint.
+Kameraet lagrer en 960×600-render fra spillerens virkelige kamera. En bevisst, foto-eksklusiv geometrisk respons gjør at filmen registrerer den ekstra referansen; normalvisningen gjør det ikke. Kamera/world-metode, tid, bildehash og stabile ID-er fryses ved eksponering. Framkalling endrer tilgjengelighet; den tar aldri et nytt bilde. Opprinnelig sidecar beskriver eksponeringen, mens framkalt/undersøkt tilstand ligger i sakslagringen.
 
-Candidate02 visibly corrected the enlarger, CRT surfaces and restored receiver LEDs. Remaining signed/card text, ceiling glare and static tracking label were corrected for candidate03. Actual native testing found an additional Kubuntu fullscreen defect: boolean fullscreen preserved a downscaled1280×800 render surface inside1920×1080 XWayland, and legacy IMGUI input was scaled twice. The corrected path requests native borderless fullscreen and restores the recorded window size, with version2 settings and version1 migration. This requires fresh native testing; neither the failed fullscreen test nor read-only contract checks count as PASS.
+Vesentlige feil som ble funnet og rettet: køet checkpoint ved Quit, receiver-LED etter Continue, eksportmetadata skrevet før ferdig SHA, klikk gjennom innstillingspanelet, og Kubuntu-fullskjerm med feilskalerte IMGUI-koordinater. Native fullskjerm bruker nå skjermens opprinnelige oppløsning og gjenoppretter tidligere vindusstørrelse. En eldre scene-lagringshook overskrev lablyset; rekkefølgen er nå eksplisitt og idempotent. Berørte kontroller ble kjørt på nytt før sluttbygget ble godkjent.
+
+Testverktøyene krevde også rettelser, uten endring av spillet: feilprofilens konvolutthash måtte ha samme store heksadesimale bokstaver som formatet; retur fra telefonbordet måtte følge gangveien fremfor en diagonal gjennom dørkarmen. XWayland root-bildefangst og root-fokusforespørsel virket ikke. Installert KDE Spectacle fanget det faktiske aktive spillvinduet, og vanlig Alt+Tab bekreftet fokusbytte. Tidligere mislykkede verktøyforsøk er beholdt separat i `VerificationCorrections/`; de brukes ikke som PASS-bevis.
+
+## Skills og videreføring
+
+| Skill/metode | Kilde og faktisk bruk |
+| --- | --- |
+| gauntlet-loop | Installert lokal SKILL.md og visuell-/ytelsesreferanse lest. Definer→inspiser→bygg→kjør→vurder→rett→checkpoint anvendt gjennom hele kapitlet. |
+| Brainstorming | [Original obra/superpowers](https://github.com/obra/superpowers/blob/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/brainstorming/SKILL.md) commit `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`, gjennomgått og installert gratis gjennom skill-installer i `~/.codex/skills/brainstorming`. Original MIT-lisens og låst kildeinfo er lagret lokalt. Valgt SARO-design fulgt med brukerens delegerte rutinevalg. Dette er metodebruk, ikke en ny motorintegrasjon. |
+| Dream Loop / imagegen | [Original achimala/dream-loop](https://github.com/achimala/dream-loop/blob/9bddb901f7d071cfefdd21e264267c757177a9df/SKILL.md) commit `9bddb901f7d071cfefdd21e264267c757177a9df` lest. Inkludert bildegenerering, faktiske runtime-bilder og separat kritiker brukt. Ingen betalt 3D-API. |
+| skill-creator | Lest før én prøvd arbeidsmetode ble lagt til eksisterende lokale Gauntlet som `references/unity-linux-chapter-validation.md`. Identiteten er bevart. Filplasseringer og SHA er i `skill-learning.json`; lokal lagring innebærer ikke synkronisering til andre maskiner. |
+
+Gameplay, lagring, miljø og uavhengig kritikk hadde avklart filansvar. Hovedagenten integrerte, kjørte editor/bygg og alle eksklusive native inputtester. Subagentenes ferdigmeldinger ble kontrollert mot faktisk kjøring.
+
+Forrige FieldCamera08-pakke og originale 169 innholdsfiler matcher fortsatt payload `672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020`; den eksisterende ekstra LES_MEG-filen er skilt fra originalpayloaden. Synkroniserte `sources/` og andre prosjekter er urørt. Arbeidet ligger på `gauntlet/chapter-one-09`; ingen merge eller offentlig publisering er utført.

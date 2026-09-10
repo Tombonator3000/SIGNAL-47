@@ -1,0 +1,120 @@
+{
+    "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+    "buildId": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "sampleRate": 48000,
+    "dspAdvanced": true,
+    "levels": [
+        {
+            "state": "start",
+            "windows": 90,
+            "samples": 184320,
+            "overFullScale": 0,
+            "peak": 0.014126150868833065,
+            "rms": 0.006594109984317596
+        },
+        {
+            "state": "room",
+            "windows": 162,
+            "samples": 331776,
+            "overFullScale": 0,
+            "peak": 0.10788635164499283,
+            "rms": 0.0068297490629435
+        },
+        {
+            "state": "receiver",
+            "windows": 1299,
+            "samples": 2660352,
+            "overFullScale": 0,
+            "peak": 0.114169180393219,
+            "rms": 0.007214634854322085
+        },
+        {
+            "state": "printer",
+            "windows": 30,
+            "samples": 61440,
+            "overFullScale": 0,
+            "peak": 0.09472468495368958,
+            "rms": 0.010868907126985142
+        },
+        {
+            "state": "ring",
+            "windows": 201,
+            "samples": 411648,
+            "overFullScale": 0,
+            "peak": 0.15612249076366425,
+            "rms": 0.017796499069152356
+        },
+        {
+            "state": "call",
+            "windows": 103,
+            "samples": 210944,
+            "overFullScale": 0,
+            "peak": 0.22273287177085877,
+            "rms": 0.024653888971866837
+        },
+        {
+            "state": "line-dead",
+            "windows": 1134,
+            "samples": 2322432,
+            "overFullScale": 0,
+            "peak": 0.019093381240963937,
+            "rms": 0.006852264098898913
+        },
+        {
+            "state": "paused",
+            "windows": 93,
+            "samples": 190464,
+            "overFullScale": 0,
+            "peak": 0.010141336359083653,
+            "rms": 0.0008044987650353752
+        },
+        {
+            "state": "impact",
+            "windows": 220,
+            "samples": 450560,
+            "overFullScale": 0,
+            "peak": 0.1226290836930275,
+            "rms": 0.00872285003383107
+        },
+        {
+            "state": "title",
+            "windows": 39,
+            "samples": 79872,
+            "overFullScale": 0,
+            "peak": 0.016057003289461137,
+            "rms": 0.006586074167422612
+        },
+        {
+            "state": "chapter-collect-camera",
+            "windows": 156,
+            "samples": 319488,
+            "overFullScale": 0,
+            "peak": 0.02032085880637169,
+            "rms": 0.006740518275913807
+        },
+        {
+            "state": "chapter-motor-log",
+            "windows": 388,
+            "samples": 794624,
+            "overFullScale": 0,
+            "peak": 0.1140420138835907,
+            "rms": 0.007502243466842685
+        },
+        {
+            "state": "chapter-first-exposure",
+            "windows": 119,
+            "samples": 243712,
+            "overFullScale": 0,
+            "peak": 0.1070045605301857,
+            "rms": 0.006633474938687147
+        },
+        {
+            "state": "chapter-develop-first",
+            "windows": 37,
+            "samples": 75776,
+            "overFullScale": 0,
+            "peak": 0.16325245797634126,
+            "rms": 0.008124930339059988
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+  "capturedUtc": "2026-09-10T17:56:47.692226+00:00",
+  "uname": [
+    "Linux",
+    "tom-travelmate",
+    "7.0.0-31-generic",
+    "#31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026",
+    "x86_64",
+    ""
+  ],
+  "osRelease": "PRETTY_NAME=\"Ubuntu 26.04.1 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"26.04\"\nVERSION=\"26.04.1 LTS (Resolute Raccoon)\"\nVERSION_CODENAME=resolute\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=resolute\nLOGO=ubuntu-logo\n",
+  "display": {
+    "code": 0,
+    "stdout": "Screen 0: minimum 16 x 16, current 5760 x 1080, maximum 32767 x 32767\neDP-1 connected 1920x1080+3840+0 (normal left inverted right x axis y axis) 344mm x 194mm\n   1920x1080     59.96*+\n   1440x1080     59.99  \n   1400x1050     59.98  \n   1280x1024     59.89  \n   1280x960      59.94  \n   1152x864      59.96  \n   1024x768      59.92  \n   800x600       59.86  \n   640x480       59.38  \n   320x240       59.29  \n   1680x1050     59.95  \n   1440x900      59.89  \n   1280x800      59.81  \n   1152x720      59.75  \n   960x600       59.63  \n   928x580       59.88  \n   800x500       59.50  \n   768x480       59.90  \n   720x480       59.71  \n   640x400       59.95  \n   320x200       58.14  \n   1600x900      59.95  \n   1368x768      59.88  \n   1280x720      59.86  \n   1024x576      59.90  \n   864x486       59.92  \n   720x400       59.27  \n   640x350       59.28  \nDP-3 connected primary 1920x1080+1920+0 (normal left inverted right x axis y axis) 597mm x 336mm\n   1920x1080     74.82*+\n   1440x1080     74.80  \n   1400x1050     74.75  \n   1280x1024     74.77  \n   1280x960      74.86  \n   1152x864      74.82  \n   1024x768      74.67  \n   800x600       74.52  \n   640x480       74.77  \n   320x240       73.82  \n   1680x1050     74.79  \n   1440x900      74.85  \n   1280x800      74.76  \n   1152x720      74.72  \n   960x600       74.84  \n   928x580       74.58  \n   800x500       74.40  \n   768x480       74.71  \n   720x480       74.51  \n   640x400       74.23  \n   320x200       72.67  \n   1600x900      74.89  \n   1368x768      74.73  \n   1280x720      74.78  \n   1024x576      74.80  \n   864x486       74.45  \n   720x400       74.23  \n   640x350       74.53  \nHDMI-A-1 connected 1920x1080+0+0 (normal left inverted right x axis y axis) 598mm x 336mm\n   1920x1080     74.91*+\n   1440x1080     74.92  \n   1400x1050     74.87  \n   1280x1024     74.90  \n   1280x960      74.86  \n   1152x864      74.82  \n   1024x768      74.67  \n   800x600       74.91  \n   640x480       74.77  \n   320x240       73.82  \n   1680x1050     74.89  \n   1440x900      74.85  \n   1280x800      74.76  \n   1152x720      74.72  \n   960x600       74.84  \n   928x580       74.58  \n   800x500       74.87  \n   768x480       74.71  \n   720x480       74.51  \n   640x400       74.23  \n   320x200       72.67  \n   1600x900      74.89  \n   1368x768      74.73  \n   1280x720      74.78  \n   1024x576      74.80  \n   864x486       74.45  \n   720x400       74.23  \n   640x350       74.53  \n",
+    "stderr": ""
+  },
+  "graphics": {
+    "code": 0,
+    "stdout": "name of display: :0\ndisplay: :0  screen: 0\ndirect rendering: Yes\nExtended renderer info (GLX_MESA_query_renderer):\n    Vendor: Intel (0x8086)\n    Device: Mesa Intel(R) Graphics (ARL) (0x7d41)\n    Version: 26.0.8\n    Accelerated: yes\n    Video memory: 15524MB\n    Unified memory: yes\n    Preferred profile: core (0x1)\n    Max core profile version: 4.6\n    Max compat profile version: 4.6\n    Max GLES1 profile version: 1.1\n    Max GLES[23] profile version: 3.2\nOpenGL vendor string: Intel\nOpenGL renderer string: Mesa Intel(R) Graphics (ARL)\nOpenGL core profile version string: 4.6 (Core Profile) Mesa 26.0.8-1ubuntu0.3\nOpenGL core profile shading language version string: 4.60\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6 (Compatibility Profile) Mesa 26.0.8-1ubuntu0.3\nOpenGL shading language version string: 4.60\nOpenGL context flags: (none)\nOpenGL profile mask: compatibility profile\n\nOpenGL ES profile version string: OpenGL ES 3.2 Mesa 26.0.8-1ubuntu0.3\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "stderr": ""
+  },
+  "power": {
+    "/sys/class/power_supply/ucsi-source-psy-USBC000:002/online": "0",
+    "/sys/class/power_supply/ucsi-source-psy-USBC000:002/status": "Discharging",
+    "/sys/class/power_supply/BAT1/capacity": "100",
+    "/sys/class/power_supply/BAT1/status": "Full",
+    "/sys/class/power_supply/ucsi-source-psy-USBC000:001/online": "1",
+    "/sys/class/power_supply/ucsi-source-psy-USBC000:001/status": "Charging",
+    "/sys/class/power_supply/ACAD/online": "1"
+  },
+  "thermal": {
+    "/sys/class/thermal/thermal_zone2/temp": "43050",
+    "/sys/class/thermal/thermal_zone0/temp": "63000",
+    "/sys/class/thermal/thermal_zone9/temp": "68000",
+    "/sys/class/thermal/thermal_zone7/temp": "48050",
+    "/sys/class/thermal/thermal_zone5/temp": "43050",
+    "/sys/class/thermal/thermal_zone3/temp": "43050",
+    "/sys/class/thermal/thermal_zone1/temp": "20000",
+    "/sys/class/thermal/thermal_zone8/temp": "38000",
+    "/sys/class/thermal/thermal_zone6/temp": "68000",
+    "/sys/class/thermal/thermal_zone4/temp": "63050"
+  },
+  "boundary": "Release player; native input;1280x800 Ultra; 75Hz primary DP-3;20 seconds extra warmup after normal prologue/first exposure then >=120 seconds all intervals. Includes actual second photo/render/export, lab, control, comparison, ending. No screenshot or audio audit during performance run. Explicit Continue load measured separately. No threshold changed.",
+  "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave"
+}

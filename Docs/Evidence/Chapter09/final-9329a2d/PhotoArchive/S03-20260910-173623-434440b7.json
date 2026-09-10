@@ -1,0 +1,33 @@
+{
+    "id": "s03-field-photograph",
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/S03-20260910-173623-434440b7.jpg",
+    "utc": "2026-09-10T17:36:23.0287680Z",
+    "localTime": "23:43:46",
+    "build": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "method": "baseline",
+    "subject": "S-03 / array profile",
+    "sha256": "a38f45c9096d477d4d65730dfd33a599ba0c1d96d15394ef18354604e205a307",
+    "position": {
+        "x": 10.696220397949219,
+        "y": 1.7899997234344483,
+        "z": -11.994260787963868
+    },
+    "forward": {
+        "x": -0.12024595588445664,
+        "y": 0.13459153473377229,
+        "z": -0.9835783243179321
+    },
+    "referenceViewport": {
+        "x": 0.47139793634414675,
+        "y": 0.3655959963798523
+    },
+    "echoViewport": {
+        "x": 0.44666820764541628,
+        "y": 0.3655240535736084
+    },
+    "width": 960,
+    "height": 600,
+    "developed": false,
+    "inspected": false,
+    "exported": true
+}

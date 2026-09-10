@@ -113,9 +113,13 @@ class ChapterJourney(legacy.Journey):
   s=wait_for(lambda s:s['paused']);self.mark('normal-save-and-quit');self.d.click(s['width']/2+62,s['height']/2+168)
  def resume(self):
   self.d.focus();s=state();assert not s["started"]
+  self.d.move_pointer(s["width"]/2,s["height"]/2+138);load_started=time.monotonic()
   self.d.click(s["width"]/2,s["height"]/2+138)
   wait_for(lambda s:s["started"] and not s["restoring"],30)
+  load_seconds=time.monotonic()-load_started
   self.mark("continued-in-new-process")
+  self.events[-1]['continueObservedSeconds']=load_seconds
+  self.events[-1]['continueTimingScope']='Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement.'
  def inspect_rooms(self):
   self.return_to_lab();self.walk(0,9.5);self.aim(0,1.4,12.5);self.mark('photolab-overview')
   self.walk(0,10.3);self.aim(-2.7,1.3,11.4);self.mark('photolab-enlarger-and-trays')
@@ -125,11 +129,11 @@ class ChapterJourney(legacy.Journey):
   self.walk(-4.2,4.3);self.walk(-4.2,2.8);self.aim(-6.3,1.35,1.6);self.mark('receiver-restored-powered-leds')
   for x,z in [(-4.2,4.3),(0,3.2),(3.3,1.85),(4.6,1.85)]:self.walk(x,z)
   self.aim(5.1,1.08,.5);self.mark('phone-desk-after-light-correction')
- def settings(self,restore=False):
+ def settings(self,restore=False,keep_fullscreen=False):
   s=state();assert not s['started']
   if restore:
    expected=json.loads(Path(s['savePath']).with_name('ui-test-settings-expected.json').read_text())
-   assert abs(s['masterVolume']-expected['masterVolume'])<.00001 and abs(s['mouseSensitivity']-expected['mouseSensitivity'])<.00001,'Settings did not survive process restart'
+   assert abs(s['masterVolume']-expected['masterVolume'])<.00001 and abs(s['mouseSensitivity']-expected['mouseSensitivity'])<.00001 and s['fullscreen']==expected['fullscreen'],'Settings did not survive process restart'
    self.mark('audio-and-mouse-settings-survived-restart')
   if not s['settingsOpen']:self.d.click(s['width']/2-77,s['height']/2+188)
   wait_for(lambda s:s['settingsOpen']);self.mark('settings-open-without-starting-case')
@@ -145,13 +149,15 @@ class ChapterJourney(legacy.Journey):
   if not restore:
    s=state();window=(s['width'],s['height']);self.d.click(s['width']/2-210,s['height']/2+85);wait_for(lambda s:s['fullscreen'],8);time.sleep(.8);self.mark('fullscreen-applied')
    s=state();self.d.click(s['width']/2-210,s['height']/2+85);wait_for(lambda s:not s['fullscreen'] and (s['width'],s['height'])==window,8);self.mark('fullscreen-menu-click-returns-to-previous-window-size')
+   if keep_fullscreen:
+    s=state();self.d.click(s['width']/2-210,s['height']/2+85);wait_for(lambda s:s['fullscreen'],8);time.sleep(.8)
   if restore:
    s=state();self.d.click(s['width']/2-123,s['height']/2+163);wait_for(lambda s:s['masterVolume']==1 and abs(s['mouseSensitivity']-.085)<.00001 and not s['fullscreen'])
   s=state();self.d.click(s['width']/2+106,s['height']/2+163);wait_for(lambda s:not s['settingsOpen']);self.mark('settings-saved')
   settings=json.loads(Path(state()['savePath']).with_name('settings.json').read_text())
   assert abs(settings['masterVolume']-state()['masterVolume'])<.001 and abs(settings['mouseSensitivity']-state()['mouseSensitivity'])<.001
   if not restore:
-   Path(state()['savePath']).with_name('ui-test-settings-expected.json').write_text(json.dumps({k:state()[k] for k in ('masterVolume','mouseSensitivity')}))
+   Path(state()['savePath']).with_name('ui-test-settings-expected.json').write_text(json.dumps({k:state()[k] for k in ('masterVolume','mouseSensitivity','fullscreen')}))
    s=state();self.d.click(s['width']/2,s['height']/2+81);wait_for(lambda s:s['started']);before=state()['yaw'];sensitivity=state()['mouseSensitivity'];self.d.look_delta(100,0);time.sleep(.2)
    moved=abs(legacy.angle(state()['yaw']-before));assert abs(moved-sensitivity*100)<.5,(moved,sensitivity);self.mark('saved-sensitivity-changes-real-mouse-look')
  def invalid_save(self):
@@ -171,13 +177,40 @@ class ChapterJourney(legacy.Journey):
   s=state();self.d.click(s['width']/2,s['height']/2+300)
  def recover_second(self):
   assert state()['frameCount']==1 and state()['developedFrames']==1 and state()['chapterStage']=='second-exposure';self.mark('missing-photo-reports-recoverable-second-exposure')
-  for x,z in [(0,9.5),(0,6.5),(6,5.7),(8,3.2),(10.7,3.2),(10.7,-2),(10.7,-7.8),(10.7,-12.2),(10.7,-15.3),(10.75,-18.9)]:self.walk(x,z)
+  # Completed fixtures may resume at the inspected phone desk or inside the lab.
+  # Follow the real aisle/door approach; a diagonal through the jamb is not a route.
+  approach=[(0,9.5),(0,6.5)] if state()['z']>7.5 else [(3.3,1.85),(0,3.2),(0,6.5)]
+  for x,z in approach+[(6,5.7),(8,3.2),(10.7,3.2),(10.7,-2),(10.7,-7.8),(10.7,-12.2),(10.7,-15.3),(10.75,-18.9)]:self.walk(x,z)
   self.aim(10,1.6,-22);self.d.tap('c');wait_for(lambda s:s['cameraRaised'] and not s['frameProblem']);self.d.tap('space')
   wait_for(lambda s:s['frameCount']==2 and s['photoReady'],20);assert len({f['id'] for f in frames()})==2;self.mark('missing-photo-retaken-with-stable-evidence-identity')
+ def premature_control(self):
+  self.walk(10.7,-15.3);self.walk(10.75,-18.9);self.interact(11.66,1.02,-20.10,'B-12');wait_for(lambda s:s['chapterPanel']=='experiment')
+  self.click_panel(345,512);assert not chapter()['experimentMethod'] and not chapter()['controlObserved'] and state()['developedFrames']==0;self.mark('premature-control-requires-an-investigation-question');self.close_panel()
+ def reopen_evidence(self):
+  self.close_panel();wait_for(lambda s:not s['saving'],15)
+  payload=json.loads(json.loads(Path(state()['savePath']).read_text())['payload'])
+  evidence=json.loads(payload['notebook'])['evidence'];count=state()['evidence']
+  before={f['id']:hashlib.sha256(Path(f['path']).read_bytes()).hexdigest() for f in frames()}
+  for cycle in range(2):
+   for identity,panel in [('s03-field-photograph','first'),('b12-control-photograph','comparison')]:
+    index=next(i for i,e in enumerate(evidence) if e['Id']==identity)
+    self.d.tap('Tab');wait_for(lambda s:s['modal']);s=state();self.d.click(s['width']/2,162+index*48)
+    wait_for(lambda s:s['chapterPanel']==panel);self.mark('notebook-reopened-'+identity+'-'+str(cycle+1))
+    if cycle==0 and panel=='first':
+     self.click_panel(1177,170);self.mark('contact-print-loupe-enlarged')
+     self.d.drag(1066,211,1155,211);self.mark('contact-print-loupe-panned')
+    self.close_panel()
+  assert state()['evidence']==count and state()['frameCount']==2
+  after={f['id']:hashlib.sha256(Path(f['path']).read_bytes()).hexdigest() for f in frames()}
+  assert before==after;self.mark('reopening-and-loupe-preserve-originals-without-duplicates')
+ def package_start(self):
+  s=state();assert not s['started'];self.mark('extracted-package-normal-start-menu')
+  self.d.click(s['width']/2,s['height']/2+81);wait_for(lambda s:s['started']);self.mark('extracted-package-enters-night-shift')
+  before=state()['z'];self.d.key('w',True);time.sleep(.5);self.d.key('w',False);time.sleep(.2);assert abs(state()['z']-before)>.1;self.mark('extracted-package-receives-native-movement')
 
 if __name__=="__main__":
  parser=argparse.ArgumentParser();parser.add_argument("--resume",action="store_true");parser.add_argument("--lab",action="store_true");parser.add_argument("--no-shots",action="store_true");parser.add_argument('--current',action='store_true');parser.add_argument('--phase',choices=['first','control','finish','all','inspect'],default='first');parser.add_argument('--method',choices=['passive','active'],default='passive');parser.add_argument('--quit',action='store_true');parser.add_argument('--measure',action='store_true')
- parser.add_argument('--check',choices=['settings-write','settings-read','invalid-save','new-case','backup','failed-save-exit','missing-second']);parser.add_argument('--inspect-after',action='store_true')
+ parser.add_argument('--check',choices=['settings-write','settings-fullscreen-write','settings-read','invalid-save','new-case','backup','failed-save-exit','missing-second','package-start']);parser.add_argument('--inspect-after',action='store_true');parser.add_argument('--out-of-order',action='store_true');parser.add_argument('--reopen',action='store_true')
  args=parser.parse_args();d=PhysicalDesktop();d.inject_setup();j=ChapterJourney(d,not args.no_shots)
  outcome="FAIL";error=""
  try:
@@ -185,13 +218,15 @@ if __name__=="__main__":
   if args.resume:j.resume()
   elif not args.current and not args.check:j.run()
   if args.check:
-   if args.check.startswith('settings-'):j.settings(args.check=='settings-read')
+   if args.check.startswith('settings-'):j.settings(args.check=='settings-read',args.check=='settings-fullscreen-write')
    elif args.check=='invalid-save':j.invalid_save()
    elif args.check=='new-case':j.new_case_preserves_exports()
    elif args.check=='backup':
     assert state()['chapterComplete'] and 'recovery copy' in state()['saveStatus'];j.mark('corrupt-primary-restored-from-backup')
    elif args.check=='failed-save-exit':j.failed_save_exit()
    elif args.check=='missing-second':j.recover_second()
+   elif args.check=='package-start':j.package_start()
+  if args.out_of_order:j.premature_control()
   if args.measure:time.sleep(20);legacy.command('record');measurement_start=time.monotonic()
   if args.lab or args.phase in ('control','finish','all'):j.return_to_lab()
   if args.phase=='inspect':j.inspect_rooms()
@@ -202,6 +237,7 @@ if __name__=="__main__":
    if args.phase=='all':j.return_to_lab()
    j.develop(2);j.conclude()
   if args.inspect_after:j.close_panel();j.inspect_rooms()
+  if args.reopen:j.reopen_evidence()
   if args.measure:
    while time.monotonic()-measurement_start<121:time.sleep(1)
    legacy.command('finish');time.sleep(.4)

@@ -1,0 +1,105 @@
+{
+  "method": "Linux /proc/PID/status sampled every0.5s across entire player lifetime, including explicit loading; VmHWM is process resident peak, not Unity engine memory.",
+  "samples": [
+    {
+      "wall": 1789062937.9106307,
+      "rssKiB": 816,
+      "peakRssKiB": 816
+    },
+    {
+      "wall": 1789062938.4109662,
+      "rssKiB": 235564,
+      "peakRssKiB": 235564
+    },
+    {
+      "wall": 1789062938.911264,
+      "rssKiB": 237184,
+      "peakRssKiB": 237184
+    },
+    {
+      "wall": 1789062939.4115558,
+      "rssKiB": 237240,
+      "peakRssKiB": 237240
+    },
+    {
+      "wall": 1789062939.9118338,
+      "rssKiB": 237292,
+      "peakRssKiB": 237292
+    },
+    {
+      "wall": 1789062940.4121065,
+      "rssKiB": 238248,
+      "peakRssKiB": 238248
+    },
+    {
+      "wall": 1789062940.9123805,
+      "rssKiB": 245332,
+      "peakRssKiB": 245332
+    },
+    {
+      "wall": 1789062941.4128695,
+      "rssKiB": 273368,
+      "peakRssKiB": 273368
+    },
+    {
+      "wall": 1789062941.9131563,
+      "rssKiB": 274792,
+      "peakRssKiB": 274792
+    },
+    {
+      "wall": 1789062942.4134538,
+      "rssKiB": 275736,
+      "peakRssKiB": 275736
+    },
+    {
+      "wall": 1789062942.9137375,
+      "rssKiB": 276560,
+      "peakRssKiB": 276560
+    },
+    {
+      "wall": 1789062943.4140232,
+      "rssKiB": 277156,
+      "peakRssKiB": 277156
+    },
+    {
+      "wall": 1789062943.9143617,
+      "rssKiB": 278000,
+      "peakRssKiB": 278000
+    },
+    {
+      "wall": 1789062944.4146364,
+      "rssKiB": 278712,
+      "peakRssKiB": 278712
+    },
+    {
+      "wall": 1789062944.9149017,
+      "rssKiB": 279636,
+      "peakRssKiB": 279636
+    },
+    {
+      "wall": 1789062945.4151847,
+      "rssKiB": 287600,
+      "peakRssKiB": 287600
+    },
+    {
+      "wall": 1789062945.9155128,
+      "rssKiB": 288208,
+      "peakRssKiB": 288208
+    },
+    {
+      "wall": 1789062946.415779,
+      "rssKiB": 288872,
+      "peakRssKiB": 288872
+    },
+    {
+      "wall": 1789062946.9160879,
+      "rssKiB": 289480,
+      "peakRssKiB": 289480
+    },
+    {
+      "wall": 1789062947.4163585,
+      "rssKiB": 289500,
+      "peakRssKiB": 289500
+    }
+  ]
+}

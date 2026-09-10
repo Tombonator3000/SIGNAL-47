@@ -1,0 +1,27 @@
+{
+  "outcome": "PASS",
+  "recomputedFromAllCSVIntervals": {
+    "frames": 9104,
+    "seconds": 121.397260785,
+    "averageFps": 74.99345488629758,
+    "p95ms": 15.897098,
+    "p99ms": 16.186517,
+    "maxMs": 20.086565,
+    "stallsOver50ms": 0
+  },
+  "thresholds": {
+    "minSeconds": 120,
+    "minAverageFps": 59,
+    "maxP95ms": 17.2,
+    "exclusiveMaxP99ms": 20,
+    "allowedIntervalsOver50ms": 0
+  },
+  "processPeakRssMiB": 314.41015625,
+  "enginePeakAllocatedMiB": 99.73205375671387,
+  "nativeRefreshHz": 75,
+  "targetFrameRate": 75,
+  "vSyncCount": 0,
+  "gpuTiming": "UNVERIFIED",
+  "screenshotsDuringMeasurement": 0,
+  "sampling": "All 9104 intervals, nearest-rank percentiles. No removal. Native focused release player; actual exposure/export, lab and ending included.20s additional warmup after normal prologue/first frame; explicit Continue loading separate."
+}

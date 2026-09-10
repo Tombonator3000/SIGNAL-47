@@ -1,0 +1,117 @@
+{
+  "outcome": "PASS",
+  "classification": "Playable alpha with the complete ordered first-chapter journey; not the whole planned game or final polished art",
+  "build": {
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651",
+    "working_tree_changes": false,
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "6b0c99dc455267875ac836594e6f1478fb58515d337313032604325c2de6056b",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "criteria": [
+    {
+      "id": 1,
+      "name": "whole_journey",
+      "status": "PASS",
+      "evidence": "Final-Passive-Opening + Final-Passive-Control + Final-Passive-Finish and Final-Active"
+    },
+    {
+      "id": 2,
+      "name": "connected_spaces",
+      "status": "PASS",
+      "evidence": "Actual normal movement on both native routes and room inspection"
+    },
+    {
+      "id": 3,
+      "name": "investigation_consequences",
+      "status": "PASS",
+      "evidence": "Distinct passive and active control setup, wrong hypotheses/conclusions and premature action tested"
+    },
+    {
+      "id": 4,
+      "name": "photographic_chain",
+      "status": "PASS",
+      "evidence": "Actual scene images, both film processes, photo hashes/IDs, independent visual inspection and repeated notebook/loupe actions"
+    },
+    {
+      "id": 5,
+      "name": "signature_and_ending",
+      "status": "PASS",
+      "evidence": "Both photographic comparisons, local reports and stored completion; original smoke regression"
+    },
+    {
+      "id": 6,
+      "name": "durable_state",
+      "status": "PASS",
+      "evidence": "Two real process restarts, backup/invalid/duplicate/missing/write-failure/new-case profiles"
+    },
+    {
+      "id": 7,
+      "name": "presentation_and_controls",
+      "status": "PASS",
+      "evidence": "Independent images for both routes, audio output, persisted settings and native Alt+Tab in ordinary package"
+    },
+    {
+      "id": 8,
+      "name": "verified_delivery",
+      "status": "PASS",
+      "evidence": "Same source/build manifests; all CSV intervals;173 packaged files; ordinary extracted startup and image review"
+    }
+  ],
+  "performance": {
+    "outcome": "PASS",
+    "recomputedFromAllCSVIntervals": {
+      "frames": 9104,
+      "seconds": 121.397260785,
+      "averageFps": 74.99345488629758,
+      "p95ms": 15.897098,
+      "p99ms": 16.186517,
+      "maxMs": 20.086565,
+      "stallsOver50ms": 0
+    },
+    "thresholds": {
+      "minSeconds": 120,
+      "minAverageFps": 59,
+      "maxP95ms": 17.2,
+      "exclusiveMaxP99ms": 20,
+      "allowedIntervalsOver50ms": 0
+    },
+    "processPeakRssMiB": 314.41015625,
+    "enginePeakAllocatedMiB": 99.73205375671387,
+    "nativeRefreshHz": 75,
+    "targetFrameRate": 75,
+    "vSyncCount": 0,
+    "gpuTiming": "UNVERIFIED",
+    "screenshotsDuringMeasurement": 0,
+    "sampling": "All 9104 intervals, nearest-rank percentiles. No removal. Native focused release player; actual exposure/export, lab and ending included.20s additional warmup after normal prologue/first frame; explicit Continue loading separate."
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/PackageExtractedV3/Chapter09-86a28b30ad94",
+    "manifest_sha256": "35a28d3101d83ec532b12d243c8ddfeb95e256aff5354495e2f1fd2de8f3c2fa",
+    "package_id": "Chapter09-86a28b30ad94",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 150891646,
+    "package_payload_sha256": "1a68b4d210a7a470e411105ca7e1dbbe5033d58bf0d5092657d7f43796b5dcdf",
+    "unity_source_sha256": "86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "base_revision": "9329a2d819108796c6f731cc305f16dc3250c651"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz",
+    "bytes": 65422347,
+    "sha256": "bce4c4c7423a4e7f42792991553fb1ee3386d0f3a9918a2cdb14aee8ab9a1696",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Chapter09-86a28b30ad94-Linux.tar.gz.sha256",
+    "sidecar_sha256": "a24adb80faf0622805279b4396bb0135cbb826cde12ec4e2121edce4cbd564e4"
+  },
+  "supplemental_unverified": [
+    "GPU timings unavailable from this renderer",
+    "Actual listening, subjective mix and speaker/headphone output",
+    "Continuous all-channel audio clipping and exact post-transition pause silence",
+    "External first-time player discovery and20–30-minute duration",
+    "Other machines, presets and resolutions"
+  ],
+  "retained_art_limits": "Targets guided functional/architectural/readability corrections. Flat materials, contact lighting and angular furniture remain alpha polish; no numeric image-match score claimed.",
+  "local_changes_after_runtime_build": "Only automation, delivery launchers, docs and evidence changed after9329a2d. Current Unity files remain identical to the hashed tested sources. The package launcher was separately executed from a fresh extraction.",
+  "test_method": "Native uinput keyboard/mouse, observation-only telemetry for gameplay tests; no game actions injected or teleports. Offline fault fixtures and smoke/mock contracts are separate evidence. Ordinary package startup has no observer/smoke flag."
+}

@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-10T18:05:21.617491+00:00",
+  "thermal": {
+    "/sys/class/thermal/thermal_zone2/temp": "43050",
+    "/sys/class/thermal/thermal_zone0/temp": "78000",
+    "/sys/class/thermal/thermal_zone9/temp": "89000",
+    "/sys/class/thermal/thermal_zone7/temp": "47050",
+    "/sys/class/thermal/thermal_zone5/temp": "43050",
+    "/sys/class/thermal/thermal_zone3/temp": "43050",
+    "/sys/class/thermal/thermal_zone1/temp": "20000",
+    "/sys/class/thermal/thermal_zone8/temp": "33000",
+    "/sys/class/thermal/thermal_zone6/temp": "90000",
+    "/sys/class/thermal/thermal_zone4/temp": "78050"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "pid": 368649,
+  "processExit": 0,
+  "normalMenuQuit": true,
+  "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Fixtures/FinalV2/DuplicateFrame",
+  "caseHashesBefore": {
+    "case.json": "71e1330f445926f020ad035ff44db653badacc8f531a1cd49550eb6d809cef2d"
+  },
+  "caseHashesAfter": {
+    "case.json": "71e1330f445926f020ad035ff44db653badacc8f531a1cd49550eb6d809cef2d"
+  },
+  "journeyExit": 0
+}

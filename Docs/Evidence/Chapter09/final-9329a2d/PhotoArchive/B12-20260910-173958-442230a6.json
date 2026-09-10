@@ -1,0 +1,33 @@
+{
+    "id": "b12-control-photograph",
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive/FieldPhotos/B12-20260910-173958-442230a6.jpg",
+    "utc": "2026-09-10T17:39:58.3482640Z",
+    "localTime": "23:45:01",
+    "build": "9329a2d819108796c6f731cc305f16dc3250c651 clean source-sha256:86a28b30ad94fc9e67aa0bf0558f0a51f511adadc76323fcf69eca7c72d8c8b9",
+    "method": "passive",
+    "subject": "B-12 / controlled reference",
+    "sha256": "c37c1cbdd021fde3fc54a6392c56b12b73d5019807094794f23e9a049e9d6d7c",
+    "position": {
+        "x": 10.745918273925782,
+        "y": 1.7899998426437379,
+        "z": -18.704998016357423
+    },
+    "forward": {
+        "x": -0.2199208289384842,
+        "y": -0.05634431168437004,
+        "z": -0.9738896489143372
+    },
+    "referenceViewport": {
+        "x": 0.500288724899292,
+        "y": 0.5001675486564636
+    },
+    "echoViewport": {
+        "x": 0.42778849601745608,
+        "y": 0.49887794256210329
+    },
+    "width": 960,
+    "height": 600,
+    "developed": false,
+    "inspected": false,
+    "exported": true
+}

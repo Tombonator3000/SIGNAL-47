@@ -1,0 +1,15 @@
+{
+  "pid": 361592,
+  "processExit": 0,
+  "normalMenuQuit": true,
+  "profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/FinalPassive",
+  "caseHashesBefore": {
+    "case.json": "597bee3ee04e3bf4aaea284c89a20151868a083ec718994b9b2ee323adacbc59",
+    "case.backup.json": "6339f21b65e95c53f01e3fa849a89bc1473bb4c2bd38b54b1b7255bb77290fd6"
+  },
+  "caseHashesAfter": {
+    "case.json": "f9dcfa0e26569e58d65a0fb02a6f77eacc5e830544bb4a31e3a6340076310139",
+    "case.backup.json": "cdbab092fdb59e916bb9d1a89b77f92569300fb27e12c623373d540d17003472"
+  },
+  "journeyExit": 0
+}

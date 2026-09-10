@@ -34,8 +34,8 @@ class Desktop:
     if children:self.x.XFree(children)
   walk(self.root,3);assert len(windows)==1,f'Expected one SIGNAL 47 window, found {windows}'
   self.w=windows[0]
- def inject_setup(self):
-  for name,keys,relative in [('Signal47 Gauntlet keyboard',[1,15,17,18,30,31,32,46,57],False),('Signal47 Gauntlet mouse',[272],True)]:
+ def inject_setup(self,extra_keys=()):
+  for name,keys,relative in [('Signal47 Gauntlet keyboard',[1,15,17,18,30,31,32,46,57,*extra_keys],False),('Signal47 Gauntlet mouse',[272],True)]:
    fd=os.open('/dev/uinput',os.O_WRONLY|os.O_NONBLOCK);self.devices.append(fd)
    fcntl.ioctl(fd,0x40045564,1)
    for k in keys:fcntl.ioctl(fd,0x40045565,k)
@@ -62,7 +62,7 @@ class Desktop:
   f=C.c_ulong();r=C.c_int();self.x.XGetInputFocus(self.d,C.byref(f),C.byref(r));assert f.value==self.w,'Game lost native input focus; stopped to avoid typing into another app'
  def key(self,k,down):
   if down:self.guard()
-  code={'Escape':1,'Tab':15,'w':17,'e':18,'a':30,'s':31,'d':32,'c':46,'space':57}[k]
+  code={'Escape':1,'Tab':15,'w':17,'e':18,'a':30,'s':31,'d':32,'c':46,'Alt':56,'space':57}[k]
   self.emit(0,[(1,code,int(down))])
   if down:self.held.add(k)
   else:self.held.discard(k)

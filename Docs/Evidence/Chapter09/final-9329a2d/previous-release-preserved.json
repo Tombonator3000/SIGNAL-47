@@ -1,0 +1,7 @@
+{
+  "outcome": "PASS",
+  "originalPayloadSha256": "672a8a768f0069dc1e06e561c50ed496cb1bca7d8ca3772374aeea88bdb8a020",
+  "checkedFiles": 169,
+  "method": "Original release payload, sorted relative path NUL bytes. Excludes build metadata and the existing supplementary LES_MEG.txt notice. Matches the stored FieldCamera08 manifest.",
+  "archiveStillPresent": true
+}
