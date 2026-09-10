@@ -1,0 +1,34 @@
+[
+  {
+    "route": "Active",
+    "id": "s03-field-photograph",
+    "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+    "declaredHashMatches": true,
+    "developed": true,
+    "file": "PhotoArchiveActive/S03-20260910-204853-dece0938.jpg"
+  },
+  {
+    "route": "Active",
+    "id": "b12-control-photograph",
+    "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+    "declaredHashMatches": true,
+    "developed": true,
+    "file": "PhotoArchiveActive/B12-20260910-205046-2238d7dd.jpg"
+  },
+  {
+    "route": "Passive",
+    "id": "s03-field-photograph",
+    "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+    "declaredHashMatches": true,
+    "developed": true,
+    "file": "PhotoArchivePassive/S03-20260910-204853-dece0938.jpg"
+  },
+  {
+    "route": "Passive",
+    "id": "b12-control-photograph",
+    "sha256": "433eec0c8abb370d93221c501b5fa87d5b66b7b88f737491029c9fcd9dc7b38b",
+    "declaredHashMatches": true,
+    "developed": true,
+    "file": "PhotoArchivePassive/B12-20260910-205414-e71930ea.jpg"
+  }
+]

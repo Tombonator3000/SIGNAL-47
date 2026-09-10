@@ -1,0 +1,40 @@
+{
+  "classification": "Verified playable graphics update to existing complete chapter; full visual target quality remains open",
+  "build": {
+    "base_revision": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba",
+    "working_tree_changes": false,
+    "unity_source_sha256": "eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "eb2bbdcc925e3e016b6e5c90996cb386ada41bb2004e42e1954b07713601ebb6",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "checks": {
+    "photolab_defined_visual_features": "PASS",
+    "b12_defined_visual_features": "PASS",
+    "licensed_graphics_fx_music": "PASS",
+    "native_chapter_both_methods": "PASS",
+    "two_real_process_restores": "PASS",
+    "immutable_photographic_chain": "PASS",
+    "settings_and_normal_package_start": "PASS",
+    "performance": "PASS",
+    "full_reference_quality": "FAIL",
+    "subjective_audio_listening": "UNVERIFIED",
+    "gpu_timing": "UNVERIFIED"
+  },
+  "reference_gap": "Independent image review still finds lower prop/surface density, narrower floor reflections, less cabinet paint damage and sparse/planar terrain versus user targets. Do not call the full reference target achieved.",
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Visual10PackageExtract/Visual10-eb0748660027",
+    "manifest_sha256": "f2cdf70bf3a3ee37ac3a1e3c5dda5597ddace244704673a3a0d9807fea6017c2",
+    "package_id": "Visual10-eb0748660027",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 294812835,
+    "package_payload_sha256": "ad402556d71970057b0b9b8af061d4a3293c7ba39536a73bf73c402d5cd4d6a2",
+    "unity_source_sha256": "eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "base_revision": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba"
+  },
+  "package_visual_review": "Visual10PackageStartup/visual-review.json",
+  "runtimeExceptionsInNewRuns": 0,
+  "editorWarning": "Unity Core RP VolumeProfileOverridesAnalytic throws a post-build analytics NullReference; successful BuildPlayer and actual packaged runtime independently verified. PackageCache not modified.",
+  "visual_manifest_note": "Visual10FinalVisual began before Git metadata restamp; its source and payload hashes equal d026cc3. Its original earlier metadata retained."
+}

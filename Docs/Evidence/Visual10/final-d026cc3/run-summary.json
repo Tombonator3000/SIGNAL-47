@@ -1,0 +1,51 @@
+[
+  {
+    "run": "Visual10FinalOpening",
+    "outcome": "PASS",
+    "events": 23,
+    "secondsBetweenFirstAndLastCheckpoint": 174.94143843650818,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalActiveControl",
+    "outcome": "PASS",
+    "events": 17,
+    "secondsBetweenFirstAndLastCheckpoint": 81.18648982048035,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalActiveFinish",
+    "outcome": "PASS",
+    "events": 23,
+    "secondsBetweenFirstAndLastCheckpoint": 86.70980286598206,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalPassive",
+    "outcome": "PASS",
+    "events": 32,
+    "secondsBetweenFirstAndLastCheckpoint": 139.83354449272156,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalPerformance",
+    "outcome": "PASS",
+    "events": 24,
+    "secondsBetweenFirstAndLastCheckpoint": 142.54919981956482,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalSettingsWrite",
+    "outcome": "PASS",
+    "events": 6,
+    "secondsBetweenFirstAndLastCheckpoint": 13.709115505218506,
+    "normalMenuQuit": true
+  },
+  {
+    "run": "Visual10FinalSettingsRead",
+    "outcome": "PASS",
+    "events": 4,
+    "secondsBetweenFirstAndLastCheckpoint": 5.551632404327393,
+    "normalMenuQuit": true
+  }
+]

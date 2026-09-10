@@ -1,0 +1,587 @@
+[
+  {
+    "path": "PhotoArchiveActive/B12-20260910-205046-2238d7dd.jpg",
+    "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+    "bytes": 102059
+  },
+  {
+    "path": "PhotoArchiveActive/S03-20260910-204853-dece0938.jpg",
+    "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+    "bytes": 76674
+  },
+  {
+    "path": "PhotoArchiveActive/after-control.fixture.json",
+    "sha256": "bb251a70529b16f9c46c61e4a7c0ce220e90278fc271fdb9154c58d3edf8dcdc",
+    "bytes": 10700
+  },
+  {
+    "path": "PhotoArchiveActive/before-development.fixture.json",
+    "sha256": "c359a1a4b5b2c23301802998111179a7f54535399b1ada11e8f8841b7f445727",
+    "bytes": 6333
+  },
+  {
+    "path": "PhotoArchiveActive/case.json",
+    "sha256": "b2745930d745d5df8f2e8ef70e862d0e11d65b1b1b6adfa79d79cfaff9aa98da",
+    "bytes": 12790
+  },
+  {
+    "path": "PhotoArchivePassive/B12-20260910-205414-e71930ea.jpg",
+    "sha256": "433eec0c8abb370d93221c501b5fa87d5b66b7b88f737491029c9fcd9dc7b38b",
+    "bytes": 95183
+  },
+  {
+    "path": "PhotoArchivePassive/S03-20260910-204853-dece0938.jpg",
+    "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+    "bytes": 76674
+  },
+  {
+    "path": "PhotoArchivePassive/case.json",
+    "sha256": "0f087138ee8a9d82e3cc5b02ee0094af907e954e6b4248736b9f22692cd4f8c7",
+    "bytes": 12675
+  },
+  {
+    "path": "README.md",
+    "sha256": "d231a84973834bbbace5c566750558beef772cc2a682a5c998819b2cd341928e",
+    "bytes": 1318
+  },
+  {
+    "path": "Visual10FinalActiveControl/audio-audit.json",
+    "sha256": "bbef6399c4170eb81d7a96fe5565c088f86107e1ba083b334bb686b38ea24b48",
+    "bytes": 3181
+  },
+  {
+    "path": "Visual10FinalActiveControl/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalActiveControl/chapter09-result.json",
+    "sha256": "a7d2a036c0fb24690d55ccc63c3f22022fb34b3e2bf28011a1c2f804907f70dd",
+    "bytes": 71028
+  },
+  {
+    "path": "Visual10FinalActiveControl/journey-04.png",
+    "sha256": "f3c2680da83a893f78095d6fd54ae0fe6c3bdb080fd3cb6efc281fec17961e6e",
+    "bytes": 835259
+  },
+  {
+    "path": "Visual10FinalActiveControl/journey-06.png",
+    "sha256": "924de2aa1a31576ef96464ff52a538c5a580469c6d9537244eeb497c5bb6340c",
+    "bytes": 307692
+  },
+  {
+    "path": "Visual10FinalActiveControl/journey-11.png",
+    "sha256": "6ebc2d93103d311ca837079653b883fe591cd39b2a09f83007574eb9c5e09554",
+    "bytes": 1364720
+  },
+  {
+    "path": "Visual10FinalActiveControl/journey-13.png",
+    "sha256": "7d9c8362eba25b7ddc214c475733612949e361b8187e3c5a1370086810d177aa",
+    "bytes": 990871
+  },
+  {
+    "path": "Visual10FinalActiveControl/journey-16.png",
+    "sha256": "287a9e2396494abb1086df3653aaf9aa2d3f0b62b6d0aab9fdc914750c35d6a7",
+    "bytes": 991540
+  },
+  {
+    "path": "Visual10FinalActiveControl/player.log",
+    "sha256": "2e9572edffee035d8c9a34549c7d7269450c4ac87947b2734ddae03bb126a5e5",
+    "bytes": 14498
+  },
+  {
+    "path": "Visual10FinalActiveControl/process-memory.json",
+    "sha256": "7e0ad2c5c29b7df2a7a164571aea5162140d23398072e20477660ac3205735b4",
+    "bytes": 17873
+  },
+  {
+    "path": "Visual10FinalActiveControl/process.json",
+    "sha256": "3f0636b952c1eaef0875412b818049fafa67ec5999c134e6439fe1f23a105a4f",
+    "bytes": 653
+  },
+  {
+    "path": "Visual10FinalActiveControl/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalActiveControl/state.json",
+    "sha256": "c5a4ff8faee8a04cb45d129efcff3b6f3f737afb0ffc64ae6240fb5c5e044d7a",
+    "bytes": 4196
+  },
+  {
+    "path": "Visual10FinalActiveFinish/audio-audit.json",
+    "sha256": "9c5860e92e152d91695e6b66b53ea0da775e86bcee2fefcb5fbdeaa6f57f2598",
+    "bytes": 2649
+  },
+  {
+    "path": "Visual10FinalActiveFinish/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalActiveFinish/chapter09-result.json",
+    "sha256": "830a808b3489c41a7a74a967c36accf703d6303b22c472dcf91c81ef9f8a81c5",
+    "bytes": 115992
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-05.png",
+    "sha256": "ce6f7a729045f1b57f0ef9461b6304da159464275e4a58440b7de15e65817201",
+    "bytes": 386244
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-07.png",
+    "sha256": "bb3011da912c428180dd5d031041cd3b60e4f71faeedb862d70034efb3aa3609",
+    "bytes": 386702
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-09.png",
+    "sha256": "da07fd2b7bc018f597c131ec9b5da2474aae2151af63ff16a89ce279c12064fd",
+    "bytes": 111913
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-13.png",
+    "sha256": "bc7fdbf06330630520360ab7a6bb3e1c2a3a71bce89e2fb806ba9e1a9250ceed",
+    "bytes": 615395
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-15.png",
+    "sha256": "9fde1252e8e59cf2d159ad8f97803da7874980c8aaf22740901a483508d59add",
+    "bytes": 820435
+  },
+  {
+    "path": "Visual10FinalActiveFinish/journey-17.png",
+    "sha256": "c3cb393c2ad805cd43d4be64ec4726c9b2e9a83c62f6a62076ef2a0e9500e2d9",
+    "bytes": 251410
+  },
+  {
+    "path": "Visual10FinalActiveFinish/player.log",
+    "sha256": "13c188d49c1f6b8fe3a7df385feb7ca9c606a2d9d87f4f89ba35727189ddb31c",
+    "bytes": 13785
+  },
+  {
+    "path": "Visual10FinalActiveFinish/process-memory.json",
+    "sha256": "7d7b4945790c2605408dcc0ad5f66145e2e7e41a1f9aae0fec6c492b5c13c8fc",
+    "bytes": 18946
+  },
+  {
+    "path": "Visual10FinalActiveFinish/process.json",
+    "sha256": "71fc96559ad9f11c4f14bf088625a457283bdc68afc0755020614374e841e9d4",
+    "bytes": 653
+  },
+  {
+    "path": "Visual10FinalActiveFinish/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalActiveFinish/state.json",
+    "sha256": "bf080f7ce884f657aedcac5147822f5a58adf0a379420c959a1b142f0ec06024",
+    "bytes": 4120
+  },
+  {
+    "path": "Visual10FinalOpening/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalOpening/chapter09-result.json",
+    "sha256": "ee49e56f1ab8358de8f3116e753a5ed79486a5beef9373d42e9d52aee242391f",
+    "bytes": 68843
+  },
+  {
+    "path": "Visual10FinalOpening/journey-01.png",
+    "sha256": "c3e0270e568e00d0e6a52c17c17a89fd5ac7bd5ee20f2d2dbf468c9ca3f984ba",
+    "bytes": 657576
+  },
+  {
+    "path": "Visual10FinalOpening/journey-07.png",
+    "sha256": "7559755dcf29124db117d41e4c7b39634b9990308084d01d0e7328616fdf1892",
+    "bytes": 568595
+  },
+  {
+    "path": "Visual10FinalOpening/journey-08.png",
+    "sha256": "44d8d08a1597a310062fe86213b853acb28cef9058db82967030ea5cc8cec076",
+    "bytes": 818518
+  },
+  {
+    "path": "Visual10FinalOpening/journey-13.png",
+    "sha256": "0d8516515df27bac315c196f7d502f4423e593e335d5c41b74308f2e419b2fe1",
+    "bytes": 171925
+  },
+  {
+    "path": "Visual10FinalOpening/journey-20.png",
+    "sha256": "ae5e11751965653506314df67debacc908a1247af600af868f5800c56a916281",
+    "bytes": 768576
+  },
+  {
+    "path": "Visual10FinalOpening/player.log",
+    "sha256": "80a6513a95e6bfab3c9e4331867cddb58e38a9d2d573ee1064d7dfae0b5d966f",
+    "bytes": 10707
+  },
+  {
+    "path": "Visual10FinalOpening/process-memory.json",
+    "sha256": "558851221c0319a9d717887afff4e873f6de1d6f4207df7177e9c00c71be21dc",
+    "bytes": 36041
+  },
+  {
+    "path": "Visual10FinalOpening/process.json",
+    "sha256": "629e52a0ee94222ea226d54e90f174f9f12f195a0491dbb7eae7b405a01b79b8",
+    "bytes": 474
+  },
+  {
+    "path": "Visual10FinalOpening/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalOpening/state.json",
+    "sha256": "edcb4675bd964ce9735bdb05db9f2014993c4cef6577aafd92b9a6777013607e",
+    "bytes": 3168
+  },
+  {
+    "path": "Visual10FinalPassive/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalPassive/chapter09-result.json",
+    "sha256": "6fcb0692df5559a697ed55cf0e53b1955f373b7a7070c23d9cb15f74f8cd096c",
+    "bytes": 146347
+  },
+  {
+    "path": "Visual10FinalPassive/journey-13.png",
+    "sha256": "e81414e64a9aeac0dc06915442e2518e6140b870f177112ea14fdc555a858e19",
+    "bytes": 975488
+  },
+  {
+    "path": "Visual10FinalPassive/journey-22.png",
+    "sha256": "60b02678d9f2cef1751278778220c44c81e7c3b14189f0bcb2f66b647b6c526a",
+    "bytes": 391470
+  },
+  {
+    "path": "Visual10FinalPassive/journey-24.png",
+    "sha256": "5cc00ff0e1377af2d74b7207cc17351de6f4d03559be1c1bb7fc5b13951edadf",
+    "bytes": 111358
+  },
+  {
+    "path": "Visual10FinalPassive/player.log",
+    "sha256": "edf1843c40bad7a6d1451951c7ffedc7c725fcd7f7af106f157c17bc23e24da1",
+    "bytes": 17462
+  },
+  {
+    "path": "Visual10FinalPassive/process-memory.json",
+    "sha256": "0de7b889d559959518987a95bb4ae964e32ea50813eeb07543fdcb7c4e2cb149",
+    "bytes": 29409
+  },
+  {
+    "path": "Visual10FinalPassive/process.json",
+    "sha256": "1f6b36a47ca40af3377948f620d3966afee645693348a1d9424c06a362f37310",
+    "bytes": 654
+  },
+  {
+    "path": "Visual10FinalPassive/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalPassive/state.json",
+    "sha256": "588d57325308018754fa76ef587cda7d942e664125e9a20d822c6af41f0530f5",
+    "bytes": 4161
+  },
+  {
+    "path": "Visual10FinalPerformance/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalPerformance/chapter09-result.json",
+    "sha256": "4152e7d1656588d74d39042b614952cbba18025cc2d9439627c86ca4c810a1bd",
+    "bytes": 106445
+  },
+  {
+    "path": "Visual10FinalPerformance/conditions-before.json",
+    "sha256": "2c9facca0ca33ecce41a72de902cb1cfce1c6073dc19690a5aa901c39ba225e9",
+    "bytes": 7063
+  },
+  {
+    "path": "Visual10FinalPerformance/frame-work.csv",
+    "sha256": "73ed5eae893430037fbf84fcd718963fd40cf30069328f77d71a313a2087bb98",
+    "bytes": 637319
+  },
+  {
+    "path": "Visual10FinalPerformance/frames.csv",
+    "sha256": "d45904c60410d092e28cf3d5db90b0c2c37a2811cdff1ba31c8ed129d0c35a94",
+    "bytes": 132736
+  },
+  {
+    "path": "Visual10FinalPerformance/performance-verification.json",
+    "sha256": "06a4613bcc9948c4ae436952de1578f13c175ebfcb89062adb9e4286ea9fa292",
+    "bytes": 501
+  },
+  {
+    "path": "Visual10FinalPerformance/performance.json",
+    "sha256": "a4edc334560fe24c8ae11f650387a3d22da3c54c91623cfee41f9c63f965fb17",
+    "bytes": 1321
+  },
+  {
+    "path": "Visual10FinalPerformance/player.log",
+    "sha256": "22bb379c4417ceaee585f493d6b2e552d5449f7d91a0ea7e71e8a9b409ab4150",
+    "bytes": 17110
+  },
+  {
+    "path": "Visual10FinalPerformance/process-memory.json",
+    "sha256": "da72f35d3790e74d5915616e00bcea25c396189dff7801ee9fc7aa39dda11c20",
+    "bytes": 29805
+  },
+  {
+    "path": "Visual10FinalPerformance/process.json",
+    "sha256": "3f9499930639a8b1e102c4cccb786fcbc6fb37b786f29377f8906df4b564f1a2",
+    "bytes": 658
+  },
+  {
+    "path": "Visual10FinalPerformance/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalPerformance/state.json",
+    "sha256": "fd9ef2f5d78d007af647b1a238814464a3b8f4936c3780a6c57fffa3a3844567",
+    "bytes": 4171
+  },
+  {
+    "path": "Visual10FinalSettingsRead/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalSettingsRead/chapter09-result.json",
+    "sha256": "4226a7b4e17c5865c5e63876f24ad15b59440ad2dd0290b2730bbea5acb35687",
+    "bytes": 11208
+  },
+  {
+    "path": "Visual10FinalSettingsRead/player.log",
+    "sha256": "456f5b595fd3c7e2029abe46462afe932d2a6cfc41c314a46503a6ea01833f5d",
+    "bytes": 9988
+  },
+  {
+    "path": "Visual10FinalSettingsRead/process-memory.json",
+    "sha256": "e69582475ae6accaadb9a1f2a2e0c547d6f69c340fc3e09afbef73d9ec63a28b",
+    "bytes": 2728
+  },
+  {
+    "path": "Visual10FinalSettingsRead/process.json",
+    "sha256": "5c02c0f202573b05412da57574a1422a88ae1e00496b1b8e50ce7a826c86f922",
+    "bytes": 297
+  },
+  {
+    "path": "Visual10FinalSettingsRead/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalSettingsRead/state.json",
+    "sha256": "f71c1967f046e06fcb331a3c2eab60806d5f49c7f404c8d4c86d1ba97067308d",
+    "bytes": 1875
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/chapter09-result.json",
+    "sha256": "e8c3a97617c9b3ab7092d6f4c6c696acd70db91910a4f447364b37ede456eb01",
+    "bytes": 16761
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/player.log",
+    "sha256": "13a1bfc5dbc671dc865e1d79deda1c21917a3d530879813b63ded84dc3e5b2d2",
+    "bytes": 11325
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/process-memory.json",
+    "sha256": "329b9793e2c073c7b0bc04d2186d00bf9030059ae8b54eee6b5ce681cfa46b28",
+    "bytes": 4587
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/process.json",
+    "sha256": "730142677c7e9d79d363957d1cf659c9833d8ed9113f29555d6ce2050157e91e",
+    "bytes": 297
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalSettingsWrite/state.json",
+    "sha256": "b750f3f9f6aef2aad613a508a87e77a1497f38979e6d48adce7a5d27ad7800af",
+    "bytes": 1928
+  },
+  {
+    "path": "Visual10FinalVisual/build-manifest.json",
+    "sha256": "33347726cda96ab8d7c04e71de7a45bb4a2eb32f9d42bc1f7d55f57ca9309576",
+    "bytes": 539
+  },
+  {
+    "path": "Visual10FinalVisual/chapter09-result.json",
+    "sha256": "1112188bc8c7a3685f0197bb57c7da182bde3996900f448cf38f008d517b22dc",
+    "bytes": 44539
+  },
+  {
+    "path": "Visual10FinalVisual/independent-visual-review.md",
+    "sha256": "ca9d12582b1c83a2713d0e56ffdfa8655d40d59876b776dd22028f6d2a5d7056",
+    "bytes": 3359
+  },
+  {
+    "path": "Visual10FinalVisual/journey-03.png",
+    "sha256": "5a4bec1b239ca2bddad10f598cc9447eac1586427a90fb98fcb2e7f03ebaf64b",
+    "bytes": 1029647
+  },
+  {
+    "path": "Visual10FinalVisual/journey-04.png",
+    "sha256": "eb4ceaaa37cebf8de619de27b6a04b75542ec2ef2ea38cb734c78fc50a8ff417",
+    "bytes": 928135
+  },
+  {
+    "path": "Visual10FinalVisual/journey-07.png",
+    "sha256": "bba963dd5b1e2e578d1f04cbbf076789562a255b665364833d6ea3f2becb4533",
+    "bytes": 1122667
+  },
+  {
+    "path": "Visual10FinalVisual/journey-08.png",
+    "sha256": "df95f44e6dbe98be29d5a28c7047586fe466a114e4fbdedb1e23294e0496f37b",
+    "bytes": 1178756
+  },
+  {
+    "path": "Visual10FinalVisual/journey-09.png",
+    "sha256": "3452787e08312654c8f8ff5e41156886e50f05221c5e326d01ad0ab05d027e92",
+    "bytes": 1445750
+  },
+  {
+    "path": "Visual10FinalVisual/journey-10.png",
+    "sha256": "4826fed1cc56c8294f10727225d24a1f587672227002994f03b10c36cfa57574",
+    "bytes": 994075
+  },
+  {
+    "path": "Visual10FinalVisual/player.log",
+    "sha256": "e6034101fba8318d441f33843c30e8dce6ea5d3948cba61c37f268a2296e711e",
+    "bytes": 10843
+  },
+  {
+    "path": "Visual10FinalVisual/previous-release-preserved.json",
+    "sha256": "a855a1c97293b99b406a7c7651720f3dc3971b71d4a08140bfcb5038c2fbf54f",
+    "bytes": 201
+  },
+  {
+    "path": "Visual10FinalVisual/process-memory.json",
+    "sha256": "38f559e26b24b58b6aa2b89fb566ed5c5585232eeb42d7a3c1644483dff8b591",
+    "bytes": 14559
+  },
+  {
+    "path": "Visual10FinalVisual/process.json",
+    "sha256": "8756f6243e2b2887fa39cd2d0b784a72e6bd5496b73ba7d3f93d0ac17b7af82b",
+    "bytes": 653
+  },
+  {
+    "path": "Visual10FinalVisual/skill-learning.json",
+    "sha256": "b62bd120b782bfd243c1bc21ffb8d93099f7ce880cb9175cfe436404cadda6b3",
+    "bytes": 620
+  },
+  {
+    "path": "Visual10FinalVisual/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10FinalVisual/state.json",
+    "sha256": "f9a3bc6346f192564114ecbb1b0a061682ba5a31eddccff7c176417bd27b535d",
+    "bytes": 3158
+  },
+  {
+    "path": "Visual10PackageStartup/01-menu.png",
+    "sha256": "d78f87610c945968fc0d703d98b8075aad40af0f7e3dfe2a3382ed16af22d948",
+    "bytes": 637418
+  },
+  {
+    "path": "Visual10PackageStartup/02-playing.png",
+    "sha256": "ba96bf5e7460cd75fa49fd0781824b4fad26c181d0498f7b9f9536153a2b8c03",
+    "bytes": 824503
+  },
+  {
+    "path": "Visual10PackageStartup/03-pause.png",
+    "sha256": "8ebe225abf5369d592f427c9926dee040c0d3989c5380374c749cca0d5def69e",
+    "bytes": 709738
+  },
+  {
+    "path": "Visual10PackageStartup/archive.sha256",
+    "sha256": "3a003e4ac04b63e4acfdcfb4ef7fd42fdc5e07a285c8196dd9836bc0673e0e9a",
+    "bytes": 110
+  },
+  {
+    "path": "Visual10PackageStartup/build-id.txt",
+    "sha256": "cda19aecbc0b334e49042600720b4823011d88541a7049573551fef8ea662e28",
+    "bytes": 126
+  },
+  {
+    "path": "Visual10PackageStartup/build-manifest.json",
+    "sha256": "91c2cbdfb0a45522979a4f92a6eb12a3bcd6ebbb0b64f1f39a56adc8dc063df5",
+    "bytes": 540
+  },
+  {
+    "path": "Visual10PackageStartup/package-manifest.json",
+    "sha256": "f2cdf70bf3a3ee37ac3a1e3c5dda5597ddace244704673a3a0d9807fea6017c2",
+    "bytes": 38321
+  },
+  {
+    "path": "Visual10PackageStartup/package-startup-result.json",
+    "sha256": "c0d1524b233803ee3da12f1e3750185f550668468e47ca99066f10b020db1ce4",
+    "bytes": 8234
+  },
+  {
+    "path": "Visual10PackageStartup/player.log",
+    "sha256": "cf90628b55da56d48a52850d1de7d7565a36f4905a023b9f73325edc9e99fbdf",
+    "bytes": 10111
+  },
+  {
+    "path": "Visual10PackageStartup/startup.log",
+    "sha256": "4271a9c08b224811f7909db63543bc09f9d162359790cc587b391a6777fa8704",
+    "bytes": 1741
+  },
+  {
+    "path": "Visual10PackageStartup/verified-files.json",
+    "sha256": "6a5755916a3a2edf6895dc99e56eaf2264c9528ce009ba76c11f51548d23855c",
+    "bytes": 37764
+  },
+  {
+    "path": "Visual10PackageStartup/visual-review.json",
+    "sha256": "9fee48c9c873068219e95601eb346b0f2b4d9db19f1cc5dc827be617a2ec57b8",
+    "bytes": 622
+  },
+  {
+    "path": "final-asset-audit.json",
+    "sha256": "b0782bd3c5549c080447d353835b6c456e257cb0be8134ec5517e9fe7d3fffa0",
+    "bytes": 9494
+  },
+  {
+    "path": "photographic-integrity.json",
+    "sha256": "358a0df06c8c125b071d9803f5c2c32d5c8ffccb8a3ab22bf4724a4f4478ace0",
+    "bytes": 1090
+  },
+  {
+    "path": "run-summary.json",
+    "sha256": "89ab3c6b0ae7bc16e811678a53fa81b38e1a22bd3668ee040a94a3099556ea49",
+    "bytes": 1255
+  },
+  {
+    "path": "verification.json",
+    "sha256": "9522257f74ef753d584aad31afd05d6bf4653ae4a2cd5018b966c5bd8166e02e",
+    "bytes": 2571
+  },
+  {
+    "path": "visual10-bake-build.log",
+    "sha256": "c089b6afd113f39168cd660d0a95f62c089c84ca122e46efdba69eca4444edd3",
+    "bytes": 614461
+  }
+]

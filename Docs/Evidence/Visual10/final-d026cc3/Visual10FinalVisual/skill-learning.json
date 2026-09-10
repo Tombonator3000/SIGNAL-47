@@ -1,0 +1,15 @@
+{
+  "skill": "gauntlet-loop",
+  "path": "/home/tombonator3000t/.codex/skills/gauntlet-loop/references/visual-and-performance.md",
+  "sha256": "00df54358e9afe52b53812c5ff52ff2a2337a8b025350c94e39cd170ece08391",
+  "method": "Read skill-creator, updated existing tested guidance, quick_validate passed",
+  "localOnly": true,
+  "gitRepository": false,
+  "automaticSyncClaim": false,
+  "learned": [
+    "Preserve FBX import root below placement parent",
+    "Order idempotent scene dressing before visual pass",
+    "Inspect actual winding and analytic normals",
+    "Invalidate derived material maps deterministically"
+  ]
+}

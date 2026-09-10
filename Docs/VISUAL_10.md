@@ -12,9 +12,9 @@ Keep the completed investigation, world positions, input, immutable photographs 
 5. Delivery/performance: new identified Linux package and launcher; 1280x800 Ultra on reference Kubuntu, >=20s warm-up and >=120s representative measure; mean>=59fps, p95<=17.2ms, p99<20ms, no frames>50ms. No screenshot overhead removed from a mixed measurement; screenshots in separate run.
 
 ## Production availability
-Files/terminal: VERIFIED. Unity 6000.3.22f1 CLI and Blender4.5.13: previously verified, new export/build pending. Native input, runtime captures, audio-output and measurements: previously verified, pending new build. Subjective audio listening: UNVERIFIED.
+Files, terminal, Unity6000.3.22f1 build, Blender4.5.13 export/import, native input, runtime captures, sampled audio output and release measurements: VERIFIED. Subjective audio listening: UNVERIFIED.
 
-Status: in production; all new gates UNVERIFIED until measured/inspected. Previous Chapter09 release remains available.
+Status: verified playable graphics update packaged as Visual10-eb0748660027. Defined static features and runtime/delivery checks pass; full reference quality remains FAIL with the specific differences below. Previous Chapter09 release remains available.
 
 ## Observed corrections
 
@@ -55,3 +55,19 @@ Independent review found the black procedural twig clusters visually worse than 
 Known comparison limits remain explicit: the established multi-antenna array composition differs from the reference's single dominant dish; broad floor-reflection shapes and fine material/prop density still require judgment in the final captures. Full reference equivalence is not established by the narrower five production gates.
 
 The locally installed Gauntlet visual reference was updated through the read skill-creator workflow with tested FBX-root preservation, scene-pass overwrite, bowl-normal and derived-map lessons. Local validation passed; that skill directory is not a Git repository, and no sync to another machine is claimed. Dream Loop was read from the pinned original source and used as a comparison method, not newly installed. No paid asset service was used.
+
+## Controlled local release
+
+`Visual10-eb0748660027`, source commit `d026cc3d431ed0e99b43e06e2e6e204ef842cdba`; Unity SHA `eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01`, build payload `eb2bbdcc925e3e016b6e5c90996cb386ada41bb2004e42e1954b07713601ebb6`. Archive SHA `8f83fba8197dd3650d6ca608efdaefc05c44f12eb138bc3f64b42b98121368dd`. Subsequent documentation/evidence commits do not change that tested source. Evidence: [final-d026cc3](Evidence/Visual10/final-d026cc3/README.md).
+
+PASS: actual new-game prologue and first exposure, restart before development, active control, restart after second exposure, second development/conclusion and repeated original-photo reopening/loupe; a separate passive branch completes from the same first real checkpoint. Wrong subjects, premature control, wrong references/hypotheses/conclusions and lab pause are exercised. Settings sliders affect native mouse input, window/fullscreen toggles work and audio/mouse values survive process restart. No runtime exception markers in seven new runtime runs. Earlier unchanged Chapter09 core smoke/negative-save reports are preserved as historical regression evidence, not relabeled as new runs.
+
+PASS: the new archive was unpacked into a new directory; all173 files, hashes and executable modes checked, normal launcher started without observer/smoke flags, first-person play, focus loss/return, pause and Quit inspected. Original package-start PNGs were reviewed separately after automation. Root `Spill-SIGNAL47.sh` points to this fixed release. Previous Chapter09 archive hash remains unchanged.
+
+PASS performance on Intel Core Ultra5 225U / Mesa Intel ARL, Linux7.0 Ubuntu26.04 / OpenGLCore /1280×800 Ultra /75Hz, target75, vSync0. After20s warm-up: 8922 unfiltered intervals over121.533s, mean73.412fps, p95 15.368ms, p99 19.364ms, max30.718ms, zero>50ms. Nearest-rank percentiles and mean independently reproduced from the full CSV. Route includes lab, dense grass, active reference, new photo/export and conclusion; screenshots/audio audit separate. Engine peak135.52MiB; whole-process peak RSS380.68MiB includes startup/loading. GPU timing UNVERIFIED. This is not a performance claim for other machines/presets.
+
+Sampled audio output PASS for observed sound output/no sampled clipping: 48kHz, channel0/2048 samples about every40ms, 4030 windows across active control/finish, maximum amplitude0.25628, no full-scale samples. Paused-state windows include transitions and are not proof of sample-perfect silence. Subjective listening remains UNVERIFIED.
+
+The independent critic confirms coherent reference art direction and the registered static features. **Full reference quality remains FAIL:** prop/surface density, broad floor-reflection shapes, cabinet paint damage and terrain variation remain lower than the target images. This delivery is a substantial playable graphics checkpoint, not a claim that the entire requested reference target is finished. The next coherent art pass should address those remaining material/geometry differences; moving working antennas merely to duplicate one reference composition is unnecessary.
+
+Unity's post-build analytics callback emitted a Core RP VolumeProfileOverridesAnalytic NullReference. It is recorded in the unmodified build log; successful build, emitter validation and actual package runtime are separately checked. No PackageCache or engine source was changed to hide it.
