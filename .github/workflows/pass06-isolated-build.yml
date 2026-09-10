@@ -1,4 +1,5 @@
 name: SIGNAL47 pass06 isolated build
+# Iteration 2: inspect authored key bounds separately from Unity's static render batch.
 # Read-only repository permissions. No native input, user display, or source/evidence push.
 on:
   workflow_dispatch:
@@ -29,7 +30,7 @@ jobs:
           bash Automation/build-linux.sh
           grep -q SIGNAL47_SMOKE_PASS Artifacts/smoke.log
           ! grep -Eq '(SMOKE_FAIL|SMOKE_TIMEOUT)' Artifacts/smoke.log
-          grep -E 'CONTROL_PASS_SMOKE_|WORLD_PASS_SMOKE_|SIGNAL47_SMOKE_' Artifacts/smoke.log
+          grep -E 'CONTROL_KEY_GEOMETRY|CONTROL_PASS_SMOKE_|WORLD_PASS_SMOKE_|SIGNAL47_SMOKE_' Artifacts/smoke.log
           test "$(grep -c CONTROL_PASS_SMOKE_PASS Artifacts/smoke.log)" -ge 10
       - name: Build stamped release
         run: bash Automation/build-gauntlet-linux.sh
@@ -41,7 +42,7 @@ jobs:
           grep -q 'WORLD_CAPTURE_PASS 6' Artifacts/isolated-capture.log
           cat Artifacts/WorldCapture/capture-manifest.json
           python3 - <<'PY'
-          import base64,hashlib,json,shutil
+          import base64,hashlib,json
           from pathlib import Path
           from PIL import Image
           p=Path('Artifacts/WorldCapture');manifest=[]
@@ -69,7 +70,7 @@ jobs:
           [[ ! -f Artifacts/GauntletLinux/build-manifest.json ]] || cp Artifacts/GauntletLinux/build-manifest.json "$destination/"
           printf '%s\n' "$GITHUB_SHA" > "$destination/tested-revision.txt"
           echo "PRESERVED_RUNNER_EVIDENCE $destination"
-          grep -E 'error CS|Exception|FAIL|BUILD_OK' Artifacts/build.log Artifacts/isolated-capture.log 2>/dev/null || true
+          grep -E 'error CS|Exception|FAIL|BUILD_OK|CONTROL_KEY_GEOMETRY' Artifacts/build.log Artifacts/smoke.log Artifacts/isolated-capture.log 2>/dev/null || true
       - name: Transfer this run's logs and true snapshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
