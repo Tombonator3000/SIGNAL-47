@@ -1,0 +1,22 @@
+diff --git a/Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity b/Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity
+index e82be1d..d1f79f3 100644
+--- a/Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity
++++ b/Unity/Assets/Signal47/Scenes/Prototype/SARO_Prologue.unity
+@@ -26,7 +26,7 @@ RenderSettings:
+   m_AmbientIntensity: 1
+   m_AmbientMode: 3
+   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+-  m_SkyboxMaterial: {fileID: 2100000, guid: be3e5144e7004ac6ea1ecba3ccfbe1ec, type: 2}
++  m_SkyboxMaterial: {fileID: 2100000, guid: 4cca12a046226471fbf15d084c8eb7f1, type: 2}
+   m_HaloStrength: 0.5
+   m_FlareStrength: 1
+   m_FlareFadeSpeed: 3
+@@ -24717,7 +24717,7 @@ MeshRenderer:
+   m_PrefabInstance: {fileID: 0}
+   m_PrefabAsset: {fileID: 0}
+   m_GameObject: {fileID: 383453109}
+-  m_Enabled: 1
++  m_Enabled: 0
+   m_CastShadows: 0
+   m_ReceiveShadows: 0
+   m_DynamicOccludee: 1

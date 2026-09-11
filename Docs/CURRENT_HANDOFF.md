@@ -1,29 +1,31 @@
 # SIGNAL / 47 — aktuell overlevering
 
-Oppdatert 10. september 2026. Grafikkpass10 er levert som en kontrollert, spillbar oppdatering av første kapittel. Fotolab, materialer, metall, lys, vegetasjon og fysiske lydeffekter er vesentlig løftet. **Hele referansebildenes kvalitetsnivå er fortsatt ikke nådd.** Nærdetalj, brede gulvreflekser, malingsavskalling og terrengvariasjon står åpne i [grafikkrapporten](VISUAL_10.md).
+Oppdatert 11. september 2026 fra faktisk lokal Git-status og GitHub. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
-## Åpne utgaven
+GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. NightSky12-grenen er **kun lokal**; ingen push/PR er utført fordi nye filer da ville blitt offentlig publisert. Ikke endre synlighet eller publiser kandidaten uten relevant autorisasjon.
 
-Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
+## Gjeldende spill og ny kandidat
 
-Kjør `./Spill-SIGNAL47.sh`. Den peker fast på `Artifacts/Releases/Visual10-eb0748660027/Start-SIGNAL47.sh`. Flyttbar pakke: `Artifacts/Releases/SIGNAL47-Visual10-eb0748660027-Linux.tar.gz`. Ny utpakking,173 filer, rettigheter, normal start, bevegelse, fokusbytte, pause og avslutning er kontrollert uten testmodus. Lokale pakker følger ikke et rent Git-klon.
+**Visual10 er den siste verifiserte spillutgaven.** PR7 ble merget 11. september; hovedgrenen er `1db7b41e99cf8cfe5d7ca31fb12d3782c0f18cc4`. `./Spill-SIGNAL47.sh` starter fortsatt den faste pakken `Artifacts/Releases/Visual10-eb0748660027/`. Første kapittel har nattevakt, S-03, fysisk framkalling, bildeundersøkelse, aktiv/passiv B-12-prøve, to faktiske eksponeringer, lokal avslutning og lagring. Se [Visual10](VISUAL_10.md) og [Chapter09](CHAPTER_09.md).
 
-Det komplette kapittelforløpet er bevart: nattevakt, S-03, fotolab, bildeundersøkelse, hypotese, aktiv eller passiv B-12-prøve, andre eksponering og lokal avslutning. Lagring åpnes etter telefon-/antenneforløpet. Ny sak bevarer eksportarkivet. README beskriver kontroller og lagring.
+**NightSky12 er en ny testkandidat**, med 8K katalogbasert stjernehimmel og dempet Melkevei, på `gauntlet/night-sky-12`. Kildecommit `94811347a00811648f937400a1522c7d2cdd1d2b`. Unity er faktisk bygget; originalbilder fra faste inspeksjonskameraer er tatt i den utpakkede spilleren. Full brukerreise, lagring/fotobevis, bevegelse og ny ytelsesmåling er fortsatt UNVERIFIED fordi Kubuntu-skjermen var låst. Native tester oppdager nå låsen før de starter. Brukeren er bedt om å låse opp; låsen er ikke omgått.
 
-## Kilde og verifisering
+Kandidaten åpnes med `Artifacts/Releases/NightSky12-79cafef6f5a5/Start-SIGNAL47.sh`. Flyttbar pakke: `Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz`. Den er merket TESTKANDIDAT. Ingen ny merge eller offentlig publisering er utført. Begge spillpakkene er lokale leveranser og følger ikke et rent Git-klon.
 
-Privat repo Tombonator3000/SIGNAL-47, gren `gauntlet/visual-reference-10`, fra main `c48616a` etter brukerens merge av PR6. Grafikk-/spillkildecommit `d026cc3d431ed0e99b43e06e2e6e204ef842cdba`. Senere leveranse-/dokumentasjonscommits endrer ikke den testede Unity-kilden.
+[NightSky12-rapporten](NIGHT_SKY_12.md) beskriver endringen, faktisk kjørte kontroller, skillet mellom bilder og spillerreise, og vurderingen av X-bildene / Magnific / Grok / Claude. Konsept11 «Den slettede natten» er bevart på `concept/story-sky-11` med åtte genererte bilder. Ny lore, himmelhendelser, motell og bil er fortsatt forslag eller senere innhold.
 
-Unity SHA `eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01`; byggpayload `eb2bbdcc925e3e016b6e5c90996cb386ada41bb2004e42e1954b07713601ebb6`; arkiv `8f83fba8197dd3650d6ca608efdaefc05c44f12eb138bc3f64b42b98121368dd`. Bevis: `Docs/Evidence/Visual10/final-d026cc3/`.
+## Kildeidentitet og målinger
 
-PASS: ny normalstart, begge forsøksveier, to faktiske prosessgjenstarter, negative valg, labpause, varige fotohasher, lupe/gjenåpning, innstillinger og pakket oppstart. Hele den aktive kjente-løsning-ruten tok ca343 sekunder inklusive negative kontroller og ekstra inspeksjon; dette er ikke førstegangsspillertid. Eldre uendrede kjernetester og feilprofiler står fortsatt i Chapter09-bevisene.
+NightSky12: Unity SHA `79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512`, byggpayload `c04306ebfdfe5046170ff419acb4281dfb5fcdc90137d4a853dfadb453c8b51a`, arkiv SHA `fc49644ab2a853d4afb2cf1e1bdc45425e3e3fa9d27039ff0260534cb379545d`. Senere dokumentasjonscommits endrer ikke denne Unity-kilden. [Innsjekket bevissett](Evidence/NightSky12/final-9481134/README.md) dokumenterer ni inspiserte sluttbilder, førbilde, korrigert polfeil, bygging, pakkeinnhold og den negative skjermlåstesten. Full arbeidslogg ligger lokalt i `Artifacts/Sky12/`.
 
-Målt release:73,412fps/121,533s etter20s oppvarming, p95 15,368ms, p99 19,364ms, maksimum30,718ms og ingen intervaller>50ms. Intel Core Ultra5 225U / Mesa Intel ARL / Ubuntu26.04 Linux7.0 / OpenGLCore /1280×800 Ultra /75Hz, mål75, vSync0. Alle8922 intervaller beholdt, bilder og lydmåling separat. GPU-tid og subjektiv lytting UNVERIFIED. Samplet lydutgang uten fullskaleklipping; ingen ekstern spilltesting påstås.
+Visual10: kildecommit `d026cc3`, Unity SHA `eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01`. Historisk måling på Intel Core Ultra 5 225U / Mesa Intel ARL / OpenGLCore / 1280×800 Ultra / 75 Hz: 73,412 fps over 121,533 sekunder etter 20 sekunders oppvarming; p95 15,368 ms, p99 19,364 ms, maksimum 30,718 ms, ingen intervaller over 50 ms. Dette gjelder Visual10, ikke den nye himmelen. GPU-tid, subjektiv lydmiks og ekstern førstegangsspilltesting er fortsatt uverifisert.
 
-## Bygging og videre arbeid
+## Fortsett her
 
-Bruk `bash Automation/build-visual10-linux.sh`. CPU-lysberegningen trenger faktisk grafikkenhet og grafisk sesjon; ikke `-nographics`. Bygget validerer UV/lysatlas og synlige emissive materialer. Eldre byggeskript regenererer scenen uten bakte lysdata og skal ikke brukes som oppskrift for denne grafikkpakken.
+1. Lås opp Kubuntu. Fullfør en fersk tastatur-/musreise på den eksakte NightSky12-pakken, begge forsøksveier og faktiske prosessgjenstarter. Bruk nye, isolerte testprofiler.
+2. Kontroller de virkelige fotografiene, inkludert gjenåpning, og himmelen under vanlig gange og raske vendinger. Kjør separat releaseytelse med alle frameintervaller beholdt.
+3. Korriger eventuelle funn før kandidaten kan erstatte Visual10. Deretter avgrenses én undersøkelig himmelhendelse fra konseptforslaget.
 
-Behold Unity6000.3.22f1/URP17.3.0/Input1.20.0/Blender4.5.13, opprinnelige modeller/kilder, metadata, VT323/Scott Buckley og1419.900/1420.110/1420.405MHz,4/7,−39LY og47 spillsekunder.23 installerte originalfiler fra kostnadsfrie kilder er hash-/lisenskontrollert. Gauntlet og Brainstorming lest; Dream Loop brukt som metode. Gauntlet-læring er oppdatert og validert lokalt, ikke automatisk synkronisert.
+Bygg himmelkandidaten med `bash Automation/build-night-sky12-linux.sh`; dette bevarer de to eksisterende lablysatlasene. `build-visual10-linux.sh` regenererer og baker scenen på nytt, nå også med himmelpasset. Eldre genereringsskript er ikke oppskriften for et identisk bakt releasebygg.
 
-Forrige kapittelpakke `Chapter09-86a28b30ad94` og feltkamera08 er beholdt. Ingen brukerlagring, synkronisert `sources/` eller andre prosjekter er endret. Bil, motell og resten av Roswell er senere innhold. Ingen kjøp, ny merge eller offentlig publisering er gjort. Leveransen er samlet i [privat PR-utkast #7](https://github.com/Tombonator3000/SIGNAL-47/pull/7), med bevis-/leveransecommit `8769546`. Ingen merge er utført.
+Behold Unity 6000.3.22f1 / URP 17.3.0 / Input System 1.20.0 / Blender 4.5.13, originalmodeller og metadata, NASA-kildespor og øvrige lisenser, VT323/Scott Buckley og 1419.900 / 1420.110 / 1420.405 MHz, 4/7, −39 LY og 47 spillsekunder. Ingen brukerlagring, synkronisert `sources/` eller andre prosjekter er endret. Ingen ny bakgrunnsjobb er planlagt etter leveringen.

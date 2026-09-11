@@ -1,0 +1,31 @@
+{
+  "schema": "signal47-night-sky12-package-content-v1",
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS",
+    "default_launcher_and_prior_release_preserved": "PASS",
+    "candidate_label_present": "PASS"
+  },
+  "scope": "Archive content and fixed runtime cameras; no native journey or performance claim.",
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz",
+    "bytes": 146267284,
+    "sha256": "fc49644ab2a853d4afb2cf1e1bdc45425e3e3fa9d27039ff0260534cb379545d",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz.sha256",
+    "sidecar_sha256": "2d395050d0b7ff6c4b1de89f13c755350fd67df19147b25bfcbd8e8cccca5a01"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Sky12/DeliveryExtract/NightSky12-79cafef6f5a5",
+    "manifest_sha256": "ba862bf8d719a5339fc075f345b19e45d154439e605e638c022b6c0e44e9006e",
+    "package_id": "NightSky12-79cafef6f5a5",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 325569471,
+    "package_payload_sha256": "6df338f2b50a8da570128b7535c4ef740520f0992be8b9946e10056ba84f7c6a",
+    "unity_source_sha256": "79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512",
+    "base_revision": "94811347a00811648f937400a1522c7d2cdd1d2b"
+  },
+  "outcome": "PASS"
+}

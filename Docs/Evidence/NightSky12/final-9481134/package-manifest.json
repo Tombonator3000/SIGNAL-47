@@ -1,0 +1,1122 @@
+{
+  "schema": "signal47-chapter09-package-v1",
+  "package_id": "NightSky12-79cafef6f5a5",
+  "base_revision": "94811347a00811648f937400a1522c7d2cdd1d2b",
+  "unity_source_sha256": "79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512",
+  "build_payload_sha256": "c04306ebfdfe5046170ff419acb4281dfb5fcdc90137d4a853dfadb453c8b51a",
+  "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+  "package_payload_sha256": "6df338f2b50a8da570128b7535c4ef740520f0992be8b9946e10056ba84f7c6a",
+  "package_hash_method": "Sorted relative file paths, NUL, file bytes; includes build metadata and package additions; excludes package-manifest.json itself. File modes and directories are recorded separately below.",
+  "files": [
+    {
+      "path": "SIGNAL 47_BurstDebugInformation_DoNotShip/Data/Plugins/lib_burst_generated.txt",
+      "bytes": 193690,
+      "mode": "0664",
+      "sha256": "4f83b64c2189cad66e40c2f6736c97f0e9eca008449198ef17e2c4475461a859"
+    },
+    {
+      "path": "START_HER.txt",
+      "bytes": 1276,
+      "mode": "0644",
+      "sha256": "07ffa7ad901dfc44249a5fa02563a5f4291a85a7927282c8c8de74b47b725f54"
+    },
+    {
+      "path": "Signal47.x86_64",
+      "bytes": 4472,
+      "mode": "0755",
+      "sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc"
+    },
+    {
+      "path": "Signal47_Data/Managed/Assembly-CSharp.dll",
+      "bytes": 157184,
+      "mode": "0664",
+      "sha256": "78b5ad3a52d8dc5f713d58c0d47701184537b55aec30506e03fb21c61413ee8b"
+    },
+    {
+      "path": "Signal47_Data/Managed/Mono.Security.dll",
+      "bytes": 241152,
+      "mode": "0644",
+      "sha256": "d9157a58fc1a0102161b79c5d680b52f4cb29534cdd2860bda9170e8b80d2ed9"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.ComponentModel.Composition.dll",
+      "bytes": 257024,
+      "mode": "0644",
+      "sha256": "98b5ba7092f7c64e0c27c8e535c076a2b0f4f83ce9faec60418445c5d2281329"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Configuration.dll",
+      "bytes": 124928,
+      "mode": "0644",
+      "sha256": "9477e1d9ff31ef1e527be3954343891679b7f60b850eff491ff911317b772430"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Core.dll",
+      "bytes": 1115136,
+      "mode": "0644",
+      "sha256": "0ad3e5616708fc0b74dcedc1d9a6acf774fd100add713fb2b0f1b11e0f2cd840"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Data.DataSetExtensions.dll",
+      "bytes": 29696,
+      "mode": "0644",
+      "sha256": "75ee28f8d3f94b2a1cfb87221430783c5382795a39e7dde9551a5911191b2fb1"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Data.dll",
+      "bytes": 2104320,
+      "mode": "0644",
+      "sha256": "8ab2ebb034bdafb5b071462652df9c62fb0df9deb7ad6c6eee8d7bc883b61689"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Drawing.dll",
+      "bytes": 489984,
+      "mode": "0644",
+      "sha256": "34df68bb2fe0376199a47a81cdcd0af129413fc597c65b45767802fdfab9a4a6"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.EnterpriseServices.dll",
+      "bytes": 44544,
+      "mode": "0644",
+      "sha256": "222c295f3fa70b7b8544352449582068c7d15ad0fd37508e7a7a8a811d23d299"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.IO.Compression.FileSystem.dll",
+      "bytes": 18432,
+      "mode": "0644",
+      "sha256": "a9bd7914e39a8b99389adfb5d1df5882227366fc7d5882178de4c101da52d039"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.IO.Compression.dll",
+      "bytes": 114688,
+      "mode": "0644",
+      "sha256": "bb04288b738aa703193e19b154ee065b001c5c327a795ce7adb4878951bbae71"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Net.Http.dll",
+      "bytes": 281600,
+      "mode": "0644",
+      "sha256": "11cf7a01c1f08629cbe0979e7f195879d011147af91147fa87658a9f4611a29d"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Numerics.dll",
+      "bytes": 119296,
+      "mode": "0644",
+      "sha256": "cc25bce79e4784cc0dc62bac1da39e128bfb2848cbb38946f8badbbd31a2cb71"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Runtime.Serialization.dll",
+      "bytes": 934400,
+      "mode": "0644",
+      "sha256": "4e4ec85e04889f529d51cff1c9c193dc4eb50c67600302d7671796922dc5e49b"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Runtime.dll",
+      "bytes": 12288,
+      "mode": "0644",
+      "sha256": "fbc8607d8c4312460f5234c1950a74d098ff8cab5abcc1a093e55b2bbed75d30"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Security.dll",
+      "bytes": 314880,
+      "mode": "0644",
+      "sha256": "f2537ce3de6c23e29d394c10334b64993d5c6ddade45fa555f98c86edf26003d"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.ServiceModel.Internals.dll",
+      "bytes": 215040,
+      "mode": "0644",
+      "sha256": "7291b15e952cd080b7df0a43d74d856bb77f59d306585248063195eab1317a76"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Transactions.dll",
+      "bytes": 35328,
+      "mode": "0644",
+      "sha256": "66e610519022738a071b0427d43ca0c68f9ac84ee44ff10d93243a1dbc36a993"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Xml.Linq.dll",
+      "bytes": 136704,
+      "mode": "0644",
+      "sha256": "371b06a50ed863d6890a17ae7abe7dcce3e9623dce4cc40af1f8d713bf7b7a42"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.Xml.dll",
+      "bytes": 3160064,
+      "mode": "0644",
+      "sha256": "aacffdb637bb1e18533507dec182566f0c288d5a8b705b255e10f0cd59659830"
+    },
+    {
+      "path": "Signal47_Data/Managed/System.dll",
+      "bytes": 2655744,
+      "mode": "0644",
+      "sha256": "afb0b59ab5ea986d3b2665faf8d81cae0008d94f61041ae9b1e71e3412742b7d"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Burst.Unsafe.dll",
+      "bytes": 5632,
+      "mode": "0644",
+      "sha256": "9d9c1ff52411decbee5d9f0d1cd61ebeaa222077aa77a52101ea3debafae98e2"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Burst.dll",
+      "bytes": 296960,
+      "mode": "0664",
+      "sha256": "4807bb1a6cdefc7829f336b50ddbbca814ba025ddc1452e5758519a73b605a7c"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Collections.LowLevel.ILSupport.dll",
+      "bytes": 5120,
+      "mode": "0644",
+      "sha256": "ff50383f807f9692e4913b97e47d86fefcb8faa33d6d48cd3e3fd6fc7ffb448d"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Collections.dll",
+      "bytes": 432128,
+      "mode": "0664",
+      "sha256": "401204a2f8af51912ae2b605f3e6d5dc91d1bf5a0066006d9243d567bdd4fec8"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InputSystem.ForUI.dll",
+      "bytes": 15360,
+      "mode": "0664",
+      "sha256": "2b8fc9b9f50e6695957af0407c9f3f6ce475ec62000e8ff2549ce91ca10138c7"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InputSystem.dll",
+      "bytes": 1093120,
+      "mode": "0664",
+      "sha256": "d1c509008f4d1f302269b03aaa8332faca6c3d2eb2bad7973eaba74b86d05bb4"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InternalAPIEngineBridge.004.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "0ee133e008bfce5c28daa67a794ec702f9f44fafffd5701760a9aa432b26822e"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Mathematics.dll",
+      "bytes": 737280,
+      "mode": "0664",
+      "sha256": "7b3d233537dc9bfaf7bd56b44c9bc9869ad42ab8169156f777c0fe6ec18ff3eb"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipeline.Universal.ShaderLibrary.dll",
+      "bytes": 7680,
+      "mode": "0664",
+      "sha256": "dd521ebe40f9b7de05c77fbd06219440ee3b822ca842f3168700895f3b3daabe"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.Runtime.Shared.dll",
+      "bytes": 4608,
+      "mode": "0664",
+      "sha256": "a7b1618bf9f88abc9c3b77cde416d50cc0d49e2adb03fb7cebd093ccf8d222a8"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.Runtime.dll",
+      "bytes": 1131520,
+      "mode": "0664",
+      "sha256": "dbf45e5c0814f368ce869db1db2f9cfab91fc1e5a820e85d9b52934c76333c19"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.ShaderLibrary.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "60ac9a478b2eedd04191b7bd7ed5d61057668aa442f403ae9bcd31c346d37df8"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.GPUDriven.Runtime.dll",
+      "bytes": 220160,
+      "mode": "0664",
+      "sha256": "9873a722409809fee77eeda87297adab63f616f63a850fd40bbc5b7f0cdd8844"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "ab69e760d58e414ab01e8c43846e4ebc3b1a918191acd07f363466b24c96e11b"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.2D.Runtime.dll",
+      "bytes": 216064,
+      "mode": "0664",
+      "sha256": "978767a7b4a4ef872b6f743a4c728db69ff40d8b2617542ef703d441a7fc0c76"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Config.Runtime.dll",
+      "bytes": 4096,
+      "mode": "0664",
+      "sha256": "edff60fc7f2946ae87c60858d9d889f643bc30552e312dd813fa664c2e1509b4"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Runtime.dll",
+      "bytes": 698880,
+      "mode": "0664",
+      "sha256": "d2fba18f059b5f48c00f5c5437abdf7a7ac20850da6b16d11dbe7b86c13abe6b"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Shaders.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "f70d2764bc8cb3d2d0fc222e505d6e1055cb5d4b5d748bf87777ca8feb15c2f3"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.TextMeshPro.dll",
+      "bytes": 435712,
+      "mode": "0664",
+      "sha256": "46ecd17ccc08126981dd548a20d4939acaf5d19beec2460a636dd5e5aca672de"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.UnifiedRayTracing.Runtime.dll",
+      "bytes": 88576,
+      "mode": "0664",
+      "sha256": "88266e7f04b87a555d6882c9c849d350baf1378b2a35039f0b2498c5b8b5deca"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AIModule.dll",
+      "bytes": 66560,
+      "mode": "0664",
+      "sha256": "5caa1be107b08988cc2dd3638b77c39e188789eb17b6c962759f8bcd25a51e68"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AccessibilityModule.dll",
+      "bytes": 40448,
+      "mode": "0664",
+      "sha256": "b21e5a3db9a426389597dde5b4bffc05c46b818f6030865cf6cfc7981c397d20"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AdaptivePerformanceModule.dll",
+      "bytes": 114688,
+      "mode": "0664",
+      "sha256": "587de225ea5efa482af37994e5672cd0341ec1cd4a56bb06d0e11bb954cb2f2a"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AndroidJNIModule.dll",
+      "bytes": 110592,
+      "mode": "0664",
+      "sha256": "f87185835006ae31d50f4b29e36b4a57120bd9b5d4c127d6f700429d97e7e425"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AnimationModule.dll",
+      "bytes": 214528,
+      "mode": "0664",
+      "sha256": "d327c0ce0507a38f21930424d5859d0a5e8ad4564929f2528112b9d01a856e62"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AssetBundleModule.dll",
+      "bytes": 31232,
+      "mode": "0664",
+      "sha256": "2dcb874760702ffe8e6710d087e3a875283446e21da54a70b4c47ca9cb2de6b8"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AudioModule.dll",
+      "bytes": 132096,
+      "mode": "0664",
+      "sha256": "42067292086ba2681591a6a0c5c4e1048df81f9009bf13f66212f8e70e0a2e52"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClothModule.dll",
+      "bytes": 25600,
+      "mode": "0664",
+      "sha256": "3de6b8cfe76153f6d2ced04d7eb606641687b75ea259562ed77b22c2d1faee8b"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClusterInputModule.dll",
+      "bytes": 17408,
+      "mode": "0664",
+      "sha256": "d7a657de25d29fdc493cc97c4fcbe18f4a91bf068946b9e410dafa6aeda19bf9"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClusterRendererModule.dll",
+      "bytes": 15872,
+      "mode": "0664",
+      "sha256": "521dc9bb7e0eb9077dfff902841d46980960b2eb0c6a9b22547a15290e667ec2"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ContentLoadModule.dll",
+      "bytes": 22016,
+      "mode": "0664",
+      "sha256": "d74bc029c88aa71f4119569083307c82e2e165b8ac7a013fe3d5a73bd9df1753"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.CoreModule.dll",
+      "bytes": 1972224,
+      "mode": "0664",
+      "sha256": "d98e6d6ffb18b304c58bd34fac7cdde56297940d89872d01579ce0fc4358f52a"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.CrashReportingModule.dll",
+      "bytes": 15872,
+      "mode": "0664",
+      "sha256": "c9c6ecc4e46a62c7ad5aa801837617597fd80103e397547a110dde2b29054886"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.DSPGraphModule.dll",
+      "bytes": 20992,
+      "mode": "0664",
+      "sha256": "54a0485d561424ba29651e1dde2ba456c8e02f7f3544450a669c529b89f08a32"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.DirectorModule.dll",
+      "bytes": 30720,
+      "mode": "0664",
+      "sha256": "f18bd814cf3b553a09713c39220d27ebe5e35c779909aa49c2c2892b7384fd43"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GIModule.dll",
+      "bytes": 13824,
+      "mode": "0664",
+      "sha256": "199bb741c3f8c68ffd63cbb431f675750d4b6b3a73dec6933a54eeec8229fe2d"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GameCenterModule.dll",
+      "bytes": 35328,
+      "mode": "0664",
+      "sha256": "cc14a177738a5fe053b7802a87dfaadaf1856d03f2eac63591c49d95291c33d4"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GraphicsStateCollectionSerializerModule.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "5f317b9a5effaf3480930c77d293147c2953c4eb2417c11bac056105007f4f3d"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GridModule.dll",
+      "bytes": 19968,
+      "mode": "0664",
+      "sha256": "ad8f884b3c2ec5b06b152dbf921397983bd8dc3936826edf8d1e1d765cf0d5f7"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HierarchyCoreModule.dll",
+      "bytes": 98816,
+      "mode": "0664",
+      "sha256": "62c7d542429d7156861f72187dd9b95dd173596bc3d1c09c05eba7e3d7451d5a"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HierarchyModule.dll",
+      "bytes": 91648,
+      "mode": "0664",
+      "sha256": "93d8643cca73d34ef07c78c4de7baf6525b0cac622957d982b14690a95bfb3c9"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HotReloadModule.dll",
+      "bytes": 13824,
+      "mode": "0664",
+      "sha256": "33fa0a60a0f9a6a9fd3ba3437edcbdce3f0c6ae2a2236491c1f230280474f615"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.IMGUIModule.dll",
+      "bytes": 203776,
+      "mode": "0664",
+      "sha256": "9f779efddd121df7cf8932c10593a2c6e1c4faa74c309aef7814058e2ec2b2c5"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.IdentifiersModule.dll",
+      "bytes": 6144,
+      "mode": "0664",
+      "sha256": "d0646d720b44d82b240f4e7f10535e70cd5c1ddeb238f5d182d2e4db85abdbad"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ImageConversionModule.dll",
+      "bytes": 20480,
+      "mode": "0664",
+      "sha256": "7917b738b11bad5410bc5ad9677c350646448c2f32ce7ccab150617f3e522e9d"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputForUIModule.dll",
+      "bytes": 47104,
+      "mode": "0664",
+      "sha256": "77d22a20eb99141c5377aecbae5c34caab5d15abdafcfce5f5e88f3b7e75e545"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputLegacyModule.dll",
+      "bytes": 35328,
+      "mode": "0664",
+      "sha256": "65c2244b0da67e9a3f07e6d63d8454de7b055d9912cd053a09ff8f8d917e77eb"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputModule.dll",
+      "bytes": 17408,
+      "mode": "0664",
+      "sha256": "062a58f8afe55efd23eb1d0f00fd5acba4ec7f226a46c2bc7bce1e3d3b98a1ca"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.JSONSerializeModule.dll",
+      "bytes": 16384,
+      "mode": "0664",
+      "sha256": "6ec00d6e1ef138507ccadb7a8bb54bf3be65c3d453363f9c24354265570a5f7c"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.LocalizationModule.dll",
+      "bytes": 16384,
+      "mode": "0664",
+      "sha256": "67ab8e8829c96f33a7165dd646dd0dbf9ba4abab5822a1feb25960125d83c17a"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.MarshallingModule.dll",
+      "bytes": 73216,
+      "mode": "0664",
+      "sha256": "288b625f161c09a2e79cd165dd231188d58e413069877fc8801e3938ec4fdc5d"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.MultiplayerModule.dll",
+      "bytes": 7168,
+      "mode": "0664",
+      "sha256": "71e151c1c0fe0fea6400cf1c23bca5c3101a778ebb4346501ca800786c15b5a2"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ParticleSystemModule.dll",
+      "bytes": 160768,
+      "mode": "0664",
+      "sha256": "2209c75167cdb694475dc53e1efa409ac68d3d092e3cb2e255668a54038d7889"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PerformanceReportingModule.dll",
+      "bytes": 14336,
+      "mode": "0664",
+      "sha256": "a10a3c4328fe351b654c848709456fa3306dbde341e23e587cabbffaadeb1e80"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.Physics2DModule.dll",
+      "bytes": 577024,
+      "mode": "0664",
+      "sha256": "11476025ece2362e5f08fdc3a1867ec6e4a31949cb5ee1f961eb15b51dbc31a9"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PhysicsBackendPhysXModule.dll",
+      "bytes": 3584,
+      "mode": "0664",
+      "sha256": "2b8783ed2a43ae0b3d77a7c938eb8812e4194eda49cc21e98d5eb9f2ff78c612"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PhysicsModule.dll",
+      "bytes": 173056,
+      "mode": "0664",
+      "sha256": "4fd73210a20d26c835b0d0ed58649ff88a7d2c7c1e412402a50e2e40749e193a"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PropertiesModule.dll",
+      "bytes": 123392,
+      "mode": "0664",
+      "sha256": "9883681c553b4a4bb5845768e0313e113d2a4ec9a95899e55298abafbf2f33b9"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.RenderAs2DModule.dll",
+      "bytes": 14848,
+      "mode": "0664",
+      "sha256": "3dd11f7052d9aa4b5b8f9e6f39225f7c0e9d20a826ac593d8f48262d6deeeb37"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll",
+      "bytes": 13824,
+      "mode": "0664",
+      "sha256": "e05dd3e96ecc3f41b7d7eda1749eef41d717a414014089290efbebf05f4f225b"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ScreenCaptureModule.dll",
+      "bytes": 15360,
+      "mode": "0664",
+      "sha256": "5dc968281cc4af525e08fd88b30ca3046a5fcceeefb817a4021b79f30a45a2f6"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ShaderRuntimeModule.dll",
+      "bytes": 14848,
+      "mode": "0664",
+      "sha256": "2d6a10cb71ff6d6d9fcc9af759d8bf0754104c041a4d4350da38455931e85495"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ShaderVariantAnalyticsModule.dll",
+      "bytes": 13824,
+      "mode": "0664",
+      "sha256": "148ef85b39d6c92bf65e0eb2d4df0d42adb2df15cb349d5ea93aff1b3cec4b47"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SharedInternalsModule.dll",
+      "bytes": 27136,
+      "mode": "0664",
+      "sha256": "3ab8974617c2a72b7343c5ecf038bd325f70365e36e2969f3645280969afa3a0"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SpriteMaskModule.dll",
+      "bytes": 17920,
+      "mode": "0664",
+      "sha256": "91f5b6020e935ce0e6cac005318c8609a29a83f96763a237e9851bfecb5343d5"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SpriteShapeModule.dll",
+      "bytes": 21504,
+      "mode": "0664",
+      "sha256": "7ef505a3f6df3cdcb86fb05962128b9d872fbb5956e12054001f98e699ea3c36"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.StreamingModule.dll",
+      "bytes": 14848,
+      "mode": "0664",
+      "sha256": "896bc75b1565bb7be755df72b221901512b4cbf3807b1afb3910e322ca698add"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SubstanceModule.dll",
+      "bytes": 18432,
+      "mode": "0664",
+      "sha256": "89367e39a2ef4817a292c0a1cbe21966b559ff23822911e4a6c77a42f28268d6"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SubsystemsModule.dll",
+      "bytes": 31232,
+      "mode": "0664",
+      "sha256": "fb6f2d351352341536f33d6211cc0e0874e58f9a9d9539657ff62cdcc7fdb744"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TLSModule.dll",
+      "bytes": 21504,
+      "mode": "0664",
+      "sha256": "f14147c4ea3a26dc987878c3b74720df1b267cc983059d4354ecb63e6de65ea2"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TerrainModule.dll",
+      "bytes": 122880,
+      "mode": "0664",
+      "sha256": "db2751bad3539cf6796b8f13c7c4abc131b0787ba315353b40e27f8b624fdec8"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TerrainPhysicsModule.dll",
+      "bytes": 14848,
+      "mode": "0664",
+      "sha256": "bdae690a02ca07baf19b06efea0f455ea41874ce844cd9da2272397cff790240"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextCoreFontEngineModule.dll",
+      "bytes": 71680,
+      "mode": "0664",
+      "sha256": "38ac32c3eb2077f26b1bab6e45e6c69582ac6791321cd3c6f1c900a12c7667c0"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextCoreTextEngineModule.dll",
+      "bytes": 324096,
+      "mode": "0664",
+      "sha256": "3af519bee0379859baefbdbef066e2e2b06d6715db6704ef655de94522d428dc"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextRenderingModule.dll",
+      "bytes": 28672,
+      "mode": "0664",
+      "sha256": "60ffb5f84480518f915cc772f760455de23ee5c500481f5570fc0882ff5e8c36"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TilemapModule.dll",
+      "bytes": 48128,
+      "mode": "0664",
+      "sha256": "f75434bab96f7855335be747e16dcefa9d5571b40e80ad2f446f69f5777dcd1c"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UI.dll",
+      "bytes": 258560,
+      "mode": "0664",
+      "sha256": "d4189cd930cf289d4f129ea70680b6414ba911c992e8b0227db29e13fa6fe087"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UIElementsModule.dll",
+      "bytes": 2442752,
+      "mode": "0664",
+      "sha256": "a8c1e719d9cbf5075672417719dd1b1c4e307b2d7550765cce394af96a1602c4"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UIModule.dll",
+      "bytes": 38912,
+      "mode": "0664",
+      "sha256": "81872efe7f3822a323c817ed986a1e906f2c9e5cdfa5e9062c0ed4802f38e46c"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UmbraModule.dll",
+      "bytes": 13824,
+      "mode": "0664",
+      "sha256": "4ce602eb5554e4e9ad0588e9dd160c93eeb4e323717db9da7076093684fe76eb"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityAnalyticsCommonModule.dll",
+      "bytes": 25088,
+      "mode": "0664",
+      "sha256": "8cdae6277ab2ddaa490507f52b4ac447490bdf018d889000af2df8832a4877a4"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityAnalyticsModule.dll",
+      "bytes": 50176,
+      "mode": "0664",
+      "sha256": "0786e13d9fe4cfea6dce162c003ae595b777520b2e9e72b32576537e245ce537"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityConnectModule.dll",
+      "bytes": 16896,
+      "mode": "0664",
+      "sha256": "7e6a4f723e613802b489cc6bfb7af86d7fcfabb67973bdee488a9f0b3a05337d"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityConsentModule.dll",
+      "bytes": 5632,
+      "mode": "0664",
+      "sha256": "2f7dee9e6289839529d36066ca35d667d15d8be67b7a2819c9a7dda542d9d9fc"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityCurlModule.dll",
+      "bytes": 15360,
+      "mode": "0664",
+      "sha256": "77e53763aab2da8a99485ba2001589fb213dbcdc536b78ce959bda2aa404a124"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestAssetBundleModule.dll",
+      "bytes": 17920,
+      "mode": "0664",
+      "sha256": "968fe67e165eeeed53dc8999b161a31db3b2021683570da8c439e3cfedce2d4c"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestAudioModule.dll",
+      "bytes": 17408,
+      "mode": "0664",
+      "sha256": "4c464d389f60f775893fbb8f62a43af92db38fa3d127cfaedb8f482f626e7870"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestModule.dll",
+      "bytes": 59392,
+      "mode": "0664",
+      "sha256": "7ce73dff5f8ee76c2b00a439fe2cb6a6fda3b813740b666474a55c6ce444117c"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestTextureModule.dll",
+      "bytes": 16896,
+      "mode": "0664",
+      "sha256": "528a958352c9fb64cedefb0a39581e12fd87358ef92deccec90b77a5a73354ee"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestWWWModule.dll",
+      "bytes": 25600,
+      "mode": "0664",
+      "sha256": "1209d4dafe32bd612bf9bbeb5f72fc1cd4fb3a5be1c35f62e934648074ca9278"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VFXModule.dll",
+      "bytes": 67584,
+      "mode": "0664",
+      "sha256": "295e4cc8d08f567d618ab6a1d9f958bdd74cf9735d615eda944b6d14af609fea"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VRModule.dll",
+      "bytes": 20992,
+      "mode": "0664",
+      "sha256": "35fb96cdee700a73abd49d1bce2768793a2a37ddd046007762531b072e2000b3"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VectorGraphicsModule.dll",
+      "bytes": 242688,
+      "mode": "0664",
+      "sha256": "a0cf02f4316cdbfaf93f49f0dd2b583eeab872ea1fc5843a6b7fc6d3afba9a89"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VehiclesModule.dll",
+      "bytes": 20480,
+      "mode": "0664",
+      "sha256": "07d8061cd11ab134c9059a98aae4bc0cbeb9c68d1561d432202d3e122bb77c17"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VideoModule.dll",
+      "bytes": 38400,
+      "mode": "0664",
+      "sha256": "3d6e7ab3aa5e44d2e984e404fec77ae7f192e7a032ce9eac075846fa0c43acc6"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VirtualTexturingModule.dll",
+      "bytes": 32256,
+      "mode": "0664",
+      "sha256": "2a3ab9dbef20301f0511507c9da5a649e5c250e7e8aaa5bcc5b2497a2d266ada"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.WindModule.dll",
+      "bytes": 15872,
+      "mode": "0664",
+      "sha256": "3c8975af610c88845342af3388ac7598ba8c5ba2ceccccf4870717946fbed4b0"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.XRModule.dll",
+      "bytes": 77824,
+      "mode": "0664",
+      "sha256": "30919639936862f2e9cdf3cbfe0469f508357f1b368713b343702d852c1f30c3"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.dll",
+      "bytes": 185344,
+      "mode": "0644",
+      "sha256": "2d6132afce3824c4ce88f9970bdee003189ba30b1005440b63661442bd593c69"
+    },
+    {
+      "path": "Signal47_Data/Managed/mscorlib.dll",
+      "bytes": 4623360,
+      "mode": "0644",
+      "sha256": "481b0d5a4ffbbda781aa55418cd61b996e59588eceb1d3c99aa218416c88ab5a"
+    },
+    {
+      "path": "Signal47_Data/Managed/netstandard.dll",
+      "bytes": 90624,
+      "mode": "0644",
+      "sha256": "bf0b7eac9010b75413e4ec1a07a3453bc6a68eeb8e916fbed7c1f2777841f7c7"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/Browsers/Compat.browser",
+      "bytes": 1605,
+      "mode": "0644",
+      "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/DefaultWsdlHelpGenerator.aspx",
+      "bytes": 60575,
+      "mode": "0644",
+      "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/machine.config",
+      "bytes": 29066,
+      "mode": "0644",
+      "sha256": "e91782a27fa39fc6c1d6ee8b08529f5d35052310d0006034b878eb04b8f2af30"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/settings.map",
+      "bytes": 2622,
+      "mode": "0644",
+      "sha256": "49c6160f9d54af4270a3b4e997fc4a8301f79b9e2070118fa46ddbcbbc44f9a2"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/web.config",
+      "bytes": 11635,
+      "mode": "0644",
+      "sha256": "cf2b54339e069b9e42f7d6795eecbf562c50c1011f4ca8f65f578fe52d97ff92"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/Browsers/Compat.browser",
+      "bytes": 1605,
+      "mode": "0644",
+      "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/DefaultWsdlHelpGenerator.aspx",
+      "bytes": 60575,
+      "mode": "0644",
+      "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/machine.config",
+      "bytes": 33598,
+      "mode": "0644",
+      "sha256": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/settings.map",
+      "bytes": 2622,
+      "mode": "0644",
+      "sha256": "ce1db1ad8a9512073164e3eccdc193f7eda036e1a9733caec4635de21b2865c8"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/web.config",
+      "bytes": 18802,
+      "mode": "0644",
+      "sha256": "e38bb8cc68fe5b4edecdfd288d094b9e8ced7629039b2a347682aba0d8bd7492"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/Browsers/Compat.browser",
+      "bytes": 1605,
+      "mode": "0644",
+      "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/DefaultWsdlHelpGenerator.aspx",
+      "bytes": 60575,
+      "mode": "0644",
+      "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/machine.config",
+      "bytes": 34056,
+      "mode": "0644",
+      "sha256": "ee950004b576fb28dc85f4b0435ed04bf96612de2e8b53be84d07afe85a0de6c"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/settings.map",
+      "bytes": 2622,
+      "mode": "0644",
+      "sha256": "ce1db1ad8a9512073164e3eccdc193f7eda036e1a9733caec4635de21b2865c8"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/web.config",
+      "bytes": 18811,
+      "mode": "0644",
+      "sha256": "c4cbddd4fd9347b58cc5a72b36dc4ba1ad2bb699e65869d05cd3fb9865f0d824"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/browscap.ini",
+      "bytes": 311984,
+      "mode": "0644",
+      "sha256": "4ddd50f31fb968f30bedefc253a46dc3f2890192d05cdaa9e0a64a056eee807e"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/config",
+      "bytes": 3764,
+      "mode": "0644",
+      "sha256": "b12f4e32436f1b417451eb5f69433433ae1f732b0c9e80b039073e1b6daa24da"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/mconfig/config.xml",
+      "bytes": 25817,
+      "mode": "0644",
+      "sha256": "0c56e34c69124510fa8c19e7b4c2ca6c1c4ff460ae19f798dd0ca035809e396d"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/x86_64/libMonoPosixHelper.so",
+      "bytes": 264160,
+      "mode": "0755",
+      "sha256": "2a1014074bbfdc0b151d0a0fa830a1fcdb281eb2660d68667e05e489c4516aed"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/x86_64/libmono-native.so",
+      "bytes": 2303400,
+      "mode": "0755",
+      "sha256": "291744dd9192ffb47e2f4f56037192787ba712c618be9144f58bee5831144276"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so",
+      "bytes": 3856176,
+      "mode": "0755",
+      "sha256": "ef78998d272456345b025b41c71bd3fd294da19d963e68f1a1e00c907eacb20b"
+    },
+    {
+      "path": "Signal47_Data/Plugins/lib_burst_generated.so",
+      "bytes": 1122288,
+      "mode": "0775",
+      "sha256": "53d21d9801d0d44ac209b5141bd60b6e66140bef206f9518b9c067595a1262a0"
+    },
+    {
+      "path": "Signal47_Data/Resources/UnityPlayer.png",
+      "bytes": 58193,
+      "mode": "0664",
+      "sha256": "7ea94a5d57a58d58c52618e592fd73d9f8487e6026b2531ae2e7b4ee440367b4"
+    },
+    {
+      "path": "Signal47_Data/Resources/unity default resources",
+      "bytes": 5883716,
+      "mode": "0644",
+      "sha256": "32b58bdb9cf090212b46a8ca7436dcdae89e4ef43e9d55a835233c21d1347734"
+    },
+    {
+      "path": "Signal47_Data/Resources/unity_builtin_extra",
+      "bytes": 738856,
+      "mode": "0664",
+      "sha256": "132c53adffc070d081883cf19ae6ee0319a6f90ac46c6e4e36946dc8b416aa4c"
+    },
+    {
+      "path": "Signal47_Data/RuntimeInitializeOnLoads.json",
+      "bytes": 3343,
+      "mode": "0664",
+      "sha256": "116c7afedcfcc5959f991a1e8de15c8ce66c7d92a479ad821fb17ee1d95d215d"
+    },
+    {
+      "path": "Signal47_Data/ScriptingAssemblies.json",
+      "bytes": 3896,
+      "mode": "0664",
+      "sha256": "819ef4aa537b6e788c265cb3b2708243fc040078629eecb9b038ae9dde1f2019"
+    },
+    {
+      "path": "Signal47_Data/app.info",
+      "bytes": 14,
+      "mode": "0664",
+      "sha256": "9cdac817a45bbba7a3db2b6e51a00e8cff208d7ce04f6f7b156c7e62cb0581a7"
+    },
+    {
+      "path": "Signal47_Data/boot.config",
+      "bytes": 185,
+      "mode": "0664",
+      "sha256": "203030c979c90e7ccf002210e8a72a76171d27677e9f0c2cdf75b73b6c76558b"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers",
+      "bytes": 182548,
+      "mode": "0664",
+      "sha256": "96e6e0ab8ed66728a24eb8f1ae18f1118b28aaa94f5c40e82bfacee0c2f76f13"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers.assets",
+      "bytes": 2120040,
+      "mode": "0664",
+      "sha256": "17de6c9bb74e9387b49e60496fb2218b678d14151a5d9401499953865b007c88"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers.assets.resS",
+      "bytes": 6174944,
+      "mode": "0664",
+      "sha256": "26b24bbd0bdb7017ecbac3b829c0ed7c4848bc343af5702e96ebdb75a7258b04"
+    },
+    {
+      "path": "Signal47_Data/level0",
+      "bytes": 3853468,
+      "mode": "0664",
+      "sha256": "1371d2afda87f591e2d95643fbc5263189819d6fdccc016a2c93a00b008fec6b"
+    },
+    {
+      "path": "Signal47_Data/level0.resS",
+      "bytes": 17050896,
+      "mode": "0664",
+      "sha256": "3d9f8f5ee0eeab70fdd88d1c5a615c161fcd0d00d7c143c94b4e40e4fa4e928e"
+    },
+    {
+      "path": "Signal47_Data/resources.assets",
+      "bytes": 347752,
+      "mode": "0664",
+      "sha256": "b005791157d4d136e2234315677082ae7a7ff39d2b98d840f7f8339fe831e987"
+    },
+    {
+      "path": "Signal47_Data/resources.assets.resS",
+      "bytes": 7232,
+      "mode": "0664",
+      "sha256": "f12f30b4c1648273e460dab9f8ec974e616980f7a3027d54ac4ca0f19ba89cd3"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.assets",
+      "bytes": 6496364,
+      "mode": "0664",
+      "sha256": "334c15c506e0c1d8f9120e29e6b414af394db6aaa84c3e800042b6d53d117d50"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.assets.resS",
+      "bytes": 197167248,
+      "mode": "0664",
+      "sha256": "99f06b8d05cb24fab64659ec57f2a6b17a6af55465ad92c62a876e2c0afc4d0e"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.resource",
+      "bytes": 3492544,
+      "mode": "0664",
+      "sha256": "d835d0b92c7198f1be14242a4df8dca9ee901e74ce39bc26d8dfa241c4017188"
+    },
+    {
+      "path": "Start-SIGNAL47.sh",
+      "bytes": 619,
+      "mode": "0755",
+      "sha256": "cda8b121e75871efca82451cec867d8067e6a76ceaef873e0d59f5987e4399f4"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 8658,
+      "mode": "0664",
+      "sha256": "e61b865f6d3b1b81d942aa1f1dbd1b99ab6c6305c4b25f15eeb7b0f55d0c7eb4"
+    },
+    {
+      "path": "UnityPlayer.so",
+      "bytes": 41564512,
+      "mode": "0755",
+      "sha256": "ff8687880597ed56b84bda8778829c32d4b6b3c3307a83683de09ea5527e7386"
+    },
+    {
+      "path": "VT323-OFL.txt",
+      "bytes": 4367,
+      "mode": "0664",
+      "sha256": "27d9af34210253e7ca1251fbace86c6f65b40031d6ce1a75493a1b2093631298"
+    },
+    {
+      "path": "build-id.txt",
+      "bytes": 133,
+      "mode": "0664",
+      "sha256": "20be52baa7ec70e8e758b47e63ddd82706dd09a0fde2b0efee5112a521255b10"
+    },
+    {
+      "path": "build-manifest.json",
+      "bytes": 539,
+      "mode": "0664",
+      "sha256": "c4871b4e837b4981f79c02fe8dae98b8d75a31b8049a09e82e030bef7a762eee"
+    },
+    {
+      "path": "libdecor-0.so.0",
+      "bytes": 45536,
+      "mode": "0664",
+      "sha256": "c624974348a9c91034a17430fa684119d8bb71d828cd8921e54198a7c9c57eef"
+    },
+    {
+      "path": "libdecor-cairo.so",
+      "bytes": 69664,
+      "mode": "0664",
+      "sha256": "4a2c5bb1399eed40528e5d34049694d6409ec24e60b41f89264d423fa7058a3a"
+    }
+  ],
+  "directories": [
+    {
+      "path": ".",
+      "mode": "0755"
+    },
+    {
+      "path": "SIGNAL 47_BurstDebugInformation_DoNotShip",
+      "mode": "0775"
+    },
+    {
+      "path": "SIGNAL 47_BurstDebugInformation_DoNotShip/Data",
+      "mode": "0775"
+    },
+    {
+      "path": "SIGNAL 47_BurstDebugInformation_DoNotShip/Data/Plugins",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/Managed",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/2.0/Browsers",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.0/Browsers",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/4.5/Browsers",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/etc/mono/mconfig",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/MonoBleedingEdge/x86_64",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/Plugins",
+      "mode": "0775"
+    },
+    {
+      "path": "Signal47_Data/Resources",
+      "mode": "0775"
+    }
+  ]
+}

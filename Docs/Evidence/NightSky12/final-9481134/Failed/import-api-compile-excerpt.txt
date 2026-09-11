@@ -1,0 +1,10 @@
+EXCERPT of Artifacts/Sky12/cubemap-import-api-failed.log
+Full original SHA-256: cbfd5ab15451d033ef9d96ed07e11f9ff2dee9372927b66c188f94dd7bb82f19
+Selection regex: error CS\d+
+
+729: Assets/Signal47/Editor/NightSky12.cs(24,22): error CS1061: 'TextureImporter' does not contain a definition for 'cubemapConvolution' and no accessible extension method 'cubemapConvolution' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)
+730: Assets/Signal47/Editor/NightSky12.cs(25,22): error CS1061: 'TextureImporter' does not contain a definition for 'seamlessCubemap' and no accessible extension method 'seamlessCubemap' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)
+736: Assets/Signal47/Editor/NightSky12.cs(24,22): error CS1061: 'TextureImporter' does not contain a definition for 'cubemapConvolution' and no accessible extension method 'cubemapConvolution' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)
+737: Assets/Signal47/Editor/NightSky12.cs(25,22): error CS1061: 'TextureImporter' does not contain a definition for 'seamlessCubemap' and no accessible extension method 'seamlessCubemap' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)
+740: Assets/Signal47/Editor/NightSky12.cs(24,22): error CS1061: 'TextureImporter' does not contain a definition for 'cubemapConvolution' and no accessible extension method 'cubemapConvolution' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)
+741: Assets/Signal47/Editor/NightSky12.cs(25,22): error CS1061: 'TextureImporter' does not contain a definition for 'seamlessCubemap' and no accessible extension method 'seamlessCubemap' accepting a first argument of type 'TextureImporter' could be found (are you missing a using directive or an assembly reference?)

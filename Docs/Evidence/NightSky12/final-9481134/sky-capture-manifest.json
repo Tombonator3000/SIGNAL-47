@@ -1,0 +1,118 @@
+{
+    "unity": "6000.3.22f1",
+    "resolution": "1280x800",
+    "quality": "Ultra",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "buildId": "94811347a00811648f937400a1522c7d2cdd1d2b working-tree source-sha256:79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512",
+    "method": "fixed sky camera views on the actual player; no native input; NOT traversal, saved photographic evidence or performance verification",
+    "mobilePreviews": "none; original unedited PNGs",
+    "development": false,
+    "views": [
+        {
+            "file": "sky-heading-000.png",
+            "state": "fixed sky inspection at B-12; NOT traversal or an exposure collected by the player",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": 10.699999809265137,
+                "y": 59.137638092041019,
+                "z": 63.215206146240237
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-heading-090.png",
+            "state": "fixed sky inspection at B-12; NOT traversal or an exposure collected by the player",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": 92.61519622802735,
+                "y": 59.137638092041019,
+                "z": -18.699996948242189
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-heading-180.png",
+            "state": "fixed sky inspection at B-12; NOT traversal or an exposure collected by the player",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": 10.699992179870606,
+                "y": 59.137638092041019,
+                "z": -100.61520385742188
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-heading-270.png",
+            "state": "fixed sky inspection at B-12; NOT traversal or an exposure collected by the player",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": -71.21520233154297,
+                "y": 59.137638092041019,
+                "z": -18.699996948242189
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-zenith.png",
+            "state": "fixed near-zenith texture inspection; NOT traversal",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": 10.710000038146973,
+                "y": 101.77999877929688,
+                "z": -18.690000534057618
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-seam-left.png",
+            "state": "fixed cubemap +X/+Y face boundary inspection; NOT motion/performance evidence",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": -64.24185943603516,
+                "y": 96.53983306884766,
+                "z": -90.22999572753906
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "sky-seam-right.png",
+            "state": "fixed cubemap +X/+Y face boundary inspection; NOT motion/performance evidence",
+            "position": {
+                "x": 10.699999809265137,
+                "y": 1.7799999713897706,
+                "z": -18.700000762939454
+            },
+            "target": {
+                "x": -67.20018768310547,
+                "y": 96.53983306884766,
+                "z": -96.57415771484375
+            },
+            "fov": 60.0
+        }
+    ]
+}

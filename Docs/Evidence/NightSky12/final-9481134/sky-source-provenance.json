@@ -1,0 +1,19 @@
+{
+  "source_page": "https://svs.gsfc.nasa.gov/4851/",
+  "source_url": "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_8k.exr",
+  "source_sha256": "dc6c4f413e85707a29a25a9451148154554ecca2c996f84fa8f47b65ef9ff7c4",
+  "source_bytes": 130530278,
+  "output": "NASA_DeepStarMap_8k.png",
+  "output_sha256": "8656cbde536e23787a9ccc1e9af16f48e2f83434deba5c198967a7a5ceee9fb6",
+  "output_bytes": 46213490,
+  "dimensions": [
+    8192,
+    4096
+  ],
+  "conversion": "Blender 4.5.13 Standard, exposure 0, gamma 1; linear EXR to 8-bit sRGB PNG. No resize or painted stars. Quantized derivative, not a lossless master.",
+  "linear_mean_absolute_error": 9.915316331898794e-05,
+  "linear_max_absolute_error": 0.00439453125,
+  "credits": "NASA/Goddard Space Flight Center Scientific Visualization Studio; Ernie Wright (USRA). Gaia DR2: ESA/Gaia/DPAC. Hipparcos-2, Tycho-2, Yale Bright Star, UCAC3 and XHIP catalogue sources.",
+  "terms": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "scope": "Star-map layer only; no IAU constellation figures, NASA logo or identifiable people. Artistic sky orientation, not a dated 1986 sky simulation."
+}
