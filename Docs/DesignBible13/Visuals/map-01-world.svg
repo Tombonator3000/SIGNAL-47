@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1280" height="800" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1280" height="800"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-800)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1280" height="800" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="48" y="752" style="font-family: DVB; font-size: 22px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1504) scale(1,-1)">SIGNAL / 47</text>
+			<text x="48" y="703" style="font-family: DVB; font-size: 38px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1406) scale(1,-1)">Tre steder. Én sammenhengende sak.</text>
+			<text x="48" y="668" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1336) scale(1,-1)">Verdenskart / topologi og hovedrute / ingen geografisk målestokk</text>
+			<path d="M 48,647 L 1232,647 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 48,60 L 1232,60 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="48" y="29" style="font-family: DV; font-size: 17px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,58) scale(1,-1)">PROPOSED MAP / v0.1 / PROPOSED - NOT GAMEPLAY</text>
+			<text x="1186.19140625" y="29" style="font-family: DV; font-size: 18px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,58) scale(1,-1)">1986</text>
+			<rect x="48" y="297" width="360" height="285" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="66" y="548" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1096) scale(1,-1)">SARO</text>
+			<text x="66" y="516" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1032) scale(1,-1)">K1 / K2 / K5 / K6 / EPILOG</text>
+			<text x="66" y="488.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,976) scale(1,-1)">Kontrollrom, fotolab, arkiv og</text>
+			<text x="66" y="460.9" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,921) scale(1,-1)">servicegård. Det kjente</text>
+			<text x="66" y="433.34999999999997" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,866) scale(1,-1)">knutepunktet.</text>
+			<rect x="460" y="297" width="360" height="285" rx="5" ry="5" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="478" y="548" style="font-family: DVB; font-size: 24px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1096) scale(1,-1)">MÅLESTASJONEN</text>
+			<text x="478" y="516" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1032) scale(1,-1)">K3 / Ett rom, transitflate,</text>
+			<text x="478" y="488.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,976) scale(1,-1)">fastmerker og kabelbrudd.</text>
+			<text x="478" y="460.9" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,921) scale(1,-1)">Rekonstruer forsøket.</text>
+			<rect x="872" y="297" width="360" height="285" rx="5" ry="5" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="890" y="548" style="font-family: DVB; font-size: 24px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1096) scale(1,-1)">SIERRA MOTOR COURT</text>
+			<text x="890" y="516" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1032) scale(1,-1)">K4 / Kontor og rom 6. Møt Nora</text>
+			<text x="890" y="488.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,976) scale(1,-1)">og prøv rapporten mot vitnet.</text>
+			<path d="M 408,480 L 460,480 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="460 480, 450 485, 450 475" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 820,480 L 872,480 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="872 480, 862 485, 862 475" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 1052,275 L 1052,232 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="1052 232, 1057 242, 1047 242" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 1052,232 L 228,232 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="228 232, 238 227, 238 237" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 228,232 L 228,275 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="228 275, 223 265, 233 265" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="275.08837890625" y="191" style="font-family: DVB; font-size: 23px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,382) scale(1,-1)">RETUR TIL SARO: NYE PRØVER / INFORMERT SLUTTVALG</text>
+			<text x="48" y="145" style="font-family: DV; font-size: 22px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,290) scale(1,-1)">Områdebytte via tjenestebil og oppdragskart. Kort hoppbar reiseintro; ingen kjørefysikk, drivstoff eller</text>
+			<text x="48" y="113.10000000000002" style="font-family: DV; font-size: 22px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,226) scale(1,-1)">åpen verden.</text>
+		</g>
+	</g>
+</svg>

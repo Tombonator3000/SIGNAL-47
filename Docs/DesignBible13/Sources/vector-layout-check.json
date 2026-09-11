@@ -1,0 +1,82 @@
+[
+  {
+    "file": "map-01-world.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 20,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "map-02-saro.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 27,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "map-03-local-areas.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 29,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "map-04-evidence-flow.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 34,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-01-start.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 20,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-02-load.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 23,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-03-save.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 22,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-04-evidence.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 18,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-05-settings.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 24,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  },
+  {
+    "file": "ui-06-load-recovery.svg",
+    "width": 1280,
+    "height": 800,
+    "text_items": 15,
+    "text_bounds": "PASS",
+    "scope": "Vector layout bounds, not a Unity UI interaction test"
+  }
+]

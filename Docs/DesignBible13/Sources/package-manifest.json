@@ -1,0 +1,135 @@
+{
+  "scope": "DesignBible13 deliverables; manifest excludes itself",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5064,
+      "sha256": "7dd53f4eebb25642914259bd65d42472500e1d319fe8e3b3f3b703d36a6cc7cc"
+    },
+    {
+      "path": "Sources/build_book.py",
+      "bytes": 10247,
+      "sha256": "865562af2f8b06b3d6b7baf15b14f162e9539081509e50884662e8989462cce3"
+    },
+    {
+      "path": "Sources/build_visuals.py",
+      "bytes": 14401,
+      "sha256": "362cf8ec9dfc13d5dec93493cc0810feb5253b794e3c971c0831af5a0c1dce93"
+    },
+    {
+      "path": "Sources/check_package.py",
+      "bytes": 3893,
+      "sha256": "b4ea94be635b765b0d5399def999e52818ebe245b273bd26115c9e19d456a89b"
+    },
+    {
+      "path": "Sources/concept-files.json",
+      "bytes": 766,
+      "sha256": "5b8d83936d66b0eb7c8cf7511e7860b948569cb12ba1a82adcb56e3f397f8b17"
+    },
+    {
+      "path": "Sources/design-review.json",
+      "bytes": 7742,
+      "sha256": "4d13ba93ad52c488d98cc470c029a0e1a6614916c7bb11e1a1f04b773cc45e1d"
+    },
+    {
+      "path": "Sources/image-prompts.json",
+      "bytes": 5962,
+      "sha256": "c89931488f4ca24897fbe23ee19d4510174d20857101bdb7f15dc3f77a5839f4"
+    },
+    {
+      "path": "Sources/pdf-sections.json",
+      "bytes": 1831,
+      "sha256": "4dbaff2ddfbc00778c8140ffc4bcf9f031872971a194517d3011f41cd6e2ba0a"
+    },
+    {
+      "path": "Sources/source-status.json",
+      "bytes": 815,
+      "sha256": "2d3be4c65bc8db2f66d1996400e566557d724ee8844efc96d66b74834dfaee41"
+    },
+    {
+      "path": "Sources/vector-layout-check.json",
+      "bytes": 1992,
+      "sha256": "7a7dffccd1389d3d763193ea3cc5fa52edc99a1da2b8a6184ddebb97dbebf8f1"
+    },
+    {
+      "path": "Visuals/concept-01-survey-station.png",
+      "bytes": 2233567,
+      "sha256": "00340c4b7cc020f9786a52f31a1e38d961fa2e44898db2e31322b88b23cee242"
+    },
+    {
+      "path": "Visuals/concept-02-nora-motel.png",
+      "bytes": 2029116,
+      "sha256": "85d21867baf7699d6fbc266e8dbe7dc6d1846215b2e7f04968bbbcdf2cae9ead"
+    },
+    {
+      "path": "Visuals/concept-03-final-reading.png",
+      "bytes": 2206983,
+      "sha256": "4f4441e3d4e4b174d573ad33dae41daccff9505fb1c240878036baef2900309a"
+    },
+    {
+      "path": "Visuals/map-01-world.svg",
+      "bytes": 6555,
+      "sha256": "bec7be8b45d4c1b709628e2d7b93247a66d59e2d0ecdfba129ae67f4f5d7f472"
+    },
+    {
+      "path": "Visuals/map-02-saro.svg",
+      "bytes": 9090,
+      "sha256": "b9f88eba640c14203bd5774a7ed2c0fb29c60e81112dffb946ca438f07fcaef0"
+    },
+    {
+      "path": "Visuals/map-03-local-areas.svg",
+      "bytes": 9557,
+      "sha256": "c7184179d346e8681c14cccf058c6b91582ad0344302abfc83546b5a3a637620"
+    },
+    {
+      "path": "Visuals/map-04-evidence-flow.svg",
+      "bytes": 14841,
+      "sha256": "547bb9f98b1e22b886555b223289f07794b3c2cc1ed290a0a3e0eb0076ab8b0a"
+    },
+    {
+      "path": "Visuals/ui-01-start.svg",
+      "bytes": 5970,
+      "sha256": "378248cb27434553d747a69c7d11ba7f9c660f5961f7b8c55826a17261c6d136"
+    },
+    {
+      "path": "Visuals/ui-02-load.svg",
+      "bytes": 6651,
+      "sha256": "e06192a38069831d5184af511302c2d57ff52ac0d5977a981bc631772323ee1f"
+    },
+    {
+      "path": "Visuals/ui-03-save.svg",
+      "bytes": 6998,
+      "sha256": "0468d760b051694136c2f3785872f43b383ab185f55ff04b8b8d2e1e69b4cb2f"
+    },
+    {
+      "path": "Visuals/ui-04-evidence.svg",
+      "bytes": 7159,
+      "sha256": "a6b3850a6927470c6878b8176a6b597e4993a2f5bf62ea7565506555509eca40"
+    },
+    {
+      "path": "Visuals/ui-05-settings.svg",
+      "bytes": 7352,
+      "sha256": "c14d6e9ea1f6bd8d45311bd6e1f7ad45c8e7fb4d0aec4eeaa44a553ea27d3e77"
+    },
+    {
+      "path": "Visuals/ui-06-load-recovery.svg",
+      "bytes": 4833,
+      "sha256": "d1900a9fec4ce41fac866da9eb25c580e50eec05c3b236c7e2813c41d8213ab6"
+    },
+    {
+      "path": "design-bible.md",
+      "bytes": 59567,
+      "sha256": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69"
+    },
+    {
+      "path": "output/pdf/SIGNAL47-Designbibel-v0.1.pdf",
+      "bytes": 16476593,
+      "sha256": "c8e33a78c4b6edc2524bf7c68ed6f1f17001e9f8e2d626ba966bd77934b07d45"
+    },
+    {
+      "path": "story-material.md",
+      "bytes": 10754,
+      "sha256": "26f5860c87f21d6c21fb2ef0ee2d649efca564de1e9082cb98b4ab89c31fb3f9"
+    }
+  ]
+}

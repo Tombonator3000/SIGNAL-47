@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1280" height="800" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1280" height="800"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-800)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1280" height="800" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="48" y="752" style="font-family: DVB; font-size: 22px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1504) scale(1,-1)">SIGNAL / 47</text>
+			<text x="48" y="703" style="font-family: DVB; font-size: 38px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1406) scale(1,-1)">LOAD CASE</text>
+			<text x="48" y="668" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1336) scale(1,-1)">Select a case, then choose a checkpoint. Example data, not an actual save file.</text>
+			<path d="M 48,647 L 1232,647 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 48,60 L 1232,60 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="48" y="29" style="font-family: DV; font-size: 17px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,58) scale(1,-1)">UI SKETCH / v0.1 / PROPOSED - NOT GAMEPLAY</text>
+			<text x="1186.19140625" y="29" style="font-family: DV; font-size: 18px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,58) scale(1,-1)">1986</text>
+			<rect x="48" y="485" width="335" height="122" rx="5" ry="5" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="67" y="567" style="font-family: DVB; font-size: 23px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1134) scale(1,-1)">CASE 01 / NIGHT SHIFT</text>
+			<text x="67" y="528" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1056) scale(1,-1)">SARO · 01:28:12</text>
+			<rect x="48" y="340" width="335" height="122" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="67" y="422" style="font-family: DVB; font-size: 23px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,844) scale(1,-1)">CASE 02 / EMPTY</text>
+			<text x="67" y="383" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,766) scale(1,-1)">Start a new investigation</text>
+			<rect x="48" y="195" width="335" height="122" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="67" y="277" style="font-family: DVB; font-size: 23px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,554) scale(1,-1)">CASE 03 / EMPTY</text>
+			<text x="67" y="238" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,476) scale(1,-1)">Start a new investigation</text>
+			<rect x="418" y="209" width="814" height="398" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="444" y="565" style="font-family: DVB; font-size: 26px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1130) scale(1,-1)">CHECKPOINTS / CASE 01</text>
+			<rect x="440" y="452" width="768" height="84" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="458" y="504" style="font-family: DVB; font-size: 23px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1008) scale(1,-1)">AUTO 03 / Archive entered</text>
+			<text x="458" y="474" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,948) scale(1,-1)">Today 21:14 · SARO · 01:28:12</text>
+			<rect x="440" y="354" width="768" height="84" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="458" y="406" style="font-family: DVB; font-size: 23px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,812) scale(1,-1)">MANUAL 01 / Local report filed</text>
+			<text x="458" y="376" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,752) scale(1,-1)">Today 21:06 · SARO · 01:20:04</text>
+			<rect x="440" y="256" width="768" height="84" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="458" y="308" style="font-family: DVB; font-size: 23px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,616) scale(1,-1)">AUTO 02 / B-12 print collected</text>
+			<text x="458" y="278" style="font-family: DV; font-size: 20px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,556) scale(1,-1)">Today 20:59 · SARO · 01:13:09</text>
+			<text x="444" y="225" style="font-family: DV; font-size: 20px;fill: rgb(60%,77%,64%); stroke:none;" transform="translate(0,450) scale(1,-1)">Original photographs: available</text>
+			<rect x="418" y="128" width="300" height="48" rx="3" ry="3" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="435" y="145" style="font-family: DVB; font-size: 22px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,290) scale(1,-1)">LOAD CHECKPOINT</text>
+			<rect x="741" y="128" width="190" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="758" y="145" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,290) scale(1,-1)">BACK</text>
+			<text x="964" y="159" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,318) scale(1,-1)">Future chapters stay</text>
+			<text x="964" y="131.45000000000005" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,262) scale(1,-1)">hidden.</text>
+		</g>
+	</g>
+</svg>
