@@ -2,7 +2,7 @@
 
 Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
-Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel. Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
+Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel og publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
 
 ## Spill på Kubuntu
 

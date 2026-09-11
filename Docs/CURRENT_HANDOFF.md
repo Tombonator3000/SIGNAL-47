@@ -2,7 +2,7 @@
 
 Oppdatert 11. september 2026 fra faktisk lokal Git-status og GitHub. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
-GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. NightSky12-grenen er **kun lokal**; ingen push/PR er utført fordi nye filer da ville blitt offentlig publisert. Ikke endre synlighet eller publiser kandidaten uten relevant autorisasjon.
+GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. Brukeren har uttrykkelig godkjent publisering av NightSky12-grenen og opprettelse av PR uten sin egen gjennomgang først. Grenen er pushet, og [PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8) er opprettet som utkast. Autorisasjonen gjelder denne publiseringen, ikke merge eller godkjenning av uutførte tester. Repoets synlighet er ikke endret.
 
 ## Gjeldende spill og ny kandidat
 
@@ -10,7 +10,7 @@ GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator30
 
 **NightSky12 er en ny testkandidat**, med 8K katalogbasert stjernehimmel og dempet Melkevei, på `gauntlet/night-sky-12`. Kildecommit `94811347a00811648f937400a1522c7d2cdd1d2b`. Unity er faktisk bygget; originalbilder fra faste inspeksjonskameraer er tatt i den utpakkede spilleren. Full brukerreise, lagring/fotobevis, bevegelse og ny ytelsesmåling er fortsatt UNVERIFIED fordi Kubuntu-skjermen var låst. Native tester oppdager nå låsen før de starter. Brukeren er bedt om å låse opp; låsen er ikke omgått.
 
-Kandidaten åpnes med `Artifacts/Releases/NightSky12-79cafef6f5a5/Start-SIGNAL47.sh`. Flyttbar pakke: `Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz`. Den er merket TESTKANDIDAT. Ingen ny merge eller offentlig publisering er utført. Begge spillpakkene er lokale leveranser og følger ikke et rent Git-klon.
+Kandidaten åpnes med `Artifacts/Releases/NightSky12-79cafef6f5a5/Start-SIGNAL47.sh`. Flyttbar pakke: `Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz`. Den er merket TESTKANDIDAT. Kilde, dokumentasjon og bevisbilder er offentlig publisert i PR8; ingen merge er utført. Begge spillpakkene er lokale leveranser og følger ikke et rent Git-klon.
 
 [NightSky12-rapporten](NIGHT_SKY_12.md) beskriver endringen, faktisk kjørte kontroller, skillet mellom bilder og spillerreise, og vurderingen av X-bildene / Magnific / Grok / Claude. Konsept11 «Den slettede natten» er bevart på `concept/story-sky-11` med åtte genererte bilder. Ny lore, himmelhendelser, motell og bil er fortsatt forslag eller senere innhold.
 

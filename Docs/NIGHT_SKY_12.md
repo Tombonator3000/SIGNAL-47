@@ -2,7 +2,7 @@
 
 11. september 2026. Avgrenset videreføring fra `main` 1db7b41, etter merge av Visual10 / PR7. Kildecommit: `94811347a00811648f937400a1522c7d2cdd1d2b`.
 
-**Leveransen er lokal.** Siste direkte GitHub-kontroll svarer `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Dette avviker fra prosjektinstruksens beskrivelse av et privat repo. Ingen push eller PR er gjort for NightSky12, siden det ville publisere de nye filene offentlig uten uttrykkelig autorisasjon. Repoets synlighet er ikke endret. Lokal gren, pakke og bevissett er klare til gjennomgang.
+**Publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8).** GitHub-repoet er offentlig. Brukeren godkjente publisering av grenen og opprettelse av PR uten sin egen gjennomgang først. Kilde, dokumentasjon og bevisbilder er publisert; spillpakken ligger fortsatt lokalt. Ingen merge eller endring av repoets synlighet er utført. Godkjenningen erstatter ikke de manglende interaktive testene. Bevissettets opprinnelige synlighets-/leveranseregistreringer beskriver tidspunktet før publiseringstillatelsen.
 
 Spillets opprinnelige overlevering på 79c0742 er historikk. Første kapittel, fysisk framkalling, aktiv/passiv B-12-prøve og lagring er allerede levert i Visual10. Konsept11 «Den slettede natten» ligger fortsatt på `concept/story-sky-11`; den nye historien og himmelhendelsene er forslag. Denne kandidaten endrer den vanlige himmelen.
 
@@ -20,7 +20,7 @@ NASA-originalen er kontrollert med SHA-256. Blender 4.5.13 gjør en dokumentert 
 
 | Ansvar | Verktøy | Inndata → resultat | Nåværende tilgang |
 | --- | --- | --- | --- |
-| Kilde og revisjoner | Lokal Git / GitHub-lesing | main → egen lokal gren og dokumentert kandidat | VERIFIED WORKING; GitHub-repoet er nå offentlig, ingen push utført |
+| Kilde og revisjoner | Git / GitHub | main → egen gren og dokumentert kandidat | VERIFIED WORKING; grenen er publisert med utkast til PR8 etter brukerens godkjenning |
 | Klargjøring av kart | Blender 4.5.13 CLI | kilde-EXR → 8K PNG og konverteringsrapport | VERIFIED WORKING |
 | Spill og import | Unity 6000.3.22f1 / URP 17.3.0 | PNG → seks BC7-flater → scene → Linux-spiller | VERIFIED WORKING |
 | Inspeksjon | Eksisterende fastkamera-verktøy i Unity | utpakket spiller → originale PNG-er og manifest | VERIFIED WORKING, statisk inspeksjon |

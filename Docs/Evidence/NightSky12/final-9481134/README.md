@@ -2,7 +2,7 @@
 
 Kildecommit `9481134`, Unity SHA `79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512`. Dette er en kandidat. Tastatur-/musreisen, nye fotobevis, lagring/gjenstart, bevegelse og ytelse er **UNVERIFIED** fordi Kubuntu-skjermen er låst. Visual10 er fortsatt standard.
 
-**Kun lokal leveranse:** [GitHub-kontrollen](repository-visibility.json) viser at repoet nå er offentlig. Ingen push/PR er utført; publisering av de nye filene krever relevant autorisasjon.
+**Publisering etter bevisinnsamlingen:** [GitHub-kontrollen](repository-visibility.json) registrerte at repoet var offentlig og at publisering derfor ventet på autorisasjon. Brukeren godkjente senere publiseringen; kilde, dokumentasjon og dette bevissettet er nå tilgjengelig i [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). De opprinnelige JSON-registreringene er bevart som historikk fra innsamlingstidspunktet. Ingen merge eller nye interaktive tester er utført.
 
 Se [resultater og avgrensning](verification.json), [pakkeinnhold](content-verification.json), [byggeutdrag](unity-build-excerpt.txt) og [skjermlåsens negative test](screen-lock-preflight.json). Byggets working-tree-markør gjelder dokumentasjon; Unity-kildene ble kontrollert identiske med kodecommiten. Fullstendige lokale originalbygge-/feillogger er identifisert med hash i resultatfilen; innsjekkede tekstutdrag oppgir filter og linjenumre.
 
