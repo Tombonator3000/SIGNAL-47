@@ -42,16 +42,16 @@ namespace Signal47.Debugging
                     yield return Shot(camera,$"sky-heading-{heading:000}.png",position,position+direction*100,"fixed sky inspection at B-12; NOT traversal or an exposure collected by the player");
                 }
                 yield return Shot(camera,"sky-zenith.png",position,position+new Vector3(.01f,100,.01f),"fixed near-zenith texture inspection; NOT traversal");
-                // Look across both sides of the catalogue's longitude wrap at
-                // +/-1 degree. Exposure and the sampled sky remain identical.
+                // Look across the cubemap's +X/+Y face boundary. Both views use
+                // the same source, exposure and camera position.
                 var mat=RenderSettings.skybox;
-                if(mat&&mat.HasProperty("_Tilt"))foreach(float longitude in new[]{-179f,179f})
+                if(mat&&mat.HasProperty("_Tilt"))foreach(float side in new[]{-.035f,.035f})
                 {
-                    var mapped=new Vector3(.70710678f*Mathf.Cos(longitude*Mathf.Deg2Rad),.70710678f,.70710678f*Mathf.Sin(longitude*Mathf.Deg2Rad));
+                    var mapped=new Vector3(1+side,1,.2f);
                     float tilt=-mat.GetFloat("_Tilt")*Mathf.Deg2Rad,yaw=-mat.GetFloat("_Rotation")*Mathf.Deg2Rad;
                     var untilted=new Vector3(mapped.x,Mathf.Cos(tilt)*mapped.y-Mathf.Sin(tilt)*mapped.z,Mathf.Sin(tilt)*mapped.y+Mathf.Cos(tilt)*mapped.z);
                     var direction=new Vector3(Mathf.Cos(yaw)*untilted.x-Mathf.Sin(yaw)*untilted.z,untilted.y,Mathf.Sin(yaw)*untilted.x+Mathf.Cos(yaw)*untilted.z);
-                    yield return Shot(camera,longitude<0?"sky-seam-left.png":"sky-seam-right.png",position,position+direction*100,"fixed +/-1 degree catalogue seam inspection; NOT motion/performance evidence");
+                    yield return Shot(camera,side<0?"sky-seam-left.png":"sky-seam-right.png",position,position+direction*100,"fixed cubemap +X/+Y face boundary inspection; NOT motion/performance evidence");
                 }
                 WriteManifest("fixed sky camera views on the actual player; no native input; NOT traversal, saved photographic evidence or performance verification");
                 Debug.Log("SKY_CAPTURE_PASS "+views.Count);Application.Quit(0);yield break;

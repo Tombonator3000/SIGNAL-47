@@ -19,7 +19,13 @@ namespace Signal47.Editor
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (!importer) throw new FileNotFoundException("Run Blender/Source/prepare_night_sky.py first", path);
             importer.textureType = TextureImporterType.Default;
-            importer.textureShape = TextureImporterShape.Texture2D;
+            importer.textureShape = TextureImporterShape.TextureCube;
+            importer.generateCubemap = TextureImporterGenerateCubemap.AutoCubemap;
+            var cubeSettings = new TextureImporterSettings();
+            importer.ReadTextureSettings(cubeSettings);
+            cubeSettings.cubemapConvolution = TextureImporterCubemapConvolution.None;
+            cubeSettings.seamlessCubemap = true;
+            importer.SetTextureSettings(cubeSettings);
             importer.sRGBTexture = true;
             importer.alphaSource = TextureImporterAlphaSource.None;
             importer.mipmapEnabled = true;
@@ -27,17 +33,17 @@ namespace Signal47.Editor
             importer.wrapModeV = TextureWrapMode.Clamp;
             importer.filterMode = FilterMode.Trilinear;
             importer.anisoLevel = 1;
-            importer.maxTextureSize = 8192;
+            importer.maxTextureSize = 2048;
             importer.isReadable = false;
             var platform = importer.GetPlatformTextureSettings("Standalone");
             platform.overridden = true;
-            platform.maxTextureSize = 8192;
+            platform.maxTextureSize = 2048;
             platform.format = TextureImporterFormat.BC7;
             platform.compressionQuality = 100;
             importer.SetPlatformTextureSettings(platform);
             importer.SaveAndReimport();
-            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            if (texture.width != 8192 || texture.height != 4096) throw new InvalidOperationException("Sky map was unexpectedly resized");
+            var texture = AssetDatabase.LoadAssetAtPath<Cubemap>(path);
+            if (!texture || texture.width != 2048) throw new InvalidOperationException("Expected six 2048px cubemap faces from the 8K catalogue");
             var shader = Shader.Find("Signal47/Catalog Night Sky");
             if (!shader || ShaderUtil.ShaderHasError(shader)) throw new InvalidOperationException("Catalogue sky shader failed to compile");
             var material = AssetDatabase.LoadAssetAtPath<Material>(Root + "SARO_NightSky.mat");
@@ -55,7 +61,7 @@ namespace Signal47.Editor
             // so finite-distance square stars cannot overlay the catalogue.
             var legacy = GameObject.Find("V10.NightStars");
             if (legacy) foreach (var renderer in legacy.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
-            Debug.Log($"NIGHTSKY12_APPLIED map={texture.width}x{texture.height} format={texture.format} mipmaps={texture.mipmapCount} ambient={RenderSettings.ambientMode}");
+            Debug.Log($"NIGHTSKY12_APPLIED source=8192x4096 cube_faces=6 face_size={texture.width} format={texture.format} mipmaps={texture.mipmapCount} ambient={RenderSettings.ambientMode}");
         }
         public static void Build()
         {
