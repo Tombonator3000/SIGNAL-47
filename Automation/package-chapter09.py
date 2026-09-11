@@ -227,11 +227,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT / "Artifacts/GauntletLinux")
     parser.add_argument("--expect-source", help="Require this exact tested Unity source SHA-256.")
+    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10"], help="Identified release family; prior packages are retained.")
     parser.add_argument("--check-only", action="store_true", help="Read-only build/source verification; create no package or launcher.")
     args = parser.parse_args()
     build_dir = args.build_dir.resolve()
     build = verify_build(ROOT, build_dir, args.expect_source)
-    package_id = "Chapter09-" + build["unity_source_sha256"][:12]
+    package_id = args.label + "-" + build["unity_source_sha256"][:12]
     releases = ROOT / "Artifacts/Releases"
     destination = releases / package_id
     archive = releases / f"SIGNAL47-{package_id}-Linux.tar.gz"

@@ -96,11 +96,11 @@ def file_mode(value):
 def describe_manifest(manifest):
     require(manifest.get("schema") == "signal47-chapter09-package-v1", "Unknown package-manifest schema.")
     package_id = manifest.get("package_id")
-    require(isinstance(package_id, str) and re.fullmatch(r"Chapter09-[0-9a-f]{12}", package_id), "Invalid package id.")
+    require(isinstance(package_id, str) and re.fullmatch(r"(?:Chapter09|Visual10)-[0-9a-f]{12}", package_id), "Invalid package id.")
     require(re.fullmatch(r"[0-9a-f]{40}", manifest.get("base_revision", "")), "Package needs an exact base revision.")
     for name in ("unity_source_sha256", "build_payload_sha256", "player_sha256", "package_payload_sha256"):
         require(isinstance(manifest.get(name), str) and SHA256.fullmatch(manifest[name]), f"Invalid manifest hash: {name}")
-    require(package_id == "Chapter09-" + manifest["unity_source_sha256"][:12], "Package id does not identify its source hash.")
+    require(package_id.split("-", 1)[1] == manifest["unity_source_sha256"][:12], "Package id does not identify its source hash.")
     files, directories = {}, {}
     for kind, result in (("files", files), ("directories", directories)):
         require(isinstance(manifest.get(kind), list), f"Missing manifest {kind} list.")

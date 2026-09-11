@@ -1,0 +1,88 @@
+{
+    "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+    "buildId": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "sampleRate": 48000,
+    "dspAdvanced": true,
+    "levels": [
+        {
+            "state": "start",
+            "windows": 70,
+            "samples": 143360,
+            "overFullScale": 0,
+            "peak": 0.014126150868833065,
+            "rms": 0.006549992602175388
+        },
+        {
+            "state": "chapter-develop-second",
+            "windows": 544,
+            "samples": 1114112,
+            "overFullScale": 0,
+            "peak": 0.1433783322572708,
+            "rms": 0.0076031703506115699
+        },
+        {
+            "state": "chapter-lab",
+            "windows": 137,
+            "samples": 280576,
+            "overFullScale": 0,
+            "peak": 0.25354570150375368,
+            "rms": 0.012059464195618424
+        },
+        {
+            "state": "chapter-comparison",
+            "windows": 221,
+            "samples": 452608,
+            "overFullScale": 0,
+            "peak": 0.18933001160621644,
+            "rms": 0.013421068185905385
+        },
+        {
+            "state": "chapter-file-report",
+            "windows": 48,
+            "samples": 98304,
+            "overFullScale": 0,
+            "peak": 0.15095634758472444,
+            "rms": 0.016805613586145259
+        },
+        {
+            "state": "chapter-report",
+            "windows": 43,
+            "samples": 88064,
+            "overFullScale": 0,
+            "peak": 0.1314031183719635,
+            "rms": 0.008828345511475265
+        },
+        {
+            "state": "chapter-ending",
+            "windows": 20,
+            "samples": 40960,
+            "overFullScale": 0,
+            "peak": 0.13346301019191743,
+            "rms": 0.018001856550014938
+        },
+        {
+            "state": "chapter-complete",
+            "windows": 801,
+            "samples": 1640448,
+            "overFullScale": 0,
+            "peak": 0.09961443394422531,
+            "rms": 0.013160234215800959
+        },
+        {
+            "state": "chapter-first",
+            "windows": 136,
+            "samples": 278528,
+            "overFullScale": 0,
+            "peak": 0.15380704402923585,
+            "rms": 0.015354010910012182
+        },
+        {
+            "state": "paused",
+            "windows": 45,
+            "samples": 92160,
+            "overFullScale": 0,
+            "peak": 0.0,
+            "rms": 0.0
+        }
+    ]
+}

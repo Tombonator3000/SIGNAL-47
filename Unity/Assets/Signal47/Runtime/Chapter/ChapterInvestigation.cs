@@ -45,6 +45,7 @@ namespace Signal47.Chapter
         float lampRest = 2, experimentRemaining;
         Material printMaterial;
         AudioSource foley;
+        public AudioClip filmHandlingClip, mechanicalClip;
         AudioClip filmSound, transferSound, shutterContact, discoveryTone;
         bool initialized;
         GUIStyle ink, small, heading, button;
@@ -109,9 +110,9 @@ namespace Signal47.Chapter
             if (photoEcho) photoEcho.SetActive(false);
             if (developingPrint) { printMaterial = developingPrint.material; printMaterial.color = paper; }
             foley = gameObject.AddComponent<AudioSource>(); foley.playOnAwake = false; foley.spatialBlend = 0;
-            filmSound = MakeSound("FilmTank", .38f, 145, .15f);
+            filmSound = filmHandlingClip ? filmHandlingClip : MakeSound("FilmTank", .38f, 145, .15f);
             transferSound = MakeSound("WetPaperTransfer", .62f, 290, .09f);
-            shutterContact = MakeSound("ReferenceDetent", .15f, 510, .11f);
+            shutterContact = mechanicalClip ? mechanicalClip : MakeSound("ReferenceDetent", .15f, 510, .11f);
             discoveryTone = MakeSound("ContactPrintResonance", 1.25f, 94, .09f);
             ApplyExperiment(1); RefreshPrint();
         }
@@ -126,7 +127,7 @@ namespace Signal47.Chapter
             }
             var clip = AudioClip.Create(name, samples.Length, 1, rate, false); clip.SetData(samples, 0); return clip;
         }
-        void Sound(AudioClip clip) { if (foley && clip) foley.PlayOneShot(clip); }
+        void Sound(AudioClip clip) { if (foley && clip) foley.PlayOneShot(clip, clip == mechanicalClip ? .20f : clip == filmHandlingClip ? .35f : 1); }
         void Update()
         {
             if (!Game || !Game.hud.Started || Game.hud.Paused) return;
@@ -562,7 +563,7 @@ namespace Signal47.Chapter
         }
         void OnDestroy()
         {
-            if (printMaterial) Destroy(printMaterial); if (filmSound) Destroy(filmSound); if (transferSound) Destroy(transferSound); if (shutterContact) Destroy(shutterContact); if (discoveryTone) Destroy(discoveryTone);
+            if (printMaterial) Destroy(printMaterial); if (filmSound && filmSound != filmHandlingClip) Destroy(filmSound); if (transferSound) Destroy(transferSound); if (shutterContact && shutterContact != mechanicalClip) Destroy(shutterContact); if (discoveryTone) Destroy(discoveryTone);
         }
     }
 }

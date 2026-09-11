@@ -1,0 +1,159 @@
+{
+  "blender": "4.5.13 LTS",
+  "source": "https://polyhaven.com/a/grass_medium_02",
+  "author": "Rico Cilliers",
+  "license": "CC0-1.0",
+  "source_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+  "method": "Layered actual source blade islands at varied height/yaw/radial spread, exact UV corner copying, floor pivot",
+  "geometry_nodes_evaluated": false,
+  "material": "V10_DryGrass_Atlas",
+  "assets": [
+    {
+      "name": "V10_DryTuft_A",
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.2,
+          "yaw_degrees": 0,
+          "radial_spread": 1.15,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.17,
+          "yaw_degrees": 117,
+          "radial_spread": 1.35,
+          "crown_offset_m": [
+            0.018,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.13,
+          "yaw_degrees": 243,
+          "radial_spread": 1.5,
+          "crown_offset_m": [
+            -0.015,
+            0.012
+          ]
+        }
+      ],
+      "triangles": 2142,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.19718989326026304,
+        0.17865197162112673,
+        0.2
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    },
+    {
+      "name": "V10_DryTuft_B",
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_c",
+          "blade_islands": 27,
+          "triangles": 1215,
+          "height_m": 0.3,
+          "yaw_degrees": 0,
+          "radial_spread": 1.05,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.22,
+          "yaw_degrees": 91,
+          "radial_spread": 1.45,
+          "crown_offset_m": [
+            0.024,
+            0.015
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 14,
+          "triangles": 535,
+          "height_m": 0.16,
+          "yaw_degrees": 218,
+          "radial_spread": 1.65,
+          "crown_offset_m": [
+            -0.025,
+            -0.016
+          ]
+        }
+      ],
+      "triangles": 2464,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.35581355039074514,
+        0.36507664202954576,
+        0.3
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    },
+    {
+      "name": "V10_DryTuft_C",
+      "source_layers": [
+        {
+          "source_object": "grass_medium_02_e",
+          "blade_islands": 45,
+          "triangles": 1664,
+          "height_m": 0.45,
+          "yaw_degrees": 0,
+          "radial_spread": 1.1,
+          "crown_offset_m": [
+            0,
+            0
+          ]
+        },
+        {
+          "source_object": "grass_medium_02_a",
+          "blade_islands": 18,
+          "triangles": 714,
+          "height_m": 0.29,
+          "yaw_degrees": 139,
+          "radial_spread": 1.75,
+          "crown_offset_m": [
+            0.035,
+            -0.024
+          ]
+        }
+      ],
+      "triangles": 2378,
+      "uv_corners_copied_exactly": true,
+      "dimensions_blender_m": [
+        0.4381364434162847,
+        0.5318398679602654,
+        0.45
+      ],
+      "floor_z_m": 0.0,
+      "roundtrip_scale_pass": true,
+      "roundtrip_uv_pass": true,
+      "roundtrip_unit_normals_pass": true,
+      "roundtrip_floor_pass": true
+    }
+  ]
+}

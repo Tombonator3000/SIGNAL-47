@@ -1,0 +1,36 @@
+{
+  "recordedBeforeMeasurement": "2026-09-10T20:47:33.228658+00:00",
+  "planned": {
+    "warmupSeconds": 20,
+    "minimumSeconds": 120,
+    "resolution": "1280x800",
+    "preset": "Ultra",
+    "targetFrameRate": 75,
+    "vsync": 0,
+    "screenshots": false,
+    "audioAudit": false,
+    "route": "Restored real first-photo checkpoint: develop first image, active control, new exposure/export, return to lab, develop, conclude. Explicit initial Continue before warmup; all recording intervals retained.",
+    "gates": {
+      "averageFpsMin": 59,
+      "p95msMax": 17.2,
+      "p99msStrictMax": 20,
+      "stallsOver50msMax": 0
+    },
+    "percentiles": "nearest-rank"
+  },
+  "os": {
+    "code": 0,
+    "stdout": "Linux tom-travelmate 7.0.0-31-generic #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Aug  1 04:26:38 UTC 2026 x86_64 GNU/Linux\n",
+    "stderr": ""
+  },
+  "graphics": {
+    "code": 0,
+    "stdout": "name of display: :0\ndisplay: :0  screen: 0\ndirect rendering: Yes\nExtended renderer info (GLX_MESA_query_renderer):\n    Vendor: Intel (0x8086)\n    Device: Mesa Intel(R) Graphics (ARL) (0x7d41)\n    Version: 26.0.8\n    Accelerated: yes\n    Video memory: 15524MB\n    Unified memory: yes\n    Preferred profile: core (0x1)\n    Max core profile version: 4.6\n    Max compat profile version: 4.6\n    Max GLES1 profile version: 1.1\n    Max GLES[23] profile version: 3.2\nOpenGL vendor string: Intel\nOpenGL renderer string: Mesa Intel(R) Graphics (ARL)\nOpenGL core profile version string: 4.6 (Core Profile) Mesa 26.0.8-1ubuntu0.3\nOpenGL core profile shading language version string: 4.60\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6 (Compatibility Profile) Mesa 26.0.8-1ubuntu0.3\nOpenGL shading language version string: 4.60\nOpenGL context flags: (none)\nOpenGL profile mask: compatibility profile\n\nOpenGL ES profile version string: OpenGL ES 3.2 Mesa 26.0.8-1ubuntu0.3\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "stderr": ""
+  },
+  "screens": {
+    "code": 0,
+    "stdout": "\u001b[01;32mOutput: \u001b[0;0m1 eDP-1 cd3e9759-d4f4-4482-a9fb-d992d642f0b3\n\t\u001b[01;32menabled\u001b[0;0m\n\t\u001b[01;32mconnected\u001b[0;0m\n\t\u001b[01;32mpriority 2\u001b[0;0m\n\t\u001b[01;33mPanel\u001b[0;0m\n\t\u001b[01;33mreplication source:\u001b[0;0m0\n\t\u001b[01;34mModes: \u001b[0;0m 1:\u001b[01;32m1920x1080@60.00*\u001b[0;0m!  2:1280x1024@59.90  3:1024x768@59.92  4:1280x800@59.81  5:1600x900@59.95  6:1368x768@59.88  7:1280x720@59.85 \n\u001b[01;33m\tCustom modes:\u001b[0;0m None\n\u001b[01;33m\tGeometry: \u001b[0;0m3840,0 1920x1080\n\u001b[01;33m\tScale: \u001b[0;0m1\n\u001b[01;33m\tRotation: \u001b[0;0m1\n\u001b[01;33m\tOverscan: \u001b[0;0m0\n\u001b[01;33m\tVrr: \u001b[0;0mincapable\n\u001b[01;33m\tRgbRange: \u001b[0;0mAutomatic\n\u001b[01;33m\tHDR: \u001b[0;0mincapable\n\u001b[01;33m\tWide Color Gamut: \u001b[0;0mincapable\n\u001b[01;33m\tICC profile: \u001b[0;0mnone\n\u001b[01;33m\tColor profile source: \u001b[0;0msRGB\n\u001b[01;33m\tColor power preference: \u001b[0;0mprefer efficiency and performance\n\u001b[01;33m\tBrightness control: \u001b[0;0msupported, set to 30% and dimming to 100%\n\u001b[01;33m\tColor resolution: \u001b[0;0mautomatic (10), range: [6; 12] bits per color\n\u001b[01;33m\tAllow EDR: \u001b[0;0malways\n\u001b[01;33m\tSharpness control: \u001b[0;0munsupported\n\u001b[01;33m\tAutomatic brightness: \u001b[0;0munsupported\n\u001b[01;32mOutput: \u001b[0;0m2 DP-3 d08d6393-27da-4ddd-9037-d9881f312333\n\t\u001b[01;32menabled\u001b[0;0m\n\t\u001b[01;32mconnected\u001b[0;0m\n\t\u001b[01;32mpriority 1\u001b[0;0m\n\t\u001b[01;33mDisplayPort\u001b[0;0m\n\t\u001b[01;33mreplication source:\u001b[0;0m0\n\t\u001b[01;34mModes: \u001b[0;0m 10:1920x1080@59.94  11:1920x1080@50.00  12:1680x1050@59.88  13:1600x900@60.00  14:1280x1024@72.05  15:1280x1024@60.02  16:1440x900@59.90  17:1366x768@59.79  18:1280x800@59.91  19:1280x720@60.00  20:1280x720@59.94  21:1280x720@50.00  22:1024x768@60.00  23:800x600@60.32  24:720x576@50.00  25:720x576@50.00  26:720x480@60.00  27:720x480@60.00  28:720x480@59.94  29:720x480@59.94  30:640x480@60.00  31:640x480@59.94  32:640x480@59.94  33:720x400@70.08  8:1920x1080@60.00!  9:\u001b[01;32m1920x1080@74.91*\u001b[0;0m \n\u001b[01;33m\tCustom modes:\u001b[0;0m None\n\u001b[01;33m\tGeometry: \u001b[0;0m1920,0 1920x1080\n\u001b[01;33m\tScale: \u001b[0;0m1\n\u001b[01;33m\tRotation: \u001b[0;0m1\n\u001b[01;33m\tOverscan: \u001b[0;0m0\n\u001b[01;33m\tVrr: \u001b[0;0mincapable\n\u001b[01;33m\tRgbRange: \u001b[0;0mAutomatic\n\u001b[01;33m\tHDR: \u001b[0;0mincapable\n\u001b[01;33m\tWide Color Gamut: \u001b[0;0mincapable\n\u001b[01;33m\tICC profile: \u001b[0;0mnone\n\u001b[01;33m\tColor profile source: \u001b[0;0msRGB\n\u001b[01;33m\tColor power preference: \u001b[0;0mprefer efficiency and performance\n\u001b[01;33m\tBrightness control: \u001b[0;0msupported, set to 100% and dimming to 100%\n\u001b[01;33m\tColor resolution: \u001b[0;0mautomatic (10), range: [6; 12] bits per color\n\u001b[01;33m\tAllow EDR: \u001b[0;0munsupported\n\u001b[01;33m\tSharpness control: \u001b[0;0munsupported\n\u001b[01;33m\tAutomatic brightness: \u001b[0;0munsupported\n\u001b[01;32mOutput: \u001b[0;0m3 HDMI-A-1 ee690c84-b40e-4875-8ee9-1e6d75fe31ed\n\t\u001b[01;32menabled\u001b[0;0m\n\t\u001b[01;32mconnected\u001b[0;0m\n\t\u001b[01;32mpriority 3\u001b[0;0m\n\t\u001b[01;33mHDMI\u001b[0;0m\n\t\u001b[01;33mreplication source:\u001b[0;0m0\n\t\u001b[01;34mModes: \u001b[0;0m 34:1920x1080@60.00!  35:\u001b[01;32m1920x1080@74.97*\u001b[0;0m  36:1920x1080@60.00  37:1920x1080@59.94  38:1920x1080@50.00  39:1680x1050@59.88  40:1600x900@60.00  41:1280x1024@60.02  42:1440x900@59.90  43:1280x800@59.91  44:1280x720@60.00  45:1280x720@60.00  46:1280x720@59.94  47:1280x720@50.00  48:1280x720@50.00  49:1024x768@60.00  50:800x600@60.32  51:720x576@50.00  52:720x576@50.00  53:720x480@60.00  54:720x480@60.00  55:720x480@59.94  56:720x480@59.94  57:720x480@59.94  58:640x480@60.00  59:640x480@59.94  60:640x480@59.94  61:720x400@70.08 \n\u001b[01;33m\tCustom modes:\u001b[0;0m None\n\u001b[01;33m\tGeometry: \u001b[0;0m0,0 1920x1080\n\u001b[01;33m\tScale: \u001b[0;0m1\n\u001b[01;33m\tRotation: \u001b[0;0m1\n\u001b[01;33m\tOverscan: \u001b[0;0m0\n\u001b[01;33m\tVrr: \u001b[0;0mincapable\n\u001b[01;33m\tRgbRange: \u001b[0;0mAutomatic\n\u001b[01;33m\tHDR: \u001b[0;0mincapable\n\u001b[01;33m\tWide Color Gamut: \u001b[0;0mincapable\n\u001b[01;33m\tICC profile: \u001b[0;0mnone\n\u001b[01;33m\tColor profile source: \u001b[0;0msRGB\n\u001b[01;33m\tColor power preference: \u001b[0;0mprefer efficiency and performance\n\u001b[01;33m\tBrightness control: \u001b[0;0msupported, set to 100% and dimming to 100%\n\u001b[01;33m\tColor resolution: \u001b[0;0mautomatic (10), range: [8; 12] bits per color\n\u001b[01;33m\tAllow EDR: \u001b[0;0munsupported\n\u001b[01;33m\tSharpness control: \u001b[0;0munsupported\n\u001b[01;33m\tAutomatic brightness: \u001b[0;0munsupported\n",
+    "stderr": ""
+  }
+}

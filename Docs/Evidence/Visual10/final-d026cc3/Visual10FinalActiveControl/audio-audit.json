@@ -1,0 +1,104 @@
+{
+    "method": "Unity AudioListener channel 0: 2048-sample windows about every 40 ms; windows may overlap or leave gaps. No subjective listening claim.",
+    "buildId": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "sampleRate": 48000,
+    "dspAdvanced": true,
+    "levels": [
+        {
+            "state": "start",
+            "windows": 70,
+            "samples": 143360,
+            "overFullScale": 0,
+            "peak": 0.014126150868833065,
+            "rms": 0.006526834809138665
+        },
+        {
+            "state": "chapter-develop-first",
+            "windows": 585,
+            "samples": 1198080,
+            "overFullScale": 0,
+            "peak": 0.14354965090751649,
+            "rms": 0.0074917779511227389
+        },
+        {
+            "state": "chapter-lab",
+            "windows": 119,
+            "samples": 243712,
+            "overFullScale": 0,
+            "peak": 0.2562800347805023,
+            "rms": 0.013106105011473345
+        },
+        {
+            "state": "paused",
+            "windows": 90,
+            "samples": 184320,
+            "overFullScale": 0,
+            "peak": 0.010345443151891232,
+            "rms": 0.0005147624762021535
+        },
+        {
+            "state": "chapter-first",
+            "windows": 65,
+            "samples": 133120,
+            "overFullScale": 0,
+            "peak": 0.13193853199481965,
+            "rms": 0.011771380707841563
+        },
+        {
+            "state": "chapter-interpret-first",
+            "windows": 42,
+            "samples": 86016,
+            "overFullScale": 0,
+            "peak": 0.014736726880073548,
+            "rms": 0.006589056654538
+        },
+        {
+            "state": "chapter-archive",
+            "windows": 178,
+            "samples": 364544,
+            "overFullScale": 0,
+            "peak": 0.14042450487613679,
+            "rms": 0.007142609401221165
+        },
+        {
+            "state": "chapter-choose-control",
+            "windows": 598,
+            "samples": 1224704,
+            "overFullScale": 0,
+            "peak": 0.14140309393405915,
+            "rms": 0.0072822450889411739
+        },
+        {
+            "state": "chapter-experiment",
+            "windows": 58,
+            "samples": 118784,
+            "overFullScale": 0,
+            "peak": 0.13236507773399354,
+            "rms": 0.010664990745766108
+        },
+        {
+            "state": "chapter-observe-control",
+            "windows": 85,
+            "samples": 174080,
+            "overFullScale": 0,
+            "peak": 0.13409419357776643,
+            "rms": 0.00887777696503304
+        },
+        {
+            "state": "chapter-second-exposure",
+            "windows": 54,
+            "samples": 110592,
+            "overFullScale": 0,
+            "peak": 0.03421835973858833,
+            "rms": 0.006575230878897136
+        },
+        {
+            "state": "chapter-develop-second",
+            "windows": 21,
+            "samples": 43008,
+            "overFullScale": 0,
+            "peak": 0.15938346087932588,
+            "rms": 0.00946207218379969
+        }
+    ]
+}

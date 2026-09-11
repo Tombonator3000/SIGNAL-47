@@ -1,0 +1,20 @@
+{
+  "outcome": "PASS",
+  "checks": {
+    "native_journey": true,
+    "all_intervals_present": true,
+    "mean_fps": true,
+    "p95": true,
+    "p99": true,
+    "no_over_50ms": true,
+    "duration": true,
+    "focused": true,
+    "release": true,
+    "percentiles_reproduce": true,
+    "fps_reproduces": true,
+    "no_screenshots": true
+  },
+  "rawFrames": 8922,
+  "method": "All CSV intervals independently counted and nearest-rank percentiles reproduced; none removed.",
+  "gpuTiming": "UNVERIFIED"
+}

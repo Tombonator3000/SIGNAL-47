@@ -47,6 +47,9 @@ class ChapterJourney(legacy.Journey):
   wait_for(lambda s:s["saveExists"] and not s["saving"],20)
   self.mark("checkpoint-before-development")
  def return_to_lab(self):
+  if -7.4 < state()["z"] < 7.6 and abs(state()["x"]) < 9.5:
+   for x,z in [(3.2,2.1),(0,6.5),(0,9.5),(0,10.3)]:self.walk(x,z)
+   return
   if state()['z']>7.6 and abs(state()['x'])<4:
    self.walk(0,10.3);return
   if state()['z'] < -15:self.walk(10.7,-15.3)
@@ -87,6 +90,7 @@ class ChapterJourney(legacy.Journey):
   self.click_panel(246 if method=='passive' else 624,542);wait_for(lambda s:bool(chapter(s)['hypothesis']));self.mark('testable-hypothesis-'+method);self.close_panel()
  def visit_control(self,method):
   for x,z in [(0,9.5),(0,6.5),(6,5.7),(8,3.2),(10.7,3.2),(10.7,-2),(10.7,-7.8),(10.7,-12.2),(10.7,-15.3),(10.75,-18.9)]:self.walk(x,z)
+  self.aim(13.8,.18,-20.8);self.mark('dry-grass-near-field-point')
   self.aim(10,1.6,-22);self.mark('new-field-point-before-control')
   self.interact(11.66,1.02,-20.10,'B-12');wait_for(lambda s:s['chapterPanel']=='experiment')
   self.click_panel(345 if method=='passive' else 907,512);wait_for(lambda s:chapter(s)['experimentMethod']==method and not s['chapterModal']);time.sleep(2)
@@ -120,6 +124,16 @@ class ChapterJourney(legacy.Journey):
   self.mark("continued-in-new-process")
   self.events[-1]['continueObservedSeconds']=load_seconds
   self.events[-1]['continueTimingScope']='Ready-player observation after native Continue click; includes 0.42s input settling and <=0.1s observation polling. Explicit scene reload, outside continuous gameplay frame measurement.'
+ def inspect_visual10(self):
+  self.close_panel();self.return_to_lab();self.walk(0,8.0);self.aim(0,1.60,13.4);self.mark('visual10-lab-entrance')
+  self.walk(0,10.3);self.aim(-2.7,1.3,11.4);self.mark('visual10-lab-wet-bench')
+  self.aim(2.7,1.3,11.3);self.mark('visual10-lab-archive')
+  self.aim(0,1.0,13.4);self.mark('visual10-lab-sink')
+  self.aim(-.6,.03,11.9);self.mark('visual10-floor-reflection-detail')
+  for x,z in [(0,6.5),(6,5.7),(8,3.2),(10.7,3.2),(10.7,-7.8),(10.7,-12.2),(10.7,-18.7)]:self.walk(x,z)
+  self.walk(11.35,-18.0);self.aim(10.8,1.10,-21.4);self.mark('visual10-b12-overview')
+  self.aim(11.67,.85,-20.40);self.mark('visual10-b12-cabinet')
+  self.walk(10.7,-19.35);self.aim(10,1.6,-22);self.mark('visual10-b12-reference')
  def inspect_rooms(self):
   self.return_to_lab();self.walk(0,9.5);self.aim(0,1.4,12.5);self.mark('photolab-overview')
   self.walk(0,10.3);self.aim(-2.7,1.3,11.4);self.mark('photolab-enlarger-and-trays')
@@ -209,7 +223,7 @@ class ChapterJourney(legacy.Journey):
   before=state()['z'];self.d.key('w',True);time.sleep(.5);self.d.key('w',False);time.sleep(.2);assert abs(state()['z']-before)>.1;self.mark('extracted-package-receives-native-movement')
 
 if __name__=="__main__":
- parser=argparse.ArgumentParser();parser.add_argument("--resume",action="store_true");parser.add_argument("--lab",action="store_true");parser.add_argument("--no-shots",action="store_true");parser.add_argument('--current',action='store_true');parser.add_argument('--phase',choices=['first','control','finish','all','inspect'],default='first');parser.add_argument('--method',choices=['passive','active'],default='passive');parser.add_argument('--quit',action='store_true');parser.add_argument('--measure',action='store_true')
+ parser=argparse.ArgumentParser();parser.add_argument("--resume",action="store_true");parser.add_argument("--lab",action="store_true");parser.add_argument("--no-shots",action="store_true");parser.add_argument('--current',action='store_true');parser.add_argument('--phase',choices=['first','control','finish','all','inspect','visual'],default='first');parser.add_argument('--method',choices=['passive','active'],default='passive');parser.add_argument('--quit',action='store_true');parser.add_argument('--measure',action='store_true')
  parser.add_argument('--check',choices=['settings-write','settings-fullscreen-write','settings-read','invalid-save','new-case','backup','failed-save-exit','missing-second','package-start']);parser.add_argument('--inspect-after',action='store_true');parser.add_argument('--out-of-order',action='store_true');parser.add_argument('--reopen',action='store_true')
  args=parser.parse_args();d=PhysicalDesktop();d.inject_setup();j=ChapterJourney(d,not args.no_shots)
  outcome="FAIL";error=""
@@ -230,6 +244,7 @@ if __name__=="__main__":
   if args.measure:time.sleep(20);legacy.command('record');measurement_start=time.monotonic()
   if args.lab or args.phase in ('control','finish','all'):j.return_to_lab()
   if args.phase=='inspect':j.inspect_rooms()
+  if args.phase=='visual':j.inspect_visual10()
   if args.phase in ('control','all'):
    if state()['developedFrames']<1:j.develop(1,not args.measure)
    j.interpret(args.method);j.visit_control(args.method)

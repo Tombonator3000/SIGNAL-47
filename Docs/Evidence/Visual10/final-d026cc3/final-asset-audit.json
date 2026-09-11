@@ -1,0 +1,178 @@
+{
+  "audit_utc": "2026-09-10T20:46:08.466546+00:00",
+  "revision": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba",
+  "build_manifest": {
+    "base_revision": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba",
+    "working_tree_changes": false,
+    "unity_source_sha256": "eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "eb2bbdcc925e3e016b6e5c90996cb386ada41bb2004e42e1954b07713601ebb6",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "scope": "Read-only static code, source hash and existing build-log audit; no editor/runtime input or listening performed",
+  "installed_sources": [
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/concrete_floor_02/concrete_floor_02_diff_2k.jpg",
+      "sha256": "b08a20dcb306d08ee7f4a05ec216b19b7fd37e95745998ec5f81ecedaac1f0e9",
+      "expected_sha256": "b08a20dcb306d08ee7f4a05ec216b19b7fd37e95745998ec5f81ecedaac1f0e9",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/concrete_floor_02/concrete_floor_02_nor_gl_2k.jpg",
+      "sha256": "ce12d18f283f884f4be6f6c110f81582376049caada1e226958659d3d5fbaae1",
+      "expected_sha256": "ce12d18f283f884f4be6f6c110f81582376049caada1e226958659d3d5fbaae1",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/concrete_floor_02/concrete_floor_02_rough_2k.jpg",
+      "sha256": "cb539b0f8fdc8c63241683e01c923eb040fa701ec4c60cff27b674294746ae67",
+      "expected_sha256": "cb539b0f8fdc8c63241683e01c923eb040fa701ec4c60cff27b674294746ae67",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/green_metal_rust/green_metal_rust_diff_2k.jpg",
+      "sha256": "727515554ffb6410be82d3625a2837fe46612cb186ec391f77c50bd52c4d7ab2",
+      "expected_sha256": "727515554ffb6410be82d3625a2837fe46612cb186ec391f77c50bd52c4d7ab2",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/green_metal_rust/green_metal_rust_nor_gl_2k.jpg",
+      "sha256": "45ec5d256c91ccf4a87dd4c4a90f6c58b460f3862287f014bfde432055ece239",
+      "expected_sha256": "45ec5d256c91ccf4a87dd4c4a90f6c58b460f3862287f014bfde432055ece239",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/green_metal_rust/green_metal_rust_rough_2k.jpg",
+      "sha256": "0a691b35df773ab86dbbc86b787f8efaa81497780820abec0832b1e7aac309a6",
+      "expected_sha256": "0a691b35df773ab86dbbc86b787f8efaa81497780820abec0832b1e7aac309a6",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/painted_plaster_wall/painted_plaster_wall_diff_2k.jpg",
+      "sha256": "6fd812ed8dd5be1873c29aeef38ce9bf1fb30a22c6d4b3a12db725e98c26a1be",
+      "expected_sha256": "6fd812ed8dd5be1873c29aeef38ce9bf1fb30a22c6d4b3a12db725e98c26a1be",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/painted_plaster_wall/painted_plaster_wall_nor_gl_2k.jpg",
+      "sha256": "2d601a46ed5ce2af866741c53cafa3cba472620c272e633b6484d4de16a80eb1",
+      "expected_sha256": "2d601a46ed5ce2af866741c53cafa3cba472620c272e633b6484d4de16a80eb1",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/painted_plaster_wall/painted_plaster_wall_rough_2k.jpg",
+      "sha256": "35aad595469533cc3b7cc209cc6c7e065d660211f02c867f4492d3b371b1fee1",
+      "expected_sha256": "35aad595469533cc3b7cc209cc6c7e065d660211f02c867f4492d3b371b1fee1",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Audio/impactMetal_light_000.ogg",
+      "sha256": "33b5e6e37c6e9d54e07bf5a89b12c76e879f40c1ea83cdd82714df1d6f9fec6d",
+      "expected_sha256": "33b5e6e37c6e9d54e07bf5a89b12c76e879f40c1ea83cdd82714df1d6f9fec6d",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Audio/impactSoft_medium_000.ogg",
+      "sha256": "7d3ba0bb5e60a11b5d3e558c141303dcf494256675fbf753c0d252d2cf0481e3",
+      "expected_sha256": "7d3ba0bb5e60a11b5d3e558c141303dcf494256675fbf753c0d252d2cf0481e3",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Audio/footstep_concrete_000.ogg",
+      "sha256": "d7267e183067757c92c169de2a379abea592cfca6b39bb2e8feea15221ad79fe",
+      "expected_sha256": "d7267e183067757c92c169de2a379abea592cfca6b39bb2e8feea15221ad79fe",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Audio/footstep_concrete_001.ogg",
+      "sha256": "507a75eb19b897087855a3be3cf11a12d7fa37d143ad535eeebe0b8031c7325d",
+      "expected_sha256": "507a75eb19b897087855a3be3cf11a12d7fa37d143ad535eeebe0b8031c7325d",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Audio/footstep_concrete_002.ogg",
+      "sha256": "b21fa546d74941196b25da8a20b7010abd8c05c4fcf93545d1f344e66a664e13",
+      "expected_sha256": "b21fa546d74941196b25da8a20b7010abd8c05c4fcf93545d1f344e66a664e13",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/dry_ground_rocks/dry_ground_rocks_diff_2k.jpg",
+      "sha256": "ebfb8b98b48a4fcafac354d1e206944824c549e93ea6d977f69664f0dc3dbb6a",
+      "expected_sha256": "ebfb8b98b48a4fcafac354d1e206944824c549e93ea6d977f69664f0dc3dbb6a",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/dry_ground_rocks/dry_ground_rocks_nor_gl_2k.jpg",
+      "sha256": "6e4d9e19c8fb010aaebf7b95105d8b501c08590a0e03e0dbcc8cf98886edae4e",
+      "expected_sha256": "6e4d9e19c8fb010aaebf7b95105d8b501c08590a0e03e0dbcc8cf98886edae4e",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/dry_ground_rocks/dry_ground_rocks_rough_2k.jpg",
+      "sha256": "261aa42d1626d7b71675d918239f4b2be10d40c00bd9f954273a5aba4a19baaf",
+      "expected_sha256": "261aa42d1626d7b71675d918239f4b2be10d40c00bd9f954273a5aba4a19baaf",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Blender/ThirdParty/grass_medium_02/grass_medium_02_1k.blend",
+      "sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+      "expected_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_alpha_1k.png",
+      "sha256": "15976877b3dbd22cd496a9549f1eb7d86710846a3631fb87eedbf046519e339f",
+      "expected_sha256": "15976877b3dbd22cd496a9549f1eb7d86710846a3631fb87eedbf046519e339f",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_diff_1k.jpg",
+      "sha256": "91ae99005b449011aceb207a68a937258fd9bfd66ff367d344c50398b1df389c",
+      "expected_sha256": "91ae99005b449011aceb207a68a937258fd9bfd66ff367d344c50398b1df389c",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_dry_diff_1k.png",
+      "sha256": "f22eed29790823fa58c6e2bff9b10d7b52683e1e4e5d0e4e762bedaf23499708",
+      "expected_sha256": "f22eed29790823fa58c6e2bff9b10d7b52683e1e4e5d0e4e762bedaf23499708",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_nor_gl_1k.exr",
+      "sha256": "f87429d46ca64672000fe1780d223431c974889ef7d68259914fb4d8862bf631",
+      "expected_sha256": "f87429d46ca64672000fe1780d223431c974889ef7d68259914fb4d8862bf631",
+      "status": "PASS"
+    },
+    {
+      "installed": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_rough_1k.exr",
+      "sha256": "4a3f1911c5dd08c423dbc46a230565ddfd19bae99e68b1e8fb9c999c93517db5",
+      "expected_sha256": "4a3f1911c5dd08c423dbc46a230565ddfd19bae99e68b1e8fb9c999c93517db5",
+      "status": "PASS"
+    }
+  ],
+  "source_count": 23,
+  "source_status": "PASS",
+  "licenses": {
+    "status": "PASS",
+    "kenney_original_license_identical": true,
+    "packaged_third_party_notices_identical": true,
+    "covered": "Poly Haven existing and all Visual10 PBR/terrain/grass sources; Kenney interface and five new impact/footsteps; Freesound effects; VT323 OFL; Scott Buckley CC-BY4.0 excerpt and modification notes",
+    "music": "Existing Signal to Noise No Piano Melody retained; chapter ending credit remains in source",
+    "limitation": "No renewed verification of unchanged external asset masters, no audio listening"
+  },
+  "prior_emission_finding": {
+    "status": "RESOLVED",
+    "static_checks": {
+      "realtimeGI_disabled": true,
+      "RealtimeEmissive_flag": true,
+      "URP_keyword_validation_before_build": true,
+      "keyword_assert_after_build": true
+    },
+    "build_log": "Artifacts/visual10-bake-build.log",
+    "evidence": [
+      "VISUAL10_EMISSION_VALIDATED count=11"
+    ],
+    "explanation": "RealtimeEmissive satisfies URP AnyEmissive keyword gating; realtime GI is disabled and these materials do not request BakedEmissive. Explicit URP validation before build and postbuild assertion prevent the earlier None flag regression."
+  },
+  "source_modified": false
+}
