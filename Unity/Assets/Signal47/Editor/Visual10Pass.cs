@@ -391,6 +391,7 @@ namespace Signal47.Editor
             if(!GameObject.Find("WorldAreaArt")) WorldAreaPass.Dress(Object.FindFirstObjectByType<Signal47.Environment.DishArrayController>());
             root = new GameObject("Visual10Environment").transform;
             Materials(); Props(); Rendering(); Lighting(); LabDetails(); ExteriorDetail(); DryGrass(); Audio(session);
+            NightSky12.Apply();
             foreach(var r in root.GetComponentsInChildren<Renderer>()) GameObjectUtility.SetStaticEditorFlags(r.gameObject, StaticEditorFlags.BatchingStatic);
             Debug.Log("VISUAL10_APPLIED PBR CC0 / local shadows / contact occlusion / practical reflections");
         }

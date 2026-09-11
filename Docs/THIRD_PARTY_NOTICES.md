@@ -1,5 +1,15 @@
 # SIGNAL / 47 — third-party resources
 
+## NightSky12 — NASA catalogue map
+
+[Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/), visualization by Ernie Wright (USRA).
+Credit: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.
+The map also uses Hipparcos-2, Tycho-2, Yale Bright Star, UCAC3 and XHIP catalogue data.
+
+Source file: `starmap_2020_8k.exr`. The game's `NASA_DeepStarMap_8k.png` is an 8192×4096 sRGB derivative, re-encoded in Blender; shader exposure, atmosphere and orientation are artistic adaptations. It is not an astronomically dated reconstruction of New Mexico in 1986. No constellation diagrams, NASA logos or identifiable persons are included. Source and derivative hashes, the conversion and its measured error are in `Art/NightSky12/provenance.json`; the reproducible conversion is `Blender/Source/prepare_night_sky.py`.
+
+Use follows the [NASA media guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/), not a CC0 designation. Source acknowledgement does not imply NASA endorsement of SIGNAL / 47.
+
 ## Poly Haven — CC0 1.0
 
 - Old Linoleum Flooring 01 — Charlotte Baglioni: https://polyhaven.com/a/old_linoleum_flooring_01

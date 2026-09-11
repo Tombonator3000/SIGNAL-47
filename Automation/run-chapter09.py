@@ -19,6 +19,11 @@ for sock in Path('/tmp/.X11-unix').glob('X*'):
   if subprocess.run(['xdpyinfo'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:found=True;break
  if found:break
 assert found,'Authenticated desktop unavailable'
+# Fail before launching a player or clearing telemetry when the desktop is locked.
+import importlib.util
+desktop_spec=importlib.util.spec_from_file_location('signal47_desktop_preflight',ROOT/'Automation/gauntlet-user-journey.py')
+desktop_module=importlib.util.module_from_spec(desktop_spec);desktop_spec.loader.exec_module(desktop_module)
+desktop_module.Desktop.require_unlocked()
 for pattern in ['state.json','command.txt','performance.json','frames.csv','frame-work.csv','chapter09-result.json','journey-*.png','audio-audit.json']:
  for path in telemetry.glob(pattern):path.unlink()
 manifest=player.parent/'build-manifest.json'
