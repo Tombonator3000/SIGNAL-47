@@ -22,7 +22,9 @@ Visual10: kildecommit `d026cc3`, Unity SHA `eb0748660027744a8ad717c16a51a1e8801f
 
 ## Fortsett her
 
-1. Lås opp Kubuntu. Fullfør en fersk tastatur-/musreise på den eksakte NightSky12-pakken, begge forsøksveier og faktiske prosessgjenstarter. Bruk nye, isolerte testprofiler.
+Brukeren opplyste 11. september at vedkommende er borte hjemmefra og ikke kan låse opp skjermen nå. Ikke gjenta opplåsingsforespørselen eller start flere native inputforsøk mens dette gjelder. Bygging, statisk runtime-inspeksjon og pakkekontroll er allerede utført; manglende interaktive kontroller utsettes til skrivebordet er tilgjengelig. Ingen overvåking eller bakgrunnsjobb er startet.
+
+1. Når brukeren har tilgang til et opplåst Kubuntu-skrivebord: fullfør en fersk tastatur-/musreise på den eksakte NightSky12-pakken, begge forsøksveier og faktiske prosessgjenstarter. Bruk nye, isolerte testprofiler.
 2. Kontroller de virkelige fotografiene, inkludert gjenåpning, og himmelen under vanlig gange og raske vendinger. Kjør separat releaseytelse med alle frameintervaller beholdt.
 3. Korriger eventuelle funn før kandidaten kan erstatte Visual10. Deretter avgrenses én undersøkelig himmelhendelse fra konseptforslaget.
 
