@@ -1,0 +1,7 @@
+EXCERPT of Artifacts/Sky12/build.log
+Full original SHA-256: dee351f2ce361d0676e722a3af2d04a633d70be638ae3e045fd3661e19378e7a
+Selection regex: NIGHTSKY12_|SIGNAL47_BUILD_OK|error CS\d+|Shader error|NullReferenceException
+
+450: NIGHTSKY12_APPLIED source=8192x4096 cube_faces=6 face_size=2048 format=BC7 mipmaps=12 ambient=Flat
+6862: SIGNAL47_BUILD_OK /home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/GauntletLinux/Signal47.x86_64
+6875: NIGHTSKY12_BUILD_PASS preserved_lab_lightmaps=2

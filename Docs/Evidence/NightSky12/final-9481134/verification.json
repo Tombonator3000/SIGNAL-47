@@ -1,0 +1,108 @@
+{
+  "schema": "signal47-night-sky12-verification-v1",
+  "recorded_utc": "2026-09-11T09:48:29.567277+00:00",
+  "release_status": "CANDIDATE — native journey, photography and performance remain unverified",
+  "reviewer": "Primary agent, sequential visual self-review; no independent review agents",
+  "build": {
+    "base_revision": "94811347a00811648f937400a1522c7d2cdd1d2b",
+    "working_tree_changes": true,
+    "unity_source_sha256": "79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "c04306ebfdfe5046170ff419acb4281dfb5fcdc90137d4a853dfadb453c8b51a",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "build_working_tree_note": "working_tree_changes=true records documentation edits; Unity content exactly matches code commit 94811347a00811648f937400a1522c7d2cdd1d2b.",
+  "package": {
+    "schema": "signal47-night-sky12-package-content-v1",
+    "checks": {
+      "archive_sidecar": "PASS",
+      "tar_paths_links_types": "PASS",
+      "all_files_hashes_sizes_modes": "PASS",
+      "build_package_identity": "PASS",
+      "default_launcher_and_prior_release_preserved": "PASS",
+      "candidate_label_present": "PASS"
+    },
+    "scope": "Archive content and fixed runtime cameras; no native journey or performance claim.",
+    "archive": {
+      "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz",
+      "bytes": 146267284,
+      "sha256": "fc49644ab2a853d4afb2cf1e1bdc45425e3e3fa9d27039ff0260534cb379545d",
+      "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-NightSky12-79cafef6f5a5-Linux.tar.gz.sha256",
+      "sidecar_sha256": "2d395050d0b7ff6c4b1de89f13c755350fd67df19147b25bfcbd8e8cccca5a01"
+    },
+    "package": {
+      "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Sky12/DeliveryExtract/NightSky12-79cafef6f5a5",
+      "manifest_sha256": "ba862bf8d719a5339fc075f345b19e45d154439e605e638c022b6c0e44e9006e",
+      "package_id": "NightSky12-79cafef6f5a5",
+      "file_count": 173,
+      "directory_count": 19,
+      "uncompressed_bytes": 325569471,
+      "package_payload_sha256": "6df338f2b50a8da570128b7535c4ef740520f0992be8b9946e10056ba84f7c6a",
+      "unity_source_sha256": "79cafef6f5a59d042d101652cb5fb55942de4b13af91e8949a080d4caf580512",
+      "base_revision": "94811347a00811648f937400a1522c7d2cdd1d2b"
+    },
+    "outcome": "PASS"
+  },
+  "checks": {
+    "source_conversion_import": "PASS — NASA source and Blender derivative hashes, linear conversion error, 6x2048 BC7 cubemap/12 mips recorded",
+    "unity_shader_and_build": "PASS — final build success markers, no CS/shader errors, two existing laboratory lightmaps preserved",
+    "source_scope": "PASS — scene changes only sky material and legacy-star renderer; gameplay runtime files unchanged apart from opt-in inspection harness",
+    "static_visual": "PASS in nine reviewed final original PNGs: four headings, zenith, +X/+Y face boundary from both sides, yard and window. No observed polar stretch or visible face seam; antenna silhouettes and local lamps remain readable.",
+    "native_screen_lock_preflight": "PASS — actual locked KDE desktop rejected before player/input; telemetry unchanged",
+    "archive_content": "PASS — 173 files, hashes, sizes, modes, identity and candidate label checked after actual extraction",
+    "baseline_preservation": "PASS — existing Visual10 archive and default launcher unchanged",
+    "native_user_journey": "UNVERIFIED — locked desktop, user asked to unlock",
+    "photographic_evidence_and_save_reload": "UNVERIFIED on NightSky12",
+    "motion_shimmer_and_performance": "UNVERIFIED — static cameras cannot establish these",
+    "subjective_audio_mix": "UNVERIFIED — no audio changes in this pass"
+  },
+  "visual_scope": "Actual release executable from exact extracted archive at 1280x800 Ultra, Mesa Intel ARL, OpenGLCore. Opt-in capture sets inspection state and moves fixed cameras; no native input or user-collected photos. Original unedited PNGs only.",
+  "visual_findings": [
+    "Small varied stars and a dim Milky Way replace finite-distance bright square stars.",
+    "Initial equirectangular mapping produced radial polar distortion at heading 270; rejected image and manifest retained under Failed/.",
+    "Directional cubemap filtering removes that observed defect in the final heading 270 and zenith frames.",
+    "No visible discontinuity in sampled views across the +X/+Y face boundary. This does not prove every possible seam or temporal behavior.",
+    "Overall terrain, foreground modelling and reflection quality still lag the concept target; this pass only improves the ordinary night sky."
+  ],
+  "full_local_log_provenance": [
+    {
+      "original": "Artifacts/Sky12/build.log",
+      "sha256": "dee351f2ce361d0676e722a3af2d04a633d70be638ae3e045fd3661e19378e7a",
+      "bytes": 544920,
+      "excerpt": "unity-build-excerpt.txt",
+      "selection_regex": "NIGHTSKY12_|SIGNAL47_BUILD_OK|error CS\\d+|Shader error|NullReferenceException"
+    },
+    {
+      "original": "Artifacts/Sky12/cubemap-import-api-failed.log",
+      "sha256": "cbfd5ab15451d033ef9d96ed07e11f9ff2dee9372927b66c188f94dd7bb82f19",
+      "bytes": 73606,
+      "excerpt": "Failed/import-api-compile-excerpt.txt",
+      "selection_regex": "error CS\\d+"
+    }
+  ],
+  "preserved_baseline": {
+    "default_launcher_sha256": "f072ce1e53eff838ca562c93c92249f436deaabcaa7b917b3b927dc0fce33400",
+    "visual10_archive_sha256": "8f83fba8197dd3650d6ca608efdaefc05c44f12eb138bc3f64b42b98121368dd",
+    "source_reference": "origin/main 1db7b41e99cf8cfe5d7ca31fb12d3782c0f18cc4",
+    "review_kind": "sequential self-review"
+  },
+  "source_scene_changed_lines": [
+    "-  m_SkyboxMaterial: {fileID: 2100000, guid: be3e5144e7004ac6ea1ecba3ccfbe1ec, type: 2}",
+    "+  m_SkyboxMaterial: {fileID: 2100000, guid: 4cca12a046226471fbf15d084c8eb7f1, type: 2}",
+    "-  m_Enabled: 1",
+    "+  m_Enabled: 0"
+  ],
+  "changed_runtime_files": [
+    "Unity/Assets/Signal47/Runtime/Debug/WorldAreaCapture.cs"
+  ],
+  "next_required": "On unlocked Kubuntu, use fresh isolated profiles for active and passive chapter routes, inspect actual saved photos, restart the process, then collect a separate 120+ second performance run after 20 seconds warm-up. Keep Visual10 default until these pass.",
+  "delivery_visibility": {
+    "default_branch": "main",
+    "full_name": "Tombonator3000/SIGNAL-47",
+    "html_url": "https://github.com/Tombonator3000/SIGNAL-47",
+    "private": false,
+    "visibility": "public",
+    "checked_utc": "2026-09-11T09:51:18.086802+00:00",
+    "action": "No push, PR or visibility change. New code and evidence remain local."
+  }
+}

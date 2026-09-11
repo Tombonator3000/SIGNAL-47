@@ -2,12 +2,20 @@
 """Exercise the Linux player with native Linux uinput keyboard/mouse events.
 Reads observation-only Unity telemetry; never edits game state or calls interactions.
 """
-import argparse,ctypes as C,json,math,time,os,fcntl,struct
+import argparse,ctypes as C,json,math,time,os,fcntl,struct,subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'Artifacts/Gauntlet'
 class Desktop:
+ @staticmethod
+ def require_unlocked():
+  # XWayland can acknowledge window focus behind the KDE lock screen. That is
+  # not an interactive desktop: the next real input goes to the screen locker.
+  result=subprocess.run(['qdbus6','org.freedesktop.ScreenSaver','/ScreenSaver','org.freedesktop.ScreenSaver.GetActive'],capture_output=True,text=True,timeout=5)
+  assert result.returncode==0 and result.stdout.strip() in ('true','false'), 'Could not verify KDE screen-lock state; no native input sent'
+  assert result.stdout.strip()=='false', 'Kubuntu screen is locked; unlock the desktop before native game testing. No input sent.'
  def __init__(self):
   self.x=C.CDLL('libX11.so.6');self.t=C.CDLL('libXtst.so.6');self.d=None;self.held=set();self.devices=[]
+  self.require_unlocked()
   def bind(lib,name,args,result=C.c_int):
    f=getattr(lib,name);f.argtypes=args;f.restype=result;return f
   D=C.c_void_p;U=C.c_ulong;I=C.c_int
@@ -70,6 +78,7 @@ class Desktop:
  def move_pointer(self,x,y):
   self.guard()
   for _ in range(40):
+   self.guard()
    rr,cc=C.c_ulong(),C.c_ulong();a,b,lx,ly=C.c_int(),C.c_int(),C.c_int(),C.c_int();mask=C.c_uint()
    self.x.XQueryPointer(self.d,self.w,C.byref(rr),C.byref(cc),C.byref(a),C.byref(b),C.byref(lx),C.byref(ly),C.byref(mask))
    dx,dy=round(x)-lx.value,round(y)-ly.value

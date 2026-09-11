@@ -1,0 +1,103 @@
+{
+    "unity": "6000.3.22f1",
+    "resolution": "1280x800",
+    "quality": "Ultra",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "buildId": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+    "method": "six fixed runtime camera views; explicit receiver power setup; NOT traversal or performance evidence",
+    "mobilePreviews": "Generated from original PNGs by evidence script; resizing/JPEG only",
+    "development": false,
+    "views": [
+        {
+            "file": "01-control-room-array.png",
+            "state": "receiver powered; calibration not solved; HUD hidden for review",
+            "position": {
+                "x": 0.0,
+                "y": 1.649999976158142,
+                "z": 4.550000190734863
+            },
+            "target": {
+                "x": 0.0,
+                "y": 1.7999999523162842,
+                "z": -22.0
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "02-workstation.png",
+            "state": "same powered control room; fixed review camera",
+            "position": {
+                "x": -3.0,
+                "y": 1.649999976158142,
+                "z": 0.4000000059604645
+            },
+            "target": {
+                "x": 0.10000000149011612,
+                "y": 1.2999999523162842,
+                "z": -2.1500000953674318
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "03-crt-detail.png",
+            "state": "same powered control room; fixed review camera",
+            "position": {
+                "x": 0.0,
+                "y": 1.6100000143051148,
+                "z": -0.30000001192092898
+            },
+            "target": {
+                "x": 0.0,
+                "y": 1.340000033378601,
+                "z": -1.9500000476837159
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "04-window-array.png",
+            "state": "normal array from the window; fixed review camera",
+            "position": {
+                "x": 0.0,
+                "y": 1.7000000476837159,
+                "z": -6.099999904632568
+            },
+            "target": {
+                "x": 0.0,
+                "y": 3.0,
+                "z": -30.0
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "05-service-yard-array.png",
+            "state": "exterior review position; NOT player traversal",
+            "position": {
+                "x": -17.0,
+                "y": 1.6200000047683716,
+                "z": -11.5
+            },
+            "target": {
+                "x": 7.0,
+                "y": 3.0,
+                "z": -37.0
+            },
+            "fov": 60.0
+        },
+        {
+            "file": "06-sierra-motor-court-blockout.png",
+            "state": "motel blockout temporarily enabled for review; inactive in normal prologue; NOT accessible gameplay",
+            "position": {
+                "x": 85.22637939453125,
+                "y": 1.649999976158142,
+                "z": 24.37440299987793
+            },
+            "target": {
+                "x": 110.430908203125,
+                "y": 1.7999999523162842,
+                "z": 53.59309768676758
+            },
+            "fov": 60.0
+        }
+    ]
+}

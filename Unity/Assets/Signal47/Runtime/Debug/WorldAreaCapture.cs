@@ -19,7 +19,7 @@ namespace Signal47.Debugging
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
-            if((Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-world-capture")>=0 || Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-yard-capture")>=0)&&!FindFirstObjectByType<WorldAreaCapture>())new GameObject("WorldAreaCapture").AddComponent<WorldAreaCapture>();
+            if((Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-world-capture")>=0 || Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-yard-capture")>=0 || Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-sky-capture")>=0)&&!FindFirstObjectByType<WorldAreaCapture>())new GameObject("WorldAreaCapture").AddComponent<WorldAreaCapture>();
         }
         void Awake(){DontDestroyOnLoad(gameObject);Application.runInBackground=true;root=Path.GetFullPath(Path.Combine(Application.dataPath,"../../WorldCapture"));Directory.CreateDirectory(root);StartCoroutine(Run());}
         IEnumerator Run()
@@ -33,6 +33,29 @@ namespace Signal47.Debugging
             var interactor=session.player.GetComponent<Signal47.Interaction.PlayerInteractor>();if(interactor)interactor.enabled=false;
             yield return new WaitForSecondsRealtime(3);
             var camera=session.player.viewCamera;camera.fieldOfView=60;
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-sky-capture")>=0)
+            {
+                var position=new Vector3(10.7f,1.78f,-18.7f);
+                foreach(var heading in new[]{0,90,180,270})
+                {
+                    var direction=Quaternion.Euler(-35,heading,0)*Vector3.forward;
+                    yield return Shot(camera,$"sky-heading-{heading:000}.png",position,position+direction*100,"fixed sky inspection at B-12; NOT traversal or an exposure collected by the player");
+                }
+                yield return Shot(camera,"sky-zenith.png",position,position+new Vector3(.01f,100,.01f),"fixed near-zenith texture inspection; NOT traversal");
+                // Look across the cubemap's +X/+Y face boundary. Both views use
+                // the same source, exposure and camera position.
+                var mat=RenderSettings.skybox;
+                if(mat&&mat.HasProperty("_Tilt"))foreach(float side in new[]{-.035f,.035f})
+                {
+                    var mapped=new Vector3(1+side,1,.2f);
+                    float tilt=-mat.GetFloat("_Tilt")*Mathf.Deg2Rad,yaw=-mat.GetFloat("_Rotation")*Mathf.Deg2Rad;
+                    var untilted=new Vector3(mapped.x,Mathf.Cos(tilt)*mapped.y-Mathf.Sin(tilt)*mapped.z,Mathf.Sin(tilt)*mapped.y+Mathf.Cos(tilt)*mapped.z);
+                    var direction=new Vector3(Mathf.Cos(yaw)*untilted.x-Mathf.Sin(yaw)*untilted.z,untilted.y,Mathf.Sin(yaw)*untilted.x+Mathf.Cos(yaw)*untilted.z);
+                    yield return Shot(camera,side<0?"sky-seam-left.png":"sky-seam-right.png",position,position+direction*100,"fixed cubemap +X/+Y face boundary inspection; NOT motion/performance evidence");
+                }
+                WriteManifest("fixed sky camera views on the actual player; no native input; NOT traversal, saved photographic evidence or performance verification");
+                Debug.Log("SKY_CAPTURE_PASS "+views.Count);Application.Quit(0);yield break;
+            }
             if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-yard-capture")>=0)
             {
                 yield return Shot(camera,"yard-path.png",new Vector3(10.7f,1.78f,2),new Vector3(11,1,-13.2f),"fixed service path lighting review; NOT traversal");
@@ -50,10 +73,14 @@ namespace Signal47.Debugging
             bool wasActive=motel.activeSelf;motel.SetActive(true);
             yield return Shot(camera,"06-sierra-motor-court-blockout.png",motel.transform.TransformPoint(new Vector3(-34,1.65f,-18)),motel.transform.TransformPoint(new Vector3(-1,1.8f,2)),"motel blockout temporarily enabled for review; inactive in normal prologue; NOT accessible gameplay");
             motel.SetActive(wasActive);
-            string stamp=Path.Combine(Application.dataPath,"../build-id.txt");
-            var manifest=new Manifest{unity=Application.unityVersion,resolution=$"{Screen.width}x{Screen.height}",quality=QualitySettings.names[QualitySettings.GetQualityLevel()],gpu=SystemInfo.graphicsDeviceName,renderer=SystemInfo.graphicsDeviceType.ToString(),buildId=File.Exists(stamp)?File.ReadAllText(stamp).Trim():"unknown",development=Debug.isDebugBuild,method="six fixed runtime camera views; explicit receiver power setup; NOT traversal or performance evidence",mobilePreviews="Generated from original PNGs by evidence script; resizing/JPEG only",views=views.ToArray()};
-            File.WriteAllText(Path.Combine(root,"capture-manifest.json"),JsonUtility.ToJson(manifest,true));
+            WriteManifest("six fixed runtime camera views; explicit receiver power setup; NOT traversal or performance evidence");
             Debug.Log("WORLD_CAPTURE_PASS "+views.Count);Application.Quit(0);
+        }
+        void WriteManifest(string method)
+        {
+            string stamp=Path.Combine(Application.dataPath,"../build-id.txt");
+            var manifest=new Manifest{unity=Application.unityVersion,resolution=$"{Screen.width}x{Screen.height}",quality=QualitySettings.names[QualitySettings.GetQualityLevel()],gpu=SystemInfo.graphicsDeviceName,renderer=SystemInfo.graphicsDeviceType.ToString(),buildId=File.Exists(stamp)?File.ReadAllText(stamp).Trim():"unknown",development=Debug.isDebugBuild,method=method,mobilePreviews="none; original unedited PNGs",views=views.ToArray()};
+            File.WriteAllText(Path.Combine(root,"capture-manifest.json"),JsonUtility.ToJson(manifest,true));
         }
         IEnumerator Shot(Camera camera,string file,Vector3 position,Vector3 target,string state)
         {

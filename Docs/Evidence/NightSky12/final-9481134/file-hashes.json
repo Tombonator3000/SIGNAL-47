@@ -1,0 +1,162 @@
+[
+  {
+    "path": "Baseline/05-service-yard-array.png",
+    "sha256": "8e198d70c9bc24cb35636f7341494307f17f83fbdcbf66eb395c857885495212",
+    "bytes": 785530
+  },
+  {
+    "path": "Baseline/capture-manifest.json",
+    "sha256": "55edd05dc1fa9ecfab20b213c94f198b1ee4b11c3ee311675fe347c634eddf80",
+    "bytes": 3335
+  },
+  {
+    "path": "Failed/import-api-compile-excerpt.txt",
+    "sha256": "ca54663cbd1aa70dcd151645fc8672ee4d923cc981e3372e7332368262108cdd",
+    "bytes": 2095
+  },
+  {
+    "path": "Failed/initial-polar-distortion.png",
+    "sha256": "82b3cdaaa7c8fe7a16cda266dff14167c1e563de3a0c75e28f6165acf0235d3f",
+    "bytes": 1241960
+  },
+  {
+    "path": "Failed/initial-sky-capture-manifest.json",
+    "sha256": "309b010ae2bfe2a416c2336ce166a74480cdce8d45e1613116932285623c1179",
+    "bytes": 4138
+  },
+  {
+    "path": "Final/04-window-array.png",
+    "sha256": "787494d6ed823e5f8713bb6b9892f1e8cc29c902d4427cd03f0b8980d3ae7743",
+    "bytes": 1029386
+  },
+  {
+    "path": "Final/05-service-yard-array.png",
+    "sha256": "df1e61afcde5d01379fd41fe6a2811174cb2f640ce2e93d64a0a5fd0274ce5dd",
+    "bytes": 1081946
+  },
+  {
+    "path": "Final/sky-heading-000.png",
+    "sha256": "4046427a33663a17aac61c7bd77ab1da6121d45408d8e6d35e7342f0b9a3512e",
+    "bytes": 1042492
+  },
+  {
+    "path": "Final/sky-heading-090.png",
+    "sha256": "9d2023a577f53604ac293f8155b3308550ebaae81c7e4e6937dd8ded15fa29f1",
+    "bytes": 1007170
+  },
+  {
+    "path": "Final/sky-heading-180.png",
+    "sha256": "20e6427b0c2cc137e3d0ae6b1794feeff7379c55c66d252ef02ebcc5a06a470a",
+    "bytes": 1077729
+  },
+  {
+    "path": "Final/sky-heading-270.png",
+    "sha256": "4fcfbff3061f199ea7456d5fa058bf4ff1f372f3c5c25d465b624d24b22cd7c7",
+    "bytes": 1027299
+  },
+  {
+    "path": "Final/sky-seam-left.png",
+    "sha256": "214821d8bfbf881588d04c3ecb6935f15111189ed5cce33d251592982037f28b",
+    "bytes": 1087420
+  },
+  {
+    "path": "Final/sky-seam-right.png",
+    "sha256": "963cfc8f32ad3388e69a85286c2ffea9605a2bea61c652ab14619ee29394ddbd",
+    "bytes": 1084416
+  },
+  {
+    "path": "Final/sky-zenith.png",
+    "sha256": "b92afccf5b3c71c15d5bb8958e252b0c9ded8e6641e96e6e2868802862a0a2ac",
+    "bytes": 1106888
+  },
+  {
+    "path": "README.md",
+    "sha256": "1855bce8215b61ce6ca04d257bd5972054a01f8a3c2695805c332d0fe262e307",
+    "bytes": 3421
+  },
+  {
+    "path": "archive.sha256",
+    "sha256": "2d395050d0b7ff6c4b1de89f13c755350fd67df19147b25bfcbd8e8cccca5a01",
+    "bytes": 112
+  },
+  {
+    "path": "build-id.txt",
+    "sha256": "20be52baa7ec70e8e758b47e63ddd82706dd09a0fde2b0efee5112a521255b10",
+    "bytes": 133
+  },
+  {
+    "path": "build-manifest.json",
+    "sha256": "c4871b4e837b4981f79c02fe8dae98b8d75a31b8049a09e82e030bef7a762eee",
+    "bytes": 539
+  },
+  {
+    "path": "content-verification.json",
+    "sha256": "abcb4f5c5576ee3211d2f38cecb1f7b17b51d7ce51a9e097615a99fda21dd184",
+    "bytes": 1686
+  },
+  {
+    "path": "package-manifest.json",
+    "sha256": "ba862bf8d719a5339fc075f345b19e45d154439e605e638c022b6c0e44e9006e",
+    "bytes": 38323
+  },
+  {
+    "path": "preserved-baseline.json",
+    "sha256": "a89bc8abc0e20578e5b46164cc59614bd5e1401a5a9b1608ada3b85ef092f518",
+    "bytes": 318
+  },
+  {
+    "path": "repository-visibility.json",
+    "sha256": "d7592e3c30043b271bfbcb0d7c9e7af9866fab5458928cae855beb96bb68959c",
+    "bytes": 319
+  },
+  {
+    "path": "scene-change.diff",
+    "sha256": "7dc2cdbfb8a688ccd19e0f5230bfdecd4e392bd4f5c2c983c6823f3073382f0e",
+    "bytes": 918
+  },
+  {
+    "path": "screen-lock-preflight.json",
+    "sha256": "bdeb963ee951861d22787de781bd8b76a5b955ea11f9555fea9c33b8c3f259bc",
+    "bytes": 319
+  },
+  {
+    "path": "sky-capture-manifest.json",
+    "sha256": "67247a83f872abb31ba6be0a1afbfcd367484d55039e139dd06626d50058d9b8",
+    "bytes": 4151
+  },
+  {
+    "path": "sky-player.log",
+    "sha256": "cadf1136df19b19028a4cd4a9527f141f3ee557622e4a3b09726083b29e63f92",
+    "bytes": 10375
+  },
+  {
+    "path": "sky-source-provenance.json",
+    "sha256": "77ef02bf83f7c5b320509b9d7ee75a84f0f70ac5555252b129fcd6a369d24df4",
+    "bytes": 1160
+  },
+  {
+    "path": "unity-build-excerpt.txt",
+    "sha256": "019f8968d9f28aac7c30df426c1a0e66f47718466dfd9c693fc6e9f1c73711a6",
+    "bytes": 537
+  },
+  {
+    "path": "verification.json",
+    "sha256": "9c3d6bc5e4d94f292eba3601dec0699457482ce4b385a05759d69b311fd7c42c",
+    "bytes": 7092
+  },
+  {
+    "path": "verified-files.json",
+    "sha256": "0310e0a9221fceeebf74efad5bb7f355a79454c9bfa4564f6a90e991ec50222b",
+    "bytes": 37764
+  },
+  {
+    "path": "world-capture-manifest.json",
+    "sha256": "8703b7445b2be6145aaa8a88b94310150ed40e505182c2de232349315e77d96a",
+    "bytes": 3303
+  },
+  {
+    "path": "world-player.log",
+    "sha256": "ced199460650c758d3b25c67c056055baea56830bb49f53cd6ab0b5334ac2fb3",
+    "bytes": 10369
+  }
+]

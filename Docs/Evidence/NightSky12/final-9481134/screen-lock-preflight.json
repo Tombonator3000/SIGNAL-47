@@ -1,0 +1,8 @@
+{
+  "outcome": "PASS",
+  "scope": "Expected refusal on an actually locked KDE desktop; not a gameplay test.",
+  "returncode": 1,
+  "noPlayerLaunched": true,
+  "existingTelemetryUnchanged": true,
+  "diagnostic": "AssertionError: Kubuntu screen is locked; unlock the desktop before native game testing. No input sent."
+}

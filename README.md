@@ -2,6 +2,8 @@
 
 Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
+Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel og publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
+
 ## Spill på Kubuntu
 
 Start `./Spill-SIGNAL47.sh` i denne prosjektmappen. Startfilen peker fast på kapittelpakken `Artifacts/Releases/Visual10-eb0748660027/`, slik at et senere utviklingsbygg ikke endrer hva du åpner.
