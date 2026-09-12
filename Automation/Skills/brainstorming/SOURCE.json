@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/obra/superpowers",
+  "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+  "path": "skills/brainstorming",
+  "license_url": "https://raw.githubusercontent.com/obra/superpowers/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/LICENSE",
+  "license_sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+  "scope": "Locally adapted 2026-09-13 at user request: remove redundant approval/terminal-skill gates and preserve complete authorized delivery. Upstream provenance and MIT license retained; installed SKILL.md is no longer the unmodified upstream version.",
+  "upstream_skill_sha256": "74edf03ea6d24ef53db48677b93558d14a979bdf052ca3f57ecdca0c66791608",
+  "installed_skill_sha256": "882dd75aa11138cc7a3924769782ea4881796d8b2fbaf400dd78a7e97d6da5eb"
+}

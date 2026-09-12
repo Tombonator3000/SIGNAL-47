@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Production"
+  short_description: "Fra spillidé til testet og gjennomført leveranse"
+  default_prompt: "Bruk $game-production til å videreføre prosjektet med tydelig ramme, gjennomført uttrykk og et testet neste steg."

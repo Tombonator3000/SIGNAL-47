@@ -1,0 +1,15 @@
+splat-transform v3.4.2 (0cb47cd)
+▸ [2/2] Output preview.webp
+  · 784 gaussians · 0 SH bands
+  ▸ Render
+    · Detecting GPU adapters...
+Warning: maxDynamicUniformBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+Warning: maxDynamicStorageBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+Warning: maxDynamicUniformBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+Warning: maxDynamicStorageBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+    · 640x480 fov 60°
+    ▸ Cull
+    ▸ rasterizing [####################] 0.035s
+    ▸ Encoding
+    · preview.webp (21.6KB)
+done in 0.247s  [peak cpu=189.9MB gpu=45.7MB]

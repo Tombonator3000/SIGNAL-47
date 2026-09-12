@@ -1,0 +1,24 @@
+{
+    "format": "ply",
+    "gaussian": true,
+    "numGaussians": 784,
+    "numLods": 1,
+    "lodCounts": [784],
+    "shBands": 0,
+    "model": "default",
+    "layers": ["position", "geometric", "color", "other"],
+    "extraColumns": [
+        {
+            "name": "nx",
+            "type": "float32"
+        },
+        {
+            "name": "ny",
+            "type": "float32"
+        },
+        {
+            "name": "nz",
+            "type": "float32"
+        }
+    ]
+}

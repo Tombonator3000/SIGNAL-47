@@ -1,0 +1,4 @@
+interface:
+  display_name: "Universal Gauntlet"
+  short_description: "Bygg, inspiser og verifiser en fungerende leveranse"
+  default_prompt: "Bruk $gauntlet-loop på dette prosjektet og fullfør neste avgrensede, verifiserbare byggetrinn."

@@ -34,6 +34,6 @@ On tested Blender 4.5.13, the dedicated missing-files summary fails because `bpy
 
 The server executes Python with the process's file/network permissions. The weak sandbox and subprocess timeouts are not OS isolation. Use reviewed code, scoped output paths and copies of important files. Keep local stdio as the default; an HTTP listener is unnecessary for saved-file work.
 
-CLI execution is limited to 120 seconds in the reviewed server. Use smaller previews or the existing Blender batch pipeline for long renders; do not launch indefinite retries. Stop and inspect the exception before retrying a mutation, checking whether its output already exists.
+CLI execution is limited to 120 seconds in the reviewed server. Use smaller previews or the existing Blender batch pipeline for long renders; do not launch indefinite retries. Inspect the exception and existing outputs before retrying a mutation. This is a diagnostic checkpoint: resolve the cause or use a verified alternative route and continue the authorized task. A failed helper does not make every Blender operation unavailable.
 
 Preserve upstream license notices if copying or redistributing its code. Keep the external tool installation separate from game runtime code and independently record the provenance of generated or imported assets. No external model purchase, desktop unlock, global configuration rewrite or benchmark agent run is implied by invoking this skill.

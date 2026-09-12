@@ -1,0 +1,230 @@
+{
+  "scope": "synthetic format/renderer/collision probe; no Unity integration or FPS test",
+  "expected_count": 784,
+  "runs": [
+    {
+      "label": "version",
+      "arguments": [
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.09
+    },
+    {
+      "label": "gpu-list",
+      "arguments": [
+        "--list-gpus"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.107
+    },
+    {
+      "label": "source-info",
+      "arguments": [
+        "fixture.ply",
+        "--info",
+        "json",
+        "null"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.079
+    },
+    {
+      "label": "compress-cpu",
+      "arguments": [
+        "-g",
+        "cpu",
+        "fixture.ply",
+        "fixture.sog"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.462
+    },
+    {
+      "label": "decompress",
+      "arguments": [
+        "fixture.sog",
+        "roundtrip.ply"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.104
+    },
+    {
+      "label": "splat-glb",
+      "arguments": [
+        "fixture.ply",
+        "fixture.glb"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.098
+    },
+    {
+      "label": "collision",
+      "arguments": [
+        "-g",
+        "0",
+        "fixture.ply",
+        "--voxel-size",
+        "0.1",
+        "--voxel-opacity",
+        "0.3",
+        "--collision-mesh",
+        "faces",
+        "fixture.voxel.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.285
+    },
+    {
+      "label": "render",
+      "arguments": [
+        "-g",
+        "0",
+        "fixture.sog",
+        "--camera-pos",
+        "2,1.7,-2",
+        "--camera-target",
+        "0,0.25,0",
+        "--resolution",
+        "640x480",
+        "--background",
+        "0.035,0.045,0.065",
+        "preview.webp"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.442
+    }
+  ],
+  "checks": {
+    "roundtrip": true,
+    "splat_extension": true,
+    "triangle_collision": true
+  },
+  "roundtrip": {
+    "source_count": 784,
+    "output_count": 784,
+    "finite_values": true,
+    "max_position_error_m": 5.327361651777006e-05,
+    "tolerance_m": 0.001
+  },
+  "splat_glb": {
+    "extensions_used": [
+      "KHR_gaussian_splatting"
+    ],
+    "extensions_required": [],
+    "primitives": 1,
+    "modes": [
+      0
+    ],
+    "indexed_triangles": 0
+  },
+  "collision_glb": {
+    "extensions_used": [],
+    "extensions_required": [],
+    "primitives": 1,
+    "modes": [
+      4
+    ],
+    "indexed_triangles": 537
+  },
+  "files": {
+    "collision.stderr.txt": {
+      "bytes": 1314,
+      "sha256": "f48c3edeb2665b64b30262e793c84aead11bad947aabdd89001476debe73aea1"
+    },
+    "collision.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compress-cpu.stderr.txt": {
+      "bytes": 172,
+      "sha256": "977d0ca1006c63fdd66f44b795aaa4782f69dd3736c24848bea0014c8a1531fd"
+    },
+    "compress-cpu.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "decompress.stderr.txt": {
+      "bytes": 175,
+      "sha256": "8681802bc1e97e34126406ab2458b99276c2ac121bb08487dc637bdb8de84599"
+    },
+    "decompress.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fixture.collision.glb": {
+      "bytes": 10592,
+      "sha256": "745b4a3381e6ff1dd5d6f487d1e43eadcbcdafb26e2625bcee93030de50952fd"
+    },
+    "fixture.glb": {
+      "bytes": 48692,
+      "sha256": "8c39967ac60ea8cad8b040c2746feac6f59bb173084bf646615245cd50384c9c"
+    },
+    "fixture.ply": {
+      "bytes": 53788,
+      "sha256": "f12c1a5a8072438054b3f6c43d4f834321f42e5d9caa61185745c9b2124bdc4f"
+    },
+    "fixture.sog": {
+      "bytes": 13870,
+      "sha256": "49755de8bac1f33b3fc8ecfc535f28e7bb805c5aa4bda5d8b6076a0e1181b9f6"
+    },
+    "fixture.voxel.bin": {
+      "bytes": 1340,
+      "sha256": "531b5c99b94e7fbbcd16753d61c6d50024d0413e14d4fa3c4cf4a7714cbbf07f"
+    },
+    "fixture.voxel.json": {
+      "bytes": 662,
+      "sha256": "21c4d0469df7166aac90639180aed34de2b4a959f5b6876c87f4475cafa5b240"
+    },
+    "gpu-list.stderr.txt": {
+      "bytes": 406,
+      "sha256": "54c43b295ccd1cc7484f4b881f316467a2844036c382ad7fb60517448c84388d"
+    },
+    "gpu-list.stdout.txt": {
+      "bytes": 65,
+      "sha256": "a63b189beb3dc6c6040bedaf5ad9af5ce1022e430042f3f6d26052ec25caa509"
+    },
+    "preview.webp": {
+      "bytes": 17334,
+      "sha256": "9a954cbd062a4828653354f03d70609d34b66f79a7ca2d3b1eb91aaf919cd6cc"
+    },
+    "render.stderr.txt": {
+      "bytes": 841,
+      "sha256": "5cc03c0617ef0026d15898f995c127d1a3fd0fdda846e671c206a1c9df8ddfb6"
+    },
+    "render.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "roundtrip.ply": {
+      "bytes": 44263,
+      "sha256": "0d5c9161ca7f17220e18506df1a18a148d3be466178ae746e2bf3d5c493b3bbc"
+    },
+    "source-info.stderr.txt": {
+      "bytes": 122,
+      "sha256": "4e05cdccfe62cc9e98679c286c570a28b8da8d4a3a797629fce1c9fad85a65f2"
+    },
+    "source-info.stdout.txt": {
+      "bytes": 473,
+      "sha256": "ec843126c78818872b94de71961447554fb3e2e7108beff8bf10ed1269a56fe9"
+    },
+    "splat-glb.stderr.txt": {
+      "bytes": 171,
+      "sha256": "be06c468ed94461f04fd2e240e4dc218c6a947fd169ed8213252abe344f38cb7"
+    },
+    "splat-glb.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "version.stderr.txt": {
+      "bytes": 33,
+      "sha256": "7720aec0a120fee8a38d04b972a06996862a93eeec6a4b156e086541433e919a"
+    },
+    "version.stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "all_commands_succeeded": true,
+  "automated_checks_passed": true
+}
