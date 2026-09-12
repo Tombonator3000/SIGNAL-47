@@ -32,7 +32,7 @@ Brukeren ba 12. september om å fortsette. Designbibelens trestedsramme brukes s
 
 [P04/P05-papirprøven](Menu14/PAPER_CASE.md) har kildekort, diagram, fasit og dokumentert egenkontroll. Vedlikeholdskortets for tidlige avsløring er rettet i prøveteksten. Dette er ikke en bestått blindtest; M1 og 5–6-timersmålet er fortsatt åpne. Den eldre designbibel-PDF-en er bevart som v0.1.
 
-28 API-styrte kontroller består i faktisk Unity-spiller og gjennom launcher etter utpakking. De inkluderer feil, avbryt, faktisk scenelasting av en tidligere fullført v1-sak og dekoding av to originale foto med identiske bytes. Originale menyskjermer er inspisert. Ingen nye native tastatur-/musforsøk eller ytelsesmålinger er utført. Menu14 er en separat testkandidat; Visual10 er fortsatt standardstarteren. Se [verifikasjon og pakkeidentitet](Menu14/Evidence/verification.json). Arbeidet ligger lokalt på `gauntlet/menu-14`; ingen ny push, PR eller merge er gjort i dette passet.
+28 API-styrte kontroller består i faktisk Unity-spiller og gjennom launcher etter utpakking. De inkluderer feil, avbryt, faktisk scenelasting av en tidligere fullført v1-sak og dekoding av to originale foto med identiske bytes. Originale menyskjermer er inspisert. Ingen nye native tastatur-/musforsøk eller ytelsesmålinger er utført. Menu14 er en separat testkandidat; Visual10 er fortsatt standardstarteren. Se [verifikasjon og pakkeidentitet](Menu14/Evidence/verification.json). Arbeidet er samlet på `gauntlet/menu-14`. Brukeren ba 12. september uttrykkelig om «Fortsett, merge»; publisering og fletting av denne grenen, inkludert designbibelen, er nå autorisert. Faktisk PR-/merge-resultat registreres etter GitHub-bekreftelse. Dette endrer ikke testkandidatstatus eller standardstarter.
 
 ## Fortsett her
 
