@@ -1,0 +1,119 @@
+{
+  "recorded_utc": "2026-09-12T19:12:58.012349+00:00",
+  "scope": "Standalone P04 document interaction study, not the main game or full K2",
+  "baseline": "51752367a591ba6a900b7006e6efa8a1af5813e4",
+  "build": {
+    "base_revision": "51752367a591ba6a900b7006e6efa8a1af5813e4",
+    "working_tree_changes": true,
+    "unity_source_sha256": "4748e9d2fc14d6e3cb6755fa5467990245277fb496d18c9d10145217af2c1a8f",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "fa0518b6b87c22dffe9f6c85c3082c3186d1b6c42a65838790f61c21c6d682b5",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Archive16-4748e9d2fc14",
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Archive16-4748e9d2fc14",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Archive16-4748e9d2fc14-Linux.tar.gz",
+    "archive_sha256": "d594614cffc171c18a2d5e76c593c8123fced09764da337df4336729f9e157ec",
+    "package_payload_sha256": "0c1bbe834bad382e95f2c07e2beda4aea44c6f9f0ca8956bba1cda07c984a931",
+    "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Archive16-4748e9d2fc14/Start-SIGNAL47.sh",
+    "candidate": true
+  },
+  "tested_launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Archive16/unpacked-_ln7pz8p/Archive16-4748e9d2fc14/Start-SIGNAL47.sh",
+  "checks": 18,
+  "gates": {
+    "blender_export_roundtrip_bounds": "PASS",
+    "blender_authoring_render_inspection": "PASS",
+    "unity_import_world_bounds": "PASS",
+    "unity_linux_build": "PASS",
+    "API_interaction_and_wrong_answer_retry": "PASS",
+    "unpacked_launcher_API_suite": "PASS",
+    "eight_original_runtime_states_1280x800": "PASS",
+    "archive_bytes_paths_and_executable_permissions": "PASS",
+    "main_scene_settings_and_default_launcher_preserved": "PASS",
+    "native_input_and_keyboard_focus": "UNVERIFIED",
+    "performance": "UNVERIFIED",
+    "other_resolutions": "UNVERIFIED",
+    "M1_blind_comprehension_and_K2_duration": "UNVERIFIED",
+    "main_game_persistence": "N/A: no save or GameSession component in standalone scene",
+    "P05_negative_and_area_transition": "NOT_IMPLEMENTED"
+  },
+  "review": "self-review; no independent reviewer or reader",
+  "evidence_files": [
+    {
+      "file": "01-desk.png",
+      "bytes": 958981,
+      "sha256": "57b45d7391f7c4f4d1dea78238e7d5ba5112758c1e98cd67918d8d7269d211c3"
+    },
+    {
+      "file": "02-room.png",
+      "bytes": 1075777,
+      "sha256": "4871665caba364e20b773b1d9ce8373e8eb697e444ce43a9c79b354672604d94"
+    },
+    {
+      "file": "03-original.png",
+      "bytes": 144107,
+      "sha256": "9a7c1f1a7316dab5101eb61a2b7bfcacfd63ed0bd0b3088a4c00e0c0107848d1"
+    },
+    {
+      "file": "04-amended.png",
+      "bytes": 125078,
+      "sha256": "db4511317d25d83f9d610226403141c758e843be72a12a8e3f76a5b1071aa63e"
+    },
+    {
+      "file": "05-comparison.png",
+      "bytes": 161757,
+      "sha256": "ee4991a369b9d9c4dbdfdfe47d1984b7320a1b427c7870d2eb589f54b91d89aa"
+    },
+    {
+      "file": "06-unsupported.png",
+      "bytes": 169705,
+      "sha256": "5a9c92696408413c6bdd0eb0e6115e0c942f98393786d080ae11f44b1d09efb5"
+    },
+    {
+      "file": "07-supported.png",
+      "bytes": 179469,
+      "sha256": "6e35f0252e02e8064af92efafb209e37268991a0b6fe9e43b443fd5ed7f19ffd"
+    },
+    {
+      "file": "08-complete-desk.png",
+      "bytes": 960980,
+      "sha256": "7ddc92f08e3e31ae07187b4d3d44e78f03d8329190962898b51e8f262a3c2f8a"
+    },
+    {
+      "file": "before-desk.png",
+      "bytes": 1094173,
+      "sha256": "ace9b7e0fa13923e795cef63182948fca62bb4f02971226a75e7baed3bf86c9a"
+    },
+    {
+      "file": "build-manifest.json",
+      "bytes": 539,
+      "sha256": "8a418e99f9e74a7100840b25f54c09ac17d2cce5ac0ead7c7a4f596b854b4596"
+    },
+    {
+      "file": "direct-result.json",
+      "bytes": 1345,
+      "sha256": "360c40bf86bf27e611548dcbe3fa2ab81c22d3e245439cdf2c67b944ed45320c"
+    },
+    {
+      "file": "extraction.json",
+      "bytes": 739,
+      "sha256": "6639458b8c3863eb38a63bec67ece48462b206fba4e860f1d5549ead1a0bbba0"
+    },
+    {
+      "file": "folio-authoring.png",
+      "bytes": 339064,
+      "sha256": "779ae38fb3eb5754c104aeca8c14c07fe53aac25d03e856bc167f16d24c55976"
+    },
+    {
+      "file": "result.json",
+      "bytes": 1345,
+      "sha256": "360c40bf86bf27e611548dcbe3fa2ab81c22d3e245439cdf2c67b944ed45320c"
+    },
+    {
+      "file": "unity-folio-bounds.json",
+      "bytes": 255,
+      "sha256": "e997f096769f0406c38b1300cb55a9abc3e55a11719effd807abbf00a7de4f38"
+    }
+  ]
+}

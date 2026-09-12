@@ -1,0 +1,14 @@
+{
+  "source": "Unity/Blender/SIGNAL47_archive16_folio.blend",
+  "recipe": "Unity/Blender/Source/archive16_folio.py",
+  "blender": "4.5.13 LTS",
+  "authored_original": true,
+  "units": "metres",
+  "dimensions_blender_xyz": [
+    0.46000000834465027,
+    0.369499996304512,
+    0.01600000075995922
+  ],
+  "triangles": 1080,
+  "fbx_roundtrip_bounds": "PASS"
+}

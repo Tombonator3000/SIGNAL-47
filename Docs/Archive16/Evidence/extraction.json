@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Archive16-4748e9d2fc14-Linux.tar.gz",
+  "archive_sha256": "d594614cffc171c18a2d5e76c593c8123fced09764da337df4336729f9e157ec",
+  "extracted": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Archive16/unpacked-_ln7pz8p/Archive16-4748e9d2fc14",
+  "files": 171,
+  "payload_sha256": "0c1bbe834bad382e95f2c07e2beda4aea44c6f9f0ca8956bba1cda07c984a931",
+  "method": "Safe data-filter extraction; exact file paths/bytes/hash and stored file modes verified; launcher/player executable. Data filter may normalize write permissions."
+}
