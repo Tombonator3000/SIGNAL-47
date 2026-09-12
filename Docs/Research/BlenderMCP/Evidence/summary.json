@@ -1,0 +1,28 @@
+{
+  "checks": {
+    "datablocks": true,
+    "audit-before": true,
+    "checkpoint": true,
+    "audit-reopened": true,
+    "geometry_preserved_after_reopen": true,
+    "reject-existing-output": true,
+    "render-cpu": true,
+    "source_and_original_unchanged": true,
+    "png_created": true,
+    "runtime_fbx_lookup_returns_unsupported": true,
+    "missing_files_tool_failure_reproduced": true
+  },
+  "original": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Unity/Blender/SIGNAL47_workstation18.blend",
+  "original_sha256": "8f8003b54605691ba2403187106fea45be8962d9dfa3305a1846a5476541eca8",
+  "checkpoint_sha256": "5450164444236c05acd700936f01d4a69ae80edf7ed562c74aee3f7cc1f4fdaa",
+  "render_sha256": "2b90ea79ca8012f0ba8db3ebae45744f0b30b0d1345815f88ce858d82a20b5ee",
+  "mesh_count": 13,
+  "total_triangles": 31732,
+  "blender_version": "4.5.13 LTS",
+  "native_ui": "UNVERIFIED",
+  "unity_integration": "not changed",
+  "limitations": {
+    "missing_files_tool": "FAIL on Blender 4.5.13: missing file_path_foreach; fallback tested separately",
+    "runtime_fbx_operator_docs": "UNSUPPORTED on Blender 4.5.13; explicit RNA fallback tested separately"
+  }
+}

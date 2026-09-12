@@ -1,5 +1,15 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Nyeste verktøypass: Blender MCP-skill
+
+12. september 2026: Brukeren ba om analyse av bpy-dev/blender-mcp og en gjenbrukbar skill. [Vurdering og testresultater](Research/BlenderMCP/README.md) dokumenterer faktisk MCP/stdio-kjøring med eksisterende Blender 4.5.13. `$blender-mcp` er lagret lokalt og [sikkerhetskopiert i repoet](../Automation/Skills/blender-mcp/SKILL.md). Serveren er installert i et eget miljø; den medfølgende klienten gjør den brukbar uten global registrering eller skjermopplåsing.
+
+Modellinspeksjon, testlagring/gjenåpning, CPU-render og FBX tur-retur består på kopier av Workstation18. To upstream-API-begrensninger på 4.5.13 har testede alternativer; den utvalgte upstream-testpakken har én feil og sju hoppede tester. Se rapporten før bruk. Dette er et verktøypass, ingen endring av spillinnhold. Dokumentlesbarhet/P04-kobling er fortsatt neste avgrensede spillsteg.
+
+Skill, vurdering og bevis er publisert gjennom [PR14](https://github.com/Tombonator3000/SIGNAL-47/pull/14); GitHub viser gjeldende flettestatus.
+
+PR13 er nå bekreftet MERGED på `af3aba5daf878595acfdff8e8db5f8262c2cef34`. Eldre tekst om å slå opp flettestatus nedenfor er historikk; standardstarter og åpne tester er uendret.
+
 ## Nyeste produksjon: Workstation18
 
 12. september 2026: Brukeren godkjente anbefalingene fra VotV-vurderingen og ba om videreføring. [Workstation18](Workstation18/README.md) erstatter synlig CRT-/tastatur-/stolgeometri på de tre arbeidsplassene i hovedscenen med tre originale Blender-modeller. Levende skjermer, signalprofiler, 154 eksisterende kollisjonskomponenter, to lightmaps og spilloppførsel er bevart. Ni modellinstanser er kontrollert etter Unity-import. Integrasjonscommit `f92db83`; kildehash `ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c`.

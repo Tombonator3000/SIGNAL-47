@@ -1,0 +1,6 @@
+{
+  "live_tool_rejected": true,
+  "existing_output_preserved": true,
+  "live_stderr": "usage: mcp_cli.py [-h] --server SERVER --blender BLENDER [--request REQUEST]\n                  --output OUTPUT\nmcp_cli.py: error: Request must name a saved-file or documentation tool with object arguments\n",
+  "existing_stderr": "usage: mcp_cli.py [-h] --server SERVER --blender BLENDER [--request REQUEST]\n                  --output OUTPUT\nmcp_cli.py: error: Choose fresh result and log paths\n"
+}

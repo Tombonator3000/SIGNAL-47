@@ -1,0 +1,93 @@
+{
+  "timestamp_utc": "2026-09-12T21:37:33.193291+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "execute_blender_code_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-probe.blend",
+      "code": "\nimport bpy, os\nfrom mathutils import Vector\npaths=bpy.utils.blend_paths(absolute=True,packed=False)\nmissing=[p for p in paths if not os.path.exists(p)]\nassert not missing,missing\nfixture=bpy.data.images.new('MCP missing dependency probe',width=1,height=1)\nfixture.source='FILE';fixture.filepath='/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/intentionally-missing.png'\nassert '/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/intentionally-missing.png' in bpy.utils.blend_paths(absolute=True,packed=False)\nassert not os.path.exists('/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/intentionally-missing.png')\nbpy.data.images.remove(fixture)\nproperties=bpy.ops.export_scene.fbx.get_rna_type().properties\napi={name:{'type':properties[name].type,'default':properties[name].default,'enum': [v.identifier for v in properties[name].enum_items] if properties[name].type=='ENUM' else None} for name in ['axis_forward','axis_up','use_selection','apply_unit_scale']}\nassert '-Z' in api['axis_forward']['enum'] and 'Y' in api['axis_up']['enum']\nobjects=[o for o in bpy.context.scene.objects if o.type=='MESH']\ndef metrics(items):\n    bpy.context.view_layer.update()\n    points=[o.matrix_world@Vector(v) for o in items for v in o.bound_box]\n    tris=0\n    for o in items:o.data.calc_loop_triangles();tris+=len(o.data.loop_triangles)\n    return {'meshes':len(items),'triangles':tris,'bounds':[max(v[i] for v in points)-min(v[i] for v in points) for i in range(3)]}\nbefore=metrics(objects)\nbpy.ops.object.select_all(action='DESELECT')\nfor o in objects:o.select_set(True)\nbpy.context.view_layer.objects.active=objects[0]\nbpy.ops.export_scene.fbx(filepath='/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/workstation-probe.fbx',use_selection=True,object_types={'MESH'},add_leaf_bones=False,bake_anim=False,axis_forward='-Z',axis_up='Y',apply_unit_scale=True)\nbpy.ops.wm.read_factory_settings(use_empty=True)\nbpy.ops.import_scene.fbx(filepath='/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/workstation-probe.fbx')\nafter=metrics(list(bpy.context.selected_objects))\nassert before['meshes']==after['meshes'] and before['triangles']==after['triangles']\nassert all(abs(a-b)<1e-5 for a,b in zip(before['bounds'],after['bounds'])),(before,after)\nresult={'dependency_paths':paths,'missing':missing,'injected_missing_image_detected':True,'fbx_api':api,'fbx_before':before,'fbx_after':after,'fbx_roundtrip':'PASS'}\n"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"dependency_paths\": [],\n  \"missing\": [],\n  \"injected_missing_image_detected\": true,\n  \"fbx_api\": {\n    \"axis_forward\": {\n      \"type\": \"ENUM\",\n      \"default\": \"-Z\",\n      \"enum\": [\n        \"X\",\n        \"Y\",\n        \"Z\",\n        \"-X\",\n        \"-Y\",\n        \"-Z\"\n      ]\n    },\n    \"axis_up\": {\n      \"type\": \"ENUM\",\n      \"default\": \"Y\",\n      \"enum\": [\n        \"X\",\n        \"Y\",\n        \"Z\",\n        \"-X\",\n        \"-Y\",\n        \"-Z\"\n      ]\n    },\n    \"use_selection\": {\n      \"type\": \"BOOLEAN\",\n      \"default\": false,\n      \"enum\": null\n    },\n    \"apply_unit_scale\": {\n      \"type\": \"BOOLEAN\",\n      \"default\": true,\n      \"enum\": null\n    }\n  },\n  \"fbx_before\": {\n    \"meshes\": 13,\n    \"triangles\": 31732,\n    \"bounds\": [\n      2.172500193119049,\n      1.4794999063014984,\n      1.831660270690918\n    ]\n  },\n  \"fbx_after\": {\n    \"meshes\": 13,\n    \"triangles\": 31732,\n    \"bounds\": [\n      2.172500193119049,\n      1.4795002043247223,\n      1.8316604197755915\n    ]\n  },\n  \"fbx_roundtrip\": \"PASS\"\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "dependency_paths": [],
+      "missing": [],
+      "injected_missing_image_detected": true,
+      "fbx_api": {
+        "axis_forward": {
+          "type": "ENUM",
+          "default": "-Z",
+          "enum": [
+            "X",
+            "Y",
+            "Z",
+            "-X",
+            "-Y",
+            "-Z"
+          ]
+        },
+        "axis_up": {
+          "type": "ENUM",
+          "default": "Y",
+          "enum": [
+            "X",
+            "Y",
+            "Z",
+            "-X",
+            "-Y",
+            "-Z"
+          ]
+        },
+        "use_selection": {
+          "type": "BOOLEAN",
+          "default": false,
+          "enum": null
+        },
+        "apply_unit_scale": {
+          "type": "BOOLEAN",
+          "default": true,
+          "enum": null
+        }
+      },
+      "fbx_before": {
+        "meshes": 13,
+        "triangles": 31732,
+        "bounds": [
+          2.172500193119049,
+          1.4794999063014984,
+          1.831660270690918
+        ]
+      },
+      "fbx_after": {
+        "meshes": 13,
+        "triangles": 31732,
+        "bounds": [
+          2.172500193119049,
+          1.4795002043247223,
+          1.8316604197755915
+        ]
+      },
+      "fbx_roundtrip": "PASS"
+    },
+    "isError": false
+  }
+}

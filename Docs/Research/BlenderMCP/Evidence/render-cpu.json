@@ -1,0 +1,42 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:18.581093+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "execute_blender_code_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-probe.blend",
+      "code": "\nimport bpy\ns=bpy.context.scene\ns.render.engine='CYCLES';s.cycles.device='CPU';s.cycles.samples=16\ns.render.resolution_x=640;s.render.resolution_y=400;s.render.resolution_percentage=100\ns.render.image_settings.file_format='PNG'\ns.render.filepath='/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-cpu.png'\nbpy.ops.render.render(write_still=True)\nresult={'rendered':True,'engine':s.render.engine,'device':s.cycles.device,'resolution':[640,400]}\n"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"rendered\": true,\n  \"engine\": \"CYCLES\",\n  \"device\": \"CPU\",\n  \"resolution\": [\n    640,\n    400\n  ]\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "rendered": true,
+      "engine": "CYCLES",
+      "device": "CPU",
+      "resolution": [
+        640,
+        400
+      ]
+    },
+    "isError": false
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:14.998664+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "execute_blender_code_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-probe.blend",
+      "code": "\nimport bpy\nrows=[]\nfor o in bpy.context.scene.objects:\n    if o.type!='MESH': continue\n    mesh=o.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh()\n    mesh.calc_loop_triangles()\n    rows.append({'name':o.name,'triangles':len(mesh.loop_triangles),'uv_layers':len(mesh.uv_layers),'dimensions':list(o.dimensions),'materials':len(o.material_slots)})\n    o.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh_clear()\nresult={'version':bpy.app.version_string,'meshes':rows,'total_triangles':sum(x['triangles'] for x in rows),'engine':bpy.context.scene.render.engine,'probe':bpy.context.scene.get('signal47_mcp_probe')}\n"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"version\": \"4.5.13 LTS\",\n  \"meshes\": [\n    {\n      \"name\": \"CRT_Cream\",\n      \"triangles\": 1128,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        1.0921385288238525,\n        0.8240000009536743,\n        0.9641603231430054\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"CRT_Dark\",\n      \"triangles\": 3384,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.9300000667572021,\n        0.8140000104904175,\n        0.8709999918937683\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"CRT_Steel\",\n      \"triangles\": 2080,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.8040001392364502,\n        0.6419999599456787,\n        0.8395000100135803\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"CRT_Key\",\n      \"triangles\": 564,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.1889999806880951,\n        0.003000000026077032,\n        0.017999999225139618\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"CRT_Amber\",\n      \"triangles\": 188,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.01600000075995922,\n        0.007000000216066837,\n        0.009999999776482582\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Keyboard_Steel\",\n      \"triangles\": 188,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        1.1200000047683716,\n        0.7300000190734863,\n        0.04399999976158142\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Keyboard_Dark\",\n      \"triangles\": 1136,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        1.1200001239776611,\n        0.9129999876022339,\n        0.20530833303928375\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Keyboard_Cream\",\n      \"triangles\": 3196,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        1.0149999856948853,\n        0.4399999976158142,\n        0.10899999737739563\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Keyboard_Key\",\n      \"triangles\": 8460,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.6720000505447388,\n        0.32399997115135193,\n        0.032999999821186066\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Keyboard_Amber\",\n      \"triangles\": 564,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.1379999816417694,\n        0.014000000432133675,\n        0.004999999888241291\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Chair_Steel\",\n      \"triangles\": 3196,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.7932289838790894,\n        0.7006983160972595,\n        1.007946491241455\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Chair_Dark\",\n      \"triangles\": 7272,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.8250000476837158,\n        0.7914229035377502,\n        1.25\n      ],\n      \"materials\": 1\n    },\n    {\n      \"name\": \"Chair_Fabric\",\n      \"triangles\": 376,\n      \"uv_layers\": 1,\n      \"dimensions\": [\n        0.6200000047683716,\n        0.6330000162124634,\n        0.718000054359436\n      ],\n      \"materials\": 1\n    }\n  ],\n  \"total_triangles\": 31732,\n  \"engine\": \"CYCLES\",\n  \"probe\": \"verified-saved-file-route\"\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "version": "4.5.13 LTS",
+      "meshes": [
+        {
+          "name": "CRT_Cream",
+          "triangles": 1128,
+          "uv_layers": 1,
+          "dimensions": [
+            1.0921385288238525,
+            0.8240000009536743,
+            0.9641603231430054
+          ],
+          "materials": 1
+        },
+        {
+          "name": "CRT_Dark",
+          "triangles": 3384,
+          "uv_layers": 1,
+          "dimensions": [
+            0.9300000667572021,
+            0.8140000104904175,
+            0.8709999918937683
+          ],
+          "materials": 1
+        },
+        {
+          "name": "CRT_Steel",
+          "triangles": 2080,
+          "uv_layers": 1,
+          "dimensions": [
+            0.8040001392364502,
+            0.6419999599456787,
+            0.8395000100135803
+          ],
+          "materials": 1
+        },
+        {
+          "name": "CRT_Key",
+          "triangles": 564,
+          "uv_layers": 1,
+          "dimensions": [
+            0.1889999806880951,
+            0.003000000026077032,
+            0.017999999225139618
+          ],
+          "materials": 1
+        },
+        {
+          "name": "CRT_Amber",
+          "triangles": 188,
+          "uv_layers": 1,
+          "dimensions": [
+            0.01600000075995922,
+            0.007000000216066837,
+            0.009999999776482582
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Keyboard_Steel",
+          "triangles": 188,
+          "uv_layers": 1,
+          "dimensions": [
+            1.1200000047683716,
+            0.7300000190734863,
+            0.04399999976158142
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Keyboard_Dark",
+          "triangles": 1136,
+          "uv_layers": 1,
+          "dimensions": [
+            1.1200001239776611,
+            0.9129999876022339,
+            0.20530833303928375
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Keyboard_Cream",
+          "triangles": 3196,
+          "uv_layers": 1,
+          "dimensions": [
+            1.0149999856948853,
+            0.4399999976158142,
+            0.10899999737739563
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Keyboard_Key",
+          "triangles": 8460,
+          "uv_layers": 1,
+          "dimensions": [
+            0.6720000505447388,
+            0.32399997115135193,
+            0.032999999821186066
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Keyboard_Amber",
+          "triangles": 564,
+          "uv_layers": 1,
+          "dimensions": [
+            0.1379999816417694,
+            0.014000000432133675,
+            0.004999999888241291
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Chair_Steel",
+          "triangles": 3196,
+          "uv_layers": 1,
+          "dimensions": [
+            0.7932289838790894,
+            0.7006983160972595,
+            1.007946491241455
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Chair_Dark",
+          "triangles": 7272,
+          "uv_layers": 1,
+          "dimensions": [
+            0.8250000476837158,
+            0.7914229035377502,
+            1.25
+          ],
+          "materials": 1
+        },
+        {
+          "name": "Chair_Fabric",
+          "triangles": 376,
+          "uv_layers": 1,
+          "dimensions": [
+            0.6200000047683716,
+            0.6330000162124634,
+            0.718000054359436
+          ],
+          "materials": 1
+        }
+      ],
+      "total_triangles": 31732,
+      "engine": "CYCLES",
+      "probe": "verified-saved-file-route"
+    },
+    "isError": false
+  }
+}

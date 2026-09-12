@@ -1,0 +1,45 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:41.492711+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "get_runtime_python_api_docs_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-source.blend",
+      "identifier": "bpy.utils.blend_paths"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"found\": true,\n  \"identifier\": \"bpy.utils.blend_paths\",\n  \"runtime\": {\n    \"blender\": \"4.5.13\",\n    \"python\": \"3.11.15\"\n  },\n  \"kind\": \"function\",\n  \"signature\": \"bpy.utils.blend_paths(...)\",\n  \"description\": \".. function:: blend_paths(absolute=False, packed=False, local=False)\",\n  \"truncated\": false\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "found": true,
+      "identifier": "bpy.utils.blend_paths",
+      "runtime": {
+        "blender": "4.5.13",
+        "python": "3.11.15"
+      },
+      "kind": "function",
+      "signature": "bpy.utils.blend_paths(...)",
+      "description": ".. function:: blend_paths(absolute=False, packed=False, local=False)",
+      "truncated": false
+    },
+    "isError": false
+  }
+}

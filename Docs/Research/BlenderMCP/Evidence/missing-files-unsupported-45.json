@@ -1,0 +1,33 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:10.886898+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "get_blendfile_summary_missing_files_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-source.blend"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "Error executing tool get_blendfile_summary_missing_files_for_cli: Blender error: 'BlendData' object has no attribute 'file_path_foreach'",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": null,
+    "isError": true
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blender MCP"
+  short_description: "Inspect and refine Blender assets with verified MCP"
+  default_prompt: "Use $blender-mcp to inspect and refine the project’s Blender assets, then verify saved outputs."
