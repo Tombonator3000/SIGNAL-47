@@ -1,0 +1,11 @@
+{
+  "checked_on": "2026-09-12",
+  "source": "https://github.com/TeradaSeqo/Font-Votv-Pixelated/blob/223df554a1513a1b349705a245d883e1f82e1282/VotVPixelated-Regular.otf",
+  "file": "VotVPixelated-Regular.otf",
+  "sha256": "95488902b3dd9d8a48229dd992a1e7ae34bfae50a8d07418a5493b59e4599809",
+  "method": "fc-query charset; character coverage only, no Unity rendering test",
+  "charset": "20-23 25 27-3f 41-5b 5d-7e a0",
+  "tested_characters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÆØÅæøå−–—…°$&@\\",
+  "missing_characters": "ÆØÅæøå−–—…°$&@\\",
+  "font_imported_into_game": false
+}

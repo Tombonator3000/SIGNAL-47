@@ -1,0 +1,88 @@
+[
+  {
+    "repository": "pelmentor/VotvIO",
+    "url": "https://github.com/pelmentor/VotvIO",
+    "default_branch": "main",
+    "head": "5cc1c6c7336c067d33aa3caaedb8241409f42611",
+    "pushed_at": "2026-09-02T03:55:39Z",
+    "github_license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    }
+  },
+  {
+    "repository": "TeradaSeqo/Font-Votv-Pixelated",
+    "url": "https://github.com/TeradaSeqo/Font-Votv-Pixelated",
+    "default_branch": "main",
+    "head": "223df554a1513a1b349705a245d883e1f82e1282",
+    "pushed_at": "2026-08-17T11:29:44Z",
+    "github_license": {
+      "key": "ofl-1.1",
+      "name": "SIL Open Font License 1.1",
+      "spdx_id": "OFL-1.1",
+      "url": "https://api.github.com/licenses/ofl-1.1",
+      "node_id": "MDc6TGljZW5zZTE3"
+    }
+  },
+  {
+    "repository": "Questwalker/votv-map",
+    "url": "https://github.com/Questwalker/votv-map",
+    "default_branch": "main",
+    "head": "0ff2102780755eb98d6d87ed1501d66c6ac46d53",
+    "pushed_at": "2026-08-16T19:06:43Z",
+    "github_license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    }
+  },
+  {
+    "repository": "modestimpala/libvotv",
+    "url": "https://github.com/modestimpala/libvotv",
+    "default_branch": "main",
+    "head": "04bc63b3f98ba32edb064342b034c74d24fe2c81",
+    "pushed_at": "2026-08-23T00:58:30Z",
+    "github_license": null
+  },
+  {
+    "repository": "modestimpala/VotV-RE-UE4SS",
+    "url": "https://github.com/modestimpala/VotV-RE-UE4SS",
+    "default_branch": "main",
+    "head": "dd81a5d3c6a054e2bc0035986a99ab4d4dfbd3f2",
+    "pushed_at": "2026-08-28T06:31:08Z",
+    "github_license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    }
+  },
+  {
+    "repository": "NynrahGhost/VotV_ghostmapping",
+    "url": "https://github.com/NynrahGhost/VotV_ghostmapping",
+    "default_branch": "main",
+    "head": "af2ebfab5b4a47703e829504fec2a9cb1300c111",
+    "pushed_at": "2024-10-17T20:08:40Z",
+    "github_license": null
+  },
+  {
+    "repository": "modestimpala/VotVChaosMod",
+    "url": "https://github.com/modestimpala/VotVChaosMod",
+    "default_branch": "main",
+    "head": "014601af864cb350377c71f3a7191231f5b06c6d",
+    "pushed_at": "2026-04-01T13:36:27Z",
+    "github_license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    }
+  }
+]
