@@ -18,7 +18,7 @@ namespace Signal47.UI
         string toast=""; bool paperOpen,notebookOpen,photoOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
         Vector2 noteScroll,paperScroll;bool returnToNotebook,settingsOpen;
-        bool confirmationFocusPending,confirmationAudioPaused;float confirmationTimeScale;
+        bool confirmationFocusPending,confirmationAudioPaused;float confirmationTimeScale;string confirmationMessage="";
         void Update()
         {
             if(ChapterSave.QuitPending || ChapterSave.IsRestoring || Core.GameSession.Instance.Transitioning)return;
@@ -59,7 +59,7 @@ namespace Signal47.UI
             if(NewShiftConfirmation||ChapterSave.Saving||ChapterSave.IsRestoring||ChapterSave.QuitPending)return;
             if(!Started&&!ChapterSave.HasSave){BeginNewShift();return;}
             confirmationTimeScale=Time.timeScale;confirmationAudioPaused=AudioListener.pause;
-            NewShiftConfirmation=true;confirmationFocusPending=true;
+            NewShiftConfirmation=true;confirmationFocusPending=true;confirmationMessage="";
             Time.timeScale=0;AudioListener.pause=true;SetCursor(false);
         }
         public void CancelNewShift()
@@ -72,7 +72,7 @@ namespace Signal47.UI
         public bool ConfirmNewShift()=>NewShiftConfirmation&&BeginNewShift();
         bool BeginNewShift()
         {
-            if(!ChapterSave.StartNew())return false;
+            if(!ChapterSave.StartNew()){confirmationMessage=ChapterSave.Status;return false;}
             NewShiftConfirmation=false;confirmationFocusPending=false;
             if(Started)Core.GameSession.Instance.Restart();else StartShift();
             return true;
@@ -198,7 +198,7 @@ namespace Signal47.UI
             GUI.SetNextControlName("keep-current-shift");
             if(GUI.Button(new Rect(x+28,y+220,(width-68)/2,48),"KEEP CURRENT SHIFT",button))CancelNewShift();
             if(GUI.Button(new Rect(x+40+(width-68)/2,y+220,(width-68)/2,48),"START NEW SHIFT",button))ConfirmNewShift();
-            GUI.Label(new Rect(x+28,y+286,width-56,72),ChapterSave.Status+"\nESC / Keep current shift",new GUIStyle(mono){fontSize=16});
+            GUI.Label(new Rect(x+28,y+286,width-56,72),confirmationMessage+"\nESC / Keep current shift",new GUIStyle(mono){fontSize=16});
             if(confirmationFocusPending&&Event.current.type==EventType.Repaint)
             {GUI.FocusControl("keep-current-shift");confirmationFocusPending=false;}
         }

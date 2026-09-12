@@ -1,6 +1,6 @@
 # SIGNAL / 47 — aktuell overlevering
 
-Oppdatert 11. september 2026 fra faktisk lokal Git-status og GitHub. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
+Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt og er uendret. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
 GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. Brukeren har uttrykkelig godkjent publisering av NightSky12-grenen og opprettelse av PR uten sin egen gjennomgang først. Brukeren har deretter selv flettet [PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8); merge er kontrollert via GitHub, commit `f156a9f2f656d168356145dabbe0bc8fb4ef0ec9`, 11. september 2026 kl. 10:32:08 UTC. Dette godkjenner ikke uutførte tester. Repoets synlighet er ikke endret av agenten.
 
@@ -26,12 +26,20 @@ Brukeren ønsker nå en komplett historie og en tydelig ramme for et gjennomfør
 
 Eksisterende kanon er skilt fra nye forslag. Nora/Tomás-forløpet, fenomenets presise lokale regler og sluttvalget må gjennomgås før ny historie implementeres. Tidsbudsjettet er ikke målt spilletid. De gamle punktene om en enkelt himmelhendelse er nå underlagt den samlede foreslåtte beviskjeden og roadmappen; ikke bygg en løs hendelse som motsier denne rammen.
 
+## Menu14 — første implementeringssteg etter bibelen
+
+Brukeren ba 12. september om å fortsette. Designbibelens trestedsramme brukes som arbeidsretning; dette passet innfører ingen ny lore i Unity. [Menu14](Menu14/README.md) retter eksisterende start-/checkpoint-flyt: Fortsett først når en sak finnes, eksplisitt avbrytbar ny-sak-bekreftelse, bevaring av begge checkpoint-filer i et unikt PreviousCases-arkiv og ingen overgang ved kopieringsfeil. Originalfoto bevares. Ingen tre-saks-/flerplassmeny eller nye historieområder er implementert.
+
+[P04/P05-papirprøven](Menu14/PAPER_CASE.md) har kildekort, diagram, fasit og dokumentert egenkontroll. Vedlikeholdskortets for tidlige avsløring er rettet i prøveteksten. Dette er ikke en bestått blindtest; M1 og 5–6-timersmålet er fortsatt åpne. Den eldre designbibel-PDF-en er bevart som v0.1.
+
+28 API-styrte kontroller består i faktisk Unity-spiller og gjennom launcher etter utpakking. De inkluderer feil, avbryt, faktisk scenelasting av en tidligere fullført v1-sak og dekoding av to originale foto med identiske bytes. Originale menyskjermer er inspisert. Ingen nye native tastatur-/musforsøk eller ytelsesmålinger er utført. Menu14 er en separat testkandidat; Visual10 er fortsatt standardstarteren. Se [verifikasjon og pakkeidentitet](Menu14/Evidence/verification.json). Arbeidet ligger lokalt på `gauntlet/menu-14`; ingen ny push, PR eller merge er gjort i dette passet.
+
 ## Fortsett her
 
 Brukeren opplyste 11. september at vedkommende er borte hjemmefra og ikke kan låse opp skjermen nå. Ikke gjenta opplåsingsforespørselen eller start flere native inputforsøk mens dette gjelder. Bygging, statisk runtime-inspeksjon og pakkekontroll er allerede utført; manglende interaktive kontroller utsettes til skrivebordet er tilgjengelig. Ingen overvåking eller bakgrunnsjobb er startet.
 
-1. Gjennomgå designbibelens hovedramme og avslutninger med brukeren. Prøv P04/P05 som papirsak med tekstgrunnlaget; dette krever ikke tilgang til det låste skrivebordet.
-2. Når brukeren har tilgang til et opplåst Kubuntu-skrivebord: fullfør en fersk tastatur-/musreise på den eksakte NightSky12-pakken, begge forsøksveier og faktiske prosessgjenstarter. Bruk nye, isolerte testprofiler.
+1. Bruk det ferdige P04/P05-spillerarket i Menu14 til en ny lesers papirprøve. Dokumenter begrunnelser og tidsbruk; egenkontrollen er allerede gjort. Før større historieproduksjon må åpne kanonvalg og innholdstak fryses.
+2. Når brukeren har tilgang til et opplåst Kubuntu-skrivebord: kontroller Menu14s faktiske knapper, Escape og tastaturfokus, avbryt fra meny/pause, Fortsett etter prosessgjenstart og begge forsøksveier. Menu14 inkluderer NightSky12; en full ny tur på samme pakke kan dekke begge. Bruk nye, isolerte testprofiler.
 3. Kontroller de virkelige fotografiene, inkludert gjenåpning, og himmelen under vanlig gange og raske vendinger. Kjør separat releaseytelse med alle frameintervaller beholdt.
 4. Korriger eventuelle funn før kandidaten kan erstatte Visual10. Følg deretter M1–M3 i designbibelens roadmap: papirprøve, trygg lagring/områdeovergang og kort spillbar arkivsekvens. Ikke start alle nye systemer og miljøer samtidig.
 

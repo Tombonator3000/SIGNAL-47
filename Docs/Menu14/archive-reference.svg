@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="680" viewBox="0 0 1100 680">
+<rect width="1100" height="680" fill="#f2eddd"/>
+<g font-family="DejaVu Sans, sans-serif" fill="#22372e">
+<text x="48" y="55" font-size="25" font-weight="bold">SIGNAL / 47 — ARCHIVE REFERENCE</text>
+<text x="48" y="91" font-size="17">PAPER TEST DIAGRAM / NOT A PHOTOGRAPH OR SURVEYED GAME MAP</text>
+<path d="M48 118H1052" stroke="#819184"/>
+<text x="48" y="167" font-size="21" font-weight="bold">ORIGINAL / STATION 01 / 1947</text>
+<text x="48" y="202" font-size="17">A: fixed survey point    B: comparison vane    C: closing sight line</text>
+<g fill="none" stroke="#22372e" stroke-width="3">
+<path d="M150 297L177 245L204 297ZM150 309H204M240 277H490M542 250V306M548 277H834"/>
+<circle cx="862" cy="277" r="25"/>
+</g>
+<text x="167" y="345" font-size="23">A</text><text x="532" y="345" font-size="23">B</text><text x="852" y="345" font-size="23">C</text>
+<path d="M48 385H1052" stroke="#819184"/>
+<text x="48" y="434" font-size="21" font-weight="bold">AMENDED SERVICE COPY / STATION 01 / 1947</text>
+<g fill="none" stroke="#22372e" stroke-width="3">
+<path d="M150 555L177 503L204 555ZM150 567H204M240 535H490M542 508V562"/>
+</g>
+<text x="167" y="603" font-size="23">A</text><text x="532" y="603" font-size="23">B</text>
+<text x="48" y="651" font-size="16">DESIGN DRAFT / TWO COPIES OF THE SAME RECORD / NO PRE-MARKED ANSWER</text>
+</g></svg>
