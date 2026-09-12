@@ -1,0 +1,27 @@
+{
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Workstation18-ae3fe61bf190-Linux.tar.gz",
+    "bytes": 147756517,
+    "sha256": "48647f1d21a9417dd5426b83a564d17f47dd1891ecad4391a1b866240e9d5aa2",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Workstation18-ae3fe61bf190-Linux.tar.gz.sha256",
+    "sidecar_sha256": "1ce3c9c885d0bb833dee64099ddea958e2604c343d8f1397bf7996aa13b9b508"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Workstation18/unpacked-9ih7dh7n/Workstation18-ae3fe61bf190",
+    "manifest_sha256": "8bc497b0ced525e350270ae233456f921cc482cedc4531673af86c1b6a19f055",
+    "package_id": "Workstation18-ae3fe61bf190",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 330865698,
+    "package_payload_sha256": "14c3cb8ad356e750d019bae047e30f0a59909cb5ff84bf559d19ce02216c509a",
+    "unity_source_sha256": "ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c",
+    "base_revision": "70b438b447a6ac6efebf847dfe7c69efdb27855c"
+  },
+  "method": "Archive/content verification only; native startup is not invoked here."
+}

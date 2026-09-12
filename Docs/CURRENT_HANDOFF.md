@@ -1,5 +1,23 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Nyeste produksjon: Workstation18
+
+12. september 2026: Brukeren godkjente anbefalingene fra VotV-vurderingen og ba om videreføring. [Workstation18](Workstation18/README.md) erstatter synlig CRT-/tastatur-/stolgeometri på de tre arbeidsplassene i hovedscenen med tre originale Blender-modeller. Levende skjermer, signalprofiler, 154 eksisterende kollisjonskomponenter, to lightmaps og spilloppførsel er bevart. Ni modellinstanser er kontrollert etter Unity-import. Integrasjonscommit `f92db83`; kildehash `ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c`.
+
+19 API-kontroller består direkte og 19 gjennom nyutpakket starter, inkludert den faktiske 47-sekunderssekvensen. 50 lagrings-/gjenopprettingskontroller består gjennom samme utpakkede starter; begge originalfoto dekodes med uendrede bytes. Seks originale runtime-bilder er inspisert. Pakken har 173 verifiserte filer. Se [identitet og bevis](Workstation18/Evidence/verification.json).
+
+Kandidat: `Artifacts/Releases/Workstation18-ae3fe61bf190/Start-SIGNAL47.sh`. Visual10 er fortsatt standard og `Spill-SIGNAL47.sh` er byteidentisk med før passet. Native brukerreise, ytelse, andre oppløsninger og subjektiv lyd er fortsatt UNVERIFIED. Ingen nye forsøk på native input er gjort mens skrivebordet er utilgjengelig. Arkivprøven er fortsatt separat; neste avgrensede steg er dokumentlesbarhet og avklart kobling fra instrumentruten til P04, med P04/P05-blindtesten fortsatt åpen.
+
+Kilde, VotV-rapport og verifikasjon er publisert gjennom [PR13](https://github.com/Tombonator3000/SIGNAL-47/pull/13). Se GitHub for gjeldende flettestatus; standardstarter og åpne tester er uavhengige av dette.
+
+## Nyeste status: VotV-referansevurdering
+
+12. september 2026: GitHub bekrefter at [PR12](https://github.com/Tombonator3000/SIGNAL-47/pull/12) nå er MERGED, mergecommit `f476b1ec884030e67971948121eb32ef05ec399d`. Eldre omtale av PR12 som åpen nedenfor er historisk. Dette endrer ikke kandidatens åpne tester eller standardstarter.
+
+Brukeren ba om bred undersøkelse av Voices of the Void, inkludert kode. [Referanserapporten](Research/VOTV/README.md) dekker offisielle nettsider, tolv galleribilder, indeks/emnesøk i 31 utviklerposter og vurdering av offentlige mod-/kodeprosjekter. Den inneholder prioriterte forslag, konkrete koblinger til eksisterende Unity-kode, lisensfunn og tolv foreslåtte regresjonstester. VotvIO er en MIT-lisensiert Blender-referanse; den tilgjengelige OFL-fontens Regular-fil mangler norske bokstaver. Ingen verifisert offentlig kildekode til selve VotV ble funnet.
+
+Leveransen er kun dokumentasjon på `research/votv-reference-audit`, basert på den oppdaterte hovedgrenen. Ingen eksterne spillassets, font eller kode er innlemmet; ingen nye gameplay-funksjoner eller spilltester er utført. JSON-registre og lokale dokumentlenker er kontrollert. Neste foreslåtte produksjonspass er CRT/tastatur/stol og dokumentlesbarhet, fulgt av avklart integrasjon av eksisterende P04. Rapporten erstatter ikke designbibelen og lukker ikke blindtest, native brukerreise eller ytelsesportene.
+
 Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt; PR11 er flettet på `f2d92a7a8cc770849346221751a752831b6b2637`. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
 GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. Brukeren har uttrykkelig godkjent publisering av NightSky12-grenen og opprettelse av PR uten sin egen gjennomgang først. Brukeren har deretter selv flettet [PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8); merge er kontrollert via GitHub, commit `f156a9f2f656d168356145dabbe0bc8fb4ef0ec9`, 11. september 2026 kl. 10:32:08 UTC. Dette godkjenner ikke uutførte tester. Repoets synlighet er ikke endret av agenten.

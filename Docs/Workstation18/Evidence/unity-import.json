@@ -1,0 +1,117 @@
+{
+    "unity": "6000.3.22f1",
+    "retainedColliders": 154,
+    "retainedLightmaps": 2,
+    "disabledRenderers": 270,
+    "displayTransformsPreserved": true,
+    "models": [
+        {
+            "name": "CRT",
+            "size": {
+                "x": 1.0921385288238526,
+                "y": 1.011660099029541,
+                "z": 0.8605002164840698
+            },
+            "triangles": 7344,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Keyboard",
+            "size": {
+                "x": 1.1200002431869507,
+                "y": 0.2053084373474121,
+                "z": 0.9130001068115234
+            },
+            "triangles": 13544,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "CRT",
+            "size": {
+                "x": 1.092138648033142,
+                "y": 1.011660099029541,
+                "z": 0.8605002164840698
+            },
+            "triangles": 7344,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Keyboard",
+            "size": {
+                "x": 1.1200001239776612,
+                "y": 0.2053084373474121,
+                "z": 0.9130001068115234
+            },
+            "triangles": 13544,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "CRT",
+            "size": {
+                "x": 1.0921385288238526,
+                "y": 1.011660099029541,
+                "z": 0.8605002164840698
+            },
+            "triangles": 7344,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Keyboard",
+            "size": {
+                "x": 1.1200001239776612,
+                "y": 0.2053084373474121,
+                "z": 0.9130001068115234
+            },
+            "triangles": 13544,
+            "renderers": 5,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Chair",
+            "size": {
+                "x": 0.8250000476837158,
+                "y": 1.25,
+                "z": 0.7914232015609741
+            },
+            "triangles": 10844,
+            "renderers": 3,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Chair",
+            "size": {
+                "x": 0.8250002861022949,
+                "y": 1.25,
+                "z": 0.7914232015609741
+            },
+            "triangles": 10844,
+            "renderers": 3,
+            "boundsPass": true,
+            "meshPass": true
+        },
+        {
+            "name": "Chair",
+            "size": {
+                "x": 0.8250002861022949,
+                "y": 1.25,
+                "z": 0.7914232015609741
+            },
+            "triangles": 10844,
+            "renderers": 3,
+            "boundsPass": true,
+            "meshPass": true
+        }
+    ]
+}

@@ -1,0 +1,87 @@
+{
+  "date_utc": "2026-09-12T20:57:48.775577+00:00",
+  "scope": "Workstation18 original CRT, keyboard/tray and chair models in the main SARO scene",
+  "source_commit": "f92db838915a5de1402aaefe4985a40ad29d7ccf",
+  "build": {
+    "base_revision": "70b438b447a6ac6efebf847dfe7c69efdb27855c",
+    "working_tree_changes": true,
+    "unity_source_sha256": "ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "3e90a519c72464bd772b516a48c8660507bc238293b4ba00cdd4b9a2eb6932dd",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Workstation18-ae3fe61bf190",
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Workstation18-ae3fe61bf190",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Workstation18-ae3fe61bf190-Linux.tar.gz",
+    "archive_sha256": "48647f1d21a9417dd5426b83a564d17f47dd1891ecad4391a1b866240e9d5aa2",
+    "package_payload_sha256": "14c3cb8ad356e750d019bae047e30f0a59909cb5ff84bf559d19ce02216c509a",
+    "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Workstation18-ae3fe61bf190/Start-SIGNAL47.sh",
+    "candidate": true
+  },
+  "toolchain": {
+    "blender": "4.5.13 LTS",
+    "unity": "6000.3.22f1",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "resolution": "1280x800"
+  },
+  "tests": {
+    "direct_api": 19,
+    "unpacked_api": 19,
+    "unpacked_recovery_api": 50,
+    "direct_profile": "Artifacts/Workstation18/check-A7fgFl",
+    "unpacked_profile": "Artifacts/Workstation18/check-Lag6zh",
+    "recovery_profile": "Artifacts/Menu14/menu14-test-526sZj",
+    "original_source_fixture_hashes_preserved": true
+  },
+  "gates": {
+    "blender_export_reimport_3_assets": "PASS",
+    "unity_import_9_instances": "PASS",
+    "main_scene_linux_build": "PASS",
+    "signal_sequence_and_47_seconds_api": "PASS",
+    "checkpoint_recovery_original_photo_decode": "PASS",
+    "runtime_visual_six_states_1280x800": "PASS",
+    "archive_173_files_hashes_paths_modes": "PASS",
+    "unpacked_launcher_api": "PASS",
+    "default_visual10_launcher_preserved": "PASS",
+    "native_user_journey": "UNVERIFIED — user desktop unavailable for native input",
+    "release_performance": "UNVERIFIED — no new frame-time measurement",
+    "subjective_audio": "UNVERIFIED — mix unchanged and no listening pass",
+    "other_resolutions": "UNVERIFIED",
+    "P04_P05_blind_test": "UNVERIFIED",
+    "archive_gameplay_integration": "N/A — this pass replaces control-room geometry only"
+  },
+  "review": {
+    "method": "sequential self-review",
+    "fixed": [
+      "Unsupported keyboard overhang now has a visible tray and runners",
+      "Keyboard numeric block corrected to the player right",
+      "API phone wait corrected to respect the existing 3.6-second sequence",
+      "API final-state wait corrected for director coroutine scheduling"
+    ],
+    "scope_limit": "Cosmetic pass retains existing collider shapes; not collision geometry for individual keys or chair controls. Existing baked lighting retained, not rebaked."
+  },
+  "evidence_sha256": {
+    "01-control-room.png": "4363978c607e780e817a254982ceee29fddb1c35e6b8696d5bbb16eca7d6f412",
+    "02-workstation.png": "9d7f0a5e5b0de8fde691f200a1a101a86ab0f57f03961479f7e5857e79a63f2d",
+    "03-crt-detail.png": "c3e75e7490a2078e9b3c7c2398e23abcac65c008542237c8e9e3ceb53c82bb8e",
+    "04-chair-detail.png": "7fc6ac539d3fe1846814c9cb8d6e7d23788528987084f7d431c8bcea6d80a182",
+    "05-console-ui.png": "90b60161df06d44f262d1d171619ad35273dd74c29d9589e353d07a0cf0e7522",
+    "06-locked-screen.png": "7b70a6bfa0a5e143d06148c2a863c151d26ea53dd1bdef259dc3d434df79da27",
+    "baseline-build.json": "1ef44e458ef7b2316e55e12a069a6b3b359266e8b3b98426d1b67649ba81ecd6",
+    "before-crt.png": "6230d6b7298f9a8c2253ab5c44f31ff51943e8d2a19804ac13cf60096c4e2960",
+    "before-workstation.png": "6cbbbea6bc963c0b70c0d45f0f5006ec8d9558461745aa4dd8b94533f3ca30c4",
+    "build-manifest.json": "41665a7826513a70af9500df9a9ec02c57a749a69e1a493284cca5a37fb76f97",
+    "direct-result.json": "03923429042839bee34346763e7fca84dbaa2750720e423adb2037a09ade5b7c",
+    "extraction.json": "ab426f1667fd750ed9c1592f0af043477ec157d12ff6546f8d9cdf7307e655a9",
+    "front-authoring.png": "d30ae0a7bc49ac1d495d249e29a1dae9b2ff2cfa9e2f24556d27aebc611007fc",
+    "iteration1-keyboard.png": "ba8e7c4e0707669f735ffcf12208d7eb4e74c9bf968f5af2677f538a173f7300",
+    "iteration2-test-race.json": "c11fdaffa31fcf7a969db70e16e5d241455d7898e54f80127d12f0012f096aad",
+    "package.json": "1a9580f85bf66230e587351625845d935277ea45260d67a7545184fc7f8d4e4b",
+    "rear-authoring.png": "224c825ce76bc410098306363183964823ad7922168501f98d69cde39617a2ef",
+    "recovery-result.json": "174a80185e428a658e2dfb95db7ac7093f906da60e6fcb88b91d1d614818f7ac",
+    "result.json": "03923429042839bee34346763e7fca84dbaa2750720e423adb2037a09ade5b7c",
+    "unity-import.json": "7c12b27f9260ea0f4acef01d4a4dc3441ec4e3899072127957b7f1c2b7d6d408"
+  }
+}

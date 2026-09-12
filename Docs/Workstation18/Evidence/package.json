@@ -1,0 +1,9 @@
+{
+  "package_id": "Workstation18-ae3fe61bf190",
+  "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Workstation18-ae3fe61bf190",
+  "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Workstation18-ae3fe61bf190-Linux.tar.gz",
+  "archive_sha256": "48647f1d21a9417dd5426b83a564d17f47dd1891ecad4391a1b866240e9d5aa2",
+  "package_payload_sha256": "14c3cb8ad356e750d019bae047e30f0a59909cb5ff84bf559d19ce02216c509a",
+  "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Workstation18-ae3fe61bf190/Start-SIGNAL47.sh",
+  "candidate": true
+}
