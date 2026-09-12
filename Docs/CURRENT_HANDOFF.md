@@ -6,6 +6,8 @@
 
 Modellinspeksjon, testlagring/gjenåpning, CPU-render og FBX tur-retur består på kopier av Workstation18. To upstream-API-begrensninger på 4.5.13 har testede alternativer; den utvalgte upstream-testpakken har én feil og sju hoppede tester. Se rapporten før bruk. Dette er et verktøypass, ingen endring av spillinnhold. Dokumentlesbarhet/P04-kobling er fortsatt neste avgrensede spillsteg.
 
+Skill, vurdering og bevis er publisert gjennom [PR14](https://github.com/Tombonator3000/SIGNAL-47/pull/14); GitHub viser gjeldende flettestatus.
+
 PR13 er nå bekreftet MERGED på `af3aba5daf878595acfdff8e8db5f8262c2cef34`. Eldre tekst om å slå opp flettestatus nedenfor er historikk; standardstarter og åpne tester er uendret.
 
 ## Nyeste produksjon: Workstation18
