@@ -126,6 +126,19 @@ exec "$signal47_release" "$@"
 
 
 def start_text(package_id, build, candidate=False):
+    if package_id.startswith("Archive16-"):
+        return f"""SIGNAL / 47 — ARCHIVE16 / SELVSTENDIG PRODUKSJONSPRØVE
+Pakke: {package_id}
+Unity-kilder SHA-256: {build['unity_source_sha256']}
+Dette er en egen P04-prøve, ikke hovedspillet eller et ferdig nytt kapittel.
+Start i denne mappen: ./Start-SIGNAL47.sh
+Hele pakken må følge med. Progresjon lagres ikke; hovedspillets saker berøres ikke.
+Klikk saksmappen eller trykk E fra bordvisningen. Tab bytter rom-/bordvisning.
+1/2 åpner protokollene; 3 åpner sammenligningen etter at begge er lest.
+Velg en begrunnet slutning. Escape lukker dokumentet eller åpner pause.
+Native input, ytelse og blind forståelsestest er fortsatt uverifisert.
+Se THIRD_PARTY_NOTICES.md og VT323-OFL.txt for kreditering.
+"""
     status = 'TESTKANDIDAT: full spillerreise og ny ytelseskontroll er ikke godkjent ennå.\n' if candidate else ''
     return f"""SIGNAL / 47 — DEN ANDRE EKSPONERINGEN
 
@@ -229,10 +242,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT / "Artifacts/GauntletLinux")
     parser.add_argument("--expect-source", help="Require this exact tested Unity source SHA-256.")
-    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15"], help="Identified release family; prior packages are retained.")
+    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15", "Archive16"], help="Identified release family; prior packages are retained.")
     parser.add_argument("--candidate", action="store_true", help="Label the package as awaiting gameplay/performance verification and preserve the default launcher.")
     parser.add_argument("--check-only", action="store_true", help="Read-only build/source verification; create no package or launcher.")
     args = parser.parse_args()
+    require(args.label != "Archive16" or args.candidate, "Archive16 is a standalone study; --candidate is required to preserve the default game.")
     build_dir = args.build_dir.resolve()
     build = verify_build(ROOT, build_dir, args.expect_source)
     package_id = args.label + "-" + build["unity_source_sha256"][:12]
