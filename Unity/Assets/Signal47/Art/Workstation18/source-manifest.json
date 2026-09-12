@@ -1,0 +1,55 @@
+{
+  "authored_original": true,
+  "external_assets": [],
+  "blender": "4.5.13 LTS",
+  "units": "metres",
+  "source": "Unity/Blender/SIGNAL47_workstation18.blend",
+  "recipe": "Unity/Blender/Source/workstation18.py",
+  "assets": [
+    {
+      "name": "CRT",
+      "fbx": "W18_CRT.fbx",
+      "dimensions_blender_xyz": [
+        1.0921385288238525,
+        0.8604999780654907,
+        1.0116603374481201
+      ],
+      "triangles": 7344,
+      "triangle_budget": 11000,
+      "render_meshes": 5,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "Keyboard",
+      "fbx": "W18_Keyboard.fbx",
+      "dimensions_blender_xyz": [
+        1.1200000643730164,
+        0.9129999279975891,
+        0.20530833303928375
+      ],
+      "triangles": 13544,
+      "triangle_budget": 17000,
+      "render_meshes": 5,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "Chair",
+      "fbx": "W18_Chair.fbx",
+      "dimensions_blender_xyz": [
+        0.8250001668930054,
+        0.7914230227470398,
+        1.25
+      ],
+      "triangles": 10844,
+      "triangle_budget": 16000,
+      "render_meshes": 3,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    }
+  ]
+}
