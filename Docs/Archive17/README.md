@@ -72,3 +72,5 @@ python3 Automation/package-chapter09.py --label Archive16 --candidate
 ```
 
 Ny bygging får identitet fra faktisk kildeinnhold. Ikke overskriv en eksisterende pakke med andre bytes. Neste steg er ekte input og en førstegangsleser i denne prøven. Før modellene flyttes til hovedspillets frie gange trengs en avgrenset integrasjon med passende kollisjonsvolumer og måling på målmaskinen; møblenes skuffer er ikke animerte eller interaktive.
+
+Levering: [PR12](https://github.com/Tombonator3000/SIGNAL-47/pull/12), åpen. Modell-/integrasjonscommit `26d0a78`; senere dokumentasjonsendringer endrer ikke den registrerte Unity-kilden eller pakken.

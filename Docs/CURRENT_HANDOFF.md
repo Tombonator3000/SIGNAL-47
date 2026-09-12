@@ -48,7 +48,7 @@ Blender-oppskrift, redigerbar mappe og FBX er bevart; Unity-bounds er kontroller
 
 Brukerens neste bestilling var bedre Blender-modeller. [Archive17](Archive17/README.md) erstatter bord, skap, lampe, mappe og papirbunke i den selvstendige arkivprøven med fem originale FBX-modeller og redigerbar `.blend`-kilde. Samme P04-handling, kameraer og kildetekster. Sammenfallende bordflater og synlig lysrør fra siden ble oppdaget og rettet i faktisk visuell kontroll. UV-er, normaler, dimensjoner og geometribudsjett er kontrollert etter Unity-import. Ingen Magnific-generering var nødvendig; bilde-til-3D-verktøyet finnes i den tilkoblede katalogen.
 
-Ny lokal kandidat: `Artifacts/Releases/Archive16-74eb85f963c7/Start-SIGNAL47.sh` (Archive16-familie, Archive17-modeller). Kilde-SHA `74eb85f963c76cbb6f5277e3605ce68d1c843da97e7f1d74460c857c21d89082`. Blender- og Unity-bilder har separate merkinger. Se rapporten for tester, pakkeidentitet og gjenværende porter. Visual10 er fortsatt standard. Hovedspillets scene og lagring er bevart. Gren: `gauntlet/archive-models-17`.
+Ny lokal kandidat: `Artifacts/Releases/Archive16-74eb85f963c7/Start-SIGNAL47.sh` (Archive16-familie, Archive17-modeller). Kilde-SHA `74eb85f963c76cbb6f5277e3605ce68d1c843da97e7f1d74460c857c21d89082`. Blender- og Unity-bilder har separate merkinger. Se rapporten for tester, pakkeidentitet og gjenværende porter. Visual10 er fortsatt standard. Hovedspillets scene og lagring er bevart. Kilde og bevis er pushet som [PR12](https://github.com/Tombonator3000/SIGNAL-47/pull/12) på `gauntlet/archive-models-17`; åpen ved denne overleveringen. 18 API-kontroller består direkte og fra utpakket launcher; åtte sluttbilder er inspisert. Native input og releaseytelse er fortsatt UNVERIFIED.
 
 ## Fortsett her
 
