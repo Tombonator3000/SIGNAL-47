@@ -66,6 +66,7 @@ namespace Signal47.Editor
             Chapter09Pass.Dress(session);Visual10Pass.Dress(session);systems.AddComponent<Signal47.Chapter.ChapterSave>();
             if(!GameObject.Find("ControlRoomArt06"))ControlRoomPass06.Dress();
             Workstation18.Apply();
+            Resources19.Apply();
             EditorSceneManager.SaveScene(scene,ScenePath);EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(ScenePath,true)};AssetDatabase.SaveAssets();Debug.Log("SIGNAL / 47 chapter generated: "+ScenePath);
         }
 

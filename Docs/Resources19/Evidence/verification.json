@@ -1,0 +1,135 @@
+{
+  "date": "2026-09-13",
+  "scope": "Resources19 test candidate: desk prop scale, antenna details, separate audio audition pack",
+  "build": {
+    "base_revision": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6",
+    "working_tree_changes": true,
+    "unity_source_sha256": "bea744ade4d9d86adf4b91429dad0b057e20ef6d871bb5246438525eec4b5caa",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "6ea87f378756639ffd88a227ed3700c1fc1aa2f2ae39fc216bfa4895d8c7a437",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Resources19/unpacked-final/Resources19-bea744ade4d9",
+    "manifest_sha256": "8b44961a8932318333a50ca1cc7794f89fdc9711f8942ced41d74b5bc28a48a9",
+    "package_id": "Resources19-bea744ade4d9",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 331914597,
+    "package_payload_sha256": "1072f96db3eaf460082c35f5a7cf55683a01ce78e4da66fd98cd5c7271cd0dd4",
+    "unity_source_sha256": "bea744ade4d9d86adf4b91429dad0b057e20ef6d871bb5246438525eec4b5caa",
+    "base_revision": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Resources19-bea744ade4d9-Linux.tar.gz",
+    "bytes": 148170708,
+    "sha256": "474f3b39617036708fcba774efaedcc65190ac6e8bb280cb595eba904cc73928",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Resources19-bea744ade4d9-Linux.tar.gz.sha256",
+    "sidecar_sha256": "4f3d3f87008803a2cf47255ff1cb8cacce675971182d7548ec93c986edfad389"
+  },
+  "launcher": "Artifacts/Releases/Resources19-bea744ade4d9/Start-SIGNAL47.sh",
+  "executed_test_launcher": "Artifacts/Resources19/unpacked-final/Resources19-bea744ade4d9/Start-SIGNAL47.sh",
+  "checks": {
+    "unity_build": "PASS",
+    "blender_mesh_uv_normals": "PASS",
+    "pedestal_clearance_11_poses_each_of_11_antennas": "PASS",
+    "api_gameplay_from_unpacked_launcher": {
+      "result": "PASS",
+      "count": 42,
+      "report": "runtime-checks.json"
+    },
+    "api_recovery_from_same_unpacked_launcher": {
+      "result": "PASS",
+      "count": 50,
+      "report": "recovery-checks.json"
+    },
+    "original_case_and_photos_unchanged": "PASS",
+    "package_files": {
+      "result": "PASS",
+      "count": 173
+    },
+    "audio_decodes_and_negative_sample_peaks": {
+      "result": "PASS",
+      "count": 15
+    },
+    "runtime_visual_review": {
+      "result": "PASS",
+      "captures": 6
+    },
+    "native_keyboard_mouse_journey": "UNVERIFIED",
+    "performance_on_target": "UNVERIFIED",
+    "subjective_audio_mix": "UNVERIFIED",
+    "other_resolutions": "UNVERIFIED"
+  },
+  "images": [
+    {
+      "file": "Runtime/01-control-room.png",
+      "sha256": "f5c60d19e07d6a650ad15c93fe093495d00535edb31dc56e5a62ca8203212b9b",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    },
+    {
+      "file": "Runtime/07-phone-scale.png",
+      "sha256": "147d365233ee9b1ba067fb5d067d43639571de5e87af51c2bc8f11d8fbabd0e1",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    },
+    {
+      "file": "Runtime/08-dish-front.png",
+      "sha256": "b958c0dded446180d88d91cdccb17c40717d98f30b5f8bce52b5efec7b4c4f39",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    },
+    {
+      "file": "Runtime/09-dish-rear.png",
+      "sha256": "2318d2ba6fd2d671fd72e2045fd865441c58115a330fe5a6e9d53b9ac7c33dfa",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    },
+    {
+      "file": "Runtime/10-phone-offhook.png",
+      "sha256": "767fa66b7b5a7265c0b71082daf6e9b0d0f473679cfe43b50672737b1af38d11",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    },
+    {
+      "file": "Runtime/11-dish-aligned.png",
+      "sha256": "7ceff26f0ce65f4e98ba108c6f8b5c64afc193f2c3c391d5323f92f5415f38bd",
+      "kind": "unaltered Unity player capture; fixed API camera",
+      "review": "inspected"
+    }
+  ],
+  "original_assets": [
+    {
+      "file": "Spill-SIGNAL47.sh",
+      "sha256": "f072ce1e53eff838ca562c93c92249f436deaabcaa7b917b3b927dc0fce33400",
+      "unchanged_from": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+    },
+    {
+      "file": "Unity/Blender/SIGNAL47_story_phone.blend",
+      "sha256": "3bf6ac189ce60ed5b410e3ad5885adf9061563a9816ecf2510ad53fd0e1c9483",
+      "unchanged_from": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/Authored/SM_StoryPhone.fbx",
+      "sha256": "f6ae576b2db79d60b797b79989264bdd47947270b5bcf45425d02d3f464925f3",
+      "unchanged_from": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+    },
+    {
+      "file": "Unity/Assets/Signal47/Art/Visual10/Models/V10_RadioDish_BowlCorrected.fbx",
+      "sha256": "62451c8a54051f292d87d8879aca314b982e6516ac026dad43d65886da7dc64f",
+      "unchanged_from": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+    }
+  ],
+  "corrections": [
+    "Oversized phone and adjacent mug corrected after world-space measurement.",
+    "First 37-check run was not accepted visually: pedestal beam/caps/ladder crossed bowl.",
+    "Intermediate cord had wrong FBX-axis socket; corrected and both attachment positions tested.",
+    "Analytic audit found remaining 0.078 m beam intrusion at final alignment; corrected and 11 poses per antenna verified.",
+    "One Unity editor startup aborted before final build; retry completed and final packaged player passed."
+  ],
+  "audio_status": "15 candidate OGGs and audition HTML in Docs/Resources19. No new audio assigned to live Unity mix. CC0/CC BY provenance retained.",
+  "default_launcher": "Visual10 unchanged",
+  "method": "API-driven isolated profiles, real Unity player and inspected original captures; not native-input or performance certification",
+  "source_commit": "848a11dc426800dde2f0ca41623468ea64dd26d4"
+}
