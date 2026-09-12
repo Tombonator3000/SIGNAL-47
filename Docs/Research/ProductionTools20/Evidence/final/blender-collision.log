@@ -1,0 +1,7 @@
+00:54:25 | INFO: Data are loaded, start creating Blender stuff
+00:54:25 | INFO: Blender create Mesh node 0
+00:54:25 | INFO: glTF import finished in 0.00s
+{"blender": "4.5.13 LTS", "mesh_objects": 1, "vertices": 284, "triangles": 515, "bounds_min": [-1.100000023841858, -1.100000023841858, -0.20000000298023224], "bounds_max": [1.100000023841858, 1.100000023841858, 1.0], "axis": "Blender Z-up after glTF import", "downward_ray_heights": {"box": 1.0, "floor": 0.19999980926513672}, "checks": {"box_above_floor": true, "fixture_scale": true}}
+Blender 4.5.13 LTS (hash daeeeca98fb0 built 2026-08-25 01:31:19)
+
+Blender quit

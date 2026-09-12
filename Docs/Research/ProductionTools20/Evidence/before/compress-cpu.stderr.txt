@@ -1,0 +1,6 @@
+splat-transform v3.4.2 (0cb47cd)
+▸ [2/2] Output fixture.sog
+  · 784 gaussians · 0 SH bands
+  ▸ Writing
+    · fixture.sog (13.5KB)
+done in 0.367s  [peak cpu=166.5MB]

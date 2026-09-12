@@ -1,0 +1,19 @@
+{
+  "scope": "source/evidence consistency checks; not Unity runtime or independent model testing",
+  "checks": [
+    "before: all 24 recorded files match size and SHA256",
+    "final: all 24 recorded files match size and SHA256",
+    "Final GLB triangle count agrees with Blender import; both spatial checks pass",
+    "Automation/probe_splats.py: Python syntax valid",
+    "Automation/inspect_splat_collision.py: Python syntax valid",
+    "Four repo skill snapshots byte-match corresponding installed source files; ignored Python caches excluded",
+    "25 relative document/skill links resolve",
+    "All report JSON files parse"
+  ],
+  "pass": true,
+  "visual_review": {
+    "method": "direct image inspection of original before/final WebP files",
+    "before": "FAIL: box occluded below floor because fixture used wrong PLY coordinate convention",
+    "final": "PASS for synthetic representation only: box above floor; soft splat edges visible; no scan-quality or game-art claim"
+  }
+}

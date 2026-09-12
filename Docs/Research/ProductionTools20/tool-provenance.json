@@ -1,0 +1,31 @@
+{
+  "name": "@playcanvas/splat-transform",
+  "version": "3.4.2",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dist": {
+    "shasum": "9bff721958bba58f5714f1117d835f29b7934029",
+    "tarball": "https://registry.npmjs.org/@playcanvas/splat-transform/-/splat-transform-3.4.2.tgz",
+    "fileCount": 223,
+    "integrity": "sha512-uKIS9VpBxzFnvJ6JVxOYPMeFEeS60JGj5fHmA7IdgVkKMFwF9hmE86wA5eIUJUtF0eK5eCRDCMffjVzu/ouxHg==",
+    "signatures": [
+      {
+        "sig": "MEUCIQC4A5SjKy0ZdqNOsv5sj6JE7jwxjZwZ1H6OCS4zNRNJeQIgVm5qRbWXATsrThElQPtHaaB9WBgNHumoCBCvqR9bZYk=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "sig": "MEUCIQDyGF53Zi0cigngn5hHVWsODsQk8JJkXh8pEMgeHtz40gIgCG1FEwdxVFPKG4/4jRs3hlBqzuOCdBlLIgOkhwDg34Y=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@playcanvas%2fsplat-transform@3.4.2",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 44454759
+  }
+}

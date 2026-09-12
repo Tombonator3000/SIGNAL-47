@@ -1,0 +1,25 @@
+{
+  "blender": "4.5.13 LTS",
+  "mesh_objects": 1,
+  "vertices": 284,
+  "triangles": 515,
+  "bounds_min": [
+    -1.100000023841858,
+    -1.100000023841858,
+    -0.20000000298023224
+  ],
+  "bounds_max": [
+    1.100000023841858,
+    1.100000023841858,
+    1.0
+  ],
+  "axis": "Blender Z-up after glTF import",
+  "downward_ray_heights": {
+    "box": 1.0,
+    "floor": 0.19999980926513672
+  },
+  "checks": {
+    "box_above_floor": true,
+    "fixture_scale": true
+  }
+}
