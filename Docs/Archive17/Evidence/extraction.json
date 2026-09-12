@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "archive_sha256": "6f7e72d2234c276be06984244dae1c5ce5fee00fa11884d4c46ded468c3f6fd6",
+  "package_payload_sha256": "b630dd3fc5af06c34895fb93f5bea34a3ab757a5bbe3186e57a93f01ed050aa1",
+  "files_verified": 171,
+  "unique_safe_paths": true,
+  "tar_modes_match_manifest": true,
+  "extracted_bytes_match_manifest": true,
+  "required_executable_permissions": true,
+  "extracted_root": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Archive17/unpacked-gsepx73w/Archive16-74eb85f963c7",
+  "note": "tar data filter may normalize group-write mode; stored modes and executable permissions checked separately."
+}

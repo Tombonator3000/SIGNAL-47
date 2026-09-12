@@ -1,0 +1,169 @@
+{
+  "date_utc": "2026-09-12T20:06:06.130182+00:00",
+  "scope": "Archive17 original Blender furniture in standalone Archive16 P04 study",
+  "build": {
+    "base_revision": "f2d92a7a8cc770849346221751a752831b6b2637",
+    "working_tree_changes": true,
+    "unity_source_sha256": "74eb85f963c76cbb6f5277e3605ce68d1c843da97e7f1d74460c857c21d89082",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "dbb01716bf484848b307869039ec7bf49722247063588663ddee63aaf5c86b2a",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Archive16-74eb85f963c7",
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Archive16-74eb85f963c7",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Archive16-74eb85f963c7-Linux.tar.gz",
+    "archive_sha256": "6f7e72d2234c276be06984244dae1c5ce5fee00fa11884d4c46ded468c3f6fd6",
+    "package_payload_sha256": "b630dd3fc5af06c34895fb93f5bea34a3ab757a5bbe3186e57a93f01ed050aa1",
+    "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Archive16-74eb85f963c7/Start-SIGNAL47.sh",
+    "candidate": true
+  },
+  "blender": "4.5.13 LTS",
+  "source_recipe": "Unity/Blender/Source/archive17_furniture.py",
+  "source_blend": "Unity/Blender/SIGNAL47_archive17_furniture.blend",
+  "tests": {
+    "direct_profile": "Artifacts/Archive16/archive16-test-phzHTG",
+    "unpacked_profile": "Artifacts/Archive16/archive16-test-7n9U2z",
+    "direct_checks": 18,
+    "unpacked_checks": 18,
+    "method": "API only; no native keyboard/mouse; no chapter saves"
+  },
+  "gates": {
+    "blender_roundtrip_uv_face_area": "PASS",
+    "unity_import_bounds_normals_uv_triangle_budget": "PASS",
+    "unity_linux_build": "PASS",
+    "api_regression": "PASS",
+    "runtime_visual_1280x800_eight_states": "PASS",
+    "authoring_front_rear_detail": "PASS",
+    "archive_paths_bytes_modes_executables": "PASS",
+    "unpacked_launcher_api": "PASS",
+    "main_game_runtime_original_assets_and_default_preserved": "PASS",
+    "native_input": "UNVERIFIED",
+    "release_performance": "UNVERIFIED",
+    "other_resolutions": "UNVERIFIED",
+    "blind_comprehension_test": "UNVERIFIED",
+    "main_save_integration": "N/A — standalone study has no save components"
+  },
+  "visual_review": {
+    "type": "sequential self-review",
+    "baseline": "Docs/Archive16/Evidence/02-room.png",
+    "fixed": [
+      "Coplanar tabletop and cabinet crown surfaces separated",
+      "Lamp end caps conceal exposed bright tube from side"
+    ],
+    "runtime_captures": "01 through 08 are original unedited captures from unpacked release player",
+    "authoring_renders": "furniture, rear and desk-detail are Blender studio renders, not gameplay"
+  },
+  "magnific": {
+    "catalog_image_to_3d_tool_present": true,
+    "generation_executed": false,
+    "reason": "Precise technical props authored directly in Blender"
+  },
+  "files": [
+    {
+      "path": "01-desk.png",
+      "bytes": 983596,
+      "sha256": "d18d8ff7a0d1a77a34db0de6006ee5be76d8c81280e16a52469c0f218ae2db56"
+    },
+    {
+      "path": "02-room.png",
+      "bytes": 1112859,
+      "sha256": "0cfd848a97ef1d3a8bd1f9695ba1a8ac4f1c216822ea8dd2e9102fea5f17109e"
+    },
+    {
+      "path": "03-original.png",
+      "bytes": 147841,
+      "sha256": "da8813490568e08207f4d3696cc52818b7d5fc0925a7c2d6b3b37cbe789e2bc8"
+    },
+    {
+      "path": "04-amended.png",
+      "bytes": 128610,
+      "sha256": "a62ca9ab8b7ffce3c7843acf2c18109db3cb8d4ed823103ea0e5b7e52230b77e"
+    },
+    {
+      "path": "05-comparison.png",
+      "bytes": 165000,
+      "sha256": "d9aaf5e9058152a411427e2e213b3a5c1ecdc15a7b8ea166cfbf45de2964e457"
+    },
+    {
+      "path": "06-unsupported.png",
+      "bytes": 173176,
+      "sha256": "9f28523e6b5bd46c21762f5f13aebae2826873e8aeeadf2b1eb261bc63682fca"
+    },
+    {
+      "path": "07-supported.png",
+      "bytes": 182737,
+      "sha256": "4f6040719c3a06538c3d4aa83e41245c8696ae37661d300c032b393b2a3d8bd2"
+    },
+    {
+      "path": "08-complete-desk.png",
+      "bytes": 985656,
+      "sha256": "9ce179dd47c8fbc8df1718206867ca396a9a4bf214978f2434e732f1388e8fb6"
+    },
+    {
+      "path": "build-manifest.json",
+      "bytes": 539,
+      "sha256": "82a805d6a731536f0f0bb584625b28239c60d78b9cf4cff55c44f6e1ecd2dbc3"
+    },
+    {
+      "path": "desk-detail-authoring.png",
+      "bytes": 1034282,
+      "sha256": "5a5bd547580d0934959c03893ad61942656ed410f81a60011831448819f81875"
+    },
+    {
+      "path": "direct-result.json",
+      "bytes": 1345,
+      "sha256": "360c40bf86bf27e611548dcbe3fa2ab81c22d3e245439cdf2c67b944ed45320c"
+    },
+    {
+      "path": "extraction.json",
+      "bytes": 681,
+      "sha256": "dd3409a35b83e40fafdd1332c6b18001141b20f958758999d6ae1fffcdf1cca0"
+    },
+    {
+      "path": "furniture-authoring.png",
+      "bytes": 857047,
+      "sha256": "268a351fe4d0f17e41426ad930fc32eb3beb18e206fd03e6086badb8699bbdcb"
+    },
+    {
+      "path": "iteration1-zfighting.png",
+      "bytes": 985032,
+      "sha256": "7943d5aac7696cd1b868a23fa7eefe756f13fa767839aacca4d2e1b0227e48c1"
+    },
+    {
+      "path": "package.json",
+      "bytes": 749,
+      "sha256": "5c4153d1fb53ad3b600146d8e32b29cef1229bfa11bf0537e429b79347d0f7f1"
+    },
+    {
+      "path": "rear-authoring.png",
+      "bytes": 792987,
+      "sha256": "46b580daeaf6225593f221f8ed6c3f791b8fc224848e106d864c67fcf6edbabb"
+    },
+    {
+      "path": "result.json",
+      "bytes": 1345,
+      "sha256": "360c40bf86bf27e611548dcbe3fa2ab81c22d3e245439cdf2c67b944ed45320c"
+    },
+    {
+      "path": "unity-import.json",
+      "bytes": 2470,
+      "sha256": "08857574dddf13a6a33f97c9e5a7e0b80d7439f3caeca71e33c65ae770437785"
+    },
+    {
+      "path": "Unity/Blender/Source/archive17_furniture.py",
+      "bytes": 13652,
+      "sha256": "6b71a57b061bca713ac6b106e745e0d8de07af24bae110714ddc18e9096fc29f"
+    },
+    {
+      "path": "Unity/Blender/SIGNAL47_archive17_furniture.blend",
+      "bytes": 2951554,
+      "sha256": "b5a13bd7a59d05a5f5f38191fe66b03569549f3c4c387bbfc70d7c55ca0132b6"
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Archive17/source-manifest.json",
+      "bytes": 2129,
+      "sha256": "8df867504963b389d067deba0728122429527d0acf5cd6ade8735b07033a31e2"
+    }
+  ]
+}

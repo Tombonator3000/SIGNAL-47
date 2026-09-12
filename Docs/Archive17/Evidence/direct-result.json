@@ -1,0 +1,26 @@
+{
+    "result": "PASS",
+    "method": "API-driven standalone Archive16 study; no native input or performance claim",
+    "unity": "6000.3.22f1",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "checks": [
+        "Study has physical folio and both source documents",
+        "Standalone scene has no chapter/save components",
+        "First launch starts at an unsolved physical desk",
+        "Answer cannot complete the study outside the document comparison",
+        "A ray missing the folio cannot open documents",
+        "Desk view centre ray reaches the physical folio collider",
+        "Comparison is unavailable until both versions have been visited",
+        "Amended copy can be opened",
+        "Invalid page leaves the current document unchanged",
+        "Closing the document leaves the finding unresolved",
+        "Reopening retains read state and permits comparison",
+        "Unsupported motive claim gives feedback without progression",
+        "Incorrect identical-record claim remains retryable",
+        "Documented omitted-reference finding completes the study",
+        "Closing after success preserves the session finding",
+        "Explicit reset returns to a fresh unsolved study",
+        "Documents can be revisited in a different order before comparison",
+        "Invalid answer cannot complete the study"
+    ]
+}
