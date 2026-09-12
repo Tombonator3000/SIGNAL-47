@@ -1,6 +1,6 @@
 # SIGNAL / 47 — aktuell overlevering
 
-Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt; PR10 er flettet på `51752367a591ba6a900b7006e6efa8a1af5813e4`. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
+Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt; PR11 er flettet på `f2d92a7a8cc770849346221751a752831b6b2637`. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
 GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. Brukeren har uttrykkelig godkjent publisering av NightSky12-grenen og opprettelse av PR uten sin egen gjennomgang først. Brukeren har deretter selv flettet [PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8); merge er kontrollert via GitHub, commit `f156a9f2f656d168356145dabbe0bc8fb4ef0ec9`, 11. september 2026 kl. 10:32:08 UTC. Dette godkjenner ikke uutførte tester. Repoets synlighet er ikke endret av agenten.
 
@@ -42,7 +42,13 @@ Brukeren ba 12. september om å fortsette. Designbibelens trestedsramme brukes s
 
 Brukeren ba deretter om å fortsette med gauntlet-loop og game-production, etter forslaget om en liten visuell arkivprøve. [Archive16](Archive16/README.md) prøver P04 ved et fysisk bord: åpne mappe, les original og korrigert protokoll, sammenlign og velg en støttet slutning. Egen Unity-scene med to faste inspeksjonskameraer; ingen ny gangrute, kapittelovergang eller lagring. Dette er en separat produksjonsprøve og lukker ikke M1/M2 eller K2s spilletidsbudsjett.
 
-Blender-oppskrift, redigerbar mappe og FBX er bevart; Unity-bounds er kontrollert. Første visuelle inspeksjon fant for stor tekst, etiketter gjennom bordet og for sterkt lys; disse er korrigert. Alle 18 API-kontroller består både direkte og gjennom en nyutpakket launcher; åtte originale runtime-bilder er inspisert. Kandidat `Archive16-4748e9d2fc14` og endelig testidentitet følger [verifikasjonsrapporten](Archive16/Evidence/verification.json). Kilde og bevis er publisert i [PR11](https://github.com/Tombonator3000/SIGNAL-47/pull/11) på `gauntlet/archive-16`, åpen ved denne overleveringen. `Artifacts/GauntletLinux` inneholder nå arkivprøven; navngitte hovedspillpakker og `Spill-SIGNAL47.sh` er bevart.
+Blender-oppskrift, redigerbar mappe og FBX er bevart; Unity-bounds er kontrollert. Første visuelle inspeksjon fant for stor tekst, etiketter gjennom bordet og for sterkt lys; disse er korrigert. Alle 18 API-kontroller består både direkte og gjennom en nyutpakket launcher; åtte originale runtime-bilder er inspisert. Kandidat `Archive16-4748e9d2fc14` og endelig testidentitet følger [verifikasjonsrapporten](Archive16/Evidence/verification.json). Kilde og bevis er publisert i [PR11](https://github.com/Tombonator3000/SIGNAL-47/pull/11) på `gauntlet/archive-16`, nå flettet; MERGED og mergecommit `f2d92a7a8cc770849346221751a752831b6b2637` er kontrollert via GitHub. `Artifacts/GauntletLinux` inneholder nå arkivprøven; navngitte hovedspillpakker og `Spill-SIGNAL47.sh` er bevart.
+
+## Archive17 — Blender-pass
+
+Brukerens neste bestilling var bedre Blender-modeller. [Archive17](Archive17/README.md) erstatter bord, skap, lampe, mappe og papirbunke i den selvstendige arkivprøven med fem originale FBX-modeller og redigerbar `.blend`-kilde. Samme P04-handling, kameraer og kildetekster. Sammenfallende bordflater og synlig lysrør fra siden ble oppdaget og rettet i faktisk visuell kontroll. UV-er, normaler, dimensjoner og geometribudsjett er kontrollert etter Unity-import. Ingen Magnific-generering var nødvendig; bilde-til-3D-verktøyet finnes i den tilkoblede katalogen.
+
+Ny lokal kandidat: `Artifacts/Releases/Archive16-74eb85f963c7/Start-SIGNAL47.sh` (Archive16-familie, Archive17-modeller). Kilde-SHA `74eb85f963c76cbb6f5277e3605ce68d1c843da97e7f1d74460c857c21d89082`. Blender- og Unity-bilder har separate merkinger. Se rapporten for tester, pakkeidentitet og gjenværende porter. Visual10 er fortsatt standard. Hovedspillets scene og lagring er bevart. Gren: `gauntlet/archive-models-17`.
 
 ## Fortsett her
 

@@ -1,5 +1,7 @@
 # Archive16 — første fysiske dokumentprøve
 
+Nyere modellpass: [Archive17](../Archive17/README.md) bygger videre på denne prøven. Bildene og pakkeidentiteten nedenfor er historisk Archive16.
+
 Selvstendig Unity-prøve av P04 etter Recovery15. Spilleren åpner en fysisk mappe, leser original og korrigert protokoll, sammenligner dem og velger en slutning som kildene støtter. Dette er en produksjonsprøve med to faste kameravinkler, ikke et nytt tilgjengelig område i hovedspillet. Ingen lagring eller kapittelprogresjon inngår. Visual10 er fortsatt standardstarter.
 
 ## Ramme og aksept

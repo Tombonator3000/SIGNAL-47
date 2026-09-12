@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -14,6 +15,13 @@ namespace Signal47.Editor
     public static class Archive16Build
     {
         [Serializable] sealed class BoundsRecord { public Vector3 center,size; public bool scalePass; }
+        [Serializable] sealed class AssetSource { public string name,fbx; public float[] dimensions_blender_xyz; public int triangles,triangle_budget,render_meshes; }
+        [Serializable] sealed class AssetSources { public AssetSource[] assets; }
+        [Serializable] sealed class ImportedAsset { public string name; public Vector3 size; public int triangles,renderMeshes; public bool boundsPass,normalsAndUvPass; }
+        [Serializable] sealed class ImportReport { public List<ImportedAsset> assets=new(); }
+        static ImportReport importReport;
+        static AssetSources sources;
+        const string Furniture="Assets/Signal47/Art/Archive17/";
         const string Art="Assets/Signal47/Art/Archive16/";
         static Material labelMaterial;
         static Material M(string name)=>AssetDatabase.LoadAssetAtPath<Material>("Assets/Signal47/Art/Chapter09/CH09_"+name+".mat");
@@ -35,9 +43,36 @@ namespace Signal47.Editor
                 for(int i=0;i<mats.Length;i++)
                 {
                     var key=mats[i]?mats[i].name:"";
+                    if(key.StartsWith("A17_",StringComparison.Ordinal))
+                    {
+                        string materialName=key.Substring(4);
+                        mats[i]=M(materialName=="Card"?"Cork":materialName=="Tab"?"Red":materialName);
+                        if(!mats[i])throw new Exception("Missing archive material: "+key);
+                        continue;
+                    }
                     mats[i]=key.Contains("Paper")||key.Contains("Label")?M("Paper"):key.Contains("Clip")?M("Steel"):key.Contains("Tab")?M("Red"):key.Contains("Card")?M("Cork"):M("Green");
                 }
                 r.sharedMaterials=mats;
+            }
+            if(path.StartsWith(Furniture,StringComparison.Ordinal))
+            {
+                bounds=rs[0].bounds;foreach(var r in rs)bounds.Encapsulate(r.bounds);
+                var expected=sources.assets.First(a=>a.fbx==Path.GetFileName(path));
+                var d=expected.dimensions_blender_xyz;
+                var target=new Vector3(d[0],d[2],d[1])*(width/d[0]);
+                if((bounds.size-target).magnitude>.002f)throw new Exception("Furniture scale/axis mismatch: "+name+" "+bounds.size+" expected "+target);
+                int triangles=0;
+                foreach(var mf in g.GetComponentsInChildren<MeshFilter>())
+                {
+                    var mesh=mf.sharedMesh;triangles+=mesh.triangles.Length/3;
+                    if(mesh.normals.Length!=mesh.vertexCount||mesh.uv.Length!=mesh.vertexCount||
+                       mesh.normals.Any(n=>float.IsNaN(n.sqrMagnitude)||Mathf.Abs(n.sqrMagnitude-1)>.03f)||
+                       mesh.uv.Any(uv=>!float.IsFinite(uv.x)||!float.IsFinite(uv.y)))
+                        throw new Exception("Invalid imported normals/UVs: "+mf.name);
+                }
+                if(triangles!=expected.triangles||triangles>expected.triangle_budget||rs.Length!=expected.render_meshes)
+                    throw new Exception("Furniture triangle/mesh budget mismatch: "+name+" "+triangles);
+                importReport.assets.Add(new ImportedAsset{name=name,size=bounds.size,triangles=triangles,renderMeshes=rs.Length,boundsPass=true,normalsAndUvPass=true});
             }
             return parent;
         }
@@ -48,7 +83,9 @@ namespace Signal47.Editor
         }
         public static void Build()
         {
-            AssetDatabase.Refresh();var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+            AssetDatabase.Refresh();importReport=new ImportReport();
+            sources=JsonUtility.FromJson<AssetSources>(File.ReadAllText(Furniture+"source-manifest.json"));
+            var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
             var font=AssetDatabase.LoadAssetAtPath<Font>("Assets/Signal47/Art/ThirdParty/VT323/VT323-Regular.ttf");
             labelMaterial=AssetDatabase.LoadAssetAtPath<Material>(Art+"ArchiveWorldText.mat");
             if(!labelMaterial){labelMaterial=new Material(Shader.Find("Signal47/Archive World Text"));AssetDatabase.CreateAsset(labelMaterial,Art+"ArchiveWorldText.mat");}
@@ -58,27 +95,29 @@ namespace Signal47.Editor
             Box("Back plaster",new Vector3(0,1.6f,2.4f),new Vector3(6,3.2f,.2f),M("UpperWall"));
             Box("Back green dado",new Vector3(0,.6f,2.28f),new Vector3(6,1.2f,.06f),M("LowerWall"));
             Box("Left wall",new Vector3(-2.8f,1.5f,0),new Vector3(.2f,3,5),M("UpperWall"));
-            Box("Work table",new Vector3(0,.76f,0),new Vector3(2.7f,.09f,1.35f),M("Green"));
-            foreach(float x in new[]{-1.13f,1.13f})foreach(float z in new[]{-.48f,.48f})Box("Table leg",new Vector3(x,.36f,z),new Vector3(.06f,.72f,.06f),M("Steel"));
+            Model(Furniture+"A17_Desk.fbx","Work table",new Vector3(0,.008f,0),2.7f);
             Model("Assets/Signal47/Art/Chapter09/CH09_LabStool.fbx","Lab stool",new Vector3(1.45f,0,-.2f),.5f);
             for(int i=0;i<3;i++)
             {
-                float x=-1.95f+i*1.6f;Box("Archive cabinet",new Vector3(x,.98f,1.89f),new Vector3(1.3f,1.96f,.56f),M("Green"));
+                float x=-1.95f+i*1.6f;
+                var cabinet=Model(Furniture+"A17_Cabinet.fbx","Archive cabinet",new Vector3(x,0,1.85f),1.3f);
+                // Place text from imported paper pockets, avoiding assumptions about FBX axes.
+                var paper=cabinet.GetComponentsInChildren<MeshFilter>().First(f=>f.name=="Cabinet_Paper");
+                var mesh=paper.sharedMesh;
+                var points=mesh.vertices.Select(v=>paper.transform.TransformPoint(v)).ToArray();
+                float front=points.Min(v=>v.z);
                 for(int j=0;j<4;j++)
-                {float y=.25f+j*.46f;Box("Drawer front",new Vector3(x,y,1.59f),new Vector3(1.19f,.4f,.04f),M("LowerWall"));Box("Label holder",new Vector3(x,y+.05f,1.557f),new Vector3(.29f,.09f,.022f),M("Paper"));Box("Drawer handle",new Vector3(x,y-.085f,1.52f),new Vector3(.21f,.025f,.05f),M("Steel"));Label("Drawer index",$"{1947+i*10} / {j+1:00}",new Vector3(x,y+.05f,1.539f),.012f,Quaternion.identity,font);}
+                    Label("Drawer index",$"{1947+i*10} / {j+1:00}",new Vector3(x,.336f+j*.46f,front-.001f),.012f,Quaternion.identity,font);
             }
-            var folder=Model(Art+"A16_Folio.fbx","Protocol folio",new Vector3(0,.81f,-.16f),.46f);
+            var folder=Model(Furniture+"A17_Folio.fbx","Protocol folio",new Vector3(0,.806f,-.16f),.46f);
             var rs=folder.GetComponentsInChildren<Renderer>();var b=rs[0].bounds;foreach(var r in rs)b.Encapsulate(r.bounds);
             if(b.size.y>.06f||b.size.z<.3f||b.size.x>.48f)throw new Exception("Folio Unity bounds invalid: "+b);
             var hit=new GameObject("Folio interaction").AddComponent<BoxCollider>();hit.transform.position=b.center;hit.size=b.size+new Vector3(.04f,.04f,.04f);
             var labelBounds=rs.First(r=>r.name.Contains("Label field")).bounds;
             Label("Folio caption","STATION 01\nFIELD RECORD / 1947",new Vector3(labelBounds.center.x,labelBounds.max.y+.001f,labelBounds.center.z),.014f,Quaternion.Euler(90,0,0),font,.245f);
-            Box("Document stack",new Vector3(.69f,.83f,.12f),new Vector3(.34f,.045f,.25f),M("Paper"));
-            Box("Task lamp base",new Vector3(-.83f,.835f,.2f),new Vector3(.3f,.07f,.2f),M("Steel"));
-            Box("Task lamp stem",new Vector3(-.83f,1.04f,.25f),new Vector3(.025f,.42f,.025f),M("Steel"));
-            Box("Task lamp shade",new Vector3(-.69f,1.27f,.22f),new Vector3(.43f,.1f,.22f),M("Green"));
-            Box("Task lamp diffuser",new Vector3(-.69f,1.214f,.22f),new Vector3(.34f,.012f,.16f),M("WarmDiffuser"));
-            var lamp=new GameObject("Warm task light").AddComponent<Light>();lamp.type=LightType.Point;lamp.transform.position=new Vector3(-.65f,1.16f,.16f);lamp.color=new Color(1,.79f,.5f);lamp.intensity=.35f;lamp.range=3;lamp.shadows=LightShadows.Soft;
+            Model(Furniture+"A17_PaperStack.fbx","Document stack",new Vector3(.69f,.806f,.12f),.3475463f);
+            Model(Furniture+"A17_Lamp.fbx","Task lamp",new Vector3(-.83f,.806f,.20f),.4623919f);
+            var lamp=new GameObject("Warm task light").AddComponent<Light>();lamp.type=LightType.Point;lamp.transform.position=new Vector3(-.80f,1.235f,.095f);lamp.color=new Color(1,.79f,.5f);lamp.intensity=.35f;lamp.range=3;lamp.shadows=LightShadows.Soft;
             var main=new GameObject("Ceiling wash").AddComponent<Light>();main.type=LightType.Spot;main.spotAngle=125;main.transform.rotation=Quaternion.Euler(90,0,0);main.transform.position=new Vector3(.3f,2.7f,-.5f);main.color=new Color(.8f,.91f,.86f);main.intensity=1.2f;main.range=7;main.shadows=LightShadows.Soft;
             var cam=new GameObject("Study camera").AddComponent<Camera>();cam.gameObject.AddComponent<AudioListener>();cam.clearFlags=CameraClearFlags.SolidColor;cam.backgroundColor=new Color(.025f,.035f,.03f);cam.fieldOfView=52;cam.nearClipPlane=.05f;
             var controller=new GameObject("Archive Study").AddComponent<ArchiveStudy>();controller.labelMaterial=labelMaterial;controller.view=cam;controller.folio=hit;controller.font=font;
@@ -89,6 +128,8 @@ namespace Signal47.Editor
             cam.transform.SetPositionAndRotation(controller.deskView.position,controller.deskView.rotation);
             string scenePath="Assets/Signal47/Scenes/Prototype/Archive16_Study.unity";EditorSceneManager.SaveScene(scene,scenePath);AssetDatabase.SaveAssets();
             Directory.CreateDirectory("../Artifacts/Archive16");File.WriteAllText("../Artifacts/Archive16/unity-folio-bounds.json",JsonUtility.ToJson(new BoundsRecord{center=b.center,size=b.size,scalePass=true},true));
+            Directory.CreateDirectory("../Artifacts/Archive17");
+            File.WriteAllText("../Artifacts/Archive17/unity-import.json",JsonUtility.ToJson(importReport,true));
             string output=Path.GetFullPath("../Artifacts/GauntletLinux/Signal47.x86_64");
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scenePath},locationPathName=output,target=BuildTarget.StandaloneLinux64,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Archive build failed: "+report.summary.result);
