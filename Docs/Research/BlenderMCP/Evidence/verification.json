@@ -1,0 +1,33 @@
+{
+  "upstream_commit": "e8ac4088d4a3e0469d3eff9f9bb2dd717e899219",
+  "blender": "4.5.13 LTS",
+  "mcp_sdk": "1.30.0",
+  "capabilities": {
+    "stdio": "PASS",
+    "datablock_summary": "PASS",
+    "saved_checkpoint_reopen": "PASS",
+    "cpu_render": "PASS",
+    "fbx_roundtrip": "PASS",
+    "original_preserved": "PASS",
+    "dependency_path_fallback": "PASS",
+    "operator_rna_fallback": "PASS",
+    "upstream_missing_files_tool": "FAIL_VERSION_COMPATIBILITY",
+    "upstream_fbx_runtime_docs": "UNSUPPORTED",
+    "live_addon": "UNVERIFIED",
+    "standalone_bpy": "UNVERIFIED"
+  },
+  "upstream_tests": {
+    "run": 91,
+    "passed": 83,
+    "skipped": 7,
+    "failed": 1
+  },
+  "skill_files": {
+    "SKILL.md": "ff10812df9597c4321c484f74c71e485fd30789b249636418a6605c797f2a280",
+    "agents/openai.yaml": "41cb332f901f95c8a6b0a908fb62a34acd76c3871c512fdf2f2f0ae44853b568",
+    "scripts/mcp_cli.py": "fe5069bb85e053e93ed29a2aa2b3d841f52812af30da94182b35e5eeb46ce131",
+    "references/assessment.md": "82be36297f015464a9fdbfb85c711d88b5daf59dc49a99c708a917b2dae9e182",
+    "references/setup-and-use.md": "cf6416ae7af6d58a150d04422c37a00e8a5b458a41fe4dd454f1183693e7cee8",
+    "references/local-verification.md": "54e06a6716d5b44e692e453137011c50ac95edcfd84a39cb98fac948687fbd31"
+  }
+}

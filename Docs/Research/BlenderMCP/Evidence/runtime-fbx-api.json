@@ -1,0 +1,39 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:11.948885+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "get_runtime_python_api_docs_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-source.blend",
+      "identifier": "bpy.ops.export_scene.fbx"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"found\": false,\n  \"identifier\": \"bpy.ops.export_scene.fbx\",\n  \"error\": \"unsupported\",\n  \"truncated\": false\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "found": false,
+      "identifier": "bpy.ops.export_scene.fbx",
+      "error": "unsupported",
+      "truncated": false
+    },
+    "isError": false
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:15.778964+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "execute_blender_code_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-source.blend",
+      "code": "raise AssertionError('must not execute')",
+      "expected_output_blend": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-probe.blend"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "Error executing tool execute_blender_code_for_cli: expected output checkpoint must be a fresh distinct path",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": null,
+    "isError": true
+  }
+}

@@ -1,0 +1,22 @@
+..........................................sssssss........................................[09/12/26 23:36:11] INFO     Processing request of type            server.py:733
+                             ListToolsRequest                                   
+.F
+======================================================================
+FAIL: test_tools_match_expected (tests.test_tool_listing.TestToolListing.test_tools_match_expected)
+Checks that the live tool listing exactly matches ``EXPECTED_TOOLS``.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/tombonator3000t/signal47-tools/blender-mcp-e8ac408/tests/test_tool_listing.py", line 798, in test_tools_match_expected
+    self.assertEqual(self._tools, EXPECTED_TOOLS)
+AssertionError: Lists differ: [{'na[42 chars]: "\n        Execute Python code in the connec[17614 chars]t'}}] != [{'na[42 chars]: "\nExecute Python code in the connected Blen[16638 chars]t'}}]
+
+First differing element 0:
+{'nam[41 chars]: "\n        Execute Python code in the connec[514 chars]ct'}}
+{'nam[41 chars]: "\nExecute Python code in the connected Blen[466 chars]ct'}}
+
+Diff is 49219 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 91 tests in 0.844s
+
+FAILED (failures=1, skipped=7)

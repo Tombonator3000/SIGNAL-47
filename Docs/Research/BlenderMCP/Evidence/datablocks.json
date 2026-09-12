@@ -1,0 +1,63 @@
+{
+  "timestamp_utc": "2026-09-12T21:36:09.783802+00:00",
+  "server": "/home/tombonator3000t/signal47-tools/blender-mcp-env/bin/blender-mcp",
+  "blender": "/home/tombonator3000t/signal47-tools/blender-4.5.13-linux-x64/blender",
+  "transport": "stdio",
+  "live_sync_disabled": true,
+  "server_info": {
+    "name": "blender-mcp",
+    "title": null,
+    "version": "1.30.0",
+    "websiteUrl": null,
+    "icons": null
+  },
+  "request": {
+    "tool": "get_blendfile_summary_datablocks_for_cli",
+    "arguments": {
+      "blend_file": "/home/tombonator3000t/signal47-tools/evidence/blender-mcp-20260912/iteration2/workstation-source.blend"
+    }
+  },
+  "response": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"status\": \"ok\",\n  \"datablock_counts\": {\n    \"cameras\": 1,\n    \"lights\": 2,\n    \"materials\": 19,\n    \"meshes\": 13,\n    \"objects\": 16,\n    \"scenes\": 1,\n    \"screens\": 11,\n    \"window_managers\": 1,\n    \"workspaces\": 11,\n    \"worlds\": 1\n  },\n  \"render_engine\": \"CYCLES\",\n  \"scene_name\": \"Scene\",\n  \"workspaces\": [\n    \"Animation\",\n    \"Compositing\",\n    \"Geometry Nodes\",\n    \"Layout\",\n    \"Modeling\",\n    \"Rendering\",\n    \"Scripting\",\n    \"Sculpting\",\n    \"Shading\",\n    \"Texture Paint\",\n    \"UV Editing\"\n  ],\n  \"active_workspace\": \"Layout\"\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "status": "ok",
+      "datablock_counts": {
+        "cameras": 1,
+        "lights": 2,
+        "materials": 19,
+        "meshes": 13,
+        "objects": 16,
+        "scenes": 1,
+        "screens": 11,
+        "window_managers": 1,
+        "workspaces": 11,
+        "worlds": 1
+      },
+      "render_engine": "CYCLES",
+      "scene_name": "Scene",
+      "workspaces": [
+        "Animation",
+        "Compositing",
+        "Geometry Nodes",
+        "Layout",
+        "Modeling",
+        "Rendering",
+        "Scripting",
+        "Sculpting",
+        "Shading",
+        "Texture Paint",
+        "UV Editing"
+      ],
+      "active_workspace": "Layout"
+    },
+    "isError": false
+  }
+}
