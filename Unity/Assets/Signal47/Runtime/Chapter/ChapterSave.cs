@@ -89,6 +89,12 @@ namespace Signal47.Chapter
             instance=this;suppressCheckpoints=false;quitPending=false;quitAllowed=false;quitWithoutSavingAvailable=false;
             Application.wantsToQuit-=WantsToQuit;Application.wantsToQuit+=WantsToQuit;
             PlayerSettings.Load();PlayerSettings.Apply();
+            if(pendingRestore==null)RefreshMenuStatus();
+        }
+        public static void RefreshMenuStatus()
+        {
+            if(!Saving&&!IsRestoring&&!quitPending)
+                Status=HasSave?"A checkpoint was found. Choose Continue to reopen it.":"No checkpoint saved yet.";
         }
         IEnumerator Start()
         {
@@ -358,27 +364,46 @@ namespace Signal47.Chapter
             if(File.Exists(destination))File.Replace(temporary,destination,backup);
             else File.Move(temporary,destination);
         }
-        public static void StartNew()
+        public static bool StartNew()
         {
-            // Never remove FieldPhotos, settings, or earlier exported evidence.
-            suppressCheckpoints=true;checkpointRequested=false;pendingRestore=null;IsRestoring=false;quitPending=false;quitAllowed=false;quitWithoutSavingAvailable=false;quitClock=null;
+            FinishWrite();
+            if(Saving||IsRestoring||quitPending)
+            {Status="Wait for saving or loading to finish before starting a new night shift.";return false;}
+            if(string.IsNullOrEmpty(SavePath))
+            {Status="Cannot start a new case: "+storageError;return false;}
             try
             {
                 lock(FileGate)
                 {
-                    caseGeneration++;
-                    if(!string.IsNullOrEmpty(SavePath))
+                    // Preserve both originals before clearing the active checkpoint.
+                    // A failed copy never removes an active file. If clearing later
+                    // fails, the recovery directory still contains the originals.
+                    string retired=null;
+                    foreach(string path in new[]{SavePath,BackupPath})
                     {
-                        File.Delete(SavePath);File.Delete(BackupPath);File.Delete(SavePath+".tmp");
+                        if(!File.Exists(path))continue;
+                        if(retired==null)
+                        {
+                            retired=Path.Combine(StorageDirectory,"PreviousCases",DateTime.UtcNow.ToString("yyyyMMddTHHmmssfff")+"-"+Guid.NewGuid().ToString("N"));
+                            Directory.CreateDirectory(retired);
+                        }
+                        string copy=Path.Combine(retired,Path.GetFileName(path));
+                        using(var input=File.OpenRead(path))
+                        using(var output=new FileStream(copy,FileMode.CreateNew,FileAccess.Write,FileShare.None))
+                        {input.CopyTo(output);output.Flush(true);}
                     }
+                    File.Delete(SavePath);File.Delete(BackupPath);File.Delete(SavePath+".tmp");
+                    caseGeneration++;
                 }
-                writeJob=null;Status="New case. Previous photograph exports were preserved.";LastLoadUsedBackup=false;
+                suppressCheckpoints=true;checkpointRequested=false;pendingRestore=null;quitAllowed=false;quitWithoutSavingAvailable=false;quitClock=null;
+                writeJob=null;Status="New case. Previous checkpoints and photograph exports were preserved.";LastLoadUsedBackup=false;
                 var g=GameSession.Instance;
                 // Initial Start enters this already-fresh scene; in-game New reloads it.
                 if(g&&g.hud&&!g.hud.Started)suppressCheckpoints=false;
+                return true;
             }
             catch(Exception error) when(error is IOException||error is UnauthorizedAccessException)
-            {Status="The old checkpoint could not be cleared: "+error.Message;Debug.LogWarning("CHAPTER_NEW_CASE_FAILED "+error.Message);}
+            {Status="New shift canceled: recovery files could not be prepared. Your current shift remains open.";Debug.LogWarning("CHAPTER_NEW_CASE_FAILED "+error.Message);return false;}
         }
     }
 }

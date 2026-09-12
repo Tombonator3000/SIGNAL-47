@@ -117,8 +117,9 @@ class ChapterJourney(legacy.Journey):
   s=wait_for(lambda s:s['paused']);self.mark('normal-save-and-quit');self.d.click(s['width']/2+62,s['height']/2+168)
  def resume(self):
   self.d.focus();s=state();assert not s["started"]
-  self.d.move_pointer(s["width"]/2,s["height"]/2+138);load_started=time.monotonic()
-  self.d.click(s["width"]/2,s["height"]/2+138)
+  continue_y=s["height"]/2+(81 if s.get('menuLayoutVersion',0)>=14 else 138)
+  self.d.move_pointer(s["width"]/2,continue_y);load_started=time.monotonic()
+  self.d.click(s["width"]/2,continue_y)
   wait_for(lambda s:s["started"] and not s["restoring"],30)
   load_seconds=time.monotonic()-load_started
   self.mark("continued-in-new-process")

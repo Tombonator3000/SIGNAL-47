@@ -1,0 +1,21 @@
+{
+  "baseline_commit": "f156a9f2f656d168356145dabbe0bc8fb4ef0ec9",
+  "merged_pr": 8,
+  "status": "Design proposal, not implementation or measured playtime",
+  "prior_concept_commit": "558b1db60e4e3191a00bdf37c444b46384dbdf2b",
+  "prior_concept": "Docs/CONCEPT_11.md on concept/story-sky-11",
+  "reference_images": [
+    {
+      "path": "Artifacts/Design13/References/03-saro-place.png",
+      "sha256": "e8a288f549ecceee4d1bbf0339b2f9879a04939b32f8d41dae98862c3f5b192a"
+    },
+    {
+      "path": "Artifacts/Design13/References/05-old-survey-station.png",
+      "sha256": "758a9ea49213de1249840ea0053d436fa7719964fd08734b224d8600e23d4975"
+    },
+    {
+      "path": "Artifacts/Design13/References/06-motel-witness.png",
+      "sha256": "33d65abe676e3553123fbd4da0ddedd08482441c316c63b9dd4b69a9c3f6d429"
+    }
+  ]
+}

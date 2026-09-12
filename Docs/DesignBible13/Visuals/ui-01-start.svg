@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1280" height="800" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1280" height="800"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-800)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1280" height="800" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="48" y="752" style="font-family: DVB; font-size: 22px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1504) scale(1,-1)">SIGNAL / 47</text>
+			<text x="48" y="703" style="font-family: DVB; font-size: 38px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1406) scale(1,-1)">THE ERASED NIGHT</text>
+			<text x="48" y="668" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1336) scale(1,-1)">Main menu / example case data / returning player</text>
+			<path d="M 48,647 L 1232,647 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 48,60 L 1232,60 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="48" y="29" style="font-family: DV; font-size: 17px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,58) scale(1,-1)">UI SKETCH / v0.1 / PROPOSED - NOT GAMEPLAY</text>
+			<text x="1186.19140625" y="29" style="font-family: DV; font-size: 18px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,58) scale(1,-1)">1986</text>
+			<text x="75" y="575" style="font-family: DVB; font-size: 59px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1150) scale(1,-1)">SIGNAL / 47</text>
+			<rect x="78" y="486" width="362" height="48" rx="3" ry="3" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="95" y="503" style="font-family: DVB; font-size: 22px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,1006) scale(1,-1)">CONTINUE</text>
+			<rect x="78" y="420" width="362" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="95" y="437" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,874) scale(1,-1)">NEW CASE</text>
+			<rect x="78" y="354" width="362" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="95" y="371" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,742) scale(1,-1)">LOAD CASE</text>
+			<rect x="78" y="288" width="362" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="95" y="305" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,610) scale(1,-1)">SETTINGS</text>
+			<rect x="78" y="222" width="362" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="95" y="239" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,478) scale(1,-1)">CREDITS</text>
+			<rect x="78" y="156" width="362" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="95" y="173" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,346) scale(1,-1)">QUIT</text>
+			<rect x="535" y="126" width="662" height="470" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<rect x="565" y="541" width="96.4140625" height="29" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="576" y="550" style="font-family: DVB; font-size: 16px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,1100) scale(1,-1)">CASE 01</text>
+			<text x="565" y="487" style="font-family: DVB; font-size: 29px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,974) scale(1,-1)">THE AMENDED PROTOCOL</text>
+			<text x="565" y="445" style="font-family: DV; font-size: 25px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,890) scale(1,-1)">SARO / Archive</text>
+			<text x="565" y="400" style="font-family: DV; font-size: 22px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,800) scale(1,-1)">PLAYTIME 01:28:12</text>
+			<text x="565" y="362" style="font-family: DV; font-size: 22px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,724) scale(1,-1)">LAST SAVED: TODAY, 21:14</text>
+			<path d="M 565,326 L 1166,326 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="565" y="281" style="font-family: DV; font-size: 24px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,562) scale(1,-1)">Continue from your latest checkpoint. Your</text>
+			<text x="565" y="246.20000000000005" style="font-family: DV; font-size: 24px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,492) scale(1,-1)">original photographs stay with this case.</text>
+			<text x="565" y="157" style="font-family: DV; font-size: 19px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,314) scale(1,-1)">ENTER  SELECT        ESC  BACK</text>
+		</g>
+	</g>
+</svg>

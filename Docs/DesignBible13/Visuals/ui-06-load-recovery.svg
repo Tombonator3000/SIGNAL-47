@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1280" height="800" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1280" height="800"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-800)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1280" height="800" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="48" y="752" style="font-family: DVB; font-size: 22px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1504) scale(1,-1)">SIGNAL / 47</text>
+			<text x="48" y="703" style="font-family: DVB; font-size: 38px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1406) scale(1,-1)">CHECKPOINT RECOVERY</text>
+			<text x="48" y="668" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1336) scale(1,-1)">Load failure state / preserve originals / no silent restart</text>
+			<path d="M 48,647 L 1232,647 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 48,60 L 1232,60 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="48" y="29" style="font-family: DV; font-size: 17px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,58) scale(1,-1)">UI SKETCH / v0.1 / PROPOSED - NOT GAMEPLAY</text>
+			<text x="1186.19140625" y="29" style="font-family: DV; font-size: 18px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,58) scale(1,-1)">1986</text>
+			<rect x="178" y="115" width="924" height="486" rx="6" ry="6" style="stroke: rgb(96%,63%,58%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<rect x="214" y="543" width="304.796875" height="29" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(96%,63%,58%); fill-rule: evenodd;"/>
+			<text x="225" y="552" style="font-family: DVB; font-size: 16px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,1104) scale(1,-1)">CHECKPOINT NEEDS RECOVERY</text>
+			<text x="214" y="494" style="font-family: DVB; font-size: 31px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,988) scale(1,-1)">The latest checkpoint could not be read.</text>
+			<text x="214" y="445" style="font-family: DV; font-size: 25px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,890) scale(1,-1)">Your previous checkpoint and original photographs have been</text>
+			<text x="214" y="408.75" style="font-family: DV; font-size: 25px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,817) scale(1,-1)">kept. A verified recovery copy is available.</text>
+			<rect x="214" y="266" width="850" height="100" rx="4" ry="4" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="234" y="328" style="font-family: DVB; font-size: 23px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,656) scale(1,-1)">RECOVERY COPY / CASE 01</text>
+			<text x="234" y="290" style="font-family: DV; font-size: 22px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,580) scale(1,-1)">SARO · Today 21:06 · Playtime 01:20:04</text>
+			<rect x="214" y="176" width="296" height="48" rx="3" ry="3" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="231" y="193" style="font-family: DVB; font-size: 22px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,386) scale(1,-1)">LOAD RECOVERY</text>
+			<rect x="532" y="176" width="233" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="549" y="193" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,386) scale(1,-1)">TRY AGAIN</text>
+			<rect x="787" y="176" width="277" height="48" rx="3" ry="3" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="804" y="193" style="font-family: DV; font-size: 22px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,386) scale(1,-1)">BACK TO CASES</text>
+			<text x="214" y="136" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,272) scale(1,-1)">The unreadable file is preserved. Loading recovery may lose newer progress.</text>
+		</g>
+	</g>
+</svg>

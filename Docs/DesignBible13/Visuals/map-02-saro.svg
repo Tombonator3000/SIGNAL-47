@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1280" height="800" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1280" height="800"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-800)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1280" height="800" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(6%,10%,10%); fill-rule: evenodd;"/>
+			<text x="48" y="752" style="font-family: DVB; font-size: 22px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1504) scale(1,-1)">SIGNAL / 47</text>
+			<text x="48" y="703" style="font-family: DVB; font-size: 38px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1406) scale(1,-1)">SARO / fungerende kjerne og foreslått utvidelse</text>
+			<text x="48" y="668" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1336) scale(1,-1)">Topologisk romplan / plasseringer skal tilpasses faktisk scene / 3 interiører</text>
+			<path d="M 48,647 L 1232,647 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 48,60 L 1232,60 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<text x="48" y="29" style="font-family: DV; font-size: 17px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,58) scale(1,-1)">PROPOSED MAP / v0.1 / PROPOSED - NOT GAMEPLAY</text>
+			<text x="1186.19140625" y="29" style="font-family: DV; font-size: 18px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,58) scale(1,-1)">1986</text>
+			<rect x="58" y="442" width="290" height="154" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="76" y="562" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1124) scale(1,-1)">FOTOLAB</text>
+			<text x="76" y="530" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1060) scale(1,-1)">Eksponering → framkalling</text>
+			<text x="76" y="502.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1004) scale(1,-1)">→ undersøkelse.</text>
+			<text x="76" y="474.9" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,949) scale(1,-1)">Eksisterende.</text>
+			<rect x="400" y="442" width="335" height="154" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="418" y="562" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,1124) scale(1,-1)">KONTROLLROM / C</text>
+			<text x="418" y="530" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1060) scale(1,-1)">Mottaker, telefon, utskrift og</text>
+			<text x="418" y="502.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1004) scale(1,-1)">finaleprotokoll. Eksisterende.</text>
+			<rect x="792" y="442" width="360" height="154" rx="5" ry="5" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="810" y="562" style="font-family: DVB; font-size: 24px;fill: rgb(93%,70%,43%); stroke:none;" transform="translate(0,1124) scale(1,-1)">ARKIV</text>
+			<text x="810" y="530" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1060) scale(1,-1)">Nytt lite rom: to protokoller,</text>
+			<text x="810" y="502.45" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,1004) scale(1,-1)">referansekart og kontaktspor.</text>
+			<path d="M 348,525 L 400,525 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="400 525, 390 530, 390 520" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 735,525 L 792,525 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="792 525, 782 530, 782 520" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<rect x="400" y="196" width="335" height="169" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="418" y="331" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,662) scale(1,-1)">SERVICEGÅRD</text>
+			<text x="418" y="299" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,598) scale(1,-1)">Eksisterende hovedganglinje</text>
+			<text x="418" y="271.45000000000005" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,542) scale(1,-1)">og port. Reisepunkt ved bilen.</text>
+			<path d="M 565,442 L 565,365 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="565 365, 570 375, 560 375" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 348,472 L 374,472 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 374,472 L 374,324 Z" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<path d="M 374,324 L 400,324 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="400 324, 390 329, 390 319" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<rect x="58" y="196" width="255" height="169" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="76" y="331" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,662) scale(1,-1)">S-03</text>
+			<text x="76" y="299" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,598) scale(1,-1)">Motorlogg og første</text>
+			<text x="76" y="271.45000000000005" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,542) scale(1,-1)">eksponering.</text>
+			<rect x="837" y="196" width="315" height="169" rx="5" ry="5" style="stroke: rgb(31%,39%,36%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(10%,16%,15%); fill-rule: evenodd;"/>
+			<text x="855" y="331" style="font-family: DVB; font-size: 24px;fill: rgb(93%,91%,87%); stroke:none;" transform="translate(0,662) scale(1,-1)">B-12 / B</text>
+			<text x="855" y="299" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,598) scale(1,-1)">Kontrollreferanse, svarprøve</text>
+			<text x="855" y="271.45000000000005" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,542) scale(1,-1)">og observasjonspunkt.</text>
+			<path d="M 400,238 L 313,238 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="313 238, 323 233, 323 243" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<path d="M 735,290 L 837,290 Z" style="stroke: rgb(93%,70%,43%); stroke-linecap: butt; stroke-width: 2;"/>
+			<polygon points="837 290, 827 295, 827 285" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<rect x="58" y="111" width="287.84375" height="29" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(60%,77%,64%); fill-rule: evenodd;"/>
+			<text x="69" y="120" style="font-family: DVB; font-size: 16px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,240) scale(1,-1)">EKSISTERENDE FORBINDELSE</text>
+			<rect x="467" y="111" width="225.5" height="29" style="stroke: none; stroke-linecap: butt; stroke-width: 1.3; fill: rgb(93%,70%,43%); fill-rule: evenodd;"/>
+			<text x="478" y="120" style="font-family: DVB; font-size: 16px;fill: rgb(9%,14%,12%); stroke:none;" transform="translate(0,240) scale(1,-1)">FORESLÅTT NYTT ROM</text>
+			<text x="58" y="89" style="font-family: DV; font-size: 19px;fill: rgb(71%,77%,74%); stroke:none;" transform="translate(0,178) scale(1,-1)">A ligger ved målestasjonen. Kartet viser forbindelser, ikke oppmålte avstander eller nye azimutverdier.</text>
+		</g>
+	</g>
+</svg>

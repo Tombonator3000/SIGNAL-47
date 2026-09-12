@@ -1,0 +1,401 @@
+{
+  "recorded_utc": "2026-09-11T11:56:50.040708+00:00",
+  "baseline_commit": "f156a9f2f656d168356145dabbe0bc8fb4ef0ec9",
+  "review_scope": "Design/document structure only; no Unity game or interactive UI test",
+  "pdf_sha256": "c8e33a78c4b6edc2524bf7c68ed6f1f17001e9f8e2d626ba966bd77934b07d45",
+  "pdf_pages": 43,
+  "page_geometry": [
+    {
+      "page": 1,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 59,
+      "outside_page": 0
+    },
+    {
+      "page": 2,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 217,
+      "outside_page": 0
+    },
+    {
+      "page": 3,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 394,
+      "outside_page": 0
+    },
+    {
+      "page": 4,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 389,
+      "outside_page": 0
+    },
+    {
+      "page": 5,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 484,
+      "outside_page": 0
+    },
+    {
+      "page": 6,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 501,
+      "outside_page": 0
+    },
+    {
+      "page": 7,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 475,
+      "outside_page": 0
+    },
+    {
+      "page": 8,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 361,
+      "outside_page": 0
+    },
+    {
+      "page": 9,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 269,
+      "outside_page": 0
+    },
+    {
+      "page": 10,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 334,
+      "outside_page": 0
+    },
+    {
+      "page": 11,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 506,
+      "outside_page": 0
+    },
+    {
+      "page": 12,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 488,
+      "outside_page": 0
+    },
+    {
+      "page": 13,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 326,
+      "outside_page": 0
+    },
+    {
+      "page": 14,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 348,
+      "outside_page": 0
+    },
+    {
+      "page": 15,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 423,
+      "outside_page": 0
+    },
+    {
+      "page": 16,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 238,
+      "outside_page": 0
+    },
+    {
+      "page": 17,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 409,
+      "outside_page": 0
+    },
+    {
+      "page": 18,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 369,
+      "outside_page": 0
+    },
+    {
+      "page": 19,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 476,
+      "outside_page": 0
+    },
+    {
+      "page": 20,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 258,
+      "outside_page": 0
+    },
+    {
+      "page": 21,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 237,
+      "outside_page": 0
+    },
+    {
+      "page": 22,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 379,
+      "outside_page": 0
+    },
+    {
+      "page": 23,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 360,
+      "outside_page": 0
+    },
+    {
+      "page": 24,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 360,
+      "outside_page": 0
+    },
+    {
+      "page": 25,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 202,
+      "outside_page": 0
+    },
+    {
+      "page": 26,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 375,
+      "outside_page": 0
+    },
+    {
+      "page": 27,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 432,
+      "outside_page": 0
+    },
+    {
+      "page": 28,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 375,
+      "outside_page": 0
+    },
+    {
+      "page": 29,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 423,
+      "outside_page": 0
+    },
+    {
+      "page": 30,
+      "width": 595.28,
+      "height": 841.89,
+      "words": 219,
+      "outside_page": 0
+    },
+    {
+      "page": 31,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 119,
+      "outside_page": 0
+    },
+    {
+      "page": 32,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 119,
+      "outside_page": 0
+    },
+    {
+      "page": 33,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 129,
+      "outside_page": 0
+    },
+    {
+      "page": 34,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 144,
+      "outside_page": 0
+    },
+    {
+      "page": 35,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 54,
+      "outside_page": 0
+    },
+    {
+      "page": 36,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 57,
+      "outside_page": 0
+    },
+    {
+      "page": 37,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 60,
+      "outside_page": 0
+    },
+    {
+      "page": 38,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 91,
+      "outside_page": 0
+    },
+    {
+      "page": 39,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 127,
+      "outside_page": 0
+    },
+    {
+      "page": 40,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 100,
+      "outside_page": 0
+    },
+    {
+      "page": 41,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 92,
+      "outside_page": 0
+    },
+    {
+      "page": 42,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 83,
+      "outside_page": 0
+    },
+    {
+      "page": 43,
+      "width": 841.89,
+      "height": 595.28,
+      "words": 105,
+      "outside_page": 0
+    }
+  ],
+  "task_count": 18,
+  "task_dependencies": {
+    "P01": [],
+    "P02": [
+      "P01"
+    ],
+    "P03": [
+      "P02"
+    ],
+    "P04": [
+      "P03"
+    ],
+    "P05": [
+      "P04"
+    ],
+    "P06": [
+      "P05"
+    ],
+    "P07": [
+      "P05"
+    ],
+    "P08": [
+      "P06",
+      "P07"
+    ],
+    "P09": [
+      "P08"
+    ],
+    "P10": [
+      "P09"
+    ],
+    "P11": [
+      "P10"
+    ],
+    "P12": [
+      "P10"
+    ],
+    "P13": [
+      "P11",
+      "P12"
+    ],
+    "P14": [
+      "P13"
+    ],
+    "P15": [
+      "P14"
+    ],
+    "P16": [
+      "P15"
+    ],
+    "P17": [
+      "P16"
+    ],
+    "P18": [
+      "P17"
+    ]
+  },
+  "tasks_reachable": "PASS in the proposed dependency model",
+  "chapter_minutes": [
+    50,
+    45,
+    60,
+    45,
+    65,
+    55,
+    10
+  ],
+  "total_target_minutes": 330,
+  "playtime_status": "UNMEASURED design target",
+  "canon_constants_present": "PASS",
+  "Unity_changes": "none; compared with baseline; launcher also unchanged",
+  "visual_review": {
+    "result": "PASS, scoped design self-review",
+    "reviewed": "All 43 pages rendered and visually inspected as six contact sheets; selected text/UI pages inspected individually; final wording correction on page 13 rendered and inspected again. Three chosen concept originals also inspected.",
+    "corrections": [
+      "Misleading SARO connector rerouted around S-03",
+      "Optional task order distinguished from dependency",
+      "Load/save button labels fitted inside controls",
+      "All three manual save slots shown",
+      "Finale concept laser-like beam removed and analog camera corrected",
+      "Contents page compressed and avoidable orphan pages removed",
+      "Task P01 wording corrected"
+    ],
+    "limits": "Maps are topological proposals; UI is static. No Unity interaction, native journey, performance or first-time playtime test."
+  },
+  "runtime_gate": "NOT RUN; design-only pass; desktop remains unavailable",
+  "local_markdown_links_checked": 22,
+  "vector_files": 10,
+  "concept_files": 3,
+  "structural_result": "PASS",
+  "design_approval": "PENDING user review of new narrative/three-site scope/endings; proposed direction, not approved canon"
+}

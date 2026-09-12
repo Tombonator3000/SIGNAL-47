@@ -1,0 +1,23 @@
+[
+  {
+    "file": "Visuals/concept-01-survey-station.png",
+    "sha256": "00340c4b7cc020f9786a52f31a1e38d961fa2e44898db2e31322b88b23cee242",
+    "bytes": 2233567,
+    "kind": "Generated concept, not gameplay",
+    "review": "Inspected by primary agent"
+  },
+  {
+    "file": "Visuals/concept-02-nora-motel.png",
+    "sha256": "85d21867baf7699d6fbc266e8dbe7dc6d1846215b2e7f04968bbbcdf2cae9ead",
+    "bytes": 2029116,
+    "kind": "Generated concept, not gameplay",
+    "review": "Inspected by primary agent"
+  },
+  {
+    "file": "Visuals/concept-03-final-reading.png",
+    "sha256": "4f4441e3d4e4b174d573ad33dae41daccff9505fb1c240878036baef2900309a",
+    "bytes": 2206983,
+    "kind": "Generated concept, not gameplay",
+    "review": "Inspected by primary agent"
+  }
+]

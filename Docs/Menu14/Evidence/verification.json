@@ -1,0 +1,99 @@
+{
+  "recorded_utc": "2026-09-12T18:15:59.383288+00:00",
+  "scope": "Menu14 bounded Unity menu/checkpoint correction plus M1 paper preparation",
+  "baseline": "5f568bdf3f7dbcb18c1ca10174241ff4cfd174a9",
+  "build": {
+    "base_revision": "fb3b0c3a348889fd6da557ca66a4a8230264500f",
+    "working_tree_changes": true,
+    "unity_source_sha256": "9c76ff2cf81bbd024ea37c57224d55f54a8c6b62f0bd767641492fe16ef076f2",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "29766dc6225d1a06ea580428dcbb865156bef8c01aa0b9af158cbd8719c70d22",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Menu14-9c76ff2cf81b",
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Menu14-9c76ff2cf81b",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Menu14-9c76ff2cf81b-Linux.tar.gz",
+    "archive_sha256": "ae20d4f7da295df584208e9c75d7e975e7194b57df111a51ba4b74fde2117fdb",
+    "package_payload_sha256": "300ae19e45c12dd1db8d519b51a933da8f1c9c38a6d8104a5ac53b6dff4c8d81",
+    "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Menu14-9c76ff2cf81b/Start-SIGNAL47.sh",
+    "candidate": true
+  },
+  "run_profile": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Menu14/menu14-test-w07br2",
+  "unpacked_launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Menu14/unpacked-final-7euwmhnm/Menu14-9c76ff2cf81b/Start-SIGNAL47.sh",
+  "process_exit": 0,
+  "runtime_checks": 28,
+  "runtime_result": "PASS: API-driven, not native input",
+  "visual_review": "Self-review: seven original states inspected, final changed confirmation/error pages re-inspected; 1280x800. Menus only, not full design bible visual completion.",
+  "original_fixture_files_unchanged": true,
+  "default_launcher_unchanged": true,
+  "gates": {
+    "build": "PASS",
+    "API_menu_save_contracts": "PASS",
+    "original_photo_restore": "PASS in isolated relocated v1 fixture",
+    "packaged_launch": "PASS",
+    "native_keyboard_mouse_journey": "UNVERIFIED",
+    "keyboard_focus_and_Enter_Tab": "UNVERIFIED",
+    "performance": "UNVERIFIED",
+    "M1_new_reader_comprehension": "UNVERIFIED",
+    "M1_paper_material_and_self_review": "PASS"
+  },
+  "remaining": "No three-case or multi-slot UI, prologue-saving, migration format, area transition or new Unity story area built. Existing default stays Visual10.",
+  "evidence_files": [
+    {
+      "file": "01-fresh-menu.png",
+      "bytes": 764381,
+      "sha256": "8d20edae3a9e2e1bbab192a3b2de494234b7af3b7a94fad93aad45d30ccc718c"
+    },
+    {
+      "file": "02-existing-checkpoint.png",
+      "bytes": 766022,
+      "sha256": "970405080d2423ff09fcc7a22e27a21ff03814941d0b89a97a5c4e72d8d39a96"
+    },
+    {
+      "file": "03-confirmation.png",
+      "bytes": 166445,
+      "sha256": "ab30feb34129890d5c90fa3028323dfabc712fa4ba0b09785bceebcf2e7ff042"
+    },
+    {
+      "file": "04-paused.png",
+      "bytes": 803609,
+      "sha256": "0cb66ada9805b226ca314143aea0e0c54cddb65d24b0caa8a8a71a693f35d89f"
+    },
+    {
+      "file": "05-recovery-copy-failure.png",
+      "bytes": 174849,
+      "sha256": "df5a8f205841eb74aeb7f301b95a35967853cf685c830b5f632b4af2ad3852fa"
+    },
+    {
+      "file": "06-new-menu-after-reload.png",
+      "bytes": 765040,
+      "sha256": "bb608aceb189321029da607c11aed753a8b90c6d74f932952e0b84505290d666"
+    },
+    {
+      "file": "07-restored-case-pause.png",
+      "bytes": 828445,
+      "sha256": "2ccee2bf5f613d2d0a811973e64cb38aa3b5c3d42beb261a13f6964089165280"
+    },
+    {
+      "file": "build-manifest.json",
+      "bytes": 539,
+      "sha256": "db6dcb69a5b965bc740c94dd4314127276e0de4fb1271e50c2abf401f087e442"
+    },
+    {
+      "file": "fixture-source-hashes.json",
+      "bytes": 1444,
+      "sha256": "6e635c96de9a373b5d55dd1bbea4975bbf98b8ee90609e18a5b6f7462923ae8d"
+    },
+    {
+      "file": "fixture.txt",
+      "bytes": 166,
+      "sha256": "56a1df0631a87c1749c8af84b1fb3395717adee029f37c063f6b99c69818445a"
+    },
+    {
+      "file": "result.json",
+      "bytes": 2502,
+      "sha256": "f0dfcdb847c2e5e295b9cad690e625742b0005bbf0247fdef4f85411ee35efcb"
+    }
+  ]
+}

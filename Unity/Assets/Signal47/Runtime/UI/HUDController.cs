@@ -12,14 +12,21 @@ namespace Signal47.UI
         public bool Paused { get; private set; }
         public bool TitleVisible { get; private set; }
         public bool SettingsOpen => settingsOpen;
-        public bool ModalOpen => settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
+        public bool NewShiftConfirmation { get; private set; }
+        public bool ModalOpen => NewShiftConfirmation || settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
         public string InteractionPrompt { get; set; } = "";
         string toast=""; bool paperOpen,notebookOpen,photoOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
         Vector2 noteScroll,paperScroll;bool returnToNotebook,settingsOpen;
+        bool confirmationFocusPending,confirmationAudioPaused;float confirmationTimeScale;string confirmationMessage="";
         void Update()
         {
             if(ChapterSave.QuitPending || ChapterSave.IsRestoring || Core.GameSession.Instance.Transitioning)return;
+            if(NewShiftConfirmation)
+            {
+                if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)CancelNewShift();
+                return;
+            }
             if(settingsOpen)
             {
                 if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame){PlayerSettings.Save();settingsOpen=false;}
@@ -47,6 +54,29 @@ namespace Signal47.UI
         }
         public void SetPaused(bool value){Paused=value;Time.timeScale=value?0:1;AudioListener.pause=value;SetCursor(!value);}
         public void StartShift(){Started=true;SetPaused(false);SetCursor(true);Toast("SHIFT LOG // 23:41 LOCAL",2f);}
+        public void RequestNewShift()
+        {
+            if(NewShiftConfirmation||ChapterSave.Saving||ChapterSave.IsRestoring||ChapterSave.QuitPending)return;
+            if(!Started&&!ChapterSave.HasSave){BeginNewShift();return;}
+            confirmationTimeScale=Time.timeScale;confirmationAudioPaused=AudioListener.pause;
+            NewShiftConfirmation=true;confirmationFocusPending=true;confirmationMessage="";
+            Time.timeScale=0;AudioListener.pause=true;SetCursor(false);
+        }
+        public void CancelNewShift()
+        {
+            if(!NewShiftConfirmation)return;
+            NewShiftConfirmation=false;confirmationFocusPending=false;
+            Time.timeScale=confirmationTimeScale;AudioListener.pause=confirmationAudioPaused;
+            SetCursor(Started&&!Paused&&!TitleVisible);
+        }
+        public bool ConfirmNewShift()=>NewShiftConfirmation&&BeginNewShift();
+        bool BeginNewShift()
+        {
+            if(!ChapterSave.StartNew()){confirmationMessage=ChapterSave.Status;return false;}
+            NewShiftConfirmation=false;confirmationFocusPending=false;
+            if(Started)Core.GameSession.Instance.Restart();else StartShift();
+            return true;
+        }
         public void ResumeFromSave(){Started=true;TitleVisible=false;settingsOpen=false;CloseModal();Toast("NIGHT SHIFT // CHECKPOINT RESTORED",3);}
         public void Toast(string msg,float seconds=1.8f){toast=msg;toastUntil=Time.unscaledTime+seconds;}
         public void ShowPaper(string content){returnToNotebook=notebookOpen;notebookOpen=false;paper=content;paperScroll=Vector2.zero;paperOpen=true;if(Core.GameSession.Instance.director.palette)Core.GameSession.Instance.director.palette.Click();SetCursor(false);}
@@ -83,14 +113,18 @@ namespace Signal47.UI
                 GUI.Label(new Rect(0,Screen.height*.5f-25,Screen.width,60),ChapterSave.QuitPending?"SAVING BEFORE EXIT…":ChapterSave.IsRestoring?"RESTORING THE NIGHT SHIFT…":"PREPARING THE NIGHT SHIFT…",big);return;
             }
             if(settingsOpen){DrawSettings();return;}
+            if(NewShiftConfirmation){DrawNewShiftConfirmation();return;}
             if(!Started)
             {
                 GUI.color=new Color(.025f,.04f,.035f,.97f);GUI.DrawTexture(new Rect(Screen.width*.5f-290,Screen.height*.5f-190,580,450),Texture2D.whiteTexture);GUI.color=Color.white;
-                GUI.Label(new Rect(Screen.width*.5f-230,Screen.height*.5f-125,460,70),"SIERRA ARRAY\nRADIO OBSERVATORY",new GUIStyle(big){fontSize=27});
+                GUI.Label(new Rect(Screen.width*.5f-230,Screen.height*.5f-125,460,70),"SIGNAL / 47",big);
                 GUI.Label(new Rect(Screen.width*.5f-250,Screen.height*.5f-35,500,60),"THE SECOND EXPOSURE // CHAPTER ONE\n23:41 // NEW MEXICO, 1986",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter});
-                if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+55,300,52),"START NIGHT SHIFT",button)){ChapterSave.StartNew();StartShift();}
-                GUI.enabled=ChapterSave.HasSave;
-                if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+117,300,42),"CONTINUE CHECKPOINT",button))ChapterSave.TryContinue();
+                bool hasSave=ChapterSave.HasSave;
+                GUI.enabled=!ChapterSave.Saving;
+                if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+55,300,52),hasSave?"CONTINUE CHECKPOINT":"START NIGHT SHIFT",button))
+                {if(hasSave)ChapterSave.TryContinue();else RequestNewShift();}
+                GUI.enabled=hasSave&&!ChapterSave.Saving;
+                if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+117,300,42),hasSave?"NEW NIGHT SHIFT":"NO SAVED CHECKPOINT",button))RequestNewShift();
                 GUI.enabled=true;
                 if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+169,145,38),"SETTINGS",button))settingsOpen=true;
                 if(GUI.Button(new Rect(Screen.width*.5f+5,Screen.height*.5f+169,145,38),"QUIT",button))Application.Quit();
@@ -133,7 +167,7 @@ namespace Signal47.UI
                 GUI.color=new Color(.025f,.04f,.035f,.98f);GUI.DrawTexture(new Rect(Screen.width*.5f-235,Screen.height*.5f-130,470,ChapterSave.CanQuitWithoutSaving?460:400),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(Screen.width*.5f-170,Screen.height*.5f-88,340,40),"PAUSED",new GUIStyle(big){fontSize=28});
                 if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f-15,240,45),"RESUME",button)){SetPaused(false);}
-                if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+42,240,45),"NEW NIGHT SHIFT",button)){ChapterSave.StartNew();Core.GameSession.Instance.Restart();}
+                if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+42,240,45),"NEW NIGHT SHIFT",button))RequestNewShift();
                 GUI.enabled=ChapterSave.CanSave;
                 if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+99,240,40),"SAVE CHECKPOINT",button))ChapterSave.RequestCheckpoint();
                 GUI.enabled=true;
@@ -149,10 +183,24 @@ namespace Signal47.UI
                 GUI.Label(new Rect(0,Screen.height*.5f,Screen.width,35),"THE NIGHT IS NOT OVER // CHECK THE LOCAL CONTROLLER",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter,fontSize=20,normal={textColor=new Color(.75f,.78f,.75f)}});
                 GUI.Label(new Rect(30,Screen.height-92,Screen.width-60,70),"Music: ‘Signal to Noise’ — Scott Buckley • CC BY 4.0\nNo-piano mix, excerpt with fades • scottbuckley.com.au\ncreativecommons.org/licenses/by/4.0/",new GUIStyle(mono){fontSize=13,alignment=TextAnchor.MiddleCenter});
                 if(Core.GameSession.Instance.yard && GUI.Button(new Rect(Screen.width*.5f-145,Screen.height*.5f+45,290,42),"CONTINUE / SERVICE YARD",button))ContinueToServiceYard();
-                if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+95,240,48),"NEW NIGHT SHIFT",button)){ChapterSave.StartNew();Core.GameSession.Instance.Restart();}
+                if(GUI.Button(new Rect(Screen.width*.5f-120,Screen.height*.5f+95,240,48),"NEW NIGHT SHIFT",button))RequestNewShift();
             }
             if(Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen)Core.GameSession.Instance.chapter.DrawPanel();
             if(settingsOpen)DrawSettings();
+        }
+        void DrawNewShiftConfirmation()
+        {
+            float width=Mathf.Min(580,Screen.width-40),x=(Screen.width-width)/2,y=Screen.height*.5f-185;
+            GUI.color=new Color(.018f,.026f,.022f,.98f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);
+            GUI.color=new Color(.055f,.085f,.065f,1);GUI.DrawTexture(new Rect(x,y,width,380),Texture2D.whiteTexture);GUI.color=Color.white;
+            GUI.Label(new Rect(x+24,y+20,width-48,45),"START A NEW NIGHT SHIFT?",new GUIStyle(big){fontSize=28});
+            GUI.Label(new Rect(x+28,y+84,width-56,115),"Begin again at 23:41. Progress since the last checkpoint will be lost.\n\nPrevious checkpoints are kept in a local recovery folder. Your original photographs are preserved.",mono);
+            GUI.SetNextControlName("keep-current-shift");
+            if(GUI.Button(new Rect(x+28,y+220,(width-68)/2,48),"KEEP CURRENT SHIFT",button))CancelNewShift();
+            if(GUI.Button(new Rect(x+40+(width-68)/2,y+220,(width-68)/2,48),"START NEW SHIFT",button))ConfirmNewShift();
+            GUI.Label(new Rect(x+28,y+286,width-56,72),confirmationMessage+"\nESC / Keep current shift",new GUIStyle(mono){fontSize=16});
+            if(confirmationFocusPending&&Event.current.type==EventType.Repaint)
+            {GUI.FocusControl("keep-current-shift");confirmationFocusPending=false;}
         }
         void DrawSettings()
         {

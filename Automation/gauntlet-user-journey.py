@@ -200,6 +200,7 @@ class Journey:
   self.open_photo();self.mark('photograph-in-notebook');self.d.click(362,686);assert not state()['photoCompared'];self.mark('comparison-requires-control-room');self.d.tap('Escape');self.d.tap('Escape')
  def run(self):
   self.d.focus();s=state();assert not s['started'],'Start from a fresh player launch'
+  assert not s.get('saveExists',False),'New journey requires an empty isolated test profile; do not replace an existing case.'
   self.mark('start');self.d.click(s['width']/2,s['height']/2+81);wait_for(lambda s:s['started'])
   self.interact(-1.7,.9,5.2,'READ SHIFT');wait_for(lambda s:s['evidence']==1);self.mark('read-shift-log');self.d.tap('Escape')
   self.walk(-4.2,4.3);self.walk(-4.2,2.8);self.interact(-6.3,1.35,1.6,'RECEIVER');wait_for(lambda s:s['powered']);self.mark('receiver-powered')

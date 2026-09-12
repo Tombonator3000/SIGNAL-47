@@ -1,0 +1,1 @@
+Historical v1 fixture: only photo paths relocated to this isolated profile and envelope digest recomputed. Original JPEG bytes unchanged. Not a native-input journey.

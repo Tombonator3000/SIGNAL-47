@@ -22,6 +22,7 @@ namespace Signal47.Debugging
             public string chapterState,cameraState,saveStatus,savePath,objective,chapterStage,chapterPanel;
             public float masterVolume,mouseSensitivity;public bool fullscreen,settingsOpen,quitPending,canQuitWithoutSaving;
             public string prompt;public float mouseX,mouseY;public bool mouseDown;
+            public int menuLayoutVersion;public bool newShiftConfirmation;
         }
         [Serializable] sealed class Report
         {
@@ -60,6 +61,7 @@ namespace Signal47.Debugging
             if(g.fieldCamera){state.frameCount=g.fieldCamera.FrameCount;state.developedFrames=g.fieldCamera.DevelopedCount;state.photoReady=g.fieldCamera.SaveReady;state.cameraState=g.fieldCamera.CaptureState();}
             if(g.chapter){state.chapterState=g.chapter.CaptureState();state.chapterModal=g.chapter.ModalOpen;state.chapterComplete=g.chapter.Complete;state.objective=g.chapter.Objective;state.chapterStage=g.chapter.Stage;state.chapterPanel=g.chapter.CurrentPanel;}
             state.masterVolume=AudioListener.volume;state.mouseSensitivity=g.player.lookSensitivity;state.fullscreen=Screen.fullScreen;state.settingsOpen=g.hud.SettingsOpen;state.quitPending=Signal47.Chapter.ChapterSave.QuitPending;state.canQuitWithoutSaving=Signal47.Chapter.ChapterSave.CanQuitWithoutSaving;
+            state.menuLayoutVersion=14;state.newShiftConfirmation=g.hud.NewShiftConfirmation;
             state.canSave=Signal47.Chapter.ChapterSave.CanSave;state.saveExists=Signal47.Chapter.ChapterSave.HasSave;state.saving=Signal47.Chapter.ChapterSave.Saving;state.restoring=Signal47.Chapter.ChapterSave.IsRestoring;state.saveStatus=Signal47.Chapter.ChapterSave.Status;state.savePath=Signal47.Chapter.ChapterSave.SavePath;
             var mouse=UnityEngine.InputSystem.Mouse.current;if(mouse!=null){state.mouseX=mouse.position.ReadValue().x;state.mouseY=mouse.position.ReadValue().y;state.mouseDown=mouse.leftButton.isPressed;}
             File.WriteAllText(Path.Combine(root,"state.tmp"),JsonUtility.ToJson(state));File.Delete(Path.Combine(root,"state.json"));File.Move(Path.Combine(root,"state.tmp"),Path.Combine(root,"state.json"));

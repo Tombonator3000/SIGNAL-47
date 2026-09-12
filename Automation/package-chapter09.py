@@ -229,7 +229,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT / "Artifacts/GauntletLinux")
     parser.add_argument("--expect-source", help="Require this exact tested Unity source SHA-256.")
-    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12"], help="Identified release family; prior packages are retained.")
+    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14"], help="Identified release family; prior packages are retained.")
     parser.add_argument("--candidate", action="store_true", help="Label the package as awaiting gameplay/performance verification and preserve the default launcher.")
     parser.add_argument("--check-only", action="store_true", help="Read-only build/source verification; create no package or launcher.")
     args = parser.parse_args()
