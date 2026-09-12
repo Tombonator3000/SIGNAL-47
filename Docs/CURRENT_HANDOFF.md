@@ -8,6 +8,8 @@
 
 Kandidat: `Artifacts/Releases/Workstation18-ae3fe61bf190/Start-SIGNAL47.sh`. Visual10 er fortsatt standard og `Spill-SIGNAL47.sh` er byteidentisk med før passet. Native brukerreise, ytelse, andre oppløsninger og subjektiv lyd er fortsatt UNVERIFIED. Ingen nye forsøk på native input er gjort mens skrivebordet er utilgjengelig. Arkivprøven er fortsatt separat; neste avgrensede steg er dokumentlesbarhet og avklart kobling fra instrumentruten til P04, med P04/P05-blindtesten fortsatt åpen.
 
+Kilde, VotV-rapport og verifikasjon er publisert gjennom [PR13](https://github.com/Tombonator3000/SIGNAL-47/pull/13). Se GitHub for gjeldende flettestatus; standardstarter og åpne tester er uavhengige av dette.
+
 ## Nyeste status: VotV-referansevurdering
 
 12. september 2026: GitHub bekrefter at [PR12](https://github.com/Tombonator3000/SIGNAL-47/pull/12) nå er MERGED, mergecommit `f476b1ec884030e67971948121eb32ef05ec399d`. Eldre omtale av PR12 som åpen nedenfor er historisk. Dette endrer ikke kandidatens åpne tester eller standardstarter.

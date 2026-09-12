@@ -74,3 +74,5 @@ python3 Automation/package-chapter09.py --label Workstation18 --candidate
 Ny bygging identifiseres fra faktisk kildeinnhold. Eksisterende pakker skal ikke overskrives med andre bytes. Pakkekontrollens navnevalidering er oppdatert slik at den godtar de samme kandidatfamiliene som pakkeskriptet.
 
 Neste avgrensede arbeid er dokumentlesbarhet og en avklart kobling mellom den eksisterende instrumentruten og P04. Modellene er nå i hovedrommet; den selvstendige arkivprøven er fortsatt separat. Lydmiks bør vurderes i et eget faktisk lyttpass.
+
+GitHub-leveranse: [PR13](https://github.com/Tombonator3000/SIGNAL-47/pull/13), med VotV-rapport, modeller, Unity-integrasjon og testbevis. Fletting endrer ikke kandidatstatus eller de åpne portene over.
