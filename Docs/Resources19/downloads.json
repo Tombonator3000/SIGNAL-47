@@ -1,0 +1,32 @@
+[
+  {
+    "file": "echoes_of_the_past.wav",
+    "url": "https://opengameart.org/sites/default/files/echoes_of_the_past.wav",
+    "bytes": 8466476,
+    "sha256": "ec149d7daceb8d0d5f20816ae401d8e04ea8e5960fc558d378c2c27139835292"
+  },
+  {
+    "file": "outpost_loop.flac",
+    "url": "https://opengameart.org/sites/default/files/outpost_loop.flac",
+    "bytes": 13138965,
+    "sha256": "eef9f8e7a6014e109bee382350362b71dcd8cd021ad008aae58bad24343e6767"
+  },
+  {
+    "file": "dirty_rain_loop.flac",
+    "url": "https://opengameart.org/sites/default/files/dirty_rain_loop.flac",
+    "bytes": 8132882,
+    "sha256": "5f8c3081e1f026fac4bf9e968f006c77e72e1e857a04b2eaa468261f7b88329e"
+  },
+  {
+    "file": "ambient-machinery.zip",
+    "url": "https://opengameart.org/sites/default/files/ambient%20machinery%201.zip",
+    "bytes": 17375980,
+    "sha256": "63606e824ea772576fed071e82ff2722652657061e74e9cdc148faa8681f59c7"
+  },
+  {
+    "file": "nasa-70-meter-dish.glb",
+    "url": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/model/70-meter-dish/70%20meter%20dish.glb",
+    "bytes": 2216584,
+    "sha256": "36ff56a7a2bfd1c278f6f4774d32128d5931f2c22fe58241d00ee7d1815634bb"
+  }
+]

@@ -1,0 +1,1 @@
+PASS: all sampled pedestal mesh vertices behind the parabola in 11 sampled poses per antenna

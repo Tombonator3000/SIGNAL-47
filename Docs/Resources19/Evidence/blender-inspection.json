@@ -1,0 +1,44 @@
+{
+  "blender": "4.5.13 LTS",
+  "meshes": [
+    {
+      "name": "R19_BowlDetail_R19_Steel",
+      "triangles": 3968,
+      "uv": true,
+      "normals_valid": true
+    },
+    {
+      "name": "R19_BowlDetail_R19_Seam",
+      "triangles": 4608,
+      "uv": true,
+      "normals_valid": true
+    },
+    {
+      "name": "R19_BowlDetail_R19_Enamel",
+      "triangles": 1280,
+      "uv": true,
+      "normals_valid": true
+    },
+    {
+      "name": "R19_PedestalDetail_R19_Steel",
+      "triangles": 568,
+      "uv": true,
+      "normals_valid": true
+    },
+    {
+      "name": "R19_PedestalDetail_R19_Enamel",
+      "triangles": 332,
+      "uv": true,
+      "normals_valid": true
+    },
+    {
+      "name": "R19_PedestalDetail_R19_Seam",
+      "triangles": 72,
+      "uv": true,
+      "normals_valid": true
+    }
+  ],
+  "triangles": 10828,
+  "valid": true,
+  "blend_sha256": "9ff93eceb4e46bb382fc7d11c41000ce0936c762818569f99833bb34e81d742a"
+}

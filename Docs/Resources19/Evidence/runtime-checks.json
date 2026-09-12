@@ -1,0 +1,192 @@
+{
+    "result": "PASS",
+    "method": "API-driven real Unity player; not native input or performance measurement",
+    "unity": "6000.3.22f1",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "resolution": "1280x800",
+    "buildId": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6 working-tree source-sha256:bea744ade4d9d86adf4b91429dad0b057e20ef6d871bb5246438525eec4b5caa\n",
+    "checks": [
+        {
+            "name": "main scene and player loaded",
+            "pass": true
+        },
+        {
+            "name": "new workstation family integrated into main scene",
+            "pass": true
+        },
+        {
+            "name": "cosmetic models add no interaction blockers",
+            "pass": true
+        },
+        {
+            "name": "three CRT instances",
+            "pass": true
+        },
+        {
+            "name": "three Keyboard instances",
+            "pass": true
+        },
+        {
+            "name": "three Chair instances",
+            "pass": true
+        },
+        {
+            "name": "original live screen remains connected and visible",
+            "pass": true
+        },
+        {
+            "name": "three authored frequency constants unchanged",
+            "pass": true
+        },
+        {
+            "name": "authored 47-second delay unchanged",
+            "pass": true
+        },
+        {
+            "name": "unpowered console blocks use",
+            "pass": true
+        },
+        {
+            "name": "phone housing is 20.4 cm wide in world metres",
+            "pass": true
+        },
+        {
+            "name": "approach ray reaches rescaled phone",
+            "pass": true
+        },
+        {
+            "name": "coffee mug has a believable tabletop height 0.126",
+            "pass": true
+        },
+        {
+            "name": "rescaled mug can be picked up",
+            "pass": true
+        },
+        {
+            "name": "rescaled mug can be returned",
+            "pass": true
+        },
+        {
+            "name": "eleven dishes each have bowl and pedestal details",
+            "pass": true
+        },
+        {
+            "name": "antenna details add no blockers",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_00",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_01",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_02",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_03",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_04",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_05",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_06",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_07",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_08",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_09",
+            "pass": true
+        },
+        {
+            "name": "detail follows existing bowl pivot Dish_10",
+            "pass": true
+        },
+        {
+            "name": "existing approach ray reaches console past furniture",
+            "pass": true
+        },
+        {
+            "name": "powered console opens",
+            "pass": true
+        },
+        {
+            "name": "wrong settings do not produce evidence",
+            "pass": true
+        },
+        {
+            "name": "repeated completed action adds no duplicate notes",
+            "pass": true
+        },
+        {
+            "name": "close releases console modal",
+            "pass": true
+        },
+        {
+            "name": "signal solve produces printout and phone call",
+            "pass": true
+        },
+        {
+            "name": "answer lifts receiver by 32 cm despite scaled model",
+            "pass": true
+        },
+        {
+            "name": "receiver cord remains connected while lifted",
+            "pass": true
+        },
+        {
+            "name": "receiver returns to its cradle after line dies",
+            "pass": true
+        },
+        {
+            "name": "pause preserves sequence clock",
+            "pass": true
+        },
+        {
+            "name": "actual impact delay remains 47 seconds within one frame tolerance",
+            "pass": true
+        },
+        {
+            "name": "array sequence completes after model replacement",
+            "pass": true
+        },
+        {
+            "name": "rescaled mug still breaks during the authored event",
+            "pass": true
+        },
+        {
+            "name": "all added dish details follow array alignment",
+            "pass": true
+        }
+    ],
+    "screenshots": [
+        "07-phone-scale.png",
+        "08-dish-front.png",
+        "09-dish-rear.png",
+        "01-control-room.png",
+        "02-workstation.png",
+        "03-crt-detail.png",
+        "04-chair-detail.png",
+        "05-console-ui.png",
+        "06-locked-screen.png",
+        "10-phone-offhook.png",
+        "11-dish-aligned.png"
+    ]
+}

@@ -1,0 +1,26 @@
+{
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Resources19-bea744ade4d9-Linux.tar.gz",
+    "bytes": 148170708,
+    "sha256": "474f3b39617036708fcba774efaedcc65190ac6e8bb280cb595eba904cc73928",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Resources19-bea744ade4d9-Linux.tar.gz.sha256",
+    "sidecar_sha256": "4f3d3f87008803a2cf47255ff1cb8cacce675971182d7548ec93c986edfad389"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Resources19/unpacked-final/Resources19-bea744ade4d9",
+    "manifest_sha256": "8b44961a8932318333a50ca1cc7794f89fdc9711f8942ced41d74b5bc28a48a9",
+    "package_id": "Resources19-bea744ade4d9",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 331914597,
+    "package_payload_sha256": "1072f96db3eaf460082c35f5a7cf55683a01ce78e4da66fd98cd5c7271cd0dd4",
+    "unity_source_sha256": "bea744ade4d9d86adf4b91429dad0b057e20ef6d871bb5246438525eec4b5caa",
+    "base_revision": "88ac057a2e01b3019c15f29bc3e9a9df2fbd5ee6"
+  }
+}

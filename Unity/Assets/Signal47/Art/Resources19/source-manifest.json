@@ -1,0 +1,16 @@
+{
+  "original_geometry": true,
+  "bowl_radius_m": 4.2,
+  "models": [
+    {
+      "name": "R19_BowlDetail",
+      "triangles": 9856,
+      "renderers": 3
+    },
+    {
+      "name": "R19_PedestalDetail",
+      "triangles": 972,
+      "renderers": 3
+    }
+  ]
+}
