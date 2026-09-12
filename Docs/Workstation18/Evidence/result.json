@@ -1,0 +1,95 @@
+{
+    "result": "PASS",
+    "method": "API-driven real Unity player; not native input or performance measurement",
+    "unity": "6000.3.22f1",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "renderer": "OpenGLCore",
+    "resolution": "1280x800",
+    "buildId": "70b438b447a6ac6efebf847dfe7c69efdb27855c working-tree source-sha256:ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c\n",
+    "checks": [
+        {
+            "name": "main scene and player loaded",
+            "pass": true
+        },
+        {
+            "name": "new workstation family integrated into main scene",
+            "pass": true
+        },
+        {
+            "name": "cosmetic models add no interaction blockers",
+            "pass": true
+        },
+        {
+            "name": "three CRT instances",
+            "pass": true
+        },
+        {
+            "name": "three Keyboard instances",
+            "pass": true
+        },
+        {
+            "name": "three Chair instances",
+            "pass": true
+        },
+        {
+            "name": "original live screen remains connected and visible",
+            "pass": true
+        },
+        {
+            "name": "three authored frequency constants unchanged",
+            "pass": true
+        },
+        {
+            "name": "authored 47-second delay unchanged",
+            "pass": true
+        },
+        {
+            "name": "unpowered console blocks use",
+            "pass": true
+        },
+        {
+            "name": "existing approach ray reaches console past furniture",
+            "pass": true
+        },
+        {
+            "name": "powered console opens",
+            "pass": true
+        },
+        {
+            "name": "wrong settings do not produce evidence",
+            "pass": true
+        },
+        {
+            "name": "repeated completed action adds no duplicate notes",
+            "pass": true
+        },
+        {
+            "name": "close releases console modal",
+            "pass": true
+        },
+        {
+            "name": "signal solve produces printout and phone call",
+            "pass": true
+        },
+        {
+            "name": "pause preserves sequence clock",
+            "pass": true
+        },
+        {
+            "name": "actual impact delay remains 47 seconds within one frame tolerance",
+            "pass": true
+        },
+        {
+            "name": "array sequence completes after model replacement",
+            "pass": true
+        }
+    ],
+    "screenshots": [
+        "01-control-room.png",
+        "02-workstation.png",
+        "03-crt-detail.png",
+        "04-chair-detail.png",
+        "05-console-ui.png",
+        "06-locked-screen.png"
+    ]
+}

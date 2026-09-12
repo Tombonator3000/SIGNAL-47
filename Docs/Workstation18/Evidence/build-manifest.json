@@ -1,0 +1,8 @@
+{
+  "base_revision": "70b438b447a6ac6efebf847dfe7c69efdb27855c",
+  "working_tree_changes": true,
+  "unity_source_sha256": "ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c",
+  "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+  "build_payload_sha256": "3e90a519c72464bd772b516a48c8660507bc238293b4ba00cdd4b9a2eb6932dd",
+  "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+}

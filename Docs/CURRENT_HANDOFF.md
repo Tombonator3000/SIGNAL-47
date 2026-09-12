@@ -1,5 +1,13 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Nyeste produksjon: Workstation18
+
+12. september 2026: Brukeren godkjente anbefalingene fra VotV-vurderingen og ba om videreføring. [Workstation18](Workstation18/README.md) erstatter synlig CRT-/tastatur-/stolgeometri på de tre arbeidsplassene i hovedscenen med tre originale Blender-modeller. Levende skjermer, signalprofiler, 154 eksisterende kollisjonskomponenter, to lightmaps og spilloppførsel er bevart. Ni modellinstanser er kontrollert etter Unity-import. Integrasjonscommit `f92db83`; kildehash `ae3fe61bf1903bec8c2978cf6b6a413b3eb82b54bb15eae1c5798dacf60d5e0c`.
+
+19 API-kontroller består direkte og 19 gjennom nyutpakket starter, inkludert den faktiske 47-sekunderssekvensen. 50 lagrings-/gjenopprettingskontroller består gjennom samme utpakkede starter; begge originalfoto dekodes med uendrede bytes. Seks originale runtime-bilder er inspisert. Pakken har 173 verifiserte filer. Se [identitet og bevis](Workstation18/Evidence/verification.json).
+
+Kandidat: `Artifacts/Releases/Workstation18-ae3fe61bf190/Start-SIGNAL47.sh`. Visual10 er fortsatt standard og `Spill-SIGNAL47.sh` er byteidentisk med før passet. Native brukerreise, ytelse, andre oppløsninger og subjektiv lyd er fortsatt UNVERIFIED. Ingen nye forsøk på native input er gjort mens skrivebordet er utilgjengelig. Arkivprøven er fortsatt separat; neste avgrensede steg er dokumentlesbarhet og avklart kobling fra instrumentruten til P04, med P04/P05-blindtesten fortsatt åpen.
+
 ## Nyeste status: VotV-referansevurdering
 
 12. september 2026: GitHub bekrefter at [PR12](https://github.com/Tombonator3000/SIGNAL-47/pull/12) nå er MERGED, mergecommit `f476b1ec884030e67971948121eb32ef05ec399d`. Eldre omtale av PR12 som åpen nedenfor er historisk. Dette endrer ikke kandidatens åpne tester eller standardstarter.
