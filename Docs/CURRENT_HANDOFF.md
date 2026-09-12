@@ -2,6 +2,8 @@
 
 ## Nyeste verktøy- og instruksjonspass: ProductionTools20
 
+Leveringssporet er [PR16](https://github.com/Tombonator3000/SIGNAL-47/pull/16); GitHub viser faktisk flettestatus. Dette sporet inneholder verktøybevis og instruksjoner, ingen ny spillpakke.
+
 13. september 2026: [PlayCanvas/Tripo-vurdering og testbevis](Research/ProductionTools20/README.md), med [gjennomgang av stoppunkter](Research/ProductionTools20/SKILL_AUDIT.md). Fem personlige skills er rettet etter gjennomgang av 47 lokale skill-filer. Brainstorming krever ikke lenger ny godkjenning for allerede autorisert implementering eller en manglende `writing-plans`-skill. Delsteg er checkpoints; hele bestillingen og relevant autorisert levering styrer ferdigstatus. Repoets `AGENTS.md` og personlig `~/.codex/AGENTS.md` gjør arbeidsformen varig. Reelle tilgangs-/kvalitetsgrenser og uutførte tester er beholdt.
 
 PlayCanvas SplatTransform 3.4.2 er installert separat og faktisk kjørt: original prøve med 784 splats, CPU-komprimering/tur-retur, GPU-render, separat kollisjonsmesh og import i Blender 4.5.13. Testgeneratorens aksefeil er funnet i bilde og rettet; 515 kollisjonstrekanter og strålekontroller består. Proxyen er grov og ikke godkjent som presis spillkollisjon. Gaussian splatting anbefales som avgrenset miljøeksperiment; ingen Unity-integrasjon, rendererendring eller ny personmodell er innført. Gjenbrukbar kunnskap ligger i game-production-skillen.
