@@ -130,5 +130,6 @@
   ],
   "audio_status": "15 candidate OGGs and audition HTML in Docs/Resources19. No new audio assigned to live Unity mix. CC0/CC BY provenance retained.",
   "default_launcher": "Visual10 unchanged",
-  "method": "API-driven isolated profiles, real Unity player and inspected original captures; not native-input or performance certification"
+  "method": "API-driven isolated profiles, real Unity player and inspected original captures; not native-input or performance certification",
+  "source_commit": "848a11dc426800dde2f0ca41623468ea64dd26d4"
 }

@@ -2,6 +2,8 @@
 
 ## Nyeste produksjon: Resources19
 
+Kilde og bevis er publisert gjennom [PR15](https://github.com/Tombonator3000/SIGNAL-47/pull/15). GitHub viser gjeldende flettestatus; dette endrer ikke kandidatens åpne tester.
+
 13. september 2026: [Resources19](Resources19/README.md) svarer på ønsket om gratis lyd/musikk, mer detaljerte antenner og riktig telefonskala. Telefonhuset er korrigert fra 68 til 20,4 cm, med bevart rørløft, synlig ledning og tilpasset treffboks. Den overstore nabokoppen er også korrigert. Elleve antenner har original Blender-geometri for paneler, avstivere, motorhus, stige og lager. Gjennomskjæring i sluttstillingen er målt og korrigert; geometrikontroll i elleve posisjoner per antenne er innført. 154 kollisjonskomponenter og to lightmaps er beholdt.
 
 15 gratis lydkandidater, kreditering, kilde-/filhash og [lydprøve](Resources19/lydprove.html) følger repoet. Tre CC0-musikkspor og tolv CC BY 3.0-maskinlyder er konvertert og målt, men ikke tildelt den aktive spillmiksen. NASA-modellen er bare lokal vurderingskandidat; ingen Sonniss-filer er hentet.
