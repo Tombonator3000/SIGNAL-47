@@ -1,0 +1,622 @@
+{
+  "result": "PASS",
+  "archive_sha256": "c18f5960e2d119ce0c75f333e0a88e1d07fe9189e132532822c9f9b01d502012",
+  "unpacked": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Recovery15/unpacked-rvzkc49l/Recovery15-bda088dfe638",
+  "file_bytes_and_paths_match": true,
+  "stored_tar_modes_match_manifest": true,
+  "launcher_and_player_executable": true,
+  "extraction_filter": "data",
+  "normalized_modes": [
+    {
+      "path": "SIGNAL 47_BurstDebugInformation_DoNotShip/Data/Plugins/lib_burst_generated.txt",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Assembly-CSharp.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Burst.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Collections.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InputSystem.ForUI.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InputSystem.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.InternalAPIEngineBridge.004.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.Mathematics.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipeline.Universal.ShaderLibrary.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.Runtime.Shared.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Core.ShaderLibrary.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.GPUDriven.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.2D.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Config.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.RenderPipelines.Universal.Shaders.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.TextMeshPro.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/Unity.UnifiedRayTracing.Runtime.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AccessibilityModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AdaptivePerformanceModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AndroidJNIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AnimationModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AssetBundleModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.AudioModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClothModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClusterInputModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ClusterRendererModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ContentLoadModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.CoreModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.CrashReportingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.DSPGraphModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.DirectorModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GameCenterModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GraphicsStateCollectionSerializerModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.GridModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HierarchyCoreModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HierarchyModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.HotReloadModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.IMGUIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.IdentifiersModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ImageConversionModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputForUIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputLegacyModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.InputModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.JSONSerializeModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.LocalizationModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.MarshallingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.MultiplayerModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ParticleSystemModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PerformanceReportingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.Physics2DModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PhysicsBackendPhysXModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PhysicsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.PropertiesModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.RenderAs2DModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ScreenCaptureModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ShaderRuntimeModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.ShaderVariantAnalyticsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SharedInternalsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SpriteMaskModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SpriteShapeModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.StreamingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SubstanceModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.SubsystemsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TLSModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TerrainModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TerrainPhysicsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextCoreFontEngineModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextCoreTextEngineModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TextRenderingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.TilemapModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UI.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UIElementsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UIModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UmbraModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityAnalyticsCommonModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityAnalyticsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityConnectModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityConsentModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityCurlModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestAssetBundleModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestAudioModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestTextureModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.UnityWebRequestWWWModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VFXModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VRModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VectorGraphicsModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VehiclesModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VideoModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.VirtualTexturingModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.WindModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Managed/UnityEngine.XRModule.dll",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Plugins/lib_burst_generated.so",
+      "stored": "0775",
+      "extracted": "0755"
+    },
+    {
+      "path": "Signal47_Data/Resources/UnityPlayer.png",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/Resources/unity_builtin_extra",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/RuntimeInitializeOnLoads.json",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/ScriptingAssemblies.json",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/app.info",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/boot.config",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers.assets",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/globalgamemanagers.assets.resS",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/level0",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/level0.resS",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/resources.assets",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/resources.assets.resS",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.assets",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.assets.resS",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "Signal47_Data/sharedassets0.resource",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "VT323-OFL.txt",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "build-id.txt",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "build-manifest.json",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "libdecor-0.so.0",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": "libdecor-cairo.so",
+      "stored": "0664",
+      "extracted": "0644"
+    },
+    {
+      "path": ".",
+      "stored": "0755",
+      "extracted": "0775"
+    }
+  ],
+  "initial_check": "Strict equality rejected data-filter mode normalization. A direct-player fallback rerun is not packaged-launch evidence. Verification was corrected to check all bytes/paths, package payload, stored tar modes and executable permissions separately."
+}

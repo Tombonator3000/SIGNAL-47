@@ -35,11 +35,17 @@ snapshot['camera']=json.dumps(camera,separators=(',',':'))
 envelope['payload']=json.dumps(snapshot,separators=(',',':'))
 envelope['sha256']=hashlib.sha256(envelope['payload'].encode()).hexdigest().upper()
 (profile/'Seed/case.json').write_text(json.dumps(envelope,indent=2))
-(profile/'Seed/fixture.txt').write_text('Historical v1 fixture: only photo paths relocated to this isolated profile and envelope digest recomputed. Original JPEG bytes unchanged. Not a native-input journey.\n')
+snapshot['savedUtc']='2026-09-11T01:02:03.0000000Z'
+previous=dict(envelope,payload=json.dumps(snapshot,separators=(',',':')))
+previous['sha256']=hashlib.sha256(previous['payload'].encode()).hexdigest().upper()
+(profile/'Seed/previous-case.json').write_text(json.dumps(previous,indent=2))
+(profile/'Seed/fixture.txt').write_text('Historical v1 fixture: only photo paths relocated to this isolated profile and envelope digest recomputed. Previous-case fixture additionally changes savedUtc to distinguish the reviewed checkpoint. Original JPEG bytes unchanged. Not a native-input journey.\n')
 paths=[seed/'case.json',*sorted((seed/'FieldPhotos').glob('*'))]
 (profile/'Seed/source-hashes.json').write_text(json.dumps([{'source':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths if p.is_file()],indent=2))
 PY
-timeout --signal=TERM --kill-after=10s 180s "$signal47_menu_player" --signal47-menu14-checks --signal47-save-dir "$signal47_menu_profile" -force-glcore -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$signal47_menu_profile/player.log"
+signal47_menu_suite="${3:---signal47-menu14-checks}"
+case "$signal47_menu_suite" in --signal47-menu14-checks|--signal47-recovery15-checks) ;; *) echo 'Unknown check suite' >&2; exit 1 ;; esac
+timeout --signal=TERM --kill-after=10s 180s "$signal47_menu_player" "$signal47_menu_suite" --signal47-save-dir "$signal47_menu_profile" -force-glcore -screen-width 1280 -screen-height 800 -screen-fullscreen 0 -logFile "$signal47_menu_profile/player.log"
 python3 - "$signal47_menu_profile" <<'PY'
 import json,sys
 from pathlib import Path
