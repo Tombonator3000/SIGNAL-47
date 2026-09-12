@@ -1,0 +1,1 @@
+Historical v1 fixture: only photo paths relocated to this isolated profile and envelope digest recomputed. Previous-case fixture additionally changes savedUtc to distinguish the reviewed checkpoint. Original JPEG bytes unchanged. Not a native-input journey.

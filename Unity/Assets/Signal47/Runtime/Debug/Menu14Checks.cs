@@ -23,7 +23,7 @@ namespace Signal47.Debugging
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
-            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-menu14-checks")>=0&&!FindFirstObjectByType<Menu14Checks>())
+            if((Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-menu14-checks")>=0||Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-recovery15-checks")>=0)&&!FindFirstObjectByType<Menu14Checks>())
                 new GameObject("Menu14Checks").AddComponent<Menu14Checks>();
         }
         void Awake(){DontDestroyOnLoad(gameObject);Application.runInBackground=true;deadline=Time.realtimeSinceStartup+150;}
@@ -141,6 +141,67 @@ namespace Signal47.Debugging
             foreach(var pair in photoBytes)
                 Check(Convert.ToBase64String(File.ReadAllBytes(pair.Key))==Convert.ToBase64String(pair.Value),"Original exposure unchanged after Continue and canceled New: "+Path.GetFileName(pair.Key));
             yield return Shot("07-restored-case-pause");
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--signal47-recovery15-checks")<0)yield break;
+            string chosen=File.ReadAllText(Path.Combine(ChapterSave.StorageDirectory,"Seed","previous-case.json"));
+            string valid=Path.Combine(previous,"zz-valid"),fallback=Path.Combine(previous,"yy-backup"),broken=Path.Combine(previous,"xx-broken");
+            Directory.CreateDirectory(valid);File.WriteAllText(Path.Combine(valid,"case.json"),chosen);
+            Directory.CreateDirectory(fallback);File.WriteAllText(Path.Combine(fallback,"case.json"),"invalid selected primary");File.WriteAllText(Path.Combine(fallback,"case.backup.json"),chosen);
+            Directory.CreateDirectory(broken);File.WriteAllText(Path.Combine(broken,"case.json"),"unreadable case");
+            for(int i=0;i<5;i++){string dir=Path.Combine(previous,"page-"+i);Directory.CreateDirectory(dir);File.WriteAllText(Path.Combine(dir,"case.json"),chosen);}
+            var info=ChapterSave.InspectPreviousCase("zz-valid");
+            Check(info.Available&&!info.UsesBackup&&info.Label.Contains("11 Sep 2026"),"Previous-case preview reads real saved date without modifying the file");
+            Check(!ChapterSave.TryContinuePrevious("zz-valid",info.Fingerprint)&&hud.Started&&!g.Transitioning,"Switching previous shifts is blocked while a live shift is open");
+            g.Restart();for(int i=0;i<600&&GameSession.Instance==g;i++)yield return null;
+            yield return new WaitForSecondsRealtime(1);g=GameSession.Instance;hud=g.hud;
+            string activeBefore=File.ReadAllText(primary);
+            Check(!ChapterSave.InspectPreviousCase("../Seed").Available&&!ChapterSave.TryContinuePrevious("../Seed",info.Fingerprint),"Previous-case identifiers cannot escape the archive root");
+            Check(!ChapterSave.InspectPreviousCase("xx-broken").Available,"Unreadable entries remain unavailable instead of starting an empty case");
+            Check(ChapterSave.InspectPreviousCase("yy-backup").UsesBackup,"A valid recovery copy is explicitly identified in the preview");
+            int countBefore=Directory.GetDirectories(previous).Length;
+            hud.OpenPreviousShifts();
+            Check(hud.PreviousShiftsOpen&&hud.PreviousShiftCount>6&&!hud.ConfirmPreviousShift(),"Browser opens a multi-page catalog with no implicit selection");
+            yield return Shot("08-previous-list");
+            hud.MovePreviousPage(-1);
+            Check(hud.PreviousShiftPage==0&&hud.VisiblePreviousShiftCount==6,"First page cannot move before the start of the catalog");
+            hud.MovePreviousPage(1);hud.MovePreviousPage(1);
+            Check(hud.PreviousShiftPage==1&&hud.VisiblePreviousShiftCount==4,"Last page shows the remaining entries and cannot move past the catalog");
+            yield return Shot("08b-previous-last-page");hud.MovePreviousPage(-1);
+            hud.SelectPreviousShift("zz-valid");
+            Check(hud.SelectedPreviousShift=="zz-valid"&&!g.Transitioning&&File.ReadAllText(primary)==activeBefore,"Selecting a previous shift opens review without writing the active case");
+            yield return Shot("09-previous-confirmation");
+            hud.BackFromPreviousShifts();hud.BackFromPreviousShifts();
+            Check(!hud.PreviousShiftsOpen&&File.ReadAllText(primary)==activeBefore&&Directory.GetDirectories(previous).Length==countBefore,"Cancel selection and browser preserve every active checkpoint and archive count");
+            hud.OpenPreviousShifts();hud.SelectPreviousShift("zz-valid");
+            File.WriteAllText(Path.Combine(valid,"case.json"),activeBefore);
+            Check(!hud.ConfirmPreviousShift()&&!g.Transitioning&&File.ReadAllText(primary)==activeBefore,"Changed valid checkpoint is rejected against the reviewed fingerprint before any writes");
+            File.WriteAllText(Path.Combine(valid,"case.json"),chosen);
+            hud.BackFromPreviousShifts();hud.SelectPreviousShift("yy-backup");
+            Check(!File.Exists(backup),"Fixture has no active backup before the blocked-destination test");
+            Directory.CreateDirectory(backup);
+            Check(!hud.ConfirmPreviousShift()&&!g.Transitioning&&File.ReadAllText(primary)==activeBefore,"Blocked backup destination aborts switching and retains the current primary");
+            yield return Shot("10-previous-write-failure");
+            Directory.Delete(backup);
+            File.WriteAllText(backup,activeBefore);Directory.CreateDirectory(primary+".tmp");
+            Check(!hud.ConfirmPreviousShift()&&!g.Transitioning&&File.ReadAllText(primary)==activeBefore,"Primary-write failure keeps the active primary after preserving its recovery copy");
+            bool preservedPair=false;
+            foreach(string dir in Directory.GetDirectories(previous))
+                if(File.Exists(Path.Combine(dir,"case.backup.json"))&&File.Exists(Path.Combine(dir,"case.json"))
+                    &&File.ReadAllText(Path.Combine(dir,"case.json"))==activeBefore&&File.ReadAllText(Path.Combine(dir,"case.backup.json"))==activeBefore)preservedPair=true;
+            Check(preservedPair,"Both current checkpoint files survive together in Previous Shifts after a failed primary write");
+            Directory.Delete(primary+".tmp");
+            Check(hud.ConfirmPreviousShift(),"Explicit retry opens the reviewed previous recovery copy");
+            Check(File.ReadAllText(primary)==chosen&&!File.Exists(backup),"Selected checkpoint is atomic primary and cannot fall back to the unrelated old active backup");
+            bool preservedActive=false;
+            foreach(string dir in Directory.GetDirectories(previous))
+                if(File.Exists(Path.Combine(dir,"case.json"))&&File.ReadAllText(Path.Combine(dir,"case.json"))==activeBefore)preservedActive=true;
+            Check(preservedActive,"Switching archives the previously active checkpoint for later access");
+            Check(File.ReadAllText(Path.Combine(fallback,"case.backup.json"))==chosen&&File.ReadAllText(Path.Combine(fallback,"case.json"))=="invalid selected primary","Selected archive and its damaged primary remain unchanged");
+            for(int i=0;i<600&&(GameSession.Instance==g||ChapterSave.IsRestoring);i++)yield return null;
+            yield return new WaitForSecondsRealtime(1);g=GameSession.Instance;hud=g.hud;
+            Check(hud.Started&&g.chapter.Complete&&ChapterSave.LastLoadUsedBackup&&g.fieldCamera.Frames.Count==2,"Previous recovery copy restores the full completed case and both photographs after scene reload");
+            foreach(var pair in photoBytes)
+                Check(Convert.ToBase64String(File.ReadAllBytes(pair.Key))==Convert.ToBase64String(pair.Value),"Original exposure unchanged after previous-case continuation: "+Path.GetFileName(pair.Key));
+            hud.SetPaused(true);yield return Shot("11-previous-case-restored");
         }
     }
 }

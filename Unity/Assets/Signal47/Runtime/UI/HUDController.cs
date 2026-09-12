@@ -5,7 +5,7 @@ using Signal47.Investigation;
 using Signal47.Chapter;
 namespace Signal47.UI
 {
-    public sealed class HUDController : MonoBehaviour
+    public sealed partial class HUDController : MonoBehaviour
     {
         public Notebook notebook;public Font terminalFont;
         public bool Started { get; private set; }
@@ -13,7 +13,7 @@ namespace Signal47.UI
         public bool TitleVisible { get; private set; }
         public bool SettingsOpen => settingsOpen;
         public bool NewShiftConfirmation { get; private set; }
-        public bool ModalOpen => NewShiftConfirmation || settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
+        public bool ModalOpen => PreviousShiftsOpen || NewShiftConfirmation || settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
         public string InteractionPrompt { get; set; } = "";
         string toast=""; bool paperOpen,notebookOpen,photoOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
@@ -22,6 +22,11 @@ namespace Signal47.UI
         void Update()
         {
             if(ChapterSave.QuitPending || ChapterSave.IsRestoring || Core.GameSession.Instance.Transitioning)return;
+            if(PreviousShiftsOpen)
+            {
+                if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame)BackFromPreviousShifts();
+                return;
+            }
             if(NewShiftConfirmation)
             {
                 if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)CancelNewShift();
@@ -112,11 +117,12 @@ namespace Signal47.UI
                 GUI.color=new Color(.018f,.026f,.022f,.98f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(0,Screen.height*.5f-25,Screen.width,60),ChapterSave.QuitPending?"SAVING BEFORE EXIT…":ChapterSave.IsRestoring?"RESTORING THE NIGHT SHIFT…":"PREPARING THE NIGHT SHIFT…",big);return;
             }
+            if(PreviousShiftsOpen){DrawPreviousShifts();return;}
             if(settingsOpen){DrawSettings();return;}
             if(NewShiftConfirmation){DrawNewShiftConfirmation();return;}
             if(!Started)
             {
-                GUI.color=new Color(.025f,.04f,.035f,.97f);GUI.DrawTexture(new Rect(Screen.width*.5f-290,Screen.height*.5f-190,580,450),Texture2D.whiteTexture);GUI.color=Color.white;
+                GUI.color=new Color(.025f,.04f,.035f,.97f);GUI.DrawTexture(new Rect(Screen.width*.5f-290,Screen.height*.5f-190,580,515),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(Screen.width*.5f-230,Screen.height*.5f-125,460,70),"SIGNAL / 47",big);
                 GUI.Label(new Rect(Screen.width*.5f-250,Screen.height*.5f-35,500,60),"THE SECOND EXPOSURE // CHAPTER ONE\n23:41 // NEW MEXICO, 1986",new GUIStyle(mono){alignment=TextAnchor.MiddleCenter});
                 bool hasSave=ChapterSave.HasSave;
@@ -128,7 +134,8 @@ namespace Signal47.UI
                 GUI.enabled=true;
                 if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+169,145,38),"SETTINGS",button))settingsOpen=true;
                 if(GUI.Button(new Rect(Screen.width*.5f+5,Screen.height*.5f+169,145,38),"QUIT",button))Application.Quit();
-                GUI.Label(new Rect(Screen.width*.5f-270,Screen.height*.5f+214,540,38),ChapterSave.Status,new GUIStyle(mono){fontSize=16,alignment=TextAnchor.MiddleCenter});
+                if(GUI.Button(new Rect(Screen.width*.5f-150,Screen.height*.5f+214,300,38),"PREVIOUS SHIFTS",button))OpenPreviousShifts();
+                GUI.Label(new Rect(Screen.width*.5f-270,Screen.height*.5f+265,540,50),ChapterSave.Status,new GUIStyle(mono){fontSize=16,alignment=TextAnchor.MiddleCenter});
                 if(settingsOpen)DrawSettings();
                 return;
             }

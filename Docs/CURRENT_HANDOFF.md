@@ -1,12 +1,12 @@
 # SIGNAL / 47 — aktuell overlevering
 
-Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt og er uendret. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
+Oppdatert 12. september 2026 fra faktisk lokal Git-status, bygg og pakkekontroll. GitHub-hovedgrenen ble kontrollert på nytt; PR9 er flettet. Kanonisk mappe: `/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47`.
 
 GitHub API bekrefter nå `private: false`, `visibility: public` for Tombonator3000/SIGNAL-47. Den eldre instruksens «privat repo» er dermed utdatert. Brukeren har uttrykkelig godkjent publisering av NightSky12-grenen og opprettelse av PR uten sin egen gjennomgang først. Brukeren har deretter selv flettet [PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8); merge er kontrollert via GitHub, commit `f156a9f2f656d168356145dabbe0bc8fb4ef0ec9`, 11. september 2026 kl. 10:32:08 UTC. Dette godkjenner ikke uutførte tester. Repoets synlighet er ikke endret av agenten.
 
 ## Gjeldende spill og ny kandidat
 
-**Visual10 er den siste verifiserte spillutgaven.** PR7 ble merget 11. september; PR8 er nå også flettet, og hovedgrenen er `f156a9f2f656d168356145dabbe0bc8fb4ef0ec9`. `./Spill-SIGNAL47.sh` starter fortsatt den faste pakken `Artifacts/Releases/Visual10-eb0748660027/`. Første kapittel har nattevakt, S-03, fysisk framkalling, bildeundersøkelse, aktiv/passiv B-12-prøve, to faktiske eksponeringer, lokal avslutning og lagring. Se [Visual10](VISUAL_10.md) og [Chapter09](CHAPTER_09.md).
+**Visual10 er den siste verifiserte spillutgaven.** PR7 ble merget 11. september; PR8 og PR9 er også flettet; PR9s mergecommit er `52c23abf28b3bf74adccb99d0f392fb8640892fb`. `./Spill-SIGNAL47.sh` starter fortsatt den faste pakken `Artifacts/Releases/Visual10-eb0748660027/`. Første kapittel har nattevakt, S-03, fysisk framkalling, bildeundersøkelse, aktiv/passiv B-12-prøve, to faktiske eksponeringer, lokal avslutning og lagring. Se [Visual10](VISUAL_10.md) og [Chapter09](CHAPTER_09.md).
 
 **NightSky12 er en ny testkandidat**, med 8K katalogbasert stjernehimmel og dempet Melkevei, integrert i hovedgrenen gjennom PR8. Kildecommit `94811347a00811648f937400a1522c7d2cdd1d2b`. Unity er faktisk bygget; originalbilder fra faste inspeksjonskameraer er tatt i den utpakkede spilleren. Full brukerreise, lagring/fotobevis, bevegelse og ny ytelsesmåling er fortsatt UNVERIFIED fordi Kubuntu-skjermen var låst. Native tester oppdager nå låsen før de starter. Brukeren er bedt om å låse opp; låsen er ikke omgått.
 
@@ -22,7 +22,7 @@ Visual10: kildecommit `d026cc3`, Unity SHA `eb0748660027744a8ad717c16a51a1e8801f
 
 ## Designbibel 13 - nytt arbeidsgrunnlag
 
-Brukeren ønsker nå en komplett historie og en tydelig ramme for et gjennomførbart spill på 5–6 timer. [Designbibel v0.1](DesignBible13/README.md) er et sammenhengende forslag: tre steder, seks kapitler og epilog, 18 hovedoppgaver, to avslutninger, 330 minutters førstegangsmål, kildetekster, fire kart, tre genererte konseptbilder og seks UI-skisser. PDF og redigerbare kilder følger samme lokale gren `design/bible-13`. Ingen Unity-kode er endret og ingen ny PR/push er utført for historieforslaget.
+Brukeren ønsker nå en komplett historie og en tydelig ramme for et gjennomførbart spill på 5–6 timer. [Designbibel v0.1](DesignBible13/README.md) er et sammenhengende forslag: tre steder, seks kapitler og epilog, 18 hovedoppgaver, to avslutninger, 330 minutters førstegangsmål, kildetekster, fire kart, tre genererte konseptbilder og seks UI-skisser. PDF og redigerbare kilder er nå offentlig publisert og flettet gjennom PR9 etter brukerens «Fortsett, merge». Dokumentenes opprinnelige v0.1-status er historikk; selve historieforslaget innfører ingen nye Unity-områder.
 
 Eksisterende kanon er skilt fra nye forslag. Nora/Tomás-forløpet, fenomenets presise lokale regler og sluttvalget må gjennomgås før ny historie implementeres. Tidsbudsjettet er ikke målt spilletid. De gamle punktene om en enkelt himmelhendelse er nå underlagt den samlede foreslåtte beviskjeden og roadmappen; ikke bygg en løs hendelse som motsier denne rammen.
 
@@ -32,14 +32,18 @@ Brukeren ba 12. september om å fortsette. Designbibelens trestedsramme brukes s
 
 [P04/P05-papirprøven](Menu14/PAPER_CASE.md) har kildekort, diagram, fasit og dokumentert egenkontroll. Vedlikeholdskortets for tidlige avsløring er rettet i prøveteksten. Dette er ikke en bestått blindtest; M1 og 5–6-timersmålet er fortsatt åpne. Den eldre designbibel-PDF-en er bevart som v0.1.
 
-28 API-styrte kontroller består i faktisk Unity-spiller og gjennom launcher etter utpakking. De inkluderer feil, avbryt, faktisk scenelasting av en tidligere fullført v1-sak og dekoding av to originale foto med identiske bytes. Originale menyskjermer er inspisert. Ingen nye native tastatur-/musforsøk eller ytelsesmålinger er utført. Menu14 er en separat testkandidat; Visual10 er fortsatt standardstarteren. Se [verifikasjon og pakkeidentitet](Menu14/Evidence/verification.json). Arbeidet er samlet på `gauntlet/menu-14`. Brukeren ba 12. september uttrykkelig om «Fortsett, merge»; publisering og fletting av denne grenen, inkludert designbibelen, er nå autorisert. Faktisk PR-/merge-resultat registreres etter GitHub-bekreftelse. Dette endrer ikke testkandidatstatus eller standardstarter.
+28 API-styrte kontroller består i faktisk Unity-spiller og gjennom launcher etter utpakking. De inkluderer feil, avbryt, faktisk scenelasting av en tidligere fullført v1-sak og dekoding av to originale foto med identiske bytes. Originale menyskjermer er inspisert. Ingen nye native tastatur-/musforsøk eller ytelsesmålinger er utført. Menu14 er en separat testkandidat; Visual10 er fortsatt standardstarteren. Se [verifikasjon og pakkeidentitet](Menu14/Evidence/verification.json). Arbeidet ble flettet som [PR9](https://github.com/Tombonator3000/SIGNAL-47/pull/9), mergecommit `52c23abf28b3bf74adccb99d0f392fb8640892fb`, 12. september kl. 18:24:43 UTC. GitHub bekreftet MERGED; vanlig merge uten bypass. Dette endrer ikke testkandidatstatus eller standardstarter.
+
+## Recovery15 — videreført tilgang til tidligere saker
+
+[Recovery15](Recovery15/README.md) bygger videre på PR9: Previous Shifts i startmenyen, liste med lokal dato og backup-status, avbrytbar forhåndsvisning, ny validering før bytte og bevaring av gjeldende sak før gjenoppretting. Samme v1-format og fotofiler brukes. Dette er en avgrenset del av M2, ikke ferdig treplasslagring, områdeovergang eller ny historie. Unity-bygg og 50 API-kontroller består både direkte og gjennom launcher fra utpakket kandidat. Begge originale foto og kildeprofilen er uendret; seks originale menystater er visuelt inspisert. Kandidat: `Recovery15-bda088dfe638`. Native input og ytelse er fortsatt UNVERIFIED; Visual10 er standard. Bygg-, pakke- og testidentitet følger [verifikasjonsrapporten](Recovery15/Evidence/verification.json).
 
 ## Fortsett her
 
 Brukeren opplyste 11. september at vedkommende er borte hjemmefra og ikke kan låse opp skjermen nå. Ikke gjenta opplåsingsforespørselen eller start flere native inputforsøk mens dette gjelder. Bygging, statisk runtime-inspeksjon og pakkekontroll er allerede utført; manglende interaktive kontroller utsettes til skrivebordet er tilgjengelig. Ingen overvåking eller bakgrunnsjobb er startet.
 
 1. Bruk det ferdige P04/P05-spillerarket i Menu14 til en ny lesers papirprøve. Dokumenter begrunnelser og tidsbruk; egenkontrollen er allerede gjort. Før større historieproduksjon må åpne kanonvalg og innholdstak fryses.
-2. Når brukeren har tilgang til et opplåst Kubuntu-skrivebord: kontroller Menu14s faktiske knapper, Escape og tastaturfokus, avbryt fra meny/pause, Fortsett etter prosessgjenstart og begge forsøksveier. Menu14 inkluderer NightSky12; en full ny tur på samme pakke kan dekke begge. Bruk nye, isolerte testprofiler.
+2. Når brukeren har tilgang til et opplåst Kubuntu-skrivebord: kontroller Recovery15s faktiske knapper, Escape og tastaturfokus, listesider og valg av tidligere sak, avbryt fra meny/pause, Fortsett etter prosessgjenstart og begge forsøksveier. Recovery15 inkluderer Menu14 og NightSky12; en full ny tur på samme pakke kan dekke begge. Bruk nye, isolerte testprofiler.
 3. Kontroller de virkelige fotografiene, inkludert gjenåpning, og himmelen under vanlig gange og raske vendinger. Kjør separat releaseytelse med alle frameintervaller beholdt.
 4. Korriger eventuelle funn før kandidaten kan erstatte Visual10. Følg deretter M1–M3 i designbibelens roadmap: papirprøve, trygg lagring/områdeovergang og kort spillbar arkivsekvens. Ikke start alle nye systemer og miljøer samtidig.
 

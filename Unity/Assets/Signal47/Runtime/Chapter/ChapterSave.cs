@@ -12,7 +12,7 @@ using Signal47.Signals;
 namespace Signal47.Chapter
 {
     /// <summary>A durable case checkpoint, separate from the player's exported photographs.</summary>
-    public sealed class ChapterSave : MonoBehaviour
+    public sealed partial class ChapterSave : MonoBehaviour
     {
         const int FormatVersion=1;
         const int MaximumFileBytes=2*1024*1024;
@@ -314,13 +314,15 @@ namespace Signal47.Chapter
             reason=primaryReason;return false;
         }
         static bool TryRead(string path,out Snapshot state,out string reason,bool verifyReferences)
+            =>TryRead(path,out state,out reason,verifyReferences,out _);
+        static bool TryRead(string path,out Snapshot state,out string reason,bool verifyReferences,out string encoded)
         {
-            state=null;reason="No saved case is available.";
+            state=null;encoded=null;reason="No saved case is available.";
             try
             {
                 if(!File.Exists(path))return false;
                 if(new FileInfo(path).Length>MaximumFileBytes){reason="The checkpoint exceeds the supported size.";return false;}
-                string json=File.ReadAllText(path,Encoding.UTF8);
+                string json=File.ReadAllText(path,Encoding.UTF8);encoded=json;
                 var file=JsonUtility.FromJson<Envelope>(json);
                 if(file==null||file.format!=FormatName||file.version!=FormatVersion)
                 {reason="This checkpoint uses an unsupported format. It has been preserved.";return false;}
@@ -378,20 +380,7 @@ namespace Signal47.Chapter
                     // Preserve both originals before clearing the active checkpoint.
                     // A failed copy never removes an active file. If clearing later
                     // fails, the recovery directory still contains the originals.
-                    string retired=null;
-                    foreach(string path in new[]{SavePath,BackupPath})
-                    {
-                        if(!File.Exists(path))continue;
-                        if(retired==null)
-                        {
-                            retired=Path.Combine(StorageDirectory,"PreviousCases",DateTime.UtcNow.ToString("yyyyMMddTHHmmssfff")+"-"+Guid.NewGuid().ToString("N"));
-                            Directory.CreateDirectory(retired);
-                        }
-                        string copy=Path.Combine(retired,Path.GetFileName(path));
-                        using(var input=File.OpenRead(path))
-                        using(var output=new FileStream(copy,FileMode.CreateNew,FileAccess.Write,FileShare.None))
-                        {input.CopyTo(output);output.Flush(true);}
-                    }
+                    PreserveActiveCheckpoint();
                     File.Delete(SavePath);File.Delete(BackupPath);File.Delete(SavePath+".tmp");
                     caseGeneration++;
                 }

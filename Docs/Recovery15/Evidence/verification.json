@@ -1,0 +1,102 @@
+{
+  "recorded_utc": "2026-09-12T18:44:21.785974+00:00",
+  "scope": "Recovery15 bounded previous-checkpoint menu and restoration; baseline PR9 merged 52c23ab",
+  "build": {
+    "base_revision": "52c23abf28b3bf74adccb99d0f392fb8640892fb",
+    "working_tree_changes": true,
+    "unity_source_sha256": "bda088dfe6387a55b039f17f2c3fb6b881269abdd3bb6f9a36e23806001add53",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "59ee6e5a247d08abe9bb4fe505586fd6d39776761cc80c2039895dd20f04b83e",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Recovery15-bda088dfe638",
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Recovery15-bda088dfe638",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Recovery15-bda088dfe638-Linux.tar.gz",
+    "archive_sha256": "c18f5960e2d119ce0c75f333e0a88e1d07fe9189e132532822c9f9b01d502012",
+    "package_payload_sha256": "7874d5b027ed6247d3f3b1770df82307a36b876f6782956af62bb8b68c29a450",
+    "launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Recovery15-bda088dfe638/Start-SIGNAL47.sh",
+    "candidate": true
+  },
+  "tested_launcher": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Recovery15/unpacked-rvzkc49l/Recovery15-bda088dfe638/Start-SIGNAL47.sh",
+  "runtime_checks": 50,
+  "gates": {
+    "unity_build": "PASS",
+    "direct_runtime_API_checks": "PASS",
+    "unpacked_launcher_runtime_API_checks": "PASS",
+    "restored_completed_v1_case_and_two_photos": "PASS",
+    "historical_source_profile_and_original_JPEG_bytes": "PASS",
+    "pagination_and_failure_recovery_API": "PASS",
+    "visual_review_six_original_1280x800_states": "PASS",
+    "package_archive_paths_bytes_modes_and_execute_permission": "PASS",
+    "native_mouse_keyboard_journey": "UNVERIFIED",
+    "keyboard_focus_Enter_Tab": "UNVERIFIED",
+    "other_display_sizes": "UNVERIFIED",
+    "performance_and_sky_in_motion": "UNVERIFIED",
+    "M1_blind_reader_and_5_6_hour_playtime": "UNVERIFIED",
+    "full_M2_three_slots_prologue_saving_area_transition": "NOT_IMPLEMENTED"
+  },
+  "default_launcher": "Visual10-eb0748660027 unchanged",
+  "evidence_files": [
+    {
+      "file": "01-fresh-menu.png",
+      "bytes": 725531,
+      "sha256": "14c269d2663d7980cba12e5f07eee9167f49548dcbfeddd72bab55ac1279cb98"
+    },
+    {
+      "file": "08-previous-list.png",
+      "bytes": 183328,
+      "sha256": "35e8088f03993ce743342945c14353b7a3c56ecc77a5ca0cb6e429101ab5f3f1"
+    },
+    {
+      "file": "08b-previous-last-page.png",
+      "bytes": 167256,
+      "sha256": "020adf4dda5d6d67923043f67f770da05d51099a0a640debe83ed1cc6e09ea68"
+    },
+    {
+      "file": "09-previous-confirmation.png",
+      "bytes": 139866,
+      "sha256": "118443ba51bde2a2e3a898029fb5218e6d003242fd15f0e56cc9b2dba44bec0f"
+    },
+    {
+      "file": "10-previous-write-failure.png",
+      "bytes": 147153,
+      "sha256": "9dbbfccc6743f389c30db040f815f931aa599207d98fc2ae3b8ec50bdd185264"
+    },
+    {
+      "file": "11-previous-case-restored.png",
+      "bytes": 831722,
+      "sha256": "80b51c904aa2fcb812b2224afd2e6e78c050feaeef41342b05603793fbafec3f"
+    },
+    {
+      "file": "build-manifest.json",
+      "bytes": 539,
+      "sha256": "8be91379d9dfcd929c19f5e121e395435a8902d59c5181e501fadc5b98358df7"
+    },
+    {
+      "file": "direct-result.json",
+      "bytes": 4167,
+      "sha256": "6d6f1ac2e1eccf79e0b8325b93eae65d19e0c30801fe9322eaf87ab1439afe3e"
+    },
+    {
+      "file": "extraction.json",
+      "bytes": 16793,
+      "sha256": "8986d2fd6107eb3a754597e7196f4a20d6861e9d4b9dda252e0637aae308e413"
+    },
+    {
+      "file": "fixture-source-hashes.json",
+      "bytes": 1444,
+      "sha256": "6e635c96de9a373b5d55dd1bbea4975bbf98b8ee90609e18a5b6f7462923ae8d"
+    },
+    {
+      "file": "fixture.txt",
+      "bytes": 258,
+      "sha256": "c4e2f1377655269ee0451860cba0571bad95dd1ba5c32234f161c3b11a9166d5"
+    },
+    {
+      "file": "result.json",
+      "bytes": 4380,
+      "sha256": "ee63b32ea3c56ef1c4716a7fc57523fa2794c8db30b858209f523aaae56af3aa"
+    }
+  ]
+}
