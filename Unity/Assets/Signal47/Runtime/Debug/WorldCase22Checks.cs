@@ -251,7 +251,7 @@ namespace Signal47.Debugging
             Check(worldRoot && folio && hitObject && worldRoot.GetComponent<WorldCaseController>() == Case, "Main scene has the physical folio and its assigned archive controller");
             var colliders = FindObjectsByType<Collider>(FindObjectsSortMode.None); int additions = 0;
             foreach (var collider in colliders) if (collider.transform.IsChildOf(worldRoot.transform)) additions++;
-            Check(additions == 1 && colliders.Length - additions == 154 && LightmapSettings.lightmaps.Length == 2, "Archive adds one interaction collider while preserving the 154 original colliders and two lightmaps");
+            Check(additions == 1 && colliders.Length - additions - Array.FindAll(colliders,c=>GameSession.Instance.station && c.transform.IsChildOf(GameSession.Instance.station.transform)).Length == 154 && LightmapSettings.lightmaps.Length == 2, "Archive adds one interaction collider while preserving the 154 original colliders and two lightmaps");
             var renderers = folio.GetComponentsInChildren<Renderer>(); Check(renderers.Length > 0, "Folio has visible model geometry");
             var bounds = renderers[0].bounds; foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
             var bench = GameObject.Find("CH09.ArchiveBench.FormicaTop").GetComponent<Renderer>().bounds;
@@ -316,7 +316,7 @@ namespace Signal47.Debugging
             Case.Close(); Check(!Case.P05Complete && Case.ReadIndex && Case.ReadMaintenance, "Cancel after wrong routes retains sources without committing a destination");
             Check(!Case.SubmitDestination("old-survey-station", "STATION 01", "triangle-bar"), "Closed route form cannot complete P05");
             Check(Case.Open() && Case.SelectPage("route") && Case.SubmitDestination("old-survey-station", "STATION 01", "triangle-bar") && Case.P05Complete, "Matched destination, survey ID and fixed-point mark complete P05");
-            Check(Case.Objective.Contains("NOT YET PLAYABLE") && !GameSession.Instance.Transitioning, "Preparing field access does not claim or launch an unbuilt area"); yield return Shot("10-p05-supported");
+            Check(!GameSession.Instance.Transitioning && (GameSession.Instance.station ? !GameSession.Instance.station.InStation : Case.Objective.Contains("NOT YET PLAYABLE")), "Preparing field access retains SARO until a separate travel action"); yield return Shot("10-p05-supported");
             before = Case.CaptureState();
             Check(Case.SubmitDestination("old-survey-station", "STATION 01", "triangle-bar") && Case.CaptureState() == before, "Resubmitting supported destination is idempotent");
             yield return SaveAndReload("P05 complete");

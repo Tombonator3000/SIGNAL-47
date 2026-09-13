@@ -1,5 +1,19 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Station26 — sammenhengende feltreise i hovedspillet
+
+13. september 2026: [Station26](Station26/README.md) er nyeste hovedspillkandidat, bygget fra flettet Scan25/PR21 (`db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a`). Faktisk GitHub-status viser fortsatt PUBLIC; synligheten er ikke endret. Arbeidet samler avreise etter P04/P05, et fysisk STATION 01-område, P06–P09, to nye kameraeksponeringer, retur til våtbenken og varig lagring. Feltområdet er en avgrenset, aktivert del av samme Unity-scene; ingen bilkjøring eller separat scenelasting er innført.
+
+**Prøv lokalt:** `~/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh`, også under `Artifacts/Releases/`. Bruk **FIELD TRAVEL**-folioen ved arkivbenken etter B-12 og arkivfunnene. Begge feltfilmene kan framkalles etter samme retur. WorldCase22-pakken og brukerlagring er bevart. **Visual10 er fortsatt standardstarter; Station26 er en testkandidat.** Kilde-SHA `8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4`; arkiv-SHA `b9c72948896c1d18777206fb2311e3177cdbce7da6ba1863bc9d416842e0d3c3`.
+
+162 feltkontroller består direkte ved 1280×800 og fra nyutpakket starter ved 1600×900. Samme utpakkede starter består 118 arkiv-, 42 eksisterende spill- og 50 meny-/gjenopprettingskontroller. Begge oppgaverekkefølger, fysisk gangrute gjennom hytta, faktiske eksporterte foto, scenegjenstart og feil ved lagring/manglende bilder er prøvd via API. 173 pakkefiler, fem historiske kildefiler og fire foto i begge feltkjøringer er hashkontrollert. To lightmaps og opprinnelige kollidere beholdes; 28 feltkollidere tilkommer. Se [fullt bevis](Station26/Evidence/verification.json) og [presise testgrenser](Station26/TEST_PLAN.md).
+
+Teksturert Hybrid23-bygning brukes som vanlig mesh sammen med originale Archive17-detaljer. Ingen splatpakke er innført i hovedspillet. Faktiske runtime-bilder viser prototypeterreng og enkle instrumenter. Et historisk diagram og teksttranskript er tilgjengelig; originalnegativ og ny innspilt stemme er ikke produsert. Native input, blind forståelse/tidsbruk, subjektiv lyd og separat releaseytelse er fortsatt UNVERIFIED. Hele K3 eller 5–6-timersspillet er ikke ferdig.
+
+En P1-feil fra uavhengig kodegjennomgang er rettet før levering: mislykket fotoeksport kan prøves igjen ved feltets returfolio. Reell eksportfeil, bevart originalbuffer og vellykket lokal gjenoppretting er med i begge sluttkjøringer. Tidligere Station26-pakke `ef2a95b4a65b` er en bevart mellomkandidat, ikke den anbefalte prøvepakken.
+
+**Neste samlede produksjon:** følg opp feltbevisene på SARO og bygg den avgrensede overgangen mot SIERRA MOTOR COURT fra gjeldende verdensdesign, med nødvendige historieassets, lagring og verifikasjon. Lukk kandidatens åpne spiller-/ytelsesprøver når verktøy og spiller er tilgjengelige. Ikke erstatt dette med flere isolerte splat-/verktøyforsøk uten konkret behov. Eldre «neste P06–P09» og «WorldCase22 siste kandidat» nedenfor er historikk.
+
 ## Scan25 — detaljert, trent steinskann faktisk prøvd i Unity
 
 13. september 2026: [Scan25](Research/Scan25/README.md) bruker Loop CEs fotograferte og trente «rock», CC BY 4.0. 493 869 Gaussians er beskåret/renset fra originalen; alle beholdte felt er kontrollert bit for bit, med SH3 bevart. PlayCanvas og Unity viser tre tilsvarende vinkler. En faktisk fargeromsfeil er rettet: Gamma-prosjektet skal ikke bruke splatkomponentens ubetingede GammaToLinear-konvertering. Dette oppdaterer forståelsen av mørke splatbilder; historiske Hybrid23-resultater er ikke kjørt om.

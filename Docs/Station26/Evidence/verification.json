@@ -1,0 +1,265 @@
+{
+  "date": "2026-09-13",
+  "scope": "Station26 integrated main-game P06-P09 field journey; prototype environment, not the full K3 or 5-6 hour game",
+  "build": {
+    "base_revision": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a",
+    "working_tree_changes": true,
+    "unity_source_sha256": "8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "877ad6a6898fdedb1c13983dba0b2e581cbca6cf956c803b67d5fe1ce3739e65",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "package_id": "Station26-8b181fb4830e",
+    "archive_sha256": "b9c72948896c1d18777206fb2311e3177cdbce7da6ba1863bc9d416842e0d3c3",
+    "archive_bytes": 151841006,
+    "manifest_entries_verified": 172,
+    "files_including_manifest": 173,
+    "tar_modes_verified": true,
+    "extracted_permissions": "All file and directory modes restored to recorded modes after data-filter extraction",
+    "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh",
+    "package_payload_sha256": "964bf99b3fc59e0d5d2d117959a94986680f5350d364aef48e61c881f08f53dc",
+    "manifest_sha256": "66d0261f7bb61bf7532fdb288960b7e8b8e7f1404ddb4ef49dcbe3808b62176f",
+    "current_source_and_build_match": true,
+    "all_extracted_files_and_modes_rechecked": true
+  },
+  "runs": [
+    {
+      "suite": "Station26 direct",
+      "profile": "Artifacts/Station26/station26-test-jq0aVo",
+      "report": "Direct1280/result.json",
+      "result": "PASS",
+      "count": 162,
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven integrated STATION 01 P06-P09 with durable save/reload; no native input or performance claim",
+      "launcher": "Artifacts/GauntletLinux/Signal47.x86_64"
+    },
+    {
+      "suite": "Station26 extracted",
+      "profile": "Artifacts/Station26/station26-test-1ecGNH",
+      "report": "Packaged1600/result.json",
+      "result": "PASS",
+      "count": 162,
+      "resolution": [
+        1600,
+        900
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven integrated STATION 01 P06-P09 with durable save/reload; no native input or performance claim",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh"
+    },
+    {
+      "suite": "WorldCase22 extracted",
+      "profile": "Artifacts/WorldCase22/worldcase22-test-51mQyA",
+      "report": "worldcase22-checks.json",
+      "result": "PASS",
+      "count": 118,
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven integrated P04/P05 with real checkpoint writes and scene reloads; no native input, blind reading or performance claim",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh"
+    },
+    {
+      "suite": "Resources19 extracted",
+      "profile": "Artifacts/Resources19/check-AyyBph",
+      "report": "resources19-checks.json",
+      "result": "PASS",
+      "count": 42,
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven real Unity player; not native input or performance measurement",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh"
+    },
+    {
+      "suite": "Recovery15 extracted",
+      "profile": "Artifacts/Menu14/menu14-test-nL4DP0",
+      "report": "recovery15-checks.json",
+      "result": "PASS",
+      "count": 50,
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven Unity menu/save checks; no native input or performance certification",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh"
+    }
+  ],
+  "scene": {
+    "lightmaps": 2,
+    "stationColliders": 28,
+    "source": "Preserved WorldCase22 + ordinary mesh from Hybrid23 + original Archive17 props",
+    "origin": {
+      "x": 120.0,
+      "y": 0.0,
+      "z": 100.0
+    }
+  },
+  "photos": [
+    {
+      "run": "Station26 direct",
+      "id": "s03-field-photograph",
+      "path": "Artifacts/Station26/station26-test-jq0aVo/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+      "width": 960,
+      "height": 600,
+      "build": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 direct",
+      "id": "b12-control-photograph",
+      "path": "Artifacts/Station26/station26-test-jq0aVo/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+      "width": 960,
+      "height": 600,
+      "build": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 direct",
+      "id": "station01-marker-photograph",
+      "path": "Artifacts/Station26/station26-test-jq0aVo/FieldPhotos/ST01-MARKER-20260913-121808-6c4fb5e7.jpg",
+      "sha256": "c28b5ab51a4e197e385dc756dcfee9ef2c94547e0597b2bad3ae16fe2f0a6904",
+      "width": 960,
+      "height": 600,
+      "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 direct",
+      "id": "station01-cable-photograph",
+      "path": "Artifacts/Station26/station26-test-jq0aVo/FieldPhotos/ST01-CABLE-20260913-121810-8471ee51.jpg",
+      "sha256": "3cf6a0191cea029ddc0fbbc2a9a6ed98f1cc91bbee8aef864e271608db389263",
+      "width": 960,
+      "height": 600,
+      "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 extracted",
+      "id": "s03-field-photograph",
+      "path": "Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+      "width": 960,
+      "height": 600,
+      "build": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 extracted",
+      "id": "b12-control-photograph",
+      "path": "Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+      "width": 960,
+      "height": 600,
+      "build": "d026cc3d431ed0e99b43e06e2e6e204ef842cdba clean source-sha256:eb0748660027744a8ad717c16a51a1e8801f4908b758e4ca191e24108c9a2c01",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 extracted",
+      "id": "station01-marker-photograph",
+      "path": "Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/ST01-MARKER-20260913-122008-305198bf.jpg",
+      "sha256": "af817779ccfd54eadf5f09097acca95d55ab5b27545c805483c05ed4ee277516",
+      "width": 960,
+      "height": 540,
+      "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Station26 extracted",
+      "id": "station01-cable-photograph",
+      "path": "Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/ST01-CABLE-20260913-122010-6b9283b9.jpg",
+      "sha256": "c75e3cbc9d0385616dcf7c2183c3cc499974488794d98b803a942c796463686c",
+      "width": 960,
+      "height": 540,
+      "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    }
+  ],
+  "unchanged_historical_sources": [
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/B12-20260910-205046-2238d7dd.json",
+      "sha256": "ae2e89a07aecc1613cc69db407c5a1fac781e43cd48dd7927ccf96d115db1ba6"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/S03-20260910-204853-dece0938.json",
+      "sha256": "beefe41ecbac7e40f475de20ea74b5c70e0bd0e18826e2c2981db7c4a0da2f5d"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/case.json",
+      "sha256": "b2745930d745d5df8f2e8ef70e862d0e11d65b1b1b6adfa79d79cfaff9aa98da"
+    }
+  ],
+  "unchanged_default_launcher": {
+    "path": "Spill-SIGNAL47.sh",
+    "sha256": "f072ce1e53eff838ca562c93c92249f436deaabcaa7b917b3b927dc0fce33400",
+    "default": "Visual10"
+  },
+  "asset_reuse": {
+    "source_manifest": "Unity/Assets/Signal47/Art/Station26/source-manifest.json",
+    "both_files_identical_to_Hybrid23": true,
+    "splats_in_main_game": false
+  },
+  "visual_review": {
+    "method": "Unedited actual Unity runtime captures; direct inspection of the files listed, not native-input playtesting",
+    "inspected": [
+      "Direct1280/09-export-retry.png",
+      "Direct1280/10-export-recovered.png",
+      "Direct1280/01-arrival.png",
+      "Direct1280/05-cable-finding.png",
+      "Packaged1600/00-travel-review.png",
+      "Packaged1600/09-export-retry.png",
+      "Packaged1600/10-export-recovered.png",
+      "Packaged1600/08-developed-cable.png"
+    ],
+    "corrections": "World labels oriented correctly and depth tested, facade lining inset, ground fill adjusted, dark ink on feedback cards, physical cable cut made legible; reviewed P1 photo-export travel trap fixed with local immutable retry and actual failure/recovery fixture",
+    "remaining": "Simple prototype terrain and instruments, no photorealism or final art approval"
+  },
+  "unverified": [
+    "Native keyboard/mouse and menu-focus journey",
+    "Independent blind clue comprehension and elapsed chapter time",
+    "Separate release performance and GPU profiling",
+    "Subjective audio balance and new recorded voice",
+    "Full K3 narrative/asset delivery and the complete 5-6 hour game"
+  ],
+  "delivery": {
+    "status": "Local candidate ready; Git delivery pending",
+    "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh",
+    "previous_user_package_preserved": true
+  }
+}

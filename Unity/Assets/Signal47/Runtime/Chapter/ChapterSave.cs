@@ -26,7 +26,7 @@ namespace Signal47.Chapter
         [Serializable] sealed class Snapshot
         {
             public int version;
-            public string savedUtc,build,notebook,camera,chapter,worldCase;
+            public string savedUtc,build,notebook,camera,chapter,worldCase,station;
             public bool postPrologue,yardCompleted,yardReturned,doorOpen,worldCasePhotoRecovery;
             public Vector3 playerPosition,mugPosition;
             public float playerYaw,playerPitch,frequency,gain,bandwidth,azimuth;
@@ -121,9 +121,12 @@ namespace Signal47.Chapter
                 g.fieldCamera.RestoreState(state.camera);
                 g.chapter.RestoreState(state.chapter);
                 g.worldCase.RestoreState(state.worldCase);
+                if(g.station){g.station.RestoreState(state.station);g.station.ReconcileRestoredPhotos();}
                 worldCasePhotoRecovery=Signal47.WorldCase22.WorldCaseController.HasProgress(state.worldCase)&&!g.chapter.Complete &&
                     (state.worldCasePhotoRecovery || ChapterInvestigation.IsCompletedState(state.chapter));
-                g.player.RestorePose(state.playerPosition,state.playerYaw,state.playerPitch);
+                if(g.station && g.station.InStation && !g.chapter.Complete)
+                {g.station.ForceReturnForPhotoRecovery();g.player.RestorePose(g.station.saroReturn.position,g.station.saroReturn.eulerAngles.y,0);}
+                else g.player.RestorePose(state.playerPosition,state.playerYaw,state.playerPitch);
                 Time.timeScale=1;AudioListener.pause=false;PlayerSettings.Apply();
                 LastLoadUsedBackup=loadedBackup;
                 Status=loadedBackup?"Case restored from the recovery copy. The damaged checkpoint was preserved.":"Case continued from the saved checkpoint.";
@@ -248,7 +251,7 @@ namespace Signal47.Chapter
                     playerPosition=g.player.transform.position,playerYaw=g.player.transform.eulerAngles.y,playerPitch=g.player.ViewPitch,
                     mugPosition=g.director.mug.transform.position,
                     frequency=console.frequency,gain=console.gain,bandwidth=console.bandwidth,azimuth=console.azimuth,
-                    notebook=g.notebook.CaptureState(),camera=g.fieldCamera.CaptureState(),chapter=g.chapter.CaptureState(),worldCase=g.worldCase.CaptureState(),
+                    notebook=g.notebook.CaptureState(),camera=g.fieldCamera.CaptureState(),chapter=g.chapter.CaptureState(),worldCase=g.worldCase.CaptureState(),station=g.station?g.station.CaptureState():null,
                     worldCasePhotoRecovery=instance.worldCasePhotoRecovery&&!g.chapter.Complete
                 };
                 // The camera's SaveReady contract guarantees archived exposures here. File
@@ -348,6 +351,9 @@ namespace Signal47.Chapter
             if(!InRange(state.frequency,1419.5f,1420.7f)||!InRange(state.gain,0,100)||!InRange(state.bandwidth,4,100)||!InRange(state.azimuth,0,180))return false;
             if(!Notebook.ValidateState(state.notebook,out reason))return false;
             if(!Signal47.WorldCase22.WorldCaseController.ValidateState(state.worldCase,out reason))return false;
+            if(!Signal47.Station26.StationController.ValidateState(state.station,out reason))return false;
+            if(Signal47.Station26.StationController.HasProgress(state.station) && !Signal47.WorldCase22.WorldCaseController.IsDestinationPrepared(state.worldCase))
+            {reason="Field progress requires the supported STATION 01 destination.";return false;}
             bool archiveProgress=Signal47.WorldCase22.WorldCaseController.HasProgress(state.worldCase);
             bool chapterComplete=ChapterInvestigation.IsCompletedState(state.chapter);
             if(archiveProgress&&!chapterComplete&&!state.worldCasePhotoRecovery)
@@ -357,6 +363,10 @@ namespace Signal47.Chapter
             if(verifyReferences)
             {
                 if(!FieldCamera.ValidateState(state.camera,out reason))return false;
+                if(!Signal47.Station26.StationController.ValidatePhotoState(state.station,state.camera,out reason))return false;
+                bool fieldPhotos=FieldCamera.StateHasFrame(state.camera,FieldCamera.StationMarkerPhotoId)||FieldCamera.StateHasFrame(state.camera,FieldCamera.StationCablePhotoId);
+                if(fieldPhotos && !Signal47.WorldCase22.WorldCaseController.IsDestinationPrepared(state.worldCase))
+                {reason="Field photographs require the supported STATION 01 route.";return false;}
                 if(!ChapterInvestigation.ValidateState(state.chapter,out reason))return false;
             }
             else if(string.IsNullOrEmpty(state.camera)||string.IsNullOrEmpty(state.chapter))return false;

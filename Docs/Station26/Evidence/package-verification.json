@@ -1,0 +1,10 @@
+{
+  "package_id": "Station26-8b181fb4830e",
+  "archive_sha256": "b9c72948896c1d18777206fb2311e3177cdbce7da6ba1863bc9d416842e0d3c3",
+  "archive_bytes": 151841006,
+  "manifest_entries_verified": 172,
+  "files_including_manifest": 173,
+  "tar_modes_verified": true,
+  "extracted_permissions": "All file and directory modes restored to recorded modes after data-filter extraction",
+  "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh"
+}

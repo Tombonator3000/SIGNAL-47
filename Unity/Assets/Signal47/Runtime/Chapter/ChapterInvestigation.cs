@@ -181,6 +181,12 @@ namespace Signal47.Chapter
         public void ClosePanel() { panel = ""; feedback = ""; if (Game && Game.hud) Game.hud.SetCursor(true); }
         public bool OpenEvidence(string id)
         {
+            if (FieldCamera.IsStationPhoto(id))
+            {
+                var frame = Camera ? Camera.GetFrame(id) : null;
+                if (frame == null || !frame.developed) { if (Game) Game.hud.Toast("PROCESS THIS FRAME AT THE SARO WET BENCH FIRST", 3); return true; }
+                selectedPhoto = id; Camera.Inspect(id); OpenPanel("field-photo"); return true;
+            }
             if (id == FieldCamera.PhotoId || id == FieldCamera.SecondPhotoId)
             {
                 var frame = Camera ? Camera.GetFrame(id) : null;
@@ -210,6 +216,13 @@ namespace Signal47.Chapter
         void CollectPrint()
         {
             if (state.labStep != 2 || state.labRemaining > 0 || !Camera.Develop(state.labFrameId)) return;
+            if (FieldCamera.IsStationPhoto(state.labFrameId))
+            {
+                selectedPhoto = state.labFrameId; state.labStep = 0; state.labFrameId = "";
+                Sound(transferSound); Camera.Inspect(selectedPhoto); OpenPanel("field-photo");
+                Game.notebook.Add(FieldCamera.FrameLabel(selectedPhoto) + " processed. The original field exposure is available in the notebook.");
+                ChapterSave.RequestCheckpoint(); return;
+            }
             bool second = state.labFrameId == FieldCamera.SecondPhotoId;
             state.labStep = 0; state.labFrameId = ""; Sound(transferSound);
             OpenPanel(second ? "comparison" : "first"); Camera.Inspect(second ? FieldCamera.SecondPhotoId : FieldCamera.PhotoId);
@@ -349,6 +362,7 @@ namespace Signal47.Chapter
             if (Button(new Rect(1110, 42, 120, 38), "CLOSE")) { ClosePanel(); GUI.matrix = previous; return; }
             switch (panel)
             {
+                case "field-photo": DrawFieldPhoto(); break;
                 case "lab": DrawLab(); break;
                 case "first": DrawFirst(); break;
                 case "archive": DrawArchive(); break;
@@ -372,13 +386,13 @@ namespace Signal47.Chapter
         }
         string PanelTitle()
         {
-            switch (panel) { case "lab": return "W E T  B E N C H"; case "archive": return "R E F E R E N C E  F I L E"; case "experiment": return "B - 1 2  C O N T R O L"; case "comparison": return "T W O  E X P O S U R E S"; case "report": return "L O C A L  R E P O R T"; case "ending": return "T H E  S E C O N D  E X P O S U R E"; default: return "C O N T A C T  P R I N T  0 1"; }
+            switch (panel) { case "field-photo": return "S T A T I O N  0 1  /  C O N T A C T  P R I N T"; case "lab": return "W E T  B E N C H"; case "archive": return "R E F E R E N C E  F I L E"; case "experiment": return "B - 1 2  C O N T R O L"; case "comparison": return "T W O  E X P O S U R E S"; case "report": return "L O C A L  R E P O R T"; case "ending": return "T H E  S E C O N D  E X P O S U R E"; default: return "C O N T A C T  P R I N T  0 1"; }
         }
         void DrawLab()
         {
             var film = Camera.PendingFilm;
             if (film == null) { Label(75, 140, 1100, 150, "The tank is empty.\nExpose a frame from the S-03 apron before loading film. The archive desk holds the local reference plan."); return; }
-            Label(75, 125, 1070, 55, (film.id == FieldCamera.PhotoId ? "SEALED FRAME 01 / S-03" : "SEALED FRAME 02 / B-12 CONTROL") + "    " + film.localTime);
+            Label(75, 125, 1070, 55, ("SEALED " + FieldCamera.FrameLabel(film.id) + " / " + film.subject) + "    " + film.localTime);
             string[] steps = { "1 / LOAD LIGHT-TIGHT TANK", "2 / TRANSFER PRINT TO FIXER", "3 / COLLECT STABLE PRINT" };
             for (int i = 0; i < 3; i++)
             {
@@ -396,6 +410,18 @@ namespace Signal47.Chapter
             else if (state.labStep == 2 && Button(new Rect(340, 454, 600, 66), "COLLECT AND EXAMINE PRINT")) CollectPrint();
             Label(80, 558, 850, 55, Camera.SaveStatus, true);
             if (!Camera.SaveReady && Button(new Rect(950, 554, 230, 48), "RETRY PHOTO EXPORT")) Camera.RetryExport();
+        }
+        void DrawFieldPhoto()
+        {
+            var frame = Camera.GetFrame(selectedPhoto);
+            if (frame == null || !frame.developed || !frame.texture) { Label(75,140,1050,100,"Return to the wet bench to process this field frame."); return; }
+            Camera.Inspect(selectedPhoto);
+            Label(65,108,1130,42,FieldCamera.FrameLabel(frame.id) + " / " + frame.subject + " / " + frame.localTime,true);
+            var outer=new Rect(65,163,835,450); Block(outer,paper);
+            GUI.DrawTexture(outer,frame.texture,ScaleMode.ScaleToFit);
+            Label(926,177,288,200,"ORIGINAL FIELD EXPOSURE\n\nThe archived pixels are unchanged. This print records the photographed arrangement; it does not establish who moved or cut it.",true);
+            Label(926,398,288,145,"Return to the STATION 01 field folio to compare the source records and record supported findings.",true);
+            if(Camera.PendingFilm != null && Button(new Rect(926,555,288,55),"PROCESS NEXT FRAME"))OpenPanel("lab");
         }
         void DrawFirst()
         {
@@ -545,7 +571,7 @@ namespace Signal47.Chapter
             {
                 var value = JsonUtility.FromJson<State>(json);
                 if (value == null || value.version != 1 || value.labStep < 0 || value.labStep > 2 || float.IsNaN(value.labRemaining) || value.labRemaining < 0 || value.labRemaining > 3 || (!string.IsNullOrEmpty(value.experimentMethod) && value.experimentMethod != "passive" && value.experimentMethod != "active")) { reason = "Invalid chapter progress record."; return false; }
-                if ((!string.IsNullOrEmpty(value.hypothesis) && value.hypothesis != "stray-light" && value.hypothesis != "encoder-drift") || (value.complete && !value.comparisonConfirmed) || (value.labStep > 0 && value.labFrameId != FieldCamera.PhotoId && value.labFrameId != FieldCamera.SecondPhotoId)) { reason = "Inconsistent chapter progress record."; return false; }
+                if ((!string.IsNullOrEmpty(value.hypothesis) && value.hypothesis != "stray-light" && value.hypothesis != "encoder-drift") || (value.complete && !value.comparisonConfirmed) || (value.labStep > 0 && value.labFrameId != FieldCamera.PhotoId && value.labFrameId != FieldCamera.SecondPhotoId && !FieldCamera.IsStationPhoto(value.labFrameId))) { reason = "Inconsistent chapter progress record."; return false; }
                 return true;
             }
             catch (Exception ex) { reason = "Unreadable chapter progress: " + ex.Message; return false; }

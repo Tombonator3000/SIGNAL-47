@@ -139,6 +139,7 @@ Velg en begrunnet slutning. Escape lukker dokumentet eller åpner pause.
 Native input, ytelse og blind forståelsestest er fortsatt uverifisert.
 Se THIRD_PARTY_NOTICES.md og VT323-OFL.txt for kreditering.
 """
+    field_note = '\nSTATION 01\nEtter B-12-rapporten: fullfør arkivets sammenligning og reisemål. Bruk FIELD TRAVEL-folioen ved arkivbenken. Undersøk fastmerket og lampen i valgfri rekkefølge, fotografer kabelbruddet og sammenlign tidsloggen. Retur-folioen står ved ankomsten; framkall begge feltfilmene på SAROs våtbenk. Motellet er senere innhold. Området har foreløpig enkel terrenggrafikk og tekstutskrift av mottaksfragmentet.\n' if package_id.startswith('Station26-') else ''
     status = 'TESTKANDIDAT: full spillerreise og ny ytelseskontroll er ikke godkjent ennå.\n' if candidate else ''
     return f"""SIGNAL / 47 — DEN ANDRE EKSPONERINGEN
 
@@ -166,7 +167,7 @@ C: kamerasøker. Space: eksponer film når søkeren er oppe.
 Fotografier må framkalles i fotolaben før de kan undersøkes.
 Lyd, musefølsomhet og fullskjerm finnes under SETTINGS.
 Fullskjerm bruker skjermens native oppløsning; vindusstørrelsen huskes.
-
+{field_note}
 KREDITERING OG LISENSER
 Se THIRD_PARTY_NOTICES.md og VT323-OFL.txt i denne mappen.
 """
@@ -242,7 +243,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT / "Artifacts/GauntletLinux")
     parser.add_argument("--expect-source", help="Require this exact tested Unity source SHA-256.")
-    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15", "Archive16", "Workstation18", "Resources19", "WorldCase22"], help="Identified release family; prior packages are retained.")
+    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15", "Archive16", "Workstation18", "Resources19", "WorldCase22", "Station26"], help="Identified release family; prior packages are retained.")
     parser.add_argument("--candidate", action="store_true", help="Label the package as awaiting gameplay/performance verification and preserve the default launcher.")
     parser.add_argument("--check-only", action="store_true", help="Read-only build/source verification; create no package or launcher.")
     args = parser.parse_args()

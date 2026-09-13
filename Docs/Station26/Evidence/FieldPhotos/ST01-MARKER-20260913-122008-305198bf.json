@@ -1,0 +1,33 @@
+{
+    "id": "station01-marker-photograph",
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/ST01-MARKER-20260913-122008-305198bf.jpg",
+    "utc": "2026-09-13T12:20:08.4770220Z",
+    "localTime": "23:46:51",
+    "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+    "method": "field-observation",
+    "subject": "STATION 01 / fixed-point comparison",
+    "sha256": "af817779ccfd54eadf5f09097acca95d55ab5b27545c805483c05ed4ee277516",
+    "position": {
+        "x": 115.4000015258789,
+        "y": 1.736667513847351,
+        "z": 102.0
+    },
+    "forward": {
+        "x": 0.0,
+        "y": -0.25389814376831057,
+        "z": 0.9672309756278992
+    },
+    "referenceViewport": {
+        "x": 0.5,
+        "y": 0.502703070640564
+    },
+    "echoViewport": {
+        "x": 0.5,
+        "y": 0.502703070640564
+    },
+    "width": 960,
+    "height": 540,
+    "developed": false,
+    "inspected": false,
+    "exported": true
+}
