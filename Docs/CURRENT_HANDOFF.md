@@ -2,6 +2,8 @@
 
 ## WorldCase22 — hovedspillets arkivsak og hele områdekartet
 
+Kilde, kart og bevis leveres gjennom [PR18](https://github.com/Tombonator3000/SIGNAL-47/pull/18). GitHub viser faktisk flettestatus.
+
 13. september 2026: [WorldCase22](WorldCase22/README.md) samler P04 og P05 i hovedspillets fotolab etter den opprinnelige toeksponeringssaken. Fire kildekort, rapport­sammenligning, begrunnet STATION 01-spor og varig framdrift er integrert ved den eksisterende arkivbenken. Tre subagenter bidro til implementering, verifikasjon og [samlet verdensdesign](WorldCase22/WORLD_DESIGN.md). [Illustrert områdekart](WorldCase22/Visuals/world-map-final.png) viser SARO, STATION 01 og SIERRA MOTOR COURT som en avgrenset produksjon med 330 minutters designmål. Kartet er konsept, ikke faktisk spillbilde eller målt nivågeografi.
 
 **Siste produksjonskandidat:** `Artifacts/Releases/WorldCase22-5c453a898fce/Start-SIGNAL47.sh`. Kildehash `5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16`. Visual10 er fortsatt standard. 118 arkivkontroller består direkte ved 1280×800 og fra utpakket starter ved 1600×900; samme utpakkede starter består 42 spillkontroller og 50 meny-/gjenopprettingskontroller. 173 pakkefiler, begge originale foto og uendret standardstarter er kontrollert. 26 originale runtime-bilder er gjennomgått. [Bevis og identitet](WorldCase22/Evidence/verification.json).

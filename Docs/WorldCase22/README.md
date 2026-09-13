@@ -38,6 +38,8 @@ Funnene ble rettet før sluttkandidaten:
 
 ## Verifikasjon og levering
 
+Leveringsspor: [PR18](https://github.com/Tombonator3000/SIGNAL-47/pull/18). GitHub viser gjeldende flettestatus; en fletting lukker ingen av de åpne testene.
+
 Endelige kjøringer, pakkeidentitet og åpne porter registreres i [verifikasjonen](Evidence/verification.json). [Testplanen](TEST_PLAN.md) beskriver hva API-kjøring kan og ikke kan bevise. Bruk en separat kandidat, og behold Visual10 som standard til de åpne bruker-/ytelsesportene er kontrollert.
 
 Sluttkandidat: `Artifacts/Releases/WorldCase22-5c453a898fce/Start-SIGNAL47.sh`. Kildehash: `5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16`. Spillpakken er lokal; kode, kart og bevis følger repoet.
