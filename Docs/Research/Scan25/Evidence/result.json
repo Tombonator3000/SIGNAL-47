@@ -1,0 +1,463 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "Vulkan",
+    "gpu": "Intel(R) Graphics (ARL)",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "scope": "Isolated STATION 01 hybrid probe; synthetic or imported environment as explicitly identified. API motion is not native input. Short frame intervals are not game performance. JPEG files are separate diagnostic exposures, not canonical field photographs. Trained-scan comparison: cropped Loop CE rock retains original learned positions, covariance, opacity and SH3. Ordinary scene stays visible in hybrid phases; reference views isolate the scan. No generated mesh or retraining is involved.",
+    "failureReason": "",
+    "colorSpace": "Gamma",
+    "gammaToLinear": false,
+    "width": 1280,
+    "height": 800,
+    "errors": 0,
+    "declaredSplatCount": 493869,
+    "completed": true,
+    "automated": true,
+    "compute": true,
+    "generatedMeshComparison": false,
+    "splatRegionLightPixels": 69450,
+    "splatRegionLightChangedPixels": 4872,
+    "splatRegionMeanAbsoluteRgbChange": 2.6976961843052558,
+    "splatRegionInterpretation": "Pixels selected by common-scene/hybrid A-B at identical light settings; a light response here can still include translucent underlying meshes and requires visual inspection.",
+    "proxyPhotoScope": "No proxy relighting configured",
+    "nativeInput": "UNVERIFIED",
+    "visualOcclusion": "UNVERIFIED: inspect original A/B captures",
+    "splatRelighting": "UNVERIFIED: mesh-light response does not prove splat relighting",
+    "checks": [
+        {
+            "name": "source-color-conversion-matches-project",
+            "detail": "Actual project=Gamma; renderer GammaToLinear=False",
+            "passed": true
+        },
+        {
+            "name": "capture-resolution",
+            "detail": "1280x800",
+            "passed": true
+        },
+        {
+            "name": "data-origin-labelled",
+            "detail": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "passed": true
+        },
+        {
+            "name": "splat-count-declared",
+            "detail": "493869 splats declared by the scene builder; this is not by itself proof of rendered splats.",
+            "passed": true
+        },
+        {
+            "name": "reference-front-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=493869; uploaded=493869; declared=493869. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "reference-oblique-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=493869; uploaded=493869; declared=493869. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "reference-detail-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=493869; uploaded=493869; declared=493869. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "authored-rock-proxy-in-path",
+            "detail": "Conservative box inside the stone; not a mesh extracted from the scan.",
+            "passed": true
+        },
+        {
+            "name": "rock-proxy-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.585000038m; collision flags=5; final=(6.200, 0.025, 1.185)",
+            "passed": true
+        },
+        {
+            "name": "wall-proxy-in-test-path",
+            "detail": "The assigned opaque wall collider is the first obstacle along the wall test path.",
+            "passed": true
+        },
+        {
+            "name": "ordinary-wall-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.585000038m; collision flags=5; final=(2.000, 0.025, -0.415)",
+            "passed": true
+        },
+        {
+            "name": "closed-door-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.615m; collision flags=5; final=(0.000, 0.035, -0.385)",
+            "passed": true
+        },
+        {
+            "name": "door-ray-interaction",
+            "detail": "API calls the same ray-gated door interaction as E; collision remains enabled while the real door rotates.",
+            "passed": true
+        },
+        {
+            "name": "open-door-allows-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=2m; collision flags=Below; final=(0.000, 0.035, 1.000)",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=493869; uploaded=493869; declared=493869. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "splat-camera-image-response",
+            "detail": "69450 separate-camera pixels differ from the common-scene baseline with identical lamp state. This establishes visible splat contribution, not correct occlusion.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=493869; uploaded=493869; declared=493869. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "rendered-light-change",
+            "detail": "606179 pixels differ by >=12 summed RGB; mean absolute RGB change=38.965915364583331. Establishes an image response only; inspect mesh and splat regions separately.",
+            "passed": true
+        },
+        {
+            "name": "separate-camera-exposures",
+            "detail": "Three isolated views, four hybrid A/B states and a clean scene preview, through a separate disabled camera and URP SingleCameraRequest.",
+            "passed": true
+        }
+    ],
+    "phases": [
+        {
+            "name": "reference-front",
+            "representation": "trained rock isolated / renderer comparison",
+            "splats": true,
+            "light": true,
+            "frames": 131,
+            "splatCount": 493869,
+            "seconds": 2.0048452250000006,
+            "meanMs": 15.304162022900768,
+            "p95Ms": 17.29647699999859,
+            "p99Ms": 18.39511100000024,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        },
+        {
+            "name": "reference-oblique",
+            "representation": "trained rock isolated / renderer comparison",
+            "splats": true,
+            "light": true,
+            "frames": 109,
+            "splatCount": 493869,
+            "seconds": 2.000458743000001,
+            "meanMs": 18.352832504587167,
+            "p95Ms": 20.08759799999993,
+            "p99Ms": 20.246161000001096,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        },
+        {
+            "name": "reference-detail",
+            "representation": "trained rock isolated / renderer comparison",
+            "splats": true,
+            "light": true,
+            "frames": 118,
+            "splatCount": 493869,
+            "seconds": 2.013369059000002,
+            "meanMs": 17.06244965254239,
+            "p95Ms": 21.530772999998506,
+            "p99Ms": 21.875541,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        },
+        {
+            "name": "mesh-light-on",
+            "representation": "ordinary scene only / trained rock disabled",
+            "splats": false,
+            "light": true,
+            "frames": 507,
+            "splatCount": 0,
+            "seconds": 2.000430381000001,
+            "meanMs": 3.9456220532544399,
+            "p95Ms": 5.843696999999537,
+            "p99Ms": 6.135143999998149,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-on",
+            "representation": "trained rock + ordinary scene",
+            "splats": true,
+            "light": true,
+            "frames": 115,
+            "splatCount": 493869,
+            "seconds": 2.005874168000002,
+            "meanMs": 17.442384069565234,
+            "p95Ms": 18.167137999999029,
+            "p99Ms": 19.73931200000223,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-off",
+            "representation": "trained rock + ordinary scene",
+            "splats": true,
+            "light": false,
+            "frames": 96,
+            "splatCount": 493869,
+            "seconds": 2.000367582999999,
+            "meanMs": 20.837162322916659,
+            "p95Ms": 22.2383050000019,
+            "p99Ms": 22.62645000000063,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        },
+        {
+            "name": "mesh-light-off",
+            "representation": "ordinary scene only / trained rock disabled",
+            "splats": false,
+            "light": false,
+            "frames": 668,
+            "splatCount": 0,
+            "seconds": 2.0014580540000006,
+            "meanMs": 2.996194691616767,
+            "p95Ms": 5.118035000002408,
+            "p99Ms": 5.550002999999748,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        }
+    ],
+    "exposures": [
+        {
+            "name": "reference-front",
+            "file": "hybridprobe-exposure-reference-front.jpg",
+            "sha256": "e642b5e5b47c57b014a362dbfe35571ac8e6c5a593bc877af47e5f05e70ee88c",
+            "utc": "2026-09-13T11:01:42.9515300Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock isolated / renderer comparison",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.09844758201344169,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "reference-oblique",
+            "file": "hybridprobe-exposure-reference-oblique.jpg",
+            "sha256": "64638390c87d2a0efbdb59083e4f1450a1348d51edf6a951c7d2f06fe237f319",
+            "utc": "2026-09-13T11:01:46.0792680Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock isolated / renderer comparison",
+            "position": {
+                "x": 9.600000381469727,
+                "y": 1.7400000095367432,
+                "z": -0.09999990463256836
+            },
+            "forward": {
+                "x": -0.8202898502349854,
+                "y": -0.2653878629207611,
+                "z": 0.5066494941711426
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.0979517911065874,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "reference-detail",
+            "file": "hybridprobe-exposure-reference-detail.jpg",
+            "sha256": "a5da9f29b7a12add22312d6f926b566e945e9197f49549a8659d49c5dea82f45",
+            "utc": "2026-09-13T11:01:49.2499960Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock isolated / renderer comparison",
+            "position": {
+                "x": 5.899999618530273,
+                "y": 1.190000057220459,
+                "z": 0.25
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.29982665181159975,
+                "z": 0.9539936780929565
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.28219254641122895,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "mesh-light-on",
+            "file": "hybridprobe-exposure-mesh-light-on.jpg",
+            "sha256": "1274db6e36057156d1775a2ccacc15e0d53c780009618cb255eccfffcd3e5bbb",
+            "utc": "2026-09-13T11:01:54.5161080Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "ordinary scene only / trained rock disabled",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": true,
+            "meanLuma": 0.3381126129232738,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "hybrid-light-on",
+            "file": "hybridprobe-exposure-hybrid-light-on.jpg",
+            "sha256": "cf6ca50dacaceb8394b7a609e2b0f002b005a164e4fc13d88d8582fb8384d13b",
+            "utc": "2026-09-13T11:01:57.6821260Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock + ordinary scene",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.3646075322494833,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "hybrid-light-off",
+            "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+            "sha256": "e5f51c4e281ac1a6a21e16b67deea33e1d5c217c66d2bf7575dfe34dbcb23180",
+            "utc": "2026-09-13T11:02:00.8310640Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock + ordinary scene",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": false,
+            "meanLuma": 0.2009841477874013,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "mesh-light-off",
+            "file": "hybridprobe-exposure-mesh-light-off.jpg",
+            "sha256": "cdfdb60758be80dbe8628a696ade73d1b93425f936f1e012656d9a9e2caed89b",
+            "utc": "2026-09-13T11:02:03.8971230Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "ordinary scene only / trained rock disabled",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": false,
+            "meanLuma": 0.17061113659080966,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "scene-preview",
+            "file": "hybridprobe-exposure-scene-preview.jpg",
+            "sha256": "b42f90e0fbaa57e1a06ede3a409cc2456801b841d3b745d0a1a58507cf597fd2",
+            "utc": "2026-09-13T11:02:04.0833380Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "representation": "trained rock + ordinary scene",
+            "position": {
+                "x": 6.199999809265137,
+                "y": 1.440000057220459,
+                "z": -1.7000000476837159
+            },
+            "forward": {
+                "x": 0.0,
+                "y": -0.2113327980041504,
+                "z": 0.9774141907691956
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.36564707849862168,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        }
+    ]
+}

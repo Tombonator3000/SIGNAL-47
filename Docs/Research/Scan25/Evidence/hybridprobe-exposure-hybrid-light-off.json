@@ -1,0 +1,28 @@
+{
+    "name": "hybrid-light-off",
+    "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+    "sha256": "e5f51c4e281ac1a6a21e16b67deea33e1d5c217c66d2bf7575dfe34dbcb23180",
+    "utc": "2026-09-13T11:02:00.8310640Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "representation": "trained rock + ordinary scene",
+    "position": {
+        "x": 6.199999809265137,
+        "y": 1.440000057220459,
+        "z": -1.7000000476837159
+    },
+    "forward": {
+        "x": 0.0,
+        "y": -0.2113327980041504,
+        "z": 0.9774141907691956
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": false,
+    "meanLuma": 0.2009841477874013,
+    "proxyConfigured": false,
+    "proxyReady": false,
+    "proxyRenderSubmitted": false,
+    "samePoseProjection": true
+}

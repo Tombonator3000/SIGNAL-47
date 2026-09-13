@@ -1,0 +1,24 @@
+{
+  "frames": 2748,
+  "seconds": 60.00146780799999,
+  "mean_fps": 45.79887960063553,
+  "mean_ms": 21.83459527219796,
+  "p95_ms": 27.758470000001978,
+  "p99_ms": 30.86086199999727,
+  "max_ms": 324.94678599999816,
+  "frames_over_50ms": 6,
+  "warmup_seconds": 10,
+  "measurement_seconds_target": 60,
+  "resolution": [
+    1280,
+    800
+  ],
+  "renderer": "Vulkan",
+  "gpu": "Intel(R) Graphics (ARL)",
+  "color_space": "Gamma",
+  "splat_count": 493869,
+  "quality": "full cropped density / SH3 / Uncompressed / HDR / MSAA1",
+  "sustained_60fps_gate": "FAIL: p95 >16.67ms and p99 >=20ms",
+  "scope": "Moving camera through this small isolated scene; no screenshot writes during sample. Not full game or thermal/device portability proof.",
+  "max_process_rss_kib": 516812
+}

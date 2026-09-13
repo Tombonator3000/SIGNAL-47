@@ -1,0 +1,72 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "Vulkan",
+    "gpu": "Intel(R) Graphics (ARL)",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "scope": "Isolated STATION 01 hybrid probe; synthetic or imported environment as explicitly identified. API motion is not native input. Short frame intervals are not game performance. JPEG files are separate diagnostic exposures, not canonical field photographs. Trained-scan comparison: cropped Loop CE rock retains original learned positions, covariance, opacity and SH3. Ordinary scene stays visible in hybrid phases; reference views isolate the scan. No generated mesh or retraining is involved. Dedicated scripted camera sweep: 10-second warm-up and 60-second frame-interval sample, no screenshots during sampling. This is this small scene on this device, not full-game performance or native input.",
+    "failureReason": "",
+    "colorSpace": "Gamma",
+    "gammaToLinear": false,
+    "width": 1280,
+    "height": 800,
+    "errors": 0,
+    "declaredSplatCount": 493869,
+    "completed": true,
+    "automated": true,
+    "compute": true,
+    "generatedMeshComparison": false,
+    "splatRegionLightPixels": 0,
+    "splatRegionLightChangedPixels": 0,
+    "splatRegionMeanAbsoluteRgbChange": 0.0,
+    "splatRegionInterpretation": "Pixels selected by common-scene/hybrid A-B at identical light settings; a light response here can still include translucent underlying meshes and requires visual inspection.",
+    "proxyPhotoScope": "No proxy relighting configured",
+    "nativeInput": "UNVERIFIED",
+    "visualOcclusion": "UNVERIFIED: inspect original A/B captures",
+    "splatRelighting": "UNVERIFIED: mesh-light response does not prove splat relighting",
+    "checks": [
+        {
+            "name": "source-color-conversion-matches-project",
+            "detail": "Actual project=Gamma; renderer GammaToLinear=False",
+            "passed": true
+        },
+        {
+            "name": "capture-resolution",
+            "detail": "1280x800",
+            "passed": true
+        },
+        {
+            "name": "data-origin-labelled",
+            "detail": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+            "passed": true
+        },
+        {
+            "name": "splat-count-declared",
+            "detail": "493869 splats declared by the scene builder; this is not by itself proof of rendered splats.",
+            "passed": true
+        },
+        {
+            "name": "benchmark-trained-data-ready",
+            "detail": "All declared trained Gaussians uploaded before measurement.",
+            "passed": true
+        }
+    ],
+    "phases": [
+        {
+            "name": "moving-rock-60s",
+            "representation": "trained rock + ordinary scene",
+            "splats": true,
+            "light": true,
+            "frames": 2748,
+            "splatCount": 493869,
+            "seconds": 60.00146780799999,
+            "meanMs": 21.83459527219796,
+            "p95Ms": 27.758470000001979,
+            "p99Ms": 30.86086199999727,
+            "rendererCount": 1,
+            "assetCount": 493869,
+            "uploadedCount": 493869,
+            "assetsReady": true
+        }
+    ],
+    "exposures": []
+}

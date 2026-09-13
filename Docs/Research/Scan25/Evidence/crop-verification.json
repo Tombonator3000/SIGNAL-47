@@ -1,0 +1,7 @@
+{
+  "original_rows_checked": 493869,
+  "float32_fields_per_row": 62,
+  "all_retained_fields_bit_identical": true,
+  "cropped_sha256": "2d618e08d25d8cc7f207a28dc032838dfe3c166face8f527a3eaea4adb121f42",
+  "scope": "Crop integrity including all trained SH3, covariance and opacity; not renderer equivalence."
+}

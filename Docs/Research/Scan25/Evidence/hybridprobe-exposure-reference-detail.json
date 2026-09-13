@@ -1,0 +1,28 @@
+{
+    "name": "reference-detail",
+    "file": "hybridprobe-exposure-reference-detail.jpg",
+    "sha256": "a5da9f29b7a12add22312d6f926b566e945e9197f49549a8659d49c5dea82f45",
+    "utc": "2026-09-13T11:01:49.2499960Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "representation": "trained rock isolated / renderer comparison",
+    "position": {
+        "x": 5.899999618530273,
+        "y": 1.190000057220459,
+        "z": 0.25
+    },
+    "forward": {
+        "x": 0.0,
+        "y": -0.29982665181159975,
+        "z": 0.9539936780929565
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": true,
+    "meanLuma": 0.28219254641122895,
+    "proxyConfigured": false,
+    "proxyReady": false,
+    "proxyRenderSubmitted": false,
+    "samePoseProjection": true
+}

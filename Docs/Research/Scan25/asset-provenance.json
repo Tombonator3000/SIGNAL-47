@@ -1,0 +1,232 @@
+{
+  "author": "Loop CE",
+  "title": "rock",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "asset_page": "https://loopce.com/gaussian-splats",
+  "revision": "f8c5eeae5ff5410dc537a27762c8927ba2fd29a2",
+  "files": {
+    "point_cloud.ply": {
+      "url": "https://huggingface.co/datasets/loopce/gaussiansplats/resolve/f8c5eeae5ff5410dc537a27762c8927ba2fd29a2/rock/model/point_cloud/iteration_30000/point_cloud.ply",
+      "bytes": 1820132556,
+      "sha256": "7cc0092ef49843f6c6bbcd53289f9f29cf69bb10b8480f0b3e7a23ed6a18a359"
+    },
+    "0001.png": {
+      "url": "https://huggingface.co/datasets/loopce/gaussiansplats/resolve/f8c5eeae5ff5410dc537a27762c8927ba2fd29a2/rock/images/0001.png",
+      "bytes": 4981722,
+      "sha256": "73af76687516f12312207ffeaf325e8e2c7ac7f96968eba35762c95df764f77c"
+    },
+    "cameras.bin": {
+      "url": "https://huggingface.co/datasets/loopce/gaussiansplats/resolve/f8c5eeae5ff5410dc537a27762c8927ba2fd29a2/rock/sparse/0/cameras.bin",
+      "bytes": 64,
+      "sha256": "e33a406ce0411a6175fb42cd45a62bfbc8997efe211d78154f9ed62e491f103f"
+    },
+    "images.bin": {
+      "url": "https://huggingface.co/datasets/loopce/gaussiansplats/resolve/f8c5eeae5ff5410dc537a27762c8927ba2fd29a2/rock/sparse/0/images.bin",
+      "bytes": 123262487,
+      "sha256": "e02f64b5db4fc7d1aea9e15b460a9a271f19786c71106c67cc663813ef68b2ee"
+    }
+  },
+  "registered_cameras": 439,
+  "source_count": 7339238,
+  "count": 493869,
+  "source_columns": [
+    "x",
+    "y",
+    "z",
+    "nx",
+    "ny",
+    "nz",
+    "f_dc_0",
+    "f_dc_1",
+    "f_dc_2",
+    "f_rest_0",
+    "f_rest_1",
+    "f_rest_2",
+    "f_rest_3",
+    "f_rest_4",
+    "f_rest_5",
+    "f_rest_6",
+    "f_rest_7",
+    "f_rest_8",
+    "f_rest_9",
+    "f_rest_10",
+    "f_rest_11",
+    "f_rest_12",
+    "f_rest_13",
+    "f_rest_14",
+    "f_rest_15",
+    "f_rest_16",
+    "f_rest_17",
+    "f_rest_18",
+    "f_rest_19",
+    "f_rest_20",
+    "f_rest_21",
+    "f_rest_22",
+    "f_rest_23",
+    "f_rest_24",
+    "f_rest_25",
+    "f_rest_26",
+    "f_rest_27",
+    "f_rest_28",
+    "f_rest_29",
+    "f_rest_30",
+    "f_rest_31",
+    "f_rest_32",
+    "f_rest_33",
+    "f_rest_34",
+    "f_rest_35",
+    "f_rest_36",
+    "f_rest_37",
+    "f_rest_38",
+    "f_rest_39",
+    "f_rest_40",
+    "f_rest_41",
+    "f_rest_42",
+    "f_rest_43",
+    "f_rest_44",
+    "opacity",
+    "scale_0",
+    "scale_1",
+    "scale_2",
+    "rot_0",
+    "rot_1",
+    "rot_2",
+    "rot_3"
+  ],
+  "output_sha256": "2d618e08d25d8cc7f207a28dc032838dfe3c166face8f527a3eaea4adb121f42",
+  "selection": "spatial crop and maximum Gaussian scale filter; retained rows unchanged without decimation, color edits or retraining",
+  "max_scale": 0.08,
+  "min": [
+    -1.85,
+    -2.5,
+    -0.48
+  ],
+  "max": [
+    1.0,
+    -1.18,
+    1.6
+  ],
+  "actualBounds": [
+    [
+      -1.8499477388691994,
+      -2.499994152669933,
+      -0.4666124972120285
+    ],
+    [
+      0.9999395706661776,
+      -1.1888608039741473,
+      1.5999954808147114
+    ]
+  ],
+  "worldToLocalRUF": [
+    [
+      0.9764406352162153,
+      -0.020878647465657194,
+      -0.21477375998608159
+    ],
+    [
+      -0.09286904395799916,
+      -0.9390753485027942,
+      -0.33092722841839844
+    ],
+    [
+      0.1947794305692503,
+      -0.34307662688437474,
+      0.9188903098372287
+    ]
+  ],
+  "center": [
+    -0.42500000000000004,
+    -2.5,
+    0.56
+  ],
+  "scale_note": "source scale is not metrically certified; one source unit is provisionally one Unity metre for the probe",
+  "orientation_note": "up inferred from registered camera orientations; visually inspect floor contact",
+  "views": [
+    {
+      "name": "front",
+      "position": [
+        0,
+        1.5,
+        -3.7
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ],
+      "playcanvasPosition": [
+        0.9337256379963383,
+        -2.025209382092635,
+        -2.4631094964764153
+      ],
+      "playcanvasTarget": [
+        0.13874650972371286,
+        -1.5070861414226842,
+        1.20152643265605
+      ],
+      "playcanvasUp": [
+        0.09286904395799916,
+        0.9390753485027942,
+        -0.33092722841839844
+      ]
+    },
+    {
+      "name": "oblique",
+      "position": [
+        3.4,
+        1.8,
+        -2.1
+      ],
+      "target": [
+        0,
+        0.7,
+        0
+      ],
+      "playcanvasPosition": [
+        -2.669958897462194,
+        -1.1235767731435629,
+        -1.8223939532150462
+      ],
+      "playcanvasTarget": [
+        0.13874650972371286,
+        -1.5070861414226842,
+        1.20152643265605
+      ],
+      "playcanvasUp": [
+        0.09286904395799916,
+        0.9390753485027942,
+        -0.33092722841839844
+      ]
+    },
+    {
+      "name": "detail",
+      "position": [
+        -0.3,
+        1.25,
+        -1.75
+      ],
+      "target": [
+        -0.3,
+        0.7,
+        0
+      ],
+      "playcanvasPosition": [
+        0.823620677961665,
+        -1.5972423910335,
+        -0.524109457193395
+      ],
+      "playcanvasTarget": [
+        0.4316787002885775,
+        -1.5133497356623813,
+        1.2659585606518744
+      ],
+      "playcanvasUp": [
+        0.09286904395799916,
+        0.9390753485027942,
+        -0.33092722841839844
+      ]
+    }
+  ]
+}
