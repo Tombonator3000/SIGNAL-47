@@ -41,3 +41,5 @@ Feltauditen har 150 MeshRenderere og 324 344 trekanter; i tillegg finnes 648 gre
 Dette er et tydelig visuelt løft fra Station26, men bakgrunnsfjell, gangstikanter og enkelte maskindetaljer er fortsatt enkle. Ekte input, blind forståelse/tidsbruk og subjektiv lydmiks gjenstår. Neste konkrete ytelsestiltak er et enklere gressnivå med samme atlas og silhuett; dette skal sammenlignes i spillet før en endring godtas.
 
 Neste samlede innholdsleveranse er oppfølgingen av feltbevisene på SARO og overgangen mot SIERRA MOTOR COURT innen eksisterende verdensdesign. Hele K3 og 5–6-timersspillet er ikke implementert. Produksjonslærdommen fra dette passet er å bruke faktiske spillbilder tidlig, skifte metode når egen geometri ikke gir tilstrekkelig kvalitet, og måle representativt før en penere kandidat blir standard.
+
+Kilde og bevis: [PR23](https://github.com/Tombonator3000/SIGNAL-47/pull/23). Merge er kildelevering og endrer ikke de åpne prøveportene.

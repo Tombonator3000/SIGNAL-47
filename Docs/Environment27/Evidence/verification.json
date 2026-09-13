@@ -311,7 +311,8 @@
     "stationStarter": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-STATION01.sh",
     "instructions": "Start-STATION01.sh then CONTINUE CHECKPOINT; own persistent demo profile, original save preserved.",
     "previousPackagesPreserved": true,
-    "pull_request": null,
-    "merge_status": "Pending ordinary authorized PR delivery"
+    "pull_request": "https://github.com/Tombonator3000/SIGNAL-47/pull/23",
+    "merge_status": "Source and evidence delivered through PR23; GitHub is authoritative for actual merge state.",
+    "implementation_commit": "e1987c729f0e5943ae681bab94c64ade04e71a88"
   }
 }

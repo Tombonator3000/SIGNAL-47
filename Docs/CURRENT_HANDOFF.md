@@ -2,6 +2,8 @@
 
 ## Environment27 — STATION 01 som sammenhengende sted
 
+Kilde og bevis leveres gjennom [PR23](https://github.com/Tombonator3000/SIGNAL-47/pull/23), implementeringscommit `e1987c729f0e5943ae681bab94c64ade04e71a88`. GitHub viser faktisk flettestatus.
+
 13. september 2026: [miljøpasset](Environment27/README.md) er nyeste hovedspillkandidat, basert på faktisk flettet Station26/PR22 (`a241f222a77d5150de4f2866b708babec3c27cbd`). Repoet er kontrollert PUBLIC; synligheten er ikke endret. Brukeren godkjente oppgradering av hele stasjonsområdet etter sammenligningen med X-eksemplene. To lette subagenter bidro med Blender-modeller, kildesjekk, startlagring, pakkekontroll og uavhengig kodegjennomgang.
 
 **Prøv direkte på feltet:** `~/Nedlastinger/Environment27-22a160fafeb3/Start-STATION01.sh`, velg **CONTINUE CHECKPOINT**. Den bruker egen vedvarende prøveprofil og bevarer vanlig lagring. P06–P09 er uutførte i denne profilen. Den ordinære `Start-SIGNAL47.sh` finnes i samme pakke. **Visual10 forblir standard**, og Station26/WorldCase22-pakkene er bevart. Kilde-SHA `22a160fafeb39984d8124d842982ccf500acad1d65f88552a977a69c82243e9f`; arkiv-SHA `4e1b3f9f5d947f90a855253779310722fa48d519edd39c4dbb0609cea682ecde`.
