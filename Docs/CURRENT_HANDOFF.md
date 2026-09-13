@@ -2,6 +2,8 @@
 
 ## Station26 — sammenhengende feltreise i hovedspillet
 
+Kilde og bevis leveres gjennom [PR22](https://github.com/Tombonator3000/SIGNAL-47/pull/22), implementeringscommit `7349bfc34d7b72a197365bc641206266d389a733`. GitHub viser faktisk flettestatus.
+
 13. september 2026: [Station26](Station26/README.md) er nyeste hovedspillkandidat, bygget fra flettet Scan25/PR21 (`db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a`). Faktisk GitHub-status viser fortsatt PUBLIC; synligheten er ikke endret. Arbeidet samler avreise etter P04/P05, et fysisk STATION 01-område, P06–P09, to nye kameraeksponeringer, retur til våtbenken og varig lagring. Feltområdet er en avgrenset, aktivert del av samme Unity-scene; ingen bilkjøring eller separat scenelasting er innført.
 
 **Prøv lokalt:** `~/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh`, også under `Artifacts/Releases/`. Bruk **FIELD TRAVEL**-folioen ved arkivbenken etter B-12 og arkivfunnene. Begge feltfilmene kan framkalles etter samme retur. WorldCase22-pakken og brukerlagring er bevart. **Visual10 er fortsatt standardstarter; Station26 er en testkandidat.** Kilde-SHA `8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4`; arkiv-SHA `b9c72948896c1d18777206fb2311e3177cdbce7da6ba1863bc9d416842e0d3c3`.

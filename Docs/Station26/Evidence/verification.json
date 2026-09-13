@@ -258,8 +258,11 @@
     "Full K3 narrative/asset delivery and the complete 5-6 hour game"
   ],
   "delivery": {
-    "status": "Local candidate ready; Git delivery pending",
+    "status": "Local candidate verified; source and evidence delivered through PR22. GitHub is authoritative for current merge status.",
     "launcher": "/home/tombonator3000t/Nedlastinger/Station26-8b181fb4830e/Start-SIGNAL47.sh",
-    "previous_user_package_preserved": true
+    "previous_user_package_preserved": true,
+    "pull_request": "https://github.com/Tombonator3000/SIGNAL-47/pull/22",
+    "implementation_commit": "7349bfc34d7b72a197365bc641206266d389a733",
+    "review": "Independent code review found the export-retry P1; corrected, exercised in both final player runs, and reviewed again with no further material findings."
   }
 }
