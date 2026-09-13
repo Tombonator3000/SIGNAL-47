@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-13",
+  "reference": {
+    "file": "Visuals/station01-reference-gpt25.png",
+    "creation": "LwiHbVrswO",
+    "model_name": "GPT 2.5",
+    "actual_tool_slug": "gpt-2-mini",
+    "kind": "Generated concept/reference, not a gameplay screenshot",
+    "sha256": "22bb175bae6943ecc56437a1bc9f8c27fab8bb32182985402f785befb7a53ff4"
+  },
+  "model": {
+    "file": "SourceAssets/station01-tripo-v31.glb",
+    "creation": "mE1DdyxhJQ",
+    "model": "tripo-v31",
+    "source_creation": "LwiHbVrswO",
+    "sha256": "7f8df7db365cb37c8dd06459d2c470aa7388b1897c70c851192423fdce30c489",
+    "known_defects": [
+      "Invented second entrance on rear",
+      "No authored interior",
+      "Front aperture needed explicit clipping and Unity door"
+    ]
+  },
+  "derived_splats": {
+    "method": "Deterministic area-weighted surface samples of image-generated textured mesh",
+    "not": "Not a World Labs world, multiview reconstruction, photogrammetric capture or trained Gaussian field",
+    "script": "../../../Automation/Hybrid23/convert_generated.py",
+    "count": 150000
+  },
+  "blender": {
+    "version": "4.5.13",
+    "inspection": "CPU Cycles, 16 samples, two original renders",
+    "source_unchanged": true
+  },
+  "marble": {
+    "status": "UNAVAILABLE_PENDING_USER_LOGIN",
+    "account_creation_or_payment": false,
+    "world_generated": false
+  },
+  "rights_note": "Plugin notices are separately documented. Service and generated-content terms are separate from the UnitySplats MIT license; no claim that the entire service pipeline is free."
+}

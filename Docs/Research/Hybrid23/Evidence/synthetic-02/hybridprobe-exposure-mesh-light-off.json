@@ -1,0 +1,24 @@
+{
+    "name": "mesh-light-off",
+    "file": "hybridprobe-exposure-mesh-light-off.jpg",
+    "sha256": "3a6fa80af86c5fff6bd57a735048b924a638b0c21a8c1f577951f07beff7f99c",
+    "utc": "2026-09-13T09:55:46.8993300Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+    "representation": "ordinary scene only / synthetic reference disabled",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.5388274192810059,
+        "y": -0.12735919654369355,
+        "z": 0.8327332139015198
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": false,
+    "light": false,
+    "meanLuma": 0.15477971139625427
+}

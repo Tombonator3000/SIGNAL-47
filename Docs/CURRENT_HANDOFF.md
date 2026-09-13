@@ -1,5 +1,19 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Hybrid23 — faktisk bilde/modell/splat-prøve for STATION 01
+
+13. september 2026: [Hybrid23](Research/Hybrid23/README.md) undersøker Arloopa UnitySplats **1.2.0**, låst revisjon `6c0258189a2b124af1282fa9236fd9b6637f1a1a`. MIT tillater gratis kommersiell bruk med bevarte notiser; de konkrete avhengighetenes MIT/BSD-tekster følger kilde og prøvepakke. **Anbefalingen for selve feltbygningen er den genererte teksturerte modellen som vanlig Unity-3D.** Splats er et separat, faktisk testet alternativ, uten hovedspillintegrasjon.
+
+GPT 2.5-forlegg → Magnific/Tripo v3.1 → Blender-kontroll → samme klippede mesh og 150 000 overflatesamplede Gaussians. Dette er ikke en trent Gaussian-rekonstruksjon eller Marble-verden. Original GLB, forlegg, Blender-render, opphav, import-/konverteringskode og reelle Unity-bilder er bevart. Vanlig geometri gir gangflate, innvendige vegger, roterende dør og kollisjon. Matchet lysproxy gir synlig lampesvar og samme-poses separate fotoeksponeringer. Flekkete detaljer og enkelte lyse interiørskjøter gjenstår; mesh-versjonen er skarpere og har lavere diagnostisk bildetid.
+
+Syntetisk prøve består **13**, generert uten proxy **16**, og sluttvarianten **22 API-kontroller**, alle med null registrerte runtime-feil. Sluttpakken består de samme **22** etter utpakking og start via egen launcher, med **186** hashkontrollerte filer og fem nye separate JPEG-eksponeringer. Generert cyanreferanse: 2414 innvendige piksler / null endrede ved A/B. Syntetisk fotreferanse har lokal splatoverlapp og består ikke null-overlappskontrollen; generell overdekking og Splat21s identiske feilscene er ikke godkjent av dette. [Samlet bevis og presise avgrensninger](Research/Hybrid23/Evidence/verification.json).
+
+Lokal prøve: `Artifacts/Releases/Hybrid23-b37b22e6eca6/Start-Hybrid23.sh`. Kildehash `b37b22e6eca619242ff23de7143d98536a4aa663e51bd26eea2a3900ec96f0d2`; spillerhash `9e411c618c7b64305f89d17361422612ca46138ead87609d5221f5c5ffe32b88`. Starteren viser mesh først; G bytter representasjon, F lampen, E døren, C diagnostisk foto. Kun Linux/Vulkan, 1280×800, HDR/1×MSAA er kjørt. Hovedprosjektets 2×MSAA, kanonisk fotoapparat, native input og lengre GPU-/ytelsesprøver er uverifisert. Ingen testprosess står igjen etter levering.
+
+**Marble ba fortsatt om innlogging.** Ingen konto eller betaling er opprettet, og bilde → Marble-verden er uutført. Innloggingsfanen er beholdt for eventuell brukerhandling. Ingen ventende bakgrunnsgenerering eller automatisk oppfølging er startet. Unity-/Blender-arbeidet og lokal prøvelevering er ferdig uavhengig av denne tilgangen.
+
+WorldCase22/PR18 er faktisk flettet på `ea0ec2438e31c1fffb6f9c70cd9600791e90c366`. WorldCase22 er fortsatt siste produksjonskandidat og Visual10 standard; hovedspillets `Unity/` og `Spill-SIGNAL47.sh` er uendret i Hybrid23. Neste ordinære produksjon er fortsatt hele STATION 01-feltsekvensen P06–P09, med den kontrollerbare mesh-/Unity-arbeidsflyten. Hybrid23 er miljøprøve, ikke ferdig historiekapittel.
+
 ## WorldCase22 — hovedspillets arkivsak og hele områdekartet
 
 Kilde, kart og bevis leveres gjennom [PR18](https://github.com/Tombonator3000/SIGNAL-47/pull/18). GitHub viser faktisk flettestatus.

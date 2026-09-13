@@ -1,0 +1,24 @@
+{
+    "name": "hybrid-light-off",
+    "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+    "sha256": "41952d55eb73b90aced80edc4462675101545ff2586f208a27d18155cc384d4c",
+    "utc": "2026-09-13T09:55:43.8288130Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+    "representation": "synthetic Gaussian reference + ordinary scene",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.5388274192810059,
+        "y": -0.12735919654369355,
+        "z": 0.8327332139015198
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": false,
+    "meanLuma": 0.1503681943120259
+}

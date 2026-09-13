@@ -1,0 +1,254 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "Vulkan",
+    "gpu": "Intel(R) Graphics (ARL)",
+    "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+    "scope": "Isolated STATION 01 hybrid probe; synthetic or imported environment as explicitly identified. API motion is not native input. Short frame intervals are not game performance. JPEG files are separate diagnostic exposures, not canonical field photographs. Synthetic comparison: common ordinary meshes stay visible; Gaussian reference content is toggled on/off.",
+    "failureReason": "",
+    "width": 1280,
+    "height": 800,
+    "errors": 0,
+    "declaredSplatCount": 2521,
+    "completed": true,
+    "automated": true,
+    "compute": true,
+    "generatedMeshComparison": false,
+    "splatRegionLightPixels": 32348,
+    "splatRegionLightChangedPixels": 2428,
+    "splatRegionMeanAbsoluteRgbChange": 1.939996290342525,
+    "splatRegionInterpretation": "Pixels selected by common-scene/hybrid A-B at identical light settings; a light response here can still include translucent underlying meshes and requires visual inspection.",
+    "nativeInput": "UNVERIFIED",
+    "visualOcclusion": "UNVERIFIED: inspect original A/B captures",
+    "splatRelighting": "UNVERIFIED: mesh-light response does not prove splat relighting",
+    "checks": [
+        {
+            "name": "capture-resolution",
+            "detail": "1280x800",
+            "passed": true
+        },
+        {
+            "name": "data-origin-labelled",
+            "detail": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+            "passed": true
+        },
+        {
+            "name": "splat-count-declared",
+            "detail": "2521 splats declared by the scene builder; this is not by itself proof of rendered splats.",
+            "passed": true
+        },
+        {
+            "name": "wall-proxy-in-test-path",
+            "detail": "The assigned opaque wall collider is the first obstacle along the wall test path.",
+            "passed": true
+        },
+        {
+            "name": "ordinary-wall-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.585000038m; collision flags=5; final=(2.000, 0.025, -0.415)",
+            "passed": true
+        },
+        {
+            "name": "closed-door-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.615m; collision flags=5; final=(0.000, 0.035, -0.385)",
+            "passed": true
+        },
+        {
+            "name": "door-ray-interaction",
+            "detail": "API calls the same ray-gated door interaction as E; collision remains enabled while the real door rotates.",
+            "passed": true
+        },
+        {
+            "name": "open-door-allows-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=2m; collision flags=Below; final=(0.000, 0.035, 1.000)",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=2521; uploaded=2521; declared=2521. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "splat-camera-image-response",
+            "detail": "32348 separate-camera pixels differ from the common-scene baseline with identical lamp state. This establishes visible splat contribution, not correct occlusion.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=2521; uploaded=2521; declared=2521. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "rendered-light-change",
+            "detail": "372096 pixels differ by >=12 summed RGB; mean absolute RGB change=7.6634951171875. Establishes an image response only; inspect mesh and splat regions separately.",
+            "passed": true
+        },
+        {
+            "name": "separate-camera-exposures",
+            "detail": "Diagnostic JPEGs rendered through a separate disabled camera and URP SingleCameraRequest; no screen-copy substitution.",
+            "passed": true
+        }
+    ],
+    "phases": [
+        {
+            "name": "mesh-light-on",
+            "representation": "ordinary scene only / synthetic reference disabled",
+            "splats": false,
+            "light": true,
+            "frames": 527,
+            "splatCount": 0,
+            "seconds": 2.001201902,
+            "meanMs": 3.797347062618596,
+            "p95Ms": 6.411507000001038,
+            "p99Ms": 6.6807159999999758,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-on",
+            "representation": "synthetic Gaussian reference + ordinary scene",
+            "splats": true,
+            "light": true,
+            "frames": 516,
+            "splatCount": 2521,
+            "seconds": 2.000685162,
+            "meanMs": 3.8772968255813957,
+            "p95Ms": 6.527415000000758,
+            "p99Ms": 7.30558400000092,
+            "rendererCount": 1,
+            "assetCount": 2521,
+            "uploadedCount": 2521,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-off",
+            "representation": "synthetic Gaussian reference + ordinary scene",
+            "splats": true,
+            "light": false,
+            "frames": 664,
+            "splatCount": 2521,
+            "seconds": 2.001137933999999,
+            "meanMs": 3.013761948795179,
+            "p95Ms": 3.150287000000418,
+            "p99Ms": 6.218602000000573,
+            "rendererCount": 1,
+            "assetCount": 2521,
+            "uploadedCount": 2521,
+            "assetsReady": true
+        },
+        {
+            "name": "mesh-light-off",
+            "representation": "ordinary scene only / synthetic reference disabled",
+            "splats": false,
+            "light": false,
+            "frames": 598,
+            "splatCount": 0,
+            "seconds": 2.0006913729999988,
+            "meanMs": 3.3456377474916367,
+            "p95Ms": 5.653731999998968,
+            "p99Ms": 6.241097000000195,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        }
+    ],
+    "exposures": [
+        {
+            "name": "mesh-light-on",
+            "file": "hybridprobe-exposure-mesh-light-on.jpg",
+            "sha256": "b361ec7b37f0c5eec8f2e586f391f08cf05018be6584a2a7baa6c58ac6c2c9c7",
+            "utc": "2026-09-13T09:55:37.6843780Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+            "representation": "ordinary scene only / synthetic reference disabled",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.5388274192810059,
+                "y": -0.12735919654369355,
+                "z": 0.8327332139015198
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": true,
+            "meanLuma": 0.18907108798256037
+        },
+        {
+            "name": "hybrid-light-on",
+            "file": "hybridprobe-exposure-hybrid-light-on.jpg",
+            "sha256": "3af360bfc607437cef2de0b2d726d968ff346fc719d6e361b4b2e744c476a1a4",
+            "utc": "2026-09-13T09:55:40.7595900Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+            "representation": "synthetic Gaussian reference + ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.5388274192810059,
+                "y": -0.12735919654369355,
+                "z": 0.8327332139015198
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.1824081898176481
+        },
+        {
+            "name": "hybrid-light-off",
+            "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+            "sha256": "41952d55eb73b90aced80edc4462675101545ff2586f208a27d18155cc384d4c",
+            "utc": "2026-09-13T09:55:43.8288130Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+            "representation": "synthetic Gaussian reference + ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.5388274192810059,
+                "y": -0.12735919654369355,
+                "z": 0.8327332139015198
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": false,
+            "meanLuma": 0.1503681943120259
+        },
+        {
+            "name": "mesh-light-off",
+            "file": "hybridprobe-exposure-mesh-light-off.jpg",
+            "sha256": "3a6fa80af86c5fff6bd57a735048b924a638b0c21a8c1f577951f07beff7f99c",
+            "utc": "2026-09-13T09:55:46.8993300Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+            "representation": "ordinary scene only / synthetic reference disabled",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.5388274192810059,
+                "y": -0.12735919654369355,
+                "z": 0.8327332139015198
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": false,
+            "meanLuma": 0.15477971139625427
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "name": "mesh-light-off",
+    "file": "hybridprobe-exposure-mesh-light-off.jpg",
+    "sha256": "ffb1c739b92321d19c7277ba257e4078dbeded181e5808e2ac31db8b20bbcf4a",
+    "utc": "2026-09-13T10:08:22.1148140Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+    "representation": "source textured mesh + common ordinary scene",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.7037881016731262,
+        "y": -0.09677086025476456,
+        "z": 0.703788161277771
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": false,
+    "light": false,
+    "meanLuma": 0.14330507224508375,
+    "proxyConfigured": false,
+    "proxyReady": false,
+    "proxyRenderSubmitted": false,
+    "samePoseProjection": true
+}

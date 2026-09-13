@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-13",
+  "decision": "Use generated textured mesh for this near-field station; retain UnitySplats as isolated experimental renderer",
+  "source_sha256": "b37b22e6eca619242ff23de7143d98536a4aa663e51bd26eea2a3900ec96f0d2",
+  "player_sha256": "9e411c618c7b64305f89d17361422612ca46138ead87609d5221f5c5ffe32b88",
+  "runs": {
+    "synthetic-02": {
+      "runtime_checks_passed": 13,
+      "runtime_errors": 0,
+      "decoded_original_images": 13,
+      "separate_exposures_verified": 4,
+      "source_sha256": "7cbeadb916263658662bd1ca8a1c0bc095ab4a27899d600448de076d770e3600",
+      "player_sha256": "025012d093244d1ff0008eaad3884147944595496ff001aaaec835ae339f8ac3",
+      "player_bytes_verified": true,
+      "cyan_interior_pixels": 2345,
+      "cyan_pixels_changed_by_splats": 479,
+      "cyan_reference_pass": false,
+      "screen_photo_mean_absolute_rgb_0_255": {
+        "mesh-light-on": 0.5465279947916667,
+        "hybrid-light-on": 0.5547972005208334,
+        "hybrid-light-off": 0.5393811848958333,
+        "mesh-light-off": 0.5310472005208333
+      },
+      "scope": "Data and a single opaque cyan reference at the fixed comparison pose. Not global occlusion, image quality, native input, GPU profiling or canonical game-camera verification."
+    },
+    "generated-01": {
+      "runtime_checks_passed": 16,
+      "runtime_errors": 0,
+      "decoded_original_images": 15,
+      "separate_exposures_verified": 5,
+      "source_sha256": "00337a5e433fc6c0437961190adb6c0e22e4ac9ad88e4c13086153b4dc6b274c",
+      "player_sha256": "b66f3823ae6ade08e571e1a9706ffaf6db14c61298f9d2667f0aef1e66de18b2",
+      "player_bytes_verified": true,
+      "cyan_interior_pixels": 2414,
+      "cyan_pixels_changed_by_splats": 0,
+      "cyan_reference_pass": true,
+      "screen_photo_mean_absolute_rgb_0_255": {
+        "common-only-light-on": 0.5479599609375,
+        "mesh-light-on": 0.6215569661458333,
+        "hybrid-light-on": 0.6641650390625,
+        "hybrid-light-off": 0.6358984375,
+        "mesh-light-off": 0.5708564453125
+      },
+      "scope": "Data and a single opaque cyan reference at the fixed comparison pose. Not global occlusion, image quality, native input, GPU profiling or canonical game-camera verification."
+    },
+    "proxy-01": {
+      "runtime_checks_passed": 22,
+      "runtime_errors": 0,
+      "decoded_original_images": 16,
+      "separate_exposures_verified": 5,
+      "source_sha256": "b37b22e6eca619242ff23de7143d98536a4aa663e51bd26eea2a3900ec96f0d2",
+      "player_sha256": "9e411c618c7b64305f89d17361422612ca46138ead87609d5221f5c5ffe32b88",
+      "player_bytes_verified": true,
+      "cyan_interior_pixels": 2414,
+      "cyan_pixels_changed_by_splats": 0,
+      "cyan_reference_pass": true,
+      "screen_photo_mean_absolute_rgb_0_255": {
+        "common-only-light-on": 0.5495696614583333,
+        "mesh-light-on": 0.6222216796875,
+        "hybrid-light-on": 0.6425833333333333,
+        "hybrid-light-off": 0.5875270182291666,
+        "mesh-light-off": 0.5704954427083333
+      },
+      "scope": "Data and a single opaque cyan reference at the fixed comparison pose. Not global occlusion, image quality, native input, GPU profiling or canonical game-camera verification."
+    },
+    "packaged-01": {
+      "runtime_checks_passed": 22,
+      "runtime_errors": 0,
+      "decoded_original_images": 16,
+      "separate_exposures_verified": 5,
+      "source_sha256": "b37b22e6eca619242ff23de7143d98536a4aa663e51bd26eea2a3900ec96f0d2",
+      "player_sha256": "9e411c618c7b64305f89d17361422612ca46138ead87609d5221f5c5ffe32b88",
+      "player_bytes_verified": true,
+      "cyan_interior_pixels": 2414,
+      "cyan_pixels_changed_by_splats": 0,
+      "cyan_reference_pass": true,
+      "screen_photo_mean_absolute_rgb_0_255": {
+        "common-only-light-on": 0.5491376953125,
+        "mesh-light-on": 0.6215891927083333,
+        "hybrid-light-on": 0.64244921875,
+        "hybrid-light-off": 0.58721875,
+        "mesh-light-off": 0.5705094401041667
+      },
+      "scope": "Data and a single opaque cyan reference at the fixed comparison pose. Not global occlusion, image quality, native input, GPU profiling or canonical game-camera verification."
+    }
+  },
+  "visual_review": {
+    "reviewers": [
+      "root",
+      "verification subagent"
+    ],
+    "final_findings": [
+      "Door aperture and physical passage clear",
+      "Ordinary inward lining occludes generated exterior underside/window artifacts inside",
+      "Proxy facade responds visibly to local light",
+      "Splats remain flecked, softer and darker than mesh",
+      "Some bright/jagged ceiling-wall seams remain",
+      "Separate camera JPEG matches shown rendering",
+      "Final cyan reference 2414 interior pixels, no changed pixels"
+    ],
+    "scope": "Isolated trial, fixed comparison pose and bounded doorway journey; not a full game chapter"
+  },
+  "unverified": [
+    "Native keyboard and mouse",
+    "Canonical SIGNAL47 photo camera integration",
+    "Other photo poses/aspect ratios",
+    "Production MSAA2 configuration",
+    "Other platforms/backends",
+    "Long GPU/VRAM/performance study",
+    "Marble generated world (login unavailable)"
+  ],
+  "main_unity_and_default_launcher": "unchanged vs ea0ec2438e31c1fffb6f9c70cd9600791e90c366",
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Hybrid23-b37b22e6eca6",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Hybrid23-b37b22e6eca6.tar.gz",
+    "archive_sha256": "f089e5657c125e045018d26578bbf543945941bc69ac32930ec3c4be21da48ab",
+    "files": 186,
+    "payload_sha256": "b5cb209630bc7e6d82ee94adcd45b4e4fa415123fc0bcbf0e82d922e6766bbf5"
+  }
+}

@@ -1,0 +1,344 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "Vulkan",
+    "gpu": "Intel(R) Graphics (ARL)",
+    "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+    "scope": "Isolated STATION 01 hybrid probe; synthetic or imported environment as explicitly identified. API motion is not native input. Short frame intervals are not game performance. JPEG files are separate diagnostic exposures, not canonical field photographs. Generated-model comparison: source textured mesh is visible only in mesh phases; surface-derived Gaussians replace that mesh in hybrid phases. These Gaussians are sampled from the model surface, not a trained reconstruction or Marble world. Common collision, door and interior geometry stays active. A common-only exposure independently tests visible splat contribution.",
+    "failureReason": "",
+    "width": 1280,
+    "height": 800,
+    "errors": 0,
+    "declaredSplatCount": 150000,
+    "completed": true,
+    "automated": true,
+    "compute": true,
+    "generatedMeshComparison": true,
+    "splatRegionLightPixels": 68687,
+    "splatRegionLightChangedPixels": 37193,
+    "splatRegionMeanAbsoluteRgbChange": 22.90028195534332,
+    "splatRegionInterpretation": "Pixels selected by common-scene/hybrid A-B at identical light settings; a light response here can still include translucent underlying meshes and requires visual inspection.",
+    "proxyPhotoScope": "Matched-mesh proxy trial. Separate camera inherits the player camera pose, projection and 1280x800 viewport. Its lighting map is explicitly refreshed and rendered immediately before the photo request. This tests same-pose photos only; independent camera poses and general photographic consistency remain unverified.",
+    "nativeInput": "UNVERIFIED",
+    "visualOcclusion": "UNVERIFIED: inspect original A/B captures",
+    "splatRelighting": "UNVERIFIED: mesh-light response does not prove splat relighting",
+    "checks": [
+        {
+            "name": "capture-resolution",
+            "detail": "1280x800",
+            "passed": true
+        },
+        {
+            "name": "data-origin-labelled",
+            "detail": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "passed": true
+        },
+        {
+            "name": "splat-count-declared",
+            "detail": "150000 splats declared by the scene builder; this is not by itself proof of rendered splats.",
+            "passed": true
+        },
+        {
+            "name": "generated-source-mesh-present",
+            "detail": "1 source MeshFilters; at least one must contain renderable vertices.",
+            "passed": true
+        },
+        {
+            "name": "visual-comparison-preserves-common-physics",
+            "detail": "Generated visual root must be separate from splats, door, wall, player, lamp and opaque comparison object. Both switched visual roots must contain no colliders so A/B preserves common physics.",
+            "passed": true
+        },
+        {
+            "name": "wall-proxy-in-test-path",
+            "detail": "The assigned opaque wall collider is the first obstacle along the wall test path.",
+            "passed": true
+        },
+        {
+            "name": "ordinary-wall-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.585000038m; collision flags=5; final=(2.000, 0.025, -0.415)",
+            "passed": true
+        },
+        {
+            "name": "closed-door-blocks-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=0.615m; collision flags=5; final=(0.000, 0.035, -0.385)",
+            "passed": true
+        },
+        {
+            "name": "door-ray-interaction",
+            "detail": "API calls the same ray-gated door interaction as E; collision remains enabled while the real door rotates.",
+            "passed": true
+        },
+        {
+            "name": "open-door-allows-controller",
+            "detail": "Requested 2m with 40 actual CharacterController.Move calls; forward movement=2m; collision flags=Below; final=(0.000, 0.135, 1.000)",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=150000; uploaded=150000; declared=150000. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-proxy-active-source",
+            "detail": "Player camera binding=True; active source resolved=True; proxy layer=30; blend=1; brightness=2; background=1; texture scale=0,5. Independent source-camera substitution is not performed.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-proxy-same-pose-projection",
+            "detail": "Separate camera and proxy source must share pose, projection, culling mask and 1280x800 viewport; this is a same-pose-only test.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-on-proxy-render-request",
+            "detail": "IsReady=True; RenderNow returned=True. A true return confirms submitted rendering, not visual lighting correctness.",
+            "passed": true
+        },
+        {
+            "name": "splat-camera-image-response",
+            "detail": "68687 separate-camera pixels differ from the common-scene baseline with identical lamp state. This establishes visible splat contribution, not correct occlusion.",
+            "passed": true
+        },
+        {
+            "name": "generated-representation-ab-response",
+            "detail": "72269 pixels differ between source mesh and surface-derived Gaussians. Compare original captures for preservation of shape, texture and occlusion; difference alone is not visual quality.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-splat-resources",
+            "detail": "1 active Gsplat renderers; actual asset splats=150000; uploaded=150000; declared=150000. Visibility is tested independently in captured pixels.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-proxy-active-source",
+            "detail": "Player camera binding=True; active source resolved=True; proxy layer=30; blend=1; brightness=2; background=1; texture scale=0,5. Independent source-camera substitution is not performed.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-proxy-same-pose-projection",
+            "detail": "Separate camera and proxy source must share pose, projection, culling mask and 1280x800 viewport; this is a same-pose-only test.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-light-off-proxy-render-request",
+            "detail": "IsReady=True; RenderNow returned=True. A true return confirms submitted rendering, not visual lighting correctness.",
+            "passed": true
+        },
+        {
+            "name": "rendered-light-change",
+            "detail": "388417 pixels differ by >=12 summed RGB; mean absolute RGB change=8.4631337890625. Establishes an image response only; inspect mesh and splat regions separately.",
+            "passed": true
+        },
+        {
+            "name": "separate-camera-exposures",
+            "detail": "Diagnostic JPEGs rendered through a separate disabled camera and URP SingleCameraRequest; no screen-copy substitution.",
+            "passed": true
+        }
+    ],
+    "phases": [
+        {
+            "name": "mesh-light-on",
+            "representation": "source textured mesh + common ordinary scene",
+            "splats": false,
+            "light": true,
+            "frames": 447,
+            "splatCount": 0,
+            "seconds": 2.0027992290000009,
+            "meanMs": 4.480535187919465,
+            "p95Ms": 8.038694999999763,
+            "p99Ms": 8.427924000001142,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-on",
+            "representation": "surface-derived Gaussians + common ordinary scene",
+            "splats": true,
+            "light": true,
+            "frames": 204,
+            "splatCount": 150000,
+            "seconds": 2.0027161420000008,
+            "meanMs": 9.817235990196082,
+            "p95Ms": 11.689665999998767,
+            "p99Ms": 12.46551000000018,
+            "rendererCount": 1,
+            "assetCount": 150000,
+            "uploadedCount": 150000,
+            "assetsReady": true
+        },
+        {
+            "name": "hybrid-light-off",
+            "representation": "surface-derived Gaussians + common ordinary scene",
+            "splats": true,
+            "light": false,
+            "frames": 276,
+            "splatCount": 150000,
+            "seconds": 2.0015020009999988,
+            "meanMs": 7.2518188442028939,
+            "p95Ms": 10.565571999997303,
+            "p99Ms": 11.944612999997162,
+            "rendererCount": 1,
+            "assetCount": 150000,
+            "uploadedCount": 150000,
+            "assetsReady": true
+        },
+        {
+            "name": "mesh-light-off",
+            "representation": "source textured mesh + common ordinary scene",
+            "splats": false,
+            "light": false,
+            "frames": 451,
+            "splatCount": 0,
+            "seconds": 2.001863670999999,
+            "meanMs": 4.438722108647448,
+            "p95Ms": 7.602474000002246,
+            "p99Ms": 8.10324300000076,
+            "rendererCount": 0,
+            "assetCount": 0,
+            "uploadedCount": 0,
+            "assetsReady": true
+        }
+    ],
+    "exposures": [
+        {
+            "name": "common-only-light-on",
+            "file": "hybridprobe-exposure-common-only-light-on.jpg",
+            "sha256": "cb809d20f6eacba188855dd1049452181a50f63d8fa41b41409bb276e2b463c2",
+            "utc": "2026-09-13T10:04:34.6767840Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "representation": "common ordinary scene only / visibility control",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.7037881016731262,
+                "y": -0.09677086025476456,
+                "z": 0.703788161277771
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": true,
+            "meanLuma": 0.18532161014409008,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "mesh-light-on",
+            "file": "hybridprobe-exposure-mesh-light-on.jpg",
+            "sha256": "bc35d0d334910365f16dbd253f522be658849db0828cae58375b38f04713fdb8",
+            "utc": "2026-09-13T10:04:37.7502790Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "representation": "source textured mesh + common ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.7037881016731262,
+                "y": -0.09677086025476456,
+                "z": 0.703788161277771
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": true,
+            "meanLuma": 0.18490163539310043,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        },
+        {
+            "name": "hybrid-light-on",
+            "file": "hybridprobe-exposure-hybrid-light-on.jpg",
+            "sha256": "949952349eccefcf479e1b6b140e9bc0366aaee35348643ab6714a36ecc19af4",
+            "utc": "2026-09-13T10:04:40.8519680Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "representation": "surface-derived Gaussians + common ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.7037881016731262,
+                "y": -0.09677086025476456,
+                "z": 0.703788161277771
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": true,
+            "meanLuma": 0.16993883374091615,
+            "proxyConfigured": true,
+            "proxyReady": true,
+            "proxyRenderSubmitted": true,
+            "samePoseProjection": true
+        },
+        {
+            "name": "hybrid-light-off",
+            "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+            "sha256": "603416b0a01865c230d53cb818a22734130ecb6d5a1e0d8a2dd0b519cf87bda9",
+            "utc": "2026-09-13T10:04:43.9321910Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "representation": "surface-derived Gaussians + common ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.7037881016731262,
+                "y": -0.09677086025476456,
+                "z": 0.703788161277771
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": true,
+            "light": false,
+            "meanLuma": 0.13418071563087836,
+            "proxyConfigured": true,
+            "proxyReady": true,
+            "proxyRenderSubmitted": true,
+            "samePoseProjection": true
+        },
+        {
+            "name": "mesh-light-off",
+            "file": "hybridprobe-exposure-mesh-light-off.jpg",
+            "sha256": "ee2fea90a10527f527e1439afddef076949d5771418ca661cc122296949d1994",
+            "utc": "2026-09-13T10:04:47.0034160Z",
+            "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+            "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+            "representation": "source textured mesh + common ordinary scene",
+            "position": {
+                "x": 8.0,
+                "y": 2.299999952316284,
+                "z": -6.0
+            },
+            "forward": {
+                "x": -0.7037881016731262,
+                "y": -0.09677086025476456,
+                "z": 0.703788161277771
+            },
+            "width": 1280,
+            "height": 800,
+            "splats": false,
+            "light": false,
+            "meanLuma": 0.14330342506600819,
+            "proxyConfigured": false,
+            "proxyReady": false,
+            "proxyRenderSubmitted": false,
+            "samePoseProjection": true
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "name": "hybrid-light-on",
+    "file": "hybridprobe-exposure-hybrid-light-on.jpg",
+    "sha256": "3af360bfc607437cef2de0b2d726d968ff346fc719d6e361b4b2e744c476a1a4",
+    "utc": "2026-09-13T09:55:40.7595900Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Original synthetic SIGNAL47 soil/rock fixture; not a scan or generated World Labs scene",
+    "representation": "synthetic Gaussian reference + ordinary scene",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.5388274192810059,
+        "y": -0.12735919654369355,
+        "z": 0.8327332139015198
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": true,
+    "meanLuma": 0.1824081898176481
+}

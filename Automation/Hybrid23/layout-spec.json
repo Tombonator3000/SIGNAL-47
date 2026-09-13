@@ -1,0 +1,235 @@
+{
+  "id": "hybrid23-station01-isolated-probe",
+  "classification": "synthetic mechanics and hybrid rendering experiment; not complete K3 or real-world reconstruction",
+  "units": "Unity metres; local scene coordinates",
+  "pipeline": {
+    "unity": "6000.3.22f1",
+    "urp": "17.3.0",
+    "graphics": "Vulkan",
+    "msaa": 1,
+    "proxyRelightingDefault": false
+  },
+  "geometry": {
+    "hutFootprint": {
+      "width": 8,
+      "depth": 6,
+      "frontZ": 0,
+      "rearZ": 6,
+      "wallHeight": 2.8
+    },
+    "door": {
+      "hinge": [
+        -0.6,
+        0,
+        0
+      ],
+      "leafLocalCenter": [
+        0.6,
+        1.05,
+        0
+      ],
+      "leafDimensions": [
+        1.2,
+        2.1,
+        0.14
+      ],
+      "openLocalYDegrees": 90
+    },
+    "player": {
+      "height": 1.8,
+      "radius": 0.28,
+      "center": [
+        0,
+        0.9,
+        0
+      ],
+      "cameraLocalPosition": [
+        0,
+        1.6,
+        0
+      ]
+    },
+    "playerStart": [
+      0,
+      0,
+      -4
+    ],
+    "doorTestStart": [
+      0,
+      0,
+      -1
+    ],
+    "wallTestStart": [
+      2,
+      0,
+      -1
+    ],
+    "collisionTestForward": [
+      0,
+      0,
+      1
+    ],
+    "collisionRequestedDistance": 2,
+    "cyanOccluder": {
+      "position": [
+        5,
+        0.65,
+        1.5
+      ],
+      "dimensions": [
+        0.4,
+        1.3,
+        0.14
+      ],
+      "material": "opaque URP Unlit cyan"
+    },
+    "photoPose": [
+      8,
+      2.3,
+      -6
+    ],
+    "photoLookAt": [
+      2.5,
+      1,
+      2.5
+    ],
+    "photoFovDegrees": 70,
+    "lampPosition": [
+      4.8,
+      2.2,
+      0.5
+    ]
+  },
+  "syntheticInput": {
+    "origin": "original generated Gaussian soil grid and three rock hemispheres",
+    "sourceCoordinates": "RUF",
+    "count": 2521,
+    "notAScan": true,
+    "notWorldLabs": true,
+    "collisionFromSplats": false,
+    "relightingProxy": "optional aligned coarse sphere/soil mesh; no collision"
+  },
+  "externalInput": {
+    "arguments": [
+      "--ply",
+      "--data-origin",
+      "--source-coordinates",
+      "--position",
+      "--rotation",
+      "--scale"
+    ],
+    "defaultMaxSplats": 250000,
+    "defaultMaxInputMiB": 128,
+    "alignment": "explicit and inspected, not inferred from visual plausibility",
+    "proxyRequirement": "matched mesh required before external proxy relighting"
+  },
+  "mechanicsScope": [
+    "first person CharacterController movement",
+    "opaque mesh collision",
+    "hinged door with collision retained",
+    "toggleable local light",
+    "separate-camera diagnostic exposure",
+    "same-pose mesh/splats comparison"
+  ],
+  "excludedClaims": [
+    "implemented STATION01 story",
+    "P06-P09 complete",
+    "historical negative",
+    "real-world scan fidelity",
+    "release performance",
+    "native input verification"
+  ],
+  "generatedModelMode": {
+    "baselineFiles": [
+      "station-mesh.json",
+      "station-texture.jpg"
+    ],
+    "coordinates": "normalized Unity RUF, identity transform matching surface-sampled PLY",
+    "hutBounds": {
+      "x": [
+        -4,
+        4
+      ],
+      "y": [
+        0,
+        2.8
+      ],
+      "z": [
+        0,
+        6
+      ]
+    },
+    "sourceMeshRoot": "render-only mesh, no collider, independently toggled by runtime",
+    "ordinaryExterior": "existing outer wall and roof renderers hidden, colliders retained",
+    "sharedGeometry": "ground, inner lining, door, doorframe, camera and lamp remain across representation changes",
+    "doorOpening": "source model clipped by converter at x +/- .70, y <2.15, z <.65; builder frame hides cut edges",
+    "cyanPosition": [
+      2.6,
+      0.8,
+      -1
+    ],
+    "cyanReason": "in front of generated source, offset from x2 wall collision test",
+    "lampPosition": [
+      2,
+      2.2,
+      -2
+    ],
+    "photoPosition": [
+      8,
+      2.3,
+      -6
+    ],
+    "photoLookAt": [
+      0,
+      1.2,
+      2
+    ],
+    "texture": "original JPG bytes hashed before and after copy; 4096 import; URP Lit mesh material",
+    "comparison": "same generated source textured mesh versus surface-sampled Gaussian representation, with common-only visibility control",
+    "notClaimed": [
+      "trained Gaussian reconstruction",
+      "World Labs Marble output",
+      "full STATION01 gameplay"
+    ],
+    "proxyRelighting": {
+      "optional": true,
+      "mesh": "same GeneratedStation mesh asset as baseline, child of splat root",
+      "material": "untextured neutral URP Lit grey .5",
+      "layer": 30,
+      "colliders": 0,
+      "textureScale": 0.5,
+      "blend": 1,
+      "brightness": 2,
+      "background": 1,
+      "capture": "main SourceCamera Refresh and RenderNow before same-pose separate-camera request; runtime verifies support and matching view",
+      "limits": [
+        "screen-space lighting modulation",
+        "source texture baked lighting remains",
+        "arbitrary different photo camera views unverified"
+      ]
+    },
+    "innerLining": {
+      "wallCenterX": [
+        -3.55,
+        3.55
+      ],
+      "frontZ": 0.45,
+      "rearZ": 5.55,
+      "thickness": 0.06,
+      "ceilingUndersideY": 2.6,
+      "finishedFloorTopY": 0.1,
+      "reason": "ordinary opaque interior built in front of sampled exterior surface; not renderer occlusion repair",
+      "sourceGeometryAudit": {
+        "insideRoofY": [
+          2.6373974,
+          2.6855461
+        ],
+        "insideFloorY": [
+          0.01679,
+          0.0591866
+        ],
+        "region": "abs(x)<3.5 and .5<z<5.5"
+      }
+    }
+  }
+}

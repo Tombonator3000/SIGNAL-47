@@ -1,0 +1,28 @@
+{
+    "name": "hybrid-light-off",
+    "file": "hybridprobe-exposure-hybrid-light-off.jpg",
+    "sha256": "603416b0a01865c230d53cb818a22734130ecb6d5a1e0d8a2dd0b519cf87bda9",
+    "utc": "2026-09-13T10:04:43.9321910Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+    "representation": "surface-derived Gaussians + common ordinary scene",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.7037881016731262,
+        "y": -0.09677086025476456,
+        "z": 0.703788161277771
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": false,
+    "meanLuma": 0.13418071563087836,
+    "proxyConfigured": true,
+    "proxyReady": true,
+    "proxyRenderSubmitted": true,
+    "samePoseProjection": true
+}

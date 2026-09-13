@@ -1,0 +1,15 @@
+Additional attribution for the exact DLL files bundled by UnitySplats at commit 6c0258189a2b124af1282fa9236fd9b6637f1a1a:
+
+System.Runtime.CompilerServices.Unsafe 6.1.0
+Copyright (c) Microsoft Corporation. All rights reserved.
+Source repository copyright: Copyright (c) .NET Foundation and Contributors.
+MIT license: see System.Runtime.CompilerServices.Unsafe-MIT.txt.
+Bundled DLL is byte-identical to lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll in the official Microsoft NuGet package 6.1.0.
+
+ZstdSharp.Port 0.8.8
+Copyright Oleg Stepanischev 2026 (package metadata).
+Copyright (c) 2021 Oleg Stepanischev (source license).
+MIT license: see ZstdSharp-MIT.txt.
+Bundled DLL is byte-identical to lib/netstandard2.1/ZstdSharp.dll in the official NuGet package 0.8.8.
+
+See PROVENANCE.json for source URLs, exact byte hashes and package metadata. This supplemental notice does not replace or alter upstream notices.
