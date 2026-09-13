@@ -1,0 +1,11 @@
+mode=route
+invocation=Automation/run-environment27-checks.sh 
+player=/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/GauntletLinux/Signal47.x86_64
+player_sha256=8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc
+build_id=a241f222a77d5150de4f2866b708babec3c27cbd working-tree source-sha256:3de74f79f1c9c2ad53a2d6aac590c237ece93ec4126091733a364e22d31b60a2
+seed=/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Station26
+resource_cap_bytes=2147483648
+runtime_cap_seconds=180
+resolution=1280x800
+graphics_flag=-force-glcore
+native_input_claim=false

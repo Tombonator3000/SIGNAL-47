@@ -139,8 +139,17 @@ Velg en begrunnet slutning. Escape lukker dokumentet eller åpner pause.
 Native input, ytelse og blind forståelsestest er fortsatt uverifisert.
 Se THIRD_PARTY_NOTICES.md og VT323-OFL.txt for kreditering.
 """
-    field_note = '\nSTATION 01\nEtter B-12-rapporten: fullfør arkivets sammenligning og reisemål. Bruk FIELD TRAVEL-folioen ved arkivbenken. Undersøk fastmerket og lampen i valgfri rekkefølge, fotografer kabelbruddet og sammenlign tidsloggen. Retur-folioen står ved ankomsten; framkall begge feltfilmene på SAROs våtbenk. Motellet er senere innhold. Området har foreløpig enkel terrenggrafikk og tekstutskrift av mottaksfragmentet.\n' if package_id.startswith('Station26-') else ''
-    status = 'TESTKANDIDAT: full spillerreise og ny ytelseskontroll er ikke godkjent ennå.\n' if candidate else ''
+    if package_id.startswith("Environment27-"):
+        field_note = ('\nSTATION 01 / ENVIRONMENT27-DEMO\n'
+                      'Etter B-12-rapporten: fullfør arkivets sammenligning og reisemål. Bruk FIELD TRAVEL-folioen ved arkivbenken. Undersøk fastmerket og lampen i valgfri rekkefølge, fotografer kabelbruddet og sammenlign tidsloggen. Retur-folioen står ved ankomsten; framkall begge feltfilmene på SAROs våtbenk. Motellet er senere innhold. Mottaksfragmentet foreligger som tekstutskrift. Start-STATION01.sh oppretter en separat, vedvarende feltprofil med den historiske tobildersprøven; velg CONTINUE CHECKPOINT i menyen. Start-SIGNAL47.sh bruker den vanlige spillprofilen.\n')
+    elif package_id.startswith("Station26-"):
+        field_note = ('\nSTATION 01\n'
+                      'Etter B-12-rapporten: fullfør arkivets sammenligning og reisemål. Bruk FIELD TRAVEL-folioen ved arkivbenken. Undersøk fastmerket og lampen i valgfri rekkefølge, fotografer kabelbruddet og sammenlign tidsloggen. Retur-folioen står ved ankomsten; framkall begge feltfilmene på SAROs våtbenk. Motellet er senere innhold. Mottaksfragmentet foreligger som tekstutskrift. Start-SIGNAL47.sh bruker den vanlige spillprofilen.\n')
+    else:
+        field_note = ''
+    status = ('TESTKANDIDAT: Automatiserte oppsett- og runtime-målinger, dersom de følger med som eksplisitt bevis, '
+              'er separate fra native spillerreise. Native spillerreise, input og lydlytting er fortsatt uverifisert.\n'
+              if candidate else '')
     return f"""SIGNAL / 47 — DEN ANDRE EKSPONERINGEN
 
 Pakke: {package_id}
@@ -243,7 +252,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT / "Artifacts/GauntletLinux")
     parser.add_argument("--expect-source", help="Require this exact tested Unity source SHA-256.")
-    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15", "Archive16", "Workstation18", "Resources19", "WorldCase22", "Station26"], help="Identified release family; prior packages are retained.")
+    parser.add_argument("--label", default="Chapter09", choices=["Chapter09", "Visual10", "NightSky12", "Menu14", "Recovery15", "Archive16", "Workstation18", "Resources19", "WorldCase22", "Station26", "Environment27"], help="Identified release family; prior packages are retained.")
     parser.add_argument("--candidate", action="store_true", help="Label the package as awaiting gameplay/performance verification and preserve the default launcher.")
     parser.add_argument("--check-only", action="store_true", help="Read-only build/source verification; create no package or launcher.")
     args = parser.parse_args()
@@ -281,6 +290,11 @@ def main():
             require(not (stage / name).exists(), f"Build already contains reserved package file: {name}")
             (stage / name).write_text(content, encoding="utf-8")
             (stage / name).chmod(mode)
+        # Add Environment27's immutable demo fixture before hashing the package
+        # tree, so every helper and seed byte is covered by the manifest/archive.
+        if args.label == "Environment27":
+            from environment27_demo import prepare, DEFAULT_SOURCE_SEED
+            prepare(stage, DEFAULT_SOURCE_SEED)
         require(not (stage / PACKAGE_MANIFEST).exists(), "Build already contains a package manifest.")
         package_manifest = make_package_manifest(stage, package_id, build)
         (stage / PACKAGE_MANIFEST).write_text(json.dumps(package_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

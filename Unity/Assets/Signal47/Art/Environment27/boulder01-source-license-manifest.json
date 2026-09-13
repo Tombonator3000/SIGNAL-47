@@ -1,0 +1,96 @@
+{
+  "source_asset": "PolyHaven Boulder 01",
+  "source_page": "https://polyhaven.com/a/boulder_01",
+  "source_api": "https://api.polyhaven.com/files/boulder_01",
+  "author": "Rico Cilliers",
+  "license": "CC0 1.0",
+  "source_format": "2K GLTF from API; boulder_01_2k.gltf + boulder_01.bin",
+  "source_files": {
+    "boulder_01.bin": {
+      "bytes": 2938808,
+      "sha256": "7f5b06503d62bd95bfe9c6b8a354a5cc8ff04a4d271a8cf87a3e3125db4232d7"
+    },
+    "boulder_01_2k.gltf": {
+      "bytes": 2773,
+      "sha256": "52d118b56748a18509e4ec0075d07b254d72a0401793f22363c0bb3a682e7361"
+    },
+    "boulder_01_api.json": {
+      "bytes": 24428,
+      "sha256": "c2b21c87241cbe9a46c190c6cd231cd943c4ff5dbd28b634cf19613a21a75167"
+    },
+    "boulder_01_arm_2k.jpg": {
+      "bytes": 2273068,
+      "sha256": "ab52859dde519b4822111aa60916b6d21f8a6966c67b6cec44d1cd0775b8a86a"
+    },
+    "boulder_01_diff_2k.jpg": {
+      "bytes": 3672483,
+      "sha256": "90bbaa17c1fe0254d2b0b6e5148264fa834953a72724d566f14af029eebe3ca3"
+    },
+    "boulder_01_nor_gl_2k.jpg": {
+      "bytes": 4649207,
+      "sha256": "5174b318712ac7725cbcb55d422607f9c66d7f8d035c5412ab897b5939e2db6b"
+    },
+    "boulder_01_page.html": {
+      "bytes": 193262,
+      "sha256": "1af4fa94e0e89823a9f6b0dafdc1cf5ed801ea16971b115a87898db6068f72f4"
+    }
+  },
+  "maps": {
+    "diffuse_2k": "boulder_01_diff_2k.jpg",
+    "normal_gl_2k": "boulder_01_nor_gl_2k.jpg",
+    "arm_2k": "boulder_01_arm_2k.jpg"
+  },
+  "blender": "4.5.13 LTS",
+  "units": "metres; Blender Z-up; FBX axis_forward=-Z axis_up=Y",
+  "material": "E27_Boulder01",
+  "mounting": "centered X/Y, local Z=0 at lowest source vertex",
+  "outputs": [
+    {
+      "name": "LOD0",
+      "fbx": "E27_Boulder_LOD0.fbx",
+      "triangles": 3306,
+      "dimensions_blender_xyz": [
+        1.272136,
+        1.830334,
+        1.00383
+      ],
+      "bounds_min": [
+        -0.636068,
+        -0.915167,
+        0.0
+      ],
+      "bounds_max": [
+        0.636068,
+        0.915167,
+        1.00383
+      ],
+      "uv_layers": 1,
+      "material": "E27_Boulder01",
+      "fbx_roundtrip": "PASS"
+    },
+    {
+      "name": "LOD1",
+      "fbx": "E27_Boulder_LOD1.fbx",
+      "triangles": 396,
+      "dimensions_blender_xyz": [
+        1.272136,
+        1.830334,
+        1.00383
+      ],
+      "bounds_min": [
+        -0.636068,
+        -0.915167,
+        0.0
+      ],
+      "bounds_max": [
+        0.636068,
+        0.915167,
+        1.00383
+      ],
+      "uv_layers": 1,
+      "material": "E27_Boulder01",
+      "fbx_roundtrip": "PASS"
+    }
+  ],
+  "preview": "boulder01-lod0-preview.png"
+}

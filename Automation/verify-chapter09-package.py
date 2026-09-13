@@ -5,10 +5,15 @@ Example:
   python3 Automation/verify-chapter09-package.py --archive ARCHIVE.tar.gz \
     --extract-dir /tmp/signal47-new-package-check --out Artifacts/Chapter09/PackageStartup
 
+For package-only verification of an Environment27 or Station26 archive, add
+``--unpack-only``. This validates and extracts the immutable tree without
+starting the native player or sending input.
+
 Extraction and output directories must be absent or empty. No observation,
-smoke-test, telemetry, or direct gameplay APIs are used. Native input and a
-zero exit code are machine-verifiable; the three original window captures
-require a separate visual review of menu, playing, and pause content.
+smoke-test, telemetry, or direct gameplay APIs are used. In normal mode,
+native input and a zero exit code are machine-verifiable; the three original
+window captures require a separate visual review of menu, playing, and pause
+content.
 """
 import argparse
 import ctypes as C
@@ -34,6 +39,9 @@ MAX_MEMBERS = 100000
 MAX_UNPACKED_BYTES = 32 * 1024 ** 3
 MAX_MANIFEST_BYTES = 16 * 1024 ** 2
 WIDTH, HEIGHT = 1280, 800
+ENVIRONMENT27_ROOT_FILES = frozenset({"Start-STATION01.sh", "initialize-station01.py"})
+ENVIRONMENT27_SEED_FILES = frozenset({"DemoSeed/case.json", "DemoSeed/fixture-metadata.json"})
+ENVIRONMENT27_SEED_PREFIX = "DemoSeed/"
 
 
 def require(condition, message):
@@ -96,7 +104,7 @@ def file_mode(value):
 def describe_manifest(manifest):
     require(manifest.get("schema") == "signal47-chapter09-package-v1", "Unknown package-manifest schema.")
     package_id = manifest.get("package_id")
-    require(isinstance(package_id, str) and re.fullmatch(r"(?:Chapter09|Visual10|NightSky12|Menu14|Recovery15|Archive16|Workstation18|Resources19|WorldCase22)-[0-9a-f]{12}", package_id), "Invalid package id.")
+    require(isinstance(package_id, str) and re.fullmatch(r"(?:Chapter09|Visual10|NightSky12|Menu14|Recovery15|Archive16|Workstation18|Resources19|WorldCase22|Station26|Environment27)-[0-9a-f]{12}", package_id), "Invalid package id.")
     require(re.fullmatch(r"[0-9a-f]{40}", manifest.get("base_revision", "")), "Package needs an exact base revision.")
     for name in ("unity_source_sha256", "build_payload_sha256", "player_sha256", "package_payload_sha256"):
         require(isinstance(manifest.get(name), str) and SHA256.fullmatch(manifest[name]), f"Invalid manifest hash: {name}")
@@ -122,7 +130,32 @@ def describe_manifest(manifest):
             continue
         parent = PurePosixPath(path).parent.as_posix()
         require(parent in directories, f"Manifest omits the parent directory of {path}")
+    if package_id.startswith("Environment27-"):
+        # These are the only package additions permitted by the Environment27
+        # release family. The build's ordinary files remain governed by the
+        # build manifest; DemoSeed is constrained to the immutable two-photo
+        # fixture and its metadata.
+        require(ENVIRONMENT27_ROOT_FILES.issubset(files), "Environment27 starter/helper files are missing from the manifest.")
+        require(ENVIRONMENT27_SEED_FILES.issubset(files), "Environment27 DemoSeed metadata is missing from the manifest.")
+        seed_dirs = {path for path in directories if path == "DemoSeed" or path.startswith(ENVIRONMENT27_SEED_PREFIX)}
+        require(seed_dirs == {"DemoSeed", "DemoSeed/FieldPhotos"}, "Environment27 DemoSeed directories differ from the exact fixture layout.")
+        seed_files = {path for path in files if path.startswith(ENVIRONMENT27_SEED_PREFIX)}
+        photos = seed_files - ENVIRONMENT27_SEED_FILES
+        require(len(photos) == 2 and all(re.fullmatch(r"DemoSeed/FieldPhotos/[A-Za-z0-9._-]+\.jpg", path) for path in photos),
+                "Environment27 DemoSeed must contain exactly two regular JPG photos.")
+        require(seed_files == ENVIRONMENT27_SEED_FILES | photos, "Unexpected Environment27 DemoSeed payload.")
     return package_id, files, directories
+
+
+def counts_as_original_build_payload(path, package_id):
+    """Whether a manifest file belongs to the original Unity build payload."""
+    if PurePosixPath(path).name in {"build-manifest.json", "build-id.txt"}:
+        return False
+    if path in {"Start-SIGNAL47.sh", "START_HER.txt"}:
+        return False
+    if package_id.startswith("Environment27-") and (path in ENVIRONMENT27_ROOT_FILES or path.startswith(ENVIRONMENT27_SEED_PREFIX)):
+        return False
+    return True
 
 
 def inspect_archive(tar):
@@ -241,7 +274,7 @@ def unpack_checked(archive, extraction, out, result):
     # than the raw slash-containing strings when a directory shares a prefix.
     for path in sorted(files, key=lambda value: PurePosixPath(value).parts):
         streams = [payload]
-        if PurePosixPath(path).name not in {"build-manifest.json", "build-id.txt"} and path not in {"Start-SIGNAL47.sh", "START_HER.txt"}:
+        if counts_as_original_build_payload(path, manifest["package_id"]):
             streams.append(build_payload)
         for digest in streams:
             digest.update(path.encode("utf-8") + b"\0")
@@ -551,6 +584,8 @@ def main():
     parser.add_argument("--extract-dir", required=True, type=Path, help="A NEW empty extraction container; never reuse a populated directory.")
     parser.add_argument("--out", type=Path, default=ROOT / "Artifacts/Chapter09/PackageStartup", help="New empty evidence directory.")
     parser.add_argument("--startup-timeout", type=float, default=45, help="Seconds to wait for the actual player window.")
+    parser.add_argument("--unpack-only", action="store_true",
+                        help="Verify and extract the archive without opening the desktop or launching the native player.")
     args = parser.parse_args()
     require(5 <= args.startup_timeout <= 180, "Startup timeout must be between 5 and 180 seconds.")
     archive = args.archive.expanduser().absolute()
@@ -571,17 +606,25 @@ def main():
 
     previous_sigterm = signal.signal(signal.SIGTERM, interrupt_for_cleanup)
     try:
-        runtime = Path(f"/run/user/{os.getuid()}")
-        require(runtime.is_dir(), "The current user's desktop runtime directory is unavailable.")
-        lock_fd = os.open(runtime / "signal47-gauntlet.lock", os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW, 0o600)
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        result["exclusive_lock"] = str(runtime / "signal47-gauntlet.lock")
-        require(not player_pids(), "Another SIGNAL 47 player is running; package startup refused before input.")
+        runtime = None
+        if not args.unpack_only:
+            runtime = Path(f"/run/user/{os.getuid()}")
+            require(runtime.is_dir(), "The current user's desktop runtime directory is unavailable.")
+            lock_fd = os.open(runtime / "signal47-gauntlet.lock", os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            result["exclusive_lock"] = str(runtime / "signal47-gauntlet.lock")
+            require(not player_pids(), "Another SIGNAL 47 player is running; package startup refused before input.")
         extraction = new_directory(extraction_path)
         package = unpack_checked(archive, extraction, out, result)
-        env = desktop_environment(runtime)
-        exercise_package(package, out, env, result, args.startup_timeout)
-        result["outcome"] = "AUTOMATION_PASS_VISUAL_UNVERIFIED"
+        if args.unpack_only:
+            result["checks"]["package_only_extraction"] = "PASS"
+            result["checks"]["native_player_launch"] = "NOT_RUN"
+            result["checks"]["native_input_sequence_issued"] = "NOT_RUN"
+            result["outcome"] = "UNPACK_PASS_NATIVE_UNRUN"
+        else:
+            env = desktop_environment(runtime)
+            exercise_package(package, out, env, result, args.startup_timeout)
+            result["outcome"] = "AUTOMATION_PASS_VISUAL_UNVERIFIED"
         code = 0
     except KeyboardInterrupt:
         result["error"] = "Interrupted; only this run's process/input devices were cleaned up."
@@ -594,8 +637,11 @@ def main():
         (out / "package-startup-result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         if lock_fd is not None:
             os.close(lock_fd)
+    review = ("NOT_RUN — package-only extraction requested"
+              if args.unpack_only else
+              "UNVERIFIED — inspect 01-menu.png, 02-playing.png and 03-pause.png")
     print(json.dumps({"outcome": result["outcome"], "result": str(out / "package-startup-result.json"), "error": result["error"],
-                      "visual_review": "UNVERIFIED — inspect 01-menu.png, 02-playing.png and 03-pause.png"}, ensure_ascii=False, indent=2))
+                      "visual_review": review}, ensure_ascii=False, indent=2))
     return code
 
 

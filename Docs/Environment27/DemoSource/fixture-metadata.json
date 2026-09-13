@@ -1,0 +1,23 @@
+{
+  "schema": "signal47-environment27-demo-seed-v1",
+  "source": "Station26 completed WorldCase seed; historical first two frames retained",
+  "cameraFramesKept": [
+    "s03-field-photograph",
+    "b12-control-photograph"
+  ],
+  "stationState": "version 1 with inStation=true; P06-P09 fields omitted/reset",
+  "notebookEntriesRemoved": [
+    "FRAME 03",
+    "FRAME 04",
+    "PHOTO 03",
+    "PHOTO 04"
+  ],
+  "playerPose": {
+    "x": 120.0,
+    "y": 0.12,
+    "z": 94.0,
+    "yaw": 0.0,
+    "pitch": 0.0
+  },
+  "photoPaths": "relative basenames in package; initializer remaps to the dedicated profile"
+}

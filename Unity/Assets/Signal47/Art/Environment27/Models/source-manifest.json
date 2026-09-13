@@ -1,0 +1,230 @@
+{
+  "authored_original": true,
+  "external_assets": [],
+  "blender": "4.5.13 LTS",
+  "units": "metres",
+  "axis": "Blender Z-up; FBX axis_forward=-Z axis_up=Y; Unity metres",
+  "source": "Unity/Blender/SIGNAL47_environment27_props.blend",
+  "recipe": "Unity/Blender/Source/environment27_props.py",
+  "materials": [
+    "E27_PaintedMetal",
+    "E27_Steel",
+    "E27_Rubber",
+    "E27_Wood",
+    "E27_Glass",
+    "E27_Lamp",
+    "E27_Sandstone"
+  ],
+  "mounting_offsets": {
+    "SurveyTransit": "ground z=0; optical center z=1.28 m",
+    "AnalogReceiver": "ground z=0; case bounds 0.48 x 0.30 x 0.25 m",
+    "LampPole": "ground z=0; overall height approx. 1.69 m including handle",
+    "DieselGenerator": "ground z=0; wheel/skid contact",
+    "DistributionCabinet": "ground z=0; plinth contact; body height 1.52 m",
+    "Sandstone_A": "ground z=0; irregular rock contact",
+    "Sandstone_B": "ground z=0; irregular rock contact",
+    "ServiceGate": "ground z=0; post center spacing 1.44 m"
+  },
+  "assets": [
+    {
+      "name": "SurveyTransit",
+      "fbx": "E27_SurveyTransit.fbx",
+      "dimensions_blender_xyz": [
+        0.67,
+        0.488372,
+        1.428
+      ],
+      "bounds_min": [
+        -0.335,
+        -0.244186,
+        0.0
+      ],
+      "bounds_max": [
+        0.335,
+        0.244186,
+        1.428
+      ],
+      "triangles": 4864,
+      "triangle_budget": 6200,
+      "mesh_parts": 5,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "AnalogReceiver",
+      "fbx": "E27_AnalogReceiver.fbx",
+      "dimensions_blender_xyz": [
+        0.48,
+        0.379732,
+        0.392728
+      ],
+      "bounds_min": [
+        -0.24,
+        -0.181,
+        0.01
+      ],
+      "bounds_max": [
+        0.24,
+        0.198732,
+        0.402728
+      ],
+      "triangles": 4132,
+      "triangle_budget": 5200,
+      "mesh_parts": 5,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "LampPole",
+      "fbx": "E27_LampPole.fbx",
+      "dimensions_blender_xyz": [
+        0.495,
+        0.34,
+        1.7075
+      ],
+      "bounds_min": [
+        -0.215,
+        -0.17,
+        0.0
+      ],
+      "bounds_max": [
+        0.28,
+        0.17,
+        1.7075
+      ],
+      "triangles": 2816,
+      "triangle_budget": 5200,
+      "mesh_parts": 4,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "DieselGenerator",
+      "fbx": "E27_DieselGenerator.fbx",
+      "dimensions_blender_xyz": [
+        0.84,
+        0.593,
+        0.91
+      ],
+      "bounds_min": [
+        -0.365,
+        -0.235,
+        0.0
+      ],
+      "bounds_max": [
+        0.475,
+        0.358,
+        0.91
+      ],
+      "triangles": 3076,
+      "triangle_budget": 5600,
+      "mesh_parts": 3,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "DistributionCabinet",
+      "fbx": "E27_DistributionCabinet.fbx",
+      "dimensions_blender_xyz": [
+        0.62,
+        0.399,
+        1.52
+      ],
+      "bounds_min": [
+        -0.31,
+        -0.203,
+        0.0
+      ],
+      "bounds_max": [
+        0.31,
+        0.196,
+        1.52
+      ],
+      "triangles": 2652,
+      "triangle_budget": 4200,
+      "mesh_parts": 4,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "Sandstone_A",
+      "fbx": "E27_Sandstone_A.fbx",
+      "dimensions_blender_xyz": [
+        1.025509,
+        0.72944,
+        0.547625
+      ],
+      "bounds_min": [
+        -0.512754,
+        -0.36472,
+        0.0
+      ],
+      "bounds_max": [
+        0.512754,
+        0.36472,
+        0.547625
+      ],
+      "triangles": 704,
+      "triangle_budget": 1400,
+      "mesh_parts": 1,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "Sandstone_B",
+      "fbx": "E27_Sandstone_B.fbx",
+      "dimensions_blender_xyz": [
+        1.091841,
+        0.795901,
+        0.612712
+      ],
+      "bounds_min": [
+        -0.54592,
+        -0.397951,
+        0.0
+      ],
+      "bounds_max": [
+        0.54592,
+        0.397951,
+        0.612712
+      ],
+      "triangles": 704,
+      "triangle_budget": 1400,
+      "mesh_parts": 1,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    },
+    {
+      "name": "ServiceGate",
+      "fbx": "E27_ServiceGate.fbx",
+      "dimensions_blender_xyz": [
+        1.62,
+        0.598146,
+        1.4
+      ],
+      "bounds_min": [
+        -0.81,
+        -0.354073,
+        0.0
+      ],
+      "bounds_max": [
+        0.81,
+        0.244073,
+        1.4
+      ],
+      "triangles": 2512,
+      "triangle_budget": 5200,
+      "mesh_parts": 3,
+      "uv_layers": "PASS",
+      "nonzero_face_area": "PASS",
+      "fbx_roundtrip_bounds": "PASS"
+    }
+  ]
+}

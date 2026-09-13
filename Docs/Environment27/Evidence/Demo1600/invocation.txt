@@ -1,0 +1,4 @@
+package=/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3
+graphics_api_request=auto
+resolution=1600x900
+method=Packaged initializer and normal launcher; Continue API; no native menu input
