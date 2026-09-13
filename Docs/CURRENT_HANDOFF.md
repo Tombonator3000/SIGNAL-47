@@ -1,5 +1,15 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Scan25 — detaljert, trent steinskann faktisk prøvd i Unity
+
+13. september 2026: [Scan25](Research/Scan25/README.md) bruker Loop CEs fotograferte og trente «rock», CC BY 4.0. 493 869 Gaussians er beskåret/renset fra originalen; alle beholdte felt er kontrollert bit for bit, med SH3 bevart. PlayCanvas og Unity viser tre tilsvarende vinkler. En faktisk fargeromsfeil er rettet: Gamma-prosjektet skal ikke bruke splatkomponentens ubetingede GammaToLinear-konvertering. Dette oppdaterer forståelsen av mørke splatbilder; historiske Hybrid23-resultater er ikke kjørt om.
+
+Lokal prøvepakke: `Artifacts/Releases/Scan25-8892097d2889/Start-Scan25.sh`. Kildehash `8892097d28891cf9074f9b8ec011d76913e7822bd6bf7d60e7719a17b568f1e9`; spillerhash `10867df793932c39c4591acd66eaec0c00304239b1bea90132230731deb28074`. Fra utpakket starter består 19 API-kontroller, 188 pakkefiler og åtte separate kameraeksponeringer; 21 bilder dekodes. Detalj og form ligger visuelt nær kildens referanse-render. Opprinnelig lys og litt lodne ytterkanter er beholdt. Kollisjon er en konservativ, håndlaget boks, ikke automatisk rekonstruksjon.
+
+**Åpne porter:** cyan-null-overlapp feiler med 29 endrede av 24 544 innvendige piksler. Separat 60-sekunders kamerarunde gir 45,80 FPS, p95 27,76 ms og p99 30,86 ms på Intel ARL / Vulkan / 1280×800 / Gamma / HDR / 1×MSAA; stabile 60 FPS er ikke bestått. Native input, hovedspillets fotoapparat, 2×MSAA og nattbelysning av skannen er uverifisert. Ingen produksjonspromotering. Hele prøvepakken og krediteringen er levert lokalt; store kildefiler kan hentes på nytt med den pinnede oppskriften.
+
+WorldCase22 er fortsatt produksjonskandidat og Visual10 standard. Neste ordinære innhold er fortsatt P06–P09. Videre splat-integrasjon krever lettere detaljnivå med bevart utseende, riktige overganger og passende innbakt lys. SplatQuality24/PR20 er bekreftet MERGED på `bb52eada117a6d40c8427ec37b4eb6a0f83be7e4`.
+
 ## SplatQuality24 — ny vurdering av den grove miljøprøven
 
 13. september 2026: [PlayCanvas-/Gabor-vurderingen](Research/SplatQuality24/README.md) presiserer Hybrid23-resultatet: den genererte modellen var skarpere enn vår **utrente** overflatesampling; dette avviser ikke fotorealisme fra godt rekonstruerte splats. To lette subagenter analyserte primærkilder. SplatTransform 3.4.2 leste prøvefilen med 150 000 Gaussians uten NaN/Inf, under minne-/tidsgrense. Ingen ny Unity-kjøring eller spillendring er utført.

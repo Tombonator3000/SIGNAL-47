@@ -1,0 +1,28 @@
+{
+    "name": "reference-oblique",
+    "file": "hybridprobe-exposure-reference-oblique.jpg",
+    "sha256": "64638390c87d2a0efbdb59083e4f1450a1348d51edf6a951c7d2f06fe237f319",
+    "utc": "2026-09-13T11:01:46.0792680Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "representation": "trained rock isolated / renderer comparison",
+    "position": {
+        "x": 9.600000381469727,
+        "y": 1.7400000095367432,
+        "z": -0.09999990463256836
+    },
+    "forward": {
+        "x": -0.8202898502349854,
+        "y": -0.2653878629207611,
+        "z": 0.5066494941711426
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": true,
+    "light": true,
+    "meanLuma": 0.0979517911065874,
+    "proxyConfigured": false,
+    "proxyReady": false,
+    "proxyRenderSubmitted": false,
+    "samePoseProjection": true
+}

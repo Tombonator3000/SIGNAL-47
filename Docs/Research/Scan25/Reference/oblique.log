@@ -1,0 +1,12 @@
+splat-transform v3.4.2 (0cb47cd)
+▸ [2/2] Output Artifacts/Scan25/Reference02/oblique.webp
+  · 494K gaussians · 3 SH bands
+  ▸ Render
+Warning: maxDynamicUniformBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+Warning: maxDynamicStorageBuffersPerPipelineLayout artificially reduced from 500000 to 16 to fit dynamic offset allocation limit.
+    · 1280x800 fov 70°
+    ▸ Cull
+    ▸ rasterizing [####################] 0.573s
+    ▸ Encoding
+    · oblique.webp (100.5KB)
+done in 1.328s  [peak cpu=463.7MB gpu=793.8MB]

@@ -1,0 +1,24 @@
+{
+  "identity": {
+    "source_sha256": "8892097d28891cf9074f9b8ec011d76913e7822bd6bf7d60e7719a17b568f1e9",
+    "player_sha256": "10867df793932c39c4591acd66eaec0c00304239b1bea90132230731deb28074",
+    "build": {
+      "result": "Succeeded",
+      "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+      "sourceCoordinates": "RUB",
+      "importedCompression": "Uncompressed",
+      "settingsResourcePath": "Assets/Gsplat/Settings/Resources/GsplatSettings.asset",
+      "errors": 0,
+      "splatCount": 493869,
+      "proxyRelighting": false,
+      "generatedMesh": false
+    }
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Scan25-8892097d2889",
+    "archive": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/Scan25-8892097d2889.tar.gz",
+    "archive_sha256": "5ecf490aa82cb6fffb25bf4b4fe714ba72157db4137b4bc348d0608f96cb3959",
+    "files": 188,
+    "payload_sha256": "ae07f427ffd5fe1095f1717ebfc9c08083c6c36c696c79090d28885f53b5bf2a"
+  }
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "file": "UnitySplats-MIT.txt",
+    "source": "https://github.com/arloopa/UnitySplats/blob/6c0258189a2b124af1282fa9236fd9b6637f1a1a/LICENSE.md",
+    "sha256": "ce5539b628125e959c8c7b3b7842d6e2f66bb0a03b92e070a6f3327a59f32782"
+  },
+  {
+    "file": "UnitySplats-Third-Party-Notices.md",
+    "source": "https://github.com/arloopa/UnitySplats/blob/6c0258189a2b124af1282fa9236fd9b6637f1a1a/Third%20Party%20Notices.md",
+    "sha256": "85fca7b57f92c002f30741b0c1cf0291e0d1cdd5d031a195212b06f218b32e66"
+  },
+  {
+    "package": "system.runtime.compilerservices.unsafe",
+    "version": "6.1.0",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/6.1.0/system.runtime.compilerservices.unsafe.6.1.0.nupkg",
+    "package_sha256": "372aaaa51707ba6cd2c69b2044382e0f9486c1d50d1c16e8d0e39dccb4c8cc25",
+    "bundled_dll": "System.Runtime.CompilerServices.Unsafe.dll",
+    "dll_sha256": "c0c628ecea65b4261cb88a1c322a3596bbde1dc2df102b88d63bab8c1a48d57a",
+    "exact_package_file_matches": [
+      "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll"
+    ],
+    "licenses": [],
+    "nuspec": [
+      "\ufeff<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<package xmlns=\"http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd\">\r\n  <metadata>\r\n    <id>System.Runtime.CompilerServices.Unsafe</id>\r\n    <version>6.1.0</version>\r\n    <authors>Microsoft</authors>\r\n    <requireLicenseAcceptance>true</requireLicenseAcceptance>\r\n    <license type=\"expression\">MIT</license>\r\n    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>\r\n    <icon>Icon.png</icon>\r\n    <readme>PACKAGE.md</readme>\r\n    <projectUrl>https://github.com/dotnet/maintenance-packages</projectUrl>\r\n    <description>Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.\r\n\r\nCommonly Used Types:\r\nSystem.Runtime.CompilerServices.Unsafe</description>\r\n    <copyright>\u00a9 Microsoft Corporation. All rights reserved.</copyright>\r\n    <serviceable>true</serviceable>\r\n    <repository type=\"git\" url=\"https://github.com/dotnet/maintenance-packages\" commit=\"d0c2a5a83211e271826172a6b0510c25a52dbd53\" />\r\n    <dependencies>\r\n      <group targetFramework=\".NETFramework4.6.2\" />\r\n      <group targetFramework=\"net7.0\" />\r\n      <group targetFramework=\".NETStandard2.0\" />\r\n    </dependencies>\r\n    <frameworkAssemblies>\r\n      <frameworkAssembly assemblyName=\"mscorlib\" targetFramework=\".NETFramework4.6.2\" />\r\n    </frameworkAssemblies>\r\n  </metadata>\r\n</package>"
+    ]
+  },
+  {
+    "package": "zstdsharp.port",
+    "version": "0.8.8",
+    "url": "https://api.nuget.org/v3-flatcontainer/zstdsharp.port/0.8.8/zstdsharp.port.0.8.8.nupkg",
+    "package_sha256": "f6797192deebf4535f0601c2273e750da0c02062e30a3e4a3c4011b9ac22403a",
+    "bundled_dll": "ZstdSharp.dll",
+    "dll_sha256": "b75edec5f10dda74b651faa05e3db54061d7448be3a6332cf51d8be3be67805a",
+    "exact_package_file_matches": [
+      "lib/netstandard2.1/ZstdSharp.dll"
+    ],
+    "licenses": [],
+    "nuspec": [
+      "\ufeff<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<package xmlns=\"http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd\">\r\n  <metadata>\r\n    <id>ZstdSharp.Port</id>\r\n    <version>0.8.8</version>\r\n    <authors>Oleg Stepanischev</authors>\r\n    <license type=\"expression\">MIT</license>\r\n    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>\r\n    <projectUrl>https://github.com/oleg-st/ZstdSharp</projectUrl>\r\n    <description>Port of zstd compression library to c#</description>\r\n    <copyright>Copyright Oleg Stepanischev 2026</copyright>\r\n    <tags>zstd zstandard port compression</tags>\r\n    <repository type=\"git\" url=\"https://github.com/oleg-st/ZstdSharp.git\" branch=\"refs/heads/master\" commit=\"2cd0c019693bc786a5fe5c3be94e107b24e7267e\" />\r\n    <dependencies>\r\n      <group targetFramework=\".NETFramework4.6.2\">\r\n        <dependency id=\"System.Memory\" version=\"4.6.0\" exclude=\"Build,Analyzers\" />\r\n        <dependency id=\"System.Runtime.CompilerServices.Unsafe\" version=\"6.1.0\" exclude=\"Build,Analyzers\" />\r\n        <dependency id=\"System.Threading.Tasks.Extensions\" version=\"4.5.4\" exclude=\"Build,Analyzers\" />\r\n      </group>\r\n      <group targetFramework=\".NETCoreApp3.1\">\r\n        <dependency id=\"System.Runtime.CompilerServices.Unsafe\" version=\"6.1.0\" exclude=\"Build,Analyzers\" />\r\n      </group>\r\n      <group targetFramework=\"net5.0\" />\r\n      <group targetFramework=\"net6.0\" />\r\n      <group targetFramework=\"net7.0\" />\r\n      <group targetFramework=\"net8.0\" />\r\n      <group targetFramework=\"net9.0\" />\r\n      <group targetFramework=\".NETStandard2.0\">\r\n        <dependency id=\"System.Memory\" version=\"4.6.0\" exclude=\"Build,Analyzers\" />\r\n        <dependency id=\"System.Runtime.CompilerServices.Unsafe\" version=\"6.1.0\" exclude=\"Build,Analyzers\" />\r\n        <dependency id=\"System.Threading.Tasks.Extensions\" version=\"4.5.4\" exclude=\"Build,Analyzers\" />\r\n      </group>\r\n      <group targetFramework=\".NETStandard2.1\">\r\n        <dependency id=\"System.Runtime.CompilerServices.Unsafe\" version=\"6.1.0\" exclude=\"Build,Analyzers\" />\r\n      </group>\r\n    </dependencies>\r\n  </metadata>\r\n</package>"
+    ]
+  },
+  {
+    "file": "System.Runtime.CompilerServices.Unsafe-MIT.txt",
+    "source": "https://raw.githubusercontent.com/dotnet/maintenance-packages/d0c2a5a83211e271826172a6b0510c25a52dbd53/LICENSE",
+    "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310"
+  },
+  {
+    "file": "ZstdSharp-MIT.txt",
+    "source": "https://raw.githubusercontent.com/oleg-st/ZstdSharp/2cd0c019693bc786a5fe5c3be94e107b24e7267e/LICENSE",
+    "sha256": "9a6a7216e532c4ee4f78881d31fb641c27148eb01b2d0e8e3235ffe9a70a662c"
+  },
+  {
+    "file": "Unity.WebP-MIT.txt",
+    "source": "https://github.com/netpyoung/unity.webp/blob/9818db6327e09d399bf4fb84da4ed19f03b565b4/unity_project/Assets/unity.webp/LICENSE.md",
+    "sha256": "b929044d70f9b7d5bf88ee3c2566e912b931caa4b072ae669c847b18abe37439"
+  },
+  {
+    "file": "Unity.WebP-libwebp-BSD3.txt",
+    "source": "https://github.com/netpyoung/unity.webp/blob/9818db6327e09d399bf4fb84da4ed19f03b565b4/unity_project/Assets/unity.webp/THIRD%20PARTY%20NOTICES.md",
+    "sha256": "698aae030bba51f7293cb63f40639b41cca6f9d024b28df7022aabcd5b011a64"
+  }
+]

@@ -1,0 +1,28 @@
+{
+    "name": "mesh-light-off",
+    "file": "hybridprobe-exposure-mesh-light-off.jpg",
+    "sha256": "cdfdb60758be80dbe8628a696ade73d1b93425f936f1e012656d9a9e2caed89b",
+    "utc": "2026-09-13T11:02:03.8971230Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Loop CE / rock / trained photo reconstruction / CC BY 4.0",
+    "representation": "ordinary scene only / trained rock disabled",
+    "position": {
+        "x": 6.199999809265137,
+        "y": 1.440000057220459,
+        "z": -1.7000000476837159
+    },
+    "forward": {
+        "x": 0.0,
+        "y": -0.2113327980041504,
+        "z": 0.9774141907691956
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": false,
+    "light": false,
+    "meanLuma": 0.17061113659080966,
+    "proxyConfigured": false,
+    "proxyReady": false,
+    "proxyRenderSubmitted": false,
+    "samePoseProjection": true
+}
