@@ -1,0 +1,395 @@
+{
+  "date": "2026-09-13",
+  "scope": "WorldCase22 integrated main-game P04/P05 archive journey and separate whole-game illustrated concept map",
+  "build": {
+    "base_revision": "60b97e5f1da15f820dde71110bfecbc0fe1d56bb",
+    "working_tree_changes": true,
+    "unity_source_sha256": "5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "41810c80c30b723f849da6fc4d01119e61987a36bf7cb221cbac5f47c9a67b14",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/WorldCase22/UnpackedFinal/WorldCase22-5c453a898fce",
+    "manifest_sha256": "96411e3c17414b6b27e049febd427d23887f854906de443a6fb865f8335ef1ee",
+    "package_id": "WorldCase22-5c453a898fce",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 332163344,
+    "package_payload_sha256": "bccff4d86cf77f5cefa8db9bd372e568da22da5be0339a818e127fd01e184ce0",
+    "unity_source_sha256": "5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16",
+    "base_revision": "60b97e5f1da15f820dde71110bfecbc0fe1d56bb"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-WorldCase22-5c453a898fce-Linux.tar.gz",
+    "bytes": 148241025,
+    "sha256": "2ea3eafa9b0f205684c800d1ad2ae27e6b35b7216fff04d8163d30c4604581b4",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-WorldCase22-5c453a898fce-Linux.tar.gz.sha256",
+    "sidecar_sha256": "77d0d9259adbcc4c0457af0861f6478d9a9bb41f1ceadcaf5fd781965204ce90"
+  },
+  "launcher": "Artifacts/Releases/WorldCase22-5c453a898fce/Start-SIGNAL47.sh",
+  "runs": [
+    {
+      "report": "Direct1280/result.json",
+      "result": "PASS",
+      "count": 118,
+      "profile": "Artifacts/WorldCase22/worldcase22-test-6t6DfF",
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven integrated P04/P05 with real checkpoint writes and scene reloads; no native input, blind reading or performance claim",
+      "launcher": "Artifacts/GauntletLinux/Signal47.x86_64"
+    },
+    {
+      "report": "Packaged1600/result.json",
+      "result": "PASS",
+      "count": 118,
+      "profile": "Artifacts/WorldCase22/worldcase22-test-LBr4h4",
+      "resolution": [
+        1600,
+        900
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven integrated P04/P05 with real checkpoint writes and scene reloads; no native input, blind reading or performance claim",
+      "launcher": "Artifacts/WorldCase22/UnpackedFinal/WorldCase22-5c453a898fce/Start-SIGNAL47.sh"
+    },
+    {
+      "report": "resources19-checks.json",
+      "result": "PASS",
+      "count": 42,
+      "profile": "Artifacts/Resources19/check-hpBT0x",
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven real Unity player; not native input or performance measurement",
+      "launcher": "Artifacts/WorldCase22/UnpackedFinal/WorldCase22-5c453a898fce/Start-SIGNAL47.sh"
+    },
+    {
+      "report": "recovery15-checks.json",
+      "result": "PASS",
+      "count": 50,
+      "profile": "Artifacts/Menu14/menu14-test-pNS6BG",
+      "resolution": [
+        1280,
+        800
+      ],
+      "process_exit_code": 0,
+      "method": "API-driven Unity menu/save checks; no native input or performance certification",
+      "launcher": "Artifacts/WorldCase22/UnpackedFinal/WorldCase22-5c453a898fce/Start-SIGNAL47.sh"
+    }
+  ],
+  "checks": {
+    "unity_build": "PASS",
+    "current_source_matches_build": "PASS",
+    "package_files_and_identity": {
+      "archive_sidecar": "PASS",
+      "tar_paths_links_types": "PASS",
+      "all_files_hashes_sizes_modes": "PASS",
+      "build_package_identity": "PASS"
+    },
+    "original_case_and_photo_files_unchanged": "PASS",
+    "standard_launcher_unchanged": "PASS",
+    "native_keyboard_mouse_journey": "UNVERIFIED",
+    "blind_source_reading_and_duration": "UNVERIFIED",
+    "subjective_audio_mix": "UNVERIFIED",
+    "target_performance": "UNVERIFIED",
+    "whole_game_5_to_6_hours": "DESIGN TARGET ONLY"
+  },
+  "scene": {
+    "beforeColliders": 154,
+    "afterColliders": 155,
+    "lightmaps": 2,
+    "folioBottom": 0.9605000019073486,
+    "benchTop": 0.9589999914169312,
+    "hitCenter": {
+      "x": 2.1700000762939453,
+      "y": 1.100000023841858,
+      "z": 10.399999618530273
+    },
+    "hitSize": {
+      "x": 0.2800002098083496,
+      "y": 0.3399999737739563,
+      "z": 0.6200008392333984
+    }
+  },
+  "visual_review": {
+    "result": "PASS for captured states at the two tested resolutions",
+    "captures": 26,
+    "corrected": "At 1600x900, the old rotated-pivot drawing displaced the triangle segments. BeforeCorrections preserves failure and old build identity. Final Packaged1600/07-index.png confirms corrected complete triangle and bar.",
+    "limits": "Fixed camera and API captures do not prove natural movement, physical input, blind comprehension or performance."
+  },
+  "images": [
+    {
+      "file": "Direct1280/00a-physical-folio.png",
+      "sha256": "4c403232d1c2ffcca8a1515565d59847ee9be32ba408ee0c0f73110445af0aef",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/00b-archive-area.png",
+      "sha256": "e5c495ce97e123d0d0cc47f65597e33b5fd9314e25f9129bc3e6a0dc55b3b3e2",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/01-original.png",
+      "sha256": "99cf600ce9931ec0db8358a5aa328dc1c54992e23bab4ec84fe7730f74cdbb7a",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/02-amended.png",
+      "sha256": "d19b456459ee331f6c6b64ef62852b0d05c2450ba90fc7d3c75ed78cde4cb2ba",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/03-comparison.png",
+      "sha256": "b6e74b9eedcda7b5f99ffaa594130d6b959716fe9b75ff813fcd49ac50eb84b3",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/04-unsupported-motive.png",
+      "sha256": "d4948ae7c5e9a7db8cd05cf84dbd1d231f0d4bc19af831c13abb72792c3d16fb",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/05-p04-supported.png",
+      "sha256": "c3c4ec1bf20e4281467dd7d70299043fc27ce1cef1178a8b4c2c219ce1945943",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/06-maintenance.png",
+      "sha256": "786e0aa65da9f1feb4b2ef917d169b59156a5a66cafe491f94767c6f8acb6be4",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/07-index.png",
+      "sha256": "d78158ff750d3ec3b2115c85a4d8eb33d63d7a76c3c2077511ccc5d3b9bb2653",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/08-route-unsolved.png",
+      "sha256": "1ba9a890a59e3306ba06b261db2185e97b8f7322ceaf5956309ad7ee640f1496",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/09-wrong-marker.png",
+      "sha256": "785577e09476c9f236132b4b74462261a63953882f860ba5236687e4ee795aca",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/10-p05-supported.png",
+      "sha256": "cd45d569cfb4ce8a9afc6bbfd0393132be613b9fe7e523c2ea98d60f4250fc75",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Direct1280/11-restored-route.png",
+      "sha256": "f5219cd91e0df04a517a1b194299559d682a81d0ec74fbb44a964cc8621f0674",
+      "pixels": [
+        1280,
+        800
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/00a-physical-folio.png",
+      "sha256": "6c4e54c3891c352abfd568ebb24ad6e3fae23118e74f95a23f175565c6b41b79",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/00b-archive-area.png",
+      "sha256": "b1ee602f4a6785e45cc0e685374e70986377296c0695a4ce0063bea837de5449",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/01-original.png",
+      "sha256": "2f067d0351784976fcc1477b72401d5ac5f1ec16e30fcb673f3d48534afbe17c",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/02-amended.png",
+      "sha256": "fcbbc79605acb2fce3fddcb948d1fde829a838e2d420e1232cf8c10f69acb8f5",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/03-comparison.png",
+      "sha256": "efcefc3a65298299ad1b3f2a6be50f02c5976b3664bd057df5513241ac18ef99",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/04-unsupported-motive.png",
+      "sha256": "284e06814ebf956d2ea43a5ba095722e2e1459dddc21975b46f1673661b73ddf",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/05-p04-supported.png",
+      "sha256": "fa1a38d371012b0ed87c389db22d5aa8ad1ae851b0a5dcbb56d53fbb35214cce",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/06-maintenance.png",
+      "sha256": "f664a636759caec9a5a408ef741b2880da518603c6482252bde33bfdc0d7b3bd",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/07-index.png",
+      "sha256": "bc18758e4f299957d238727976820eae901d243f97aa7701948b07c047b4af37",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/08-route-unsolved.png",
+      "sha256": "e5bdb342dd4b88db7dabcd33fb488f2adc3b9df2414166cbcfdee41f4ceaac34",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/09-wrong-marker.png",
+      "sha256": "a1c3278e3654efffa413bdcf09ca8aad679b365bce0e047a167e0af51530071c",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/10-p05-supported.png",
+      "sha256": "31427dfc6027ef28205c4ff762cbf6489ce972a5afd1a3b1492e4edf34e827d1",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    },
+    {
+      "file": "Packaged1600/11-restored-route.png",
+      "sha256": "ed139d49f453d7ff2ad1269a7db21924ec816254d43eb6323edb611b0248e67b",
+      "pixels": [
+        1600,
+        900
+      ],
+      "kind": "unaltered Unity player capture, API-controlled state/camera",
+      "review": "inspected; byte-identical document captures carry forward the same visual inspection"
+    }
+  ],
+  "concept_map": "../Visuals/world-map-final.png",
+  "map_provenance": "../Visuals/provenance.json",
+  "delivery_policy": "Separate local candidate; Visual10 remains standard. STATION 01 and motel are planned, not playable.",
+  "review_agents": [
+    "world_design: whole-game topology and chapter production plan",
+    "case_flow: archive controller and presentation",
+    "verification: independent state/geometry/drawing review; root ran Unity and inspected captures"
+  ]
+}

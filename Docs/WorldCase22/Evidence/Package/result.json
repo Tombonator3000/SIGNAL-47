@@ -1,0 +1,27 @@
+{
+  "method": "Checked extraction and payload verification only; no native UI routine called",
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS"
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-WorldCase22-5c453a898fce-Linux.tar.gz",
+    "bytes": 148241025,
+    "sha256": "2ea3eafa9b0f205684c800d1ad2ae27e6b35b7216fff04d8163d30c4604581b4",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-WorldCase22-5c453a898fce-Linux.tar.gz.sha256",
+    "sidecar_sha256": "77d0d9259adbcc4c0457af0861f6478d9a9bb41f1ceadcaf5fd781965204ce90"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/WorldCase22/UnpackedFinal/WorldCase22-5c453a898fce",
+    "manifest_sha256": "96411e3c17414b6b27e049febd427d23887f854906de443a6fb865f8335ef1ee",
+    "package_id": "WorldCase22-5c453a898fce",
+    "file_count": 173,
+    "directory_count": 19,
+    "uncompressed_bytes": 332163344,
+    "package_payload_sha256": "bccff4d86cf77f5cefa8db9bd372e568da22da5be0339a818e127fd01e184ce0",
+    "unity_source_sha256": "5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16",
+    "base_revision": "60b97e5f1da15f820dde71110bfecbc0fe1d56bb"
+  }
+}

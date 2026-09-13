@@ -26,12 +26,14 @@ namespace Signal47.Chapter
         [Serializable] sealed class Snapshot
         {
             public int version;
-            public string savedUtc,build,notebook,camera,chapter;
-            public bool postPrologue,yardCompleted,yardReturned,doorOpen;
+            public string savedUtc,build,notebook,camera,chapter,worldCase;
+            public bool postPrologue,yardCompleted,yardReturned,doorOpen,worldCasePhotoRecovery;
             public Vector3 playerPosition,mugPosition;
             public float playerYaw,playerPitch,frequency,gain,bandwidth,azimuth;
         }
 
+        // Keeps already-established archive findings while missing original photos are repaired.
+        bool worldCasePhotoRecovery;
         static readonly object FileGate=new();
         static ChapterSave instance;
         static Snapshot pendingRestore;
@@ -118,6 +120,9 @@ namespace Signal47.Chapter
                 g.notebook.RestoreState(state.notebook);
                 g.fieldCamera.RestoreState(state.camera);
                 g.chapter.RestoreState(state.chapter);
+                g.worldCase.RestoreState(state.worldCase);
+                worldCasePhotoRecovery=Signal47.WorldCase22.WorldCaseController.HasProgress(state.worldCase)&&!g.chapter.Complete &&
+                    (state.worldCasePhotoRecovery || ChapterInvestigation.IsCompletedState(state.chapter));
                 g.player.RestorePose(state.playerPosition,state.playerYaw,state.playerPitch);
                 Time.timeScale=1;AudioListener.pause=false;PlayerSettings.Apply();
                 LastLoadUsedBackup=loadedBackup;
@@ -206,7 +211,7 @@ namespace Signal47.Chapter
             if(checkpointRequested||Saving||writeFailed)Debug.LogWarning("CHAPTER_FORCED_QUIT_INCOMPLETE Last durable checkpoint preserved; forced shutdown interrupted the latest save.");
         }
 
-        static bool RuntimeReady(GameSession g)=>g&&g.player&&g.hud&&g.notebook&&g.fieldCamera&&g.chapter&&g.yard&&g.yard.door&&g.director&&g.director.mug&&g.director.printer&&g.director.dishes;
+        static bool RuntimeReady(GameSession g)=>g&&g.player&&g.hud&&g.notebook&&g.fieldCamera&&g.chapter&&g.worldCase&&g.yard&&g.yard.door&&g.director&&g.director.mug&&g.director.printer&&g.director.dishes;
         static string SaveBlocker()
         {
             if(string.IsNullOrEmpty(StorageDirectory))return storageError;
@@ -243,7 +248,8 @@ namespace Signal47.Chapter
                     playerPosition=g.player.transform.position,playerYaw=g.player.transform.eulerAngles.y,playerPitch=g.player.ViewPitch,
                     mugPosition=g.director.mug.transform.position,
                     frequency=console.frequency,gain=console.gain,bandwidth=console.bandwidth,azimuth=console.azimuth,
-                    notebook=g.notebook.CaptureState(),camera=g.fieldCamera.CaptureState(),chapter=g.chapter.CaptureState()
+                    notebook=g.notebook.CaptureState(),camera=g.fieldCamera.CaptureState(),chapter=g.chapter.CaptureState(),worldCase=g.worldCase.CaptureState(),
+                    worldCasePhotoRecovery=instance.worldCasePhotoRecovery&&!g.chapter.Complete
                 };
                 // The camera's SaveReady contract guarantees archived exposures here. File
                 // decoding is reserved for Continue so checkpoints cannot stall rendering.
@@ -341,6 +347,13 @@ namespace Signal47.Chapter
             if(!Finite(state.playerPosition)||!Finite(state.mugPosition)||!Finite(state.playerYaw)||!Finite(state.playerPitch)||state.playerPitch<-70||state.playerPitch>70)return false;
             if(!InRange(state.frequency,1419.5f,1420.7f)||!InRange(state.gain,0,100)||!InRange(state.bandwidth,4,100)||!InRange(state.azimuth,0,180))return false;
             if(!Notebook.ValidateState(state.notebook,out reason))return false;
+            if(!Signal47.WorldCase22.WorldCaseController.ValidateState(state.worldCase,out reason))return false;
+            bool archiveProgress=Signal47.WorldCase22.WorldCaseController.HasProgress(state.worldCase);
+            bool chapterComplete=ChapterInvestigation.IsCompletedState(state.chapter);
+            if(archiveProgress&&!chapterComplete&&!state.worldCasePhotoRecovery)
+            {reason="Archive progress requires a filed two-exposure report or recorded photo recovery.";return false;}
+            if(state.worldCasePhotoRecovery&&(!archiveProgress||chapterComplete))
+            {reason="The archive photo recovery marker is inconsistent with the saved case.";return false;}
             if(verifyReferences)
             {
                 if(!FieldCamera.ValidateState(state.camera,out reason))return false;

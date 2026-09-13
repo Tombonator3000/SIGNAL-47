@@ -1,5 +1,17 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## WorldCase22 — hovedspillets arkivsak og hele områdekartet
+
+13. september 2026: [WorldCase22](WorldCase22/README.md) samler P04 og P05 i hovedspillets fotolab etter den opprinnelige toeksponeringssaken. Fire kildekort, rapport­sammenligning, begrunnet STATION 01-spor og varig framdrift er integrert ved den eksisterende arkivbenken. Tre subagenter bidro til implementering, verifikasjon og [samlet verdensdesign](WorldCase22/WORLD_DESIGN.md). [Illustrert områdekart](WorldCase22/Visuals/world-map-final.png) viser SARO, STATION 01 og SIERRA MOTOR COURT som en avgrenset produksjon med 330 minutters designmål. Kartet er konsept, ikke faktisk spillbilde eller målt nivågeografi.
+
+**Siste produksjonskandidat:** `Artifacts/Releases/WorldCase22-5c453a898fce/Start-SIGNAL47.sh`. Kildehash `5c453a898fce7d670d866204ef2102231acf4d8096b1860e24b43903dde68a16`. Visual10 er fortsatt standard. 118 arkivkontroller består direkte ved 1280×800 og fra utpakket starter ved 1600×900; samme utpakkede starter består 42 spillkontroller og 50 meny-/gjenopprettingskontroller. 173 pakkefiler, begge originale foto og uendret standardstarter er kontrollert. 26 originale runtime-bilder er gjennomgått. [Bevis og identitet](WorldCase22/Evidence/verification.json).
+
+Lagring dekker delvis lesing, begge funn, Previous Shifts og eksplisitt foto­reparasjon uten tap av arkivframdrift. Ulovlig kombinasjon av ufullført originalsak og arkivframdrift avvises. 154 opprinnelige kollidere og to lightmaps beholdes, én arkivkollider tilkommer. Folioens bordkontakt, etikett, HUD-overlapp og et feiltegnet indeksmerke ved større oppløsning ble rettet før sluttpakken.
+
+**Neste samlede leveranse:** hele feltreisen til STATION 01, K3/P06–P09: avreise/retur, feltbygning, historisk oppstilling, lampetest, kabelsløyfe, ekte feltfoto og lagring på tvers av området. Ikke gå tilbake til små, urelaterte modell-/verktøypass. Resten av K2, STATION 01, motellet og senere kapitler er ennå ikke ferdige. Ekte input, blind leseforståelse/tidsbruk, subjektiv lyd og separat ytelsesmåling er fortsatt åpne. Splat21 forblir separat, og ingen splatpakke er innført i hovedspillet.
+
+Eldre «neste P04» og «Resources19 siste kandidat» nedenfor er historikk og erstattes av denne statusen.
+
 ## Splat21 — gjenopprettet etter systemkrasj
 
 13. september 2026: [Unity-splatprøven og krasjrapporten](Research/UnitySplat21/README.md) er fullført som separat eksperiment. PR16 er kontrollert MERGED på `e976fa7f9b46225ed37873131e878bfd87c40dec`. Alt lokalt Splat21-arbeid ble bevart etter omstart; kerneljournalen bekrefter global minnemangel og at ChatGPT ble drept, men ikke hele årsakskjeden.

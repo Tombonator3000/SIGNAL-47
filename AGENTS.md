@@ -14,6 +14,10 @@ Kartlegg hele bestillingen og senere korrigeringer. Arbeid i avgrensede steg, me
 
 Brukeren har i SIGNAL / 47-samtalen godkjent vanlig PR og merge uten egen forhåndsgjennomgang. Bruk relevant eksisterende autorisasjon, verifiser riktig head og påkrevde kontroller, og kontroller faktisk resultat. Dette gir ikke rett til å omgå beskyttelser, kjøpe, endre synlighet, kontakte nye mottakere eller publisere spillutgaver utover gitt autorisasjon. Nyere brukerbeskjeder går foran.
 
+## Størrelse på videre leveranser
+
+Brukeren ba 13. september om større inkrementer og subagenter. Ved videreføring: samle en hel sammenhengende spillerreise med nødvendige kilder, handlinger, tilbakemelding, lagring og levering. Deltester er interne checkpoints; ikke avslutt ved bare én modell eller én kosmetisk rettelse når den bestilte reisen gjenstår. Prioriter hele neste feltsekvens/kapittel fremfor nye verktøypass uten produksjonsbehov. Bruk subagenter innenfor gjeldende autorisasjon med tydelige filansvar; bygg og grafiske tester kjøres fortsatt sekvensielt på denne maskinen.
+
 ## Avhengigheter og bevis
 
 Utilgjengelig skrivebord eller testutstyr blokkerer den berørte testen, ikke alt utviklingsarbeid. Bruk eksisterende Unity-/Blender-automatisering og isolerte testprofiler der dette gir nyttig bevis. Ikke omgå skjermlås eller gjenta forespørsler om en allerede kjent utilgjengelig handling. Bevar kjent fungerende standard når kandidaten mangler nødvendige tester for å bli standard.
