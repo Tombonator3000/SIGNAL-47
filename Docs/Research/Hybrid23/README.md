@@ -2,7 +2,7 @@
 
 **UnitySplats er gratis, MIT-lisensiert og tillater kommersiell bruk med bevarte notiser. Den virker i vår isolerte Unity/Vulkan-prøve. For denne feltbygningen anbefales likevel den genererte teksturerte modellen som vanlig 3D: den er skarpere, enklere å belyse og billigere å tegne.** Splats beholdes som et avgrenset verktøy for fremtidige skannede/genererte miljøer. [Lisens og undersøkte avhengigheter](LICENSE_AND_COMPATIBILITY.md).
 
-Dette er et faktisk kjørt miljøeksperiment, ikke et nytt ferdig kapittel eller en endring av standardspillet. Hovedspillets `Unity/`, lagring og starter er uendret. WorldCase22 er fortsatt produksjonskandidat, Visual10 standard. PR-lenken i aktuell overlevering viser leveringsstatus.
+Dette er et faktisk kjørt miljøeksperiment, ikke et nytt ferdig kapittel eller en endring av standardspillet. Hovedspillets `Unity/`, lagring og starter er uendret. WorldCase22 er fortsatt produksjonskandidat, Visual10 standard. Kilde og bevis leveres gjennom [PR19](https://github.com/Tombonator3000/SIGNAL-47/pull/19); GitHub viser faktisk flettestatus.
 
 ## Hva som ble laget
 
@@ -87,3 +87,5 @@ Ett bygg ble stoppet av prøvens **4 GiB cgroup-grense** under shader-kompilerin
 Bruk bilde → generert modell → Blender-kontroll → vanlig Unity-geometri til feltbygninger og nærinteraksjoner. Behold dører, gangflater, lommelyktområder og fotograferbare bevis som kontrollerbar geometri. UnitySplats kan beholdes som gratis eksperimentverktøy for et senere avgrenset landskap med en egnet faktisk Gaussian-kilde.
 
 Marble ba om innlogging, og ingen World Labs-konto ble tilgjengelig i denne kjøringen. Den konkrete **GPT-bilde → Marble-verden**-delen er derfor uutført. Ingen konto eller betaling ble opprettet. GPT/Magnific/Marble har egne tjenestevilkår og kreditter; MIT-lisensen gjør ikke hele kjeden gratis. Når en faktisk verden kan eksporteres, gjenbrukes samme kollisjons-, kamera-, overdekkings- og ytelsesprøve før eventuell hovedspillintegrasjon.
+
+De gjenbrukbare erfaringene er også lagret i [game-production-skillens splat-referanse](../../../Automation/Skills/game-production/references/splats-and-generated-characters.md), med lik lokal skillkopi.

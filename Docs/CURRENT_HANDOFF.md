@@ -2,6 +2,8 @@
 
 ## Hybrid23 — faktisk bilde/modell/splat-prøve for STATION 01
 
+Kilde, oppskrift og bevis leveres gjennom [PR19](https://github.com/Tombonator3000/SIGNAL-47/pull/19). GitHub viser faktisk flettestatus.
+
 13. september 2026: [Hybrid23](Research/Hybrid23/README.md) undersøker Arloopa UnitySplats **1.2.0**, låst revisjon `6c0258189a2b124af1282fa9236fd9b6637f1a1a`. MIT tillater gratis kommersiell bruk med bevarte notiser; de konkrete avhengighetenes MIT/BSD-tekster følger kilde og prøvepakke. **Anbefalingen for selve feltbygningen er den genererte teksturerte modellen som vanlig Unity-3D.** Splats er et separat, faktisk testet alternativ, uten hovedspillintegrasjon.
 
 GPT 2.5-forlegg → Magnific/Tripo v3.1 → Blender-kontroll → samme klippede mesh og 150 000 overflatesamplede Gaussians. Dette er ikke en trent Gaussian-rekonstruksjon eller Marble-verden. Original GLB, forlegg, Blender-render, opphav, import-/konverteringskode og reelle Unity-bilder er bevart. Vanlig geometri gir gangflate, innvendige vegger, roterende dør og kollisjon. Matchet lysproxy gir synlig lampesvar og samme-poses separate fotoeksponeringer. Flekkete detaljer og enkelte lyse interiørskjøter gjenstår; mesh-versjonen er skarpere og har lavere diagnostisk bildetid.
