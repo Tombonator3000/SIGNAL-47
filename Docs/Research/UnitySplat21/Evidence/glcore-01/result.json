@@ -1,0 +1,46 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "OpenGLCore",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "scope": "Isolated synthetic URP probe; frame intervals are not SIGNAL47 game performance",
+    "width": 1280,
+    "height": 800,
+    "errors": 398,
+    "compute": true,
+    "shaderSupported": true,
+    "phases": [
+        {
+            "name": "baseline-close",
+            "splatCount": 0,
+            "frames": 2981,
+            "seconds": 5.0005796270000009,
+            "meanMs": 1.6774839406239517,
+            "p95Ms": 3.19856699999832,
+            "p99Ms": 3.7962870000001205,
+            "validAsset": true,
+            "validBuffers": false
+        },
+        {
+            "name": "splats-close",
+            "splatCount": 784,
+            "frames": 20,
+            "seconds": 8.153142094999997,
+            "meanMs": 407.6571047499998,
+            "p95Ms": 743.9974730000004,
+            "p99Ms": 743.9974730000004,
+            "validAsset": true,
+            "validBuffers": true
+        },
+        {
+            "name": "baseline-wide",
+            "splatCount": 0,
+            "frames": 3851,
+            "seconds": 5.000596789999996,
+            "meanMs": 1.2985190314204092,
+            "p95Ms": 2.897849000000008,
+            "p99Ms": 2.955608000000609,
+            "validAsset": true,
+            "validBuffers": false
+        }
+    ]
+}

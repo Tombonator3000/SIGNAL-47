@@ -1,0 +1,59 @@
+{
+    "unity": "6000.3.22f1",
+    "renderer": "Vulkan",
+    "gpu": "Intel(R) Graphics (ARL)",
+    "scope": "Isolated synthetic URP probe; frame intervals are not SIGNAL47 game performance",
+    "width": 1280,
+    "height": 800,
+    "errors": 0,
+    "compute": true,
+    "shaderSupported": true,
+    "completed": true,
+    "failureReason": "",
+    "phases": [
+        {
+            "name": "baseline-close",
+            "splatCount": 0,
+            "frames": 2950,
+            "seconds": 5.001590235,
+            "meanMs": 1.6954543169491526,
+            "p95Ms": 2.4869909999996056,
+            "p99Ms": 3.186239999999785,
+            "validAsset": true,
+            "validBuffers": false
+        },
+        {
+            "name": "splats-close",
+            "splatCount": 784,
+            "frames": 1741,
+            "seconds": 5.002438961000001,
+            "meanMs": 2.8733135904652506,
+            "p95Ms": 4.301069000000268,
+            "p99Ms": 4.720439999999826,
+            "validAsset": true,
+            "validBuffers": true
+        },
+        {
+            "name": "baseline-wide",
+            "splatCount": 0,
+            "frames": 3139,
+            "seconds": 5.001045391999998,
+            "meanMs": 1.5931970028671545,
+            "p95Ms": 2.349372000001182,
+            "p99Ms": 2.5252999999985095,
+            "validAsset": true,
+            "validBuffers": false
+        },
+        {
+            "name": "splats-wide",
+            "splatCount": 50176,
+            "frames": 1211,
+            "seconds": 5.003419822999998,
+            "meanMs": 4.131643123864573,
+            "p95Ms": 5.670284999997222,
+            "p99Ms": 6.487577000001465,
+            "validAsset": true,
+            "validBuffers": true
+        }
+    ]
+}
