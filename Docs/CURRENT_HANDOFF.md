@@ -1,5 +1,11 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## SplatQuality24 — ny vurdering av den grove miljøprøven
+
+13. september 2026: [PlayCanvas-/Gabor-vurderingen](Research/SplatQuality24/README.md) presiserer Hybrid23-resultatet: den genererte modellen var skarpere enn vår **utrente** overflatesampling; dette avviser ikke fotorealisme fra godt rekonstruerte splats. To lette subagenter analyserte primærkilder. SplatTransform 3.4.2 leste prøvefilen med 150 000 Gaussians uten NaN/Inf, under minne-/tidsgrense. Ingen ny Unity-kjøring eller spillendring er utført.
+
+Anbefalt neste splat-prøve er én rettighetsavklart, trent skann, sammenlignet i kildens visning og Unity før større miljøer eller komprimering. PlayCanvas-verktøy for kollisjon og kildebehandling er relevante; strømmet SOG må verifiseres separat i Unity. Gabor krever egen visningskode, CUDA i forskningsimplementasjonen og særskilt kommersiell tillatelse. Den tidligere anbefalingen om vanlig mesh gjelder foreløpig den konkrete Hybrid23-bygningen. WorldCase22 er fortsatt produksjonskandidat, Visual10 standard, og neste ordinære feltsekvens er P06–P09. Hybrid23/PR19 er bekreftet MERGED på `cc522940929be56cbe43d789acf0cb070f7f3bf8`.
+
 ## Hybrid23 — faktisk bilde/modell/splat-prøve for STATION 01
 
 Kilde, oppskrift og bevis leveres gjennom [PR19](https://github.com/Tombonator3000/SIGNAL-47/pull/19). GitHub viser faktisk flettestatus.

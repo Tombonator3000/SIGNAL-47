@@ -2,6 +2,14 @@
 
 Read this when evaluating captured environments, PlayCanvas/SuperSplat, or image-to-3D characters. These are different asset pipelines. Check current versions and the target renderer before adopting either. Sources checked 13 September 2026; local experiments are evidence for their stated fixture only.
 
+## Quality assessment correction — SplatQuality24
+
+Before judging photorealism, distinguish a trained reconstruction from mesh-sampled synthetic Gaussians. Hybrid23's random single-color surface samples were a compatibility fixture, not a fair substitute for a well-reconstructed environment. Compare a rights-cleared trained source in its supported viewer and the target engine at corresponding poses before compression or scale-up. A successful `--stats` report establishes numeric integrity only. Preserve the original source and separate source defects, conversion loss and runtime artifacts.
+
+The [PlayCanvas game article](https://blog.playcanvas.com/turning-a-gaussian-splat-into-a-videogame/) starts with a detailed real scan. Its lightness grid matches ordinary objects to captured lighting; it is distinct from relighting the splat through a lit proxy. A Unity package reading SOG does not establish support for PlayCanvas Streamed SOG's LOD hierarchy.
+
+[3D Gabor Splatting](https://haato-w.github.io/3d-gabor-splatting-project-page/) is a research option for fine surface patterns, not a drop-in standard-splat quality filter. Its extra frequency/phase/weight attributes require matching rendering logic; the supplied rasterizer uses CUDA. As checked on 13 September 2026, the [main code license](https://github.com/haato-w/3d-gabor-splatting/blob/main/LICENSE.md) and [rasterizer license](https://github.com/haato-w/diff-gabor-rasterization/blob/main/LICENSE.md) restrict commercial use without prior permission. Baking to a different asset format does not itself clear the upstream use. Recheck concrete licenses and implementation support before any adoption; research benchmarks on small objects are not target-device game measurements.
+
 ## Choose by the asset's role
 
 Gaussian splats represent a scene with overlapping oriented, colored distributions. They are useful candidates for captured static environments, spatial reference and inspection experiences. An ordinary mesh remains the practical baseline for movable, articulated, precisely scaled or heavily edited game objects. This is a production recommendation, not a claim that splats cannot animate.
