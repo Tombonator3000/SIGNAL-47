@@ -16,6 +16,7 @@ namespace Signal47.Core
         public FieldCamera fieldCamera;
         public Signal47.Chapter.ChapterInvestigation chapter;
         public PrologueDirector director;
+        public Signal47.WorldCase22.WorldCaseController worldCase;
         bool restarting;
         public bool Transitioning => restarting;
         public bool CanControl => !restarting && !Signal47.Chapter.ChapterSave.IsRestoring && !Signal47.Chapter.ChapterSave.QuitPending && !(fieldCamera && fieldCamera.Capturing) && hud != null && hud.Started && !hud.ModalOpen && !Signal47.Signals.SignalConsole.AnyOpen;

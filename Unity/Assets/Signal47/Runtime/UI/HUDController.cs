@@ -13,7 +13,7 @@ namespace Signal47.UI
         public bool TitleVisible { get; private set; }
         public bool SettingsOpen => settingsOpen;
         public bool NewShiftConfirmation { get; private set; }
-        public bool ModalOpen => PreviousShiftsOpen || NewShiftConfirmation || settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
+        public bool ModalOpen => (Core.GameSession.Instance && Core.GameSession.Instance.worldCase && Core.GameSession.Instance.worldCase.ModalOpen) || PreviousShiftsOpen || NewShiftConfirmation || settingsOpen || photoOpen || paperOpen || notebookOpen || Paused || TitleVisible || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
         public string InteractionPrompt { get; set; } = "";
         string toast=""; bool paperOpen,notebookOpen,photoOpen; string paper=""; float toastUntil;
         GUIStyle mono, big, button, paperStyle;
@@ -38,6 +38,12 @@ namespace Signal47.UI
                 return;
             }
             if (!Started || TitleVisible) return;
+            var dossier=Core.GameSession.Instance.worldCase;
+            if(dossier && dossier.ModalOpen)
+            {
+                if(Keyboard.current!=null && (Keyboard.current.escapeKey.wasPressedThisFrame || Keyboard.current.tabKey.wasPressedThisFrame))dossier.Close();
+                return;
+            }
             var chapter=Core.GameSession.Instance.chapter;
             if(chapter && chapter.ModalOpen)
             {
@@ -97,7 +103,7 @@ namespace Signal47.UI
         public bool PhotoOpen=>photoOpen || (Core.GameSession.Instance && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.ModalOpen);
         public void ShowNotebook(){notebookOpen=true;SetCursor(false);}
         public void ShowTitle(){paperOpen=false;notebookOpen=false;Paused=false;Time.timeScale=1;AudioListener.pause=false;TitleVisible=true;Signals.SignalConsole console=FindFirstObjectByType<Signals.SignalConsole>();if(console)console.Close();SetCursor(false);}
-        public void CloseModal(){photoOpen=false;paperOpen=false;notebookOpen=false;returnToNotebook=false;settingsOpen=false;if(Core.GameSession.Instance.chapter)Core.GameSession.Instance.chapter.ClosePanel();SetPaused(false);SetCursor(true);}
+        public void CloseModal(){if(Core.GameSession.Instance.worldCase)Core.GameSession.Instance.worldCase.Close();photoOpen=false;paperOpen=false;notebookOpen=false;returnToNotebook=false;settingsOpen=false;if(Core.GameSession.Instance.chapter)Core.GameSession.Instance.chapter.ClosePanel();SetPaused(false);SetCursor(true);}
         public void SetCursor(bool lockIt){Cursor.lockState=lockIt?CursorLockMode.Locked:CursorLockMode.None;Cursor.visible=!lockIt;}
         void Styles()
         {
@@ -117,6 +123,8 @@ namespace Signal47.UI
                 GUI.color=new Color(.018f,.026f,.022f,.98f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=Color.white;
                 GUI.Label(new Rect(0,Screen.height*.5f-25,Screen.width,60),ChapterSave.QuitPending?"SAVING BEFORE EXIT…":ChapterSave.IsRestoring?"RESTORING THE NIGHT SHIFT…":"PREPARING THE NIGHT SHIFT…",big);return;
             }
+            // The dossier owns its whole screen; avoid clock/toast text over the paper heading.
+            if(Core.GameSession.Instance.worldCase && Core.GameSession.Instance.worldCase.ModalOpen && !Paused && !settingsOpen && !PreviousShiftsOpen && !NewShiftConfirmation && !TitleVisible)return;
             if(PreviousShiftsOpen){DrawPreviousShifts();return;}
             if(settingsOpen){DrawSettings();return;}
             if(NewShiftConfirmation){DrawNewShiftConfirmation();return;}
@@ -143,7 +151,7 @@ namespace Signal47.UI
                 GUI.Label(new Rect(Screen.width*.5f-210,Screen.height-95,420,40),InteractionPrompt,new GUIStyle(mono){alignment=TextAnchor.MiddleCenter});
             if(!photoOpen && Time.unscaledTime<toastUntil) GUI.Label(new Rect(24,24,600,35),toast,mono);
             if(Core.GameSession.Instance.yard && Core.GameSession.Instance.yard.Active && !ModalOpen)
-                GUI.Label(new Rect(24,65,Screen.width-48,55),Core.GameSession.Instance.chapter?Core.GameSession.Instance.chapter.Objective:Core.GameSession.Instance.yard.Objective,mono);
+                GUI.Label(new Rect(24,65,Screen.width-48,55),Core.GameSession.Instance.worldCase && Core.GameSession.Instance.chapter && Core.GameSession.Instance.chapter.Complete?Core.GameSession.Instance.worldCase.Objective:Core.GameSession.Instance.chapter?Core.GameSession.Instance.chapter.Objective:Core.GameSession.Instance.yard.Objective,mono);
             if(paperOpen)
             {
                 float height=Mathf.Min(540,Screen.height-40);var r=new Rect(Screen.width*.5f-290,(Screen.height-height)/2,580,height);

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "signal47-worldcase22-world-map",
+  "title": "SIGNAL / 47 — Områdekart",
+  "date": "2026-09-13",
+  "baselineCommit": "60b97e5f1da15f820dde71110bfecbc0fe1d56bb",
+  "classification": "concept-production-topology",
+  "notRuntimeEvidence": true,
+  "scale": "schematic-not-geographic",
+  "coordinatePolicy": "No invented distances, world coordinates or instrument azimuths. Illustration layout only.",
+  "mandatoryCaption": "KONSEPT / PLANLAGT VERDEN · IKKE MÅLESTOKK",
+  "statusScope": "Implementation statuses describe the baseline before WorldCase22. See the delivery report for verified changes.",
+  "world": {"setting": "New Mexico", "year": 1986, "historicalYear": 1947, "areaCap": 3, "interiorCap": 6, "mandatoryTaskCount": 18, "requiredNewExposures": 6, "firstPlayTargetMinutes": 330, "measuredDuration": null},
+  "visualDirection": {
+    "style": "Illustrated production area map with three detailed environment clusters in sparse desert terrain",
+    "palette": ["cream paper", "institutional green", "warm amber task lights", "cool desert night"],
+    "layout": {"SARO": "largest cluster, lower left", "STATION01": "smaller remote cluster, upper center", "MOTEL": "right cluster beside an access road"},
+    "northArrow": "illustration orientation only; keep B12 south of S03 in SARO inset",
+    "localPaths": "solid",
+    "travelTransitions": "dashed",
+    "background": "mesas, sparse desert, implied road connections; not traversable open world",
+    "exclude": ["fourth destination", "city", "freeway gameplay", "kilometre scale", "invented azimuths", "extra explorable motel rooms"]
+  },
+  "sources": ["../DesignBible13/design-bible.md", "../DesignBible13/story-material.md", "../DesignBible13/Visuals/map-01-world.svg", "../DesignBible13/Visuals/map-02-saro.svg", "../DesignBible13/Visuals/map-03-local-areas.svg", "../Menu14/PAPER_CASE.md", "../Archive16/README.md", "../CURRENT_HANDOFF.md", "../../Unity/Assets/Signal47/Runtime/Chapter/ChapterInvestigation.cs", "../../Unity/Assets/Signal47/Runtime/Chapter/ChapterSave.cs", "../../Unity/Assets/Signal47/Runtime/Archive/ArchiveStudy.cs"],
+  "areas": [
+    {
+      "id": "SARO", "label": "SARO", "chapters": ["K1", "K2", "K5", "K6", "E"], "interiors": 3,
+      "status": "existing-core-with-planned-functions",
+      "zones": [
+        {"id": "control", "label": "Kontrollrom", "interior": true, "status": "implemented-k1", "tasks": ["P01", "P13", "P14", "P15", "P16", "P17"], "plannedFunction": "C receiver chain and final protocols"},
+        {"id": "photolab", "label": "Fotolab", "interior": true, "status": "implemented-k1", "tasks": ["P02", "P03", "P13", "P17", "P18"], "plannedFunction": "later exposures and final report"},
+        {"id": "archive", "label": "Arkiv", "interior": true, "status": "standalone-study-not-connected", "tasks": ["P04", "P05"], "plannedFunction": "connected room and durable chapter progression"},
+        {"id": "yard", "label": "Servicegård", "interior": false, "status": "implemented", "tasks": ["P02", "P03"]},
+        {"id": "s03", "label": "S-03", "interior": false, "status": "implemented", "tasks": ["P02"]},
+        {"id": "b12", "label": "B-12", "interior": false, "status": "implemented-k1", "tasks": ["P03", "P13", "P15", "P17"], "relativePlacementConstraint": "south of S03 apron", "plannedFunction": "B reference, response and counter-test"},
+        {"id": "travel", "label": "Port / reisepunkt", "interior": false, "status": "planned-travel-on-existing-yard-route", "tasks": ["P05"]}
+      ],
+      "localEdges": [["control", "photolab"], ["control", "yard"], ["photolab", "yard"], ["yard", "s03"], ["yard", "b12"], ["control", "archive"], ["yard", "travel"]],
+      "edgePolicy": "Preserve existing connected routes; archive and travel edges are planned, not measured collision."
+    },
+    {
+      "id": "STATION01", "label": "Gammel målestasjon / STATION 01", "chapters": ["K3"], "interiors": 1, "status": "planned",
+      "zones": [
+        {"id": "arrival", "label": "Ankomst / retur", "interior": false, "status": "planned", "tasks": []},
+        {"id": "hut", "label": "Feltbygning", "interior": true, "status": "planned", "tasks": ["P09"]},
+        {"id": "transit", "label": "Transit / fastmerke A", "interior": false, "status": "planned", "tasks": ["P06"]},
+        {"id": "markers", "label": "Fastmerker / lokal lampe", "interior": false, "status": "planned", "tasks": ["P06", "P07"]},
+        {"id": "cable", "label": "Kabelsløyfe / brudd", "interior": false, "status": "planned", "tasks": ["P08"]}
+      ],
+      "localEdges": [["arrival", "hut"], ["hut", "transit"], ["transit", "markers"], ["markers", "cable"], ["cable", "hut"]],
+      "edgePolicy": "Short reversible walking loop. P06 and P07 may be solved in either order."
+    },
+    {
+      "id": "MOTEL", "label": "Sierra Motor Court", "chapters": ["K4"], "interiors": 2, "status": "planned",
+      "zones": [
+        {"id": "parking", "label": "Parkering / gangvei", "interior": false, "status": "planned", "tasks": []},
+        {"id": "office", "label": "Kontor", "interior": true, "status": "planned", "tasks": ["P10"]},
+        {"id": "room6", "label": "Rom 6 / Nora", "interior": true, "status": "planned", "tasks": ["P10", "P11", "P12"]}
+      ],
+      "localEdges": [["parking", "office"], ["office", "room6"], ["room6", "parking"]],
+      "edgePolicy": "Office to room 6 uses the exterior walkway. All other rooms and pool are backdrop. P11 and P12 may be solved in either order."
+    }
+  ],
+  "chapterRoute": [
+    {"id": "K1", "label": "Den andre eksponeringen", "area": "SARO", "tasks": ["P01", "P02", "P03"], "targetMinutes": 50},
+    {"id": "K2", "label": "Den strøkne protokollen", "area": "SARO", "tasks": ["P04", "P05"], "targetMinutes": 45},
+    {"id": "K3", "label": "Målestasjonen", "area": "STATION01", "tasks": ["P06", "P07", "P08", "P09"], "targetMinutes": 60},
+    {"id": "K4", "label": "Rom 6", "area": "MOTEL", "tasks": ["P10", "P11", "P12"], "targetMinutes": 45},
+    {"id": "K5", "label": "Referansen som svarer", "area": "SARO", "tasks": ["P13", "P14", "P15"], "targetMinutes": 65},
+    {"id": "K6", "label": "Siste avlesning", "area": "SARO", "tasks": ["P16", "P17"], "targetMinutes": 55},
+    {"id": "E", "label": "Rettelsen", "area": "SARO", "tasks": ["P18"], "targetMinutes": 10}
+  ],
+  "travelEdges": [
+    {"from": "SARO", "to": "STATION01", "gate": ["P05", "required sources preserved", "Nora contact", "valid checkpoint", "implemented destination"], "status": "planned"},
+    {"from": "STATION01", "to": "MOTEL", "gate": ["P09", "field evidence preserved", "Nora meeting confirmation", "valid checkpoint", "implemented destination"], "status": "planned"},
+    {"from": "MOTEL", "to": "SARO", "gate": ["P11", "P12", "required sources preserved", "valid checkpoint"], "status": "planned"}
+  ],
+  "playerMapPolicy": {
+    "initialKnownAreas": ["SARO"],
+    "discoverStation": "after P05",
+    "discoverMotel": "after K3 contact/field finding confirms meeting",
+    "revealFullReferenceNetwork": "P14",
+    "showUnbuiltDestination": "clearly label as later candidate content; no active travel into a missing scene",
+    "productionMapMayShowSpoilers": true
+  },
+  "p04p05Contract": {
+    "entry": "existing ChapterInvestigation complete with original K1 report and photos preserved",
+    "sourceReadOrder": "any",
+    "p04Sources": ["E07 original", "E06 amended"],
+    "p04Finding": "Closing sight line C omitted; retained mark reclassified as development fault.",
+    "p05Sources": ["B12 reference lineage", "E08 archive index diagram"],
+    "p05Prerequisites": ["P04", "both P05 sources visited", "STATION 01 matched", "correct fixed-point mark matched"],
+    "fixedPointMark": "outlined triangle with a short horizontal bar beneath it",
+    "rejectedMark": "triangle without the bar, general elevation symbol",
+    "destination": "OLD SURVEY STATION",
+    "e08Representation": "explicit archive index/diagram; not historical negative or player photograph",
+    "unsupportedClaims": ["motive", "identity of cable cutter", "Tomas disappearance", "time travel derived from minus 39 LY"],
+    "recovery": "retain visited sources, supported findings and discovered destination; migrate old completed case with empty new state; preserve both original photos"
+  }
+}

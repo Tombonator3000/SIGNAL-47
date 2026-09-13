@@ -1,0 +1,39 @@
+{
+  "scope": "Illustrated production concept map, not runtime evidence or measured geography",
+  "requested_model_name": "imagen 2.5",
+  "catalog_resolution": "No exact Imagen 2.5 model in connected catalog; first map generated with Magnific model named GPT 2.5 (gpt-2-mini). User was informed and optional clarification was offered.",
+  "initial_generation": {
+    "provider": "Magnific",
+    "model_name": "GPT 2.5",
+    "model_slug": "gpt-2-mini",
+    "creation_id": "eIQntYIdqL",
+    "prompt": "map-prompt.txt"
+  },
+  "correction": {
+    "provider": "built-in image_gen",
+    "model_version": "not exposed by tool",
+    "changes": [
+      "Single-storey SARO, no optical dome",
+      "B-12 optical installation rather than dish/building",
+      "Norwegian diacritics"
+    ],
+    "prompt": "map-edit-prompt.txt"
+  },
+  "files": {
+    "world-map-gpt25.png": {
+      "sha256": "8795ad3283c4f4c337a647feac5ede47bc2f202e32e18679c03393e0a7a73cf8",
+      "pixels": [
+        3840,
+        2160
+      ]
+    },
+    "world-map-final.png": {
+      "sha256": "69a784d7c7a4f288230db822699925dee9abd6b01d7538878a7e648d23dfc5a3",
+      "pixels": [
+        1672,
+        941
+      ]
+    }
+  },
+  "visual_review": "Three clusters and sequence preserved; B-12 south of S-03; concept/non-scale legend legible. Illustrated architecture is schematic, not a reproduction of Unity meshes."
+}

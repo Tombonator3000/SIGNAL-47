@@ -532,6 +532,12 @@ namespace Signal47.Chapter
             Label(83, 685, 1100, 49, "Music: ‘Signal to Noise’ — Scott Buckley / CC BY 4.0 / scottbuckley.com.au\nNo-piano mix, excerpt with fades. License: creativecommons.org/licenses/by/4.0/", true);
         }
         public string CaptureState() => JsonUtility.ToJson(state);
+        public static bool IsCompletedState(string json)
+        {
+            if(string.IsNullOrEmpty(json))return false;
+            try{return JsonUtility.FromJson<State>(json)?.complete==true;}
+            catch(ArgumentException){return false;}
+        }
         public static bool ValidateState(string json, out string reason)
         {
             reason = "";
