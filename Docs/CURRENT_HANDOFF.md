@@ -6,7 +6,7 @@
 
 Vulkan fullfører fire faser med 784/50 176 originale splats, både før og etter gjenoppretting, med null registrerte runtime-feil. OpenGL feilet med 398 feil og ufullført måling; denne kombinasjonen avvises nå før start. Ny starter har kontrollerte minne-/tidsgrenser og seks beståtte grensetester. Begge Vulkan-nærbilder har synlig blandingsfeil mot et vanlig objekt: splats er **ikke godkjent for hovedspillet**. Resultater, originale bilder og spiller-/kildehash er bevart. Ingen testprosess skal stå igjen etter levering.
 
-Resources19 er fortsatt siste produksjonskandidat, Visual10 standard; `Unity/` og `Spill-SIGNAL47.sh` er uendret i Splat21. Neste ordinære produksjonssteg er dokumentlesbarhet/P04; videre splat-arbeid er et separat mulig eksperiment og skal ikke forsinke dette. Testspor og leveringsstatus finnes i rapporten og GitHub.
+Resources19 er fortsatt siste produksjonskandidat, Visual10 standard; `Unity/` og `Spill-SIGNAL47.sh` er uendret i Splat21. Neste ordinære produksjonssteg er dokumentlesbarhet/P04; videre splat-arbeid er et separat mulig eksperiment og skal ikke forsinke dette. Kilde og bevis er levert i [PR17](https://github.com/Tombonator3000/SIGNAL-47/pull/17), opprinnelig kildecommit `55320c13378d06e4a5041d3af8d3812e10df677d`; GitHub viser faktisk flettestatus.
 
 ## Nyeste verktøy- og instruksjonspass: ProductionTools20
 

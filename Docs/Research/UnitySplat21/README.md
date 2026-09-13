@@ -2,6 +2,8 @@
 
 13. september 2026. Brukerens «Test splatt ekspert» ble tolket som en bestilling av splat-eksperimentet. Etter systemkrasjet er arbeidet gjenfunnet, teststarteren begrenset og Vulkan-prøven fullført på nytt. **Vulkan tegner prøvedataene, men denne integrasjonen er ikke klar for hovedspillet.** OpenGL feilet; blanding med vanlig geometri har en synlig feil også på Vulkan.
 
+Leveringsspor: [PR17](https://github.com/Tombonator3000/SIGNAL-47/pull/17), kildecommit `55320c13378d06e4a5041d3af8d3812e10df677d`. GitHub viser faktisk flettestatus; en merge endrer ikke de åpne testportene.
+
 ## Hva var bevart?
 
 PR16 var allerede flettet på `e976fa7f9b46225ed37873131e878bfd87c40dec`. Grenen `experiment/unity-splat-21` hadde bare nye lokale filer under `Automation/Splat21/`; ingen Splat21-commit eller PR var laget. Testprosjekt, to spillerkjøringer og et vellykket bygg lå under ignorerte `Artifacts/Splat21/`. Ingen testprosesser kjørte etter omstarten. Hovedspillets `Unity/` og `Spill-SIGNAL47.sh` er identiske med utgangspunktet.
