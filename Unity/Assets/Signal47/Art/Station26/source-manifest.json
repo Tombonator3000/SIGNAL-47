@@ -1,0 +1,11 @@
+{
+  "origin": "Existing SIGNAL / 47 Hybrid23 generated ordinary mesh; no new generation or download",
+  "reference": "Docs/Research/Hybrid23/asset-provenance.json",
+  "model": "Docs/Research/Hybrid23/SourceAssets/station01-tripo-v31.glb",
+  "conversion": "Automation/Hybrid23/convert_generated.py; existing clipped mesh and texture reused unchanged",
+  "changes": "Placed in Station26 area; ordinary Unity lighting, authored interior and independent colliders; no splat plugin",
+  "files": {
+    "station-texture.jpg": "c6c0e50f694b8fd3192bc72374a44552a48de141b51ba5d78b5219b7409481c6",
+    "station-mesh.json": "fefd0e2bf1372b72cd59208a82767522774c73c2770804eb70275f6c82a5a16c"
+  }
+}

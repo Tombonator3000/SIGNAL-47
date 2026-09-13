@@ -1,0 +1,10 @@
+{
+    "lightmaps": 2,
+    "stationColliders": 28,
+    "source": "Preserved WorldCase22 + ordinary mesh from Hybrid23 + original Archive17 props",
+    "origin": {
+        "x": 120.0,
+        "y": 0.0,
+        "z": 100.0
+    }
+}

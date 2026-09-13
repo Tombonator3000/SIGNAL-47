@@ -111,7 +111,7 @@ namespace Signal47.WorldCase22
                 Panel(new Rect(65, 195, 1150, 498), Paper);
                 GUI.Label(new Rect(93, 220, 1090, 47), "FIELD DESTINATION SUPPORTED / OLD SURVEY STATION", paperHeading);
                 GUI.Label(new Rect(94, 292, 1030, 217), "B-12 retains STATION 01. The matching archive sleeve provides the dated 1947 index and the outlined triangle with its short bar.\n\nThe amended record omitted C. This establishes a changed report and a continued reference, not a motive or a proven time displacement.", paperText);
-                GUI.Label(new Rect(94, 544, 1040, 112), "FIELD ACCESS PREPARED\nThe next area is not yet playable in this candidate. Your findings are recorded in this case. Check the save status below before exit.", paperHeading);
+                GUI.Label(new Rect(94, 544, 1040, 112), "FIELD ACCESS PREPARED\nUse the FIELD TRAVEL folio beside this dossier to prepare departure. Your findings and original photographs travel with the case.", paperHeading);
                 GUI.Label(new Rect(65, 740, 1135, 44), "SAVE STATUS / " + Signal47.Chapter.ChapterSave.Status, small);
                 return;
             }

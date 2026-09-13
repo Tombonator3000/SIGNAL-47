@@ -31,6 +31,11 @@ namespace Signal47.Investigation
     {
         public const string PhotoId = "s03-field-photograph";
         public const string SecondPhotoId = "b12-control-photograph";
+        public const string StationMarkerPhotoId = "station01-marker-photograph";
+        public const string StationCablePhotoId = "station01-cable-photograph";
+        public static bool IsStationPhoto(string id) => id == StationMarkerPhotoId || id == StationCablePhotoId;
+        public static string FrameLabel(string id) => id == PhotoId ? "FRAME 01" : id == SecondPhotoId ? "FRAME 02" : id == StationMarkerPhotoId ? "FRAME 03" : "FRAME 04";
+        public string NextPhotoId => GameSession.Instance && GameSession.Instance.station && GameSession.Instance.station.InStation ? (GetFrame(StationMarkerPhotoId) == null ? StationMarkerPhotoId : StationCablePhotoId) : HasPhoto ? SecondPhotoId : PhotoId;
         public static readonly Vector3 Subject = new Vector3(8, 4.8f, -34);
         public bool Acquired { get; private set; }
         public bool Raised { get; private set; }
@@ -41,6 +46,7 @@ namespace Signal47.Investigation
         public int FrameCount => frames.Count;
         public int DevelopedCount { get { int count = 0; foreach (var frame in frames) if (frame.developed) count++; return count; } }
         public bool SaveReady => !busy && saveJob == null && frames.TrueForAll(f => f.exported);
+        public bool ExportRetryAvailable => !busy && saveJob == null && frames.Exists(f => !f.exported && f.pendingPixels != null);
         public string SaveStatus { get; private set; } = "";
         public string PhotoPath => GetFrame(PhotoId)?.path ?? "";
         public Texture2D photograph;
@@ -90,7 +96,7 @@ namespace Signal47.Investigation
             {
                 bool ok = !saveJob.IsFaulted && !saveJob.IsCanceled && File.Exists(savingFrame.path) && File.Exists(Path.ChangeExtension(savingFrame.path, ".json"));
                 savingFrame.exported = ok;
-                SaveStatus = ok ? "SAVED TO LOCAL PHOTO ARCHIVE" : "EXPORT FAILED // RETRY AT THE PHOTOLAB";
+                SaveStatus = ok ? "SAVED TO LOCAL PHOTO ARCHIVE" : g.station && g.station.InStation ? "EXPORT FAILED // RETRY AT THE RETURN FOLIO" : "EXPORT FAILED // RETRY AT THE PHOTOLAB";
                 if (!ok) { Debug.LogWarning("FIELD_PHOTO_SAVE_FAILED " + saveJob.Exception?.GetBaseException().Message); g.hud.Toast(SaveStatus, 6); }
                 else { savingFrame.sha256 = saveJob.Result; savingFrame.pendingPixels = null; Debug.Log("FIELD_PHOTO_EXPORTED " + savingFrame.id); }
                 saveJob = null; savingFrame = null;
@@ -101,15 +107,37 @@ namespace Signal47.Investigation
             if (keys.cKey.wasPressedThisFrame && !busy) Raised = !Raised;
             if (Raised && keys.spaceKey.wasPressedThisFrame && !busy)
             {
-                string problem = FrameProblem();
-                if (problem.Length > 0) { RejectedFrames++; g.hud.Toast(problem, 3); return; }
-                StartCoroutine(Expose());
+                TryExpose();
             }
+        }
+        public bool TryExpose()
+        {
+            var g = GameSession.Instance;
+            if (!g || !g.CanControl || !Acquired || busy) return false;
+            string problem = FrameProblem();
+            if (problem.Length > 0) { RejectedFrames++; g.hud.Toast(problem, 3); return false; }
+            StartCoroutine(Expose()); return true;
         }
         public string FrameProblem()
         {
             var g = GameSession.Instance; if (!g || !g.player) return "CAMERA UNAVAILABLE";
             var c = g.player.viewCamera;
+            if (g.station && g.station.InStation)
+            {
+                if (!Acquired) return "COLLECT THE FIELD CAMERA AT SARO";
+                if (!SaveReady) return ExportRetryAvailable ? "PHOTO NOT SAVED // RETRY AT THE RETURN FOLIO" : "FINISHING PHOTO ARCHIVE";
+                string id = NextPhotoId;
+                if (GetFrame(id) != null) return "BOTH FIELD FRAMES EXPOSED // RETURN TO SARO TO PROCESS";
+                if (!g.station.CanExpose(id)) return id == StationMarkerPhotoId ? "READ THE TRANSIT RECORD AND INSPECT THE FIXED MARKS" : "COMPLETE THE MARKER AND LAMP TESTS, THEN INSPECT THE CABLE CUT";
+                Transform target = id == StationMarkerPhotoId ? g.station.markerTarget : g.station.cableTarget;
+                if (!target) return "FIELD REFERENCE UNAVAILABLE";
+                Vector3 v = c.WorldToViewportPoint(target.position);
+                if (v.z <= 0 || v.x < .18f || v.x > .82f || v.y < .18f || v.y > .82f) return "CENTER THE FIELD REFERENCE IN THE VIEWFINDER";
+                float range = Vector3.Distance(c.transform.position, target.position);
+                if (range > (id == StationMarkerPhotoId ? 7f : 3.8f)) return "MOVE CLOSER TO THE FIELD REFERENCE";
+                if (Physics.Linecast(c.transform.position, target.position, out var obstruction, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && obstruction.distance < range - .3f) return "FIELD REFERENCE OBSTRUCTED // FIND A CLEAR VIEW";
+                return "";
+            }
             if (!g.yard || !g.yard.Completed) return "READ THE S-03 MOTOR LOG FIRST";
             if (saveJob != null) return "FILM ADVANCE // FINISHING THE EXPOSURE";
             if (HasPhoto)
@@ -134,15 +162,22 @@ namespace Signal47.Investigation
         {
             busy = true; Capturing = true; EnsureTarget();
             var g = GameSession.Instance; var camera = g.player.viewCamera;
-            bool second = HasPhoto;
+            string nextId = NextPhotoId; bool stationPhoto = IsStationPhoto(nextId);
+            bool second = nextId == SecondPhotoId;
             var record = new ExposureRecord
             {
-                id = second ? SecondPhotoId : PhotoId, subject = second ? "B-12 / controlled reference" : "S-03 / array profile",
-                method = second && Chapter ? Chapter.ExperimentMethod : "baseline", utc = DateTime.UtcNow.ToString("O"), build = buildId,
+                id = nextId, subject = stationPhoto ? (nextId == StationMarkerPhotoId ? "STATION 01 / fixed-point comparison" : "STATION 01 / separated cable ends") : second ? "B-12 / controlled reference" : "S-03 / array profile",
+                method = stationPhoto ? "field-observation" : second && Chapter ? Chapter.ExperimentMethod : "baseline", utc = DateTime.UtcNow.ToString("O"), build = buildId,
                 localTime = TimeSpan.FromSeconds(g.notebook.LocalClockSeconds).ToString(@"hh\:mm\:ss"),
                 position = camera.transform.position, forward = camera.transform.forward, width = exposureTarget.width, height = exposureTarget.height
             };
-            if (Chapter)
+            if (stationPhoto)
+            {
+                var target = nextId == StationMarkerPhotoId ? g.station.markerTarget : g.station.cableTarget;
+                Vector3 point = camera.WorldToViewportPoint(target.position);
+                record.referenceViewport = record.echoViewport = new Vector2(point.x, point.y);
+            }
+            else if (Chapter)
             {
                 Vector3 a = camera.WorldToViewportPoint(Chapter.ReferencePosition), b = camera.WorldToViewportPoint(Chapter.EchoPosition);
                 record.referenceViewport = new Vector2(a.x, a.y); record.echoViewport = new Vector2(b.x, b.y);
@@ -152,7 +187,7 @@ namespace Signal47.Investigation
             bool rendered = false;
             try
             {
-                if (Chapter) Chapter.SetFilmResponse(true);
+                if (Chapter && !stationPhoto) Chapter.SetFilmResponse(true);
                 var request = new UniversalRenderPipeline.SingleCameraRequest { destination = exposureTarget };
                 if (RenderPipeline.SupportsRenderRequest(camera, request)) { RenderPipeline.SubmitRenderRequest(camera, request); rendered = true; }
                 else Debug.LogWarning("FIELD_PHOTO_RENDER_UNSUPPORTED");
@@ -184,12 +219,12 @@ namespace Signal47.Investigation
             record.texture = new Texture2D(record.width, record.height, TextureFormat.RGBA32, false) { name = record.id };
             record.texture.LoadRawTextureData(pixels); record.texture.Apply(); record.pendingPixels = pixels;
             string dir = ChapterSave.PhotoArchiveDirectory;
-            record.path = string.IsNullOrEmpty(dir) ? "" : Path.Combine(dir, (record.id == PhotoId ? "S03-" : "B12-") + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".jpg");
+            record.path = string.IsNullOrEmpty(dir) ? "" : Path.Combine(dir, (record.id == PhotoId ? "S03-" : record.id == SecondPhotoId ? "B12-" : record.id == StationMarkerPhotoId ? "ST01-MARKER-" : "ST01-CABLE-") + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".jpg");
             frames.Add(record); if (record.id == PhotoId) photograph = record.texture;
             BeginExport(record);
             var g = GameSession.Instance;
-            g.notebook.Add((record.id == PhotoId ? "Frame 01" : "Frame 02") + " exposed. Sealed film awaits processing in the north photolab.");
-            g.hud.Toast((record.id == PhotoId ? "FRAME 01" : "FRAME 02") + " EXPOSED // PROCESS FILM IN THE NORTH PHOTOLAB", 5);
+            g.notebook.Add(FrameLabel(record.id) + " exposed. Sealed film awaits processing in the north photolab.");
+            g.hud.Toast(FrameLabel(record.id) + " EXPOSED // PROCESS FILM IN THE NORTH PHOTOLAB", 5);
             Debug.Log("FIELD_PHOTO_CAPTURED " + record.id + " " + record.width + "x" + record.height + " method=" + record.method);
             if (Chapter) Chapter.ExposureRecorded(record.id);
         }
@@ -242,23 +277,30 @@ namespace Signal47.Investigation
         {
             var record = GetFrame(id); if (record == null || record.developed || !record.texture) return false;
             record.developed = true;
-            GameSession.Instance.notebook.Collect(id, id == PhotoId ? "PHOTO 01 / S-03 contact print" : "PHOTO 02 / B-12 control print", "Processed contact print. Select to inspect the original exposure and its visible reference marks.");
+            GameSession.Instance.notebook.Collect(id, id == PhotoId ? "PHOTO 01 / S-03 contact print" : id == SecondPhotoId ? "PHOTO 02 / B-12 control print" : id == StationMarkerPhotoId ? "PHOTO 03 / STATION 01 fixed marks" : "PHOTO 04 / STATION 01 cable cut", "Processed contact print. Select to inspect the original exposure and its visible reference marks.");
             ChapterSave.RequestCheckpoint(); return true;
         }
-        public void Inspect(string id) { var record = GetFrame(id); if (record != null && record.developed) record.inspected = true; }
+        public void Inspect(string id) { var record = GetFrame(id); if (record != null && record.developed && !record.inspected) { record.inspected = true; ChapterSave.RequestCheckpoint(); } }
         public void Compare() { if (HasPhoto && GetFrame(PhotoId).developed) { Compared = true; ChapterSave.RequestCheckpoint(); } }
         public bool DrawPhotograph(GUIStyle button, GUIStyle text) { if (Chapter) { Chapter.OpenEvidence(PhotoId); Chapter.DrawPanel(); } return false; }
         public string CaptureState() => JsonUtility.ToJson(new CameraState { acquired = Acquired, compared = Compared, rejected = RejectedFrames, frames = frames });
+        public static bool StateHasFrame(string json, string id)
+        {
+            if(!ValidateState(json,out _))return false;
+            return JsonUtility.FromJson<CameraState>(json).frames.Exists(f=>f.id==id);
+        }
         public static bool ValidateState(string json, out string reason)
         {
             reason = "";
             try
             {
                 var state = JsonUtility.FromJson<CameraState>(json);
-                if (state == null || state.version != 1 || state.frames == null || state.frames.Count > 2) { reason = "Unsupported camera record."; return false; }
+                if (state == null || state.version != 1 || state.frames == null || state.frames.Count > 4) { reason = "Unsupported camera record."; return false; }
                 var ids = new HashSet<string>();
                 foreach (var frame in state.frames)
-                    if (frame == null || (frame.id != PhotoId && frame.id != SecondPhotoId) || !ids.Add(frame.id) || frame.width < 1 || frame.height < 1 || frame.width > 4096 || frame.height > 4096 || string.IsNullOrEmpty(frame.path) || (frame.inspected && !frame.developed) || (frame.id == SecondPhotoId && frame.method != "passive" && frame.method != "active")) { reason = "Invalid exposure metadata."; return false; }
+                    if (frame == null || (frame.id != PhotoId && frame.id != SecondPhotoId && !IsStationPhoto(frame.id)) || !ids.Add(frame.id) || frame.width < 1 || frame.height < 1 || frame.width > 4096 || frame.height > 4096 || string.IsNullOrEmpty(frame.path) || (frame.inspected && !frame.developed) || (frame.id == SecondPhotoId && frame.method != "passive" && frame.method != "active")) { reason = "Invalid exposure metadata."; return false; }
+                foreach (var frame in state.frames)
+                    if (IsStationPhoto(frame.id) && frame.method != "field-observation") { reason = "Invalid field-exposure method."; return false; }
                 if ((state.frames.Count > 0 && !state.acquired) || (ids.Contains(SecondPhotoId) && !ids.Contains(PhotoId))) { reason = "Exposure sequence is incomplete."; return false; }
                 return true;
             }
@@ -306,7 +348,7 @@ namespace Signal47.Investigation
             var style = new GUIStyle(GUI.skin.label) { font = g.hud.terminalFont, fontSize = Mathf.RoundToInt(h * .028f), normal = { textColor = ivory }, wordWrap = true };
             GUI.Label(new Rect(w * .03f, 18, w * .8f, 38), "S A R O / F I E L D  C A M E R A", style);
             GUI.color = new Color(.018f, .023f, .020f, .96f); GUI.DrawTexture(new Rect(0, h * .9f, w, h * .1f), Texture2D.whiteTexture); GUI.color = Color.white;
-            GUI.Label(new Rect(w * .03f, h * .925f, w * .14f, 40), HasPhoto ? "FRAME 02" : "FRAME 01", style);
+            GUI.Label(new Rect(w * .03f, h * .925f, w * .14f, 40), FrameLabel(NextPhotoId), style);
             string problem = FrameProblem(); GUI.Label(new Rect(w * .18f, h * .925f, w * .51f, 55), problem.Length == 0 ? "REFERENCE IN FRAME // READY" : problem, style);
             GUI.Label(new Rect(w * .73f, h * .925f, w * .26f, 45), "C LOWER   SPACE SHUTTER", style);
         }

@@ -1,0 +1,33 @@
+{
+    "id": "station01-cable-photograph",
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Station26/station26-test-1ecGNH/FieldPhotos/ST01-CABLE-20260913-122010-6b9283b9.jpg",
+    "utc": "2026-09-13T12:20:10.2337100Z",
+    "localTime": "23:46:53",
+    "build": "db36ff92e5cd7cf7be83c2c9bf7ab6634b3b315a working-tree source-sha256:8b181fb4830ee7956234a8f24b077dfe92457cb6c6049ae74c6592553df527d4",
+    "method": "field-observation",
+    "subject": "STATION 01 / separated cable ends",
+    "sha256": "c75e3cbc9d0385616dcf7c2183c3cc499974488794d98b803a942c796463686c",
+    "position": {
+        "x": 125.0,
+        "y": 1.7366650104522706,
+        "z": 101.80000305175781
+    },
+    "forward": {
+        "x": 0.0,
+        "y": -0.47266653180122378,
+        "z": 0.8812413811683655
+    },
+    "referenceViewport": {
+        "x": 0.5,
+        "y": 0.5040870904922485
+    },
+    "echoViewport": {
+        "x": 0.5,
+        "y": 0.5040870904922485
+    },
+    "width": 960,
+    "height": 540,
+    "developed": false,
+    "inspected": false,
+    "exported": true
+}

@@ -23,7 +23,7 @@ namespace Signal47.WorldCase22
         public bool ReadIndex => state.readIndex;
         public string CurrentPage { get; private set; } = "original";
         public string Feedback { get; private set; } = "";
-        public string Objective => !P04Complete ? "PHOTOLAB ARCHIVE // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS" : !P05Complete ? "PHOTOLAB ARCHIVE // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX" : "STATION 01 // FIELD ACCESS PREPARED / NEXT AREA NOT YET PLAYABLE";
+        public string Objective => !P04Complete ? "PHOTOLAB ARCHIVE // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS" : !P05Complete ? "PHOTOLAB ARCHIVE // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX" : Game && Game.station ? Game.station.Objective : "STATION 01 // FIELD ACCESS PREPARED / NEXT AREA NOT YET PLAYABLE";
         GameSession Game => GameSession.Instance;
         bool SessionReady => Available && Game.hud && Game.hud.Started && !Game.hud.Paused && !Game.hud.TitleVisible && !Game.Transitioning && !ChapterSave.IsRestoring && !ChapterSave.QuitPending;
 
@@ -96,13 +96,14 @@ namespace Signal47.WorldCase22
             if (surveyId != "STATION 01") { Feedback = "Match the survey ID in both sources. The dated archive supplies 1947; -39 LY is not a calendar code or a survey ID."; return false; }
             if (marker != "triangle-bar") { Feedback = "The matching fixed-point mark has a short bar beneath the outlined triangle. A triangle without the bar is only an elevation symbol."; return false; }
             if (destination != "old-survey-station") { Feedback = "The B-12 service lineage and matching archive sleeve identify OLD SURVEY STATION. The documents do not establish another destination."; return false; }
-            Feedback = "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared; the next area is not yet playable.";
+            Feedback = "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. Consult the travel folio beside the archive dossier for departure.";
             if (!state.p05Complete)
             {
                 state.p05Complete = true; state.destination = destination; state.surveyId = surveyId; state.marker = marker; Changed?.Invoke();
             }
             return true;
         }
+        public static bool IsDestinationPrepared(string json) => ValidateState(json, out _) && !string.IsNullOrEmpty(json) && JsonUtility.FromJson<State>(json).p05Complete;
         public string CaptureState() => JsonUtility.ToJson(state);
         public static bool ValidateState(string json, out string reason)
         {
