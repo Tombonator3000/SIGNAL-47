@@ -1,0 +1,6 @@
+{
+  "batches": 164,
+  "instances": 648,
+  "logical_grass_triangles_before_culling": 1510004,
+  "note": "Not the measured per-frame visible count; original scene audit excludes GPU-instanced grass."
+}

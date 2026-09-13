@@ -1,0 +1,13 @@
+{
+  "source": "https://opengameart.org/content/12-ambient-machine-sounds",
+  "author": "Michael Brigida and students",
+  "license": "CC BY 3.0",
+  "source_file": "Docs/Resources19/Audio/engine_noise.ogg",
+  "source_sha256": "6dad15c22608b68e61a141e4fe0fe92c96c9a8aca78c75ca1ff27f2c13048447",
+  "output_sha256": "825ba4f23c7e26555bca80b0d2febab52b1d45091cfb57a4e637eb8a5056eb06",
+  "changes": "Mono22.05kHz PCM16; 400ms linear tail/head crossfade; DC removed, no amplification. Existing Resources19 source retained.",
+  "duration_s": 12.138775510204082,
+  "peak": 0.7049590538135598,
+  "seam_delta": 0.0013659670948982239,
+  "runtime_gain": 0.16
+}

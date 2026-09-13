@@ -1,5 +1,23 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Environment27 — STATION 01 som sammenhengende sted
+
+Kilde og bevis leveres gjennom [PR23](https://github.com/Tombonator3000/SIGNAL-47/pull/23), implementeringscommit `e1987c729f0e5943ae681bab94c64ade04e71a88`. GitHub viser faktisk flettestatus.
+
+13. september 2026: [miljøpasset](Environment27/README.md) er nyeste hovedspillkandidat, basert på faktisk flettet Station26/PR22 (`a241f222a77d5150de4f2866b708babec3c27cbd`). Repoet er kontrollert PUBLIC; synligheten er ikke endret. Brukeren godkjente oppgradering av hele stasjonsområdet etter sammenligningen med X-eksemplene. To lette subagenter bidro med Blender-modeller, kildesjekk, startlagring, pakkekontroll og uavhengig kodegjennomgang.
+
+**Prøv direkte på feltet:** `~/Nedlastinger/Environment27-22a160fafeb3/Start-STATION01.sh`, velg **CONTINUE CHECKPOINT**. Den bruker egen vedvarende prøveprofil og bevarer vanlig lagring. P06–P09 er uutførte i denne profilen. Den ordinære `Start-SIGNAL47.sh` finnes i samme pakke. **Visual10 forblir standard**, og Station26/WorldCase22-pakkene er bevart. Kilde-SHA `22a160fafeb39984d8124d842982ccf500acad1d65f88552a977a69c82243e9f`; arkiv-SHA `4e1b3f9f5d947f90a855253779310722fa48d519edd39c4dbb0609cea682ecde`.
+
+Terreng, servicevei, gangspor, steiner, vegetasjon, gjerde og strømopplegg erstatter det flate prototypemiljøet. Innredet brakke, fysisk vindusinnramming og originale instrumentmodeller gir mer troverdig skala. Sluttsteinene er fotograferte Poly Haven Boulder01 av Rico Cilliers (CC0), bevart med kildehash, teksturer og Blender-bearbeiding. Feltet har lokal vind og bearbeidet generatorlyd med kreditering. Ingen splatpakke eller ny motor er innført. SAROs lys/tåke gjenopprettes ved retur.
+
+Den **samme utpakkede pakken** består 168 feltkontroller ved 1600×900, 118 arkivkontroller, 42 eksisterende spillkontroller, 50 meny-/gjenopprettingskontroller og 27 kontroller av den faktiske demo-startlagringen gjennom Continue-API. 179 pakkefiler, alle rettigheter, åtte foto fra to feltkjøringer, fem historiske kildefiler og uendret standardstarter er kontrollert. Den første 1280-feltkjøringen med 168 kontroller var før den siste romlige batchingendringen; sluttkilden er prøvd gjennom pakket feltreise og egen kamerarunde. [Samlet bevis](Environment27/Evidence/verification.json) og [testgrenser](Environment27/TEST_PLAN.md).
+
+Separat 120-sekunders feltkamerarunde på Intel ARL / OpenGL / 1280×800: **65,80 FPS**, p95 **20,00 ms**, p99 **22,08 ms**, ingen bilder over 50 ms. Romlig inndeling av geometri/gress økte snittet fra 36,89 FPS uten å fjerne modeller eller plasseringer. **Stabile 60 FPS er fortsatt FAIL** etter p95 ≤ 16,67 ms og p99 < 20 ms. Målingen har skjult HUD og styrt kamera; den dekker ikke hele spillet, 1600×900 eller ren GPU-tid. Den korrigerte geometriauditen skiller 324 344 MeshRenderer-trekanter fra 648 gressinstanser / 1 510 004 logiske instanstrekanter før utsiling.
+
+Originale Unity-bilder og faktiske eksporterte JPEG er visuelt gjennomgått. Stasjonen er tydelig forbedret, men bakgrunnsfjell og enkelte overganger/detaljer er fortsatt enkle. **Native input, blind forståelse/tidsbruk og subjektiv lydmiks er uverifisert.** Ingen testprosess står igjen. Merge er kildelevering og lukker ikke disse portene eller det uferdige 5–6-timersspillet.
+
+**Neste samlede innhold:** oppfølging av feltbevisene på SARO og avgrenset overgang mot SIERRA MOTOR COURT fra gjeldende verdensdesign. Ved neste nødvendige ytelsespass: lettere gressnivå med samme atlas/silhuett, vurdert i faktisk spill. Ikke gjenåpne nye motor-/splatforsøk uten produksjonsbehov. Station26-statusen nedenfor er historikk; [Environment27-beviset](Environment27/Evidence/verification.json) registrerer PR-leveringen.
+
 ## Station26 — sammenhengende feltreise i hovedspillet
 
 Kilde og bevis leveres gjennom [PR22](https://github.com/Tombonator3000/SIGNAL-47/pull/22), implementeringscommit `7349bfc34d7b72a197365bc641206266d389a733`. GitHub viser faktisk flettestatus.

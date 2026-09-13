@@ -157,6 +157,7 @@ namespace Signal47.Editor
             // The same triangle-and-bar symbol seen in the source record is physically present on A.
             Vector3 top=new Vector3(-3.9f,1.45f,5.89f),left=new Vector3(-4.05f,1.20f,5.89f),right=new Vector3(-3.75f,1.20f,5.89f);
             Beam("MarkerTriangle",top,left,.018f,paper);Beam("MarkerTriangle",left,right,.018f,paper);Beam("MarkerTriangle",right,top,.018f,paper);
+            Environment27Pass.Apply(world,font,worldText);
             worldGo.SetActive(false);EditorUtility.SetDirty(g);AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Directory.CreateDirectory("../Artifacts/Station26");File.WriteAllText("../Artifacts/Station26/scene-audit.json",JsonUtility.ToJson(new Audit{lightmaps=LightmapSettings.lightmaps.Length,stationColliders=root.GetComponentsInChildren<Collider>(true).Length,source="Preserved WorldCase22 + ordinary mesh from Hybrid23 + original Archive17 props",origin=Origin},true));
             Automation.BuildCurrentGauntletLinux();

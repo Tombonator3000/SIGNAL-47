@@ -1,0 +1,47 @@
+{
+  "asset": "Boulder 01",
+  "source": {
+    "page": "https://polyhaven.com/a/boulder_01",
+    "api": "https://api.polyhaven.com/files/boulder_01",
+    "license": "CC0 1.0",
+    "author": "Rico Cilliers"
+  },
+  "files": [
+    {
+      "name": "boulder_01_2k.gltf",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/boulder_01/boulder_01_2k.gltf",
+      "sha256": "52d118b56748a18509e4ec0075d07b254d72a0401793f22363c0bb3a682e7361"
+    },
+    {
+      "name": "boulder_01.bin",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/boulder_01/boulder_01.bin",
+      "sha256": "7f5b06503d62bd95bfe9c6b8a354a5cc8ff04a4d271a8cf87a3e3125db4232d7"
+    },
+    {
+      "name": "boulder_01_diff_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/boulder_01/boulder_01_diff_2k.jpg",
+      "sha256": "90bbaa17c1fe0254d2b0b6e5148264fa834953a72724d566f14af029eebe3ca3"
+    },
+    {
+      "name": "boulder_01_nor_gl_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/boulder_01/boulder_01_nor_gl_2k.jpg",
+      "sha256": "5174b318712ac7725cbcb55d422607f9c66d7f8d035c5412ab897b5939e2db6b"
+    },
+    {
+      "name": "boulder_01_arm_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/boulder_01/boulder_01_arm_2k.jpg",
+      "sha256": "ab52859dde519b4822111aa60916b6d21f8a6966c67b6cec44d1cd0775b8a86a"
+    }
+  ],
+  "authoring": {
+    "recipe": "Unity/Blender/Source/environment27_boulder.py",
+    "source_output": "Artifacts/Environment27/StagedBoulder/Source/Boulder01",
+    "mods": [
+      "Rotate GLTF +90 degrees around Blender X (Y-up source to Z-up authoring).",
+      "Center X/Y and place the lowest source vertex at Blender Z=0 for a ground pivot.",
+      "Weld duplicate seam vertices, preserve UVs, and decimate to approximately 3306-triangle LOD0 and 396-triangle LOD1.",
+      "Export FBX with Blender Z-up converted to Unity Y-up using axis_forward=-Z and axis_up=Y.",
+      "Use diffuse, OpenGL normal, and ARM (AO/roughness/metallic) maps from this pinned set."
+    ]
+  }
+}

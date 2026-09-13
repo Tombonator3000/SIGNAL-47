@@ -23,6 +23,21 @@ namespace Signal47.Debugging
         void OnDestroy(){Application.logMessageReceived-=Log;}
         void Log(string m,string s,LogType t){if(m.StartsWith("CHAPTER_SAVE_OK ",StringComparison.Ordinal))writes++;if((t==LogType.Error||t==LogType.Exception||t==LogType.Assert)&&report.errors.Count<8)report.errors.Add(m);}
         void Check(bool ok,string name){if(!ok)throw new InvalidOperationException(name);report.checks.Add(name);Debug.Log("STATION26_PASS "+name);}
+        string LightingState()
+        {
+            var states=new List<string>();var station=GameSession.Instance.station;
+            foreach(var light in FindObjectsByType<Light>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+                if(light.type==LightType.Directional&&!light.transform.IsChildOf(station.transform))states.Add(light.name+":"+light.enabled);
+            states.Sort(StringComparer.Ordinal);return string.Join("|",states);
+        }
+        void CheckEmitter(bool lit)
+        {
+            int count=0;
+            foreach(var surface in GameSession.Instance.station.stationRoot.GetComponentsInChildren<Signal47.Audio.PracticalLampEmission>())
+                if(surface.source==GameSession.Instance.station.testLamp)
+                {var block=new MaterialPropertyBlock();surface.GetComponent<Renderer>().GetPropertyBlock(block);float value=block.GetColor("_EmissionColor").maxColorComponent;Check(lit?value>.05f:value<.001f,"Authored lamp emitter follows "+(lit?"exposed":"covered")+" state");count++;}
+            Check(count>0,"Physical test lamp has a visible emitter response");
+        }
         void Finish(bool ok,string reason=""){if(finished)return;finished=true;StopAllCoroutines();report.result=ok?"PASS":"FAIL: "+reason;if(root!=null)File.WriteAllText(Path.Combine(root,"result.json"),JsonUtility.ToJson(report,true));Application.Quit(ok?0:2);}
         void Update(){if(finished)return;if(report.errors.Count>0)Finish(false,"Runtime error: "+report.errors[0]);else if(Time.realtimeSinceStartup>deadline)Finish(false,"Timeout");}
         IEnumerator Start(){var a=System.Environment.GetCommandLineArgs();int oi=Array.IndexOf(a,"--signal47-save-dir");try{if(oi<0||oi+1>=a.Length)throw new InvalidOperationException("Dedicated station26 profile required");string d=ChapterSave.StorageDirectory;if(!Path.GetFileName(d).StartsWith("station26-test-",StringComparison.Ordinal)||!File.Exists(Path.Combine(d,"ALLOW_STATION26_TEST")))throw new InvalidOperationException("Dedicated station26 profile and marker required");root=Path.Combine(d,"Evidence");Directory.CreateDirectory(root);report.unity=Application.unityVersion;report.renderer=SystemInfo.graphicsDeviceType+" / "+SystemInfo.graphicsDeviceName;}catch(Exception e){Finish(false,e.ToString());yield break;}var stack=new Stack<IEnumerator>();stack.Push(Run());while(stack.Count>0&&!finished){object next=null;bool advanced=false;Exception failure=null;try{advanced=stack.Peek().MoveNext();if(advanced)next=stack.Peek().Current;}catch(Exception e){failure=e;}if(failure!=null){Finish(false,failure.ToString());yield break;}if(!advanced){stack.Pop();continue;}if(next is IEnumerator nested)stack.Push(nested);else yield return next;}Finish(report.errors.Count==0,report.errors.Count>0?report.errors[0]:"");}
@@ -189,8 +204,10 @@ namespace Signal47.Debugging
             Check(departure && Physics.Raycast(eye,(departure.GetComponent<Collider>().bounds.center-eye).normalized,out var departureHit,2.65f) && departureHit.collider.gameObject==departure,"Physical departure folio is reachable beside archive bench");
             Check(g.station.Open("travel"),"Travel review opens in SARO");yield return Shot("00-travel-review");g.station.Close();
             Check(!g.station.InStation,"Cancel keeps SARO");yield return Save("SARO archive");
+            Color saroAmbient=RenderSettings.ambientLight,saroFog=RenderSettings.fogColor;float saroDensity=RenderSettings.fogDensity;string saroLights=LightingState();
             Check(g.station.Travel(true),"Confirmed departure starts");yield return WaitFor(()=>g.station.InStation&&!g.station.Traveling,25,"Departure finishes with saved destination");
             var st=g.station;yield return Shot("01-arrival");
+            Check(RenderSettings.ambientLight!=saroAmbient&&LightingState()!=saroLights,"Field visit applies its own atmosphere and removes duplicate distant directional light");
             yield return WalkAndReach();
             string initial=st.CaptureState();
             Check(st.stationRoot.activeSelf&&g.player.transform.position.x>100,"Playable field area is active");
@@ -205,7 +222,9 @@ namespace Signal47.Debugging
             Position(st.testLamp.transform,2);g.hud.SetPaused(true);st.SetLampCovered(true);
             Check(!st.LampCovered&&!st.ObserveLamp(),"Pause blocks lamp mutation and observation");g.hud.SetPaused(false);
             Check(!st.ObserveLamp(),"Uncovered lamp does not pass null test");yield return Shot("03-lamp-on");
+            CheckEmitter(true);
             st.SetLampCovered(true);Check(st.ObserveLamp()&&st.P07Complete&&!st.testLamp.enabled,"Covered actual lamp records P07");yield return Shot("04-lamp-off");
+            CheckEmitter(false);
             Position(st.cableTarget,2.2f);Check(st.InspectCable(),"Physical cable cut can be inspected nearby");
             Check(st.Open("cable")&&!st.SubmitCable("deliberate-cut"),"P08 waits for separate cable frame");st.Close();
             yield return Expose(FieldCamera.StationCablePhotoId);
@@ -215,6 +234,7 @@ namespace Signal47.Debugging
             string stationState=st.CaptureState();yield return Save("Field complete");yield return Reload("Inside station");g=GameSession.Instance;st=g.station;
             Check(st.InStation&&st.CaptureState()==stationState&&g.fieldCamera.FrameCount==4,"Field state and all photos restore inside station");
             Check(st.Travel(false),"Return starts");yield return WaitFor(()=>!st.Traveling&&!st.InStation,25,"Return finishes with saved SARO location");
+            Check(RenderSettings.ambientLight==saroAmbient&&RenderSettings.fogColor==saroFog&&Mathf.Abs(RenderSettings.fogDensity-saroDensity)<.00001f&&LightingState()==saroLights,"Return restores the exact SARO ambient, fog and directional-light state");
             string returnState=st.CaptureState();yield return Save("SARO return");yield return Reload("SARO return");g=GameSession.Instance;
             Check(g.station.CaptureState()==returnState&&!g.station.stationRoot.activeSelf,"Return state and inactive field area restore");
             Check(g.chapter.CaptureState()==originalChapter&&Case.CaptureState()==archiveState,"Original chapter and archive deductions preserved");

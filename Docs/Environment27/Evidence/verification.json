@@ -1,0 +1,318 @@
+{
+  "date": "2026-09-13",
+  "scope": "Environment27: STATION 01 environment art, local atmosphere and sound, preserved P06-P09 and separate persistent field demo. Not the entire K3 or 5-6 hour game.",
+  "build": {
+    "base_revision": "a241f222a77d5150de4f2866b708babec3c27cbd",
+    "working_tree_changes": true,
+    "unity_source_sha256": "22a160fafeb39984d8124d842982ccf500acad1d65f88552a977a69c82243e9f",
+    "player_sha256": "8027f7d1f9ae7dacfc826fb218adcc1ae7464af098a8a59397e7531c0f7ec0bc",
+    "build_payload_sha256": "0af0fcfdeb32295daa0f35eeea94745540747b9636ad1ef3931f0e62b1632b1a",
+    "payload_hash_method": "Sorted relative file paths, NUL, file bytes; excludes build-manifest.json and build-id.txt. player_sha256 covers the native launcher only."
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3",
+    "manifest_sha256": "d75d04baa29a3f68569738478c07540d0c9fd38944bd6326c455daa0c89185a4",
+    "package_id": "Environment27-22a160fafeb3",
+    "file_count": 179,
+    "directory_count": 21,
+    "uncompressed_bytes": 384577644,
+    "package_payload_sha256": "0831ec0212994559442ce41a6f3c1332b88f30ad52b83ba4ff4fcf3b8c898d0d",
+    "unity_source_sha256": "22a160fafeb39984d8124d842982ccf500acad1d65f88552a977a69c82243e9f",
+    "base_revision": "a241f222a77d5150de4f2866b708babec3c27cbd",
+    "archive": {
+      "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Environment27-22a160fafeb3-Linux.tar.gz",
+      "bytes": 182219528,
+      "sha256": "4e1b3f9f5d947f90a855253779310722fa48d519edd39c4dbb0609cea682ecde",
+      "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Environment27-22a160fafeb3-Linux.tar.gz.sha256",
+      "sidecar_sha256": "e85c3e1d09e09616b72851970981c017ee0a9abf140f69cc0f1908df503ac0fc"
+    },
+    "all_files_modes_and_current_source_rechecked": true
+  },
+  "runs": [
+    {
+      "suite": "Initial field 1280",
+      "profile": "Artifacts/Station26/station26-test-4Aor5i",
+      "report": "InitialDirect1280/result.json",
+      "result": "PASS",
+      "checks": 168,
+      "final_source": false,
+      "method": "API-driven integrated STATION 01 P06-P09 with durable save/reload; no native input or performance claim",
+      "launcher": "Artifacts/GauntletLinux/Signal47.x86_64",
+      "exit_code": 0
+    },
+    {
+      "suite": "Packaged field 1600",
+      "profile": "Artifacts/Station26/station26-test-AGQtdg",
+      "report": "Packaged1600/result.json",
+      "result": "PASS",
+      "checks": 168,
+      "final_source": true,
+      "method": "API-driven integrated STATION 01 P06-P09 with durable save/reload; no native input or performance claim",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-SIGNAL47.sh",
+      "exit_code": 0
+    },
+    {
+      "suite": "Packaged archive",
+      "profile": "Artifacts/WorldCase22/worldcase22-test-ikJfov",
+      "report": "worldcase22-checks.json",
+      "result": "PASS",
+      "checks": 118,
+      "final_source": true,
+      "method": "API-driven integrated P04/P05 with real checkpoint writes and scene reloads; no native input, blind reading or performance claim",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-SIGNAL47.sh",
+      "exit_code": 0
+    },
+    {
+      "suite": "Packaged original gameplay",
+      "profile": "Artifacts/Resources19/check-pFxADS",
+      "report": "resources19-checks.json",
+      "result": "PASS",
+      "checks": 42,
+      "final_source": true,
+      "method": "API-driven real Unity player; not native input or performance measurement",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-SIGNAL47.sh",
+      "exit_code": 0
+    },
+    {
+      "suite": "Packaged recovery",
+      "profile": "Artifacts/Menu14/menu14-test-fyRyND",
+      "report": "recovery15-checks.json",
+      "result": "PASS",
+      "checks": 50,
+      "final_source": true,
+      "method": "API-driven Unity menu/save checks; no native input or performance certification",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-SIGNAL47.sh",
+      "exit_code": 0
+    },
+    {
+      "suite": "Packaged demo Continue",
+      "profile": "Artifacts/Environment27/demo-data-c81DWS/Signal47/Environment27Demo/environment27-test-packaged",
+      "report": "Demo1600/result.json",
+      "result": "PASS",
+      "checks": 27,
+      "final_source": true,
+      "method": "Station26 field camera route; completed WorldCase seed; six pre-run player-eye captures; five eased 24 s transitions (120 s); unscaled Update intervals; all samples retained; no native input claim",
+      "launcher": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-SIGNAL47.sh",
+      "exit_code": 0
+    }
+  ],
+  "performance": {
+    "report": "Final1280/result.json",
+    "frames": "Final1280/frames.csv",
+    "method": "Station26 field camera route; completed WorldCase seed; six pre-run player-eye captures; five eased 24 s transitions (120 s); unscaled Update intervals; all samples retained; no native input claim",
+    "resolution": "1280x800",
+    "renderer": "OpenGLCore",
+    "cpu": "Intel(R) Core(TM) Ultra 5 225U",
+    "gpu": "Mesa Intel(R) Graphics (ARL)",
+    "focusedThroughout": true,
+    "targetFrameRate": 75,
+    "vSyncCount": 0,
+    "warmupSeconds": 12.0,
+    "measuredSeconds": 120.02040907700001,
+    "framesRetained": 7897,
+    "averageFps": 65.79876988295517,
+    "p95ms": 20.00333799999865,
+    "p99ms": 22.0819329999955,
+    "maxMs": 36.0108069999967,
+    "stallsOver50ms": 0,
+    "engineMemoryPeakMiB": 196.46669483184814,
+    "gpuTimingAvailable": false,
+    "stable60Gate": "FAIL",
+    "gate": "p95 <= 16.67 ms and p99 < 20 ms",
+    "initialDefaultAverageFps": 36.89491276660284,
+    "improvementPercent": 78.34103660631501,
+    "limitations": [
+      "Single 120-second field camera route with HUD and player updates suppressed; not a whole-game benchmark.",
+      "No screenshot/file-export overhead during measurement.",
+      "No 1600x900 performance run or separate GPU timing."
+    ]
+  },
+  "scene": {
+    "meshRendererAudit": {
+      "renderers": 150,
+      "triangles": 324344,
+      "colliders": 76,
+      "lightmaps": 2
+    },
+    "grass": {
+      "batches": 164,
+      "instances": 648,
+      "logical_grass_triangles_before_culling": 1510004,
+      "note": "Not the measured per-frame visible count; original scene audit excludes GPU-instanced grass."
+    },
+    "lightmapsPreserved": 2,
+    "fieldOrigin": [
+      120,
+      0,
+      100
+    ],
+    "splats_in_main_game": false
+  },
+  "photos": [
+    {
+      "run": "Artifacts/Station26/station26-test-4Aor5i",
+      "id": "s03-field-photograph",
+      "path": "Artifacts/Station26/station26-test-4Aor5i/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-4Aor5i",
+      "id": "b12-control-photograph",
+      "path": "Artifacts/Station26/station26-test-4Aor5i/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-4Aor5i",
+      "id": "station01-marker-photograph",
+      "path": "Artifacts/Station26/station26-test-4Aor5i/FieldPhotos/ST01-MARKER-20260913-140024-43ec2025.jpg",
+      "sha256": "9f9a5ec4e924681dd4c2a3b3c9040677256f55833a66be1389de5dd51f275cce",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-4Aor5i",
+      "id": "station01-cable-photograph",
+      "path": "Artifacts/Station26/station26-test-4Aor5i/FieldPhotos/ST01-CABLE-20260913-140026-5255e8a5.jpg",
+      "sha256": "275e74bd887b5602b92affe71efd2b69e978b2cba235bca5f3393cbcd2dcbb01",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-AGQtdg",
+      "id": "s03-field-photograph",
+      "path": "Artifacts/Station26/station26-test-AGQtdg/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-AGQtdg",
+      "id": "b12-control-photograph",
+      "path": "Artifacts/Station26/station26-test-AGQtdg/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8",
+      "dimensions": [
+        960,
+        600
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-AGQtdg",
+      "id": "station01-marker-photograph",
+      "path": "Artifacts/Station26/station26-test-AGQtdg/FieldPhotos/ST01-MARKER-20260913-141352-b30dc53e.jpg",
+      "sha256": "dbee76bb4d13610351bb139e63a52b86bd0ade94b37d483ac1a219ffcb5dcbd1",
+      "dimensions": [
+        960,
+        540
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    },
+    {
+      "run": "Artifacts/Station26/station26-test-AGQtdg",
+      "id": "station01-cable-photograph",
+      "path": "Artifacts/Station26/station26-test-AGQtdg/FieldPhotos/ST01-CABLE-20260913-141354-e4462578.jpg",
+      "sha256": "0b9405e683c011a641b01a88df2d4382d4d7a6d16c97456a46d51e5163280090",
+      "dimensions": [
+        960,
+        540
+      ],
+      "exported": true,
+      "developed": true,
+      "inspected": true
+    }
+  ],
+  "visual_review": {
+    "method": "Direct inspection of unedited Unity runtime PNG and exported JPEG",
+    "reviewed": [
+      "Final1280/01-arrival-wide.png",
+      "Final1280/06-cabin-interior.png",
+      "Packaged1600/01-arrival.png",
+      "Packaged1600/08-developed-cable.png",
+      "Packaged1600/FieldPhotos/ST01-MARKER-20260913-141352-b30dc53e.jpg"
+    ],
+    "assessment": "Clear improvement over Station26 prototype: terrain and layered backdrop, photographed rocks, grass, physical service layout, framed windows, instrument models, worn PBR finishes and warm interior. Investigation and photo details remain readable.",
+    "remaining": "Background mesas, footpath edges and some hardware still look procedural; no photorealism/final-art claim."
+  },
+  "source_review": {
+    "independent_agents": 2,
+    "code_review": "No material gameplay/save/rendering regressions found in final spatial batching, field atmosphere/audio, emitter or package integration.",
+    "assets": "Original Blender kit preserved with source and FBX. Poly Haven Boulder01 by Rico Cilliers, CC0; pinned source downloads. Generator loop derived reproducibly from credited Michael Brigida/students CC BY 3.0 recording.",
+    "grass_audit_correction": "648 actual instances / 1,510,004 logical triangles before culling, rather than all 780 placement candidates."
+  },
+  "unchanged_historical_sources": [
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/B12-20260910-205046-2238d7dd.jpg",
+      "sha256": "4147222fbc7ddd31d823223c7e590cb1a73ebd50a5fb0f60c7520d7b1f7a10a8"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/B12-20260910-205046-2238d7dd.json",
+      "sha256": "ae2e89a07aecc1613cc69db407c5a1fac781e43cd48dd7927ccf96d115db1ba6"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/S03-20260910-204853-dece0938.jpg",
+      "sha256": "9c45d8b6d12caa1d72c087c551039f7f8f1beb4b7b065ab62bbb069dfc767008"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/FieldPhotos/S03-20260910-204853-dece0938.json",
+      "sha256": "beefe41ecbac7e40f475de20ea74b5c70e0bd0e18826e2c2981db7c4a0da2f5d"
+    },
+    {
+      "source": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Chapter09/Profiles/Visual10FinalActive/case.json",
+      "sha256": "b2745930d745d5df8f2e8ef70e862d0e11d65b1b1b6adfa79d79cfaff9aa98da"
+    }
+  ],
+  "unchanged_default_launcher": {
+    "path": "Spill-SIGNAL47.sh",
+    "sha256": "f072ce1e53eff838ca562c93c92249f436deaabcaa7b917b3b927dc0fce33400",
+    "default": "Visual10"
+  },
+  "unverified": [
+    "Native keyboard/mouse, menu focus and blind clue comprehension/time.",
+    "Subjective audio balance.",
+    "Stable 60 FPS target failed despite optimization; GPU-specific timing and 1600x900 performance remain unmeasured.",
+    "Remaining K3/motel story and complete 5-6 hour game."
+  ],
+  "delivery": {
+    "candidate": true,
+    "default": "Visual10 preserved",
+    "stationStarter": "/home/tombonator3000t/Nedlastinger/Environment27-22a160fafeb3/Start-STATION01.sh",
+    "instructions": "Start-STATION01.sh then CONTINUE CHECKPOINT; own persistent demo profile, original save preserved.",
+    "previousPackagesPreserved": true,
+    "pull_request": "https://github.com/Tombonator3000/SIGNAL-47/pull/23",
+    "merge_status": "Source and evidence delivered through PR23; GitHub is authoritative for actual merge state.",
+    "implementation_commit": "e1987c729f0e5943ae681bab94c64ade04e71a88"
+  }
+}

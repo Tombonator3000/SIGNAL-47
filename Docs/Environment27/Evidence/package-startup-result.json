@@ -1,0 +1,44 @@
+{
+  "schema": "signal47-chapter09-package-startup-v1",
+  "started_utc": "2026-09-13T14:12:13Z",
+  "ended_utc": "2026-09-13T14:12:17Z",
+  "outcome": "UNPACK_PASS_NATIVE_UNRUN",
+  "error": null,
+  "checks": {
+    "archive_sidecar": "PASS",
+    "tar_paths_links_types": "PASS",
+    "all_files_hashes_sizes_modes": "PASS",
+    "build_package_identity": "PASS",
+    "package_only_extraction": "PASS",
+    "native_player_launch": "NOT_RUN",
+    "native_input_sequence_issued": "NOT_RUN"
+  },
+  "input_events": [],
+  "screenshots": [],
+  "verification_script_sha256": "c94ca4ad79d5620db087c68053c0f7137dd53a70302d2edfc816f5e9d10ff035",
+  "desktop_source_sha256": "42eef7337cb3583b7d996181212e848495a9ee58e5bf99a3bb5f0bfb9310f909",
+  "visual_review": {
+    "menu": "UNVERIFIED",
+    "playing": "UNVERIFIED",
+    "pause": "UNVERIFIED",
+    "requirement": "A reviewer must inspect the original captures for actual GUI state and any overlap. Issued input is not proof of the displayed state."
+  },
+  "archive": {
+    "path": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Environment27-22a160fafeb3-Linux.tar.gz",
+    "bytes": 182219528,
+    "sha256": "4e1b3f9f5d947f90a855253779310722fa48d519edd39c4dbb0609cea682ecde",
+    "sidecar": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Releases/SIGNAL47-Environment27-22a160fafeb3-Linux.tar.gz.sha256",
+    "sidecar_sha256": "e85c3e1d09e09616b72851970981c017ee0a9abf140f69cc0f1908df503ac0fc"
+  },
+  "package": {
+    "directory": "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Environment27/Unpacked/Environment27-22a160fafeb3",
+    "manifest_sha256": "d75d04baa29a3f68569738478c07540d0c9fd38944bd6326c455daa0c89185a4",
+    "package_id": "Environment27-22a160fafeb3",
+    "file_count": 179,
+    "directory_count": 21,
+    "uncompressed_bytes": 384577644,
+    "package_payload_sha256": "0831ec0212994559442ce41a6f3c1332b88f30ad52b83ba4ff4fcf3b8c898d0d",
+    "unity_source_sha256": "22a160fafeb39984d8124d842982ccf500acad1d65f88552a977a69c82243e9f",
+    "base_revision": "a241f222a77d5150de4f2866b708babec3c27cbd"
+  }
+}
