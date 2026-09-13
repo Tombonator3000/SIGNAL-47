@@ -1,5 +1,13 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Splat21 — gjenopprettet etter systemkrasj
+
+13. september 2026: [Unity-splatprøven og krasjrapporten](Research/UnitySplat21/README.md) er fullført som separat eksperiment. PR16 er kontrollert MERGED på `e976fa7f9b46225ed37873131e878bfd87c40dec`. Alt lokalt Splat21-arbeid ble bevart etter omstart; kerneljournalen bekrefter global minnemangel og at ChatGPT ble drept, men ikke hele årsakskjeden.
+
+Vulkan fullfører fire faser med 784/50 176 originale splats, både før og etter gjenoppretting, med null registrerte runtime-feil. OpenGL feilet med 398 feil og ufullført måling; denne kombinasjonen avvises nå før start. Ny starter har kontrollerte minne-/tidsgrenser og seks beståtte grensetester. Begge Vulkan-nærbilder har synlig blandingsfeil mot et vanlig objekt: splats er **ikke godkjent for hovedspillet**. Resultater, originale bilder og spiller-/kildehash er bevart. Ingen testprosess skal stå igjen etter levering.
+
+Resources19 er fortsatt siste produksjonskandidat, Visual10 standard; `Unity/` og `Spill-SIGNAL47.sh` er uendret i Splat21. Neste ordinære produksjonssteg er dokumentlesbarhet/P04; videre splat-arbeid er et separat mulig eksperiment og skal ikke forsinke dette. Testspor og leveringsstatus finnes i rapporten og GitHub.
+
 ## Nyeste verktøy- og instruksjonspass: ProductionTools20
 
 Leveringssporet er [PR16](https://github.com/Tombonator3000/SIGNAL-47/pull/16); GitHub viser faktisk flettestatus. Dette sporet inneholder verktøybevis og instruksjoner, ingen ny spillpakke.

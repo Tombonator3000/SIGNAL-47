@@ -1,0 +1,15 @@
+{
+  "upstream_revision": "2c6fed37da67a217367261fcfcd3316d34c73e76",
+  "source_assets_sha256": {
+    "Assets/UniversalRenderer.asset": "4c4b5551901fbb1a3406936530752cee3469cbbc2dee75e96baab2e07d551ccf",
+    "Assets/UniversalRenderer.asset.meta": "bb7b9d68f6495650847a4b1ed982cd60e587c19d347ad1b9e1c206ac2e251df5",
+    "Assets/UniversalRenderPipelineGlobalSettings.asset": "1a7ee04d016f1815ec6b2c5713ce95e8665864b8473b9c4faaafbd67c33c5ac2",
+    "Assets/UniversalRenderPipelineGlobalSettings.asset.meta": "3ceaa29ff74e953cb38ba9f02ddd2d8bd1bf66a1b5276fe85fd8ce250afaea34",
+    "Assets/Signal47/Art/PrototypePort/Signal47_URP.asset": "f06a95f87a98bf916b6dc437ce9dbd60f828c088db23b345250a1a465f181651",
+    "Assets/Signal47/Art/PrototypePort/Signal47_URP.asset.meta": "ea8549fb823198ec715cee4041573bc84ff6938137ad024746a9189265da7450"
+  },
+  "small_count": 784,
+  "grid_count": 50176,
+  "fixture_sha256": "afa18498a0439dc10f0298103ddf87750237368f49491f9da83c95879b2d757c",
+  "grid_sha256": "7ea90ddb3eb416eb7494a6772c9a67544accd2ad69fd54a724c7c8e7417f71c7"
+}
