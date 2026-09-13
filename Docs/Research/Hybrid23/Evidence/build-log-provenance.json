@@ -1,0 +1,41 @@
+{
+  "scope": "Public build log copies omit machine/session/license identifiers. Original logs remain under Artifacts/Hybrid23. No runtime images or exposure files were edited.",
+  "logs": [
+    {
+      "public_file": "GeneratedTrial-build-01.log.gz",
+      "original_uncompressed_sha256": "dbda64ece34ecc13e11501a524b5547d4aa258bdc6d15789304ccf6d60cc70ca",
+      "public_uncompressed_sha256": "4673a0fa3091b2d3be49fe4258c29eebc0f737f282b85353ae2e84d3185edd97",
+      "identifier_lines_redacted": 3
+    },
+    {
+      "public_file": "Hybrid23-build-05.log.gz",
+      "original_uncompressed_sha256": "f8e940b6d1e9c1c10bb5130c7f3e1fc4efbd7ee9e32dc6728c2dee3eb03a7413",
+      "public_uncompressed_sha256": "f5f46fc5c7f3a8d04e7543fe7db02961a49ecbfc02117c9db5d73f5e97a0060c",
+      "identifier_lines_redacted": 3
+    },
+    {
+      "public_file": "proxy-build-02.log.gz",
+      "original_uncompressed_sha256": "6be6a3f57b2ce75e0e8e217b2c10b18fbba2205f5e32ca79bd46961e6c46a8d2",
+      "public_uncompressed_sha256": "4ee207bb99a4504c78b93e60897940db96b485c986942979b603da4cb75c2f8b",
+      "identifier_lines_redacted": 3
+    },
+    {
+      "public_file": "failed-attempts/Hybrid23-build-03.log.gz",
+      "original_uncompressed_sha256": "3507cfb5e4800563d3e1aa020b4473d2983bb199721f423d9167f6f3c2711660",
+      "public_uncompressed_sha256": "a4eff7b8d2078e62ec34ef2ebe5fba0d626517d27ce3363b416b31bb13baf9a5",
+      "identifier_lines_redacted": 3
+    },
+    {
+      "public_file": "failed-attempts/Hybrid23-build-02.log.gz",
+      "original_uncompressed_sha256": "6586337140d7df60c8b9ef44cc9d02e193ce05d2152a973280fdfbecbdda8f8a",
+      "public_uncompressed_sha256": "04b8e28418d9da17d84491ec6dd9e39f073ed7ac3cc9ef351b2ca97f0930c636",
+      "identifier_lines_redacted": 3
+    },
+    {
+      "public_file": "failed-attempts/Hybrid23-build-01.log.gz",
+      "original_uncompressed_sha256": "5cd1e75ecf3aa7b258211603359362892260410554fe1e07ee9246bdb3500ccc",
+      "public_uncompressed_sha256": "e3d5deadcbfb83362e37cfe0413a5bf64ddd8fac852741d00420f5c910338039",
+      "identifier_lines_redacted": 3
+    }
+  ]
+}

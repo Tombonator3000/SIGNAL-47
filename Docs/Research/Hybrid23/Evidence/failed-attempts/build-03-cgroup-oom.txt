@@ -1,0 +1,3 @@
+Sep 13 11:47:36 tom-travelmate systemd[2072]: run-p55140-i66690.service: The kernel OOM killer killed some processes in this unit.
+Sep 13 11:47:37 tom-travelmate systemd[2072]: run-p55140-i66690.service: Failed with result 'oom-kill'.
+Sep 13 11:47:37 tom-travelmate systemd[2072]: app.slice: The kernel OOM killer killed some processes in this unit.

@@ -1,0 +1,24 @@
+{
+    "name": "common-only-light-on",
+    "file": "hybridprobe-exposure-common-only-light-on.jpg",
+    "sha256": "c4e80e1db993711df5bb7e643919352486fb3d150acf6e5b42a58cb9f609e4a4",
+    "utc": "2026-09-13T09:58:36.0359550Z",
+    "method": "Separate camera / URP SingleCameraRequest / RenderTexture / JPEG 95",
+    "dataOrigin": "Magnific generated STATION01 model with clipped doorway and normalized scene coordinates; Gaussians sampled from its textured surface. Not a trained reconstruction or Marble world.",
+    "representation": "common ordinary scene only / visibility control",
+    "position": {
+        "x": 8.0,
+        "y": 2.299999952316284,
+        "z": -6.0
+    },
+    "forward": {
+        "x": -0.7037881016731262,
+        "y": -0.09677086025476456,
+        "z": 0.703788161277771
+    },
+    "width": 1280,
+    "height": 800,
+    "splats": false,
+    "light": true,
+    "meanLuma": 0.18880155372553379
+}

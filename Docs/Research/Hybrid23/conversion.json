@@ -1,0 +1,49 @@
+{
+  "source_sha256": "7f8df7db365cb37c8dd06459d2c470aa7388b1897c70c851192423fdce30c489",
+  "source_creation": "mE1DdyxhJQ",
+  "source_type": "Magnific Tripo v3.1 image-generated textured GLB",
+  "output_type": "Deterministically surface-sampled Gaussians, not trained 3DGS or a Marble world",
+  "axes": "Unity RUF; generated model +Blender X facade becomes Unity -Z facade",
+  "normalization_meters": {
+    "width": 8,
+    "depth": 6,
+    "height": 2.8
+  },
+  "original_vertices": 20477,
+  "original_triangles": 33903,
+  "output_triangles": 32556,
+  "doorway_triangles_considered": 1642,
+  "doorway_cut": {
+    "x": [
+      -0.7,
+      0.7
+    ],
+    "y": [
+      -0.2,
+      2.15
+    ],
+    "z": [
+      -0.5,
+      0.65
+    ]
+  },
+  "surface_area_m2": 172.82832974362515,
+  "splats": 150000,
+  "seed": 470023,
+  "tangent_radius_m": 0.023760735338561715,
+  "normal_radius_m": 0.003,
+  "opacity": 0.95,
+  "texture": {
+    "size": [
+      4096,
+      4096
+    ],
+    "sample": "bilinear original encoded sRGB values",
+    "bytes_unchanged_from_glb": true
+  },
+  "files": {
+    "station-texture.jpg": "c6c0e50f694b8fd3192bc72374a44552a48de141b51ba5d78b5219b7409481c6",
+    "station-surface-splats.ply": "39171f90bcb407e9f5aca214aaada955ea947a004513bb584d5c288bad1f102a",
+    "station-mesh.json": "fefd0e2bf1372b72cd59208a82767522774c73c2770804eb70275f6c82a5a16c"
+  }
+}

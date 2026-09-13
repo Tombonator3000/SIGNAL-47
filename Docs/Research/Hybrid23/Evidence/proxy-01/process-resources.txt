@@ -1,0 +1,23 @@
+	Command being timed: "/home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Hybrid23/GeneratedTrial/Player/Hybrid23.x86_64 -force-vulkan -screen-width 1280 -screen-height 800 -screen-fullscreen 0 --hybrid23-checks --hybrid23-out /home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Hybrid23/Evidence/proxy-01 -logFile /home/tombonator3000t/.codex/.chatgpt-projects/g-p-6aa05604a4708191a65139c1d5f89363/SIGNAL-47/Artifacts/Hybrid23/Evidence/proxy-01/player.log"
+	User time (seconds): 7.27
+	System time (seconds): 1.55
+	Percent of CPU this job got: 39%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:22.15
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 334292
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 89017
+	Voluntary context switches: 245457
+	Involuntary context switches: 7411
+	Swaps: 0
+	File system inputs: 4528
+	File system outputs: 9344
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
