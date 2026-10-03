@@ -6,7 +6,6 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [ ] Tom tester lenken på mobil og PC. Noter fps-følelse, kontroller og lesbarhet.
 - [ ] Mål ytelse på ekte telefon. Fps-telleren bak `?debug` som var tenkt til dette, finnes ikke i koden ennå og må lages først.
-- [ ] Tom: bestem om grenen `ccr-30e38858-767d90` skal bli PR mot main. web/ ligger foreløpig bare der.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
 - [ ] Sjekkpunkt etter fullført prolog: Continue starter i dag fra 02:13. Lagre et "ferdig"-punkt som går rett til kapittel 1 når det finnes.
 - [ ] Toasts kan stable seg oppå hverandre når mange kommer tett. Legg dem i kø.

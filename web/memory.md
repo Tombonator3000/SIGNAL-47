@@ -4,7 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
-- 2026-10-03: web/ ligger i repoet fra commit `3dd5b37` på grenen `ccr-30e38858-767d90`, lagt inn av Claude Code. Grenen `web/threejs-prologue` som chatloggen nevner, ble aldri pushet. Tom bestemmer når det flettes til main.
+- 2026-10-03: web/ ble lagt inn av Claude Code (commit `3dd5b37` på grenen `ccr-30e38858-767d90`) og føres til main gjennom [PR #24](https://github.com/Tombonator3000/SIGNAL-47/pull/24), fordi Tom ba om PR og merge. Grenen `web/threejs-prologue` som chatloggen nevner, ble aldri pushet.
 - 2026-10-03: Spillet bygges videre i three.js i `web/` i samme repo (Tombonator3000/SIGNAL-47). Unity-prosjektet blir liggende som arkiv. Vi tar med design, historie og konstanter, ikke kode.
 - 2026-10-03: Claude er lead og koder. ChatGPT lager 2D-grafikk etter `ART_BRIEF.md`. Tom bestemmer og tester.
 - 2026-10-03: Stilisert lavpoly etter Toms referansebilder: natt, Melkeveien, oransje natriumlys, grønne CRT-er, røde blinklys på antennene, neon fra Sierra Motor Court.
