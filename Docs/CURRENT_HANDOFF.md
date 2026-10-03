@@ -1,5 +1,11 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Nettversjonen i web/ (3. oktober 2026)
+
+Fra 3. oktober 2026 bygges spillet videre i three.js i [`web/`](../web/README.md) i samme repo. Unity-prosjektet blir liggende som arkiv og referanse. Prologen «Night Shift» ble laget i en Claude-chat og lagt inn i repoet av Claude Code samme kveld, gjennom [PR24](https://github.com/Tombonator3000/SIGNAL-47/pull/24). Kilden bygger til en fil som er byte-identisk med den publiserte claude.ai-artefakten Tom tester på mobil. Headless gjennomspilling ved 844×390 består, mens fps på ekte telefon og PC, ekte berøringsinput og lydmiks er UNVERIFIED. GitHub viser faktisk flettestatus.
+
+Arbeid under `web/` følger [`web/AGENTS.md`](../web/AGENTS.md). Gjeldende beslutninger, kanon og neste steg står i [`web/memory.md`](../web/memory.md), [`web/todo.md`](../web/todo.md) og [`web/log.md`](../web/log.md). Seksjonene under gjelder Unity-sporet.
+
 ## Environment27 — STATION 01 som sammenhengende sted
 
 Kilde og bevis leveres gjennom [PR23](https://github.com/Tombonator3000/SIGNAL-47/pull/23), implementeringscommit `e1987c729f0e5943ae681bab94c64ade04e71a88`. GitHub viser faktisk flettestatus.

@@ -2,6 +2,12 @@
 
 Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
+## Nettversjonen i `web/`
+
+Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md), med three.js, TypeScript og Vite. Prologen «Night Shift» kan spilles fra start til sluttkort i nettleseren, med mus og tastatur eller berøringskontroller. Ytelse og berøring på ekte telefon er ikke testet ennå. Arbeid i mappen følger [`web/AGENTS.md`](web/AGENTS.md), og status står i `web/memory.md`, `web/todo.md` og `web/log.md`. Unity-prosjektet som beskrives under, er arkiv og referanse.
+
+## Unity-versjonen (arkiv)
+
 Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel og publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
 
 ## Spill på Kubuntu

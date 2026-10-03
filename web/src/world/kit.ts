@@ -1,0 +1,162 @@
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+// ---------- Exterior floodlights ----------
+// Real three.js point lights cost every material a loop per light. Outside we fake
+// sodium floodlights with a tiny shader add-on that only exterior materials pay for.
+export const FLOOD_N = 16;
+export const flood = {
+  pos: Array.from({ length: FLOOD_N }, () => new THREE.Vector4(0, -999, 0, 0)),
+  col: Array.from({ length: FLOOD_N }, () => new THREE.Color(1, 0.6, 0.25)),
+  count: 0,
+  scale: { value: 0.07 },
+};
+export function addFlood(x: number, y: number, z: number, intensity: number, color = 0xff9a45) {
+  if (flood.count >= FLOOD_N) return;
+  flood.pos[flood.count].set(x, y, z, intensity);
+  flood.col[flood.count].set(color);
+  flood.count++;
+}
+
+export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012): T {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uFloodPos = { value: flood.pos };
+    sh.uniforms.uFloodCol = { value: flood.col };
+    sh.uniforms.uFloodFall = { value: falloff };
+    sh.uniforms.uFloodScale = flood.scale;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vFWorld;\nvarying vec3 vFNormal;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec4 fw = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          fw = instanceMatrix * fw;
+        #endif
+        fw = modelMatrix * fw;
+        vFWorld = fw.xyz;
+        vec3 fn = objectNormal;
+        #ifdef USE_INSTANCING
+          fn = mat3(instanceMatrix) * fn;
+        #endif
+        vFNormal = normalize(mat3(modelMatrix) * fn);`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec3 vFWorld; varying vec3 vFNormal;
+        uniform vec4 uFloodPos[${FLOOD_N}]; uniform vec3 uFloodCol[${FLOOD_N}];
+        uniform float uFloodFall; uniform float uFloodScale;`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        vec3 fAcc = vec3(0.0);
+        vec3 fN = normalize(vFNormal);
+        for (int i = 0; i < ${FLOOD_N}; i++) {
+          vec3 L = uFloodPos[i].xyz - vFWorld;
+          float d2 = dot(L, L);
+          L *= inversesqrt(max(d2, 1e-4));
+          float ndl = abs(dot(fN, L)) * 0.75 + 0.25;
+          // windowed falloff: each lamp lights a pool, not the whole desert
+          float win = clamp(1.0 - sqrt(d2) / (uFloodPos[i].w * 1.6 + 8.0), 0.0, 1.0);
+          fAcc += uFloodCol[i] * (uFloodPos[i].w * ndl * win * win / (1.0 + d2 * uFloodFall));
+        }
+        totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;`);
+  };
+  m.customProgramCacheKey = () => 'flood' + falloff;
+  return m;
+}
+
+// ---------- Materials ----------
+const std = (o: THREE.MeshStandardMaterialParameters) => new THREE.MeshStandardMaterial(o);
+export const M = {
+  deskTop: std({ color: 0x55605f, roughness: 0.5 }),
+  deskBody: std({ color: 0x3d4749, roughness: 0.55, metalness: 0.35 }),
+  steel: std({ color: 0x7c8387, roughness: 0.4, metalness: 0.7 }),
+  beige: std({ color: 0xcfc3a3, roughness: 0.55 }),
+  beigeDark: std({ color: 0xa69a7c, roughness: 0.6 }),
+  darkPlastic: std({ color: 0x17191c, roughness: 0.6 }),
+  chair: std({ color: 0x24272d, roughness: 0.95 }),
+  cabinet: std({ color: 0x59615f, roughness: 0.5, metalness: 0.4 }),
+  paper: std({ color: 0xe6dfcb, roughness: 0.9 }),
+  glassDark: std({ color: 0x08100b, roughness: 0.15, metalness: 0.1 }),
+  plant: std({ color: 0x3e5a2c, roughness: 0.9 }),
+  pot: std({ color: 0x7a4a2e, roughness: 0.9 }),
+  frame: std({ color: 0x2b3033, roughness: 0.5, metalness: 0.5 }),
+  emissiveTube: new THREE.MeshBasicMaterial({ color: 0xfff1d6 }),
+  emissiveTubeOff: new THREE.MeshStandardMaterial({ color: 0x8c8a82, roughness: 0.4 }),
+  lampShade: std({ color: 0x1e2224, roughness: 0.45, metalness: 0.5, side: THREE.DoubleSide }),
+  lampBulb: new THREE.MeshBasicMaterial({ color: 0xffd9a0 }),
+  ceramic: std({ color: 0xece7db, roughness: 0.35 }),
+  coffee: std({ color: 0x1c0f07, roughness: 0.15 }),
+  ledRed: new THREE.MeshBasicMaterial({ color: 0xff3b2a }),
+  ledGreen: new THREE.MeshBasicMaterial({ color: 0x45ff7a }),
+  ledAmber: new THREE.MeshBasicMaterial({ color: 0xffb040 }),
+  black: new THREE.MeshBasicMaterial({ color: 0x050505 }),
+  // exterior, floodlit
+  concrete: floodlit(std({ color: 0x8d8576, roughness: 0.95 })),
+  dishWhite: floodlit(std({ color: 0xd8d2c4, roughness: 0.6, metalness: 0.15, side: THREE.DoubleSide })),
+  dishMetal: floodlit(std({ color: 0xa8a39a, roughness: 0.55, metalness: 0.3 })),
+  pole: floodlit(std({ color: 0x4a4a48, roughness: 0.7, metalness: 0.4 })),
+};
+
+// ---------- Mesh helpers ----------
+export function box(parent: THREE.Object3D, w: number, h: number, d: number, mat: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  parent.add(m);
+  return m;
+}
+export function cyl(parent: THREE.Object3D, rt: number, rb: number, h: number, mat: THREE.Material, x = 0, y = 0, z = 0, seg = 12) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.position.set(x, y, z);
+  parent.add(m);
+  return m;
+}
+export function plane(parent: THREE.Object3D, w: number, h: number, mat: THREE.Material, x = 0, y = 0, z = 0, ry = 0, rx = 0) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+  m.position.set(x, y, z); m.rotation.set(rx, ry, 0, 'YXZ');
+  parent.add(m);
+  return m;
+}
+// Thin rod between two points (cables, truss members, feed legs).
+const _up = new THREE.Vector3(0, 1, 0);
+export function rod(parent: THREE.Object3D, a: THREE.Vector3, b: THREE.Vector3, r: number, mat: THREE.Material, seg = 5) {
+  const d = new THREE.Vector3().subVectors(b, a);
+  const len = d.length();
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg), mat);
+  m.position.copy(a).addScaledVector(d, 0.5);
+  m.quaternion.setFromUnitVectors(_up, d.normalize());
+  parent.add(m);
+  return m;
+}
+export function noMerge(o: THREE.Object3D) { o.userData.noMerge = true; return o; }
+
+// ---------- Batching ----------
+// Merge all static meshes under `root` into one mesh per material. Big win on mobile.
+export function mergeStatic(root: THREE.Object3D) {
+  root.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const buckets = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  const victims: THREE.Mesh[] = [];
+  const walk = (o: THREE.Object3D) => {
+    for (const c of [...o.children]) {
+      if (c.userData.noMerge) continue;
+      const mesh = c as THREE.Mesh;
+      if (mesh.isMesh && !(mesh as any).isInstancedMesh && !Array.isArray(mesh.material) && !(mesh.geometry.attributes.color)) {
+        const g = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+        for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+        if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+        g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, mesh.matrixWorld));
+        const mat = mesh.material as THREE.Material;
+        if (!buckets.has(mat)) buckets.set(mat, []);
+        buckets.get(mat)!.push(g);
+        victims.push(mesh);
+      }
+      walk(c);
+    }
+  };
+  walk(root);
+  for (const v of victims) { v.parent?.remove(v); v.geometry.dispose(); }
+  for (const [mat, geos] of buckets) {
+    const merged = mergeGeometries(geos, false);
+    if (!merged) continue;
+    const m = new THREE.Mesh(merged, mat);
+    m.matrixAutoUpdate = false;
+    root.add(m);
+  }
+}
