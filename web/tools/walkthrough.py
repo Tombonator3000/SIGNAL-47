@@ -91,9 +91,13 @@ async def main():
         az = await ev("S47.ext.dishes.map(d=>Math.round(d.curAz))")
         check(all(a == 26 for a in az), f'all {len(az)} dishes at az 026')
         await tick(6)
-        await ev("S47.hold = false"); await pg.wait_for_timeout(2500)
-        await shot('12_endcard')
+        await ev("S47.hold = false")
         check(await pg.locator('.endcard').count() == 1, 'end card shown')
+        # The end card fades in with CSS animations (title after 1 s, buttons after 6.5 s). In the software
+        # renderer that takes far longer than a fixed wait, so wait until the buttons are fully visible.
+        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
+        await shot('12_endcard')
+        check(await ev("getComputedStyle(document.querySelector('.endcard h1')).opacity") == '1', 'end card title and buttons visible')
         saved = await ev("localStorage.getItem('s47.checkpoint')")
         print('checkpoint in storage:', saved)
         print('\n'.join(errs[:30]) or 'no console errors/warnings')

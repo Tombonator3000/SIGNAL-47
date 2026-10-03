@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-03: web/ ligger i repoet fra commit `3dd5b37` på grenen `ccr-30e38858-767d90`, lagt inn av Claude Code. Grenen `web/threejs-prologue` som chatloggen nevner, ble aldri pushet. Tom bestemmer når det flettes til main.
 - 2026-10-03: Spillet bygges videre i three.js i `web/` i samme repo (Tombonator3000/SIGNAL-47). Unity-prosjektet blir liggende som arkiv. Vi tar med design, historie og konstanter, ikke kode.
 - 2026-10-03: Claude er lead og koder. ChatGPT lager 2D-grafikk etter `ART_BRIEF.md`. Tom bestemmer og tester.
 - 2026-10-03: Stilisert lavpoly etter Toms referansebilder: natt, Melkeveien, oransje natriumlys, grønne CRT-er, røde blinklys på antennene, neon fra Sierra Motor Court.
@@ -28,6 +29,14 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 - Neste kapittel: S-03 i servicegården. Planlagt 042°, enkoder 026°, commands received 0.
 - Hele historien med tre slutter (Silence, Answer, Listen) står i ChatGPT-samtalen "Utvikle spillområde visuelt" og i Unity-repoets `Docs/DesignBible13`.
 
+## Referansebilder
+
+Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoet.
+
+- Seks SARO-bilder: motellskiltet ved arrayet, kontrollrommet, skrivebordet med feltkamera og S-03-profilen (planlagt 042, enkoder 026, commands received 0, neste spor Sierra Motor Court), servicegården ved S-03 (AZIMUTH 026, NO CONTROL COMMAND RECORDED), konsollen med SIGNAL LOCK og EVENT IN 00:00:47, og spektrumanalysatoren med 1419.900 CAL, 1420.110 RFI, 1420.405 ANOMALY og -39.0 LY.
+- Klokkeslett, SNR, asimut og repetisjonstid i bildene avviker fra kanon over (for eksempel 03:14:27, SNR 12.4 dB og "repeats every 47s"). Kanon gjelder, bildene er stemning og stil.
+- Et skjermbilde fra et annet spill: håndskrevet dagbok til venstre og ren transkripsjon til høyre. Dokumentvisningen i `UI.document()` har samme oppsett.
+
 ## Arkitektur
 
 - `src/main.ts`: oppstart, step/draw-løkke, menyer, adaptiv oppløsning, testkroker på `window.S47` (hold, tick, jump, setQuality, game, room, ext, player, renderer, scene).
@@ -42,3 +51,6 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 - Fullskjermlag i `#ui` får `pointer-events: auto` fra `#ui > *`. Lag som dekker skjermen må overstyres eksplisitt, ellers sluker de klikk og berøring.
 - Headless Chromium stopper skjermbilder mens pekeren er låst. Testene erstatter `requestPointerLock`.
 - Flomlysene var for sterke og gjorde natten til dag i High. Nå har de vindusavtagning og skala 0.07.
+- Bygget er reproduserbart. `npm ci` og `npm run build:single` ga 3. oktober en fil som var byte-identisk med den publiserte artefakten (sha256 `8a7dce16c5a6c806...`). Sammenlign sha256 når du vil vite om artefakten og repoet er samme versjon.
+- Sluttkortet toner inn med CSS-animasjoner (tittel etter 1 s, knapper etter 6,5 s). I programvare-renderingen går de mye tregere enn vegguret. Tester må vente på synlighet, ikke på fast tid.
+- I Claude Code-skyen ligger Chromium 141 ferdig i `/opt/pw-browsers`. Python Playwright 1.56.0 passer til den. Ikke kjør `playwright install`.

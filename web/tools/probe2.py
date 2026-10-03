@@ -1,10 +1,10 @@
-import asyncio, time
+import asyncio, time, os
 from playwright.async_api import async_playwright
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required'])
         pg = await b.new_page(viewport={'width':640,'height':360}); pg.set_default_timeout(60000)
-        await pg.goto('file:///home/claude/signal47-web/dist-single/index.html')
+        await pg.goto('file://' + os.path.abspath('dist-single/index.html'))
         await pg.wait_for_selector('button[data-a=start]')
         await pg.evaluate("S47.setQuality('low')")
         await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)

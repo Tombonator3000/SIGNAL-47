@@ -2,6 +2,10 @@
 
 Svar på norsk. Dette er den redigerbare kildekoden til SIGNAL / 47, et Unity-spill om kosmisk etterforskning ved SARO i New Mexico, 1986. Les `Docs/CURRENT_HANDOFF.md` først i dette repoet, deretter relevant design, kode og bevis. Bevar Unity/Blender, spillkonstanter, fungerende interaksjoner, originale assets og lisenskreditering.
 
+## Nettversjonen i web/
+
+Fra 3. oktober 2026 bygges spillet videre i three.js i `web/`. For alt arbeid under `web/` gjelder `web/AGENTS.md` i stedet for reglene i denne fila. Les den, `web/memory.md`, `web/todo.md` og de siste oppføringene i `web/log.md` før du starter. `Unity/` er arkiv og referanse og redigeres ikke fra nettarbeid. Resten av denne fila gjelder Unity-sporet.
+
 ## Finn gjeldende sannhet
 
 Kontroller faktisk Git-/PR-status og repoets synlighet. ChatGPT-prosjektets `sources/` er skrivebeskyttede historiske referanser; gammel omtale av privat repo, PR1 eller neste produksjonspass overstyrer ikke nyere kontrollert status. Ikke rediger synkroniserte referanser. Hold kilde, lokal kandidat, pakket bygg og standardstarter atskilt.

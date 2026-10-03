@@ -23,3 +23,26 @@ Logg over alt som er gjort i `web/`, med UTC-tid. Nyeste nederst. Tider merket c
 - ca. 20:00: Fontene lastes nå med FontFace-API-et fra bytes i stedet for CSS @font-face. Testet med en streng sikkerhetspolicy (font-src kun fonts.gstatic.com, ingen connect-src): alle fire fontene lastet, alle 11 lydfilene dekodet, ingen feil.
 - ca. 20:05: Lagt inn i repoet som `web/` på grenen `web/threejs-prologue`. Rotens README og AGENTS.md har fått en kort henvisning. Prologen er publisert som claude.ai-artefakt for mobiltesting.
 - UNVERIFIED: fps på ekte telefon og PC, ekte berøringsinput, lydmiks. Headless-testen bruker programvare-rendering.
+
+### Claude Code (sky): web/ lagt inn i repoet
+
+Tidene under er nøyaktige UTC-tider fra maskinen.
+
+- 21:16: Overtok fra Claude-chatten. Lest rotens AGENTS.md, Docs/CURRENT_HANDOFF.md og alle .md-filene i web/ fra signal47-web.zip (AGENTS, log, memory, todo, ART_BRIEF, README, THIRD_PARTY_NOTICES). Sett på de sju bildene Tom la ved. De er beskrevet i memory.md under Referansebilder.
+- 21:17: Kontrollert Git. Grenen `web/threejs-prologue` finnes ikke på GitHub, og rotens README og AGENTS.md hadde ingen henvisning til web/. Oppføringen ca. 20:05 over beskriver det som var tenkt i chatten. Den ble aldri pushet.
+- 21:17: Pakket ut web/ fra zip-filen uendret, 53 filer. Arbeidsgren er `ccr-30e38858-767d90`, laget fra main (`ebd784d`).
+- 21:17: `npm ci`: OK. `npm audit` melder 3 high i byggverktøyet (braces via micromatch via vite-plugin-singlefile, GHSA-vfj7-8cjw-p6xm). Det gjelder bare byggingen og havner ikke i spillet. Ikke rettet, fordi den eneste fiksen npm tilbyr er en mye eldre plugin. Lagt i todo.md.
+- 21:17: `npm run typecheck`: PASS.
+- 21:18: `npm run build:single`: PASS. `dist-single/index.html` er byte-identisk med artefakten https://claude.ai/artifact/CJBDbSNe6G3T6aaDmkawgm og med HTML-fila fra chatten (sha256 8a7dce16c5a6c8060676da190045ca536fdc3b159be047d718a4527a8dd711d8). Kilden i repoet er altså nøyaktig den versjonen Tom tester.
+- 21:23: Installert Python Playwright 1.56.0, som passer Chromium 141 som allerede ligger i skymiljøet. Første pip-forsøk fikk tidsavbrudd mot files.pythonhosted.org, det andre gikk.
+- 21:24: Commit `3dd5b37`: web/ lagt inn uendret.
+- 21:24 til 21:26: `python3 tools/walkthrough.py shots 844x390 high`: 21 av 21 PASS, ingen feil eller advarsler i konsollen, alle 27 antenner endte på az 026. Skjermbildet av sluttkortet var likevel helt svart.
+- 21:25: Rettet fast sti `/home/claude/signal47-web/` i `tools/shoot.py`, `probe.py`, `probe2.py` og `probe3.py`. De leser nå `dist-single/index.html` fra web/, slik `walkthrough.py` og `looks.py` gjør. `tools/csptest.py` leser fortsatt `/tmp/csp_test.html`, som ingen skript i repoet lager. Lagt i todo.md.
+- 21:26: Rotens README.md og AGENTS.md har fått en kort henvisning til web/, det oppføringen ca. 20:05 sa var gjort.
+- 21:27: Undersøkt det svarte sluttkortet med et eget skript. Sluttkortet virker: tittelen toner inn etter 1 s og knappene etter 6,5 s, slik CSS-en sier. I programvare-renderingen går animasjonene mye tregere enn vegguret, så de hadde ikke startet da testen tok bildet etter fast 2,5 s. Feilen lå i testen, ikke i spillet.
+- 21:28: `tools/walkthrough.py` venter nå til knappene på sluttkortet er helt synlige før bildet tas, og har fått sjekken "end card title and buttons visible". 22 sjekker i alt.
+- 21:28: Docs/CURRENT_HANDOFF.md har fått en kort seksjon øverst om nettversjonen, så agenter som følger rotens AGENTS.md finner web/.
+- 21:28 til 21:31: Ny `python3 tools/walkthrough.py shots 844x390 high`: 22 av 22 PASS, ingen feil eller advarsler i konsollen. Sluttkortet er synlig på bildet.
+- 21:33: Målt sluttkortet headless i fire størrelser. Liggende mobil får ikke plass: ved 844×390 kuttes toppen av tittelen med 20 px og siste kredittlinje med 8 px, ved 667×375 toppen av tittelen med 9 px. Knappene er synlige. 390×844 og 1280×800 er OK. Lagt i todo.md sammen med to andre funn: 3D-scenen tegnes fortsatt bak det svarte sluttkortet, og skjermen er svart til all lyd er dekodet etter Start.
+- Spillkoden er ikke endret i denne økta. Repoet skal bygge nøyaktig den artefakten Tom tester på mobil. Rettelser av funnene over gjøres som egne steg.
+- UNVERIFIED, uendret: fps på ekte telefon og PC, ekte berøringsinput, lydmiks.

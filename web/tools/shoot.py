@@ -1,10 +1,10 @@
 # Headless walkthrough of dist-single/index.html. Takes screenshots and prints console errors.
 # Usage: python3 tools/shoot.py [outdir] [WxH]
-import asyncio, sys, json
+import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'shots'
 W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '960x540').split('x'))
-URL = 'file:///home/claude/signal47-web/dist-single/index.html'
+URL = 'file://' + os.path.abspath('dist-single/index.html')
 
 async def main():
     async with async_playwright() as p:
