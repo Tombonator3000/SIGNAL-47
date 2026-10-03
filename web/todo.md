@@ -4,7 +4,6 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (prolog ferdig til mobiltest)
 
-- [ ] Tom: slå på GitHub Pages én gang. Settings, Pages, Build and deployment, Source: GitHub Actions. Start deretter Actions, Publish web game to GitHub Pages, Run workflow (eller be Claude gjøre det).
 - [ ] Tom tester spillet på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller og lesbarhet.
 - [ ] Mål ytelse på ekte telefon. Fps-telleren bak `?debug` som var tenkt til dette, finnes ikke i koden ennå og må lages først.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
@@ -17,6 +16,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Etter Start venter spillet til all lyd er dekodet (`audio.unlock()`) før prologen begynner, og skjermen er svart så lenge. Noter under mobiltesten om det tar merkbar tid.
 - [ ] Spillet tegner hele 3D-scenen hver frame bak sluttkortet, selv om kortet dekker alt med svart. Stopp tegningen mens kortet vises, for å spare batteri og varme på mobil.
 - [ ] `tools/csptest.py` leser `/tmp/csp_test.html`, men ingen skript i repoet lager den fila. Lag den i skriptet eller fjern testen.
+- [ ] GitHub varsler at configure-pages v5, setup-node v4 og upload-artifact v4 (via upload-pages-artifact v3) er laget for Node 20 og tvinges over på Node 24. Publiseringen virker i dag. Bytt til versjoner laget for Node 24 når det passer.
 - [ ] `npm audit` melder 3 high i byggverktøyet (braces via vite-plugin-singlefile). Gjelder bare bygging. Oppgrader når pluginen får en fiks.
 
 ## Grafikk fra ChatGPT (se ART_BRIEF.md)
