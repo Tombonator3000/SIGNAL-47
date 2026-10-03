@@ -4,7 +4,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (prolog ferdig til mobiltest)
 
-- [ ] Tom tester lenken på mobil og PC. Noter fps-følelse, kontroller og lesbarhet.
+- [ ] Tom: slå på GitHub Pages én gang. Settings, Pages, Build and deployment, Source: GitHub Actions. Start deretter Actions, Publish web game to GitHub Pages, Run workflow (eller be Claude gjøre det).
+- [ ] Tom tester spillet på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller og lesbarhet.
 - [ ] Mål ytelse på ekte telefon. Fps-telleren bak `?debug` som var tenkt til dette, finnes ikke i koden ennå og må lages først.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
 - [ ] Sjekkpunkt etter fullført prolog: Continue starter i dag fra 02:13. Lagre et "ferdig"-punkt som går rett til kapittel 1 når det finnes.

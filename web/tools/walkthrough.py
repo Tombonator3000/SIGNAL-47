@@ -1,10 +1,11 @@
 # Full prologue through the real interactables and console DOM.
 # The render loop is held and the game is advanced with S47.tick(), so it runs
 # in a software renderer too. Usage: python3 tools/walkthrough.py OUTDIR WxH quality
-import asyncio, sys, json, time
+# Set S47_URL to test another build, for example the Pages build served over HTTP.
+import asyncio, sys, json, time, os
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in sys.argv[2].split('x')); Q = sys.argv[3] if len(sys.argv) > 3 else 'high'
-URL = 'file://' + __import__('os').path.abspath('dist-single/index.html')
+URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
 checks = []
 def check(ok, what): checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
 

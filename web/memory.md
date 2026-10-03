@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-03: Tom ba om at spillet skal kunne spilles fra GitHub Pages. Det publiseres på https://tombonator3000.github.io/SIGNAL-47/ med `.github/workflows/pages.yml` hver gang main får endringer i `web/`. Det vanlige bygget (`npm run build`, `dist/`) publiseres, fordi kode, lyd og fonter da mellomlagres hver for seg. `build:single` brukes fortsatt til artefakter og deling som én fil.
 - 2026-10-03: web/ ble lagt inn av Claude Code (commit `3dd5b37` på grenen `ccr-30e38858-767d90`) og føres til main gjennom [PR #24](https://github.com/Tombonator3000/SIGNAL-47/pull/24), fordi Tom ba om PR og merge. Grenen `web/threejs-prologue` som chatloggen nevner, ble aldri pushet.
 - 2026-10-03: Spillet bygges videre i three.js i `web/` i samme repo (Tombonator3000/SIGNAL-47). Unity-prosjektet blir liggende som arkiv. Vi tar med design, historie og konstanter, ikke kode.
 - 2026-10-03: Claude er lead og koder. ChatGPT lager 2D-grafikk etter `ART_BRIEF.md`. Tom bestemmer og tester.
@@ -53,4 +54,6 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 - Flomlysene var for sterke og gjorde natten til dag i High. Nå har de vindusavtagning og skala 0.07.
 - Bygget er reproduserbart. `npm ci` og `npm run build:single` ga 3. oktober en fil som var byte-identisk med den publiserte artefakten (sha256 `8a7dce16c5a6c806...`). Sammenlign sha256 når du vil vite om artefakten og repoet er samme versjon.
 - Sluttkortet toner inn med CSS-animasjoner (tittel etter 1 s, knapper etter 6,5 s). I programvare-renderingen går de mye tregere enn vegguret. Tester må vente på synlighet, ikke på fast tid.
+- Pages legger spillet i undermappen `/SIGNAL-47/`. `base: './'` i `vite.config.ts` gjør alle stier relative, og det må den fortsette med.
+- Alle Toms Pages-sider deler opprinnelsen `tombonator3000.github.io`, også `localStorage`. Nøklene våre har prefikset `s47.`, og det må nye nøkler også ha.
 - I Claude Code-skyen ligger Chromium 141 ferdig i `/opt/pw-browsers`. Python Playwright 1.56.0 passer til den. Ikke kjør `playwright install`.
