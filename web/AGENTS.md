@@ -33,3 +33,9 @@ python3 tools/walkthrough.py shots 844x390 high
 ```
 
 Merk resultat som PASS, FAIL eller UNVERIFIED med faktisk grunnlag. Headless-testen bruker programvare-rendering og sier ingenting om ekte fps. Ytelse er UNVERIFIED til noen har målt på ekte maskinvare.
+
+Endringer som påvirker hvordan filer lastes (lyd, fonter, grafikk, stier, `vite.config.ts`), testes også mot det vanlige bygget servert fra en undermappe, slik Pages gjør. Se Testing i `README.md`.
+
+## Publisering
+
+Spillet ligger på https://tombonator3000.github.io/SIGNAL-47/. `.github/workflows/pages.yml` i roten bygger `web/` med `npm run build` og publiserer `dist/` på GitHub Pages hver gang main får endringer i `web/`. Det som flettes til main, er altså ute på nettet noen minutter senere. Kjør kontrollene over før du fletter.
