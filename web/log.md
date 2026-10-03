@@ -63,3 +63,4 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - 22:13: Kontrollert https://tombonator3000.github.io/SIGNAL-47/: alle 12 filene er byte-identiske med `dist/` som besto 22 av 22 fra `/SIGNAL-47/` lokalt. Pages oppgir riktige filtyper (text/html, application/javascript, text/css, font/woff2, audio/mp3), og http sendes videre til https.
 - 22:13: GitHub varsler at configure-pages v5, setup-node v4 og upload-artifact v4 er laget for Node 20 og tvinges over på Node 24. Virker nå, lagt i todo.md.
 - UNVERIFIED: spilling på ekte telefon og PC fra Pages-adressen. Headless Chromium her kan ikke åpne https-sider utenfor maskinen, så selve siden er kontrollert med curl, og spillet med de samme filene lokalt.
+- 22:14: Laget [PR #26](https://github.com/Tombonator3000/SIGNAL-47/pull/26) med rettelsene over og flettet den som vanlig merge-commit rett etter denne oppføringen. Flettingen starter en ny publisering med det samme innholdet. GitHub viser faktisk status.
