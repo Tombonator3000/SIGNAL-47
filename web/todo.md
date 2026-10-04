@@ -59,7 +59,8 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 - [x] Omgivelsesskygge (GTAO) overalt i Ultra.
 - [x] Ekte glød (bloom) før VHS-passet; båndets egen glød er dempet i Ultra.
 - [ ] Lys i lufta: svake lyskjegler under natriumlampene og bakkedis ute.
-- [ ] Normal- og ruhetskart fra Codex (runde 9, PR #51): levert og koblet inn på sesjonsgrenen (`ULTRA_ART`, `ultra.ts`, tvillingkart for veiene), `ultra.py` 8 av 8. Venter på Codex sin rettede JPEG-ruhet i PR #51; så hele testrekka (også `artcheck.py`, `csptest.py` og Pages fra undermappe), PR og fletting.
+- [x] Normal- og ruhetskart fra Codex (runde 9, PR #51 med rettet ruhet `b32263c`): koblet inn og flettet gjennom PR #52. Hele testrekka og Pages fra undermappe PASS.
+- [ ] Tom ser Ultra med kartene på PC og sier om relieffet og glansen er for sterke eller for svake.
 - [ ] Skapfrontene med stensiltekst og bakken på STATION 01 er sammensatte canvas uten kart i Ultra. Gi dem tvillingkart som veiene hvis det synes.
 - [ ] Måle fps på Toms PC i Ultra og High, med `?debug`. Headless: rundt 580 til 780 tegnekall i Ultra mot 80 til 200 i High (skyggene og AO-passet), UNVERIFIED som fps.
 - [ ] Tom ser på Ultra og sier om skyggene er sterke nok, eller om lampene og mørket skal ha mer kontrast.
