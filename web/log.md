@@ -141,4 +141,4 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - `chapter2.py` mot Pages-bygget ga først 49 av 50: én advarsel om at tittelmusikken ikke ble hentet («Failed to fetch»). Lyden hentes tidlig i oppstarten og er en egen fil i Pages-bygget, så testens første omlasting avbrøt mest sannsynlig hentingen. Jeg fikk den ikke fram igjen i tre forsøk alene. `chapter1.py` og `chapter2.py` venter nå til lydene er lastet før første omlasting. Ny kjøring mot Pages-bygget: kapittel 1 63 av 63 og kapittel 2 49 av 49, uten feil eller advarsler i konsollen.
 - B-12-stripa og ekkostripa synes på begge fotobevisene med det nye B-12-bildet. Faste bilder av B-12, R-07, feltkartet, gulvmerkingen, labskiltene, korridoren og arkivet i High og Low ligger i testmappen til `artcheck.py`.
 - UNVERIFIED: fps, berøring og lydmiks på ekte telefon og PC, og Safari.
-- 09:20: Forslagssiden i Claude Docs oppdatert: de fire beslutningene står som Avgjort.
+- 08:44: Forslagssiden i Claude Docs oppdatert: de fire beslutningene står som Avgjort.
