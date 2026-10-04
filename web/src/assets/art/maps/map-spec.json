@@ -202,5 +202,7 @@
       "png_sha256": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
       "png_bytes": 240725
     }
-  ]
+  ],
+  "sourceSnapshotCommit": "6f2bea0",
+  "snapshotNote": "Kildehash gjelder denne bevarte konseptcommiten. Kartet viser main-geometrien fra 65ad59f før Claudes arkivtilbygg. Rom 6 er senere avklart på Claude-grenen; kartets uavklarte romnummer er historikk."
 }

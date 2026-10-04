@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04 08:08:54 UTC",
+  "project": "SIGNAL / 47",
+  "asset": "web/src/assets/art/yard/floor_paint_frame.png",
+  "brief": {
+    "path": "web/ART_BRIEF.md",
+    "git_ref": "origin/ccr-30e38858-767d90",
+    "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8",
+    "blob": "d0b2f046d1dc8d007433d62cb58bcd440f2fa04e",
+    "round": 3
+  },
+  "generator": {
+    "tool": "Innebygd ChatGPT image_gen",
+    "model_version": "Ikke eksponert eller bekreftet av verktøyet.",
+    "transparent_background": true,
+    "calls": 3,
+    "process": "Ett genereringskall og to målrettede bildegeneratorredigeringer for innrykk og dempet malingsfarge. Ingen ekstern API."
+  },
+  "intended_use": "Kun malingalfalag, 2.2x1.1m gulvmerking for S-03 APRON og B-12 SIGHT LINE. All tekst legges på i kode.",
+  "spec": {
+    "dimensions": [
+      1024,
+      512
+    ],
+    "format": "PNG",
+    "mode": "RGBA",
+    "color_space": "sRGB med ICC-profil",
+    "target_paint_color": "#e8ce78",
+    "target_stripe_width_px": [
+      10,
+      14
+    ],
+    "target_inset": "Omtrent 3 prosent, ikke pikselpresis vektorgeometri."
+  },
+  "output": {
+    "bytes": 106181,
+    "sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-3c0b295f-48f4-45ca-a19c-b748a2c991c4.png",
+    "source_dimensions": [
+      1774,
+      887
+    ],
+    "source_sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e"
+  },
+  "processing": "Kun RGBA-bevaring, nedskalering 1774x887 til nøyaktig 1024x512 med Lanczos, og PNG-eksport med sRGB. Ingen kodebasert endring av motiv, farge eller alfa. Kilde-PNG er bevart.",
+  "iterations": [
+    {
+      "stage": "generate",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-8fa8727d-9467-40d3-b284-145e33ba3cf8.png",
+      "sha256": "cf7710f6f1cecadc38090c218d9b9afae4060c23df1d8044b383b2c8dfeff31d",
+      "prompt": "Use case: stylized-concept. Asset type: transparent RGBA decal texture for SIGNAL / 47, a stylized Three.js game in New Mexico, 1986. Generate a single wide landscape 2:1 image, intended final 1024 x 512 pixels. Primary request: ONLY one thin rectangular perimeter frame of worn yellow floor-marking PAINT, viewed exactly orthographically from directly above. Completely transparent alpha background everywhere else: all the large empty interior of the rectangle, the narrow outside margins, and the tiny chips missing from the paint must have real transparent alpha. This is an isolated paint decal, NOT a picture of a concrete floor. The game supplies the concrete beneath. Frame geometry at intended 1024x512: left painted stroke centered at x=31, right at x=993, upper at y=16, lower at y=496. The single continuous stripe is only 12 pixels thick at the intended output, permitted 10-14 pixels. Square 90-degree joined corners, near-straight long edges, balanced symmetric rectangular outline. Frame should fill almost the entire canvas with approximately three percent inset on each axis, no large padding. Color: muted matte dusty yellow near sRGB #e8ce78, subtle natural variations within the yellow pigment. Surface style: restrained hand-painted industrial floor stencil paint, dry worn texture and sparse small transparent chips, subtle roughness along the edges, moderate wear while maintaining a clearly readable continuous rectangular form. No gaps through a whole stripe, no missing corners, no detached major splashes. Base-color only: no lighting, no glossy highlights, no shadows, no bevel, no depth, no perspective. There are NO other elements. Avoid ALL text, letters, numbers, symbols, arrows, dashes, ticks, logos, checkerboard graphics, gray fill, concrete, dirt patches, floor surface, backdrop, border outside the paint, watermark. One simple quiet empty yellow rectangular paint frame on genuine alpha transparency.",
+      "disposition": "Bevart utkast. Vertikalt innrykk var større enn ønsket."
+    },
+    {
+      "stage": "edit_geometry",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-bd37b4be-1169-4e52-ba34-2cb431c3603d.png",
+      "sha256": "31cc1484b8190aeb80b240ca26bffae96b3cf6c0d2f71ff7c64dab85191bbde4",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied transparent yellow rectangular paint frame. Preserve the genuine transparent RGBA background, muted matte yellow color, sparse dry paint wear, and empty center. Make ONLY the geometric fit correction: maintain a 2:1 wide landscape canvas, intended 1024x512. Move the top horizontal stripe closer to the top canvas edge so its center is at y=16 out of 512, and move the bottom horizontal stripe closer to bottom so its center is at y=496. Current top/bottom padding is about twice too large. Keep left stripe centered at x=31 and right stripe centered at x=993 out of 1024. Connect all four corners cleanly at right angles. Make all four stripes 12 pixels thick at 1024x512, almost uniform except the existing small dry worn chips. Keep the rectangle very close to all four edges with 3 percent margins in each dimension and absolutely no cropping of its paint. It must remain just one thin empty rectangular paint outline, no other objects. No text, letters, numbers, symbols, arrows or ticks. No concrete, no gray interior, no background image, no new paint splatters, no shadows, no bevel, no lighting. Outside, empty interior and chipped holes retain REAL TRANSPARENT ALPHA. Near-straight lines and flat muted yellow paint only.",
+      "disposition": "Bevart utkast. Innrykk justert; fargen var for mettet."
+    },
+    {
+      "stage": "edit_color",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-3c0b295f-48f4-45ca-a19c-b748a2c991c4.png",
+      "sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e",
+      "prompt": "Use case: precise-object-edit. Edit target: this transparent worn rectangular yellow paint decal. Make ONE change only: lower the paint's color saturation so it is pale muted dusty straw yellow, approximately sRGB RGB(232,206,120), hex #e8ce78. The current yellow is too vivid and golden. Use a soft beige-yellow paint color with noticeably more blue in the RGB mixture, like faded old ochre floor paint. No vivid safety yellow, no lemon yellow, no gold foil. Preserve the rectangle's exact current proportions, position, stripe thickness, corner joins and small worn chips. Preserve real transparent alpha around and inside the paint rectangle. The center must be fully empty transparent, no background, no concrete, no lettering or symbols, no arrows, no added specks or dirt. Flat matte diffuse pigment with no lighting or shading, no cast shadows, no glow, no bevel. Output the same single wide 2:1 rectangular paint-only RGBA decal; no canvas background.",
+      "disposition": "Valgt sluttleveranse."
+    }
+  ],
+  "validation": {
+    "format": "PASS: 1024x512 PNG RGBA og sRGB ICC.",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "fully_transparent_pixels": 468290,
+    "fully_opaque_pixels": 3641,
+    "total_pixels": 524288,
+    "center_region": {
+      "rectangle_xyxy": [
+        60,
+        50,
+        964,
+        462
+      ],
+      "alpha_range": [
+        0,
+        1
+      ],
+      "note": "Stort transparent tekstfelt. Noen nær usynlige kildepiksler har alfa 1 av 255; ikke tersklet eller kunstig fjernet."
+    },
+    "stripe_scan_at_alpha_over_64": {
+      "x512_top_y": [
+        15,
+        28
+      ],
+      "x512_bottom_y": [
+        482,
+        494
+      ],
+      "y256_left_x": [
+        22,
+        34
+      ],
+      "y256_right_x": [
+        990,
+        1004
+      ],
+      "measured_width_px": [
+        13,
+        12,
+        12,
+        14
+      ]
+    },
+    "paint_rgb_mean_where_alpha_over_200": [
+      234.96,
+      203.07,
+      106.28
+    ],
+    "visual": "PASS: mørk og lys QA-komposisjon inspisert. Én tom rektangulær gul ramme med moderat tørrslitasje, lesbare hjørner og sammenhengende form. Ingen betongbakgrunn, tekst, bokstaver, piler eller andre symboler.",
+    "qa_composites": {
+      "dark": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/floor-frame-v3-dark.jpg",
+      "light": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/floor-frame-v3-light.jpg",
+      "note": "Kun forhåndsvisninger. Ensfarget bakgrunn er ikke del av leveransen."
+    },
+    "runtime": "UNVERIFIED: ikke koblet inn eller spilltestet i denne isolerte grafikkoppgaven."
+  }
+}

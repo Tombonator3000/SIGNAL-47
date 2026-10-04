@@ -37,3 +37,7 @@ Dette er konseptkunst og produksjonskart. Bildene er ikke spillbilder, spilleren
 PASS: sju JPEG-filer med dimensjoner, sRGB og samsvarende fil-/referansehash; tre SVG-er med XML- og PNG-kontroll; ti kartkildehasher og seks karteksporthasher. Alle bilder og kart er visuelt inspisert. Galleriet er kjørt i headless Chromium ved 1360×900 og 390×844: alle ti bilder lastet, ingen sidefeil, mislykkede forespørsler eller vannrett overflow. Se `evidence/concepts-2026-10-04/verification.json`.
 
 Spillkode og runtimeassets er uendret. Tidligere beståtte spilltester er derfor ikke kjørt om igjen for denne konseptleveransen. Faktisk spilling på mobil og målt ytelse er fortsatt utenfor denne kontrollen.
+
+## Nyere kildegrunnlag ved Claude-gjennomgang
+
+Etter denne første leveransen ble `origin/ccr-30e38858-767d90` lest på `e5706fb`. Der er rom 6 og to slutter registrert som avklart, og et arkivtilbygg er kodet sør for kontrollrommet. Det tidligere forbeholdet om romnummer ovenfor er historikk. Et nytt `concept/ch4_room6.jpg` med to stoler, lampe og papirbevis er levert; den eldre filen er bevart. Galleriet viser den nye varianten. Nærkartet viser fortsatt det eldre main-grunnlaget `65ad59f`, ikke det nye arkivtilbygget. Se `CLAUDE_HANDOFF.md` for status og kilder.
