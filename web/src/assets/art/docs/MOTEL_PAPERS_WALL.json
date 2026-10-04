@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04T13:03:52.343018+00:00",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 7: motellvegg og to blanke historiske papirflater.",
+  "paths_relative_to": "repository_root",
+  "brief": {
+    "commit": "db47e04b95602bb81c96df3734ba934ce5fd44d0",
+    "path": "web/ART_BRIEF.md",
+    "sha256": "502a18d5590ba95a637bba05e3df8f8446c84832ac5f7747008bcb9d60428632",
+    "bytes": 14799
+  },
+  "generator": {
+    "tool": "built-in image_gen",
+    "calls": 3,
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false,
+    "reference_input_mode": "Eksisterende motellkonsept inspisert som stilreferanse. Ingen bildefil sendt som generatorinput."
+  },
+  "style_references": [
+    {
+      "path": "web/src/assets/art/concept/sierra_court.jpg",
+      "sha256": "f817d253f41df000067e4fdcb4416182a398b2e08357bcd57fa9c95a55e8c930",
+      "role": "Inspeksjon av motellets etablerte blekfersken/sand-puss; nattlys ble ikke bakt inn i veggteksturen."
+    }
+  ],
+  "export": {
+    "operations": [
+      "Pillow RGB-konvertering og LANCZOS-skalering av hele kilden",
+      "JPEG kvalitet 85, chroma subsampling 0, optimize true",
+      "Innebygd sRGB ICC-profil",
+      "2x2-kontrollark fra uendrede veggeksporter, JPEG kvalitet 90"
+    ],
+    "content_edited_by_code": false,
+    "cropped": false,
+    "source_colour_assumption": "Genererte RGB-kilder har ingen innebygd ICC og er behandlet som sRGB. Ingen fargekorrigering er utført."
+  },
+  "assets": [
+    {
+      "id": "wall",
+      "file": "web/src/assets/art/motel/tex_motel_wall.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-2151d78d-c02e-4c1e-8fd5-3a32daa2a614.png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+      "bytes": 407769,
+      "format": "JPEG",
+      "mode": "RGB",
+      "opaque": true,
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "quality": 85,
+      "source_sha256": "01f1e9f2622f6b11ed1e6775739fa8424864774507c4bbd51d38743faff7f058",
+      "source_bytes": 3555036,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: seamless square sRGB base-color/albedo wall texture for the low-poly Three.js game SIGNAL / 47, New Mexico 1986. Create a flat front-facing orthographic scan of a 2 metre by 2 metre area of an old 1950s motel exterior: painted fine stucco plaster in pale dusty peach and warm sand, restrained chalky matte finish, fine irregular plaster grains, very few tiny hairline cracks and a few softly faded dust scuffs. Muted aged material, gently stylized rather than photographic. The plaster stays structurally continuous across the entire square. Dirt is very subtle and scattered, never a dark base strip; keep equal brightness and hue at opposing boundaries for seamless vertical and horizontal tiling. Perfectly flat diffuse albedo, neutral even illumination, no baked highlights, cast shadows, gradients, vignette, ambient occlusion, neon glow, depth or perspective. There is NO wall silhouette, bottom edge, skirting board, masonry border, concrete base, corner, door, window, object, writing, numbering or logo anywhere. Image consists only of uninterrupted pale peach/sand plaster from edge to edge, without any frame. All four edges must wrap naturally. Intended opaque final square export 1024 by 1024 pixels.",
+      "resize": {
+        "method": "LANCZOS",
+        "from": [
+          1254,
+          1254
+        ],
+        "to": [
+          1024,
+          1024
+        ],
+        "cropped": false,
+        "aspect_ratio_changed": false,
+        "aspect_ratio_change_percent": 0.0,
+        "note": "Hele generatorkilden skalert til bestilt eksport. Ingen tekst, former, rettede sømmer eller andre malte elementer lagt til via kode."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Eksport dekodet i riktig størrelse, RGB og JPEG.",
+          "Innebygd sRGB ICC kontrollert.",
+          "JPEG-tabellene er lik Pillow kvalitet 85.",
+          "Slutteksport inspisert visuelt.",
+          "Ingen leselig skrift, tall, logo, person eller uønsket objekt.",
+          "Matt blek fersken/sand-puss uten sokkel, vindu, dør eller bygningskant."
+        ],
+        "preview": "web/src/assets/art/motel/motel-wall-repeat-preview.jpg",
+        "preview_sha256": "ff0d48c7d74c7792eed4355b77fa555a75ba10e76a29318d984cdbe02d614d6b",
+        "preview_bytes": 1892479,
+        "preview_dimensions": [
+          2048,
+          2048
+        ],
+        "repeat_status": "PASS_VISUAL",
+        "repeat_method": "Fire uendrede eksportkopier i vanlig 2x2-rutenett; ingen speiling eller blanding.",
+        "limitation": "Visuelt jevn repetisjon uten tydelig tonal skjøt. Ingen påstand om pikselidentiske kanter. Skitt/slitasje er svak og fordelt, uten lokasjonsspesifikk mørk sokkelstripe som ville brutt vertikal repeat."
+      },
+      "physical_size_metres": [
+        2,
+        2
+      ],
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "repeat": "ordinary XY repeat",
+        "full_image_metres": [
+          2,
+          2
+        ],
+        "runtime_applied": false
+      }
+    },
+    {
+      "id": "card",
+      "file": "web/src/assets/art/docs/card_field_1947.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-05cb64ea-4d31-4083-820e-ec5e91a6f966.png",
+      "dimensions": [
+        1024,
+        640
+      ],
+      "sha256": "a69b7cc9fa0340bc62071cb695d879b73a9387d3296639e93e5f6034c7876999",
+      "bytes": 120139,
+      "format": "JPEG",
+      "mode": "RGB",
+      "opaque": true,
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "quality": 85,
+      "source_sha256": "dc4e55ae08e3b0e695d6262a3871f1c0d78a60b22c435ea039aa18cd84ce7568",
+      "source_bytes": 2455909,
+      "source_dimensions": [
+        1586,
+        992
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: blank historical paper texture for a document viewer in the low-poly investigation game SIGNAL / 47. Create one perfectly flat horizontal 5 by 8 inch field index card from 1947, viewed exactly from above, full-bleed rectangular card filling the entire canvas, aspect ratio 8:5, intended export 1024 by 640 pixels. Warm pale yellowed ivory cardstock with subtle paper fibres, very lightly darkened age at the edges and tiny authentic wear. Thin faded blue horizontal printed ruling lines with generous regular spacing, a single thin faded red vertical margin line near the left edge. A faint old coffee-ring mark confined to the upper-right corner, low contrast and not dominating the main writing area. All of the ruled writing area is COMPLETELY BLANK. Restrained tactile stylized surface that stays readable beneath code-rendered dark text; not a cinematic still or a photograph of a desk. No text at all: no handwriting, printed labels, dates, numbers, stamps, signatures, logos or symbols. No other objects, no desk background or external border, no perspective, no lighting gradient, no cast shadow or bent corners. Only the opaque card surface. Do not depict any writing, even ghost writing.",
+      "resize": {
+        "method": "LANCZOS",
+        "from": [
+          1586,
+          992
+        ],
+        "to": [
+          1024,
+          640
+        ],
+        "cropped": false,
+        "aspect_ratio_changed": true,
+        "aspect_ratio_change_percent": 0.075662,
+        "note": "Hele generatorkilden skalert til bestilt eksport. Ingen tekst, former, rettede sømmer eller andre malte elementer lagt til via kode."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Eksport dekodet i riktig størrelse, RGB og JPEG.",
+          "Innebygd sRGB ICC kontrollert.",
+          "JPEG-tabellene er lik Pillow kvalitet 85.",
+          "Slutteksport inspisert visuelt.",
+          "Ingen leselig skrift, tall, logo, person eller uønsket objekt.",
+          "Kartotekkortets 8:5 landskapsformat, blå linjer, rød marg og ett kaffehjørne er oppfylt."
+        ],
+        "blue_rule_lines_observed": 11,
+        "red_margin_x_px_approx": 86,
+        "coffee_mark_location": "øvre høyre hjørne",
+        "note": "Rette trykte linjer med svak papiraldring. Kaffemerket er i ett hjørne. Ingen tekst eller stempler."
+      },
+      "physical_size_inches": [
+        8,
+        5
+      ],
+      "physical_size_metres": [
+        0.2032,
+        0.127
+      ],
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "repeat": false,
+        "usage": "Dokumentbakgrunn, skrift legges på separat i kode."
+      }
+    },
+    {
+      "id": "letter",
+      "file": "web/src/assets/art/docs/letter_paper_1947.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-0135ac0e-5478-4649-b6ed-9a323a3fdc6d.png",
+      "dimensions": [
+        1024,
+        1365
+      ],
+      "sha256": "9975313dfe91924f02280082faf84e6c2897728be8fbb7872194c26df2b2dca9",
+      "bytes": 257517,
+      "format": "JPEG",
+      "mode": "RGB",
+      "opaque": true,
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "quality": 85,
+      "source_sha256": "e19bd5258b0d33832014982546940aaee7a1695a596da55011cb4a2ba899e31d",
+      "source_bytes": 2482273,
+      "source_dimensions": [
+        1086,
+        1448
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: blank old letter-paper background for a document viewer in the low-poly investigation game SIGNAL / 47. Create one single full rectangular sheet of letter paper from 1947, straight overhead orthographic, portrait 3:4 aspect ratio, intended export 1024 by 1365 pixels. The sheet fills the image edge to edge, no surrounding desk or background. Warm ivory paper yellowed by decades, restrained fine paper fibres, gentle uneven age mottling and slightly darker worn margins, not torn. The sheet was folded into THREE horizontal panels, therefore show exactly TWO clear horizontal fold creases, at one-third and two-thirds of the sheet height. Creases are visible flattened paper wear lines with minute broken fibres; the sheet remains physically flat, with no cast shadows, large ridges or perspective. Most of the paper stays softly even and pale for dark text to be rendered on top in code. Visually tactile but restrained and stylized, suitable for a 1986 low-poly game, no photographic lighting. Completely BLANK: no handwriting, letters, numbers, dates, signatures, printed lines, stamps, watermarks, logo, illustrations or objects. No vertical crease. No outer frame, no vignette, no directional light. One opaque yellowed tri-fold paper surface.",
+      "resize": {
+        "method": "LANCZOS",
+        "from": [
+          1086,
+          1448
+        ],
+        "to": [
+          1024,
+          1365
+        ],
+        "cropped": false,
+        "aspect_ratio_changed": true,
+        "aspect_ratio_change_percent": 0.02442,
+        "note": "Hele generatorkilden skalert til bestilt eksport. Ingen tekst, former, rettede sømmer eller andre malte elementer lagt til via kode."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Eksport dekodet i riktig størrelse, RGB og JPEG.",
+          "Innebygd sRGB ICC kontrollert.",
+          "JPEG-tabellene er lik Pillow kvalitet 85.",
+          "Slutteksport inspisert visuelt.",
+          "Ingen leselig skrift, tall, logo, person eller uønsket objekt.",
+          "Gulnet brevark med to tydelige vannrette bretter som gir tre paneler."
+        ],
+        "horizontal_fold_count": 2,
+        "panels": 3,
+        "fold_y_px_approx": [
+          460,
+          911
+        ],
+        "note": "Brettet i tre er tolket som tre paneler avgrenset av to vannrette bretter. Ingen ekstra vertikal brett, linjering eller skrift. Faktisk papirstørrelse er ikke fastsatt av briefen."
+      },
+      "physical_size_metres": null,
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "repeat": false,
+        "usage": "Dokumentbakgrunn, skrift legges på separat i kode."
+      }
+    }
+  ],
+  "rights": {
+    "origin": "Ny grafikk generert for SIGNAL / 47 med innebygd bildeverktøy.",
+    "note": "Ingen eksterne fotografier eller tredjepartsmerker brukt. Eksakt generatormodell eller særskilt tredjepartslisens påstås ikke."
+  },
+  "integration": {
+    "status": "UNVERIFIED",
+    "note": "Kun produksjonsfiler og QA. Ingen runtime-filer, loader, dokumentvisning, spilltester, bygg, commit eller push endret/kjørt av denne deloppgaven."
+  },
+  "qa_summary": {
+    "status": "PASS",
+    "production_assets": 3,
+    "repeat_previews": 1,
+    "all_exact_dimensions": true,
+    "all_rgb_srgb_jpeg85": true,
+    "no_text": true,
+    "runtime_verified": false
+  }
+}
