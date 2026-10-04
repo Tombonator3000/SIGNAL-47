@@ -109,6 +109,15 @@ Kapittel 4 begynner rundt 04:35. Spilleren går fra SARO over veien til motellet
 | `docs/card_field_1947.jpg` | 1024×640 | i dokumentvisningen | Kartotekkort (5 × 8 tommer) fra 1947: gulnet, trykte blå linjer og rød marglinje, et kaffemerke i ett hjørne, ingen skrift. Rett ovenfra. Bakgrunn for Tomás' feltkort (E11). |
 | `docs/letter_paper_1947.jpg` | 1024×1365 | i dokumentvisningen | Brevark fra 1947 som har vært brettet i tre: tydelige bretter, gulnet, ingen skrift. Rett ovenfra. Bakgrunn for brevet fra Tomás (E13). |
 
+## Runde 8: dineren, to flater (prioritet 2, etter `Diner.ts`)
+
+Til dineren i «All Night» (se oppgaven i `todo.md`). Ingen tekst i bildene. Sømløse, rett forfra, uten skygger fra en bestemt lyskilde.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `diner/tex_booth_vinyl.jpg` | 512×512, sømløs | 0,5 × 0,5 m | Rødt kunstskinn på båsene med knappede sømmer i rutemønster, litt slitt og blankere der folk har sittet. |
+| `diner/tex_wall_panel.jpg` | 1024×1024, sømløs | 2,0 × 2,0 m | Furupanel i honningfarge fra 1950-tallet: loddrette bord med kvister, litt mørknet nederst og ved kjøkkenluka. |
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
