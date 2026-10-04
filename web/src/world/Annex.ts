@@ -27,6 +27,9 @@ export class RecordsAnnex {
   flood = annexFlood;
   private flicker = -1;
   private exitHinge!: THREE.Group;
+  private recordsHinge!: THREE.Group;
+  // the open records door, flat against the wall east of the doorway
+  readonly recordsLeafCol: Collider = { minX: -3.42, maxX: -2.46, minZ: 6.8, maxZ: 6.9 };
   exitOpen = 0;                          // 0 closed, 1 open (the leaf swings 80 degrees out)
   readonly exitLeafCol: Collider = { minX: -7.3, maxX: -6.3, minZ: 5.12, maxZ: 5.32 };
   private flickerTube!: THREE.Mesh;
@@ -120,7 +123,7 @@ export class RecordsAnnex {
     // walkable areas: corridor, records room and the two doorways
     this.addZone('southDoor', -2.88, -1.92, 3.6, 5.8, false);
     this.addZone('corridor', -5.75, 1.75, 5.05, 6.35);
-    this.addZone('recordsDoor', -4.38, -3.42, 5.6, 7.7);
+    this.addZone('recordsDoor', -4.38, -3.42, 5.6, 7.7, false);
     this.addZone('records', -5.75, -1.25, 7.05, 10.25);
     this.addZone('exitDoor', -6.9, -5.0, 5.25, 6.15, false);
   }
@@ -211,14 +214,26 @@ export class RecordsAnnex {
     this.tube(st, -2.4, 9.4);
     addFlood(-4.6, 2.5, 8.0, 5.5, 0xe4ecff, f);
     this.flicker = addFlood(-2.4, 2.5, 9.4, 5.5, 0xe4ecff, f);
-    // the door leaf stands open against the wall inside the room
-    const leaf = new THREE.Group();
-    leaf.position.set(-3.42, 0, 6.82);
-    box(leaf, 0.045, 2.04, 0.93, this.mat({ color: 0x6b5a45, roughness: 0.7 }), 0, 1.02, 0.47);
-    box(leaf, 0.06, 0.04, 0.14, steel, -0.04, 1.0, 0.82);
-    st.add(leaf);
-    this.col(-3.48, -3.36, 6.8, 7.78);
-    plane(st, 0.62, 0.22, this.card(['RECORDS ROOM', 'NO SMOKING / NO FOOD'], { w: 256, h: 92, size: 24 }), -2.6, 2.05, 6.81);
+    // The records room door (world/Doors.ts opens and shuts it). It hangs on the east jamb,
+    // on the room side, and opens all the way round, flat against the wall beside the
+    // doorway. Before 4 October a fixed leaf stood open across the floor inside, and with
+    // the table it closed off the east half of the room, the wall phone with it (Tom's
+    // report); a leaf opened to 90 degrees would have closed off the west half instead.
+    const door = new THREE.Group();
+    door.position.set(-3.42, 0, 6.82);
+    const hinge = new THREE.Group();
+    const leafMat = this.mat({ color: 0x6b5a45, roughness: 0.7 });
+    box(hinge, 0.94, 2.04, 0.045, leafMat, -0.48, 1.02, -0.025);
+    box(hinge, 0.14, 0.04, 0.05, steel, -0.84, 1.0, 0.02);
+    box(hinge, 0.14, 0.04, 0.05, steel, -0.84, 1.0, -0.07);
+    mergeStatic(hinge);
+    noMerge(hinge);
+    door.add(hinge);
+    noMerge(door);
+    this.interior.add(door);
+    this.recordsHinge = hinge;
+    this.objs.recordsDoor = door;
+    plane(st, 0.62, 0.22, this.card(['RECORDS ROOM', 'NO SMOKING / NO FOOD'], { w: 256, h: 92, size: 24 }), -2.6, 2.32, 6.81);
 
     // west wall: steel shelving with archive boxes
     for (const z of [7.15, 8.65, 10.15]) box(st, 0.45, 2.3, 0.04, greenDark, -5.78, 1.15, z);
@@ -297,32 +312,35 @@ export class RecordsAnnex {
     plane(st, 0.26, 0.32, this.mat({ map: T.calendarApril1986(), roughness: 0.9 }), -1.005, 1.65, 9.8, -Math.PI / 2);
 
     // work table in the middle, with a green desk lamp and a blotter
-    box(st, 1.7, 0.05, 0.85, desk, -3.4, 0.745, 8.6);
-    for (const [x, z] of [[-4.2, 8.22], [-2.6, 8.22], [-4.2, 8.98], [-2.6, 8.98]]) box(st, 0.05, 0.72, 0.05, steel, x, 0.36, z);
-    box(st, 0.6, 0.006, 0.42, this.mat({ color: 0x3b4f3f, roughness: 0.9 }), -3.4, 0.773, 8.6);
-    for (let i = 0; i < 3; i++) { const p = plane(st, 0.21, 0.29, paper, -3.75 + i * 0.05, 0.777 + i * 0.002, 8.62 - i * 0.03, 0, -Math.PI / 2); p.rotation.z = 0.12 * i - 0.1; }
+    box(st, 1.7, 0.05, 0.85, desk, -3.65, 0.745, 8.6);
+    for (const [x, z] of [[-4.45, 8.22], [-2.85, 8.22], [-4.45, 8.98], [-2.85, 8.98]]) box(st, 0.05, 0.72, 0.05, steel, x, 0.36, z);
+    box(st, 0.6, 0.006, 0.42, this.mat({ color: 0x3b4f3f, roughness: 0.9 }), -3.65, 0.773, 8.6);
+    for (let i = 0; i < 3; i++) { const p = plane(st, 0.21, 0.29, paper, -4.0 + i * 0.05, 0.777 + i * 0.002, 8.62 - i * 0.03, 0, -Math.PI / 2); p.rotation.z = 0.12 * i - 0.1; }
     const lamp = new THREE.Group();
-    lamp.position.set(-2.82, 0.77, 8.35);
+    lamp.position.set(-3.07, 0.77, 8.35);
     cyl(lamp, 0.08, 0.09, 0.03, this.mat({ color: 0x23262a, roughness: 0.5 }), 0, 0.015, 0, 14);
     rod(lamp, new THREE.Vector3(0, 0.03, 0), new THREE.Vector3(0, 0.32, 0), 0.01, steel, 6);
     const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 14, 1, false, 0, Math.PI), this.mat({ color: 0x1f5a3a, roughness: 0.3, metalness: 0.3, side: THREE.DoubleSide }));
     shade.rotation.set(0, 0, Math.PI / 2); shade.position.set(0, 0.36, 0.0);
     lamp.add(shade);
     st.add(lamp);
-    addFlood(-2.85, 1.05, 8.4, 3.2, 0xffcf8a, f);
-    this.glow.add(-2.82, 1.08, 8.36, 0.3, 0xffd59a);
-    this.col(-4.28, -2.52, 8.15, 9.05);
-    this.proxy('workTable', 1.7, 0.3, 0.85, -3.4, 0.9, 8.6);
+    addFlood(-3.1, 1.05, 8.4, 3.2, 0xffcf8a, f);
+    this.glow.add(-3.07, 1.08, 8.36, 0.3, 0xffd59a);
+    this.col(-4.53, -2.77, 8.15, 9.05);
+    this.proxy('workTable', 1.7, 0.3, 0.85, -3.65, 0.9, 8.6);
     // a chair pushed in at the table
     const chair = this.mat({ color: 0x3a3f46, roughness: 0.95 });
-    box(st, 0.44, 0.05, 0.42, chair, -3.4, 0.46, 9.35);
-    box(st, 0.44, 0.42, 0.05, chair, -3.4, 0.72, 9.58);
-    for (const [x, z] of [[-3.6, 9.17], [-3.2, 9.17], [-3.6, 9.53], [-3.2, 9.53]]) box(st, 0.03, 0.44, 0.03, steel, x, 0.22, z);
-    this.col(-3.65, -3.15, 9.15, 9.62);
+    box(st, 0.44, 0.05, 0.42, chair, -3.65, 0.46, 9.35);
+    box(st, 0.44, 0.42, 0.05, chair, -3.65, 0.72, 9.58);
+    for (const [x, z] of [[-3.85, 9.17], [-3.45, 9.17], [-3.85, 9.53], [-3.45, 9.53]]) box(st, 0.03, 0.44, 0.03, steel, x, 0.22, z);
+    this.col(-3.9, -3.4, 9.15, 9.62);
     // fire extinguisher by the door
     cyl(st, 0.08, 0.08, 0.46, this.mat({ color: 0xa3241b, roughness: 0.45 }), -4.75, 0.5, 6.95, 12);
     box(st, 0.04, 0.06, 0.2, steel, -4.75, 0.6, 6.83);
   }
+
+  /** Swings the records room door into the room and round against the wall: 0 shut, 1 open. */
+  setRecordsDoor(k: number) { this.recordsHinge.rotation.y = k * Math.PI; }
 
   /** Swings the fire exit: 0 shut, 1 open (world/Doors.ts opens its doorway zone). */
   setExitDoor(k: number) {

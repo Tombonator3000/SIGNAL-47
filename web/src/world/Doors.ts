@@ -10,7 +10,7 @@ import type { AudioSys } from '../core/Audio';
 // The chapters do not own doors any more; they may listen (onChange) and ask (isOpen).
 // The state goes into every save.
 
-export type DoorId = 'east' | 'south' | 'lab' | 'exit';
+export type DoorId = 'east' | 'south' | 'lab' | 'exit' | 'records';
 export interface DoorSpec {
   id: DoorId;
   inter: string;                   // interactable id (kept from before, the tests use them)

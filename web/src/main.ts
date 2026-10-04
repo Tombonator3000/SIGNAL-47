@@ -154,6 +154,8 @@ async function boot() {
     zones: [yard.zone.labDoor], leaf: { minX: 12.8, maxX: 13.75, minZ: -0.78, maxZ: -0.68 } });
   doors.add({ id: 'exit', inter: 'exitDoor', name: 'the fire exit', proxy: annex.objs.exitDoor, set: (k) => annex.setExitDoor(k),
     zones: [annex.zone.exitDoor], leaf: annex.exitLeafCol });
+  doors.add({ id: 'records', inter: 'recordsDoor', name: 'records room door', proxy: annex.objs.recordsDoor, set: (k) => annex.setRecordsDoor(k),
+    zones: [annex.zone.recordsDoor], leaf: annex.recordsLeafCol, sound: 'light' });
   room.setDoorLock(true);
   const motelOffice = world.motel.zones.find((z) => z.id === 'office')!;
   const game = new Prologue({
