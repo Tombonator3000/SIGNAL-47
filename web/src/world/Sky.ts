@@ -84,6 +84,7 @@ export class Sky {
           }`,
       }),
     );
+    dome.userData.noAO = true;   // no surface for the occlusion pass (core/vhs.ts)
     dome.renderOrder = -10;
     dome.frustumCulled = false;
     this.group.add(dome);
@@ -108,6 +109,7 @@ export class Sky {
     m.position.set(Math.sin(az) * Math.cos(el) * R, Math.sin(el) * R + 14, -Math.cos(az) * Math.cos(el) * R);
     m.lookAt(0, m.position.y, 0);
     m.rotateZ(0.5);
+    m.userData.noAO = true;
     m.renderOrder = -8;
     m.frustumCulled = false;
     return m;

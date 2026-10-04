@@ -8,12 +8,17 @@ import { artTexture } from '../core/art';
 // A material belongs to one set of fake lights. The big outdoor set lights the site;
 // small sets light a single interior (the photo lab) without paying for the site.
 export type FloodSet = { n: number; pos: THREE.Vector4[]; col: THREE.Color[]; count: number; scale: { value: number }; key: string };
+// Every set made, so the PC tier can swap the nearest lamps for real lights with
+// shadows (core/ultra.ts) without importing the areas that own them.
+export const floodSets: FloodSet[] = [];
 export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
-  return {
+  const set: FloodSet = {
     n, key, count: 0, scale: { value: scale },
     pos: Array.from({ length: n }, () => new THREE.Vector4(0, -999, 0, 0)),
     col: Array.from({ length: n }, () => new THREE.Color(1, 0.6, 0.25)),
   };
+  floodSets.push(set);
+  return set;
 }
 export const FLOOD_N = 22;
 export const flood = floodSet(FLOOD_N, 'site');

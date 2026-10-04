@@ -16,6 +16,8 @@ const pencil = (html: string) => html.replace(/^~ (.*)$/gm, '<span class="pencil
 
 const CREDITS = 'Music: "Signal to Noise" by Scott Buckley, CC BY 4.0, scottbuckley.com.au. Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
+const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
+
 type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos';
 // the picture setting: clean, the 1986 tape look, or a worn tape with tracking trouble
 const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
@@ -281,7 +283,7 @@ export class UI {
   pause(o: {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
     onSave?: () => void; onLoad?: () => void;
-    quality: 'high' | 'low'; onQuality: (q: 'high' | 'low') => void; title?: string; settingsOnly?: boolean;
+    quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
     invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
   }) {
@@ -298,7 +300,7 @@ export class UI {
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
         <div class="set"><span class="lbl">Text</span><button class="opt qual" data-a="txt" aria-label="Text size">${o.largeText ? 'Large' : 'Normal'}</button></div>
-        <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${o.quality === 'high' ? 'High' : 'Low'}</button></div>
+        <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${QUALITY[o.quality]}</button></div>
         <div class="set"><span class="lbl">Picture</span><button class="opt qual" data-a="pic" aria-label="Picture: clean or video tape">${PICTURE[o.picture]}</button></div>
         ${o.settingsOnly ? '' : '<button class="opt" data-a="title">Quit to title</button>'}
         <p class="small">${o.settingsOnly ? 'Settings are kept on this device.' : 'Nothing in the control room moves on while the game is paused.'}</p>
@@ -315,7 +317,9 @@ export class UI {
     el.querySelector('[data-a=txt]')!.addEventListener('click', (e) => { big = !big; (e.target as HTMLElement).textContent = big ? 'Large' : 'Normal'; o.onLargeText(big); });
     let q = o.quality;
     const qb = el.querySelector('[data-a=qual]') as HTMLButtonElement;
-    qb.addEventListener('click', () => { q = q === 'high' ? 'low' : 'high'; qb.textContent = q === 'high' ? 'High' : 'Low'; o.onQuality(q); });
+    // Ultra (shadows, occlusion, bloom) is offered on a computer; phones keep High and Low
+    const order: ('ultra' | 'high' | 'low')[] = o.ultraOk ? ['ultra', 'high', 'low'] : ['high', 'low'];
+    qb.addEventListener('click', () => { q = order[(order.indexOf(q) + 1) % order.length]; qb.textContent = QUALITY[q]; o.onQuality(q); });
     let pic = o.picture;
     const pb = el.querySelector('[data-a=pic]') as HTMLButtonElement;
     pb.addEventListener('click', () => { pic = pic === 'off' ? 'vhs' : pic === 'vhs' ? 'heavy' : 'off'; pb.textContent = PICTURE[pic]; o.onPicture(pic); });
