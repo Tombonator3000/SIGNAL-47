@@ -13,6 +13,7 @@ Rapportens tekniske PASS er ikke visuell aksept eller bevis på sømløs albedo.
 from __future__ import annotations
 
 import argparse
+import io
 from array import array
 from collections import deque
 import hashlib
@@ -421,6 +422,66 @@ def check_material(normal,support,rough,profile):
     return stats
 
 
+def roughness_limits(profile):
+    lo,hi=profile['rough']
+    hi=max(hi,profile.get('feature_rough',hi))
+    if profile['kind']=='asphalt':lo=.15
+    if profile['kind']=='metal':hi=.90
+    return lo,hi
+
+
+def jpeg_collar(data,size=SIZE,band=16):
+    """8px DCT-blokker er konstante langs kantnormalen, med 8px overgang.
+
+    Motsatte blokker har identiske prøver. Null AC i kantnormalens retning
+    overlever JPEG90 og gir lik første/siste dekodet piksel, også i hjørnene.
+    """
+    out=list(data)
+    for y in range(size):
+        edge=round((data[y*size]+data[y*size+size-1])/2)
+        for d in range(band):
+            t=clamp((d-7)/(band-8));t=t*t*(3-2*t)
+            for x in (d,size-1-d):out[y*size+x]=round(edge*(1-t)+data[y*size+x]*t)
+    before=out[:]
+    for x in range(size):
+        edge=round((before[x]+before[(size-1)*size+x])/2)
+        for d in range(band):
+            t=clamp((d-7)/(band-8));t=t*t*(3-2*t)
+            for y in (d,size-1-d):out[y*size+x]=round(edge*(1-t)+before[y*size+x]*t)
+    return out
+
+
+def encode_roughness(rough,profile):
+    """Godta bare ferdigdekodet JPEG innen profilbåndet og med like kanter.
+
+    Lokal kodingsfeedback korrigerer bare komprimeringsoversving. Dette er
+    JPEG-forbehandling, ikke en endring av normaler eller kildens geometri.
+    """
+    from round9_check import roughness_byte_bounds
+    bounds=roughness_byte_bounds(roughness_limits(profile))
+    lower,upper=bounds
+    data=jpeg_collar([max(lower,min(upper,round(v*255))) for v in rough])
+    initial=None
+    for attempt in range(31):
+        image=Image.new('L',(SIZE,SIZE));image.putdata(data)
+        buffer=io.BytesIO();image.save(buffer,format='JPEG',quality=90,optimize=True)
+        with Image.open(io.BytesIO(buffer.getvalue())) as decoded:
+            decoded.load();readback=values(decoded);edges=edge_stats(decoded)
+        bad=sum(not lower<=v<=upper for v in readback)
+        if initial is None:initial={'out_of_range_pixels':bad,'range_bytes':[min(readback),max(readback)]}
+        if bad==0 and edges['max_abs_byte_delta']==0:
+            return buffer.getvalue(),{'quality':90,'allowed_decoded_byte_range':bounds,
+                                     'profile_representation_tolerance':.5/255,
+                                     'feedback_passes':attempt,'first_encoding':initial,
+                                     'final_decoded_range_bytes':[min(readback),max(readback)],
+                                     'decoded_edges':edges,'flat_collar_pixels':8,'transition_pixels':8}
+        if edges['max_abs_byte_delta']!=0:raise ValueError('JPEG DCT collar did not preserve opposing borders')
+        # Add the decoded error at failing pixels; keep accumulated integer
+        # compensation instead of re-rounding a damped contrast each pass.
+        data=jpeg_collar([max(0,min(255,a+max(lower,min(upper,b))-b)) for a,b in zip(data,readback)])
+    raise ValueError('JPEG roughness bounds did not converge; refusing an invalid map')
+
+
 def convert(albedo,guide_path,profile_name,output_prefix,qa_dir,report_path=None):
     if profile_name not in PROFILES:raise ValueError(f'Unknown profile {profile_name}')
     if Path(albedo).resolve()==Path(guide_path).resolve():raise ValueError('Guide must be a separate observed height-guide, not albedo')
@@ -439,11 +500,22 @@ def convert(albedo,guide_path,profile_name,output_prefix,qa_dir,report_path=None
     for target in (npath,rpath):
         if target.resolve() in (Path(albedo).resolve(),Path(guide_path).resolve()):raise ValueError('Output would overwrite input')
     normal.save(npath,compress_level=9)
-    gray(rough).save(rpath,quality=90,optimize=True)
+    roughness_jpeg,jpeg_report=encode_roughness(rough,profile)
+    rpath.write_bytes(roughness_jpeg)
     from round9_check import check_pair,analytical_hill
-    validation=check_pair(npath,rpath)
+    validation=check_pair(npath,rpath,roughness_limits(profile))
     material=check_material(normal,support,rough,profile)
+    material['roughness_decoded_range']=validation['roughness_readback']
+    material['roughness_decoded_byte_bounds']=jpeg_report['allowed_decoded_byte_range']
+    material['roughness_decoded_status']=validation['roughness_profile_status']
+    if validation['roughness_profile_status']!='PASS':material['status']='FAIL'
     qa=make_qa(rgb,normal,mask,height,Path(qa_dir),prefix.name)
+    with Image.open(rpath) as encoded_roughness:
+        repeated=Image.new('L',(SIZE*2,SIZE*2))
+        for y in range(2):
+            for x in range(2):repeated.paste(encoded_roughness,(x*SIZE,y*SIZE))
+        repeat_path=Path(qa_dir)/(prefix.name+'_roughness_2x2.png')
+        repeated.save(repeat_path,compress_level=9);qa['roughness_2x2']=info(repeat_path)
     if profile['kind']=='asphalt':
         wet_qa=Path(qa_dir)/(prefix.name+'_roughness.png')
         with Image.open(rpath) as rough_image:rough_image.save(wet_qa)
@@ -455,7 +527,7 @@ def convert(albedo,guide_path,profile_name,output_prefix,qa_dir,report_path=None
         'method':details,'outputs':{'normal':info(npath),'roughness':info(rpath)},'qa':qa,
         'normal_convention':'OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)',
         'roughness_convention':'absolute linear grayscale values; integration chooses material multiplier',
-        'seam_conditioning':{'data_only':True,'band_pixels':8,'flat_boundary_pixels':2,'normal_edges':edge_stats(normal),'albedo_edges_unmodified':edge_stats(rgb)},
+        'seam_conditioning':{'data_only':True,'band_pixels':8,'flat_boundary_pixels':2,'normal_edges':edge_stats(normal),'roughness_jpeg':jpeg_report,'albedo_edges_unmodified':edge_stats(rgb)},
         'slope_clamped_pixel_count':clipped,'technical':validation,'material_contract':material,'analytic_positive_y':analytical_hill(),
         'visual_status':'UNVERIFIED','runtime_status':'UNVERIFIED',
         'limitations':['Semantic feature masks require visual review per source.','The guide does not replace source geometry.','Normal direction test verifies the converter, not semantic correctness of every bump.',

@@ -1,145 +1,145 @@
 {
   "schema": "signal47-round9-browser-check-v1",
-  "checked_utc": "2026-10-04T21:01:56.527Z",
-  "scope": "Private isolated Three.js material preview, not integrated game",
+  "checked_utc": "2026-10-04T21:25:11.454Z",
+  "scope": "Private isolated Three.js material preview after P2 JPEG correction, not integrated game",
   "url": "http://127.0.0.1:8487/src/assets/art/production/round9_qa/index.html",
   "materials": [
     {
-      "label": "Kontrollrom: sekskantfliser",
-      "links": 8,
+      "links": 9,
       "selected": "Kontrollrom: sekskantfliser",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Kontrollrom: sekskantfliser",
       "pass": true
     },
     {
-      "label": "Kontrollrom: malt vegg",
-      "links": 8,
+      "links": 9,
       "selected": "Kontrollrom: malt vegg",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Kontrollrom: malt vegg",
       "pass": true
     },
     {
-      "label": "Ute: betong",
-      "links": 8,
+      "links": 9,
       "selected": "Ute: betong",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Ute: betong",
       "pass": true
     },
     {
-      "label": "Ute: ørkenbakke",
-      "links": 8,
+      "links": 9,
       "selected": "Ute: ørkenbakke",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Ute: ørkenbakke",
       "pass": true
     },
     {
-      "label": "Ute: våt asfalt",
-      "links": 8,
+      "links": 9,
       "selected": "Ute: våt asfalt",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Ute: våt asfalt",
       "pass": true
     },
     {
-      "label": "Arkiv: vinylgulv",
-      "links": 8,
+      "links": 9,
       "selected": "Arkiv: vinylgulv",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Arkiv: vinylgulv",
       "pass": true
     },
     {
-      "label": "Gård: malt metallskap",
-      "links": 8,
+      "links": 9,
       "selected": "Gård: malt metallskap",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Gård: malt metallskap",
       "pass": true
     },
     {
-      "label": "Kontrollrom: pultlaminat",
-      "links": 8,
+      "links": 9,
       "selected": "Kontrollrom: pultlaminat",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Kontrollrom: pultlaminat",
       "pass": true
     },
     {
-      "label": "Kontrollrom: takplater",
-      "links": 8,
+      "links": 9,
       "selected": "Kontrollrom: takplater",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Kontrollrom: takplater",
       "pass": true
     },
     {
-      "label": "Feltstasjon: pussvegg",
-      "links": 8,
+      "links": 9,
       "selected": "Feltstasjon: pussvegg",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Feltstasjon: pussvegg",
       "pass": true
     },
     {
-      "label": "Feltstasjon: gammel betong",
-      "links": 8,
+      "links": 9,
       "selected": "Feltstasjon: gammel betong",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Feltstasjon: gammel betong",
       "pass": true
     },
     {
-      "label": "Feltstasjon: værslitt tre",
-      "links": 8,
+      "links": 9,
       "selected": "Feltstasjon: værslitt tre",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Feltstasjon: værslitt tre",
       "pass": true
     },
     {
-      "label": "Feltstasjon: gulvbord",
-      "links": 8,
+      "links": 9,
       "selected": "Feltstasjon: gulvbord",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Feltstasjon: gulvbord",
       "pass": true
     },
     {
-      "label": "Vei: grus og hjulspor",
-      "links": 8,
+      "links": 9,
       "selected": "Vei: grus og hjulspor",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Vei: grus og hjulspor",
       "pass": true
     },
     {
-      "label": "Motell: pussvegg",
-      "links": 8,
+      "links": 9,
       "selected": "Motell: pussvegg",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Motell: pussvegg",
       "pass": true
     },
     {
-      "label": "Diner: sjakkfliser",
-      "links": 8,
+      "links": 9,
       "selected": "Diner: sjakkfliser",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Diner: sjakkfliser",
       "pass": true
     },
     {
-      "label": "Diner: furupanel",
-      "links": 8,
+      "links": 9,
       "selected": "Diner: furupanel",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Diner: furupanel",
       "pass": true
     },
     {
-      "label": "Diner: stopping i kunstskinn",
-      "links": 8,
+      "links": 9,
       "selected": "Diner: stopping i kunstskinn",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Diner: stopping i kunstskinn",
       "pass": true
     },
     {
-      "label": "Diner: disklaminat",
-      "links": 8,
+      "links": 9,
       "selected": "Diner: disklaminat",
       "status": "Klart: 3 teksturer lastet. Begge datakart bruker lineære data.",
+      "label": "Diner: disklaminat",
       "pass": true
     }
   ],
   "console_warnings_errors": [],
-  "repeat2_check": "Visible pressed state confirmed and hextile/asphalt/booth screenshots inspected",
+  "repeat2_check": "Visible pressed state confirmed; fresh hextile/asphalt/booth screenshots inspected",
   "limitations": [
     "No game loader, quality switching, composed-road alignment or hardware FPS verified here.",
     "Existing albedo seams remain."
