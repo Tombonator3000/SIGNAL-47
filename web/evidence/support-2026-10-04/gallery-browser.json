@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "imagesLoaded": 6,
+      "imagesTotal": 6,
+      "pageWidth": 1265,
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "imagesLoaded": 6,
+      "imagesTotal": 6,
+      "pageWidth": 375,
+      "viewport": [
+        390,
+        844
+      ]
+    }
+  ],
+  "console": []
+}

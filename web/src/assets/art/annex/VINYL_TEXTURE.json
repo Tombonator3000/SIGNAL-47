@@ -1,0 +1,86 @@
+{
+  "created_utc": "2026-10-04T10:55:36.803Z",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "generator_model": "Eksakt modellnavn eller versjon er ikke eksponert eller bekreftet.",
+  "file": "tex_floor_vinyl.jpg",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "color_space": "sRGB",
+  "format": "JPEG quality 85",
+  "physical_size_metres": [
+    1.2,
+    1.2
+  ],
+  "tile_grid": [
+    4,
+    4
+  ],
+  "tile_size_metres": [
+    0.3,
+    0.3
+  ],
+  "prompt": "Use case: stylized-concept. Asset type: one square seamless tileable sRGB albedo texture for a stylized low-poly Three.js game, SIGNAL / 47, archive corridor in New Mexico in 1986.\nPrimary request: quiet pale grey-beige matte 1970s vinyl floor tiles. The image represents exactly 1.2 by 1.2 metres: EXACTLY FOUR columns and FOUR rows of equal 30 cm SQUARE tiles, sixteen whole tiles total, an aligned 4x4 grid without stagger. Three very thin straight vertical joints at 25%, 50% and 75% of the width, and three matching horizontal joints at 25%, 50% and 75% of the height. The outside edges coincide with the outer joints; each outer edge has only HALF the joint width, so repeated images make a joint matching the interior joints. Very narrow subtle grey-beige seams, approximately two pixels wide at a final 1024px size, slightly darker than the tile surface but not black.\nMaterial: uniformly pale warm grey-beige, restrained soft hand-painted vinyl flecking and extremely gentle cloudy marbling. All sixteen tiles nearly the same color and brightness, NO checkerboard. Very modest even wear, no large scuffs, no dirt concentrations, no chipped grout, no cracks, no recognizable isolated stains or objects. A calm office floor that supports quiet low-poly architecture without visual noise.\nComposition: completely flat orthographic view from directly above, material fills the entire square canvas. EXACT seamless ordinary RepeatWrapping in BOTH axes: edges align perfectly in joint placement, color and texture without a visible square boundary. Do not mirror the tiles. Flat diffuse unlit base color only, no lighting, no gradients, no highlights, no reflections, no shadows or ambient-occlusion halos, no vignette, no perspective, no border or outer frame.\nNo text, symbols, numbers, logos, marks, footprints, coffee rings, objects, labels, watermark or room scene. One square material texture, target 1024x1024. Clearly understated stylized game art, not a photographed floor.",
+  "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-82e07214-ef7e-47ed-bc82-801b5531eb1a.png",
+  "brief": {
+    "git_ref": "3264fab",
+    "path": "web/ART_BRIEF.md",
+    "section": "Runde 4: arkivfløyen i kapittel 2",
+    "commit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+    "sha256": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c"
+  },
+  "inspected_style_references": [
+    "web/src/assets/art/room/tex_floor_hextile.jpg",
+    "web/src/assets/art/room/tex_desk_laminate.jpg"
+  ],
+  "reference_use": "Eksisterende materialer inspisert for stil. Ingen referansebilder sendt til generatoren; runde 4 bestemmer den lysere fargen og kvadratiske 4x4-fliser.",
+  "postprocess": "Kun Lanczos-skalering og JPEG-eksport med sRGB-profil. Ingen kodebasert retusjering. QA-arket består av fire vanlige kopier uten speiling.",
+  "validation": {
+    "format": "PASS: 1024x1024 RGB-JPEG kvalitet 85 med innebygd sRGB-profil og verifisert SHA-256.",
+    "grid": "PASS: Fire ganger fire kvadratiske fliser. 1,2 x 1,2 m ved korrekt mapping, 30 cm per flis.",
+    "visual": "PASS: Matt lys gråbeige vinyl med lav kontrast, smale fuger og lite slitasje; ingen skrift, objekter eller bakt belysning.",
+    "repeat_2x2": "PASS: Siste vanlige 2x2-ark inspisert med view_image. Åtte ganger åtte fliser med gjennomgående fuger. Første kandidat manglet kantfuge; to målrettede imagegen-redigeringer rettet manglende og doble ytterfuger. Ingen kodebasert retusjering.",
+    "runtime": "UNVERIFIED: Ingen runtime-endringer eller spilltester utført i denne deloppgaven."
+  },
+  "source_sha256": "10468d70f07fc1a49770c7d63d17e39f2b06cb38ba441ed340798733f8b46dd7",
+  "style_reference_hashes": {
+    "web/src/assets/art/room/tex_floor_hextile.jpg": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+    "web/src/assets/art/room/tex_desk_laminate.jpg": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+  },
+  "source_dimensions": [
+    1254,
+    1254
+  ],
+  "mean_rgb": [
+    204.86,
+    196.34,
+    184.67
+  ],
+  "stddev_rgb": [
+    8.13,
+    8.2,
+    8.25
+  ],
+  "sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+  "bytes": 111439,
+  "qa_preview": {
+    "file": "vinyl-repeat-preview.jpg",
+    "dimensions": [
+      2048,
+      2048
+    ],
+    "sha256": "c7058094ed98c6299170e515a3c82ebe153a884eb6376ec6893fcd2cc88d2df7",
+    "purpose": "Kun visuell kontroll av vanlig 2x2-repetisjon."
+  },
+  "first_source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-83d2a0b0-6bbc-40d9-8aa2-228f936f11e4.png",
+  "first_source_sha256": "1c32c3d871f6c8f57e6bbc259dc3125d2b429f0403b6fc7ade0f23ebd5167186",
+  "edit_prompt": "Use case: precise-object-edit. Edit target: attached 4x4 pale grey-beige vinyl tile texture. Correct ONE technical error only: the very top and very bottom image edges currently lack the thin horizontal grout that already exists at 25%, 50% and 75% of image height. Add a very thin straight grey grout line at both the top and bottom outer edges, each HALF the width of an internal grout line, so ordinary vertical repetition joins the two half lines into a line matching every internal grout. Keep the left/right edge treatment and all interior grid lines exactly in place. Keep EXACTLY four full columns and four full rows, sixteen complete equal square tiles in the image. This image must repeat into a perfect regular 8x8 grid when copied 2x2, without a missing joint or double-height tile band at the horizontal join. Preserve the flat orthographic material, all current pale grey-beige colors, low-contrast vinyl flecking, subtle wear and matte stylized low-poly game look. NO other changes, no new objects, text, gradients, lights, shadows, highlights or perspective. Return only the corrected single square texture, not a preview grid, final target 1024x1024.",
+  "intermediate_source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-c1bf996d-9a02-47ae-8078-f89e59c2ee40.png",
+  "intermediate_source_sha256": "9cd42e85a693b2c40c076e8deab699cb5966aeb87da765fd08e89714ac88645c",
+  "second_edit_prompt": "Use case: precise-object-edit. Change ONLY the outermost BOTTOM and RIGHT edge lines of this square 4x4 vinyl tile texture. Remove the bottom outer horizontal grout line entirely and replace its pixels with the adjacent pale tile material. Remove the right outer vertical grout line entirely and replace its pixels with adjacent pale tile material. Keep the TOP and LEFT outer grout lines exactly as thin as the inner grout lines, and preserve them. Keep the three INTERNAL horizontal and three INTERNAL vertical lines exactly as they are. This asymmetric border ownership is deliberate: when the image is repeated, the top and left lines provide each seam ONCE, instead of two outer lines combining into a thicker seam. There must still be exactly sixteen equal square tiles in four rows and four columns. Preserve ALL colors, quiet vinyl flecking, matte grey-beige style, flat unlit orthographic texture and interior material pattern. No other changes, no extra lines, no change in crop, no text, no objects. Return one corrected square texture, not a preview grid.",
+  "limitations": [
+    "Repetisjon er visuelt kontrollert, ikke garantert pikselidentisk langs motstående kanter.",
+    "Generert kilde er 1254x1254 og er skalert til bestilte 1024x1024."
+  ]
+}

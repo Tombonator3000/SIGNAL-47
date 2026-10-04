@@ -1,0 +1,133 @@
+{
+  "created_utc": "2026-10-04T11:01:33.203Z",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "generator_model": "Eksakt modellnavn eller versjon er ikke eksponert eller bekreftet.",
+  "brief": {
+    "git_ref": "origin/ccr-30e38858-767d90",
+    "path": "web/ART_BRIEF.md",
+    "section": "Runde 5: STATION 01 (prioritet 1, ønskes nå)",
+    "commit": "1a084341ee842a4e3d34fab1971c3f3826c4d80e",
+    "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+  },
+  "inspected_references": [
+    "web/src/assets/art/concept/station01_field.jpg",
+    "web/src/assets/art/maps/station01-plan.png"
+  ],
+  "reference_use": "Referansene er visuelt inspisert for materialstil og brukssted. Bildene er ikke sendt til generatoren, slik at de nye albedoflatene ikke arver nattlys eller perspektiv.",
+  "color_space": "sRGB",
+  "format": "JPEG quality 85",
+  "postprocess": "Kun Lanczos-skalering fra generert kilde og JPEG-eksport med sRGB-profil. QA-bilder bruker fire vanlige kopier, uten speiling. Ingen kodebasert retusjering.",
+  "assets": [
+    {
+      "file": "tex_stucco_wall.jpg",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "physical_size_metres": [
+        2,
+        2
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: seamless tileable sRGB albedo texture for the exterior walls of STATION 01, a small 1947 New Mexico field-measurement cabin seen in 1986, in the stylized low-poly Three.js game SIGNAL / 47. The texture represents a 2 by 2 metre patch of wall.\nPrimary request: sun-bleached pale cream-yellow stucco over concrete masonry blocks, matte and weathered after decades of dry desert weather. Restrained hand-painted low-poly material language with broad readable pale plaster areas, fine sandy aggregate, a few very thin hairline cracks and subtle repaired plaster patches. The masonry underneath is mostly covered; no regular exposed brick facade. Add only a couple of extremely faint thin rusty runoff traces in the lower third, tapering out well before the bottom edge. Modest wear and low contrast, no deep damaged holes or large black cracks. Gentle desaturated cream and dusty warm grey, no orange lamp light.\nComposition: perfectly front-facing orthographic square material swatch, wall surface covers the canvas fully. It is not a picture of a wall object. Opposite edges must match in tone and texture for true seamless ordinary repetition in X and Y; keep cracks and discrete repair edges from abruptly terminating at the outer canvas boundaries. Same average color and value near every edge; no dark bottom strip or lighter upper strip. Fine roughness is represented as restrained base-color detail, not baked shadows.\nFlat unlit diffuse albedo only. No directional light, gradients, highlights, shadows, ambient-occlusion halo, vignette, perspective, depth of field or photorealistic photo grain. Absolutely no window, door, trim, wall corner, roof, ground line, pipes, wires, rivets, objects, signs, text, numbers, graffiti, logos or watermarks. One square image, target final export 1024x1024 sRGB JPEG.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-adccad85-6a32-42d5-93c1-8a17f6d67c95.png",
+      "preview": "stucco-repeat-preview.jpg",
+      "validation": {
+        "format": "PASS: 1024x1024 RGB-JPEG kvalitet 85 med innebygd sRGB-profil og kontrollert SHA-256.",
+        "repeat_2x2": "PASS MED MERKNAD: Vanlig 2x2-ark inspisert med view_image. En smal overgang i finstrukturen kan anes ved loddrett midtsøm ved nær inspeksjon, men den gir ikke en vesentlig tonal kant. Ingen speiling eller kodebasert sømretting. Visuell repetisjon er akseptabel; motstående kanter er ikke pikselidentiske.",
+        "runtime": "UNVERIFIED: Materialene er ikke integrert eller testet i spill av denne deloppgaven.",
+        "visual": "PASS: Solbleket kremgul matt puss, hårfine sprekker, svake lappede felt og minimale rustspor. Ingen vinduer, dører, skrift, objektekanter, perspektiv eller innbakt nattlys."
+      },
+      "source_sha256": "213f1c40652e4bfda9edc97222d48e4c77782015d2859167a286e3fd36b9d658",
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "mean_rgb": [
+        226.55,
+        211.89,
+        185.97
+      ],
+      "stddev_rgb": [
+        14.87,
+        15.01,
+        15.16
+      ],
+      "sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+      "bytes": 315151,
+      "preview_sha256": "286bd728259eae52c8635c0c3c9f11e608e5677dd4395cf8b347899eb4a6b26b",
+      "preview_dimensions": [
+        2048,
+        2048
+      ],
+      "surface_note": "2 x 2 m materiale. Rustspor ligger diskret i nedre tredjedel og danner ikke en mørk bunnkant ved vertikal repetisjon.",
+      "edge_diagnostics": {
+        "method": "Read-only analyse av endelig JPEG. Gjennomsnittlig RGB-forskjell mellom kantstriper, samt absolutt pikselforskjell over venstre/høyre søm sammenlignet med sju indre nabokolonnepar. Verdier på 0-255-skala.",
+        "left_minus_right_mean_16px_strip_rgb": [
+          0.52,
+          0.92,
+          1.71
+        ],
+        "left_minus_right_mean_32px_strip_rgb": [
+          0.15,
+          0.55,
+          1.46
+        ],
+        "seam_adjacent_abs_rgb_mean": 11.97,
+        "interior_adjacent_abs_rgb_mean": 11.56,
+        "assessment": "Avviket ved skjøten ligger nær materialets vanlige finstruktur; kantstripene har liten gjennomsnittlig toneforskjell."
+      }
+    },
+    {
+      "file": "tex_concrete_old.jpg",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "physical_size_metres": [
+        1,
+        1
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: square seamless tileable sRGB diffuse albedo for old concrete foundations and a survey instrument pier at STATION 01, built in 1947 and weathered in the New Mexico desert until 1986, in the stylized low-poly Three.js game SIGNAL / 47. Each image represents a 1 by 1 metre patch of concrete.\nPrimary request: old matte medium-light neutral grey concrete with coarse aggregate embedded in the cement, shallow worn pitting, a few subtle patches of surface spalling that expose small irregular grey stones. Gently weathered and dusty, restrained low-contrast variation, quiet stylized hand-painted material rather than a noisy photograph. Readable broad worn areas with small irregular aggregate, no huge rocks or deep craters. Grey with a tiny warm dusty cast, no white mineral veins, no orange rust, no yellow lamp-light tint.\nCritical: this is a continuous flat MATERIAL SURFACE, not a concrete block, slab, pedestal or object. Do not show outer slab edges, bevels, cracks separating objects, panel seams, borders, corners, ground, surrounding space, or isolated blocks. Represent chipped material only as shallow irregular worn areas inside the continuous surface; mesh geometry will provide actual object edges.\nTrue seamless ordinary repetition in both X and Y, match opposite boundary colors and surface detail, no tonal jump or frame. Keep average tone even across the square. Perfect front-facing orthographic view. Flat unlit base color only, no lighting, directional shadows, baked ambient occlusion, vignette, gradients, reflections, perspective, depth of field, film grain. No objects, plants, litter, writing, symbols, numerals, markings, rebar, bolts, labels, logos or watermark. One square texture, final target 1024x1024 sRGB JPEG quality 85.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-d3de144c-b340-4245-886c-f2f290a6fde5.png",
+      "preview": "concrete-old-repeat-preview.jpg",
+      "validation": {
+        "format": "PASS: 1024x1024 RGB-JPEG kvalitet 85 med innebygd sRGB-profil og kontrollert SHA-256.",
+        "repeat_2x2": "PASS: Vanlig 2x2-ark inspisert med view_image. Ingen tydelig hard skjøt eller kantlinje. Ingen speiling eller kodebasert sømretting.",
+        "runtime": "UNVERIFIED: Materialene er ikke integrert eller testet i spill av denne deloppgaven.",
+        "visual": "PASS: Gammel lavkontrast grå betong med grovt tilslag, små porer og grunn avskalling. Ingen ytterkant fra blokk/søyle, skrift, gjenstander eller perspektiv."
+      },
+      "source_sha256": "4f9bd717741eb57ed97903d2046626d3f8178dc9b1faa90280afe404c7bc1953",
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "mean_rgb": [
+        155.98,
+        148.81,
+        139.67
+      ],
+      "stddev_rgb": [
+        17.87,
+        17.71,
+        17.54
+      ],
+      "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+      "bytes": 335151,
+      "preview_sha256": "e744b73fdbe7b040eea7ced568e6fc529e2a1517ec0386ec8f04cbeed17ef29d",
+      "preview_dimensions": [
+        2048,
+        2048
+      ],
+      "surface_note": "1 x 1 m materiale. Avskalling er overflateslitasje; geometrien må levere faktiske objektkanter."
+    }
+  ],
+  "reference_hashes": {
+    "web/src/assets/art/concept/station01_field.jpg": "d8ed709a7a9dd1ca56a8d8e1e0345ae039a22e1ececbe6841a3d6b951f40caa6",
+    "web/src/assets/art/maps/station01-plan.png": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e"
+  },
+  "limitations": [
+    "Sømløshet er kontrollert visuelt ved vanlig 2x2-repetisjon; motstående kanter er ikke garantert pikselidentiske.",
+    "Begge originaler er generert i 1254x1254 og skalert til bestilte 1024x1024.",
+    "QA-kopier er kontrollbilder og skal ikke importeres i runtime."
+  ]
+}

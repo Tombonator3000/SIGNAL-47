@@ -1,0 +1,135 @@
+{
+  "createdUTC": "2026-10-04T11:12:21.045Z",
+  "method": "CUA UI controls, DOM-visible metrics, unedited screenshots; isolated Room6 preview",
+  "views": [
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "quality": "high",
+      "view": "Door",
+      "metrics": "Door · HIGH · Lamp on | Draw calls 49/120 | Triangles 2 244 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 62 geometries, 8 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "quality": "high",
+      "view": "Table",
+      "metrics": "Table · HIGH · Lamp on | Draw calls 34/120 | Triangles 1 750 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 65 geometries, 8 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "quality": "high",
+      "view": "Nora",
+      "metrics": "Nora · HIGH · Lamp on | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 66 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "quality": "high",
+      "view": "Window",
+      "metrics": "Window · HIGH · Lamp on | Draw calls 35/120 | Triangles 1 752 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 66 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "high",
+      "view": "Door",
+      "metrics": "Door · HIGH · Lamp on | Draw calls 52/120 | Triangles 2 416 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 65 geometries, 8 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "high",
+      "view": "Table",
+      "metrics": "Table · HIGH · Lamp on | Draw calls 34/120 | Triangles 1 750 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 65 geometries, 8 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "high",
+      "view": "Nora",
+      "metrics": "Nora · HIGH · Lamp on | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 66 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "high",
+      "view": "Window",
+      "metrics": "Window · HIGH · Lamp on | Draw calls 36/120 | Triangles 1 764 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 67 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "low",
+      "view": "Door",
+      "metrics": "Door · LOW · Lamp on | Draw calls 52/120 | Triangles 2 416 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 67 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "quality": "low",
+      "view": "Nora",
+      "metrics": "Nora · LOW · Lamp on | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 67 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    }
+  ],
+  "lifecycle": [
+    {
+      "action": "Lamp off in Low",
+      "metrics": "Nora · LOW · Lamp off | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 67 geometries, 9 textures | Recreate 0, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "action": "Recreate 1",
+      "metrics": "Nora · LOW · Lamp off | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 41 geometries, 8 textures | Recreate 1, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "action": "Recreate 2",
+      "metrics": "Nora · LOW · Lamp off | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 41 geometries, 8 textures | Recreate 2, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    },
+    {
+      "action": "Recreate 3",
+      "metrics": "Nora · LOW · Lamp off | Draw calls 33/120 | Triangles 1 668 | Scene 67 meshes / 67 geometries / 2 586 triangles / 24 materials | GPU 41 geometries, 8 textures | Recreate 3, flood 4/6",
+      "checks": "Contract checks: 17/17 PASS"
+    }
+  ],
+  "contractChecks": "PASS: 13 exact proxy IDs\nPASS: Proxies use translated world placement\nPASS: 3 documents and lamp remain separate\nPASS: Nora and movable head remain separate\nPASS: World-space zones and colliders\nPASS: Zone connections overlap by > 0.6 m\nPASS: Arrival / talk / exit anchors clear\nPASS: Door-to-table route clear (radius 0.27)\nPASS: Interaction: fieldCard beats inert table\nPASS: Interaction: letter beats inert table\nPASS: Interaction: correction beats inert table\nPASS: 4 / 6 motel flood slots, world positions\nPASS: Exactly one Room6 group after Recreate\nPASS: Lamp flood matches its switch\nPASS: Room has its own hemisphere and moon\nPASS: Draw calls within 120\nPASS: No captured error / flood overflow",
+  "consoleDesktop": [],
+  "consoleMobile": [],
+  "limits": [
+    "No chapter-four integration or story test",
+    "No physical mobile, Safari or hardware fps claim"
+  ]
+}

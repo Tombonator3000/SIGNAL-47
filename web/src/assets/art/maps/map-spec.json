@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "created_utc": "2026-10-04",
   "language": "nb",
   "authoring": "Originale redigerbare SVG-former og tekst laget med render_maps.py. Ingen genererte eller eksterne rasterbilder inngår.",
@@ -23,7 +23,7 @@
   "status_legend": {
     "navy": "Eksisterende three.js-kjerne på SARO",
     "amber_fill": "Planforslag til three.js",
-    "amber_dashed_unfilled": "Eksisterende fotoavgrensning på SARO eller separat arkivinnsett, se lokal tekst",
+    "amber_dashed_unfilled": "Eksisterende fotoavgrensning på SARO. Planmarkeringer i de historiske forslagene leses etter lokal tekst.",
     "gray_hatched": "Bakgrunn uten rom- eller gangtilgang"
   },
   "sources": [
@@ -69,7 +69,7 @@
     }
   ],
   "saro": {
-    "status": "Forankret i gjeldende three.js-kilde. Ikke oppmåling eller kjørbar navigasjon.",
+    "status": "Kodeavledet fra main 3264fab, inkludert bygget sørkorridor og arkiv i kapittel 2. Ikke oppmåling eller kjørbar navigasjon.",
     "north": "negative world Z",
     "control_room_center_xz": [
       0,
@@ -129,14 +129,146 @@
       9.5,
       -42
     ],
-    "main_projection": "SVG X = 500 + 25 * world x; SVG Y = 1000 + 25 * world z. Antennen er flyttet til øvre bakgrunnsfelt med tydelig utsnittsbrudd.",
-    "archive": "Separat stiplet planinnsett uten fast plassering, dør eller fysisk kobling.",
+    "main_projection": "SVG X = 500 + 20 * world x; SVG Y = 850 + 20 * world z. Antennen er flyttet til øvre bakgrunnsfelt med tydelig utsnittsbrudd.",
+    "archive": {
+      "status": "Bygget Three.js-område, ikke separat planinnsett.",
+      "outer_shell_bounds_xz": [
+        -6.3,
+        2.3,
+        4.8,
+        10.8
+      ],
+      "corridor_floor_bounds_xz": [
+        -6,
+        2,
+        4.8,
+        6.6
+      ],
+      "records_floor_bounds_xz": [
+        -6,
+        -1,
+        6.8,
+        10.5
+      ],
+      "records_door_center_xz": [
+        -3.9,
+        6.7
+      ],
+      "records_door_wall_opening_x": [
+        -4.4,
+        -3.4
+      ],
+      "walkable_zones_bounds_xz": {
+        "southDoor": [
+          -2.88,
+          -1.92,
+          3.6,
+          5.8
+        ],
+        "corridor": [
+          -5.75,
+          1.75,
+          5.05,
+          6.35
+        ],
+        "recordsDoor": [
+          -4.38,
+          -3.42,
+          5.6,
+          7.7
+        ],
+        "records": [
+          -5.75,
+          -1.25,
+          7.05,
+          10.25
+        ]
+      },
+      "route_world_xz": [
+        [
+          0,
+          1.6
+        ],
+        [
+          -2.4,
+          1.6
+        ],
+        [
+          -2.4,
+          5.7
+        ],
+        [
+          -3.9,
+          5.7
+        ],
+        [
+          -3.9,
+          7.9
+        ]
+      ],
+      "route_note": "Skjematisk ganglinje går gjennom begge faktiske åpninger og stopper før arkivbordet. Ikke en full kollisjonstest.",
+      "closed_doors": [
+        "Driftskontor",
+        "WC",
+        "Nødutgang"
+      ],
+      "closed_region": "Den østlige delen bak arkivskilleveggen er skravert. Ingen spillbar romdeling eller ny inngang er funnet på."
+    },
     "exceptions": [
       "WorldCase22s gamle Unity-retning B-12 sør for S-03 overstyres av web/src/world/ServiceYard.ts, der B-12 står nord for motorskapet.",
       "Fotoakseptflaten er bredere enn sideplattingen og er derfor tegnet som egen stiplet avgrensning, ikke som ekstra gulv.",
       "Kartet viser forbindelser når dørene er åpne. Tilgang avhenger fortsatt av spillets fase og låsestatus.",
       "Ganglinjer er skjematiske og viser ikke alle kollidere, stolbein eller bevegelsesmarg."
-    ]
+    ],
+    "updated_utc": "2026-10-04",
+    "sourceSnapshotCommit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+    "sources": [
+      {
+        "path": "web/src/world/Annex.ts",
+        "sha256": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17"
+      },
+      {
+        "path": "web/src/world/ControlRoom.ts",
+        "sha256": "757ada4f8b46c1c7d91645760c7ebf14a4cab30559ffc5f211ca5690affdfa73"
+      },
+      {
+        "path": "web/src/world/ServiceYard.ts",
+        "sha256": "fbcb2ca37ab680a442d125a353a55e2c100bc2660d3e0f0b0c6a59ba795fc9c6"
+      },
+      {
+        "path": "web/src/world/Exterior.ts",
+        "sha256": "c4389a57cf011c5eb36932de69b0273c1100bbd7867357b1d101720e674104d5"
+      },
+      {
+        "path": "web/src/story/Chapter2.ts",
+        "sha256": "ff1b48a7e38bcfca48aba3d52a9468806917eeb669ad219d5e433d7eaf25edc6"
+      }
+    ],
+    "south_door_xz": [
+      -2.4,
+      4.65
+    ],
+    "south_door_wall_opening_x": [
+      -2.9,
+      -1.9
+    ],
+    "validation": {
+      "svg": "PASS: XML og 1800x1280 kontrollert",
+      "dimensions": [
+        1800,
+        1280
+      ],
+      "render": "PASS: endelig PNG inspisert med view_image; etiketter, sørdør og arkivrute lesbare uten vesentlig overlapp.",
+      "preserved_other_outputs": {
+        "station01-plan.svg": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+        "station01-plan.png": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+        "motel-plan.svg": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+        "motel-plan.png": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132"
+      },
+      "geometry": "PASS: alle fire walkable zones sammenlignet med Annex.ts i 3264fab. Fysiske gulv og begge døråpninger lest fra Annex.ts og ControlRoom.ts.",
+      "hashes": "PASS: fem SARO-kilder mot 3264fab, ti historiske kilder mot 6f2bea0, alle seks SVG/PNG-hash.",
+      "other_maps": "PASS: STATION 01 og motell samt deres manifestinnhold bevart byte-for-byte mot HEAD."
+    }
   },
   "station01": {
     "status": "Romlig planforslag til three.js. Unity-felt finnes fra før; kartet er ikke oppmåling av det.",
@@ -177,12 +309,12 @@
   "outputs": [
     {
       "svg": "saro-plan.svg",
-      "svg_sha256": "04e4eea75df95bcaef57b55df0063833eb5980efed8480dcd4165f7ef1fca226",
-      "svg_bytes": 14602,
+      "svg_sha256": "ff9415fbcc1efdc0e7506434038ee7c3fca1740788b8909dc003632bea088b6f",
+      "svg_bytes": 17653,
       "png_rendered": true,
       "png": "saro-plan.png",
-      "png_sha256": "6bcc8aad28c8e101e21af9ef74947a35be4eb94e3ba8306ee7842bd9e5dc933c",
-      "png_bytes": 251161
+      "png_sha256": "124aa798deca5b2dadc274baa3db259add11b76d3e80212427431821ef72fead",
+      "png_bytes": 269149
     },
     {
       "svg": "station01-plan.svg",
@@ -204,5 +336,9 @@
     }
   ],
   "sourceSnapshotCommit": "6f2bea0",
-  "snapshotNote": "Kildehash gjelder denne bevarte konseptcommiten. Kartet viser main-geometrien fra 65ad59f før Claudes arkivtilbygg. Rom 6 er senere avklart på Claude-grenen; kartets uavklarte romnummer er historikk."
+  "snapshotNote": "Rotens kildehash og snapshot 6f2bea0 bevarer grunnlaget for de historiske planforslagene STATION 01 og motell. SARO har eget nyere snapshot og kildehash under saro. Motellkartets uavklarte romnummer er historikk; gjeldende romnummer er 6.",
+  "sourceSnapshotAppliesTo": [
+    "station01",
+    "motel"
+  ]
 }

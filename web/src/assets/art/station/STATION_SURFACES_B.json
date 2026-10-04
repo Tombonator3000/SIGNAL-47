@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-04",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 5, STATION 01, treflater B",
+  "generator": {
+    "tool": "built-in image_gen",
+    "mode": "one call per generation or edit",
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false
+  },
+  "brief": {
+    "git_ref": "1a084341ee842a4e3d34fab1971c3f3826c4d80e",
+    "git_path": "web/ART_BRIEF.md",
+    "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+  },
+  "technical_reference": {
+    "git_ref": "1a084341ee842a4e3d34fab1971c3f3826c4d80e",
+    "git_path": "web/src/world/Station01.ts",
+    "sha256": "02a4be02b9ebaaca736e339f916efa08b6f55ce2bfafc194d96d161059e47020",
+    "note": "Eksisterende kodetekstur har vannrette gulvbord. Ny brief fastsetter 12 cm og 1,2 m flate."
+  },
+  "rights": {
+    "origin": "Ny originalgrafikk generert for prosjektet med innebygd bildeverktøy. Ingen eksterne fotografier eller varemerker brukt.",
+    "license_note": "Ingen bestemt generatormodell eller separat tredjepartslisens påstås."
+  },
+  "postprocess": {
+    "allowed_operations": [
+      "Pillow RGB-konvertering",
+      "LANCZOS skalering av hele bildet",
+      "JPEG eksport kvalitet 85",
+      "Innbygging av sRGB ICC-profil",
+      "Uendret vanlig 2x2 repetisjon for QA"
+    ],
+    "content_editing_by_code": false,
+    "cropping": false,
+    "source_colour_assumption": "Genererte RGB-kilder uten innebygd profil ble behandlet som sRGB. Ingen fargekorrigering utført."
+  },
+  "assets": [
+    {
+      "path": "web/src/assets/art/station/tex_wood_weathered.jpg",
+      "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+      "bytes": 302855,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "quality": 85,
+      "colour_profile": "sRGB built-in",
+      "source_step": "wood",
+      "resize": {
+        "from": [
+          1254,
+          1254
+        ],
+        "to": [
+          1024,
+          1024
+        ],
+        "method": "LANCZOS"
+      },
+      "mapping_metres": [
+        0.5,
+        1
+      ],
+      "grain_direction": "vertical, along image Y",
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Eksport dekodet i riktig størrelse og sRGB.",
+          "Matt sølvgrått langsgående ørkenslitt treverk, ingen påtegnede beslag eller tekst.",
+          "Vanlig 2x2-gjentakelse inspisert visuelt, ingen vesentlig kant eller fargetrinn. Fine fiberforskyvninger kan sees ved nærstudium."
+        ],
+        "preview_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/weatheredwood-repeat-2x2.jpg",
+        "preview_sha256": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161",
+        "preview_file": "weatheredwood-repeat-preview.jpg"
+      }
+    },
+    {
+      "path": "web/src/assets/art/station/tex_floorboards.jpg",
+      "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+      "bytes": 265958,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "quality": 85,
+      "colour_profile": "sRGB built-in",
+      "source_step": "boards-portrait",
+      "resize": {
+        "from": [
+          1122,
+          1402
+        ],
+        "to": [
+          1024,
+          1024
+        ],
+        "method": "LANCZOS",
+        "aspect_ratio_changed": true,
+        "note": "Hele portrettkilden er skalert til kvadrat for ti bord over 1,2 m. Ingen beskjæring, nye sømmer eller tegning via kode."
+      },
+      "mapping_metres": [
+        1.2,
+        1.2
+      ],
+      "grain_direction": "horizontal, along image X",
+      "board_count": 10,
+      "nominal_board_width_metres": 0.12,
+      "qa": {
+        "status": "PASS_WITH_RECORDED_VARIATION",
+        "checks": [
+          "Eksport dekodet i riktig størrelse og sRGB.",
+          "Ti parallelle vannrette bord telt visuelt og støttet av ni mørke interne sømrader.",
+          "Tørt matt gråbrunt furugulv med små spikerhoder og sand i fuger; ingen tekst, perspektiv eller objektskygge.",
+          "Vanlig 2x2-gjentakelse inspisert visuelt. Kantfugen leses som en ordinær gulvfuge, ingen vesentlig kontrastsøm.",
+          "Gangslitasjen er svak og er ikke en lokasjonsspesifikk malt sti mot benken."
+        ],
+        "measured_seam_centres_px": [
+          101,
+          205,
+          310,
+          414,
+          517,
+          623,
+          727,
+          830,
+          931
+        ],
+        "board_widths_px": [
+          101,
+          104,
+          105,
+          104,
+          103,
+          106,
+          104,
+          103,
+          101,
+          93
+        ],
+        "board_width_metres_range_approx": [
+          0.109,
+          0.124
+        ],
+        "limitation": "Bordene er omtrent, ikke matematisk, like brede. Nederste bord er 93 px mot nominelt 102,4 px. De andre er 101 til 106 px. Ti-bordsantallet og nominell 1,2 m mapping er oppfylt; helt eksakt 12 cm for hvert bord er ikke oppfylt.",
+        "preview_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/floorboards-repeat-2x2.jpg",
+        "preview_sha256": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a",
+        "preview_file": "floorboards-repeat-preview.jpg"
+      }
+    }
+  ],
+  "generation_steps": [
+    {
+      "id": "wood",
+      "prompt": "Use case: stylized-concept.\nAsset type: seamless opaque sRGB albedo texture for a stylized low-poly Three.js game, square 1024 by 1024 intended delivery.\nPrimary request: the flat continuous surface of old silver-grey wood exposed to New Mexico desert sun for forty years, in 1986. Used on thin survey posts, stakes, gate posts, and a hut door. One image maps to 0.5 metres across by 1.0 metre along the grain using UV scale.\nComposition: orthographic straight-on material swatch filling the entire square edge to edge, fine elongated vertical wood fibres running top to bottom, several narrow longitudinal dry cracks and subdued irregular grain. A continuous wood surface without any plank boundaries or edge frame; no actual object silhouette. Medium-light desaturated silver grey with subtle warm dusty undertone, low contrast. Matte, dry, gently stylized painted game texture, physically readable at a small size.\nTiling: genuinely seamless ordinary repeat in BOTH axes; top edge and bottom edge must continue the same longitudinal grain with no horizontal join. Left and right edges match in tone and texture. Even spatial distribution. No obvious repeating landmark, giant knot or dark slash.\nLighting: unlit base colour only, completely even neutral illumination; no highlights, light gradient, cast shadow, ambient occlusion, vignette, baked blue night colour or orange light.\nConstraints: no text, letters, numbers, signs, logos, nails, metal, doors, handles, borders, background, perspective, depth, floor or room scene. Only the material swatch. Opaque output.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-45d15ceb-acac-43c5-b3d8-24bb1a9f60f5.png",
+      "sha256": "640fb1ab48041ad7adcfbebff8d8fe28faec079919212cd77c42284c393a876a",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "selected"
+    },
+    {
+      "id": "boards-initial",
+      "prompt": "Use case: stylized-concept.\nAsset type: seamless opaque sRGB albedo game texture, intended square 1024 by 1024, for the floor of a 1947 survey hut in New Mexico in 1986, stylized low-poly Three.js game.\nPrimary request: ten equally wide, long parallel worn pine floorboards, running horizontally from left to right. Precisely TEN horizontal courses fill the square height; each board is 12 cm wide, the full texture covers 1.2 by 1.2 metres. Nine narrow internal horizontal joints plus one shared wrap joint along the top/bottom boundary. The top and bottom edges each crop through half of the same narrow seam, so ordinary tiling does not double the seam width. No transverse end joints.\nMaterials: dry matte faded grey-tan pine, restrained warm brown traces of aged wood, elongated grain along each horizontal board, a few shallow scratches, occasional very small dull nail heads and only small amounts of naturally settled pale sand in the narrow joints. Slightly cleaner rubbed wear near the middle of the width forms a very faint softly blended foot-traffic path from top to bottom, no sharp stripe or bright patch.\nComposition: directly overhead orthographic flat material swatch, fills the full canvas with no border, no perspective, no outside scene. Fine simplified painted detail for stylized 3D. Low contrast board-to-board variation, especially at all outside edges.\nTiling: truly seamless regular repeat in BOTH axes. All horizontal grain, cracks, tiny nails and colour continue naturally across the left-right boundary. Top and bottom share the ordinary board seam. No obvious tile edge or lighting discontinuity.\nLighting: strictly unlit albedo under perfectly uniform neutral illumination, no light gradient, shine, ambient-occlusion halo, vignette or object shadows. Night illumination will be supplied in the game.\nConstraints: no text, letters, numbers, marks, logos, objects, footprints, people, wall, furniture, window shadow, pebbles, grass, glossy varnish or sci-fi. Opaque.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-fe439d4f-cc93-4c02-9f21-b5098897ebc3.png",
+      "sha256": "b77852095ccd47b2f3674ffb4c19183f9e509074d05b67e0a8b3cb07f1319233",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "rejected: cropped unequal outer boards"
+    },
+    {
+      "id": "boards-layout-edit",
+      "prompt": "Use case: precise-object-edit. Edit the supplied pine floor texture. Preserve its matte desaturated grey-tan pine colour, restrained grain, tiny dull nailheads, trace of sand in joints and uniform neutral albedo lighting. Correct ONLY the board layout and tiling. The image must contain exactly TEN COMPLETE horizontal pine boards of precisely equal height, each exactly one tenth of the square image. Place the nine internal perfectly horizontal narrow seams at exactly 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90% of image height. The top boundary at 0% and bottom boundary at 100% each have half of a narrow seam, making a single normal seam when repeated. NO cropped partial board at top or bottom, NO extra stripe, NO offset. All ten boards extend left to right across the entire square, horizontal grain seamlessly matching left and right. Keep ordinary repeat seamless in both directions with no bright/dark edge transition. No text, symbols, perspective, gloss, directional light or objects. Preserve subdued slightly rubbed traffic wear. Square opaque texture.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-5a229c42-eef4-464d-93e0-7a637b2e7fa3.png",
+      "sha256": "cfc10385299bcf3fa1b78de3d8c6ce0b557380cf1f75a8aa5d8a2612aee42aab",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "rejected: layout correction not achieved",
+      "edit_target": "boards-initial"
+    },
+    {
+      "id": "boards-regenerate",
+      "prompt": "Use case: stylized-concept. Create a square, seamless 2D albedo texture for a stylized low-poly 1986 New Mexico survey-hut floor. It is a flat layout of exactly TEN complete parallel long pine boards, each perfectly horizontal and equal height. TEN full rows, every row 10% of image height, no partial rows. Nine thin straight internal joints at y=10%,20%,30%,40%,50%,60%,70%,80%,90%; a tiny half-joint along top and bottom edges which becomes one normal joint during seamless repeat. Continuous grain runs left to right, no transverse end joints. Draw from overhead, zero perspective. These ten 12cm wide boards cover a 1.2metre square.\nThe boards are worn dry matte pine, muted grey-beige with subdued taupe grain. Simple restrained illustrated game material, NOT a photograph. Long fine shallow scratches, sparse tiny old nailheads, a few sand grains trapped in thin gaps. Very subtle rubbed wear on the central third but no strong stripe. Keep everything low contrast and uniformly lit. No black heavy board outlines. Avoid large knots or unique distinctive marks. Absolutely no scene, objects, labels or text.\nCritical seamless requirement: ordinary repeat in both axes. Match grain and tone at left/right. Complete board rows and gap at top/bottom. Do not frame the texture, do not draw outside board edges, do not add margins. Flat unlit sRGB colour, no shadows, shading gradients, specular light, glossy varnish or vignette. Opaque 1024x1024 intended texture.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-391f09c1-b865-4ed7-b659-11e48bbf4ec2.png",
+      "sha256": "4b80e116be32014ba82ddb5646eba3eacccb7666c16b9db7b076a6be6804ef4f",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "rejected: eight boards"
+    },
+    {
+      "id": "boards-count-edit",
+      "prompt": "Use case: precise-object-edit. The source image has EIGHT boards and is incorrect. Replace its layout with TEN boards. This is a measurable geometry correction: make each board 20 percent narrower in the vertical direction, then add two more equally wide boards to fill the square. Do not preserve the source row positions. Rebuild the layout completely. Keep the same muted taupe-grey matte weathered pine material and plain top-down style. Exactly FIVE rows must fill the upper half and exactly FIVE rows must fill the lower half, total TEN, equally spaced. The line at the exact vertical middle separates row five from row six. Nine internal seams run straight horizontally through the square. No half boards at either top or bottom. The canvas starts at the top edge of the first board and ends at the bottom edge of the tenth board. Texture must seamlessly repeat in both directions with no doubled border and no visible tile joins. Wood grain runs left-right, sparse tiny dark nail heads, trace of sand in gaps, faint smooth worn footpath near centre, no large marks. Flat uniform albedo. No text, labels, numbering, arrows or graphic guides, no gloss, illumination or shadow. Square image.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-03bd881f-7da9-4bf2-b2ce-3121017de0ce.png",
+      "sha256": "3b3627c7628a13f4d6dfe281b21de5ecae3c820e2a1b14b84b30a91ce2ebdc63",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "rejected: count correction not achieved",
+      "edit_target": "boards-regenerate"
+    },
+    {
+      "id": "boards-ten-retry",
+      "prompt": "Use case: stylized-concept. A seamless square albedo material bitmap, carefully designed graphic texture for a stylized game. The entire canvas is filled with TEN stacked narrow horizontal wooden slats: top slat, second slat, third slat, fourth slat, fifth slat, sixth slat, seventh slat, eighth slat, ninth slat, bottom slat. TEN equal horizontal bands, total TEN complete planks from top to bottom. Very narrow straight joints separate each adjacent pair. Exactly five planks above the midpoint and five below it. Each plank occupies one tenth of the square height. This exact 10-row layout is the most important feature.\nEvery band is dull weathered pine wood in pale low-saturation grey-tan brown. The grain runs horizontally, small subtle grain and fine cracks, tiny occasional nails, light traces of dust and sand in joints. Minor softened scuffing, no shiny varnish. Restrained slightly hand-painted stylized 3D game texture, believable aged New Mexico hut floor from 1947, viewed in 1986.\nAll four edges must tile seamlessly. At the top and bottom include only half of an ordinary thin joint so the two edges join to make a normal gap. Continuous pine grain across left and right edges. No crosswise end joints, no border or cropped half-planks. Orthographic flat overhead material only, completely even neutral unlit base color. No cast shadow or object shadow, no gradient or vignette. No scene or furniture, no text or numbers or other graphics. Opaque.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-2764cb9d-d0e4-432e-9d30-0683a6abb8e5.png",
+      "sha256": "8d5f3367da42aab9853c968d8b87faae8940cf5b1a9cee8de188b702a837e5c4",
+      "size": [
+        1254,
+        1254
+      ],
+      "status": "rejected: wrong count and partial outer boards"
+    },
+    {
+      "id": "boards-portrait",
+      "prompt": "Use case: stylized-concept. Create a PORTRAIT 4:5 material texture panel, width 1024 height 1280, no border or margin. It shows precisely TEN complete horizontal pine floorboards, ten identical height planks stacked vertically, spanning the full panel width. Each board occupies exactly one tenth of panel height. Exactly nine internal horizontal joins, plus a matching half join at the top and bottom to make a seamless repeat. No cropped partial boards. All ten are equally wide. Wood fibres run horizontally left to right. The ten planks should be easy to count while keeping seams very thin. This is a 2D material albedo bitmap for a stylized game, no perspective. Muted grey-tan weathered pine, low contrast, dry matte finish, subtle thin grain, few fine cracks, scattered tiny flush nailheads, a trace of sand in seams, no large knots. A very faint cleaner foot-traffic strip near centre. The material belongs to a survey hut built in 1947 in New Mexico, seen in 1986. Uniform unlit neutral colours with no light gradient, object shadow, vignette or shine. Ordinary seamless repetition left to right and top to bottom. No text, numbers, letters, symbols, graphics, objects, environment, frame or gloss. Opaque. Portrait composition 4:5.",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-30fa1379-3d58-4e54-a06d-7072882e4cc8.png",
+      "sha256": "e3b259eddf30a32a1cc59b061645912093854a759145996300a4727b5eb6aafe",
+      "size": [
+        1122,
+        1402
+      ],
+      "status": "selected"
+    }
+  ],
+  "integration": {
+    "status": "UNVERIFIED",
+    "note": "Kun grafikkleveranse og fil-/bilde-QA. Runtime, fellesdokumenter, bygg, browser, commit og push er ikke endret eller kjørt av denne deloppgaven."
+  }
+}
