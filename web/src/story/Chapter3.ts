@@ -467,6 +467,7 @@ export class Chapter3 {
       s.p07 = true;
       this.file(this.docFinding('p07'));
       this.g.note('P07: with the field lamp covered, the local null test is normal. The lamp is a local source, nothing more.');
+      this.d.ui.toast('Null test recorded. Uncover the lamp again when you need its light.', 4);
       this.d.milestone();
     }
     return { ok: true, text: SUPPORTED.lamp };
@@ -575,6 +576,7 @@ export class Chapter3 {
     const { fcam } = this.d;
     const site = this.d.travel.site()!;
     if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false };
+    if (this.s.lampCovered) return { text: 'TOO DARK FOR THE FILM // UNCOVER THE FIELD LAMP', ok: false };
     const t = this.target('marker');
     const d = this.dist(t);
     if (d > 16) return { text: 'MOVE CLOSER TO THE TRANSIT SIGHT LINE', ok: false };
@@ -589,6 +591,7 @@ export class Chapter3 {
   private check04(): { text: string; ok: boolean } {
     const { fcam } = this.d;
     if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false };
+    if (this.s.lampCovered) return { text: 'TOO DARK FOR THE FILM // UNCOVER THE FIELD LAMP', ok: false };
     const t = this.target('cable');
     if (this.dist(t) > 3.2) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
     if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false };

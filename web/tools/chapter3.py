@@ -193,6 +193,18 @@ async def main():
         check(await s3('p07') and 'NULL TEST RECORDED' in await ev("document.querySelector('.lp-page').textContent"), 'P07 recorded')
         await close_panel()
         await shot('e08_lamp_covered')
+        # the film needs the lamp's light: covered, the camera refuses the cable frame
+        await stand('cable', 1.3, -0.3); await use('s1cable'); await tick(0.1); await close_panel()
+        await ev("""(() => { const s = S47.world.site, t = s.anchors.cableTarget, p = S47.player;
+          p.pitch = Math.atan2(t.y - p.eye, Math.hypot(t.x - p.pos.x, t.z - p.pos.z));
+          p.yaw = Math.atan2(-(t.x - p.pos.x), -(t.z - p.pos.z)); S47.tick(0.05); })()""")
+        await ev("S47.ch1.toggleCamera()"); await tick(0.3)
+        check('TOO DARK' in await ev("document.querySelector('.vf-status').textContent"), 'with the lamp covered the film is too dark')
+        await ev("S47.ch1.toggleCamera()"); await tick(0.3)
+        await stand('lamp', 1.4); await use('s1lamp'); await tick(0.1)
+        await pg.click('.labpanel [data-a=cover]'); await tick(0.2)
+        check(not await s3('lampCovered') and await s3('p07'), 'lamp uncovered again, P07 stays recorded')
+        await close_panel()
 
         # ---------- the cable and FRAME 04 ----------
         check(await stand('cable', 1.3, -0.3) is not None, 'the cable break can be reached')
@@ -265,7 +277,7 @@ async def main():
         check('STATION 01' in await ev("document.querySelector('.cont-info').textContent"), 'title screen offers to continue at STATION 01')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
-        check(await ev("S47.world.area") == 'station01' and await s3('stage') == 'return' and await s3('lampCovered'), 'Continue brings back the station, the findings and the covered lamp')
+        check(await ev("S47.world.area") == 'station01' and await s3('stage') == 'return' and await s3('p07') and await ev("S47.world.site.lampCovered === S47.ch3.s.lampCovered"), 'Continue brings back the station, the findings and the lamp as it was left')
         check(await ev("S47.ch3.s.f3.url.length > 50000 && S47.ch3.s.f4.url.length > 50000"), 'Continue brings back both field photographs')
         await shot('e12_continue_station')
 
