@@ -1,0 +1,381 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/room/tex_desk_laminate.jpg",
+    "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+    "bytes": 124281,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/station/desk_height_original.png",
+    "sha256": "015561144231d34d11478ce89c8fe3c0aa0ddee862f41504d0d5e3e3f3bffc66",
+    "bytes": 1739577,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "desk",
+  "parameters": {
+    "kind": "flat",
+    "rough": [
+      0.35,
+      0.5
+    ],
+    "depth": 0.08,
+    "guide": 0.018
+  },
+  "method": {
+    "geometry": "almost flat; only weak narrow source scratches",
+    "guide_weight_height_pixels": 0.018,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.0,
+    "strong_slope_support_fraction": 0.0,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/room/tex_desk_laminate_n.png",
+      "sha256": "f01d9a441260ff607596a0804b7704015c6bc9a46408f52ff017ef53f85d6c08",
+      "bytes": 88298,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/room/tex_desk_laminate_r.jpg",
+      "sha256": "b75a71e8b3648404192b40267a676e66c07995f5e10dd99e0c5b6fcc475c3434",
+      "bytes": 1184,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_normal_2x2.png",
+      "sha256": "d3b7b5975e187e8dec57f5413df73ff899b9a19494de95bc3a3b52c7799a60fe",
+      "bytes": 199610,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_overlay.png",
+      "sha256": "abb7a2fc9567854e428391a3b83954dbdd050e685110fb09dfe03461f1c71925",
+      "bytes": 260762,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_light_top.png",
+      "sha256": "4e3c2e2883f1dd41f2c40d57817f763516e5bdb8bcdf3eacda2b19f9e4414664",
+      "bytes": 50651,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_mask.png",
+      "sha256": "714af89758652d112bb91d9e7c25a5a75a3cbb6f4ced1310126815966c3f796a",
+      "bytes": 31837,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_derived_height.png",
+      "sha256": "35a0c3c5a4f3aec327acf018f0f8c4c0456be8d84d4cb1d4dbd83c045eab25c3",
+      "bytes": 83926,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 4.8525390625,
+      "p95_abs_byte_delta": 14,
+      "max_abs_byte_delta": 29
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 255
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 1.0000153785822494,
+          "max": 1.0000153785822494
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 0.31775544206983286,
+          "pixels_over15": 0
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.4235294117647059,
+      "max": 0.4235294117647059,
+      "mean": 0.4235294117647059
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 0.31775544206983286,
+    "feature_max_degrees": 0,
+    "calm_pixel_count": 262144,
+    "feature_pixel_count": 0,
+    "roughness_intended_range": [
+      0.35,
+      0.5
+    ],
+    "roughness_pre_jpeg_range": [
+      0.42500001192092896,
+      0.42500001192092896
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+    "reviewer": "Codex B1 asset inspection",
+    "reviewed_views": [
+      "original albedo",
+      "original generated height guide",
+      "normal 2x2",
+      "normal over albedo at 50%",
+      "flat top lighting",
+      "roughness grayscale"
+    ],
+    "note": "Nesten flat laminat. Riper er svært svake. Kaffering og pigment er ikke formet som et relieff.",
+    "inspection": {
+      "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_inspection.png",
+      "sha256": "6d8eb9b29737deb71c3361643f759158e97b836d03350b989d08ca672bd39633"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "signal47-round9-independent-audit-v1",
+  "checked_utc": "2026-10-04T21:05:41.244301+00:00",
+  "reviewer": "Codex audit_threejs, read-only independent check",
+  "map_files": 38,
+  "albedos_unchanged": 19,
+  "status": "PASS",
+  "normal_vector_length": [
+    0.99409,
+    1.00584
+  ],
+  "maximum_normal_degrees": 39.694,
+  "minimum_blue_channel": 226,
+  "format": "512x512 RGB PNG normal, L JPEG90 roughness; no ICC/gamma/alpha",
+  "checked_map_sha256_count": 38,
+  "checked_qa_sha256_count": 96,
+  "positive_y": "19/19 analytic results consistent",
+  "limitations": [
+    "Data contract only, not physical correctness of every relief detail.",
+    "Existing albedo seams are not certified.",
+    "Ultra game integration and hardware FPS remain UNVERIFIED."
+  ]
+}

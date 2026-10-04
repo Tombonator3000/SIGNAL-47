@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "motel/tex_motel_wall.jpg",
+  "albedo_sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-e570bc53-9e75-42f6-999e-650af7c31766.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_motel_wall_height_original.png",
+  "saved_original_sha256": "1f80b01a9a8ceb00d4210a8802b72b737e19827182abd9176509cea4b71f74c0",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input image is the exact painted stucco albedo reference. Preserve the exact square crop, all visible fissure positions, plaster patch boundaries and edge continuation. Make a mostly neutral midgray smooth plane with only shallow gently rounded stucco relief and existing hairline cracks depressed slightly. Remove color, lighting, cast shadow and dirt stain contrast. Large peach/brown color variations are paint or dirt and MUST NOT become bumps or depressions. Avoid exaggerated rough rock, cliffs, pits and isolated grains. The output is a HEIGHT GUIDE, not a normal map: brighter is higher, darker is lower. Gentle low contrast, quiet broad plaster forms, no fine noisy sparkling relief. No added seams, new cracks, border, text, objects, crop or rotation. Preserve the original edge structure.",
+  "prompt_sha256_utf8": "e69a5e6e358e751fb015bf67d67c7d1f8c9cba808495fdb6649396189bedf57d",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}

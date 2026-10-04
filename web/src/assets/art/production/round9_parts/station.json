@@ -1,0 +1,1392 @@
+{
+  "schema": "signal47-round9-part-v1",
+  "group": "station",
+  "created_utc": "2026-10-04T20:46:13.194159+00:00",
+  "owner": "Codex B1 station materials",
+  "albedos_unchanged": true,
+  "assets": [
+    {
+      "profile": "desk",
+      "albedo": {
+        "path": "src/assets/art/room/tex_desk_laminate.jpg",
+        "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+        "bytes": 124281,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/desk_height_original.png",
+        "sha256": "015561144231d34d11478ce89c8fe3c0aa0ddee862f41504d0d5e3e3f3bffc66",
+        "bytes": 1739577,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-df786d91-9304-468b-a7c2-0ada274a6cea.png",
+        "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for a Three.js game material. Input image is the edit target and exact spatial authority. Return ONE square image of this same texture transformed into a neutral grayscale height guide. White means high, black means low; a midgray base plane. Match every existing structural detail in its original exact coordinate, crop and orientation. No perspective, no light or shadow, no colour, no extra objects, no text, no watermark, no border. Suppress photographic shading, stains and pigment; do not mistake dark colour for a cavity. Gentle smooth structural relief, no high-frequency flicker noise. Preserve original edge layout; visually compatible periodic edges. This is a DATA height guide, not a rendered material preview or a normal map. Material: office desk laminate, almost perfectly flat. Keep the source's sparse diagonal hairline scratches at exact positions as extremely shallow dark grooves. The large coffee cup ring at upper right and all dirt, flecks, discoloration and mottled paint are PIGMENT ONLY: flatten these to base gray, no ring depression or raised spots. Very subtle restrained surface microtexture. Entire plane nearly uniform middle gray, weak grooves only.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "almost flat; only weak narrow source scratches",
+        "guide_weight_height_pixels": 0.018,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.0,
+        "strong_slope_support_fraction": 0.0,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/room/tex_desk_laminate_n.png",
+          "sha256": "f01d9a441260ff607596a0804b7704015c6bc9a46408f52ff017ef53f85d6c08",
+          "bytes": 88298,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/room/tex_desk_laminate_r.jpg",
+          "sha256": "b75a71e8b3648404192b40267a676e66c07995f5e10dd99e0c5b6fcc475c3434",
+          "bytes": 1184,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_normal_2x2.png",
+          "sha256": "d3b7b5975e187e8dec57f5413df73ff899b9a19494de95bc3a3b52c7799a60fe",
+          "bytes": 199610,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_overlay.png",
+          "sha256": "abb7a2fc9567854e428391a3b83954dbdd050e685110fb09dfe03461f1c71925",
+          "bytes": 260762,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_light_top.png",
+          "sha256": "4e3c2e2883f1dd41f2c40d57817f763516e5bdb8bcdf3eacda2b19f9e4414664",
+          "bytes": 50651,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_mask.png",
+          "sha256": "714af89758652d112bb91d9e7c25a5a75a3cbb6f4ced1310126815966c3f796a",
+          "bytes": 31837,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_derived_height.png",
+          "sha256": "35a0c3c5a4f3aec327acf018f0f8c4c0456be8d84d4cb1d4dbd83c045eab25c3",
+          "bytes": 83926,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_report.json",
+        "sha256": "635581236f0f00214dd8832601899e04703b7489ce0b77fb6ed7e3d49317ab6a",
+        "bytes": 9614
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 0.31775544206983286,
+        "feature_max_degrees": 0,
+        "calm_pixel_count": 262144,
+        "feature_pixel_count": 0,
+        "roughness_intended_range": [
+          0.35,
+          0.5
+        ],
+        "roughness_pre_jpeg_range": [
+          0.42500001192092896,
+          0.42500001192092896
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "Nesten flat laminat. Riper er svært svake. Kaffering og pigment er ikke formet som et relieff.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_inspection.png",
+          "sha256": "6d8eb9b29737deb71c3361643f759158e97b836d03350b989d08ca672bd39633"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 4.8525390625,
+          "p95_abs_byte_delta": 14,
+          "max_abs_byte_delta": 29
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 4.8525390625,
+          "p95_abs_byte_delta": 14,
+          "max_abs_byte_delta": 29
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 4.8525390625,
+            "p95_abs_byte_delta": 14,
+            "max_abs_byte_delta": 29
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f"
+    },
+    {
+      "profile": "ceiling",
+      "albedo": {
+        "path": "src/assets/art/room/tex_ceiling_tile.jpg",
+        "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+        "bytes": 71384,
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/ceiling_height_original.png",
+        "sha256": "f5c13d74c268583a5c78ccd30773da0bcda8eecc9617faf1c172c5fa13e6de13",
+        "bytes": 1979524,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-63146dd9-26b5-476b-87d7-ad53ec2bd7f3.png",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale height guide aligned to one existing acoustic ceiling tile for a Three.js game. Input is exact spatial authority, transform its same square crop without moving or adding details. Return ONE square opaque grayscale DATA height image, not a normal map or a shaded material preview. White high, black low, midgray flat face. The source shows ONE acoustic tile with a very narrow recessed joint along all four perimeter edges: retain that exact boundary width and position, no additional grid lines. Keep the plate face nearly flat with gently recessed source pores at corresponding positions, very restrained broad porous microrelief. Remove colour, pigment, all lighting/shadow and broad shading gradients; pores represent depressions only, no white specular highlights. The outermost opposite edges should meet when tiled, without a frame or border added. No text, no watermark, no new objects, no perspective, no random high-frequency noise. Preserve the source orientation and crop exactly.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+        "guide_weight_height_pixels": 0.025,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.23695755004882812,
+        "strong_slope_support_fraction": 0.9847373962402344,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/room/tex_ceiling_tile_n.png",
+          "sha256": "faa3bbaabf69c3a8831129589a0ac06f14700dcd841b3ce6f209b722ae288943",
+          "bytes": 271966,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/room/tex_ceiling_tile_r.jpg",
+          "sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_normal_2x2.png",
+          "sha256": "8eda2beadeacfa65042395b922a6280dc9c7867bd320ef1d5d6e55a735b5b340",
+          "bytes": 575432,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_overlay.png",
+          "sha256": "8168b49063b30eaa6f3374e62fcfb31ad0e1c7c92c6a177c1fcb18e014fda78b",
+          "bytes": 424359,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_light_top.png",
+          "sha256": "ac6ad398fbda6fb8e3d74d3d575cd5a2c39f959ae3a1cfc88f86ef1aa952c095",
+          "bytes": 166372,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_mask.png",
+          "sha256": "e334d0156559abe0d82fb7d3e8373af1421ad11c1b0b0a54f70729de886d83b8",
+          "bytes": 172437,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_derived_height.png",
+          "sha256": "438111b62a52017bf6b3532054a4b85105c39d35b758aa8b9cb35c13d6fc66b3",
+          "bytes": 170610,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_report.json",
+        "sha256": "06dff7d598b9ff1b9beeeff331665c1265fb76d6415e8641c0745fcff33637c6",
+        "bytes": 9745
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 1.3099244053779315,
+        "feature_max_degrees": 13.123481944903466,
+        "calm_pixel_count": 4001,
+        "feature_pixel_count": 258143,
+        "roughness_intended_range": [
+          0.95,
+          0.95
+        ],
+        "roughness_pre_jpeg_range": [
+          0.949999988079071,
+          0.949999988079071
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "En plate, eksisterende kantfuge og lokal porøshet beholdes. Rolig relieff uten nytt rutemønster.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_inspection.png",
+          "sha256": "8511b44171233c39b029a46eeb694939f1cee27b5762ed3a1f6cd77468ed9d49"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 9.764322916666666,
+          "p95_abs_byte_delta": 25,
+          "max_abs_byte_delta": 45
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 9.764322916666666,
+          "p95_abs_byte_delta": 25,
+          "max_abs_byte_delta": 45
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 9.764322916666666,
+            "p95_abs_byte_delta": 25,
+            "max_abs_byte_delta": 45
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f"
+    },
+    {
+      "profile": "stucco",
+      "albedo": {
+        "path": "src/assets/art/station/tex_stucco_wall.jpg",
+        "sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+        "bytes": 315151,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/stucco_height_original.png",
+        "sha256": "6c9a83fdba003986cc3a4506d90d742bac920972052268a92c5cf528dfb890a6",
+        "bytes": 2818161,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-48f6d91b-3e8d-44d0-abe6-32062a86d908.png",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale height guide aligned to existing stucco wall albedo for a Three.js game. Input image is exact spatial authority. Transform this ONE same square image to a neutral grayscale HEIGHT DATA guide, not a normal map, photograph or lit material. Midgray plane, lighter slightly raised plaster, darker recessed cracks and tiny chips. Preserve original exact crop, orientation and existing crack network and patch boundaries at original coordinates. Thin branching cracks are shallow recessed paths. The source's worn plaster patches have subtle smooth relief only. Flatten yellow/beige pigment, rust streaks, broad pale or gray stains and lighting/shadow to same midgray; no relief caused by colour. Keep all relief gentle and smooth, shallow fine surface texture without grain noise. No new cracks, no new patch layout, no lighting, no highlights, no ambient shadows, no perspective, no frame/border, no text/watermark. Opposite edges remain compatible for repeating without relocating structural details.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+        "guide_weight_height_pixels": 0.05,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.20111846923828125,
+        "strong_slope_support_fraction": 0.9557762145996094,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/station/tex_stucco_wall_n.png",
+          "sha256": "008e1f9c519b7018276e24c1f32f487638ee90255edb248ca6a492bdc7eb3856",
+          "bytes": 247930,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/station/tex_stucco_wall_r.jpg",
+          "sha256": "4a81335468ffbc90a7dccab48c7676caae16fdb51ba81dfd8cf4d550ed27b934",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_normal_2x2.png",
+          "sha256": "75e09fb5695a81a05c7e77f2ba22398000129d0441c4c5462c4e8959d2e41941",
+          "bytes": 531027,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_overlay.png",
+          "sha256": "aea15307bbe9335ca7cf19c9592cc4b016038ff5845741eb4faf2dbcf6b966cd",
+          "bytes": 420361,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_light_top.png",
+          "sha256": "a56a6a9d3e4aa07b19a6b6f6753855d60c61177e744f57c1c4a906b06fa15a1a",
+          "bytes": 151000,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_mask.png",
+          "sha256": "ebd104ecb74bced281a88e484b141b4c7d07c14ce5e68ce2eaf00c68f7600c46",
+          "bytes": 168166,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_derived_height.png",
+          "sha256": "305fc12ac4801512704ccea917c3e64616ca72e66bbca5ccfa3801ba9503e549",
+          "bytes": 169435,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_report.json",
+        "sha256": "4c6ee80e5dc969f241cb6cf7510da7e0a9f9da934b9ffc9fc0530435771532e5",
+        "bytes": 9734
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 1.5883864605532065,
+        "feature_max_degrees": 12.63180215201537,
+        "calm_pixel_count": 11607,
+        "feature_pixel_count": 250537,
+        "roughness_intended_range": [
+          0.9,
+          0.9
+        ],
+        "roughness_pre_jpeg_range": [
+          0.8999999761581421,
+          0.8999999761581421
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "Lokal grovhet og sprekk-/lappekanter følger kilden. Brede gule flekker og rustrenner blir ikke store bulker.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_inspection.png",
+          "sha256": "d2a6ca8e33a3e9d5edb914d374568c4d5f7b3bb4d74bb2c61e44f634dbda8dfe"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 9.847330729166666,
+          "p95_abs_byte_delta": 28,
+          "max_abs_byte_delta": 52
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 9.847330729166666,
+          "p95_abs_byte_delta": 28,
+          "max_abs_byte_delta": 52
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 9.847330729166666,
+            "p95_abs_byte_delta": 28,
+            "max_abs_byte_delta": 52
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041"
+    },
+    {
+      "profile": "concrete_old",
+      "albedo": {
+        "path": "src/assets/art/station/tex_concrete_old.jpg",
+        "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+        "bytes": 335151,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/concrete_old_height_original.png",
+        "sha256": "190ef0da58a90410a83a4f6eac4a2c70581db5ca921b084136f992419adf6635",
+        "bytes": 3059249,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-b86bbc4f-9a64-4893-87f3-af7465ff0860.png",
+        "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for old concrete in a Three.js game. The supplied square albedo is exact spatial authority. Produce ONE opaque square grayscale HEIGHT DATA image of the exact same crop and orientation. Midgray main flat concrete plane; existing recessed tiny pores, chipped spalled areas and exposed cavities darker; the same visible coarse aggregate stones very subtly raised lighter. Preserve positions and silhouettes of all source chips and aggregate. Gentle structural relief, do not make stones into large rocky bumps. Remove beige/gray pigment differences, broad discoloration and all illumination/shadow/highlight cues. Do not map every dark source stone to a deep crater: source aggregate can be dark pigment, and should be a slight protruding flat grain with modest recessed outline only. No added cracks or stones, no rearrangement, no gradient from lighting, no rendered preview, no purple/blue normal colours, no frame/border, no perspective, no labels or watermark. Opposite edges remain suitable for repeat, shallow band-limited microtexture without gritty high-frequency noise.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "small source aggregate peaks and narrow depressions; broad colour/shading excluded",
+        "guide_weight_height_pixels": 0.05,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.3975257873535156,
+        "strong_slope_support_fraction": 0.9992942810058594,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/station/tex_concrete_old_n.png",
+          "sha256": "422018a538d81bc0531f00f60297df7cfdfcd2ae959fcef7f513cc11df58724e",
+          "bytes": 368241,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/station/tex_concrete_old_r.jpg",
+          "sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_normal_2x2.png",
+          "sha256": "258d36b6fc1fa3e369fa7b08e67244f0cb83f5abfab516cf5a25a240eeba3021",
+          "bytes": 761454,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_overlay.png",
+          "sha256": "7a2088622594df75814dc62547de2310bd805b7fa08c195861cf64bd1f077b9d",
+          "bytes": 483308,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_light_top.png",
+          "sha256": "7aa8a6844d0c77a98ab8378970467106e78d0ce3a40db3457df78799203dd36c",
+          "bytes": 214603,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_mask.png",
+          "sha256": "4631ef2e4fecf16bb88755c67023003d05bc15805e58261ffbf33a6b539152a6",
+          "bytes": 193027,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_derived_height.png",
+          "sha256": "8c0d35ee235a73bfeb58219dc8646fefdb8069aef8a8dbb078f15210bc1322cd",
+          "bytes": 181086,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_report.json",
+        "sha256": "97c4083358560c041dd276761295522868f9706d0cebc1fbdde8b458dbba27a5",
+        "bytes": 9806
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 2.0337938122111194,
+        "feature_max_degrees": 23.897163913423064,
+        "calm_pixel_count": 187,
+        "feature_pixel_count": 261957,
+        "roughness_intended_range": [
+          0.9,
+          1.0
+        ],
+        "roughness_pre_jpeg_range": [
+          0.949999988079071,
+          0.949999988079071
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "Kildens små tilslag og avskalling gir rolig grovt relieff. Ingen brede pigmentfelt er gjort til store daler.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_inspection.png",
+          "sha256": "205f180ebb92a083c27656604cf8d11bebfe33ca9f97e93fade1e51feeb9d454"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 12.326497395833334,
+          "p95_abs_byte_delta": 33,
+          "max_abs_byte_delta": 67
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 12.326497395833334,
+          "p95_abs_byte_delta": 33,
+          "max_abs_byte_delta": 67
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 12.326497395833334,
+            "p95_abs_byte_delta": 33,
+            "max_abs_byte_delta": 67
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041"
+    },
+    {
+      "profile": "weathered_wood",
+      "albedo": {
+        "path": "src/assets/art/station/tex_wood_weathered.jpg",
+        "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+        "bytes": 302855,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/weathered_wood_height_original.png",
+        "sha256": "dfe4c22e0e81d41f8f10893ac8f3d175f6c7f1363b63383bffb24e63b0e7924a",
+        "bytes": 1949327,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-8e6f682d-91c4-4b15-8f3c-a0dca3b777d3.png",
+        "prompt": "Use case: precise-object-edit. Asset type: a source-aligned grayscale height guide for weathered wood in a Three.js game. Use the provided image as exact edit target. Return ONE opaque square grayscale HEIGHT DATA image, not a shaded wood render or a blue/purple normal map. Midgray main wood plane, existing narrow long cracks darker as shallow recessed grooves, subtle broad wood fibres slightly lighter. Maintain the exact vertical top-to-bottom grain direction, original crop, all existing fragmented narrow cracks and wavy longitudinal fibres in the source coordinates. Do NOT invent regular plank joints or rotate to horizontal boards. Treat gray, beige and brown pigment colour, staining and source shadows as flat base value, no relief from broad discoloration. Keep modest relief with smooth low-contrast fibre and deeper narrow cracks only, no sharply embossed bark. Remove lighting, highlights and shadows. Preserve compatible opposite edge layout for repeating; no new frame/border, text, watermark, added objects, perspective or random high-frequency grain.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "connected local high-contrast fragmented cracks with five-row vertical support plus very weak local fibre; no full-column extrusion",
+        "guide_weight_height_pixels": 0.03,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.0846710205078125,
+        "strong_slope_support_fraction": 0.2699241638183594,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/station/tex_wood_weathered_n.png",
+          "sha256": "1c2c9cf96dbc726ba88224c9df7b9b4ffc1657de83f178cf2f53aaee303aef9d",
+          "bytes": 113902,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/station/tex_wood_weathered_r.jpg",
+          "sha256": "463f01f7f3793689f5c6e9f807ad554a7cd00666d261124290d606c744d705f5",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_normal_2x2.png",
+          "sha256": "b67267b08f5b4f8dd2488d38b7206085b36862159e831197b6138b1bfe8f6f7f",
+          "bytes": 253246,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_overlay.png",
+          "sha256": "1bb2f7de6b9bcdac9909c0e72a5d2bdef184723dd24d41c5523de126dde4d6a1",
+          "bytes": 350918,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_light_top.png",
+          "sha256": "e903be5dd45384f30b833f963959453da5ebb64954164d22fff7ede16e64ac0c",
+          "bytes": 88348,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_mask.png",
+          "sha256": "39ce8ef8468418bf7666f73d93ecb8f29b82d8026a88d2831c914c5947e33966",
+          "bytes": 15829,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_derived_height.png",
+          "sha256": "a1965ae56c5c81d5e45a3aeb14878f9ef06293e7d705364165615a081cd9fd3b",
+          "bytes": 42126,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_report.json",
+        "sha256": "a33f7d943a79aa790f8138b5248fb9b9872c33035b3d935b2d55068ed0228b24",
+        "bytes": 9828
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 0.31775544206983286,
+        "feature_max_degrees": 27.585614035744324,
+        "calm_pixel_count": 191425,
+        "feature_pixel_count": 70719,
+        "roughness_intended_range": [
+          0.85,
+          0.85
+        ],
+        "roughness_pre_jpeg_range": [
+          0.8500000238418579,
+          0.8500000238418579
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "Lokale, fragmenterte vertikale sprekknett følger de bølgete kildesporene. Ingen nye rette helhøyde fuger; rolig lokal fiber.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_inspection.png",
+          "sha256": "07f692025b673578d0b387b3b5385b2c863907e288b0fe3c6b7878be8790f655"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 10.79296875,
+          "p95_abs_byte_delta": 26,
+          "max_abs_byte_delta": 45
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 10.79296875,
+          "p95_abs_byte_delta": 26,
+          "max_abs_byte_delta": 45
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 10.79296875,
+            "p95_abs_byte_delta": 26,
+            "max_abs_byte_delta": 45
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a"
+    },
+    {
+      "profile": "floorboards",
+      "albedo": {
+        "path": "src/assets/art/station/tex_floorboards.jpg",
+        "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+        "bytes": 265958,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/station/floorboards_height_original.png",
+        "sha256": "36bbabcf3c7f2ec7372ebd11f2d79f29870849fd8019d8b79f61b572565a115d",
+        "bytes": 1765877,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "Built-in ChatGPT image generator (exact model not exposed)",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-e14d758b-6c1f-4a32-be47-f3101b8ab526.png",
+        "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for timber floorboards in a Three.js game. Input square albedo is exact spatial authority. Transform the SAME image to ONE opaque square grayscale HEIGHT DATA guide. Midgray flat timber planes; the source has exactly TEN HORIZONTAL floorboards across the full width, with nine internal horizontal joints and the same partial joint at top/bottom edges. Keep each board width, every horizontal joint at its exact source row, and every existing small round nail head near left and right ends in original coordinates. Make joints shallow dark recessed valleys, timber grain extremely subtle horizontally oriented smooth relief. Nail heads remain almost flush, tiny recessed outline only. Do NOT add or remove a board, rotate fibres, move joints, make a new layout, or use different dark board colour as height. Flatten beige/gray pigment, stain, lighting and shadow into neutral middle gray. No shading/highlights, perspective, frame/border, text, watermark, knots added or random high-frequency noise. Preserve compatible opposite edge layout so the structural guide can repeat.",
+        "role": "supplerende, bandbegrenset mikrorelieff; originalmasken er geometrisk fasit"
+      },
+      "method": {
+        "geometry": "narrow source row/column valleys for board joints; weak narrow grain",
+        "wear_method": "source low microcontrast, 9px energy and 12px spatial smoothing, percentile normalized; excludes grout",
+        "wear_interpretation": "UNVERIFIED walking path: only local smoother source regions, no invented continuous traffic stripe",
+        "guide_weight_height_pixels": 0.025,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.09765625,
+        "strong_slope_support_fraction": 0.25390625,
+        "puddle_candidate_fraction": 0.0
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "pillow": "12.1.1",
+        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/station/tex_floorboards_n.png",
+          "sha256": "7773de2ef323cd0d30dab5e3e72fe5024453b3e689c6d3264efafccf1340b7c9",
+          "bytes": 75869,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/station/tex_floorboards_r.jpg",
+          "sha256": "ca25634b805b3d2a002ecf6ea51632b76623ab2ddc7d8500ac3cc49e6fd2c68b",
+          "bytes": 11161,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_normal_2x2.png",
+          "sha256": "f55ddacdf71b4e3fe24344b01bba16f47116a1dfd5f3a0c105550c52988638d8",
+          "bytes": 172579,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_overlay.png",
+          "sha256": "b5b8dab89dcc934376f468e0b9e399f3cd28b0d1948bf9febde0241cafad2959",
+          "bytes": 306033,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_light_top.png",
+          "sha256": "ceb38719b81b31bc3e3155cc0b6be8e2f553162c69b5953bdc86604ad871a823",
+          "bytes": 36159,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_mask.png",
+          "sha256": "7b143c7ca4b2baf962d3a07865fc083ddfc92da5d37eedfed45c230fa644a768",
+          "bytes": 585,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_derived_height.png",
+          "sha256": "241c9b472c21fe4771f86262afe8807f73348e25fb8255af8059fa3c6e2d6065",
+          "bytes": 28377,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/station/tex_floorboards_report.json",
+        "sha256": "3ab1b61d6bae464065b64f5167b06319a1ca50c656eb60cbf946354beb0b417e",
+        "bytes": 10107
+      },
+      "technical_status": "PASS",
+      "analytic_positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 5.647801966037269,
+        "feature_max_degrees": 25.261749711261608,
+        "calm_pixel_count": 195584,
+        "feature_pixel_count": 66560,
+        "roughness_intended_range": [
+          0.6,
+          0.75
+        ],
+        "roughness_pre_jpeg_range": [
+          0.6000000238418579,
+          0.7335293889045715
+        ],
+        "status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+        "reviewer": "Codex B1 asset inspection",
+        "reviewed_views": [
+          "original albedo",
+          "original generated height guide",
+          "normal 2x2",
+          "normal over albedo at 50%",
+          "flat top lighting",
+          "roughness grayscale"
+        ],
+        "note": "Ti horisontale bord og ni interne fuger følger kildeplasseringene. Fiber er svak. Lokal ruhetsvariasjon bygger på tapt mikrokontrast, ikke lysere pigment; pre-JPEG .60-.75. Ingen sammenhengende gangstripe er funnet på albedo og ingen er oppfunnet.",
+        "inspection": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_inspection.png",
+          "sha256": "ce3b67f0744bd1590a865f6b33a7bb101ca911fa1b7184a713ba138c50c8b0ca"
+        }
+      },
+      "seam_limits": {
+        "normal_data_opposite_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "conditioning_band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "albedo_edge_mismatch": {
+          "mean_abs_byte_delta": 15.6220703125,
+          "p95_abs_byte_delta": 44,
+          "max_abs_byte_delta": 82
+        },
+        "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "source_supported_walking_wear": {
+        "status": "UNVERIFIED",
+        "note": "Ingen sammenhengende gangsti kan utledes fra denne albedo. Lokal slitasjevariasjon gir ikke bevis for en fysisk gangbane."
+      },
+      "roughness_jpeg_rounding_note": "Pre-JPEG data følger .60-.75. Dekodet quality-90 JPEG har min .5961, max .7373; svært liten avrundings/ringing-variasjon ved komprimering.",
+      "albedo_unchanged": true,
+      "positive_y_status": "PASS",
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 15.6220703125,
+          "p95_abs_byte_delta": 44,
+          "max_abs_byte_delta": 82
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "outputs_byte_identical": true,
+        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "unchanged_albedo_sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae"
+      },
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool.",
+        {
+          "normal_data_opposite_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "conditioning_band_pixels": 8,
+          "flat_boundary_pixels": 2,
+          "albedo_edge_mismatch": {
+            "mean_abs_byte_delta": 15.6220703125,
+            "p95_abs_byte_delta": 44,
+            "max_abs_byte_delta": 82
+          },
+          "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
+        }
+      ],
+      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a"
+    }
+  ],
+  "finished_utc": "2026-10-04T20:49:24.933157+00:00",
+  "status": "PASS with documented source/runtime limits"
+}

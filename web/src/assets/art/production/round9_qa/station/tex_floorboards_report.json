@@ -1,0 +1,384 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/station/tex_floorboards.jpg",
+    "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+    "bytes": 265958,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/station/floorboards_height_original.png",
+    "sha256": "36bbabcf3c7f2ec7372ebd11f2d79f29870849fd8019d8b79f61b572565a115d",
+    "bytes": 1765877,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "floorboards",
+  "parameters": {
+    "kind": "wood_h",
+    "rough": [
+      0.6,
+      0.75
+    ],
+    "depth": 1.4,
+    "guide": 0.025,
+    "joint_count": 10
+  },
+  "method": {
+    "geometry": "narrow source row/column valleys for board joints; weak narrow grain",
+    "wear_method": "source low microcontrast, 9px energy and 12px spatial smoothing, percentile normalized; excludes grout",
+    "wear_interpretation": "UNVERIFIED walking path: only local smoother source regions, no invented continuous traffic stripe",
+    "guide_weight_height_pixels": 0.025,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.09765625,
+    "strong_slope_support_fraction": 0.25390625,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/station/tex_floorboards_n.png",
+      "sha256": "7773de2ef323cd0d30dab5e3e72fe5024453b3e689c6d3264efafccf1340b7c9",
+      "bytes": 75869,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/station/tex_floorboards_r.jpg",
+      "sha256": "ca25634b805b3d2a002ecf6ea51632b76623ab2ddc7d8500ac3cc49e6fd2c68b",
+      "bytes": 11161,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_normal_2x2.png",
+      "sha256": "f55ddacdf71b4e3fe24344b01bba16f47116a1dfd5f3a0c105550c52988638d8",
+      "bytes": 172579,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_overlay.png",
+      "sha256": "b5b8dab89dcc934376f468e0b9e399f3cd28b0d1948bf9febde0241cafad2959",
+      "bytes": 306033,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_light_top.png",
+      "sha256": "ceb38719b81b31bc3e3155cc0b6be8e2f553162c69b5953bdc86604ad871a823",
+      "bytes": 36159,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_mask.png",
+      "sha256": "7b143c7ca4b2baf962d3a07865fc083ddfc92da5d37eedfed45c230fa644a768",
+      "bytes": 585,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_derived_height.png",
+      "sha256": "241c9b472c21fe4771f86262afe8807f73348e25fb8255af8059fa3c6e2d6065",
+      "bytes": 28377,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 15.6220703125,
+      "p95_abs_byte_delta": 44,
+      "max_abs_byte_delta": 82
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 243
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9950821016786114,
+          "max": 1.0040670850420794
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 25.261749711261608,
+          "pixels_over15": 18432
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.596078431372549,
+      "max": 0.7372549019607844,
+      "mean": 0.6446146198347503
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 5.647801966037269,
+    "feature_max_degrees": 25.261749711261608,
+    "calm_pixel_count": 195584,
+    "feature_pixel_count": 66560,
+    "roughness_intended_range": [
+      0.6,
+      0.75
+    ],
+    "roughness_pre_jpeg_range": [
+      0.6000000238418579,
+      0.7335293889045715
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+    "reviewer": "Codex B1 asset inspection",
+    "reviewed_views": [
+      "original albedo",
+      "original generated height guide",
+      "normal 2x2",
+      "normal over albedo at 50%",
+      "flat top lighting",
+      "roughness grayscale"
+    ],
+    "note": "Ti horisontale bord og ni interne fuger følger kildeplasseringene. Fiber er svak. Lokal ruhetsvariasjon bygger på tapt mikrokontrast, ikke lysere pigment; pre-JPEG .60-.75. Ingen sammenhengende gangstripe er funnet på albedo og ingen er oppfunnet.",
+    "inspection": {
+      "path": "src/assets/art/production/round9_qa/station/tex_floorboards_inspection.png",
+      "sha256": "ce3b67f0744bd1590a865f6b33a7bb101ca911fa1b7184a713ba138c50c8b0ca"
+    }
+  }
+}

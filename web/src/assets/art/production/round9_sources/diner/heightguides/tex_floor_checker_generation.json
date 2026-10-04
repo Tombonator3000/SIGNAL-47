@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "diner/tex_floor_checker.jpg",
+  "albedo_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-c7ed700b-21ff-4587-9d4a-ec142a0fe6d9.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_floor_checker_height_original.png",
+  "saved_original_sha256": "2a3ffb284d43777e283a8c11076bf9b321820ad718dd3826025c17711fe21a89",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. The input is an EXACT 8 by 8 checker tile floor albedo. Preserve its square framing, the exact 8x8 layout and every thin joint at x/y multiples of 1/8 including border joints. Both BLACK and CREAM tile faces MUST become the SAME uniform light-midgray height; their color difference is printed pigment and MUST NOT become alternating height. Lower only the narrow grout lines to a dark-midgray shallow groove, with very narrow softly rounded bevels along the exact visible tile edges. Tile faces remain flat, equally tall and calm; remove all stains, print, scratches, brightness gradients, light and shadow. The output is grayscale height, NOT purple normal map: higher=brighter, lower=darker. No new lines, no displaced grid, no thick joints, no crop, no rotation, no frame or text. Preserve exact border continuation.",
+  "prompt_sha256_utf8": "ad5ed076756ebd738085010ac15a55e74134a55b4f77e6fc77da43af8160ff2f",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}
