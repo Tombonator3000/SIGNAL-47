@@ -31,7 +31,7 @@ async def main():
         await pg.goto(URL)
         # Let the first page finish fetching its sounds. On the Pages build they are separate
         # files, and a reload in the middle aborts the fetch, so the old page logs a warning.
-        try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 11", timeout=120000)
+        try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 25", timeout=120000)
         except Exception: pass
         await pg.evaluate("localStorage.clear()")
         await pg.reload()

@@ -79,7 +79,10 @@ export class Doors {
     const at = door.spec.proxy.getWorldPosition(new THREE.Vector3());
     const heavy = door.spec.sound !== 'light';
     this.d.audio.play('switch', { gain: heavy ? 0.55 : 0.45, rate: door.open ? 1 : 0.85, at });
-    this.d.audio.play('thudSoft', { gain: door.open ? 0.3 : 0.45, when: door.open ? 0.6 : 0.75, at });
+    // hinges that want oil on the way, then the leaf meets the frame (steel or wood)
+    this.d.audio.play(Math.random() < 0.5 ? 'doorCreak0' : 'doorCreak1', { gain: heavy ? 0.16 : 0.12, rate: (heavy ? 0.8 : 1) * (0.95 + Math.random() * 0.1), when: 0.08, at });
+    if (!door.open) this.d.audio.play(heavy ? 'doorMetal' : 'doorClose', { gain: heavy ? 0.32 : 0.4, when: 0.78, at });
+    else this.d.audio.play('thudSoft', { gain: 0.25, when: 0.6, at });
   }
 
   // Standing in the doorway, or where the leaf swings: the door stays open.
