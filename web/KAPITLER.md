@@ -9,7 +9,7 @@ Status:
 | Kapittel | Spesifisert | Bygd |
 | --- | --- | --- |
 | Night Shift | Ja, under | Bygd 4. oktober kveld (se loggen) |
-| The Second Exposure | Neste | Grunnløpet er bygd |
+| The Second Exposure | Ja, under (venter på Tom) | Grunnløpet er bygd |
 | The Amended Record | | Grunnløpet er bygd |
 | The Survey Station | | Grunnløpet er bygd |
 | Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
@@ -309,6 +309,106 @@ Begge er bakgrunnstråder, ikke funn. De hjelper den som vil skjønne, og stoppe
 
 1. **Kometen som bevis: ja** (4. oktober kveld). Halleys komet var synlig lavt i sør i april 1986 og umulig å se i 1947. Plakaten her, kometen på himmelen og kometen i avisbildet fra 1947.
 2. **Reléet under nedtellingen: ja.** K3 slår ut sju sekunder før smellet, og bank 3 må slås inn igjen etterpå.
+
+## The Second Exposure (02:16 til 02:55)
+
+### Lag
+
+- **Det spilleren tror først:** lampa, framkallingen eller motoren lager et ekstra merke på filmen.
+- **Det nye laget:** filmen beholder en referanse øyet ikke ser. Og SARO har sett det samme på film før, og kalt det rystelse, slør og framkallingsfeil. Det er de samme nettene som i perma.
+- **Det som holdes tilbake:** hva referansen er. Rapporten sier bare hva prøven viser.
+
+### Det som finnes og blir
+
+Alt i dagens kapittel 1 blir: feltkameraet ved østdøra, S-03-loggen (enkoder 026, planlagt 042, ingen kommando), FRAME 01 fra S-03-plattformen, framkallingen på våtbenken, merkingen av referansen på kopien, hypotesen, B-12 med passiv eller aktiv kontroll, FRAME 02, sammenligningen, den lokale rapporten, og Ward som ringer etterpå. Ingen tekster skrives om. Jakka og kometen er allerede bygd.
+
+### Nytt
+
+1. **Telexen fra Hondo Valley, 02:29.** Mens spilleren er i gården, skramler telexmaskinen i kontrollrommet. Den høres gjennom den åpne østdøra. Rullen får en melding til, og konsolloggen får `TELEX RECEIVED  HONDO VALLEY`. Ingen tekst på skjermen sier noe om den; den som går inn, finner den.
+
+```
+ZCZC HVR0229
+SARO OPS
+FM HONDO VALLEY RADIO STN
+0229 MST 14 APR 86
+RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE.
+NNNN
+```
+
+2. **Mørkeromsboka** på hylla over våtbenken i fotolaben (`Darkroom log`). Åpen på siste side, med eldre sider bak:
+
+```
+SARO PHOTO LAB / DARKROOM LOG
+DATE      FILM  FR  BY    NOTES
+04/02/86  ---   --  D.    FIXER CHANGED. DEV 68 F.
+04/11/86  HP5   6   D.    CAL TARGETS. OK.
+- - - - - - - - - - - - - - - - - - - - -
+10/20/85  TX    2   M.O.  S-03 SURVEY 10/19.
+                          EXTRA MARK ON BOTH.
+                          DEV FAULT?
+03/03/83  TX    1   R.K.  APRON, 03/02. FAINT
+                          SECOND VANE. FOG ON
+                          EMULSION, PROBABLY.
+09/23/81  TX    2   ---   REF CHECK 09/22.
+                          DOUBLE IMAGE B-12.
+                          CAMERA SHOOK. REJECT.
+```
+
+Blyant ved 1985-linja, Dales hånd: *Same as the binder.* Beskrivelse i spillet: «The log is open at this month. Further back, three entries say the same thing in three different ways.»
+
+3. **Historikken i S-03-kontrolleren.** Motorskapet får en side til etter den første loggen (`S-03 / Controller history`):
+
+```
+SARO ARRAY / MOTOR BUS S-03
+MOTION WITHOUT COMMAND / HISTORY
+
+09/22/81  01:52:07  ENCODER 026
+03/02/83  03:10:44  ENCODER 026
+10/19/85  23:58:31  ENCODER 026
+04/14/86  02:14:52  ENCODER 026
+```
+
+Samme asimut hver gang, på klokkeslett som står i perma. Tidspunktet i natt kommer fra spillets klokke.
+
+4. **Fikserflaska og lappen på laboratorieveggen:** «Fixer changed on the 2nd. Developer at 68. Dale.» Den vanlige forklaringen (gammel fikser) faller før spilleren rekker å tenke den.
+
+5. **Merket under malingen på B-12.** Når spilleren ser nøye på vingen, står det et stemplet merke under malingen på braketten: «STA 01 / B». Det betyr ingenting ennå, men det er det The Amended Record leter etter.
+
+### Gåter
+
+Hovedkjeden er som før og følger allerede rekkefølgen: observer (S-03 sto feil), dokumenter (FRAME 01), sammenlign (merket mot installasjonsarket), konkluder (hypotese), test (B-12-kontrollen og FRAME 02). Det nye er valgfritt:
+
+- **Er det nytt?** Mørkeromsboka, S-03-historikken og perma fra Night Shift har de samme datoene. Det er tre bakgrunnstråder på bordet når det kommer i The Amended Record: «The same three nights in three records.»
+- **Hva peker 026 mot?** Ingen svarer på det i dette kapitlet. Det står igjen som et spørsmål i notatene: «Every time: 026.»
+
+### Falske forklaringer
+
+| Forklaring | Fra | Det som skiller den ut |
+| --- | --- | --- |
+| Arbeidslampa lager et gjenskinn | Hypotesen, spilleren | Den passive kontrollen: lampa skjermet, merket blir |
+| Motoren har drevet | S-03 | Den aktive kontrollen: vingen flyttes, merket blir stående der det var |
+| Framkallingsfeil | Mørkeromsboka 1985, rapporten fra 1947 senere | Fersk fikser, og merket står på begge bildene på samme sted |
+| Kameraet ristet | Mørkeromsboka 1981 | Begge bildene i natt er skarpe |
+| Dugg på glasset | S-03-loggen | Duggen er på inspeksjonsglasset, ikke på linsa |
+
+### Callbacks
+
+| Settes opp her | Betales tilbake |
+| --- | --- |
+| «DEV FAULT?» i mørkeromsboka | Den endrede rapporten fra 1947 i The Amended Record, som sier akkurat det |
+| «STA 01 / B» på braketten | B-12-linjekortet og STATION 01 |
+| Hondo Valley på telexen | Nettverksstatusen senere og Wards «Hondo called» i dineren |
+| 026 hver gang | Holdes åpent til slutten |
+| Rødt lys i fotolaben | Frontlysene i THE EVENT, der rødt er den siste fargen |
+| FRAME 01 og 02: filmen ser det øyet ikke ser | Avisbildet fra 1947, og bildet etter rulleteksten |
+
+### Hva som bygges
+
+- `ServiceYard.ts`: mørkeromsboka på hylla over våtbenken, fikserflaska og lappen, trefflater.
+- `Chapter1.ts`: dokumentene (mørkeromsboka, S-03-historikken), merket under malingen i teksten til vingen, telexen klokka 02:29 med lyd fra maskinen i kontrollrommet, og nye linjer i konsolloggen.
+- `nightshift.ts`: telexmeldingen fra Hondo Valley på rullen.
+- Lyd: telexmaskinen som skriver (syntese: rytmiske slag og en motor).
+- Test i `chapter1.py`: mørkeromsboka og historikken kan leses, telexen kommer 02:29, og en lagring tar dem med.
 
 ## Room 6, avklart på forhånd: walkie-talkien
 
