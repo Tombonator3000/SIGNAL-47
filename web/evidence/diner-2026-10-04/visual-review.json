@@ -1,0 +1,59 @@
+{
+  "status": "PASS_WITH_NOTED_PREVIEW_LIMITS",
+  "runtime_source_sha256": "44f9f2c81af027ab8a4721b41589f463e8c22a1369e66c78e60ef24ef2b1352b",
+  "capture_report_sha256": "1e71c192c48fdad90c0936f7b845713e4c322c43a4045d67c2a51dd0abbc67e4",
+  "independent_review": {
+    "final_main_images": 36,
+    "individual_full_size_images": 19,
+    "views": "four contact sheets plus Clipping/Menu/Sign/Phone in every combination and desktop High Arrival/Outside/Worst",
+    "before_image_excluded": true,
+    "findings_fixed": [
+      "sign artwork duplicated posts/floating feet",
+      "newspaper frame floating in glass instead of on a wall"
+    ],
+    "remaining_limits": [
+      "Phone close-up crops top and bottom of apparatus",
+      "Mobile Clipping toolbar covers top masthead",
+      "small pine grain discontinuity at vertical repeat; strict seamless not claimed"
+    ],
+    "hardware_or_integrated_play_verified": false
+  },
+  "root_cua": {
+    "requested_dom_viewport": [
+      1280,
+      800
+    ],
+    "images": [
+      {
+        "file": "review-before-clipping-wall.jpg",
+        "actual_pixel_dimensions": [
+          1280,
+          800
+        ],
+        "sha256": "41c514bd5a56e08c312a3092d08e0cff5fecfc7b1eff75009e9afed4fbaba9b6",
+        "historical_before_fix": true
+      },
+      {
+        "file": "cua-arrival-final.jpg",
+        "actual_pixel_dimensions": [
+          1280,
+          800
+        ],
+        "sha256": "e1b53724d5f8ce3c48ac941ac089781bec2c091282b4b9f7a8cb833a4a545c32",
+        "historical_before_fix": false
+      },
+      {
+        "file": "cua-booth-final.jpg",
+        "actual_pixel_dimensions": [
+          1280,
+          800
+        ],
+        "sha256": "90846f5d2dfdcce35daf3f7dd5771501b54dfdbb414a7adb078604cf23b1c6b1",
+        "historical_before_fix": false
+      }
+    ],
+    "warm_final_construction_ms": 27.7,
+    "initial_pre_fix_cold_constructor_ms": 1159.9,
+    "note": "Observed timings from private IAB. Not hardware FPS or a construction guarantee."
+  }
+}
