@@ -1,0 +1,750 @@
+{
+  "fallback": {
+    "view": "Arrival",
+    "quality": "low",
+    "viewport": [
+      844,
+      390
+    ],
+    "calls": 53,
+    "triangles": 15260,
+    "scene": {
+      "meshes": 67,
+      "geometries": 67,
+      "totalTriangles": 15474,
+      "materials": 28
+    },
+    "gpu": {
+      "geometries": 51,
+      "textures": 8
+    },
+    "firstBuildMs": 64.70000000298023,
+    "buildMs": 64.70000000298023,
+    "recreations": 0,
+    "origin": [
+      -8000,
+      0,
+      0
+    ],
+    "surfaceArt": "procedural fallback",
+    "flood": {
+      "count": 10,
+      "n": 10
+    },
+    "switches": {
+      "sign": true,
+      "dawn": 0.25,
+      "doorOpen": true
+    },
+    "viewStandingClear": true,
+    "viewNote": "Walking-height view",
+    "checks": [
+      {
+        "name": "13 exact proxy IDs",
+        "pass": true
+      },
+      {
+        "name": "13 hit meshes hidden on layer 31",
+        "pass": true
+      },
+      {
+        "name": "7 independent contract objects",
+        "pass": true
+      },
+      {
+        "name": "5 exact zones",
+        "pass": true
+      },
+      {
+        "name": "Zone overlaps > 0.6 m",
+        "pass": true
+      },
+      {
+        "name": "Origin applied to zones, colliders and lights",
+        "pass": true
+      },
+      {
+        "name": "Walk anchors radius-clear",
+        "pass": true
+      },
+      {
+        "name": "Truck placement anchor faces north; separate parking collider",
+        "pass": true
+      },
+      {
+        "name": "Player route arriveOutsideInsideStool",
+        "pass": true
+      },
+      {
+        "name": "Player route arriveOutsideInsideStoolReverse",
+        "pass": true
+      },
+      {
+        "name": "Player route insidePhone",
+        "pass": true
+      },
+      {
+        "name": "Player route insidePhoneReverse",
+        "pass": true
+      },
+      {
+        "name": "Player route stoolMenu",
+        "pass": true
+      },
+      {
+        "name": "Player route stoolMenuReverse",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick door",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick counter",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick coffee",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick waitress",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick driver",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick menu",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick clipping",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick payphone",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick jukebox",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick window",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick booth",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick sign",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick rig",
+        "pass": true
+      },
+      {
+        "name": "Inert counter does not mask coffee",
+        "pass": true
+      },
+      {
+        "name": "Diner flood 10/10; other sets unchanged",
+        "pass": true
+      },
+      {
+        "name": "Exactly one real HemisphereLight",
+        "pass": true
+      },
+      {
+        "name": "Sign off/on affects all quality variants",
+        "pass": true
+      },
+      {
+        "name": "Dawn clamps and updates all quality variants",
+        "pass": true
+      },
+      {
+        "name": "Exactly one Diner group",
+        "pass": true
+      },
+      {
+        "name": "Shared artwork never disposed",
+        "pass": true
+      },
+      {
+        "name": "Draw calls <= 120",
+        "pass": true
+      },
+      {
+        "name": "No captured runtime errors",
+        "pass": true
+      }
+    ],
+    "pickResults": {
+      "door": {
+        "picked": "door",
+        "expected": "door",
+        "standingClear": true,
+        "worldEye": [
+          -7996.9,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "counter": {
+        "picked": "counter",
+        "expected": "counter",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "coffee": {
+        "picked": "coffee",
+        "expected": "coffee",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "waitress": {
+        "picked": "waitress",
+        "expected": "waitress",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "driver": {
+        "picked": "driver",
+        "expected": "driver",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "menu": {
+        "picked": "menu",
+        "expected": "menu",
+        "standingClear": true,
+        "worldEye": [
+          -8003.72,
+          1.62,
+          -2.4
+        ],
+        "range": 2.4
+      },
+      "clipping": {
+        "picked": "clipping",
+        "expected": "clipping",
+        "standingClear": true,
+        "worldEye": [
+          -7999.25,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "payphone": {
+        "picked": "payphone",
+        "expected": "payphone",
+        "standingClear": true,
+        "worldEye": [
+          -7999.6,
+          1.62,
+          8.05
+        ],
+        "range": 2.4
+      },
+      "jukebox": {
+        "picked": "jukebox",
+        "expected": "jukebox",
+        "standingClear": true,
+        "worldEye": [
+          -8001.1,
+          1.62,
+          -6.8
+        ],
+        "range": 2.4
+      },
+      "window": {
+        "picked": "window",
+        "expected": "window",
+        "standingClear": true,
+        "worldEye": [
+          -7999.5,
+          1.62,
+          -1.15
+        ],
+        "range": 2.4
+      },
+      "booth": {
+        "picked": "booth",
+        "expected": "booth",
+        "standingClear": true,
+        "worldEye": [
+          -8001,
+          1.62,
+          3.05
+        ],
+        "range": 2.4
+      },
+      "sign": {
+        "picked": "sign",
+        "expected": "sign",
+        "standingClear": true,
+        "worldEye": [
+          -7986.45,
+          1.62,
+          -11
+        ],
+        "range": 2.4
+      },
+      "rig": {
+        "picked": "rig",
+        "expected": "rig",
+        "standingClear": true,
+        "worldEye": [
+          -7991,
+          1.62,
+          -11.3
+        ],
+        "range": 2.4
+      }
+    },
+    "routeResults": {
+      "arriveOutsideInsideStool": {
+        "pass": true,
+        "steps": 164
+      },
+      "arriveOutsideInsideStoolReverse": {
+        "pass": true,
+        "steps": 164
+      },
+      "insidePhone": {
+        "pass": true,
+        "steps": 147
+      },
+      "insidePhoneReverse": {
+        "pass": true,
+        "steps": 147
+      },
+      "stoolMenu": {
+        "pass": true,
+        "steps": 44
+      },
+      "stoolMenuReverse": {
+        "pass": true,
+        "steps": 44
+      }
+    },
+    "disposal": {
+      "exercised": false,
+      "geometries": 0,
+      "disposedGeometries": 0,
+      "materials": 0,
+      "disposedMaterials": 0,
+      "textures": 0,
+      "disposedTextures": 0
+    },
+    "errors": []
+  },
+  "recreated": {
+    "view": "Arrival",
+    "quality": "low",
+    "viewport": [
+      844,
+      390
+    ],
+    "calls": 53,
+    "triangles": 15260,
+    "scene": {
+      "meshes": 67,
+      "geometries": 67,
+      "totalTriangles": 15474,
+      "materials": 28
+    },
+    "gpu": {
+      "geometries": 51,
+      "textures": 8
+    },
+    "firstBuildMs": 64.70000000298023,
+    "buildMs": 17.200000002980232,
+    "recreations": 1,
+    "origin": [
+      -8000,
+      0,
+      0
+    ],
+    "surfaceArt": "procedural fallback",
+    "flood": {
+      "count": 10,
+      "n": 10
+    },
+    "switches": {
+      "sign": true,
+      "dawn": 0.25,
+      "doorOpen": true
+    },
+    "viewStandingClear": true,
+    "viewNote": "Walking-height view",
+    "checks": [
+      {
+        "name": "13 exact proxy IDs",
+        "pass": true
+      },
+      {
+        "name": "13 hit meshes hidden on layer 31",
+        "pass": true
+      },
+      {
+        "name": "7 independent contract objects",
+        "pass": true
+      },
+      {
+        "name": "5 exact zones",
+        "pass": true
+      },
+      {
+        "name": "Zone overlaps > 0.6 m",
+        "pass": true
+      },
+      {
+        "name": "Origin applied to zones, colliders and lights",
+        "pass": true
+      },
+      {
+        "name": "Walk anchors radius-clear",
+        "pass": true
+      },
+      {
+        "name": "Truck placement anchor faces north; separate parking collider",
+        "pass": true
+      },
+      {
+        "name": "Player route arriveOutsideInsideStool",
+        "pass": true
+      },
+      {
+        "name": "Player route arriveOutsideInsideStoolReverse",
+        "pass": true
+      },
+      {
+        "name": "Player route insidePhone",
+        "pass": true
+      },
+      {
+        "name": "Player route insidePhoneReverse",
+        "pass": true
+      },
+      {
+        "name": "Player route stoolMenu",
+        "pass": true
+      },
+      {
+        "name": "Player route stoolMenuReverse",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick door",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick counter",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick coffee",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick waitress",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick driver",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick menu",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick clipping",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick payphone",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick jukebox",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick window",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick booth",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick sign",
+        "pass": true
+      },
+      {
+        "name": "Interaction.pick rig",
+        "pass": true
+      },
+      {
+        "name": "Inert counter does not mask coffee",
+        "pass": true
+      },
+      {
+        "name": "Diner flood 10/10; other sets unchanged",
+        "pass": true
+      },
+      {
+        "name": "Exactly one real HemisphereLight",
+        "pass": true
+      },
+      {
+        "name": "Sign off/on affects all quality variants",
+        "pass": true
+      },
+      {
+        "name": "Dawn clamps and updates all quality variants",
+        "pass": true
+      },
+      {
+        "name": "Exactly one Diner group",
+        "pass": true
+      },
+      {
+        "name": "Shared artwork never disposed",
+        "pass": true
+      },
+      {
+        "name": "Retired geometry/material/canvas resources disposed once",
+        "pass": true
+      },
+      {
+        "name": "Draw calls <= 120",
+        "pass": true
+      },
+      {
+        "name": "No captured runtime errors",
+        "pass": true
+      }
+    ],
+    "pickResults": {
+      "door": {
+        "picked": "door",
+        "expected": "door",
+        "standingClear": true,
+        "worldEye": [
+          -7996.9,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "counter": {
+        "picked": "counter",
+        "expected": "counter",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "coffee": {
+        "picked": "coffee",
+        "expected": "coffee",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "waitress": {
+        "picked": "waitress",
+        "expected": "waitress",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "driver": {
+        "picked": "driver",
+        "expected": "driver",
+        "standingClear": true,
+        "worldEye": [
+          -8002.8,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "menu": {
+        "picked": "menu",
+        "expected": "menu",
+        "standingClear": true,
+        "worldEye": [
+          -8003.72,
+          1.62,
+          -2.4
+        ],
+        "range": 2.4
+      },
+      "clipping": {
+        "picked": "clipping",
+        "expected": "clipping",
+        "standingClear": true,
+        "worldEye": [
+          -7999.25,
+          1.62,
+          0
+        ],
+        "range": 2.4
+      },
+      "payphone": {
+        "picked": "payphone",
+        "expected": "payphone",
+        "standingClear": true,
+        "worldEye": [
+          -7999.6,
+          1.62,
+          8.05
+        ],
+        "range": 2.4
+      },
+      "jukebox": {
+        "picked": "jukebox",
+        "expected": "jukebox",
+        "standingClear": true,
+        "worldEye": [
+          -8001.1,
+          1.62,
+          -6.8
+        ],
+        "range": 2.4
+      },
+      "window": {
+        "picked": "window",
+        "expected": "window",
+        "standingClear": true,
+        "worldEye": [
+          -7999.5,
+          1.62,
+          -1.15
+        ],
+        "range": 2.4
+      },
+      "booth": {
+        "picked": "booth",
+        "expected": "booth",
+        "standingClear": true,
+        "worldEye": [
+          -8001,
+          1.62,
+          3.05
+        ],
+        "range": 2.4
+      },
+      "sign": {
+        "picked": "sign",
+        "expected": "sign",
+        "standingClear": true,
+        "worldEye": [
+          -7986.45,
+          1.62,
+          -11
+        ],
+        "range": 2.4
+      },
+      "rig": {
+        "picked": "rig",
+        "expected": "rig",
+        "standingClear": true,
+        "worldEye": [
+          -7991,
+          1.62,
+          -11.3
+        ],
+        "range": 2.4
+      }
+    },
+    "routeResults": {
+      "arriveOutsideInsideStool": {
+        "pass": true,
+        "steps": 164
+      },
+      "arriveOutsideInsideStoolReverse": {
+        "pass": true,
+        "steps": 164
+      },
+      "insidePhone": {
+        "pass": true,
+        "steps": 147
+      },
+      "insidePhoneReverse": {
+        "pass": true,
+        "steps": 147
+      },
+      "stoolMenu": {
+        "pass": true,
+        "steps": 44
+      },
+      "stoolMenuReverse": {
+        "pass": true,
+        "steps": 44
+      }
+    },
+    "disposal": {
+      "exercised": true,
+      "geometries": 67,
+      "disposedGeometries": 67,
+      "materials": 55,
+      "disposedMaterials": 55,
+      "textures": 7,
+      "disposedTextures": 7
+    },
+    "errors": []
+  },
+  "sourceHashes": {
+    "src/world/Diner.ts": "44f9f2c81af027ab8a4721b41589f463e8c22a1369e66c78e60ef24ef2b1352b",
+    "tools/dinerpreview.py": "6f98413f43b1641fb59110ba8a71ac596dffe8fd583d680eff5d023b0890f73a"
+  },
+  "limitations": [
+    "Privat modulforh\u00e5ndsvisning, ingen kapittel- eller integrasjonstest.",
+    "Worst er et diagnostisk kamera bak disken, utenfor kundens gangsone.",
+    "Headless SwiftShader-m\u00e5linger beviser ikke FPS p\u00e5 fysisk mobil."
+  ],
+  "browserClosed": true
+}
