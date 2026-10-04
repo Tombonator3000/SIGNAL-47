@@ -2,7 +2,7 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
-## Nå (prolog og kapittel 1 til 3 ferdige til test)
+## Nå (prolog og kapittel 1 til 3 er ute på Pages fra 4. oktober kl. 12.39)
 
 - [ ] Tom tester natten fra prologen til og med kapittel 3 på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller, lesbarhet, kameraet, fotopanelene, arkivbordet, telefonsamtalene, kjøringen (taster og venstre stikke på telefon), STATION 01 og om kapittelkortene gir en sammenhengende natt.
 - [ ] Prøv lagringen: Save case og Load case i pausemenyen, Continue og Load case på tittelskjermen, tre saker, og at bildene i saksmappa kommer tilbake etter lasting.
@@ -13,7 +13,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Neste
 
-- [ ] Kapittel 4 «Room 6»: Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.
+- [ ] Kapittel 4 «Room 6» (neste for Claude): Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.
 - [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
 - [ ] Dinerens grafikk fra Codex (PR #35) kobles inn når dineren bygges: skiltet (tekst i kode på baseline (512, 230), høyst 50 px), menytavla (fem linjer), mintlaminatet (0,6 m), rutegulvet (2,4 m) og avisfotoet. PNG-ene får WebP-kopier med `tools/prepare_art.py`, og alfa og tekst kontrolleres etterpå.
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
