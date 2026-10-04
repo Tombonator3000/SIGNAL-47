@@ -288,6 +288,15 @@ export class Room6 {
     box(shoebox,.39,.14,.25,m.cream,0,.07,0);box(shoebox,.4,.015,.26,m.wood,.05,.15,.04);
     for(let i=0;i<4;i++)box(shoebox,.29,.008,.19,m.cream,-.018,.153+i*.009,-.025);
     mergeStatic(shoebox);
+    // Tomás' field radio from 1947, lying on the table by the shoebox (Chapter4.ts, core/walkie.ts)
+    const wk=this.model('walkie',.27,.81,1.62);wk.rotation.y=.25;
+    const olive=this.mat({color:0x4b5135,roughness:.8});
+    box(wk,.095,.075,.3,olive,0,.0375,0);box(wk,.07,.012,.09,m.black,0,.08,-.09);
+    for(let i=0;i<4;i++)box(wk,.05,.004,.006,m.metal,0,.077,.03+i*.018);
+    cyl(wk,.012,.012,.02,m.metal,.03,.085,-.12,8);
+    rod(wk,new THREE.Vector3(-.03,.07,-.15),new THREE.Vector3(-.035,.075,.17),.004,m.metal,4);
+    mergeStatic(wk);
+    this.proxy('walkie',.18,.13,.38,.27,.86,1.62);
     cyl(this.fixed,.069,.08,.025,m.metal,.59,.83,1.59,12);
     cyl(this.fixed,.052,.052,.006,m.black,.59,.844,1.59,12);
   }

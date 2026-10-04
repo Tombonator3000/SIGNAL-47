@@ -17,7 +17,7 @@ export class DecoderDesk {
   private scrT = 0;
   private spin = 0;
 
-  constructor(private d: { ui: UI; audio: AudioSys; room: ControlRoom; inter: Interaction; locked: () => boolean; recorded: () => string; busy: () => boolean }) {
+  constructor(private d: { ui: UI; audio: AudioSys; room: ControlRoom; inter: Interaction; locked: () => boolean; recorded: () => string; busy: () => boolean; power: () => boolean }) {
     const { inter, room } = d;
     inter.add({ id: 'decoder', object: room.objs.decoder, range: 2.4,
       label: () => this.playing ? 'Signal processor (playing)' : 'Signal processor',
@@ -30,6 +30,7 @@ export class DecoderDesk {
   private open() {
     const { ui, audio } = this.d;
     if (this.d.busy()) return;
+    if (!this.d.power()) { ui.toast('No power to the processor. It runs off RX bank 3.', 3); return; }
     if (!this.d.locked()) {
       ui.toast('The deck records whatever the receiver locks on. Nothing has been locked tonight.', 3.6);
       return;

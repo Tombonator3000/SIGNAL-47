@@ -11,6 +11,8 @@ export interface DocSpec {
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+// A line that starts with "~ " is pencil on the paper (story/nightshift.ts).
+const pencil = (html: string) => html.replace(/^~ (.*)$/gm, '<span class="pencil">$1</span>');
 
 const CREDITS = 'Music: "Signal to Noise" by Scott Buckley, CC BY 4.0, scottbuckley.com.au. Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
@@ -197,7 +199,7 @@ export class UI {
       : (doc.kind === 'photo' || doc.kind === 'map') && doc.image
         ? `<div class="page photo${doc.kind === 'map' ? ' map' : ''}"><img alt="${esc(doc.title)}" src="${doc.image}"></div>`
         : doc.kind === 'typed'
-          ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${esc(doc.page)}</pre>${doc.image ? `<img class="attached" alt="" src="${doc.image}">` : ''}</div>`
+          ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${pencil(esc(doc.page))}</pre>${doc.image ? `<img class="attached" alt="" src="${doc.image}">` : ''}</div>`
           : `<div class="page${doc.paper ? ' on-paper' : ''}${(doc.paperRatio ?? 0) > 1 ? ' wide' : ''}"${doc.paper ? ` style="background-image:url('${doc.paper}');aspect-ratio:${doc.paperRatio ?? 0.77}"` : ''}>${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<div class="hand">${esc(doc.page)}</div></div>`;
     el.innerHTML = `
       <div class="page-wrap">${page}</div>

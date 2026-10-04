@@ -96,7 +96,9 @@ const NOTES: Record<string, string> = {
 const NOTE_Q: Record<string, string> = { 'n.c': 'P04', 'n.mark': 'P04', 'n.id': 'P05', 'n.mark2': 'P05', 'n.dest': 'P05' };
 type Rule = { a: string; b: string; note?: keyof typeof NOTES; text: string; wrong?: 4 | 5 };
 const ELEVATION = 'A triangle without the bar is only an elevation symbol. The matching fixed-point mark has a short bar beneath the outlined triangle.';
-const LY = 'The dated archive supplies 1947; -39 LY is not a calendar code or a survey ID.';
+// -39 against a year from the archive holds, as a thin thread with nothing added: the
+// player can do the sum or not (HISTORIE.md: -39 LY is 39 years, and nobody says so).
+const LY = '-39 on tonight\'s printout. 1947 on the record.';
 const DEVELOPMENT = 'Compare the arrangement, not just the amended explanation. Which reference appears in the original and is omitted from the service copy?';
 const RULES: Rule[] = [
   { a: 'e07.abc', b: 'e06.omit', note: 'n.c', text: NOTES['n.c'] },
@@ -111,8 +113,8 @@ const RULES: Rule[] = [
   { a: 'e06.fault', b: 'e07.head', text: DEVELOPMENT, wrong: 4 },
   { a: 'e06.fault', b: 'e07.sig', text: 'The shared signature identifies the report. It does not establish the author\'s motive or responsibility. Which reference changes between the two versions?', wrong: 4 },
   { a: 'b12.mark', b: 'e08.elev', text: ELEVATION, wrong: 5 },
-  { a: 'rx.dist', b: 'e08.id', text: LY, wrong: 5 },
-  { a: 'rx.dist', b: 'e07.head', text: LY, wrong: 5 },
+  { a: 'rx.dist', b: 'e08.id', text: LY },
+  { a: 'rx.dist', b: 'e07.head', text: LY },
 ];
 const pair = (a: string, b: string) => [a, b].sort().join('|');
 const ruleOf = (k: string) => RULES.find((r) => pair(r.a, r.b) === k);
@@ -436,7 +438,7 @@ export class Chapter2 {
     if (!s.p04) return { ok: false, text: 'Record what changed in the two field records before preparing the field destination.' };
     if (!s.read.lineage || !s.read.index) return { ok: false, text: 'Read both the B-12 lineage card and archive sleeve index. A place name alone does not establish the connection.' };
     const wrong = (text: string) => { s.wrong05++; this.save(); return { ok: false, text }; };
-    if (surveyId !== 'STATION 01') return wrong('Match the survey ID in both sources. The dated archive supplies 1947; -39 LY is not a calendar code or a survey ID.');
+    if (surveyId !== 'STATION 01') return wrong('Match the survey ID in both sources. -39 LY is not a survey ID.');
     if (marker !== 'triangle-bar') return wrong('The matching fixed-point mark has a short bar beneath the outlined triangle. A triangle without the bar is only an elevation symbol.');
     if (destination !== 'old-survey-station') return wrong('The B-12 service lineage and matching archive sleeve identify OLD SURVEY STATION. The documents do not establish another destination.');
     if (!s.p05) {

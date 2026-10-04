@@ -202,6 +202,15 @@ export function calendarApril1986() {
       const x = 22 + (cell % 7) * 35, y = 128 + Math.floor(cell / 7) * 38;
       g.fillText(String(d), x, y);
       if (d === 13) { g.strokeStyle = '#26324f'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 6, 15, 0, Math.PI * 2); g.stroke(); }
+      // the moon's phases, printed small in the corner of the day, as calendars had them
+      const phase = ({ 1: 'last', 9: 'new', 17: 'first', 24: 'full' } as Record<number, string>)[d];
+      if (phase) {
+        const mx = x + 12, my = y - 16, r = 4;
+        g.fillStyle = '#2b2a27'; g.strokeStyle = '#2b2a27'; g.lineWidth = 1;
+        g.beginPath(); g.arc(mx, my, r, 0, Math.PI * 2);
+        if (phase === 'new') g.fill(); else g.stroke();
+        if (phase === 'first' || phase === 'last') { g.beginPath(); g.arc(mx, my, r, Math.PI / 2, -Math.PI / 2, phase === 'first'); g.fill(); }
+      }
     }
   });
 }
@@ -423,4 +432,97 @@ export function screenCanvas(w = 256, h = 160) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   return { canvas: c, ctx: c.getContext('2d')!, tex: t };
+}
+
+// ---------- Night Shift papers (story/nightshift.ts) ----------
+
+// The spring 1986 poster for Halley's comet: a night sky, the comet with its tail, a little
+// chart of the southern sky with the comet's places through April, and Ward's note.
+export function halleyPosterTex() {
+  return canvasTex(256, 384, (g, w, h) => {
+    const sky = g.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#060a1c'); sky.addColorStop(0.65, '#14204a'); sky.addColorStop(1, '#2a2440');
+    g.fillStyle = sky; g.fillRect(0, 0, w, h);
+    const r = rng(1986);
+    for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(255,255,240,${0.3 + r() * 0.7})`; g.fillRect(r() * w, r() * h * 0.7, r() < 0.1 ? 2 : 1, r() < 0.1 ? 2 : 1); }
+    // the comet, head low right, tail up to the left
+    g.save(); g.translate(176, 150); g.rotate(-0.75);
+    const tail = g.createLinearGradient(0, 0, 0, -150);
+    tail.addColorStop(0, 'rgba(220,235,255,.85)'); tail.addColorStop(1, 'rgba(220,235,255,0)');
+    g.fillStyle = tail; g.beginPath(); g.moveTo(-6, 0); g.lineTo(-26, -150); g.lineTo(26, -150); g.lineTo(6, 0); g.fill();
+    const head = g.createRadialGradient(0, 0, 0, 0, 0, 14);
+    head.addColorStop(0, 'rgba(255,255,255,1)'); head.addColorStop(1, 'rgba(200,220,255,0)');
+    g.fillStyle = head; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.fill();
+    g.restore();
+    // mesa along the bottom of the picture
+    g.fillStyle = '#0b0a12'; g.beginPath(); g.moveTo(0, 236); g.lineTo(40, 228); g.lineTo(70, 214); g.lineTo(150, 212); g.lineTo(176, 226); g.lineTo(w, 232); g.lineTo(w, 250); g.lineTo(0, 250); g.fill();
+    g.fillStyle = '#f2e6c4'; g.textAlign = 'center';
+    g.font = '600 30px Oswald'; g.fillText("HALLEY'S COMET", w / 2, 44);
+    g.font = '500 16px Oswald'; g.fillText('APRIL 1986', w / 2, 66);
+    // the chart: horizon line and the comet's places
+    g.fillStyle = '#e9dfc4'; g.fillRect(14, 256, w - 28, 92);
+    g.strokeStyle = '#2b2a27'; g.lineWidth = 1; g.strokeRect(18, 260, w - 36, 84);
+    g.beginPath(); g.moveTo(22, 330); g.lineTo(w - 22, 330); g.stroke();
+    g.fillStyle = '#2b2a27'; g.font = '10px Oswald'; g.textAlign = 'left'; g.fillText('S', w / 2 - 3, 342); g.fillText('SE', w - 40, 342); g.fillText('SW', 26, 342);
+    const pts: [number, number, string][] = [[196, 300, '5'], [160, 316, '10'], [118, 318, '14'], [76, 304, '20']];
+    for (const [x, y, d] of pts) { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); g.fillText(d, x - 4, y - 7); }
+    g.font = '500 12px Oswald'; g.textAlign = 'center'; g.fillStyle = '#f2e6c4';
+    g.fillText('LOOK LOW IN THE SOUTH', w / 2, 372);
+    // Ward's note, taped on
+    g.save(); g.translate(30, 92); g.rotate(-0.08);
+    g.fillStyle = '#efe39a'; g.fillRect(0, 0, 92, 62);
+    g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(30, -6, 34, 12);
+    g.fillStyle = '#26324f'; g.font = '15px "Reenie Beanie", cursive'; g.textAlign = 'left';
+    ['comet calls go', 'to the planetarium', 'not us  E.W.'].forEach((l, i) => g.fillText(l, 5, 18 + i * 17));
+    g.restore();
+  });
+}
+
+// The service record on its clipboard (RX bank 3).
+export function serviceRecordTex() {
+  return canvasTex(192, 256, (g, w, h) => {
+    g.fillStyle = '#7a5a36'; g.fillRect(0, 0, w, h);
+    paperRect(g, 12, 22, w - 24, h - 30);
+    g.fillStyle = '#9aa0a3'; g.fillRect(w / 2 - 34, 6, 68, 24);
+    g.fillStyle = '#26262a'; g.font = '11px "Special Elite", serif'; g.textAlign = 'left';
+    ['SARO / MAINTENANCE', 'RX BANK 3', 'SERVICE RECORD', '', '09/23/81 K3 REPLACED', '03/03/83 K3 REPLACED', '10/21/85 K3 REPLACED', '  (3RD)', 'IT TRIPS BEFORE,', 'NOT AFTER.   M.O.'].forEach((l, i) => g.fillText(l, 20, 50 + i * 18));
+  });
+}
+
+// A strip of telex roll: yellowish paper with upper-case type.
+export function telexPaperTex() {
+  return canvasTex(128, 256, (g, w, h) => {
+    g.fillStyle = '#efe8c8'; g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(38,38,42,.85)'; g.font = '9px "Special Elite", serif';
+    ['ZCZC WX2250', 'SARO OPS', 'WX ADVISORY 2250', 'TSTMS W OF MAGDALENA', 'MTNS MOVG NE 15 KT.', 'NNNN', '', 'ZCZC NET2300', 'ALL SITES', 'NET STATUS 2300 MST', 'SITE 03 - NORMAL', 'SITE 11 - NORMAL', 'SARO - NORMAL', 'NNNN'].forEach((l, i) => g.fillText(l, 8, 18 + i * 13));
+  });
+}
+
+// The spine label of the exceptions binder.
+export function binderSpineTex() {
+  return canvasTex(64, 256, (g, w, h) => {
+    g.fillStyle = '#2f4a6e'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#e9e2cf'; g.fillRect(10, 30, w - 20, 150);
+    g.save(); g.translate(w / 2 + 6, 105); g.rotate(-Math.PI / 2);
+    g.fillStyle = '#1f2326'; g.font = '600 16px Oswald'; g.textAlign = 'center'; g.fillText('EXCEPTIONS', 0, 0);
+    g.restore();
+    g.fillStyle = '#c9c1a8'; g.beginPath(); g.arc(w / 2, 214, 9, 0, Math.PI * 2); g.fill();
+  });
+}
+
+// Dale's index card taped to the console.
+export function rfiCardTex() {
+  return canvasTex(192, 120, (g, w, h) => {
+    g.fillStyle = '#f1ead6'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(180,70,70,.6)'; g.beginPath(); g.moveTo(0, 22); g.lineTo(w, 22); g.stroke();
+    g.strokeStyle = 'rgba(80,120,170,.35)'; for (let y = 38; y < h; y += 14) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    g.fillStyle = '#26324f'; g.font = '15px "Reenie Beanie", cursive';
+    ['CAL 1419.900  45-65  34-62', '1420.110 HIGHWAY RELAY. NOTCH', '1420.6 SAT, PASSES ONLY', 'ANYTHING ELSE: LOG IT'].forEach((l, i) => g.fillText(l, 8, 18 + i * 26));
+    g.fillStyle = 'rgba(200,170,90,.55)'; g.fillRect(70, -2, 50, 10);
+  });
+}
+
+function paperRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const im = artImage('paper');
+  g.drawImage(im, 0, 0, im.width, im.height, x, y, w, h);
 }

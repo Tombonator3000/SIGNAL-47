@@ -207,6 +207,63 @@ export class AudioSys {
   signalOff() { this.signal?.stop(); this.signal = null; }
   /** White noise, for synths elsewhere (core/decoder.ts). Null until unlock(). */
   noiseBuffer(): AudioBuffer | null { return this.ctx ? this.noise : null; }
+  /** A point in the world that sounds can be sent to (core/walkie.ts). */
+  spatial(at: THREE.Vector3, ref = 1.0): AudioNode | null { return this.ctx ? this.panner(at, ref) : null; }
+
+  // ---------- the radio on the filing cabinets ----------
+  // AM at night: a station a long way off that fades in and out of the static (skywave).
+  // The tune is made here, a slow three-chord waltz on a tinny little speaker; no
+  // recording, so no licence. amRadioJam() drops it into the hiss while the line is dead.
+  private am: { out: GainNode; music: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  amRadio(at: THREE.Vector3 | null) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (!at) {
+      const r = this.am; if (!r) return;
+      this.am = null;
+      r.out.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+      setTimeout(() => r.stop(), 900);
+      return;
+    }
+    if (this.am) return;
+    const sr = ctx.sampleRate, secs = 19.2, buf = ctx.createBuffer(1, Math.floor(sr * secs), sr), d = buf.getChannelData(0);
+    // G, C, D, G in 3/4 at 100 bpm: bass on one, chord on two and three, a little melody over it
+    const hz = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
+    const bars: [number, number[], number[]][] = [[43, [59, 62, 67], [71, 74, 71]], [48, [60, 64, 67], [72, 71, 69]], [50, [62, 66, 69], [69, 66, 62]], [43, [59, 62, 67], [67, 0, 0]]];
+    const beat = 0.6;
+    const tone = (f: number, t0: number, dur: number, amp: number, harm: number) => {
+      const i0 = Math.floor(t0 * sr), n = Math.floor(dur * sr);
+      for (let i = 0; i < n && i0 + i < d.length; i++) {
+        const t = i / sr, env = Math.min(1, t / 0.01) * Math.exp(-t * 3.2);
+        const ph = 2 * Math.PI * f * t;
+        d[i0 + i] += amp * env * (Math.sin(ph) + harm * Math.sin(2 * ph) + harm * 0.5 * Math.sin(3 * ph));
+      }
+    };
+    for (let rep = 0; rep < 2; rep++) bars.forEach(([bass, chord, mel], b) => {
+      const t0 = (rep * 4 + b) * 3 * beat;
+      tone(hz(bass), t0, beat * 1.2, 0.22, 0.4);
+      for (const k of [1, 2]) for (const n of chord) tone(hz(n), t0 + k * beat, beat * 0.8, 0.06, 0.6);
+      mel.forEach((n, k) => { if (n) tone(hz(n + (rep ? 0 : 0)), t0 + k * beat, beat * 1.4, 0.1, 0.3); });
+    });
+    const out = ctx.createGain(); out.gain.value = 0;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.7;
+    out.connect(bp); bp.connect(this.panner(at, 0.8));
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const music = ctx.createGain(); music.gain.value = 0.8;
+    const fade = ctx.createGain(); fade.gain.value = 0.6;
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07;
+    const lg = ctx.createGain(); lg.gain.value = 0.4; lfo.connect(lg); lg.connect(fade.gain);
+    src.connect(music); music.connect(fade); fade.connect(out);
+    const n = this.noiseSrc(false); const hiss = ctx.createGain(); hiss.gain.value = 0.18; n.connect(hiss); hiss.connect(out);
+    for (const x of [src, lfo, n]) x.start();
+    out.gain.setTargetAtTime(0.11, ctx.currentTime, 0.3);
+    this.am = { out, music, hiss, stop: () => { for (const x of [src, lfo, n]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+  }
+  amRadioJam(on: boolean) {
+    const ctx = this.ctx, r = this.am; if (!ctx || !r) return;
+    const t = ctx.currentTime;
+    r.music.gain.setTargetAtTime(on ? 0 : 0.8, t, on ? 0.4 : 1.2);
+    r.hiss.gain.setTargetAtTime(on ? 0.5 : 0.18, t, 0.4);
+  }
 
   setCarrier(level: number, pitchOffset: number, staticLevel: number) {
     if (!this.carrier || !this.ctx) return;

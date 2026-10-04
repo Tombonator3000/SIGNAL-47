@@ -8,11 +8,11 @@ Status:
 
 | Kapittel | Spesifisert | Bygd |
 | --- | --- | --- |
-| Night Shift | Ja, under | Grunnløpet er bygd. Det nye i dette dokumentet er ikke bygd |
+| Night Shift | Ja, under | Bygd 4. oktober kveld (se loggen) |
 | The Second Exposure | Neste | Grunnløpet er bygd |
 | The Amended Record | | Grunnløpet er bygd |
 | The Survey Station | | Grunnløpet er bygd |
-| Room 6 | | Grunnløpet er bygd |
+| Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
 | All Night | | Området er bygd |
 | Roswell Road og THE EVENT | | |
 
@@ -145,9 +145,13 @@ NNNN
 HALLEY'S COMET
 APRIL 1986
 CLOSEST TO EARTH APRIL 11
-LOOK LOW IN THE SOUTH BEFORE DAWN
+LOOK LOW IN THE SOUTH
+EARLY APRIL: BEFORE DAWN
+AFTER THE 12TH: AROUND MIDNIGHT
 GET AWAY FROM TOWN LIGHTS
 ```
+
+Etter nærmeste punkt 11. april flyttet kometen seg fort vestover på himmelen. Natt til 14. april sto den lavt i sør rundt midnatt (rundt 12 grader over horisonten) og gikk ned litt over tre. I spillet står den lavt i sør-sørvest til 03:05.
 
 En liten stjernekart-skisse med kometens plass for 5., 10., 14. og 20. april. Teipet i hjørnet, Wards hånd: *Public line: comet calls go to the planetarium in town. Not us. Not at 3 a.m. E.W.*
 
@@ -160,13 +164,13 @@ KNOWN INTERFERENCE
           ANYTHING ELSE: LOG IT.
 ```
 
-**6. Jakka** (kroken ved østdøra, `Your jacket`): «SARO issue, with a reflective band across the back. Too warm for in here.» Spilleren tar den på seg av seg selv første gang hen går ut i The Second Exposure («You take your jacket.»). Det er silhuetten i bildet etter rulleteksten, så den skal være lett å huske, men ikke pekt på.
+**6. Jakka** (kroken ved østdøra, `Your jacket`): «SARO issue, with a reflective band all the way round. Too warm for in here.» Spilleren tar den på seg av seg selv første gang hen går ut i The Second Exposure («You take your jacket.»). Det er silhuetten i bildet etter rulleteksten, så den skal være lett å huske, men ikke pekt på.
 
-**7. Radioen** (hylla): ingen tekst, bare lyd. Den faller ut i sus i det linja dør, og kommer tilbake etter smellet.
+**7. Radioen** (på arkivskapene ved vestveggen): ingen tekst, bare lyd. En vals i tre akkorder fra en liten høyttaler, laget i koden, som kommer og går i suset. Den faller ut i sus i det linja dør, og kommer tilbake etter smellet.
 
 ### Terminalfiler
 
-En ny terminal på pulten ved skriveren: SAROs driftssystem, grønn skjerm, 80 tegn. Kommandoene velges i en liste nederst (trykk eller klikk). På PC kan de også skrives. Svarene er korte. Tidspunktene i loggen kommer fra spillets egen klokke.
+En ny terminal på den andre pulten ved vestveggen (ved skriveren var det ikke plass): SAROs driftssystem, grønn skjerm, 80 tegn. Kommandoene velges i en liste nederst (trykk eller klikk). På PC kan de også skrives. Svarene er korte. Tidspunktene i loggen kommer fra spillets egen klokke.
 
 ```
 SARO OPERATIONS SYSTEM   V4.2        13-APR-1986 23:52
@@ -204,6 +208,8 @@ DATE       TIME      RANGE    CLASS
 RAW TAPE CATALOGUE   SARO   1979-1986
 REELS ON FILE: 001-046, 048-1311
 ```
+
+`TYPE` på en fil viser hodet: når den ble åpnet, operatør og antall poster. Den framtidige fila i All Night viser `OPERATOR REYES`, `RECORDS 0` og `FILE INCOMPLETE. RECORD NOT CLOSED.`
 
 `SHOW TAPES 045-049` gir datoene: 045 08-AUG-79, 046 09-AUG-79, 048 11-AUG-79, 049 12-AUG-79. Spole 047 (10. august 1979) finnes ikke i databasen. Den står i arkivet, og det hører til The Amended Record.
 
@@ -299,7 +305,35 @@ Begge er bakgrunnstråder, ikke funn. De hjelper den som vil skjønne, og stoppe
 - Draw calls ved pulten før og etter, i High og Low.
 - Leveransetestene i `AGENTS.md` som vanlig.
 
-### Spørsmål til Tom
+### Avklart med Tom
 
-1. **Kometen som bevis.** Tom ba om et bilde fra 1947 der stjernefeltet stemmer med himmelen i natt. Få spillere kjenner igjen et stjernefelt. Halleys komet var faktisk synlig lavt i sør i april 1986, og var umulig å se i 1947. Med plakaten her og kometen på himmelen kan alle se at bildet fra 1947 har den. Forslaget er å bruke kometen som det tydelige tegnet. Ok?
-2. **Reléet under nedtellingen.** Det gjør prologen litt mer dramatisk for alle, og gir den som leste servicekortet, en egen grunn til å grue seg de siste sju sekundene. Bank 3 må slås inn igjen etterpå. Ok?
+1. **Kometen som bevis: ja** (4. oktober kveld). Halleys komet var synlig lavt i sør i april 1986 og umulig å se i 1947. Plakaten her, kometen på himmelen og kometen i avisbildet fra 1947.
+2. **Reléet under nedtellingen: ja.** K3 slår ut sju sekunder før smellet, og bank 3 må slås inn igjen etterpå.
+
+## Room 6, avklart på forhånd: walkie-talkien
+
+Tom 4. oktober kveld: ingen blackout og ingen lys over motellet, men walkie-talkien skal ha en guffen lyd som skaper uro og peker fram. Resten av Room 6 spesifiseres når kapitlet står for tur.
+
+**Tingen.** Tomás' feltradio fra 1947 ligger på bordet i rom 6, ved siden av skoesken. Olivengrønn, på størrelse med en murstein, med en pisketantenne som er slått ned. Den er en del av referansen: Tomás hadde den i hånda ute på C (R1). Ingen merkenavn.
+
+**Lyden når spilleren slår den på** (rundt 18 sekunder, lyden kommer fra radioen, og den samme hver gang, som en referanse):
+
+| Tid | Hva |
+| --- | --- |
+| 0 s | Bryteren er stiv. Et klikk. Ingenting. |
+| 1 s | Sus som stiger sakte, tynt, som fra en liten høyttaler. |
+| 3 s | Inni suset: en motor på tomgang, langt borte. Den hoster to ganger. |
+| 7 s | Motoren stopper. Suset faller helt bort. Stillhet i to sekunder, mens radioen fortsatt står på. |
+| 9 s | Klikk som fra et relé: fire, pause, sju. |
+| 13 s | Noen puster, tett inntil mikrofonen, sakte. To ganger. |
+| 16 s | Suset kommer tilbake, lavt, og blir stående. |
+
+Dette er THE EVENT spilt omtrent en time før det skjer: motoren som dør, dashbordlampene i 4/7 og spilleren som sitter alene i bilen. Ingen sier det. Ingen tekst forklarer det.
+
+**Trykk for å snakke.** Når suset står, kan spilleren trykke. Suset forsvinner mens knappen holdes (radioen sender og kan ikke ta imot). Når den slippes: et sekund stille, så kommer klikkene tilbake, fire og sju. Det er det spilleren sendte, organisert (R5). Ingen stemme.
+
+**Nora** sier én ting første gang sekvensen er ferdig, uten å se på radioen: «I took the battery out in 1947.» Første gang spilleren trykker: «He pressed it too. Twice.»
+
+**Tekst:** merkelapp «Field radio, 1947», så «Press to talk» og «Turn it off». Første gang: «The switch is stiff. There is no battery in it.» Notatet i journalen er bare det spilleren hørte: «Tomás' field radio. No battery. An engine far off, coughing, then stopping. Silence. Clicks, four and seven. Someone breathing.» Etter trykket: «I pressed to talk once. Four clicks and seven came back.»
+
+**Bygges:** radioen i `Room6.ts` (modell og trefflate), lyden som syntese i `core/walkie.ts` (motor, sus, relé, pust, alt gjennom et smalt båndfilter som en liten høyttaler), og samspillet i `Chapter4.ts`. Den holder seg stille mens Nora snakker. Suset stopper når spilleren går ut av rommet.
