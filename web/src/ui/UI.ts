@@ -156,23 +156,27 @@ export class UI {
     return el;
   }
 
-  title(opts: { onStart: () => void; canContinue: boolean; onContinue: () => void; onSettings: () => void }) {
+  title(opts: { onStart: () => void; cont: string | null; onContinue: () => void; canLoad: boolean; onLoad: () => void; onSettings: () => void }) {
     const el = document.createElement('div');
     el.className = 'title-screen';
     el.innerHTML = `
       <h1>SIGNAL<span class="slash">/</span>47</h1>
       <div class="sub">New Mexico, 1986. Night shift at SARO.</div>
       <div class="menu">
-        <button data-a="start">Start night shift</button>
-        <button data-a="cont" ${opts.canContinue ? '' : 'disabled'}>Continue</button>
+        <button data-a="cont" ${opts.cont ? '' : 'disabled'}>Continue</button>
+        ${opts.cont ? `<div class="cont-info">${esc(opts.cont)}</div>` : ''}
+        <button data-a="start">New night</button>
+        <button data-a="load" ${opts.canLoad ? '' : 'disabled'}>Load case</button>
         <button data-a="set">Settings</button>
       </div>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">Prologue, chapter one (The Second Exposure) and chapter two (The Amended Record). Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The prologue and chapters one to three, from the control room to the survey station. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
     el.querySelector('[data-a=start]')!.addEventListener('click', opts.onStart);
     el.querySelector('[data-a=cont]')!.addEventListener('click', opts.onContinue);
+    el.querySelector('[data-a=load]')!.addEventListener('click', opts.onLoad);
     el.querySelector('[data-a=set]')!.addEventListener('click', opts.onSettings);
     this.root.appendChild(el);
+    (el.querySelector(opts.cont ? '[data-a=cont]' : '[data-a=start]') as HTMLButtonElement).focus({ preventScroll: true });
     return el;
   }
 
@@ -247,6 +251,7 @@ export class UI {
 
   pause(o: {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
+    onSave?: () => void; onLoad?: () => void;
     quality: 'high' | 'low'; onQuality: (q: 'high' | 'low') => void; title?: string; settingsOnly?: boolean;
     invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
   }) {
@@ -256,6 +261,8 @@ export class UI {
       <div class="panel">
         <h3>${o.title ?? 'Paused'}</h3>
         <button class="opt" data-a="resume">${o.settingsOnly ? 'Back' : 'Resume'}</button>
+        ${o.onSave ? '<button class="opt" data-a="save">Save case</button>' : ''}
+        ${o.onLoad ? '<button class="opt" data-a="load">Load case</button>' : ''}
         <div class="set"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="1" step="0.01" value="${o.volume}"></div>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
@@ -267,6 +274,8 @@ export class UI {
       </div>`;
     el.querySelector('[data-a=resume]')!.addEventListener('click', () => this.close());
     el.querySelector('[data-a=title]')?.addEventListener('click', () => { this.close(true); o.onTitle(); });
+    el.querySelector('[data-a=save]')?.addEventListener('click', () => o.onSave?.());
+    el.querySelector('[data-a=load]')?.addEventListener('click', () => o.onLoad?.());
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
     (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
@@ -279,7 +288,22 @@ export class UI {
     this.open(el, o.onResume);
   }
 
-  // Black card with the title, a few lines and buttons. Used between chapters and at the end.
+  // Between chapters: on the black, a line about what was just closed, then the next
+  // chapter's title and the night's clock. The night does not stop for it.
+  private cardEl: HTMLElement | null = null;
+  chapterCard(o: { closed: string; recap: string; next: string; title: string; clock: string } | null) {
+    if (this.cardEl) { const old = this.cardEl; old.classList.add('out'); setTimeout(() => old.remove(), 900); this.cardEl = null; }
+    if (!o) return;
+    const el = document.createElement('div');
+    el.className = 'chapter-card';
+    el.innerHTML = `
+      <div class="cc-a"><div class="cc-closed">${esc(o.closed)}</div><p class="cc-recap">${esc(o.recap)}</p></div>
+      <div class="cc-b"><div class="cc-next">${esc(o.next)}</div><h2>${esc(o.title)}</h2><div class="cc-clock">${esc(o.clock)}</div></div>`;
+    document.body.appendChild(el);
+    this.cardEl = el;
+  }
+
+  // Black card with the title, a few lines and buttons. Used where the built night ends.
   endcard(o: { lines: string[]; buttons: { label: string; on: () => void }[]; credits?: boolean }) {
     const el = document.createElement('div');
     el.className = o.credits || o.lines.length > 2 ? 'endcard long' : 'endcard';

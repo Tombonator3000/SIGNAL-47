@@ -151,7 +151,7 @@ export class Chapter2 {
         if (!s.p04) return 'SARO RECORDS // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS';
         return 'SARO RECORDS // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX';
       case 'call-nora': return 'STATION 01 // CALL THE KEY HOLDER FROM THE RECORDS ROOM PHONE';
-      case 'complete': return 'STATION 01 // FIELD ACCESS PREPARED / NEXT AREA NOT YET PLAYABLE';
+      case 'complete': return 'STATION 01 // FIELD ACCESS PREPARED';
     }
   }
 
@@ -235,7 +235,7 @@ export class Chapter2 {
     inter.add({ id: 'vending', object: o.vending, label: () => on() ? 'Vending machine' : null, use: () => ui.toast('Cola, orange soda, peanut butter crackers. Somebody\'s dime is stuck in the coin return.') });
     inter.add({ id: 'officeDoor', object: o.officeDoor, label: () => on() ? 'Operations office' : null, use: () => ui.toast('Locked. Dale took the key home.') });
     inter.add({ id: 'restroomDoor', object: o.restroomDoor, label: () => on() ? 'Restrooms' : null, use: () => ui.toast('Not now.') });
-    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => on() ? 'Fire exit' : null, use: () => ui.toast('The push bar is alarmed. The yard is easier by the east door.') });
+    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => on() ? 'Fire exit' : null, use: () => ui.toast('The fire exit to the west lot. The push bar is alarmed, and the yard is easier by the east door.') });
   }
   private anyRead() { const r = this.s.read; return r.original || r.amended || r.lineage || r.index; }
 
@@ -378,17 +378,6 @@ export class Chapter2 {
       this.save();
       this.g.after(3.6, () => this.onEnd?.());
     });
-  }
-
-  endingLines() {
-    return [
-      'THE AMENDED RECORD',
-      'SARO ARCHIVE // P04 AND P05 RECORDED',
-      'The 1947 field record was changed. The service copy leaves out C, the closing sight line, and calls the retained mark a development fault.',
-      'B-12 still carries the STATION 01 survey. The archive sleeve gives the destination: OLD SURVEY STATION.',
-      'The key holder is N. Vega at Sierra Motor Court. She wants you at the cut cable before you come to her.',
-      'NEXT: STATION 01. This part of the night is still being built.',
-    ];
   }
 
   // ---------- documents ----------

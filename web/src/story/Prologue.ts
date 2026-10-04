@@ -11,6 +11,7 @@ import { M } from '../world/kit';
 import { materialFor } from '../core/quality';
 import { Chapter1, type CaseState } from './Chapter1';
 import { Chapter2, type Ch2State } from './Chapter2';
+import { Chapter3, type Ch3State, type Travel } from './Chapter3';
 import type { RecordsAnnex } from '../world/Annex';
 import type { ServiceYard } from '../world/ServiceYard';
 import type { FieldCamera } from '../core/FieldCamera';
@@ -19,7 +20,7 @@ import type { Collider } from '../world/ControlRoom';
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
 const ORDER = ['intro', 'shift', 'survey', 'skip', 'residual', 'locked', 'solving', 'printing', 'printed',
-  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2'] as const;
+  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2', 'ch3'] as const;
 export type Phase = typeof ORDER[number];
 
 const START_CLOCK = 23 * 3600 + 41 * 60;        // 23:41:00
@@ -101,7 +102,7 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
   };
 }
 
-export interface SavedCase { s: CaseState; ch2?: Ch2State; notes: string[]; clock: number }
+export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; notes: string[]; clock: number }
 export interface PrologueDeps {
   ui: UI; audio: AudioSys; room: ControlRoom; ext: Exterior; player: Player; inter: Interaction;
   yard: ServiceYard; fcam: FieldCamera; colliders: Collider[]; annex: RecordsAnnex;
@@ -109,6 +110,8 @@ export interface PrologueDeps {
   saveCase: (c: SavedCase | null) => void;
   loadCase: () => SavedCase | null;
   isTouch: () => boolean;
+  travel: Travel;
+  milestone: () => void;
 }
 
 export class Prologue {
@@ -128,6 +131,7 @@ export class Prologue {
   onCheckpoint?: (name: string) => void;
   ch1: Chapter1;
   ch2: Chapter2;
+  ch3: Chapter3;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
@@ -174,13 +178,44 @@ export class Prologue {
       ui: d.ui, audio: d.audio, room: d.room, annex: d.annex, player: d.player, inter: d.inter, colliders: d.colliders,
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
     });
+    this.ch3 = new Chapter3(this, {
+      ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, fcam: d.fcam, ch1: this.ch1, view: d.view, travel: d.travel,
+      save: () => d.saveCase(this.composeCase(this.ch1.s)),
+      milestone: () => { this.onCheckpoint?.('chapter3'); },
+    });
     this.reset();
   }
 
   at(p: Phase) { return ORDER.indexOf(this.phase) >= ORDER.indexOf(p); }
-  // One saved case for both chapters: chapter two's state rides along once it has begun.
+
+  // ---------- saving ----------
+  // Where a save resumes. The prologue only has safe points at the start of the night and
+  // at 02:13; inside a chapter the chapter's own state is the resume point.
+  checkpointName(): string {
+    if (this.phase === 'ch3') return 'chapter3';
+    if (this.phase === 'ch2') return 'chapter2';
+    if (this.phase === 'ch1') return 'chapter1';
+    return this.at('residual') ? 'residual' : 'start';
+  }
+  /** Why the game cannot be saved right now, or null when it can. */
+  saveBlock(): string | null {
+    if (!this.at('residual')) return 'The night can be saved from 02:13, once the survey has been running for a while.';
+    if (this.cinematic) return 'Not right now. Let the moment finish first.';
+    if (this.at('ringing') && !this.at('ch1')) return 'Not during the call and what follows it. The game saves again when the night moves on.';
+    if (this.phase === 'ch3') return this.ch3.saveBlock();
+    return null;
+  }
+  /** The case as it stands, for a save. Null in the prologue, which keeps no case. */
+  snapshotCase(): SavedCase | null { return this.at('ch1') ? this.composeCase(this.ch1.s) : null; }
+  chapterTitle(): string {
+    if (this.phase === 'ch3') return 'Chapter 3: The Survey Station';
+    if (this.phase === 'ch2') return 'Chapter 2: The Amended Record';
+    if (this.phase === 'ch1') return 'Chapter 1: The Second Exposure';
+    return 'Prologue: Night Shift';
+  }
+  // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
-    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, notes: [...this.notes], clock: this.clock };
+    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, notes: [...this.notes], clock: this.clock };
   }
   private setPhase(p: Phase) { this.phase = p; }
 
@@ -192,6 +227,7 @@ export class Prologue {
   tasks() {
     if (this.phase === 'ch1') return this.ch1.tasks();
     if (this.phase === 'ch2') return this.ch2.tasks();
+    if (this.phase === 'ch3') return this.ch3.tasks();
     const t: { text: string; done: boolean }[] = [{ text: "Read Dale's shift log", done: this.logRead }];
     if (this.logRead || this.at('residual')) {
       t.push({ text: 'Power up RX bank 3', done: this.powered });
@@ -209,7 +245,7 @@ export class Prologue {
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
   openNotebook() {
     const ui = this.d.ui;
-    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : 'Tonight');
+    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : 'Tonight');
   }
 
   // ---------- world helpers ----------
@@ -294,6 +330,7 @@ export class Prologue {
       label: () => this.phase === 'ch2' ? this.ch2.phoneLabel() : this.ringing ? 'Answer the phone' : this.phase === 'call' ? null : 'Telephone',
       use: () => {
         if (this.phase === 'ch2') { this.ch2.usePhone(); return; }
+        if (this.phase === 'ch3') { toast('The supervisor line is quiet. Ward wants a field record, not a phone call.'); return; }
         if (this.ringing) { this.answer(); return; }
         if (this.answered) toast('Dead line. Not even a dial tone.');
         else toast('Internal line and one outside line. Nobody calls out here after midnight.');
@@ -308,8 +345,8 @@ export class Prologue {
         audio.play('click', { gain: 0.6, at: this.worldPos(o.doorEast) });
         toast(this.at('event') ? 'Service access is locked while the array is tracking.' : 'Locked at night. Day crew has the key to the service yard.');
       } });
-    inter.add({ id: 'doorSouth', object: o.doorSouth, label: () => this.phase === 'ch2' ? this.ch2.southDoorLabel() : 'Corridor',
-      use: () => this.phase === 'ch2' ? this.ch2.useSouthDoor() : toast(this.phase === 'ch1' ? 'Vending machine, restrooms, Dale\'s empty office. The work tonight is out in the yard.' : this.at('event') ? 'You are not walking away from this console now.' : 'Vending machine, restrooms, Dale\'s empty office. Nothing for you out there tonight.') });
+    inter.add({ id: 'doorSouth', object: o.doorSouth, label: () => this.phase === 'ch2' || this.phase === 'ch3' ? this.ch2.southDoorLabel() : 'Corridor',
+      use: () => this.phase === 'ch2' || this.phase === 'ch3' ? this.ch2.useSouthDoor() : toast(this.phase === 'ch1' ? 'Vending machine, restrooms, Dale\'s empty office. The work tonight is out in the yard.' : this.at('event') ? 'You are not walking away from this console now.' : 'Vending machine, restrooms, Dale\'s empty office. Nothing for you out there tonight.') });
   }
 
   // ---------- beats ----------
@@ -609,6 +646,21 @@ export class Prologue {
     this.onCheckpoint?.('chapter2');
   }
 
+  // ---------- chapter three ----------
+  // After the call to the key holder: from the records room out to the service truck.
+  beginChapter3(saved: SavedCase | null) {
+    const { ui } = this.d;
+    this.setPhase('ch3');
+    this.cinematic = false;
+    this.lookAssist = 0;
+    this.timers = [];
+    if (saved?.ch3) { this.notes = [...saved.notes]; this.clock = saved.clock; }
+    else this.clock = Math.max(this.clock, 3 * 3600 + 40 * 60);
+    ui.fade(false);
+    this.ch3.begin(saved?.ch3 ?? null);
+    this.onCheckpoint?.('chapter3');
+  }
+
   // ---------- per frame ----------
   update(dt: number, t: number, paused: boolean) {
     const { room, audio, player, ext } = this.d;
@@ -703,8 +755,9 @@ export class Prologue {
 
     // dishes arrive
     if (this.phase === 'turning' && !ext.dishes.some((x) => x.moving)) this.arrived();
-    if (this.phase === 'ch1' || this.phase === 'ch2') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
+    if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
     if (this.phase === 'ch2') this.ch2.update(paused ? 0 : dt, t);
+    if (this.phase === 'ch3') this.ch3.update(paused ? 0 : dt, t);
 
     // gentle camera assist so the player sees the array turn
     if (this.lookAssist > 0 && (this.phase === 'turning' || this.phase === 'end')) {
@@ -850,6 +903,7 @@ export class Prologue {
     if (audio.ctx) { audio.stop('ring'); audio.stop('printer'); audio.setCarrier(0, 0, 0); audio.stopMotors(); }
     this.ch1?.reset();
     this.ch2?.reset();
+    this.ch3?.reset();
   }
 
   start(checkpoint?: string) {
@@ -866,6 +920,7 @@ export class Prologue {
     const { player, room, ui } = this.d;
     if (target === 'chapter1') { this.jumpChapter1(); return; }
     if (target === 'chapter2') { this.jumpChapter2(); return; }
+    if (target === 'chapter3') { this.jumpChapter3(); return; }
     const steps = ['shift', 'residual', 'locked', 'printed', 'countdown', 'event'];
     const idx = steps.indexOf(target);
     if (idx < 0) return;
@@ -927,6 +982,26 @@ export class Prologue {
     };
     this.beginChapter1(done);
     this.beginChapter2(done.ch2 ? done : null);
+  }
+
+  // Chapter three from a checkpoint, or for testing straight after chapter two (without
+  // photographs) when there is no saved case.
+  private jumpChapter3() {
+    const saved = this.d.loadCase();
+    this.afterPrologue(saved);
+    const ch2 = { v: 1 as const, stage: 'complete' as const, answered: true, door: true, entered: true,
+      read: { original: true, amended: true, lineage: true, index: true }, p04: true, p05: true,
+      finding: 'omitted-c', destination: 'old-survey-station', surveyId: 'STATION 01', marker: 'triangle-bar',
+      wrong04: 0, wrong05: 0, called: true };
+    const done: SavedCase = saved?.ch2?.called ? saved : {
+      s: { v: 1, stage: 'complete', eventClock: this.eventClock, camera: true, door: true, labDoor: true, log: true, returned: true,
+        dev1: 3, dev2: 3, ref: true, hyp: 'light', method: 'passive', observed: true, concluded: true, filed: true,
+        wrongRef: 0, wrongHyp: 0, wrongConcl: 0, rejected: 0 },
+      ch2, notes: [...this.notes], clock: this.eventClock + 80 * 60,
+    };
+    this.beginChapter1(done);
+    this.beginChapter2(done);
+    this.beginChapter3(done.ch3 ? done : null);
   }
 
   // Everything the prologue leaves behind.

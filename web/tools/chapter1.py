@@ -13,6 +13,10 @@ METHOD = sys.argv[2] if len(sys.argv) > 2 else 'passive'
 W, H = (int(v) for v in (sys.argv[3] if len(sys.argv) > 3 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
 NO_IDB = os.environ.get('S47_NO_IDB') == '1'
+# Reads one record from the game's IndexedDB (database 's47', version 2).
+IDB_GET = """((store, key) => new Promise((ok) => { const r = indexedDB.open('s47', 2);
+  r.onsuccess = () => { const g = r.result.transaction(store).objectStore(store).get(key);
+    g.onsuccess = () => { ok(g.result ?? null); r.result.close(); }; g.onerror = () => ok(null); }; r.onerror = () => ok(null); }))"""
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -189,32 +193,41 @@ async def main():
         # file the report
         await use('records'); await tick(0.1); await shot('c11_report')
         await pg.click('[data-a=file]'); await tick(1.2)
-        await ev("S47.hold = false"); await pg.wait_for_timeout(600); await ev("S47.hold = true")
         check(await stage() == 'complete', 'local case filed')
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        text = await ev("document.querySelector('.endcard').textContent")
-        check('THE SECOND EXPOSURE' in text and ('work lamp' in text if METHOD == 'passive' else 'encoder drift' in text), 'ending card names the test')
-        await shot('c12_ending')
-        # the card leads on into chapter two
-        check(await ev("[...document.querySelectorAll('.endcard button')].some(b => b.textContent === 'Continue: the reference record')"), 'ending card offers chapter two')
+        # No end card: a chapter card closes chapter one (naming the chosen test) and chapter
+        # two begins behind it.
+        await tick(1.2)
+        check(await ev("!!document.querySelector('.chapter-card')"), 'chapter card after chapter one')
+        text = await ev("document.querySelector('.chapter-card').textContent")
+        check('LOCAL INCIDENT S-03 / B-12' in text and 'THE AMENDED RECORD' in text and ('shielded lamp' in text if METHOD == 'passive' else 'encoder drift' in text), 'chapter card names the test and chapter two')
+        check(await pg.locator('.endcard').count() == 0, 'no end card between the chapters')
+        await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
+        await shot('c12_chapter_card')
+        await tick(7)
+        check(await ev("!document.querySelector('.chapter-card:not(.out)')") and await ev("S47.game.phase") == 'ch2' and await ev("S47.ch2.ringing"), 'chapter two begins behind the card: the supervisor line rings')
 
         notes = await ev("S47.game.notes")
         docs = await ev("S47.game.docs.map(d => d.id)")
         for want in ['frame01', 'frame02', 's03log', 'refsheet', 'observation', 'finding']:
             check(want in docs, f'paper filed: {want}')
         check(any(n.startswith('LOCAL CASE CLOSED') for n in notes), 'notebook closes the case')
-        saved = await ev("JSON.parse(localStorage.getItem('s47.case') || 'null')")
-        check(saved is not None and saved['s']['stage'] == 'complete' and saved['s']['f2'] is not None, 'case and photographs saved')
-        await pg.wait_for_timeout(400)  # the IndexedDB write runs behind the save
-        size = await ev("(localStorage.getItem('s47.case') || '').length")
-        print(f'saved case: {size / 1024:.0f} kB of text in localStorage', flush=True)
-        raw = await ev("localStorage.getItem('s47.case') || ''")
-        if NO_IDB: check('data:image/jpeg' in raw, 'without IndexedDB the photographs stay in localStorage')
-        else: check('idb:frame01' in raw and 'idb:frame02' in raw and size < 40000, 'photographs moved to IndexedDB, case text stays small')
 
-        await pg.click('.endcard button:has-text("Continue: the reference record")'); await pg.wait_for_timeout(400)
-        await ev("S47.hold = true; S47.tick(1.5)")
-        check(await ev("S47.game.phase") == 'ch2' and await ev("S47.ch2.ringing"), 'chapter two begins: the supervisor line rings')
+        # The autosave at chapter two holds the whole case. Photographs are stored once,
+        # apart from the saves, and the save points at them.
+        await pg.wait_for_function("S47.saves.list(S47.caseId()).some(m => m.chapter.startsWith('Chapter 2'))", polling=300, timeout=30000)
+        meta = await ev("S47.saves.list(S47.caseId())[0]")
+        check(meta['chapter'] == 'Chapter 2: The Amended Record' and len(meta['photos']) == (0 if NO_IDB else 2) and (meta['thumb'] or '').startswith('data:image/jpeg'), f"autosave {meta['id']}: chapter two, {len(meta['photos'])} photographs, a picture")
+        if NO_IDB:
+            raw = await ev(f"localStorage.getItem('s47.save.{meta['id']}') || ''")
+            check('data:image/jpeg' in raw, 'without IndexedDB the save keeps its photographs inline in localStorage')
+            print(f'save in localStorage: {len(raw) / 1024:.0f} kB', flush=True)
+        else:
+            rec = await ev(IDB_GET + f"('saves', '{meta['id']}')")
+            size = len(json.dumps(rec['state']))
+            check(rec['state']['case']['s']['f1']['url'].startswith('idb:p') and rec['state']['case']['s']['f2']['url'].startswith('idb:p') and size < 40000, f'the save points at its photographs and stays small ({size / 1024:.0f} kB)')
+            key = rec['state']['case']['s']['f1']['url'][4:]
+            stored = await ev(IDB_GET + f"('photos', '{key}')")
+            check((stored or '').startswith('data:image/jpeg') and len(stored) > 50000, 'frame 01 is stored once, under its content key')
 
         # Continue from the title restores the finished case with both prints
         await pg.reload()
@@ -226,8 +239,8 @@ async def main():
         check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
 
         if not NO_IDB:
-            # A photograph that cannot be read must not be lost (Codex's P1). The next two
-            # IndexedDB reads abort: frame 01 fails twice (the store retries once), frame 02 loads.
+            # A photograph that cannot be read must not be lost (Codex's P1). The next two reads
+            # from the photo store abort: frame 01 fails twice (the store retries once), frame 02 loads.
             original = await ev("S47.ch1.s.f1.url")
             await pg.add_init_script("""(() => {
               let left = +sessionStorage.getItem('s47.failreads') || 0;
@@ -235,7 +248,7 @@ async def main():
               const get = IDBObjectStore.prototype.get;
               IDBObjectStore.prototype.get = function (key) {
                 const req = get.call(this, key);
-                if (left > 0) { left--; sessionStorage.setItem('s47.failreads', String(left)); this.transaction.abort(); }
+                if (left > 0 && this.name === 'photos') { left--; sessionStorage.setItem('s47.failreads', String(left)); this.transaction.abort(); }
                 return req;
               };
             })();""")
@@ -245,17 +258,16 @@ async def main():
             await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
             await ev("S47.hold = true; S47.tick(0.5)")
             check(await ev("S47.ch1.s.f1.url.length < 50000 && S47.ch1.s.f2.url.length > 50000"), 'unreadable photograph shows the stand-in print, the other one loads')
-            await ev("S47.ch1.d.save(S47.ch1.s)"); await pg.wait_for_timeout(600)
-            kept = await ev("""new Promise((ok) => { const r = indexedDB.open('s47', 1);
-              r.onsuccess = () => { const g = r.result.transaction('photos').objectStore('photos').get('frame01'); g.onsuccess = () => ok(g.result); }; })""")
-            check(kept == original, 'saving after the read error leaves the original photograph in IndexedDB')
-            check('idb:frame01' in await ev("localStorage.getItem('s47.case') || ''"), 'the saved case still points at the original photograph')
+            m = await ev("S47.saveNow('manual', 0)")
+            rec = await ev(IDB_GET + f"('saves', '{m['id']}')")
+            check(rec['state']['case']['s']['f1']['url'] == 'idb:' + key, 'a save after the read error still points at the original photograph')
+            check(await ev(IDB_GET + f"('photos', '{key}')") == original, 'the original photograph is still stored')
             await ev("sessionStorage.removeItem('s47.failreads')")
             await pg.reload()
             await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
             await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
             await ev("S47.hold = true; S47.tick(0.5)")
-            check(await ev("S47.ch1.s.f1.url") == original, 'next Continue brings the original photograph back')
+            check(await ev("S47.ch1.s.f1.url") == original, 'next Continue (the manual save) brings the original photograph back')
 
         # the case file spread in the notebook: both prints as pictures, the papers as cards
         await ev("S47.game.openNotebook()")

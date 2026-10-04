@@ -4,6 +4,10 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-04: Tom ba om bilkjøring mot Roswell etter motellet, en mer sammenhengende historie etter prologen, at bilen streiker og lysene blinker (UFO), en stopp på en diner, lagring og lasting, og modulær oppbygging i stedet for én stor fil. Avgjort slik: hele natten er ett kapittelløp i `HISTORIE.md`. Roswell-veien og dineren kommer etter rom 6 (K4), fordi bilen dør der den gamle siktlinja C krysser riksveien, og det er Nora som forteller hvor C gikk (regel R1: fenomenet følger referansene). Kapittel 3 (STATION 01) bygges nå med samme lastebil og kjøresystem som Roswell-veien skal bruke. Designbibelen hadde valgt bort kjøring. Dette utvider den bevisst med korte, håndlagde etapper, ikke en åpen verden.
+- 2026-10-04: Ingen sluttskjerm mellom kapitlene. Et kapittelkort på svart viser hva som ble lukket og neste kapittels tittel og klokke, mens neste kapittel starter bak kortet. Sluttkortet med knapper brukes bare der den bygde natten slutter (nå etter kapittel 3).
+- 2026-10-04: Lagring etter del 13 i designbibelen, tilpasset nettleseren (`src/core/saves.ts`): tre saker, hver med tre autolagringer som går på omgang og tre manuelle plasser. IndexedDB-databasen `s47` versjon 2 har lagrene `saves` og `photos`. Fotografier lagres én gang under en nøkkel laget av innholdet (`p` + hash) og lagringene peker på dem med `idb:<nøkkel>`. Fotografier ingen lagring peker på, slettes. Uten IndexedDB ligger alt i `localStorage` (`s47.save.<id>`, `s47.saves`). Den første nettversjonens lagring (`s47.case`, `s47.checkpoint`) flyttes inn som autolagring i sak 1 og blir liggende. Det kan ikke lagres før 02:13, under samtaler og andre låste øyeblikk, eller under kjøring.
+- 2026-10-04: Kapittel 3 «The Survey Station» følger Unitys Station26 (P06 til P09, tekstene i `StationController.cs`). Nytt: lastebilen SARO 07 på en betongplass nedenfor østlandingen, kjøreturen sørover, Nora som ringer felttelefonen i hytta etter P09 (linja går fortsatt til motellkontoret), og framkalling av FRAME 03 og 04 på våtbenken på SARO etterpå. Kjøreturen tilbake er et kort kutt. Sjekkpunkt `chapter3`. Tilstanden lagres i saken (feltet `ch3`), og lagringen husker området (`saro` eller `station01`).
 - 2026-10-04: Kapittel 2, den samlede grafikken og fotolagringen ble flettet gjennom [PR #32](https://github.com/Tombonator3000/SIGNAL-47/pull/32) (`77125ed`, med Codex sin PR #31) og er ute på Pages fra kl. 09:35 UTC.
 - 2026-10-04: Samarbeid med Codex (ChatGPT) på Toms bestilling: Codex lager grafikk, kildefiler og kontroller, Claude eier kodeintegrasjonen og den samlede spilltesten. Begge leser `log.md` og `CLAUDE_HANDOFF.md`. PR #30 (16 bilder og loaderen) og PR #31 (runde 3, konsepter og kart) ble flettet inn i Claudes gren og går til main sammen med kapittel 2.
 - 2026-10-04: Grafikk: én loader, `src/core/art.ts` fra PR #30, utvidet til 22 bilder med de seks tekstfrie flatene fra runde 3. Alle lastes før verden bygges, og spillet viser TRY AGAIN hvis ett mangler. Tekst som må være riktig, tegnes i kode oppå bildene: R-07, feltkartets navn (plassene står i `production/PRECISE_GRAPHICS.json`), gulvmerkingen, skilt og kort. Min første loader (`0bb9170`, utskifting i etterkant med bred filglob) ble fjernet ved flettingen. Bare bilder som importeres i `art.ts`, kommer med i bygget.
@@ -55,26 +59,31 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 
 ## Arkitektur
 
-- `src/main.ts`: oppstart, step/draw-løkke, menyer, adaptiv oppløsning, testkroker på `window.S47` (art, hold, tick, jump, setQuality, game, room, ext, yard, fcam, ch1, annex, ch2, player, renderer, scene, camera). `S47.jump('chapter1')` og `S47.jump('chapter2')` hopper rett til kapitlene.
+- `src/main.ts`: oppstart, step/draw-løkke, menyer, lagring, adaptiv oppløsning, testkroker på `window.S47` (art, hold, tick, jump, setQuality, saveNow, playtime, caseId, game, room, ext, yard, fcam, ch1, ch2, ch3, annex, saves, world, player, renderer, scene, camera). `S47.jump('chapter1')`, `'chapter2'` og `'chapter3'` hopper rett til kapitlene.
+- `src/world/World.ts`: områdene SARO (rundt origo), veien (rundt x 8000) og STATION 01 (rundt z 8000) i samme scene, så langt fra hverandre at kameraets fjernplan skiller dem. Veien og stasjonen lastes første gang de trengs (egne filer i Pages-bygget). Bytter soner, kolliderere og synlige grupper, og styrer kjøringen. SAROs lys ligger i kontrollromgruppa og skjules med SARO. De andre områdene har egne lys.
+- `src/drive/`: lastebilen (`Truck.ts`), kjørekontrollen (`Drive.ts`), motorlyden (`engineSound.ts`) og veien (`RoadArea.ts`).
+- `src/world/Station01.ts`: STATION 01 med egne flomlyssett (`field` med 10 plasser, 0 og 1 holdt av til lastebilens frontlys, og `hut` med 5).
+- `src/story/Chapter3.ts`: kapittel 3 som trinn (`to-truck`, `station`, `call`, `return`, `develop`, `complete`) med `Ch3State`. Feltjournalen er `fieldRecord()` i `src/ui/Panels.ts`. Kapittel 1 gir fra seg kameraet (`ch1.field`) og våtbenken (`ch1.lab`) mens kapittel 3 kjører.
+- `src/core/saves.ts` og `src/ui/SaveMenu.ts`: lagringssystemet og menyene. `src/story/state.ts` er det en lagring inneholder.
 - `src/story/Chapter1.ts`: kapitlet som trinn (`Stage`) med en lagringsbar `CaseState`. Alle regler for når lukkeren kan utløses står i `check()`.
 - `src/story/Chapter2.ts`: kapittel 2 som trinn (`ward-call`, `records`, `call-nora`, `complete`) med `Ch2State`. Tekstene til dokumentene, P04/P05 og telefonsamtalene står her. Tegningene i dokumentene og saksmappens kart lages i `src/story/drawings.ts`.
 - `src/world/Annex.ts`: korridoren og arkivrommet, med egne soner, kolliderere, usynlige trefflater og flomlyssettet `annex` (6 plasser, også brukt av døra i kontrollrommets sørvegg). Alt som bare synes innenfra, ligger i `annex.interior`.
 - `src/core/art.ts`: de 22 bildene. `artTexture(id, repeat)` gir en delt tekstur per id og repeat, `artImage(id)` gir selve bildet til kodeteksturer som tegner tekst oppå.
-- `src/core/caseStore.ts`: saken i `localStorage`, fotografiene i IndexedDB, flytting av eldre lagringer og vern mot tapte fotografier.
 - `src/world/ServiceYard.ts`: gangvei, S-03, B-12, fotolab og detaljer. Gangbare flater er soner (`zones`), hindringer er `colliders`.
 - `src/core/FieldCamera.ts`: søkeren gir skjermkameraet det synsfeltet som gjør at rammen viser nøyaktig det fotografiet får med (44,6 grader vertikalt). Eksponeringen tegner scenen på nytt i 960x600.
 - `src/story/Prologue.ts`: faser i rekkefølge intro, shift, survey, skip, residual, locked, solving, printing, printed, ringing, call, countdown, event, turning, end. Alle forsinkelser bruker spilltid (`after()`), så pause og omstart virker.
 - `src/world/kit.ts`: materialer, byggeklosser, statisk sammenslåing, falske natriumflomlys (`addFlood`, `floodlit`).
 - `src/world/Dish.ts`: antenne med asimut- og elevasjonsledd. lod 1 for fjerne antenner.
 - `src/core/quality.ts`: bytte mellom High og Low. Kode som setter materialer under spillet skal bruke `materialFor()`.
-- Sjekkpunkt: `localStorage` nøkkel `s47.checkpoint`, settes til `residual` ved 02:13.
+- Sjekkpunkt: lagringens `checkpoint` er `residual` (02:13), `chapter1`, `chapter2` eller `chapter3`. Før 4. oktober lå det i `localStorage` under `s47.checkpoint`.
 
 ## Kjente fallgruver
 
 - Spilleren må alltid stå inne i minst én sone. Der to soner møtes, må de overlappe med mer enn spillerens diameter, ellers blir spilleren stående fast i skjøten.
 - three.js treffer også usynlige objekter med stråler. Det som skal være skjult for interaksjon, flyttes til lag 31 (`layers.set(31)`). Små eller sammenslåtte ting får en usynlig boks (`proxy()`) som strålen kan treffe.
 - `mergeStatic()` slår sammen alt i en gruppe. Objekter som skal kunne brukes, flyttes eller skjules, må få `noMerge()` eller ligge utenfor gruppa.
-- Flomlyssett (`floodSet`): ute brukes settet `site` med 20 plasser, fotolaben har sitt eget sett med 5. Et fullt sett gir en advarsel i konsollen.
+- Flomlyssett (`floodSet`): ute brukes settet `site` med 22 plasser (21 i bruk etter lastebilplassen), fotolaben har sitt eget sett med 5, arkivfløyen `annex` med 6, STATION 01 `field` med 10 og `hut` med 5. Et fullt sett gir en advarsel i konsollen.
+- Tittelskjermen vises før lagringene er lest fra IndexedDB, og tegnes på nytt når de er klare. Uten det ble Continue stående grå.
 - I testene vises merkelappen til et objekt et øyeblikk etter et hopp, fordi teksten tones ut med CSS. Det er ikke en feil i spillet.
 - Fullskjermlag i `#ui` får `pointer-events: auto` fra `#ui > *`. Lag som dekker skjermen må overstyres eksplisitt, ellers sluker de klikk og berøring.
 - Headless Chromium stopper skjermbilder mens pekeren er låst. Testene erstatter `requestPointerLock`.

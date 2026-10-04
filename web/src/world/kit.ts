@@ -15,7 +15,7 @@ export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
     col: Array.from({ length: n }, () => new THREE.Color(1, 0.6, 0.25)),
   };
 }
-export const FLOOD_N = 20;
+export const FLOOD_N = 22;
 export const flood = floodSet(FLOOD_N, 'site');
 // The south corridor and the records room (chapter two). The control room's corridor
 // door uses it too, so the open door is lit from the corridor side.

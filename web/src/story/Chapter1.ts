@@ -64,10 +64,21 @@ const fresh = (eventClock: number): CaseState => ({
 const MARK_R1 = 0.095, MARK_R2 = 0.115; // how close a click must be to a reference, in print UV
 const VANE_TIME = 1.8, DOOR_TIME = 0.75, TANK_TIME = 2.2, FIX_TIME = 1.5;
 
+// Later chapters take over the camera and the wet bench while they run (chapter three's
+// field frames): the viewfinder, the shutter rules and the bench go to them.
+export interface FieldShots {
+  frameNo(): string;
+  check(): { text: string; ok: boolean };
+  expose(): void;
+  rejected(): void;
+}
+
 export class Chapter1 {
   active = false;
   s: CaseState = fresh(0);
   onEnd?: (method: Method) => void;
+  field: FieldShots | null = null;          // set by a later chapter while it runs
+  lab: (() => boolean) | null = null;       // a later chapter's use of the wet bench; true when handled
   private images: Record<string, THREE.Texture> = {};
   private anim: { vane?: { from: number; to: number; t0: number }; door?: number; labDoor?: number; fix?: number } = {};
   private busy: string | null = null;     // a timed step at the wet bench
@@ -342,6 +353,7 @@ export class Chapter1 {
 
   private useWetBench() {
     const { ui, yard, audio } = this.d;
+    if (this.lab?.()) return;
     const f = this.devFrame();
     if (!f) {
       P.wetBench(ui, { frame: '', step: 0, empty: 'The tank is empty.\nExpose a frame from the S-03 apron before loading film. The archive bench holds the local reference plan.', onAct: () => {} });
@@ -429,7 +441,10 @@ export class Chapter1 {
     this.setMap(p, this.texOf(photo), 0);
     p.visible = true;
   }
-  private hangPrint(i: number, photo: Photo) {
+  // For chapter three's field roll: the same tray, the same fade-in, the same drying line.
+  fixPrint(photo: Photo) { this.showWetPrint(photo); this.anim.fix = this.g.gt; }
+  clearWetPrint() { this.d.yard.wetPrint.visible = false; }
+  hangPrint(i: number, photo: Photo) {
     const p = this.d.yard.dryPrints[i];
     this.setMap(p, this.texOf(photo), 1);
     p.visible = true;
@@ -598,10 +613,11 @@ export class Chapter1 {
     if (!fcam.raised) ui.viewfinder(false);
   }
 
-  private frameNo() { return this.s.f2 ? 'FRAME 03' : this.s.f1 ? 'FRAME 02' : 'FRAME 01'; }
+  private frameNo() { return this.field ? this.field.frameNo() : this.s.f2 ? 'FRAME 03' : this.s.f1 ? 'FRAME 02' : 'FRAME 01'; }
 
   // Why the shutter would (not) fire right now. Mirrors the Unity rules.
   private check(): { text: string; ok: boolean } {
+    if (this.field) return this.field.check();
     const s = this.s, { fcam, yard, ext } = this.d;
     const p = this.d.player.pos;
     if (!s.log) return { text: 'READ THE S-03 MOTOR LOG FIRST', ok: false };
@@ -630,9 +646,14 @@ export class Chapter1 {
     if (!fcam.raised) return;
     const c = this.check();
     if (!c.ok) {
-      this.s.rejected++;
+      if (this.field) this.field.rejected(); else this.s.rejected++;
       audio.play('click', { gain: 0.3, rate: 0.7 });
       ui.toast(`${c.text}. No film used.`, 2.6);
+      return;
+    }
+    if (this.field) {
+      this.field.expose();
+      this.g.after(0.6, () => { if (fcam.raised) this.toggleCamera(); });
       return;
     }
     const first = !this.s.f1;
@@ -691,16 +712,6 @@ export class Chapter1 {
     this.d.audio.play('thudSoft', { gain: 0.4 });
     this.stageTo('complete');
     this.g.after(0.8, () => this.onEnd?.(s.method ?? 'passive'));
-  }
-
-  endingLines(method: Method) {
-    return [
-      'THE SECOND EXPOSURE',
-      'LOCAL INCIDENT S-03 / B-12 // FILED',
-      'The array moved without a command. You changed a known condition at B-12 and preserved the result. The eye saw one reference. The film kept two.',
-      `Your ${method === 'passive' ? 'shielded-lamp test rules out the work lamp' : '042-degree reference test rules out simple encoder drift'} as a sufficient explanation. Both negatives, the motor log and your conclusion now belong to the same case.`,
-      'One line on the original receiver print remains unexplained: DISTANCE:\u00a0-39\u00a0LY. What does the receiver mean by "behind"?',
-    ];
   }
 
   // ---------- documents ----------

@@ -117,3 +117,56 @@ export function caseMap(o: { station: boolean; motel: boolean }) {
     g.setLineDash([]);
   });
 }
+
+// E09A, the field transit record (chapter three): a plan of the 1947 set-up at STATION 01,
+// north up. Points are in metres from the transit (x east, z south), taken from the built
+// station so the paper and the ground agree. A sits in its footing on the transit sight
+// line; B is the comparison marker to the west; C, the closing line, runs off the sheet.
+export function transitRecord(o: { a: [number, number]; b: [number, number]; c: [number, number] }) {
+  return sheet(960, 620, (g) => {
+    g.font = '600 26px Oswald, sans-serif';
+    g.fillText('FIELD TRANSIT / STATION 01 / E09A', 40, 56);
+    g.font = '19px "Special Elite", serif';
+    g.fillText('Plan, 1947. Fixed points set in concrete footings.', 40, 92);
+    g.globalAlpha = 0.5; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(40, 112); g.lineTo(920, 112); g.stroke();
+    g.globalAlpha = 1; g.lineWidth = 3;
+    // fit A and B (C is a direction) into the sheet around the transit
+    const reach = Math.max(4, ...[o.a, o.b].map(([x, z]) => Math.hypot(x, z)));
+    const k = 200 / reach, cx = 480, cy = 360;
+    const P = ([x, z]: [number, number]) => [cx + x * k, cy + z * k] as const;
+    const [ax, ay] = P(o.a), [bx, by] = P(o.b);
+    // transit: a circle with cross hairs on the pier
+    g.beginPath(); g.arc(cx, cy, 16, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(cx - 24, cy); g.lineTo(cx + 24, cy); g.moveTo(cx, cy - 24); g.lineTo(cx, cy + 24); g.stroke();
+    // the transit sight line through A, dashed past it
+    g.setLineDash([10, 8]); g.lineWidth = 2;
+    const dl = Math.hypot(ax - cx, ay - cy) || 1;
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + (ax - cx) / dl * (dl + 70), cy + (ay - cy) / dl * (dl + 70)); g.stroke();
+    // C: the closing sight line, off the sheet
+    const cl = Math.hypot(o.c[0], o.c[1]) || 1;
+    const ex = cx + o.c[0] / cl * 400, ey = cy + o.c[1] / cl * 400;
+    g.setLineDash([]); g.lineWidth = 3;
+    g.save(); g.beginPath(); g.rect(40, 120, 880, 470); g.clip();
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(ex, ey); g.stroke();
+    g.restore();
+    // B, the comparison marker
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(bx, by); g.stroke();
+    g.beginPath(); g.moveTo(bx, by - 30); g.lineTo(bx, by + 30); g.stroke();
+    // A in its square footing
+    g.lineWidth = 2; g.strokeRect(ax - 34, ay - 34, 68, 68); g.lineWidth = 3;
+    mark(g, ax, ay - 2, 40);
+    g.font = '30px "Special Elite", serif';
+    g.fillText('A', ax + 42, ay + 10); g.fillText('B', bx - 12, by + 62);
+    const lx = Math.min(890, Math.max(60, cx + o.c[0] / cl * 300)), ly = Math.min(570, Math.max(150, cy + o.c[1] / cl * 300));
+    g.fillText('C', lx + 6, ly - 14);
+    g.font = '17px "Special Elite", serif';
+    g.fillText('TRANSIT', cx + 26, cy + 40);
+    g.fillText('footing', ax - 34, ay + 56);
+    // north arrow
+    g.beginPath(); g.moveTo(880, 210); g.lineTo(880, 150); g.lineTo(870, 170); g.moveTo(880, 150); g.lineTo(890, 170); g.stroke();
+    g.font = '22px "Special Elite", serif'; g.fillText('N', 872, 236);
+    g.font = '17px "Special Elite", serif';
+    g.fillText('FIELD COPY / KEEP WITH THE TRANSIT', 40, 600);
+  });
+}

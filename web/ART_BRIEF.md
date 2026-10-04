@@ -72,6 +72,19 @@ Ingen tekst i bildene. Begge tegnes i kode i dag og byttes når filene finnes.
 | `annex/tex_floor_vinyl.jpg` | 1024×1024, sømløs | 1,2 × 1,2 m (fire ganger fire fliser på 30 cm) | Rolige vinylfliser i lys gråbeige fra 1970-tallet, matte og litt slitte, smale fuger. Brukes i korridoren og arkivrommet. |
 | `annex/vending_front.png` | 512×1024 | 0,74 × 1,48 m | Front på en brus- og snacksautomat uten merkenavn: glassvindu med rader av bokser og poser, myntinnkast og knapper til høyre, uttaksluke nederst. Feltet under vinduet står tomt, der skriver koden COLD DRINKS. |
 
+## Runde 5: Roswell-veien og dineren (kan lages nå, brukes etter rom 6)
+
+Historien står i `HISTORIE.md`. Natt mot grålysning, 05:00 til 05:25. Dineren har vært åpen hele natten siden 1940-tallet. Ingen tekst i bildene: navn, overskrifter, priser og skilttekst tegnes i kode oppå. Avisen er oppdiktet, ikke en kopi av en ekte forside.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `diner/sign_diner_blank.png` | 1024×512, gjennomsiktig | 4,0 × 2,0 m | Gammelt veiskilt for en diner på to stolper: buet metallramme med neonrør langs kanten (rødt og cyan, påslått), tomt felt i midten der koden skriver navnet. |
+| `diner/tex_counter_laminate.jpg` | 512×512, sømløs | 0,6 × 0,6 m | Benkeplate i mintgrønn laminat med små gråstjerner, slitt der tallerkenene settes. |
+| `diner/tex_floor_checker.jpg` | 1024×1024, sømløs | 2,4 × 2,4 m | Svart og hvitt rutegulv, 30 cm ruter, matt og gulnet i fugene. |
+| `diner/menu_board_blank.png` | 1024×512 | 1,6 × 0,8 m | Svart menytavle med hvite rammelister og tomme linjer. Rettene skrives i kode. |
+| `diner/clipping_photo_1947.jpg` | 1024×768 | inne i avisutklippet | Avisfoto fra 1947 i grovt raster: natt over en flat mesa, et rolig lys høyt over den, tre rancher i silhuett i forgrunnen. Ingen tekst. |
+| `road/tex_gravel_track.jpg` | 1024×1024, sømløs | 4 × 4 m | Grusvei med to hjulspor og spredt kreosotløv, sett rett ovenfra. |
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Alle bilder i spillet lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
