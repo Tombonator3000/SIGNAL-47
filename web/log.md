@@ -142,3 +142,4 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - B-12-stripa og ekkostripa synes på begge fotobevisene med det nye B-12-bildet. Faste bilder av B-12, R-07, feltkartet, gulvmerkingen, labskiltene, korridoren og arkivet i High og Low ligger i testmappen til `artcheck.py`.
 - UNVERIFIED: fps, berøring og lydmiks på ekte telefon og PC, og Safari.
 - 08:44: Forslagssiden i Claude Docs oppdatert: de fire beslutningene står som Avgjort.
+- 09:34: Laget [PR #32](https://github.com/Tombonator3000/SIGNAL-47/pull/32) mot main med alt over, også Codex sin PR #31, og fletter den som vanlig merge-commit rett etter denne oppføringen. Rotens AGENTS.md gir fullmakt til vanlig PR og merge. Flettingen starter publiseringen til Pages. GitHub viser faktisk status.
