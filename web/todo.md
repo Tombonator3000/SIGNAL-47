@@ -4,6 +4,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (prolog og kapittel 1 til 3 er ute på Pages fra 4. oktober kl. 12.39)
 
+- [ ] Tom går rundt SARO på Pages: ut østdøra, rundt lastebilen, ned rampa, langs serviceveien og gangstien til nødutgangen, opp vestsiden, langs vinduene og opp trappa til østgangen. Si fra om noe står i veien, ser feil ut eller mangler.
+- [ ] Tom ser på stjernehimmelen på PC og mobil: er stjernene små og skarpe nok, og er Melkeveien like fin som før?
+- [ ] Mål oppstarten på mobil: å ta ut de malte stjernene tok rundt 115 ms i programvare-rendereren (UNVERIFIED på telefon).
+
 - [ ] Tom prøver arkivrommet igjen: døra kan lukkes og åpnes, og telefonen kan nås rundt bordet (rettet 4. oktober kveld).
 - [ ] Tom prøver det nye i Night Shift: perma over skriveren, servicekortet på racket, telexen, plakaten, terminalen på vestpulten, radioen, reléet som slår ut sju sekunder før smellet, og walkie-talkien i rom 6.
 
