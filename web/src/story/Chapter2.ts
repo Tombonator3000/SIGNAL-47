@@ -71,42 +71,52 @@ const PHONE = '5055550119';
 const SUPPORTED_04 = 'SUPPORTED / E07 records A, B and C and a retained mark with the lamp isolated. E06 omits C, the closing sight line, and calls the mark a development fault. The report was changed; motive remains unknown.';
 const SUPPORTED_05 = 'SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.';
 
-// Design bible section 08 (three levels) and the facilitator hints from the P04/P05 paper test.
+// Design bible section 08 (three levels) and the facilitator hints from the P04/P05 paper
+// test, plus a fourth that names the threads, held back until the player has seen the
+// third and still missed twice (SPILLDESIGN.md: hints never spell the pair too early).
 const HINTS_04 = ['What is different between the two versions?', 'Which field is in the original and missing from the service copy? Compare the arrangement, not only the conclusion.', 'Put the original plan beside the amended copy and find the connection that is missing.',
-  'Thread the three references in E07 to the omitted sight line in E06, and the retained mark in E07 to the development fault in E06. Pin both notes to P04.'];
+  'Thread the three references in E07 to the omitted sight line in E06, and the retained mark in E07 to the development fault in E06.'];
 const HINTS_05 = ['Where does today\'s B-12 reference come from?', 'Find both the site ID and the reference mark in the lineage card and in the sleeve.', 'Match STATION 01 and the triangle with a bar, then choose the place the sleeve names.',
-  'Thread STATION 01 on the B-12 card to STATION 01 on the sleeve, and the two triangle-with-bar marks to each other. Pin both notes to P05, then the field destination.'];
+  'Thread STATION 01 on the B-12 card to STATION 01 on the sleeve, the two triangles with the bar to each other, and the two place names.'];
 
 // ---------- the evidence board ----------
 // The lines that matter on each record. A thread between two lines that say something
-// about each other holds; some leave a note to pin on a question. P04 needs the two notes
-// on what the copy changed; P05 the two matches between B-12 and the sleeve, then the
-// destination. Wrong threads get the Unity replies and count as before.
+// about each other holds; what they show together goes into its question by itself (P04:
+// the omitted C and the explained-away mark; P05: the survey, the mark and the place).
+// Some threads hold without answering anything: a note on the board, or a thin thread.
+// Threads that contradict get the Unity replies and count as wrong, as before.
 const NOTES: Record<string, string> = {
   'n.c': 'C, the closing sight line, is in the original. The service copy leaves it out.',
   'n.mark': 'The original kept the mark with the lamp isolated. The copy calls it a development fault.',
   'n.sig': 'The same name signs both versions. It says who changed the record, not why.',
   'n.id': 'Same survey: STATION 01 on the B-12 card and on the 1947 sleeve.',
   'n.mark2': 'Same fixed-point mark: the outlined triangle with the bar.',
+  'n.dest': 'Both name the same place: OLD SURVEY STATION.',
 };
+const NOTE_Q: Record<string, string> = { 'n.c': 'P04', 'n.mark': 'P04', 'n.id': 'P05', 'n.mark2': 'P05', 'n.dest': 'P05' };
 type Rule = { a: string; b: string; note?: keyof typeof NOTES; text: string; wrong?: 4 | 5 };
 const ELEVATION = 'A triangle without the bar is only an elevation symbol. The matching fixed-point mark has a short bar beneath the outlined triangle.';
 const LY = 'The dated archive supplies 1947; -39 LY is not a calendar code or a survey ID.';
+const DEVELOPMENT = 'Compare the arrangement, not just the amended explanation. Which reference appears in the original and is omitted from the service copy?';
 const RULES: Rule[] = [
   { a: 'e07.abc', b: 'e06.omit', note: 'n.c', text: NOTES['n.c'] },
   { a: 'e07.mark', b: 'e06.fault', note: 'n.mark', text: NOTES['n.mark'] },
   { a: 'e07.sig', b: 'e06.sig', note: 'n.sig', text: NOTES['n.sig'] },
   { a: 'b12.id', b: 'e08.id', note: 'n.id', text: NOTES['n.id'] },
   { a: 'b12.mark', b: 'e08.mark', note: 'n.mark2', text: NOTES['n.mark2'] },
+  { a: 'b12.site', b: 'e08.dest', note: 'n.dest', text: NOTES['n.dest'] },
   { a: 'e07.head', b: 'e08.id', text: 'The sleeve belongs with the 1947 record: same survey, same year.' },
   { a: 'e07.head', b: 'b12.id', text: 'Today\'s B-12 vane keeps the survey from the 1947 record.' },
-  { a: 'b12.site', b: 'e08.dest', text: 'Both name OLD SURVEY STATION.' },
+  { a: 'e06.fault', b: 'e07.abc', text: DEVELOPMENT, wrong: 4 },
+  { a: 'e06.fault', b: 'e07.head', text: DEVELOPMENT, wrong: 4 },
+  { a: 'e06.fault', b: 'e07.sig', text: 'The shared signature identifies the report. It does not establish the author\'s motive or responsibility. Which reference changes between the two versions?', wrong: 4 },
   { a: 'b12.mark', b: 'e08.elev', text: ELEVATION, wrong: 5 },
   { a: 'rx.dist', b: 'e08.id', text: LY, wrong: 5 },
   { a: 'rx.dist', b: 'e07.head', text: LY, wrong: 5 },
 ];
 const pair = (a: string, b: string) => [a, b].sort().join('|');
-const QUESTIONS = ['P04', 'P05'];
+const ruleOf = (k: string) => RULES.find((r) => pair(r.a, r.b) === k);
+const questionOf = (a: string, b: string) => [a, b].some((x) => /^(b12|e08|rx)\./.test(x)) ? 'P05' : 'P04';
 
 const WHERE: Record<P.SourceKey, string> = {
   original: 'The 1947 field records are in a box on the west shelves, marked STATION 01.',
@@ -123,8 +133,6 @@ export class Chapter2 {
   s: Ch2State = fresh();
   onEnd?: () => void;
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
-  private hint04 = 0;
-  private hint05 = 0;
 
   constructor(private g: Chapter2Host, private d: Chapter2Deps) {
     this.interactables();
@@ -337,87 +345,66 @@ export class Chapter2 {
         { id: 'P04', stamp: 'P04', text: 'What changed in the 1947 record after the run?', slots: 2, x: 14, y: 452, w: 272 },
         { id: 'P05', stamp: 'P05', text: 'Where does the B-12 reference lead in the field?', slots: 3, x: 898, y: 14, w: 266 },
       ],
-      noteAt: (id) => ({ 'n.c': tb(304, 432), 'n.mark': tb(318, 526), 'n.sig': tb(304, 626), 'n.id': tb(912, 330), 'n.mark2': tb(960, 440) } as Record<string, { x: number; y: number }>)[id],
+      noteAt: (id) => (id === 'n.sig' ? tb(304, 440) : undefined),
       state: () => {
         const links = this.s.links ?? [];
+        const made = links.map((k) => ({ k, r: ruleOf(k) })).filter((x) => x.r);
         return {
-          notes: RULES.filter((r) => r.note && links.includes(pair(r.a, r.b))).map((r) => ({ id: r.note!, text: NOTES[r.note!], from: [r.a, r.b] as [string, string] })),
-          threads: links.map((k) => k.split('|') as [string, string]),
-          pinned: (q) => links.filter((k) => k.split('|').includes(q)).map((k) => k.split('|').find((x) => x !== q)!),
+          notes: made.filter((x) => x.r!.note && !NOTE_Q[x.r!.note]).map((x) => ({ id: x.r!.note!, text: NOTES[x.r!.note!], from: [x.r!.a, x.r!.b] as [string, string] })),
+          threads: made.map((x) => ({ a: x.r!.a, b: x.r!.b, thin: !x.r!.note })),
+          slots: (q) => made.filter((x) => x.r!.note && NOTE_Q[x.r!.note] === q).map((x) => NOTES[x.r!.note!]),
           done: (q) => q === 'P04' ? (this.s.p04 ? SUPPORTED_04 : null) : (this.s.p05 ? SUPPORTED_05 : null),
         };
       },
       connect: (a, b) => this.connect(a, b),
-      hint: (q) => {
-        const list = q === 'P04' ? HINTS_04 : HINTS_05;
-        const i = q === 'P04' ? this.hint04++ : this.hint05++;
-        return list[Math.min(i, list.length - 1)];
-      },
+      record: (q) => q === 'P04' ? this.compare('omitted-c') : this.route('old-survey-station', 'STATION 01', 'triangle-bar'),
+      hint: (q) => this.hint(q),
     });
   }
 
-  // Saves from before the board recorded P04 and P05 without threads: lay them out.
-  private backfillLinks() {
-    const s = this.s, links = (s.links ??= []);
-    const add = (a: string, b: string) => { if (!links.includes(pair(a, b))) links.push(pair(a, b)); };
-    if (s.p04) { add('e07.abc', 'e06.omit'); add('e07.mark', 'e06.fault'); add('n.c', 'P04'); add('n.mark', 'P04'); }
-    if (s.p05) { add('b12.id', 'e08.id'); add('b12.mark', 'e08.mark'); add('n.id', 'P05'); add('n.mark2', 'P05'); add('e08.dest', 'P05'); }
+  // Three hint levels per question; the fourth names the threads, and only comes after the
+  // third has been read and two more threads have missed.
+  private hintSeen: Record<string, number> = { P04: 0, P05: 0 };
+  private missSince: Record<string, number> = { P04: 0, P05: 0 };
+  private hint(q: string) {
+    const list = q === 'P04' ? HINTS_04 : HINTS_05;
+    const n = this.hintSeen[q];
+    if (n >= 3 && this.missSince[q] < 2) return list[2];
+    this.hintSeen[q] = Math.min(n + 1, list.length);
+    if (this.hintSeen[q] === 3) this.missSince[q] = 0;
+    return list[Math.min(n, list.length - 1)];
   }
 
-  // A thread on the board, from a to b (lines, notes or a question).
+  // Saves from before the board recorded P04 and P05 without threads, and the first board
+  // also kept threads to the question cards: lay the line-to-line threads out again.
+  private backfillLinks() {
+    const s = this.s;
+    const links = (s.links = (s.links ?? []).filter((k) => !/(^|\|)(P0|n\.)/.test(k)));
+    const add = (a: string, b: string) => { if (!links.includes(pair(a, b))) links.push(pair(a, b)); };
+    if (s.p04) { add('e07.abc', 'e06.omit'); add('e07.mark', 'e06.fault'); }
+    if (s.p05) { add('b12.id', 'e08.id'); add('b12.mark', 'e08.mark'); add('b12.site', 'e08.dest'); }
+  }
+
+  // A thread on the board, from line a to line b.
   private connect(a: string, b: string): { ok: boolean; text: string } {
     const s = this.s, links = (s.links ??= []);
-    if (a === b) return { ok: false, text: 'Pull the thread to another line.' };
+    const miss = (r: { ok: boolean; text: string }) => { this.missSince[questionOf(a, b)]++; return r; };
+    if (a === b) return { ok: false, text: 'Pull the thread to a line on another record.' };
+    if (a.split('.')[0] === b.split('.')[0]) return miss({ ok: false, text: 'Both lines are on the same record. Compare it with another one.' });
     if (links.includes(pair(a, b))) return { ok: true, text: 'Those two are already connected.' };
-    const q = QUESTIONS.find((x) => x === a || x === b);
-    if (q) return this.pin(q, q === a ? b : a);
-    if (a.startsWith('n.') || b.startsWith('n.')) return { ok: false, text: 'A note goes on a question. Pin it to P04 or P05.' };
-    if (a.split('.')[0] === b.split('.')[0]) return { ok: false, text: 'Both lines are on the same record. Compare it with another one.' };
-    const r = RULES.find((x) => pair(x.a, x.b) === pair(a, b));
-    if (!r) return { ok: false, text: 'Those two lines do not say anything about each other.' };
+    const r = ruleOf(pair(a, b));
+    if (!r) return miss({ ok: false, text: 'Those two lines do not say anything about each other.' });
     if (r.wrong) {
       if (r.wrong === 4) s.wrong04++; else s.wrong05++;
       this.save();
-      return { ok: false, text: r.text };
+      return miss({ ok: false, text: r.text });
     }
     links.push(pair(a, b)); this.save();
-    return { ok: true, text: r.text };
-  }
-
-  // Pinning a note (or a line) on P04 or P05.
-  private pin(q: string, x: string): { ok: boolean; text: string } {
-    const s = this.s, links = s.links!;
-    const pinned = (id: string) => links.includes(pair(id, q));
-    const put = () => { links.push(pair(x, q)); this.save(); };
-    if (q === 'P04') {
-      if (s.p04) return { ok: false, text: 'P04 is recorded. The board keeps it.' };
-      if (!s.read.original || !s.read.amended) return this.compare('omitted-c');   // the Unity refusal
-      if (x === 'n.sig') return this.compare('author-guilt');
-      if (x === 'e06.fault' || x === 'e06.repeat') return this.compare('development-only');
-      if (x === 'n.c' || x === 'n.mark') {
-        put();
-        if (pinned('n.c') && pinned('n.mark')) return this.compare('omitted-c');
-        return { ok: true, text: 'Pinned. What else does the service copy change?' };
-      }
-      if (x.startsWith('n.')) return { ok: false, text: 'That note belongs to the other question.' };
-      return { ok: false, text: 'Pin what two lines show together. Connect two lines first, then pin the note.' };
-    }
-    // P05
-    if (s.p05) return { ok: false, text: 'P05 is recorded. The board keeps it.' };
-    if (!s.p04 || !s.read.lineage || !s.read.index) return this.route('', '', 'triangle');   // the Unity refusals, in order
-    if (x === 'rx.dist') { s.wrong05++; this.save(); return { ok: false, text: LY }; }
-    if (x === 'e08.elev') { s.wrong05++; this.save(); return { ok: false, text: ELEVATION }; }
-    if (x === 'e08.dest' || x === 'b12.site') {
-      if (!pinned('n.id') || !pinned('n.mark2')) return { ok: false, text: 'A place name alone does not establish the connection. Match the survey ID and the fixed-point mark first, and pin both.' };
-      put();
-      return this.route('old-survey-station', 'STATION 01', 'triangle-bar');
-    }
-    if (x === 'n.id' || x === 'n.mark2') {
-      put();
-      return { ok: true, text: pinned('n.id') && pinned('n.mark2') ? 'Pinned. Both sources agree. Now the place they name.' : 'Pinned. What else must match before the place counts?' };
-    }
-    if (x.startsWith('n.')) return { ok: false, text: 'That note belongs to the other question.' };
-    return { ok: false, text: 'Pin what two lines show together. Connect two lines first, then pin the note.' };
+    const q = r.note ? NOTE_Q[r.note] : undefined;
+    if (!q) return { ok: true, text: r.text };
+    const filled = links.filter((k) => { const x = ruleOf(k); return x?.note && NOTE_Q[x.note] === q; }).length;
+    const total = q === 'P04' ? 2 : 3;
+    return { ok: true, text: filled >= total ? `${r.text} ${q} has what it needs: RECORD it.` : `${r.text} (${q}: ${filled} of ${total})` };
   }
 
   // P04: the Unity rules and replies.

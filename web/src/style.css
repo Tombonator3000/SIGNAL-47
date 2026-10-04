@@ -557,16 +557,16 @@ html.text-large .prompt { font-size: 28px; }
 .bcard.open .bcard-img { max-height: 200px; }
 .bline { position: relative; display: flex; gap: 6px; align-items: flex-start; margin: 4px 8px 0; padding: 5px 22px 5px 6px; cursor: crosshair; touch-action: none; border: 1px dashed transparent; }
 .bline img { width: 26px; height: 26px; flex: none; }
-.bline:hover, .bnote:hover, .bq:hover { border-color: rgba(196,36,28,.55); }
-.bline.sel, .bnote.sel, .bq.sel { border: 1px solid #c4241c; background: rgba(196,36,28,.1); }
+.bline:hover { border-color: rgba(196,36,28,.55); }
+.bline.sel { border: 1px solid #c4241c; background: rgba(196,36,28,.1); }
 .pin { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: #c4241c; box-shadow: 0 1px 2px rgba(0,0,0,.5); }
 .bline .pin { right: 5px; top: 50%; margin-top: -5.5px; }
-.bnote { width: 186px; background: #f1dc7c; font-family: var(--type); font-size: 12.5px; line-height: 1.28; padding: 0 10px 8px; touch-action: none; cursor: crosshair; border: 1px solid transparent; transform: rotate(-1.2deg); }
+.bnote { width: 186px; background: #f1dc7c; font-family: var(--type); font-size: 12.5px; line-height: 1.28; padding: 0 10px 8px; transform: rotate(-1.2deg); }
 .bnote p { margin: 0; }
 .bnote-head { height: 16px; position: relative; cursor: grab; }
 .bnote-head .pin, .bq-head .pin { left: 50%; top: 3px; margin-left: -5.5px; }
 .bq-head { position: relative; }
-.bq { background: #f4efe4; font-family: var(--type); font-size: 14px; padding: 0 0 8px; border-top: 4px solid #8f2a1d; cursor: crosshair; touch-action: none; border-left: 1px solid transparent; border-right: 1px solid transparent; border-bottom: 1px solid transparent; }
+.bq { background: #f4efe4; font-family: var(--type); font-size: 14px; padding: 0 0 8px; border-top: 4px solid #8f2a1d; }
 .bq-head span { font-family: var(--term); font-size: 17px; color: #2f6a3c; }
 .bq-text { margin: 6px 10px; font-size: 15px; }
 .bq-slots { margin: 4px 10px 6px 30px; padding: 0; font-size: 12.5px; color: #555; }
@@ -574,8 +574,27 @@ html.text-large .prompt { font-size: 28px; }
 .bq-slots li.on { color: #1e2430; }
 .bq-done { margin: 6px 10px 0; font-size: 12.5px; color: #2c4a30; }
 .bq.done { border-top-color: #2f6a3c; }
-.bq-hint { font-size: 16px; min-height: 32px; padding: 2px 10px; margin-left: 10px; color: #233a7a; border-color: rgba(35,58,122,.4); }
+.bq-row { display: flex; gap: 8px; margin: 0 10px; }
+.bq-hint { font-size: 16px; min-height: 32px; padding: 2px 10px; color: #233a7a; border-color: rgba(35,58,122,.4); }
+.bq-record { font-size: 18px; min-height: 32px; padding: 2px 12px; color: #8f2a1d; border-color: #8f2a1d; background: rgba(196,36,28,.08); }
+.bq.ready { box-shadow: 0 0 0 2px #c4241c, 2px 4px 10px rgba(0,0,0,.45); }
+.bq-count { font-family: var(--term); font-size: 17px; color: #6b6458; }
+.bq-slots li.on { background: rgba(241,220,124,.55); padding: 1px 3px; }
+.thread.thin { stroke-width: 1.2; opacity: .7; stroke-dasharray: none; }
+.btag { display: inline-block; margin-left: 6px; padding: 0 5px; font-style: normal; font-family: var(--term); font-size: 15px; color: #fff; background: #c4241c; border-radius: 2px; }
+.btag.thin { background: #8a8172; }
+/* one column on small screens: questions on top, the cards in a list, links as tags */
+.board-col .board-scroll { overflow-y: auto; overflow-x: hidden; }
+.board-col .board-size { width: auto !important; height: auto !important; }
+.board-col .board { position: static; width: auto; height: auto; transform: none !important; display: flex; flex-direction: column; gap: 10px; padding: 10px; box-shadow: none; }
+.board-col .board-threads { display: none; }
+.board-col .bcard, .board-col .bq, .board-col .bnote { position: static; width: auto; transform: none; }
+.board-col .bq-strip { display: grid; gap: 8px; }
+.board-col .bline { min-height: 44px; align-items: center; cursor: pointer; }
+.board-col .bline .pin { display: none; }
+.board-col .bcard-head, .board-col .bq-head { cursor: default; }
 .board-say { margin: 0; min-height: 1.5em; font-size: 15.5px; color: #ddd5c2; }
 .board-say.bad { color: #ffb3a0; }
 .board-say.good { color: #b9ffc7; }
 @media (max-height: 520px) { .board-how { display: none; } .board-head h3 { font-size: 18px; } .board-status { font-size: 15px; } }
+.board-col .bq.done .bq-text, .board-col .bq.done .bq-done { display: none; }   /* recorded: one line; the finding is in the journal */

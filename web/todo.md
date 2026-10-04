@@ -28,10 +28,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Fra Tom 4. oktober kveld (neste runder)
 
-- [x] **Bevisbord i kapittel 2** (`ui/Board.ts`): kort, tråder, lapper, P04 og P05. Gjenstår: samme bord for funnene i kapittel 1 og 3, og et samlet bord i journalen.
+- [x] **Bevisbord i kapittel 2** (`ui/Board.ts`), nå v2 etter `SPILLDESIGN.md`: det trådene viser, går selv inn i spørsmålet, RECORD registrerer, én kolonne på telefon. Gjenstår: samme bord for funnene i kapittel 1 og 3 (P06, P08, P09), bevis i stedet for setninger i kapittel 4, og bordet i journalen.
 - [ ] **Bevisbord i stedet for faner (Tom: «knotete og vanskelig å forstå»), resten.** Et korkbord / arbeidsbord der bevisene ligger som kort og bilder. Spilleren drar dem fritt rundt og trekker en rød tråd mellom to bevis. En tråd mellom to ting som faktisk henger sammen gir en ny lapp på bordet (for eksempel E07 + E06 gir «C er fjernet»); feil kobling får et kort svar og tråden slakker av. Funnene (P04 og videre) registreres ved å koble sammen, ikke ved å velge blant tre setninger. Samme bord brukes i alle kapitler og samler alt fra journalen. Må gå med mus og berøring.
-- [ ] **VHS / X-Files-etterbehandling:** ett fullskjermspass etter at scenen er tegnet: litt lavere oppløsning, fargegradering (knuste svarte, grønnblå skygger, varme lys), lett kromatisk forskyvning ytterst, støy og sporingslinjer, glød rundt sterke lys. Valg i innstillingene (av, mild, full) og av på svake telefoner. Camcorder-modus med REC, dato og klokke når kameraet er oppe.
-- [ ] **Lyd:** fjern torden over mesaen (noen varianter), dyr i ørkenen om natta (prærieulv, ugle, sirisser), fottrinn etter underlag (betong og linoleum, grus, tre, teppe, metall). Lydkilder fra Toms egne repoer gjennomgås med lisens først.
+- [x] **VHS / X-Files-etterbehandling** (`core/vhs.ts`, Settings: Picture). Camcorder-modus med REC og dato er ikke laget: designrådet er at feltkameraet er et filmkamera; venter på Tom.
+- [x] **Lyd:** sirisser, ugle, hund, vindkast, fottrinn etter underlag, dører, papir og fjern rullende torden er inne. Gjenstår: prærieulv (ingen CC0-fil funnet i Toms repoer), teppe og metallrist har egne opptak, TV-sus og walkie-talkie.
 - [ ] **Bilen stopper (abduksjonsscenen):** på Roswell-veien dør motoren der C krysser veien (regel R1, ser tilfeldig ut for spilleren). Lys over bilen, lyset blinker i 4/7, hvitt, så svart. Spilleren våkner i bilen med tapt tid (klokka har hoppet), bilen står vendt en annen vei. Ingen tydelig romvesen i bildet; høyst en skikkelse i motlys, uklar. Må avgjøres med Tom før den bygges.
 
 ## Neste
