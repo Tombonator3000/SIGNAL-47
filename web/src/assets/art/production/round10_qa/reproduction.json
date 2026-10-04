@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "method": "rerun frozen exporter from saved original PNGs and frozen ICC; compare complete JPEG SHA256",
+  "byte_identical_count": 4,
+  "sha256": {
+    "photo_1947_master": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+    "poster_halley_1986_blank": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+    "fanfold_1986": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+    "fanfold_1947": "847c21d0175d6d589ac3c6c2d6e6349153fd605df01ed51c584e2c5e2dfacd52"
+  },
+  "exporter_sha256": "48aa7140656ffe66147660ad4b3735a6ff2d386cab4a75d50be447f76403dae0"
+}

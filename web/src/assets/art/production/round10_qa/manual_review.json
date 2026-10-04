@@ -1,0 +1,69 @@
+{
+  "schema": "signal47-round10-visual-review-v1",
+  "created_utc": "2026-10-04T22:54:14.674081+00:00",
+  "reviewers": [
+    "Codex root",
+    "independent ultra_b_diner"
+  ],
+  "inputs": {
+    "src/assets/art/docs/photo_1947_master.jpg": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+    "src/assets/art/docs/poster_halley_1986_blank.jpg": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+    "src/assets/art/docs/fanfold_1986.jpg": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+    "src/assets/art/docs/fanfold_1947.jpg": "847c21d0175d6d589ac3c6c2d6e6349153fd605df01ed51c584e2c5e2dfacd52"
+  },
+  "status": "PASS",
+  "photo": {
+    "light_center_approx": [
+      899,
+      412
+    ],
+    "comet_center_approx": [
+      1375,
+      837
+    ],
+    "mesa_top_approx_y": 971,
+    "ranchers": 2,
+    "surveyors": 3,
+    "survey_leftmost_visible_mark_approx_x": 1940,
+    "A": "PASS: light, small short-tail comet and mesa top; no people",
+    "B": "PASS: two ranchers; no surveyor, tripod, staff, shadow or blur. Full-height right edge inspected.",
+    "C": "PASS: all five; three far-right surveyors, third blurred with clear chest band",
+    "faces": "No recognizable faces",
+    "style": "fictional 1947 coarse press halftone; no craft, rays, captions or border"
+  },
+  "poster": {
+    "core_approx": [
+      680,
+      640
+    ],
+    "mesa_top_approx_y": 924,
+    "chart_approx_xyxy": [
+      71,
+      1011,
+      952,
+      1288
+    ],
+    "horizon_approx_y": 1240,
+    "blank_text_free": "PASS",
+    "quiet_zones": "PASS",
+    "full_sample": "PASS: exact title, dates, note and five lines readable without clipping/overlap",
+    "wall_256x384": "PASS: title/date and main motif clear; note/chart microtext requires document view"
+  },
+  "fanfold": {
+    "dimensions_each": [
+      1024,
+      1186
+    ],
+    "holes_each_side_each_sheet": 22,
+    "age": "PASS: clean white/green against visibly aged yellow-tan with faded bands, rust and worn edges",
+    "torn_hole": "one, left row 4; generation prompt requested row 5, brief does not fix which hole",
+    "sample_text": "PASS: quiet centers, full sample readable on both papers"
+  },
+  "limitations": [
+    "Visual review is not OCR/object detection or runtime verification.",
+    "Exact AI model/version was not exposed.",
+    "Photo native generation 1536x1024, exported with Lanczos to requested 2400x1600; fanfold native 1165x1350 to 1024x1186.",
+    "Broad threshold hole alignment is UNVERIFIED on aged paper; independent low-threshold cores corroborate count and row placement.",
+    "Runtime loading, actual integrated text/crops, CSP, Pages and physical PC/mobile remain with Claude and UNVERIFIED here."
+  ]
+}

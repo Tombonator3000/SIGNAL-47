@@ -1,0 +1,29 @@
+{
+  "asset": "poster_halley_1986_blank",
+  "source": "src/assets/art/production/round10_qa/sources/poster_halley_1986_blank_generated.png",
+  "source_sha256": "30d7a645efd359cd7d803297e33842a61adce512839de0e99cabd81dd2bd1863",
+  "source_size": [
+    1024,
+    1536
+  ],
+  "source_embedded_icc": false,
+  "file": "src/assets/art/docs/poster_halley_1986_blank.jpg",
+  "size": [
+    1024,
+    1536
+  ],
+  "sha256": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+  "bytes": 293045,
+  "export": {
+    "pillow": "12.1.1",
+    "resize": "Lanczos, exact-size only",
+    "color": "embedded frozen sRGB ICC, RGB",
+    "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+    "grayscale_rgb": false,
+    "jpeg_quality": 85,
+    "subsampling": 0,
+    "optimize": true
+  },
+  "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+  "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e"
+}
