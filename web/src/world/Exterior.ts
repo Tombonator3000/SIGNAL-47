@@ -42,10 +42,22 @@ export class Exterior {
   }
 
   private ground() {
-    // Rings every 95 m, so the ground within 300 m is really flat at -0.62. (A plain circle
-    // has only a centre and a rim: its triangles sloped from SARO out to the rolling rim
-    // and rose over the highway in places.)
-    const geo = new THREE.RingGeometry(0.01, 1900, 96, 20);
+    // Rings that grow outwards (each about 7 per cent wider than the last), so every cell is
+    // roughly square: near SARO they are a few metres across, at the horizon a hundred. The
+    // ground within 300 m is flat at -0.62. (A plain circle has only a centre and a rim, and
+    // its triangles sloped out to the rolling rim and rose over the highway; evenly spaced
+    // rings left long slivers at the centre that leaked through the control room floor as a
+    // dotted line on some screens.)
+    const R0 = 0.5, R1 = 1900;
+    const geo = new THREE.RingGeometry(R0, R1, 96, 120);
+    {
+      const p = geo.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), y = p.getY(i), r = Math.hypot(x, y);
+        const k = R0 * Math.pow(R1 / R0, (r - R0) / (R1 - R0)) / r;
+        p.setXY(i, x * k, y * k);
+      }
+    }
     geo.rotateX(-Math.PI / 2);
     const pos = geo.attributes.position as THREE.BufferAttribute;
     const col = new Float32Array(pos.count * 3);

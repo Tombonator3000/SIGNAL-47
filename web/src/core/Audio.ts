@@ -5,14 +5,45 @@ import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
 import wind from '../assets/audio/wind.mp3';
 import titleMusic from '../assets/audio/title_music.mp3';
-import step0 from '../assets/audio/step0.mp3';
-import step1 from '../assets/audio/step1.mp3';
-import step2 from '../assets/audio/step2.mp3';
+// The night outside, steps by surface, doors and paper: CC0 recordings from Freesound, by
+// way of Tom's own projects (morbidium, Loincloth-Legends). See THIRD_PARTY_NOTICES.md.
+import crickets from '../assets/audio/crickets.mp3';
+import owl from '../assets/audio/owl.mp3';
+import dog0 from '../assets/audio/dog0.mp3';
+import dog1 from '../assets/audio/dog1.mp3';
+import gust from '../assets/audio/gust.mp3';
+import stepConcrete0 from '../assets/audio/step_concrete0.mp3';
+import stepConcrete1 from '../assets/audio/step_concrete1.mp3';
+import stepConcrete2 from '../assets/audio/step_concrete2.mp3';
+import stepWood0 from '../assets/audio/step_wood0.mp3';
+import stepWood1 from '../assets/audio/step_wood1.mp3';
+import stepDirt from '../assets/audio/step_dirt.mp3';
+import doorCreak0 from '../assets/audio/door_creak0.mp3';
+import doorCreak1 from '../assets/audio/door_creak1.mp3';
+import doorMetal from '../assets/audio/door_metal.mp3';
+import doorClose from '../assets/audio/door_close.mp3';
+import paper0 from '../assets/audio/paper0.mp3';
+import paper1 from '../assets/audio/paper1.mp3';
 import click from '../assets/audio/click.mp3';
 import sw from '../assets/audio/switch.mp3';
 import thudSoft from '../assets/audio/thud_soft.mp3';
 
-const SOURCES: Record<string, string> = { phoneRing, printer, ceramic, wind, titleMusic, step0, step1, step2, click, switch: sw, thudSoft };
+const SOURCES: Record<string, string> = {
+  phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
+  crickets, owl, dog0, dog1, gust, stepConcrete0, stepConcrete1, stepConcrete2, stepWood0, stepWood1, stepDirt,
+  doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1,
+};
+
+// What the player walks on, and how a step on it sounds: which recordings, how loud, the
+// pitch, a low-pass for soft floors, and grit on top for dirt and gravel.
+export type Surface = 'tile' | 'concrete' | 'dirt' | 'wood' | 'carpet';
+const STEPS: Record<Surface, { names: string[]; gain: number; rate: number; lp?: number; grit?: number }> = {
+  tile: { names: ['stepConcrete0', 'stepConcrete1', 'stepConcrete2'], gain: 0.34, rate: 1.12 },
+  concrete: { names: ['stepConcrete0', 'stepConcrete1', 'stepConcrete2'], gain: 0.42, rate: 0.94 },
+  dirt: { names: ['stepDirt'], gain: 0.42, rate: 0.72, grit: 0.05 },
+  wood: { names: ['stepWood0', 'stepWood1'], gain: 0.4, rate: 0.95 },
+  carpet: { names: ['stepWood0', 'stepWood1'], gain: 0.2, rate: 0.9, lp: 900 },
+};
 
 function decodeDataUrl(url: string): ArrayBuffer {
   const b64 = url.slice(url.indexOf(',') + 1);
@@ -113,12 +144,12 @@ export class AudioSys {
     return p;
   }
 
-  play(name: string, o: { gain?: number; rate?: number; at?: THREE.Vector3; when?: number; dest?: AudioNode; loop?: boolean } = {}) {
+  play(name: string, o: { gain?: number; rate?: number; at?: THREE.Vector3; when?: number; dest?: AudioNode; loop?: boolean; lp?: number } = {}) {
     const ctx = this.ctx; const b = this.buf[name];
     if (!ctx || !b) return null;
     const src = ctx.createBufferSource(); src.buffer = b; src.playbackRate.value = o.rate ?? 1; src.loop = !!o.loop;
     const g = ctx.createGain(); g.gain.value = o.gain ?? 1;
-    src.connect(g);
+    if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; src.connect(f); f.connect(g); } else src.connect(g);
     g.connect(o.dest ?? (o.at ? this.panner(o.at) : this.sfx));
     src.start(ctx.currentTime + (o.when ?? 0));
     return { src, gain: g };
@@ -207,12 +238,25 @@ export class AudioSys {
     n.connect(lp); lp.connect(ng); ng.connect(out); n.start(t); n.stop(t + 3);
   }
 
+  // Thunder far away over the mesa: no crack, only rolls that come in slowly, darker and
+  // later the further off it is, after the far-thunder layers in Tom's Loincloth-Legends
+  // (thunderSyn with `far`), with a low sine swell under them.
   thunder(strength = 0.6) {
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
-    const n = this.noiseSrc(true, false); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
-    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.5 * strength, t + 0.6); g.gain.exponentialRampToValueAtTime(0.001, t + 5.5);
-    n.connect(lp); lp.connect(g); g.connect(this.amb); n.start(t); n.stop(t + 6);
+    const roll = (at: number, dur: number, f0: number, f1: number, v: number) => {
+      const n = this.noiseSrc(true, false); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(f0, t + at); lp.frequency.exponentialRampToValueAtTime(f1, t + at + dur);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, t + at); g.gain.linearRampToValueAtTime(v, t + at + dur * 0.28); g.gain.exponentialRampToValueAtTime(0.001, t + at + dur);
+      n.connect(lp); lp.connect(g); g.connect(this.amb); n.start(t + at); n.stop(t + at + dur + 0.1);
+    };
+    const s = strength;
+    roll(0, 3.4, 360, 55, 0.5 * s);
+    roll(0.8 + Math.random() * 0.7, 2.6, 280, 45, 0.38 * s);
+    if (Math.random() < 0.7) roll(2.1 + Math.random() * 1.2, 3.2, 220, 38, 0.3 * s);
+    const o = ctx.createOscillator(); o.frequency.setValueAtTime(44, t + 0.3); o.frequency.exponentialRampToValueAtTime(30, t + 2.8);
+    const og = ctx.createGain(); og.gain.setValueAtTime(0, t + 0.3); og.gain.linearRampToValueAtTime(0.28 * s, t + 1.0); og.gain.exponentialRampToValueAtTime(0.001, t + 3.0);
+    o.connect(og); og.connect(this.amb); o.start(t + 0.3); o.stop(t + 3.1);
   }
 
   gasp(dest?: AudioNode, when = 0) {
@@ -392,14 +436,53 @@ export class AudioSys {
     r.voice.gain.setTargetAtTime(0, t + secs, 0.12);
   }
 
-  // Where the listener is. Out in the yard the wind takes over from the room tone;
-  // the photo lab is small and closed, with its own ventilation hum.
+  // Where the listener is. Out in the yard the wind and the crickets take over from the
+  // room tone; the photo lab is small and closed, with its own ventilation hum.
+  private space: 'room' | 'yard' | 'lab' = 'room';
   setSpace(space: 'room' | 'yard' | 'lab') {
+    this.space = space;
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
-    const [tone, wind] = space === 'room' ? [0.5, 0.14] : space === 'lab' ? [0.3, 0.05] : [0.1, 0.34];
+    const [tone, wind, bugs] = space === 'room' ? [0.5, 0.14, 0.02] : space === 'lab' ? [0.3, 0.05, 0] : [0.1, 0.34, 0.16];
     this.roomTone?.gain.setTargetAtTime(tone, t, 0.7);
     this.loops.get('wind')?.gain.gain.setTargetAtTime(wind, t, 0.7);
+    this.loops.get('crickets')?.gain.gain.setTargetAtTime(bugs, t, 1.2);
+  }
+
+  /** One step on a surface (Player.onStep). */
+  step(surface: Surface) {
+    const s = STEPS[surface];
+    const name = s.names[Math.floor(Math.random() * s.names.length)];
+    this.play(name, { gain: s.gain * (0.85 + Math.random() * 0.3), rate: s.rate * (0.94 + Math.random() * 0.12), lp: s.lp });
+    if (s.grit) this.grit(s.grit);
+  }
+
+  // The desert at night, far from everything: an owl, a dog at a ranch, a gust in the
+  // scrub, now and then, from a random direction. Only outside; nothing answers the player.
+  private nextLife = 20;
+  nightLife(dt: number, at: THREE.Vector3) {
+    if (!this.ctx || this.space !== 'yard') return;
+    this.nextLife -= dt;
+    if (this.nextLife > 0) return;
+    this.nextLife = 25 + Math.random() * 45;
+    const r = Math.random();
+    const name = r < 0.35 ? 'owl' : r < 0.6 ? (Math.random() < 0.5 ? 'dog0' : 'dog1') : 'gust';
+    this.far(name, at, name === 'gust' ? 0.35 : name === 'owl' ? 0.3 : 0.22, name === 'owl' ? 0.9 + Math.random() * 0.15 : 1);
+  }
+  /** A sound far off in a random direction: panned, quiet and dull with distance. */
+  far(name: string, at: THREE.Vector3, gain: number, rate = 1) {
+    const ctx = this.ctx; const b = this.buf[name];
+    if (!ctx || !b) return;
+    const a = Math.random() * Math.PI * 2, d = 30 + Math.random() * 30;
+    const pos = new THREE.Vector3(at.x + Math.cos(a) * d, at.y + 2, at.z + Math.sin(a) * d);
+    const p = ctx.createPanner();
+    p.panningModel = 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = 30; p.rolloffFactor = 1; p.maxDistance = 200;
+    if ((p as any).positionX) { p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; } else (p as any).setPosition(pos.x, pos.y, pos.z);
+    const src = ctx.createBufferSource(); src.buffer = b; src.playbackRate.value = rate;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600 - d * 20;
+    const g = ctx.createGain(); g.gain.value = gain;
+    src.connect(lp); lp.connect(g); g.connect(p); p.connect(this.amb);
+    src.start();
   }
 
   duckAll(seconds: number) {

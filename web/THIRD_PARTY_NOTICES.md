@@ -13,7 +13,31 @@ Alt under er hentet fra Unity-prosjektet i samme repo, med samme lisens som der 
 - ceramic cup shatters on tile floor, geraldfiebig, Freesound 524999 (`ceramic.mp3`)
 - desert_wind.wav, DarkShroom, Freesound 645305 (`wind.mp3`)
 - Kenney Interface Sounds, https://kenney.nl/assets/interface-sounds (`click.mp3`, `switch.mp3`)
-- Kenney Impact Sounds, https://kenney.nl/assets/impact-sounds (`step0-2.mp3`, `thud_soft.mp3`)
+- Kenney Impact Sounds, https://kenney.nl/assets/impact-sounds (`thud_soft.mp3`)
+
+### Natten, fottrinn, dører og papir (4. oktober 2026), CC0 1.0
+
+Hentet fra Toms egne prosjekter: `Tombonator3000/morbidium` (`assets/lyd/`, kildeliste i `KILDER.md` og `lyd.json`) og `Tombonator3000/Loincloth-Legends` (`public/assets/sound/`, `KILDER.md`). Filene der er laget av Freesounds forhåndsvisning (128 kbps), trimmet, tonet inn og ut, mikset til mono og normalisert. Freesound-siden for hver fil ble åpnet 4. oktober 2026 og viser fortsatt CC0 1.0. Navnene under er filnavnene i spillet.
+
+- crickets, FreethinkerAnon, Freesound 129678 (`crickets.mp3`, morbidium `amb_natt`)
+- Buhos.wav, Gamba_Studio, Freesound 447211 (`owl.mp3`, morbidium `ugle`)
+- Dogs Barking in Distance_Rural.wav, rvandemark, Freesound 581478 (`dog0.mp3`, morbidium `hund`)
+- Distant Dog Bark, qubodup, Freesound 813116 (`dog1.mp3`, morbidium `hund_2`)
+- wind_gust_short_sqeeeek.wav, sqeeeek, Freesound 381853 (`gust.mp3`, Loincloth-Legends `vindkast`)
+- concrete footstep 2, Yoyodaman234, Freesound 166508 (`step_concrete0.mp3`, morbidium `fot_stein`)
+- Concrete Footstep 2.mp3, matth3wc04, Freesound 690006 (`step_concrete1.mp3`, morbidium `fot_stein_2`)
+- Cloth_And_Shoes_On_Concrete_22, BlondPanda, Freesound 778502 (`step_concrete2.mp3`, morbidium `fot_stein_3`)
+- Footstep_Wood_Toe_1.wav, GiocoSound, Freesound 421153 (`step_wood0.mp3`, morbidium `fot_tre`)
+- Wood step Sample 4, Notarget, Freesound 434759 (`step_wood1.mp3`, morbidium `fot_tre_2`)
+- Footstep in the snow_04 [RAW], cabled_mess, Freesound 384424 (`step_dirt.mp3`, Loincloth-Legends `fot_sno`; spilles dypere som grus og jord)
+- Squeaky door opened quickly.wav, CastIronCarousel, Freesound 216878 (`door_creak0.mp3`, morbidium `door`)
+- Door - Creak.wav, JarredGibb, Freesound 219499 (`door_creak1.mp3`, morbidium `door_2`)
+- Metal Door Slam_SoundSmith.wav, Lunardrive, Freesound 48980 (`door_metal.mp3`, morbidium `dorslag`)
+- door_close, wjtaylor, Freesound 266682 (`door_close.mp3`, morbidium `dorslag_2`)
+- PageTurn.wav, yatoimtop, Freesound 346835 (`paper0.mp3`, morbidium `paper`)
+- Page Turn 01, LilMati, Freesound 397548 (`paper1.mp3`, morbidium `paper_2`)
+
+Fjern torden over mesaen lages i kode (rullende lavpasset støy og en lav sinus), etter «far»-varianten av `thunderSyn` i Loincloth-Legends.
 
 Brummen, bærebølgen, telefonopptaket, smellet og motorene lages i kode med Web Audio.
 

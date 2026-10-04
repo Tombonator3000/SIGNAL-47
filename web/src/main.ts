@@ -1,7 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import { UI } from './ui/UI';
-import { AudioSys } from './core/Audio';
+import { AudioSys, type Surface } from './core/Audio';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
@@ -11,6 +11,7 @@ import { ControlRoom } from './world/ControlRoom';
 import { Prologue } from './story/Prologue';
 import { ServiceYard, YARD } from './world/ServiceYard';
 import { RecordsAnnex } from './world/Annex';
+import { Vhs, type Picture } from './core/vhs';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
@@ -79,8 +80,20 @@ async function boot() {
   const fcam = new FieldCamera(renderer, scene, camera);
 
   let quality: Quality = store.get<Quality>('quality', 'high');
+  // the picture: a 1986 tape look over the whole night (core/vhs.ts), off by default on Low
+  // (until the player picks one in Settings, the picture follows the graphics level)
+  const vhs = new Vhs(renderer, quality === 'high' ? 4 : 0);
+  const applyPicture = (p: Picture, chosen = true) => {
+    vhs.picture = p;
+    if (chosen) store.set('picture', p);
+    document.documentElement.classList.toggle('vhs-on', vhs.on);   // the shader has its own grain
+  };
+  applyPicture(store.get<Picture | null>('picture', null) ?? (quality === 'high' ? 'vhs' : 'off'), false);
+  renderer.info.autoReset = false;   // two passes per frame: count both (the draw-call budget)
   function applyQuality(q: Quality) {
     quality = q; store.set('quality', q);
+    vhs.setSamples(q === 'high' ? 4 : 0);
+    if (store.get<Picture | null>('picture', null) === null) applyPicture(q === 'high' ? 'vhs' : 'off', false);
     setQuality(scene, q);
     maxPR = Math.min(window.devicePixelRatio || 1, q === 'low' ? 1 : (touchGuess ? 1.6 : 2));
     pr = Math.min(pr, maxPR);
@@ -117,12 +130,19 @@ async function boot() {
     skipClock: (sec) => { game.clock += sec; },
     touch: () => input.touchMode,
   });
-  // footsteps: a little deeper and with some grit out on the concrete
-  player.onStep = () => {
-    const out = space === 'yard';
-    audio.play('step' + Math.floor(Math.random() * 3), { gain: out ? 0.26 : 0.22, rate: (out ? 0.82 : 0.94) + Math.random() * 0.12 });
-    if (out) audio.grit(0.045);
+  // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard and
+  // on the motel's walk, dirt between them, boards in the hut, carpet at the motel
+  const surfaceAt = (): Surface => {
+    const p = player.pos;
+    if (world.area === 'room6') return 'carpet';
+    if (world.area === 'station01') return world.indoors(p) ? 'wood' : 'dirt';
+    if (world.area !== 'saro') return 'dirt';
+    if (inside(motelOffice, p)) return 'carpet';
+    if (space !== 'yard') return 'tile';
+    return player.floorY < -0.3 ? 'dirt' : 'concrete';
   };
+  player.onStep = () => audio.step(surfaceAt());
+  ui.onPaper = () => audio.play(Math.random() < 0.5 ? 'paper0' : 'paper1', { gain: 0.35, rate: 0.95 + Math.random() * 0.1 });
   // SARO's doors open and shut at any time of the night (world/Doors.ts)
   const doors = new Doors({ inter, audio, colliders, player, toast: (text, secs) => ui.toast(text, secs), busy: () => game.cinematic || !!ui.modal });
   doors.add({ id: 'east', inter: 'doorEast', name: 'service door', proxy: room.objs.doorEast, set: (k) => room.setDoor(k),
@@ -213,6 +233,7 @@ async function boot() {
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
     quality, onQuality: (q: Quality) => applyQuality(q),
+    picture: vhs.picture, onPicture: (p: Picture) => applyPicture(p),
     invertY, onInvertY: (v: boolean) => { invertY = v; store.set('invertY', v); },
     fov: baseFov, onFov: (v: number) => { baseFov = v; store.set('fov', v); resize(); },
     largeText: document.documentElement.classList.contains('text-large'),
@@ -346,6 +367,7 @@ async function boot() {
     caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
+    audio.loop('crickets', 'crickets', { dest: audio.amb, gain: 0.02 });
     space = 'room';
     world.stopDriving();
     world.enter('saro');
@@ -621,6 +643,7 @@ async function boot() {
       }
       game.update(dt, t, modalOpen);
       doors.update(dt);
+      if (mode === 'play') audio.nightLife(dt, player.pos);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
@@ -652,9 +675,10 @@ async function boot() {
     camera.updateMatrixWorld();
     // glow points keep their size in metres: pixels per metre at one metre distance.
     // Set every frame, because the viewfinder and the adaptive resolution change both.
-    glowScale.value = renderer.getDrawingBufferSize(buf).y / (2 * Math.tan(camera.fov * Math.PI / 360));
+    renderer.info.reset();
+    glowScale.value = vhs.lines(renderer.getDrawingBufferSize(buf).y) / (2 * Math.tan(camera.fov * Math.PI / 360));
     ext.dishArray.cull(camera);
-    renderer.render(scene, camera);
+    vhs.render(scene, camera, performance.now() / 1000);
   }
   const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}`) : null;
   function frame(now: number) {
@@ -678,12 +702,13 @@ async function boot() {
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },
     setQuality: (q: 'high' | 'low') => applyQuality(q),
+    vhs, setPicture: (p: Picture) => applyPicture(p),
   });
 
   applyQuality(quality);
   resize();
   titleCam(0);
-  renderer.render(scene, camera);
+  vhs.render(scene, camera, 0);
   loading.remove();
   showTitle();
   // the saves are read from IndexedDB while the title is up; then Continue knows what to offer

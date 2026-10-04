@@ -44,7 +44,7 @@ Pages legger spillet i undermappen `/SIGNAL-47/`. Det virker fordi `base: './'` 
 PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for notatboka, Escape for pause. Med feltkameraet: C hever og senker kameraet, mellomrom, E eller klikk tar bildet, Escape senker det.
 Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet. Camera-knappen dukker opp når kameraet er hentet. Mens kameraet er hevet, tar et trykk på skjermen eller på Use-knappen bildet.
 Kjøring: W og S gir gass og bremser (S rygger når bilen står), A og D styrer, musa ser seg rundt i førerhuset. På mobil styrer venstre tommel både gass og ratt.
-Settings har lydnivå, blikkfart, invertert blikk opp og ned, synsfelt, større tekst og grafikk (High eller Low).
+Settings har lydnivå, blikkfart, invertert blikk opp og ned, synsfelt, større tekst, grafikk (High eller Low) og bilde (Clean, VHS eller Worn VHS).
 
 ## Lagring
 
@@ -60,6 +60,7 @@ Alt ligger i nettleseren: lagringene og fotografiene i IndexedDB (fotografiene �
 src/main.ts                oppstart, løkke, menyer, testkroker (window.S47)
 src/core/                  lyd, input, interaksjon, bildeinnlasting, kodeteksturer, grafikknivå
 src/core/art.ts            de 35 bildene: 28 lastet før verden bygges (TRY AGAIN hvis noe mangler), 4 med STATION 01, 1 med veien, 2 papirbakgrunner til Noras dokumenter
+src/core/vhs.ts            bildet som fra et VHS-bånd fra 1986 (Settings: Picture), ett fullskjermspass
 src/core/signalVoice.ts    signalet slik det høres mens man stiller inn (sus, pulser, tunge slag i 4/7, metallisk hvin)
 src/core/decoder.ts        signalprosessoren: båndet spilt av rått eller harmonisert, nesten som musikk
 src/core/saves.ts          lagringssystemet: tre saker, autolagring, manuelle plasser, fotografier i IndexedDB
@@ -90,7 +91,7 @@ src/story/drawings.ts      tegningene i kapittel 2-dokumentene og saksmappens ka
 src/story/Signal.ts        mottakerlogikken, portert fra Unity
 src/ui/                    HUD, dokumenter, notatbok, RX-konsoll
 src/ui/Panels.ts           fotolabens paneler, feltjournalen i kapittel 3 og samtalen i kapittel 4
-src/ui/Board.ts            bevisbordet: kort med linjer, røde tråder mellom dem, lapper som festes på spørsmålene (P04 og P05 i kapittel 2)
+src/ui/Board.ts            bevisbordet: kort med linjer og røde tråder mellom dem; det trådene viser, fyller spørsmålene (P04 og P05 i kapittel 2), RECORD registrerer; én kolonne på telefon
 src/ui/SaveMenu.ts         menyene Load case, Save case og New case
 src/assets/                lyd, fonter og grafikk (se THIRD_PARTY_NOTICES.md og ART_BRIEF.md)
 tools/                     headless-tester med Playwright, lagringstest i Node
@@ -100,7 +101,7 @@ tools/                     headless-tester med Playwright, lagringstest i Node
 
 `tools/walkthrough.py` spiller hele prologen gjennom de ekte interaksjonene og konsollens glidebrytere, tar skjermbilder og skriver PASS eller FAIL per steg. Den sjekker også at signalet blir klarere når mottakeren nærmer seg 1420.405, at signalprosessoren spiller av og stopper, og at døra ut til gården kan åpnes og lukkes. Løkken holdes og spillet drives med `S47.tick()`, slik at testen går i en programvare-renderer.
 
-`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode, og prøver også en simulert lesefeil i IndexedDB: originalfotoet skal ligge der etter neste lagring. `tools/chapter2.py` spiller kapittel 2 fra telefonen ringer til kapittelkortet: bevisbordet med tråder trukket med musa og ved å trykke på to linjer, gale tråder med svarene fra Unity, lappene festet på P04 og P05, en eldre lagring som får trådene tilbake, lagring og Continue. `tools/chapter3.py` spiller kapittel 3: lastebilen, kjøringen, P06 til P09 med gale og riktige svar, begge feltbildene, Nora, Continue på stasjonen, turen tilbake og framkallingen. `tools/chapter4.py` spiller kapittel 4: nødutgangen, rampa ned og veien over riksveien, innkjørselen opp på motellplassen, kontoret med lappen fra Nora, langs plassen til døra til rom 6, samtalen med gale og riktige svar, papirene på bordet, Continue i rom 6, sluttkortet og saksmappa. `tools/saves.cjs` tester lagringssystemet i Node, uten nettleser. `tools/artcheck.py` sjekker at de 28 startbildene lastes og at de sju som hører til senere områder venter, at High og Low bruker de samme teksturene, og tar faste bilder av blant annet B-12, R-07, feltkartet og arkivet. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter, lyder og bilder kommer med.
+`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode, og prøver også en simulert lesefeil i IndexedDB: originalfotoet skal ligge der etter neste lagring. `tools/chapter2.py` spiller kapittel 2 fra telefonen ringer til kapittelkortet: bevisbordet med tråder trukket med musa og ved å trykke på to linjer, tomme tråder og gale tråder med svarene fra Unity, hintnivåene, plassene på P04 og P05 og RECORD, en eldre lagring som får trådene tilbake, bordet som én kolonne på telefon, lagring og Continue. `tools/chapter3.py` spiller kapittel 3: lastebilen, kjøringen, P06 til P09 med gale og riktige svar, begge feltbildene, Nora, Continue på stasjonen, turen tilbake og framkallingen. `tools/chapter4.py` spiller kapittel 4: nødutgangen, rampa ned og veien over riksveien, innkjørselen opp på motellplassen, kontoret med lappen fra Nora, langs plassen til døra til rom 6, samtalen med gale og riktige svar, papirene på bordet, Continue i rom 6, sluttkortet og saksmappa. `tools/saves.cjs` tester lagringssystemet i Node, uten nettleser. `tools/artcheck.py` sjekker at de 28 startbildene lastes og at de sju som hører til senere områder venter, at High og Low bruker de samme teksturene, og tar faste bilder av blant annet B-12, R-07, feltkartet og arkivet. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter, lyder og bilder kommer med.
 
 ```sh
 pip install playwright && playwright install chromium

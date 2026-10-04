@@ -33,6 +33,13 @@ async def main():
         use = lambda i: ev(f"S47.game.d.inter.get('{i}').use()")
         await tick(2.0); await shot('01_spawn')
         check(await ev("S47.game.phase") == 'intro', 'game starts in intro phase')
+        # the picture and the sounds (core/vhs.ts, core/Audio.ts)
+        check(await ev("S47.vhs.picture") == ('vhs' if Q == 'high' else 'off') and await ev("S47.vhs.on") == (Q == 'high'), f'picture defaults to {"the VHS look" if Q == "high" else "clean"} on {Q}')
+        check(await ev("S47.renderer.info.render.calls") > 60, f'draw calls counted over both passes ({await ev("S47.renderer.info.render.calls")})')
+        try: await pg.wait_for_function("Object.keys(S47.game.d.audio.buf).length >= 25", timeout=60000)
+        except Exception: pass
+        check(await ev("Object.keys(S47.game.d.audio.buf).length") == 25, 'all 25 sounds decoded')
+        check(await ev("(()=>{ const a=S47.game.d.audio; ['tile','concrete','dirt','wood','carpet'].forEach(s=>a.step(s)); a.thunder(0.4); a.far('owl', S47.player.pos, 0.3); return true; })()"), 'steps on every surface, far thunder and a far owl play')
         await use('logbook'); await tick(0.2); await shot('02_shiftlog')
         await ev("S47.game.d.ui.close()"); await tick(1)
         check(await ev("S47.game.logRead") is True, 'shift log read and filed')

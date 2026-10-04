@@ -14,6 +14,9 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 const CREDITS = 'Music: "Signal to Noise" by Scott Buckley, CC BY 4.0, scottbuckley.com.au. Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
+// the picture setting: clean, the 1986 tape look, or a worn tape with tracking trouble
+const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
+
 export class UI {
   root = document.getElementById('ui')!;
   modal: HTMLElement | null = null;
@@ -182,7 +185,10 @@ export class UI {
     return el;
   }
 
+  /** Called when a paper is opened (the sound of the page; set by main). */
+  onPaper?: () => void;
   document(doc: DocSpec, onClose: () => void) {
+    this.onPaper?.();
     const el = document.createElement('div');
     el.className = 'docview';
     const page = doc.kind === 'printout'
@@ -255,6 +261,7 @@ export class UI {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
     onSave?: () => void; onLoad?: () => void;
     quality: 'high' | 'low'; onQuality: (q: 'high' | 'low') => void; title?: string; settingsOnly?: boolean;
+    picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
     invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
   }) {
     const el = document.createElement('div');
@@ -271,6 +278,7 @@ export class UI {
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
         <div class="set"><span class="lbl">Text</span><button class="opt qual" data-a="txt" aria-label="Text size">${o.largeText ? 'Large' : 'Normal'}</button></div>
         <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${o.quality === 'high' ? 'High' : 'Low'}</button></div>
+        <div class="set"><span class="lbl">Picture</span><button class="opt qual" data-a="pic" aria-label="Picture: clean or video tape">${PICTURE[o.picture]}</button></div>
         ${o.settingsOnly ? '' : '<button class="opt" data-a="title">Quit to title</button>'}
         <p class="small">${o.settingsOnly ? 'Settings are kept on this device.' : 'Nothing in the control room moves on while the game is paused.'}</p>
       </div>`;
@@ -287,6 +295,9 @@ export class UI {
     let q = o.quality;
     const qb = el.querySelector('[data-a=qual]') as HTMLButtonElement;
     qb.addEventListener('click', () => { q = q === 'high' ? 'low' : 'high'; qb.textContent = q === 'high' ? 'High' : 'Low'; o.onQuality(q); });
+    let pic = o.picture;
+    const pb = el.querySelector('[data-a=pic]') as HTMLButtonElement;
+    pb.addEventListener('click', () => { pic = pic === 'off' ? 'vhs' : pic === 'vhs' ? 'heavy' : 'off'; pb.textContent = PICTURE[pic]; o.onPicture(pic); });
     this.open(el, o.onResume);
   }
 
