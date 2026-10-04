@@ -56,8 +56,9 @@ export class World {
   onArriveSaro?: () => void;
   onStationLoaded?: (site: FieldSite) => void;
   saroTruck: Truck | null = null;
-  /** Tests steer the truck through this instead of the keys (tools/chapter3.py). */
-  testInput: { steer: number; throttle: number } | null = null;
+  /** Tests steer the truck through this instead of the keys (tools/chapter3.py): fixed
+   *  input, or a function asked every step (an autopilot along road.route). */
+  testInput: { steer: number; throttle: number } | (() => { steer: number; throttle: number }) | null = null;
 
   private mods: Partial<Modules> = {};
   private road: RoadArea | null = null;
@@ -270,7 +271,7 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'road' && this.road && this.drive && this.truck) {
-      if (this.testInput) input = this.testInput;
+      if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
       if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
       this.road.update(dt, t, this.drive.pos);
       if (this.engine) { this.engine.set(this.drive.rpm, this.drive.load); this.engine.tyres(this.drive.surface.kind, Math.abs(this.drive.speed)); }

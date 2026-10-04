@@ -34,6 +34,25 @@ STAND = """((key, d, dy) => { const s = S47.world.site, p = S47.player, r = p.ra
     }
   }
   return null; })"""
+# An autopilot for the truck: aims at the next waypoint of road.route, slows down for bends,
+# on gravel and before the gate. Positive steer turns right; heading h faces (-sin h, -cos h).
+AUTOPILOT = """(() => { const w = S47.world, r = w.road, d = w.drive, route = r.route; let i = 0;
+  const ang = (a, b) => Math.atan2(-(b.x - a.x), -(b.z - a.z));
+  const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  w.testInput = () => {
+    const p = d.pos;
+    while (i < route.length - 1 && Math.hypot(route[i].x - p.x, route[i].z - p.z) < 10) i++;
+    const err = wrap(ang(p, route[i]) - d.heading);
+    const a = route[Math.min(route.length - 1, i)], b = route[Math.min(route.length - 1, i + 1)], c = route[Math.min(route.length - 1, i + 2)];
+    const bend = Math.abs(wrap(ang(b, c) - ang(a, b))) + Math.abs(err);
+    const end = route[route.length - 1], left = Math.hypot(end.x - p.x, end.z - p.z);
+    let want = d.surface.kind === 'asphalt' ? 15 : 9;
+    if (bend > 0.3) want = Math.min(want, 6);
+    if (left < 60) want = Math.min(want, 4);
+    const v = d.speed;
+    const throttle = v < want - 0.5 ? 1 : v > want + 1.5 ? -0.5 : 0.12;
+    return { steer: Math.max(-1, Math.min(1, -err * 2.4)), throttle };
+  }; })()"""
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -105,27 +124,40 @@ async def main():
         check(await ev("!S47.world.saroTruck.group.visible && !S47.yard.group.visible"), 'SARO is hidden while away')
         await tick(1.2)
         await shot('e03_cab')
-        x0 = await ev("[S47.world.drive.pos.x, S47.world.drive.pos.z]")
-        await ev("S47.world.testInput = { steer: 0, throttle: 1 }"); await tick(4)
-        await ev("S47.world.testInput = { steer: 0, throttle: 0 }")
-        x1 = await ev("[S47.world.drive.pos.x, S47.world.drive.pos.z]")
-        mph = await ev("S47.world.drive.mph")
-        check(math.hypot(x1[0] - x0[0], x1[1] - x0[1]) > 10 and mph > 10, f'the truck drives ({math.hypot(x1[0] - x0[0], x1[1] - x0[1]):.0f} m, {mph:.0f} mph)')
-        await shot('e04_highway')
         check(await ev("S47.game.saveBlock()") is not None, 'no saving while driving')
-        calls = await ev("S47.renderer.info.render.calls")
-        print(f'draw calls on the road: {calls}', flush=True)
-        # roll into the end zone at the gate (the drive itself is tested by the road preview)
-        await ev("""(() => { const r = S47.world.road, z = r.endZone, e = r.end;
-          const cx = (z.minX + z.maxX) / 2, cz = (z.minZ + z.maxZ) / 2;
-          const back = 14, h = e.heading;
-          S47.world.drive.place(S47.camera.position.clone().set(cx + Math.sin(h) * back, 0, cz + Math.cos(h) * back), h);
-          try { S47.world.drive.speed = 0; } catch (e) { /* a read-only speed is reset by place() */ } })()""")
-        await ev("S47.world.testInput = { steer: 0, throttle: 0.4 }")
-        for _ in range(60):
-            await tick(0.25)
+        # The whole way with an autopilot along road.route: steer at the next waypoint, slow
+        # for bends, the gravel and the gate. If it gets stuck, the truck is put down before
+        # the gate instead, so the rest of the chapter is still tested.
+        await ev(AUTOPILOT)
+        shots = {'e04_highway': False, 'e04b_track': False, 'e04c_gate': False}
+        best, still, t_drive = 1e9, 0, 0.0
+        for _ in range(400):
+            await tick(0.5); t_drive += 0.5
             if await ev("S47.world.area === 'station01'"): break
-            if await ev("S47.world.drive.mph > 9"): await ev("S47.world.testInput = { steer: 0, throttle: -0.3 }")
+            st = await ev("(() => { const d = S47.world.drive, r = S47.world.road, e = r.route[r.route.length - 1]; return { mph: d.mph, kind: d.surface.kind, left: Math.hypot(e.x - d.pos.x, e.z - d.pos.z), calls: S47.renderer.info.render.calls }; })()")
+            if not shots['e04_highway'] and st['mph'] > 25:
+                shots['e04_highway'] = True; await shot('e04_highway'); print(f"highway at {st['mph']:.0f} mph, {st['calls']} draw calls", flush=True)
+            if not shots['e04b_track'] and st['kind'] == 'gravel' and st['left'] < 520:
+                shots['e04b_track'] = True; await shot('e04b_track'); print(f"survey track, {st['calls']} draw calls", flush=True)
+            if not shots['e04c_gate'] and st['left'] < 45:
+                shots['e04c_gate'] = True; await shot('e04c_gate'); print(f"at the gate, {st['calls']} draw calls", flush=True)
+            if st['left'] < best - 1: best, still = st['left'], 0
+            else: still += 0.5
+            if still > 12: break
+        drove = await ev("S47.world.area === 'station01'")
+        check(drove, f'the autopilot drives the whole way to the gate ({t_drive:.0f} s of game time, {best:.0f} m left at worst)')
+        check(all(shots.values()), 'highway, survey track and gate were all passed')
+        if not drove:
+            # roll into the end zone at the gate
+            await ev("""(() => { const r = S47.world.road, z = r.endZone, e = r.end;
+              const cx = (z.minX + z.maxX) / 2, cz = (z.minZ + z.maxZ) / 2;
+              const back = 14, h = e.heading;
+              S47.world.drive.place(S47.camera.position.clone().set(cx + Math.sin(h) * back, 0, cz + Math.cos(h) * back), h); })()""")
+            await ev("S47.world.testInput = { steer: 0, throttle: 0.4 }")
+            for _ in range(60):
+                await tick(0.25)
+                if await ev("S47.world.area === 'station01'"): break
+                if await ev("S47.world.drive.mph > 9"): await ev("S47.world.testInput = { steer: 0, throttle: -0.3 }")
         await ev("S47.world.testInput = null")
         await tick(1.5)
         check(await ev("S47.world.area === 'station01' && !S47.world.driving"), 'arrived at STATION 01 and out of the truck')

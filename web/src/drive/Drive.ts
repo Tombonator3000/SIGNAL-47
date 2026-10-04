@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { FloodSet } from '../world/kit';
 import { WHEELBASE, type Truck } from './Truck';
 
 /*
@@ -18,8 +19,8 @@ import { WHEELBASE, type Truck } from './Truck';
     const road = new RoadArea(ROAD_ORIGIN);            // adds its own hemisphere light and moon
     const truck = new Truck();                         // or new Truck({ flood: roadStatic })
     const drive = new DriveController(camera, truck, road);
-    // the road area hands slots 0 to 2 of roadFlood to the truck in its constructor
-    // (truck.headlightFloods(roadFlood, [0, 1, 2]) happens on the first road.update)
+    // the controller hands road.headlights (roadFlood, slots 0 to 2) to the truck:
+    // truck.headlightFloods(roadFlood, [0, 1, 2]) needs no call of its own
     drive.place(road.start.pos, road.start.heading);
     truck.setHeadlights(true); truck.setLightLevel(1);
     drive.onArrive = () => ...;                        // once, in road.endZone below 6 m/s
@@ -57,6 +58,8 @@ export interface DriveArea {
   height?(x: number, z: number): number;
   obstacles: Obstacle[];
   endZone: Box2;
+  /** Flood slots for the headlight pools; the controller hands them to the truck. */
+  headlights?: { set: FloodSet; slots: number[] };
 }
 export type DriveInput = { steer: number; throttle: number };
 
@@ -99,7 +102,9 @@ export class DriveController {
   private yawRate = 0;
   private body = { y: 0, vy: 0, pitch: 0, vp: 0, roll: 0, vr: 0 };
 
-  constructor(public camera: THREE.PerspectiveCamera, public truck: Truck, public area: DriveArea) {}
+  constructor(public camera: THREE.PerspectiveCamera, public truck: Truck, public area: DriveArea) {
+    if (area.headlights) truck.headlightFloods(area.headlights.set, area.headlights.slots);
+  }
 
   /** Put the truck at a world position and heading, standing still, view straight ahead. */
   place(pos: THREE.Vector3, heading: number) {
