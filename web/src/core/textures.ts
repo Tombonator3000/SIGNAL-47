@@ -326,3 +326,136 @@ export function roadTex() {
     g.fillStyle = '#9a9a92'; g.fillRect(2, 0, 2, h); g.fillRect(w - 4, 0, 2, h);
   }, [1, 60]);
 }
+
+// ---------- Chapter one: service yard and photo lab ----------
+
+// Plain label: dark text on a light card, one line per entry. Size is in canvas pixels.
+export function labelCard(lines: string[], o: { w?: number; h?: number; bg?: string; fg?: string; font?: string; size?: number; border?: boolean; align?: CanvasTextAlign } = {}) {
+  const w = o.w ?? 256, h = o.h ?? 160;
+  return canvasTex(w, h, (g) => {
+    g.fillStyle = o.bg ?? '#e6dfca'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, Math.floor(w * h / 60), 0.08, lines.length + w);
+    if (o.border !== false) { g.strokeStyle = o.fg ?? '#25292c'; g.lineWidth = Math.max(2, w / 90); g.strokeRect(w * 0.03, h * 0.04, w * 0.94, h * 0.92); }
+    const size = o.size ?? Math.min(34, Math.floor((h * 0.8) / Math.max(1, lines.length) * 0.78));
+    g.fillStyle = o.fg ?? '#1f2326'; g.textAlign = o.align ?? 'center'; g.textBaseline = 'middle';
+    g.font = `500 ${size}px ${o.font ?? 'Oswald'}`;
+    const x = (o.align ?? 'center') === 'center' ? w / 2 : w * 0.1;
+    const top = h / 2 - ((lines.length - 1) * size * 1.2) / 2;
+    lines.forEach((l, i) => g.fillText(l, x, top + i * size * 1.2));
+  });
+}
+
+export function cameraCard() {
+  return labelCard(['FIELD CAMERA', 'C  /  VIEWFINDER', 'SPACE  /  SHUTTER'], { w: 256, h: 160, font: 'VT323', size: 30 });
+}
+
+// SARO enamel sign on the yard fence (reference image: service yard at S-03)
+export function yardSign() {
+  return canvasTex(512, 256, (g, w, h) => {
+    g.fillStyle = '#d9d4c4'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 4000, 0.14, 61);
+    g.strokeStyle = '#2b2f33'; g.lineWidth = 6; g.strokeRect(10, 10, w - 20, h - 20);
+    g.fillStyle = '#23272b'; g.font = '500 70px Oswald'; g.fillText('SARO', 36, 92);
+    dishIcon(g, 270, 62, 22, '#23272b');
+    g.font = '18px Oswald'; g.fillText('SOUTHWEST ASTRONOMICAL', 36, 122); g.fillText('RESEARCH OBSERVATORY', 36, 144);
+    g.fillRect(36, 158, w - 72, 3);
+    g.font = '500 44px Oswald'; g.fillText('SERVICE YARD', 36, 206);
+    g.font = '20px Oswald'; g.fillText('AUTHORIZED PERSONNEL ONLY', 36, 236);
+    // rust at the bolts
+    for (const [x, y] of [[22, 22], [w - 22, 22], [22, h - 22], [w - 22, h - 22]]) { g.fillStyle = 'rgba(120,60,20,.55)'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); }
+  });
+}
+
+// Grey steel cabinet door with stencil and a small inspection window
+export function cabinetFace(title: string, sub: string[], seed = 3) {
+  return canvasTex(256, 384, (g, w, h) => {
+    g.fillStyle = '#5b6463'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 5000, 0.18, seed);
+    const r = rng(seed + 7);
+    for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(110,60,25,${0.15 + r() * 0.3})`; g.fillRect(r() < 0.5 ? r() * 14 : w - r() * 14, r() * h, 2 + r() * 6, 2 + r() * 14); }
+    g.strokeStyle = 'rgba(20,24,26,.8)'; g.lineWidth = 3; g.strokeRect(10, 10, w - 20, h - 20);
+    g.fillStyle = '#e8e2cf'; g.font = '500 64px Oswald'; g.textAlign = 'center'; g.fillText(title, w / 2, 70);
+    // inspection window (a screen can sit behind it), py 92 to 176
+    g.fillStyle = '#1c2226'; g.fillRect(40, 92, w - 80, 84);
+    g.strokeStyle = 'rgba(200,196,180,.35)'; g.lineWidth = 2; g.strokeRect(36, 88, w - 72, 92);
+    g.fillStyle = '#e8e2cf'; g.font = '22px Oswald'; g.textAlign = 'right';
+    sub.forEach((l, i) => g.fillText(l, w - 28, 210 + i * 26));
+    // warning plate, bottom right
+    g.fillStyle = '#d1a91f'; g.fillRect(128, 292, 100, 40);
+    g.fillStyle = '#16120a'; g.textAlign = 'center'; g.font = '600 19px Oswald'; g.fillText('DANGER', 178, 310);
+    g.font = '15px Oswald'; g.fillText('480 VOLTS', 178, 327);
+  });
+}
+
+// Faded paint stencil on the concrete walk
+export function floorStencil(lines: string[], w = 512, h = 256) {
+  const t = canvasTex(w, h, (g) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = 'rgba(232,206,120,.82)'; g.strokeStyle = 'rgba(232,206,120,.82)'; g.lineWidth = 8;
+    g.strokeRect(14, 14, w - 28, h - 28);
+    g.font = `500 ${Math.floor(h / (lines.length + 1.2))}px Oswald`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    lines.forEach((l, i) => g.fillText(l, w / 2, h / 2 + (i - (lines.length - 1) / 2) * h / (lines.length + 0.8)));
+    // wear
+    const r = rng(lines[0].length * 13);
+    g.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(0,0,0,${r() * 0.8})`; g.fillRect(r() * w, r() * h, 1 + r() * 7, 1 + r() * 3); }
+  });
+  return t;
+}
+
+// B-12 reference vane: dark board, one ivory stripe, scale ticks (as in the Unity photographs)
+export function vaneFace() {
+  return canvasTex(128, 512, (g, w, h) => {
+    g.fillStyle = '#16191b'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#efe6cd'; g.fillRect(w * 0.22, h * 0.05, w * 0.3, h * 0.9);
+    g.fillStyle = '#c9c0a4';
+    for (let i = 0; i < 12; i++) g.fillRect(w * 0.66, h * 0.08 + i * h * 0.075, w * 0.18, 4);
+    g.strokeStyle = '#3a3f42'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  });
+}
+export function echoFace() {
+  return canvasTex(128, 512, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    const gr = g.createLinearGradient(w * 0.15, 0, w * 0.6, 0);
+    gr.addColorStop(0, 'rgba(240,236,214,0)'); gr.addColorStop(0.25, 'rgba(240,236,214,.75)'); gr.addColorStop(0.75, 'rgba(240,236,214,.75)'); gr.addColorStop(1, 'rgba(240,236,214,0)');
+    g.fillStyle = gr; g.fillRect(w * 0.15, h * 0.05, w * 0.45, h * 0.9);
+  });
+}
+// R-07: the other survey marker, three horizontal bars
+export function barsBoard() {
+  return canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#16191b'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#efe6cd'; for (let i = 0; i < 3; i++) g.fillRect(w * 0.12, h * (0.18 + i * 0.25), w * 0.76, h * 0.12);
+    g.fillStyle = '#c9c0a4'; g.font = '24px Oswald'; g.textAlign = 'center'; g.fillText('R-07', w / 2, h - 10);
+  });
+}
+
+// Field map on the photo lab wall: control room, yard walk, S-03 motor bus, B-12, the lab
+export function fieldMap() {
+  return canvasTex(512, 384, (g, w, h) => {
+    g.fillStyle = '#ddd4ba'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 5000, 0.1, 77);
+    g.fillStyle = '#2a2a26'; g.font = '500 30px Oswald'; g.fillText('SARO / FIELD MAP', 24, 40);
+    g.font = '15px Special Elite'; g.fillText('SERVICE YARD, EAST WALK', 24, 62);
+    g.strokeStyle = '#3c3a33'; g.lineWidth = 3;
+    // control room (west), walk going north (up), lab east of the walk
+    g.strokeRect(60, 250, 130, 100); g.fillText('CONTROL ROOM', 66, 300);
+    g.strokeRect(220, 90, 46, 270); g.fillText('EAST WALK', 274, 340);
+    g.strokeRect(300, 230, 130, 90); g.fillText('PHOTO LAB', 320, 280);
+    g.fillStyle = '#9b3b2c';
+    g.beginPath(); g.arc(258, 190, 7, 0, 7); g.fill(); g.fillText('S-03 / MOTOR BUS', 300, 195);
+    g.beginPath(); g.arc(240, 110, 7, 0, 7); g.fill(); g.fillText('B-12 / OPTICAL', 300, 112);
+    g.strokeStyle = '#9b3b2c'; g.setLineDash([6, 6]); g.beginPath(); g.moveTo(243, 200); g.lineTo(236, 30); g.stroke(); g.setLineDash([]);
+    g.fillText('TO S-03 (ANTENNA)', 140, 26);
+    g.fillStyle = '#2a2a26'; g.font = '22px Reenie Beanie'; g.fillText('fence', 120, 84);
+    g.strokeStyle = '#2a2a26'; g.beginPath(); g.moveTo(20, 80); g.lineTo(w - 20, 80); g.stroke();
+    g.font = '16px Oswald'; g.fillText('N', w - 40, 40); g.beginPath(); g.moveTo(w - 34, 48); g.lineTo(w - 34, 90); g.stroke();
+  });
+}
+
+// Motor bus display behind the inspection glass. Drawn by the chapter code.
+export function screenCanvas(w = 256, h = 160) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return { canvas: c, ctx: c.getContext('2d')!, tex: t };
+}

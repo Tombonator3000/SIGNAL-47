@@ -1,6 +1,8 @@
 # SIGNAL / 47 (web)
 
-Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift" fra start til tittelkort.
+Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift" og kapittel 1 "The Second Exposure": servicegården øst for kontrollrommet, motorskapet S-03, feltkameraet, fotolaben og B-12-kontrollen, fram til den lokale rapporten er arkivert.
+
+Forslag til hva som bør gjøres videre, og hva Tom må bestemme, står i `FORSLAG.md`.
 
 Unity-versjonen i rotmappen er arkiv. Design, historie og spillkonstanter er hentet derfra.
 
@@ -27,35 +29,50 @@ Pages legger spillet i undermappen `/SIGNAL-47/`. Det virker fordi `base: './'` 
 
 ## Kontroller
 
-PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for notatboka, Escape for pause.
-Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet.
-Settings har lydnivå, blikkfart og grafikk (High eller Low). Innstillinger og sjekkpunkt lagres i nettleseren.
+PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for notatboka, Escape for pause. Med feltkameraet: C hever og senker kameraet, mellomrom, E eller klikk tar bildet, Escape senker det.
+Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet. Camera-knappen dukker opp når kameraet er hentet. Mens kameraet er hevet, tar et trykk på skjermen eller på Use-knappen bildet.
+Settings har lydnivå, blikkfart og grafikk (High eller Low). Innstillinger, sjekkpunkt og saken i kapittel 1 (med fotografiene) lagres i nettleseren.
+
+`?debug` bak adressen viser fps, 95-persentil for bildetid, draw calls og trekanter oppe til venstre. Den er laget for å måle på ekte telefoner.
 
 ## Struktur
 
 ```
-src/main.ts            oppstart, løkke, menyer, testkroker (window.S47)
-src/core/              lyd, input, interaksjon, teksturer tegnet i kode, grafikknivå
-src/player/            førstepersonsspiller med kollisjon
-src/world/             kontrollrom, antenner, utendørs, himmel, byggeklosser (kit.ts)
-src/story/Prologue.ts  hele prologen som faser og tidsstyrte hendelser
-src/story/Signal.ts    mottakerlogikken, portert fra Unity
-src/ui/                HUD, dokumenter, notatbok, RX-konsoll
-src/assets/            lyd og fonter (se THIRD_PARTY_NOTICES.md)
-tools/                 headless-tester med Playwright
+src/main.ts                oppstart, løkke, menyer, testkroker (window.S47)
+src/core/                  lyd, input, interaksjon, teksturer tegnet i kode, grafikknivå
+src/core/FieldCamera.ts    søker, eksponering og filmkopi (960x600 med papirkant og håndskrevet tekst)
+src/core/debug.ts          målestripa bak ?debug
+src/player/                førstepersonsspiller med gangbare soner og kollisjon
+src/world/                 kontrollrom, antenner, utendørs, himmel, byggeklosser (kit.ts)
+src/world/ServiceYard.ts   servicegården, S-03, B-12 og fotolaben
+src/world/Dish.ts          de 27 antennene som instanser, med egen synlighetstest
+src/world/glow.ts          alle lampeglød og blinklys i ett tegnekall
+src/world/props.ts         lyktestolper, rekkverk, utklippstavle, feltkamera
+src/story/Prologue.ts      hele prologen som faser og tidsstyrte hendelser
+src/story/Chapter1.ts      kapittel 1 som trinn, med lagring av saken
+src/story/Signal.ts        mottakerlogikken, portert fra Unity
+src/ui/                    HUD, dokumenter, notatbok, RX-konsoll
+src/ui/Panels.ts           fotolabens paneler: våtbenk, kontaktkopi, referansefil, B-12, to eksponeringer, rapport
+src/assets/                lyd og fonter (se THIRD_PARTY_NOTICES.md)
+tools/                     headless-tester med Playwright
 ```
 
 ## Testing
 
 `tools/walkthrough.py` spiller hele prologen gjennom de ekte interaksjonene og konsollens glidebrytere, tar skjermbilder og skriver PASS eller FAIL per steg. Løkken holdes og spillet drives med `S47.tick()`, slik at testen går i en programvare-renderer.
 
+`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter og lyder kommer med.
+
 ```sh
 pip install playwright && playwright install chromium
 python3 tools/walkthrough.py shots 844x390 high
+python3 tools/chapter1.py shots/ch1 passive
+python3 tools/chapter1.py shots/ch1 active
+python3 tools/csptest.py
 python3 tools/looks.py shots 844x390 high
 ```
 
-Testene leser `dist-single/index.html` når ikke annet er oppgitt. Med `S47_URL` kan `walkthrough.py` teste et annet bygg, for eksempel Pages-bygget servert fra en undermappe:
+Testene leser `dist-single/index.html` når ikke annet er oppgitt. Med `S47_URL` kan `walkthrough.py` og `chapter1.py` teste et annet bygg, for eksempel Pages-bygget servert fra en undermappe:
 
 ```sh
 npm run build

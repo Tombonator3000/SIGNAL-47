@@ -37,6 +37,7 @@ export class Interaction {
   }
 
   update(camera: THREE.Camera) {
+    camera.updateMatrixWorld(); // the player moved the camera this step; aim with where it is now
     this.current = this.pick(camera);
     return this.current;
   }

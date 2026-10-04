@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import type { Collider } from '../world/ControlRoom';
 
+// A walkable rectangle. The player may stand anywhere inside the union of the enabled
+// zones, minus the colliders. Doorways are small zones that bridge two rooms and are
+// switched on when the door opens.
+export type Zone = Collider & { id?: string; enabled?: boolean };
+
 export class Player {
   pos = new THREE.Vector3();
   yaw = 0; pitch = 0;
@@ -12,7 +17,7 @@ export class Player {
   shake = 0;
   onStep?: () => void;
 
-  constructor(public camera: THREE.PerspectiveCamera, public colliders: Collider[], public bounds: { minX: number; maxX: number; minZ: number; maxZ: number }) {}
+  constructor(public camera: THREE.PerspectiveCamera, public colliders: Collider[], public zones: Zone[]) {}
 
   place(x: number, z: number, yaw: number) { this.pos.set(x, 0, z); this.yaw = yaw; this.pitch = -0.06; }
 
@@ -28,8 +33,8 @@ export class Player {
     const vx = (mx * c + mz * s) * sp * dt;
     const vz = (-mx * s + mz * c) * sp * dt;
     const before = this.pos.clone();
-    this.pos.x += vx; this.resolve('x');
-    this.pos.z += vz; this.resolve('z');
+    this.pos.x += vx; this.resolve('x', before.x);
+    this.pos.z += vz; this.resolve('z', before.z);
     const moved = Math.hypot(this.pos.x - before.x, this.pos.z - before.z);
     if (moved > 0.0005) {
       this.bob += moved * 7.2;
@@ -47,10 +52,30 @@ export class Player {
     this.camera.rotation.set(this.pitch + (Math.random() - 0.5) * sh * 0.02, this.yaw, Math.sin(this.bob * 0.5) * 0.004, 'YXZ');
   }
 
-  private resolve(axis: 'x' | 'z') {
-    const r = this.radius, p = this.pos, b = this.bounds;
-    p.x = THREE.MathUtils.clamp(p.x, b.minX + r, b.maxX - r);
-    p.z = THREE.MathUtils.clamp(p.z, b.minZ + r, b.maxZ - r);
+  private inside(b: Zone, x: number, z: number) {
+    const r = this.radius, e = 1e-6;
+    return x >= b.minX + r - e && x <= b.maxX - r + e && z >= b.minZ + r - e && z <= b.maxZ - r + e;
+  }
+  walkable(x: number, z: number) {
+    for (const b of this.zones) if (b.enabled !== false && this.inside(b, x, z)) return true;
+    return false;
+  }
+
+  private resolve(axis: 'x' | 'z', old: number) {
+    const r = this.radius, p = this.pos;
+    if (!this.walkable(p.x, p.z)) {
+      // Slide along the edge of whichever zone we were standing in.
+      const want = axis === 'x' ? p.x : p.z;
+      let best = old;
+      for (const b of this.zones) {
+        if (b.enabled === false) continue;
+        const ox = axis === 'x' ? old : p.x, oz = axis === 'z' ? old : p.z;
+        if (!this.inside(b, ox, oz)) continue;
+        const v = axis === 'x' ? THREE.MathUtils.clamp(want, b.minX + r, b.maxX - r) : THREE.MathUtils.clamp(want, b.minZ + r, b.maxZ - r);
+        if (Math.abs(v - want) < Math.abs(best - want)) best = v;
+      }
+      if (axis === 'x') p.x = best; else p.z = best;
+    }
     for (const c of this.colliders) {
       if (p.x + r <= c.minX || p.x - r >= c.maxX || p.z + r <= c.minZ || p.z - r >= c.maxZ) continue;
       if (axis === 'x') {

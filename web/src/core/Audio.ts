@@ -33,6 +33,30 @@ export class AudioSys {
   roomTone: GainNode | null = null;
   motor: { gain: GainNode; osc: OscillatorNode } | null = null;
 
+  private loading: Promise<void> | null = null;
+
+  // Decode every sound while the title screen is up, so Start does not wait on it.
+  // An OfflineAudioContext needs no user gesture and logs no autoplay warning. Its
+  // buffers play fine in the real context that unlock() creates later.
+  preload() {
+    if (this.loading) return this.loading;
+    const O = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
+    let dec: BaseAudioContext;
+    try { dec = new O(1, 1, 48000); } catch { return null; }
+    this.loading = this.decodeAll(dec);
+    return this.loading;
+  }
+
+  private async decodeAll(ctx: BaseAudioContext) {
+    await Promise.all(Object.entries(SOURCES).map(async ([k, url]) => {
+      if (this.buf[k]) return;
+      try {
+        const data = url.startsWith('data:') ? decodeDataUrl(url) : await (await fetch(url)).arrayBuffer();
+        this.buf[k] = await ctx.decodeAudioData(data);
+      } catch (err) { console.warn('audio load failed', k, err); }
+    }));
+  }
+
   async unlock() {
     if (this.ctx) { if (this.ctx.state !== 'running') await this.ctx.resume(); return; }
     const C = window.AudioContext || (window as any).webkitAudioContext;
@@ -45,12 +69,8 @@ export class AudioSys {
     this.noise = this.makeNoise(false); this.brown = this.makeNoise(true);
     // A silent blip satisfies iOS's "sound must start inside the gesture" rule.
     const b = ctx.createBufferSource(); b.buffer = ctx.createBuffer(1, 1, 22050); b.connect(ctx.destination); b.start();
-    await Promise.all(Object.entries(SOURCES).map(async ([k, url]) => {
-      try {
-        const data = url.startsWith('data:') ? decodeDataUrl(url) : await (await fetch(url)).arrayBuffer();
-        this.buf[k] = await ctx.decodeAudioData(data);
-      } catch (err) { console.warn('audio load failed', k, err); }
-    }));
+    if (this.loading) await this.loading;
+    await this.decodeAll(ctx); // anything the preload missed
     this.ready = true;
   }
 
@@ -242,11 +262,77 @@ export class AudioSys {
     this.motor = null;
   }
 
+  // Positional electrical hum (a transformer cabinet, a lamp ballast): mains and two harmonics.
+  private hums = new Map<string, GainNode>();
+  hum(key: string, at: THREE.Vector3, gain = 0.05, base = 60) {
+    const ctx = this.ctx; if (!ctx || this.hums.has(key)) return;
+    const out = ctx.createGain(); out.gain.value = 0;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    out.connect(lp); lp.connect(this.panner(at, 1.0));
+    for (const [mul, g, type] of [[1, 1, 'sine'], [2, 0.5, 'sine'], [3, 0.12, 'square']] as const) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = base * mul;
+      const og = ctx.createGain(); og.gain.value = g; o.connect(og); og.connect(out); o.start();
+    }
+    out.gain.setTargetAtTime(gain, ctx.currentTime, 1.0);
+    this.hums.set(key, out);
+  }
+  stopHums() {
+    if (!this.ctx) return;
+    for (const g of this.hums.values()) g.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
+    this.hums.clear();
+  }
+
+  // Where the listener is. Out in the yard the wind takes over from the room tone;
+  // the photo lab is small and closed, with its own ventilation hum.
+  setSpace(space: 'room' | 'yard' | 'lab') {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const [tone, wind] = space === 'room' ? [0.5, 0.14] : space === 'lab' ? [0.3, 0.05] : [0.1, 0.34];
+    this.roomTone?.gain.setTargetAtTime(tone, t, 0.7);
+    this.loops.get('wind')?.gain.gain.setTargetAtTime(wind, t, 0.7);
+  }
+
   duckAll(seconds: number) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
     this.sfx.gain.setTargetAtTime(0, t, 0.3); this.amb.gain.setTargetAtTime(0, t, 0.6);
     setTimeout(() => { if (!this.ctx) return; const t2 = this.ctx.currentTime; this.sfx.gain.setTargetAtTime(1, t2, 0.2); this.amb.gain.setTargetAtTime(1, t2, 0.5); }, seconds * 1000);
+  }
+
+  // Rangefinder shutter: two dry clicks, then the film advance lever.
+  shutter() {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const click = (when: number, f: number, g: number) => {
+      const n = this.noiseSrc(false, false); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 2.5;
+      const gn = ctx.createGain(); gn.gain.setValueAtTime(0, t + when); gn.gain.linearRampToValueAtTime(g, t + when + 0.002); gn.gain.exponentialRampToValueAtTime(0.001, t + when + 0.04);
+      n.connect(bp); bp.connect(gn); gn.connect(this.sfx); n.start(t + when); n.stop(t + when + 0.06);
+    };
+    click(0, 3400, 0.8); click(0.05, 2200, 0.55);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(150, t + 0.16); o.frequency.linearRampToValueAtTime(95, t + 0.42);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t + 0.16); g.gain.linearRampToValueAtTime(0.07, t + 0.19); g.gain.linearRampToValueAtTime(0, t + 0.44);
+    o.connect(lp); lp.connect(g); g.connect(this.sfx); o.start(t + 0.16); o.stop(t + 0.46);
+  }
+
+  // A small geared motor running for `secs` (the B-12 reference drive).
+  servo(secs: number, at?: THREE.Vector3) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(210, t); o.frequency.linearRampToValueAtTime(260, t + secs * 0.5); o.frequency.linearRampToValueAtTime(190, t + secs);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.18, t + 0.08); g.gain.setValueAtTime(0.18, t + secs - 0.1); g.gain.linearRampToValueAtTime(0, t + secs);
+    o.connect(lp); lp.connect(g); g.connect(at ? this.panner(at, 1.5) : this.sfx); o.start(t); o.stop(t + secs + 0.05);
+    this.play('switch', { gain: 0.5, when: secs, at });
+  }
+
+  // Clicks in the 4 / 7 grouping of the signal.
+  signature(gain = 0.5) {
+    if (!this.ctx) return;
+    const times: number[] = [];
+    for (let i = 0; i < 4; i++) times.push(i * 0.22);
+    for (let i = 0; i < 7; i++) times.push(1.4 + i * 0.22);
+    times.forEach((w) => this.play('click', { gain, when: w, rate: 0.9 }));
   }
 
   suspend(on: boolean) { if (!this.ctx) return; if (on) this.ctx.suspend(); else this.ctx.resume(); }

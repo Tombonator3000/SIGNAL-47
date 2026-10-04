@@ -4,6 +4,8 @@
 
 Fra 3. oktober 2026 bygges spillet videre i three.js i [`web/`](../web/README.md) i samme repo. Unity-prosjektet blir liggende som arkiv og referanse. Prologen «Night Shift» ble laget i en Claude-chat og lagt inn i repoet av Claude Code samme kveld, gjennom [PR24](https://github.com/Tombonator3000/SIGNAL-47/pull/24). Kilden bygger til en fil som er byte-identisk med den publiserte claude.ai-artefakten Tom tester på mobil. Headless gjennomspilling ved 844×390 består, mens fps på ekte telefon og PC, ekte berøringsinput og lydmiks er UNVERIFIED. GitHub viser faktisk flettestatus. Spillet publiseres på GitHub Pages fra main, https://tombonator3000.github.io/SIGNAL-47/, med `.github/workflows/pages.yml`.
 
+Samme kveld kom kapittel 1 «The Second Exposure» inn i nettversjonen, portert fra Unity-kapitlet (S-03-loggen, feltkameraet, fotolaben, B-12 med passiv eller aktiv metode og lokal rapport). Det testes headless med `web/tools/chapter1.py`. Hva Tom må bestemme og hva som bør gjøres videre, står i [`web/FORSLAG.md`](../web/FORSLAG.md).
+
 Arbeid under `web/` følger [`web/AGENTS.md`](../web/AGENTS.md). Gjeldende beslutninger, kanon og neste steg står i [`web/memory.md`](../web/memory.md), [`web/todo.md`](../web/todo.md) og [`web/log.md`](../web/log.md). Seksjonene under gjelder Unity-sporet.
 
 ## Environment27 — STATION 01 som sammenhengende sted
