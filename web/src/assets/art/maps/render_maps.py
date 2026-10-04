@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Lag redigerbare SVG-nærkart og PNG-forhåndsvisninger uten eksterne bilder.
+"""Oppdater SARO som redigerbar SVG og PNG uten eksterne bilder.
 
 Kjør fra vilkårlig mappe: python3 render_maps.py
+STATION 01 og motell er historiske forslag og regenereres ikke.
 PNG krever Node med sharp. Sett MAP_NODE og MAP_SHARP ved behov.
 SVG-filene består av navngitte grupper, former og redigerbar tekst.
 """
@@ -11,6 +12,7 @@ import hashlib
 import json
 import os
 import subprocess
+import xml.etree.ElementTree as ET
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[4]
@@ -82,6 +84,7 @@ class Map:
             elif kind=='sight': self.line(x,y-5,x+40,y-5,C['muted'] if self.key=='station01' else C['amber'],3,'6 6')
             elif kind=='cable': self.line(x,y-5,x+40,y-5,C['ink'],3)
             elif kind=='photo': self.rect(x,y-18,32,26,'none',C['amber'],2,dash='6 4')
+            elif kind=='door': self.circle(x+16,y-6,8,C['paper'],C['ink'],3)
             elif kind=='plan': self.rect(x,y-18,32,26,C['plan'],C['amber'],2,dash='6 4')
             elif kind=='bg': self.background(x,y-18,32,26)
             else: self.rect(x,y-18,32,26,C['built'],C['ink'],2)
@@ -94,77 +97,97 @@ class Map:
 
 
 def saro():
-    m=Map('saro','SARO / KONTROLLROM OG SERVICEGÅRD','Dagens three.js-oppsett. Nord er opp; østdøra leder til feltet og fotolaben.','EKSISTERENDE KJERNE + PLANLAGT ARKIV')
-    X=lambda x:500+25*x
-    Y=lambda z:1000+25*z
+    m=Map('saro','SARO / FELT, LAB OG ARKIV','Kildeavledet fra main 3264fab. Nord er opp; sørdøra knytter arkivet til kontrollrommet.','THREE.JS / KAPITTEL 1 + 2')
+    X=lambda x:500+20*x
+    Y=lambda z:850+20*z
     m.group('orientation-and-background')
     m.arrow(150,280,note='-Z i spillet')
-    # S-03 is farther north; a deliberate drawing break avoids implying walkability.
+    # The distant dish is displaced only after the explicit drawing break.
     m.circle(X(9.5),320,41,C['bg'],C['muted'],3)
     m.path(f'M{X(9.5)-34} 305Q{X(9.5)} 353 {X(9.5)+34} 305',C['muted'],3)
     m.line(X(9.5),320,X(9.5)+20,292,C['muted'],3)
-    m.text(815,307,'S-03 / ANTENNE',24,weight=700)
-    m.text(815,343,['Bakgrunn, ikke gangbar.','Lenger nord enn utsnittet.'],18,color=C['muted'])
+    m.text(780,307,'S-03 / ANTENNE',24,weight=700)
+    m.text(780,343,['Bakgrunn, ikke gangbar.','Lenger nord enn utsnittet.'],18,color=C['muted'])
     m.text(280,273,['27 antenner i scenen.','Kun S-03 er vist her.'],19,color=C['muted'])
-    m.line(X(9.9),538,X(9.5),363,C['amber'],3,'6 7')
-    m.path('M702 415L719 407L736 415L753 407L770 415',C['muted'],2)
-    m.text(674,453,'UTSNITTSBRUDD',15,color=C['muted'],anchor='end')
-    m.line(284,500,1057,500,C['line'],4,'3 8')
-    m.text(292,485,'GJERDE / FELTGRENSE',17,color=C['muted'])
+    m.line(X(9.9),Y(-18.35),X(9.5),363,C['amber'],3,'6 7')
+    m.path('M654 408L671 400L688 408L705 400L722 408',C['muted'],2)
+    m.text(646,418,'UTSNITTSBRUDD',15,color=C['muted'],anchor='end')
+    m.line(284,445,1057,445,C['line'],4,'3 8')
+    m.text(292,434,'GJERDE / FELTGRENSE',17,color=C['muted'])
     m.end()
     m.group('existing-physical-footprints')
-    # Physical slabs differ from broad photograph acceptance region below.
     for x0,x1,z0,z1 in [(6.3,11,-.6,3.4),(8,11,-19.6,-.6),(11,12.6,-13.4,-8.6),(11,12.6,-1.9,-.6)]:
-        m.rect(X(x0),Y(z0),(x1-x0)*25,(z1-z0)*25,C['built'],C['ink'],2)
-    m.rect(X(-6.3),Y(-4.8),12.6*25,9.6*25,C['built'],C['ink'],4)
-    m.rect(X(12.6),Y(-6),6.6*25,7*25,C['built'],C['ink'],4)
-    m.rect(X(-5.6),Y(-4.52),10.9*25,7,'#91b3b4','none')
-    # Door gaps: east control-room wall and west lab wall.
+        m.rect(X(x0),Y(z0),(x1-x0)*20,(z1-z0)*20,C['built'],C['ink'],2)
+    m.rect(X(-6.3),Y(-4.8),12.6*20,9.6*20,C['built'],C['ink'],4)
+    m.rect(X(12.6),Y(-6),6.6*20,7*20,C['built'],C['ink'],4)
+    m.rect(X(-5.6),Y(-4.52),10.9*20,6,'#91b3b4','none')
     m.line(X(6.3),Y(1.12),X(6.3),Y(2.08),C['built'],8)
     m.line(X(12.6),Y(-1.7),X(12.6),Y(-.7),C['built'],8)
-    m.text(494,947,'KONTROLLROM',25,anchor='middle',weight=700)
-    m.text(494,981,['Mottaker, telefon','og skriver'],19,anchor='middle')
-    m.text(898,895,'FOTOLAB',22,anchor='middle',weight=700)
-    m.text(898,929,['Framkalling','og rapport'],18,anchor='middle')
-    m.text(644,1071,'Østdør',17,anchor='end')
-    m.text(865,1056,'Dør på vestsiden',17,anchor='middle',color=C['muted'])
-    m.line(833,1041,X(12.6),Y(-1.2),C['muted'],1.5)
+    m.text(500,805,'KONTROLLROM',23,anchor='middle',weight=700)
+    m.text(500,837,['Mottaker, telefon','og skriver'],18,anchor='middle')
+    m.text(818,758,'FOTOLAB',21,anchor='middle',weight=700)
+    m.text(818,785,['Foto','og rapport'],17,anchor='middle')
+    m.text(672,934,'Østdør',18,anchor='middle')
+    m.text(892,914,'Vestdør til fotolab',18,anchor='middle',color=C['muted'])
+    m.line(795,894,X(12.6),Y(-1.2),C['muted'],1.5)
+    m.end()
+    m.group('built-south-annex')
+    # Floors and wall centerlines are from Annex.ts. The closed east part is
+    # shaded separately; no extra walkable rectangle or exit is invented.
+    m.rect(X(-6),Y(4.8),8*20,1.8*20,C['built'],C['ink'],2)
+    m.rect(X(-6),Y(6.8),5*20,3.7*20,C['built'],C['ink'],2)
+    m.background(X(-1),Y(6.8),3*20,3.7*20)
+    m.rect(X(-6.3),Y(4.8),8.6*20,6*20,'none',C['ink'],4)
+    m.line(X(-6),Y(6.7),X(2),Y(6.7),C['ink'],3)
+    m.line(X(-.9),Y(6.8),X(-.9),Y(10.5),C['ink'],3)
+    # Actual openings: control-room south wall and records partition.
+    m.line(X(-2.9),Y(4.8),X(-1.9),Y(4.8),C['built'],9)
+    m.line(X(-4.4),Y(6.7),X(-3.4),Y(6.7),C['built'],9)
+    m.text(304,917,'Sørdør',20,anchor='end')
+    m.line(318,921,X(-2.9),Y(4.65),C['muted'],1.5)
+    m.text(290,975,'SØRKORRIDOR',20,anchor='end',weight=700)
+    m.line(304,969,X(-6),Y(5.7),C['muted'],1.5)
+    m.text(300,1060,'ARKIV',23,anchor='end',weight=700)
+    m.line(315,1052,X(-6),Y(9.9),C['muted'],1.5)
+    m.text(625,1025,['LUKKET DEL','Ingen romtilgang'],19,color=C['muted'])
+    m.line(607,1019,X(.9),Y(8.5),C['muted'],1.5)
     m.end()
     m.group('existing-route-and-field-points')
-    m.path(f'M{X(3.5)} {Y(1.6)}H{X(9.4)}V{Y(-18.0)}',C['ink'],7)
+    m.path(f'M{X(0)} {Y(1.6)}H{X(9.4)}V{Y(-18.0)}',C['ink'],7)
     m.path(f'M{X(9.4)} {Y(-1.2)}H{X(13.5)}',C['ink'],7)
-    m.circle(X(6.15),Y(1.6),8,C['paper'],C['ink'],3)
-    m.circle(X(12.6),Y(-1.2),8,C['paper'],C['ink'],3)
-    m.rect(X(8),Y(-15.2),4.6*25,6.6*25,'none',C['amber'],3,dash='8 5')
+    m.path(f'M{X(0)} {Y(1.6)}H{X(-2.4)}V{Y(5.7)}H{X(-3.9)}V{Y(7.9)}',C['ink'],7)
+    for x,z in [(6.15,1.6),(12.6,-1.2),(-2.4,4.65),(-3.9,6.7)]:
+        m.circle(X(x),Y(z),7,C['paper'],C['ink'],3)
+    m.rect(X(8),Y(-15.2),4.6*20,6.6*20,'none',C['amber'],3,dash='8 5')
     m.number(X(9.9),Y(-18.35),3)
-    m.text(828,544,'B-12 / REFERANSE',23,weight=700)
-    m.text(828,580,'Nord for motorskapet',18,color=C['muted'])
-    m.rect(X(8.35)-8,Y(-16.9)-8,16,16,C['ink'],C['ink'])
-    m.line(X(8.35)-13,Y(-16.9),575,Y(-16.9),C['muted'],1.5)
-    m.text(560,Y(-16.9)+7,'B-12-kontroll',19,anchor='end')
+    m.text(810,491,'B-12 / REFERANSE',23,weight=700)
+    m.text(810,526,'Nord for motorskapet',18,color=C['muted'])
+    m.line(X(9.9)+25,Y(-18.35),788,Y(-18.35),C['ink'],2)
+    m.rect(X(8.35)-7,Y(-16.9)-7,14,14,C['ink'],C['ink'])
+    m.line(X(8.35)-13,Y(-16.9),555,Y(-16.9),C['muted'],1.5)
+    m.text(539,Y(-16.9)+7,'B-12-kontroll',19,anchor='end')
     m.number(X(12.3),Y(-11),2)
-    m.line(X(12.3)+24,Y(-11),859,Y(-11),C['ink'],2)
-    m.text(875,711,['S-03','MOTORSKAP'],23,weight=700)
-    m.text(674,700,['FOTOFLATE','S-03'],22,anchor='end',weight=700,color=C['amber'])
-    m.line(600,746,X(8)-10,746,C['amber'],2)
-    m.text(677,787,'Gangvei',20,anchor='end')
-    m.number(X(2.6),Y(2.55),1)
-    m.number(947,987,4)
+    m.line(X(12.3)+24,Y(-11),790,Y(-11),C['ink'],2)
+    m.text(810,615,['S-03','MOTORSKAP'],23,weight=700)
+    m.text(625,596,['FOTOFLATE','S-03'],22,anchor='end',weight=700,color=C['amber'])
+    m.line(571,651,X(8)-10,651,C['amber'],2)
+    m.text(625,709,'Gangvei',20,anchor='end')
+    m.number(X(3.3),Y(3.2),1)
+    m.number(857,847,4)
+    m.number(513,Y(5.7),5)
+    m.number(431,Y(9.45),6)
     m.end()
     m.group('reading-notes')
-    m.text(1185,256,'EN SAMMENHENGENDE RUTE',21,weight=700,spacing=1)
+    m.text(1185,256,'FELTARBEID OG ARKIV I SAMME ANLEGG',21,weight=700)
     m.note(313,1,'Kontrollrommet',['Start ved pulten. Feltkameraet','hentes ved østdøra.'])
     m.note(443,2,'Servicegård og S-03',['Gangvei og oppstillingsflate','leder til skapet, ikke antennen.'])
     m.note(573,3,'B-12 lenger nord',['Referansen står ved gjerdet.','Siktlinjen fortsetter mot S-03.'])
     m.note(703,4,'Fotolab øst for gangveien',['Vestdør gir en kort avstikker.','Foto og rapport behandles her.'])
-    m.rect(1185,819,551,276,C['paper'],C['amber'],2,dash='10 7')
-    m.text(1210,856,'ARKIV / SEPARAT PLANINNSETT',23,weight=700,color=C['amber'])
-    m.rect(1210,890,128,112,C['plan'],C['amber'],2,dash='8 6')
-    m.text(1274,949,'ARKIV',20,anchor='middle',weight=700,color=C['amber'])
-    m.text(1360,916,['Ett framtidig rom.','Plassering og inngang','er ikke fastlagt.'],20,color=C['muted'])
-    m.text(1210,1057,'Ingen ny dør eller fysisk forbindelse er tegnet.',19,color=C['muted'])
+    m.note(833,5,'Sørkorridor i kapittel 2',['Gjennom sørdøra i kontrollrommet.','Drift, WC og nødutgang er stengt.'])
+    m.note(963,6,'Arkivet',['Arkivdøra ligger vest i korridoren.','Bord, mapper og telefon er i bruk.'])
+    m.text(1185,1091,'Spillfasen styrer når sørdøra åpnes.',20,color=C['muted'])
     m.end()
-    m.legend([(80,'Eksisterende flate','built'),(396,'Bakgrunn','bg'),(652,'Fotoflate','photo'),(902,'Arkivforslag','plan'),(1184,'Ganglinje','route'),(1480,'Siktlinje','sight')])
+    m.legend([(80,'Eksisterende flate','built'),(396,'Bakgrunn','bg'),(652,'Fotoflate','photo'),(902,'Døråpning','door'),(1184,'Ganglinje','route'),(1480,'Siktlinje','sight')])
     return m.save()
 
 
@@ -291,48 +314,60 @@ def digest(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def main():
-    outputs=[saro(),station(),motel()]
-    sources=['web/src/world/ControlRoom.ts','web/src/world/ServiceYard.ts','web/src/world/Exterior.ts','web/AGENTS.md','web/ART_BRIEF.md','web/memory.md','web/todo.md','Docs/DesignBible13/design-bible.md','Docs/WorldCase22/WORLD_DESIGN.md','Docs/CURRENT_HANDOFF.md']
-    manifest={
-      'schema':1,'created_utc':'2026-10-04','language':'nb','authoring':'Originale redigerbare SVG-former og tekst laget med render_maps.py. Ingen genererte eller eksterne rasterbilder inngår.',
-      'purpose':'Konseptleveranse og produksjonsoversikt, ikke kart som vises til spilleren.',
-      'canvas':[W,H],'palette':C,'font':'DejaVu Sans med Arial/sans-serif som reserve. SVG beholder redigerbar tekst.',
-      'status_legend':{'navy':'Eksisterende three.js-kjerne på SARO','amber_fill':'Planforslag til three.js','amber_dashed_unfilled':'Eksisterende fotoavgrensning på SARO eller separat arkivinnsett, se lokal tekst','gray_hatched':'Bakgrunn uten rom- eller gangtilgang'},
-      'sources':[{'path':p,'sha256':digest(ROOT/p)} for p in sources],
-      'saro':{
-        'status':'Forankret i gjeldende three.js-kilde. Ikke oppmåling eller kjørbar navigasjon.',
-        'north':'negative world Z','control_room_center_xz':[0,0],
-        'east_door_xz':[6.15,1.6],'walkway_bounds_xz':[8,11,-19.6,0.5],
-        'photo_apron_bounds_xz':[8,12.6,-15.2,-8.6],
-        'physical_s03_side_slab_bounds_xz':[11,12.6,-13.4,-8.6],
-        'walkable_apron_bounds_xz':[10.2,12.6,-13.4,-8.6],
-        'photo_lab_bounds_xz':[12.6,19.2,-6,1],'photo_lab_west_door_xz':[12.6,-1.2],
-        'b12_vane_xz':[9.9,-18.35],'b12_control_xz':[8.35,-16.9],
-        's03_cabinet_xz':[12.3,-11],'s03_antenna_xz':[9.5,-42],
-        'main_projection':'SVG X = 500 + 25 * world x; SVG Y = 1000 + 25 * world z. Antennen er flyttet til øvre bakgrunnsfelt med tydelig utsnittsbrudd.',
-        'archive':'Separat stiplet planinnsett uten fast plassering, dør eller fysisk kobling.',
-        'exceptions':['WorldCase22s gamle Unity-retning B-12 sør for S-03 overstyres av web/src/world/ServiceYard.ts, der B-12 står nord for motorskapet.','Fotoakseptflaten er bredere enn sideplattingen og er derfor tegnet som egen stiplet avgrensning, ikke som ekstra gulv.','Kartet viser forbindelser når dørene er åpne. Tilgang avhenger fortsatt av spillets fase og låsestatus.','Ganglinjer er skjematiske og viser ikke alle kollidere, stolbein eller bevegelsesmarg.']},
-      'station01':{'status':'Romlig planforslag til three.js. Unity-felt finnes fra før; kartet er ikke oppmåling av det.','interiors':1,'features':['Feltbygning','Transitflate','Tre fastmerker','Kabel og kabelbrudd','Kort gangsløyfe','Ankomst og retur'],'caveats':['Geometri, merking og sikteretninger fryses i senere blokkering.','Plasseringen av fastmerker viser ikke oppgavens fasit.','Historiske og nye foto må lages fra samme endelige oppstilling.']},
-      'motel':{'status':'Romlig planforslag til three.js. Eksisterende motellkulisse er ikke en ferdig spillbar scene.','accessible_interiors':['Kontor','Noras rom'],'background':['Andre rom','Basseng','Ytre vei og terreng'],'unresolved':'Romnummer 6 kontra 47 er ikke bestemt. Kartet bruker NORAS ROM uten nummer.'},
-      'global_caveats':['Ikke målestokk. Ingen geografiske kilometer, jordkoordinater eller ny motorasimut.','Ikke spillbilder eller bevis på implementerte framtidige scener.','SARO viser bare nærutsnitt og én bakgrunnsantenne; spillet beholder 27 antenner.','Tidsløs produksjonsgrafikk med norske etiketter; tekst inne i spillet forblir engelsk.'],
-      'outputs':[],
-    }
+    # The two proposal maps are retained as historical snapshots. Regenerating
+    # SARO must not alter either their bytes or their manifest/source records.
+    manifest_path=HERE/'map-spec.json'
+    manifest=json.loads(manifest_path.read_text())
+    preserved={name:digest(HERE/name) for name in ['station01-plan.svg','station01-plan.png','motel-plan.svg','motel-plan.png']}
+    snapshot='3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc'
+    paths=['web/src/world/Annex.ts','web/src/world/ControlRoom.ts','web/src/world/ServiceYard.ts','web/src/world/Exterior.ts','web/src/story/Chapter2.ts']
+    sources=[]
+    for path in paths:
+        data=subprocess.check_output(['git','show',snapshot+':'+path],cwd=ROOT)
+        sources.append({'path':path,'sha256':hashlib.sha256(data).hexdigest()})
+    path=saro()
+    svg=ET.parse(path).getroot()
+    assert (int(svg.attrib['width']),int(svg.attrib['height']))==(W,H)
+    png=path.with_suffix('.png')
     runtime=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies'
     node=os.environ.get('MAP_NODE',str(runtime/'node/bin/node'))
     sharp=os.environ.get('MAP_SHARP',str(runtime/'node/node_modules/sharp'))
-    for path in outputs:
-        png=path.with_suffix('.png')
-        code='const sharp=require(process.argv[1]);sharp(process.argv[2]).png().toFile(process.argv[3]).catch(e=>{console.error(e);process.exit(1)});'
-        rendered=False
-        try:
-            subprocess.run([node,'-e',code,sharp,str(path),str(png)],check=True,capture_output=True,text=True)
-            rendered=True
-        except (OSError,subprocess.CalledProcessError) as exc: print('PNG kunne ikke rendres:',path.name,str(exc))
-        entry={'svg':path.name,'svg_sha256':digest(path),'svg_bytes':path.stat().st_size,'png_rendered':rendered}
-        if rendered: entry.update(png=png.name,png_sha256=digest(png),png_bytes=png.stat().st_size)
-        manifest['outputs'].append(entry)
-        print(path.name,'PNG',rendered)
-    (HERE/'map-spec.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+    code='const sharp=require(process.argv[1]);sharp(process.argv[2]).png().toFile(process.argv[3]).catch(e=>{console.error(e);process.exit(1)});'
+    subprocess.run([node,'-e',code,sharp,str(path),str(png)],check=True,capture_output=True,text=True)
+    manifest['schema']=2
+    manifest['sourceSnapshotAppliesTo']=['station01','motel']
+    manifest['snapshotNote']='Rotens kildehash og snapshot 6f2bea0 bevarer grunnlaget for de historiske planforslagene STATION 01 og motell. SARO har eget nyere snapshot og kildehash under saro. Motellkartets uavklarte romnummer er historikk; gjeldende romnummer er 6.'
+    manifest['status_legend']['amber_dashed_unfilled']='Eksisterende fotoavgrensning på SARO. Planmarkeringer i de historiske forslagene leses etter lokal tekst.'
+    manifest['saro'].update({
+        'status':'Kodeavledet fra main 3264fab, inkludert bygget sørkorridor og arkiv i kapittel 2. Ikke oppmåling eller kjørbar navigasjon.',
+        'updated_utc':'2026-10-04','sourceSnapshotCommit':snapshot,'sources':sources,
+        'main_projection':'SVG X = 500 + 20 * world x; SVG Y = 850 + 20 * world z. Antennen er flyttet til øvre bakgrunnsfelt med tydelig utsnittsbrudd.',
+        'south_door_xz':[-2.4,4.65],
+        'south_door_wall_opening_x':[-2.9,-1.9],
+        'archive':{
+            'status':'Bygget Three.js-område, ikke separat planinnsett.',
+            'outer_shell_bounds_xz':[-6.3,2.3,4.8,10.8],
+            'corridor_floor_bounds_xz':[-6,2,4.8,6.6],
+            'records_floor_bounds_xz':[-6,-1,6.8,10.5],
+            'records_door_center_xz':[-3.9,6.7],
+            'records_door_wall_opening_x':[-4.4,-3.4],
+            'walkable_zones_bounds_xz':{
+                'southDoor':[-2.88,-1.92,3.6,5.8],
+                'corridor':[-5.75,1.75,5.05,6.35],
+                'recordsDoor':[-4.38,-3.42,5.6,7.7],
+                'records':[-5.75,-1.25,7.05,10.25]},
+            'route_world_xz':[[0,1.6],[-2.4,1.6],[-2.4,5.7],[-3.9,5.7],[-3.9,7.9]],
+            'route_note':'Skjematisk ganglinje går gjennom begge faktiske åpninger og stopper før arkivbordet. Ikke en full kollisjonstest.',
+            'closed_doors':['Driftskontor','WC','Nødutgang'],
+            'closed_region':'Den østlige delen bak arkivskilleveggen er skravert. Ingen spillbar romdeling eller ny inngang er funnet på.'},
+        'validation':{'svg':'XML kontrollert','dimensions':[W,H],'render':'PNG skal visuelt kontrolleres etter hver endring','preserved_other_outputs':preserved}
+    })
+    entry={'svg':path.name,'svg_sha256':digest(path),'svg_bytes':path.stat().st_size,'png_rendered':True,'png':png.name,'png_sha256':digest(png),'png_bytes':png.stat().st_size}
+    manifest['outputs']=[entry if item['svg']=='saro-plan.svg' else item for item in manifest['outputs']]
+    for name,expected in preserved.items():
+        if digest(HERE/name)!=expected: raise RuntimeError('Historisk kart er endret: '+name)
+    manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+    print('SARO rendret. STATION 01 og motell bevart byte-for-byte.')
 
 
 if __name__=='__main__': main()

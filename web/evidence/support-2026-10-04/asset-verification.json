@@ -1,0 +1,1583 @@
+{
+  "schema_version": 1,
+  "phase": "final",
+  "project": "SIGNAL / 47",
+  "created_utc": "2026-10-04T11:10:31.215287+00:00",
+  "scope": "Teknisk fil- og kildekontroll av seks nye assets, fire manifester, kart og lokale gallerilenker. Ingen runtime- eller spilltest.",
+  "checks": [
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg sha256",
+      "status": "PASS",
+      "actual": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+      "expected": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d"
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg bytes",
+      "status": "PASS",
+      "actual": 111439,
+      "expected": 111439
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        1024,
+        1024
+      ],
+      "expected": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg format",
+      "status": "PASS",
+      "actual": "JPEG",
+      "expected": "JPEG"
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/annex/tex_floor_vinyl.jpg JPEG q85 quantization sha256",
+      "status": "PASS",
+      "actual": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b",
+      "expected": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-82e07214-ef7e-47ed-bc82-801b5531eb1a.png sha256",
+      "status": "PASS",
+      "actual": "10468d70f07fc1a49770c7d63d17e39f2b06cb38ba441ed340798733f8b46dd7",
+      "expected": "10468d70f07fc1a49770c7d63d17e39f2b06cb38ba441ed340798733f8b46dd7"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-83d2a0b0-6bbc-40d9-8aa2-228f936f11e4.png sha256",
+      "status": "PASS",
+      "actual": "1c32c3d871f6c8f57e6bbc259dc3125d2b429f0403b6fc7ade0f23ebd5167186",
+      "expected": "1c32c3d871f6c8f57e6bbc259dc3125d2b429f0403b6fc7ade0f23ebd5167186"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-c1bf996d-9a02-47ae-8078-f89e59c2ee40.png sha256",
+      "status": "PASS",
+      "actual": "9cd42e85a693b2c40c076e8deab699cb5966aeb87da765fd08e89714ac88645c",
+      "expected": "9cd42e85a693b2c40c076e8deab699cb5966aeb87da765fd08e89714ac88645c"
+    },
+    {
+      "check": "vinyl source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "web/src/assets/art/annex/vinyl-repeat-preview.jpg sha256",
+      "status": "PASS",
+      "actual": "c7058094ed98c6299170e515a3c82ebe153a884eb6376ec6893fcd2cc88d2df7",
+      "expected": "c7058094ed98c6299170e515a3c82ebe153a884eb6376ec6893fcd2cc88d2df7"
+    },
+    {
+      "check": "vinyl preview dimensions",
+      "status": "PASS",
+      "actual": [
+        2048,
+        2048
+      ],
+      "expected": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/ART_BRIEF.md sha256",
+      "status": "PASS",
+      "actual": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c",
+      "expected": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c"
+    },
+    {
+      "check": "web/src/assets/art/room/tex_floor_hextile.jpg sha256",
+      "status": "PASS",
+      "actual": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "expected": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9"
+    },
+    {
+      "check": "web/src/assets/art/room/tex_desk_laminate.jpg sha256",
+      "status": "PASS",
+      "actual": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "expected": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png sha256",
+      "status": "PASS",
+      "actual": "6e4485ac20c426e406c215ad89375d6fe67723dc20bfdc4f8bc9a7d17f282567",
+      "expected": "6e4485ac20c426e406c215ad89375d6fe67723dc20bfdc4f8bc9a7d17f282567"
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png bytes",
+      "status": "PASS",
+      "actual": 666270,
+      "expected": 666270
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png dimensions",
+      "status": "PASS",
+      "actual": [
+        512,
+        1024
+      ],
+      "expected": [
+        512,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png format",
+      "status": "PASS",
+      "actual": "PNG",
+      "expected": "PNG"
+    },
+    {
+      "check": "web/src/assets/art/annex/vending_front.png sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-f7f3b03d-720b-4932-835b-b63a1a96f200.png sha256",
+      "status": "PASS",
+      "actual": "fb51e64c2553aefda7113fe8fe0f2d29562a70858a215b1cc12b5dd16c88a54d",
+      "expected": "fb51e64c2553aefda7113fe8fe0f2d29562a70858a215b1cc12b5dd16c88a54d"
+    },
+    {
+      "check": "vending source dimensions",
+      "status": "PASS",
+      "actual": [
+        887,
+        1774
+      ],
+      "expected": [
+        887,
+        1774
+      ]
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/ART_BRIEF.md sha256",
+      "status": "PASS",
+      "actual": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c",
+      "expected": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/world/Annex.ts sha256",
+      "status": "PASS",
+      "actual": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17",
+      "expected": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/core/textures.ts sha256",
+      "status": "PASS",
+      "actual": "c5c5d3bb4621df89299ec9cfe7219fc1fdc743beec51076e693dc8cee54570cf",
+      "expected": "c5c5d3bb4621df89299ec9cfe7219fc1fdc743beec51076e693dc8cee54570cf"
+    },
+    {
+      "check": "1a084341ee842a4e3d34fab1971c3f3826c4d80e:web/ART_BRIEF.md sha256",
+      "status": "PASS",
+      "actual": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "expected": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg sha256",
+      "status": "PASS",
+      "actual": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+      "expected": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg bytes",
+      "status": "PASS",
+      "actual": 315151,
+      "expected": 315151
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        1024,
+        1024
+      ],
+      "expected": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg format",
+      "status": "PASS",
+      "actual": "JPEG",
+      "expected": "JPEG"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/tex_stucco_wall.jpg JPEG q85 quantization sha256",
+      "status": "PASS",
+      "actual": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b",
+      "expected": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-adccad85-6a32-42d5-93c1-8a17f6d67c95.png sha256",
+      "status": "PASS",
+      "actual": "213f1c40652e4bfda9edc97222d48e4c77782015d2859167a286e3fd36b9d658",
+      "expected": "213f1c40652e4bfda9edc97222d48e4c77782015d2859167a286e3fd36b9d658"
+    },
+    {
+      "check": "web/src/assets/art/station/stucco-repeat-preview.jpg sha256",
+      "status": "PASS",
+      "actual": "286bd728259eae52c8635c0c3c9f11e608e5677dd4395cf8b347899eb4a6b26b",
+      "expected": "286bd728259eae52c8635c0c3c9f11e608e5677dd4395cf8b347899eb4a6b26b"
+    },
+    {
+      "check": "tex_stucco_wall.jpg source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "tex_stucco_wall.jpg preview dimensions",
+      "status": "PASS",
+      "actual": [
+        2048,
+        2048
+      ],
+      "expected": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg sha256",
+      "status": "PASS",
+      "actual": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+      "expected": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg bytes",
+      "status": "PASS",
+      "actual": 335151,
+      "expected": 335151
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        1024,
+        1024
+      ],
+      "expected": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg format",
+      "status": "PASS",
+      "actual": "JPEG",
+      "expected": "JPEG"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/tex_concrete_old.jpg JPEG q85 quantization sha256",
+      "status": "PASS",
+      "actual": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b",
+      "expected": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-d3de144c-b340-4245-886c-f2f290a6fde5.png sha256",
+      "status": "PASS",
+      "actual": "4f9bd717741eb57ed97903d2046626d3f8178dc9b1faa90280afe404c7bc1953",
+      "expected": "4f9bd717741eb57ed97903d2046626d3f8178dc9b1faa90280afe404c7bc1953"
+    },
+    {
+      "check": "web/src/assets/art/station/concrete-old-repeat-preview.jpg sha256",
+      "status": "PASS",
+      "actual": "e744b73fdbe7b040eea7ced568e6fc529e2a1517ec0386ec8f04cbeed17ef29d",
+      "expected": "e744b73fdbe7b040eea7ced568e6fc529e2a1517ec0386ec8f04cbeed17ef29d"
+    },
+    {
+      "check": "tex_concrete_old.jpg source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "tex_concrete_old.jpg preview dimensions",
+      "status": "PASS",
+      "actual": [
+        2048,
+        2048
+      ],
+      "expected": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "check": "web/src/assets/art/concept/station01_field.jpg sha256",
+      "status": "PASS",
+      "actual": "d8ed709a7a9dd1ca56a8d8e1e0345ae039a22e1ececbe6841a3d6b951f40caa6",
+      "expected": "d8ed709a7a9dd1ca56a8d8e1e0345ae039a22e1ececbe6841a3d6b951f40caa6"
+    },
+    {
+      "check": "web/src/assets/art/maps/station01-plan.png sha256",
+      "status": "PASS",
+      "actual": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "expected": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e"
+    },
+    {
+      "check": "web/src/assets/art/maps/saro-plan.svg sha256",
+      "status": "PASS",
+      "actual": "ff9415fbcc1efdc0e7506434038ee7c3fca1740788b8909dc003632bea088b6f",
+      "expected": "ff9415fbcc1efdc0e7506434038ee7c3fca1740788b8909dc003632bea088b6f"
+    },
+    {
+      "check": "web/src/assets/art/maps/saro-plan.svg bytes",
+      "status": "PASS",
+      "actual": 17653,
+      "expected": 17653
+    },
+    {
+      "check": "saro-plan.svg XML root",
+      "status": "PASS",
+      "actual": "{http://www.w3.org/2000/svg}svg",
+      "expected": "{http://www.w3.org/2000/svg}svg"
+    },
+    {
+      "check": "saro-plan.svg viewBox",
+      "status": "PASS",
+      "actual": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ],
+      "expected": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ]
+    },
+    {
+      "check": "web/src/assets/art/maps/saro-plan.png sha256",
+      "status": "PASS",
+      "actual": "124aa798deca5b2dadc274baa3db259add11b76d3e80212427431821ef72fead",
+      "expected": "124aa798deca5b2dadc274baa3db259add11b76d3e80212427431821ef72fead"
+    },
+    {
+      "check": "web/src/assets/art/maps/saro-plan.png bytes",
+      "status": "PASS",
+      "actual": 269149,
+      "expected": 269149
+    },
+    {
+      "check": "saro-plan.png dimensions",
+      "status": "PASS",
+      "actual": [
+        1800,
+        1280
+      ],
+      "expected": [
+        1800,
+        1280
+      ]
+    },
+    {
+      "check": "saro-plan.png format",
+      "status": "PASS",
+      "actual": "PNG",
+      "expected": "PNG"
+    },
+    {
+      "check": "web/src/assets/art/maps/station01-plan.svg sha256",
+      "status": "PASS",
+      "actual": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+      "expected": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5"
+    },
+    {
+      "check": "web/src/assets/art/maps/station01-plan.svg bytes",
+      "status": "PASS",
+      "actual": 12998,
+      "expected": 12998
+    },
+    {
+      "check": "station01-plan.svg XML root",
+      "status": "PASS",
+      "actual": "{http://www.w3.org/2000/svg}svg",
+      "expected": "{http://www.w3.org/2000/svg}svg"
+    },
+    {
+      "check": "station01-plan.svg viewBox",
+      "status": "PASS",
+      "actual": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ],
+      "expected": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ]
+    },
+    {
+      "check": "web/src/assets/art/maps/station01-plan.png sha256",
+      "status": "PASS",
+      "actual": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "expected": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e"
+    },
+    {
+      "check": "web/src/assets/art/maps/station01-plan.png bytes",
+      "status": "PASS",
+      "actual": 258731,
+      "expected": 258731
+    },
+    {
+      "check": "station01-plan.png dimensions",
+      "status": "PASS",
+      "actual": [
+        1800,
+        1280
+      ],
+      "expected": [
+        1800,
+        1280
+      ]
+    },
+    {
+      "check": "station01-plan.png format",
+      "status": "PASS",
+      "actual": "PNG",
+      "expected": "PNG"
+    },
+    {
+      "check": "web/src/assets/art/maps/motel-plan.svg sha256",
+      "status": "PASS",
+      "actual": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+      "expected": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016"
+    },
+    {
+      "check": "web/src/assets/art/maps/motel-plan.svg bytes",
+      "status": "PASS",
+      "actual": 12042,
+      "expected": 12042
+    },
+    {
+      "check": "motel-plan.svg XML root",
+      "status": "PASS",
+      "actual": "{http://www.w3.org/2000/svg}svg",
+      "expected": "{http://www.w3.org/2000/svg}svg"
+    },
+    {
+      "check": "motel-plan.svg viewBox",
+      "status": "PASS",
+      "actual": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ],
+      "expected": [
+        0.0,
+        0.0,
+        1800.0,
+        1280.0
+      ]
+    },
+    {
+      "check": "web/src/assets/art/maps/motel-plan.png sha256",
+      "status": "PASS",
+      "actual": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
+      "expected": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132"
+    },
+    {
+      "check": "web/src/assets/art/maps/motel-plan.png bytes",
+      "status": "PASS",
+      "actual": 240725,
+      "expected": 240725
+    },
+    {
+      "check": "motel-plan.png dimensions",
+      "status": "PASS",
+      "actual": [
+        1800,
+        1280
+      ],
+      "expected": [
+        1800,
+        1280
+      ]
+    },
+    {
+      "check": "motel-plan.png format",
+      "status": "PASS",
+      "actual": "PNG",
+      "expected": "PNG"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/world/Annex.ts sha256",
+      "status": "PASS",
+      "actual": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17",
+      "expected": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/world/ControlRoom.ts sha256",
+      "status": "PASS",
+      "actual": "757ada4f8b46c1c7d91645760c7ebf14a4cab30559ffc5f211ca5690affdfa73",
+      "expected": "757ada4f8b46c1c7d91645760c7ebf14a4cab30559ffc5f211ca5690affdfa73"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/world/ServiceYard.ts sha256",
+      "status": "PASS",
+      "actual": "fbcb2ca37ab680a442d125a353a55e2c100bc2660d3e0f0b0c6a59ba795fc9c6",
+      "expected": "fbcb2ca37ab680a442d125a353a55e2c100bc2660d3e0f0b0c6a59ba795fc9c6"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/world/Exterior.ts sha256",
+      "status": "PASS",
+      "actual": "c4389a57cf011c5eb36932de69b0273c1100bbd7867357b1d101720e674104d5",
+      "expected": "c4389a57cf011c5eb36932de69b0273c1100bbd7867357b1d101720e674104d5"
+    },
+    {
+      "check": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc:web/src/story/Chapter2.ts sha256",
+      "status": "PASS",
+      "actual": "ff1b48a7e38bcfca48aba3d52a9468806917eeb669ad219d5e433d7eaf25edc6",
+      "expected": "ff1b48a7e38bcfca48aba3d52a9468806917eeb669ad219d5e433d7eaf25edc6"
+    },
+    {
+      "check": "6f2bea0:web/src/world/ControlRoom.ts sha256",
+      "status": "PASS",
+      "actual": "21796eae0d322d60be3870489c2dccbcbf1d4c53db72a480355da4809c54ce8e",
+      "expected": "21796eae0d322d60be3870489c2dccbcbf1d4c53db72a480355da4809c54ce8e"
+    },
+    {
+      "check": "6f2bea0:web/src/world/ServiceYard.ts sha256",
+      "status": "PASS",
+      "actual": "b24aa169d1baf8e9865d31342b8a1b601c8835d430bebbae5624b79cc726547b",
+      "expected": "b24aa169d1baf8e9865d31342b8a1b601c8835d430bebbae5624b79cc726547b"
+    },
+    {
+      "check": "6f2bea0:web/src/world/Exterior.ts sha256",
+      "status": "PASS",
+      "actual": "9d7c729e198201d68d62d275397c668cb373f675d82691671c7239bf233e130a",
+      "expected": "9d7c729e198201d68d62d275397c668cb373f675d82691671c7239bf233e130a"
+    },
+    {
+      "check": "6f2bea0:web/AGENTS.md sha256",
+      "status": "PASS",
+      "actual": "087c0728cf75a06ffe6d332fe0ffcc521a58508e0f568126c9019c6d1a6ed3da",
+      "expected": "087c0728cf75a06ffe6d332fe0ffcc521a58508e0f568126c9019c6d1a6ed3da"
+    },
+    {
+      "check": "6f2bea0:web/ART_BRIEF.md sha256",
+      "status": "PASS",
+      "actual": "3d6fd9a0b5b2646c8a080512f89655e661c9f9a3e1c7f28489152059b3e3bf63",
+      "expected": "3d6fd9a0b5b2646c8a080512f89655e661c9f9a3e1c7f28489152059b3e3bf63"
+    },
+    {
+      "check": "6f2bea0:web/memory.md sha256",
+      "status": "PASS",
+      "actual": "eb4df27242428dd6f273099bdc786464f7eb1e6f49cde978c0df735afdb5d3b9",
+      "expected": "eb4df27242428dd6f273099bdc786464f7eb1e6f49cde978c0df735afdb5d3b9"
+    },
+    {
+      "check": "6f2bea0:web/todo.md sha256",
+      "status": "PASS",
+      "actual": "57e9e610944355a6c61c8292f3a0b93a0fab64004f812cf8f83dfffe91ff11ff",
+      "expected": "57e9e610944355a6c61c8292f3a0b93a0fab64004f812cf8f83dfffe91ff11ff"
+    },
+    {
+      "check": "6f2bea0:Docs/DesignBible13/design-bible.md sha256",
+      "status": "PASS",
+      "actual": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69",
+      "expected": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69"
+    },
+    {
+      "check": "6f2bea0:Docs/WorldCase22/WORLD_DESIGN.md sha256",
+      "status": "PASS",
+      "actual": "b7b926c9b680f208e3e6005099da90d4c09cafee45439f2552e1d0354fb9f46b",
+      "expected": "b7b926c9b680f208e3e6005099da90d4c09cafee45439f2552e1d0354fb9f46b"
+    },
+    {
+      "check": "6f2bea0:Docs/CURRENT_HANDOFF.md sha256",
+      "status": "PASS",
+      "actual": "d8fb5df0c7bab071264e2027292ce5989014f936770a85b6fa7474bb7a96b560",
+      "expected": "d8fb5df0c7bab071264e2027292ce5989014f936770a85b6fa7474bb7a96b560"
+    },
+    {
+      "check": "map-spec station01 object preserved",
+      "status": "PASS",
+      "actual": {
+        "status": "Romlig planforslag til three.js. Unity-felt finnes fra før; kartet er ikke oppmåling av det.",
+        "interiors": 1,
+        "features": [
+          "Feltbygning",
+          "Transitflate",
+          "Tre fastmerker",
+          "Kabel og kabelbrudd",
+          "Kort gangsløyfe",
+          "Ankomst og retur"
+        ],
+        "caveats": [
+          "Geometri, merking og sikteretninger fryses i senere blokkering.",
+          "Plasseringen av fastmerker viser ikke oppgavens fasit.",
+          "Historiske og nye foto må lages fra samme endelige oppstilling."
+        ]
+      },
+      "expected": {
+        "status": "Romlig planforslag til three.js. Unity-felt finnes fra før; kartet er ikke oppmåling av det.",
+        "interiors": 1,
+        "features": [
+          "Feltbygning",
+          "Transitflate",
+          "Tre fastmerker",
+          "Kabel og kabelbrudd",
+          "Kort gangsløyfe",
+          "Ankomst og retur"
+        ],
+        "caveats": [
+          "Geometri, merking og sikteretninger fryses i senere blokkering.",
+          "Plasseringen av fastmerker viser ikke oppgavens fasit.",
+          "Historiske og nye foto må lages fra samme endelige oppstilling."
+        ]
+      }
+    },
+    {
+      "check": "map-spec motel object preserved",
+      "status": "PASS",
+      "actual": {
+        "status": "Romlig planforslag til three.js. Eksisterende motellkulisse er ikke en ferdig spillbar scene.",
+        "accessible_interiors": [
+          "Kontor",
+          "Noras rom"
+        ],
+        "background": [
+          "Andre rom",
+          "Basseng",
+          "Ytre vei og terreng"
+        ],
+        "unresolved": "Romnummer 6 kontra 47 er ikke bestemt. Kartet bruker NORAS ROM uten nummer."
+      },
+      "expected": {
+        "status": "Romlig planforslag til three.js. Eksisterende motellkulisse er ikke en ferdig spillbar scene.",
+        "accessible_interiors": [
+          "Kontor",
+          "Noras rom"
+        ],
+        "background": [
+          "Andre rom",
+          "Basseng",
+          "Ytre vei og terreng"
+        ],
+        "unresolved": "Romnummer 6 kontra 47 er ikke bestemt. Kartet bruker NORAS ROM uten nummer."
+      }
+    },
+    {
+      "check": "station01-plan.svg byte-for-byte HEAD",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "station01-plan.png byte-for-byte HEAD",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "motel-plan.svg byte-for-byte HEAD",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "motel-plan.png byte-for-byte HEAD",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/concept/index.html all href/src exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/concept/index.html all anchors exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/index.html all href/src exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/index.html all anchors exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/round45.html all href/src exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/round45.html all anchors exist",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "1a084341ee842a4e3d34fab1971c3f3826c4d80e:web/ART_BRIEF.md sha256",
+      "status": "PASS",
+      "actual": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "expected": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+    },
+    {
+      "check": "1a084341ee842a4e3d34fab1971c3f3826c4d80e:web/src/world/Station01.ts sha256",
+      "status": "PASS",
+      "actual": "02a4be02b9ebaaca736e339f916efa08b6f55ce2bfafc194d96d161059e47020",
+      "expected": "02a4be02b9ebaaca736e339f916efa08b6f55ce2bfafc194d96d161059e47020"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg sha256",
+      "status": "PASS",
+      "actual": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+      "expected": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg bytes",
+      "status": "PASS",
+      "actual": 302855,
+      "expected": 302855
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        1024,
+        1024
+      ],
+      "expected": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg format",
+      "status": "PASS",
+      "actual": "JPEG",
+      "expected": "JPEG"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg JPEG q85 quantization sha256",
+      "status": "PASS",
+      "actual": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b",
+      "expected": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/weatheredwood-repeat-2x2.jpg sha256",
+      "status": "PASS",
+      "actual": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161",
+      "expected": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161"
+    },
+    {
+      "check": "web/src/assets/art/station/weatheredwood-repeat-preview.jpg sha256",
+      "status": "PASS",
+      "actual": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161",
+      "expected": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161"
+    },
+    {
+      "check": "web/src/assets/art/station/weatheredwood-repeat-preview.jpg copied byte-for-byte",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/weatheredwood-repeat-preview.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        2048,
+        2048
+      ],
+      "expected": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg selected source status",
+      "status": "PASS",
+      "actual": "selected",
+      "expected": "selected"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_wood_weathered.jpg recorded resize source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg sha256",
+      "status": "PASS",
+      "actual": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+      "expected": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg bytes",
+      "status": "PASS",
+      "actual": 265958,
+      "expected": 265958
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        1024,
+        1024
+      ],
+      "expected": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg mode",
+      "status": "PASS",
+      "actual": "RGB",
+      "expected": "RGB"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg format",
+      "status": "PASS",
+      "actual": "JPEG",
+      "expected": "JPEG"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg sRGB ICC",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg JPEG q85 quantization sha256",
+      "status": "PASS",
+      "actual": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b",
+      "expected": "c63867006bdcac34c348e80c6bbaed1868688b50d457570224d725fda5bcc60b"
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/floorboards-repeat-2x2.jpg sha256",
+      "status": "PASS",
+      "actual": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a",
+      "expected": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a"
+    },
+    {
+      "check": "web/src/assets/art/station/floorboards-repeat-preview.jpg sha256",
+      "status": "PASS",
+      "actual": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a",
+      "expected": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a"
+    },
+    {
+      "check": "web/src/assets/art/station/floorboards-repeat-preview.jpg copied byte-for-byte",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "web/src/assets/art/station/floorboards-repeat-preview.jpg dimensions",
+      "status": "PASS",
+      "actual": [
+        2048,
+        2048
+      ],
+      "expected": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg selected source status",
+      "status": "PASS",
+      "actual": "selected",
+      "expected": "selected"
+    },
+    {
+      "check": "web/src/assets/art/station/tex_floorboards.jpg recorded resize source dimensions",
+      "status": "PASS",
+      "actual": [
+        1122,
+        1402
+      ],
+      "expected": [
+        1122,
+        1402
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-45d15ceb-acac-43c5-b3d8-24bb1a9f60f5.png sha256",
+      "status": "PASS",
+      "actual": "640fb1ab48041ad7adcfbebff8d8fe28faec079919212cd77c42284c393a876a",
+      "expected": "640fb1ab48041ad7adcfbebff8d8fe28faec079919212cd77c42284c393a876a"
+    },
+    {
+      "check": "wood source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-fe439d4f-cc93-4c02-9f21-b5098897ebc3.png sha256",
+      "status": "PASS",
+      "actual": "b77852095ccd47b2f3674ffb4c19183f9e509074d05b67e0a8b3cb07f1319233",
+      "expected": "b77852095ccd47b2f3674ffb4c19183f9e509074d05b67e0a8b3cb07f1319233"
+    },
+    {
+      "check": "boards-initial source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-5a229c42-eef4-464d-93e0-7a637b2e7fa3.png sha256",
+      "status": "PASS",
+      "actual": "cfc10385299bcf3fa1b78de3d8c6ce0b557380cf1f75a8aa5d8a2612aee42aab",
+      "expected": "cfc10385299bcf3fa1b78de3d8c6ce0b557380cf1f75a8aa5d8a2612aee42aab"
+    },
+    {
+      "check": "boards-layout-edit source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-391f09c1-b865-4ed7-b659-11e48bbf4ec2.png sha256",
+      "status": "PASS",
+      "actual": "4b80e116be32014ba82ddb5646eba3eacccb7666c16b9db7b076a6be6804ef4f",
+      "expected": "4b80e116be32014ba82ddb5646eba3eacccb7666c16b9db7b076a6be6804ef4f"
+    },
+    {
+      "check": "boards-regenerate source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-03bd881f-7da9-4bf2-b2ce-3121017de0ce.png sha256",
+      "status": "PASS",
+      "actual": "3b3627c7628a13f4d6dfe281b21de5ecae3c820e2a1b14b84b30a91ce2ebdc63",
+      "expected": "3b3627c7628a13f4d6dfe281b21de5ecae3c820e2a1b14b84b30a91ce2ebdc63"
+    },
+    {
+      "check": "boards-count-edit source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-2764cb9d-d0e4-432e-9d30-0683a6abb8e5.png sha256",
+      "status": "PASS",
+      "actual": "8d5f3367da42aab9853c968d8b87faae8940cf5b1a9cee8de188b702a837e5c4",
+      "expected": "8d5f3367da42aab9853c968d8b87faae8940cf5b1a9cee8de188b702a837e5c4"
+    },
+    {
+      "check": "boards-ten-retry source dimensions",
+      "status": "PASS",
+      "actual": [
+        1254,
+        1254
+      ],
+      "expected": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "check": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-30fa1379-3d58-4e54-a06d-7072882e4cc8.png sha256",
+      "status": "PASS",
+      "actual": "e3b259eddf30a32a1cc59b061645912093854a759145996300a4727b5eb6aafe",
+      "expected": "e3b259eddf30a32a1cc59b061645912093854a759145996300a4727b5eb6aafe"
+    },
+    {
+      "check": "boards-portrait source dimensions",
+      "status": "PASS",
+      "actual": [
+        1122,
+        1402
+      ],
+      "expected": [
+        1122,
+        1402
+      ]
+    },
+    {
+      "check": "floorboards independent dark seam centres",
+      "status": "PASS",
+      "actual": [
+        101,
+        205,
+        310,
+        414,
+        517,
+        623,
+        727,
+        830,
+        931
+      ],
+      "expected": [
+        101,
+        205,
+        310,
+        414,
+        517,
+        623,
+        727,
+        830,
+        931
+      ]
+    },
+    {
+      "check": "floorboards inferred board count",
+      "status": "PASS",
+      "actual": 10,
+      "expected": 10
+    },
+    {
+      "check": "floorboards nominal mapping metres",
+      "status": "PASS",
+      "actual": [
+        1.2,
+        1.2
+      ],
+      "expected": [
+        1.2,
+        1.2
+      ]
+    },
+    {
+      "check": "web/src/assets/art/concept/index.html no external links",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/index.html no external links",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    },
+    {
+      "check": "web/src/assets/art/production/round45.html no external links",
+      "status": "PASS",
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "file_inventory": {
+    "web/src/assets/art/annex/VINYL_TEXTURE.json": {
+      "sha256": "aa7bff028012182a05327c88429a1eded9ae96312a04456191f139566d9a66c8",
+      "bytes": 7952
+    },
+    "web/src/assets/art/annex/tex_floor_vinyl.jpg": {
+      "sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+      "bytes": 111439
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-82e07214-ef7e-47ed-bc82-801b5531eb1a.png": {
+      "sha256": "10468d70f07fc1a49770c7d63d17e39f2b06cb38ba441ed340798733f8b46dd7",
+      "bytes": 1580618
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-83d2a0b0-6bbc-40d9-8aa2-228f936f11e4.png": {
+      "sha256": "1c32c3d871f6c8f57e6bbc259dc3125d2b429f0403b6fc7ade0f23ebd5167186",
+      "bytes": 1645865
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-c1bf996d-9a02-47ae-8078-f89e59c2ee40.png": {
+      "sha256": "9cd42e85a693b2c40c076e8deab699cb5966aeb87da765fd08e89714ac88645c",
+      "bytes": 1575354
+    },
+    "web/src/assets/art/annex/vinyl-repeat-preview.jpg": {
+      "sha256": "c7058094ed98c6299170e515a3c82ebe153a884eb6376ec6893fcd2cc88d2df7",
+      "bytes": 555655
+    },
+    "web/src/assets/art/room/tex_floor_hextile.jpg": {
+      "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "bytes": 155674
+    },
+    "web/src/assets/art/room/tex_desk_laminate.jpg": {
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "bytes": 124281
+    },
+    "web/src/assets/art/annex/VENDING_FRONT.json": {
+      "sha256": "7f3236b2d46039177e0a8857ec26140be7471249d9531ef35bf65dd9ebfcb0bf",
+      "bytes": 6664
+    },
+    "web/src/assets/art/annex/vending_front.png": {
+      "sha256": "6e4485ac20c426e406c215ad89375d6fe67723dc20bfdc4f8bc9a7d17f282567",
+      "bytes": 666270
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-f7f3b03d-720b-4932-835b-b63a1a96f200.png": {
+      "sha256": "fb51e64c2553aefda7113fe8fe0f2d29562a70858a215b1cc12b5dd16c88a54d",
+      "bytes": 1952110
+    },
+    "web/src/assets/art/station/STATION_SURFACES_A.json": {
+      "sha256": "0a90b0925c05127e2c4104748ac1112998ba3a04f2a69d523e22acf168e029a3",
+      "bytes": 9554
+    },
+    "web/src/assets/art/station/tex_stucco_wall.jpg": {
+      "sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+      "bytes": 315151
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-adccad85-6a32-42d5-93c1-8a17f6d67c95.png": {
+      "sha256": "213f1c40652e4bfda9edc97222d48e4c77782015d2859167a286e3fd36b9d658",
+      "bytes": 3425775
+    },
+    "web/src/assets/art/station/stucco-repeat-preview.jpg": {
+      "sha256": "286bd728259eae52c8635c0c3c9f11e608e5677dd4395cf8b347899eb4a6b26b",
+      "bytes": 1543447
+    },
+    "web/src/assets/art/station/tex_concrete_old.jpg": {
+      "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+      "bytes": 335151
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-d3de144c-b340-4245-886c-f2f290a6fde5.png": {
+      "sha256": "4f9bd717741eb57ed97903d2046626d3f8178dc9b1faa90280afe404c7bc1953",
+      "bytes": 3434551
+    },
+    "web/src/assets/art/station/concrete-old-repeat-preview.jpg": {
+      "sha256": "e744b73fdbe7b040eea7ced568e6fc529e2a1517ec0386ec8f04cbeed17ef29d",
+      "bytes": 1629534
+    },
+    "web/src/assets/art/concept/station01_field.jpg": {
+      "sha256": "d8ed709a7a9dd1ca56a8d8e1e0345ae039a22e1ececbe6841a3d6b951f40caa6",
+      "bytes": 305703
+    },
+    "web/src/assets/art/maps/station01-plan.png": {
+      "sha256": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "bytes": 258731
+    },
+    "web/src/assets/art/maps/map-spec.json": {
+      "sha256": "95bf40dd8bb7fe14195a203ce1479b9afe0928d23f5f44de4b8e23ef7ba37e3a",
+      "bytes": 10384
+    },
+    "web/src/assets/art/maps/saro-plan.svg": {
+      "sha256": "ff9415fbcc1efdc0e7506434038ee7c3fca1740788b8909dc003632bea088b6f",
+      "bytes": 17653
+    },
+    "web/src/assets/art/maps/saro-plan.png": {
+      "sha256": "124aa798deca5b2dadc274baa3db259add11b76d3e80212427431821ef72fead",
+      "bytes": 269149
+    },
+    "web/src/assets/art/maps/station01-plan.svg": {
+      "sha256": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+      "bytes": 12998
+    },
+    "web/src/assets/art/maps/motel-plan.svg": {
+      "sha256": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+      "bytes": 12042
+    },
+    "web/src/assets/art/maps/motel-plan.png": {
+      "sha256": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
+      "bytes": 240725
+    },
+    "web/src/assets/art/station/STATION_SURFACES_B.json": {
+      "sha256": "89440ea36c91ca0611b415899eed500f6f144de091b4f98ae775a6ee6f984a9b",
+      "bytes": 18555
+    },
+    "web/src/assets/art/station/tex_wood_weathered.jpg": {
+      "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+      "bytes": 302855
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/weatheredwood-repeat-2x2.jpg": {
+      "sha256": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161",
+      "bytes": 1625140
+    },
+    "web/src/assets/art/station/weatheredwood-repeat-preview.jpg": {
+      "sha256": "9f60c5abbc99cec3db0bda14483d484d735ade2089ebee3eead9a0c8310aa161",
+      "bytes": 1625140
+    },
+    "web/src/assets/art/station/tex_floorboards.jpg": {
+      "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+      "bytes": 265958
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/floorboards-repeat-2x2.jpg": {
+      "sha256": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a",
+      "bytes": 1426099
+    },
+    "web/src/assets/art/station/floorboards-repeat-preview.jpg": {
+      "sha256": "1d6c609cf87d220f6e2fd98850b3bbe79c095b9b8e96cdee4794cb49af63998a",
+      "bytes": 1426099
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-45d15ceb-acac-43c5-b3d8-24bb1a9f60f5.png": {
+      "sha256": "640fb1ab48041ad7adcfbebff8d8fe28faec079919212cd77c42284c393a876a",
+      "bytes": 2953279
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-fe439d4f-cc93-4c02-9f21-b5098897ebc3.png": {
+      "sha256": "b77852095ccd47b2f3674ffb4c19183f9e509074d05b67e0a8b3cb07f1319233",
+      "bytes": 2870404
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-5a229c42-eef4-464d-93e0-7a637b2e7fa3.png": {
+      "sha256": "cfc10385299bcf3fa1b78de3d8c6ce0b557380cf1f75a8aa5d8a2612aee42aab",
+      "bytes": 2580497
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-391f09c1-b865-4ed7-b659-11e48bbf4ec2.png": {
+      "sha256": "4b80e116be32014ba82ddb5646eba3eacccb7666c16b9db7b076a6be6804ef4f",
+      "bytes": 2469359
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-03bd881f-7da9-4bf2-b2ce-3121017de0ce.png": {
+      "sha256": "3b3627c7628a13f4d6dfe281b21de5ecae3c820e2a1b14b84b30a91ce2ebdc63",
+      "bytes": 2231862
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-2764cb9d-d0e4-432e-9d30-0683a6abb8e5.png": {
+      "sha256": "8d5f3367da42aab9853c968d8b87faae8940cf5b1a9cee8de188b702a837e5c4",
+      "bytes": 2927193
+    },
+    "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-30fa1379-3d58-4e54-a06d-7072882e4cc8.png": {
+      "sha256": "e3b259eddf30a32a1cc59b061645912093854a759145996300a4727b5eb6aafe",
+      "bytes": 2880619
+    },
+    "web/src/assets/art/concept/index.html": {
+      "sha256": "492b7a4fd0d50a763d410177c73323990d075eef69907c20318cce24b4619622",
+      "bytes": 17075
+    },
+    "web/src/assets/art/production/index.html": {
+      "sha256": "d8e7b7b1a87e1d467dc90228171557b6aaea95187bdbcf486580aac8cf8c9b09",
+      "bytes": 4108
+    },
+    "web/src/assets/art/production/round45.html": {
+      "sha256": "c7bf7636a91995286b396e69953c12489fd1b8c79bdce986df8c66b2d8188269",
+      "bytes": 4280
+    }
+  },
+  "image_inventory": {
+    "web/src/assets/art/annex/tex_floor_vinyl.jpg": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "0befc9b089b1a3e9d9bc097a4f636205c46f56837ea9f3ccf0b7b4152fb7714c"
+    },
+    "web/src/assets/art/annex/vending_front.png": {
+      "dimensions": [
+        512,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "ae4e67688c65ac25399b71bab8034ed45edfe6b5f6396ec1257b3c81ead340fb"
+    },
+    "web/src/assets/art/station/tex_stucco_wall.jpg": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "a2a06e01dd3880106e2f018ded447682cbb0b9db2ec2b536e14216f5ec852f3c"
+    },
+    "web/src/assets/art/station/tex_concrete_old.jpg": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "a2a06e01dd3880106e2f018ded447682cbb0b9db2ec2b536e14216f5ec852f3c"
+    },
+    "web/src/assets/art/station/tex_wood_weathered.jpg": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "098289bf236f3feaf9506f626bd0ca48f13aec54562bd18cb8d710f278e0fc10"
+    },
+    "web/src/assets/art/station/tex_floorboards.jpg": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "11f2b11677685adf2325fa637dbe8981ec111cfbdf3ab656376c4a4e2adb1945"
+    }
+  },
+  "galleries": [
+    {
+      "file": "web/src/assets/art/concept/index.html",
+      "local_links": 50,
+      "external_links": [],
+      "missing": [],
+      "bad_anchors": []
+    },
+    {
+      "file": "web/src/assets/art/production/index.html",
+      "local_links": 18,
+      "external_links": [],
+      "missing": [],
+      "bad_anchors": []
+    },
+    {
+      "file": "web/src/assets/art/production/round45.html",
+      "local_links": 21,
+      "external_links": [],
+      "missing": [],
+      "bad_anchors": []
+    }
+  ],
+  "floorboard_measurement": {
+    "method": "Gråtone-radgjennomsnitt over X=16..1007; lokalt minimum innen pluss/minus 12 rader og minst 40/255 under median. Ni interne fuger innebærer ti bord. Dette måler bildegeometri, ikke faktisk rommapping.",
+    "row_median_luminance": 145.9713,
+    "internal_seam_centres_px": [
+      101,
+      205,
+      310,
+      414,
+      517,
+      623,
+      727,
+      830,
+      931
+    ],
+    "inferred_board_count": 10,
+    "board_widths_px": [
+      101,
+      104,
+      105,
+      104,
+      103,
+      106,
+      104,
+      103,
+      101,
+      93
+    ],
+    "physical_mapping_metres": [
+      1.2,
+      1.2
+    ],
+    "nominal_board_width_metres": 0.12
+  },
+  "repository": {
+    "path": "/home/tombonator3000t/Documents/Codex/signal-47-threejs",
+    "branch": "codex/annex-art-20261004",
+    "head": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc"
+  },
+  "contracts": [
+    {
+      "commit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+      "path": "web/ART_BRIEF.md",
+      "sha256": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c",
+      "bytes": 10110,
+      "method": "git show pinned_commit:web/ART_BRIEF.md"
+    },
+    {
+      "commit": "1a084341ee842a4e3d34fab1971c3f3826c4d80e",
+      "path": "web/ART_BRIEF.md",
+      "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "bytes": 12829,
+      "method": "git show pinned_commit:web/ART_BRIEF.md"
+    }
+  ],
+  "map_preservation": [
+    {
+      "path": "web/src/assets/art/maps/station01-plan.svg",
+      "sha256": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+      "bytes": 12998,
+      "head_sha256": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+      "head_bytes": 12998,
+      "byte_identical_to_head": true
+    },
+    {
+      "path": "web/src/assets/art/maps/station01-plan.png",
+      "sha256": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "bytes": 258731,
+      "head_sha256": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "head_bytes": 258731,
+      "byte_identical_to_head": true
+    },
+    {
+      "path": "web/src/assets/art/maps/motel-plan.svg",
+      "sha256": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+      "bytes": 12042,
+      "head_sha256": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+      "head_bytes": 12042,
+      "byte_identical_to_head": true
+    },
+    {
+      "path": "web/src/assets/art/maps/motel-plan.png",
+      "sha256": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
+      "bytes": 240725,
+      "head_sha256": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
+      "head_bytes": 240725,
+      "byte_identical_to_head": true
+    }
+  ],
+  "methods": [
+    "Alle produksjonsbilder dekodet med Pillow. Dimensjoner, RGB-modus, filformat og innebygd sRGB ICC kontrollert. PNG RGB bekrefter ugjennomsiktig eksport.",
+    "JPEG-kvantisering sammenlignet eksakt med Pillow kvalitet 85 for begge tabeller. Dette bekrefter q85-kvantisering; JPEG lagrer ikke et separat kvalitetsfelt.",
+    "SHA-256 og byteantall beregnet fra faktiske filer. Deklarerte kilde-, eksport- og preview-hasher kontrollert. Byteantall uten deklarert forventning registrert i file_inventory.",
+    "Alle syv bevarte B-genereringssteg kontrollert, også forkastede kandidater. Begge portable B-previewfiler kontrollert mot originale QA-filer byte for byte.",
+    "SVG XML parset med ElementTree, viewBox kontrollert, PNG-er dekodet og output-hasher sammenlignet med map-spec.json. SARO-kilder kontrollert mot festet Git-commit.",
+    "Alle href/src i tre lokale HTML-gallerier og relevante HTML-ankre kontrollert mot filsystemet. Det er ingen eksterne href/src.",
+    "STATION- og motellkartets fire SVG/PNG-filer sammenlignet byte for byte med HEAD. Deres map-spec-delseksjoner sammenlignet semantisk med HEAD.",
+    "Teknisk audit i egen kontrollpass. For puss, betong og vinyl har samme agent også utført avgrenset assetproduksjon tidligere. Dette er ikke en ekstern tredjepartsrevisjon."
+  ],
+  "visual_qa": {
+    "status": "PASS_WITH_RECORDED_LIMITATIONS",
+    "preview_files": [
+      "web/src/assets/art/annex/vinyl-repeat-preview.jpg",
+      "web/src/assets/art/station/stucco-repeat-preview.jpg",
+      "web/src/assets/art/station/concrete-old-repeat-preview.jpg",
+      "web/src/assets/art/station/weatheredwood-repeat-preview.jpg",
+      "web/src/assets/art/station/floorboards-repeat-preview.jpg"
+    ],
+    "notes": [
+      "Vanlig 2x2-repetisjon er inspisert. Visuell aksept betyr ikke pikselidentiske kanter.",
+      "Puss: en smal overgang i fin struktur kan ses tett på ved loddrett repetisjon. Ingen vesentlig tonal kant; forbeholdet beholdes.",
+      "Gulvbord: ti bord og nominell 1,2 x 1,2 m flate. Bordbreddene er 93 til 106 piksler, omtrent 10,9 til 12,4 cm ved denne mappingen. Hvert bord er ikke eksakt 12 cm. Hele portrettkilden 1122 x 1402 er skalert til 1024 x 1024, uten beskjæring.",
+      "Gulvbordets gangslitasje er svak og generisk. Den er ikke malt som en lokasjonsspesifikk sti til en benk.",
+      "Automatfront: blank grafikk er eksportert uten dokumenttekst. Plassering av runtime-påskrift er et eget integrasjonsarbeid; eksisterende anker må tilpasses som angitt i VENDING_FRONT.json.",
+      "Genererte kilder uten ICC er behandlet som sRGB, slik manifestene oppgir. Eksportene har verifisert sRGB-profil; kildefargerom kan ikke bevises av manglende metadata."
+    ]
+  },
+  "unverified": [
+    "Three.js-integrasjon, texture sampler/mapping i faktiske rom, lys, materialrespons og lesbarhet i runtime.",
+    "Spillflyt, bygg, browser-/mobiltest og ytelse. Ingen slike tester er kjørt i denne auditen.",
+    "Eksakt generatormodell; verktøyet eksponerer ikke eller bekrefter den.",
+    "Git-publisering og tilgjengelighet av absolutte generatorkilder på en annen maskin. Slutteksporter og QA-preview ligger lokalt i repo."
+  ],
+  "summary": {
+    "status": "PASS",
+    "total_checks": 151,
+    "passed": 151,
+    "failures": 0,
+    "production_assets": 6,
+    "production_manifests": 4,
+    "repeat_previews": 5,
+    "galleries": 3,
+    "runtime_tests_run": false,
+    "visual_status": "PASS_WITH_RECORDED_LIMITATIONS",
+    "scope_completed": true
+  }
+}
