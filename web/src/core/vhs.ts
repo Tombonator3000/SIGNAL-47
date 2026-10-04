@@ -1,4 +1,10 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 // The picture as if it came off a VHS tape recorded in 1986, the look of late-night
 // television and the camcorder footage on "Unsolved Mysteries". One full-screen pass after
@@ -25,6 +31,7 @@ uniform vec2 uSize;        // target size in pixels
 uniform float uTime;
 uniform float uHeavy;      // 0 vhs, 1 heavy
 uniform float uGlitch;     // 0..1, extra tracking trouble (the signal, the walkie-talkie)
+uniform float uGlowK;      // the tape's own glow; the PC tier has real bloom before it
 uniform float uMotion;     // 0 when the player asked for reduced motion
 varying vec2 vUv;
 
@@ -76,7 +83,7 @@ void main() {
     vec3 s = scene(uv + vec2(cos(a), sin(a)) * px * (5.0 + 3.0 * uHeavy) * vec2(1.0, uSize.x / uSize.y));
     glow += max(s - 0.8, 0.0);
   }
-  col += glow * (0.25 + 0.1 * uHeavy) * 0.5;
+  col += glow * (0.25 + 0.1 * uHeavy) * 0.5 * uGlowK;
 
   // grade: less colour, lifted blacks, green-blue shadows and warm highlights
   float l = dot(col, vec3(0.299, 0.587, 0.114));
@@ -97,6 +104,21 @@ void main() {
 
 const vert = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
+// Ambient occlusion that leaves out what has no surface: the sky dome, see-through things
+// and the invisible boxes the player aims at (they would leave dark halos otherwise).
+class SolidAO extends GTAOPass {
+  overrideVisibility() {
+    super.overrideVisibility();
+    this.scene.traverse((o) => {
+      if (!o.visible) return;
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const mat = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.Material | undefined;
+      if (o.userData.noAO || !mat || mat.transparent || mat.visible === false) o.visible = false;
+    });
+  }
+}
+
 export class Vhs {
   picture: Picture = 'vhs';
   glitch = 0;
@@ -113,19 +135,66 @@ export class Vhs {
     this.supported = renderer.capabilities.isWebGL2 && !!(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'));
     this.mat = new THREE.ShaderMaterial({
       vertexShader: vert, fragmentShader: frag, depthTest: false, depthWrite: false,
-      uniforms: { tScene: { value: null }, uSize: { value: new THREE.Vector2(1, 1) }, uTime: { value: 0 }, uHeavy: { value: 0 }, uGlitch: { value: 0 }, uMotion: { value: 1 } },
+      uniforms: { tScene: { value: null }, uSize: { value: new THREE.Vector2(1, 1) }, uTime: { value: 0 }, uHeavy: { value: 0 }, uGlitch: { value: 0 }, uMotion: { value: 1 }, uGlowK: { value: 1 } },
     });
     this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.mat);
     this.quad.frustumCulled = false;
     this.scene2.add(this.quad);
   }
   get on() { return this.picture !== 'off' && this.supported; }
+
+  // ---------- the PC tier (core/ultra.ts): occlusion and bloom, then the tape ----------
+  ultra = false;
+  private post: { composer: EffectComposer; ao: SolidAO; bloom: UnrealBloomPass; tape: ShaderPass; out: OutputPass; w: number; h: number; scene: THREE.Scene } | null = null;
+  private renderUltra(scene: THREE.Scene, camera: THREE.Camera, t: number) {
+    const r = this.renderer;
+    r.getDrawingBufferSize(this.size);
+    const h = this.on ? this.lines(this.size.y) : Math.min(this.size.y, 1440), w = Math.round(this.size.x * h / this.size.y);
+    let p = this.post;
+    if (!p || p.scene !== scene) {
+      this.disposePost();
+      const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 });
+      const composer = new EffectComposer(r, rt);
+      composer.setPixelRatio(1);
+      composer.addPass(new RenderPass(scene, camera));
+      const ao = new SolidAO(scene, camera, w, h);
+      ao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.5, thickness: 1.5, scale: 1.0, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
+      ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+      ao.blendIntensity = 0.85;
+      composer.addPass(ao);
+      const bloom = new UnrealBloomPass(new THREE.Vector2(w >> 1, h >> 1), 0.45, 0.5, 0.95);
+      composer.addPass(bloom);
+      const tape = new ShaderPass(this.mat, 'tScene');
+      composer.addPass(tape);
+      const out = new OutputPass();
+      composer.addPass(out);
+      p = this.post = { composer, ao, bloom, tape, out, w: -1, h: -1, scene };
+    }
+    if (p.w !== w || p.h !== h) { p.composer.setSize(w, h); p.w = w; p.h = h; }
+    p.tape.enabled = this.on;
+    p.out.enabled = !this.on;
+    const u = this.mat.uniforms;
+    u.uSize.value.set(w, h);
+    u.uTime.value = t;
+    u.uHeavy.value = this.picture === 'heavy' ? 1 : 0;
+    u.uGlitch.value = this.glitch;
+    u.uMotion.value = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
+    u.uGlowK.value = 0.35;
+    p.composer.render();
+  }
+  private disposePost() {
+    const p = this.post; if (!p) return;
+    p.composer.dispose(); p.ao.dispose(); p.bloom.dispose();
+    this.post = null;
+  }
   /** The height in pixels the scene is drawn at (the glow points need it). */
   lines(bufferH: number) { return this.on ? Math.min(bufferH, LINES[this.picture as 'vhs']) : bufferH; }
 
   /** Draw the scene through the tape, or straight to the screen when off. */
   render(scene: THREE.Scene, camera: THREE.Camera, t: number) {
     const r = this.renderer;
+    if (this.ultra && this.supported) { this.renderUltra(scene, camera, t); return; }
+    this.mat.uniforms.uGlowK.value = 1;
     if (!this.on) { r.render(scene, camera); return; }
     r.getDrawingBufferSize(this.size);
     const h = this.lines(this.size.y), w = Math.round(this.size.x * h / this.size.y);
@@ -146,5 +215,5 @@ export class Vhs {
     r.render(this.scene2, this.cam);
   }
   setSamples(n: number) { if (n !== this.samples) { this.samples = n; this.rt?.dispose(); this.rt = null; } }
-  dispose() { this.rt?.dispose(); this.mat.dispose(); this.quad.geometry.dispose(); }
+  dispose() { this.rt?.dispose(); this.disposePost(); this.mat.dispose(); this.quad.geometry.dispose(); }
 }

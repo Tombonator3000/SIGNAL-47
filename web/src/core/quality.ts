@@ -5,7 +5,8 @@ import * as THREE from 'three';
 // low:  MeshLambertMaterial copies (much cheaper per pixel) and a lower pixel ratio cap.
 // The swap is reversible and cached, so toggling in Settings costs nothing after the first time.
 
-export type Quality = 'high' | 'low';
+// ultra: High's materials plus shadows, occlusion and bloom (core/ultra.ts), PC only.
+export type Quality = 'ultra' | 'high' | 'low';
 
 const toLow = new WeakMap<THREE.Material, THREE.Material>();
 const toHigh = new WeakMap<THREE.Material, THREE.Material>();

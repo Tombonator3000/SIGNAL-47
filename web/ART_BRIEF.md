@@ -118,6 +118,80 @@ Til dineren i «All Night» (se oppgaven i `todo.md`). Ingen tekst i bildene. S�
 | `diner/tex_booth_vinyl.jpg` | 512×512, sømløs | 0,5 × 0,5 m | Rødt kunstskinn på båsene med knappede sømmer i rutemønster, litt slitt og blankere der folk har sittet. |
 | `diner/tex_wall_panel.jpg` | 1024×1024, sømløs | 2,0 × 2,0 m | Furupanel i honningfarge fra 1950-tallet: loddrette bord med kvister, litt mørknet nederst og ved kjøkkenluka. |
 
+## Runde 9: normal- og ruhetskart til Ultra (PC)
+
+Bestilt 4. oktober 2026 om kvelden, etter at Ultra kom inn (`core/ultra.ts`: ekte lys med skygger fra de nærmeste lampene, GTAO og bloom). Med ekte lys som treffer flatene skrått, ser flate fargebilder platte ut. Disse kartene gir fuger, mørtel, sprekker, fiber og slitasje relieff og glans. De lastes bare i Ultra, på PC. High og Low bruker dem aldri. Ingen nye fargebilder i denne runden, og fargebildene som finnes, skal ikke endres.
+
+Codex lager kartene, manifestet og kontrollen i egen gren. Claude kobler dem inn i `art.ts` og materialene og tar den samlede testen.
+
+### Filnavn og plassering
+
+For hvert fargebilde (albedo) to filer i samme mappe, med samme navn pluss en ending:
+
+- `<navn>_n.png`: normalkart
+- `<navn>_r.jpg`: ruhetskart
+
+Eksempel: `room/tex_floor_hextile.jpg` får `room/tex_floor_hextile_n.png` og `room/tex_floor_hextile_r.jpg`.
+
+### Mål og format
+
+| | Normalkart `_n.png` | Ruhetskart `_r.jpg` |
+|---|---|---|
+| Størrelse | 512×512 for alle (også der fargebildet er 1024) | 512×512 |
+| Format | PNG, 8 bit RGB, uten alfa | JPG, kvalitet 90, 8 bit gråtone (én kanal) |
+| Fargerom | Lineære data, ikke sRGB. Ingen gammakorreksjon, ingen fargeprofil | Lineære data, ikke sRGB |
+| Sømløst | Ja, nøyaktig som fargebildet: samme repetisjon, samme søm | Ja |
+| Plassering | Piksel for piksel over fargebildet (skalert til 512): fuga i fargebildet og fuga i kartet ligger på samme sted | Samme |
+
+### Konvensjoner
+
+- **Normalkart:** tangentrom, OpenGL-konvensjon (grønn kanal peker opp, +Y), slik three.js forventer. Ikke DirectX (der grønn er snudd). Flat flate er RGB (128, 128, 255). Vektorene er normaliserte, og blå er aldri under 128 (ingen normal peker inn i flata).
+- **Styrke:** stilisert lavpoly, ikke fotorealisme. Rolige flater er nesten flate (helning under rundt 15 grader). Bare fuger, mørtellinjer, sprekker, kanter på fliser og bord og dype hjulspor får tydelig relieff (opp mot rundt 40 grader). Ingen innbakt lys eller skygge i kartene, og ingen fin støy som blir til flimmer på avstand.
+- **Ruhetskart:** hvit er ru (1,0), svart er speilblank (0,0). three.js leser den grønne kanalen; en gråtone-JPG gir det samme i alle kanaler. Ingen metallkart: alt metall i spillet er malt.
+- **Kilde:** kartene utledes fra fargebildet de hører til (for eksempel en høydeskisse tegnet over fuger og sprekker, så normaler fra den), slik at de stemmer med det spilleren ser. Ikke generiske fliser fra et bibliotek.
+
+### Prioritet A: SARO, det spilleren ser mest
+
+| Fargebilde | Flate i spillet | Normalkart | Ruhet |
+|---|---|---|---|
+| `room/tex_floor_hextile.jpg` | Gulvet i kontrollrommet (sekskantfliser) | Fugene senket, flisene flate med svakt avrundede kanter | Flisene 0,45 til 0,55, fugene 0,9 |
+| `room/tex_wall_paint.jpg` | Malte murblokker i kontrollrommet | Mørtellinjene senket, blokkene svakt ujevne | Malingen 0,7 til 0,8, mørtelen 0,9 |
+| `ext/tex_concrete.jpg` | Gangveien, plattformene, bygningene ute | Sprekker og skjøter senket, grov overflate svakt | 0,85 til 0,95 |
+| `ext/tex_desert_ground.jpg` | Ørkenbakken | Småstein og tuer litt opp, tørkesprekker ned | 0,95 til 1,0 |
+| `ext/tex_asphalt_wet.jpg` | Riksveien og motellplassen | Grov asfalt svakt, sprekker ned | Tørr asfalt 0,75 til 0,85, vannpyttene 0,15 til 0,3 (det er dette som gir speilingen av lampene) |
+| `annex/tex_floor_vinyl.jpg` | Gulvet i korridoren og arkivet | Skjøtene mellom vinylflisene senket | 0,45 til 0,6, slitte ganger litt blankere |
+| `yard/tex_cabinet_metal.jpg` | Skapfronter og stål | Bulker og kanter svakt, rustflekker litt opp | Malt stål 0,5 til 0,65, rust 0,9 |
+
+### Prioritet B: de andre stedene
+
+| Fargebilde | Flate i spillet | Normalkart | Ruhet |
+|---|---|---|---|
+| `room/tex_desk_laminate.jpg` | Pultene | Nesten flat, svake riper | 0,35 til 0,5 |
+| `room/tex_ceiling_tile.jpg` | Himlingsplatene | Rillene mellom platene, svak porøs overflate | 0,95 |
+| `station/tex_stucco_wall.jpg` | Hytta og generatorbua på STATION 01 | Puss med sprekker og lappede flekker | 0,9 |
+| `station/tex_concrete_old.jpg` | Transittpilaren og fundamentene | Avskallede kanter, grovt tilslag | 0,9 til 1,0 |
+| `station/tex_wood_weathered.jpg` | Stolper, staker, hyttedøra | Langsgående fiber og sprekker tydelig | 0,85 |
+| `station/tex_floorboards.jpg` | Gulvet i hytta | Fugene mellom bordene, fiber svakt | 0,6 til 0,75, slitt gangsti litt blankere |
+| `road/tex_gravel_track.jpg` | Grusveien | Hjulsporene senket, steiner opp | 0,95 |
+| `motel/tex_motel_wall.jpg` | Motellveggen | Puss svakt, sprekker | 0,85 |
+| `diner/tex_floor_checker.jpg` | Rutegulvet i dineren | Fugene mellom rutene | 0,35 til 0,5 (bonet gulv) |
+| `diner/tex_wall_panel.jpg` | Furupanelet i dineren | Spor mellom bordene, kvister svakt | 0,55 til 0,65 (lakk) |
+| `diner/tex_booth_vinyl.jpg` | Båsene | Knappene og sømmene ned, putene opp | 0,3 til 0,45 |
+| `diner/tex_counter_laminate.jpg` | Benkeplata | Nesten flat | 0,3 til 0,4 |
+
+Ikke lag kart for skilt, plakater, kart, papir, dokumenter, himmelen, B-12-vingen, R-07-tavla eller det tente motellskiltet.
+
+### Manifest og kontroll
+
+- `production/round9_manifest.json`: for hver fil fargebildet den hører til, metode og verktøy, størrelse, sha256, og eventuelle promter.
+- Kontrollbilder i `production/round9_qa/` (kommer aldri med i spillet): hvert normalkart lagt 2×2 for å vise sømløshet, normalkartet med 50 prosent dekning over fargebildet for å vise at fuger og sprekker ligger på samme sted, og en enkel kule- eller flatepreview lyst ovenfra som viser at grønn peker opp (en forhøyning er lys på oversiden).
+- Automatisk sjekk: riktig størrelse og kanaler, ingen alfa, blå kanal aldri under 128, normalvektorene har lengde rundt 1 (mellom 0,95 og 1,05 etter dekoding), ruhetskartet er én kanal.
+- Leveransenotat `ART_ROUND9_DELIVERY.md` med resultatet av sjekkene (PASS, FAIL, UNVERIFIED), som tidligere runder.
+
+### Hvordan Claude kobler dem inn
+
+Kartene legges i en egen gruppe i `art.ts` (`ULTRA_ART`) som bare lastes når Ultra slås på. Når Ultra er på, får de matte standardmaterialene `normalMap` og `roughnessMap` med samme repetisjon som fargebildet; slås Ultra av, tas de bort igjen. Testen `tools/ultra.py` tar de samme utsnittene før og etter.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.

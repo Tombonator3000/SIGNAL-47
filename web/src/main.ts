@@ -14,6 +14,7 @@ import { RecordsAnnex } from './world/Annex';
 import { Vhs, type Picture } from './core/vhs';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
+import { Ultra } from './core/ultra';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { glowScale } from './world/glow';
@@ -79,22 +80,30 @@ async function boot() {
   scene.add(sky.group, ext.group, room.group, yard.group, annex.group);
   const fcam = new FieldCamera(renderer, scene, camera);
 
-  let quality: Quality = store.get<Quality>('quality', 'high');
+  // Ultra on a computer (an automated browser starts on High, so the budgets stay testable),
+  // High on a phone; a phone never gets Ultra, even from an old setting
+  const ultraOk = !touchGuess;
+  let quality: Quality = store.get<Quality>('quality', ultraOk && !navigator.webdriver ? 'ultra' : 'high');
+  if (quality === 'ultra' && !ultraOk) quality = 'high';
+  const ultra = new Ultra(renderer, scene);
+  ultra.addShadowLight(room.lights.lamps[0]);   // the lamp on the supervisor desk
   // the picture: a 1986 tape look over the whole night (core/vhs.ts), off by default on Low
   // (until the player picks one in Settings, the picture follows the graphics level)
-  const vhs = new Vhs(renderer, quality === 'high' ? 4 : 0);
+  const vhs = new Vhs(renderer, quality !== 'low' ? 4 : 0);
   const applyPicture = (p: Picture, chosen = true) => {
     vhs.picture = p;
     if (chosen) store.set('picture', p);
     document.documentElement.classList.toggle('vhs-on', vhs.on);   // the shader has its own grain
   };
-  applyPicture(store.get<Picture | null>('picture', null) ?? (quality === 'high' ? 'vhs' : 'off'), false);
+  applyPicture(store.get<Picture | null>('picture', null) ?? (quality !== 'low' ? 'vhs' : 'off'), false);
   renderer.info.autoReset = false;   // two passes per frame: count both (the draw-call budget)
   function applyQuality(q: Quality) {
     quality = q; store.set('quality', q);
-    vhs.setSamples(q === 'high' ? 4 : 0);
-    if (store.get<Picture | null>('picture', null) === null) applyPicture(q === 'high' ? 'vhs' : 'off', false);
+    vhs.setSamples(q !== 'low' ? 4 : 0);
+    if (store.get<Picture | null>('picture', null) === null) applyPicture(q !== 'low' ? 'vhs' : 'off', false);
     setQuality(scene, q);
+    ultra.set(q === 'ultra');
+    vhs.ultra = q === 'ultra';
     maxPR = Math.min(window.devicePixelRatio || 1, q === 'low' ? 1 : (touchGuess ? 1.6 : 2));
     pr = Math.min(pr, maxPR);
     renderer.setPixelRatio(pr);
@@ -119,7 +128,7 @@ async function boot() {
   const world = new World({
     scene, camera, player,
     saro: { groups: [ext.group, room.group, yard.group, annex.group], zones: saroZones, colliders, truck: YARD.truck },
-    applyQuality: () => setQuality(scene, quality),
+    applyQuality: () => { setQuality(scene, quality); ultra.mark(scene); },
     audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
     thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
     fade: (on, text) => ui.fade(on, text ?? ''),
@@ -235,7 +244,7 @@ async function boot() {
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
-    quality, onQuality: (q: Quality) => applyQuality(q),
+    quality, onQuality: (q: Quality) => applyQuality(q), ultraOk,
     picture: vhs.picture, onPicture: (p: Picture) => applyPicture(p),
     invertY, onInvertY: (v: boolean) => { invertY = v; store.set('invertY', v); },
     fov: baseFov, onFov: (v: number) => { baseFov = v; store.set('fov', v); resize(); },
@@ -621,6 +630,22 @@ async function boot() {
   let space: 'room' | 'yard' | 'lab' = 'room';
   const inside = (b: { minX: number; maxX: number; minZ: number; maxZ: number }, p: THREE.Vector3) => p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
   const indoors = [room.bounds, annex.zone.southDoor, annex.zone.corridor, annex.zone.recordsDoor, annex.zone.records];
+  // Which fake lamps the PC tier may turn into real ones where the player stands
+  // (core/ultra.ts), and whether the control room's own lamp shadows are worth drawing.
+  const ultraLamps = (p: THREE.Vector3): [readonly string[], boolean] => {
+    switch (world.area) {
+      case 'saro':
+        if (inside(room.bounds, p)) return [[], true];
+        if ([annex.zone.corridor, annex.zone.records, annex.zone.recordsDoor, annex.zone.southDoor].some((z) => inside(z, p))) return [['annex'], false];
+        if (inside(yard.zone.lab, p)) return [['lab'], false];
+        if (inside(motelOffice, p)) return [['court'], false];
+        return [['site', 'court'], false];
+      case 'station01': return [world.indoors(p) ? ['hut'] : ['field'], false];
+      case 'room6': return [['motel'], false];
+      case 'diner': return [['diner'], false];
+      default: return [['road'], false];
+    }
+  };
   const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
   const dbg = { hold: false };
@@ -668,6 +693,8 @@ async function boot() {
       }
     }
     sky.update(dt, t, camera.position);
+    const [lampSets, roomLamps] = ultraLamps(player.pos);
+    ultra.update(dt, player.pos, lampSets, roomLamps);
     sky.setCometClock(game.clock);
     ext.update(dt, t);
     yard.update(t);
@@ -706,7 +733,8 @@ async function boot() {
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },
-    setQuality: (q: 'high' | 'low') => applyQuality(q),
+    setQuality: (q: Quality) => applyQuality(ultraOk || q !== 'ultra' ? q : 'high'),
+    ultra,
     vhs, setPicture: (p: Picture) => applyPicture(p),
   });
 

@@ -54,13 +54,14 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler på PC, er ekte skygger, omgivelsesskygge, ekte glød og lys i lufta. Forslaget er et tredje nivå, Ultra, bare på PC (ikke berøringsskjerm), mens High og Low blir som i dag:
 
-- [ ] Ultra-nivået i `core/quality.ts` og Settings, med Ultra som standard på PC med et ordentlig skjermkort.
-- [ ] Ekte skygger: månelyset som retningslys med myke skygger ute (antennene, gjerdene og lastebilen kaster skygge på bakken), og skyggekastende spotlys for de nærmeste lampene (natriumlampene i gården, skrivebordslampene, lampa i rom 6). Resten blir falske flomlys som nå.
-- [ ] Omgivelsesskygge (GTAO) inne: kontaktskygger under pulter, i hjørner og rundt møbler.
-- [ ] Ekte glød (bloom) før VHS-passet, i stedet for den enkle gløden i passet.
+- [x] Ultra-nivået i `core/quality.ts` og Settings (`core/ultra.ts`), standard på PC. En automatisert nettleser starter på High.
+- [x] Ekte skygger fra de tre nærmeste lampene der spilleren er (gården, arkivet, motellet, stasjonen, dineren, veien) og fra lampa på vaktpulten. Ikke månelys: månen var en tynn sigd fem dager etter nymåne og gikk ned rundt midnatt 13. april 1986. De store flomlysene over arrayet blir falske. Skyggekartene tegnes 12 ganger i sekundet.
+- [x] Omgivelsesskygge (GTAO) overalt i Ultra.
+- [x] Ekte glød (bloom) før VHS-passet; båndets egen glød er dempet i Ultra.
 - [ ] Lys i lufta: svake lyskjegler under natriumlampene og bakkedis ute.
-- [ ] Teksturer med normal- og ruhetskart fra Codex for betong, gulv, asfalt og grus (bare Ultra laster dem).
-- [ ] Måle fps på Toms PC før og etter hvert steg, med `?debug`.
+- [ ] Normal- og ruhetskart fra Codex (runde 9 i `ART_BRIEF.md`: 19 flater, prioritet A er SARO). Codex lager kartene, manifestet og kontrollen i egen gren; Claude kobler inn (`ULTRA_ART`, lastes bare i Ultra) og tester.
+- [ ] Måle fps på Toms PC i Ultra og High, med `?debug`. Headless: rundt 580 til 780 tegnekall i Ultra mot 80 til 200 i High (skyggene og AO-passet), UNVERIFIED som fps.
+- [ ] Tom ser på Ultra og sier om skyggene er sterke nok, eller om lampene og mørket skal ha mer kontrast.
 
 ### Annet
 
