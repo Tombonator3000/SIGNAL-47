@@ -143,3 +143,7 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - UNVERIFIED: fps, berøring og lydmiks på ekte telefon og PC, og Safari.
 - 08:44: Forslagssiden i Claude Docs oppdatert: de fire beslutningene står som Avgjort.
 - 09:34: Laget [PR #32](https://github.com/Tombonator3000/SIGNAL-47/pull/32) mot main med alt over, også Codex sin PR #31, og fletter den som vanlig merge-commit rett etter denne oppføringen. Rotens AGENTS.md gir fullmakt til vanlig PR og merge. Flettingen starter publiseringen til Pages. GitHub viser faktisk status.
+- 09:34: PR #32 flettet som merge-commit `77125ed`. Codex sin PR #31 står dermed også som flettet, fordi commitene ligger i main. Codex-boten svarte på begge PR-ene at kvoten for kodegjennomgang er brukt opp. Ingen andre kommentarer.
+- 09:35: Publiseringen på main, https://github.com/Tombonator3000/SIGNAL-47/actions/runs/37192612449: PASS på 46 sekunder. Kontrollert https://tombonator3000.github.io/SIGNAL-47/ kl. 09:35: alle 34 filene er byte-identiske med `dist/` som besto testene fra `/SIGNAL-47/` lokalt. Kapittel 2 og de 22 bildene er altså ute.
+- 09:36: Forslagssiden i Claude Docs oppdatert: innledningen sier at prologen og begge kapitlene er ute, de fire neste stegene er krysset av, grafikktabellen sier at alle seks flatene er levert og i spillet, og de to småtingene som er gjort, står som gjort.
+- 09:36: Startet grenen på nytt fra main (`77125ed`) for denne loggføringen, siden PR #32 er flettet. Den føres inn med en egen liten PR.
