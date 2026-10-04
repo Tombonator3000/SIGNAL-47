@@ -85,7 +85,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .hud { position: fixed; inset: 0; pointer-events: none; }
 .crosshair { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%;
   background: rgba(255,255,255,.55); box-shadow: 0 0 0 1px rgba(0,0,0,.4); transition: transform .12s, background .12s; }
-.crosshair.active { transform: scale(1.8); background: var(--amber); }
+.crosshair.active { transform: none; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 0; box-shadow: none;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8 13V5.6a1.4 1.4 0 0 1 2.8 0V11 M10.8 11V4.2a1.4 1.4 0 0 1 2.8 0V11 M13.6 11V5.2a1.4 1.4 0 0 1 2.8 0V12 M16.4 12V8.4a1.4 1.4 0 0 1 2.8 0v5.8c0 4-2.4 6.8-6.3 6.8h-1c-2.3 0-3.8-.9-5.2-2.8l-2.9-3.9a1.4 1.4 0 0 1 2.2-1.8L8 15.6' fill='rgba(255,176,82,.22)' stroke='%23ffd9a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)); }   /* a hand on what can be used */
 .prompt { position: absolute; left: 50%; top: calc(50% + 26px); transform: translateX(-50%); white-space: nowrap;
   font-family: var(--term); font-size: 24px; color: #f0ead8; text-shadow: 0 1px 3px #000, 0 0 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .15s; }
 .prompt.show { opacity: 1; }

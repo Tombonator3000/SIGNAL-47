@@ -394,7 +394,7 @@ async function boot() {
     fcam.raise(false); ui.viewfinder(false);
     ui.close(true);
     endEl?.remove(); endEl = null;
-    if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); }
+    if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
     world.enter('saro');
@@ -474,7 +474,7 @@ async function boot() {
     ui.close(true);
     ui.showHud(false, input.touchMode);
     endEl?.remove(); endEl = null;
-    if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); }
+    if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
     world.enter('saro');

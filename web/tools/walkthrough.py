@@ -87,6 +87,8 @@ async def main():
         await ev("S47.game.d.ui.close()"); await tick(0.2)
         # the doors are free, even in the prologue: open the service door and shut it again
         await look(4.5, 1.6, -math.pi / 2, 0.0); await tick(0.1)
+        check(await ev("document.querySelector('.crosshair').classList.contains('active') && getComputedStyle(document.querySelector('.crosshair')).backgroundImage.includes('svg')"),
+              'a hand instead of the dot on something that can be used')
         await use('doorEast'); await tick(1.2)
         check(await ev("S47.doors.isOpen('east') && S47.yard.zone.eastDoor.enabled"), 'the service door opens in the prologue')
         await use('doorEast'); await tick(1.2)

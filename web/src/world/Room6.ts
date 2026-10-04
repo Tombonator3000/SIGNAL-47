@@ -36,6 +36,13 @@ export class Room6 {
   private lampSlot = -1;
   private neonSlot = -1;
   private disposed = false;
+  // the television: snow on every channel, lighting the room blue (Tom, 4 October)
+  tvOn = false;
+  private tvSlot = -1;
+  private tvMaterial!: THREE.MeshStandardMaterial;
+  private tvTex!: THREE.CanvasTexture;
+  private tvAcc = 0;
+  private tvGlow = 0;
 
   constructor(origin: THREE.Vector3) {
     this.o = origin.clone();
@@ -68,6 +75,7 @@ export class Room6 {
     this.light(-0.26, 1.18, -2.5, 2.3, 0xffc082);
     this.neonSlot = this.light(1.8, 1.5, 4.5, 0.9, 0xe7775b);
     this.light(0.85, 1.65, 3.2, 0.8, 0x709dcd);
+    this.tvSlot = this.light(-1.4, 1.15, -0.55, 0, 0x7fa4ff);
 
     this.zone('room6', -2.25, 2.25, -3, 3);
     this.zone('room6Door', -1.98, -0.82, 2.05, 3.95);
@@ -233,7 +241,9 @@ export class Room6 {
     mergeStatic(dresser);this.col(-2.25,-1.48,-1.58,-.02);
     const tv=this.model('tv',-1.88,.88,-.55);tv.rotation.y=Math.PI/2;
     box(tv,.75,.54,.47,m.wood,0,.28,0);box(tv,.67,.45,.035,m.black,0,.28,.25);
-    const screen=this.mat({color:0x243336,roughness:.22,metalness:.1});
+    this.tvTex=this.texture(96,72,g=>{g.fillStyle='#000';g.fillRect(0,0,96,72);});
+    const screen=this.mat({color:0x243336,roughness:.22,metalness:.1,emissive:0xffffff,emissiveMap:this.tvTex,emissiveIntensity:0});
+    this.tvMaterial=screen;
     const crt=box(tv,.51,.36,.04,screen,-.055,.29,.279);crt.scale.x=.98;
     for(const y of [.21,.38])cyl(tv,.035,.035,.023,m.metal,.285,y,.284,8).rotation.x=Math.PI/2;
     for(let i=0;i<7;i++)box(tv,.09,.006,.012,m.darkWood,.278,.105+i*.012,.283);
@@ -314,9 +324,35 @@ export class Room6 {
       m.color.set(on?0xc7a870:0x897652);
     });
   }
-  update(_dt: number,t: number) {
+  /** Switch the television on (snow, a flickering blue light on the room) or off. */
+  setTv(on: boolean) {
+    this.tvOn=on;
+    eachVariant(this.tvMaterial,v=>{
+      const m=v as THREE.MeshStandardMaterial;
+      m.emissiveIntensity=on ? 1.15 : 0;
+      m.color.set(on?0x6d7c84:0x243336);
+    });
+    if(!on&&floodOwner===this)setFlood(this.tvSlot,0,motelFlood);
+  }
+  update(dt: number,t: number) {
     if(this.disposed)return;
     if(floodOwner===this)setFlood(this.neonSlot,.9*(.96+.04*Math.sin(t*.7)),motelFlood);
+    if(!this.tvOn)return;
+    // a new field of snow 15 times a second, a little rolling band in it, and the room's
+    // light jumping with the brightness of the picture
+    this.tvAcc+=dt;
+    if(this.tvAcc>=1/15){
+      this.tvAcc=0;
+      const c=this.tvTex.image as HTMLCanvasElement,g=c.getContext('2d')!,img=g.createImageData(c.width,c.height),d=img.data;
+      const band=(t*9)%c.height;
+      for(let y=0;y<c.height;y++){
+        const lift=Math.abs(y-band)<5?40:0;
+        for(let x=0;x<c.width;x++){const v=Math.min(255,Math.random()*215+lift),i=(y*c.width+x)*4;d[i]=v*.92;d[i+1]=v*.96;d[i+2]=v;d[i+3]=255;}
+      }
+      g.putImageData(img,0,0);this.tvTex.needsUpdate=true;
+      this.tvGlow+=((2.6+Math.random()*1.8)-this.tvGlow)*0.6;
+    }
+    if(floodOwner===this)setFlood(this.tvSlot,this.tvGlow,motelFlood);
   }
   dispose() {
     if(this.disposed)return;
