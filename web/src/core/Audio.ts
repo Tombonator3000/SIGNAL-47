@@ -262,6 +262,16 @@ export class AudioSys {
     this.motor = null;
   }
 
+  // Grit under a boot on the outside concrete: a short burst of filtered noise.
+  grit(gain = 0.05) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    const n = this.noiseSrc(false, false);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600 + Math.random() * 1400; bp.Q.value = 0.9;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    n.connect(bp); bp.connect(g); g.connect(this.sfx); n.start(t); n.stop(t + 0.14);
+  }
+
   // An ordinary phone call on the handset: line hiss for `secs`, a click at each end.
   callLine(secs: number) {
     const ctx = this.ctx; if (!ctx) return;

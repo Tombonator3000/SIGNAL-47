@@ -426,3 +426,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .page.typed img.attached { display: block; width: 100%; height: auto; margin-top: 14px; border: 1px solid rgba(0,0,0,.12); }
 .page.photo.map { transform: rotate(.6deg); }
 .notebook .cards .k-map { background: #f1ecd9; }
+
+/* Settings / Text: Large. Reading text grows about a fifth; layout stays the same. */
+html.text-large .toast { font-size: 22px; }
+html.text-large .docview .text p { font-size: 19px; }
+html.text-large .docview .text h3 { font-size: 30px; }
+html.text-large .page.typed pre { font-size: clamp(16px, 2vw, 22px); }
+html.text-large .page .hand { font-size: clamp(23px, 2.9vw, 34px); line-height: 36px; }
+html.text-large .notebook li { font-size: 30px; line-height: 34px; }
+html.text-large .notebook .cards b { font-size: 17px; }
+html.text-large .lp-text { font-size: 18px; }
+html.text-large .lp-paper p { font-size: 17px; }
+html.text-large .lp-small { font-size: 14.5px; }
+html.text-large .objective { font-size: 17px; }
+html.text-large .prompt { font-size: 28px; }
+@media (max-height: 520px) {
+  html.text-large .lp-text { font-size: 16px; }
+  html.text-large .lp-paper p { font-size: 15px; }
+}

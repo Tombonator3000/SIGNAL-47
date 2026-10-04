@@ -15,6 +15,9 @@ import type { Zone } from '../player/Player';
 // The rooms are lit only by their own fake lamps (flood set "annex"), like the photo lab.
 export class RecordsAnnex {
   group = new THREE.Group();
+  // Everything inside. The extension has no windows, so this is only drawn while the
+  // player is in it or looking in through the open corridor door (see main.ts).
+  interior = new THREE.Group();
   zones: Zone[] = [];
   zone: Record<string, Zone> = {};
   colliders: Collider[] = [];
@@ -28,11 +31,18 @@ export class RecordsAnnex {
 
   constructor() {
     const st = new THREE.Group();
-    this.group.add(st);
+    this.group.add(st, this.interior);
     this.shell(st);
     this.corridor(st);
     this.records(st);
     mergeStatic(st);
+    // after merging, only the outside surfaces stay with the shell
+    const outside = new Set<THREE.Material>([M.concrete, M.steel, M.darkPlastic]);
+    for (const c of [...st.children]) {
+      const m = c as THREE.Mesh;
+      if (m.isMesh && !Array.isArray(m.material) && outside.has(m.material)) continue;
+      this.interior.add(c);
+    }
     this.group.add(this.glow.build());
   }
 
@@ -109,7 +119,7 @@ export class RecordsAnnex {
 
   private tube(st: THREE.Group, x: number, z: number, horizontal = true) {
     box(st, horizontal ? 1.3 : 0.36, 0.06, horizontal ? 0.36 : 1.3, M.steel, x, 2.77, z);
-    const t = box(this.group, horizontal ? 1.2 : 0.26, 0.03, horizontal ? 0.26 : 1.2, this.tubeOn, x, 2.735, z);
+    const t = box(this.interior, horizontal ? 1.2 : 0.26, 0.03, horizontal ? 0.26 : 1.2, this.tubeOn, x, 2.735, z);
     noMerge(t);
     return t;
   }
@@ -142,7 +152,7 @@ export class RecordsAnnex {
     box(st, 0.04, 2.05, 0.96, this.mat({ color: 0x5a6466, roughness: 0.5, metalness: 0.4 }), -5.98, 1.03, 5.7);
     box(st, 0.06, 0.05, 0.8, steel, -5.93, 1.0, 5.7); // push bar
     const exit = plane(st, 0.42, 0.16, new THREE.MeshBasicMaterial({ map: T.labelCard(['EXIT'], { w: 160, h: 60, size: 40, bg: '#5a0f0b', fg: '#ff5a45', border: false }), toneMapped: false }), -5.985, 2.32, 5.7, Math.PI / 2);
-    noMerge(exit); this.group.add(exit);
+    noMerge(exit); this.interior.add(exit);
     this.glow.add(-5.9, 2.32, 5.7, 0.6, 0xff3a28);
     this.proxy('exitDoor', 0.2, 2.0, 1.0, -5.9, 1.05, 5.7);
 
@@ -153,7 +163,7 @@ export class RecordsAnnex {
     const face = plane(vm, 0.74, 1.48, new THREE.MeshBasicMaterial({ map: T.vendingFront(), toneMapped: false, color: 0xd8dde0 }), 0, 1.0, -0.365, Math.PI);
     noMerge(face);
     mergeStatic(vm);
-    this.group.add(vm);
+    this.interior.add(vm);
     this.objs.vending = vm;
     addFlood(1.35, 1.2, 5.6, 2.6, 0xcfe0ff, f);
     this.col(0.93, 1.77, 5.8, 6.6);
@@ -211,7 +221,7 @@ export class RecordsAnnex {
     box(fb, 0.38, 0.28, 0.34, this.mat({ color: 0x8c6d48, roughness: 0.9 }), 0, 0.14, 0);
     plane(fb, 0.26, 0.17, this.card(['STATION 01', 'FIELD RECORDS', '1947'], { w: 192, h: 128, font: 'Special Elite', size: 22 }), 0.191, 0.15, 0, Math.PI / 2);
     mergeStatic(fb);
-    this.group.add(fb);
+    this.interior.add(fb);
     this.objs.fieldBoxModel = fb;
     this.proxy('fieldBox', 0.5, 0.4, 0.5, -5.55, 1.28, 8.6);
 
@@ -235,7 +245,7 @@ export class RecordsAnnex {
     box(bd, 0.3, 0.06, 0.34, this.mat({ color: 0x2f4a6e, roughness: 0.8 }), 0, 0.03, 0);
     plane(bd, 0.2, 0.12, this.card(['SERVICE COPIES', 'REFERENCE RECORDS'], { w: 192, h: 112, size: 20 }), 0, 0.061, 0, 0, -Math.PI / 2);
     mergeStatic(bd);
-    this.group.add(bd);
+    this.interior.add(bd);
     this.proxy('binder', 0.45, 0.25, 0.45, -2.32, 1.0, 10.2);
 
     // east wall: card index cabinet for maintenance records, wall phone, calendar
@@ -250,7 +260,7 @@ export class RecordsAnnex {
     plane(ci, 0.12, 0.08, paper, -0.36, 0.84, 0.0, 0, -Math.PI / 2 + 0.3);
     plane(ci, 0.5, 0.18, this.card(['MAINTENANCE', 'REFERENCE LINEAGE'], { w: 256, h: 92, size: 22 }), 0.243, 1.3, 0, -Math.PI / 2);
     mergeStatic(ci);
-    this.group.add(ci);
+    this.interior.add(ci);
     this.col(-1.8, -1.0, 7.5, 8.4);
     this.proxy('lineage', 0.6, 1.2, 0.95, -1.3, 0.65, 7.95);
 
@@ -262,7 +272,7 @@ export class RecordsAnnex {
     for (let rr = 0; rr < 4; rr++) for (let c = 0; c < 3; c++) box(ph, 0.02, 0.016, 0.01, keys, 0.03 + (c - 1) * 0.03, 0.06 - rr * 0.035, 0.072);
     rod(ph, new THREE.Vector3(-0.06, -0.12, 0.1), new THREE.Vector3(-0.02, -0.32, 0.05), 0.006, keys, 4);
     mergeStatic(ph);
-    this.group.add(ph);
+    this.interior.add(ph);
     this.objs.recPhoneModel = ph;
     this.proxy('recPhone', 0.25, 0.4, 0.3, -1.12, 1.42, 9.25);
     plane(st, 0.26, 0.32, this.mat({ map: T.calendarApril1986(), roughness: 0.9 }), -1.005, 1.65, 9.8, -Math.PI / 2);

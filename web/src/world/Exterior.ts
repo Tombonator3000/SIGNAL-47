@@ -60,7 +60,7 @@ export class Exterior {
     const sand = T.artTexture('ext/tex_desert_ground.jpg', [380, 380]);
     if (sand) for (let i = 0; i < col.length; i++) col[i] = Math.min(1, col[i] * 3.1);
     if (sand) geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, map: sand ?? undefined })));
+    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, ...(sand ? { map: sand } : {}) })));
     this.group.add(ground);
 
     // scrub

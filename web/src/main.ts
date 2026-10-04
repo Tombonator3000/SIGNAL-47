@@ -83,7 +83,12 @@ async function boot() {
   const inter = new Interaction();
   const colliders = [...room.colliders, ...yard.colliders, ...annex.colliders];
   const player = new Player(camera, colliders, [room.bounds, ...yard.zones, ...annex.zones]);
-  player.onStep = () => audio.play('step' + Math.floor(Math.random() * 3), { gain: 0.22, rate: 0.94 + Math.random() * 0.12 });
+  // footsteps: a little deeper and with some grit out on the concrete
+  player.onStep = () => {
+    const out = space === 'yard';
+    audio.play('step' + Math.floor(Math.random() * 3), { gain: out ? 0.26 : 0.22, rate: (out ? 0.82 : 0.94) + Math.random() * 0.12 });
+    if (out) audio.grit(0.045);
+  };
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
@@ -128,15 +133,28 @@ async function boot() {
     if (document.hidden && mode === 'play' && !pausedByMenu) openPause();
   });
 
+  // the settings shared by the pause menu and the title screen; all kept on this device
+  let invertY = store.get('invertY', false);
+  let baseFov = store.get('fov', 70);
+  const setLargeText = (on: boolean) => document.documentElement.classList.toggle('text-large', on);
+  setLargeText(store.get('largeText', false));
+  const settings = () => ({
+    volume: audio.volume, sens: input.sensitivity,
+    onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
+    onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
+    quality, onQuality: (q: Quality) => applyQuality(q),
+    invertY, onInvertY: (v: boolean) => { invertY = v; store.set('invertY', v); },
+    fov: baseFov, onFov: (v: number) => { baseFov = v; store.set('fov', v); resize(); },
+    largeText: document.documentElement.classList.contains('text-large'),
+    onLargeText: (v: boolean) => { setLargeText(v); store.set('largeText', v); },
+  });
+
   function openPause() {
     if (pausedByMenu) return;
     pausedByMenu = true;
     audio.suspend(true);
     ui.pause({
-      volume: audio.volume, sens: input.sensitivity,
-      onVolume: (v) => { audio.setVolume(v); store.set('vol', v); },
-      onSens: (v) => { input.sensitivity = v; store.set('sens', v); },
-      quality, onQuality: (q) => applyQuality(q),
+      ...settings(),
       onResume: () => { pausedByMenu = false; audio.suspend(false); },
       onTitle: () => { pausedByMenu = false; audio.suspend(false); toTitle(); },
     });
@@ -189,13 +207,7 @@ async function boot() {
       canContinue: !!store.get<string | null>('checkpoint', null),
       onStart: () => startGame(),
       onContinue: () => startGame(store.get<string | null>('checkpoint', null) ?? undefined),
-      onSettings: () => ui.pause({
-        title: 'Settings', settingsOnly: true, volume: audio.volume, sens: input.sensitivity,
-        onVolume: (v) => { audio.setVolume(v); store.set('vol', v); },
-        onSens: (v) => { input.sensitivity = v; store.set('sens', v); },
-        quality, onQuality: (q) => applyQuality(q),
-        onResume: () => {}, onTitle: () => {},
-      }),
+      onSettings: () => ui.pause({ ...settings(), title: 'Settings', settingsOnly: true, onResume: () => {}, onTitle: () => {} }),
     });
   }
 
@@ -296,7 +308,8 @@ async function boot() {
     const w = innerWidth, h = innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = w < h ? 82 : 70;
+    // a phone held upright sees more of the room with a wider lens
+    if (!fcam.raised) camera.fov = w < h ? baseFov + 12 : baseFov;
     camera.updateProjectionMatrix();
   }
   addEventListener('resize', resize);
@@ -333,11 +346,11 @@ async function boot() {
   function step(dt: number) {
     t += dt;
     const modalOpen = !!ui.modal;
-    if (mode === 'title') titleCam(t);
+    if (mode === 'title') { titleCam(t); annex.interior.visible = false; }
     else {
       if (mode === 'play' && !modalOpen && !game.cinematic) {
         const look = input.consumeLook();
-        player.look(look.x, look.y);
+        player.look(look.x, invertY ? -look.y : look.y);
         const m = input.move();
         player.update(dt, m.x, m.z, m.run);
       } else {
@@ -347,6 +360,9 @@ async function boot() {
       game.update(dt, t, modalOpen);
       const sp = spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
+      // the extension has no windows: draw its rooms only from inside, or through the open door
+      annex.interior.visible = indoors.slice(1).some((b) => inside(b, player.pos))
+        || (inside(room.bounds, player.pos) && room.southDoorHinge.rotation.y > 0.01);
       crtAcc += dt;
       if (crtAcc > 1 / 12) { crtAcc = 0; game.drawCrts(t); }
       if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised) {
