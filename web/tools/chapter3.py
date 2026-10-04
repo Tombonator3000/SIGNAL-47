@@ -43,13 +43,13 @@ AUTOPILOT = """(() => { const w = S47.world, road = w.road, drive = w.drive, R =
   w.testInput = () => {
     const p = drive.pos;
     for (let i = wp; i < Math.min(R.length, wp + 20); i++) if (R[i].distanceToSquared(p) < R[wp].distanceToSquared(p)) wp = i;
-    const ahead = 7 + Math.abs(drive.speed) * 0.8;
+    const ahead = 4.5 + Math.abs(drive.speed) * 0.5;
     let tg = R[R.length - 1];
-    for (let i = wp; i < R.length; i++) if (R[i].distanceTo(p) > ahead) { tg = R[i]; break; }
+    for (let i = wp + 1; i < R.length; i++) if (R[i].distanceTo(p) > ahead) { tg = R[i]; break; }
     let err = Math.atan2(-(tg.x - p.x), -(tg.z - p.z)) - drive.heading;
     err = Math.atan2(Math.sin(err), Math.cos(err));
     const lx = p.x - o.x, lz = p.z - o.z, dEnd = p.distanceTo(road.end.pos);
-    const vT = lx > -7 ? (lz < 400 ? 25 : 6) : dEnd > 70 ? 14 : Math.max(0, (dEnd - 4) / 4);
+    const vT = lx > -7 ? (lz < 400 ? 25 : 5) : lx > -32 ? 4 : dEnd > 70 ? 13 : Math.max(0, (dEnd - 4) / 4);
     return { steer: Math.max(-1, Math.min(1, -err * 2.2)), throttle: Math.max(-1, Math.min(1, (vT - drive.speed) * 0.6)) };
   }; })()"""
 checks = []

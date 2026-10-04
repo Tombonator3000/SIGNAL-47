@@ -85,7 +85,8 @@ export class RoadArea implements DriveArea {
     this.end = { pos: w(END.x, END.z), heading: END.heading };
     this.endZone = { minX: ENDZONE.minX + origin.x, maxX: ENDZONE.maxX + origin.x, minZ: ENDZONE.minZ + origin.z, maxZ: ENDZONE.maxZ + origin.z };
     this.route = [];
-    for (let z = START.z; z < 496; z += 20) this.route.push(w(START.x, z));
+    // the lane every 10 m right up to the track mouth, so a follower never aims behind itself
+    for (let z = START.z; z <= 510; z += 10) this.route.push(w(START.x, z));
     for (const p of trackRoute()) this.route.push(w(p.x, p.y));
   }
 
