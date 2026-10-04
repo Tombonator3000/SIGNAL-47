@@ -405,3 +405,58 @@ export function fieldPrints(ui: UI, o: { prints: { url: string; caption: string 
     <div class="lp-pair">${o.prints.map((p) => `<figure><img alt="" src="${p.url}"><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div>
     <p class="lp-text">${esc(o.text)}</p>`, o.onClose);
 }
+
+// ---------- chapter four: a conversation in room 6 ----------
+// N. Vega at the table. The chapter keeps the state and says what is on screen: the last
+// exchange, the evidence that can be put on the table, a question, and the choices. The
+// panel only draws it and passes clicks back.
+export interface TalkLine { who: string; text: string }
+export interface TalkChip { id: string; label: string; image?: string; have: boolean; on: boolean }
+export interface TalkView {
+  status: string;
+  lines: TalkLine[];
+  table?: { prompt: string; chips: TalkChip[]; submit: string };
+  question?: string;
+  choices: { id: string; label: string; disabled?: boolean }[];
+  reply?: Result | null;
+  given?: { id: string; label: string }[];
+}
+export function talk(ui: UI, o: {
+  title: string;
+  view: () => TalkView;
+  onChip: (id: string) => void;
+  onTable: () => void;
+  onChoice: (id: string) => void;
+  onRead: (id: string) => void;
+  onClose?: () => void;
+}) {
+  const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div>', o.onClose);
+  const statusEl = el.querySelector('[data-status]') as HTMLElement;
+  const body = el.querySelector('[data-body]') as HTMLElement;
+  let shown = '';
+  const render = () => {
+    if (!el.isConnected) return;
+    const v = o.view();
+    statusEl.textContent = v.status;
+    // new lines come one after another; a redraw of the same lines does not repeat that
+    const key = JSON.stringify(v.lines);
+    const fresh = key !== shown;
+    shown = key;
+    const line = (l: TalkLine, i: number) => `<p class="talk-line${l.who ? '' : ' aside'}${fresh ? ' fresh' : ''}" style="animation-delay:${fresh ? i * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
+    const chip = (c: TalkChip) => `<button class="lp-choice talk-chip" data-chip="${c.id}" aria-pressed="${c.on}" ${c.have ? '' : 'disabled'}>${c.image ? `<img alt="" src="${c.image}">` : ''}<span>${esc(c.label)}${c.have ? '' : ' / not in the case'}</span></button>`;
+    body.innerHTML = `
+      <div class="talk-lines">${v.lines.map(line).join('')}</div>
+      ${v.table ? `<p class="lp-q">${esc(v.table.prompt)}</p><div class="talk-table">${v.table.chips.map(chip).join('')}</div>
+        <div class="lp-row"><button class="lp-btn primary" data-a="table">${esc(v.table.submit)}</button></div>` : ''}
+      ${v.question ? `<p class="lp-q">${esc(v.question)}</p>` : ''}
+      <div class="lp-col">${v.choices.map((c) => `<button class="lp-btn" data-c="${c.id}" ${c.disabled ? 'disabled' : ''}>${esc(c.label)}</button>`).join('')}</div>
+      ${v.reply ? `<p class="lp-text ${v.reply.ok ? 'good' : 'bad'}">${esc(v.reply.text)}</p>` : ''}
+      ${v.given?.length ? `<p class="lp-small">On the table</p><div class="lp-row">${v.given.map((g) => `<button class="lp-btn" data-read="${g.id}">${esc(g.label)}</button>`).join('')}</div>` : ''}`;
+    body.querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((b) => b.addEventListener('click', () => { o.onChip(b.dataset.chip!); render(); }));
+    body.querySelector('[data-a=table]')?.addEventListener('click', () => { o.onTable(); render(); });
+    body.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => { o.onChoice(b.dataset.c!); render(); }));
+    body.querySelectorAll<HTMLButtonElement>('[data-read]').forEach((b) => b.addEventListener('click', () => o.onRead(b.dataset.read!)));
+  };
+  render();
+  return { el, refresh: render };
+}

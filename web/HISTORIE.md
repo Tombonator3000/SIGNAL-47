@@ -12,7 +12,7 @@ Spillet er én natt. Kapitlene er avsnitt i natten, ikke separate episoder: det 
 | K1 «The Second Exposure» | 02:16 til 02:55 | Servicegården, S-03, B-12, fotolaben | To eksponeringer viser en referanse som blir liggende på filmen | Ferdig |
 | K2 «The Amended Record» | 02:55 til 03:35 | Korridoren og arkivet | Original og endret protokoll fra 1947, linjekortet til B-12, telefon til Nora Vega | Ferdig |
 | K3 «The Survey Station» | 03:40 til 04:30 | Lastebilen, veien ut, STATION 01, fotolaben | Det flyttede fastmerket, lampeprøven, det rene kabelkuttet, Tomás' stemme i mottakeren, Nora på felttelefonen | Ferdig |
-| K4 «Room 6» | 04:35 til 05:00 | Sierra Motor Court, rett over veien fra SARO | Nora forteller hva som skjedde i 1947 og gir feltkortet, brevet og rettelsen | Neste. Rommet er levert av Codex |
+| K4 «Room 6» | 04:35 til 05:00 | Sierra Motor Court, rett over veien fra SARO | Nora forteller hva som skjedde i 1947 og gir feltkortet, brevet og rettelsen | Spillbart. Motellet utenfra og kontoret kommer fra Codex |
 | **Nytt:** «The Roswell Road» | 05:00 til 05:10 | Riksveien sørover mot Roswell | Lastebilen dør der den gamle siktlinja C krysser veien. Lysene blinker i grupper på 4 og 7, et rolig lys står over mesaen | Senere |
 | **Nytt:** «All Night» | 05:10 til 05:25 | En diner som er åpen hele natten | Servitrisen og en sjåfør så lyset i natt. Et innrammet avisutklipp fra juli 1947 viser det samme. Telefonen til Ward | Senere |
 | K5 «The Reference That Answers» | 05:35 til 06:00 | SARO | Spillerens eget forsøk får svar. A, B og C legges sammen. Ward stopper morgenserien klokka 06:00 | Senere |
@@ -45,11 +45,21 @@ På STATION 01, portert fra Unitys Station26:
 - Tekstene i feltjournalen (E09A, E10, svarene på P06 til P09) er Unitys. P08 har fått et eget svar når spilleren velger motiv: «The faces show that the cable was cut on purpose. They do not show who cut it, or why.»
 - Lagring: autolagring ved ankomst, ved hvert funn og ved hjemkomst. Det kan ikke lagres under kjøring.
 
-## Kapittel 4: rom 6 (senere)
+## Kapittel 4: rom 6 (spillbart)
 
 Som i bibelen, med én endring: motellet ligger rett over veien fra SARO i nettversjonen, så spilleren kan gå dit. Det gjør natten mer sammenhengende enn en reiseknapp. Nora sitter i rom 6. Samtalen åpnes gjennom bevisene, og hver av de tre delene gir noe fysisk: Tomás' feltkort, brevet hans og Noras signerte rettelse.
 
 **Nytt:** Til slutt forteller Nora hvor C lå i 1947. Siktlinja gikk østover fra stasjonen og krysset den gamle riksveien mot Roswell. «Tomás walked out to the closing point with the last reading. If you want to know whether the line still holds, drive the road. Don't stop on the line.»
+
+Slik det er bygd (`src/story/Chapter4.ts`):
+
+- Kapittelkortet etter framkallingen sier at Nora venter i rom 6. Klokka er 04:35. Nødutgangen i enden av sørkorridoren er korteste vei: alarmen på skyvestanga ble koblet fra for mange år siden, og spilleren holder døra åpen med en murstein. En rampe går ned til bakken, en tråkket sti går mot riksveien, og på andre siden ligger motellet. Spilleren følger bakkehøyden ned rampa.
+- **P10:** Nora vil ha bevisene på bordet først: de to B-12-bildene og originalen fra 1947. Kommer det amendede eksemplaret med, sier hun at hun vet hva det står der, for hun skrev det selv. «I know that second line. Tell me which source you took away before you made the control.» Svaret må stemme med metoden spilleren valgte i kapittel 1.
+- **P11:** tre deler i valgfri rekkefølge. Den amendede protokollen (mildt eller hardt spørsmål, samme fakta) gir den signerte rettelsen (E12). Spørsmålet om T. Vega gir brevet hans (E13): Tomás var broren hennes, nitten år, «He has been nineteen for thirty-nine years.» Bildet av kabelen gir hans siste feltkort (E11): hun kuttet kabelen selv, med Tomás ute på C. Til slutt motivet: hun trodde den fullstendige protokollen ville la noen koble opp anordningen igjen.
+- **P12:** telefonen på nattbordet er koblet til den gamle feltlinja til hytta. Nora spør «Tomás. Where did you leave the spare key?» og får 1947-replikken tilbake. Det er en bevart referanse, ikke en samtale. Svaret står i brevet: nøkkelen lå i kruset.
+- Papirene hun gir, ligger på bordet etterpå og kan leses der. Hodet hennes følger spilleren.
+- Slutten: hvor C gikk. Når spilleren går ut av rommet, kommer sluttkortet. Roswell-veien er neste del.
+- Til Codex leverer motellet utenfra og kontoret (`MotelFront.ts`), er rom 6 merket på den gamle motellkulissen: nummer, tent vindu, lampe og en dør å bruke.
 
 ## Nytt: Roswell-veien
 

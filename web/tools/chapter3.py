@@ -2,7 +2,7 @@
 # SARO, the drive south, STATION 01 with P06 to P09 in the Unity order rules (wrong answers
 # and the Unity replies included), both field photographs from the real camera, Nora on
 # the field telephone, Continue at the station, the way back, developing the field roll at
-# the SARO wet bench, and the end card. Starts from S47.jump('chapter3').
+# the SARO wet bench, and the chapter card into chapter four. Starts from S47.jump('chapter3').
 # Usage: python3 tools/chapter3.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
@@ -330,15 +330,19 @@ async def main():
         check(await ev("S47.yard.dryPrints[2].visible && S47.yard.dryPrints[3].visible"), 'the field prints hang on the drying line')
         await shot('e14_field_prints')
         await pg.click('.labpanel .lp-close'); await tick(1.2)
-        await ev("S47.hold = false")
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        text = await ev("document.querySelector('.endcard').textContent")
-        check('THE SURVEY STATION' in text and 'ROOM 6' in text, 'end card for chapter three')
-        await shot('e15_ending')
-        await ev("S47.hold = true")
+        # no end card: a chapter card, then chapter four begins (room 6, across the road)
+        for i in range(24):
+            await tick(0.5)
+            if await ev("!!document.querySelector('.chapter-card')"): break
+        text = await ev("(document.querySelector('.chapter-card') || {}).textContent || ''")
+        check('THE SURVEY STATION' in text and 'CHAPTER FOUR' in text and 'ROOM 6' in text, 'chapter card closes chapter three and names chapter four')
+        check(await pg.locator('.endcard').count() == 0, 'no end card between the chapters')
+        await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
+        await shot('e15_chapter_card')
+        await tick(7)
+        check(await ev("S47.game.phase") == 'ch4' and 'ROOM 6' in await objective(), 'chapter four begins: room 6 across the road')
 
         # ---------- the case file ----------
-        await pg.click('.endcard button:has-text("Return to the observatory")'); await pg.wait_for_timeout(400)
         await ev("S47.hold = true; S47.tick(0.3)")
         await ev("S47.game.openNotebook()")
         await pg.click('.notebook [data-t=case]')

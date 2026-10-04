@@ -170,7 +170,7 @@ export class UI {
         <button data-a="set">Settings</button>
       </div>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">The prologue and chapters one to three, from the control room to the survey station. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The prologue and chapters one to four, from the control room to the survey station and room 6 at Sierra Motor Court. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
     el.querySelector('[data-a=start]')!.addEventListener('click', opts.onStart);
     el.querySelector('[data-a=cont]')!.addEventListener('click', opts.onContinue);
     el.querySelector('[data-a=load]')!.addEventListener('click', opts.onLoad);

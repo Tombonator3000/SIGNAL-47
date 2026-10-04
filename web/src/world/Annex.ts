@@ -26,6 +26,9 @@ export class RecordsAnnex {
   glow = new GlowPoints();
   flood = annexFlood;
   private flicker = -1;
+  private exitHinge!: THREE.Group;
+  exitOpen = 0;                          // 0 closed, 1 open (the leaf swings 80 degrees out)
+  readonly exitLeafCol: Collider = { minX: -7.3, maxX: -6.3, minZ: 5.12, maxZ: 5.32 };
   private flickerTube!: THREE.Mesh;
   private tubeOn = new THREE.MeshBasicMaterial({ color: 0xeef3ff });
   private tubeDim = new THREE.MeshBasicMaterial({ color: 0x6d7378 });
@@ -75,7 +78,10 @@ export class RecordsAnnex {
     const ceil = this.mat({ color: 0xb9b3a4, map: T.ceilingTiles(), roughness: 1 });
     const H = 2.8;
     // outer walls: west (corridor part, records part), south, east
-    faced(st, 0.3, H, 1.9, ext, cw, -6.15, H / 2, 5.75, '+x');
+    // the corridor part of the west wall, with the fire exit's opening (z 5.22 to 6.18)
+    faced(st, 0.3, H, 0.42, ext, cw, -6.15, H / 2, 5.01, '+x');
+    faced(st, 0.3, H, 0.52, ext, cw, -6.15, H / 2, 6.44, '+x');
+    faced(st, 0.3, H - 2.12, 0.96, ext, cw, -6.15, 2.12 + (H - 2.12) / 2, 5.7, '+x');
     faced(st, 0.3, H, 4.1, ext, rw, -6.15, H / 2, 8.75, '+x');
     faced(st, 8.6, H, 0.3, ext, rw, -2.0, H / 2, 10.65, '-z');
     faced(st, 0.3, H, 6.0, ext, cw, 2.15, H / 2, 7.8, '-x');
@@ -106,7 +112,6 @@ export class RecordsAnnex {
     box(st, 0.35, 0.25, 0.25, M.steel, -2.0, 2.4, 10.92);
     this.glow.add(-2.0, 2.3, 11.06, 1.6, 0xffbe6e);
     addFlood(-2.0, 2.2, 11.6, 8);
-    box(st, 0.05, 2.1, 1.0, M.steel, -6.33, 1.05, 5.7);
     box(st, 0.3, 0.06, 0.6, M.steel, -6.45, 2.25, 5.7);
     this.glow.add(-6.45, 2.18, 5.7, 0.7, 0xffc47a);
     box(st, 1.6, 0.8, 1.1, M.steel, -4.2, 3.6, 8.6);
@@ -117,6 +122,7 @@ export class RecordsAnnex {
     this.addZone('corridor', -5.75, 1.75, 5.05, 6.35);
     this.addZone('recordsDoor', -4.38, -3.42, 5.6, 7.7);
     this.addZone('records', -5.75, -1.25, 7.05, 10.25);
+    this.addZone('exitDoor', -6.9, -5.0, 5.25, 6.15, false);
   }
 
   private tube(st: THREE.Group, x: number, z: number, horizontal = true) {
@@ -151,8 +157,19 @@ export class RecordsAnnex {
     box(st, 0.05, 0.04, 0.14, steel, 1.94, 1.0, 5.34);
     sign(['RESTROOMS'], 1.955, 1.62, 5.7, -Math.PI / 2, 0.42);
     this.proxy('restroomDoor', 0.2, 2.0, 1.0, 1.9, 1.05, 5.7);
-    box(st, 0.04, 2.05, 0.96, this.mat({ color: 0x5a6466, roughness: 0.5, metalness: 0.4 }), -5.98, 1.03, 5.7);
-    box(st, 0.06, 0.05, 0.8, steel, -5.93, 1.0, 5.7); // push bar
+    // the fire exit: a steel leaf hinged at its south edge on the outer face of the wall,
+    // opening outwards (chapter four props it open with a brick)
+    const hinge = new THREE.Group();
+    hinge.position.set(-6.27, 0, 5.22);
+    const leafMat = this.mat({ color: 0x5a6466, roughness: 0.5, metalness: 0.4 });
+    box(hinge, 0.05, 2.08, 0.95, leafMat, 0, 1.04, 0.48);
+    box(hinge, 0.04, 0.05, 0.8, steel, 0.06, 1.0, 0.48); // push bar, inside
+    box(hinge, 0.04, 0.05, 0.05, steel, 0.06, 1.0, 0.1);
+    box(hinge, 0.03, 0.12, 0.05, steel, -0.04, 1.0, 0.86); // a pull plate outside
+    noMerge(hinge);
+    this.group.add(hinge);
+    this.exitHinge = hinge;
+    box(st, 0.06, 0.06, 1.0, steel, -6.05, 2.12, 5.7); // frame head
     const exit = plane(st, 0.42, 0.16, new THREE.MeshBasicMaterial({ map: T.labelCard(['EXIT'], { w: 160, h: 60, size: 40, bg: '#5a0f0b', fg: '#ff5a45', border: false }), toneMapped: false }), -5.985, 2.32, 5.7, Math.PI / 2);
     noMerge(exit); this.interior.add(exit);
     this.glow.add(-5.9, 2.32, 5.7, 0.6, 0xff3a28);
@@ -305,6 +322,14 @@ export class RecordsAnnex {
     // fire extinguisher by the door
     cyl(st, 0.08, 0.08, 0.46, this.mat({ color: 0xa3241b, roughness: 0.45 }), -4.75, 0.5, 6.95, 12);
     box(st, 0.04, 0.06, 0.2, steel, -4.75, 0.6, 6.83);
+  }
+
+  /** Opens (1) or closes (0) the fire exit, in between while it swings. The doorway zone
+   *  opens with it; chapter four adds the open leaf's collider. */
+  setExitDoor(k: number) {
+    this.exitOpen = k;
+    this.exitHinge.rotation.y = -1.4 * k;
+    this.zone.exitDoor.enabled = k > 0.6;
   }
 
   // A tired tube flickers now and then.

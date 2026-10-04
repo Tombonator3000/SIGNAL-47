@@ -417,6 +417,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .lp-figure { margin: 0; }
 .lp-figure img { display: block; width: 100%; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,.45); }
 .lp-figure figcaption { font-family: var(--type); font-size: 14px; line-height: 1.6; color: #cfc8b5; margin-top: 10px; }
+/* chapter four: the conversation in room 6 */
+.talk-lines { display: grid; gap: 8px; margin: 4px 0 14px; padding: 12px 14px; border-left: 2px solid rgba(255,183,164,.5); background: rgba(255,200,150,.035); }
+.talk-line { margin: 0; font-size: 16.5px; line-height: 1.5; color: #f0e7d0; }
+.talk-line .who { display: inline-block; min-width: 6.4em; margin-right: .6em; font-family: var(--term); font-size: 19px; color: #ffb7a4; letter-spacing: .08em; }
+.talk-line.aside { color: #a99f8c; font-style: italic; }
+.talk-line.fresh { animation: talk-in .45s ease-out both; }
+@keyframes talk-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.talk-table { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 8px; }
+.talk-chip img { width: 54px; height: 40px; object-fit: cover; flex: none; }
+.talk-chip[disabled] { opacity: .45; }
+@media (max-width: 760px) { .talk-table { grid-template-columns: 1fr 1fr; } .talk-line { font-size: 15px; } .talk-line .who { min-width: 0; display: block; font-size: 17px; } }
+html.text-large .talk-line { font-size: 19px; }
 .lp-cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 10px; }
 .lp-choice { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 8px 10px; min-height: 48px; text-align: left;
   font-family: var(--term); font-size: 19px; color: #e9e2cf; border: 1px solid rgba(233,226,207,.25); }

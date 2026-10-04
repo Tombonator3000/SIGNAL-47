@@ -7,6 +7,8 @@ import type { RoadArea } from '../drive/RoadArea';
 import type { DriveController } from '../drive/Drive';
 import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
+import type { Room6 } from './Room6';
+import { Crossing, type CourtSite } from './Crossing';
 import { flood as siteFlood } from './kit';
 import { loadArtFor } from '../core/art';
 
@@ -19,9 +21,13 @@ import { loadArtFor } from '../core/art';
 //   SARO        around the origin       control room, yard, records, the truck pad
 //   road        around (8000, 0, 0)     the drive south to the survey track
 //   STATION 01  around (0, 0, 8000)     the survey station, chapter three
+//   room 6      around (0, 0, -8000)    Nora's room at Sierra Motor Court, chapter four
+//
+// The walk from SARO's fire exit over the highway to the motel is part of SARO (Crossing.ts).
 
 export const ROAD_ORIGIN = new THREE.Vector3(8000, 0, 0);
 export const STATION_ORIGIN = new THREE.Vector3(0, 0, 8000);
+export const ROOM6_ORIGIN = new THREE.Vector3(0, 0, -8000);
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -47,6 +53,7 @@ type Modules = {
   Drive: typeof import('../drive/Drive');
   Truck: typeof import('../drive/Truck');
   engine: typeof import('../drive/engineSound');
+  Room6: typeof import('./Room6');
 };
 
 export class World {
@@ -56,6 +63,13 @@ export class World {
   onArriveStation?: () => void;
   onArriveSaro?: () => void;
   onStationLoaded?: (site: FieldSite) => void;
+  onRoom6Loaded?: (room: Room6) => void;
+  onEnterRoom6?: () => void;
+  onLeaveRoom6?: () => void;
+  room6: Room6 | null = null;
+  /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
+  crossing: Crossing;
+  court: CourtSite;
   saroTruck: Truck | null = null;
   /** Tests steer the truck through this instead of the keys (tools/chapter3.py): fixed
    *  input, or a function asked every step (an autopilot along road.route). */
@@ -70,7 +84,17 @@ export class World {
   private dashT = 0;
   private busy = false;
 
-  constructor(private d: WorldDeps) {}
+  constructor(private d: WorldDeps) {
+    // the walk over the road belongs to SARO: built now, shown and walked with SARO
+    const c = new Crossing();
+    this.crossing = c;
+    this.court = c.court;
+    d.scene.add(c.group);
+    d.saro.groups.push(c.group);
+    d.saro.zones.push(...c.zones);
+    d.saro.colliders.push(...c.colliders);
+    d.player.floor = c.floorAt;
+  }
 
   // ---------- loading ----------
   // The truck is part of SARO from the start (it stands on the pad all night). It is
@@ -94,7 +118,8 @@ export class World {
         : k === 'RoadArea' ? await import('../drive/RoadArea')
           : k === 'Drive' ? await import('../drive/Drive')
             : k === 'Truck' ? await import('../drive/Truck')
-              : await import('../drive/engineSound');
+              : k === 'Room6' ? await import('./Room6')
+                : await import('../drive/engineSound');
       (this.mods as Record<string, unknown>)[k] = m;
     }
     return this.mods[k] as Modules[K];
@@ -157,6 +182,20 @@ export class World {
   async prepare(area: AreaId) {
     if (area === 'station01') await this.ensureStation();
     if (area === 'road') await this.ensureRoad();
+    if (area === 'room6') await this.ensureRoom6();
+  }
+
+  private ensureRoom6() {
+    return this.once('room6', async () => {
+      const { Room6 } = await this.load('Room6');
+      const r = new Room6(ROOM6_ORIGIN.clone());
+      r.group.visible = false;
+      this.d.scene.add(r.group);
+      this.room6 = r;
+      this.d.applyQuality();
+      this.onRoom6Loaded?.(r);
+      return r;
+    });
   }
 
   // ---------- areas ----------
@@ -170,15 +209,68 @@ export class World {
     if (this.road) this.road.group.visible = area === 'road';
     if (this.truck) this.truck.group.visible = area === 'road';
     if (this.parked) this.parked.group.visible = area === 'station01';
+    if (this.room6) this.room6.group.visible = area === 'room6';
+    player.floor = area === 'saro' ? this.crossing.floorAt : null;
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
+    if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
   }
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
+    if (this.area === 'room6') return !!this.room6 && p.z < ROOM6_ORIGIN.z + 3.0;   // in the room, not on the walk outside
     if (this.area !== 'station01' || !this.site) return false;
     const b = this.site.hutBounds;
     return p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
   }
+  /** Put the player on the walk outside room 6, facing the open door. */
+  placeAtRoom6() {
+    const a = this.room6!.anchors.arrive;
+    this.d.player.place(a.x, a.z, a.yaw);
+  }
+  /** Put the player outside room 6 on the motel's front, back in SARO's scene. */
+  placeOutsideRoom6() {
+    const a = this.court.anchors.fromRoom6;
+    this.d.player.place(a.x, a.z, a.yaw);
+  }
+
+  // ---------- room 6 ----------
+  /** Through the door of room 6 (a short fade; the room loads the first time). */
+  goRoom6() {
+    if (this.busy) return;
+    this.busy = true;
+    const { fade, hold, toast } = this.d;
+    hold(true);
+    fade(true, '');
+    Promise.all([this.ensureRoom6(), new Promise((r) => setTimeout(r, 500))]).then(() => {
+      this.enter('room6');
+      this.placeAtRoom6();
+      this.busy = false;
+      this.onEnterRoom6?.();
+      hold(false);
+      fade(false);
+    }).catch((e: Error) => {
+      console.error(e);
+      this.busy = false;
+      hold(false);
+      fade(false);
+      toast('Room 6 could not be loaded. Check your connection and try the door again.', 5);
+    });
+  }
+  /** Out of room 6 onto the motel's front. */
+  leaveRoom6() {
+    if (this.busy) return;
+    const { fade, hold } = this.d;
+    hold(true);
+    fade(true, '');
+    this.d.after(0.6, () => {
+      this.enter('saro');
+      this.placeOutsideRoom6();
+      this.onLeaveRoom6?.();
+      hold(false);
+      fade(false);
+    });
+  }
+
   /** Put the player at the station's arrival point. */
   placeAtStation() {
     const a = this.site!.anchors.arrive;
@@ -275,6 +367,7 @@ export class World {
   // ---------- per frame ----------
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
+    if (this.area === 'room6') this.room6?.update(dt, t);
     if (this.area === 'road' && this.road && this.drive && this.truck) {
       if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
       if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
