@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { rng } from '../core/textures';
-import { artTexture } from '../core/art';
+import { artImage } from '../core/art';
 
 // Band of the Milky Way runs diagonally across the north view, as in the concept art.
 const A = new THREE.Vector3(-0.62, 0.22, -0.75).normalize();
@@ -21,6 +21,7 @@ export class Sky {
   // After its closest approach on the 11th it stood in the south around midnight and set
   // a little after three (HISTORIE.md, KAPITLER.md). It cannot have been in a 1947 sky.
   comet: THREE.Mesh;
+  private pixelRatio = { value: 1 };
   private flashT = 0;
   private nextFlash = 9;
   onThunder?: (delay: number, strength: number) => void;
@@ -29,7 +30,7 @@ export class Sky {
     const dome = new THREE.Mesh(
       new THREE.SphereGeometry(3000, 48, 24),
       new THREE.ShaderMaterial({
-        uniforms: { ...this.uniforms, uPanorama: { value: artTexture('sky') } },
+        uniforms: { ...this.uniforms, uPanorama: { value: this.milkyWay() } },
         side: THREE.BackSide, depthWrite: false, fog: false,
         vertexShader: /* glsl */`
           varying vec3 vDir;
@@ -68,11 +69,12 @@ export class Sky {
             float lum = (band * c1 * 0.65 + core * c2 * 0.9) * bulge;
             lum *= 1.0 - dust * core * 0.9;
             col += mwCol * lum * 0.20 * smoothstep(-0.02, 0.18, h);
-            // The source is a full-sphere equirectangular map, horizon at v=0.5.
+            // The source is a full-sphere equirectangular map, horizon at v=0.5, with its
+            // painted stars taken out (milkyWay()); the stars are the points of makeStars().
             // sRGB textures are decoded to linear values by WebGL's sampler.
             vec2 skyUV = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.1415927 + 0.5);
             vec3 painted = texture2D(uPanorama, skyUV).rgb;
-            col = mix(col, painted * 1.7, 0.72 * smoothstep(-0.03, 0.14, h));
+            col = mix(col, painted * 2.0, 0.72 * smoothstep(-0.03, 0.14, h));
             // distant lightning inside a storm on the horizon
             float fa = max(dot(d, uFlashDir), 0.0);
             col += vec3(0.55, 0.6, 0.85) * uFlash * pow(fa, 18.0) * smoothstep(0.35, 0.0, h) * 1.4;
@@ -120,28 +122,98 @@ export class Sky {
     this.comet.visible = s > 20 * 3600 || s < 3 * 3600 + 5 * 60;
   }
 
+  // The painted sky (round 1) is a 4K panorama shown at 2K. Seen at full screen its stars
+  // came out as soft blobs several pixels wide (Tom: too big, low resolution). Here the
+  // painted stars are taken out and only the Milky Way is kept: a grey opening (the darkest
+  // value within two pixels, then the brightest within one) removes anything smaller than
+  // about four pixels and leaves the band, its glow and its dust lanes. Only the sky half is
+  // filtered. The band's brightness is kept for makeStars(), so the sharp stars thicken
+  // along it as the real ones do.
+  private band: { w: number; h: number; lum: Float32Array } | null = null;
+  /** How long taking the painted stars out took (tools/sky.py reports it). */
+  filterMs = 0;
+  private milkyWay() {
+    const t0 = performance.now();
+    const W = 2048, H = 1024, ROWS = 540;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d', { willReadFrequently: true })!;
+    g.drawImage(artImage('sky'), 0, 0, W, H);
+    const img = g.getImageData(0, 0, W, ROWS), px = img.data;
+    const tmp = new Uint8ClampedArray(px.length);
+    // one pass of a min or max filter of radius r along x (wrapping: it is a panorama) or y
+    const pass = (src: Uint8ClampedArray, dst: Uint8ClampedArray, r: number, alongX: boolean, min: boolean) => {
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < W; x++) {
+          const o = (y * W + x) * 4;
+          let r0 = src[o], g0 = src[o + 1], b0 = src[o + 2];
+          for (let k = -r; k <= r; k++) {
+            if (!k) continue;
+            const q = alongX ? (y * W + ((x + k + W) % W)) * 4 : (Math.min(ROWS - 1, Math.max(0, y + k)) * W + x) * 4;
+            if (min) { if (src[q] < r0) r0 = src[q]; if (src[q + 1] < g0) g0 = src[q + 1]; if (src[q + 2] < b0) b0 = src[q + 2]; }
+            else { if (src[q] > r0) r0 = src[q]; if (src[q + 1] > g0) g0 = src[q + 1]; if (src[q + 2] > b0) b0 = src[q + 2]; }
+          }
+          dst[o] = r0; dst[o + 1] = g0; dst[o + 2] = b0; dst[o + 3] = 255;
+        }
+      }
+    };
+    pass(px, tmp, 2, true, true); pass(tmp, px, 2, false, true);
+    pass(px, tmp, 1, true, false); pass(tmp, px, 1, false, false);
+    g.putImageData(img, 0, 0);
+    // the band's brightness at a quarter size, for the stars
+    const bw = W / 4, bh = ROWS / 4, lum = new Float32Array(bw * bh);
+    let max = 0;
+    for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
+      const o = (y * 4 * W + x * 4) * 4;
+      const l = px[o] * 0.3 + px[o + 1] * 0.5 + px[o + 2] * 0.2;
+      lum[y * bw + x] = l; if (l > max) max = l;
+    }
+    for (let i = 0; i < lum.length; i++) lum[i] /= max || 1;
+    this.band = { w: bw, h: bh, lum };
+    this.filterMs = performance.now() - t0;
+    const tex = new THREE.CanvasTexture(c);
+    tex.name = 'art/sky (stars removed)';
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter;
+    return tex;
+  }
+  /** How bright the Milky Way is in direction d (0 to 1), from the filtered panorama. */
+  private bandAt(d: THREE.Vector3) {
+    const b = this.band;
+    if (!b) return Math.exp(-(d.dot(BAND_N) ** 2) / 0.022);
+    const u = Math.atan2(d.z, d.x) / (Math.PI * 2) + 0.5, v = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1)) / Math.PI + 0.5;
+    // the canvas has the zenith at the top; v = 1 is the zenith
+    const x = Math.min(b.w - 1, Math.floor(u * b.w)), y = Math.floor((1 - v) * 1024 / 4);
+    return y >= 0 && y < b.h ? b.lum[y * b.w + x] : 0;
+  }
+
+  // Sharp stars: most of them a single pixel and told apart by brightness, not size, as in
+  // a real desert sky; only the few brightest are larger, with a tight core. Their number
+  // follows the Milky Way. The point size follows the renderer's pixel ratio (update()).
   private makeStars() {
     const r = rng(47);
-    const N = 5200;
+    const N = 14000;
     const pos = new Float32Array(N * 3), size = new Float32Array(N), col = new Float32Array(N * 3), ph = new Float32Array(N);
     const v = new THREE.Vector3();
     for (let i = 0; i < N; i++) {
-      // a third of the stars cluster towards the galactic band
       for (;;) {
         v.set(r() * 2 - 1, r() * 2 - 1, r() * 2 - 1);
         const l = v.length();
         if (l < 0.05 || l > 1) continue;
         v.divideScalar(l);
         if (v.y < -0.02) continue;
-        if (i % 3 === 0) { const b = v.dot(BAND_N); if (Math.abs(b) > 0.12 + r() * 0.1) continue; }
+        // four times as many stars in the brightest part of the band as in the open sky
+        if (r() * 1.0 > 0.25 + 0.75 * Math.min(1, this.bandAt(v) * 1.6)) continue;
         break;
       }
       pos.set([v.x * 2800, v.y * 2800, v.z * 2800], i * 3);
-      const m = Math.pow(r(), 6);
-      size[i] = 1.0 + m * 4.5;
+      // brightness: many faint stars, some medium, and a few dozen bright ones a little larger
+      const q = r();
+      const big = q > 0.996 ? 2.8 : q > 0.982 ? 2.0 : 1.0;
+      const br = 0.28 + 0.7 * Math.pow(r(), 3) + (big > 1 ? 0.5 + (big - 2) * 0.6 : 0);
+      size[i] = big;
       const t = r();
-      const c = t < 0.15 ? [1, 0.8, 0.65] : t < 0.3 ? [0.75, 0.85, 1] : [1, 0.97, 0.92];
-      const br = 0.35 + m * 1.4;
+      const c = t < 0.12 ? [1, 0.83, 0.68] : t < 0.3 ? [0.8, 0.88, 1] : [1, 0.98, 0.94];
       col.set([c[0] * br, c[1] * br, c[2] * br], i * 3);
       ph[i] = r() * 100;
     }
@@ -151,25 +223,31 @@ export class Sky {
     g.setAttribute('aCol', new THREE.BufferAttribute(col, 3));
     g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uTime: this.uniforms.uTime, uPR: { value: Math.min(window.devicePixelRatio, 2) } },
+      uniforms: { uTime: this.uniforms.uTime, uPR: this.pixelRatio },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: /* glsl */`
         attribute float aSize; attribute vec3 aCol; attribute float aPh;
-        uniform float uTime, uPR; varying vec3 vCol;
+        uniform float uTime, uPR; varying vec3 vCol; varying float vSharp;
         void main() {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_Position = projectionMatrix * mv;
-          float tw = 0.75 + 0.25 * sin(uTime * (1.3 + fract(aPh) * 2.5) + aPh);
-          float horizon = smoothstep(0.0, 0.12, normalize(position).y);
-          vCol = aCol * tw * (0.35 + 0.65 * horizon);
-          gl_PointSize = aSize * uPR;
+          float up = normalize(position).y;
+          // stars twinkle more low down, where the light goes through more air
+          float amp = mix(0.3, 0.08, smoothstep(0.0, 0.35, up));
+          float tw = 1.0 - amp * (0.5 + 0.5 * sin(uTime * (1.7 + fract(aPh) * 3.0) + aPh));
+          float horizon = smoothstep(0.0, 0.12, up);
+          vCol = aCol * tw * (0.3 + 0.7 * horizon);
+          gl_PointSize = max(1.0, aSize * uPR);
+          vSharp = aSize > 1.2 ? 1.0 : 0.0;
           gl_Position.z = gl_Position.w * 0.99999;
         }`,
       fragmentShader: /* glsl */`
-        varying vec3 vCol;
+        varying vec3 vCol; varying float vSharp;
         void main() {
           vec2 c = gl_PointCoord - 0.5;
-          float a = smoothstep(0.5, 0.0, length(c));
+          // a single pixel is the star; larger ones get a tight core, as bright as a
+          // small star in the middle so the light spread over more pixels is not lost
+          float a = vSharp > 0.5 ? exp(-dot(c, c) * 9.0) * 2.4 : 1.0;
           gl_FragColor = vec4(vCol * a, a);
         }`,
     });
@@ -179,8 +257,9 @@ export class Sky {
     return pts;
   }
 
-  update(dt: number, t: number, follow: THREE.Vector3) {
+  update(dt: number, t: number, follow: THREE.Vector3, pixelRatio = 1) {
     this.group.position.copy(follow);
+    this.pixelRatio.value = pixelRatio;
     this.uniforms.uTime.value = t;
     this.nextFlash -= dt;
     if (this.nextFlash <= 0) {
