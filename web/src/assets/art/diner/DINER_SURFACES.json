@@ -1,0 +1,584 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04T11:28:12.611755+00:00",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 6, dinerflater. Kun grafikk, ingen integrasjon.",
+  "brief": {
+    "commit": "17810930a941f574f5cfcb6f0ec373c26292007b",
+    "path": "web/ART_BRIEF.md",
+    "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+    "bytes": 12829
+  },
+  "generator": {
+    "tool": "built-in image_gen",
+    "calls": 3,
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false,
+    "reference_input_mode": "Ingen bildefiler sendt som input. To eksisterende overflater inspisert for stil før generering."
+  },
+  "style_references": [
+    {
+      "path": "web/src/assets/art/room/tex_desk_laminate.jpg",
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "role": "Inspisert lokalt før generering, ikke sendt som bildeinput."
+    },
+    {
+      "path": "web/src/assets/art/lab/sign_blank.png",
+      "sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "role": "Inspisert lokalt før generering, ikke sendt som bildeinput."
+    }
+  ],
+  "export": {
+    "operations": [
+      "Hele RGB-kilden skalert med Pillow LANCZOS",
+      "JPEG kvalitet 85, chroma subsampling 0, optimize true eller ugjennomsiktig RGB PNG",
+      "Innebygd sRGB ICC",
+      "Vanlig 2x2 QA-ark fra uendrede slutteksporter, JPEG kvalitet 90"
+    ],
+    "content_edited_by_code": false,
+    "cropped": false,
+    "source_colour_assumption": "Generatorkildene har ikke ICC. Deres RGB-verdier behandles som sRGB; ingen fargekorrigering er utført."
+  },
+  "assets": [
+    {
+      "id": "counter",
+      "file": "tex_counter_laminate.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-0881325d-710f-46a9-afbe-5577f1e4f572.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "bytes": 42959,
+      "mode": "RGB",
+      "format": "JPEG",
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "opaque": true,
+      "quality": 85,
+      "source_sha256": "1af613786f181928dcb177546ad219a5c9a8d3291981629a7b0ba1a60657f386",
+      "source_bytes": 2058593,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: seamless square sRGB base-color/albedo texture for a low-poly Three.js first-person game, SIGNAL / 47, New Mexico in 1986. Create a flat orthographic scan of old diner counter laminate, covering exactly 0.6 by 0.6 metres. Pale muted mint green laminate with small sparse grey mid-century four-point starbursts printed in the laminate, restrained fine mineral speckles, very faint broad plate-contact abrasion and fine wear from decades of use. Authentic understated 1940s-to-1980s diner material, stylized readable surface, not photographic, not grungy. All wear low contrast. Flat uniform albedo only, no baked light, gradients, vignette, specular shine, reflections, ambient occlusion, depth, perspective or shadows. The entire square is the same uninterrupted material, no countertop silhouette or border. Tileable/seamless on both axes: the left and right boundaries and top and bottom boundaries must match with continuous mint color and pattern density, no boundary lines. Small grey stars remain tiny decorative material motifs, never lettering or symbols with meaning. No objects, plates, coffee cups, text, letters, numbers, logos or watermark. Deliver one square opaque texture, intended export 512 by 512 pixels.",
+      "physical_size_metres": [
+        0.6,
+        0.6
+      ],
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "full_image_metres": [
+          0.6,
+          0.6
+        ],
+        "wrap": "RepeatWrapping",
+        "orientation": "X langs bredde, Y langs høyde i bildet. Ingen geometrisk retusjering.",
+        "note": "Veiledning til integrasjon, ikke en runtime-endring."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Dekodet i riktig filformat, mål og RGB-modus.",
+          "Innebygd sRGB ICC verifisert.",
+          "Ingen leselig tekst, navn, logo eller UI.",
+          "Sluttbilde inspisert visuelt.",
+          "JPEG-kvantisering samsvarer med kvalitet 85.",
+          "Vanlig 2x2-repetisjon inspisert. Ingen vesentlig tonal skjøt eller brudd i hovedmønster.",
+          "Mintgrønn laminat med små grå stjerner, fin slitasje og svake tallerkenmerker."
+        ],
+        "preview": "counter-repeat-preview.jpg",
+        "preview_sha256": "61fb4ca65270498196233050dd2865546ffd791deae55ab5c219ff07e877dedc",
+        "preview_bytes": 199306,
+        "preview_dimensions": [
+          1024,
+          1024
+        ],
+        "repeat_method": "Fire uendrede kopier av slutteksporten i vanlig 2x2-rutenett, uten speiling eller innblanding.",
+        "repeat_status": "PASS_VISUAL",
+        "repeat_limitation": "Visuelt godkjent normal repetisjon, ikke en påstand om pikselidentiske kanter.",
+        "note": "Lav kontrast og gjennomgående mønstertetthet. Enkelte fine korn og stjernemotiver gjentas som del av teksturen."
+      }
+    },
+    {
+      "id": "floor",
+      "file": "tex_floor_checker.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f45ec731-49d6-4650-80a5-299aec593721.png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "bytes": 271874,
+      "mode": "RGB",
+      "format": "JPEG",
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "opaque": true,
+      "quality": 85,
+      "source_sha256": "d9080f8c347fb522680f55bfa7a8f671894e95689b6228405db6520909955698",
+      "source_bytes": 2705308,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: seamless square sRGB base-color/albedo texture for a low-poly Three.js game set in a worn New Mexico diner in 1986. Produce a straight-down orthographic flat image of a checkerboard floor with EXACTLY EIGHT equal square columns and EIGHT equal square rows, 64 full tiles total. The 8 by 8 grid fills the square from edge to edge: no partial extra tiles, no surrounding border or room, no perspective. Each tile represents 30 cm; full image represents 2.4 by 2.4 metres. Top-left tile is matte charcoal black; alternate black and warm ivory/off-white squares in both axes like a chessboard. Use precisely seven straight internal vertical grout lines at 12.5%,25%,37.5%,50%,62.5%,75%,87.5% of width, and precisely seven horizontal grout lines at the same percentages of height. Very narrow warm pale beige yellowed grout, about 1% of a tile width; each outer boundary has half of the same narrow grout seam so adjacent copies join into an ordinary single-width seam. Subtle scuffs, fine material grain and mild aging, consistent overall brightness; matte restrained stylized surface, no excessive cracks, no footprints or props. This is a flat base-color map: no light sources, shadows, cast light, gradients, shine, reflections, bevel shading, vignettes or cinematic lighting. It must repeat seamlessly and continue the black/ivory checker pattern across all four edges. No text, letters, numbers, logos or watermark. One square opaque texture, intended export 1024 by 1024 pixels.",
+      "physical_size_metres": [
+        2.4,
+        2.4
+      ],
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "full_image_metres": [
+          2.4,
+          2.4
+        ],
+        "wrap": "RepeatWrapping",
+        "orientation": "X langs bredde, Y langs høyde i bildet. Ingen geometrisk retusjering.",
+        "note": "Veiledning til integrasjon, ikke en runtime-endring."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Dekodet i riktig filformat, mål og RGB-modus.",
+          "Innebygd sRGB ICC verifisert.",
+          "Ingen leselig tekst, navn, logo eller UI.",
+          "Sluttbilde inspisert visuelt.",
+          "JPEG-kvantisering samsvarer med kvalitet 85.",
+          "Vanlig 2x2-repetisjon inspisert. Ingen vesentlig tonal skjøt eller brudd i hovedmønster.",
+          "Nøyaktig 8x8 ruter visuelt og teknisk kontrollert; vekslingen fortsetter over repeat-grensen."
+        ],
+        "preview": "checker-repeat-preview.jpg",
+        "preview_sha256": "2ffbf7e092f0bb06c591d0ec398145596337d99fb7bfee8c8d8c0f4c8104557d",
+        "preview_bytes": 1246676,
+        "preview_dimensions": [
+          2048,
+          2048
+        ],
+        "repeat_method": "Fire uendrede kopier av slutteksporten i vanlig 2x2-rutenett, uten speiling eller innblanding.",
+        "repeat_status": "PASS_VISUAL",
+        "repeat_limitation": "Visuelt godkjent normal repetisjon, ikke en påstand om pikselidentiske kanter.",
+        "checker_status": "PASS",
+        "checker_luminance_means": [
+          [
+            38.34,
+            219.17,
+            39.69,
+            219.07,
+            39.83,
+            219.67,
+            41.05,
+            219.27
+          ],
+          [
+            219.03,
+            40.13,
+            219.03,
+            40.99,
+            219.35,
+            40.11,
+            218.96,
+            41.63
+          ],
+          [
+            38.26,
+            219.14,
+            38.82,
+            219.75,
+            41.35,
+            220.02,
+            39.96,
+            218.56
+          ],
+          [
+            219.19,
+            40.53,
+            219.64,
+            40.62,
+            219.68,
+            39.22,
+            218.66,
+            39.22
+          ],
+          [
+            39.1,
+            219.16,
+            39.85,
+            219.18,
+            40.6,
+            219.75,
+            40.2,
+            219.76
+          ],
+          [
+            219.04,
+            39.51,
+            218.78,
+            39.81,
+            219.88,
+            40.33,
+            220.37,
+            40.8
+          ],
+          [
+            40.35,
+            219.58,
+            39.67,
+            218.35,
+            40.53,
+            219.52,
+            40.06,
+            219.75
+          ],
+          [
+            219.01,
+            40.82,
+            217.69,
+            39.72,
+            218.95,
+            41.48,
+            218.81,
+            41.26
+          ]
+        ],
+        "checker_transition_measurements": [
+          {
+            "axis": "x",
+            "line_coordinate": 64,
+            "transitions": [
+              126,
+              257,
+              383,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 192,
+            "transitions": [
+              129,
+              254,
+              385,
+              511,
+              641,
+              767,
+              898
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 320,
+            "transitions": [
+              126,
+              257,
+              384,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 448,
+            "transitions": [
+              129,
+              254,
+              385,
+              511,
+              641,
+              767,
+              898
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 576,
+            "transitions": [
+              126,
+              257,
+              383,
+              513,
+              638,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 704,
+            "transitions": [
+              129,
+              254,
+              385,
+              510,
+              641,
+              767,
+              898
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 832,
+            "transitions": [
+              126,
+              257,
+              383,
+              513,
+              638,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "x",
+            "line_coordinate": 960,
+            "transitions": [
+              129,
+              254,
+              385,
+              511,
+              641,
+              767,
+              898
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 64,
+            "transitions": [
+              127,
+              257,
+              382,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 192,
+            "transitions": [
+              130,
+              255,
+              385,
+              511,
+              641,
+              767,
+              897
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 320,
+            "transitions": [
+              127,
+              257,
+              382,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 448,
+            "transitions": [
+              130,
+              255,
+              385,
+              511,
+              641,
+              767,
+              897
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 576,
+            "transitions": [
+              127,
+              257,
+              382,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 704,
+            "transitions": [
+              130,
+              255,
+              385,
+              511,
+              641,
+              767,
+              897
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 832,
+            "transitions": [
+              127,
+              257,
+              383,
+              513,
+              639,
+              769,
+              895
+            ]
+          },
+          {
+            "axis": "y",
+            "line_coordinate": 960,
+            "transitions": [
+              129,
+              255,
+              385,
+              511,
+              641,
+              767,
+              897
+            ]
+          }
+        ],
+        "checker_measurement_method": "Senterluminans i 64 felt må veksle over/under 130. Median over sju nabopiksler langs hver av åtte kontrollinjer per akse gir sju interne overganger. Ingen bildetegning eller retusjering.",
+        "note": "64 hele fliser. Nominelt kvadratiske 30 cm-fliser ved 2,4 m mapping; smale fuger er lett naturlig uregelmessige på pikselnivå."
+      },
+      "tile_grid": [
+        8,
+        8
+      ],
+      "tile_count": 64,
+      "nominal_tile_size_metres": [
+        0.3,
+        0.3
+      ],
+      "tile_top_left": "charcoal black"
+    },
+    {
+      "id": "menu",
+      "file": "menu_board_blank.png",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-4af25d6b-6c8e-4312-81ce-a98658cd0d92.png",
+      "dimensions": [
+        1024,
+        512
+      ],
+      "sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1",
+      "bytes": 678936,
+      "mode": "RGB",
+      "format": "PNG",
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "opaque": true,
+      "quality": null,
+      "source_sha256": "90d1f817cde12b35b4142b910d78cd02b0009cbd0dc8fc14018f9ead0400eaff",
+      "source_bytes": 2210490,
+      "source_dimensions": [
+        1774,
+        887
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_preserved": true,
+      "prompt": "Use case: stylized-concept. Asset type: opaque rectangular sRGB texture for a physical wall menu board in a low-poly Three.js diner game, New Mexico 1986. Produce a completely front-facing flat black chalkboard with slim worn off-white wooden frame strips on all four sides. Overall wide rectangle exactly 2:1 aspect ratio, edge-to-edge in the image, no background outside the frame, no perspective or visible side thickness. Intended physical size 1.6 by 0.8 metres, export 1024 by 512 pixels. Blackboard is matte near-black, only faint chalk dust and extremely restrained wipe texture, broad clean areas to receive dynamically rendered menu text. Inside the frame have six very faint thin straight horizontal chalk ruling lines spanning most of the usable width, regularly spaced, with generous dark empty writing space between them. The lines are blank, no labels, no column headings and no price column. Frame gently aged cream-white painted wood, consistent narrow width, a few tiny worn spots. Keep an understated readable stylized material compatible with a 1986 low-poly game, not photorealism. Flat even diffuse base color, no highlights, lighting gradient, vignette, cast shadows or ornamental decorations. Absolutely no text, letters, numbers, food drawings, symbols, logo, chalk sticks or people. The entire image is opaque. One standalone blank physical chalkboard texture.",
+      "physical_size_metres": [
+        1.6,
+        0.8
+      ],
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "full_image_metres": [
+          1.6,
+          0.8
+        ],
+        "wrap": "ClampToEdgeWrapping",
+        "orientation": "X langs bredde, Y langs høyde i bildet. Ingen geometrisk retusjering.",
+        "note": "Veiledning til integrasjon, ikke en runtime-endring."
+      },
+      "qa": {
+        "status": "PASS",
+        "checks": [
+          "Dekodet i riktig filformat, mål og RGB-modus.",
+          "Innebygd sRGB ICC verifisert.",
+          "Ingen leselig tekst, navn, logo eller UI.",
+          "Sluttbilde inspisert visuelt.",
+          "Helt ugjennomsiktig RGB-bilde med hvite rammelister og fem tomme vannrette linjer."
+        ],
+        "blank_rule_lines_observed": 5,
+        "note": "Briefen fastsetter ikke antall linjer. Genereringen ga fem tomme linjer, selv om prompten foreslo seks. Fem er beholdt fordi det oppfyller den tomme menytavlens funksjon.",
+        "writing_safe_area_px": [
+          35,
+          25,
+          989,
+          489
+        ],
+        "rule_lines_y_px_approx": [
+          102,
+          172,
+          243,
+          313,
+          384
+        ]
+      }
+    }
+  ],
+  "integration": {
+    "status": "UNVERIFIED",
+    "owner": "Claude",
+    "note": "Ingen runtime-endring, bygg, spilltest eller commit utført. Fellesleveransen følges opp av root-agenten."
+  },
+  "rights": {
+    "origin": "Ny grafikk generert for dette prosjektet med innebygd bildeverktøy.",
+    "note": "Ingen eksterne fotografier, logoer eller spesifikk tredjepartslisens påstås."
+  },
+  "qa_summary": {
+    "status": "PASS",
+    "production_assets": 3,
+    "generation_calls": 3,
+    "repeat_previews": 2,
+    "all_exact_dimensions": true,
+    "all_rgb_srgb": true,
+    "floor_grid": [
+      8,
+      8
+    ],
+    "floor_count": 64,
+    "runtime_verified": false,
+    "further_generation_required": false
+  }
+}

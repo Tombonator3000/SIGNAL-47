@@ -1,0 +1,274 @@
+{
+  "created_utc": "2026-10-04T11:36:18.604495+00:00",
+  "base_commit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+  "brief_commit": "17810930a941f574f5cfcb6f0ec373c26292007b",
+  "runtime_sources_unchanged": true,
+  "checked_runtime_sources": [
+    {
+      "file": "web/package-lock.json",
+      "git_blob": "8da8204c4e07de0ef2109150ad68f0702c73afac"
+    },
+    {
+      "file": "web/package.json",
+      "git_blob": "c295f8256dfa952b500021aec50a4814f7d168f8"
+    },
+    {
+      "file": "web/src/assets/audio/ceramic.mp3",
+      "git_blob": "ed597da146d25c461061396704d2492ce6d71745"
+    },
+    {
+      "file": "web/src/assets/audio/click.mp3",
+      "git_blob": "1d7a97838bf8dc09bb67f872cdad1772538ce171"
+    },
+    {
+      "file": "web/src/assets/audio/phone_ring.mp3",
+      "git_blob": "efe8c6b0540d405e3f6af4372d601e9677a22333"
+    },
+    {
+      "file": "web/src/assets/audio/printer.mp3",
+      "git_blob": "53b99ee226fec41ff1754483a3176b14141f55be"
+    },
+    {
+      "file": "web/src/assets/audio/step0.mp3",
+      "git_blob": "57602c2c8375f321855b41fe71bfc9a8744d1b63"
+    },
+    {
+      "file": "web/src/assets/audio/step1.mp3",
+      "git_blob": "4d90d65322583e96636608311011e9e1e3d132fc"
+    },
+    {
+      "file": "web/src/assets/audio/step2.mp3",
+      "git_blob": "34e0185468ad93a100f66ce22678a09580ecf6f0"
+    },
+    {
+      "file": "web/src/assets/audio/switch.mp3",
+      "git_blob": "8df017ff3db79d48a1f16a7ae1085109135f1dd0"
+    },
+    {
+      "file": "web/src/assets/audio/thud_soft.mp3",
+      "git_blob": "e9b11e82408ba5be9979192ce4abaa2bae4ab930"
+    },
+    {
+      "file": "web/src/assets/audio/title_music.mp3",
+      "git_blob": "e4ae94a160de9f69c8b27ed021f448c9c05ea5fe"
+    },
+    {
+      "file": "web/src/assets/audio/wind.mp3",
+      "git_blob": "59000ab61fb2a0193862bff3b3eb86c72379ebdb"
+    },
+    {
+      "file": "web/src/assets/fonts/oswald.woff2",
+      "git_blob": "e0f43696b11fca1fd9df83b6a9a2d1e78af7eec8"
+    },
+    {
+      "file": "web/src/assets/fonts/reeniebeanie.woff2",
+      "git_blob": "52b6959fb83d1ad18158ca04d4fc8b68195e0e5c"
+    },
+    {
+      "file": "web/src/assets/fonts/specialelite.woff2",
+      "git_blob": "569a27e1794b7d5af66a6f4d140133a9b6d109e6"
+    },
+    {
+      "file": "web/src/assets/fonts/vt323.woff2",
+      "git_blob": "fd760b5bad0f5b31d4b47b8e3bf333b16f4a69eb"
+    },
+    {
+      "file": "web/src/core/Audio.ts",
+      "git_blob": "54cc01d3de45a0c51f1d05783698048698409b53"
+    },
+    {
+      "file": "web/src/core/FieldCamera.ts",
+      "git_blob": "6054866fb82316ae6a1ea150812c44a26977177b"
+    },
+    {
+      "file": "web/src/core/Input.ts",
+      "git_blob": "5b4131f9a029f801d32edc6a9c8904166fa33261"
+    },
+    {
+      "file": "web/src/core/Interaction.ts",
+      "git_blob": "613f6295acc0f585913d4894b03d19c701b93368"
+    },
+    {
+      "file": "web/src/core/art.ts",
+      "git_blob": "cac05723465a009cd32c71f35301b80dda0b36a3"
+    },
+    {
+      "file": "web/src/core/caseStore.ts",
+      "git_blob": "aa47c748918a2ef8c263689e8d58ce29d9058eb7"
+    },
+    {
+      "file": "web/src/core/debug.ts",
+      "git_blob": "b97bb3debd9676834105125f3bf0e6fe52cf3406"
+    },
+    {
+      "file": "web/src/core/fonts.ts",
+      "git_blob": "8e6fd8d7e8a64da5c5c836c48cbfa2d3d4c4da45"
+    },
+    {
+      "file": "web/src/core/quality.ts",
+      "git_blob": "4796178e59dea81c4b1c692c6ceeb46ff2ab3b47"
+    },
+    {
+      "file": "web/src/core/textures.ts",
+      "git_blob": "6a8d14416ef7d9ed9d6bddd751558e0690d266cd"
+    },
+    {
+      "file": "web/src/main.ts",
+      "git_blob": "bc40d0561c7add17aabd717bd2ddf26b17bb20bb"
+    },
+    {
+      "file": "web/src/player/Player.ts",
+      "git_blob": "f339230eedf53c677e23b5f89d772d001393ea93"
+    },
+    {
+      "file": "web/src/story/Chapter1.ts",
+      "git_blob": "08371849e9010def768bfa6bd664463fa8ca3b50"
+    },
+    {
+      "file": "web/src/story/Chapter2.ts",
+      "git_blob": "ad359f21995b56bdb4e2f17063c698eee4ab1835"
+    },
+    {
+      "file": "web/src/story/Prologue.ts",
+      "git_blob": "41f321fac95acaa4d3ffdf3c023b65c612828161"
+    },
+    {
+      "file": "web/src/story/Signal.ts",
+      "git_blob": "c6d337d756a2892b9ec40db37405f362b43b43a9"
+    },
+    {
+      "file": "web/src/story/drawings.ts",
+      "git_blob": "8d20655fb7cf60c2bc8c83fff406dc7acc0acbed"
+    },
+    {
+      "file": "web/src/story/time.ts",
+      "git_blob": "d2fd978acd26860c7b222b5c52b93d0bc555fe17"
+    },
+    {
+      "file": "web/src/style.css",
+      "git_blob": "31189474d93d7c2529c673f9ed19aef3a42ba9fb"
+    },
+    {
+      "file": "web/src/ui/Panels.ts",
+      "git_blob": "e5dbee2348decf0e8438af29d903dc84e3d4a66f"
+    },
+    {
+      "file": "web/src/ui/RxConsole.ts",
+      "git_blob": "a5223e2e269182611a494015027ed3b51f6a376a"
+    },
+    {
+      "file": "web/src/ui/UI.ts",
+      "git_blob": "84fcf0012aa2a8649cf92208ebd64974cff66852"
+    },
+    {
+      "file": "web/src/world/Annex.ts",
+      "git_blob": "5d5de68730d0c348920c29dc966d18a040c4a9ff"
+    },
+    {
+      "file": "web/src/world/ControlRoom.ts",
+      "git_blob": "6dfe1a63cc18d5369db7b551d988817dd0e352d6"
+    },
+    {
+      "file": "web/src/world/Dish.ts",
+      "git_blob": "5529f38cb48bb7d1e075eaffd5863a0b516a5bbe"
+    },
+    {
+      "file": "web/src/world/Exterior.ts",
+      "git_blob": "016db6ac07f5326fb8461cb4efd7cde28f18a9ee"
+    },
+    {
+      "file": "web/src/world/ServiceYard.ts",
+      "git_blob": "9f81687b849c175f3b446859caf8b212d6a6faa9"
+    },
+    {
+      "file": "web/src/world/Sky.ts",
+      "git_blob": "16efe478c35ce42e5a4377164e91d52949b6be4d"
+    },
+    {
+      "file": "web/src/world/glow.ts",
+      "git_blob": "68553306071da232b28933eccd6da45d18a5ba6a"
+    },
+    {
+      "file": "web/src/world/kit.ts",
+      "git_blob": "c1dd41d5975f96d42b312bcab5005cae8292dad5"
+    },
+    {
+      "file": "web/src/world/props.ts",
+      "git_blob": "ac0d001f4c8b1810547fe95ce90b4af12fddc07c"
+    },
+    {
+      "file": "web/tsconfig.json",
+      "git_blob": "2a2d67efa0d033dc27a5aa6fa32b553b577d24e1"
+    },
+    {
+      "file": "web/vite.config.ts",
+      "git_blob": "b1d8d82617011ddb64b17275ab2aaa4f257b6f70"
+    }
+  ],
+  "changed_tracked_files": [
+    "web/THIRD_PARTY_NOTICES.md",
+    "web/log.md"
+  ],
+  "assets": [
+    {
+      "file": "web/src/assets/art/diner/sign_diner_blank.png",
+      "bytes": 315692,
+      "sha256": "66cf970ffaea32671bf7f04a39acb8c0163d98ef011ca1f153df5f321c131637"
+    },
+    {
+      "file": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+      "bytes": 42959,
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248"
+    },
+    {
+      "file": "web/src/assets/art/diner/tex_floor_checker.jpg",
+      "bytes": 271874,
+      "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad"
+    },
+    {
+      "file": "web/src/assets/art/diner/menu_board_blank.png",
+      "bytes": 678936,
+      "sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1"
+    },
+    {
+      "file": "web/src/assets/art/diner/clipping_photo_1947.jpg",
+      "bytes": 288567,
+      "sha256": "9529e5990bd6f9f351bdd7692c0e6645eef806fe186c339602a112e7c1ed7474"
+    },
+    {
+      "file": "web/src/assets/art/road/tex_gravel_track.jpg",
+      "bytes": 419124,
+      "sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b"
+    }
+  ],
+  "asset_bytes_total": 2017152,
+  "screenshots": [
+    {
+      "file": "gallery-desktop.jpg",
+      "format": "JPEG",
+      "dimensions": [
+        1265,
+        1513
+      ],
+      "sha256": "fc1798c76682666a8154b5467ac33c3a8d38c164cf67625126a95d83d5f6ea76"
+    },
+    {
+      "file": "gallery-mobile.jpg",
+      "format": "JPEG",
+      "dimensions": [
+        375,
+        812
+      ],
+      "sha256": "fd51208a8c4bd59e81175eec86a120e32655c70a38db181f6968dfdfb83608f5"
+    }
+  ],
+  "asset_report_sha256": "4f58e9358e4323b3ff4d0f3e362ec9114af545ed0bc4ac5306be468f5bab1b8d",
+  "gallery_report_sha256": "33a4c0100000496d640fc8b04d043efbb763485cdbc3ed862eb977527c9d3e0e",
+  "reused_build_evidence": {
+    "pr": "https://github.com/Tombonator3000/SIGNAL-47/pull/34",
+    "path": "web/evidence/support-2026-10-04/support-build-verification.json",
+    "sha256": "cad2b305837679ca0932702b6764292e4b3844662d95fbe2405a6ddd0939907b",
+    "new_build_run": false
+  },
+  "runtime_gate": "UNVERIFIED: Claude integrates and runs one integration pass. No new images imported in this branch."
+}
