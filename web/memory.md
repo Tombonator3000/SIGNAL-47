@@ -4,6 +4,9 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-04 kveld: Tom la om historien og slutten. Natten går nå Night Shift, The Second Exposure, The Amended Record, The Survey Station, Room 6, All Night, Roswell Road og THE EVENT, så rulletekst. Én slutt, kort og ubehagelig. K5, K6, epilogen og avslutningene A og B går ut, med P13 til P18. Kjernen: signaler, fotografier, telefonlinjer og mennesker kan bli liggende igjen som referanser (et fysisk avtrykk), i begge retninger over 39 år. -39 LY er 39 år (1947 til 1986); ingen person sier det, spilleren finner det. Lastebilen dør der C krysser den gamle Roswell-veien klokka 05:29:00, og 47 sekunder senere er spilleren selv en referanse: kameraet trekkes ut, førersetet er tomt uten at det pekes på, og etter rulleteksten viser avisbildet fra 1947 tre personer ved oppmålingsutstyret (Nora, Tomás og en uskarp skikkelse med Reyes' silhuett). FLASH-sekvensen får et ansikt som kan minne om en Grey i omtrent tre bilder (erstatter rådet om ingen skikkelse og tapt tid). Hint om andre steder: høyst tre. Alt står i `HISTORIE.md`; kapitlene konkretiseres ett om gangen i `KAPITLER.md`, Night Shift først.
+- 2026-10-04 kveld: Natten er natt til mandag 14. april 1986, MST (sommertiden startet 27. april 1986). Ved Roswell begynner grålysningen 05:05 og sola står opp 05:30, så hendelsen er 05:29, ikke 05:47 som Tom foreslo som eksempel. Fila i framtiden heter `RUN860414_0529.DAT`. Forløperne (nettene SARO fikk negativ avstand) er valgt slik at avstanden er år siden juli 1947: 10.08.79 -32 (spole 047), 22.09.81 -34, 02.03.83 -36, 19.10.85 -38, 14.04.86 -39, pluss et ark datert 07/--/47 02:17:00 med -00. Reléet K3 ble byttet dagen etter de tre i midten.
+
 - 2026-10-04 kveld: Dineren fra Codex (`Diner.ts`, PR #45) er koblet inn som eget område ved `DINER_ORIGIN` (-8000, 0, 0): `World.goDiner()`, `placeAtDiner()`, SAROs lastebil på `truckPark`, runde 8 (`dinerBooth`, `dinerWall`) med `setSurfaceArt`. Skiltet er tegnet 1,8 ganger større enn briefens 4 × 2 m og flyttet en meter nord, så det leses fra riksveien og går klar av semitraileren. Kapitlet «All Night» (samtaler, døra, koppen, telefonen til Ward) er ikke skrevet ennå; trefflatene er ikke registrert i `Interaction` før det er gjort. `tools/diner.py` er integrasjonstesten.
 
 - 2026-10-04 kveld: Notatboka er nå en journal med fem faner: Tasks, Notes, Findings, Papers og Photos (`UI.notebook`). Findings samler dokumentene med id `p01` til `p99` og den lokale funnrapporten fra kapittel 1, og har en knapp som legger ut bevisbordet fra kapittel 2 når et arkivdokument er lest. Personer, steder og signaler kommer senere.
@@ -52,6 +55,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 ## Kanon (må ikke endres uten beslutning)
 
 - Sted og tid: SARO, Southwest Astronomical Research Observatory, New Mexico, 1986. Skiftet starter 23:41.
+- Natten: 13. til 14. april 1986, normaltid (MST). Grålysning 05:05, soloppgang 05:30. THE EVENT 05:29:00 til 05:29:47 der C krysser den gamle Roswell-veien, rett forbi åttemilsstolpen.
+- -39 LY er 39 år siden 1947. Ingen person i spillet sier det.
 - Kollega: Dale har lagt igjen skiftloggen ("Don't break anything. D."). Unity-versjonen signerte "R.". Webversjonen bruker Dale, og spilleren er Reyes.
 - Mottaker: RX bank 3 må slås på med spaken på racket.
 - Signaltrinn (portert 1:1 fra Unity `SignalProfile`):
@@ -65,7 +70,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 - Telefonen: framtidsopptak av kontrollrommet (romlyd, skriver, dunk, gisp, keramikk som knuses). Etter at linjen dør går det nøyaktig 47 sekunder til smellet, koppen faller og knuses.
 - Antennene: 27 stykk, S-01 til S-27. Etter smellet snur alle samtidig til az 026, el 32, uten styrekommando.
 - Neste kapittel: S-03 i servicegården. Planlagt 042°, enkoder 026°, commands received 0.
-- Slutter: to, A «Bryt referansen» og B «Fullfør én registrering», slik designbibelen (`Docs/DesignBible13/design-bible.md`) beskriver dem. Ingen tredje slutt. Tre slutter (Silence, Answer, Listen) står bare i ChatGPT-samtalen "Utvikle spillområde visuelt" og brukes ikke (avgjort 4. oktober).
+- Slutt: én, THE EVENT på Roswell-veien (se `HISTORIE.md`). Fram til 4. oktober kveld var det to, A «Bryt referansen» og B «Fullfør én registrering», slik designbibelen (`Docs/DesignBible13/design-bible.md`) beskriver dem. Det finnes ingen andre slutter. Tre slutter (Silence, Answer, Listen) står bare i ChatGPT-samtalen "Utvikle spillområde visuelt" og brukes ikke (avgjort 4. oktober).
 - Navn: spilleren heter Reyes, vaktsjefen er Dr. Evelyn Ward, vitnet er Nora Vega i rom 6 på Sierra Motor Court, og broren hennes er Tomás Vega. Dale er kollegaen som skrev skiftloggen (avgjort 4. oktober).
 
 ## Referansebilder

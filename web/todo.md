@@ -19,9 +19,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] **Motellet fra Codex (PR #39) koblet inn:** plassen, gangveien, kontoret med lappen fra Nora, rom 6 ved z 55, innkjørselsrampe fra veien, rundt skilt med riktig bakside, de seks bildene i runde 7.
 - [x] P05-siden på arkivbordet var tom hvis E07 ble lest i hylla før bordet ble åpnet (merkeikonene ble aldri tegnet). Rettet, med egen sjekk i `chapter2.py`.
 - [x] **Rom 6:** TV-en står på med sus som lyser opp rommet i blått og flimrer (`Room6.setTv`, `AudioSys.tvHiss`).
-- [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12.
+- [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12. Etter Toms nye slutt (4. oktober kveld) er rådet å droppe lysglimtet og blackouten: de bruker opp finalen før den kommer. Venter på Tom.
 - [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
-- [ ] **Tre lysende punkter over motellet:** står stille i en trekant over Sierra Motor Court i kapittel 4 for den som ser opp; et bilde av dem havner i albumet og journalen. Ingen forklaring i spillet (bibelens regel om at fenomenet følger referansene: tre punkter som A, B og C).
+- [ ] **Tre lysende punkter over motellet:** står stille i en trekant over Sierra Motor Court i kapittel 4 for den som ser opp; et bilde av dem havner i albumet og journalen. Ingen forklaring i spillet (bibelens regel om at fenomenet følger referansene: tre punkter som A, B og C). Etter den nye slutten er rådet å droppe dem av samme grunn; lyset over mesaen hører til finalen. Venter på Tom.
 - [x] **Journal med faner:** Tasks, Notes, Findings (med knapp som legger ut bevisbordet), Papers og Photos, etter `SPILLDESIGN.md`. Gjenstår: personer, steder og signaler (venter til kapittel 5), og notatene kortet ned til én linje i spillerens egne ord uten tolkning.
 - [x] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
 - [ ] Voices of the Void: idéer som passer er samlet i loggen 4. oktober (signalbibliotek, vedlikeholdsturer, basen som hjem). Ikke tilfeldige overnaturlige hendelser.
@@ -32,17 +32,24 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] **Bevisbord i stedet for faner (Tom: «knotete og vanskelig å forstå»), resten.** Et korkbord / arbeidsbord der bevisene ligger som kort og bilder. Spilleren drar dem fritt rundt og trekker en rød tråd mellom to bevis. En tråd mellom to ting som faktisk henger sammen gir en ny lapp på bordet (for eksempel E07 + E06 gir «C er fjernet»); feil kobling får et kort svar og tråden slakker av. Funnene (P04 og videre) registreres ved å koble sammen, ikke ved å velge blant tre setninger. Samme bord brukes i alle kapitler og samler alt fra journalen. Må gå med mus og berøring.
 - [x] **VHS / X-Files-etterbehandling** (`core/vhs.ts`, Settings: Picture). Camcorder-modus med REC og dato er ikke laget: designrådet er at feltkameraet er et filmkamera; venter på Tom.
 - [x] **Lyd:** sirisser, ugle, hund, vindkast, fottrinn etter underlag, dører, papir og fjern rullende torden er inne. Gjenstår: prærieulv (ingen CC0-fil funnet i Toms repoer), teppe og metallrist har egne opptak, TV-sus og walkie-talkie.
-- [ ] **Bilen stopper (abduksjonsscenen):** på Roswell-veien dør motoren der C krysser veien (regel R1, ser tilfeldig ut for spilleren). Lys over bilen, lyset blinker i 4/7, hvitt, så svart. Spilleren våkner i bilen med tapt tid (klokka har hoppet), bilen står vendt en annen vei. Ingen tydelig romvesen i bildet; høyst en skikkelse i motlys, uklar. Må avgjøres med Tom før den bygges.
+- [x] **Bilen stopper (abduksjonsscenen):** avgjort av Tom 4. oktober kveld: ingen tapt tid og ingen oppvåkning, men THE EVENT som slutt (se `HISTORIE.md`). Bygges under «Neste».
 
 ## Neste
 
-- [ ] Kapittel 4 «Room 6» (neste for Claude): Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.
-- [ ] Kapitlet «All Night» i dineren: servitrisen, sjåføren, avisutklippet (dokument), kaffen, telefonautomaten til Ward, døra (dørbladet `objs.door`), og trefflatene registrert i `Interaction` bare når spilleren er i dineren. Området er klart (`World.goDiner`).
-- [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
-- [ ] Dinerens grafikk fra Codex (PR #35) kobles inn når dineren bygges: skiltet (tekst i kode på baseline (512, 230), høyst 50 px), menytavla (fem linjer), mintlaminatet (0,6 m), rutegulvet (2,4 m) og avisfotoet. PNG-ene får WebP-kopier med `tools/prepare_art.py`, og alfa og tekst kontrolleres etterpå.
+### Historien etter Toms nye slutt (4. oktober kveld)
+
+- [ ] Tom svarer på de to spørsmålene under Night Shift i `KAPITLER.md` (kometen som bevis, reléet under nedtellingen) og leser `HISTORIE.md`.
+- [ ] `KAPITLER.md`, ett kapittel om gangen: The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
+- [ ] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen.
+- [ ] Endringer i det som finnes: lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»), sluttkortet i kapittel 4 («NEXT: ALL NIGHT»), lastebilen hentes på SARO etter rom 6.
+- [ ] Codex, neste runde når All Night er spesifisert: avisbildet fra 1947 som ett hovedbilde med tre utsnitt (saksmappa, dineren, etter rulleteksten), Halley-plakaten uten tekst, gulnet fanfoldpapir, milestolper og oppmålingsbolt.
+- [ ] Himmelen: Halleys komet lavt i sør-sørvest fra The Second Exposure.
+- [ ] Kapitlet «All Night»: fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien. Området er klart (`World.goDiner`).
+- [ ] Roswell Road og THE EVENT: kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
+
+### Annet
+
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
-- [ ] Kapittel 4, Claudes del: `src/story/Chapter4.ts`, nødutgangen i korridoren og overgangen over veien, `Room6.ts` som eget område i `World.ts`, samtalen (P10 til P12), lagringen og `tools/chapter4.py`. Codex lager motellet utenfra og kontoret (`MotelFront.ts`, se Codex-delen under). Utkast til flyten: spilleren går over veien, inn på kontoret (lappen fra Nora, nøkkel 6 mangler, felttelefonen på veggen), til døra med 6 og inn til Nora.
-- [ ] Koble `Room6.ts` (levert av Codex i PR #34) inn i `World.ts` som eget område når kapittel 4 skrives. Rommet skjules med hele `group` når spilleren er et annet sted, og `motelFlood` hører bare til rommet.
 
 ## Codex (avtalt med Tom 4. oktober 2026)
 
@@ -121,4 +128,4 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 ## Senere
 
 - [ ] Evidence board med hypoteser som kan være feil.
-- [ ] K5, K6 og epilogen (designbibelen og `HISTORIE.md`).
+- [x] K5, K6 og epilogen: går ut etter Toms nye slutt 4. oktober kveld (se `HISTORIE.md`).
