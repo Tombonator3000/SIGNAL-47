@@ -1,5 +1,13 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Kapittel 2, samlet grafikk og trygg fotolagring, 4. oktober 2026
+
+Prologen, kapittel 1 og kapittel 2 «The Amended Record» kan spilles fra start til sluttkort i nettversjonen. I kapittel 2 ringer Ward på linja i kontrollrommet, døra i sørveggen fører til korridoren og arkivrommet, spilleren kobler registreringene ved arkivbordet (P04 og P05 fra Unitys WorldCase22) og ringer nøkkelholderen Nora Vega på Sierra Motor Court. Prologen har fått arbeidsordren med Reyes og Ward, notatboka har en saksmappe, og fotografiene lagres i IndexedDB.
+
+Grafikken fra Codex er samlet i én loader (`web/src/core/art.ts`, 22 bilder): de 16 fra PR #30 og de seks tekstfrie flatene fra runde 3 i PR #31, med tekst tegnet i kode oppå. Konseptene og lokasjonskartene fra PR #31 ligger i `web/src/assets/art/concept/` og `maps/` og er ikke en del av spillpakken. Codex fant en feil der en lesefeil i IndexedDB kunne erstatte et originalfoto med stand-in-bildet. Den er rettet og testet både i Node (`web/tools/casestore.cjs`) og i nettleseren (`web/tools/chapter1.py`).
+
+Neste store steg er kapittel 3, feltreisen til STATION 01. Faktiske testresultater, tider og PR-er står i `web/log.md`. Arbeidsdelingen er at Codex lager grafikk og kontroller, og Claude eier kodeintegrasjonen og den samlede spilltesten.
+
 ## Three.js-grafikk, 4. oktober 2026
 
 [PR #30](https://github.com/Tombonator3000/SIGNAL-47/pull/30) leverer grafikkandidaten uten merge. Kandidaten bygger videre på `main` ved `47a18b7` (spillkoden er den samme som ved `478bfd1`; PR29s nyere dokumentasjon er bevart). Kode, 17 kildeassets, opphav og lette runtime-kopier ligger i `web/`. Se [`web/ART_DELIVERY.md`](../web/ART_DELIVERY.md) for faktisk teststatus, bevis og begrensninger. Endringen gjelder kontrollrommet, servicegården, fotolaben og utsikten; Unity-arkivet og spillkonstantene er bevart. De tre framtidige konseptbildene i briefen er ikke produsert. Dette er en grafikkleveranse til eksisterende prolog og kapittel 1, ikke portering av alle senere Unity-kapitler.

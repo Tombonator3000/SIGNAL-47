@@ -266,11 +266,11 @@ export class ServiceYard {
     cyl(lab, 0.085, 0.085, 0.03, steelL, 16.3, 1.15, -5.5, 14);
     box(lab, 0.16, 0.12, 0.06, plastic, 16.85, 1.0, -5.55);     // timer
     for (let i = 0; i < 4; i++) cyl(lab, 0.05, 0.05, 0.22, i % 2 ? plastic : paperL, 13.4 + i * 0.13, 1.05, -5.7, 10);
-    const proc = plane(lab, 0.5, 0.36, card(['PROCESSING', '', '1  LOAD', '2  TRANSFER', '3  COLLECT'], { w: 200, h: 150, font: 'VT323', size: 24 }), 16.3, 1.6, -5.79);
+    const proc = plane(lab, 0.5, 0.36, card(['PROCESSING', '', '1  LOAD', '2  TRANSFER', '3  COLLECT'], { w: 200, h: 150, font: 'VT323', size: 24, surface: 'paper' }), 16.3, 1.6, -5.79);
     proc.name = 'processCard';
     plane(lab, 0.7, 0.24, card(['01 / WET PROCESS', 'DEVELOP  -  STOP  -  FIX'], { w: 256, h: 88, size: 26 }), 14.7, 1.85, -5.79);
     plane(lab, 0.62, 0.24, card(['SAFELIGHT AREA', 'KEEP EXPOSED FILM CLOSED'], { w: 256, h: 96, size: 22, bg: '#3b0d0a', fg: '#ff9a84' }), 13.5, 2.2, -5.79);
-    for (const [name, x] of trays) plane(lab, 0.18, 0.05, card([name], { w: 96, h: 28, font: 'VT323', size: 24 }), x, 0.97, -5.195);
+    for (const [name, x] of trays) plane(lab, 0.18, 0.05, card([name], { w: 96, h: 28, font: 'VT323', size: 24, surface: 'paper' }), x, 0.97, -5.195);
     // safelight
     box(lab, 0.34, 0.16, 0.18, plastic, 15.0, 2.45, -5.65);
     box(lab, 0.3, 0.12, 0.01, new THREE.MeshBasicMaterial({ color: 0xff2a14 }), 15.0, 2.43, -5.555);
@@ -309,7 +309,7 @@ export class ServiceYard {
     box(lab, 0.8, 0.06, 3.2, bench, 18.6, 0.86, -3.0);
     box(lab, 0.06, 0.82, 3.0, plastic, 18.95, 0.43, -3.0);
     this.col(18.15, 19.05, -4.65, -1.35);
-    const sheet = plane(lab, 0.3, 0.4, card(['INSTALLATION SHEET 11-86', '', 'B-12  ONE STRIPE', 'R-07  THREE BARS', '', 'SIGHTLINE:', 'S-03 APRON > B-12 >', 'CENTRAL ANTENNA'], { w: 200, h: 260, font: 'Special Elite', size: 15 }), 18.55, 0.895, -3.2, -Math.PI / 2, -Math.PI / 2);
+    const sheet = plane(lab, 0.3, 0.4, card(['INSTALLATION SHEET 11-86', '', 'B-12  ONE STRIPE', 'R-07  THREE BARS', '', 'SIGHTLINE:', 'S-03 APRON > B-12 >', 'CENTRAL ANTENNA'], { w: 200, h: 260, font: 'Special Elite', size: 15, surface: 'paper' }), 18.55, 0.895, -3.2, -Math.PI / 2, -Math.PI / 2);
     sheet.name = 'referenceSheet';
     const loupe = cyl(lab, 0.04, 0.05, 0.05, plastic, 18.5, 0.92, -2.6, 12);
     loupe.name = 'loupe';

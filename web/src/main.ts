@@ -10,11 +10,13 @@ import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
 import { Prologue, type SavedCase } from './story/Prologue';
 import { ServiceYard } from './world/ServiceYard';
+import { RecordsAnnex } from './world/Annex';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { glowScale } from './world/glow';
+import { CaseStore } from './core/caseStore';
 import { loadArt, artStatus } from './core/art';
 import { initArtMaterials } from './world/kit';
 
@@ -66,7 +68,8 @@ async function boot() {
   const ext = new Exterior();
   const room = new ControlRoom();
   const yard = new ServiceYard();
-  scene.add(sky.group, ext.group, room.group, yard.group);
+  const annex = new RecordsAnnex();
+  scene.add(sky.group, ext.group, room.group, yard.group, annex.group);
   const fcam = new FieldCamera(renderer, scene, camera);
 
   let quality: Quality = store.get<Quality>('quality', 'high');
@@ -79,25 +82,33 @@ async function boot() {
     resize();
   }
 
+  // the saved case and its photographs (IndexedDB), read while the title screen is up
+  const cases = new CaseStore<SavedCase>();
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
   audio.preload(); // decodes while the title screen is up
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
-  const colliders = [...room.colliders, ...yard.colliders];
-  const player = new Player(camera, colliders, [room.bounds, ...yard.zones]);
-  player.onStep = () => audio.play('step' + Math.floor(Math.random() * 3), { gain: 0.22, rate: 0.94 + Math.random() * 0.12 });
+  const colliders = [...room.colliders, ...yard.colliders, ...annex.colliders];
+  const player = new Player(camera, colliders, [room.bounds, ...yard.zones, ...annex.zones]);
+  // footsteps: a little deeper and with some grit out on the concrete
+  player.onStep = () => {
+    const out = space === 'yard';
+    audio.play('step' + Math.floor(Math.random() * 3), { gain: out ? 0.26 : 0.22, rate: (out ? 0.82 : 0.94) + Math.random() * 0.12 });
+    if (out) audio.grit(0.045);
+  };
   const game = new Prologue({
-    ui, audio, room, ext, player, inter, yard, fcam, colliders,
+    ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
-    // The chapter-one case, photographs included, lives in its own key.
-    saveCase: (c) => store.set('case', c),
-    loadCase: () => store.get<SavedCase | null>('case', null),
+    // The case lives in its own key; photographs go to IndexedDB (core/caseStore.ts).
+    saveCase: (c) => cases.save(c),
+    loadCase: () => cases.load(),
     isTouch: () => input.touchMode,
   });
   game.onCheckpoint = (n) => store.set('checkpoint', n);
   const ch1 = game.ch1;
+  const ch2 = game.ch2;
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -131,15 +142,28 @@ async function boot() {
     if (document.hidden && mode === 'play' && !pausedByMenu) openPause();
   });
 
+  // the settings shared by the pause menu and the title screen; all kept on this device
+  let invertY = store.get('invertY', false);
+  let baseFov = store.get('fov', 70);
+  const setLargeText = (on: boolean) => document.documentElement.classList.toggle('text-large', on);
+  setLargeText(store.get('largeText', false));
+  const settings = () => ({
+    volume: audio.volume, sens: input.sensitivity,
+    onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
+    onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
+    quality, onQuality: (q: Quality) => applyQuality(q),
+    invertY, onInvertY: (v: boolean) => { invertY = v; store.set('invertY', v); },
+    fov: baseFov, onFov: (v: number) => { baseFov = v; store.set('fov', v); resize(); },
+    largeText: document.documentElement.classList.contains('text-large'),
+    onLargeText: (v: boolean) => { setLargeText(v); store.set('largeText', v); },
+  });
+
   function openPause() {
     if (pausedByMenu) return;
     pausedByMenu = true;
     audio.suspend(true);
     ui.pause({
-      volume: audio.volume, sens: input.sensitivity,
-      onVolume: (v) => { audio.setVolume(v); store.set('vol', v); },
-      onSens: (v) => { input.sensitivity = v; store.set('sens', v); },
-      quality, onQuality: (q) => applyQuality(q),
+      ...settings(),
       onResume: () => { pausedByMenu = false; audio.suspend(false); },
       onTitle: () => { pausedByMenu = false; audio.suspend(false); toTitle(); },
     });
@@ -192,13 +216,7 @@ async function boot() {
       canContinue: !!store.get<string | null>('checkpoint', null),
       onStart: () => startGame(),
       onContinue: () => startGame(store.get<string | null>('checkpoint', null) ?? undefined),
-      onSettings: () => ui.pause({
-        title: 'Settings', settingsOnly: true, volume: audio.volume, sens: input.sensitivity,
-        onVolume: (v) => { audio.setVolume(v); store.set('vol', v); },
-        onSens: (v) => { input.sensitivity = v; store.set('sens', v); },
-        quality, onQuality: (q) => applyQuality(q),
-        onResume: () => {}, onTitle: () => {},
-      }),
+      onSettings: () => ui.pause({ ...settings(), title: 'Settings', settingsOnly: true, onResume: () => {}, onTitle: () => {} }),
     });
   }
 
@@ -216,6 +234,7 @@ async function boot() {
     // Normally the sounds are decoded long before anyone taps Start. If not, say so.
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
+    await cases.ready;
     clearTimeout(slow);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
@@ -269,9 +288,17 @@ async function boot() {
       { label: 'Title', on: () => toTitle() },
     ],
   });
-  // End of chapter one.
+  // End of chapter one: the night goes on in the records room.
   ch1.onEnd = (method) => showCard({
     lines: ch1.endingLines(method),
+    buttons: [
+      { label: 'Continue: the reference record', on: () => backToPlay(() => game.beginChapter2(null)) },
+      { label: 'Title', on: () => toTitle() },
+    ],
+  });
+  // End of chapter two, as far as the night is built.
+  ch2.onEnd = () => showCard({
+    lines: ch2.endingLines(),
     buttons: [
       { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
       { label: 'Title', on: () => toTitle() },
@@ -283,7 +310,7 @@ async function boot() {
   (window as any).S47 = {
     art: artStatus,
     jump: (p: string) => { if (mode !== 'play') startGame(p); else game.start(p); },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2,
   };
 
   // ---------- resize and adaptive resolution ----------
@@ -291,7 +318,8 @@ async function boot() {
     const w = innerWidth, h = innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = w < h ? 82 : 70;
+    // a phone held upright sees more of the room with a wider lens
+    if (!fcam.raised) camera.fov = w < h ? baseFov + 12 : baseFov;
     camera.updateProjectionMatrix();
   }
   addEventListener('resize', resize);
@@ -321,17 +349,18 @@ async function boot() {
   // which ambience the listener is in (room tone, open yard, photo lab)
   let space: 'room' | 'yard' | 'lab' = 'room';
   const inside = (b: { minX: number; maxX: number; minZ: number; maxZ: number }, p: THREE.Vector3) => p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
-  const spaceOf = (p: THREE.Vector3) => inside(room.bounds, p) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
+  const indoors = [room.bounds, annex.zone.southDoor, annex.zone.corridor, annex.zone.recordsDoor, annex.zone.records];
+  const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
   const dbg = { hold: false };
   function step(dt: number) {
     t += dt;
     const modalOpen = !!ui.modal;
-    if (mode === 'title') titleCam(t);
+    if (mode === 'title') { titleCam(t); annex.interior.visible = false; }
     else {
       if (mode === 'play' && !modalOpen && !game.cinematic) {
         const look = input.consumeLook();
-        player.look(look.x, look.y);
+        player.look(look.x, invertY ? -look.y : look.y);
         const m = input.move();
         player.update(dt, m.x, m.z, m.run);
       } else {
@@ -341,6 +370,9 @@ async function boot() {
       game.update(dt, t, modalOpen);
       const sp = spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
+      // the extension has no windows: draw its rooms only from inside, or through the open door
+      annex.interior.visible = indoors.slice(1).some((b) => inside(b, player.pos))
+        || (inside(room.bounds, player.pos) && room.southDoorHinge.rotation.y > 0.01);
       crtAcc += dt;
       if (crtAcc > 1 / 12) { crtAcc = 0; game.drawCrts(t); }
       if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised) {
@@ -355,6 +387,7 @@ async function boot() {
     sky.update(dt, t, camera.position);
     ext.update(dt, t);
     yard.update(t);
+    annex.update(t);
     room.lights.hemi.intensity = hemiBase + sky.uniforms.uFlash.value * 2.4;
     audio.listener(camera);
   }
@@ -367,7 +400,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     renderer.render(scene, camera);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

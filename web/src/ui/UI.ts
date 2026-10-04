@@ -1,11 +1,11 @@
 export interface DocSpec {
   id: string;
   title: string;
-  kind: 'hand' | 'printout' | 'typed' | 'photo';
+  kind: 'hand' | 'printout' | 'typed' | 'photo' | 'map';
   page: string;        // what is written on the object
   transcript: string;  // the readable transcription on the right
   stamp?: string;
-  image?: string;      // photo prints: the print itself (data URL)
+  image?: string;      // photo prints and maps: the image itself; typed papers: an attached drawing
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -168,7 +168,7 @@ export class UI {
         <button data-a="set">Settings</button>
       </div>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">Prologue and chapter one: The Second Exposure. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">Prologue, chapter one (The Second Exposure) and chapter two (The Amended Record). Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
     el.querySelector('[data-a=start]')!.addEventListener('click', opts.onStart);
     el.querySelector('[data-a=cont]')!.addEventListener('click', opts.onContinue);
     el.querySelector('[data-a=set]')!.addEventListener('click', opts.onSettings);
@@ -181,10 +181,10 @@ export class UI {
     el.className = 'docview';
     const page = doc.kind === 'printout'
       ? `<div class="page printout"><pre>${esc(doc.page).replace('SOURCE DISTANCE:  -39 LY', '<span class="hot">SOURCE DISTANCE:  -39 LY</span>')}</pre></div>`
-      : doc.kind === 'photo' && doc.image
-        ? `<div class="page photo"><img alt="${esc(doc.title)}" src="${doc.image}"></div>`
+      : (doc.kind === 'photo' || doc.kind === 'map') && doc.image
+        ? `<div class="page photo${doc.kind === 'map' ? ' map' : ''}"><img alt="${esc(doc.title)}" src="${doc.image}"></div>`
         : doc.kind === 'typed'
-          ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${esc(doc.page)}</pre></div>`
+          ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${esc(doc.page)}</pre>${doc.image ? `<img class="attached" alt="" src="${doc.image}">` : ''}</div>`
           : `<div class="page">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<div class="hand">${esc(doc.page)}</div></div>`;
     el.innerHTML = `
       <div class="page-wrap">${page}</div>
@@ -198,23 +198,45 @@ export class UI {
     this.open(el, onClose);
   }
 
+  // The notebook has two spreads: tonight's tasks and observations, and the case file
+  // with every photograph and paper collected so far. The last spread used is kept.
+  private nbTab: 'notes' | 'case' = 'notes';
   notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight') {
     const el = document.createElement('div');
     el.className = 'overlay';
+    const photos = docs.filter((d) => d.kind === 'photo' && d.image);
+    const papers = docs.filter((d) => !(d.kind === 'photo' && d.image));
+    const kind = (d: DocSpec) => d.kind === 'hand' ? 'Handwritten' : d.kind === 'printout' ? 'Printout' : d.kind === 'typed' ? 'Typed' : d.kind === 'map' ? 'Map' : 'Print';
     el.innerHTML = `
       <div class="notebook">
+        <div class="nb-tabs" role="tablist">
+          <button role="tab" data-t="notes">Notebook</button>
+          <button role="tab" data-t="case">Case file <span class="n">${docs.length}</span></button>
+        </div>
         <button class="close">Close  [Tab]</button>
-        <section>
+        <section class="nb-notes">
           <h4>${esc(heading)}</h4>
           ${tasks.length ? `<ul>${tasks.map((t) => `<li class="${t.done ? 'done' : ''}"><span class="box">${t.done ? 'x' : '-'}</span>${esc(t.text)}</li>`).join('')}</ul>` : '<p class="empty">Nothing yet. Dale left the shift log on the desk.</p>'}
-          <h4 style="margin-top:22px">Papers</h4>
-          <div class="docs">${docs.length ? docs.map((d) => `<button data-d="${d.id}">${esc(d.title)}</button>`).join('') : '<p class="empty">None collected.</p>'}</div>
         </section>
-        <section>
+        <section class="nb-notes">
           <h4>Observations</h4>
           ${notes.length ? `<ul>${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : '<p class="empty">Nothing worth writing down. Yet.</p>'}
         </section>
+        <section class="nb-case">
+          <h4>Photographs</h4>
+          ${photos.length ? `<div class="thumbs">${photos.map((d) => `<button data-d="${d.id}"><img alt="" src="${d.image}"><span>${esc(d.title)}</span></button>`).join('')}</div>` : '<p class="empty">No exposures yet.</p>'}
+          <h4>Papers</h4>
+          ${papers.length ? `<div class="cards">${papers.map((d) => `<button data-d="${d.id}" class="k-${d.kind}"><b>${esc(d.title)}</b><span>${kind(d)}${d.stamp ? ' / ' + esc(d.stamp) : ''}</span></button>`).join('')}</div>` : '<p class="empty">None collected.</p>'}
+        </section>
       </div>`;
+    const nb = el.querySelector('.notebook') as HTMLElement;
+    const show = (t: 'notes' | 'case') => {
+      this.nbTab = t;
+      nb.classList.toggle('case-on', t === 'case');
+      el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
+    };
+    el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => show(b.dataset.t as 'notes' | 'case')));
+    show(this.nbTab);
     el.querySelector('.close')!.addEventListener('click', () => this.close());
     el.addEventListener('click', (e) => { if (e.target === el) this.close(); });
     el.querySelectorAll<HTMLButtonElement>('[data-d]').forEach((b) => b.addEventListener('click', () => {
@@ -223,7 +245,11 @@ export class UI {
     this.open(el);
   }
 
-  pause(o: { onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void; quality: 'high' | 'low'; onQuality: (q: 'high' | 'low') => void; title?: string; settingsOnly?: boolean }) {
+  pause(o: {
+    onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
+    quality: 'high' | 'low'; onQuality: (q: 'high' | 'low') => void; title?: string; settingsOnly?: boolean;
+    invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
+  }) {
     const el = document.createElement('div');
     el.className = 'overlay';
     el.innerHTML = `
@@ -232,6 +258,9 @@ export class UI {
         <button class="opt" data-a="resume">${o.settingsOnly ? 'Back' : 'Resume'}</button>
         <div class="set"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="1" step="0.01" value="${o.volume}"></div>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
+        <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
+        <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
+        <div class="set"><span class="lbl">Text</span><button class="opt qual" data-a="txt" aria-label="Text size">${o.largeText ? 'Large' : 'Normal'}</button></div>
         <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${o.quality === 'high' ? 'High' : 'Low'}</button></div>
         ${o.settingsOnly ? '' : '<button class="opt" data-a="title">Quit to title</button>'}
         <p class="small">${o.settingsOnly ? 'Settings are kept on this device.' : 'Nothing in the control room moves on while the game is paused.'}</p>
@@ -240,6 +269,10 @@ export class UI {
     el.querySelector('[data-a=title]')?.addEventListener('click', () => { this.close(true); o.onTitle(); });
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
+    (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
+    let inv = o.invertY, big = o.largeText;
+    el.querySelector('[data-a=inv]')!.addEventListener('click', (e) => { inv = !inv; (e.target as HTMLElement).textContent = inv ? 'On' : 'Off'; o.onInvertY(inv); });
+    el.querySelector('[data-a=txt]')!.addEventListener('click', (e) => { big = !big; (e.target as HTMLElement).textContent = big ? 'Large' : 'Normal'; o.onLargeText(big); });
     let q = o.quality;
     const qb = el.querySelector('[data-a=qual]') as HTMLButtonElement;
     qb.addEventListener('click', () => { q = q === 'high' ? 'low' : 'high'; qb.textContent = q === 'high' ? 'High' : 'Low'; o.onQuality(q); });

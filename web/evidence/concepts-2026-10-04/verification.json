@@ -1,0 +1,169 @@
+{
+  "created_utc": "2026-10-04T07:59:47.735301+00:00",
+  "url": "http://127.0.0.1:8478/concept/",
+  "checks": [
+    {
+      "viewport": {
+        "width": 1360,
+        "height": 900
+      },
+      "status": "PASS",
+      "images": [
+        {
+          "src": "ch1_service_yard.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "ch1_photolab.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "saro_archive.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "station01_field.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "sierra_court.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "ch3_room47.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "../maps/world-overview.jpg",
+          "w": 2400,
+          "h": 1350,
+          "ok": true
+        },
+        {
+          "src": "../maps/saro-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        },
+        {
+          "src": "../maps/station01-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        },
+        {
+          "src": "../maps/motel-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        }
+      ],
+      "horizontalOverflow": false,
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "PASS",
+      "images": [
+        {
+          "src": "ch1_service_yard.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "ch1_photolab.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "saro_archive.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "station01_field.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "sierra_court.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "ch3_room47.jpg",
+          "w": 1920,
+          "h": 1080,
+          "ok": true
+        },
+        {
+          "src": "../maps/world-overview.jpg",
+          "w": 2400,
+          "h": 1350,
+          "ok": true
+        },
+        {
+          "src": "../maps/saro-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        },
+        {
+          "src": "../maps/station01-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        },
+        {
+          "src": "../maps/motel-plan.svg",
+          "w": 1800,
+          "h": 1280,
+          "ok": true
+        }
+      ],
+      "horizontalOverflow": false,
+      "pageErrors": [],
+      "failedRequests": []
+    }
+  ],
+  "assetAudit": {
+    "status": "PASS",
+    "conceptImages": 6,
+    "locationMaps": 4,
+    "mapSourcesHashChecked": 10,
+    "mapExportsHashChecked": 6,
+    "imageManifests": "All 7 output, generator source and reference hashes independently verified by exterior_art agent.",
+    "visualReview": "All 7 generated images, 3 map PNG renders and gallery desktop/mobile inspected.",
+    "gameRuntime": "UNCHANGED; earlier passing tests not re-run for this concept-only deliverable."
+  },
+  "package": {
+    "path": "Artifacts/SIGNAL47-konsepter-kart-20261004.zip",
+    "status": "PASS",
+    "bytes": 3119831,
+    "sha256": "e95c00e5bad440c63f073d735b474b7315d3a94b3d0e0f508e076d9f3977f5ea",
+    "relativeLinksChecked": 44,
+    "crc": "PASS",
+    "fix": "Repository-external brief link replaced by local prompt and map manifests so gallery is self-contained."
+  }
+}

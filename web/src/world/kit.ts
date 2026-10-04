@@ -17,6 +17,9 @@ export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
 }
 export const FLOOD_N = 20;
 export const flood = floodSet(FLOOD_N, 'site');
+// The south corridor and the records room (chapter two). The control room's corridor
+// door uses it too, so the open door is lit from the corridor side.
+export const annexFlood = floodSet(6, 'annex', 0.2);
 
 // Returns the index, so a lamp can be dimmed or switched later with setFlood().
 export function addFlood(x: number, y: number, z: number, intensity: number, color: THREE.ColorRepresentation = 0xff9a45, set = flood) {

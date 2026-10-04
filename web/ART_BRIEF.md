@@ -48,10 +48,65 @@ Du lager 2D-grafikk. Claude bygger all 3D-geometri i kode og legger bildene dine
 | `yard/label_s03_procedure.png` | 512×768 | Prosedyreark for S-03: 1. VERIFY POWER, 2. CHECK ALIGNMENT, 3. LOG ANY ANOMALIES, 4. NOTIFY OPS. Maskinskrevet. |
 | `concept/ch1_service_yard.jpg` | 1920×1080 | Konseptbilde av servicegangen ut til S-03 om natten. |
 | `concept/ch1_photolab.jpg` | 1920×1080 | Konseptbilde av SAROs lille fotolab med rødt mørkeromslys. |
-| `concept/ch3_room47.jpg` | 1920×1080 | Konseptbilde av motellrom 47: helt ordinært, med seng, TV, askebeger og en forlatt koffert. |
+| `concept/ch4_room6.jpg` | 1920×1080 | Konseptbilde av rom 6, der Nora Vega bor: seng, CRT-TV, to stoler og et bord med papirer og lampe. |
+
+## Runde 3: flater fra kapittel 1 som tegnes i kode i dag
+
+Ingen tekst i disse bildene. Teksten legges på i kode, slik at den alltid blir riktig. Alle seks er levert (PR #31) og i spillet fra 4. oktober.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `yard/vane_b12.png` | 256×1024 | 0,34 × 1,36 m | B-12-referansen: matt mørk plate med én loddrett elfenbenshvit stripe og skalastreker langs kanten. |
+| `yard/board_r07.png` | 512×512 | 0,42 × 0,42 m | R-07: matt mørk plate med tre vannrette hvite striper. |
+| `yard/floor_paint_frame.png` | 1024×512, gjennomsiktig | 2,2 × 1,1 m | Slitt gul ramme malt på betong. Brukes til S-03 APRON og B-12 SIGHT LINE. |
+| `lab/map_field_yard.png` | 1024×768 | 1,0 × 0,75 m | Håndtegnet kart sett ovenfra: kontrollrommet nederst, gangveien nordover, S-03 og B-12 langs gangen og fotolaben øst for den. |
+| `lab/sign_blank.png` | 1024×384 | 0,2 til 0,8 m brede | Tomt emaljeskilt, kremhvitt med mørk kant og litt rust. Bakgrunn for skiltene i gården og laben. |
+| `lab/tex_paper_card.jpg` | 512×512, sømløs | kort og ark | Litt gulnet papir med svake bretter. Bakgrunn for prosesskortene og arkene i laben. |
+
+## Runde 4: arkivfløyen i kapittel 2 (ikke levert)
+
+Ingen tekst i bildene. Begge tegnes i kode i dag og byttes når filene finnes.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `annex/tex_floor_vinyl.jpg` | 1024×1024, sømløs | 1,2 × 1,2 m (fire ganger fire fliser på 30 cm) | Rolige vinylfliser i lys gråbeige fra 1970-tallet, matte og litt slitte, smale fuger. Brukes i korridoren og arkivrommet. |
+| `annex/vending_front.png` | 512×1024 | 0,74 × 1,48 m | Front på en brus- og snacksautomat uten merkenavn: glassvindu med rader av bokser og poser, myntinnkast og knapper til høyre, uttaksluke nederst. Feltet under vinduet står tomt, der skriver koden COLD DRINKS. |
+
+## Slik kommer bildene inn i spillet
+
+Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Alle bilder i spillet lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
+
+Slik brukes filene (22 bilder per 4. oktober):
+
+- Rett på flaten: gulv, tak, vegg og bord i kontrollrommet, betong, ørkenbakken, de to plakatene, New Mexico-kartet, servicegårdskiltet, S-03-prosedyren, det tente motellskiltet og `yard/vane_b12.png` (B-12, stripa ligger der stripetesten venter den). Himmelen blandes inn i stjerneshaderen.
+- Under tekst fra koden: `yard/board_r07.png` (R-07 skrives under stripene), `lab/map_field_yard.png` (tittel, alle stedsnavn, fence og N), `yard/floor_paint_frame.png` (S-03 APRON og B-12 SIGHT LINE), `lab/sign_blank.png` (alle skilt og merkelapper med kant, også i arkivet), `lab/tex_paper_card.jpg` (kort, ark, arbeidsordren og papirene på pultene), `yard/tex_cabinet_metal.jpg` (skapfrontene med stensiltekst, og stålet på sidene), `ext/tex_asphalt_wet.jpg` (veimerkingen tegnes oppå) og `brand/logo_saro.png` (kaffekoppen).
+- Ikke i spillet: `ext/sign_sierra_off.png` (kildevariant), alt i `concept/`, `maps/` og `production/`, og forhåndsvisninger som `lab/paper-repeat-preview.jpg`.
 
 ## Ikke lag dette
 
 - 3D-modeller. Claude lager geometrien.
 - Dokumenter i spillet (skiftlogg, utskrifter). Disse lages i HTML og CSS, slik at teksten alltid blir riktig.
 - Brukergrensesnitt og menyer.
+
+## Konsepter og lokasjonskart levert 4. oktober 2026
+
+De tre konseptbildene i runde 2 er levert, sammen med `concept/saro_archive.jpg`, `concept/station01_field.jpg` og `concept/sierra_court.jpg` i 1920×1080. `ch3_room47.jpg` er bevart som eldre variant. Etter gjennomgang av Claude-grenen `e5706fb` er `ch4_room6.jpg` levert etter den korrigerte briefen. Grenen registrerer rom 6 og K4 som avklart.
+
+Toms bestilling om lokasjonskart er levert som `maps/world-overview.jpg` (2400×1350) og redigerbare `maps/saro-plan.svg`, `maps/station01-plan.svg`, `maps/motel-plan.svg`, alle med PNG-kopier (1800×1280). Nærkartene fastlegger ikke nye spillkonstanter. Illustrasjonen er skjematisk; SARO-nærkartet bruker web-geometrien fra main på `65ad59f` før arkivtilbygget, mens målestasjonen og motellet er planforslag.
+
+De seks opprinnelige miljøkonseptene er skalert fra 1672×941. Rom-6-revisjonens kilde står i `concept/ROOM6_REVISION.json`. Se `CONCEPT_DELIVERY.md`, promptmanifestene og det lokale galleriet `src/assets/art/concept/index.html`.
+
+## Runde 3: tekstfrie flater fra Claudes oppdaterte brief
+
+Lest fra `origin/ccr-30e38858-767d90` på `e5706fb`, 4. oktober. Alle seks filer er levert. Tekst og bevislogikk beholdes i kode.
+
+| Fil | Størrelse | Bruk |
+| --- | --- | --- |
+| `yard/vane_b12.png` | 256×1024 | Mørk referanseplate, én elfenbensstripe og 12 skalastreker |
+| `yard/board_r07.png` | 512×512 | Mørk plate med nøyaktig tre vannrette striper |
+| `yard/floor_paint_frame.png` | 1024×512, RGBA | Slitt gul ramme, gjennomsiktig bakgrunn |
+| `lab/map_field_yard.png` | 1024×768 | Tekstfritt feltkart for kapittel 1, med plasser for engelske etiketter |
+| `lab/sign_blank.png` | 1024×384 | Tomt kremhvitt emaljeskilt |
+| `lab/tex_paper_card.jpg` | 512×512, sømløs | Lavkontrast papirunderlag for kort og ark |
+
+Se `CLAUDE_HANDOFF.md` og `src/assets/art/production/index.html`. Mål og etikettposisjoner står i `production/PRECISE_GRAPHICS.json`. Claude koblet filene inn 4. oktober: PR #30s loader er beholdt og utvidet med de seks, den parallelle loaderen fra `0bb9170` er fjernet, og tekstene legges på i kode som beskrevet over.

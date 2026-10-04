@@ -1,0 +1,900 @@
+{
+  "checked_utc": "2026-10-04T08:14:49.277850+00:00",
+  "status": "PASS",
+  "scope": "Smal filkontroll av seks produksjonsassets og konsept/ch4_room6, fire nye manifester inkludert oppgitte kilde-/referansehash, og alle href/src/fragmentlenker i begge lokale gallerier. Senere lenkekontroll og ti kartkildehash kontrollert mot angitt Git-snapshot. Tidligere bildekontroll er bevart uten ny bildeaudit. Ingen runtime- eller nettlesertest.",
+  "images": [
+    {
+      "file": "yard/vane_b12.png",
+      "dimensions": [
+        256,
+        1024
+      ],
+      "format": "PNG",
+      "mode": "RGBA",
+      "bytes": 14097,
+      "sha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec",
+      "icc_bytes": 480,
+      "icc_description": "sRGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "status": "PASS",
+      "alpha_counts": {
+        "transparent": 0,
+        "opaque": 262144,
+        "partial": 0
+      }
+    },
+    {
+      "file": "yard/board_r07.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "mode": "RGBA",
+      "bytes": 11566,
+      "sha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5",
+      "icc_bytes": 480,
+      "icc_description": "sRGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "status": "PASS",
+      "alpha_counts": {
+        "transparent": 0,
+        "opaque": 262144,
+        "partial": 0
+      }
+    },
+    {
+      "file": "lab/map_field_yard.png",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "format": "PNG",
+      "mode": "RGBA",
+      "bytes": 28235,
+      "sha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796",
+      "icc_bytes": 480,
+      "icc_description": "sRGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "status": "PASS",
+      "alpha_counts": {
+        "transparent": 0,
+        "opaque": 786432,
+        "partial": 0
+      }
+    },
+    {
+      "file": "lab/sign_blank.png",
+      "dimensions": [
+        1024,
+        384
+      ],
+      "format": "PNG",
+      "mode": "RGB",
+      "bytes": 365474,
+      "sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "alpha_range": null,
+      "status": "PASS"
+    },
+    {
+      "file": "lab/tex_paper_card.jpg",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "bytes": 20280,
+      "sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "alpha_range": null,
+      "status": "PASS"
+    },
+    {
+      "file": "yard/floor_paint_frame.png",
+      "dimensions": [
+        1024,
+        512
+      ],
+      "format": "PNG",
+      "mode": "RGBA",
+      "bytes": 106181,
+      "sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "status": "PASS",
+      "alpha_counts": {
+        "transparent": 468290,
+        "opaque": 3641,
+        "partial": 52357
+      },
+      "center_alpha_range": [
+        0,
+        1
+      ]
+    },
+    {
+      "file": "concept/ch4_room6.jpg",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "bytes": 209905,
+      "sha256": "c4485c034b664800a753555da1351a84d2bcc16ca31818605a2ae1802cfa2750",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "alpha_range": null,
+      "status": "PASS"
+    }
+  ],
+  "manifest_hash_checks": [
+    {
+      "role": "output",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/yard/vane_b12.png",
+      "expected_sha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec",
+      "actual_sha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec",
+      "status": "PASS"
+    },
+    {
+      "role": "editable_source",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/production/vane_b12.svg",
+      "expected_sha256": "97c1f65aa9bd9920e0c102bb8e1ae7b431738cdf35c267b419645336327dc76f",
+      "actual_sha256": "97c1f65aa9bd9920e0c102bb8e1ae7b431738cdf35c267b419645336327dc76f",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/yard/board_r07.png",
+      "expected_sha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5",
+      "actual_sha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5",
+      "status": "PASS"
+    },
+    {
+      "role": "editable_source",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/production/board_r07.svg",
+      "expected_sha256": "0509e293f48ce017f1c32443133cb79e4bf8246162354a451adf1b50fa5b661d",
+      "actual_sha256": "0509e293f48ce017f1c32443133cb79e4bf8246162354a451adf1b50fa5b661d",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/lab/map_field_yard.png",
+      "expected_sha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796",
+      "actual_sha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796",
+      "status": "PASS"
+    },
+    {
+      "role": "editable_source",
+      "manifest": "production/PRECISE_GRAPHICS.json",
+      "file": "web/src/assets/art/production/map_field_yard.svg",
+      "expected_sha256": "d5d8aab1633855e87ae16b515ca7c521830905ed92bc3d2c16378d3eea429a17",
+      "actual_sha256": "d5d8aab1633855e87ae16b515ca7c521830905ed92bc3d2c16378d3eea429a17",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "web/src/assets/art/lab/sign_blank.png",
+      "expected_sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "actual_sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "status": "PASS"
+    },
+    {
+      "role": "generated_source",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-e7d6a984-0ab7-4fdb-a135-bc905d316995.png",
+      "expected_sha256": "caf40af44cbe9773021b004bb95238a949061a9f03e22a4e984d5ece88f5772e",
+      "actual_sha256": "caf40af44cbe9773021b004bb95238a949061a9f03e22a4e984d5ece88f5772e",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "web/src/assets/art/lab/tex_paper_card.jpg",
+      "expected_sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229",
+      "actual_sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229",
+      "status": "PASS"
+    },
+    {
+      "role": "generated_source",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-b0cb6894-f939-453c-95c6-eaaa576c8d72.png",
+      "expected_sha256": "df5e2e06ba24836b2073006da6273e72a6036701703869a0baa5fb1941ed26dc",
+      "actual_sha256": "df5e2e06ba24836b2073006da6273e72a6036701703869a0baa5fb1941ed26dc",
+      "status": "PASS"
+    },
+    {
+      "role": "brief_snapshot",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "web/ART_BRIEF.md",
+      "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8",
+      "expected_sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5",
+      "actual_sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5",
+      "status": "PASS"
+    },
+    {
+      "role": "inspected_reference",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "web/evidence/art-2026-10-04/lab-high.png",
+      "expected_sha256": "c2e1c9a25ffef933d2bede56cf4cf61a1b5cac249615d401fd5f528f65d787a5",
+      "actual_sha256": "c2e1c9a25ffef933d2bede56cf4cf61a1b5cac249615d401fd5f528f65d787a5",
+      "status": "PASS"
+    },
+    {
+      "role": "qa_preview",
+      "manifest": "lab/LAB_SURFACES.json",
+      "file": "web/src/assets/art/lab/paper-repeat-preview.jpg",
+      "expected_sha256": "bc191a61a45dee2496a25704ab6b197574dd825d8285bcaf4cea5a7996965971",
+      "actual_sha256": "bc191a61a45dee2496a25704ab6b197574dd825d8285bcaf4cea5a7996965971",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "web/src/assets/art/yard/floor_paint_frame.png",
+      "expected_sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
+      "actual_sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
+      "status": "PASS"
+    },
+    {
+      "role": "generated_source",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-3c0b295f-48f4-45ca-a19c-b748a2c991c4.png",
+      "expected_sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e",
+      "actual_sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e",
+      "status": "PASS"
+    },
+    {
+      "role": "brief_snapshot",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "web/ART_BRIEF.md",
+      "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8",
+      "expected_git_blob": "d0b2f046d1dc8d007433d62cb58bcd440f2fa04e",
+      "actual_git_blob": "d0b2f046d1dc8d007433d62cb58bcd440f2fa04e",
+      "status": "PASS"
+    },
+    {
+      "role": "generation_iteration",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-8fa8727d-9467-40d3-b284-145e33ba3cf8.png",
+      "expected_sha256": "cf7710f6f1cecadc38090c218d9b9afae4060c23df1d8044b383b2c8dfeff31d",
+      "actual_sha256": "cf7710f6f1cecadc38090c218d9b9afae4060c23df1d8044b383b2c8dfeff31d",
+      "status": "PASS"
+    },
+    {
+      "role": "generation_iteration",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-bd37b4be-1169-4e52-ba34-2cb431c3603d.png",
+      "expected_sha256": "31cc1484b8190aeb80b240ca26bffae96b3cf6c0d2f71ff7c64dab85191bbde4",
+      "actual_sha256": "31cc1484b8190aeb80b240ca26bffae96b3cf6c0d2f71ff7c64dab85191bbde4",
+      "status": "PASS"
+    },
+    {
+      "role": "generation_iteration",
+      "manifest": "yard/FLOOR_FRAME.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-3c0b295f-48f4-45ca-a19c-b748a2c991c4.png",
+      "expected_sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e",
+      "actual_sha256": "2eccfe7d5c4b3d961f663b49a47065a796ae028d4f1de6a44e5fe1ef9e2c7b5e",
+      "status": "PASS"
+    },
+    {
+      "role": "output",
+      "manifest": "concept/ROOM6_REVISION.json",
+      "file": "web/src/assets/art/concept/ch4_room6.jpg",
+      "expected_sha256": "c4485c034b664800a753555da1351a84d2bcc16ca31818605a2ae1802cfa2750",
+      "actual_sha256": "c4485c034b664800a753555da1351a84d2bcc16ca31818605a2ae1802cfa2750",
+      "status": "PASS"
+    },
+    {
+      "role": "generated_source",
+      "manifest": "concept/ROOM6_REVISION.json",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f6accc88-df3f-49e2-bbcf-330200811b89.png",
+      "expected_sha256": "41d494f5710d0ddd64a596630ac907c617b1cca7cd667660ee4ac0b12ef38575",
+      "actual_sha256": "41d494f5710d0ddd64a596630ac907c617b1cca7cd667660ee4ac0b12ef38575",
+      "status": "PASS"
+    },
+    {
+      "role": "reference_preserved",
+      "manifest": "concept/ROOM6_REVISION.json",
+      "file": "web/src/assets/art/concept/ch3_room47.jpg",
+      "expected_sha256": "ebf63b1012a56fc65a83f1d7d19ac2ef01a62cb33c958424c5c7db0994648e6e",
+      "actual_sha256": "ebf63b1012a56fc65a83f1d7d19ac2ef01a62cb33c958424c5c7db0994648e6e",
+      "status": "PASS"
+    },
+    {
+      "role": "brief_snapshot",
+      "manifest": "concept/ROOM6_REVISION.json",
+      "file": "web/ART_BRIEF.md",
+      "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8",
+      "expected_sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5",
+      "actual_sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5",
+      "status": "PASS"
+    }
+  ],
+  "galleries": [
+    {
+      "file": "production/index.html",
+      "sha256": "aa97f7e44208afd1407954193fba3ceff8d303f3deaef7349e8e0933c87801dc",
+      "image_count": 6,
+      "reference_count": 17,
+      "unique_urls": 11,
+      "status": "PASS",
+      "references": [
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../concept/index.html",
+          "target": "web/src/assets/art/concept/index.html",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../yard/vane_b12.png",
+          "target": "web/src/assets/art/yard/vane_b12.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../yard/vane_b12.png",
+          "target": "web/src/assets/art/yard/vane_b12.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../yard/board_r07.png",
+          "target": "web/src/assets/art/yard/board_r07.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../yard/board_r07.png",
+          "target": "web/src/assets/art/yard/board_r07.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../yard/floor_paint_frame.png",
+          "target": "web/src/assets/art/yard/floor_paint_frame.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../yard/floor_paint_frame.png",
+          "target": "web/src/assets/art/yard/floor_paint_frame.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../lab/map_field_yard.png",
+          "target": "web/src/assets/art/lab/map_field_yard.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../lab/map_field_yard.png",
+          "target": "web/src/assets/art/lab/map_field_yard.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../lab/sign_blank.png",
+          "target": "web/src/assets/art/lab/sign_blank.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../lab/sign_blank.png",
+          "target": "web/src/assets/art/lab/sign_blank.png",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../lab/tex_paper_card.jpg",
+          "target": "web/src/assets/art/lab/tex_paper_card.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../lab/tex_paper_card.jpg",
+          "target": "web/src/assets/art/lab/tex_paper_card.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../lab/paper-repeat-preview.jpg",
+          "target": "web/src/assets/art/lab/paper-repeat-preview.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "PRECISE_GRAPHICS.json",
+          "target": "web/src/assets/art/production/PRECISE_GRAPHICS.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../lab/LAB_SURFACES.json",
+          "target": "web/src/assets/art/lab/LAB_SURFACES.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../yard/FLOOR_FRAME.json",
+          "target": "web/src/assets/art/yard/FLOOR_FRAME.json",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "file": "concept/index.html",
+      "sha256": "e31bdaeeec85a774282f4e8e88c31b90eb566e321de6335a7b34350699186897",
+      "image_count": 10,
+      "reference_count": 50,
+      "unique_urls": 19,
+      "status": "PASS",
+      "references": [
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "#miljoer",
+          "target": "web/src/assets/art/concept/index.html",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "#miljoer",
+          "target": "web/src/assets/art/concept/index.html",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "#kart",
+          "target": "web/src/assets/art/concept/index.html",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_service_yard.jpg",
+          "target": "web/src/assets/art/concept/ch1_service_yard.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "ch1_service_yard.jpg",
+          "target": "web/src/assets/art/concept/ch1_service_yard.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_service_yard.jpg",
+          "target": "web/src/assets/art/concept/ch1_service_yard.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_service_yard.jpg",
+          "target": "web/src/assets/art/concept/ch1_service_yard.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_photolab.jpg",
+          "target": "web/src/assets/art/concept/ch1_photolab.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "ch1_photolab.jpg",
+          "target": "web/src/assets/art/concept/ch1_photolab.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_photolab.jpg",
+          "target": "web/src/assets/art/concept/ch1_photolab.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch1_photolab.jpg",
+          "target": "web/src/assets/art/concept/ch1_photolab.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "saro_archive.jpg",
+          "target": "web/src/assets/art/concept/saro_archive.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "saro_archive.jpg",
+          "target": "web/src/assets/art/concept/saro_archive.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "saro_archive.jpg",
+          "target": "web/src/assets/art/concept/saro_archive.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "saro_archive.jpg",
+          "target": "web/src/assets/art/concept/saro_archive.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "station01_field.jpg",
+          "target": "web/src/assets/art/concept/station01_field.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "station01_field.jpg",
+          "target": "web/src/assets/art/concept/station01_field.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "station01_field.jpg",
+          "target": "web/src/assets/art/concept/station01_field.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "station01_field.jpg",
+          "target": "web/src/assets/art/concept/station01_field.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "sierra_court.jpg",
+          "target": "web/src/assets/art/concept/sierra_court.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "sierra_court.jpg",
+          "target": "web/src/assets/art/concept/sierra_court.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "sierra_court.jpg",
+          "target": "web/src/assets/art/concept/sierra_court.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "sierra_court.jpg",
+          "target": "web/src/assets/art/concept/sierra_court.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch4_room6.jpg",
+          "target": "web/src/assets/art/concept/ch4_room6.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "ch4_room6.jpg",
+          "target": "web/src/assets/art/concept/ch4_room6.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch4_room6.jpg",
+          "target": "web/src/assets/art/concept/ch4_room6.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ch4_room6.jpg",
+          "target": "web/src/assets/art/concept/ch4_room6.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/world-overview.jpg",
+          "target": "web/src/assets/art/maps/world-overview.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../maps/world-overview.jpg",
+          "target": "web/src/assets/art/maps/world-overview.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/world-overview.jpg",
+          "target": "web/src/assets/art/maps/world-overview.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/world-overview.jpg",
+          "target": "web/src/assets/art/maps/world-overview.jpg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/saro-plan.svg",
+          "target": "web/src/assets/art/maps/saro-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../maps/saro-plan.svg",
+          "target": "web/src/assets/art/maps/saro-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/saro-plan.svg",
+          "target": "web/src/assets/art/maps/saro-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/saro-plan.svg",
+          "target": "web/src/assets/art/maps/saro-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/station01-plan.svg",
+          "target": "web/src/assets/art/maps/station01-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../maps/station01-plan.svg",
+          "target": "web/src/assets/art/maps/station01-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/station01-plan.svg",
+          "target": "web/src/assets/art/maps/station01-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/station01-plan.svg",
+          "target": "web/src/assets/art/maps/station01-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/motel-plan.svg",
+          "target": "web/src/assets/art/maps/motel-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "img",
+          "attribute": "src",
+          "url": "../maps/motel-plan.svg",
+          "target": "web/src/assets/art/maps/motel-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/motel-plan.svg",
+          "target": "web/src/assets/art/maps/motel-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/motel-plan.svg",
+          "target": "web/src/assets/art/maps/motel-plan.svg",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "room-concepts.json",
+          "target": "web/src/assets/art/concept/room-concepts.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "exterior-concepts.json",
+          "target": "web/src/assets/art/concept/exterior-concepts.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "additional-concepts.json",
+          "target": "web/src/assets/art/concept/additional-concepts.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../maps/map-spec.json",
+          "target": "web/src/assets/art/maps/map-spec.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "#",
+          "target": "web/src/assets/art/concept/index.html",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "ROOM6_REVISION.json",
+          "target": "web/src/assets/art/concept/ROOM6_REVISION.json",
+          "status": "PASS"
+        },
+        {
+          "tag": "a",
+          "attribute": "href",
+          "url": "../production/index.html",
+          "target": "web/src/assets/art/production/index.html",
+          "status": "PASS"
+        }
+      ]
+    }
+  ],
+  "issues": [],
+  "link_and_map_recheck_utc": "2026-10-04T08:16:25.521513+00:00",
+  "map_source_snapshot": {
+    "manifest": "web/src/assets/art/maps/map-spec.json",
+    "manifest_sha256": "6dd96c7fbf2f640bf4a8994a168d20ae65a93e58e276cbd8cf63ebf599f27d08",
+    "sourceSnapshotCommit": "6f2bea0",
+    "resolved_commit": "6f2bea0809146a836ad785fa87e18aca52bbda49",
+    "method": "SHA-256 av git show <commit>:<path>, ikke arbeidskopien.",
+    "status": "PASS",
+    "checks": [
+      {
+        "file": "web/src/world/ControlRoom.ts",
+        "expected_sha256": "21796eae0d322d60be3870489c2dccbcbf1d4c53db72a480355da4809c54ce8e",
+        "actual_sha256": "21796eae0d322d60be3870489c2dccbcbf1d4c53db72a480355da4809c54ce8e",
+        "status": "PASS"
+      },
+      {
+        "file": "web/src/world/ServiceYard.ts",
+        "expected_sha256": "b24aa169d1baf8e9865d31342b8a1b601c8835d430bebbae5624b79cc726547b",
+        "actual_sha256": "b24aa169d1baf8e9865d31342b8a1b601c8835d430bebbae5624b79cc726547b",
+        "status": "PASS"
+      },
+      {
+        "file": "web/src/world/Exterior.ts",
+        "expected_sha256": "9d7c729e198201d68d62d275397c668cb373f675d82691671c7239bf233e130a",
+        "actual_sha256": "9d7c729e198201d68d62d275397c668cb373f675d82691671c7239bf233e130a",
+        "status": "PASS"
+      },
+      {
+        "file": "web/AGENTS.md",
+        "expected_sha256": "087c0728cf75a06ffe6d332fe0ffcc521a58508e0f568126c9019c6d1a6ed3da",
+        "actual_sha256": "087c0728cf75a06ffe6d332fe0ffcc521a58508e0f568126c9019c6d1a6ed3da",
+        "status": "PASS"
+      },
+      {
+        "file": "web/ART_BRIEF.md",
+        "expected_sha256": "3d6fd9a0b5b2646c8a080512f89655e661c9f9a3e1c7f28489152059b3e3bf63",
+        "actual_sha256": "3d6fd9a0b5b2646c8a080512f89655e661c9f9a3e1c7f28489152059b3e3bf63",
+        "status": "PASS"
+      },
+      {
+        "file": "web/memory.md",
+        "expected_sha256": "eb4df27242428dd6f273099bdc786464f7eb1e6f49cde978c0df735afdb5d3b9",
+        "actual_sha256": "eb4df27242428dd6f273099bdc786464f7eb1e6f49cde978c0df735afdb5d3b9",
+        "status": "PASS"
+      },
+      {
+        "file": "web/todo.md",
+        "expected_sha256": "57e9e610944355a6c61c8292f3a0b93a0fab64004f812cf8f83dfffe91ff11ff",
+        "actual_sha256": "57e9e610944355a6c61c8292f3a0b93a0fab64004f812cf8f83dfffe91ff11ff",
+        "status": "PASS"
+      },
+      {
+        "file": "Docs/DesignBible13/design-bible.md",
+        "expected_sha256": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69",
+        "actual_sha256": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69",
+        "status": "PASS"
+      },
+      {
+        "file": "Docs/WorldCase22/WORLD_DESIGN.md",
+        "expected_sha256": "b7b926c9b680f208e3e6005099da90d4c09cafee45439f2552e1d0354fb9f46b",
+        "actual_sha256": "b7b926c9b680f208e3e6005099da90d4c09cafee45439f2552e1d0354fb9f46b",
+        "status": "PASS"
+      },
+      {
+        "file": "Docs/CURRENT_HANDOFF.md",
+        "expected_sha256": "d8fb5df0c7bab071264e2027292ce5989014f936770a85b6fa7474bb7a96b560",
+        "actual_sha256": "d8fb5df0c7bab071264e2027292ce5989014f936770a85b6fa7474bb7a96b560",
+        "status": "PASS"
+      }
+    ]
+  }
+}

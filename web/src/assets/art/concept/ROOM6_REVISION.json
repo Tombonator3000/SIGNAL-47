@@ -1,0 +1,53 @@
+{
+  "created_utc": "2026-10-04T08:09:33.793Z",
+  "status": "CONCEPT_ONLY",
+  "file": "ch4_room6.jpg",
+  "dimensions": [
+    1920,
+    1080
+  ],
+  "color_space": "sRGB",
+  "format": "JPEG quality 85",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "generator_model": "Eksakt modellnavn eller versjon er ikke eksponert eller bekreftet.",
+  "prompt": "Use case: precise-object-edit.\nAsset type: revised environment concept art for SIGNAL / 47, a stylized low-poly Three.js game set in New Mexico in 1986. Landscape 16:9, final export target 1920x1080.\nInput image: edit target and style authority, the existing empty motel-room concept. Preserve the established low-poly angular rendering, muted rust/ochre bedspread, wooden bed and headboard on the right, wood-veneer CRT television on the left, patterned curtains, deep blue desert night outside the window, faded teal door and trim, bedside warm lamp, worn but ordinary furniture and overall room composition.\nRequested change ONLY: turn the small left-foreground wooden table into a quiet conversation and document-review place for two people, with exactly two simple matching wooden chairs facing toward the table, one on each side. Keep one existing chair and add the second, moving the small table subtly away from the wall if needed to give the chairs believable usable space. Replace the ashtray with one small warm table lamp, a neatly aligned modest stack of plain cream paper and one closed plain envelope. Papers contain NO readable text, numbers, photos, diagrams or symbols. Make both chairs visibly distinct rather than overlapping into one chair. The small table and chairs must remain plausible in this compact motel room; do not turn it into an office or briefing room. Keep the table setup visually clear and uncluttered, and the rest of the original room largely unchanged.\nLighting: preserve the warm bedside lamp and cool blue night; the new little table lamp adds a restrained warm pool of light on the paper, not an exaggerated spotlight. Matte practical materials, simple low-poly geometry and softly hand-painted wear; not photographic or cinematic realism.\nConstraints: no people, no text anywhere, no room number on doors or objects, no labels, chapter numbers, title, watermark, UI, logos, flags, supernatural elements, crime scene, weapon, evidence markings, annotations or new plot information. The newer production brief records this as Chapter 4, motel room 6, but that information must NOT be printed inside the image. This remains concept art, not a gameplay screenshot. Preserve reference composition and visual style while making the requested table change.",
+  "generated_source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f6accc88-df3f-49e2-bbcf-330200811b89.png",
+  "reference": {
+    "path": "web/src/assets/art/concept/ch3_room47.jpg",
+    "role": "Eksisterende motellkonsept ble inspisert og brukt som redigerings- og stilreferanse. Originalfilen beholdes uendret.",
+    "sha256": "ebf63b1012a56fc65a83f1d7d19ac2ef01a62cb33c958424c5c7db0994648e6e"
+  },
+  "brief": {
+    "git_ref": "e5706fb",
+    "path": "web/ART_BRIEF.md",
+    "entry": "concept/ch4_room6.jpg",
+    "decision": "Den nye briefen registrerer K4 og motellrom 6, der Nora Vega bor, som gjeldende. Filnavnet og tidligere uavklarte romnummer i ch3_room47.jpg skal ikke brukes som gjeldende kapittel-/rombeslutning.",
+    "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8",
+    "sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5"
+  },
+  "changes": [
+    "Bordet er satt opp som samtale- og dokumentplass med to tydelig atskilte trestoler.",
+    "Askebegeret er fjernet fra bordet.",
+    "En liten varm bordlampe, en ryddig bunke blanke papirer og en lukket konvolutt er lagt på bordet.",
+    "Etablert lavpoly-stil, seng, CRT-TV, gardiner, nattutsikt, varm nattbordslampe og øvrig romuttrykk er beholdt.",
+    "Ingen personer, leselig dokumenttekst, romnummer eller ny plotinformasjon er tilført."
+  ],
+  "postprocess": "Kun Lanczos-skalering til 1920x1080 og JPEG-eksport med sRGB-profil.",
+  "validation": {
+    "format": "PASS: 1920x1080 RGB-JPEG kvalitet 85 med innebygd sRGB-profil.",
+    "visual": "PASS: Eksport inspisert med view_image. To tydelige trestoler, liten bordlampe, ryddig bunke blanke papirer og lukket konvolutt. Askebegeret er fjernet; seng, CRT-TV, gardiner, varm nattbordslampe og lavpoly-rommet er beholdt. Ingen personer, leselig tekst eller romnummer.",
+    "preservation": "PASS: ch3_room47.jpg er beholdt, og referansens sjekksum er kontrollert uendret.",
+    "runtime": "NOT_APPLICABLE: Nytt konseptbilde, ingen runtime-endringer."
+  },
+  "generated_source_sha256": "41d494f5710d0ddd64a596630ac907c617b1cca7cd667660ee4ac0b12ef38575",
+  "generated_source_dimensions": [
+    1672,
+    941
+  ],
+  "sha256": "c4485c034b664800a753555da1351a84d2bcc16ca31818605a2ae1802cfa2750",
+  "bytes": 209905,
+  "limitations": [
+    "Konseptet illustrerer den korrigerte bestillingen for K4/rom 6, men er ikke et spillbilde eller bevis på implementasjon.",
+    "Generert original er 1672x941 og skalert til bestilte 1920x1080."
+  ]
+}

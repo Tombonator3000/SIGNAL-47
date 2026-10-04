@@ -193,3 +193,114 @@ export function localReport(ui: UI, o: { text: string; filed: boolean; onFile: (
     ${o.filed ? '<p class="lp-text">Filed.</p>' : '<button class="lp-btn primary" data-a="file">FILE PRINTS AND CLOSE THE LOCAL CASE</button>'}`);
   el.querySelector('[data-a=file]')?.addEventListener('click', () => { ui.close(); o.onFile(); });
 }
+
+// ---------- chapter two: the archive table ----------
+// One panel at the records room work table, after the Unity dossier (WorldCase22): the
+// four sources as tabs, then P04 (what changed) and P05 (where the reference leads).
+// A source that is still on the shelf says where it is instead.
+export type ArchivePage = 'original' | 'amended' | 'lineage' | 'index' | 'compare' | 'route';
+export type SourceKey = 'original' | 'amended' | 'lineage' | 'index';
+export interface ArchiveSource { have: boolean; heading: string; text: string; image?: string; where: string }
+type Marker = 'triangle-bar' | 'triangle' | 'three-bars';
+
+export function archive(ui: UI, o: {
+  page: ArchivePage;
+  sources: Record<SourceKey, ArchiveSource>;
+  status: () => string;
+  p04: () => boolean; p05: () => boolean;
+  supported04: string; supported05: string;
+  onCompare: (c: 'author-guilt' | 'omitted-c' | 'development-only') => Result;
+  onRoute: (destination: string, survey: string, marker: Marker) => Result;
+  hints04: string[]; hints05: string[];
+  icons: Record<Marker, string>;
+}) {
+  const tabs: [ArchivePage, string][] = [['original', 'E07 / ORIGINAL'], ['amended', 'E06 / AMENDED'], ['lineage', 'B-12 / LINEAGE'], ['index', 'E08 / INDEX'], ['compare', 'P04 / COMPARE'], ['route', 'P05 / DESTINATION']];
+  const el = shell(ui, 'SARO ARCHIVE / THE AMENDED RECORD', `
+    <p class="lp-sub" data-status></p>
+    <div class="lp-tabs" role="tablist">${tabs.map(([k, l]) => `<button class="lp-tab" role="tab" data-p="${k}">${l}</button>`).join('')}</div>
+    <div class="lp-page" data-page></div>`);
+  const pageEl = el.querySelector('[data-page]') as HTMLElement;
+  const statusEl = el.querySelector('[data-status]') as HTMLElement;
+  let hint04 = 0, hint05 = 0;
+  const sel: { destination?: string; survey?: string; marker?: Marker } = {};
+
+  const paper = (text: string) => `<div class="lp-paper typed">${text.split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>`;
+  const render = (page: ArchivePage) => {
+    statusEl.textContent = o.status();
+    el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.p === page)));
+    if (page === 'compare') return compare();
+    if (page === 'route') return route();
+    const src = o.sources[page];
+    pageEl.innerHTML = src.have
+      ? `<div class="lp-two"><div><p class="lp-q">${esc(src.heading)}</p>${paper(src.text)}</div>${src.image ? `<figure class="lp-figure"><img alt="" src="${src.image}"></figure>` : ''}</div>
+         <p class="lp-small">Read in any order. Use COMPARE and DESTINATION to record findings.</p>`
+      : `<p class="lp-text">Not on the table yet. ${esc(src.where)}</p>`;
+  };
+
+  const compare = () => {
+    const s = o.sources;
+    if (o.p04()) { pageEl.innerHTML = `${paper(o.supported04)}<p class="lp-small">P04 recorded. The sources stay available above.</p>`; return; }
+    const both = s.original.have && s.amended.have;
+    pageEl.innerHTML = `
+      <div class="lp-two">
+        <div><p class="lp-q">ORIGINAL / E07</p>${paper('Three references: A, the fixed survey point; B, the optical comparison vane; C, the closing sight line.\n\nThe mark remained in the plate with the lamp circuit opened.')}</div>
+        <div><p class="lp-q">AMENDED / E06</p>${paper('The incomplete closing sight line has been omitted.\n\nThe additional mark is attributed to a fault in plate development. No repeat observation is required.')}</div>
+      </div>
+      <p class="lp-q">${both ? 'Which finding is supported by the source records?' : 'Read E07 and E06 before recording a finding. The source tabs stay available above.'}</p>
+      <div class="lp-col">
+        <button class="lp-btn" data-c="author-guilt">The signature proves that the author caused the anomaly.</button>
+        <button class="lp-btn" data-c="omitted-c">The amended copy removes C and replaces the retained-mark observation with a development explanation.</button>
+        <button class="lp-btn" data-c="development-only">The development explanation accounts for both versions without an omitted reference.</button>
+      </div>
+      <div class="lp-row"><button class="lp-btn" data-a="hint">Hint</button></div>
+      <p class="lp-text" data-say></p>`;
+    pageEl.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => {
+      const r = o.onCompare(b.dataset.c as 'author-guilt' | 'omitted-c' | 'development-only');
+      if (r.ok) { render('compare'); return; }
+      say(el, '[data-say]', r);
+    }));
+    pageEl.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints04[Math.min(hint04, o.hints04.length - 1)]); hint04++; });
+  };
+
+  const route = () => {
+    if (o.p05()) { pageEl.innerHTML = `${paper(o.supported05)}<p class="lp-small">P05 recorded. The sources stay available above.</p>`; return; }
+    const s = o.sources;
+    const lead = !o.p04() ? 'First record the comparison in P04. You can inspect all four source cards now.'
+      : !s.lineage.have || !s.index.have ? 'Read the B-12 lineage card and E08 index before preparing the destination.'
+        : 'Match both source identifiers. Select a destination, survey ID and fixed-point mark.';
+    const choice = (group: string, key: string, label: string, icon?: string) =>
+      `<button class="lp-choice" data-g="${group}" data-k="${key}" aria-pressed="false">${icon ? `<img alt="" src="${icon}">` : ''}<span>${esc(label)}</span></button>`;
+    pageEl.innerHTML = `
+      <p class="lp-q">${esc(lead)}</p>
+      <div class="lp-cols3">
+        <div><p class="lp-small">FIELD DESTINATION</p>${choice('destination', 'old-survey-station', 'OLD SURVEY STATION')}${choice('destination', 'saro-apron', 'SARO ARRAY APRON')}${choice('destination', 'unlisted', 'UNLISTED FIELD SITE')}</div>
+        <div><p class="lp-small">SURVEY IDENTIFIER</p>${choice('survey', 'STATION 01', 'STATION 01')}${choice('survey', 'S-03', 'S-03')}${choice('survey', '-39 LY AS A YEAR CODE', '-39 LY AS A YEAR CODE')}</div>
+        <div><p class="lp-small">FIXED-POINT MARK</p>${choice('marker', 'triangle-bar', 'OUTLINED TRIANGLE + BAR', o.icons['triangle-bar'])}${choice('marker', 'triangle', 'TRIANGLE / NO BAR', o.icons.triangle)}${choice('marker', 'three-bars', 'THREE HORIZONTAL BARS', o.icons['three-bars'])}</div>
+      </div>
+      <p class="lp-small">SOURCE CHECK / The maintenance card must connect today's B-12 to the same survey and fixed-point reference in the sleeve. A place name alone is insufficient.</p>
+      <div class="lp-row"><button class="lp-btn primary" data-a="record">RECORD SUPPORTED FIELD DESTINATION</button><button class="lp-btn" data-a="hint">Hint</button></div>
+      <p class="lp-text" data-say></p>`;
+    const rec = pageEl.querySelector('[data-a=record]') as HTMLButtonElement;
+    const sync = () => { rec.disabled = !(sel.destination && sel.survey && sel.marker); };
+    pageEl.querySelectorAll<HTMLButtonElement>('[data-g]').forEach((b) => {
+      const g = b.dataset.g as 'destination' | 'survey' | 'marker';
+      if (sel[g] === b.dataset.k) b.setAttribute('aria-pressed', 'true');
+      b.addEventListener('click', () => {
+        (sel as Record<string, string>)[g] = b.dataset.k!;
+        pageEl.querySelectorAll<HTMLButtonElement>(`[data-g=${g}]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        sync();
+      });
+    });
+    rec.addEventListener('click', () => {
+      const r = o.onRoute(sel.destination!, sel.survey!, sel.marker!);
+      if (r.ok) { render('route'); return; }
+      say(el, '[data-say]', r);
+    });
+    pageEl.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints05[Math.min(hint05, o.hints05.length - 1)]); hint05++; });
+    sync();
+  };
+
+  el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.addEventListener('click', () => render(b.dataset.p as ArchivePage)));
+  render(o.page);
+  return el;
+}

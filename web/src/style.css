@@ -243,6 +243,28 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .notebook .close { position: absolute; right: 14px; top: 8px; font-family: var(--term); font-size: 22px; color: #5a5446; min-height: 40px; }
 .notebook .empty { font-family: var(--type); font-size: 15px; color: #7d7563; }
 @media (max-width: 700px) { .notebook { grid-template-columns: 1fr; } .notebook::before { display: none; } .notebook section { min-height: 0; } }
+/* notebook spreads: tasks and observations, or the case file */
+.notebook .nb-tabs { position: absolute; left: 22px; top: 8px; display: flex; gap: 6px; z-index: 1; }
+.notebook .nb-tabs button { font-family: var(--term); font-size: 21px; color: #7d7563; min-height: 40px; padding: 0 10px; border-bottom: 2px solid transparent; }
+.notebook .nb-tabs button[aria-selected=true] { color: #3f3a30; border-bottom-color: #a33a2c; }
+.notebook .nb-tabs .n { font-size: 16px; color: #a33a2c; }
+.notebook section { padding-top: 58px; background-position: 0 100px; }
+.notebook .nb-case { display: none; grid-column: 1 / -1; }
+.notebook.case-on .nb-notes { display: none; }
+.notebook.case-on .nb-case { display: block; background-image: none; }
+.notebook.case-on::before { display: none; }
+.notebook .thumbs { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+.notebook .thumbs button { width: 220px; text-align: left; padding: 0; }
+.notebook .thumbs img { display: block; width: 100%; height: auto; box-shadow: 0 6px 14px rgba(0,0,0,.35); transform: rotate(-.8deg); }
+.notebook .thumbs button:nth-child(2n) img { transform: rotate(.9deg); }
+.notebook .thumbs span { display: block; margin-top: 8px; font-family: var(--type); font-size: 14px; color: #3f3a30; }
+.notebook .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.notebook .cards button { text-align: left; padding: 10px 12px; min-height: 64px; background: #f4efe1; border: 1px solid rgba(0,0,0,.12); box-shadow: 0 2px 5px rgba(0,0,0,.12); }
+.notebook .cards b { display: block; font-family: var(--type); font-weight: normal; font-size: 15px; color: var(--ink); }
+.notebook .cards span { display: block; margin-top: 4px; font-family: var(--term); font-size: 16px; color: #8a8270; }
+.notebook .cards .k-printout { background: #eef2e6; }
+.notebook .cards .k-hand b { font-family: var(--hand); font-size: 22px; color: var(--ink-blue); }
+@media (max-width: 700px) { .notebook .thumbs button { width: calc(50% - 8px); } }
 
 /* ---------- Pause / settings ---------- */
 .panel { width: min(460px, 100%); background: rgba(8,11,19,.94); border: 1px solid rgba(255,255,255,.12); padding: 28px 30px; font-family: var(--term); }
@@ -385,4 +407,40 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
   .endcard.long .after .row { margin-top: 4px; }
   .endcard.long .after button { font-size: 21px; min-height: 36px; }
   .endcard.long .after .credits { font-size: 10px; line-height: 1.3; margin-top: 4px; }
+}
+
+/* chapter two: the archive table */
+.lp-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.lp-tab { font-family: var(--term); font-size: 19px; color: #cfc8b5; padding: 6px 10px; min-height: 40px; border: 1px solid rgba(233,226,207,.18); }
+.lp-tab[aria-selected=true] { color: #12100e; background: #c9d6c2; border-color: #c9d6c2; }
+.lp-page .lp-two { align-items: start; }
+.lp-figure { margin: 0; }
+.lp-figure img { display: block; width: 100%; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,.45); }
+.lp-cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 10px; }
+.lp-choice { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 8px 10px; min-height: 48px; text-align: left;
+  font-family: var(--term); font-size: 19px; color: #e9e2cf; border: 1px solid rgba(233,226,207,.25); }
+.lp-choice img { width: 40px; height: 40px; flex: none; }
+.lp-choice[aria-pressed=true] { background: #c9d6c2; color: #12100e; border-color: #c9d6c2; }
+.lp-btn:disabled { opacity: .45; cursor: default; }
+@media (max-width: 760px) { .lp-cols3 { grid-template-columns: 1fr; } .lp-tab { font-size: 17px; padding: 4px 8px; } }
+.page.typed img.attached { display: block; width: 100%; height: auto; margin-top: 14px; border: 1px solid rgba(0,0,0,.12); }
+.page.photo.map { transform: rotate(.6deg); }
+.notebook .cards .k-map { background: #f1ecd9; }
+
+/* Settings / Text: Large. Reading text grows about a fifth; layout stays the same. */
+html.text-large .toast { font-size: 22px; }
+html.text-large .docview .text p { font-size: 19px; }
+html.text-large .docview .text h3 { font-size: 30px; }
+html.text-large .page.typed pre { font-size: clamp(16px, 2vw, 22px); }
+html.text-large .page .hand { font-size: clamp(23px, 2.9vw, 34px); line-height: 36px; }
+html.text-large .notebook li { font-size: 30px; line-height: 34px; }
+html.text-large .notebook .cards b { font-size: 17px; }
+html.text-large .lp-text { font-size: 18px; }
+html.text-large .lp-paper p { font-size: 17px; }
+html.text-large .lp-small { font-size: 14.5px; }
+html.text-large .objective { font-size: 17px; }
+html.text-large .prompt { font-size: 28px; }
+@media (max-height: 520px) {
+  html.text-large .lp-text { font-size: 16px; }
+  html.text-large .lp-paper p { font-size: 15px; }
 }

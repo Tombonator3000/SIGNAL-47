@@ -15,11 +15,21 @@ import yard from '../assets/art/runtime/sign_service_yard.webp';
 import procedure from '../assets/art/runtime/label_s03_procedure.webp';
 import sky from '../assets/art/sky/sky_milkyway_equirect.jpg';
 import sierra from '../assets/art/runtime/sign_sierra_on.webp';
+// Round 3 (PR #31): text-free surfaces. The game draws every label on them in code.
+import vane from '../assets/art/yard/vane_b12.png';
+import bars from '../assets/art/yard/board_r07.png';
+import frame from '../assets/art/runtime/floor_paint_frame.webp';
+import fieldMap from '../assets/art/lab/map_field_yard.png';
+import sign from '../assets/art/runtime/sign_blank.webp';
+import paper from '../assets/art/lab/tex_paper_card.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
+// Only files imported here reach the game: concept/, maps/, production/ and QA
+// pictures in the same folder tree are never bundled.
 const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
-  listen, saro, map, logo, yard, procedure, sky, sierra };
+  listen, saro, map, logo, yard, procedure, sky, sierra,
+  vane, bars, frame, fieldMap, sign, paper };
 export type ArtId = keyof typeof urls;
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();

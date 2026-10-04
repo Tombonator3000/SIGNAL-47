@@ -1,0 +1,57 @@
+{
+  "outcome": "FIX_CANDIDATE_PASSED",
+  "commit": "0bb91706a4df462f6c7199726d67250bb6f17090",
+  "sourcePath": "web/src/core/caseStore.ts",
+  "sourceSha256": "a29a2e604b64bcf88d554e91f5fff11008c4727d30f64433f3be777af89e6ecc",
+  "checkedSourceSha256": "17c766814eff66a8617df8edbd7929ed344a7a50332f13e54597da8433a6d688",
+  "nodeVersion": "v24.19.0",
+  "typescriptVersion": "5.6.3",
+  "scope": "Suggested patch applied only to an in-memory source string. Mocked browser storage and canvas. No repository changes or browser runtime test.",
+  "results": [
+    {
+      "scenario": "control_successful_read",
+      "beforeRead": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "indexedDbAfterLoad": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "loadedPhotoUrl": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "indexedDbAfterNextSave": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "localStoragePhotoReference": "idb:f1",
+      "freshReloadPhotoUrl": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "originalOverwritten": false,
+      "operations": [
+        {
+          "operation": "get",
+          "id": "f1",
+          "result": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8="
+        },
+        {
+          "operation": "get",
+          "id": "f1",
+          "result": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8="
+        }
+      ]
+    },
+    {
+      "scenario": "one_readonly_transaction_error",
+      "beforeRead": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "indexedDbAfterLoad": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "loadedPhotoUrl": "data:image/jpeg;base64,UExBQ0VIT0xERVI=",
+      "indexedDbAfterNextSave": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "localStoragePhotoReference": "idb:f1",
+      "freshReloadPhotoUrl": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8=",
+      "originalOverwritten": false,
+      "operations": [
+        {
+          "operation": "get",
+          "id": "f1",
+          "result": "simulated transaction error",
+          "originalStillPresent": true
+        },
+        {
+          "operation": "get",
+          "id": "f1",
+          "result": "data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8="
+        }
+      ]
+    }
+  ]
+}

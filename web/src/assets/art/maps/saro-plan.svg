@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+<title id="title">SARO / KONTROLLROM OG SERVICEGÅRD: redigerbart nærkart</title>
+<desc id="desc">Dagens three.js-oppsett. Nord er opp; østdøra leder til feltet og fotolaben.. Konseptkart, ikke målestokk og ikke spillbilde.</desc>
+<defs><pattern id="background-hatch" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M-4 4L4-4M0 16L16 0M12 20L20 12" stroke="#b7b9b0" stroke-width="1"/></pattern></defs>
+<style>text{font-family:"DejaVu Sans",Arial,sans-serif;}</style>
+<rect x="0" y="0" width="1800" height="1280" rx="0" fill="#ebe3cf" stroke="none" stroke-width="2"/>
+<text x="64" y="54" font-size="20" font-weight="700" text-anchor="start" style="fill:#152b36" letter-spacing="2">
+<tspan x="64" dy="0">SIGNAL / 47     •     PRODUKSJONSKART</tspan>
+</text>
+<text x="64" y="123" font-size="52" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="64" dy="0">SARO / KONTROLLROM OG SERVICEGÅRD</tspan>
+</text>
+<text x="66" y="166" font-size="22" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="66" dy="0">Dagens three.js-oppsett. Nord er opp; østdøra leder til feltet og fotolaben.</tspan>
+</text>
+<line x1="64" y1="191" x2="1736" y2="191" stroke="#152b36" stroke-width="2"/>
+<text x="1736" y="54" font-size="18" font-weight="700" text-anchor="end" style="fill:#a8641f">
+<tspan x="1736" dy="0">EKSISTERENDE KJERNE + PLANLAGT ARKIV</tspan>
+</text>
+<rect x="64" y="220" width="1052" height="910" rx="10" fill="#f6f0df" stroke="#b1b4a9" stroke-width="1"/>
+<line x1="1150" y1="220" x2="1150" y2="1130" stroke="#b1b4a9" stroke-width="1"/>
+<text x="64" y="1239" font-size="20" font-weight="700" text-anchor="start" style="fill:#152b36" letter-spacing="1">
+<tspan x="64" dy="0">KONSEPTKART   •   IKKE MÅLESTOKK   •   IKKE SPILLBILDE</tspan>
+</text>
+<text x="1736" y="1239" font-size="17" font-weight="400" text-anchor="end" style="fill:#637275">
+<tspan x="1736" dy="0">REDIGERBAR SVG  /  SARO</tspan>
+</text>
+<g id="orientation-and-background">
+<line x1="150" y1="345" x2="150" y2="295" stroke="#152b36" stroke-width="3"/>
+<path d="M140 311L150 290L160 311" fill="none" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="150" y="276" font-size="19" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="150" dy="0">NORD</tspan>
+</text>
+<text x="150" y="371" font-size="15" font-weight="400" text-anchor="middle" style="fill:#637275">
+<tspan x="150" dy="0">-Z i spillet</tspan>
+</text>
+<circle cx="737.5" cy="320" r="41" fill="#d9d5c8" stroke="#637275" stroke-width="3"/>
+<path d="M703.5 305Q737.5 353 771.5 305" fill="none" stroke="#637275" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="737.5" y1="320" x2="757.5" y2="292" stroke="#637275" stroke-width="3"/>
+<text x="815" y="307" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="815" dy="0">S-03 / ANTENNE</tspan>
+</text>
+<text x="815" y="343" font-size="18" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="815" dy="0">Bakgrunn, ikke gangbar.</tspan>
+<tspan x="815" dy="24.839999999999996">Lenger nord enn utsnittet.</tspan>
+</text>
+<text x="280" y="273" font-size="19" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="280" dy="0">27 antenner i scenen.</tspan>
+<tspan x="280" dy="26.22">Kun S-03 er vist her.</tspan>
+</text>
+<line x1="747.5" y1="538" x2="737.5" y2="363" stroke="#a8641f" stroke-width="3" stroke-dasharray="6 7"/>
+<path d="M702 415L719 407L736 415L753 407L770 415" fill="none" stroke="#637275" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="674" y="453" font-size="15" font-weight="400" text-anchor="end" style="fill:#637275">
+<tspan x="674" dy="0">UTSNITTSBRUDD</tspan>
+</text>
+<line x1="284" y1="500" x2="1057" y2="500" stroke="#b1b4a9" stroke-width="4" stroke-dasharray="3 8"/>
+<text x="292" y="485" font-size="17" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="292" dy="0">GJERDE / FELTGRENSE</tspan>
+</text>
+</g>
+<g id="existing-physical-footprints">
+<rect x="657.5" y="985.0" width="117.5" height="100.0" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="2"/>
+<rect x="700" y="509.99999999999994" width="75" height="475.0" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="2"/>
+<rect x="775" y="665.0" width="39.99999999999999" height="120.00000000000001" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="2"/>
+<rect x="775" y="952.5" width="39.99999999999999" height="32.49999999999999" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="2"/>
+<rect x="342.5" y="880.0" width="315.0" height="240.0" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="4"/>
+<rect x="815.0" y="850" width="165.0" height="175" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="4"/>
+<rect x="360.0" y="887.0" width="272.5" height="7" rx="0" fill="#91b3b4" stroke="none" stroke-width="2"/>
+<line x1="657.5" y1="1028.0" x2="657.5" y2="1052.0" stroke="#d4ddd4" stroke-width="8"/>
+<line x1="815.0" y1="957.5" x2="815.0" y2="982.5" stroke="#d4ddd4" stroke-width="8"/>
+<text x="494" y="947" font-size="25" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="494" dy="0">KONTROLLROM</tspan>
+</text>
+<text x="494" y="981" font-size="19" font-weight="400" text-anchor="middle" style="fill:#152b36">
+<tspan x="494" dy="0">Mottaker, telefon</tspan>
+<tspan x="494" dy="26.22">og skriver</tspan>
+</text>
+<text x="898" y="895" font-size="22" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="898" dy="0">FOTOLAB</tspan>
+</text>
+<text x="898" y="929" font-size="18" font-weight="400" text-anchor="middle" style="fill:#152b36">
+<tspan x="898" dy="0">Framkalling</tspan>
+<tspan x="898" dy="24.839999999999996">og rapport</tspan>
+</text>
+<text x="644" y="1071" font-size="17" font-weight="400" text-anchor="end" style="fill:#152b36">
+<tspan x="644" dy="0">Østdør</tspan>
+</text>
+<text x="865" y="1056" font-size="17" font-weight="400" text-anchor="middle" style="fill:#637275">
+<tspan x="865" dy="0">Dør på vestsiden</tspan>
+</text>
+<line x1="833" y1="1041" x2="815.0" y2="970.0" stroke="#637275" stroke-width="1.5"/>
+</g>
+<g id="existing-route-and-field-points">
+<path d="M587.5 1040.0H735.0V550.0" fill="none" stroke="#152b36" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M735.0 970.0H837.5" fill="none" stroke="#152b36" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="653.75" cy="1040.0" r="8" fill="#ebe3cf" stroke="#152b36" stroke-width="3"/>
+<circle cx="815.0" cy="970.0" r="8" fill="#ebe3cf" stroke="#152b36" stroke-width="3"/>
+<rect x="700" y="620.0" width="114.99999999999999" height="165.0" rx="0" fill="none" stroke="#a8641f" stroke-width="3" stroke-dasharray="8 5"/>
+<circle cx="747.5" cy="541.25" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="747.5" y="548.25" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="747.5" dy="0">3</tspan>
+</text>
+<text x="828" y="544" font-size="23" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="828" dy="0">B-12 / REFERANSE</tspan>
+</text>
+<text x="828" y="580" font-size="18" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="828" dy="0">Nord for motorskapet</tspan>
+</text>
+<rect x="700.75" y="569.5" width="16" height="16" rx="0" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<line x1="695.75" y1="577.5" x2="575" y2="577.5" stroke="#637275" stroke-width="1.5"/>
+<text x="560" y="584.5" font-size="19" font-weight="400" text-anchor="end" style="fill:#152b36">
+<tspan x="560" dy="0">B-12-kontroll</tspan>
+</text>
+<circle cx="807.5" cy="725" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="807.5" y="732" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="807.5" dy="0">2</tspan>
+</text>
+<line x1="831.5" y1="725" x2="859" y2="725" stroke="#152b36" stroke-width="2"/>
+<text x="875" y="711" font-size="23" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="875" dy="0">S-03</tspan>
+<tspan x="875" dy="31.74">MOTORSKAP</tspan>
+</text>
+<text x="674" y="700" font-size="22" font-weight="700" text-anchor="end" style="fill:#a8641f">
+<tspan x="674" dy="0">FOTOFLATE</tspan>
+<tspan x="674" dy="30.36">S-03</tspan>
+</text>
+<line x1="600" y1="746" x2="690" y2="746" stroke="#a8641f" stroke-width="2"/>
+<text x="677" y="787" font-size="20" font-weight="400" text-anchor="end" style="fill:#152b36">
+<tspan x="677" dy="0">Gangvei</tspan>
+</text>
+<circle cx="565.0" cy="1063.75" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="565.0" y="1070.75" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="565.0" dy="0">1</tspan>
+</text>
+<circle cx="947" cy="987" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="947" y="994" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="947" dy="0">4</tspan>
+</text>
+</g>
+<g id="reading-notes">
+<text x="1185" y="256" font-size="21" font-weight="700" text-anchor="start" style="fill:#152b36" letter-spacing="1">
+<tspan x="1185" dy="0">EN SAMMENHENGENDE RUTE</tspan>
+</text>
+<circle cx="1210" cy="305" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="1210" y="312" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">1</tspan>
+</text>
+<text x="1245" y="313" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">Kontrollrommet</tspan>
+</text>
+<text x="1245" y="350" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Start ved pulten. Feltkameraet</tspan>
+<tspan x="1245" dy="28.979999999999997">hentes ved østdøra.</tspan>
+</text>
+<circle cx="1210" cy="435" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="1210" y="442" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">2</tspan>
+</text>
+<text x="1245" y="443" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">Servicegård og S-03</tspan>
+</text>
+<text x="1245" y="480" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Gangvei og oppstillingsflate</tspan>
+<tspan x="1245" dy="28.979999999999997">leder til skapet, ikke antennen.</tspan>
+</text>
+<circle cx="1210" cy="565" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="1210" y="572" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">3</tspan>
+</text>
+<text x="1245" y="573" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">B-12 lenger nord</tspan>
+</text>
+<text x="1245" y="610" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Referansen står ved gjerdet.</tspan>
+<tspan x="1245" dy="28.979999999999997">Siktlinjen fortsetter mot S-03.</tspan>
+</text>
+<circle cx="1210" cy="695" r="19" fill="#152b36" stroke="#152b36" stroke-width="2"/>
+<text x="1210" y="702" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">4</tspan>
+</text>
+<text x="1245" y="703" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">Fotolab øst for gangveien</tspan>
+</text>
+<text x="1245" y="740" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Vestdør gir en kort avstikker.</tspan>
+<tspan x="1245" dy="28.979999999999997">Foto og rapport behandles her.</tspan>
+</text>
+<rect x="1185" y="819" width="551" height="276" rx="0" fill="#ebe3cf" stroke="#a8641f" stroke-width="2" stroke-dasharray="10 7"/>
+<text x="1210" y="856" font-size="23" font-weight="700" text-anchor="start" style="fill:#a8641f">
+<tspan x="1210" dy="0">ARKIV / SEPARAT PLANINNSETT</tspan>
+</text>
+<rect x="1210" y="890" width="128" height="112" rx="0" fill="#f0d5a9" stroke="#a8641f" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1274" y="949" font-size="20" font-weight="700" text-anchor="middle" style="fill:#a8641f">
+<tspan x="1274" dy="0">ARKIV</tspan>
+</text>
+<text x="1360" y="916" font-size="20" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1360" dy="0">Ett framtidig rom.</tspan>
+<tspan x="1360" dy="27.599999999999998">Plassering og inngang</tspan>
+<tspan x="1360" dy="27.599999999999998">er ikke fastlagt.</tspan>
+</text>
+<text x="1210" y="1057" font-size="19" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1210" dy="0">Ingen ny dør eller fysisk forbindelse er tegnet.</tspan>
+</text>
+</g>
+<rect x="80" y="1145" width="32" height="26" rx="0" fill="#d4ddd4" stroke="#152b36" stroke-width="2"/>
+<text x="132" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="132" dy="0">Eksisterende flate</tspan>
+</text>
+<rect x="396" y="1145" width="32" height="26" rx="0" fill="#d9d5c8" stroke="#b1b4a9" stroke-width="2"/>
+<rect x="396" y="1145" width="32" height="26" rx="0" fill="url(#background-hatch)" stroke="none" stroke-width="2"/>
+<text x="448" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="448" dy="0">Bakgrunn</tspan>
+</text>
+<rect x="652" y="1145" width="32" height="26" rx="0" fill="none" stroke="#a8641f" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="704" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="704" dy="0">Fotoflate</tspan>
+</text>
+<rect x="902" y="1145" width="32" height="26" rx="0" fill="#f0d5a9" stroke="#a8641f" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="954" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="954" dy="0">Arkivforslag</tspan>
+</text>
+<line x1="1184" y1="1158" x2="1224" y2="1158" stroke="#152b36" stroke-width="7"/>
+<text x="1236" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="1236" dy="0">Ganglinje</tspan>
+</text>
+<line x1="1480" y1="1158" x2="1520" y2="1158" stroke="#a8641f" stroke-width="3" stroke-dasharray="6 6"/>
+<text x="1532" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="1532" dy="0">Siktlinje</tspan>
+</text>
+</svg>

@@ -4,6 +4,7 @@
 # S47.tick() so the run works with a software renderer.
 # Usage: python3 tools/chapter1.py OUTDIR [passive|active] [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
+# S47_NO_IDB=1 hides IndexedDB, to test that the photographs fall back to localStorage.
 import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 
@@ -11,6 +12,7 @@ OUT = sys.argv[1]
 METHOD = sys.argv[2] if len(sys.argv) > 2 else 'passive'
 W, H = (int(v) for v in (sys.argv[3] if len(sys.argv) > 3 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
+NO_IDB = os.environ.get('S47_NO_IDB') == '1'
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -25,7 +27,12 @@ async def main():
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
+        if NO_IDB: await pg.add_init_script("Object.defineProperty(window, 'indexedDB', { value: undefined });")
         await pg.goto(URL)
+        # Let the first page finish fetching its sounds. On the Pages build they are separate
+        # files, and a reload in the middle aborts the fetch, so the old page logs a warning.
+        try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 11", timeout=120000)
+        except Exception: pass
         await pg.evaluate("localStorage.clear()")
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
@@ -188,6 +195,8 @@ async def main():
         text = await ev("document.querySelector('.endcard').textContent")
         check('THE SECOND EXPOSURE' in text and ('work lamp' in text if METHOD == 'passive' else 'encoder drift' in text), 'ending card names the test')
         await shot('c12_ending')
+        # the card leads on into chapter two
+        check(await ev("[...document.querySelectorAll('.endcard button')].some(b => b.textContent === 'Continue: the reference record')"), 'ending card offers chapter two')
 
         notes = await ev("S47.game.notes")
         docs = await ev("S47.game.docs.map(d => d.id)")
@@ -196,8 +205,16 @@ async def main():
         check(any(n.startswith('LOCAL CASE CLOSED') for n in notes), 'notebook closes the case')
         saved = await ev("JSON.parse(localStorage.getItem('s47.case') || 'null')")
         check(saved is not None and saved['s']['stage'] == 'complete' and saved['s']['f2'] is not None, 'case and photographs saved')
+        await pg.wait_for_timeout(400)  # the IndexedDB write runs behind the save
         size = await ev("(localStorage.getItem('s47.case') || '').length")
         print(f'saved case: {size / 1024:.0f} kB of text in localStorage', flush=True)
+        raw = await ev("localStorage.getItem('s47.case') || ''")
+        if NO_IDB: check('data:image/jpeg' in raw, 'without IndexedDB the photographs stay in localStorage')
+        else: check('idb:frame01' in raw and 'idb:frame02' in raw and size < 40000, 'photographs moved to IndexedDB, case text stays small')
+
+        await pg.click('.endcard button:has-text("Continue: the reference record")'); await pg.wait_for_timeout(400)
+        await ev("S47.hold = true; S47.tick(1.5)")
+        check(await ev("S47.game.phase") == 'ch2' and await ev("S47.ch2.ringing"), 'chapter two begins: the supervisor line rings')
 
         # Continue from the title restores the finished case with both prints
         await pg.reload()
@@ -206,6 +223,49 @@ async def main():
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await stage() == 'complete' and await ev("S47.yard.dryPrints[0].visible && S47.yard.dryPrints[1].visible"), 'Continue restores the case and both prints')
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
+        check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
+
+        if not NO_IDB:
+            # A photograph that cannot be read must not be lost (Codex's P1). The next two
+            # IndexedDB reads abort: frame 01 fails twice (the store retries once), frame 02 loads.
+            original = await ev("S47.ch1.s.f1.url")
+            await pg.add_init_script("""(() => {
+              let left = +sessionStorage.getItem('s47.failreads') || 0;
+              if (!left) return;
+              const get = IDBObjectStore.prototype.get;
+              IDBObjectStore.prototype.get = function (key) {
+                const req = get.call(this, key);
+                if (left > 0) { left--; sessionStorage.setItem('s47.failreads', String(left)); this.transaction.abort(); }
+                return req;
+              };
+            })();""")
+            await ev("sessionStorage.setItem('s47.failreads', '2')")
+            await pg.reload()
+            await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await ev("S47.hold = true; S47.tick(0.5)")
+            check(await ev("S47.ch1.s.f1.url.length < 50000 && S47.ch1.s.f2.url.length > 50000"), 'unreadable photograph shows the stand-in print, the other one loads')
+            await ev("S47.ch1.d.save(S47.ch1.s)"); await pg.wait_for_timeout(600)
+            kept = await ev("""new Promise((ok) => { const r = indexedDB.open('s47', 1);
+              r.onsuccess = () => { const g = r.result.transaction('photos').objectStore('photos').get('frame01'); g.onsuccess = () => ok(g.result); }; })""")
+            check(kept == original, 'saving after the read error leaves the original photograph in IndexedDB')
+            check('idb:frame01' in await ev("localStorage.getItem('s47.case') || ''"), 'the saved case still points at the original photograph')
+            await ev("sessionStorage.removeItem('s47.failreads')")
+            await pg.reload()
+            await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await ev("S47.hold = true; S47.tick(0.5)")
+            check(await ev("S47.ch1.s.f1.url") == original, 'next Continue brings the original photograph back')
+
+        # the case file spread in the notebook: both prints as pictures, the papers as cards
+        await ev("S47.game.openNotebook()")
+        await pg.click('.notebook [data-t=case]')
+        check(await ev("document.querySelectorAll('.notebook .thumbs img').length") == 2, 'case file shows both photographs')
+        check(await ev("document.querySelectorAll('.notebook .cards button').length") >= 6, 'case file lists the papers')
+        await shot('c13_casefile')
+        await pg.click('.notebook .thumbs button')
+        check(await ev("!!document.querySelector('.docview .page.photo img')"), 'a photograph opens from the case file')
+        await ev("S47.game.d.ui.close(true)")
 
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
         if errs: check(False, 'console clean')

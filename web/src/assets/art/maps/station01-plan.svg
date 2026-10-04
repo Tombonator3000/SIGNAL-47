@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+<title id="title">STATION 01 / DEN GAMLE MÅLESTASJONEN: redigerbart nærkart</title>
+<desc id="desc">Forslag til en kompakt three.js-feltsekvens. Unity-feltet finnes fra før.. Konseptkart, ikke målestokk og ikke spillbilde.</desc>
+<defs><pattern id="background-hatch" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M-4 4L4-4M0 16L16 0M12 20L20 12" stroke="#b7b9b0" stroke-width="1"/></pattern></defs>
+<style>text{font-family:"DejaVu Sans",Arial,sans-serif;}</style>
+<rect x="0" y="0" width="1800" height="1280" rx="0" fill="#ebe3cf" stroke="none" stroke-width="2"/>
+<text x="64" y="54" font-size="20" font-weight="700" text-anchor="start" style="fill:#152b36" letter-spacing="2">
+<tspan x="64" dy="0">SIGNAL / 47     •     PRODUKSJONSKART</tspan>
+</text>
+<text x="64" y="123" font-size="52" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="64" dy="0">STATION 01 / DEN GAMLE MÅLESTASJONEN</tspan>
+</text>
+<text x="66" y="166" font-size="22" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="66" dy="0">Forslag til en kompakt three.js-feltsekvens. Unity-feltet finnes fra før.</tspan>
+</text>
+<line x1="64" y1="191" x2="1736" y2="191" stroke="#152b36" stroke-width="2"/>
+<text x="1736" y="54" font-size="18" font-weight="700" text-anchor="end" style="fill:#a8641f">
+<tspan x="1736" dy="0">PLANFORSLAG TIL THREE.JS</tspan>
+</text>
+<rect x="64" y="220" width="1052" height="910" rx="10" fill="#f6f0df" stroke="#b1b4a9" stroke-width="1"/>
+<line x1="1150" y1="220" x2="1150" y2="1130" stroke="#b1b4a9" stroke-width="1"/>
+<text x="64" y="1239" font-size="20" font-weight="700" text-anchor="start" style="fill:#152b36" letter-spacing="1">
+<tspan x="64" dy="0">KONSEPTKART   •   IKKE MÅLESTOKK   •   IKKE SPILLBILDE</tspan>
+</text>
+<text x="1736" y="1239" font-size="17" font-weight="400" text-anchor="end" style="fill:#637275">
+<tspan x="1736" dy="0">REDIGERBAR SVG  /  STATION01</tspan>
+</text>
+<g id="background-and-orientation">
+<line x1="150" y1="345" x2="150" y2="295" stroke="#152b36" stroke-width="3"/>
+<path d="M140 311L150 290L160 311" fill="none" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="150" y="276" font-size="19" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="150" dy="0">NORD</tspan>
+</text>
+<text x="150" y="371" font-size="15" font-weight="400" text-anchor="middle" style="fill:#637275">
+<tspan x="150" dy="0">Skjematisk</tspan>
+</text>
+<rect x="286" y="274" width="184" height="58" rx="0" fill="#d9d5c8" stroke="#b1b4a9" stroke-width="2"/>
+<rect x="286" y="274" width="184" height="58" rx="0" fill="url(#background-hatch)" stroke="none" stroke-width="2"/>
+<rect x="776" y="259" width="177" height="44" rx="0" fill="#d9d5c8" stroke="#b1b4a9" stroke-width="2"/>
+<rect x="776" y="259" width="177" height="44" rx="0" fill="url(#background-hatch)" stroke="none" stroke-width="2"/>
+<rect x="979" y="936" width="78" height="111" rx="0" fill="#d9d5c8" stroke="#b1b4a9" stroke-width="2"/>
+<rect x="979" y="936" width="78" height="111" rx="0" fill="url(#background-hatch)" stroke="none" stroke-width="2"/>
+<text x="650" y="249" font-size="17" font-weight="400" text-anchor="middle" style="fill:#637275">
+<tspan x="650" dy="0">FJERNE RYGGER OG BYGG ER BAKGRUNN</tspan>
+</text>
+</g>
+<g id="suggested-short-walk">
+<path d="M265 1000L265 874L360 874L360 618L553 482L724 490L872 596L943 743L923 948L517 1053L265 1000" fill="none" stroke="#a8641f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M337 670L349 647L374 650" fill="none" stroke="#a8641f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M826 575L851 575L856 552" fill="none" stroke="#a8641f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M601 1032L578 1057L603 1070" fill="none" stroke="#a8641f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="field-building">
+<rect x="205" y="656" width="307" height="202" rx="0" fill="#f0d5a9" stroke="#a8641f" stroke-width="3"/>
+<line x1="324" y1="858" x2="390" y2="858" stroke="#f0d5a9" stroke-width="8"/>
+<line x1="334" y1="656" x2="387" y2="656" stroke="#f0d5a9" stroke-width="8"/>
+<rect x="230" y="678" width="255" height="34" rx="0" fill="#ebe3cf" stroke="#a8641f" stroke-width="2"/>
+<text x="358" y="759" font-size="26" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="358" dy="0">FELTBYGNING</tspan>
+</text>
+<text x="358" y="802" font-size="20" font-weight="400" text-anchor="middle" style="fill:#152b36">
+<tspan x="358" dy="0">Benk, logg og protokoll</tspan>
+</text>
+<circle cx="205" cy="656" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="205" y="663" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="205" dy="0">1</tspan>
+</text>
+</g>
+<g id="transit-and-reference-points">
+<circle cx="724" cy="490" r="59" fill="#f0d5a9" stroke="#a8641f" stroke-width="3"/>
+<path d="M701 510L724 467L747 510M724 467V520M707 478H743" fill="none" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="646" y="589" font-size="22" font-weight="700" text-anchor="end" style="fill:#152b36">
+<tspan x="646" dy="0">TRANSITFLATE</tspan>
+</text>
+<circle cx="676" cy="451" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="676" y="458" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="676" dy="0">2</tspan>
+</text>
+<path d="M506 385L487 418H525Z" fill="#ebe3cf" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="492" y1="426" x2="520" y2="426" stroke="#152b36" stroke-width="3"/>
+<text x="465" y="366" font-size="20" font-weight="700" text-anchor="end" style="fill:#152b36">
+<tspan x="465" dy="0">FASTMERKE 1</tspan>
+</text>
+<path d="M929 356L910 389H948Z" fill="#ebe3cf" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="915" y1="397" x2="943" y2="397" stroke="#152b36" stroke-width="3"/>
+<text x="956" y="344" font-size="20" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="956" dy="0">FASTMERKE 2</tspan>
+</text>
+<path d="M943 725L924 758H962Z" fill="#ebe3cf" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="929" y1="766" x2="957" y2="766" stroke="#152b36" stroke-width="3"/>
+<text x="895" y="806" font-size="20" font-weight="700" text-anchor="end" style="fill:#152b36">
+<tspan x="895" dy="0">FASTMERKE 3</tspan>
+</text>
+<line x1="724" y1="490" x2="506" y2="403" stroke="#637275" stroke-width="2" stroke-dasharray="6 7"/>
+<line x1="724" y1="490" x2="929" y2="374" stroke="#637275" stroke-width="2" stroke-dasharray="6 7"/>
+<line x1="724" y1="490" x2="943" y2="743" stroke="#637275" stroke-width="2" stroke-dasharray="6 7"/>
+<text x="757" y="667" font-size="18" font-weight="400" text-anchor="middle" style="fill:#637275">
+<tspan x="757" dy="0">Feltmerking og vinkler</tspan>
+<tspan x="757" dy="24.839999999999996">fastlegges ved blokkering.</tspan>
+</text>
+</g>
+<g id="cable-and-arrival">
+<path d="M512 785L585 830L620 932L742 932" fill="none" stroke="#152b36" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M778 932L990 892L1045 716L998 670L983 447L929 374" fill="none" stroke="#152b36" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M742 922L742 941M778 922L778 941" fill="none" stroke="#152b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="760" cy="932" r="36" fill="none" stroke="#a8641f" stroke-width="2"/>
+<text x="751" y="875" font-size="22" font-weight="700" text-anchor="middle" style="fill:#152b36">
+<tspan x="751" dy="0">KABELBRUDD</tspan>
+</text>
+<text x="1046" y="598" font-size="17" font-weight="400" text-anchor="middle" style="fill:#152b36">
+<tspan x="1046" dy="0">KABEL</tspan>
+</text>
+<circle cx="799" cy="932" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="799" y="939" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="799" dy="0">3</tspan>
+</text>
+<rect x="211" y="1000" width="108" height="50" rx="9" fill="#ebe3cf" stroke="#152b36" stroke-width="3"/>
+<rect x="238" y="1007" width="49" height="36" rx="5" fill="#d9d5c8" stroke="#152b36" stroke-width="1"/>
+<text x="200" y="1092" font-size="22" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="200" dy="0">ANKOMST / RETUR</tspan>
+</text>
+</g>
+<g id="proposal-notes">
+<text x="1185" y="256" font-size="21" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1185" dy="0">ETT ROM OG EN KORT FELTSLØYFE</tspan>
+</text>
+<circle cx="1210" cy="316" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="1210" y="323" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">1</tspan>
+</text>
+<text x="1245" y="324" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">En liten feltbygning</tspan>
+</text>
+<text x="1245" y="361" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Benk, historisk logg og protokoll.</tspan>
+<tspan x="1245" dy="28.979999999999997">Ingen ny fløy eller byggeklynge.</tspan>
+</text>
+<circle cx="1210" cy="466" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="1210" y="473" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">2</tspan>
+</text>
+<text x="1245" y="474" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">Transit og tre faste merker</tspan>
+</text>
+<text x="1245" y="511" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Kort siktavstand fra samme flate.</tspan>
+<tspan x="1245" dy="28.979999999999997">Terrengmerkene får tydelig form.</tspan>
+</text>
+<circle cx="1210" cy="616" r="19" fill="#a8641f" stroke="#a8641f" stroke-width="2"/>
+<text x="1210" y="623" font-size="20" font-weight="700" text-anchor="middle" style="fill:#f6f0df">
+<tspan x="1210" dy="0">3</tspan>
+</text>
+<text x="1245" y="624" font-size="24" font-weight="700" text-anchor="start" style="fill:#152b36">
+<tspan x="1245" dy="0">Kabel og retur</tspan>
+</text>
+<text x="1245" y="661" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1245" dy="0">Følg en synlig, avgrenset kabel.</tspan>
+<tspan x="1245" dy="28.979999999999997">Dokumenter bruddet og returner.</tspan>
+</text>
+<rect x="1185" y="788" width="551" height="307" rx="0" fill="#ebe3cf" stroke="#a8641f" stroke-width="2" stroke-dasharray="10 7"/>
+<text x="1210" y="828" font-size="23" font-weight="700" text-anchor="start" style="fill:#a8641f">
+<tspan x="1210" dy="0">FØR BLOKKERING</tspan>
+</text>
+<text x="1210" y="873" font-size="21" font-weight="400" text-anchor="start" style="fill:#637275">
+<tspan x="1210" dy="0">Dette er en lokal romlig skisse,</tspan>
+<tspan x="1210" dy="28.979999999999997">ikke en oppmåling av Unity-scenen.</tspan>
+<tspan x="1210" dy="28.979999999999997"></tspan>
+<tspan x="1210" dy="28.979999999999997">Fastmerkene viser ikke oppgavens fasit.</tspan>
+<tspan x="1210" dy="28.979999999999997">Historisk foto og bevis må komme fra</tspan>
+<tspan x="1210" dy="28.979999999999997">den endelige fysiske oppstillingen.</tspan>
+</text>
+</g>
+<rect x="80" y="1145" width="32" height="26" rx="0" fill="#f0d5a9" stroke="#a8641f" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="132" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="132" dy="0">Planlagt spillflate</tspan>
+</text>
+<line x1="410" y1="1158" x2="450" y2="1158" stroke="#a8641f" stroke-width="7"/>
+<text x="462" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="462" dy="0">Kort gangsløyfe</tspan>
+</text>
+<rect x="763" y="1145" width="32" height="26" rx="0" fill="#d9d5c8" stroke="#b1b4a9" stroke-width="2"/>
+<rect x="763" y="1145" width="32" height="26" rx="0" fill="url(#background-hatch)" stroke="none" stroke-width="2"/>
+<text x="815" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="815" dy="0">Bakgrunn</tspan>
+</text>
+<line x1="1058" y1="1158" x2="1098" y2="1158" stroke="#637275" stroke-width="3" stroke-dasharray="6 6"/>
+<text x="1110" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="1110" dy="0">Foreslåtte siktlinjer</tspan>
+</text>
+<line x1="1480" y1="1158" x2="1520" y2="1158" stroke="#152b36" stroke-width="3"/>
+<text x="1532" y="1164" font-size="20" font-weight="400" text-anchor="start" style="fill:#152b36">
+<tspan x="1532" dy="0">Kabel</tspan>
+</text>
+</svg>

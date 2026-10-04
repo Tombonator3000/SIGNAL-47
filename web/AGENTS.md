@@ -20,7 +20,7 @@ Denne fila gjelder alt under `web/`. For denne mappen erstatter den Unity-reglen
 - Dokumentasjon og svar til Tom skrives på norsk. Ingen emoji og ingen tankestrek. Tekst inne i spillet er engelsk (New Mexico, 1986).
 - Bevar kanon: tallene og navnene i `memory.md` (frekvenser, 47 sekunder, -39 LY, 27 antenner, az 026).
 - Stilisert lavpoly som skal gå på mobil. Budsjett i kontrollrommet: rundt 300 draw calls eller mindre, noen få ekte lys. Utendørs bruker vi falske flomlys via `floodlit()` i `src/world/kit.ts`.
-- Ny grafikk legges i `src/assets/art/<kategori>/` med navnet fra briefen. Før kilde og lisens i `THIRD_PARTY_NOTICES.md`.
+- Ny grafikk legges i `src/assets/art/<kategori>/` med navnet fra briefen og kobles inn i `src/core/art.ts`. Bare bilder som importeres der, kommer med i spillet. Tekst som må være riktig (skilt, kart, bevis), tegnes i kode oppå bildet. Før kilde og lisens i `THIRD_PARTY_NOTICES.md`.
 - Jobb i små steg som blir ferdige. Ikke start motorbytte, nye rammeverk eller store verktøypass uten at Tom ber om det.
 
 ## Før levering
@@ -31,9 +31,11 @@ npm run typecheck
 npm run build:single
 python3 tools/walkthrough.py shots 844x390 high
 python3 tools/chapter1.py shots/ch1 passive
+python3 tools/chapter2.py shots/ch2
+node tools/casestore.cjs
 ```
 
-`chapter1.py` kom inn 3. oktober sammen med kapittel 1. Den dekker alt etter prologen og bør kjøres med begge metodene (`passive` og `active`) når kapittel 1 endres.
+`chapter1.py` kom inn 3. oktober sammen med kapittel 1 og bør kjøres med begge metodene (`passive` og `active`) når kapittel 1 endres. `chapter2.py` og `casestore.cjs` kom inn 4. oktober med kapittel 2 og fotolagringen i IndexedDB. Ved endringer i grafikk eller bildeinnlasting kjøres også `python3 tools/artcheck.py shots/art` og `python3 tools/csptest.py`.
 
 Merk resultat som PASS, FAIL eller UNVERIFIED med faktisk grunnlag. Headless-testen bruker programvare-rendering og sier ingenting om ekte fps. Ytelse er UNVERIFIED til noen har målt på ekte maskinvare.
 
