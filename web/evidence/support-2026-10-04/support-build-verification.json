@@ -1,0 +1,312 @@
+{
+  "created_utc": "2026-10-04T11:13:57.233629+00:00",
+  "base_commit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+  "contract_commit": "1a084341ee842a4e3d34fab1971c3f3826c4d80e",
+  "sources": [
+    {
+      "file": "web/src/world/Room6.ts",
+      "sha256": "0af91c63733bdb044514fa15d71f581c09448aa2ca1a531b6c552d1ccd8f4048"
+    },
+    {
+      "file": "web/tools/room6preview.py",
+      "sha256": "4fe26568eca26a9fc8360ef4b01378434590c0e27fab633e857b4893c014e58f"
+    }
+  ],
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit",
+    "cwd": "web",
+    "node": "bundled Codex runtime",
+    "exit_code": 0
+  },
+  "production_build": {
+    "command": "node node_modules/vite/bin/vite.js build",
+    "cwd": "web",
+    "node": "bundled Codex runtime",
+    "exit_code": 0,
+    "output_file_count": 34,
+    "raster_file_count": 22,
+    "preview_entry_excluded": true,
+    "Room6_not_integrated": true,
+    "outputs": [
+      {
+        "file": "assets/board_r07-CICTXAql.png",
+        "bytes": 11566,
+        "sha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5"
+      },
+      {
+        "file": "assets/ceramic-CYs4Yg7c.mp3",
+        "bytes": 15196,
+        "sha256": "4f5faa7709f0caada154b06d104a30c9da0d8334547d018701e6454a962692a6"
+      },
+      {
+        "file": "assets/floor_paint_frame-C-gc6eSh.webp",
+        "bytes": 49274,
+        "sha256": "ee790f3b33531702019bcfa357d8798e2a6e7519ac5fa15ae8bd7c8a16ed927c"
+      },
+      {
+        "file": "assets/index-CZ4fHyC5.css",
+        "bytes": 29605,
+        "sha256": "d2f1c5a2bc0432801ba5735bbdd139d8aedf5dd68f1d0c7ef501022426a177df"
+      },
+      {
+        "file": "assets/index-KJcWL7yb.js",
+        "bytes": 741573,
+        "sha256": "4d6e2e753d6f98e91984b3ddb5e758de4dec07f9f735dd81e883a27bdb5f44c2"
+      },
+      {
+        "file": "assets/label_s03_procedure-CXX065Te.webp",
+        "bytes": 41612,
+        "sha256": "220e5995ea8f268c3ed52cf5899b301eebb644b4a3bbb27a50a64d4a242c5df1"
+      },
+      {
+        "file": "assets/logo_saro-Bgp4ZRdW.webp",
+        "bytes": 130862,
+        "sha256": "cedeb1d187f92b931dba9e37ee8dce5bda681e9986e629e8a4a3c505ce453932"
+      },
+      {
+        "file": "assets/map_field_yard-Cz9g6mYA.png",
+        "bytes": 28235,
+        "sha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796"
+      },
+      {
+        "file": "assets/map_new_mexico-B4JTsLo6.webp",
+        "bytes": 351500,
+        "sha256": "372a7d8c91a9f1aa80aa2b68a554b7b9f730ad80b921d6376963c6edb6966c15"
+      },
+      {
+        "file": "assets/oswald-B-eyT0Dw.woff2",
+        "bytes": 12704,
+        "sha256": "541b12882301dc44b73eaaed9e230709df1d299379c3594695870fc2f9e3ff0a"
+      },
+      {
+        "file": "assets/phone_ring-DMWhUlYR.mp3",
+        "bytes": 48109,
+        "sha256": "971ff167da34d7e9609a5de3d07cd70e3170686644f73e18af1e15adefb186f6"
+      },
+      {
+        "file": "assets/poster_listen-DzQ_TlJ3.webp",
+        "bytes": 174338,
+        "sha256": "f4cf60387140cbc47ca0501069642741e4379ef903bc9ff5c3bd456ca0a4da10"
+      },
+      {
+        "file": "assets/poster_saro-B6TgLO2l.webp",
+        "bytes": 196678,
+        "sha256": "654e8cc7f1338fe9554167a5c5d019de9ad4e0f2cfa94010c66ff40f3a90d51f"
+      },
+      {
+        "file": "assets/printer-BgHr7nD5.mp3",
+        "bytes": 10075,
+        "sha256": "8b07cd55f75874d6c1424d50b5a0398a801c0c11561e463bf4ff231d07b09829"
+      },
+      {
+        "file": "assets/reeniebeanie-4a-HEdeI.woff2",
+        "bytes": 28512,
+        "sha256": "f86de18375e3edba402d39ff85030e270f724d7af865f74a74c92f34a947072c"
+      },
+      {
+        "file": "assets/sign_blank-CyyMIRp8.webp",
+        "bytes": 13710,
+        "sha256": "288e7ee2e7d9cad10840c869346d7495d3e64aedb95d66cf413125711b226de1"
+      },
+      {
+        "file": "assets/sign_service_yard-Bt58Evbl.webp",
+        "bytes": 95910,
+        "sha256": "c94a8104e2f70c8e6131cf672629284b8dff0b75d0b3358577316ac378353270"
+      },
+      {
+        "file": "assets/sign_sierra_on-q35jqmeR.webp",
+        "bytes": 239026,
+        "sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4"
+      },
+      {
+        "file": "assets/sky_milkyway_equirect-D58-EjC9.jpg",
+        "bytes": 370451,
+        "sha256": "ee1eb2683e98820718b9fc44826542fefc830989287e108b626c464f273d191f"
+      },
+      {
+        "file": "assets/specialelite-YjDd9tmf.woff2",
+        "bytes": 53296,
+        "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8"
+      },
+      {
+        "file": "assets/tex_asphalt_wet-CdDTEnd8.jpg",
+        "bytes": 305609,
+        "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0"
+      },
+      {
+        "file": "assets/tex_cabinet_metal-c_i-ed8n.jpg",
+        "bytes": 143277,
+        "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21"
+      },
+      {
+        "file": "assets/tex_ceiling_tile-CWNRSV5r.jpg",
+        "bytes": 71384,
+        "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699"
+      },
+      {
+        "file": "assets/tex_concrete-qlyt9Rj6.jpg",
+        "bytes": 309800,
+        "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520"
+      },
+      {
+        "file": "assets/tex_desert_ground-B41f7Cix.jpg",
+        "bytes": 372460,
+        "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54"
+      },
+      {
+        "file": "assets/tex_desk_laminate-CkaoLgea.jpg",
+        "bytes": 124281,
+        "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+      },
+      {
+        "file": "assets/tex_floor_hextile-BoUw-Xpl.jpg",
+        "bytes": 155674,
+        "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9"
+      },
+      {
+        "file": "assets/tex_paper_card-q13FphZv.jpg",
+        "bytes": 20280,
+        "sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229"
+      },
+      {
+        "file": "assets/tex_wall_paint-BCbWdE2K.jpg",
+        "bytes": 168716,
+        "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a"
+      },
+      {
+        "file": "assets/title_music-DikIeeOZ.mp3",
+        "bytes": 450657,
+        "sha256": "0e7ee0c63f757cb4ae2f798cda79f1f89df56827a13596c784f5508c97591f4d"
+      },
+      {
+        "file": "assets/vane_b12-CYGxMpzR.png",
+        "bytes": 14097,
+        "sha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec"
+      },
+      {
+        "file": "assets/vt323-wDgJuOC9.woff2",
+        "bytes": 17936,
+        "sha256": "8ddbebcc1048154132e1d78eb9b1f7850bca1b7d857035ccf1cb4318ebc615b6"
+      },
+      {
+        "file": "assets/wind-DS2ae9tG.mp3",
+        "bytes": 116733,
+        "sha256": "562b8dbebc5de50b1f2c674fa4275f50b0cc9be668c13cc1449a038947e31073"
+      },
+      {
+        "file": "index.html",
+        "bytes": 449,
+        "sha256": "945d51d10c17a8140f93cd6fa2427628c09a5a5a95f5fc9964880b0670da4519"
+      }
+    ]
+  },
+  "python_syntax": "PASS",
+  "screenshots": [
+    {
+      "file": "room6/1280x800-high-door.jpg",
+      "dimensions": [
+        1280,
+        800
+      ],
+      "format": "JPEG",
+      "sha256": "5fd335a095871ca79ebc0ebe9c8501af4d64a9522139c245239d1ed506903b0d"
+    },
+    {
+      "file": "room6/1280x800-high-nora.jpg",
+      "dimensions": [
+        1280,
+        800
+      ],
+      "format": "JPEG",
+      "sha256": "0c8ea35637479a84c9e0dc7df93f97b7b51fcddb0a09904cfd635c65f88dbe3e"
+    },
+    {
+      "file": "room6/1280x800-high-table.jpg",
+      "dimensions": [
+        1280,
+        800
+      ],
+      "format": "JPEG",
+      "sha256": "c986fa41454dd48eb93d612a532eb662192b3caa0537affe6665398a0e7b9982"
+    },
+    {
+      "file": "room6/1280x800-high-window.jpg",
+      "dimensions": [
+        1280,
+        800
+      ],
+      "format": "JPEG",
+      "sha256": "8199260c305ac28f4dfc245566c02d3c6740187ca152a202a240ceadc9ef5fdd"
+    },
+    {
+      "file": "room6/844x390-high-door.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "653b2a34ddc1ddd6359e907230e7abc0f6d5b6b35e5bded443ea7676940a321f"
+    },
+    {
+      "file": "room6/844x390-high-nora.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "781439df82d8ac182cd3a04493122a14d3dde7b57c72c82b40578df11d10d7f9"
+    },
+    {
+      "file": "room6/844x390-high-table.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "47ac44c416f6fe8474f87b6f8ea1d6792e406bfdd6ac0e87a23f9b72deb47d97"
+    },
+    {
+      "file": "room6/844x390-high-window.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "f3827347db35d715979b2ce8fe44cbad0a781f8359523d40a5dd3351aad2f909"
+    },
+    {
+      "file": "room6/844x390-low-door.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "a3d4a032e45e0eb78cd954e48f91eed9d2fe407ac714e36093c88c2c3e26f6fe"
+    },
+    {
+      "file": "room6/844x390-low-nora.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "1750469406852e1419687f3e76874546b3d5f8ae9b9dfe5c29d2eccac0c41d96"
+    },
+    {
+      "file": "room6/contracts-mobile.jpg",
+      "dimensions": [
+        844,
+        390
+      ],
+      "format": "JPEG",
+      "sha256": "87b4fe1c1868bbc739da93d049bcd81ca34325dadaec01b8068af180a752fe2a"
+    }
+  ],
+  "browser_report_sha256": "f82a530ce88d0c365df4d8d15fccc95cf30ef79c2ba77307e5f2e6016bd128c3",
+  "asset_report_sha256": "a153d7dd806bec6794301d409f86497a7a69fe3d9626c33564521d52dd9819b4",
+  "limitations": [
+    "Isolated Room6 preview, not chapter-four game integration",
+    "New material loader integration belongs to Claude",
+    "No physical phone, Safari, hardware fps or audio claim"
+  ]
+}

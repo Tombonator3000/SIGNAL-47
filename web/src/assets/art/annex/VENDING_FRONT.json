@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04 10:56:29 UTC",
+  "project": "SIGNAL / 47",
+  "file": "web/src/assets/art/annex/vending_front.png",
+  "classification": "Opaque flat vending front material, no lettering",
+  "source_contract": {
+    "commit": "3264fabc84ec36b5fa2b165a41b2b4f6b8f1e6dc",
+    "brief": {
+      "path": "web/ART_BRIEF.md",
+      "round": 4,
+      "sha256": "16001cabdfd470807fe8bec25f7eb79bd2fff4ca1d83ba1a5a3acfabd410ae4c"
+    },
+    "geometry": {
+      "path": "web/src/world/Annex.ts",
+      "sha256": "a00a2353e89a566ba9c7be89a72ee93a6cc41005a5b81c5c0f7be2e9f1b64a17",
+      "plane_meters": [
+        0.74,
+        1.48
+      ],
+      "face_position": [
+        0,
+        1,
+        -0.365
+      ],
+      "face_rotation_y": "Math.PI"
+    },
+    "previous_texture": {
+      "path": "web/src/core/textures.ts",
+      "function": "vendingFront",
+      "sha256": "c5c5d3bb4621df89299ec9cfe7219fc1fdc743beec51076e693dc8cee54570cf",
+      "canvas_dimensions": [
+        256,
+        512
+      ],
+      "caption_anchor": [
+        100,
+        498
+      ],
+      "caption_text": "COLD DRINKS"
+    }
+  },
+  "generator": {
+    "tool": "Innebygd ChatGPT image_gen",
+    "exact_model": "Ikke eksponert eller bekreftet.",
+    "calls": 1,
+    "transparent_background": false,
+    "external_api": false
+  },
+  "prompt": "Use case: stylized-concept. Asset type: opaque PNG game surface texture, exactly front-facing orthographic rectangular vending-machine FRONT PANEL only for SIGNAL / 47, a stylized low-poly Three.js game set in New Mexico in 1986. Output portrait 1:2 aspect, target 512x1024 pixels, sRGB. The entire canvas is filled edge-to-edge with the machine's FLAT front fascia, no surrounding space or background, no machine sides, no top surface, no floor, no perspective, no cast shadow. This is a material graphic applied to a 0.74m by 1.48m plane, not a scene, product photograph or mockup. Style: modest worn 1980s snack-and-drink vending machine, intentionally simplified low-poly game-art appearance, broad planar graphic forms, restrained hand-painted wear, matte charcoal blue-gray body (#20262c), dull beige-gray coin mechanism. No glossy science fiction. Uniform neutral diffuse color; no lighting gradients or specular reflections. Follow this precise layout in the final 512x1024 coordinate space: a tall rectangular glass display window at x=28..372, y=28..788, occupying the upper left two-thirds; thin dark window rim and quiet pale blue-gray interior, showing six compact rows of anonymous simplified cans and snack bags on thin horizontal shelves, about five items per row. Item colors muted brick red, dusty blue, dull ochre, faded green and beige, absolutely plain unlabelled packaging. Show them entirely straight on with no readable logos or tiny printed marks. The right control strip is x=392..484: a modest dull cream inset coin mechanism near y=80..320 with a narrow horizontal coin slit and a mechanical coin-return recess, followed by several plain small round or rectangular selection buttons below it, all without labels or numbers. Lower section: a dark horizontal rectangular retrieval opening at x=60..360, y=820..940. Critically preserve a clear flat dark blank label strip BELOW that opening, x=28..374, y=952..1016, for lettering that the game will add later at y=996. Also keep the narrow space directly below the display window plain and unmarked. The blank bottom label field must be empty and unobstructed, NOT replaced by vents, grooves or an extra slot. Simple subtle dry scuffs around the outer edges, no strong stains. No text of ANY kind anywhere in the image: no letters, no numbers, no words, no labels, no brand marks, no logo, no price signs, no barcode, no symbols, no UI, no decorative title, no watermark. All lettering including the machine's title will be added separately in code. Opaque image; no transparency, no checkerboard, no border outside the front panel.",
+  "generated_source": {
+    "path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-f7f3b03d-720b-4932-835b-b63a1a96f200.png",
+    "sha256": "fb51e64c2553aefda7113fe8fe0f2d29562a70858a215b1cc12b5dd16c88a54d",
+    "dimensions": [
+      887,
+      1774
+    ],
+    "mode": "RGB",
+    "preserved": true
+  },
+  "output": {
+    "dimensions": [
+      512,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "PNG",
+    "color_space": "sRGB med innebygd ICC-profil",
+    "opaque": true,
+    "alpha": "Ingen alfakanal; hele bildeflaten er opak.",
+    "bytes": 666270,
+    "sha256": "6e4485ac20c426e406c215ad89375d6fe67723dc20bfdc4f8bc9a7d17f282567"
+  },
+  "processing": "Kun nedskalering fra 887x1774 til 512x1024 med Lanczos og opak RGB PNG-eksport med sRGB ICC. Ingen visuell retusjering.",
+  "clear_text_regions": {
+    "coordinates": "Piksler fra øvre venstre hjørne i leveransen på 512x1024.",
+    "bottom_label_field": {
+      "safe_rectangle_xyxy": [
+        46,
+        946,
+        420,
+        986
+      ],
+      "recommended_anchor_center_baseline": [
+        232,
+        982
+      ],
+      "suggested_font_pixels": 44,
+      "max_text_width": 374,
+      "canvas256_equivalent": {
+        "safe_rectangle_xyxy": [
+          23,
+          473,
+          210,
+          493
+        ],
+        "anchor_center_baseline": [
+          116,
+          491
+        ],
+        "font_pixels": 22,
+        "max_text_width": 187
+      }
+    },
+    "below_window_alternative": {
+      "safe_rectangle_xyxy": [
+        44,
+        756,
+        365,
+        793
+      ],
+      "recommended_anchor_center_baseline": [
+        204,
+        787
+      ],
+      "suggested_font_pixels": 38,
+      "max_text_width": 321
+    },
+    "integration_note": "Dagens tekstanker (100,498) på 256x512 tilsvarer (200,996) på leveransen og ligger for nær etikettpanelets nederkant. Flytt til anbefalt nedre baseline491 på dagens canvas, eller bruk det ledige feltet rett under vinduet. All tekst tegnes i kode; ingen runtimekode er endret her."
+  },
+  "validation": {
+    "format": "PASS: faktisk PNG-dekoding, 512x1024 RGB, sRGB ICC og opasitet kontrollert.",
+    "visual": "PASS: ferdig eksport inspisert. Flatt rett forfra, seks rader anonyme bokser/poser, myntinnkast og knapper til høyre, uttak nede og to tomme tekstfelt. Ingen tekst, bokstaver, tall, merkevare eller omgivelser.",
+    "limits": "Generert illustrert flate har intern formskygge i vindu/uttak for lesbarhet. Ingen perspektivvisning av kabinettets sider, vegg eller ekstern kastskygge.",
+    "runtime": "UNVERIFIED: Claude eier integrasjonen. Ingen endring av bildeloader eller spilltest i denne grafikkleveransen."
+  }
+}
