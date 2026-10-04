@@ -17,7 +17,7 @@ import { WHEELBASE, type Truck } from './Truck';
 
   Wiring in the game loop (World.ts already does most of this):
     const road = new RoadArea(ROAD_ORIGIN);            // adds its own hemisphere light and moon
-    const truck = new Truck();                         // or new Truck({ flood: roadStatic })
+    const truck = new Truck();                         // new Truck({ flood: set }) lights the body too
     const drive = new DriveController(camera, truck, road);
     // the controller hands road.headlights (roadFlood, slots 0 to 2) to the truck:
     // truck.headlightFloods(roadFlood, [0, 1, 2]) needs no call of its own
@@ -29,11 +29,13 @@ import { WHEELBASE, type Truck } from './Truck';
     per frame, instead of player.update():
       const m = input.move();                          // W/S or the left stick: throttle and brake
       drive.update(dt, { steer: m.x, throttle: -m.z }, input.consumeLook()); // A/D: steer
-      road.update(dt, t, drive.pos);                   // moves nothing; reflectors and signs
+      road.update(dt, t, drive.pos);                   // reflector glints, sign shine, cattle guard
       engine.set(drive.rpm, drive.load); engine.tyres(drive.surface.kind, Math.abs(drive.speed));
       truck.setDash({ mph: drive.mph, rpm: drive.rpm, clock, fuel });   // 10 Hz is plenty
     on arrival: truck.setDriving(false) shows the whole truck again (it also happens by itself
-    on the next frame once the camera is outside the cab).
+    on the next frame once the camera is outside the cab). A camera put outside while
+    drive.update() keeps running needs truck.setDriving(false) after each update.
+    road.route lists world waypoints of the way (lane, then track), for hints or tests.
 
   Input: throttle 1 accelerates, -1 brakes and, once stopped, reverses (up to 5 m/s); positive
   steer turns right. Look: the mouse or the right-hand touch drag turns the head (yaw within

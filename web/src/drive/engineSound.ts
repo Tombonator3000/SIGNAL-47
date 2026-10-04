@@ -7,13 +7,13 @@ import type { SurfaceKind } from './Drive';
 // Levels sit under the wind ambience (AudioSys: wind 0.34 outside, motors 0.16).
 // Route `dest` to the game's sfx bus so the volume setting and pause apply.
 
-const MASTER = 0.55;
+const MASTER = 0.33;
 
 export class EngineSound {
   private out: GainNode;
   private nodes: AudioScheduledSourceNode[] = [];
   private eng: { bus: GainNode; lp: BiquadFilterNode; osc: OscillatorNode[]; lfo: OscillatorNode; noise: GainNode; band: BiquadFilterNode } | null = null;
-  private tyre: { roll: GainNode; crunch: GainNode; rumble: GainNode; wind: GainNode } | null = null;
+  private tyre: { roll: GainNode; crunch: GainNode; shake: GainNode; rumble: GainNode; wind: GainNode } | null = null;
   private white: AudioBuffer; private brown: AudioBuffer;
   private running = false;
   private stalled = false;
@@ -67,11 +67,11 @@ export class EngineSound {
     const crunch = layer(this.white, this.filter('bandpass', 1900, 0.6));
     const rumble = layer(this.brown, this.filter('lowpass', 120));
     const wind = layer(this.white, this.filter('bandpass', 650, 0.4));
-    // gravel crackles: slow brown noise shakes the crunch layer's gain
-    const shake = this.src(this.brown), sg = this.gain(0.9), slp = this.filter('lowpass', 35);
-    shake.connect(slp); slp.connect(sg); sg.connect(crunch.gain);
-    this.tyre = { roll, crunch, rumble, wind };
-    this.nodes.push(...osc, lfo, n, shake);
+    // gravel crackles: slow brown noise shakes the crunch layer's gain, as deep as the layer is loud
+    const shakeSrc = this.src(this.brown), shake = this.gain(0), slp = this.filter('lowpass', 35);
+    shakeSrc.connect(slp); slp.connect(shake); shake.connect(crunch.gain);
+    this.tyre = { roll, crunch, shake, rumble, wind };
+    this.nodes.push(...osc, lfo, n, shakeSrc);
     for (const s of this.nodes) s.start();
   }
 
@@ -137,7 +137,9 @@ export class EngineSound {
     const t = this.ctx.currentTime, v = Math.abs(speed);
     const k = Math.min(1, v / 30), slow = Math.min(1, v / 9);
     y.roll.gain.setTargetAtTime((surface === 'asphalt' ? 0.1 : 0.05) * k * k, t, 0.15);
-    y.crunch.gain.setTargetAtTime(surface === 'gravel' ? 0.1 * slow : surface === 'dirt' ? 0.04 * slow : 0, t, 0.15);
+    const crunch = surface === 'gravel' ? 0.1 * slow : surface === 'dirt' ? 0.04 * slow : 0;
+    y.crunch.gain.setTargetAtTime(crunch, t, 0.15);
+    y.shake.gain.setTargetAtTime(crunch * 2.5, t, 0.15);
     y.rumble.gain.setTargetAtTime(surface === 'dirt' ? 0.3 * slow : surface === 'gravel' ? 0.1 * slow : 0, t, 0.15);
     y.wind.gain.setTargetAtTime(0.045 * k * k, t, 0.3);
   }

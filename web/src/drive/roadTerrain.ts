@@ -175,7 +175,7 @@ export function trackGeometry() {
   return ribbon(trackPath(), (p) => {
     const w = trackHalf(p.s), e = w + TRK.soft;
     return [-e, -w, -w / 2, 0, w / 2, w, e].map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + trkLift(Math.abs(o), w), u: 0.5 + o / (2 * e) }));
-  }, false, 1 / 12);
+  }, false, 1 / 8); // 8 m per repeat: the gravel picture is 4 m long, laid twice
 }
 /** Verges beside both roads, in the desert's own material: flat, then dipping under the grid. */
 export function vergeGeometry() {

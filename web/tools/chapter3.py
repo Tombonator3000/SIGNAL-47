@@ -162,8 +162,8 @@ async def main():
         check(await ev("S47.world.area === 'station01' && !S47.world.driving"), 'arrived at STATION 01 and out of the truck')
         check(await s3('stage') == 'station' and await s3('arrived'), 'chapter three notes the arrival')
         art = await ev("S47.art()")
-        check(all(i in art['loaded'] for i in art['later']) and len(art['later']) == 4
-              and any(t['name'] == 'art/stucco' for t in art['textures']), 'the station brought its four surface images')
+        check(all(i in art['loaded'] for i in art['later']) and len(art['later']) == 5
+              and any(t['name'] == 'art/stucco' for t in art['textures']), 'the road and the station brought their five images')
         await tick(0.5)
         await shot('e05_arrival')
         calls = await ev("S47.renderer.info.render.calls")

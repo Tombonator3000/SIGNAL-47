@@ -113,15 +113,23 @@ export function plants(b: Build) {
     if (x > 395 && x < 485 && z > 150 && z < 235) return false;     // ranch yard
     return !(x > -26 && x < -14 && z > 510 && z < 530);             // cattle guard
   };
-  for (let n = 0; n < 26000 && bush.length < 1600; n++) {
-    const x = -820 + r() * 1300, z = -420 + r() * 1600;
+  // half of the candidates fall beside the way (where the headlights pass), half anywhere
+  const P = track.pts;
+  for (let n = 0; n < 30000 && bush.length < 1300; n++) {
+    let x: number, z: number;
+    const near = r() < 0.5, side = r() < 0.5 ? -1 : 1, off = r() * r();
+    if (near && r() < 0.45) { x = side * (9.5 + off * 55); z = -150 + r() * 1100; }
+    else if (near) {
+      const i = Math.floor(r() * (P.length - 1)), a = P[i], c = P[i + 1], l = a.distanceTo(c);
+      x = a.x - side * (c.y - a.y) / l * (3.6 + off * 45); z = a.y + side * (c.x - a.x) / l * (3.6 + off * 45);
+    } else { x = -820 + r() * 1300; z = -420 + r() * 1600; }
     const d = Math.min(z > -320 && z < 1150 ? Math.abs(x) : 1e9, trackNearest(x, z).d);
-    if (r() > (d < 45 ? 1 : d < 160 ? 0.32 : 0.1) || !free(x, z)) continue;
+    if ((!near && r() > (d < 45 ? 1 : d < 160 ? 0.3 : 0.1)) || !free(x, z)) continue;
     const k = r(), y = surfaceY(x, z);
     if (k < 0.72) {
       const sc = 0.45 + r() * 1.0;
       bush.push(place(x, y - 0.08 * sc, z, r() * 6, sc, 0, sc * (0.7 + r() * 0.5)));
-      tints.push(new THREE.Color().setHSL(0.15 + r() * 0.06, 0.25 + r() * 0.15, 0.22 + r() * 0.12));
+      tints.push(new THREE.Color().setHSL(0.15 + r() * 0.06, 0.22 + r() * 0.15, 0.27 + r() * 0.13));
     } else if (k < 0.96) {
       const sc = r() < 0.85 ? 0.15 + r() * 0.45 : 0.6 + r() * 0.8;
       rock.push(place(x, y - 0.12 * sc, z, r() * 6, sc, (r() - 0.5) * 0.5));
@@ -129,7 +137,7 @@ export function plants(b: Build) {
     } else yucca.push(place(x, y - 0.05, z, r() * 6, 0.8 + r() * 0.5));
   }
   const lobe = (rad: number, x: number, y: number, z: number) => new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.6, 1).translate(x, y, z);
-  const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.38, 0.2, 0.22), lobe(0.36, -0.3, 0.18, -0.25)])!, b.m.bush, bush);
+  const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.4, 0.2, 0.18)])!, b.m.bush, bush);
   tints.forEach((c, i) => bushes.setColorAt(i, c));
   b.root.add(bushes);
   b.root.add(instances(new THREE.DodecahedronGeometry(0.5, 0).scale(1, 0.62, 0.85).translate(0, 0.2, 0), b.m.rock, rock));

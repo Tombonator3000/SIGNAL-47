@@ -15,9 +15,10 @@ export { roadFlood, HEADLIGHT_SLOTS };
 // data stays small far from the world origin. Whatever is handed out in world terms
 // (start, end, endZone, obstacles, surface and height queries, floods) has the origin added.
 //
-// Draw calls: about 30 for the whole area (ground and verges 1, highway 1, track 1, merged
-// statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1,
-// mesas 1, haze 1, all lamp glows 1). Triangles: about 110 k, most of them in the ground.
+// Draw calls: about 20 for the area itself (ground and verges 1, highway 1, track 1, merged
+// statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1, mesas 1,
+// haze 1, all lamp glows 1); measured 29 to 38 per frame with the truck and the sky.
+// Triangles: about 190 k, mostly the desert grid (56 k), bushes (52 k), posts and poles.
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = {
@@ -85,9 +86,9 @@ export class RoadArea implements DriveArea {
     this.end = { pos: w(END.x, END.z), heading: END.heading };
     this.endZone = { minX: ENDZONE.minX + origin.x, maxX: ENDZONE.maxX + origin.x, minZ: ENDZONE.minZ + origin.z, maxZ: ENDZONE.maxZ + origin.z };
     this.route = [];
-    // the lane every 10 m right up to the track mouth, so a follower never aims behind itself
     for (let z = START.z; z <= 510; z += 10) this.route.push(w(START.x, z));
-    for (const p of trackRoute()) this.route.push(w(p.x, p.y));
+    this.route.push(w(-2.6, 513), w(-4.2, 518.5));          // swing into the mouth of the track
+    for (const p of trackRoute()) if (p.x < -6) this.route.push(w(p.x, p.y));
   }
 
   /** What the ground is like at a world point: asphalt, gravel (track, shoulder, cattle guard) or dirt. */
@@ -113,7 +114,7 @@ export class RoadArea implements DriveArea {
     if (_d.lengthSq() > 1) _d.normalize(); else _d.set(0, 0, -1);
     // the lamps sit about 4 m behind the first pool, 0.9 m up
     const src = _v.set(f0.x - _d.x * 4, f0.y, f0.z - _d.z * 4);
-    retroBeam.pos.value.set(src.x, src.y, src.z, on * 1.3);
+    retroBeam.pos.value.set(src.x, src.y, src.z, on * 0.55);
     retroBeam.dir.value.copy(_d);
     const col = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
     for (const g of this.glints) {

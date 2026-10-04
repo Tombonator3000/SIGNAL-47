@@ -11,8 +11,8 @@ Spillet er én natt. Kapitlene er avsnitt i natten, ikke separate episoder: det 
 | Prolog «Night Shift» | 23:41 til 02:16 | Kontrollrommet | Kalibrering, utskriften med -39 LY, telefonen som spiller noe som ikke har skjedd ennå, smellet 47 sekunder etter | Ferdig |
 | K1 «The Second Exposure» | 02:16 til 02:55 | Servicegården, S-03, B-12, fotolaben | To eksponeringer viser en referanse som blir liggende på filmen | Ferdig |
 | K2 «The Amended Record» | 02:55 til 03:35 | Korridoren og arkivet | Original og endret protokoll fra 1947, linjekortet til B-12, telefon til Nora Vega | Ferdig |
-| K3 «The Survey Station» | 03:40 til 04:30 | Lastebilen, veien ut, STATION 01, fotolaben | Det flyttede fastmerket, lampeprøven, det rene kabelkuttet, Tomás' stemme i mottakeren, Nora på felttelefonen | Bygges nå |
-| K4 «Room 6» | 04:35 til 05:00 | Sierra Motor Court, rett over veien fra SARO | Nora forteller hva som skjedde i 1947 og gir feltkortet, brevet og rettelsen | Senere |
+| K3 «The Survey Station» | 03:40 til 04:30 | Lastebilen, veien ut, STATION 01, fotolaben | Det flyttede fastmerket, lampeprøven, det rene kabelkuttet, Tomás' stemme i mottakeren, Nora på felttelefonen | Ferdig |
+| K4 «Room 6» | 04:35 til 05:00 | Sierra Motor Court, rett over veien fra SARO | Nora forteller hva som skjedde i 1947 og gir feltkortet, brevet og rettelsen | Neste. Rommet er levert av Codex |
 | **Nytt:** «The Roswell Road» | 05:00 til 05:10 | Riksveien sørover mot Roswell | Lastebilen dør der den gamle siktlinja C krysser veien. Lysene blinker i grupper på 4 og 7, et rolig lys står over mesaen | Senere |
 | **Nytt:** «All Night» | 05:10 til 05:25 | En diner som er åpen hele natten | Servitrisen og en sjåfør så lyset i natt. Et innrammet avisutklipp fra juli 1947 viser det samme. Telefonen til Ward | Senere |
 | K5 «The Reference That Answers» | 05:35 til 06:00 | SARO | Spillerens eget forsøk får svar. A, B og C legges sammen. Ward stopper morgenserien klokka 06:00 | Senere |
@@ -29,7 +29,7 @@ Klokka går fram ved kapitteloverganger, ikke som en nedtelling som straffer en 
 - **Tallene går igjen:** 47 sekunder, pulsmønsteret 4/7, -39 LY. 4/7 er grupperingen av pulser, ikke en kode.
 - **Fenomenet følger referansene A, B og C** (regel R1 i bibelen). Det skjer ikke tilfeldige overnaturlige ting overalt. Derfor må også bilstoppet på Roswell-veien ha en grunn i geometrien: det skjer der C krysser veien.
 
-## Kapittel 3: målestasjonen (bygges nå)
+## Kapittel 3: målestasjonen (ferdig)
 
 Etter samtalen med Nora og kapittelkortet står spilleren i arkivrommet klokka 03:40, og objektivet er «Take the SARO truck to STATION 01». Lastebilen (SARO 07) står på en betongplass nedenfor landingen ved østdøra, med en åpning i rekkverket ned dit. Den står der hele natten, så spilleren kan se den allerede i kapittel 1. Spilleren går gjennom kontrollrommet og ut østdøra, setter seg inn og kjører: et par hundre meter riksvei sørover med SAROs lys bak seg, forbi et skilt med «ROSWELL 64», så av ved en ferist og inn på en grusvei til porten. Porten er låst med kjetting (Nora har nøkkelen, som feltarket sier), men gangporten ved siden av står åpen.
 
@@ -38,6 +38,7 @@ På STATION 01, portert fra Unitys Station26:
 - **P06:** Transittens papir (E09A) viser A, B og C. Fundamentet til A står tomt på siktlinja, og stolpen med fastmerket står noen meter ved siden av. FRAME 03 tas så både fundamentet og stolpen synes.
 - **P07:** Feltlampen dekkes til. En vanlig nullprøve skiller den lokale lyskilden fra referansen. Kan gjøres før eller etter P06.
 - **P08:** Kabelen følges fra hytta til bruddet. Kuttflatene er rene og motstående. FRAME 04 tas på nært hold.
+- Stasjonen er mørk. Feltkameraet bruker blits der ute, så FRAME 03 og 04 blir lesbare også med lampa tildekket.
 - **P09:** Tidsloggen fra 1947 i hytta: 02:17:00 bærebølgen stopper, en stemme sier «Reference west. No. East. Hold the last reading.», 02:17:47 smell og referansebevegelse. Mottakeren i hytta tar inn det samme fragmentet i dag. Den gamle loggen sier T. Vega.
 - Når P09 er gjort, ringer felttelefonen på hytteveggen. **Nytt:** linja går fortsatt til motellkontoret, slik den har gjort siden 1947. Nora: «So you went out there.» Hun vet at du har sett kabelen, og ber deg komme til rom 6 med originalen og filmen, framkalt. Da skal hun fortelle resten.
 - Spilleren kjører tilbake (kjøreturen tilbake er et kort kutt, ikke en ny kjøring) og framkaller FRAME 03 og 04 på våtbenken i fotolaben. De to bildene henger på tørkesnora sammen med FRAME 01 og 02.

@@ -191,7 +191,7 @@ export function signs(b: Build) {
   sign(b, -7.4, 210, Math.PI, 0.3, 0.6, 1.0, SIGNS.mile, [0], b.m.steel, false);
   sign(b, -9.2, 330, Math.PI, 2.6, 0.98, 1.8, SIGNS.roswell, [-0.9, 0.9], b.m.steel);
   // the turn-off: old enamel on two wooden posts, angled to the traffic from the north
-  sign(b, -12.5, 511.5, 2.6, 1.5, 0.94, 1.0, SIGNS.station, [-0.55, 0.55], b.m.wood);
+  sign(b, -12.5, 511.5, 2.6, 1.8, 1.13, 1.0, SIGNS.station, [-0.65, 0.65], b.m.wood);
 }
 
 // ---------- the cattle guard in the right-of-way fence, with heavy gate posts ----------

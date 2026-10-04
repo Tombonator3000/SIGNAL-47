@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { box, cyl, rod, plane, mergeStatic, noMerge, floodlit, type FloodSet } from '../world/kit';
+import { box, cyl, rod, plane, mergeStatic, noMerge, floodlit, floodSet, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import { PAINT, DASH, DIALS, paintAtlas, dashAtlas, type Rect } from './truckTextures';
 
@@ -20,7 +20,7 @@ const FRONT_AXLE = -1.8, REAR_AXLE = FRONT_AXLE + WHEELBASE, WHEEL_R = 0.37, TRA
 // The fake headlight floods (kit.floodlit): truck-local position and intensity. Three
 // pools in a row make a beam that widens and fades down the road.
 const FLOODS = [
-  { p: new THREE.Vector3(0, 0.9, -6.6), w: 7 },
+  { p: new THREE.Vector3(0, 0.9, -7.8), w: 5.5 },
   { p: new THREE.Vector3(0, 1.2, -14.6), w: 10 },
   { p: new THREE.Vector3(0, 1.8, -28.6), w: 14 },
 ];
@@ -66,7 +66,7 @@ export class Truck {
   shell = new THREE.Group();
   cab = new THREE.Group();
   /** The driver's eye, truck-local (left seat). */
-  driverEye = new THREE.Vector3(-0.42, 1.45, 0.24);
+  driverEye = new THREE.Vector3(-0.42, 1.48, 0.2);
   driving = false;
   private m: ReturnType<Truck['materials']>;
   private wheels: THREE.InstancedMesh;
@@ -81,6 +81,8 @@ export class Truck {
   private clockShown = ''; private clockWanted = ''; private clockAt = -1;
   private gauge = { speed: 0, fuel: 0.6, temp: 0.15, tSpeed: 0, tFuel: 0.6, tTemp: 0.5 };
   private eyeW = new THREE.Vector3(); private camW = new THREE.Vector3();
+  // The instruments' own light on the wheel and the dash: a one-lamp flood set of its own.
+  private cabFlood = floodSet(1, 'cab', 0.5);
 
   /** flood: light the exterior with a set of fake floods (leave out the headlight slots). */
   constructor(o: { flood?: FloodSet } = {}) {
@@ -110,6 +112,7 @@ export class Truck {
     const lit = <T extends THREE.MeshStandardMaterial>(m: T) => flood ? floodlit(m, 0.02, flood) : m;
     const std = (o: THREE.MeshStandardMaterialParameters) => lit(new THREE.MeshStandardMaterial(o));
     const basic = (c: number) => new THREE.MeshBasicMaterial({ color: c });
+    const cab = <T extends THREE.MeshStandardMaterial>(m: T) => floodlit(m, 16, this.cabFlood);
     return {
       paint: std({ map: paintAtlas(), roughness: 0.55, metalness: 0.05 }),
       chrome: std({ color: 0xc4c7c9, roughness: 0.3, metalness: 0.55 }),
@@ -117,11 +120,12 @@ export class Truck {
       glass: std({ color: 0x0a0e13, roughness: 0.12, metalness: 0.4 }),
       wheel: std({ vertexColors: true, roughness: 0.85 }),
       head: basic(0x2c2c2a), park: basic(0x3a2a10), tail: basic(0x2a0606), beacon: basic(0x4a3010),
-      // the interior is never floodlit: the headlights do not shine into the cab
-      dash: new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 0.7 }),
-      vinyl: new THREE.MeshStandardMaterial({ color: 0x4c3b2c, roughness: 0.6 }),
-      liner: new THREE.MeshStandardMaterial({ color: 0x8f897b, roughness: 1 }),
-      mirror: new THREE.MeshStandardMaterial({ color: 0x07090c, roughness: 0.15, metalness: 0.5 }),
+      // the interior is lit by the instruments only (the headlights do not shine into the cab)
+      dash: cab(new THREE.MeshStandardMaterial({ color: 0x343537, roughness: 0.7 })),
+      wheelRim: cab(new THREE.MeshStandardMaterial({ color: 0x2c2926, roughness: 0.5 })),
+      vinyl: cab(new THREE.MeshStandardMaterial({ color: 0x6a5240, roughness: 0.6 })),
+      liner: cab(new THREE.MeshStandardMaterial({ color: 0x77736a, roughness: 1 })),
+      mirror: basic(0x131b28),
       gauge: new THREE.MeshBasicMaterial({ map: this.dash.tex, toneMapped: false }),
       needle: new THREE.MeshBasicMaterial({ color: 0xff6a30, toneMapped: false }),
     };
@@ -136,27 +140,27 @@ export class Truck {
     // front: bumper, grille with three bars, sealed-beam headlamps, parking lamps
     box(B, 1.96, 0.18, 0.13, m.chrome, 0, 0.46, -2.585);
     box(B, 1.7, 0.12, 0.1, m.trim, 0, 0.32, -2.5);
-    box(B, 1.84, 0.48, 0.06, m.trim, 0, 0.82, -2.5);
-    for (const y of [0.58, 1.06]) box(B, 1.86, 0.03, 0.07, m.chrome, 0, y, -2.51);
-    for (const y of [0.72, 0.82, 0.92]) box(B, 1.0, 0.024, 0.03, m.chrome, 0, y, -2.535);
-    box(B, 0.024, 0.34, 0.03, m.chrome, 0, 0.82, -2.535);
+    box(B, 1.84, 0.44, 0.06, m.trim, 0, 0.8, -2.5);
+    for (const y of [0.58, 1.02]) box(B, 1.86, 0.03, 0.07, m.chrome, 0, y, -2.51);
+    for (const y of [0.7, 0.8, 0.9]) box(B, 1.0, 0.024, 0.03, m.chrome, 0, y, -2.535);
+    box(B, 0.024, 0.32, 0.03, m.chrome, 0, 0.8, -2.535);
     for (const s of [-1, 1]) {
-      box(B, 0.3, 0.2, 0.03, m.chrome, s * 0.7, 0.87, -2.53);
-      box(B, 0.25, 0.15, 0.02, m.head, s * 0.7, 0.87, -2.548);
-      box(B, 0.25, 0.05, 0.02, m.park, s * 0.7, 0.71, -2.548);
+      box(B, 0.3, 0.2, 0.03, m.chrome, s * 0.7, 0.85, -2.53);
+      box(B, 0.25, 0.15, 0.02, m.head, s * 0.7, 0.85, -2.548);
+      box(B, 0.25, 0.05, 0.02, m.park, s * 0.7, 0.69, -2.548);
       box(B, 0.12, 0.18, 0.3, m.chrome, s * 0.92, 0.46, -2.47);
     }
     // hood, a little higher at the back, and the cowl under the windshield
-    const hood = this.pb(B, 1.88, 0.06, 1.68, 0, 1.11, -1.69); hood.rotation.x = -0.03;
-    this.pb(B, 1.88, 0.06, 0.06, 0, 1.08, -2.53);
-    this.pb(B, 1.88, 0.1, 0.14, 0, 1.17, -0.88);
-    box(B, 1.56, 0.56, 1.6, m.trim, 0, 0.78, -1.7); // closes the engine bay
-    for (const x of [-0.35, 0.25]) box(B, 0.55, 0.015, 0.03, m.trim, x, 1.232, -0.8).rotation.z = 0.06;
+    const hood = this.pb(B, 1.88, 0.06, 1.68, 0, 1.06, -1.69); hood.rotation.x = -0.03;
+    this.pb(B, 1.88, 0.06, 0.06, 0, 1.03, -2.53);
+    this.pb(B, 1.88, 0.1, 0.14, 0, 1.12, -0.88);
+    box(B, 1.56, 0.5, 1.6, m.trim, 0, 0.75, -1.7); // closes the engine bay
+    for (const x of [-0.35, 0.25]) box(B, 0.55, 0.015, 0.03, m.trim, x, 1.178, -0.8).rotation.z = 0.06;
     // fenders around square wheel openings, the bed sides the same at the back
     for (const s of [-1, 1]) {
-      this.pb(B, 0.22, 0.55, 0.26, s * 0.89, 0.825, -2.37);
-      this.pb(B, 0.22, 0.27, 0.88, s * 0.89, 0.965, -1.8);
-      this.pb(B, 0.22, 0.58, 0.51, s * 0.89, 0.81, -1.105);
+      this.pb(B, 0.22, 0.5, 0.26, s * 0.89, 0.8, -2.37);
+      this.pb(B, 0.22, 0.22, 0.88, s * 0.89, 0.94, -1.8);
+      this.pb(B, 0.22, 0.53, 0.51, s * 0.89, 0.785, -1.105);
       box(B, 0.04, 0.42, 0.88, m.trim, s * 0.79, 0.62, -1.8);
       this.pb(B, 0.1, 0.68, 0.28, s * 0.95, 0.86, 0.92);
       this.pb(B, 0.1, 0.37, 0.88, s * 0.95, 1.015, 1.5);
@@ -165,9 +169,9 @@ export class Truck {
       this.pb(B, 0.26, 0.2, 0.86, s * 0.77, 0.85, 1.5);              // wheel wells in the bed
       box(B, 0.1, 0.3, 0.03, m.tail, s * 0.93, 0.95, 2.565);
       // mirrors on short chrome arms, the glass facing back
-      box(B, 0.17, 0.025, 0.025, m.chrome, s * 1.06, 1.27, -0.72);
-      box(B, 0.05, 0.24, 0.16, m.trim, s * 1.15, 1.36, -0.72);
-      box(B, 0.042, 0.21, 0.01, m.glass, s * 1.15, 1.36, -0.637);
+      box(B, 0.17, 0.025, 0.025, m.chrome, s * 1.06, 1.25, -0.72);
+      box(B, 0.05, 0.24, 0.16, m.trim, s * 1.15, 1.34, -0.72);
+      box(B, 0.042, 0.21, 0.01, m.mirror, s * 1.15, 1.34, -0.637);
     }
     // bed floor, front wall, tailgate with the fleet number, rear step bumper
     uvBox(box(B, 1.76, 0.05, 1.72, m.paint, 0, 0.73, 1.66), PAINT.plain, PAINT.plain);
@@ -195,23 +199,23 @@ export class Truck {
   private buildShell() {
     const S = this.shell, m = this.m;
     // cab sides carry the doors and their markings, on the outer face only
-    this.pb(S, 0.1, 0.7, 1.57, -0.95, 0.87, -0.065, { '-x': PAINT.doorL });
-    this.pb(S, 0.1, 0.7, 1.57, 0.95, 0.87, -0.065, { '+x': PAINT.doorR });
+    this.pb(S, 0.1, 0.65, 1.57, -0.95, 0.845, -0.065, { '-x': PAINT.doorL });
+    this.pb(S, 0.1, 0.65, 1.57, 0.95, 0.845, -0.065, { '+x': PAINT.doorR });
     box(S, 1.8, 0.06, 1.57, m.trim, 0, 0.55, -0.065);
     for (const s of [-1, 1]) {
       box(S, 0.02, 0.03, 0.12, m.chrome, s * 1.005, 1.1, 0.42);
-      this.pb(S, 0.08, 0.68, 0.07, s * 0.9, 1.49, -0.63).rotation.x = 0.613;    // A-pillar
-      this.pb(S, 0.08, 0.52, 0.1, s * 0.93, 1.48, 0.67);                           // B-pillar
+      this.pb(S, 0.08, 0.72, 0.07, s * 0.9, 1.465, -0.63).rotation.x = 0.572;   // A-pillar
+      this.pb(S, 0.08, 0.58, 0.1, s * 0.93, 1.455, 0.67);                          // B-pillar
       box(S, 0.02, 0.02, 1.18, m.chrome, s * 0.935, 1.745, 0.13);                  // drip rail
       // side glass: a quad that follows the slope of the windshield at the front
       const g = new THREE.PlaneGeometry(1, 1);
       const p = g.attributes.position as THREE.BufferAttribute;
-      [[-0.44, 1.735], [0.62, 1.735], [-0.81, 1.215], [0.62, 1.215]].forEach(([z, y], i) => p.setXYZ(i, s * 0.935, y, z));
+      [[-0.44, 1.735], [0.62, 1.735], [-0.84, 1.165], [0.62, 1.165]].forEach(([z, y], i) => p.setXYZ(i, s * 0.935, y, z));
       if (s > 0) g.index!.array.reverse(); // as laid out it faces -X: turn it outwards on the right
       g.computeVertexNormals();
       S.add(new THREE.Mesh(g, m.glass));
     }
-    const ws = box(S, 1.78, 0.66, 0.012, m.glass, 0, 1.49, -0.63); ws.rotation.x = 0.613;
+    const ws = box(S, 1.78, 0.72, 0.012, m.glass, 0, 1.465, -0.63); ws.rotation.x = 0.572;
     this.pb(S, 1.88, 0.06, 1.2, 0, 1.77, 0.13);                                   // roof
     this.pb(S, 1.92, 1.2, 0.06, 0, 1.17, 0.73);                                   // back of the cab
     box(S, 1.28, 0.4, 0.012, m.glass, 0, 1.47, 0.765);
@@ -222,27 +226,30 @@ export class Truck {
 
   private buildCab() {
     const C = this.cab, m = this.m;
-    box(C, 1.76, 0.36, 0.42, m.dash, 0, 0.98, -0.66);                 // dashboard
-    box(C, 1.78, 0.04, 0.46, m.dash, 0, 1.17, -0.66);
-    box(C, 0.62, 0.08, 0.16, m.dash, -0.42, 1.205, -0.5);            // cluster visor
-    rod(C, new THREE.Vector3(-0.42, 0.95, -0.5), new THREE.Vector3(-0.42, 1.08, -0.3), 0.035, m.dash, 8);
-    rod(C, new THREE.Vector3(-0.33, 1.03, -0.36), new THREE.Vector3(-0.17, 0.99, -0.3), 0.008, m.chrome, 5); // column shifter
+    // Seen from the eye (1.48 m): the windshield's lower edge is 17 degrees down, the
+    // instrument binnacle just under it, the top of the wheel rim at the bottom of the view.
+    box(C, 1.76, 0.34, 0.42, m.dash, 0, 0.93, -0.66);                // dashboard
+    box(C, 1.78, 0.04, 0.46, m.dash, 0, 1.12, -0.66);                // pad
+    box(C, 0.6, 0.15, 0.2, m.dash, -0.42, 1.175, -0.5);              // binnacle, kept under the cowl line
+    box(C, 0.62, 0.025, 0.09, m.dash, -0.42, 1.262, -0.405);         // its visor
+    rod(C, new THREE.Vector3(-0.42, 0.86, -0.46), new THREE.Vector3(-0.42, 0.97, -0.24), 0.035, m.dash, 8);
+    rod(C, new THREE.Vector3(-0.33, 0.97, -0.3), new THREE.Vector3(-0.17, 0.93, -0.24), 0.008, m.chrome, 5); // column shifter
     box(C, 1.74, 0.03, 1.5, m.dash, 0, 0.6, -0.1);                   // floor
     box(C, 1.72, 0.03, 1.18, m.liner, 0, 1.745, 0.13);               // roof liner
     box(C, 1.7, 0.07, 0.1, m.liner, 0, 1.72, -0.47);
     for (const x of [-0.42, 0.42]) box(C, 0.4, 0.012, 0.18, m.liner, x, 1.718, -0.36);
     // rear-view mirror: a dark plane
-    rod(C, new THREE.Vector3(0, 1.74, -0.43), new THREE.Vector3(0, 1.665, -0.41), 0.008, m.dash, 4);
-    box(C, 0.25, 0.075, 0.025, m.dash, 0, 1.645, -0.405);
-    plane(C, 0.23, 0.058, m.mirror, 0, 1.645, -0.391);
+    rod(C, new THREE.Vector3(0, 1.74, -0.43), new THREE.Vector3(0, 1.68, -0.41), 0.008, m.dash, 4);
+    box(C, 0.23, 0.07, 0.025, m.dash, 0, 1.655, -0.405);
+    plane(C, 0.21, 0.054, m.mirror, 0, 1.655, -0.391);
     for (const s of [-1, 1]) {
-      box(C, 0.09, 0.66, 0.07, m.dash, s * 0.83, 1.49, -0.62).rotation.x = 0.613; // A-pillar
-      box(C, 0.06, 0.66, 1.4, m.vinyl, s * 0.87, 0.9, -0.1);                      // door panel
-      box(C, 0.1, 0.04, 1.42, m.dash, s * 0.865, 1.24, -0.1);
-      box(C, 0.08, 0.06, 0.32, m.dash, s * 0.82, 0.98, 0.2);
-      box(C, 0.02, 0.03, 0.1, m.chrome, s * 0.835, 1.06, -0.2);
-      box(C, 0.08, 0.52, 0.1, m.liner, s * 0.88, 1.48, 0.66);
-      box(C, 0.24, 0.42, 0.04, m.liner, s * 0.75, 1.48, 0.7);         // beside the rear window
+      box(C, 0.08, 0.72, 0.07, m.dash, s * 0.83, 1.465, -0.62).rotation.x = 0.572; // A-pillar
+      box(C, 0.06, 0.61, 1.4, m.vinyl, s * 0.87, 0.875, -0.1);                    // door panel
+      box(C, 0.1, 0.04, 1.42, m.dash, s * 0.865, 1.19, -0.1);
+      box(C, 0.08, 0.06, 0.32, m.dash, s * 0.82, 0.96, 0.2);
+      box(C, 0.02, 0.03, 0.1, m.chrome, s * 0.835, 1.04, -0.2);
+      box(C, 0.08, 0.58, 0.1, m.liner, s * 0.88, 1.455, 0.66);
+      box(C, 0.24, 0.42, 0.04, m.liner, s * 0.75, 1.48, 0.7);          // beside the rear window
     }
     box(C, 1.74, 0.7, 0.04, m.vinyl, 0, 0.92, 0.7);
     box(C, 1.74, 0.08, 0.04, m.liner, 0, 1.73, 0.7);
@@ -251,22 +258,24 @@ export class Truck {
     box(C, 1.66, 0.58, 0.12, m.vinyl, 0, 1.11, 0.6).rotation.x = 0.12;
     // instruments: cluster and radio share one canvas; needles are three instances
     const cluster = new THREE.Group();
-    cluster.position.set(-0.42, 1.075, -0.447); cluster.rotation.x = -0.12;
+    cluster.position.set(-0.42, 1.165, -0.378); cluster.rotation.x = -0.15;
     uvPlane(plane(cluster, 0.56, 0.175, m.gauge, 0, 0, 0), DASH.cluster);
     C.add(cluster);
-    uvPlane(plane(C, 0.34, 0.064, m.gauge, 0.1, 0.99, -0.448), DASH.stack);
+    uvPlane(plane(C, 0.34, 0.064, m.gauge, 0.12, 1.055, -0.428), DASH.stack);
     const ng = new THREE.BoxGeometry(0.0035, 1, 0.002).translate(0, 0.42, 0);
     this.needles = new THREE.InstancedMesh(ng, m.needle, 3);
     this.needles.frustumCulled = false;
     noMerge(this.needles); cluster.add(this.needles);
     // steering wheel: tilted towards the driver, turns about its own axis
     const pivot = new THREE.Group();
-    pivot.position.set(-0.42, 1.1, -0.28); pivot.rotation.x = -0.45;
-    const parts: THREE.BufferGeometry[] = [new THREE.TorusGeometry(0.19, 0.015, 6, 24), new THREE.CylinderGeometry(0.045, 0.05, 0.04, 10).rotateX(Math.PI / 2)];
+    pivot.position.set(-0.42, 1.0, -0.2); pivot.rotation.x = -0.5;
+    const parts: THREE.BufferGeometry[] = [new THREE.TorusGeometry(0.19, 0.016, 6, 28), new THREE.CylinderGeometry(0.05, 0.055, 0.045, 10).rotateX(Math.PI / 2)];
     for (const s of [-1, 1]) parts.push(new THREE.BoxGeometry(0.15, 0.03, 0.012).translate(s * 0.105, -0.02, 0));
-    this.wheelSpin.add(new THREE.Mesh(mergeGeometries(parts)!, m.dash));
+    this.wheelSpin.add(new THREE.Mesh(mergeGeometries(parts)!, m.wheelRim));
     pivot.add(this.wheelSpin);
     noMerge(pivot); C.add(pivot);
+    // the instruments' glow, in front of the binnacle
+    this.cabFlood.pos[0].set(0, -999, 0, 0); this.cabFlood.count = 1;
   }
 
   /** Interior on, view-blocking shell off. DriveController calls this while it drives. */
@@ -321,10 +330,13 @@ export class Truck {
   }
 
   private placeFloods() {
+    this.group.updateWorldMatrix(true, false);
+    const c = this.cabFlood.pos[0].set(-0.42, 1.12, -0.28, 1).applyMatrix4(this.group.matrixWorld);
+    c.w = this.level > 0.01 ? 1.6 : 0;
+    this.cabFlood.col[0].setRGB(0.6, 0.78, 0.68).multiplyScalar(this.level);
     if (!this.flood) return;
     const { set, slots } = this.flood;
     const on = this.headOn && this.level > 0.01;
-    this.group.updateWorldMatrix(true, false);
     slots.forEach((i, k) => {
       const f = FLOODS[k];
       const p = set.pos[i].set(f.p.x, f.p.y, f.p.z, 1).applyMatrix4(this.group.matrixWorld);

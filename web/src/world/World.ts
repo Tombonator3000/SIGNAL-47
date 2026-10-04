@@ -135,7 +135,8 @@ export class World {
 
   private ensureRoad() {
     return this.once('road', async () => {
-      const [{ RoadArea, roadFlood }, { DriveController }, { Truck }] = await Promise.all([this.load('RoadArea'), this.load('Drive'), this.load('Truck'), this.load('engine')]);
+      const [{ RoadArea, roadFlood }, { DriveController }, { Truck }] = await Promise.all([this.load('RoadArea'), this.load('Drive'), this.load('Truck'), this.load('engine'),
+        loadArtFor(['gravelTrack'])]); // the survey track's gravel comes with the road
       const truck = new Truck({ flood: roadFlood });
       truck.headlightFloods(roadFlood, [0, 1, 2]);
       truck.group.visible = false;

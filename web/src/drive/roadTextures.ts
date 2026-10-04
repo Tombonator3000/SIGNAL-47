@@ -49,34 +49,22 @@ export function highwayTex() {
       g.stroke();
     }
     g.drawImage(paint, 0, 0);
-  });
+  }, [1, 1]); // wraps: v runs along the whole highway
 }
 
-// Graded caliche gravel: pale, two darker wheel tracks, a dry crown between them, and
-// edges that fade into the plain desert. 6 m across, 12 m per repeat.
+// Graded caliche gravel: Codex's track with two wheel ruts (round 6, 4 m across, ruts along
+// the picture's height), laid twice per 8 m repeat on the desert, with edges that fade into
+// the plain desert. The track ribbon is 6 m across (soft edges included), so the picture
+// spans the 4.6 m of firm track. World loads the picture (loadArtFor) before the road.
 export function gravelTex() {
-  return canvasTex(256, 512, (g, w, h) => {
-    const desert = artImage('desert'), r = rng(12);
-    g.drawImage(desert, 0, 0, w, 256); g.drawImage(desert, 0, 256, w, 256);
+  return canvasTex(512, 1024, (g, w, h) => {
+    const desert = artImage('desert'), track = artImage('gravelTrack');
+    g.drawImage(desert, 0, 0, w, 512); g.drawImage(desert, 0, 512, w, 512);
     const mid = document.createElement('canvas'); mid.width = w; mid.height = h;
     const m = mid.getContext('2d')!;
-    m.drawImage(desert, 0, 0, w, 256); m.drawImage(desert, 0, 256, w, 256);
-    m.fillStyle = 'rgba(205,196,178,.45)'; m.fillRect(0, 0, w, h);
-    for (const u of [0.36, 0.64]) {
-      const gr = m.createLinearGradient((u - 0.05) * w, 0, (u + 0.05) * w, 0);
-      gr.addColorStop(0, 'rgba(90,80,66,0)'); gr.addColorStop(0.5, 'rgba(90,80,66,.38)'); gr.addColorStop(1, 'rgba(90,80,66,0)');
-      m.fillStyle = gr; m.fillRect((u - 0.05) * w, 0, 0.1 * w, h);
-    }
-    for (let i = 0; i < 4200; i++) {
-      const v = r();
-      m.fillStyle = v < 0.45 ? 'rgba(70,64,55,.7)' : v < 0.9 ? 'rgba(232,226,210,.65)' : 'rgba(150,110,80,.7)';
-      m.fillRect(r() * w, r() * h, 1 + r() * 2.5, 1 + r() * 2.5);
-    }
-    m.strokeStyle = 'rgba(150,130,80,.55)'; m.lineWidth = 1;
-    for (let i = 0; i < 160; i++) {
-      const x = w / 2 + (r() - 0.5) * 30, y = r() * h;
-      m.beginPath(); m.moveTo(x, y); m.lineTo(x + (r() - 0.5) * 8, y - 4 - r() * 8); m.stroke();
-    }
+    m.drawImage(desert, 0, 0, w, 512); m.drawImage(desert, 0, 512, w, 512);
+    const x0 = Math.round(w * 0.11), x1 = Math.round(w * 0.89);
+    m.drawImage(track, x0, 0, x1 - x0, 512); m.drawImage(track, x0, 512, x1 - x0, 512);
     // fade the gravel out over the soft edges (0.7 m of 6 m each side)
     m.globalCompositeOperation = 'destination-in';
     const fade = m.createLinearGradient(0, 0, w, 0);
@@ -138,10 +126,10 @@ export function signAtlas() {
     g.fillStyle = '#6a6d70'; g.fillRect(0, 0, AW, AH);
     // STATION 01: the old enamel sign at the turn-off
     enamel(g, 0, 0, 512, 320);
-    text(g, 'STATION 01', 256, 92, 96, '#1f2326', 440, 600);
-    g.fillStyle = '#1f2326'; g.fillRect(70, 150, 372, 5);
-    text(g, 'U.S. SURVEY', 256, 196, 50, '#1f2326', 400);
-    text(g, 'NO THROUGH ROAD', 256, 262, 44, '#8f2a1e', 420);
+    text(g, 'STATION 01', 256, 84, 92, '#1f2326', 440, 600);
+    g.fillStyle = '#1f2326'; g.fillRect(64, 138, 384, 5);
+    text(g, 'U.S. SURVEY', 256, 190, 62, '#1f2326', 420);
+    text(g, 'NO THROUGH ROAD', 256, 262, 56, '#8f2a1e', 440);
     weather(g, 0, 0, 512, 320, 7, 2);
     // regulatory white
     g.fillStyle = '#ecebe4'; g.fillRect(512, 0, 256, 320);

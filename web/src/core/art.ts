@@ -30,6 +30,8 @@ import stucco from '../assets/art/station/tex_stucco_wall.jpg';
 import oldConcrete from '../assets/art/station/tex_concrete_old.jpg';
 import weatheredWood from '../assets/art/station/tex_wood_weathered.jpg';
 import floorboards from '../assets/art/station/tex_floorboards.jpg';
+// Round 6 (PR #35): the survey track's gravel, loaded with the road.
+import gravelTrack from '../assets/art/road/tex_gravel_track.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -38,10 +40,10 @@ import floorboards from '../assets/art/station/tex_floorboards.jpg';
 const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   listen, saro, map, logo, yard, procedure, sky, sierra,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
-  stucco, oldConcrete, weatheredWood, floorboards };
+  stucco, oldConcrete, weatheredWood, floorboards, gravelTrack };
 export type ArtId = keyof typeof urls;
 // Images an area loads for itself when it is built, not at the start.
-const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards']);
+const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack']);
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();
