@@ -47,7 +47,33 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kl. 12.40: PR #34 og PR #35 er levert, flettet og publisert (main `29ceb4d`). Alt som var avtalt, er levert.
+Status 4. oktober kl. 16.15: PR #34, #35 og #39 er levert, flettet og publisert. Neste oppgave er dineren (under).
+
+### Neste oppgave: dineren i «All Night» (4. oktober kl. 16.15)
+
+Status: PR #39 (motellet og runde 7) er flettet og publisert sammen med PR #41 til #43. Denne oppgaven er uavhengig av de fire valgene Tom har fått (abduksjonen, walkie-talkien, lysene over motellet, albumet). Dineren kommer etter Roswell-veien, i kapitlet «All Night» (05:10 til 05:25, første grålysning). Se `HISTORIE.md`, avsnittet «Nytt: dineren».
+
+**Prioritet 1, kode: `src/world/Diner.ts`.** Codex eier `src/world/Diner.ts`, `tools/dinerpreview.py` og `DINER_DELIVERY.md`.
+
+- `export class Diner` med `new Diner(origin: THREE.Vector3)`, bygd som `Room6.ts`: et eget område langt fra de andre. Claude legger det ved `DINER_ORIGIN = (-8000, 0, 0)` i `World.ts`. Alt plasseres relativt til origo; soner, kolliderere, trefflater og ankre oppgis i verdenskoordinater som i `Room6.ts`. Nord er -Z.
+- Bildene ligger klare i `art.ts` fra main etter PR #44: `DINER_ART` (`dinerFloor` 2,4 m, `dinerCounter` 0,6 m, `dinerSign` 4,0 × 2,0 m, `dinerMenu` 1,6 × 0,8 m, `clipping1947`). De lastes med `loadArtFor(DINER_ART)` før konstruksjonen (Claude gjør det i `World`, previewen selv). Bruk `artTexture()` og `artImage()`; delte bildeteksturer disponeres aldri. Bildene fra runde 8 under brukes når de finnes, med en enkel prosedyrisk reserve til de er levert.
+- Plassen (lokale koordinater): riksveien går nord-sør langs x 16 til 24 (bare kulisse: asfalt, gul midtlinje, hvit kantlinje). Flat grusplass mellom veien og bygningen (x 2 til 16, z -16 til 16). Bygningen innenfor x -8 til 2 og z -9 til 9, med fasade, vinduer og dør mot øst (+X, mot veien); døra ved z -0,6 til 0,6. Skiltet på to stolper ved veien rundt (13, 0, -11), synlig fra veien og plassen. Sjåførens semitrailer står parkert i nordenden av plassen (kulisse med kollider). Lav bakke rundt med ringer som vokser utover (se `Exterior.ts`; ingen lange, smale trekanter fra sentrum) og to eller tre mesaer i silhuett mot øst og sør.
+- Alt man går på, ligger på y = 0. Ingen trapper eller ramper.
+- Inne: disk parallelt med fasaden (benkeplate 1,0 m høy, 0,6 m dyp, mintlaminat) med 6 til 8 krakker på kundesiden, båser langs vinduene, kaffetrakter og kanne på disken, menytavla over kjøkkenluka på bakveggen, et innrammet avisutklipp på veggen ved døra, telefonautomat i en nisje ved døra eller mot toalettene, jukeboks som kulisse, to lukkede toalettdører, rutegulv.
+- Tekst i kode (engelsk): skiltet «MESA DINER» (baseline (512, 230), høyst 50 px, som i runde 6) og «OPEN ALL NIGHT» mindre under. Menytavla, fem linjer: «COFFEE .35», «TWO EGGS ANY STYLE 1.95», «HOTCAKES 1.75», «GREEN CHILE STEW 2.95», «PIE .95». Avisutklippet: en forside klippet slik at datoen er borte, avisnavnet «PECOS VALLEY SENTINEL», tittelen «LIGHT HELD OVER MESA FOR AN HOUR», undertittelen «Ranchers on the old survey road watched a steady glow; Army field office cites weather equipment», bildet `clipping1947` med teksten «Seen from the Kessler ranch, 3 a.m.», og en blyantlapp på rammen: «July '47». Avisen og navnene er oppdiktet.
+- To personer i lavpoly som Nora i `Room6.ts`: servitrisen står bak disken (rundt 50 år, kittel), sjåføren sitter på en krakk (caps, jakke). Hodene er egne grupper i `objs` (`waitressHead`, `driverHead`), så Claude kan snu dem.
+- Lys: eget flomlyssett `dinerFlood` (høyst 10 plasser): neon på skiltet (rødt og cyan), lysrør inne (kjølig hvitt), lampe over kjøkkenluka, lys fra vinduene ut på plassen og ett svakt grålys fra øst. En egen `HemisphereLight` i gruppen som i `Room6.ts`, ellers ingen ekte lys og ingen skygger.
+- Soner (`zones`): `lot` (plassen og veikanten), `walk` (fortauet foran fasaden), `door` (døråpningen), `inside` (gulvet på kundesiden) og `phone` (nisjen). Soner som møtes, overlapper med mer enn 0,6 m.
+- Kolliderere: bygningen, disken, krakkene, båsene, jukeboksen, skiltstolpene, semitraileren og SAROs lastebil der den står (`truckPark`).
+- Usynlige trefflater (`proxies`): `door`, `counter`, `coffee`, `waitress`, `driver`, `menu`, `clipping`, `payphone`, `jukebox`, `window`, `booth`, `sign`, `rig`.
+- Ankre (`anchors`, `{ x, z, yaw }`): `truckPark` (lastebilen fra SARO, nesen mot nord), `arrive` (ved førerdøra), `outside` (foran døra, vendt mot den), `inside` (rett innenfor, vendt inn), `stool` (krakken ved siden av sjåføren) og `phone` (foran telefonautomaten).
+- `objs`: `door` (dørbladet med hengsel, så Claude kan svinge det), `coffeePot`, `cup` (koppen spilleren får), `clipping`, `payphoneHandset`, `waitressHead`, `driverHead`.
+- Metoder: `setSignLit(on)`, `setDawn(k)` (0 natt til 1 grålysning: himmelskjæret i vinduene og grålyset fra øst), `update(dt, t)` (neon og lysrør som blafrer litt) og `dispose()`.
+- Budsjett: høyst 120 draw calls fra det verste utsnittet (inne mot disken med plassen synlig gjennom vinduene), rundt 80 inne ellers.
+
+**Prioritet 2, grafikk: runde 8 i `ART_BRIEF.md`** (to tekstfrie flater til dineren).
+
+**Leveranse:** egen gren `codex/diner-<dato>`, én PR med `Diner.ts`, `dinerpreview.py`, `DINER_DELIVERY.md` og eventuelt de to bildene med manifest. Ingen endringer i `World.ts`, `art.ts`, `main.ts`, historiefilene eller testene. Claude kobler inn, skriver replikkene, kapitlet og den samlede testen. Previewen som med motellet: faste utsnitt i High og Low ved 1280x800 og 844x390, kontraktkontroller (soner, kolliderere, trefflater med `Interaction.pick` fra ankrene, gange med `Player.update` fra `arrive` via `outside` og `inside` til `stool` og `phone`), draw calls og konsollfeil. Ikke lag lyd, replikker eller spillogikk.
 
 ### Neste oppgave til kapittel 4 (avtalt 4. oktober kl. 12.45)
 

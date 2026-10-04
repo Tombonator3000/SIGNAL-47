@@ -40,6 +40,13 @@ import motelWindowLit from '../assets/art/motel/window_night_lit.jpg';
 import motelWindowDark from '../assets/art/motel/window_night_dark.jpg';
 import cardField from '../assets/art/docs/card_field_1947.jpg';
 import letterPaper from '../assets/art/docs/letter_paper_1947.jpg';
+// The diner on the Roswell road (round 6, PR #35): loaded with the diner area. The sign and
+// the menu board carry no text; the name, the dishes and the newspaper are drawn in code.
+import dinerSign from '../assets/art/runtime/sign_diner_blank.webp';
+import dinerMenu from '../assets/art/runtime/menu_board_blank.webp';
+import dinerCounter from '../assets/art/diner/tex_counter_laminate.jpg';
+import dinerFloor from '../assets/art/diner/tex_floor_checker.jpg';
+import clipping1947 from '../assets/art/diner/clipping_photo_1947.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -49,10 +56,14 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   listen, saro, map, logo, yard, procedure, sky, sierra,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
-  motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper };
+  motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
+  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947 };
 export type ArtId = keyof typeof urls;
 // Images an area loads for itself when it is built, not at the start.
-const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper']);
+const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
+  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947']);
+/** The diner's images (world/Diner.ts loads them before it builds). */
+export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947'];
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();
