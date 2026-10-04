@@ -277,6 +277,22 @@ export class AudioSys {
     n.connect(bp); bp.connect(g); g.connect(at ? this.panner(at, 1) : this.sfx); n.start(t); n.stop(t + 1.8);
   }
 
+  // A television with no station: hiss from the set's little speaker, where it stands.
+  private tv: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+  tvHiss(at: THREE.Vector3 | null) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (this.tv) { const old = this.tv; this.tv = null; old.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05); old.src.stop(ctx.currentTime + 0.3); }
+    if (!at) return;
+    const n = this.noiseSrc(false, true);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.5;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 450;
+    const g = ctx.createGain(); g.gain.value = 0;
+    g.gain.setTargetAtTime(0.09, ctx.currentTime, 0.15);
+    n.connect(hp); hp.connect(bp); bp.connect(g); g.connect(this.panner(at, 0.9));
+    n.start();
+    this.tv = { src: n, gain: g };
+  }
+
   // The handset sound: band-limited like a 1980s phone line.
   phoneLine() {
     const ctx = this.ctx!;

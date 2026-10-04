@@ -304,7 +304,7 @@ export class Chapter4 {
       add('photo', 'photo', () => 'Framed snapshot', () => this.look('photo'));
       add('window', 'window', () => 'Window', () => this.look('window'));
       add('phone', 'phone', () => 'Phone on the nightstand', () => this.usePhone());
-      add('tv', 'tv', () => 'Television', () => ui.toast('Off. At this hour it would only show a test card.', 3));
+      add('tv', 'tv', () => room.tvOn ? 'Turn the television off' : 'Turn the television on', () => this.useTv());
       add('bed', 'bed', () => 'Bed', () => ui.toast('Made, and not slept in.', 2.6));
       add('lamp', 'lamp', () => 'Table lamp', () => { room.setLamp(!room.lampOn); this.d.audio.play('switch', { gain: 0.3, rate: 1.4 }); });
       add('bathroom', 'bathroom', () => 'Bathroom door', () => ui.toast('Shut. A tap drips behind it.', 2.6));
@@ -313,10 +313,32 @@ export class Chapter4 {
     if (this.active) this.applyWorld();
   }
 
+  // The set is on when you come in: snow, and its blue light jumping on the walls. Nora
+  // keeps it on for the noise. It reacts to nothing (R1); it is just a television at 4 am.
+  private tvSeen = false;
+  private tvTouched = false;   // until the player switches it, the set is on whenever they come in
+  private useTv() {
+    const room = this.d.motel.room(); if (!room) return;
+    this.tvTouched = true;
+    room.setTv(!room.tvOn);
+    this.d.audio.play('switch', { gain: 0.35, rate: 0.8 });
+    this.tvSound();
+    if (room.tvOn && !this.tvSeen) { this.tvSeen = true; this.d.ui.toast('Snow on every channel. The stations signed off at one.', 3.2); }
+    else if (!room.tvOn) this.d.ui.toast('N. VEGA: "Leave it. The quiet is worse."', 3);
+  }
+  private tvSound() {
+    const room = this.d.motel.room();
+    const tv = room?.objs.tv;
+    this.d.audio.tvHiss(room && tv && room.tvOn && this.inRoom() ? tv.getWorldPosition(new THREE.Vector3()) : null);
+  }
+
   // Called by World when the player comes in through the door.
   enteredRoom() {
     const s = this.s;
     if (!this.active) return;
+    const room = this.d.motel.room();
+    if (room && !this.tvTouched) room.setTv(true);
+    this.tvSound();
     if (!s.arrived) {
       s.arrived = true;
       if (s.stage === 'to-motel') s.stage = 'room';
@@ -327,6 +349,7 @@ export class Chapter4 {
   }
   // Called by World when the player has stepped out of room 6.
   leftRoom() {
+    this.d.audio.tvHiss(null);
     if (!this.active) return;
     this.setLeaf(this.s.stage === 'leave' ? 0 : 0.35);
     if (this.s.stage === 'leave') this.finish();

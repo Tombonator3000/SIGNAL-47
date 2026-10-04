@@ -116,6 +116,11 @@ async def main():
         await tick(0.1)   # the objective is redrawn on the next frame
         check(await ev("S47.world.area") == 'room6' and await s4('arrived') and await s4('stage') == 'room', 'into room 6')
         check(await ev("S47.world.room6.group.visible && !S47.ext.group.visible"), 'SARO is hidden while inside')
+        check(await ev("S47.world.room6.tvOn") and await label('r6:tv') == 'Turn the television off', 'the television is on: snow and its light on the room')
+        await use('r6:tv'); await tick(0.2)
+        check(not await ev("S47.world.room6.tvOn") and 'quiet is worse' in await ev("document.querySelector('.toasts').textContent"), 'switched off, Nora would rather have the noise')
+        await use('r6:tv'); await tick(0.2)
+        check(await ev("S47.world.room6.tvOn"), 'and on again')
         check('WAITING AT THE TABLE' in await objective(), 'objective: she is waiting at the table')
         await tick(0.3); await pg.wait_for_timeout(700)   # the fade in is real time
         await shot('f05_room6')
