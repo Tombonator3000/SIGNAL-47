@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04 06:49:36 UTC",
+  "project": "SIGNAL / 47",
+  "brief": "web/ART_BRIEF.md",
+  "generator": {
+    "tool": "Innebygd ChatGPT image_gen",
+    "mode": "generate",
+    "model_version": "Ikke oppgitt av verktøyet. Eksakt modellversjon er ikke bekreftet.",
+    "third_party_inputs": "Ingen innsendte tredjepartsbilder brukt.",
+    "license_note": "Generert til SIGNAL / 47 etter prosjektets brief med OpenAI-bildeverktøyet. Ingen CC0- eller tredjepartslisens påstås."
+  },
+  "processing": {
+    "operations": [
+      "Nedskalering fra 1254x1254 til 1024x1024 med Lanczos",
+      "RGB/JPEG-eksport med kvalitet 85 og innebygd sRGB ICC-profil",
+      "2x2-kopiering kun til visuell inspeksjon"
+    ],
+    "content_edits": "Ingen etterbehandling som endrer motiv, farge, sømmer eller teksturinnhold."
+  },
+  "validation": {
+    "format": "PASS: Fire RGB JPEG i 1024x1024 med sRGB ICC-profil.",
+    "tiling": "PASS ved visuell inspeksjon av faktiske 2x2-kopier. Ikke en påstand om pikselidentiske motstående kanter.",
+    "runtime": "UNVERIFIED i denne delleveransen. Spillintegrasjon og runtimekontroll utføres av hovedagenten."
+  },
+  "assets": [
+    {
+      "file": "web/src/assets/art/ext/tex_concrete.jpg",
+      "generated_source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-e3b89deb-75e2-4b00-9e6b-8038d8d27834.png",
+      "prompt": "Use case: stylized-concept. Asset type: seamless repeatable 1024 x 1024 sRGB albedo game material texture, a single square image filling the entire canvas. Primary request: worn dusty outdoor concrete at a small research observatory in New Mexico, 1986, for a stylized low-poly three.js game. View: exactly orthographic straight overhead, one flat concrete surface, no slabs or grid. Style: restrained hand-painted game material, matte and believable, softly simplified microdetail, not a photograph. Color: low-contrast medium warm gray with a tiny sandy taupe cast, narrow uniform value range. Material: very fine aggregate, subtle irregular dust and wear, a few tiny hairline scuffs and pores evenly distributed, no large cracks. Lighting: pure neutral diffuse base color only; no directional light, baked shadows, highlights, reflections, ambient occlusion or vignette. Seamless topology is essential: the right edge must continue into the left edge and the bottom into the top with the same color and feature continuity so a 2 x 2 repeated grid shows no lines. Uniform texture density and brightness across the entire image, edges identical in character to the center. Avoid: borders, frame, panel edges, ground horizon, perspective, text, symbols, logos, watermarks, recognizable objects, dramatic discoloration, large stains, large pebbles.",
+      "purpose": "sRGB diffuse albedo / baseColor",
+      "required_size": [
+        1024,
+        1024
+      ],
+      "inspection_2x2": "Artifacts/Art/2026-10-04-exterior/tex_concrete_2x2.jpg",
+      "visual_validation": "Fin støvete betong med jevn farge og uten dominerende sprekker. Visuell 2x2-kontroll: ingen tydelige rette skjøter.",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "icc_profile": "sRGB built-in",
+      "bytes": 309800,
+      "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+      "source_sha256": "5612e2848e794e2656fd9a63eb4dc5b22a734ffda2c79a1990611d665783ac6f"
+    },
+    {
+      "file": "web/src/assets/art/ext/tex_desert_ground.jpg",
+      "generated_source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-d89d0d0a-a44d-4ba1-9a36-1604d6fad132.png",
+      "prompt": "Use case: stylized-concept. Asset type: seamless repeatable 1024 x 1024 sRGB albedo game terrain texture, one square image filling the canvas. Primary request: dry desert ground at a small research observatory in New Mexico in 1986, for a stylized low-poly three.js game. Exactly orthographic straight overhead view of a flat ground patch, no perspective. Restrained hand-painted material, softly simplified microdetail, matte and believable, not a photograph. Narrow low-contrast dusty muted tan / gray-brown / desaturated ochre palette, even brightness. Surface is mostly fine compacted sand and fine gravel, sparse tiny flat dead straw and dry scrub fragments flush to the ground, not raised plants. Texture must stay quiet when repeated across a large game terrain. No large or prominent stones, no full shrubs, no large branches, no conspicuous landmarks, no footsteps or tracks. Pure neutral diffuse base color only, no directional light, shadows, highlights, occlusion, vignette or reflections. Seamless topology essential: features and colors join perfectly right-to-left and top-to-bottom; same texture character, density and value at edges as at center; no visible lines in a 2 x 2 repeat. No border, framing, tiles, grid, sky, horizon, text, logos, symbols or watermarks.",
+      "purpose": "sRGB diffuse albedo / baseColor",
+      "required_size": [
+        1024,
+        1024
+      ],
+      "inspection_2x2": "Artifacts/Art/2026-10-04-exterior/tex_desert_ground_2x2.jpg",
+      "visual_validation": "Sand, fin grus og sparsomt flatt tørt plantemateriale. Visuell 2x2-kontroll: ingen tydelige rette skjøter, ingen store objekter.",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "icc_profile": "sRGB built-in",
+      "bytes": 372460,
+      "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+      "source_sha256": "805a18eeb9e981a9a99a0480795f70dd98acfdc9f552f8bde31ceb52bf8f0441"
+    },
+    {
+      "file": "web/src/assets/art/ext/tex_asphalt_wet.jpg",
+      "generated_source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-35e9d8c7-fa70-44af-8e83-9385ae03821c.png",
+      "prompt": "Use case: stylized-concept. Asset type: seamless repeating 1024 x 1024 sRGB albedo game texture, one flat square image occupying the entire canvas. Primary request: old slightly damp cracked asphalt outside a New Mexico observatory in 1986, a subdued hand-painted material for a stylized low-poly three.js game. Exactly orthographic overhead surface view. Medium-dark desaturated neutral charcoal gray, matte diffuse base color, low contrast, uniform brightness, restrained soft simplified small aggregate detail. Very thin sparse subdued cracks in irregular short branching networks, darker by just a little, evenly distributed and continuing seamlessly across edges; no heavy large crack network. Dampness suggested only by faint darker mottled patches, no puddle outlines, reflections, specular glints, wet glare or baked illumination. Material should tile quietly on a service road at night. Essential: seamless wrap in both axes; right meets left and bottom meets top in feature placement and color; no borders and no change of texture density around the edges; no obvious seam or repeated landmark in a 2 x 2 tile grid. Avoid perspective, horizon, light gradient, vignette, cast shadows, objects, road markings, tire marks, leaves, text, symbols, brand logos, watermark.",
+      "purpose": "sRGB diffuse albedo / baseColor",
+      "required_size": [
+        1024,
+        1024
+      ],
+      "inspection_2x2": "Artifacts/Art/2026-10-04-exterior/tex_asphalt_wet_2x2.jpg",
+      "visual_validation": "Mørk asfalt med dempede sprekker og fuktige fargevariasjoner. Visuell 2x2-kontroll: ingen tydelige rette skjøter; sprekkmønsterets gjentakelse er synlig ved stor oversikt.",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "icc_profile": "sRGB built-in",
+      "bytes": 305609,
+      "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+      "source_sha256": "18a55b80c55e12141b8024fb62a2c8831cb39bf84bc830c978e92fbe5712fd57"
+    },
+    {
+      "file": "web/src/assets/art/yard/tex_cabinet_metal.jpg",
+      "generated_source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-bf73e882-63ba-4f51-af87-b9fc216a308d.png",
+      "prompt": "Use case: stylized-concept. Asset type: seamless repeatable 1024 x 1024 sRGB albedo material texture, one square image covering the canvas. Primary request: flat neutral gray painted steel material for ordinary worn outdoor electrical cabinets at a New Mexico research observatory in 1986, for a stylized low-poly three.js game. This is the coating material only, no cabinet shape. Straight-on orthographic flat surface. Restrained hand-painted material, matte and believable, gently simplified microdetail. Medium neutral gray, very low contrast and even value, very faint paint grain, sparse fine shallow scratches and tiny worn paint flecks exposing darker steel and tiny muted rusty brown freckles, distributed naturally but quietly across the surface. Coating mostly intact; no broad rust areas. Pure diffuse base color, no metallic reflections, shine, highlights, directional lighting, shadows, occlusion, gradient or vignette. Crucial seamless tiling in both directions: color and texture features must flow continuously from right to left and bottom to top with no lines in a repeated 2 x 2 grid. Keep edges identical in material character and value to center. Do not draw any sheet or panel borders, seams, grooves, rivets, screws, doors, hinges, handles, vents, labels, text, symbols, logos or watermarks. No rusty frame. No composition with a central focal point.",
+      "purpose": "sRGB diffuse albedo / baseColor",
+      "required_size": [
+        1024,
+        1024
+      ],
+      "inspection_2x2": "Artifacts/Art/2026-10-04-exterior/tex_cabinet_metal_2x2.jpg",
+      "visual_validation": "Nøytral grå lakkert stålflate med diskrete riper og små rustprikker. Ingen håndtak, skapdør, etiketter eller ramme. Visuell 2x2-kontroll: ingen tydelige rette skjøter.",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "icc_profile": "sRGB built-in",
+      "bytes": 143277,
+      "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+      "source_sha256": "99970b6e12234055a4f24d8b1995b73f97a3f7bfa2379de5c4fbdb5fc05591fa"
+    }
+  ]
+}

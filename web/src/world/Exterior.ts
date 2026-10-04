@@ -3,6 +3,7 @@ import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
 import * as T from '../core/textures';
+import { artTexture } from '../core/art';
 
 // World layout (metres): control room centred at the origin, windows face north (-Z).
 // The road runs north-south west of SARO; Sierra Motor Court sits on the far side of it.
@@ -49,14 +50,17 @@ export class Exterior {
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), z = pos.getZ(i);
       const n = 0.75 + 0.25 * Math.sin(x * 0.013) * Math.cos(z * 0.011) + r() * 0.12;
-      col.set([0.30 * n, 0.24 * n, 0.19 * n], i * 3);
+      col.set([n, n, n], i * 3);
       const far = Math.hypot(x, z);
       if (far > 300) pos.setY(i, -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600));
       else pos.setY(i, -0.62);
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.computeVertexNormals();
-    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })));
+    // World-space metres avoid a radial UV singularity at the centre of the circle.
+    const uv = geo.attributes.uv as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 5, pos.getZ(i) / 5);
+    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 })));
     this.group.add(ground);
 
     // scrub
@@ -188,13 +192,10 @@ export class Exterior {
     // sign
     cyl(g, 0.22, 0.22, 9, M.pole, -31.5, 3.9, 30, 8);
     cyl(g, 0.22, 0.22, 9, M.pole, -29.3, 3.9, 30, 8);
-    const sierra = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 2.4), new THREE.MeshBasicMaterial({ map: T.neonSierra(), toneMapped: false }));
-    sierra.position.set(-30.4, 7.6, 30.2); sierra.rotation.y = Math.PI / 2 - 0.5;
-    const mc = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 1.2), new THREE.MeshBasicMaterial({ map: T.neonMotorCourt(), toneMapped: false }));
-    mc.position.set(-30.4, 5.8, 30.2); mc.rotation.y = Math.PI / 2 - 0.5;
-    const mq = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.4), new THREE.MeshBasicMaterial({ map: T.marquee(), toneMapped: false, color: 0xd8d0bc }));
-    mq.position.set(-30.4, 3.6, 30.2); mq.rotation.y = Math.PI / 2 - 0.5;
-    [sierra, mc, mq].forEach((m) => { noMerge(m); g.add(m); });
+    const sierra = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 7.8), new THREE.MeshBasicMaterial({ map: artTexture('sierra'), transparent: true, alphaTest: 0.02, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+    sierra.name = 'Sierra Motor Court';
+    sierra.position.set(-30.4, 5.8, 30.2); sierra.rotation.y = Math.PI / 2 - 0.5;
+    noMerge(sierra); g.add(sierra);
     addFlood(-29, 6, 32, 18, 0xff4a35); addFlood(-29, 4, 32, 6, 0x50f0d8);
     mergeStatic(g);
     this.group.add(g);

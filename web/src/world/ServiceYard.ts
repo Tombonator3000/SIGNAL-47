@@ -3,6 +3,7 @@ import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floo
 import { lampPost, railing, clipboard } from './props';
 import { GlowPoints } from './glow';
 import * as T from '../core/textures';
+import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 
@@ -121,7 +122,7 @@ export class ServiceYard {
     const cab = new THREE.Group();
     cab.position.set(12.3, 0, -11.0);
     cab.rotation.y = -Math.PI / 2; // door faces west, towards the walk
-    const steel = floodlit(new THREE.MeshStandardMaterial({ color: 0x59625f, roughness: 0.55, metalness: 0.45 }));
+    const steel = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('cabinet'), color: 0xa6b3af, roughness: 0.55, metalness: 0.45 }));
     const face = floodlit(new THREE.MeshStandardMaterial({ map: T.cabinetFace('S-03', ['MOTOR BUS', 'SARO ARRAY']), roughness: 0.6, metalness: 0.3 }));
     faced(cab, 0.82, 1.62, 0.46, steel, face, 0, 0.81, 0, '+z');
     box(cab, 0.9, 0.08, 0.52, steel, 0, 1.66, 0);
@@ -135,7 +136,7 @@ export class ServiceYard {
     const log = clipboard(T.labelCard(['ANTENNA LOG', 'S-03', '', '02:15  026', '      ???'], { w: 128, h: 170, font: 'Special Elite', size: 16, border: false }), (m) => floodlit(m));
     log.position.set(-0.24, 0.48, 0.31); log.rotation.x = -0.5;
     cab.add(log);
-    const proc = plane(cab, 0.24, 0.34, floodlit(new THREE.MeshStandardMaterial({ map: T.labelCard(['S-03', 'SERVICE PROCEDURE', '', '1. VERIFY POWER', '2. CHECK ALIGNMENT', '3. LOG ANY ANOMALIES', '4. NOTIFY OPS'], { w: 160, h: 230, font: 'Special Elite', size: 15 }), roughness: 0.9 })), 0.42, 1.0, 0.05, Math.PI / 2);
+    const proc = plane(cab, 0.24, 0.34, floodlit(new THREE.MeshStandardMaterial({ map: artTexture('procedure'), roughness: 0.9 })), 0.42, 1.0, 0.05, Math.PI / 2);
     noMerge(proc); cab.add(proc);
     mergeStatic(cab);
     this.group.add(cab);
@@ -191,7 +192,7 @@ export class ServiceYard {
     const cab = new THREE.Group();
     cab.position.set(8.35, 0, -16.9);
     cab.rotation.y = Math.PI / 2; // faces east, onto the walk
-    const steel = floodlit(new THREE.MeshStandardMaterial({ color: 0x59625f, roughness: 0.55, metalness: 0.45 }));
+    const steel = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('cabinet'), color: 0xa6b3af, roughness: 0.55, metalness: 0.45 }));
     const face = floodlit(new THREE.MeshStandardMaterial({ map: T.cabinetFace('B-12', ['SHIELD / DRIVE', 'REFERENCE 042'], 9), roughness: 0.6, metalness: 0.3 }));
     faced(cab, 0.6, 1.25, 0.36, steel, face, 0, 0.625, 0, '+z');
     box(cab, 0.66, 0.06, 0.4, steel, 0, 1.28, 0);
@@ -216,9 +217,9 @@ export class ServiceYard {
     const lf = this.labFlood;
     const FALL = 0.22;
     const lit = <T extends THREE.MeshStandardMaterial>(m: T) => floodlit(m, FALL, lf);
-    const wall = lit(new THREE.MeshStandardMaterial({ color: 0x6a706c, map: T.wallPaint(), roughness: 0.92 }));
+    const wall = lit(new THREE.MeshStandardMaterial({ color: 0xb4b8ad, map: T.wallPaint(), roughness: 0.92 }));
     const ceil = lit(new THREE.MeshStandardMaterial({ color: 0x5a5852, roughness: 1 }));
-    const floor = lit(new THREE.MeshStandardMaterial({ color: 0x4a4640, map: T.concrete(31, [3, 3]), roughness: 0.75 }));
+    const floor = lit(new THREE.MeshStandardMaterial({ color: 0x9f988b, map: T.concrete(31, [3, 3]), roughness: 0.75 }));
     const bench = lit(new THREE.MeshStandardMaterial({ color: 0x4a4e50, roughness: 0.5 }));
     const steelL = lit(new THREE.MeshStandardMaterial({ color: 0x8a8f92, roughness: 0.35, metalness: 0.7 }));
     const paperL = lit(new THREE.MeshStandardMaterial({ color: 0xd8d0b8, roughness: 0.9 }));

@@ -8,6 +8,14 @@ Unity-versjonen i rotmappen er arkiv. Design, historie og spillkonstanter er hen
 
 Spill i nettleseren: https://tombonator3000.github.io/SIGNAL-47/
 
+## Grafikkpakken fra 4. oktober 2026
+
+Nettversjonen bruker nå bildegenererte materialer i kontrollrommet, servicegården og fotolaben, et Melkeveis-panorama, to plakater, New Mexico-kart, SARO-logo, prosedyreark og skilt. Originalene med briefens filnavn og mål ligger i `src/assets/art/`. Det slukkede motellskiltet er levert som kildevariant; spillet viser den tente varianten. Prolog, fotobevis og spillkonstanter er beholdt.
+
+`src/core/art.ts` laster 16 bilder før scenen bygges. Tekstene på instrumenter, bevis og veimerking tegnes fortsatt i kode. High og Low deler bildekildene. Himmelen har en 2K-runtimekopi for å begrense GPU-minne. PNG-originalene beholdes, mens sju lette WebP-kopier brukes i spillet. De kan bygges på nytt med `python3 tools/prepare_art.py` (Pillow).
+
+Se [grafikkontroll og testgrenser](ART_DELIVERY.md). Gulvets øvre/nedre fuge har en liten registreringsfeil ved gjentakelse; alle materialer er derfor ikke godkjent som perfekt sømløse. Nye kunstbilder er assets, mens bildene under `evidence/art-2026-10-04/` er uredigerte opptak fra spillet.
+
 ## Kjør
 
 ```sh
@@ -39,7 +47,7 @@ Settings har lydnivå, blikkfart og grafikk (High eller Low). Innstillinger, sje
 
 ```
 src/main.ts                oppstart, løkke, menyer, testkroker (window.S47)
-src/core/                  lyd, input, interaksjon, teksturer tegnet i kode, grafikknivå
+src/core/                  lyd, input, interaksjon, bildeinnlasting, kodeteksturer, grafikknivå
 src/core/FieldCamera.ts    søker, eksponering og filmkopi (960x600 med papirkant og håndskrevet tekst)
 src/core/debug.ts          målestripa bak ?debug
 src/player/                førstepersonsspiller med gangbare soner og kollisjon

@@ -1,0 +1,319 @@
+{
+  "url": "http://127.0.0.1:8477/SIGNAL-47/",
+  "build_manifest": "build.json",
+  "quality": "high",
+  "viewport": [
+    844,
+    390
+  ],
+  "tests": {
+    "prologue": {
+      "checks": [
+        [
+          "PASS",
+          "game starts in intro phase"
+        ],
+        [
+          "PASS",
+          "shift log read and filed"
+        ],
+        [
+          "PASS",
+          "coffee poured"
+        ],
+        [
+          "PASS",
+          "RX bank 3 powered"
+        ],
+        [
+          "PASS",
+          "wrong calibration is rejected"
+        ],
+        [
+          "PASS",
+          "calibration 1419.900 accepted"
+        ],
+        [
+          "PASS",
+          "interference 1420.110 notched"
+        ],
+        [
+          "PASS",
+          "time skip lands at 02:13 residual"
+        ],
+        [
+          "PASS",
+          "residual appears on the spectrum"
+        ],
+        [
+          "PASS",
+          "pattern 4/7 locked at 1420.405"
+        ],
+        [
+          "PASS",
+          "direction solve starts printer"
+        ],
+        [
+          "PASS",
+          "printout ready"
+        ],
+        [
+          "PASS",
+          "phone rings after printout"
+        ],
+        [
+          "PASS",
+          "call ends, 47 s countdown runs"
+        ],
+        [
+          "PASS",
+          "nothing happens before 47 s (t=46.6)"
+        ],
+        [
+          "PASS",
+          "impact at 47 s (t=47.2)"
+        ],
+        [
+          "PASS",
+          "mug shattered"
+        ],
+        [
+          "PASS",
+          "dishes start turning"
+        ],
+        [
+          "PASS",
+          "all dishes arrived"
+        ],
+        [
+          "PASS",
+          "all 27 dishes at az 026"
+        ],
+        [
+          "PASS",
+          "end card shown"
+        ],
+        [
+          "PASS",
+          "end card title and buttons visible"
+        ]
+      ],
+      "pass": 22,
+      "total": 22
+    },
+    "chapter1_passive": {
+      "checks": [
+        [
+          "PASS",
+          "chapter one starts at the camera shelf"
+        ],
+        [
+          "PASS",
+          "objective line shown"
+        ],
+        [
+          "PASS",
+          "camera on the shelf can be aimed at"
+        ],
+        [
+          "PASS",
+          "field camera collected"
+        ],
+        [
+          "PASS",
+          "east door is unlocked"
+        ],
+        [
+          "PASS",
+          "player can stand in the yard"
+        ],
+        [
+          "PASS",
+          "walk from the room through the east door and up the walk to B-12"
+        ],
+        [
+          "PASS",
+          "motor bus cabinet can be aimed at"
+        ],
+        [
+          "PASS",
+          "S-03 log read and filed"
+        ],
+        [
+          "PASS",
+          "viewfinder raised with C"
+        ],
+        [
+          "PASS",
+          "viewfinder refuses the wrong place"
+        ],
+        [
+          "PASS",
+          "refused frame uses no film"
+        ],
+        [
+          "PASS",
+          "S-03 framed from the apron"
+        ],
+        [
+          "PASS",
+          "frame 01 exposed"
+        ],
+        [
+          "PASS",
+          "frame 01 holds the vane and the film-only echo"
+        ],
+        [
+          "PASS",
+          "echo is hidden again after the exposure"
+        ],
+        [
+          "PASS",
+          "lab door can be aimed at"
+        ],
+        [
+          "PASS",
+          "walk from the apron into the photo lab"
+        ],
+        [
+          "PASS",
+          "wet bench can be aimed at"
+        ],
+        [
+          "PASS",
+          "frame 01 developed and collected"
+        ],
+        [
+          "PASS",
+          "print hangs on the drying line"
+        ],
+        [
+          "PASS",
+          "a click on the sky is not a reference"
+        ],
+        [
+          "PASS",
+          "B-12 stripe marked on print 01"
+        ],
+        [
+          "PASS",
+          "archive bench can be aimed at"
+        ],
+        [
+          "PASS",
+          "R-07 rejected"
+        ],
+        [
+          "PASS",
+          "B-12 matched"
+        ],
+        [
+          "PASS",
+          "motor command hypothesis rejected"
+        ],
+        [
+          "PASS",
+          "light hypothesis accepted"
+        ],
+        [
+          "PASS",
+          "B-12 control can be aimed at"
+        ],
+        [
+          "PASS",
+          "vane still moving"
+        ],
+        [
+          "PASS",
+          "vane settled"
+        ],
+        [
+          "PASS",
+          "vane at -60 degrees"
+        ],
+        [
+          "PASS",
+          "direct observation noted"
+        ],
+        [
+          "PASS",
+          "B-12 framed from the sight line"
+        ],
+        [
+          "PASS",
+          "frame 02 exposed"
+        ],
+        [
+          "PASS",
+          "frame 02 developed"
+        ],
+        [
+          "PASS",
+          "no conclusion before marking frame 02"
+        ],
+        [
+          "PASS",
+          "reference marked on frame 02"
+        ],
+        [
+          "PASS",
+          "lamp conclusion rejected"
+        ],
+        [
+          "PASS",
+          "second reference concluded"
+        ],
+        [
+          "PASS",
+          "local case filed"
+        ],
+        [
+          "PASS",
+          "ending card names the test"
+        ],
+        [
+          "PASS",
+          "paper filed: frame01"
+        ],
+        [
+          "PASS",
+          "paper filed: frame02"
+        ],
+        [
+          "PASS",
+          "paper filed: s03log"
+        ],
+        [
+          "PASS",
+          "paper filed: refsheet"
+        ],
+        [
+          "PASS",
+          "paper filed: observation"
+        ],
+        [
+          "PASS",
+          "paper filed: finding"
+        ],
+        [
+          "PASS",
+          "notebook closes the case"
+        ],
+        [
+          "PASS",
+          "case and photographs saved"
+        ],
+        [
+          "PASS",
+          "Continue restores the case and both prints"
+        ],
+        [
+          "PASS",
+          "Continue restores the filed papers"
+        ]
+      ],
+      "pass": 52,
+      "total": 52
+    }
+  }
+}
