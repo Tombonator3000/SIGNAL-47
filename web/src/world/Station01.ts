@@ -1938,6 +1938,12 @@ export class Station01 {
     this.m.fieldBulb.color.set(on ? 0x151311 : 0xfff2d8);
     this.setGlow(this.gx.field, 0xffd29a, on ? 0 : 1);
   }
+  // The field camera's flash for one exposure: a white flood at the camera, in slot 0 (kept
+  // for the truck's headlights, which are off while the truck is parked here).
+  setFlash(p: THREE.Vector3 | null, w = 16) {
+    if (p) { fieldFlood.pos[0].set(p.x, p.y, p.z, w); fieldFlood.col[0].set(0xfff6ec); }
+    else fieldFlood.pos[0].w = 0;
+  }
   setReceiver(on: boolean) {
     this.receiverOn = on;
     this.m.dial.color.set(on ? 0xffffff : 0x141210);

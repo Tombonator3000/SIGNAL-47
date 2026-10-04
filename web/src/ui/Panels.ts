@@ -17,7 +17,8 @@ function shell(ui: UI, title: string, body: string, onClose?: () => void) {
   return el;
 }
 function say(el: HTMLElement, sel: string, r: Result | string) {
-  const box = el.querySelector(sel) as HTMLElement;
+  const box = el.querySelector(sel) as HTMLElement | null;
+  if (!box) return; // a recorded finding replaces the page that had the reply line
   const text = typeof r === 'string' ? r : r.text;
   box.textContent = text;
   box.classList.toggle('bad', typeof r !== 'string' && !r.ok);

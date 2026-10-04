@@ -47,6 +47,7 @@ export interface FieldSite {
   objs?: Record<string, THREE.Object3D>;   // fieldPhoneHandset rattles while the bell rings
   setLampCovered(on: boolean): void;
   setReceiver(on: boolean): void;
+  setFlash?(p: THREE.Vector3 | null, w?: number): void;   // the camera flash, for one exposure
 }
 
 // Travel between SARO and the station (main.ts: the areas, the truck and the drive).
@@ -576,7 +577,6 @@ export class Chapter3 {
     const { fcam } = this.d;
     const site = this.d.travel.site()!;
     if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false };
-    if (this.s.lampCovered) return { text: 'TOO DARK FOR THE FILM // UNCOVER THE FIELD LAMP', ok: false };
     const t = this.target('marker');
     const d = this.dist(t);
     if (d > 16) return { text: 'MOVE CLOSER TO THE TRANSIT SIGHT LINE', ok: false };
@@ -591,7 +591,6 @@ export class Chapter3 {
   private check04(): { text: string; ok: boolean } {
     const { fcam } = this.d;
     if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false };
-    if (this.s.lampCovered) return { text: 'TOO DARK FOR THE FILM // UNCOVER THE FIELD LAMP', ok: false };
     const t = this.target('cable');
     if (this.dist(t) > 3.2) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
     if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false };
@@ -627,8 +626,12 @@ export class Chapter3 {
       if (!p) continue;
       const r = fcam.project(p); if (r.front) targets[k] = [r.u, r.v];
     }
+    // out here at night the camera needs its flash; nearer subjects get less of it
+    const subject = cable ? this.target('cable') : this.target('marker');
+    const flash = Math.min(18, Math.max(3, this.dist(subject) * 2.4));
     const canvas = fcam.expose({
-      before: () => {}, after: () => {},
+      before: () => site.setFlash?.(fcam.photoCam.position, flash),
+      after: () => site.setFlash?.(null),
       restore: () => this.d.view.restore(),
       caption: cable ? 'STATION 01 // CABLE BREAK' : 'STATION 01 // FIXED POINT A',
       time: clockText(clock),

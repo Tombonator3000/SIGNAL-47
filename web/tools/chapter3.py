@@ -225,15 +225,8 @@ async def main():
         check(await s3('p07') and 'NULL TEST RECORDED' in await ev("document.querySelector('.lp-page').textContent"), 'P07 recorded')
         await close_panel()
         await shot('e08_lamp_covered')
-        # the film needs the lamp's light: covered, the camera refuses the cable frame
-        await stand('cable', 1.3, -0.3); await use('s1cable'); await tick(0.1); await close_panel()
-        await ev("""(() => { const s = S47.world.site, t = s.anchors.cableTarget, p = S47.player;
-          p.pitch = Math.atan2(t.y - p.eye, Math.hypot(t.x - p.pos.x, t.z - p.pos.z));
-          p.yaw = Math.atan2(-(t.x - p.pos.x), -(t.z - p.pos.z)); S47.tick(0.05); })()""")
-        await ev("S47.ch1.toggleCamera()"); await tick(0.3)
-        check('TOO DARK' in await ev("document.querySelector('.vf-status').textContent"), 'with the lamp covered the film is too dark')
-        await ev("S47.ch1.toggleCamera()"); await tick(0.3)
-        await stand('lamp', 1.4); await use('s1lamp'); await tick(0.1)
+        # take the hood off again, so the player can see the cable
+        await use('s1lamp'); await tick(0.1)
         await pg.click('.labpanel [data-a=cover]'); await tick(0.2)
         check(not await s3('lampCovered') and await s3('p07'), 'lamp uncovered again, P07 stays recorded')
         await close_panel()
@@ -347,8 +340,16 @@ async def main():
         await ev("S47.hold = true; S47.tick(0.3)")
         await ev("S47.game.openNotebook()")
         await pg.click('.notebook [data-t=case]')
-        nimg = await ev("document.querySelectorAll('.notebook .thumbs img').length")
-        check(nimg == 4, f'case file shows all four photographs ({nimg})')
+        # S47.jump('chapter3') starts after a chapter one without photographs: frames 03 and 04
+        ids = await ev("[...document.querySelectorAll('.notebook .thumbs button')].map(b => b.dataset.d)")
+        check(ids == ['frame03', 'frame04'], f'case file shows both field photographs ({ids})')
+        bright = await ev("""Promise.all(['frame03', 'frame04'].map((id) => new Promise((ok) => {
+          const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = 96; c.height = 60;
+            const g = c.getContext('2d'); g.drawImage(img, 28, 28, 960, 600, 0, 0, 96, 60);
+            const d = g.getImageData(0, 0, 96, 60).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] + d[i + 1] + d[i + 2];
+            ok(s / (d.length / 4) / 3); }; img.src = S47.ch3.s[id === 'frame03' ? 'f3' : 'f4'].url; })))""")
+        print(f'mean brightness of the field photographs: {bright[0]:.0f} and {bright[1]:.0f} of 255', flush=True)
+        check(all(b > 35 for b in bright), 'the flash lights both field photographs')
         await shot('e16_casefile')
         await ev("S47.game.d.ui.close(true)")
 
