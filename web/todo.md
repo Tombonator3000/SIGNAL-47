@@ -6,6 +6,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [ ] Tom tester prologen og kapittel 1 på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller, lesbarhet, kameraet og fotopanelene, og om det tar merkbar tid fra Start til prologen begynner.
 - [ ] Mål ytelse på ekte telefon med `?debug` bak adressen: ved pulten, ute på gangveien og inne i fotolaben.
+- [ ] Sammenfør dokumentasjonen med Claude-grenen `e5706fb`: den registrerer rom 6, to slutter og rollefordelingen som avgjort. Se `CLAUDE_HANDOFF.md`.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
 
 ## Neste (se FORSLAG.md del 3)
@@ -28,11 +29,21 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [ ] Gulvets heksagonfuger: fjern den lille registreringsfeilen i vanlig vertikal repeat. Speiling ble vurdert og forkastet fordi den lager smale romber.
 - [ ] Mål minne og fps med den nye grafikken på ekte mobil og PC; headless draw calls er ikke en fps-måling.
-- [ ] Kapittel 1s feltkart, B-12-stripe og fotolabskilt bruker fortsatt presise kodegrafikker. Nye illustrerte varianter og konseptbildene for videre kapitler er framtidig arbeid.
+- [ ] Koble inn de leverte runde-3-variantene av feltkart, B-12-stripe, R-07, gulvmerking, fotolabskilt og papir. Behold kodeetiketter og beviskontrakter. Se samarbeidslisten under.
+
+Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DELIVERY.md` og galleriet `src/assets/art/concept/index.html`. Kartene for STATION 01 og motellet er forslag til senere Three.js-områder.
 
 ## Senere
 
 - [ ] Kjøring mellom områder (kompakte håndlagde områder).
-- [ ] Sierra Motor Court og rom 6 (kapittel 4 i designbibelen).
+- [ ] Sierra Motor Court og Noras rom 6 (kapittel 4 i designbibelen).
 - [ ] Evidence board med hypoteser som kan være feil.
 - [ ] Lagring av hele saken på tvers av kapitler, med flere lagringsplasser som i designbibelen.
+
+## Samarbeid med Claude, 4. oktober
+
+- [ ] Rett den reprodukerte CaseStore-feilen før kapittel 2 publiseres: en midlertidig lesefeil må ikke gjøre plassholderbildet til nytt originalfoto. Reproduksjon og rettelseskandidat finnes i `evidence/claude-handoff-2026-10-04/`.
+- [ ] Koble inn de seks leverte runde-3-filene. Bevar PR30s forhåndslasting og den rettede `S47.hold`-accessoren ved sammenføring.
+- [ ] Kjør én samlet spillkontroll etter integrasjon: kapittel 1, kapittel 2, last/lagre og faktisk foto ved feilsituasjon. Oppdater SARO-nærkartet etter den integrerte arkivgeometrien.
+
+Runde-3-grafikken og oppdatert rom-6-konsept er levert. Se `CLAUDE_HANDOFF.md`; dette er ingen påstand om ferdig runtime-integrasjon.

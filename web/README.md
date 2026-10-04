@@ -16,6 +16,8 @@ Nettversjonen bruker nå bildegenererte materialer i kontrollrommet, servicegår
 
 Se [grafikkontroll og testgrenser](ART_DELIVERY.md). Gulvets øvre/nedre fuge har en liten registreringsfeil ved gjentakelse; alle materialer er derfor ikke godkjent som perfekt sømløse. Nye kunstbilder er assets, mens bildene under `evidence/art-2026-10-04/` er uredigerte opptak fra spillet.
 
+Konsepter, lokasjonskart og seks nye tekstfrie flater er levert separat for videre integrasjon. Se [overleveringen til Claude](CLAUDE_HANDOFF.md), [grafikkgalleriet](src/assets/art/production/index.html) og [konsept- og kartgalleriet](src/assets/art/concept/index.html). Kapittel 2 på Claudes arbeidsgren er ikke flettet inn her.
+
 ## Kjør
 
 ```sh

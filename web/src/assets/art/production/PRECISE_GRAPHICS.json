@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-04",
+  "method": "Originale prosjekt-SVG-er, rasterisert med sharp. Ingen bilde-AI for bevisgeometri eller karttopologi.",
+  "sourceBranch": "origin/ccr-30e38858-767d90",
+  "sourceCommit": "e5706fb",
+  "sources": [
+    "web/src/core/textures.ts: vaneFace, barsBoard, fieldMap",
+    "web/src/world/ServiceYard.ts",
+    "web/ART_BRIEF.md: runde 3"
+  ],
+  "integration": "Leverte kilder. Ingen runtime-import er endret i denne grafikkgrenen.",
+  "assets": [
+    {
+      "output": "yard/vane_b12.png",
+      "source": "production/vane_b12.svg",
+      "size": [
+        256,
+        1024
+      ],
+      "outputSha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec",
+      "sourceSha256": "97c1f65aa9bd9920e0c102bb8e1ae7b431738cdf35c267b419645336327dc76f",
+      "contract": {
+        "primaryStripe": [
+          0.22,
+          0.05,
+          0.3,
+          0.9
+        ],
+        "tickCount": 12,
+        "text": false,
+        "physicalSizeM": [
+          0.34,
+          1.36
+        ],
+        "note": "Echo-materialet er separat og skal ikke erstattes av dette bildet."
+      }
+    },
+    {
+      "output": "yard/board_r07.png",
+      "source": "production/board_r07.svg",
+      "size": [
+        512,
+        512
+      ],
+      "outputSha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5",
+      "sourceSha256": "0509e293f48ce017f1c32443133cb79e4bf8246162354a451adf1b50fa5b661d",
+      "contract": {
+        "barCount": 3,
+        "barsNormalized": [
+          [
+            0.12,
+            0.18,
+            0.76,
+            0.12
+          ],
+          [
+            0.12,
+            0.43,
+            0.76,
+            0.12
+          ],
+          [
+            0.12,
+            0.6799999999999999,
+            0.76,
+            0.12
+          ]
+        ],
+        "text": false,
+        "physicalSizeM": [
+          0.42,
+          0.42
+        ],
+        "labelOverlay": "Behold R-07 som engelsk kodetekst i nederste frie felt."
+      }
+    },
+    {
+      "output": "lab/map_field_yard.png",
+      "source": "production/map_field_yard.svg",
+      "size": [
+        1024,
+        768
+      ],
+      "outputSha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796",
+      "sourceSha256": "d5d8aab1633855e87ae16b515ca7c521830905ed92bc3d2c16378d3eea429a17",
+      "contract": {
+        "text": false,
+        "physicalSizeM": [
+          1,
+          0.75
+        ],
+        "overlayCanvas": [
+          512,
+          384
+        ],
+        "labelSlots": {
+          "CONTROL ROOM": [
+            66,
+            300
+          ],
+          "PHOTO LAB": [
+            320,
+            280
+          ],
+          "EAST WALK": [
+            274,
+            340
+          ],
+          "S-03 / MOTOR BUS": [
+            300,
+            195
+          ],
+          "B-12 / OPTICAL": [
+            300,
+            112
+          ],
+          "TO S-03 (ANTENNA)": [
+            140,
+            26
+          ],
+          "N": [
+            472,
+            40
+          ]
+        },
+        "north": "up (-Z)",
+        "scope": "Kapittel 1s feltkart; arkiv og nye reisemål skal ikke avsløres her.",
+        "geometry": "S-03-punktet er motorskapet. Antennen ligger nord utenfor nærutsnittet. B-12 er nord for skapet. Ganglinjer er skjematiske, ikke målt kollisjon."
+      }
+    }
+  ]
+}

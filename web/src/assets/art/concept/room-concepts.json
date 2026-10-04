@@ -1,0 +1,68 @@
+{
+  "created_utc": "2026-10-04T07:55:14.721Z",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "generator_model": "Eksakt modellnavn eller versjon er ikke eksponert eller bekreftet av verktøyet.",
+  "status": "CONCEPT_ONLY",
+  "description": "Nye konsepter for visuell utvikling av Three.js-versjonen. Ikke faktiske spillbilder, implementerte scener eller kanoniske beslutninger.",
+  "brief": "web/ART_BRIEF.md",
+  "color_space": "sRGB",
+  "format": "JPEG quality 85",
+  "postprocess": "Kun skalering av generert raster til 1920x1080 med Lanczos og JPEG-eksport med sRGB-profil.",
+  "room_number_note": "Romnummer er uavklart mellom 6 og 47. Ingen romnummer vises. Filnavnet ch3_room47.jpg beholdes utelukkende fordi ART_BRIEF.md bestiller det.",
+  "assets": [
+    {
+      "file": "ch1_photolab.jpg",
+      "width": 1920,
+      "height": 1080,
+      "prompt": "Use case: stylized-concept.\nAsset type: concept-only environment illustration for SIGNAL / 47, a low-poly Three.js first-person investigation game. Final composition 16:9 landscape, 1920x1080.\nInput image: reference image only. The supplied real game screenshot establishes the small room scale, painted concrete-block walls, wet bench, bottle shelves, shallow developing trays, overhead drying line and strong red safelight. It is not an edit target; create a fresh composition rather than copying the screenshot.\nPrimary request: an empty compact photographic darkroom at a New Mexico observatory in 1986, viewed at standing first-person eye height from the doorway toward the processing bench. Clearly stylized low-poly game environment with simple box-built geometry, a few facets, clean readable shapes, restrained hand-painted texture wear and matte practical materials. An L-shaped worn grey workbench, three shallow developing trays, a modest enlarger, plain chemical bottles without labels, a basin and a simple drying line holding a few small blank photographic papers. The room is functional, mundane and a little tired.\nLighting and palette: saturated deep red safelight from one small wall fixture, dim red bounce sufficient to read the entire work area, dark neutral shadows, no white overhead lamp and no blue light leaking in. Matte pale concrete blocks take on a red hue; dull metal and old laminate, no glossy futuristic materials.\nComposition: wide immersive room interior, bench and trays as the main focus, open center floor, plausible compact scale, good separation of equipment silhouettes, no cinematic letterboxing. A polished but achievable stylized Three.js visual direction, intentionally simple enough for mobile low-poly production, not a photograph and not photorealistic.\nAvoid: people, UI, crosshair, menus, captions, watermarks, readable text of any kind, lettering or numbers, brands, logos, room numbers, chapter numbers, alien motifs, supernatural props, new lore, excessive clutter, dramatic fog, film grain or lens blur. This is concept art only, not evidence of implemented gameplay.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-4d850ff0-d5ca-494d-9988-821c559cc669.png",
+      "reference": {
+        "path": "web/evidence/art-2026-10-04/lab-high.png",
+        "role": "Referanse for romstørrelse, funksjon, utstyr og rødt lys. Ny komposisjon, ingen kopiert UI eller tekst.",
+        "sha256": "c2e1c9a25ffef933d2bede56cf4cf61a1b5cac249615d401fd5f528f65d787a5"
+      },
+      "validation": {
+        "format": "PASS: 1920x1080 JPEG RGB med innebygd sRGB-profil.",
+        "visual": "PASS: eksporten er inspisert med view_image. Tydelig rødt mørkeromslys, liten fotolab, enkel geometri, benk, tre framkallingskar, forstørrer, flasker og tørkesnor. Ingen personer, UI, tekst eller tall.",
+        "reference_use": "PASS: referansen ble inspisert først. Ny komposisjon; kilde-UI og skilting er utelatt.",
+        "runtime": "NOT_APPLICABLE: konseptbilde, ingen runtime-endringer."
+      },
+      "source_sha256": "e35f1584ea9d9893c6504f199ff995ae749ff65fd5b97dac8a35b1332a065b9f",
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "b7a53d2357f21df0d787f08042fa07509ebc5c0a638aa636c008a247d69fd4c1",
+      "bytes": 147718
+    },
+    {
+      "file": "ch3_room47.jpg",
+      "width": 1920,
+      "height": 1080,
+      "prompt": "Use case: stylized-concept.\nAsset type: concept-only environment illustration for SIGNAL / 47, a low-poly Three.js first-person investigation game. Wide 16:9 landscape composition, final target 1920x1080.\nInput image: reference image only for the New Mexico 1986 motel era, warm bedside lamp versus blue desert night, plain wooden furniture and worn turquoise-painted trim. Do NOT copy its composition, person, paper evidence, captions, photorealistic rendering or room number. Create an entirely new empty room view in a clearly simpler low-poly style.\nPrimary request: an ordinary, slightly worn roadside motel room at night in New Mexico, 1986. View from just inside the entrance looking diagonally across the compact room. One modest bed with a simple muted ochre/rust geometric bedspread and wooden headboard, a small bedside table with one warm amber shaded lamp, a boxy 1980s wood-veneer CRT television switched off on a low dresser, a little plain round ashtray on an uncluttered cheap table, and a closed unattended worn brown travel suitcase resting near the bed. A simple closed entrance door with no numbers or lettering and a curtained window showing quiet deep-blue night and a small strip of sparse desert beyond. Empty, mundane, believable lodging; quiet absence rather than overt horror.\nStyle: clearly stylized low-poly Three.js game concept, simple angular geometry, broad flat material regions, restrained hand-painted wear, low polygon rounded objects with visible planar faces, matte wood and fabric. Attractive, legible shapes realistically achievable in a modest browser game. Do not produce a photograph, cinematic realism or a highly detailed interior render.\nLighting and palette: soft warm amber from the one bedside table lamp, deep navy blue night through the window, muted dusty ochre, faded teal trim and warm brown wood. Keep the bed, CRT television, ashtray and suitcase visibly recognizable without excessive dramatic darkness. No glossy sci-fi materials, no atmospheric fog, no depth-of-field blur, no film grain.\nConstraints: no people, no faces, no characters, no writing, text, numbers, room number, chapter titles, logos, captions, watermark, UI or letterbox border. No new story clues, photographs, evidence documents, paranormal motifs, crime scene or visible weapons. The unresolved room number must not appear anywhere. This image is a speculative environment concept only, not evidence of an implemented game scene.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-5ae8b561-6087-44e5-b4b0-ce1ba1ef6032.png",
+      "reference": {
+        "path": "Docs/DesignBible13/Visuals/concept-02-nora-motel.png",
+        "role": "Referanse for epoke, materialer, farger og natt. Personen, romnummeret, dokumentene og bildeteksten er utelatt.",
+        "sha256": "85d21867baf7699d6fbc266e8dbe7dc6d1846215b2e7f04968bbbcdf2cae9ead"
+      },
+      "validation": {
+        "format": "PASS: 1920x1080 JPEG RGB med innebygd sRGB-profil.",
+        "visual": "PASS: eksporten er inspisert med view_image. Stilisert lavpoly motellrom med seng, CRT-TV, askebeger, reisekoffert, varm lampe og blå natt. Ingen personer, tekst, tall eller romnummer.",
+        "reference_use": "PASS: referansen ble inspisert først. Ny komposisjon og enklere geometri; person, romnummer, dokumenter og bildetekst er utelatt.",
+        "runtime": "NOT_APPLICABLE: konseptbilde, ingen runtime-endringer."
+      },
+      "source_sha256": "db92fae3e5bb078f8594bd76e5170a52677173f09062a3c15a4eb6fb9e2ea123",
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "ebf63b1012a56fc65a83f1d7d19ac2ef01a62cb33c958424c5c7db0994648e6e",
+      "bytes": 200936
+    }
+  ],
+  "limitations": [
+    "Konseptbilder beskriver en mulig visuell retning og bekrefter ingen implementert scene eller målt ytelse.",
+    "Genererte originaler er 1672x941 og eksportert til avtalte 1920x1080. Ingen nye detaljer ble syntetisert ved eksport."
+  ]
+}

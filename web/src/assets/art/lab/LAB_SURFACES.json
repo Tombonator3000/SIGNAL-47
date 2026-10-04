@@ -1,0 +1,101 @@
+{
+  "created_utc": "2026-10-04T08:06:24.053Z",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "generator_model": "Eksakt modellnavn eller versjon er ikke eksponert eller bekreftet.",
+  "brief": {
+    "git_ref": "origin/ccr-30e38858-767d90",
+    "path": "web/ART_BRIEF.md",
+    "section": "Runde 3: flater fra kapittel 1 som tegnes i kode i dag",
+    "sha256": "d38fe7f0af18a395b11c85db6b81f395463ec41f86b7e86b8b5649f821284eb5",
+    "commit": "e5706fb46e731c74b2f3b801ee72a36013ba23e8"
+  },
+  "inspected_reference": {
+    "path": "web/evidence/art-2026-10-04/lab-high.png",
+    "role": "Visuelt inspisert som rom- og funksjonsreferanse. Ikke sendt som bildegeneratorinput, fordi skilt og papir må leveres som ubelyst albedo.",
+    "sha256": "c2e1c9a25ffef933d2bede56cf4cf61a1b5cac249615d401fd5f528f65d787a5"
+  },
+  "purpose": "Tekstfrie bakgrunner. All lesbar spilltekst skal legges oppå i kode.",
+  "postprocess": "Kun Lanczos-skalering og eksport med innebygd sRGB-profil. Skilt er ugjennomsiktig RGB-PNG, papir er RGB-JPEG kvalitet 85. Et diagnostisk 2x2-ark viser vanlig repetisjon uten speiling eller retusjering.",
+  "assets": [
+    {
+      "file": "sign_blank.png",
+      "dimensions": [
+        1024,
+        384
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: blank sign albedo image, production texture for SIGNAL / 47, a stylized low-poly Three.js game set at a New Mexico observatory in 1986. Create ONE blank cream-white matte enamel sign texture with a very thin dark charcoal rectangular border and a little restrained rusty wear confined to the extreme rim and corners. The entire image is the sign's opaque rectangular surface. It fills the canvas completely, with no surrounding wall, no external background, no transparency, no floating object, no perspective and no cast shadow. Completely straight orthographic front view, landscape aspect ratio 8:3, target final export 1024x384. The dark line follows all four straight edges, only a few pixels thick relative to the whole sign; slightly worn but continuous. Central 90 percent of the surface must be evenly pale warm ivory, very clean and quiet, plenty of unobstructed space for separately rendered in-game text. Restrained hand-painted material details consistent with simple low-poly art, not a product photograph. Flat unlit diffuse base color; no lighting gradient, no vignette, no reflections or highlights. Absolutely NO text, lettering, numbers, symbols, logos, drawings, screws, rivets, screw holes, stains in the middle, labels, border ornaments or watermark. Blank means truly blank; do not show the word blank.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-e7d6a984-0ab7-4fdb-a135-bc905d316995.png",
+      "validation": {
+        "format": "PASS: 1024x384 ugjennomsiktig RGB-PNG med sRGB-profil.",
+        "visual": "PASS: Eksport inspisert med view_image. Ingen bokstaver, tall, logoer eller elementer i tekstfeltet. Hjørnefester ble generert selv om prompten ba om ingen fester; de berører ikke midtflaten.",
+        "repeat": "NOT_APPLICABLE: Skiltflaten er ikke en gjentatt tekstur.",
+        "runtime": "UNVERIFIED: Ingen runtime-endringer eller spilltester i denne deloppgaven."
+      },
+      "source_sha256": "caf40af44cbe9773021b004bb95238a949061a9f03e22a4e984d5ece88f5772e",
+      "source_dimensions": [
+        2048,
+        768
+      ],
+      "sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "bytes": 365474,
+      "properties": {
+        "opaque": true,
+        "center": "Jevn kremhvit matt flate med svært svak materialstruktur og rikelig plass til kodebasert tekst.",
+        "border": "Tynn mørk kant, sparsom rust og små runde fester bare helt ute i de fire hjørnene.",
+        "contains_text": false,
+        "contains_perspective": false,
+        "material": "Kremhvit emalje."
+      }
+    },
+    {
+      "file": "tex_paper_card.jpg",
+      "dimensions": [
+        512,
+        512
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: seamless tileable paper albedo texture for process cards and sheets in a 1986 observatory photographic lab in SIGNAL / 47, a stylized low-poly Three.js game. Make one square uniformly pale, slightly yellowed ivory paper surface, near color #ebe3cf, covering the canvas completely edge to edge. Barely visible soft paper fibers and a few extremely faint, broad, shallow old fold impressions; fold impressions must be close to the base color, no hard lines, no dark creases. The texture must remain quiet and very low contrast behind separately rendered black writing. True seamless repeat in X and Y: opposite edge colors and fine grain match, no perimeter aging, no darkened margins, no border, no visible paper edge. Flat overhead orthographic material swatch, NOT a sheet of paper on a surface. Uniform diffuse albedo, no lighting, no gradient, no vignette, no shadows, no highlights, no photorealistic grain or embossed relief. Restrained softly hand-painted material style, understated. Absolutely no text, lettering, numbers, printing, symbols, stains, spots, coffee rings, tears, holes, marks, illustration, objects, paper silhouette, labels, watermark or frame. Square output, final target 512x512 sRGB JPEG.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-b0cb6894-f939-453c-95c6-eaaa576c8d72.png",
+      "validation": {
+        "format": "PASS: 512x512 RGB-JPEG kvalitet 85 med sRGB-profil.",
+        "visual": "PASS: Konvensjonelt 2x2-ark inspisert med view_image. Ingen tydelig hard skjøt eller mørke kanter; svake materialvariasjoner gjentas. Dette er visuell kontroll, ikke garanti om pikselidentiske motstående kanter.",
+        "repeat_preview": "paper-repeat-preview.jpg viser fire vanlige kopier, uten speiling eller endret tekstur.",
+        "runtime": "UNVERIFIED: Ingen runtime-endringer eller spilltester i denne deloppgaven."
+      },
+      "source_sha256": "df5e2e06ba24836b2073006da6273e72a6036701703869a0baa5fb1941ed26dc",
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "repeat_preview": "paper-repeat-preview.jpg",
+      "whole_image_mean_rgb": [
+        231.91,
+        221.78,
+        196.91
+      ],
+      "whole_image_stddev_rgb": [
+        2.12,
+        2.15,
+        2.17
+      ],
+      "sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229",
+      "bytes": 20280,
+      "properties": {
+        "opaque": true,
+        "material": "Svakt gulnet elfenbenspapir med fine fibre og meget svake bretteinntrykk.",
+        "contrast": "Lav kontrast for separat kodebasert tekst.",
+        "contains_text": false,
+        "contains_stains": false,
+        "edge": "Ingen papirsilhuett, ramme eller mørk aldringskant."
+      }
+    }
+  ],
+  "qa_preview": {
+    "file": "paper-repeat-preview.jpg",
+    "sha256": "bc191a61a45dee2496a25704ab6b197574dd825d8285bcaf4cea5a7996965971",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "purpose": "Kun visuell QA, ikke produksjonstekstur."
+  }
+}

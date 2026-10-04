@@ -61,3 +61,7 @@ Gulvets vanlige vertikale repetisjon har en liten feil i fugeregistreringen. Fle
 Kanon og eksisterende spillreise er beholdt. Senere Unity-kapitler er ikke portert i dette grafikkpasset. Frame- og B-12-markører er fortsatt presise kodegrafikker. Mobil-FPS og lydmiks må vurderes på faktisk utstyr.
 
 Spill lokalt med `npm run dev`, eller åpne `dist-single/index.html` direkte. Kildeendringen ligger i [PR #30](https://github.com/Tombonator3000/SIGNAL-47/pull/30), implementeringscommit `f74e411`, på egen gren. Merge til `main` vil publisere til Pages og utføres ikke i dette passet.
+
+## Senere konseptleveranse samme dato
+
+Et separat pass leverte seks miljøkonsepter og fire lokasjonskart. Se [CONCEPT_DELIVERY.md](CONCEPT_DELIVERY.md) og [galleriet](src/assets/art/concept/index.html). Dette endrer ikke runtime-resultatene ovenfor.
