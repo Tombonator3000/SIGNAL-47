@@ -90,3 +90,10 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - 00:18: PR #27 flettet som merge-commit `221c6f9`. Publiseringen på main, https://github.com/Tombonator3000/SIGNAL-47/actions/runs/37164513745: PASS på 43 sekunder. Kontrollert https://tombonator3000.github.io/SIGNAL-47/ kl. 00:18: alle 12 filene er byte-identiske med `dist/` som besto testene fra `/SIGNAL-47/` lokalt. Kapittel 1 er altså ute.
 - 00:18: Codex-boten svarte på PR #27 at kodegjennomgangen ikke kjørte fordi kvoten er brukt opp. Ingen andre kommentarer.
 - 00:20: Startet grenen på nytt fra main (`221c6f9`) for denne loggføringen, siden PR #27 er flettet. Den føres inn med en egen liten PR.
+
+### Claude Code (sky): delbar side med forslagene
+
+- 06:41: Tom svarte «Ja gjør det» på tilbudet om en side med forslagene som kan deles, for eksempel med ChatGPT til grafikkarbeidet.
+- 06:42 til 06:47: Laget dokumentet «SIGNAL / 47: forslag» i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK. Innhold: de fire beslutningene i en tabell med en Status-kolonne Tom kan endre (Åpen eller Avgjort), en avkrysningsliste for test på ekte maskiner, de fire neste stegene, en grafikktabell for ChatGPT med seks nye flater fra kapittel 1 (filnavn, størrelse i piksler og mål i spillet, etter reglene i ART_BRIEF.md) og de mindre forbedringene. Lest gjennom etterpå: to celler viste til todo.md slik den var før 3. oktober, og er rettet.
+- Siden er privat til Tom deler den fra Share øverst i dokumentet. Til ChatGPT er det enklest å eksportere den: klikk på dokumentnavnet, Export, og velg Markdown eller PDF.
+- FORSLAG.md viser til siden øverst. Grafikktabellen er ikke lagt inn i ART_BRIEF.md. Det gjøres hvis Tom vil.

@@ -2,6 +2,8 @@
 
 Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i nettversjonen. Punktene står i den rekkefølgen jeg ville tatt dem. Det som krever en beslutning fra Tom, står først, fordi det styrer det meste av resten.
 
+En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
+
 ## 1. Beslutninger Tom må ta
 
 Her spriker kildene. Jeg har ikke valgt noe på egen hånd, bortsett fra å holde kapittel 1 likt Unity-versjonen.
