@@ -26,9 +26,9 @@ export interface CourtSite {
   setRoom6Light?(on: boolean): void;
 }
 
-const GROUND = -0.6;
-const RAMP = { x0: -10.6, x1: -7.6, z0: 5.05, z1: 6.35 };
-const DRIVE = { x0: -27.7, x1: -26.2, z0: 2, z1: 10 };   // the driveway ramp up to the lot
+export const GROUND = -0.6;
+export const RAMP = { x0: -10.6, x1: -7.6, z0: 5.05, z1: 6.35 };
+export const DRIVE = { x0: -27.7, x1: -26.2, z0: 2, z1: 10 };   // the driveway ramp up to the lot
 
 export class Crossing {
   group = new THREE.Group();
@@ -48,15 +48,20 @@ export class Crossing {
     this.addZone('stoop', -7.75, -6.0, 4.75, 6.65);
     this.addZone('ramp', -10.9, -7.0, RAMP.z0, RAMP.z1);
     // the open ground between SARO and the lot (the lot's edge is a 0.6 m step: the
-    // driveway ramp is the way up), and the ramp itself, overlapping both
-    this.addZone('west', -27.7, -10.0, -4, 64);
+    // driveway ramp is the way up), and the ramp itself, overlapping both. It runs up to
+    // the control room's plinth and north to the array fence; the rest of SARO's ground
+    // is in Grounds.ts. The ramp's rails and the step's open sides are walls from below.
+    this.addZone('west', -27.7, -6.75, -19.55, 64);
+    this.col(RAMP.x0 + 0.05, -6.6, 4.7, RAMP.z0 - 0.05);
+    this.col(RAMP.x0 + 0.05, -6.6, RAMP.z1 + 0.05, 6.7);
     this.addZone('driveway', -28.6, -25.9, DRIVE.z0 + 0.5, DRIVE.z1 - 0.5);
     // the road lamps
     const post = (x: number, z: number, r = 0.25) => this.col(x - r, x + r, z - r, z + r);
     post(-18.5, 36); post(-18.5, 2);
   }
 
-  /** Height of the ground under the player in SARO's scene (0 on SARO's floors). */
+  /** Height of the ground along the walk to the motel (the rails here use it). The
+   *  player's floor in SARO's scene is Grounds.floorAt, which includes these ramps. */
   floorAt = (x: number, z: number) => {
     if (x > RAMP.x1) return 0;
     if (x <= DRIVE.x0) return 0;                                   // the motel's lot

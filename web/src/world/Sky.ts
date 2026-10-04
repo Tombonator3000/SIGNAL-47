@@ -139,36 +139,44 @@ export class Sky {
     const g = c.getContext('2d', { willReadFrequently: true })!;
     g.drawImage(artImage('sky'), 0, 0, W, H);
     const img = g.getImageData(0, 0, W, ROWS), px = img.data;
-    const tmp = new Uint8ClampedArray(px.length);
-    // one pass of a min or max filter of radius r along x (wrapping: it is a panorama) or y
-    const pass = (src: Uint8ClampedArray, dst: Uint8ClampedArray, r: number, alongX: boolean, min: boolean) => {
+    // The opening runs on brightness alone (a third of the work of doing each colour);
+    // each pixel is then darkened by what the opening took away, so the band keeps its colour.
+    const N = W * ROWS;
+    const lum = new Uint8Array(N), a = new Uint8Array(N), b = new Uint8Array(N);
+    for (let i = 0, o = 0; i < N; i++, o += 4) lum[i] = (px[o] * 77 + px[o + 1] * 150 + px[o + 2] * 29) >> 8;
+    // a min or max filter of radius r along x (wrapping round: it is a panorama) or along y
+    const pass = (src: Uint8Array, dst: Uint8Array, r: number, alongX: boolean, min: boolean) => {
       for (let y = 0; y < ROWS; y++) {
+        const row = y * W;
         for (let x = 0; x < W; x++) {
-          const o = (y * W + x) * 4;
-          let r0 = src[o], g0 = src[o + 1], b0 = src[o + 2];
-          for (let k = -r; k <= r; k++) {
-            if (!k) continue;
-            const q = alongX ? (y * W + ((x + k + W) % W)) * 4 : (Math.min(ROWS - 1, Math.max(0, y + k)) * W + x) * 4;
-            if (min) { if (src[q] < r0) r0 = src[q]; if (src[q + 1] < g0) g0 = src[q + 1]; if (src[q + 2] < b0) b0 = src[q + 2]; }
-            else { if (src[q] > r0) r0 = src[q]; if (src[q + 1] > g0) g0 = src[q + 1]; if (src[q + 2] > b0) b0 = src[q + 2]; }
+          let v = src[row + x];
+          for (let k = 1; k <= r; k++) {
+            let p: number, q: number;
+            if (alongX) { p = src[row + (x + k < W ? x + k : x + k - W)]; q = src[row + (x - k >= 0 ? x - k : x - k + W)]; }
+            else { p = src[(y + k < ROWS ? y + k : ROWS - 1) * W + x]; q = src[(y - k >= 0 ? y - k : 0) * W + x]; }
+            if (min) { if (p < v) v = p; if (q < v) v = q; } else { if (p > v) v = p; if (q > v) v = q; }
           }
-          dst[o] = r0; dst[o + 1] = g0; dst[o + 2] = b0; dst[o + 3] = 255;
+          dst[row + x] = v;
         }
       }
     };
-    pass(px, tmp, 2, true, true); pass(tmp, px, 2, false, true);
-    pass(px, tmp, 1, true, false); pass(tmp, px, 1, false, false);
+    pass(lum, a, 2, true, true); pass(a, b, 2, false, true);
+    pass(b, a, 1, true, false); pass(a, b, 1, false, false);
+    for (let i = 0, o = 0; i < N; i++, o += 4) {
+      if (b[i] >= lum[i]) continue;
+      const k = b[i] / Math.max(1, lum[i]);
+      px[o] *= k; px[o + 1] *= k; px[o + 2] *= k;
+    }
     g.putImageData(img, 0, 0);
     // the band's brightness at a quarter size, for the stars
-    const bw = W / 4, bh = ROWS / 4, lum = new Float32Array(bw * bh);
+    const bw = W / 4, bh = ROWS / 4, band = new Float32Array(bw * bh);
     let max = 0;
     for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
-      const o = (y * 4 * W + x * 4) * 4;
-      const l = px[o] * 0.3 + px[o + 1] * 0.5 + px[o + 2] * 0.2;
-      lum[y * bw + x] = l; if (l > max) max = l;
+      const l = b[y * 4 * W + x * 4];
+      band[y * bw + x] = l; if (l > max) max = l;
     }
-    for (let i = 0; i < lum.length; i++) lum[i] /= max || 1;
-    this.band = { w: bw, h: bh, lum };
+    for (let i = 0; i < band.length; i++) band[i] /= max || 1;
+    this.band = { w: bw, h: bh, lum: band };
     this.filterMs = performance.now() - t0;
     const tex = new THREE.CanvasTexture(c);
     tex.name = 'art/sky (stars removed)';

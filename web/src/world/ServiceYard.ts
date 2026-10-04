@@ -18,8 +18,9 @@ export const YARD = {
   vane: new THREE.Vector3(9.9, 2.35, -18.35),                      // centre of the B-12 vane board
   echoOffset: 0.45,                                                // film-only stripe, beside the vane
   // the service truck's pad below the east landing (chapter three drives out from here);
-  // the truck faces south, towards the ramp, with the driver's door on the open side
-  truck: { x: 8.3, z: 8.0, heading: Math.PI },
+  // the truck faces south, towards the ramp, with the driver's door on the open side.
+  // There is room to walk round it: about 1.2 m on the west side, 3 m on the east.
+  truck: { x: 8.9, z: 8.0, heading: Math.PI },
 };
 
 const VANE_W = 0.34, VANE_H = 1.36;
@@ -105,10 +106,13 @@ export class ServiceYard {
     this.proxy('truck', 2.1, 1.9, 5.3, tk.x, 0.95, tk.z);
 
     const v = (x: number, z: number) => new THREE.Vector3(x, 0, z);
-    railing(st, v(8.0, -0.6), v(8.0, -19.6));
+    // the walk's west railing has a gap for the steps down to the north side (Grounds.ts)
+    railing(st, v(8.0, -0.6), v(8.0, -11.4));
+    railing(st, v(8.0, -12.6), v(8.0, -19.6));
     railing(st, v(6.3, -0.6), v(8.0, -0.6));
     railing(st, v(6.3, 3.4), v(9.4, 3.4));      // the gap east of here leads down to the truck pad
     railing(st, v(13.0, 3.4), v(13.0, 12.4));
+    railing(st, v(6.6, 3.4), v(6.6, 12.4));      // the pad's west edge, above the generator
     railing(st, v(11.0, 3.4), v(11.0, -0.6));
     railing(st, v(11.0, -1.9), v(11.0, -8.6));
     railing(st, v(11.0, -8.6), v(12.6, -8.6));
