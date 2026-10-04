@@ -10,13 +10,13 @@
   "generator": "built-in ChatGPT image generator; exact model not exposed",
   "converter": {
     "path": "tools/round9_maps.py",
-    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-    "bytes": 26265
+    "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "bytes": 30045
   },
   "checker": {
     "path": "tools/round9_check.py",
-    "sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb",
-    "bytes": 4467
+    "sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6",
+    "bytes": 5922
   },
   "normal_contract": {
     "size": [
@@ -39,46 +39,49 @@
   "checks": {
     "format_numeric_positive_y_material": "19/19 PASS",
     "visual_source_masks_overlay_top_light": "19/19 PASS with explicit source limitations",
-    "frozen_converter_reproduction": "38/38 output files byte-identical",
+    "frozen_converter_reproduction": "38/38 revised output files byte-identical",
     "albedos_unchanged": "19/19 SHA256 verified",
     "private_threejs_browser_loads": "19/19 PASS, zero captured console warnings/errors",
     "game_integration": "UNVERIFIED",
-    "hardware_fps": "UNVERIFIED"
+    "hardware_fps": "UNVERIFIED",
+    "decoded_roughness_profile": "19/19 PASS with ±0.5/255 representation tolerance",
+    "decoded_roughness_opposite_edges": "19/19 PASS, zero different pixels in both directions",
+    "negative_and_encoder_regressions": "5/5 PASS"
   },
   "browser_evidence": {
     "path": "src/assets/art/production/round9_qa/browser_loads.json",
-    "sha256": "cabf8467a76f2bd450611c33d6fb2d836be624bb73446833da21027d4802c173",
-    "bytes": 4750
+    "sha256": "5f017a79f7a9fd3375ef7e6628449cc43ac2aee87572281b52f1a43163be727f",
+    "bytes": 4778
   },
   "browser_screenshots": [
     {
       "path": "src/assets/art/production/round9_qa/browser_hextile.png",
-      "sha256": "3ea8b0f47481d437c0cd5282f632a0d01a0cac22a3dad5735ce97590b4032b62",
-      "bytes": 153774
+      "sha256": "87edcf5239522edf480aa295ac19c436c0fc738c9990e26857f67b8355db9dae",
+      "bytes": 154578
     },
     {
       "path": "src/assets/art/production/round9_qa/browser_asphalt.png",
-      "sha256": "377d08084c012422a92b13b98fccc714f35ad61ec5e25d4d12333646334865ea",
-      "bytes": 137649
+      "sha256": "0936fee8fe88f9c691fb14e2a2b43a233873b61b13bbe3d7e0f8e448ab841a57",
+      "bytes": 138398
     },
     {
       "path": "src/assets/art/production/round9_qa/browser_booth.png",
-      "sha256": "c01561d447c178da237c70fc43625714ba646d4061eabd73a5fd7abb6abf6142",
-      "bytes": 117556
+      "sha256": "710bacd35d6e1154168cea60cacfac0f45a216d1d49da079b4224131d2dadc31",
+      "bytes": 118313
     }
   ],
   "contact": {
     "path": "src/assets/art/production/round9_qa/saro_contact.png",
-    "sha256": "b32a79abcdc89e489b7d642fe3c0a295f560251a3b5856ff293824bb8bf159e4",
-    "bytes": 1360706
+    "sha256": "8b13a2d78b321b697d8b1bb5913115343b1ab8f9affb95159dac340d735c1fff",
+    "bytes": 1359023
   },
   "integration_owner": "Claude: ULTRA_ART, NoColorSpace loader, composed-road UVs, High/Low removal, one combined game integration test",
   "limitations": [
     "Existing albedo seams remain; data-map boundary conditioning does not certify seamless albedos.",
     "Generated guides are not exact source geometry; source semantic masks are the geometric authority.",
     "Asphalt standing-water locations and continuous floor walking paths are UNVERIFIED interpretations.",
-    "JPEG90 can overshoot nominal roughness values by a few byte values.",
-    "Private material screenshots are not game screenshots."
+    "Private material screenshots are not game screenshots.",
+    "Decoded JPEG overshoots are rejected; only ±0.5/255 integer representation tolerance is allowed."
   ],
   "assets": [
     {
@@ -113,9 +116,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "dark neutral connected grout; orange/brown tile pigment excluded",
@@ -139,8 +142,8 @@
         },
         "roughness": {
           "path": "src/assets/art/room/tex_floor_hextile_r.jpg",
-          "sha256": "ba3a1261cfbbecda12985c73e57efd94f741be0bacddfb51f458bd90c4a283bf",
-          "bytes": 27171,
+          "sha256": "84f965e84049cae493463c371303755b1a2163c1cd9a2d3ffcc45e3ce441b742",
+          "bytes": 26621,
           "size": [
             512,
             512
@@ -204,12 +207,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_roughness_2x2.png",
+          "sha256": "22c74ede24ffb49ae39a63901effb64e2b1713fa8627582da3c495ded0c42314",
+          "bytes": 103574,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_report.json",
-        "sha256": "0d00bb38fddfdbd55c662209acd2f9c29fa3b9ec022a6a0b7bb8ca47bd10767b",
-        "bytes": 9410
+        "sha256": "52572872ed72ea736415af835e5831a2d1b258e02e2d584b296170626ff2314e",
+        "bytes": 12221
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -226,14 +240,36 @@
           0.5,
           0.8968627452850342
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4588235294117647,
+          "max": 0.9019607843137255,
+          "mean": 0.5268382502537148
+        },
+        "roughness_decoded_byte_bounds": [
+          115,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Fugene følger kildebildet; brun/oker pigment flatt. Kjent vertikal albedoregistrering og 8px datakantkrage består.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -244,6 +280,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            115,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 6,
+          "first_encoding": {
+            "out_of_range_pixels": 69,
+            "range_bytes": [
+              117,
+              235
+            ]
+          },
+          "final_decoded_range_bytes": [
+            117,
+            230
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 12.434244791666666,
           "p95_abs_byte_delta": 57,
@@ -252,11 +315,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -266,7 +329,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ba3a1261cfbbecda12985c73e57efd94f741be0bacddfb51f458bd90c4a283bf",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "wall_paint",
@@ -300,9 +371,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -326,8 +397,8 @@
         },
         "roughness": {
           "path": "src/assets/art/room/tex_wall_paint_r.jpg",
-          "sha256": "6550d407e12a690bf533b717d1329dafe8dc7b6cb34d3cf042a71e495a5351ef",
-          "bytes": 11853,
+          "sha256": "85b211fb25abc767bd3dc1cd5b6ae9e98b3dbcb932a3d8b60da2aa0ba6e76f48",
+          "bytes": 11832,
           "size": [
             512,
             512
@@ -391,12 +462,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_roughness_2x2.png",
+          "sha256": "90b553d9ef51acfeb123ea918cf54e6d056949698bdb1ccd649245120fa349d7",
+          "bytes": 79160,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_report.json",
-        "sha256": "e9d7c61dda0521570f453a5edf40ce73b22f7f6537d16c4464a8019ab96236eb",
-        "bytes": 9342
+        "sha256": "28121552c1dad7ef658f1072490aff6519f7815c9dd39c0ccaa4c5e28083e5ce",
+        "bytes": 12147
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -413,14 +495,36 @@
           0.75,
           0.8882352709770203
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.7372549019607844,
+          "max": 0.8941176470588236,
+          "mean": 0.7558736763748468
+        },
+        "roughness_decoded_byte_bounds": [
+          178,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Mørtellinjene følger kilden; små porer er rolige.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -431,6 +535,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            178,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              188,
+              228
+            ]
+          },
+          "final_decoded_range_bytes": [
+            188,
+            228
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 8.817708333333334,
           "p95_abs_byte_delta": 28,
@@ -439,11 +570,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -453,7 +584,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "6550d407e12a690bf533b717d1329dafe8dc7b6cb34d3cf042a71e495a5351ef",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "concrete",
@@ -487,9 +626,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -578,12 +717,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_roughness_2x2.png",
+          "sha256": "450fca149dc3ebf7195cc5fcc0693ba169186da0609c18ec13533e5c01708b90",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/ext/tex_concrete_report.json",
-        "sha256": "de03b565c09e70894ed4a46b93274ca4a7cf3f22fd09b0f93ac063774186b58e",
-        "bytes": 9356
+        "sha256": "de02ec27d4e3a51e40dd49880ebb88c7ac0e9bc3f7f1904e7b08ae209f22e4f8",
+        "bytes": 12160
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -600,14 +750,36 @@
           0.8999999761581421,
           0.8999999761581421
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.8980392156862745,
+          "max": 0.8980392156862745,
+          "mean": 0.8980392156862745
+        },
+        "roughness_decoded_byte_bounds": [
+          217,
+          242
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Svak kildeforankret grop/tilslagsstruktur, ingen oppfunnet panelskjøt.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -618,6 +790,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            217,
+            242
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              229,
+              229
+            ]
+          },
+          "final_decoded_range_bytes": [
+            229,
+            229
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 10.500651041666666,
           "p95_abs_byte_delta": 26,
@@ -626,11 +825,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -640,7 +839,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "4a81335468ffbc90a7dccab48c7676caae16fdb51ba81dfd8cf4d550ed27b934",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "desert",
@@ -674,9 +881,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small source aggregate peaks and narrow depressions; broad colour/shading excluded",
@@ -765,12 +972,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_roughness_2x2.png",
+          "sha256": "1945fdcc845b7c108f3d378d5702e29bfc992376d278f00f6994298d7c65b64c",
+          "bytes": 2385,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_report.json",
-        "sha256": "53a6d3ed2caadb37150d154e0deaa31d53980a2255fd3df0db86d659266c45a8",
-        "bytes": 9408
+        "sha256": "66eac535962b232e25be207af805f1c116ac2e39711dd8fa652f150147596cc1",
+        "bytes": 12216
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -787,14 +1005,36 @@
           0.9750000238418579,
           0.9750000238418579
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.9764705882352941,
+          "max": 0.9764705882352941,
+          "mean": 0.9764705882352941
+        },
+        "roughness_decoded_byte_bounds": [
+          242,
+          255
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Rolig småsteinstruktur; brede sandfargefelt gir ikke høyde.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -805,6 +1045,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            242,
+            255
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              249,
+              249
+            ]
+          },
+          "final_decoded_range_bytes": [
+            249,
+            249
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 15.046223958333334,
           "p95_abs_byte_delta": 39,
@@ -813,11 +1080,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -827,7 +1094,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "91434833621c8408219b4d6f089b6e2f354b4e60a484fe12f24ceb43201d8433",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "asphalt",
@@ -861,9 +1136,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -896,8 +1171,8 @@
         },
         "roughness": {
           "path": "src/assets/art/ext/tex_asphalt_wet_r.jpg",
-          "sha256": "ec1e868aafb76b95912e51ac82d24680796dde2ee5647d90d7b0887595685ec2",
-          "bytes": 28962,
+          "sha256": "0e7be2a9fdb578fd55bbb51d24f850da3723b1ee31d3122fb49483c9c8a7e77f",
+          "bytes": 28521,
           "size": [
             512,
             512
@@ -962,10 +1237,21 @@
           "mode": "L",
           "format": "PNG"
         },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness_2x2.png",
+          "sha256": "96376d8b87e654718669f083318d6e1e7ea53473ee7a54d6ef7d464bf8941b53",
+          "bytes": 167685,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
         "roughness": {
           "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness.png",
-          "sha256": "4ecbbd02bf72e4543b090e8d02aaee6fb13835f38a1a53b4b5c4ceb75285d651",
-          "bytes": 84186,
+          "sha256": "a4a469a13c15f94b37d55f3379398ccc91e027fc2a961c9420ceadbf1c1e847c",
+          "bytes": 81778,
           "size": [
             512,
             512
@@ -976,8 +1262,8 @@
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_report.json",
-        "sha256": "e1bd8ccd741dad7d32bfd3270ea1c12981b0a70af3b262d465af5700d80f7c17",
-        "bytes": 10269
+        "sha256": "95f565657a6ef4bb70b0cbbf006469579bd6477dcba84551898c90cd979ceae5",
+        "bytes": 13070
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -994,14 +1280,36 @@
           0.23000000417232513,
           0.800000011920929
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.2235294117647059,
+          "max": 0.803921568627451,
+          "mean": 0.7170502307368259
+        },
+        "roughness_decoded_byte_bounds": [
+          38,
+          217
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Eksisterende sprekker senket og myke, mørke fuktfelt blankere. Stående vann er en materialtolkning, UNVERIFIED.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -1012,6 +1320,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            38,
+            217
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              57,
+              205
+            ]
+          },
+          "final_decoded_range_bytes": [
+            57,
+            205
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 11.489908854166666,
           "p95_abs_byte_delta": 30,
@@ -1020,11 +1355,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -1034,7 +1369,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ec1e868aafb76b95912e51ac82d24680796dde2ee5647d90d7b0887595685ec2",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "vinyl",
@@ -1068,9 +1411,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "grid": {
@@ -1102,8 +1445,8 @@
         },
         "roughness": {
           "path": "src/assets/art/annex/tex_floor_vinyl_r.jpg",
-          "sha256": "ebae8aac6f32bdd69a232444c7b951fccd4a60b462c0da20e69cdb730cff59ac",
-          "bytes": 6891,
+          "sha256": "a3fe8d63e2929697a1c4c32332a6142dbe2fc6e9e78b04008aad14cb25782a2d",
+          "bytes": 6644,
           "size": [
             512,
             512
@@ -1167,12 +1510,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_roughness_2x2.png",
+          "sha256": "be5401f2d99bcc1887892fb3bf0a32d2b8ec194e88ff49b661953cbb0bb9a9a1",
+          "bytes": 18021,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_report.json",
-        "sha256": "02be863753bd73f3751ea28e4951d665f26e15a096a05a7248c3eb3babbfce00",
-        "bytes": 9477
+        "sha256": "824ac0267e0bd6fb779062ad0781689a0283c0e26c4215c0f62cb6d5f0b4d715",
+        "bytes": 12284
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -1189,14 +1543,36 @@
           0.48676469922065735,
           0.5935294032096863
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4745098039215686,
+          "max": 0.592156862745098,
+          "mean": 0.5291604883530561
+        },
+        "roughness_decoded_byte_bounds": [
+          115,
+          153
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Fire ganger fire sourcefuger; marmoreringspigment flatt. Sammenhengende gangsti UNVERIFIED.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -1207,6 +1583,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            115,
+            153
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              121,
+              151
+            ]
+          },
+          "final_decoded_range_bytes": [
+            121,
+            151
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 45.905924479166664,
           "p95_abs_byte_delta": 54,
@@ -1215,11 +1618,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -1229,7 +1632,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ebae8aac6f32bdd69a232444c7b951fccd4a60b462c0da20e69cdb730cff59ac",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "cabinet",
@@ -1263,9 +1674,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "rust_core_pixel_count": 46,
@@ -1290,8 +1701,8 @@
         },
         "roughness": {
           "path": "src/assets/art/yard/tex_cabinet_metal_r.jpg",
-          "sha256": "f655d49f56e86db108e33dca1fdf01e530df8bb711845adfe7ee95902767584e",
-          "bytes": 4369,
+          "sha256": "4475907caa6ca65d44db3801960615764b325fb20049e987293f08af477da0ba",
+          "bytes": 4236,
           "size": [
             512,
             512
@@ -1355,12 +1766,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_roughness_2x2.png",
+          "sha256": "c0e9ec258bb1b5f18292aa1e6ef4b1a973b5bebfac0ac2dc6e5184ba98dee2e9",
+          "bytes": 33145,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_report.json",
-        "sha256": "1a8343144843e76ff1436cb0473f5361d3105a1e377b2290d146637ef5412c62",
-        "bytes": 9424
+        "sha256": "b97371667fe8226aa5a2bc71463260d0130abb130efea38f09db64fbdfd79852",
+        "bytes": 12232
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -1377,14 +1799,36 @@
           0.574999988079071,
           0.8999999761581421
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.5490196078431373,
+          "max": 0.9019607843137255,
+          "mean": 0.5769301769780177
+        },
+        "roughness_decoded_byte_bounds": [
+          127,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
         "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
         "note": "Fine riper og bare brune rustflekker med høyere ruhet; grå maling holdes rolig.",
         "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -1395,6 +1839,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            127,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 4,
+          "first_encoding": {
+            "out_of_range_pixels": 7,
+            "range_bytes": [
+              140,
+              239
+            ]
+          },
+          "final_decoded_range_bytes": [
+            140,
+            230
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 3.6376953125,
           "p95_abs_byte_delta": 10,
@@ -1403,11 +1874,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -1417,7 +1888,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "f655d49f56e86db108e33dca1fdf01e530df8bb711845adfe7ee95902767584e",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "desk",
@@ -1450,9 +1929,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "almost flat; only weak narrow source scratches",
@@ -1541,12 +2020,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_roughness_2x2.png",
+          "sha256": "17023a844b4710cbb11e76ae37cc9efdad6ef62102c18420c1b9036fe2f2ca5f",
+          "bytes": 2385,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_report.json",
-        "sha256": "635581236f0f00214dd8832601899e04703b7489ce0b77fb6ed7e3d49317ab6a",
-        "bytes": 9614
+        "sha256": "edc4e1ac8b94de4973350b5c2e3764262549fd1931756e0a1dba1aa9235eacc0",
+        "bytes": 12423
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -1563,7 +2053,17 @@
           0.42500001192092896,
           0.42500001192092896
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4235294117647059,
+          "max": 0.4235294117647059,
+          "mean": 0.4235294117647059
+        },
+        "roughness_decoded_byte_bounds": [
+          89,
+          128
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -1581,6 +2081,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_desk_laminate_inspection.png",
           "sha256": "6d8eb9b29737deb71c3361643f759158e97b836d03350b989d08ca672bd39633"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -1592,6 +2104,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            89,
+            128
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              108,
+              108
+            ]
+          },
+          "final_decoded_range_bytes": [
+            108,
+            108
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 4.8525390625,
           "p95_abs_byte_delta": 14,
@@ -1600,11 +2139,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -1630,7 +2169,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f"
+      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "b75a71e8b3648404192b40267a676e66c07995f5e10dd99e0c5b6fcc475c3434",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "ceiling",
@@ -1663,9 +2210,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -1754,12 +2301,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_roughness_2x2.png",
+          "sha256": "0d5078283d06ec56fa1806a261ed062647ddf66c4c39c2e89a3e58f3a76e2d11",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_report.json",
-        "sha256": "06dff7d598b9ff1b9beeeff331665c1265fb76d6415e8641c0745fcff33637c6",
-        "bytes": 9745
+        "sha256": "23ffde5a1795c15394be86ae6339eb70acda44a7cd9e7f988b2dbb8c2603c432",
+        "bytes": 12557
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -1776,7 +2334,17 @@
           0.949999988079071,
           0.949999988079071
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.9490196078431372,
+          "max": 0.9490196078431372,
+          "mean": 0.9490196078431372
+        },
+        "roughness_decoded_byte_bounds": [
+          242,
+          242
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -1794,6 +2362,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_inspection.png",
           "sha256": "8511b44171233c39b029a46eeb694939f1cee27b5762ed3a1f6cd77468ed9d49"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -1805,6 +2385,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            242,
+            242
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              242,
+              242
+            ]
+          },
+          "final_decoded_range_bytes": [
+            242,
+            242
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 9.764322916666666,
           "p95_abs_byte_delta": 25,
@@ -1813,11 +2420,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -1843,7 +2450,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f"
+      "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "stucco",
@@ -1876,9 +2491,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -1967,12 +2582,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_roughness_2x2.png",
+          "sha256": "450fca149dc3ebf7195cc5fcc0693ba169186da0609c18ec13533e5c01708b90",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_report.json",
-        "sha256": "4c6ee80e5dc969f241cb6cf7510da7e0a9f9da934b9ffc9fc0530435771532e5",
-        "bytes": 9734
+        "sha256": "52dafe466cf2169d8454e8f2d93740d21b39ad134be1f9598f5e4ecf9c3bfe75",
+        "bytes": 12543
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -1989,7 +2615,17 @@
           0.8999999761581421,
           0.8999999761581421
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.8980392156862745,
+          "max": 0.8980392156862745,
+          "mean": 0.8980392156862745
+        },
+        "roughness_decoded_byte_bounds": [
+          229,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -2007,6 +2643,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_stucco_wall_inspection.png",
           "sha256": "d2a6ca8e33a3e9d5edb914d374568c4d5f7b3bb4d74bb2c61e44f634dbda8dfe"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -2018,6 +2666,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            229,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              229,
+              229
+            ]
+          },
+          "final_decoded_range_bytes": [
+            229,
+            229
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 9.847330729166666,
           "p95_abs_byte_delta": 28,
@@ -2026,11 +2701,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -2056,7 +2731,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041"
+      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "4a81335468ffbc90a7dccab48c7676caae16fdb51ba81dfd8cf4d550ed27b934",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "concrete_old",
@@ -2089,9 +2772,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small source aggregate peaks and narrow depressions; broad colour/shading excluded",
@@ -2180,12 +2863,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_roughness_2x2.png",
+          "sha256": "0d5078283d06ec56fa1806a261ed062647ddf66c4c39c2e89a3e58f3a76e2d11",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_report.json",
-        "sha256": "97c4083358560c041dd276761295522868f9706d0cebc1fbdde8b458dbba27a5",
-        "bytes": 9806
+        "sha256": "d200691dd3b0da0af0838e3c7a4d68e423b9959edef9911c775231f7c5940e76",
+        "bytes": 12616
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -2202,7 +2896,17 @@
           0.949999988079071,
           0.949999988079071
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.9490196078431372,
+          "max": 0.9490196078431372,
+          "mean": 0.9490196078431372
+        },
+        "roughness_decoded_byte_bounds": [
+          229,
+          255
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -2220,6 +2924,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_inspection.png",
           "sha256": "205f180ebb92a083c27656604cf8d11bebfe33ca9f97e93fade1e51feeb9d454"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -2231,6 +2947,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            229,
+            255
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              242,
+              242
+            ]
+          },
+          "final_decoded_range_bytes": [
+            242,
+            242
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 12.326497395833334,
           "p95_abs_byte_delta": 33,
@@ -2239,11 +2982,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -2269,7 +3012,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041"
+      "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "weathered_wood",
@@ -2302,9 +3053,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "connected local high-contrast fragmented cracks with five-row vertical support plus very weak local fibre; no full-column extrusion",
@@ -2393,12 +3144,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_roughness_2x2.png",
+          "sha256": "38a55bfb66bf933df3e6d0c9cc23d92fcd3aa26c9739e48fd7692728935aa033",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_report.json",
-        "sha256": "a33f7d943a79aa790f8138b5248fb9b9872c33035b3d935b2d55068ed0228b24",
-        "bytes": 9828
+        "sha256": "fbef788caf0fb8f597d17a1b6a99a9d0c8f1d1b8aff1f416b285532977f7d4c4",
+        "bytes": 12642
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -2415,7 +3177,17 @@
           0.8500000238418579,
           0.8500000238418579
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.8509803921568627,
+          "max": 0.8509803921568627,
+          "mean": 0.8509803921568627
+        },
+        "roughness_decoded_byte_bounds": [
+          217,
+          217
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -2433,6 +3205,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_inspection.png",
           "sha256": "07f692025b673578d0b387b3b5385b2c863907e288b0fe3c6b7878be8790f655"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -2444,6 +3228,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            217,
+            217
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              217,
+              217
+            ]
+          },
+          "final_decoded_range_bytes": [
+            217,
+            217
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 10.79296875,
           "p95_abs_byte_delta": 26,
@@ -2452,11 +3263,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -2482,7 +3293,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a"
+      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "463f01f7f3793689f5c6e9f807ad554a7cd00666d261124290d606c744d705f5",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "floorboards",
@@ -2515,9 +3334,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "narrow source row/column valleys for board joints; weak narrow grain",
@@ -2543,8 +3362,8 @@
         },
         "roughness": {
           "path": "src/assets/art/station/tex_floorboards_r.jpg",
-          "sha256": "ca25634b805b3d2a002ecf6ea51632b76623ab2ddc7d8500ac3cc49e6fd2c68b",
-          "bytes": 11161,
+          "sha256": "1f58448f6e9e21352d2f0eaf60a734d7dbdc0912706b63782b539faf6e5a9b67",
+          "bytes": 11228,
           "size": [
             512,
             512
@@ -2608,12 +3427,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/station/tex_floorboards_roughness_2x2.png",
+          "sha256": "18170e1ad08b4c4986ec6e78499fd8388c90e821002774cba3c65bac0f09d509",
+          "bytes": 62598,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/station/tex_floorboards_report.json",
-        "sha256": "3ab1b61d6bae464065b64f5167b06319a1ca50c656eb60cbf946354beb0b417e",
-        "bytes": 10107
+        "sha256": "011e613b2b05c7e15e8a59c5183a2346c976f6833a1bf2bbfc39dd9836a052e5",
+        "bytes": 12889
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -2630,7 +3460,17 @@
           0.6000000238418579,
           0.7335293889045715
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.6,
+          "max": 0.7372549019607844,
+          "mean": 0.6466657152362898
+        },
+        "roughness_decoded_byte_bounds": [
+          153,
+          191
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "status": "PASS",
@@ -2648,6 +3488,18 @@
         "inspection": {
           "path": "src/assets/art/production/round9_qa/station/tex_floorboards_inspection.png",
           "sha256": "ce3b67f0744bd1590a865f6b33a7bb101ca911fa1b7184a713ba138c50c8b0ca"
+        },
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
         }
       },
       "seam_conditioning": {
@@ -2659,6 +3511,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            153,
+            191
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 3,
+          "first_encoding": {
+            "out_of_range_pixels": 80,
+            "range_bytes": [
+              152,
+              188
+            ]
+          },
+          "final_decoded_range_bytes": [
+            153,
+            188
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 15.6220703125,
           "p95_abs_byte_delta": 44,
@@ -2667,11 +3546,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -2697,7 +3576,15 @@
           "note": "PASS gjelder datakanten. Albedo er uendret og har sine opprinnelige skjøteavvik. Den 8 px brede datakraven demper relieff ved kanten."
         }
       ],
-      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a"
+      "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ca25634b805b3d2a002ecf6ea51632b76623ab2ddc7d8500ac3cc49e6fd2c68b",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "gravel",
@@ -2731,9 +3618,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "rut_centres_source_512": [
@@ -2830,12 +3717,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/road/tex_gravel_track_roughness_2x2.png",
+          "sha256": "0d5078283d06ec56fa1806a261ed062647ddf66c4c39c2e89a3e58f3a76e2d11",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/road/tex_gravel_track_report.json",
-        "sha256": "b77c9034c30625cb21faea08e18dba96c3dfa4bc144f11f9f6e2ff05f57e07b4",
-        "bytes": 10136
+        "sha256": "1ad252850d7425e2ec77e040c8239bf185be92a439eff82e6df8953abc43e11e",
+        "bytes": 12945
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -2852,7 +3750,17 @@
           0.949999988079071,
           0.949999988079071
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.9490196078431372,
+          "max": 0.9490196078431372,
+          "mean": 0.9490196078431372
+        },
+        "roughness_decoded_byte_bounds": [
+          242,
+          242
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -2871,7 +3779,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -2882,6 +3802,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            242,
+            242
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              242,
+              242
+            ]
+          },
+          "final_decoded_range_bytes": [
+            242,
+            242
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 25.541666666666668,
           "p95_abs_byte_delta": 68,
@@ -2890,11 +3837,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -2904,7 +3851,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "motel_wall",
@@ -2938,9 +3893,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
@@ -3029,12 +3984,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_roughness_2x2.png",
+          "sha256": "38a55bfb66bf933df3e6d0c9cc23d92fcd3aa26c9739e48fd7692728935aa033",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_report.json",
-        "sha256": "7d0209ad4927de601ed9bec79e3ccc5531d1b85d458aeb88892898d5be433b12",
-        "bytes": 9832
+        "sha256": "1181ecef1f861ebf5cd61d252f7759c3d75aa66dbab70ab26965e7adf2930ef6",
+        "bytes": 12640
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -3051,7 +4017,17 @@
           0.8500000238418579,
           0.8500000238418579
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.8509803921568627,
+          "max": 0.8509803921568627,
+          "mean": 0.8509803921568627
+        },
+        "roughness_decoded_byte_bounds": [
+          217,
+          217
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -3070,7 +4046,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -3081,6 +4069,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            217,
+            217
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              217,
+              217
+            ]
+          },
+          "final_decoded_range_bytes": [
+            217,
+            217
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 11.042643229166666,
           "p95_abs_byte_delta": 29,
@@ -3089,11 +4104,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -3103,7 +4118,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "463f01f7f3793689f5c6e9f807ad554a7cd00666d261124290d606c744d705f5",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "checker",
@@ -3137,9 +4160,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "grid": {
@@ -3171,8 +4194,8 @@
         },
         "roughness": {
           "path": "src/assets/art/diner/tex_floor_checker_r.jpg",
-          "sha256": "9b2cd41ade8fff855b3ac3f083698f0ae97e0eabbdcd08834ccb29748e5c382f",
-          "bytes": 9905,
+          "sha256": "9baca6ebe43e39e57ebd76e5cf3e696f577fcdac31767fd2234b4a9dd5d4b201",
+          "bytes": 9824,
           "size": [
             512,
             512
@@ -3236,12 +4259,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_roughness_2x2.png",
+          "sha256": "3514a91b35254f53bea2c4df0e0e8ed02ad9ad1aa47444521ac5c6da87f44ccf",
+          "bytes": 9270,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_report.json",
-        "sha256": "b7be7cc549d68dda8f7c901b1743a95d76627b41faea0347ea92cd18b565a5de",
-        "bytes": 9924
+        "sha256": "4a3a995fa355b117f79fbd29e4b45e181bff6a8faf25cee13ce9ef183e4c199c",
+        "bytes": 12732
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -3258,7 +4292,17 @@
           0.42500001192092896,
           0.49352940917015076
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4196078431372549,
+          "max": 0.4980392156862745,
+          "mean": 0.43070565017999385
+        },
+        "roughness_decoded_byte_bounds": [
+          89,
+          128
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -3277,7 +4321,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -3288,6 +4344,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            89,
+            128
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              107,
+              127
+            ]
+          },
+          "final_decoded_range_bytes": [
+            107,
+            127
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 10.5751953125,
           "p95_abs_byte_delta": 26,
@@ -3296,11 +4379,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -3310,7 +4393,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "9b2cd41ade8fff855b3ac3f083698f0ae97e0eabbdcd08834ccb29748e5c382f",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "wall_panel",
@@ -3344,9 +4435,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "narrow source row/column valleys for board joints; weak narrow grain",
@@ -3370,8 +4461,8 @@
         },
         "roughness": {
           "path": "src/assets/art/diner/tex_wall_panel_r.jpg",
-          "sha256": "080ea7d65b2cb5b14284f0a05696ce11d77423128ab44b81d65aa61f10845f46",
-          "bytes": 10793,
+          "sha256": "9916b420c2c86fe3528bc3a0893c0963f12e1b9da3ae8f983bd2e19fbfdf69e1",
+          "bytes": 10633,
           "size": [
             512,
             512
@@ -3435,12 +4526,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/diner/tex_wall_panel_roughness_2x2.png",
+          "sha256": "b369a9fc8328caf798ae62b326c79ecde1cf2e144589b75d829cd8eff4f19461",
+          "bytes": 2597,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/diner/tex_wall_panel_report.json",
-        "sha256": "b9151222a02fbb9cd03f92791575e95f3bb93808bbfc1c71e1e3d52763b2f399",
-        "bytes": 9786
+        "sha256": "dbabdafe721d35d07ac86514cd0267a0f3bbc1a8e5436bdc8e7af3120cd7a668",
+        "bytes": 12592
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -3457,7 +4559,17 @@
           0.6000000238418579,
           0.6488234996795654
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.596078431372549,
+          "max": 0.6509803921568628,
+          "mean": 0.6084099264705882
+        },
+        "roughness_decoded_byte_bounds": [
+          140,
+          166
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -3476,7 +4588,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "98a3e30f62ab088713aa434dfbe399f8e6d532572b3dd7a6a8bbc1102aba0657",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -3487,6 +4611,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            140,
+            166
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              152,
+              166
+            ]
+          },
+          "final_decoded_range_bytes": [
+            152,
+            166
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 4.310221354166667,
           "p95_abs_byte_delta": 11,
@@ -3495,11 +4646,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "98a3e30f62ab088713aa434dfbe399f8e6d532572b3dd7a6a8bbc1102aba0657",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -3509,7 +4660,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "080ea7d65b2cb5b14284f0a05696ce11d77423128ab44b81d65aa61f10845f46",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
     },
     {
       "profile": "booth",
@@ -3543,9 +4702,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "button_centres_source_512": [
@@ -3668,12 +4827,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/diner/tex_booth_vinyl_roughness_2x2.png",
+          "sha256": "5a4d9ebe5d23e871e1c4214a9acc839f95ab9e4df979bdae50d9c32329423c89",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/diner/tex_booth_vinyl_report.json",
-        "sha256": "a66842c11728d9c3e7c22759f1968333df772dd59723b589cfe84fa93d65e8d5",
-        "bytes": 10251
+        "sha256": "a17c849835671adcfbf6c9d1b70f2108312cddf6054ffac33e21909088896f0d",
+        "bytes": 13050
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -3690,7 +4860,17 @@
           0.375,
           0.375
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.3764705882352941,
+          "max": 0.3764705882352941,
+          "mean": 0.3764705882352941
+        },
+        "roughness_decoded_byte_bounds": [
+          76,
+          115
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -3709,7 +4889,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -3720,6 +4912,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            76,
+            115
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              96,
+              96
+            ]
+          },
+          "final_decoded_range_bytes": [
+            96,
+            96
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 6.593424479166667,
           "p95_abs_byte_delta": 17,
@@ -3728,11 +4947,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -3742,7 +4961,15 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "957d56e80c430dea0f33aaea37c7ca0144fc978d77e8dcc6771baf7f5648c1ed",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     },
     {
       "profile": "counter",
@@ -3776,9 +5003,9 @@
       },
       "tool": {
         "file": "tools/round9_maps.py",
-        "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
         "pillow": "12.1.1",
-        "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
       },
       "method": {
         "geometry": "almost flat; only weak narrow source scratches",
@@ -3867,12 +5094,23 @@
           ],
           "mode": "L",
           "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/diner/tex_counter_laminate_roughness_2x2.png",
+          "sha256": "6271191a9ed848edf4fe6583a371d3b668d04a6c317d8b5e22500c58bd7c5d8a",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
         }
       },
       "report": {
         "path": "src/assets/art/production/round9_qa/diner/tex_counter_laminate_report.json",
-        "sha256": "c03ec0ff34f99f4da577629e1076e1333f27a285f7ab29c7bfca6fe004802d5d",
-        "bytes": 9876
+        "sha256": "4cc7978e9c5867b394efd5cb5425c8448d8a33d72872710793abb2c8ea445e96",
+        "bytes": 12682
       },
       "technical_status": "PASS",
       "positive_y_status": "PASS",
@@ -3889,7 +5127,17 @@
           0.3499999940395355,
           0.3499999940395355
         ],
-        "status": "PASS"
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.34901960784313724,
+          "max": 0.34901960784313724,
+          "mean": 0.34901960784313724
+        },
+        "roughness_decoded_byte_bounds": [
+          76,
+          102
+        ],
+        "roughness_decoded_status": "PASS"
       },
       "visual_review": {
         "reviewer": "ultra_b_diner",
@@ -3908,7 +5156,19 @@
         "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
         "conversion_tool_sha256_preserved": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
         "runtime_status": "UNVERIFIED",
-        "source_albedo_sha256_verified_unchanged": true
+        "source_albedo_sha256_verified_unchanged": true,
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
       },
       "seam_conditioning": {
         "data_only": true,
@@ -3919,6 +5179,33 @@
           "p95_abs_byte_delta": 0,
           "max_abs_byte_delta": 0
         },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            76,
+            102
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              89,
+              89
+            ]
+          },
+          "final_decoded_range_bytes": [
+            89,
+            89
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
         "albedo_edges_unmodified": {
           "mean_abs_byte_delta": 3.9541015625,
           "p95_abs_byte_delta": 11,
@@ -3927,11 +5214,11 @@
       },
       "reproduction": {
         "status": "PASS",
-        "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
         "outputs_byte_identical": true,
-        "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-        "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-        "unchanged_albedo_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248"
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+        "scope": "after P2 decoded JPEG correction"
       },
       "runtime_status": "UNVERIFIED: Claude owns game integration",
       "limitations": [
@@ -3941,7 +5228,48 @@
         "Equal data-map borders do not fix or certify albedo seams.",
         "PNG QA lighting is diagnostic, not an in-game screenshot.",
         "No exact image-generator model version is inferred by this tool."
-      ]
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "f201882991f267d59f989ebcbd303c2b9198b81366c2107acbe0b4b09ffefe37",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
     }
-  ]
+  ],
+  "updated_utc": "2026-10-04T21:26:56.984354+00:00",
+  "p2_correction": {
+    "roughness_changed_profiles": [
+      "hextile",
+      "wall_paint",
+      "asphalt",
+      "vinyl",
+      "cabinet",
+      "floorboards",
+      "checker",
+      "wall_panel"
+    ],
+    "normal_maps_unchanged": 19,
+    "albedos_unchanged": 19,
+    "profile_tolerance": 0.00196078431372549,
+    "decoded_opposite_edges": "19/19 exact match",
+    "decoded_profile_bounds": "19/19 PASS"
+  },
+  "p2_comparison": {
+    "path": "src/assets/art/production/round9_qa/p2_roughness_comparison.png",
+    "sha256": "362588f17641d2f55196d00b2f1d823b9c9cbc5a0f5cc8090793eddeddc6e74f",
+    "bytes": 224525
+  },
+  "regression_tool": {
+    "path": "tools/round9_regression.py",
+    "sha256": "29459ba4a380f552d34941ae162784c650eb8a9f456a6f292a9a570aedb2c60e",
+    "bytes": 3058
+  },
+  "independent_audit": {
+    "path": "src/assets/art/production/round9_qa/independent_audit.json",
+    "sha256": "404d1f7fcfad4fb3d74ee087cab5f0cf410f5ec822513eb9089c07c070f73542",
+    "bytes": 1468
+  }
 }

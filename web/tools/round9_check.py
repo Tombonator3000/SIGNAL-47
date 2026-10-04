@@ -29,7 +29,14 @@ def quantization90():
     return [max(1,min(255,(v*20+50)//100)) for v in base]
 
 
-def check_pair(normal_path,rough_path):
+def roughness_byte_bounds(limits):
+    """Profilens 8-bit-representasjon: bare ±en halv byte tillates."""
+    lo,hi=limits
+    if not 0<=lo<=hi<=1:raise ValueError('Invalid roughness profile limits')
+    return [max(0,math.ceil(lo*255-.5-1e-7)),min(255,math.floor(hi*255+.5+1e-7))]
+
+
+def check_pair(normal_path,rough_path,roughness_range=None):
     checks=[]
     def check(name,ok,detail=None):checks.append({'check':name,'status':'PASS' if ok else 'FAIL','detail':detail})
     with Image.open(normal_path) as n:
@@ -50,7 +57,16 @@ def check_pair(normal_path,rough_path):
         check('roughness no profile/EXIF/gamma',not any(k in r.info for k in ('icc_profile','exif','gamma','srgb')),sorted(r.info))
         check('roughness JPEG quality90 table',r.quantization=={0:quantization90()},r.quantization)
         vals=values(r.convert('L'));stats={'min':min(vals)/255,'max':max(vals)/255,'mean':sum(vals)/(len(vals)*255)}
-    return {'status':'PASS' if all(c['status']=='PASS' for c in checks) else 'FAIL','checks':checks,'roughness_readback':stats}
+        w,h=r.size;p=r.load()
+        mismatches=sum(p[0,y]!=p[w-1,y] for y in range(h))+sum(p[x,0]!=p[x,h-1] for x in range(w))
+        check('roughness decoded opposite border pixels identical',mismatches==0,{'mismatched_pixels':mismatches})
+        profile_status='UNVERIFIED: no profile supplied'
+        if roughness_range is not None:
+            lower,upper=roughness_byte_bounds(roughness_range)
+            bad=sum(not lower<=v<=upper for v in vals)
+            check('roughness decoded within profile byte bounds',bad==0,{'profile_range':list(roughness_range),'allowed_bytes':[lower,upper],'decoded_bytes':[min(vals),max(vals)],'out_of_range_pixels':bad,'representation_tolerance':.5/255})
+            profile_status='PASS' if bad==0 else 'FAIL'
+    return {'status':'PASS' if all(c['status']=='PASS' for c in checks) else 'FAIL','checks':checks,'roughness_readback':stats,'roughness_profile_status':profile_status}
 
 
 def analytical_hill():
@@ -68,13 +84,18 @@ def analytical_hill():
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--normal',type=Path);p.add_argument('--roughness',type=Path);p.add_argument('--self-test',action='store_true')
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--normal',type=Path);p.add_argument('--roughness',type=Path);p.add_argument('--self-test',action='store_true');p.add_argument('--profile',help='Profile name from round9_maps.PROFILES; checks the decoded JPEG bounds')
     args=p.parse_args()
     if args.self_test:
         result=analytical_hill()
     else:
         if not args.normal or not args.roughness:p.error('--normal and --roughness are required')
-        result=check_pair(args.normal,args.roughness)
+        limits=None
+        if args.profile:
+            from round9_maps import PROFILES,roughness_limits
+            if args.profile not in PROFILES:p.error('Unknown profile')
+            limits=roughness_limits(PROFILES[args.profile])
+        result=check_pair(args.normal,args.roughness,limits)
     print(json.dumps(result,indent=2))
     if result['status']!='PASS':raise SystemExit(1)
 

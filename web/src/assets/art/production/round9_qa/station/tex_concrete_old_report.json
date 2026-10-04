@@ -2,9 +2,9 @@
   "schema": "signal47-round9-map-report-v1",
   "tool": {
     "file": "tools/round9_maps.py",
-    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
     "pillow": "12.1.1",
-    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+    "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
   },
   "albedo": {
     "path": "src/assets/art/station/tex_concrete_old.jpg",
@@ -125,6 +125,17 @@
       ],
       "mode": "L",
       "format": "PNG"
+    },
+    "roughness_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_roughness_2x2.png",
+      "sha256": "0d5078283d06ec56fa1806a261ed062647ddf66c4c39c2e89a3e58f3a76e2d11",
+      "bytes": 2386,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "L",
+      "format": "PNG"
     }
   },
   "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
@@ -137,6 +148,33 @@
       "mean_abs_byte_delta": 0.0,
       "p95_abs_byte_delta": 0,
       "max_abs_byte_delta": 0
+    },
+    "roughness_jpeg": {
+      "quality": 90,
+      "allowed_decoded_byte_range": [
+        229,
+        255
+      ],
+      "profile_representation_tolerance": 0.00196078431372549,
+      "feedback_passes": 0,
+      "first_encoding": {
+        "out_of_range_pixels": 0,
+        "range_bytes": [
+          242,
+          242
+        ]
+      },
+      "final_decoded_range_bytes": [
+        242,
+        242
+      ],
+      "decoded_edges": {
+        "mean_abs_byte_delta": 0.0,
+        "p95_abs_byte_delta": 0,
+        "max_abs_byte_delta": 0
+      },
+      "flat_collar_pixels": 8,
+      "transition_pixels": 8
     },
     "albedo_edges_unmodified": {
       "mean_abs_byte_delta": 12.326497395833334,
@@ -293,13 +331,41 @@
             20
           ]
         }
+      },
+      {
+        "check": "roughness decoded opposite border pixels identical",
+        "status": "PASS",
+        "detail": {
+          "mismatched_pixels": 0
+        }
+      },
+      {
+        "check": "roughness decoded within profile byte bounds",
+        "status": "PASS",
+        "detail": {
+          "profile_range": [
+            0.9,
+            1.0
+          ],
+          "allowed_bytes": [
+            229,
+            255
+          ],
+          "decoded_bytes": [
+            242,
+            242
+          ],
+          "out_of_range_pixels": 0,
+          "representation_tolerance": 0.00196078431372549
+        }
       }
     ],
     "roughness_readback": {
       "min": 0.9490196078431372,
       "max": 0.9490196078431372,
       "mean": 0.9490196078431372
-    }
+    },
+    "roughness_profile_status": "PASS"
   },
   "material_contract": {
     "calm_max_degrees": 2.0337938122111194,
@@ -314,7 +380,17 @@
       0.949999988079071,
       0.949999988079071
     ],
-    "status": "PASS"
+    "status": "PASS",
+    "roughness_decoded_range": {
+      "min": 0.9490196078431372,
+      "max": 0.9490196078431372,
+      "mean": 0.9490196078431372
+    },
+    "roughness_decoded_byte_bounds": [
+      229,
+      255
+    ],
+    "roughness_decoded_status": "PASS"
   },
   "analytic_positive_y": {
     "status": "PASS",
@@ -354,16 +430,9 @@
     "Normal direction test verifies the converter, not semantic correctness of every bump.",
     "Equal data-map borders do not fix or certify albedo seams.",
     "PNG QA lighting is diagnostic, not an in-game screenshot.",
-    "No exact image-generator model version is inferred by this tool."
+    "No exact image-generator model version is inferred by this tool.",
+    "JPEG readback must pass exact opposite-border equality and profile bounds with ±0.5/255 representation tolerance."
   ],
-  "reproduction": {
-    "status": "PASS",
-    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
-    "outputs_byte_identical": true,
-    "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-    "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a"
-  },
   "visual_review": {
     "status": "PASS",
     "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
@@ -380,6 +449,34 @@
     "inspection": {
       "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_inspection.png",
       "sha256": "205f180ebb92a083c27656604cf8d11bebfe33ca9f97e93fade1e51feeb9d454"
+    },
+    "normal_and_albedo_unchanged": true,
+    "p2_roughness_review": {
+      "status": "PASS",
+      "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+      "reviewer": "Codex root",
+      "views": [
+        "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+        "fresh private Three.js hextile/asphalt/booth screenshots",
+        "unchanged normal and albedo hash proof"
+      ],
+      "limits": "Existing source seams, interpreted water and walking paths remain unverified."
     }
+  },
+  "p2_correction": {
+    "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+    "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+    "previous_roughness_sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+    "normal_unchanged": true,
+    "albedo_unchanged": true,
+    "roughness_changed": false
+  },
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+    "outputs_byte_identical": true,
+    "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+    "scope": "after P2 decoded JPEG correction"
   }
 }

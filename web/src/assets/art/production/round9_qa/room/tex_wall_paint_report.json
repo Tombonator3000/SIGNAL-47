@@ -2,9 +2,9 @@
   "schema": "signal47-round9-map-report-v1",
   "tool": {
     "file": "tools/round9_maps.py",
-    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
     "pillow": "12.1.1",
-    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+    "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
   },
   "albedo": {
     "path": "src/assets/art/room/tex_wall_paint.jpg",
@@ -61,8 +61,8 @@
     },
     "roughness": {
       "path": "src/assets/art/room/tex_wall_paint_r.jpg",
-      "sha256": "6550d407e12a690bf533b717d1329dafe8dc7b6cb34d3cf042a71e495a5351ef",
-      "bytes": 11853,
+      "sha256": "85b211fb25abc767bd3dc1cd5b6ae9e98b3dbcb932a3d8b60da2aa0ba6e76f48",
+      "bytes": 11832,
       "size": [
         512,
         512
@@ -126,6 +126,17 @@
       ],
       "mode": "L",
       "format": "PNG"
+    },
+    "roughness_2x2": {
+      "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_roughness_2x2.png",
+      "sha256": "90b553d9ef51acfeb123ea918cf54e6d056949698bdb1ccd649245120fa349d7",
+      "bytes": 79160,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "L",
+      "format": "PNG"
     }
   },
   "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
@@ -138,6 +149,33 @@
       "mean_abs_byte_delta": 0.0,
       "p95_abs_byte_delta": 0,
       "max_abs_byte_delta": 0
+    },
+    "roughness_jpeg": {
+      "quality": 90,
+      "allowed_decoded_byte_range": [
+        178,
+        230
+      ],
+      "profile_representation_tolerance": 0.00196078431372549,
+      "feedback_passes": 0,
+      "first_encoding": {
+        "out_of_range_pixels": 0,
+        "range_bytes": [
+          188,
+          228
+        ]
+      },
+      "final_decoded_range_bytes": [
+        188,
+        228
+      ],
+      "decoded_edges": {
+        "mean_abs_byte_delta": 0.0,
+        "p95_abs_byte_delta": 0,
+        "max_abs_byte_delta": 0
+      },
+      "flat_collar_pixels": 8,
+      "transition_pixels": 8
     },
     "albedo_edges_unmodified": {
       "mean_abs_byte_delta": 8.817708333333334,
@@ -291,13 +329,41 @@
             20
           ]
         }
+      },
+      {
+        "check": "roughness decoded opposite border pixels identical",
+        "status": "PASS",
+        "detail": {
+          "mismatched_pixels": 0
+        }
+      },
+      {
+        "check": "roughness decoded within profile byte bounds",
+        "status": "PASS",
+        "detail": {
+          "profile_range": [
+            0.7,
+            0.9
+          ],
+          "allowed_bytes": [
+            178,
+            230
+          ],
+          "decoded_bytes": [
+            188,
+            228
+          ],
+          "out_of_range_pixels": 0,
+          "representation_tolerance": 0.00196078431372549
+        }
       }
     ],
     "roughness_readback": {
       "min": 0.7372549019607844,
       "max": 0.8941176470588236,
-      "mean": 0.7540054470885034
-    }
+      "mean": 0.7558736763748468
+    },
+    "roughness_profile_status": "PASS"
   },
   "material_contract": {
     "calm_max_degrees": 6.573552859453771,
@@ -312,7 +378,17 @@
       0.75,
       0.8882352709770203
     ],
-    "status": "PASS"
+    "status": "PASS",
+    "roughness_decoded_range": {
+      "min": 0.7372549019607844,
+      "max": 0.8941176470588236,
+      "mean": 0.7558736763748468
+    },
+    "roughness_decoded_byte_bounds": [
+      178,
+      230
+    ],
+    "roughness_decoded_status": "PASS"
   },
   "analytic_positive_y": {
     "status": "PASS",
@@ -352,21 +428,42 @@
     "Normal direction test verifies the converter, not semantic correctness of every bump.",
     "Equal data-map borders do not fix or certify albedo seams.",
     "PNG QA lighting is diagnostic, not an in-game screenshot.",
-    "No exact image-generator model version is inferred by this tool."
+    "No exact image-generator model version is inferred by this tool.",
+    "JPEG readback must pass exact opposite-border equality and profile bounds with ±0.5/255 representation tolerance."
   ],
   "visual_review": {
     "status": "PASS",
     "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
     "note": "Mørtellinjene følger kilden; små porer er rolige.",
     "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
-    "seamless_albedo": "NOT CERTIFIED; inherited source seams remain"
+    "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+    "normal_and_albedo_unchanged": true,
+    "p2_roughness_review": {
+      "status": "PASS",
+      "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+      "reviewer": "Codex root",
+      "views": [
+        "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+        "fresh private Three.js hextile/asphalt/booth screenshots",
+        "unchanged normal and albedo hash proof"
+      ],
+      "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+    }
+  },
+  "p2_correction": {
+    "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+    "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+    "previous_roughness_sha256": "6550d407e12a690bf533b717d1329dafe8dc7b6cb34d3cf042a71e495a5351ef",
+    "normal_unchanged": true,
+    "albedo_unchanged": true,
+    "roughness_changed": true
   },
   "reproduction": {
     "status": "PASS",
-    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "verified_utc": "2026-10-04T21:26:56.984354+00:00",
     "outputs_byte_identical": true,
-    "previous_converter_sha256": "c159202c352c144b526e1560b3b6d2d007adbd074b5c5bd74afc8a49b306f041",
-    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
-    "unchanged_albedo_sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a"
+    "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "unchanged_albedo_sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+    "scope": "after P2 decoded JPEG correction"
   }
 }
