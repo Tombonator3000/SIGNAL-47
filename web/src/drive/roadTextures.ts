@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { canvasTex, rng } from '../core/textures';
 import { artImage } from '../core/art';
+import { dataTwin } from '../core/textures';
 import type { Rect } from './truckTextures';
 
 // Canvas textures for the drive. The art supplies asphalt, desert and enamel; every word
@@ -20,7 +21,7 @@ export function highwayTex() {
   p.globalCompositeOperation = 'destination-out';
   for (let i = 0; i < 2600; i++) { p.fillStyle = `rgba(0,0,0,${0.3 + r() * 0.7})`; p.fillRect(r() * 512, r() * 1024, 1 + r() * 3, 1 + r() * 5); }
   for (let i = 0; i < 14; i++) { p.fillStyle = 'rgba(0,0,0,.6)'; p.fillRect(0, r() * 1024, 512, 4 + r() * 20); }
-  return canvasTex(512, 1024, (g, w, h) => {
+  const tex = canvasTex(512, 1024, (g, w, h) => {
     const asphalt = artImage('asphalt'), desert = artImage('desert');
     for (let y = 0; y < h; y += 256) for (let x = 0; x < w; x += 256) g.drawImage(asphalt, x, y, 256, 256);
     g.fillStyle = 'rgba(40,40,44,.25)'; g.fillRect(0, 0, w, h);
@@ -50,6 +51,18 @@ export function highwayTex() {
     }
     g.drawImage(paint, 0, 0);
   }, [1, 1]); // wraps: v runs along the whole highway
+  // Ultra (core/ultra.ts): the same layout from the round 9 maps, the paint flat and smoother
+  dataTwin(tex, 512, 1024, (g, w, h, k) => {
+    const asphalt = artImage(k === 'n' ? 'asphaltN' : 'asphaltR'), desert = artImage(k === 'n' ? 'desertN' : 'desertR');
+    for (let y = 0; y < h; y += 256) for (let x = 0; x < w; x += 256) g.drawImage(asphalt, x, y, 256, 256);
+    for (const x0 of [0, w - 1.2 * PX]) g.drawImage(desert, 0, 0, 256, 1024, x0, 0, 1.2 * PX, h);
+    const flat = document.createElement('canvas'); flat.width = w; flat.height = h;
+    const f = flat.getContext('2d')!;
+    f.drawImage(paint, 0, 0); f.globalCompositeOperation = 'source-in';
+    f.fillStyle = k === 'n' ? 'rgb(128,128,255)' : 'rgb(140,140,140)'; f.fillRect(0, 0, w, h);
+    g.drawImage(flat, 0, 0);
+  });
+  return tex;
 }
 
 // Graded caliche gravel: Codex's track with two wheel ruts (round 6, 4 m across, ruts along
@@ -57,8 +70,7 @@ export function highwayTex() {
 // the plain desert. The track ribbon is 6 m across (soft edges included), so the picture
 // spans the 4.6 m of firm track. World loads the picture (loadArtFor) before the road.
 export function gravelTex() {
-  return canvasTex(512, 1024, (g, w, h) => {
-    const desert = artImage('desert'), track = artImage('gravelTrack');
+  const draw = (g: CanvasRenderingContext2D, w: number, h: number, desert: HTMLImageElement, track: HTMLImageElement) => {
     g.drawImage(desert, 0, 0, w, 512); g.drawImage(desert, 0, 512, w, 512);
     const mid = document.createElement('canvas'); mid.width = w; mid.height = h;
     const m = mid.getContext('2d')!;
@@ -71,7 +83,10 @@ export function gravelTex() {
     fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.13, 'rgba(0,0,0,1)'); fade.addColorStop(0.87, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
     m.fillStyle = fade; m.fillRect(0, 0, w, h);
     g.drawImage(mid, 0, 0);
-  }, [1, 1]);
+  };
+  const tex = canvasTex(512, 1024, (g, w, h) => draw(g, w, h, artImage('desert'), artImage('gravelTrack')), [1, 1]);
+  dataTwin(tex, 512, 1024, (g, w, h, k) => draw(g, w, h, artImage(k === 'n' ? 'desertN' : 'desertR'), artImage(k === 'n' ? 'gravelTrackN' : 'gravelTrackR')));
+  return tex;
 }
 
 // ---------- signs: all faces in one atlas, one draw call ----------

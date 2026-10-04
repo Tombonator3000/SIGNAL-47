@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "diner/tex_wall_panel.jpg",
+  "albedo_sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-146d7bc3-904b-4731-80a0-747287fb5ec2.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_wall_panel_height_original.png",
+  "saved_original_sha256": "b37eb6d5fcd94dd9af85f8489de3aa5696b18b8b2c1f3017e3b4b0ef5b7f00bc",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT vertical wood panel albedo. Preserve square framing, all 13 vertical board strips and their exact narrow joint positions, original knot locations and edge continuation. Convert all differently colored board faces to approximately the SAME quiet midgray height; the orange/brown colors are wood pigment, not raised planks. Lower the existing thin vertical joints gently; give the edges a narrow soft roundover. Add only extremely weak lengthwise fiber relief and a very subtle rounded grain change at original knots. Do not turn every dark knot or fiber into a hole. Remove all color, directional illumination, shadows and stains. Output a low-contrast grayscale HEIGHT GUIDE, NOT a normal map: higher=brighter, lower=darker. No extra planks, no changed board width, no new knots, no wide trenches, no crop, no rotation, no border or text. Preserve the original pattern including top/bottom grain differences.",
+  "prompt_sha256_utf8": "9a7e6932e44d5f0f8c97d3d173a314e6ab54dff0c14d54eec39b6750165540f6",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}

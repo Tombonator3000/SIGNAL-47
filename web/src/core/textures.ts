@@ -307,12 +307,46 @@ export function chainlink() {
 }
 
 export function roadTex() {
-  return canvasTex(512, 512, (g, w, h) => {
-    g.drawImage(artImage('asphalt'), 0, 0, w, h);
+  const marks = (g: CanvasRenderingContext2D, w: number, h: number, yellow: string, white: string) => {
     g.scale(w / 64, h / 256);
-    g.fillStyle = '#c99a2e'; g.fillRect(29, 0, 3, 140); g.fillRect(34, 0, 3, 140);
-    g.fillStyle = '#9a9a92'; g.fillRect(2, 0, 2, 256); g.fillRect(60, 0, 2, 256);
+    g.fillStyle = yellow; g.fillRect(29, 0, 3, 140); g.fillRect(34, 0, 3, 140);
+    g.fillStyle = white; g.fillRect(2, 0, 2, 256); g.fillRect(60, 0, 2, 256);
+  };
+  const tex = canvasTex(512, 512, (g, w, h) => {
+    g.drawImage(artImage('asphalt'), 0, 0, w, h);
+    marks(g, w, h, '#c99a2e', '#9a9a92');
   }, [1, 60]);
+  dataTwin(tex, 512, 512, (g, w, h, k) => {
+    g.drawImage(artImage(k === 'n' ? 'asphaltN' : 'asphaltR'), 0, 0, w, h);
+    const flat = k === 'n' ? 'rgb(128,128,255)' : 'rgb(140,140,140)';
+    marks(g, w, h, flat, flat);
+  });
+  return tex;
+}
+
+/**
+ * For a canvas made from round 6/7 colour pictures (the roads): a builder for the matching
+ * normal and roughness canvases from the round 9 maps, drawn the same way, kept on the
+ * texture for core/ultra.ts. Built only when Ultra asks, and only once.
+ */
+export type TwinDraw = (g: CanvasRenderingContext2D, w: number, h: number, kind: 'n' | 'r') => void;
+export function dataTwin(tex: THREE.Texture, w: number, h: number, draw: TwinDraw) {
+  let made: { normal: THREE.Texture; roughness: THREE.Texture } | null = null;
+  tex.userData.dataTwin = (like: THREE.Texture) => {
+    if (!made) {
+      const one = (k: 'n' | 'r') => {
+        const t = canvasTex(w, h, (g, ww, hh) => draw(g, ww, hh, k));
+        t.colorSpace = THREE.NoColorSpace;
+        return t;
+      };
+      made = { normal: one('n'), roughness: one('r') };
+    }
+    for (const t of [made.normal, made.roughness]) {
+      t.wrapS = like.wrapS; t.wrapT = like.wrapT; t.repeat.copy(like.repeat); t.offset.copy(like.offset);
+      t.rotation = like.rotation; t.center.copy(like.center); t.flipY = like.flipY;
+    }
+    return made;
+  };
 }
 
 // ---------- Chapter one: service yard and photo lab ----------

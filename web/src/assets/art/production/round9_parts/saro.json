@@ -1,0 +1,1823 @@
+{
+  "schema": "signal47-round9-part-v1",
+  "group": "saro",
+  "created_utc": "2026-10-04T21:04:01.269199+00:00",
+  "builtin_generation_calls": 7,
+  "assets": [
+    {
+      "profile": "hextile",
+      "albedo": {
+        "path": "src/assets/art/room/tex_floor_hextile.jpg",
+        "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+        "bytes": 155674,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_floor_hextile_height.png",
+        "sha256": "b76e196e9f67a071265b04e1aa287c0a25f5e9a0cb69c32b660ff8bdc6a381a9",
+        "bytes": 1199512,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: linear grayscale HEIGHT GUIDE for a game PBR material, not final albedo. Edit target is the supplied hexagonal vinyl tile texture. Convert only the material color information into a height guide, keeping every grout line, tile corner, hexagon position and crop at exactly the same pixel location as the input. Full square 1024x1024. Grout is lowered dark gray (~64), each hexagonal tile top uniformly light gray (~185), tiny soft 2px rounded bevel beside grout. ALL tile tops must be the SAME elevation regardless of ochre/brown pigment color. Remove color variation, painted scuffs, stains, wear flecks from height information. No lighting, no shadows, no AO, no perspective, no gradient across image. Flat top-down grayscale technical height field. Preserve grout path precisely, do not redraw the hexagon lattice, no new cracks, no text, no border. This is a quiet stylized 1986 vinyl floor used in SIGNAL / 47. Opaque image.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-bb03699d-eba6-459a-a68e-ebba05f72d8d.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "geometry": "dark neutral connected grout; orange/brown tile pigment excluded",
+        "guide_weight_height_pixels": 0.018,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.10555648803710938,
+        "strong_slope_support_fraction": 0.3261299133300781,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/room/tex_floor_hextile_n.png",
+          "sha256": "029485267d767743bc736a4dafdee4d7044f6d3e181e36e7e833df2db1df5be5",
+          "bytes": 99933,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/room/tex_floor_hextile_r.jpg",
+          "sha256": "84f965e84049cae493463c371303755b1a2163c1cd9a2d3ffcc45e3ce441b742",
+          "bytes": 26621,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_normal_2x2.png",
+          "sha256": "85b3012b33b90315fdedf6eaa2f0211bc787fba95d60f10d0cc19481c77b03e6",
+          "bytes": 220457,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_overlay.png",
+          "sha256": "81a710cf6da6289d6115f892209f3ffe32daa414a70f1171c19d8a162e17748a",
+          "bytes": 314378,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_light_top.png",
+          "sha256": "2c8d9fc42f65e7803638b9a833aaa35a47f7721e361057776dbc4285903b48cd",
+          "bytes": 75079,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_mask.png",
+          "sha256": "68f5cacbaae86360613f2733b6b2ed0bd73a5d6552f0e6b37b6639c02663a42c",
+          "bytes": 15459,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_derived_height.png",
+          "sha256": "e278d85b25aad453474d5ad0950fe73d3001805d99ac86e2bf65f4f3dc416f80",
+          "bytes": 17781,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_roughness_2x2.png",
+          "sha256": "22c74ede24ffb49ae39a63901effb64e2b1713fa8627582da3c495ded0c42314",
+          "bytes": 103574,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/room/tex_floor_hextile_report.json",
+        "sha256": "52572872ed72ea736415af835e5831a2d1b258e02e2d584b296170626ff2314e",
+        "bytes": 12221
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 6.542814850342907,
+        "feature_max_degrees": 39.69397900290988,
+        "calm_pixel_count": 176089,
+        "feature_pixel_count": 86055,
+        "roughness_intended_range": [
+          0.45,
+          0.9
+        ],
+        "roughness_pre_jpeg_range": [
+          0.5,
+          0.8968627452850342
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4588235294117647,
+          "max": 0.9019607843137255,
+          "mean": 0.5268382502537148
+        },
+        "roughness_decoded_byte_bounds": [
+          115,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Fugene følger kildebildet; brun/oker pigment flatt. Kjent vertikal albedoregistrering og 8px datakantkrage består.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            115,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 6,
+          "first_encoding": {
+            "out_of_range_pixels": 69,
+            "range_bytes": [
+              117,
+              235
+            ]
+          },
+          "final_decoded_range_bytes": [
+            117,
+            230
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 12.434244791666666,
+          "p95_abs_byte_delta": 57,
+          "max_abs_byte_delta": 118
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ba3a1261cfbbecda12985c73e57efd94f741be0bacddfb51f458bd90c4a283bf",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
+    },
+    {
+      "profile": "wall_paint",
+      "albedo": {
+        "path": "src/assets/art/room/tex_wall_paint.jpg",
+        "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+        "bytes": 168716,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_wall_paint_height.png",
+        "sha256": "ee330128e80fad00be5a194bc501a4461c10d9d564bb72f30c64c2c6a1a06cda",
+        "bytes": 2730857,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Painted concrete blocks. The existing staggered mortar lines are recessed and must remain at their exact original positions. Broad block faces are flat at the same elevation with only very faint plaster irregularities. No height changes from blue-gray paint or dark stains. No new block layout.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-78286dde-400d-4584-8a85-ae93f5ab4a8d.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+        "guide_weight_height_pixels": 0.035,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.07323074340820312,
+        "strong_slope_support_fraction": 0.3269004821777344,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/room/tex_wall_paint_n.png",
+          "sha256": "eda63e320efd5e4a766d522c168f34401e94709ee89f7d500558c90ecc02a432",
+          "bytes": 186519,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/room/tex_wall_paint_r.jpg",
+          "sha256": "85b211fb25abc767bd3dc1cd5b6ae9e98b3dbcb932a3d8b60da2aa0ba6e76f48",
+          "bytes": 11832,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_normal_2x2.png",
+          "sha256": "413883ae3ae0482410a78a3c06e09fec06bed20fb9e26cfcd59f80c62636b1ba",
+          "bytes": 400061,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_overlay.png",
+          "sha256": "8ac76a1c86f05e1993a7b132af085a60a202cc8a8fe7166c296fb9658ed64089",
+          "bytes": 303634,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_light_top.png",
+          "sha256": "2c6428a25a21a2ec856ff0605167544428e7228226a9b1074c20f6be8fcfa2d9",
+          "bytes": 119001,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_mask.png",
+          "sha256": "e509a3d24dc57fcf9952b6ffa212de4045bc56af8a716ebf80b0602ded62fb6e",
+          "bytes": 68523,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_derived_height.png",
+          "sha256": "4cb98fa061810244386d0c14294563ec75d3950c198b325a82495ad4fd4a3a72",
+          "bytes": 71123,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_roughness_2x2.png",
+          "sha256": "90b553d9ef51acfeb123ea918cf54e6d056949698bdb1ccd649245120fa349d7",
+          "bytes": 79160,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/room/tex_wall_paint_report.json",
+        "sha256": "28121552c1dad7ef658f1072490aff6519f7815c9dd39c0ccaa4c5e28083e5ce",
+        "bytes": 12147
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 6.573552859453771,
+        "feature_max_degrees": 30.662397196265612,
+        "calm_pixel_count": 176431,
+        "feature_pixel_count": 85713,
+        "roughness_intended_range": [
+          0.7,
+          0.9
+        ],
+        "roughness_pre_jpeg_range": [
+          0.75,
+          0.8882352709770203
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.7372549019607844,
+          "max": 0.8941176470588236,
+          "mean": 0.7558736763748468
+        },
+        "roughness_decoded_byte_bounds": [
+          178,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Mørtellinjene følger kilden; små porer er rolige.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            178,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              188,
+              228
+            ]
+          },
+          "final_decoded_range_bytes": [
+            188,
+            228
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 8.817708333333334,
+          "p95_abs_byte_delta": 28,
+          "max_abs_byte_delta": 47
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "6550d407e12a690bf533b717d1329dafe8dc7b6cb34d3cf042a71e495a5351ef",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
+    },
+    {
+      "profile": "cabinet",
+      "albedo": {
+        "path": "src/assets/art/yard/tex_cabinet_metal.jpg",
+        "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+        "bytes": 143277,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_cabinet_metal_height.png",
+        "sha256": "38ee7364d948563783c7fbe1c569f282a5344f2e8331f0798f6ac6e25bf28ed0",
+        "bytes": 1746421,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Gray painted steel cabinet surface with sparse thin scratches and tiny rust flecks. Almost perfectly flat paint, only existing fine scratches subtly recessed and identified brown rust flecks slightly raised. Do not give dark scuffs or paint discoloration height. No new panels, frames, rivets, seams or rust patches. Ignore broad lighting/color variation.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-ba145dab-54a1-404e-a3ae-fb0264ca6f77.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "rust_core_pixel_count": 46,
+        "geometry": "weak narrow scratches and source-supported red-brown rust; no broad tonal dents",
+        "guide_weight_height_pixels": 0.025,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.003162384033203125,
+        "strong_slope_support_fraction": 0.059803009033203125,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/yard/tex_cabinet_metal_n.png",
+          "sha256": "9d4b3234871675c44f6c22b4731bc4d9b135c545b9f5a39cfd3c337a1a2dc6e5",
+          "bytes": 76119,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/yard/tex_cabinet_metal_r.jpg",
+          "sha256": "4475907caa6ca65d44db3801960615764b325fb20049e987293f08af477da0ba",
+          "bytes": 4236,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_normal_2x2.png",
+          "sha256": "c74b52389219f2594781e3c67ba3713f7d254a9c843cd10247cc4461b2012145",
+          "bytes": 172926,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_overlay.png",
+          "sha256": "8c4ffbabea791752f5c5ae0ca8ad710d661e52d02594e75d7a9bcafef9f5f5c5",
+          "bytes": 257979,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_light_top.png",
+          "sha256": "10f05b3864fc7a3b1e3567269df804ce7ffb49e39022317d5919c6d02bd1dc54",
+          "bytes": 46758,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_mask.png",
+          "sha256": "915cf5713f0cfc6425d624b22e91d6f04f160190de924bdc5e66a1af4db61429",
+          "bytes": 23009,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_derived_height.png",
+          "sha256": "397ba6a607a3bc91ca2b9ca886d40b0151b64a06cbaa2211009cba4a7521532a",
+          "bytes": 27930,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_roughness_2x2.png",
+          "sha256": "c0e9ec258bb1b5f18292aa1e6ef4b1a973b5bebfac0ac2dc6e5184ba98dee2e9",
+          "bytes": 33145,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/yard/tex_cabinet_metal_report.json",
+        "sha256": "b97371667fe8226aa5a2bc71463260d0130abb130efea38f09db64fbdfd79852",
+        "bytes": 12232
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 1.7106744679827237,
+        "feature_max_degrees": 9.90755546353511,
+        "calm_pixel_count": 246500,
+        "feature_pixel_count": 15644,
+        "roughness_intended_range": [
+          0.5,
+          0.9
+        ],
+        "roughness_pre_jpeg_range": [
+          0.574999988079071,
+          0.8999999761581421
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.5490196078431373,
+          "max": 0.9019607843137255,
+          "mean": 0.5769301769780177
+        },
+        "roughness_decoded_byte_bounds": [
+          127,
+          230
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Fine riper og bare brune rustflekker med høyere ruhet; grå maling holdes rolig.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            127,
+            230
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 4,
+          "first_encoding": {
+            "out_of_range_pixels": 7,
+            "range_bytes": [
+              140,
+              239
+            ]
+          },
+          "final_decoded_range_bytes": [
+            140,
+            230
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 3.6376953125,
+          "p95_abs_byte_delta": 10,
+          "max_abs_byte_delta": 34
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "f655d49f56e86db108e33dca1fdf01e530df8bb711845adfe7ee95902767584e",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
+    },
+    {
+      "profile": "desert",
+      "albedo": {
+        "path": "src/assets/art/ext/tex_desert_ground.jpg",
+        "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+        "bytes": 372460,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_desert_ground_height.png",
+        "sha256": "9250c6a4e58a19d098d7041eb015777e8cf46e16006de7b9ba0b8f98acaec19c",
+        "bytes": 3189198,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Dry desert soil seen vertically from above. Existing pebbles and twig/grass tufts slightly raised, fine existing dry cracks recessed. Keep their exact positions. Sand nearly flat, with broad ochre pigment variation removed. No hills, landscape, directional shadows or new foliage.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-e6c87572-997c-45fa-94ab-9bb7c02fac16.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "geometry": "small source aggregate peaks and narrow depressions; broad colour/shading excluded",
+        "guide_weight_height_pixels": 0.05,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.5464591979980469,
+        "strong_slope_support_fraction": 1.0,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/ext/tex_desert_ground_n.png",
+          "sha256": "b8338dbbf066fd28dcf478c959cf0e512dfd00b1e4accbe83f42714762e1d42d",
+          "bytes": 407252,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/ext/tex_desert_ground_r.jpg",
+          "sha256": "91434833621c8408219b4d6f089b6e2f354b4e60a484fe12f24ceb43201d8433",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_normal_2x2.png",
+          "sha256": "abeb92dcefd4b949a51aa72e0137a7ca229902e35c03fff9d573766302128520",
+          "bytes": 834346,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_overlay.png",
+          "sha256": "5506572697b67a86b02a0edb0660141f6dc6af3214411b3c626a58f1a07d350e",
+          "bytes": 513882,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_light_top.png",
+          "sha256": "e119a1a14e82fd07d671e4f46d6a823f3367d9628364aa7d35f5e3ff9b295133",
+          "bytes": 231430,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_mask.png",
+          "sha256": "73a6d04fd19b032d34d137af22881f0c0159e1e484d0164a4fc2c9cd3a3a44c2",
+          "bytes": 206421,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_derived_height.png",
+          "sha256": "5b91b2abe52c83d8f3d899b4347d1e4ab61db463ad4b794417818e515aa191d8",
+          "bytes": 187759,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_roughness_2x2.png",
+          "sha256": "1945fdcc845b7c108f3d378d5702e29bfc992376d278f00f6994298d7c65b64c",
+          "bytes": 2385,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/ext/tex_desert_ground_report.json",
+        "sha256": "66eac535962b232e25be207af805f1c116ac2e39711dd8fa652f150147596cc1",
+        "bytes": 12216
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 0,
+        "feature_max_degrees": 26.706540654035074,
+        "calm_pixel_count": 0,
+        "feature_pixel_count": 262144,
+        "roughness_intended_range": [
+          0.95,
+          1.0
+        ],
+        "roughness_pre_jpeg_range": [
+          0.9750000238418579,
+          0.9750000238418579
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.9764705882352941,
+          "max": 0.9764705882352941,
+          "mean": 0.9764705882352941
+        },
+        "roughness_decoded_byte_bounds": [
+          242,
+          255
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Rolig småsteinstruktur; brede sandfargefelt gir ikke høyde.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            242,
+            255
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              249,
+              249
+            ]
+          },
+          "final_decoded_range_bytes": [
+            249,
+            249
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 15.046223958333334,
+          "p95_abs_byte_delta": 39,
+          "max_abs_byte_delta": 76
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "91434833621c8408219b4d6f089b6e2f354b4e60a484fe12f24ceb43201d8433",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
+    },
+    {
+      "profile": "asphalt",
+      "albedo": {
+        "path": "src/assets/art/ext/tex_asphalt_wet.jpg",
+        "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+        "bytes": 305609,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_asphalt_wet_height.png",
+        "sha256": "8c304ceee93c7c31c03882205d67018d1901c74c4b57557f4c2c245dc5a97309",
+        "bytes": 3064659,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Cracked damp asphalt seen vertically from above. Existing thin branching cracks recessed, visible aggregate very slightly raised. Darker damp/puddle fields remain flat, no elevation from wet pigment. Keep every crack position exactly, do not invent stones or broaden cracks. Most of surface very flat.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-171b94e7-afad-4f1a-bf01-e64a81f7b7e6.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+        "wet_method": "source-relative dark low-frequency regions with low local texture energy, 12px smoothing; narrow cracks excluded",
+        "wet_interpretation": "UNVERIFIED: damp-looking smooth dark regions, not photographic proof of standing water",
+        "wet_thresholds": {
+          "tone_p10": 0.24313725490196078,
+          "tone_p55": 0.2627450980392157,
+          "texture_energy_p15": 0.03529411764705882,
+          "texture_energy_p70": 0.0392156862745098,
+          "max_candidate_before_normalization": 0.9137254901960784
+        },
+        "guide_weight_height_pixels": 0.04,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.4722328186035156,
+        "strong_slope_support_fraction": 0.9997062683105469,
+        "puddle_candidate_fraction": 0.21657562255859375
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/ext/tex_asphalt_wet_n.png",
+          "sha256": "c4c86385d7029f37e45ac21ce3011652b21d339b4de8bea33b8a025e5368360a",
+          "bytes": 304156,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/ext/tex_asphalt_wet_r.jpg",
+          "sha256": "0e7be2a9fdb578fd55bbb51d24f850da3723b1ee31d3122fb49483c9c8a7e77f",
+          "bytes": 28521,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_normal_2x2.png",
+          "sha256": "df603bb03b3206a98b41a5bc928a15eab71d8ec2c2063c9494be96b65e72467f",
+          "bytes": 640449,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_overlay.png",
+          "sha256": "7ed58685555c077f4c225147163da99086661c074bb2685033aa1a4412ce41d4",
+          "bytes": 478871,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_light_top.png",
+          "sha256": "e4d8ab0fe89b12f1bed99c01360855c04f7e04dd31ad29b0f2b4889b7a32bebf",
+          "bytes": 175755,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_mask.png",
+          "sha256": "7295b95d08bf66ac4bb905077e607cfc090a415cf8a82c0dcee1096e6a41da15",
+          "bytes": 195202,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_derived_height.png",
+          "sha256": "86fe4ef784947fee3bbd36262c00e2fed95bf46e672eb11aab578a908d5ec107",
+          "bytes": 195869,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness_2x2.png",
+          "sha256": "96376d8b87e654718669f083318d6e1e7ea53473ee7a54d6ef7d464bf8941b53",
+          "bytes": 167685,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness.png",
+          "sha256": "a4a469a13c15f94b37d55f3379398ccc91e027fc2a961c9420ceadbf1c1e847c",
+          "bytes": 81778,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_report.json",
+        "sha256": "95f565657a6ef4bb70b0cbbf006469579bd6477dcba84551898c90cd979ceae5",
+        "bytes": 13070
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 1.5883864605532065,
+        "feature_max_degrees": 12.183075418024846,
+        "calm_pixel_count": 77,
+        "feature_pixel_count": 262067,
+        "roughness_intended_range": [
+          0.15,
+          0.85
+        ],
+        "roughness_pre_jpeg_range": [
+          0.23000000417232513,
+          0.800000011920929
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.2235294117647059,
+          "max": 0.803921568627451,
+          "mean": 0.7170502307368259
+        },
+        "roughness_decoded_byte_bounds": [
+          38,
+          217
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Eksisterende sprekker senket og myke, mørke fuktfelt blankere. Stående vann er en materialtolkning, UNVERIFIED.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            38,
+            217
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              57,
+              205
+            ]
+          },
+          "final_decoded_range_bytes": [
+            57,
+            205
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 11.489908854166666,
+          "p95_abs_byte_delta": 30,
+          "max_abs_byte_delta": 65
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ec1e868aafb76b95912e51ac82d24680796dde2ee5647d90d7b0887595685ec2",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
+    },
+    {
+      "profile": "concrete",
+      "albedo": {
+        "path": "src/assets/art/ext/tex_concrete.jpg",
+        "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+        "bytes": 309800,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_concrete_height.png",
+        "sha256": "efb05cd25b8a5d4ccbaf13e3ed37e534d53804d7bad95b22e748553eb5ce11e7",
+        "bytes": 3341361,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Weathered outdoor concrete. This original has fine exposed aggregate and only faint pits, no major panel seam. Keep the slab nearly flat, slightly raise visible tiny aggregate and recess visible small pits and existing hairline marks. Broad beige discoloration is pigment, not height. Avoid broad blobs or inventing joint lines.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-1259f2cb-c21b-4dff-b18f-e14f3d3ca4a4.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+        "guide_weight_height_pixels": 0.05,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.304962158203125,
+        "strong_slope_support_fraction": 0.998687744140625,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/ext/tex_concrete_n.png",
+          "sha256": "3806f0f03071528ab7bdd2ef347f7142c48340cb580a97761306d0c9453f95d9",
+          "bytes": 304125,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/ext/tex_concrete_r.jpg",
+          "sha256": "4a81335468ffbc90a7dccab48c7676caae16fdb51ba81dfd8cf4d550ed27b934",
+          "bytes": 1185,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_normal_2x2.png",
+          "sha256": "723d3d6f81814905ede14dc5711e860f4cd29951382cc820a4734c8ab5419006",
+          "bytes": 640968,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_overlay.png",
+          "sha256": "aba1ecfced27e25544a0a64ecc388c2a6e7cba2246dd361e14e08cc559c2f756",
+          "bytes": 454347,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_light_top.png",
+          "sha256": "7dcd2f4fb0ce23b03d544e21fd52e7f7f5dbd257d7b3af35a28b154192eecd35",
+          "bytes": 178484,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_mask.png",
+          "sha256": "3e334205f0d3135e26949ce75228d281bcfb371a9c52c9927c095244e18b5c9b",
+          "bytes": 181990,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_derived_height.png",
+          "sha256": "9d645a80bdf02d28610e950182f61767a85166ad454477188559ca1756e49618",
+          "bytes": 184759,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/ext/tex_concrete_roughness_2x2.png",
+          "sha256": "450fca149dc3ebf7195cc5fcc0693ba169186da0609c18ec13533e5c01708b90",
+          "bytes": 2386,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/ext/tex_concrete_report.json",
+        "sha256": "de02ec27d4e3a51e40dd49880ebb88c7ac0e9bc3f7f1904e7b08ae209f22e4f8",
+        "bytes": 12160
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 1.7106744679827237,
+        "feature_max_degrees": 16.101986574620067,
+        "calm_pixel_count": 341,
+        "feature_pixel_count": 261803,
+        "roughness_intended_range": [
+          0.85,
+          0.95
+        ],
+        "roughness_pre_jpeg_range": [
+          0.8999999761581421,
+          0.8999999761581421
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.8980392156862745,
+          "max": 0.8980392156862745,
+          "mean": 0.8980392156862745
+        },
+        "roughness_decoded_byte_bounds": [
+          217,
+          242
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Svak kildeforankret grop/tilslagsstruktur, ingen oppfunnet panelskjøt.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            217,
+            242
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              229,
+              229
+            ]
+          },
+          "final_decoded_range_bytes": [
+            229,
+            229
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 10.500651041666666,
+          "p95_abs_byte_delta": 26,
+          "max_abs_byte_delta": 50
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "4a81335468ffbc90a7dccab48c7676caae16fdb51ba81dfd8cf4d550ed27b934",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": false
+      }
+    },
+    {
+      "profile": "vinyl",
+      "albedo": {
+        "path": "src/assets/art/annex/tex_floor_vinyl.jpg",
+        "sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+        "bytes": 111439,
+        "size": [
+          1024,
+          1024
+        ],
+        "mode": "RGB",
+        "format": "JPEG"
+      },
+      "albedo_unchanged": true,
+      "generated_source": {
+        "path": "src/assets/art/production/round9_sources/saro/tex_floor_vinyl_height.png",
+        "sha256": "e9175cf9fddcf1a9bdb191793ed1b1efcff7a740e13c40f8a6d5061798210403",
+        "bytes": 1506604,
+        "size": [
+          1254,
+          1254
+        ],
+        "mode": "RGB",
+        "format": "PNG",
+        "tool": "built-in ChatGPT image generator",
+        "model_version": "not exposed by tool",
+        "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Sixteen square vinyl tiles in a 4x4 grid, existing very thin seams at x and y 0/256/512/768/1024 in the supplied 1024 target. Recess only these actual seams with a tiny soft bevel; all tile interiors at the same uniform height. Speckled beige marbling, dirt and wear patches are pigment and must not be bumps. Do not create extra tile lines.",
+        "generator_original": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-1e79b7a8-a3be-4392-a099-874c60581bc1.png",
+        "role": "supplemental height guide; original albedo masks define geometry"
+      },
+      "tool": {
+        "file": "tools/round9_maps.py",
+        "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "pillow": "12.1.1",
+        "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+      },
+      "method": {
+        "grid": {
+          "count_per_axis": 4,
+          "phase_pixels": [
+            1,
+            127
+          ],
+          "period_pixels": 128.0
+        },
+        "geometry": "source-edge fitted regular joints, no height from tile colour",
+        "guide_weight_height_pixels": 0.015,
+        "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+        "feature_mask_fraction": 0.07659912109375,
+        "strong_slope_support_fraction": 0.19281005859375,
+        "puddle_candidate_fraction": 0.0
+      },
+      "outputs": {
+        "normal": {
+          "path": "src/assets/art/annex/tex_floor_vinyl_n.png",
+          "sha256": "8989fb6cec0811f0c75bb7c38be6143a0ae289e6c39af8e47e6e4b6a44e40032",
+          "bytes": 67069,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "roughness": {
+          "path": "src/assets/art/annex/tex_floor_vinyl_r.jpg",
+          "sha256": "a3fe8d63e2929697a1c4c32332a6142dbe2fc6e9e78b04008aad14cb25782a2d",
+          "bytes": 6644,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "JPEG"
+        }
+      },
+      "qa": {
+        "normal_2x2": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_normal_2x2.png",
+          "sha256": "fb0ea90e2293a0a9dd56de8b4923d647ac51952f950f9fbbd9926192ab2e9f50",
+          "bytes": 153614,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "overlay": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_overlay.png",
+          "sha256": "04f0ebdb859513239d3eadd7232d8394fa71f6222aaae538e4c9e53c915db3c3",
+          "bytes": 229392,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "light_top": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_light_top.png",
+          "sha256": "03ac9fa86edcdba1802d9e5bcc0863dd22e747b4611d6c8dd4c5ff739e0b41de",
+          "bytes": 41147,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "RGB",
+          "format": "PNG"
+        },
+        "mask": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_mask.png",
+          "sha256": "3036041782f5f73f2e40a18d3bfb4661d34077f14b468a84bad109bb0e2a4bbf",
+          "bytes": 1245,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "derived_height": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_derived_height.png",
+          "sha256": "182b2ff329abdba8fcd18c203b8f5756944a92f9a665dc0b28454b4651e8173f",
+          "bytes": 2258,
+          "size": [
+            512,
+            512
+          ],
+          "mode": "L",
+          "format": "PNG"
+        },
+        "roughness_2x2": {
+          "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_roughness_2x2.png",
+          "sha256": "be5401f2d99bcc1887892fb3bf0a32d2b8ec194e88ff49b661953cbb0bb9a9a1",
+          "bytes": 18021,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "L",
+          "format": "PNG"
+        }
+      },
+      "report": {
+        "path": "src/assets/art/production/round9_qa/annex/tex_floor_vinyl_report.json",
+        "sha256": "824ac0267e0bd6fb779062ad0781689a0283c0e26c4215c0f62cb6d5f0b4d715",
+        "bytes": 12284
+      },
+      "technical_status": "PASS",
+      "positive_y_status": "PASS",
+      "material_contract": {
+        "calm_max_degrees": 2.927041436948962,
+        "feature_max_degrees": 13.88850337039678,
+        "calm_pixel_count": 211140,
+        "feature_pixel_count": 51004,
+        "roughness_intended_range": [
+          0.45,
+          0.6
+        ],
+        "roughness_pre_jpeg_range": [
+          0.48676469922065735,
+          0.5935294032096863
+        ],
+        "status": "PASS",
+        "roughness_decoded_range": {
+          "min": 0.4745098039215686,
+          "max": 0.592156862745098,
+          "mean": 0.5291604883530561
+        },
+        "roughness_decoded_byte_bounds": [
+          115,
+          153
+        ],
+        "roughness_decoded_status": "PASS"
+      },
+      "visual_review": {
+        "status": "PASS",
+        "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+        "note": "Fire ganger fire sourcefuger; marmoreringspigment flatt. Sammenhengende gangsti UNVERIFIED.",
+        "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+        "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+        "normal_and_albedo_unchanged": true,
+        "p2_roughness_review": {
+          "status": "PASS",
+          "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+          "reviewer": "Codex root",
+          "views": [
+            "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+            "fresh private Three.js hextile/asphalt/booth screenshots",
+            "unchanged normal and albedo hash proof"
+          ],
+          "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+        }
+      },
+      "seam_conditioning": {
+        "data_only": true,
+        "band_pixels": 8,
+        "flat_boundary_pixels": 2,
+        "normal_edges": {
+          "mean_abs_byte_delta": 0.0,
+          "p95_abs_byte_delta": 0,
+          "max_abs_byte_delta": 0
+        },
+        "roughness_jpeg": {
+          "quality": 90,
+          "allowed_decoded_byte_range": [
+            115,
+            153
+          ],
+          "profile_representation_tolerance": 0.00196078431372549,
+          "feedback_passes": 0,
+          "first_encoding": {
+            "out_of_range_pixels": 0,
+            "range_bytes": [
+              121,
+              151
+            ]
+          },
+          "final_decoded_range_bytes": [
+            121,
+            151
+          ],
+          "decoded_edges": {
+            "mean_abs_byte_delta": 0.0,
+            "p95_abs_byte_delta": 0,
+            "max_abs_byte_delta": 0
+          },
+          "flat_collar_pixels": 8,
+          "transition_pixels": 8
+        },
+        "albedo_edges_unmodified": {
+          "mean_abs_byte_delta": 45.905924479166664,
+          "p95_abs_byte_delta": 54,
+          "max_abs_byte_delta": 63
+        }
+      },
+      "reproduction": {
+        "status": "PASS",
+        "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+        "outputs_byte_identical": true,
+        "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+        "unchanged_albedo_sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+        "scope": "after P2 decoded JPEG correction"
+      },
+      "runtime_status": "UNVERIFIED: Claude owns game integration",
+      "limitations": [
+        "Semantic feature masks require visual review per source.",
+        "The guide does not replace source geometry.",
+        "Normal direction test verifies the converter, not semantic correctness of every bump.",
+        "Equal data-map borders do not fix or certify albedo seams.",
+        "PNG QA lighting is diagnostic, not an in-game screenshot.",
+        "No exact image-generator model version is inferred by this tool."
+      ],
+      "p2_correction": {
+        "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+        "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+        "previous_roughness_sha256": "ebae8aac6f32bdd69a232444c7b951fccd4a60b462c0da20e69cdb730cff59ac",
+        "normal_unchanged": true,
+        "albedo_unchanged": true,
+        "roughness_changed": true
+      }
+    }
+  ],
+  "updated_utc": "2026-10-04T21:26:56.984354+00:00"
+}

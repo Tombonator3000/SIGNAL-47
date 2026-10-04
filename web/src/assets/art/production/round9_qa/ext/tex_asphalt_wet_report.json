@@ -1,0 +1,490 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "pillow": "12.1.1",
+    "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+  },
+  "albedo": {
+    "path": "src/assets/art/ext/tex_asphalt_wet.jpg",
+    "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+    "bytes": 305609,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/saro/tex_asphalt_wet_height.png",
+    "sha256": "8c304ceee93c7c31c03882205d67018d1901c74c4b57557f4c2c245dc5a97309",
+    "bytes": 3064659,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "asphalt",
+  "parameters": {
+    "kind": "asphalt",
+    "rough": [
+      0.75,
+      0.85
+    ],
+    "depth": 0.5,
+    "guide": 0.04
+  },
+  "method": {
+    "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+    "wet_method": "source-relative dark low-frequency regions with low local texture energy, 12px smoothing; narrow cracks excluded",
+    "wet_interpretation": "UNVERIFIED: damp-looking smooth dark regions, not photographic proof of standing water",
+    "wet_thresholds": {
+      "tone_p10": 0.24313725490196078,
+      "tone_p55": 0.2627450980392157,
+      "texture_energy_p15": 0.03529411764705882,
+      "texture_energy_p70": 0.0392156862745098,
+      "max_candidate_before_normalization": 0.9137254901960784
+    },
+    "guide_weight_height_pixels": 0.04,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.4722328186035156,
+    "strong_slope_support_fraction": 0.9997062683105469,
+    "puddle_candidate_fraction": 0.21657562255859375
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/ext/tex_asphalt_wet_n.png",
+      "sha256": "c4c86385d7029f37e45ac21ce3011652b21d339b4de8bea33b8a025e5368360a",
+      "bytes": 304156,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/ext/tex_asphalt_wet_r.jpg",
+      "sha256": "0e7be2a9fdb578fd55bbb51d24f850da3723b1ee31d3122fb49483c9c8a7e77f",
+      "bytes": 28521,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_normal_2x2.png",
+      "sha256": "df603bb03b3206a98b41a5bc928a15eab71d8ec2c2063c9494be96b65e72467f",
+      "bytes": 640449,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_overlay.png",
+      "sha256": "7ed58685555c077f4c225147163da99086661c074bb2685033aa1a4412ce41d4",
+      "bytes": 478871,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_light_top.png",
+      "sha256": "e4d8ab0fe89b12f1bed99c01360855c04f7e04dd31ad29b0f2b4889b7a32bebf",
+      "bytes": 175755,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_mask.png",
+      "sha256": "7295b95d08bf66ac4bb905077e607cfc090a415cf8a82c0dcee1096e6a41da15",
+      "bytes": 195202,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_derived_height.png",
+      "sha256": "86fe4ef784947fee3bbd36262c00e2fed95bf46e672eb11aab578a908d5ec107",
+      "bytes": 195869,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "roughness_2x2": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness_2x2.png",
+      "sha256": "96376d8b87e654718669f083318d6e1e7ea53473ee7a54d6ef7d464bf8941b53",
+      "bytes": 167685,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/production/round9_qa/ext/tex_asphalt_wet_roughness.png",
+      "sha256": "a4a469a13c15f94b37d55f3379398ccc91e027fc2a961c9420ceadbf1c1e847c",
+      "bytes": 81778,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "roughness_jpeg": {
+      "quality": 90,
+      "allowed_decoded_byte_range": [
+        38,
+        217
+      ],
+      "profile_representation_tolerance": 0.00196078431372549,
+      "feedback_passes": 0,
+      "first_encoding": {
+        "out_of_range_pixels": 0,
+        "range_bytes": [
+          57,
+          205
+        ]
+      },
+      "final_decoded_range_bytes": [
+        57,
+        205
+      ],
+      "decoded_edges": {
+        "mean_abs_byte_delta": 0.0,
+        "p95_abs_byte_delta": 0,
+        "max_abs_byte_delta": 0
+      },
+      "flat_collar_pixels": 8,
+      "transition_pixels": 8
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 11.489908854166666,
+      "p95_abs_byte_delta": 30,
+      "max_abs_byte_delta": 65
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 252
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9955765294105272,
+          "max": 1.0044346115546243
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 12.183075418024846,
+          "pixels_over15": 0
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      },
+      {
+        "check": "roughness decoded opposite border pixels identical",
+        "status": "PASS",
+        "detail": {
+          "mismatched_pixels": 0
+        }
+      },
+      {
+        "check": "roughness decoded within profile byte bounds",
+        "status": "PASS",
+        "detail": {
+          "profile_range": [
+            0.15,
+            0.85
+          ],
+          "allowed_bytes": [
+            38,
+            217
+          ],
+          "decoded_bytes": [
+            57,
+            205
+          ],
+          "out_of_range_pixels": 0,
+          "representation_tolerance": 0.00196078431372549
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.2235294117647059,
+      "max": 0.803921568627451,
+      "mean": 0.7170502307368259
+    },
+    "roughness_profile_status": "PASS"
+  },
+  "material_contract": {
+    "calm_max_degrees": 1.5883864605532065,
+    "feature_max_degrees": 12.183075418024846,
+    "calm_pixel_count": 77,
+    "feature_pixel_count": 262067,
+    "roughness_intended_range": [
+      0.15,
+      0.85
+    ],
+    "roughness_pre_jpeg_range": [
+      0.23000000417232513,
+      0.800000011920929
+    ],
+    "status": "PASS",
+    "roughness_decoded_range": {
+      "min": 0.2235294117647059,
+      "max": 0.803921568627451,
+      "mean": 0.7170502307368259
+    },
+    "roughness_decoded_byte_bounds": [
+      38,
+      217
+    ],
+    "roughness_decoded_status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool.",
+    "JPEG readback must pass exact opposite-border equality and profile bounds with ±0.5/255 representation tolerance."
+  ],
+  "visual_review": {
+    "status": "PASS",
+    "reviewer": "Codex root, source/mask/overlay/top-light/roughness inspection",
+    "note": "Eksisterende sprekker senket og myke, mørke fuktfelt blankere. Stående vann er en materialtolkning, UNVERIFIED.",
+    "reviewed_utc": "2026-10-04T20:57:14.500044+00:00",
+    "seamless_albedo": "NOT CERTIFIED; inherited source seams remain",
+    "normal_and_albedo_unchanged": true,
+    "p2_roughness_review": {
+      "status": "PASS",
+      "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+      "reviewer": "Codex root",
+      "views": [
+        "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+        "fresh private Three.js hextile/asphalt/booth screenshots",
+        "unchanged normal and albedo hash proof"
+      ],
+      "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+    }
+  },
+  "p2_correction": {
+    "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+    "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+    "previous_roughness_sha256": "ec1e868aafb76b95912e51ac82d24680796dde2ee5647d90d7b0887595685ec2",
+    "normal_unchanged": true,
+    "albedo_unchanged": true,
+    "roughness_changed": true
+  },
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+    "outputs_byte_identical": true,
+    "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "unchanged_albedo_sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+    "scope": "after P2 decoded JPEG correction"
+  }
+}

@@ -1,0 +1,482 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "pillow": "12.1.1",
+    "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+  },
+  "albedo": {
+    "path": "src/assets/art/station/tex_concrete_old.jpg",
+    "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+    "bytes": 335151,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/station/concrete_old_height_original.png",
+    "sha256": "190ef0da58a90410a83a4f6eac4a2c70581db5ca921b084136f992419adf6635",
+    "bytes": 3059249,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "concrete_old",
+  "parameters": {
+    "kind": "granular",
+    "rough": [
+      0.9,
+      1.0
+    ],
+    "depth": 0.8,
+    "guide": 0.05
+  },
+  "method": {
+    "geometry": "small source aggregate peaks and narrow depressions; broad colour/shading excluded",
+    "guide_weight_height_pixels": 0.05,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.3975257873535156,
+    "strong_slope_support_fraction": 0.9992942810058594,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/station/tex_concrete_old_n.png",
+      "sha256": "422018a538d81bc0531f00f60297df7cfdfcd2ae959fcef7f513cc11df58724e",
+      "bytes": 368241,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/station/tex_concrete_old_r.jpg",
+      "sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+      "bytes": 1185,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_normal_2x2.png",
+      "sha256": "258d36b6fc1fa3e369fa7b08e67244f0cb83f5abfab516cf5a25a240eeba3021",
+      "bytes": 761454,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_overlay.png",
+      "sha256": "7a2088622594df75814dc62547de2310bd805b7fa08c195861cf64bd1f077b9d",
+      "bytes": 483308,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_light_top.png",
+      "sha256": "7aa8a6844d0c77a98ab8378970467106e78d0ce3a40db3457df78799203dd36c",
+      "bytes": 214603,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_mask.png",
+      "sha256": "4631ef2e4fecf16bb88755c67023003d05bc15805e58261ffbf33a6b539152a6",
+      "bytes": 193027,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_derived_height.png",
+      "sha256": "8c0d35ee235a73bfeb58219dc8646fefdb8069aef8a8dbb078f15210bc1322cd",
+      "bytes": 181086,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "roughness_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_roughness_2x2.png",
+      "sha256": "0d5078283d06ec56fa1806a261ed062647ddf66c4c39c2e89a3e58f3a76e2d11",
+      "bytes": 2386,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "roughness_jpeg": {
+      "quality": 90,
+      "allowed_decoded_byte_range": [
+        229,
+        255
+      ],
+      "profile_representation_tolerance": 0.00196078431372549,
+      "feedback_passes": 0,
+      "first_encoding": {
+        "out_of_range_pixels": 0,
+        "range_bytes": [
+          242,
+          242
+        ]
+      },
+      "final_decoded_range_bytes": [
+        242,
+        242
+      ],
+      "decoded_edges": {
+        "mean_abs_byte_delta": 0.0,
+        "p95_abs_byte_delta": 0,
+        "max_abs_byte_delta": 0
+      },
+      "flat_collar_pixels": 8,
+      "transition_pixels": 8
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 12.326497395833334,
+      "p95_abs_byte_delta": 33,
+      "max_abs_byte_delta": 67
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 244
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9950202809375918,
+          "max": 1.004863222591452
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 23.897163913423064,
+          "pixels_over15": 2259
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      },
+      {
+        "check": "roughness decoded opposite border pixels identical",
+        "status": "PASS",
+        "detail": {
+          "mismatched_pixels": 0
+        }
+      },
+      {
+        "check": "roughness decoded within profile byte bounds",
+        "status": "PASS",
+        "detail": {
+          "profile_range": [
+            0.9,
+            1.0
+          ],
+          "allowed_bytes": [
+            229,
+            255
+          ],
+          "decoded_bytes": [
+            242,
+            242
+          ],
+          "out_of_range_pixels": 0,
+          "representation_tolerance": 0.00196078431372549
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.9490196078431372,
+      "max": 0.9490196078431372,
+      "mean": 0.9490196078431372
+    },
+    "roughness_profile_status": "PASS"
+  },
+  "material_contract": {
+    "calm_max_degrees": 2.0337938122111194,
+    "feature_max_degrees": 23.897163913423064,
+    "calm_pixel_count": 187,
+    "feature_pixel_count": 261957,
+    "roughness_intended_range": [
+      0.9,
+      1.0
+    ],
+    "roughness_pre_jpeg_range": [
+      0.949999988079071,
+      0.949999988079071
+    ],
+    "status": "PASS",
+    "roughness_decoded_range": {
+      "min": 0.9490196078431372,
+      "max": 0.9490196078431372,
+      "mean": 0.9490196078431372
+    },
+    "roughness_decoded_byte_bounds": [
+      229,
+      255
+    ],
+    "roughness_decoded_status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool.",
+    "JPEG readback must pass exact opposite-border equality and profile bounds with ±0.5/255 representation tolerance."
+  ],
+  "visual_review": {
+    "status": "PASS",
+    "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+    "reviewer": "Codex B1 asset inspection",
+    "reviewed_views": [
+      "original albedo",
+      "original generated height guide",
+      "normal 2x2",
+      "normal over albedo at 50%",
+      "flat top lighting",
+      "roughness grayscale"
+    ],
+    "note": "Kildens små tilslag og avskalling gir rolig grovt relieff. Ingen brede pigmentfelt er gjort til store daler.",
+    "inspection": {
+      "path": "src/assets/art/production/round9_qa/station/tex_concrete_old_inspection.png",
+      "sha256": "205f180ebb92a083c27656604cf8d11bebfe33ca9f97e93fade1e51feeb9d454"
+    },
+    "normal_and_albedo_unchanged": true,
+    "p2_roughness_review": {
+      "status": "PASS",
+      "reviewed_utc": "2026-10-04T21:26:56.984354+00:00",
+      "reviewer": "Codex root",
+      "views": [
+        "8 changed roughness maps before/after/difference and decoded 2x2 comparison",
+        "fresh private Three.js hextile/asphalt/booth screenshots",
+        "unchanged normal and albedo hash proof"
+      ],
+      "limits": "Existing source seams, interpreted water and walking paths remain unverified."
+    }
+  },
+  "p2_correction": {
+    "checked_utc": "2026-10-04T21:22:18.647478+00:00",
+    "review": "https://github.com/Tombonator3000/SIGNAL-47/pull/51#discussion_r4179337392",
+    "previous_roughness_sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+    "normal_unchanged": true,
+    "albedo_unchanged": true,
+    "roughness_changed": false
+  },
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T21:26:56.984354+00:00",
+    "outputs_byte_identical": true,
+    "current_converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "unchanged_albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+    "scope": "after P2 decoded JPEG correction"
+  }
+}

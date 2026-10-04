@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "scope": "existing source button centers lower than source cushion interior samples",
+  "derived_height_sha256": "f8281868b9999fe42baba543a0c14e422e6a921a3dcfb19c3713523fa5b88000",
+  "button_samples": [
+    {
+      "xy": [
+        128,
+        128
+      ],
+      "height_gray": 0
+    },
+    {
+      "xy": [
+        384,
+        128
+      ],
+      "height_gray": 0
+    },
+    {
+      "xy": [
+        256,
+        256
+      ],
+      "height_gray": 0
+    },
+    {
+      "xy": [
+        128,
+        384
+      ],
+      "height_gray": 0
+    },
+    {
+      "xy": [
+        384,
+        384
+      ],
+      "height_gray": 0
+    }
+  ],
+  "cushion_samples": [
+    {
+      "xy": [
+        128,
+        32
+      ],
+      "height_gray": 255
+    },
+    {
+      "xy": [
+        256,
+        128
+      ],
+      "height_gray": 255
+    },
+    {
+      "xy": [
+        128,
+        256
+      ],
+      "height_gray": 255
+    },
+    {
+      "xy": [
+        384,
+        256
+      ],
+      "height_gray": 255
+    },
+    {
+      "xy": [
+        256,
+        384
+      ],
+      "height_gray": 255
+    }
+  ],
+  "note": "Diagnostic height is normalized for inspection. Numeric ordering is geometric relative height, not a physical unit or runtime observation."
+}

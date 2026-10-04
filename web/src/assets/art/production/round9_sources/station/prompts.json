@@ -1,0 +1,56 @@
+[
+  {
+    "profile": "desk",
+    "albedo": "src/assets/art/room/tex_desk_laminate.jpg",
+    "albedo_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+    "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for a Three.js game material. Input image is the edit target and exact spatial authority. Return ONE square image of this same texture transformed into a neutral grayscale height guide. White means high, black means low; a midgray base plane. Match every existing structural detail in its original exact coordinate, crop and orientation. No perspective, no light or shadow, no colour, no extra objects, no text, no watermark, no border. Suppress photographic shading, stains and pigment; do not mistake dark colour for a cavity. Gentle smooth structural relief, no high-frequency flicker noise. Preserve original edge layout; visually compatible periodic edges. This is a DATA height guide, not a rendered material preview or a normal map. Material: office desk laminate, almost perfectly flat. Keep the source's sparse diagonal hairline scratches at exact positions as extremely shallow dark grooves. The large coffee cup ring at upper right and all dirt, flecks, discoloration and mottled paint are PIGMENT ONLY: flatten these to base gray, no ring depression or raised spots. Very subtle restrained surface microtexture. Entire plane nearly uniform middle gray, weak grooves only.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-df786d91-9304-468b-a7c2-0ada274a6cea.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/desk_height_original.png"
+  },
+  {
+    "profile": "ceiling",
+    "albedo": "src/assets/art/room/tex_ceiling_tile.jpg",
+    "albedo_sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+    "prompt": "Use case: precise-object-edit. Asset type: grayscale height guide aligned to one existing acoustic ceiling tile for a Three.js game. Input is exact spatial authority, transform its same square crop without moving or adding details. Return ONE square opaque grayscale DATA height image, not a normal map or a shaded material preview. White high, black low, midgray flat face. The source shows ONE acoustic tile with a very narrow recessed joint along all four perimeter edges: retain that exact boundary width and position, no additional grid lines. Keep the plate face nearly flat with gently recessed source pores at corresponding positions, very restrained broad porous microrelief. Remove colour, pigment, all lighting/shadow and broad shading gradients; pores represent depressions only, no white specular highlights. The outermost opposite edges should meet when tiled, without a frame or border added. No text, no watermark, no new objects, no perspective, no random high-frequency noise. Preserve the source orientation and crop exactly.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-63146dd9-26b5-476b-87d7-ad53ec2bd7f3.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/ceiling_height_original.png"
+  },
+  {
+    "profile": "stucco",
+    "albedo": "src/assets/art/station/tex_stucco_wall.jpg",
+    "albedo_sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+    "prompt": "Use case: precise-object-edit. Asset type: grayscale height guide aligned to existing stucco wall albedo for a Three.js game. Input image is exact spatial authority. Transform this ONE same square image to a neutral grayscale HEIGHT DATA guide, not a normal map, photograph or lit material. Midgray plane, lighter slightly raised plaster, darker recessed cracks and tiny chips. Preserve original exact crop, orientation and existing crack network and patch boundaries at original coordinates. Thin branching cracks are shallow recessed paths. The source's worn plaster patches have subtle smooth relief only. Flatten yellow/beige pigment, rust streaks, broad pale or gray stains and lighting/shadow to same midgray; no relief caused by colour. Keep all relief gentle and smooth, shallow fine surface texture without grain noise. No new cracks, no new patch layout, no lighting, no highlights, no ambient shadows, no perspective, no frame/border, no text/watermark. Opposite edges remain compatible for repeating without relocating structural details.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-48f6d91b-3e8d-44d0-abe6-32062a86d908.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/stucco_height_original.png"
+  },
+  {
+    "profile": "concrete_old",
+    "albedo": "src/assets/art/station/tex_concrete_old.jpg",
+    "albedo_sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+    "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for old concrete in a Three.js game. The supplied square albedo is exact spatial authority. Produce ONE opaque square grayscale HEIGHT DATA image of the exact same crop and orientation. Midgray main flat concrete plane; existing recessed tiny pores, chipped spalled areas and exposed cavities darker; the same visible coarse aggregate stones very subtly raised lighter. Preserve positions and silhouettes of all source chips and aggregate. Gentle structural relief, do not make stones into large rocky bumps. Remove beige/gray pigment differences, broad discoloration and all illumination/shadow/highlight cues. Do not map every dark source stone to a deep crater: source aggregate can be dark pigment, and should be a slight protruding flat grain with modest recessed outline only. No added cracks or stones, no rearrangement, no gradient from lighting, no rendered preview, no purple/blue normal colours, no frame/border, no perspective, no labels or watermark. Opposite edges remain suitable for repeat, shallow band-limited microtexture without gritty high-frequency noise.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-b86bbc4f-9a64-4893-87f3-af7465ff0860.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/concrete_old_height_original.png"
+  },
+  {
+    "profile": "weathered_wood",
+    "albedo": "src/assets/art/station/tex_wood_weathered.jpg",
+    "albedo_sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+    "prompt": "Use case: precise-object-edit. Asset type: a source-aligned grayscale height guide for weathered wood in a Three.js game. Use the provided image as exact edit target. Return ONE opaque square grayscale HEIGHT DATA image, not a shaded wood render or a blue/purple normal map. Midgray main wood plane, existing narrow long cracks darker as shallow recessed grooves, subtle broad wood fibres slightly lighter. Maintain the exact vertical top-to-bottom grain direction, original crop, all existing fragmented narrow cracks and wavy longitudinal fibres in the source coordinates. Do NOT invent regular plank joints or rotate to horizontal boards. Treat gray, beige and brown pigment colour, staining and source shadows as flat base value, no relief from broad discoloration. Keep modest relief with smooth low-contrast fibre and deeper narrow cracks only, no sharply embossed bark. Remove lighting, highlights and shadows. Preserve compatible opposite edge layout for repeating; no new frame/border, text, watermark, added objects, perspective or random high-frequency grain.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-8e6f682d-91c4-4b15-8f3c-a0dca3b777d3.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/weathered_wood_height_original.png"
+  },
+  {
+    "profile": "floorboards",
+    "albedo": "src/assets/art/station/tex_floorboards.jpg",
+    "albedo_sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+    "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale height guide for timber floorboards in a Three.js game. Input square albedo is exact spatial authority. Transform the SAME image to ONE opaque square grayscale HEIGHT DATA guide. Midgray flat timber planes; the source has exactly TEN HORIZONTAL floorboards across the full width, with nine internal horizontal joints and the same partial joint at top/bottom edges. Keep each board width, every horizontal joint at its exact source row, and every existing small round nail head near left and right ends in original coordinates. Make joints shallow dark recessed valleys, timber grain extremely subtle horizontally oriented smooth relief. Nail heads remain almost flush, tiny recessed outline only. Do NOT add or remove a board, rotate fibres, move joints, make a new layout, or use different dark board colour as height. Flatten beige/gray pigment, stain, lighting and shadow into neutral middle gray. No shading/highlights, perspective, frame/border, text, watermark, knots added or random high-frequency noise. Preserve compatible opposite edge layout so the structural guide can repeat.",
+    "generated_tool": "Built-in ChatGPT image generator (exact model not exposed)",
+    "generator_original": "/home/tombonator3000t/.codex/generated_images/01a10897-f11b-7f22-bdeb-f076be3ce16e/exec-e14d758b-6c1f-4a32-be47-f3101b8ab526.png",
+    "height_guide": "src/assets/art/production/round9_sources/station/floorboards_height_original.png"
+  }
+]

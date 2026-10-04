@@ -44,7 +44,7 @@ Pages legger spillet i undermappen `/SIGNAL-47/`. Det virker fordi `base: './'` 
 PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for journalen (Tasks, Notes, Findings, Papers og Photos; bevisbordet kan legges ut fra Findings), Escape for pause. Med feltkameraet: C hever og senker kameraet, mellomrom, E eller klikk tar bildet, Escape senker det.
 Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet. Camera-knappen dukker opp når kameraet er hentet. Mens kameraet er hevet, tar et trykk på skjermen eller på Use-knappen bildet.
 Kjøring: W og S gir gass og bremser (S rygger når bilen står), A og D styrer, musa ser seg rundt i førerhuset. På mobil styrer venstre tommel både gass og ratt.
-Settings har lydnivå, blikkfart, invertert blikk opp og ned, synsfelt, større tekst, grafikk (Ultra, High eller Low; Ultra bare på PC) og bilde (Clean, VHS eller Worn VHS). Ultra gjør de tre nærmeste lampene til ekte lys med myke skygger, legger på omgivelsesskygge (GTAO) og ekte glød før båndet, og er standard på PC. Telefoner har High og Low som før.
+Settings har lydnivå, blikkfart, invertert blikk opp og ned, synsfelt, større tekst, grafikk (Ultra, High eller Low; Ultra bare på PC) og bilde (Clean, VHS eller Worn VHS). Ultra gjør de tre nærmeste lampene til ekte lys med myke skygger, legger på omgivelsesskygge (GTAO) og ekte glød før båndet, og er standard på PC. I Ultra får de 19 materialflatene også normal- og ruhetskartene fra runde 9 (Codex, PR #51), som lastes først når Ultra slås på. Telefoner har High og Low som før.
 
 ## Lagring
 

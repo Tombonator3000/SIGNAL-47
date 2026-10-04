@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { floodSets, type FloodSet } from '../world/kit';
+import { loadArtFor, ULTRA_ART, ULTRA_MAPS, ultraArtReady, dataTextureLike, type ArtId } from './art';
 
 // The PC tier (Settings: Ultra). Phones keep High and Low as they are.
 //
@@ -67,6 +68,7 @@ export class Ultra {
     }
     for (const l of this.extra) l.castShadow = on;
     if (!on) for (let k = 0; k < POOL; k++) this.release(k);
+    if (!on) this.unmap();
     this.mark(this.scene);
     // every lit material needs its program rebuilt with or without shadow maps
     this.scene.traverse((o) => {
@@ -88,6 +90,50 @@ export class Ultra {
       m.castShadow = on && solid;
       m.receiveShadow = on && lit;
     });
+    if (on) this.map(root);
+  }
+
+  // ---------- round 9 (Codex): normal and roughness maps, Ultra only ----------
+  // A material whose colour map is one of the 19 pictures gets that picture's normal and
+  // roughness maps laid the same way; a road canvas made from them carries a twin that is
+  // drawn the same way (textures.ts dataTwin). The roughness in the map is absolute, so the
+  // material's own factor goes to 1 while it is on. Off (High, Low), every material gets
+  // back exactly what it had. The maps load the first time Ultra is switched on; until they
+  // are there (or if they cannot load), Ultra runs without them.
+  private saved = new Map<THREE.MeshStandardMaterial, { normalMap: THREE.Texture | null; roughnessMap: THREE.Texture | null; roughness: number }>();
+  private loading = false;
+  get mapped() { return this.saved.size; }
+  private map(root: THREE.Object3D) {
+    if (!ultraArtReady()) {
+      if (this.loading) return;
+      this.loading = true;
+      loadArtFor(ULTRA_ART).then(() => { this.loading = false; if (this.on) this.map(this.scene); })
+        .catch((e) => { this.loading = false; console.info('Ultra runs without the round 9 maps:', e?.message ?? e); });
+      return;
+    }
+    root.traverse((o) => {
+      const m = (o as THREE.Mesh).material;
+      if (m) for (const x of Array.isArray(m) ? m : [m]) this.mapOne(x);
+    });
+  }
+  private mapOne(mat: THREE.Material) {
+    const m = mat as THREE.MeshStandardMaterial;
+    if (!m.isMeshStandardMaterial || !m.map || this.saved.has(m) || m.normalMap || m.roughnessMap) return;
+    let normal: THREE.Texture, roughness: THREE.Texture;
+    const twin = m.map.userData?.dataTwin as ((like: THREE.Texture) => { normal: THREE.Texture; roughness: THREE.Texture }) | undefined;
+    if (twin) ({ normal, roughness } = twin(m.map));
+    else {
+      const pair = (ULTRA_MAPS as Record<string, [ArtId, ArtId]>)[m.map.name.startsWith('art/') ? m.map.name.slice(4) : ''];
+      if (!pair) return;
+      normal = dataTextureLike(pair[0], m.map); roughness = dataTextureLike(pair[1], m.map);
+    }
+    this.saved.set(m, { normalMap: m.normalMap, roughnessMap: m.roughnessMap, roughness: m.roughness });
+    m.normalMap = normal; m.roughnessMap = roughness; m.roughness = 1;
+    m.needsUpdate = true;
+  }
+  private unmap() {
+    for (const [m, o] of this.saved) { m.normalMap = o.normalMap; m.roughnessMap = o.roughnessMap; m.roughness = o.roughness; m.needsUpdate = true; }
+    this.saved.clear();
   }
 
   // Hand the lamp back to its fake light.

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGNAL / 47: privat materialpreview</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; color: #e5e3da; background: #181b1e; }
+    * { box-sizing: border-box; }
+    body { margin: 0 auto; padding: 24px; max-width: 1180px; }
+    h1 { font-size: clamp(22px, 4vw, 32px); margin: 0 0 8px; font-weight: 650; }
+    p { line-height: 1.5; margin: 8px 0 18px; color: #b9c0c4; }
+    .badge { display: inline-block; padding: 6px 10px; border: 1px solid #6a6250; color: #dfc792; border-radius: 4px; margin-bottom: 16px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 20px 0; }
+    label { display: grid; gap: 7px; font-size: 14px; }
+    select, button { font: inherit; min-height: 44px; padding: 9px 12px; color: #eee; background: #292f33; border: 1px solid #697177; border-radius: 5px; }
+    select { min-width: min(380px, 100%); }
+    button { cursor: pointer; }
+    button[aria-pressed="true"] { color: #161a1e; background: #e0cb95; border-color: #e0cb95; }
+    button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #89c8df; outline-offset: 3px; }
+    .repeat { display: flex; gap: 6px; }
+    .labels { display: grid; grid-template-columns: 1fr 1fr; text-align: center; gap: 16px; margin: 0 0 10px; }
+    .labels strong { display: block; font-size: 16px; }
+    .labels span { color: #b9c0c4; font-size: 13px; }
+    #viewer { height: clamp(320px, 54vw, 590px); border: 1px solid #4c5357; border-radius: 6px; overflow: hidden; background: #242a2f; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #status { min-height: 1.5em; margin: 10px 0; color: #9dc4ac; }
+    #status[data-error="true"] { color: #f3aaa4; }
+    #source { overflow-wrap: anywhere; font-family: ui-monospace, monospace; font-size: 13px; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 10px; }
+    a { color: #9fd0e1; text-underline-offset: 3px; }
+    .note { font-size: 13px; margin-top: 20px; }
+    @media (max-width: 580px) { body { padding: 16px; } select { width: 100%; min-width: 0; } .controls > label { width: 100%; } .labels strong { font-size: 14px; } .labels span { font-size: 11px; } }
+  </style>
+</head>
+<body>
+  <div class="badge">Privat materialpreview, ikke integrert spill</div>
+  <h1>Runde 9: materialkart</h1>
+  <p>Samme flate og lys på begge sider. Lyset kommer skrått ovenfra. Bare det valgte materialet lastes.</p>
+  <div class="controls">
+    <label for="material">Materiale
+      <select id="material" disabled><option>Laster materialliste</option></select>
+    </label>
+    <div>
+      <label>Gjentakelse</label>
+      <div class="repeat" role="group" aria-label="Gjentakelse av materialet">
+        <button id="repeat1" type="button" aria-pressed="true">1 × 1</button>
+        <button id="repeat2" type="button" aria-pressed="false">2 × 2</button>
+      </div>
+    </div>
+  </div>
+  <div class="labels">
+    <div><strong>Før: fargekart</strong><span>Ruhet 1</span></div>
+    <div><strong>Etter: farge, normal og ruhet</strong><span>Ruhetsfaktor 1, normalstyrke 1</span></div>
+  </div>
+  <div id="viewer" aria-label="To belyste materialflater, før og etter"></div>
+  <div id="status" role="status" aria-live="polite">Starter lokal materialpreview</div>
+  <div id="source"></div>
+  <nav id="links" class="links" aria-label="Kontrollbilder for valgt materiale"></nav>
+  <p class="note">Dette kontrollerer kartene under enkelt lys. Det bekrefter ikke innkobling, fps eller utseende i spillet. Datakartenes kantutjevning reparerer ikke sømmer i det eksisterende fargebildet.</p>
+  <script type="module">
+    const state = window.S47_ROUND9 = {
+      currentId: null, ready: false, repeat: 1,
+      counts: { materials: 0, loadedTextures: 0, dataTextures: 0, nonColorDataTextures: 0, albedoSRGB: 0 },
+      errors: [], urls: {},
+    };
+    const status = document.querySelector('#status');
+    const selection = document.querySelector('#material');
+    const host = document.querySelector('#viewer');
+    const fail = error => {
+      const message = error instanceof Error ? error.message : String(error);
+      state.errors.push(message); state.ready = false;
+      status.dataset.error = 'true'; status.textContent = 'Kunne ikke laste: ' + message;
+    };
+    window.addEventListener('error', event => fail(event.error ?? event.message));
+    window.addEventListener('unhandledrejection', event => fail(event.reason));
+
+    try {
+      const THREE = await import('../../../../../node_modules/three/build/three.module.js');
+      const response = await fetch('../round9_sources/albedo_baseline.json', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Materiallisten svarte ' + response.status);
+      const baseline = await response.json();
+      const materials = baseline.albedos;
+      if (!Array.isArray(materials) || materials.length !== 19) throw new Error('Forventet 19 materialer i kildelisten');
+      const names = {
+        'room/tex_floor_hextile.jpg': 'Kontrollrom: sekskantfliser',
+        'room/tex_wall_paint.jpg': 'Kontrollrom: malt vegg',
+        'ext/tex_concrete.jpg': 'Ute: betong',
+        'ext/tex_desert_ground.jpg': 'Ute: ørkenbakke',
+        'ext/tex_asphalt_wet.jpg': 'Ute: våt asfalt',
+        'annex/tex_floor_vinyl.jpg': 'Arkiv: vinylgulv',
+        'yard/tex_cabinet_metal.jpg': 'Gård: malt metallskap',
+        'room/tex_desk_laminate.jpg': 'Kontrollrom: pultlaminat',
+        'room/tex_ceiling_tile.jpg': 'Kontrollrom: takplater',
+        'station/tex_stucco_wall.jpg': 'Feltstasjon: pussvegg',
+        'station/tex_concrete_old.jpg': 'Feltstasjon: gammel betong',
+        'station/tex_wood_weathered.jpg': 'Feltstasjon: værslitt tre',
+        'station/tex_floorboards.jpg': 'Feltstasjon: gulvbord',
+        'road/tex_gravel_track.jpg': 'Vei: grus og hjulspor',
+        'motel/tex_motel_wall.jpg': 'Motell: pussvegg',
+        'diner/tex_floor_checker.jpg': 'Diner: sjakkfliser',
+        'diner/tex_wall_panel.jpg': 'Diner: furupanel',
+        'diner/tex_booth_vinyl.jpg': 'Diner: stopping i kunstskinn',
+        'diner/tex_counter_laminate.jpg': 'Diner: disklaminat',
+      };
+      selection.replaceChildren(...materials.map(item => {
+        const option = document.createElement('option');
+        option.value = item.albedo; option.textContent = names[item.albedo] ?? item.albedo;
+        return option;
+      }));
+      selection.disabled = false; state.counts.materials = materials.length;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1;
+      host.append(renderer.domElement);
+      const scene = new THREE.Scene(); scene.background = new THREE.Color(0x242a2f);
+      const camera = new THREE.OrthographicCamera(-3.2, 3.2, 1.7, -1.7, .1, 20);
+      camera.position.set(0, 0, 6); camera.lookAt(0, 0, 0);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x484848, .75));
+      const light = new THREE.DirectionalLight(0xffffff, 3);
+      light.position.set(-1, 4, 2); scene.add(light);
+      const geometry = new THREE.PlaneGeometry(2.75, 2.75);
+      const left = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 1 }));
+      const right = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 1 }));
+      left.position.x = -1.48; right.position.x = 1.48; scene.add(left, right);
+      const loader = new THREE.TextureLoader();
+      let currentTextures = [];
+      let request = 0;
+      const render = () => {
+        renderer.render(scene, camera);
+        state.renderInfo = { drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures };
+      };
+      const resize = () => {
+        const width = host.clientWidth; const height = host.clientHeight;
+        renderer.setSize(width, height, false);
+        const aspect = width / height; const halfWidth = Math.max(3.2, 1.65 * aspect);
+        camera.left = -halfWidth; camera.right = halfWidth;
+        camera.top = halfWidth / aspect; camera.bottom = -camera.top;
+        camera.updateProjectionMatrix(); render();
+      };
+      new ResizeObserver(resize).observe(host);
+      const assetURL = path => new URL('../../' + path, document.baseURI).href;
+      const load = url => loader.loadAsync(url).catch(() => { throw new Error(url); });
+      const setRepeat = value => {
+        state.repeat = value;
+        document.querySelector('#repeat1').setAttribute('aria-pressed', String(value === 1));
+        document.querySelector('#repeat2').setAttribute('aria-pressed', String(value === 2));
+        for (const texture of currentTextures) {
+          texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(value, value); texture.needsUpdate = true;
+        }
+        render();
+      };
+      const choose = async () => {
+        const token = ++request; const id = selection.value; const stem = id.replace(/\.jpg$/, '');
+        state.currentId = id; state.ready = false; state.errors = [];
+        state.counts.loadedTextures = state.counts.dataTextures = state.counts.nonColorDataTextures = state.counts.albedoSRGB = 0;
+        status.dataset.error = 'false'; status.textContent = 'Laster ' + (names[id] ?? id);
+        left.material.dispose(); right.material.dispose();
+        currentTextures.forEach(texture => texture.dispose()); currentTextures = [];
+        left.material = new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 1 });
+        right.material = new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 1 });
+        document.querySelector('#source').textContent = id;
+        document.querySelector('#links').replaceChildren(); render();
+        state.urls = { albedo: assetURL(id), normal: assetURL(stem + '_n.png'), roughness: assetURL(stem + '_r.jpg') };
+        const results = await Promise.allSettled(Object.values(state.urls).map(load));
+        const textures = results.filter(result => result.status === 'fulfilled').map(result => result.value);
+        if (token !== request) { textures.forEach(texture => texture.dispose()); return; }
+        const failures = results.filter(result => result.status === 'rejected');
+        if (failures.length) {
+          textures.forEach(texture => texture.dispose());
+          failures.forEach(result => fail(result.reason)); return;
+        }
+        const [albedo, normal, roughness] = textures;
+        albedo.colorSpace = THREE.SRGBColorSpace;
+        normal.colorSpace = roughness.colorSpace = THREE.NoColorSpace;
+        for (const texture of textures) texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+        const before = new THREE.MeshStandardMaterial({ map: albedo, roughness: 1, metalness: 0 });
+        const after = new THREE.MeshStandardMaterial({ map: albedo, normalMap: normal, normalScale: new THREE.Vector2(1, 1), roughnessMap: roughness, roughness: 1, metalness: 0 });
+        left.material.dispose(); right.material.dispose();
+        currentTextures.forEach(texture => texture.dispose());
+        left.material = before; right.material = after; currentTextures = textures;
+        setRepeat(state.repeat);
+        state.counts.loadedTextures = textures.length;
+        state.counts.dataTextures = 2;
+        state.counts.nonColorDataTextures = [normal, roughness].filter(texture => texture.colorSpace === THREE.NoColorSpace).length;
+        state.counts.albedoSRGB = Number(albedo.colorSpace === THREE.SRGBColorSpace);
+        state.ready = true;
+        status.textContent = 'Klart: 3 teksturer lastet. Begge datakart bruker lineære data.';
+        document.querySelector('#source').textContent = id;
+        const category = ['room/tex_desk_laminate.jpg', 'room/tex_ceiling_tile.jpg'].includes(id)
+          ? 'station' : id.split('/')[0];
+        const filename = stem.split('/').at(-1);
+        const links = [
+          ['Normal 2 × 2', './' + category + '/' + filename + '_normal_2x2.png'],
+          ['Ruhet 2 × 2', './' + category + '/' + filename + '_roughness_2x2.png'],
+          ['50 % overlegg', './' + category + '/' + filename + '_overlay.png'],
+          ['Geometrimaske', './' + category + '/' + filename + '_mask.png'],
+          ['Beregnet høyde', './' + category + '/' + filename + '_derived_height.png'],
+          ['Lys ovenfra', './' + category + '/' + filename + '_light_top.png'],
+          ['Kontrollrapport', './' + category + '/' + filename + '_report.json'],
+          ['Normalkart', state.urls.normal], ['Ruhetskart', state.urls.roughness],
+        ];
+        document.querySelector('#links').replaceChildren(...links.map(([text, url]) => {
+          const anchor = document.createElement('a'); anchor.textContent = text; anchor.href = url; anchor.target = '_blank'; anchor.rel = 'noopener'; return anchor;
+        }));
+        render();
+      };
+      selection.addEventListener('change', () => { choose().catch(fail); });
+      document.querySelector('#repeat1').addEventListener('click', () => setRepeat(1));
+      document.querySelector('#repeat2').addEventListener('click', () => setRepeat(2));
+      window.addEventListener('pagehide', () => {
+        request++; currentTextures.forEach(texture => texture.dispose());
+        left.material.dispose(); right.material.dispose(); geometry.dispose(); renderer.dispose();
+      });
+      resize(); await choose();
+    } catch (error) { fail(error); }
+  </script>
+</body>
+</html>

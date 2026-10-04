@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else 'shots/art')
 URL = os.environ.get('S47_URL') or Path('dist-single/index.html').resolve().as_uri()
 ART_COUNT = 28  # 16 from PR #30, 6 round 3 surfaces from PR #31, vinyl and vending from PR #34, 4 motel images from PR #39
-LATER = 14      # STATION 01's surfaces (PR #34), the track gravel and the diner's five (PR #35), the 1947 papers (PR #39), the diner's two (PR #45)
+LATER = 52      # STATION 01's surfaces (PR #34), the track gravel and the diner's five (PR #35), the 1947 papers (PR #39), the diner's two (PR #45), the 38 round 9 maps that load only in Ultra (PR #51)
 VIEWS = [
     ('desk', 2.6, 3.5, 0, -0.50),
     ('room', -4.7, 3.5, -0.65, -0.16),

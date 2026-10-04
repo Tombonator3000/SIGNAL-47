@@ -1,0 +1,46 @@
+{
+  "schema": "signal47-round9-independent-audit-v1",
+  "checked_utc": "2026-10-04T21:05:41.244301+00:00",
+  "reviewer": "Codex audit_threejs, read-only independent check",
+  "map_files": 38,
+  "albedos_unchanged": 19,
+  "status": "PASS",
+  "normal_vector_length": [
+    0.99409,
+    1.00584
+  ],
+  "maximum_normal_degrees": 39.694,
+  "minimum_blue_channel": 226,
+  "format": "512x512 RGB PNG normal, L JPEG90 roughness; no ICC/gamma/alpha",
+  "checked_map_sha256_count": 38,
+  "checked_qa_sha256_count": 96,
+  "positive_y": "19/19 analytic results consistent",
+  "limitations": [
+    "Data contract only, not physical correctness of every relief detail.",
+    "Existing albedo seams are not certified.",
+    "Ultra game integration and hardware FPS remain UNVERIFIED."
+  ],
+  "p2_corrected_utc": "2026-10-04T21:26:56.984354+00:00",
+  "decoded_jpeg_p2_audit": {
+    "reviewer": "Codex audit_threejs, independent read-only profile/decoded pixel calculation",
+    "status": "PASS",
+    "count": 19,
+    "mismatched_opposite_edge_pixels": 0,
+    "out_of_profile_pixels": 0,
+    "representation_tolerance": 0.00196078431372549,
+    "hextile_bytes": [
+      117,
+      230
+    ],
+    "cabinet_bytes": [
+      140,
+      230
+    ],
+    "floorboards_bytes": [
+      153,
+      188
+    ],
+    "converter_sha256": "be4c93adb4e542887ca0d74fa4237d65af8a8b008321333cee7c0ad5b89d9fe6",
+    "checker_sha256": "f203c9f2e785d4b9e6b625ce3bc53daa649218d5244a90747c9abc4c37df82b6"
+  }
+}
