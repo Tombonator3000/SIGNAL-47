@@ -1,0 +1,82 @@
+{
+  "schema": "signal47-round10-independent-audit-v1",
+  "reviewer": "audit_threejs",
+  "created_utc": "2026-10-04T22:54:14.674232+00:00",
+  "input_sha256": {
+    "src/assets/art/docs/photo_1947_master.jpg": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+    "src/assets/art/docs/poster_halley_1986_blank.jpg": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+    "src/assets/art/docs/fanfold_1986.jpg": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+    "src/assets/art/docs/fanfold_1947.jpg": "847c21d0175d6d589ac3c6c2d6e6349153fd605df01ed51c584e2c5e2dfacd52"
+  },
+  "format_status": "PASS",
+  "jpeg_rgb_no_alpha": true,
+  "exact_dimensions": true,
+  "srgb_icc": "valid embedded 588-byte sRGB built-in",
+  "master_bytes": 1105625,
+  "master_max_rgb_channel_delta": 0,
+  "crop_pixel_identity": {
+    "A": "PASS",
+    "B": "PASS",
+    "C": "PASS"
+  },
+  "B_edge_pixel_identity": "PASS: (1600,220,1840,1600), nearest neighbor 2x, entire B height",
+  "hole_core_measurement": {
+    "method": "Independent connected dark components, fixed thresholds <60/<80/<100, windows x8..46 and978..1016; minimum20 pixels,3pxwidth,4pxheight; no count or phase fitting.",
+    "rows": [
+      {
+        "threshold": 60,
+        "counts_all_four_sides": [
+          22,
+          22,
+          22,
+          22
+        ],
+        "max_delta_y_left_right": [
+          0.495,
+          0.464
+        ],
+        "max_delta_x_left_right": [
+          3.769,
+          0.297
+        ]
+      },
+      {
+        "threshold": 80,
+        "counts_all_four_sides": [
+          22,
+          22,
+          22,
+          22
+        ],
+        "max_delta_y_left_right": [
+          0.555,
+          0.492
+        ],
+        "max_delta_x_left_right": [
+          3.691,
+          0.399
+        ]
+      },
+      {
+        "threshold": 100,
+        "counts_all_four_sides": [
+          22,
+          22,
+          22,
+          22
+        ],
+        "max_delta_y_left_right": [
+          0.396,
+          0.586
+        ],
+        "max_delta_x_left_right": [
+          3.695,
+          0.23
+        ]
+      }
+    ],
+    "largest_x_difference": "torn left hole, row4, aroundy188",
+    "limitations": "Measures dark cores and stable rows; physical hole form requires visual review. Broad aged-paper thresholds remain UNVERIFIED."
+  },
+  "files_changed_by_reviewer": false
+}
