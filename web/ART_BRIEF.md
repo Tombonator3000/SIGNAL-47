@@ -192,6 +192,83 @@ Ikke lag kart for skilt, plakater, kart, papir, dokumenter, himmelen, B-12-vinge
 
 Kartene legges i en egen gruppe i `art.ts` (`ULTRA_ART`) som bare lastes når Ultra slås på. Når Ultra er på, får de matte standardmaterialene `normalMap` og `roughnessMap` med samme repetisjon som fargebildet; slås Ultra av, tas de bort igjen. Testen `tools/ultra.py` tar de samme utsnittene før og etter.
 
+## Runde 10: avisbildet fra 1947, Halley-plakaten og fanfoldpapiret
+
+Bestilt 4. oktober 2026 kl. 22.25, etter at runde 9 er flettet (PR #51 og #52). Tre ting til historien som ikke venter på Toms vurdering av Ultra eller på neste kapittelspesifikasjon. Ingen tekst i noen av bildene; all tekst tegnes i kode. Ingen ekte personer, merkenavn eller kopier av ekte aviser.
+
+Codex lager bildene, manifestet og kontrollen i egen gren. Claude kobler dem inn og tar den samlede testen.
+
+### Prioritet A: `docs/photo_1947_master.jpg`, avisbildet fra 1947
+
+Det viktigste bildet i spillet. Det har aldri endret seg (R4 i `HISTORIE.md`): saksmappa i The Amended Record viser et tett utsnitt, dineren i All Night et bredere, og etter rulleteksten ser spilleren hele. Ett hovedbilde, tre utsnitt som Claude skjærer ut i kode. Det erstatter `diner/clipping_photo_1947.jpg` når det er koblet inn.
+
+- 2400×1600 (3:2), JPG rundt 85, sRGB, gråtoner (R, G og B like). Høyst rundt 1,2 MB.
+- Et pressefoto fra juli 1947 trykt i en lokalavis: grovt raster som synes når man ser nær, litt utflytende sverte, avispapirets korn. Lang eksponering om natten, så terrenget er svakt opplyst av lyset over mesaen. Fyller hele flata: ingen kant, ingen avis rundt, ingen bildetekst (koden lager utklippet og teksten).
+- Koordinatene under er i piksler i hovedbildet, fra øvre venstre hjørne. Små avvik går fint så lenge reglene for utsnittene holder.
+
+Innhold:
+
+| Hva | Hvor | Krav |
+|---|---|---|
+| Mesaen | flat topp rundt y 960 til 1000, fra x 300 til 1500 | Lav og flat, i silhuett, toppen svakt opplyst ovenfra. Flat ørken foran ned mot bunnen. |
+| Lyset | rundt (900, 420) | Rolig og rundt, rundt 40 px med en myk glorie ut til rundt 180 px. Ingen stråler, ingen farkost, ingen form. |
+| Kometen | rundt (1380, 840), lavt over horisonten til høyre for mesaen | Liten uklar kjerne med kort hale (rundt 120 px) som peker opp og litt mot venstre. Samme preg som kometen på himmelen i spillet: svak og usikker, ikke en plakatkomet. Den skal kunne kjennes igjen når det tette utsnittet forstørres. Halley sto ikke på himmelen i 1947; den står der i natt. Det er poenget med bildet. |
+| Stjernene | spredt over himmelen | Få og svake, noen tydelige. Ingen krav om ekte stjernebilder, men ingen sterke stjerner tett inntil kometen. |
+| To ranchere | nede til venstre, x 150 til 600, y 1150 til 1600 | Nære silhuetter med hatt ved en gjerdelinje, vendt mot lyset. To, ikke tre. Ingen ansikter. |
+| Landmålerne | helt til høyre, x 1960 til 2340, føttene rundt y 1180 | Lenger ute enn rancherne, rundt 180 til 220 px høye. Et stativ med teodolitt og en målestang. Tre personer, alle vendt mot lyset, ingen ansikter som kan kjennes igjen: en ung kvinne med håret satt opp og arbeidsbukser ved stativet (Nora), en ung mann med hatt og skjorteermer som holder stangen (Tomás), og litt for seg selv en tredje som er uskarp, som om hen beveget seg. Den tredje har en moderne arbeidsjakke til livet med et lyst refleksbånd hele veien rundt brystet. Båndet fanger lyset og står som en lys stripe også i rasteret. Det er silhuetten spilleren kjenner fra jakka ved østdøra i Night Shift. |
+
+Utsnittene (Claude skjærer dem ut med `drawImage` fra hovedbildet):
+
+| Utsnitt | Rektangel (x, y, b, h) | Hvor | Skal vise | Skal ikke vise |
+|---|---|---|---|---|
+| A, tett | 600, 300, 960, 720 (4:3) | saksmappa, The Amended Record | lyset, toppen av mesaen, kometen | rancherne, landmålerne |
+| B, bredt | 0, 220, 1840, 1380 (4:3) | utklippet i dineren, All Night | lyset, mesaen, kometen, rancherne | noe som helst av landmålerne: ikke et stativbein, ikke en skygge, ikke uskarphet inn over kanten. Hold x under 1900 tomt for dem. |
+| C, hele | 0, 0, 2400, 1600 | etter rulleteksten | alt | |
+
+### Prioritet B: `docs/poster_halley_1986_blank.jpg`, Halley-plakaten uten tekst
+
+Erstatter den tegnede plakaten i kontrollrommet (`halleyPosterTex` i `core/textures.ts`), som står på veggen i 0,5 × 0,75 m og vises i dokumentvisningen. Teksten står i `KAPITLER.md` (Night Shift, punkt 4) og tegnes i kode.
+
+- 1024×1536 (2:3), JPG rundt 85, sRGB.
+- En trykt plakat fra våren 1986, som fra en astronomiklubb eller et planetarium: dyp blåsvart nattehimmel med stjerner, kometen med en lengre og flottere hale enn den virkelige (det er en reklameplakat), og en mesa i silhuett nederst i bildefeltet. Trykt papir med litt slitasje i kantene. Fyller hele flata.
+- Soner der koden skriver (rolige og mørke, ingen sterke detaljer):
+
+| Sone | Rektangel (x, y, b, h) | Hva koden legger der |
+|---|---|---|
+| Tittel | 60, 50, 904, 240 | HALLEY'S COMET og APRIL 1986 |
+| Lappen | 50, 300, 330, 220 | Wards gule lapp med teip. Hold kometen og halen unna. |
+| Kartet | 70, 1010, 884, 280 | En lys kremfarget innfelt boks trykt i bildet, med tynn mørk ramme og en svak horisontlinje rundt y 1240. Ellers tom: koden tegner S, SE og SW, de fire plassene og datoene 5, 10, 14 og 20. |
+| Linjene | 60, 1310, 904, 190 | De fem linjene fra CLOSEST TO EARTH APRIL 11 til GET AWAY FROM TOWN LIGHTS |
+
+- Bildefeltet er y 290 til 1000: kometens kjerne rundt (680, 640) med halen opp mot venstre, mesaens topp rundt y 900 til 960.
+
+### Prioritet B: `docs/fanfold_1986.jpg` og `docs/fanfold_1947.jpg`, fanfoldpapiret
+
+Bakgrunn for sidene i unntaksperma i Night Shift. Det siste arket er datert 1947 og er «older paper than the rest» (`KAPITLER.md`, punkt 1). De to arkene legges i samme perm, så formatet må være likt.
+
+- 1024×1186 hver (9,5 × 11 tommer med hullstripene), JPG rundt 85, sRGB, rett ovenfra, uten skygge fra en bestemt lyskilde.
+- Begge: hullstriper på begge sider med 22 hull per side (rundt 54 px mellom hullene), perforering der stripene rives av ved rundt x 54 og x 970, og halvperforerte bretter øverst og nederst.
+- `fanfold_1986.jpg`: hvitt skriverpapir med svake lysegrønne striper, rent.
+- `fanfold_1947.jpg`: samme format og samme hullplassering, men gammelt papir: gulnet mot brunt, rustflekker, sprø kanter, et hull som har revnet. Stripene nesten borte. Det skal se eldre ut enn arket ved siden av med en gang, uten at det blir et skattekart.
+- Tekstfeltet x 90 til 934, y 60 til 1130 skal være rolig nok til at maskinskrift i kode kan leses oppå.
+
+### Ikke i denne runden
+
+- Milestolpene og oppmålingsbolten: de venter til Roswell-veien er spesifisert i `KAPITLER.md` (etter All Night).
+- Ingen endringer i kartene fra runde 9 før Tom har sett Ultra på PC.
+- Ingen kode og ingen endringer i filene Claude eier.
+
+### Manifest og kontroll
+
+- `production/round10_manifest.json`: for hver fil metode og verktøy, størrelse, sha256 og eventuelle promter, og for hovedbildet de tre utsnittene som rektangler.
+- Kontrollbilder i `production/round10_qa/` (kommer aldri med i spillet): hovedbildet med de tre rammene tegnet på, de tre utsnittene skåret ut, utsnitt B forstørret langs høyre kant (viser at ingenting av landmålerne er med), plakaten med sonene tegnet på og med prøvetekst fra `KAPITLER.md`, plakaten nedskalert til 256×384 (slik den ser ut på veggen), og de to fanfoldarkene side om side med prøvetekst fra perma.
+- Automatisk sjekk: riktig størrelse, ingen alfa, sRGB, hovedbildet i gråtoner (R, G og B innenfor 2 av hverandre), filstørrelser.
+- Leveransenotat `ART_ROUND10_DELIVERY.md` med resultatet (PASS, FAIL, UNVERIFIED), som tidligere runder.
+
+### Hvordan Claude kobler dem inn
+
+`art.ts` får de fire bildene som senere bilder (de lastes der de trengs, ikke ved start). Plakaten får teksten i `halleyPosterTex`, med den tegnede plakaten som reserve. Perma viser sidene på fanfoldpapiret og det siste arket på papiret fra 1947. Dineren bytter til utsnitt B. Utsnitt A kommer i saksmappa når tråd 7 bygges i The Amended Record, og hele bildet kommer etter rulleteksten.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
