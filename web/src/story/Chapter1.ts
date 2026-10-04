@@ -675,7 +675,7 @@ export class Chapter1 {
     const s = this.s;
     const passive = s.method === 'passive';
     return [
-      'SARO / LOCAL INCIDENT S-03 + B-12',
+      'SARO / LOCAL INCIDENT S-03 + B-12\nOPERATOR: REYES    FOR: DR. E. WARD',
       'S-03: encoder 026; scheduled 042; commands 0.\nFrame 01: foreground reference does not match the one-stripe installation sheet.',
       `CONTROL: ${passive ? 'lamp shielded, motor isolated.' : 'local reference commanded to 042; encoder and visible vane agree.'}\nDirect observation: one physical stripe.\nFrame 02: the physical vane changes; a second stripe retains its earlier alignment.`,
       `SUPPORTED: the discrepancy persists in the photographic record under the chosen control. ${passive ? 'The work lamp is not sufficient to explain it.' : 'Simple reference/encoder drift is not sufficient to explain it.'}`,

@@ -50,6 +50,28 @@ Don't break anything.
 "Coffee is fresh-ish. Storm out past the Magdalenas. Should stay there. Don't break anything. D."`,
 };
 
+// Under Dale's log: what the night is for. Ward's note is her opening line from the design bible (V1).
+const WORK_ORDER: DocSpec = {
+  id: 'workorder', title: 'Night work order', kind: 'typed', stamp: 'WORK ORDER',
+  page: `SARO / OPERATIONS
+NIGHT WORK ORDER   04/13/86
+
+OPERATOR:  REYES
+ON CALL:   DR. E. WARD, SHIFT SUPERVISOR
+
+1. RESTORE RX BANK 3.
+   CALIBRATE ON 1419.900 MHZ.
+2. RUN THE SURVEY SWEEP.
+   LOG ANYTHING OFF SCHEDULE.
+3. MORNING SERIES 06:00.
+   IT DOES NOT RUN UNTIL EVERY
+   ANOMALY TONIGHT IS DOCUMENTED
+   AND SIGNED.`,
+  transcript: `A typed work order with your name on it, initialled in the corner by the shift supervisor.
+
+Along the bottom, in Ward's handwriting: "Before the morning series, I need a report I can sign. Start with calibration. Keep the paper if it gives you anything you cannot account for. E.W."`,
+};
+
 function printout(clock: number): DocSpec {
   const lines = [
     'SARO RX/DSP   DIRECTION SOLVE',
@@ -198,6 +220,9 @@ export class Prologue {
     inter.add({ id: 'logbook', object: o.logbook, label: () => this.logRead ? 'Read the shift log' : "Read Dale's shift log",
       use: () => ui.document(LOG, () => this.logClosed()) });
 
+    inter.add({ id: 'workOrder', object: o.workOrder, label: () => 'Read the work order',
+      use: () => ui.document(WORK_ORDER, () => this.workOrderClosed()) });
+
     inter.add({ id: 'coffeePot', object: o.coffeePot, label: () => this.at('event') ? 'Coffee machine' : this.coffee === 'none' ? 'Fill your mug' : 'Coffee machine',
       use: () => {
         if (this.coffee !== 'none' || this.at('event')) { toast('The hot plate ticks. It has been on since the day shift.'); return; }
@@ -275,6 +300,12 @@ export class Prologue {
   }
 
   // ---------- beats ----------
+  private workOrderClosed() {
+    if (this.docs.includes(WORK_ORDER)) return;
+    this.docs.push(WORK_ORDER);
+    this.note('Work order: Reyes on nights, Dr. Ward on call. The morning series at 06:00 waits for a report she can sign.');
+  }
+
   private logClosed() {
     if (this.logRead) return;
     this.logRead = true;

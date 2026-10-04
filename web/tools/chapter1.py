@@ -4,6 +4,7 @@
 # S47.tick() so the run works with a software renderer.
 # Usage: python3 tools/chapter1.py OUTDIR [passive|active] [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
+# S47_NO_IDB=1 hides IndexedDB, to test that the photographs fall back to localStorage.
 import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 
@@ -11,6 +12,7 @@ OUT = sys.argv[1]
 METHOD = sys.argv[2] if len(sys.argv) > 2 else 'passive'
 W, H = (int(v) for v in (sys.argv[3] if len(sys.argv) > 3 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
+NO_IDB = os.environ.get('S47_NO_IDB') == '1'
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -25,6 +27,7 @@ async def main():
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
+        if NO_IDB: await pg.add_init_script("Object.defineProperty(window, 'indexedDB', { value: undefined });")
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()")
         await pg.reload()
@@ -196,8 +199,12 @@ async def main():
         check(any(n.startswith('LOCAL CASE CLOSED') for n in notes), 'notebook closes the case')
         saved = await ev("JSON.parse(localStorage.getItem('s47.case') || 'null')")
         check(saved is not None and saved['s']['stage'] == 'complete' and saved['s']['f2'] is not None, 'case and photographs saved')
+        await pg.wait_for_timeout(400)  # the IndexedDB write runs behind the save
         size = await ev("(localStorage.getItem('s47.case') || '').length")
         print(f'saved case: {size / 1024:.0f} kB of text in localStorage', flush=True)
+        raw = await ev("localStorage.getItem('s47.case') || ''")
+        if NO_IDB: check('data:image/jpeg' in raw, 'without IndexedDB the photographs stay in localStorage')
+        else: check('idb:frame01' in raw and 'idb:frame02' in raw and size < 40000, 'photographs moved to IndexedDB, case text stays small')
 
         # Continue from the title restores the finished case with both prints
         await pg.reload()
@@ -206,6 +213,7 @@ async def main():
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await stage() == 'complete' and await ev("S47.yard.dryPrints[0].visible && S47.yard.dryPrints[1].visible"), 'Continue restores the case and both prints')
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
+        check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
 
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
         if errs: check(False, 'console clean')

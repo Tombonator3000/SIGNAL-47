@@ -15,6 +15,7 @@ import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { glowScale } from './world/glow';
+import { CaseStore } from './core/caseStore';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
 // because storage can be blocked (private mode, sandboxed frames).
@@ -70,6 +71,8 @@ async function boot() {
     resize();
   }
 
+  // the saved case and its photographs (IndexedDB), read while the title screen is up
+  const cases = new CaseStore<SavedCase>();
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
   audio.preload(); // decodes while the title screen is up
@@ -82,9 +85,9 @@ async function boot() {
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
-    // The chapter-one case, photographs included, lives in its own key.
-    saveCase: (c) => store.set('case', c),
-    loadCase: () => store.get<SavedCase | null>('case', null),
+    // The case lives in its own key; photographs go to IndexedDB (core/caseStore.ts).
+    saveCase: (c) => cases.save(c),
+    loadCase: () => cases.load(),
     isTouch: () => input.touchMode,
   });
   game.onCheckpoint = (n) => store.set('checkpoint', n);
@@ -207,6 +210,7 @@ async function boot() {
     // Normally the sounds are decoded long before anyone taps Start. If not, say so.
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
+    await cases.ready;
     clearTimeout(slow);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });

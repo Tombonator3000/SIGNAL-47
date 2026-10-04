@@ -48,7 +48,24 @@ Du lager 2D-grafikk. Claude bygger all 3D-geometri i kode og legger bildene dine
 | `yard/label_s03_procedure.png` | 512×768 | Prosedyreark for S-03: 1. VERIFY POWER, 2. CHECK ALIGNMENT, 3. LOG ANY ANOMALIES, 4. NOTIFY OPS. Maskinskrevet. |
 | `concept/ch1_service_yard.jpg` | 1920×1080 | Konseptbilde av servicegangen ut til S-03 om natten. |
 | `concept/ch1_photolab.jpg` | 1920×1080 | Konseptbilde av SAROs lille fotolab med rødt mørkeromslys. |
-| `concept/ch3_room47.jpg` | 1920×1080 | Konseptbilde av motellrom 47: helt ordinært, med seng, TV, askebeger og en forlatt koffert. |
+| `concept/ch4_room6.jpg` | 1920×1080 | Konseptbilde av motellrom 6, der Nora Vega bor: helt ordinært, med seng, TV, et bord med papirer og en lampe. |
+
+## Runde 3: flater fra kapittel 1 som tegnes i kode i dag
+
+Ingen tekst i disse bildene. Teksten legges på i kode, slik at den alltid blir riktig.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `yard/vane_b12.png` | 256×1024 | 0,34 × 1,36 m | B-12-referansen: matt mørk plate med én loddrett elfenbenshvit stripe og skalastreker langs kanten. |
+| `yard/board_r07.png` | 512×512 | 0,42 × 0,42 m | R-07: matt mørk plate med tre vannrette hvite striper. |
+| `yard/floor_paint_frame.png` | 1024×512, gjennomsiktig | 2,2 × 1,1 m | Slitt gul ramme malt på betong. Brukes til S-03 APRON og B-12 SIGHT LINE. |
+| `lab/map_field_yard.png` | 1024×768 | 1,0 × 0,75 m | Håndtegnet kart sett ovenfra: kontrollrommet nederst, gangveien nordover, S-03 og B-12 langs gangen og fotolaben øst for den. |
+| `lab/sign_blank.png` | 1024×384 | 0,2 til 0,8 m brede | Tomt emaljeskilt, kremhvitt med mørk kant og litt rust. Bakgrunn for skiltene i gården og laben. |
+| `lab/tex_paper_card.jpg` | 512×512, sømløs | kort og ark | Litt gulnet papir med svake bretter. Bakgrunn for prosesskortene og arkene i laben. |
+
+## Slik kommer bildene inn i spillet
+
+Legg filene i `web/src/assets/art/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Spillet bruker et bilde automatisk når fila finnes, og faller tilbake på teksturen fra koden når den mangler. Ingen kodeendring trengs.
 
 ## Ikke lag dette
 

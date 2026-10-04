@@ -215,6 +215,24 @@ export function deskPapers(seed = 1) {
   });
 }
 
+// The night work order on the supervisor desk: typed form, Ward's initials, a red stamp.
+export function workOrderSheet() {
+  return canvasTex(256, 352, (g, w, h) => {
+    g.fillStyle = '#ece5d1'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 900, 0.05, 23);
+    g.fillStyle = '#26262a'; g.font = '15px "Special Elite", serif';
+    const lines = ['SARO / OPERATIONS', 'NIGHT WORK ORDER  04/13/86', '', 'OPERATOR:  REYES', 'ON CALL:   DR. E. WARD', '', '1. RESTORE RX BANK 3.', '   CALIBRATE 1419.900', '2. RUN THE SURVEY SWEEP.', '3. MORNING SERIES 06:00.', '   NOT BEFORE EVERY', '   ANOMALY IS SIGNED.'];
+    lines.forEach((l, i) => g.fillText(l, 18, 34 + i * 19));
+    g.strokeStyle = 'rgba(38,50,79,.8)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(20, 300); g.bezierCurveTo(60, 290, 90, 312, 130, 298); g.stroke();
+    g.fillStyle = '#26324f'; g.font = '24px "Reenie Beanie", cursive'; g.fillText('keep the paper  E.W.', 22, 328);
+    g.save(); g.translate(196, 70); g.rotate(-0.25);
+    g.strokeStyle = 'rgba(170,40,30,.7)'; g.lineWidth = 2.5; g.strokeRect(-40, -14, 80, 28);
+    g.fillStyle = 'rgba(170,40,30,.75)'; g.font = '600 13px Oswald'; g.textAlign = 'center'; g.fillText('WORK ORDER', 0, 5);
+    g.restore();
+  });
+}
+
 export function greenbarPaper(lines: string[]) {
   return canvasTex(512, 768, (g, w, h) => {
     g.fillStyle = '#f1efe6'; g.fillRect(0, 0, w, h);

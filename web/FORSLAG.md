@@ -6,7 +6,7 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## 1. Beslutninger Tom må ta
 
-Her spriker kildene. Jeg har ikke valgt noe på egen hånd, bortsett fra å holde kapittel 1 likt Unity-versjonen.
+Avgjort 4. oktober: Tom ba meg gjennomføre forslagene mine, så alle fire er avgjort slik jeg foreslo under. Se memory.md.
 
 1. **Rom 6 eller rom 47.** Designbibelen (`Docs/DesignBible13/design-bible.md`, K4) legger Nora Vega i rom 6 på Sierra Motor Court, og sier at kontoret og rom 6 er de eneste interiørene. `ART_BRIEF.md` og `todo.md` snakker om rom 47. Mitt forslag er rom 6. Tallet 47 bærer allerede mye (47 sekunder, SIGNAL / 47), og et rom med samme nummer kan fort virke som en vits.
 2. **To eller tre slutter.** Designbibelen har to: A "Bryt referansen" og B "Fullfør én registrering", og skriver rett ut at det ikke finnes noen tredje, hemmelig slutt. De tre sluttene Silence, Answer og Listen kommer fra ChatGPT-samtalen. memory.md påsto at designbibelen også hadde tre. Det stemte ikke, og er rettet.

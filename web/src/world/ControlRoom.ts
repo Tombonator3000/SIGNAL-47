@@ -213,9 +213,15 @@ export class ControlRoom {
     plane(log, 0.23, 0.026, M.paper, 0, 0, 0.156);
     this.group.add(log);
     this.objs.logbook = log;
-    // papers and a pen
-    const paperMat = new THREE.MeshStandardMaterial({ map: T.deskPapers(4), roughness: 0.9 });
-    plane(st, 0.21, 0.29, paperMat, 2.62, 0.782, 2.72, -0.1, -Math.PI / 2);
+    // the night work order, and a pen on it. The invisible box makes the thin sheet easy to aim at.
+    const wo = new THREE.Group();
+    wo.position.set(2.62, 0.782, 2.72); wo.rotation.y = -0.1;
+    plane(wo, 0.21, 0.29, new THREE.MeshStandardMaterial({ map: T.workOrderSheet(), roughness: 0.9 }), 0, 0, 0, 0, -Math.PI / 2);
+    const woHit = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.31), new THREE.MeshBasicMaterial({ visible: false }));
+    noMerge(woHit); wo.add(woHit);
+    mergeStatic(wo);
+    this.group.add(wo);
+    this.objs.workOrder = wo;
     rod(st, new THREE.Vector3(2.55, 0.787, 2.62), new THREE.Vector3(2.68, 0.787, 2.58), 0.005, M.darkPlastic, 5);
 
     // telephone

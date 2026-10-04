@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-04: Tom ba meg gjennomføre forslagene mine («Implementer forslagene dine»). De fire åpne spørsmålene er dermed avgjort slik jeg foreslo: Nora Vega bor i rom 6 på Sierra Motor Court. Spillet får to slutter, A «Bryt referansen» og B «Fullfør én registrering», som i designbibelen, og de tre sluttene fra ChatGPT-samtalen brukes ikke. Dale er kollegaen som skrev skiftloggen og gikk hjem, spilleren heter Reyes, og vaktsjefen er Dr. Evelyn Ward. Reyes og Ward kommer inn gjennom arbeidsordren på pulten. Bilen og motellnummeret kommer ikke i kapittel 1. Kontakten med Nora finnes i arkivet i kapittel 2.
 - 2026-10-03: Kapittel 1 "The Second Exposure" er portert fra Unity (`Chapter09`, `Visual10`, `ChapterInvestigation.cs`, `FieldCamera.cs`): kamera ved østdøra, S-03-loggen, FRAME 01 fra S-03-plattformen, framkalling i fotolaben, merking på kopien, referanse og hypotese, B-12 med passiv eller aktiv metode, FRAME 02, sammenligning og lokal rapport. Tekstene i spillet er Unitys, ordrett der det gikk. Tilpasninger: arrayet ligger nord (-Z) og servicegården øst for kontrollrommet, fotolaben ligger øst for gangveien, motorskapets logg heter SARO ARRAY (Unity: SIERRA ARRAY) og er stemplet med klokkeslettet for smellet i prologen (Unity: 23:44), og merket med tre striper heter R-07 fordi S-07 er en av de 27 antennene her. Flettet gjennom [PR #27](https://github.com/Tombonator3000/SIGNAL-47/pull/27) og ute på Pages fra 4. oktober kl. 00:18 UTC.
 - 2026-10-03: Prolog og kapittel 1 sammen tilsvarer K1 i designbibelen. Arbeidsordren med Ward og overgangen til arkivet (K2) mangler. Se `FORSLAG.md`.
 - 2026-10-03: Ytelse: antennene tegnes som instanser (`DishArray`) med egen synlighetstest per antenne, alle lampeglød i ett tegnekall (`GlowPoints`), lysdioder i racket som instanser, og bokser med ulik inn- og utside lages med `faced()` (to tegnekall i stedet for seks). Målt i skyen: tittel 451 til 198 draw calls, start ved pulten 388 til 157, vinduet 262 til 74. Ute og i laben 34 til 202.
@@ -19,7 +20,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 ## Kanon (må ikke endres uten beslutning)
 
 - Sted og tid: SARO, Southwest Astronomical Research Observatory, New Mexico, 1986. Skiftet starter 23:41.
-- Kollega: Dale har lagt igjen skiftloggen ("Don't break anything. D."). Unity-versjonen signerte "R.", webversjonen bruker Dale.
+- Kollega: Dale har lagt igjen skiftloggen ("Don't break anything. D."). Unity-versjonen signerte "R.". Webversjonen bruker Dale, og spilleren er Reyes.
 - Mottaker: RX bank 3 må slås på med spaken på racket.
 - Signaltrinn (portert 1:1 fra Unity `SignalProfile`):
   - Kalibrering: 1419.900 MHz (±0.025), gain 45 til 65, BW 34 til 62, az 35 til 49.
@@ -32,8 +33,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 - Telefonen: framtidsopptak av kontrollrommet (romlyd, skriver, dunk, gisp, keramikk som knuses). Etter at linjen dør går det nøyaktig 47 sekunder til smellet, koppen faller og knuses.
 - Antennene: 27 stykk, S-01 til S-27. Etter smellet snur alle samtidig til az 026, el 32, uten styrekommando.
 - Neste kapittel: S-03 i servicegården. Planlagt 042°, enkoder 026°, commands received 0.
-- Slutter: designbibelen (`Docs/DesignBible13/design-bible.md`) har to, A "Bryt referansen" og B "Fullfør én registrering", og sier at det ikke finnes en tredje. Tre slutter (Silence, Answer, Listen) står bare i ChatGPT-samtalen "Utvikle spillområde visuelt". Her stod det tidligere at designbibelen også hadde tre. Det var feil. Tom har ikke valgt ennå.
-- Navn i designbibelen: spilleren heter Reyes, vaktansvarlig er Dr. Evelyn Ward, vitnet er Nora Vega (rom 6 på Sierra Motor Court), broren hennes Tomás Vega. ART_BRIEF.md og todo.md sier rom 47. Ikke avgjort.
+- Slutter: to, A «Bryt referansen» og B «Fullfør én registrering», slik designbibelen (`Docs/DesignBible13/design-bible.md`) beskriver dem. Ingen tredje slutt. Tre slutter (Silence, Answer, Listen) står bare i ChatGPT-samtalen "Utvikle spillområde visuelt" og brukes ikke (avgjort 4. oktober).
+- Navn: spilleren heter Reyes, vaktsjefen er Dr. Evelyn Ward, vitnet er Nora Vega i rom 6 på Sierra Motor Court, og broren hennes er Tomás Vega. Dale er kollegaen som skrev skiftloggen (avgjort 4. oktober).
 
 ## Referansebilder
 

@@ -6,7 +6,6 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [ ] Tom tester prologen og kapittel 1 på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller, lesbarhet, kameraet og fotopanelene, og om det tar merkbar tid fra Start til prologen begynner.
 - [ ] Mål ytelse på ekte telefon med `?debug` bak adressen: ved pulten, ute på gangveien og inne i fotolaben.
-- [ ] Tom bestemmer punktene i `FORSLAG.md` del 1: rom 6 eller 47, to eller tre slutter, Dale, R. og Reyes, og om bilen og telefonnummeret skal inn i kapittel 1.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
 
 ## Neste (se FORSLAG.md del 3)
@@ -34,6 +33,6 @@ Prioritert. Flytt ferdige punkter til log.md.
 ## Senere
 
 - [ ] Kjøring mellom områder (kompakte håndlagde områder).
-- [ ] Sierra Motor Court og Noras rom (rom 6 i designbibelen, rom 47 i ART_BRIEF.md).
+- [ ] Sierra Motor Court og rom 6 (kapittel 4 i designbibelen).
 - [ ] Evidence board med hypoteser som kan være feil.
 - [ ] Lagring av hele saken på tvers av kapitler, med flere lagringsplasser som i designbibelen.
