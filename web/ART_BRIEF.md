@@ -194,6 +194,8 @@ Kartene legges i en egen gruppe i `art.ts` (`ULTRA_ART`) som bare lastes når Ul
 
 ## Runde 10: avisbildet fra 1947, Halley-plakaten og fanfoldpapiret
 
+Levert i PR #54 (`56fa505`) og koblet inn 4. oktober kl. 23.15: plakaten under teksten i `halleyPosterTex`, perma på fanfoldpapiret, utsnitt B i dineren. Se `ART_ROUND10_DELIVERY.md`.
+
 Bestilt 4. oktober 2026 kl. 22.25, etter at runde 9 er flettet (PR #51 og #52). Tre ting til historien som ikke venter på Toms vurdering av Ultra eller på neste kapittelspesifikasjon. Ingen tekst i noen av bildene; all tekst tegnes i kode. Ingen ekte personer, merkenavn eller kopier av ekte aviser.
 
 Codex lager bildene, manifestet og kontrollen i egen gren. Claude kobler dem inn og tar den samlede testen.

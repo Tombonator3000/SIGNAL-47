@@ -46,9 +46,14 @@ async def main():
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
         art = await pg.evaluate('S47.art()')
-        checks.append((f'all {ART_COUNT} runtime images loaded', len(art['loaded']) == art['expected'] == ART_COUNT))
-        checks.append((f'{LATER} later images wait for their areas', len(art['later']) == LATER and not set(art['later']) & set(art['loaded'])))
-        checks.append(('sky runtime limited to 2K', any(t['name'] == 'art/sky' and t['width'] == 2048 and t['height'] == 1024 for t in art['textures'])))
+        start = [i for i in art['loaded'] if i not in art['later']]
+        checks.append((f'all {ART_COUNT} runtime images loaded', len(start) == art['expected'] == ART_COUNT))
+        # the Halley poster (round 10) is a later image the control room asks for right after the start
+        early = set(art['later']) & set(art['loaded'])
+        checks.append((f'{LATER} later images wait for their areas (the poster may already be on its way)', len(art['later']) == LATER and early <= {'halleyPoster'}))
+        sky = await pg.evaluate("""(()=>{ let t = null; S47.sky.group.traverse(o => { const u = o.material && o.material.uniforms; if (u && u.uPanorama) t = u.uPanorama.value; });
+          return t && { name: t.name, w: t.image.width, h: t.image.height }; })()""")
+        checks.append(('sky runtime limited to 2K, painted stars taken out', bool(sky) and sky['w'] == 2048 and sky['h'] == 1024 and sky['name'] == 'art/sky (stars removed)'))
         await pg.click('button[data-a=start]')
         await pg.evaluate("S47.hold=true; S47.jump('chapter1'); S47.game.d.ui.close(); S47.tick(1)")
         maps_by_quality = []

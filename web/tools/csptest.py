@@ -32,7 +32,12 @@ async def main():
         print('sounds decoded:', sounds)
         print('art images loaded:', len(art['loaded']), '/', art['expected'])
         print('\n'.join(errs[:15]) or 'no console errors or warnings')
-        passed = len(fonts) == 4 and sounds == 25 and len(art['loaded']) == art['expected'] == 28 and not errs
+        # the 28 start images, plus later images already asked for: the Halley poster loads
+        # right after the start (round 10), so it must come through the policy too
+        start = [i for i in art['loaded'] if i not in art['later']]
+        early = sorted(i for i in art['loaded'] if i in art['later'])
+        print('later images already loaded:', early)
+        passed = len(fonts) == 4 and sounds == 25 and len(start) == art['expected'] == 28 and 'halleyPoster' in early and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:
