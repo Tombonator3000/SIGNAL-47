@@ -50,6 +50,46 @@ import clipping1947 from '../assets/art/diner/clipping_photo_1947.jpg';
 // round 8 (PR #45): the booths' red vinyl and the knotty pine on the walls
 import dinerBooth from '../assets/art/diner/tex_booth_vinyl.jpg';
 import dinerWall from '../assets/art/diner/tex_wall_panel.jpg';
+// Round 9 (Codex, PR #51): normal and roughness maps for the Ultra tier only (core/ultra.ts).
+// Data, not colour: they load when Ultra is switched on, never on High or Low.
+import floorN from '../assets/art/room/tex_floor_hextile_n.png';
+import floorR from '../assets/art/room/tex_floor_hextile_r.jpg';
+import ceilingN from '../assets/art/room/tex_ceiling_tile_n.png';
+import ceilingR from '../assets/art/room/tex_ceiling_tile_r.jpg';
+import wallN from '../assets/art/room/tex_wall_paint_n.png';
+import wallR from '../assets/art/room/tex_wall_paint_r.jpg';
+import deskN from '../assets/art/room/tex_desk_laminate_n.png';
+import deskR from '../assets/art/room/tex_desk_laminate_r.jpg';
+import concreteN from '../assets/art/ext/tex_concrete_n.png';
+import concreteR from '../assets/art/ext/tex_concrete_r.jpg';
+import desertN from '../assets/art/ext/tex_desert_ground_n.png';
+import desertR from '../assets/art/ext/tex_desert_ground_r.jpg';
+import asphaltN from '../assets/art/ext/tex_asphalt_wet_n.png';
+import asphaltR from '../assets/art/ext/tex_asphalt_wet_r.jpg';
+import cabinetN from '../assets/art/yard/tex_cabinet_metal_n.png';
+import cabinetR from '../assets/art/yard/tex_cabinet_metal_r.jpg';
+import vinylN from '../assets/art/annex/tex_floor_vinyl_n.png';
+import vinylR from '../assets/art/annex/tex_floor_vinyl_r.jpg';
+import stuccoN from '../assets/art/station/tex_stucco_wall_n.png';
+import stuccoR from '../assets/art/station/tex_stucco_wall_r.jpg';
+import oldConcreteN from '../assets/art/station/tex_concrete_old_n.png';
+import oldConcreteR from '../assets/art/station/tex_concrete_old_r.jpg';
+import weatheredWoodN from '../assets/art/station/tex_wood_weathered_n.png';
+import weatheredWoodR from '../assets/art/station/tex_wood_weathered_r.jpg';
+import floorboardsN from '../assets/art/station/tex_floorboards_n.png';
+import floorboardsR from '../assets/art/station/tex_floorboards_r.jpg';
+import gravelTrackN from '../assets/art/road/tex_gravel_track_n.png';
+import gravelTrackR from '../assets/art/road/tex_gravel_track_r.jpg';
+import motelWallN from '../assets/art/motel/tex_motel_wall_n.png';
+import motelWallR from '../assets/art/motel/tex_motel_wall_r.jpg';
+import dinerCounterN from '../assets/art/diner/tex_counter_laminate_n.png';
+import dinerCounterR from '../assets/art/diner/tex_counter_laminate_r.jpg';
+import dinerFloorN from '../assets/art/diner/tex_floor_checker_n.png';
+import dinerFloorR from '../assets/art/diner/tex_floor_checker_r.jpg';
+import dinerBoothN from '../assets/art/diner/tex_booth_vinyl_n.png';
+import dinerBoothR from '../assets/art/diner/tex_booth_vinyl_r.jpg';
+import dinerWallN from '../assets/art/diner/tex_wall_panel_n.png';
+import dinerWallR from '../assets/art/diner/tex_wall_panel_r.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -60,10 +100,16 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
-  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947, dinerBooth, dinerWall };
+  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947, dinerBooth, dinerWall,
+  floorN, floorR, ceilingN, ceilingR, wallN, wallR, deskN, deskR, concreteN, concreteR, desertN, desertR, asphaltN, asphaltR, cabinetN, cabinetR, vinylN, vinylR, stuccoN, stuccoR, oldConcreteN, oldConcreteR, weatheredWoodN, weatheredWoodR, floorboardsN, floorboardsR, gravelTrackN, gravelTrackR, motelWallN, motelWallR, dinerCounterN, dinerCounterR, dinerFloorN, dinerFloorR, dinerBoothN, dinerBoothR, dinerWallN, dinerWallR };
 export type ArtId = keyof typeof urls;
+/** Albedo id: its normal map and roughness map (round 9), for the Ultra tier. */
+const MAPPED = ['floor', 'ceiling', 'wall', 'desk', 'concrete', 'desert', 'asphalt', 'cabinet', 'vinyl', 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'motelWall', 'dinerCounter', 'dinerFloor', 'dinerBooth', 'dinerWall'] as const;
+export const ULTRA_MAPS = Object.fromEntries(MAPPED.map((id) => [id, [id + 'N', id + 'R']])) as Record<typeof MAPPED[number], [ArtId, ArtId]>;
+/** Every round 9 map: core/ultra.ts loads them when Ultra is switched on. */
+export const ULTRA_ART: ArtId[] = MAPPED.flatMap((id) => ULTRA_MAPS[id]);
 // Images an area loads for itself when it is built, not at the start.
-const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
+const LATER = new Set<ArtId>([...MAPPED.flatMap((id) => [id + 'N', id + 'R'] as ArtId[]), 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
   'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall']);
 /** The diner's images (world/Diner.ts loads them before it builds). */
 export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall'];
@@ -125,6 +171,34 @@ export function artTexture(id: ArtId, repeat?: [number, number]): THREE.Texture 
     texture.wrapS = THREE.RepeatWrapping;
     texture.generateMipmaps = false; texture.minFilter = THREE.LinearFilter;
   }
+  texture.needsUpdate = true;
+  textures.set(key, texture);
+  return texture;
+}
+
+/** Whether every round 9 map has been loaded (core/ultra.ts loads them with loadArtFor). */
+export function ultraArtReady() { return ULTRA_ART.every((id) => images.has(id)); }
+
+/**
+ * A data map (normal or roughness, round 9) laid exactly like the colour texture it belongs
+ * to: same wrapping, repeat, offset, rotation and orientation, no colour space (it is data,
+ * not colour). The image is shared per map; textures are cached per placement.
+ */
+export function dataTextureLike(id: ArtId, like: THREE.Texture): THREE.Texture {
+  const key = `${id}:data:${like.wrapS},${like.wrapT}:${like.repeat.x},${like.repeat.y}:${like.offset.x},${like.offset.y}:${like.rotation}:${like.center.x},${like.center.y}:${like.flipY}`;
+  let texture = textures.get(key);
+  if (texture) return texture;
+  let source = sources.get(id);
+  if (!source) { source = new THREE.Source(artImage(id)); sources.set(id, source); }
+  texture = new THREE.Texture();
+  texture.source = source;
+  texture.name = `art/${id}`;
+  texture.colorSpace = THREE.NoColorSpace;
+  texture.anisotropy = 4;
+  texture.wrapS = like.wrapS; texture.wrapT = like.wrapT;
+  texture.repeat.copy(like.repeat); texture.offset.copy(like.offset);
+  texture.rotation = like.rotation; texture.center.copy(like.center);
+  texture.flipY = like.flipY;
   texture.needsUpdate = true;
   textures.set(key, texture);
   return texture;

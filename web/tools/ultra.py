@@ -38,6 +38,17 @@ async def main():
         await pair('u01_control_room', desk)
         await ev("S47.setQuality('ultra')"); await tick(0.2)
         check(await ev("S47.renderer.shadowMap.enabled") and await ev("S47.room.lights.lamps[0].castShadow"), 'Ultra: shadow maps on, the desk lamp casts shadows')
+        # round 9 (Codex): normal and roughness maps on the 19 surfaces, Ultra only (three.js NoColorSpace is '')
+        await pg.wait_for_function("S47.ultra.mapped > 0", timeout=60000)
+        mapped = await ev("S47.ultra.mapped")
+        floor = await ev("""(()=>{ let r = null; S47.scene.traverse(o => { const m = o.material; if (!r && m && m.map && m.map.name === 'art/floor') r = m; });
+          return r && { n: r.normalMap && r.normalMap.name, cs: r.normalMap && r.normalMap.colorSpace, rcs: r.roughnessMap && r.roughnessMap.colorSpace,
+            rep: r.normalMap && r.normalMap.repeat.toArray().join(',') === r.map.repeat.toArray().join(','), rough: r.roughness }; })()""")
+        check(mapped >= 10 and floor and floor['n'] == 'art/floorN' and floor['cs'] == '' and floor['rcs'] == '' and floor['rep'] and floor['rough'] == 1,
+              f'Ultra: {mapped} materials get the round 9 maps; the floor: data colour space, same repeat as its picture, roughness factor 1')
+        twin = await ev("""(()=>{ let r = null; S47.scene.traverse(o => { const m = o.material; if (!r && m && m.map && m.map.userData && m.map.userData.dataTwin) r = m; });
+          return r && !!r.normalMap && r.normalMap.colorSpace === '' && r.normalMap.repeat.y === r.map.repeat.y; })()""")
+        check(twin, 'the road past SARO (a canvas made from the asphalt) gets maps drawn the same way')
         await ev("S47.jump('chapter1')"); await tick(2)
         async def yard(): await look(9.0, -2.0, -0.4, -0.3)
         await pair('u02_yard', yard)
@@ -54,6 +65,8 @@ async def main():
         await pair('u04_records', records)
         await ev("S47.setQuality('high')"); await tick(0.3)
         check(not await ev("S47.renderer.shadowMap.enabled") and await ev("S47.ultra['spots'].every(s => s.intensity === 0)"), 'back on High: no shadow maps, the fake lamps are back')
+        back = await ev("""(()=>{ let n = 0, bad = 0; S47.scene.traverse(o => { const m = o.material; if (m && m.map && m.map.name === 'art/floor') { n++; if (m.normalMap || m.roughnessMap || m.roughness === 1) bad++; } }); return [n, bad]; })()""")
+        check(await ev("S47.ultra.mapped") == 0 and back[1] == 0, f'and the maps are off again, the floor back to its own roughness ({back})')
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
         if errs: check(False, 'console clean')
         json.dump(checks, open(f'{OUT}/checks.json', 'w'), indent=1)
