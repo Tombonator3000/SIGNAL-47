@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Miljøkonsepter og kartforslag til SIGNAL / 47. Visuell retning for Three.js-versjonen, ikke faktiske spillbilder.">
+  <title>SIGNAL / 47 · Visuell retning</title>
+  <style>
+    :root { --paper: #efe9dc; --ink: #172433; --muted: #58616a; --line: #c9c1b2; --amber: #a65b2c; --red: #a64234; --panel: #f9f5ec; }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1rem; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Georgia, "Times New Roman", serif; }
+    a { color: inherit; text-underline-offset: .2em; }
+    a:hover { color: var(--red); }
+    a:focus-visible { outline: 3px solid var(--red); outline-offset: 5px; }
+    .sans, .eyebrow, .status, .actions, nav, .number, .source, footer { font-family: Arial, Helvetica, sans-serif; }
+    .wrap { width: min(1440px, calc(100% - 5rem)); margin-inline: auto; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid var(--ink); }
+    .eyebrow { margin: 0; font-size: .72rem; font-weight: 700; line-height: 1.6; letter-spacing: .14em; text-transform: uppercase; }
+    .masthead .eyebrow { color: var(--amber); }
+    nav { display: flex; gap: 1.7rem; font-size: .83rem; font-weight: 700; }
+    nav a { text-decoration: none; border-bottom: 1px solid transparent; padding: .35rem 0; }
+    nav a:hover { border-color: currentColor; }
+    .hero { display: grid; grid-template-columns: 1.35fr 1fr; align-items: end; gap: 3rem; padding: 4.5rem 0 3.5rem; }
+    h1 { margin: 0; font-weight: 400; font-size: clamp(3.5rem, 7.5vw, 7.8rem); letter-spacing: -.055em; line-height: .95; }
+    h1 span { white-space: nowrap; }
+    .hero-copy { max-width: 32rem; padding-bottom: .2rem; }
+    .hero-copy p { margin: 0; font-size: 1.16rem; line-height: 1.55; }
+    .hero-copy .eyebrow { margin-bottom: .8rem; color: var(--red); font-size: .72rem; }
+    .notice { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 1rem 0; display: flex; gap: 1.5rem; align-items: baseline; font-size: .85rem; line-height: 1.55; }
+    .notice strong { flex: 0 0 auto; color: var(--red); }
+    .notice p { margin: 0; }
+    section { padding-top: 3.5rem; }
+    .section-head { display: flex; justify-content: space-between; gap: 2rem; align-items: baseline; margin-bottom: 1.7rem; }
+    h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.3rem); font-weight: 400; letter-spacing: -.035em; }
+    .section-head p { margin: 0; max-width: 29rem; font-size: .91rem; line-height: 1.55; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.7rem 2rem; }
+    figure { min-width: 0; margin: 0; }
+    .image-link { display: block; background: var(--ink); overflow: hidden; }
+    .image-link img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; }
+    .map .image-link { background: #e3dbca; }
+    .map .image-link img { aspect-ratio: 4 / 3; padding: .5rem; }
+    figcaption { padding-top: 1rem; }
+    .caption-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .55rem; }
+    .number { color: var(--amber); font-size: .68rem; font-weight: 700; letter-spacing: .1em; }
+    .status { font-size: .65rem; line-height: 1.4; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; text-align: right; }
+    .status.proposed { color: var(--red); }
+    h3 { margin: 0 0 .5rem; font-size: clamp(1.5rem, 2.1vw, 2rem); font-weight: 400; letter-spacing: -.025em; }
+    figcaption p { margin: 0; color: var(--muted); font-family: Arial, Helvetica, sans-serif; font-size: .87rem; line-height: 1.6; max-width: 42rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: .9rem; font-size: .76rem; font-weight: 700; }
+    .actions a { padding-block: .35rem; }
+    #kart { margin-top: 3rem; padding-top: 3.5rem; border-top: 1px solid var(--ink); }
+    .source { margin-top: 3.5rem; padding: 1.5rem; border: 1px solid var(--line); background: var(--panel); display: grid; grid-template-columns: .4fr 1fr; gap: 2rem; }
+    .source h2 { font-family: Arial, Helvetica, sans-serif; font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .source p { font-size: .83rem; line-height: 1.7; margin: 0 0 .6rem; }
+    .source p:last-child { margin-bottom: 0; }
+    footer { margin-top: 3.5rem; border-top: 1px solid var(--ink); padding: 1.4rem 0 2rem; display: flex; justify-content: space-between; gap: 1.5rem; font-size: .69rem; letter-spacing: .05em; }
+    footer p { margin: 0; }
+    .skip { position: absolute; left: 1rem; top: -5rem; padding: .75rem 1rem; background: var(--panel); z-index: 2; font-family: Arial, Helvetica, sans-serif; }
+    .skip:focus { top: 1rem; }
+    @media (max-width: 800px) {
+      .wrap { width: calc(100% - 2.5rem); }
+      .hero { grid-template-columns: 1fr; gap: 1.8rem; padding: 3rem 0 2.5rem; }
+      .hero-copy { max-width: 38rem; }
+      .hero-copy p { font-size: 1.05rem; }
+      .notice { display: block; }
+      .notice strong { display: block; margin-bottom: .35rem; }
+      .section-head { display: block; }
+      .section-head p { margin-top: .75rem; }
+      .grid { gap: 2.5rem 1.25rem; }
+      .source { grid-template-columns: 1fr; gap: 1rem; }
+    }
+    @media (max-width: 580px) {
+      .wrap { width: calc(100% - 2rem); }
+      .masthead { flex-wrap: wrap; gap: .6rem; padding: 1rem 0; }
+      .masthead .eyebrow { font-size: .62rem; }
+      nav { gap: 1.4rem; font-size: .78rem; }
+      .hero { padding-top: 2.5rem; }
+      h1 { font-size: clamp(3rem, 13vw, 4.5rem); }
+      .grid { grid-template-columns: 1fr; }
+      section { padding-top: 2.5rem; }
+      #kart { margin-top: 2.5rem; padding-top: 2.5rem; }
+      .source { padding: 1.2rem; }
+      footer { flex-direction: column; gap: .7rem; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#miljoer">Hopp til miljøene</a>
+  <div class="wrap">
+    <header class="masthead">
+      <p class="eyebrow">Visuell retning · 04.10.2026</p>
+      <nav aria-label="Galleriseksjoner"><a href="#miljoer">Miljøer</a><a href="#kart">Kart</a></nav>
+    </header>
+    <main>
+      <div class="hero">
+        <h1>SIGNAL <span>/ 47</span></h1>
+        <div class="hero-copy">
+          <p class="eyebrow">New Mexico · 1986 · Three.js</p>
+          <p>Røde arbeidslys, slitte rom og blå ørkennatt. En samling miljøkonsepter og kart som utforsker spillets videre visuelle retning.</p>
+        </div>
+      </div>
+      <aside class="notice sans" aria-label="Bildenes status">
+        <strong>Konsepter, ikke spillbilder.</strong>
+        <p>Bildene viser mulige miljøer og materialer. De bekrefter verken ferdige spillområder, vedtatt romnummer eller målt ytelse.</p>
+      </aside>
+      <section id="miljoer" aria-labelledby="miljoer-title">
+        <div class="section-head"><h2 id="miljoer-title">Miljøer</h2><p class="sans">De to første bildene videreutvikler områder som er bygd i nettversjonen. De øvrige utforsker planlagt spilleinnhold.</p></div>
+        <div class="grid">
+          <figure>
+            <a class="image-link" href="ch1_service_yard.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av servicegården"><img src="ch1_service_yard.jpg" width="1920" height="1080" alt="Miljøkonsept av servicegården ved SARO om natten, med gangvei og tekniske installasjoner."></a>
+            <figcaption><div class="caption-top"><span class="number">01 / KONSEPT</span><span class="status">Bygd område · videreutvikling</span></div><h3>Servicegården</h3><p>En videre visuell retning for passasjen ut til S-03. Området finnes i nettversjonen; dette bildet viser et konsept for miljøet.</p><div class="actions"><a href="ch1_service_yard.jpg" target="_blank" rel="noopener">Åpne original</a><a href="ch1_service_yard.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure>
+            <a class="image-link" href="ch1_photolab.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av fotolaben"><img src="ch1_photolab.jpg" width="1920" height="1080" loading="lazy" alt="Stilisert fotolab med rødt mørkeromslys, framkallingskar, forstørrer og tørkesnor."></a>
+            <figcaption><div class="caption-top"><span class="number">02 / KONSEPT</span><span class="status">Bygd område · videreutvikling</span></div><h3>Fotolaben</h3><p>Rødt mørkeromslys over en liten arbeidsbenk. Konseptet bygger på funksjonen og romtypen i den eksisterende fotolaben.</p><div class="actions"><a href="ch1_photolab.jpg" target="_blank" rel="noopener">Åpne original</a><a href="ch1_photolab.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure>
+            <a class="image-link" href="saro_archive.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av SARO-arkivet"><img src="saro_archive.jpg" width="1920" height="1080" loading="lazy" alt="Miljøkonsept for et slitt og praktisk arkivrom ved SARO."></a>
+            <figcaption><div class="caption-top"><span class="number">03 / KONSEPT</span><span class="status proposed">Planlagt spilleinnhold</span></div><h3>SARO-arkivet</h3><p>Et forslag til materialer, arbeidslys og romfølelse for arkivet. Et mulig kommende spilleområde, ikke en ferdig scene.</p><div class="actions"><a href="saro_archive.jpg" target="_blank" rel="noopener">Åpne original</a><a href="saro_archive.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure>
+            <a class="image-link" href="station01_field.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av feltstasjonen"><img src="station01_field.jpg" width="1920" height="1080" loading="lazy" alt="Miljøkonsept for en avsides feltstasjon i New Mexicos ørken om natten."></a>
+            <figcaption><div class="caption-top"><span class="number">04 / KONSEPT</span><span class="status proposed">Planlagt spilleinnhold</span></div><h3>Feltstasjonen</h3><p>Et forslag til et kompakt feltområde i ørkenen. Plassering, geometri og fremtidige interaksjoner er ikke bekreftet av bildet.</p><div class="actions"><a href="station01_field.jpg" target="_blank" rel="noopener">Åpne original</a><a href="station01_field.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure>
+            <a class="image-link" href="sierra_court.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av Sierra Motor Court"><img src="sierra_court.jpg" width="1920" height="1080" loading="lazy" alt="Miljøkonsept for utsiden av Sierra Motor Court om natten."></a>
+            <figcaption><div class="caption-top"><span class="number">05 / KONSEPT</span><span class="status proposed">Planlagt spilleområde</span></div><h3>Sierra Motor Court</h3><p>Motellutsiden finnes foreløpig som bakgrunn i nettversjonen. Dette konseptet utforsker et mulig område spilleren senere kan besøke.</p><div class="actions"><a href="sierra_court.jpg" target="_blank" rel="noopener">Åpne original</a><a href="sierra_court.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure>
+            <a class="image-link" href="ch3_room47.jpg" target="_blank" rel="noopener" aria-label="Åpne originalkonseptet av motellrommet"><img src="ch3_room47.jpg" width="1920" height="1080" loading="lazy" alt="Tomt motellrom med seng, CRT-TV, askebeger og koffert, belyst av varm bordlampe mot blå natt."></a>
+            <figcaption><div class="caption-top"><span class="number">06 / KONSEPT</span><span class="status proposed">Planlagt spilleinnhold</span></div><h3>Motellrommet</h3><p>Et ordinært, slitt rom med en forlatt koffert. Romnummeret er fortsatt uavklart; filnavnet avgjør ikke hvilket nummer spillet skal bruke.</p><div class="actions"><a href="ch3_room47.jpg" target="_blank" rel="noopener">Åpne original</a><a href="ch3_room47.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section id="kart" aria-labelledby="kart-title">
+        <div class="section-head"><h2 id="kart-title">Kart</h2><p class="sans">Illustrert oversikt og planer for rom og bevegelse. Kartene har ulikt kildegrunnlag, angitt under hvert bilde.</p></div>
+        <div class="grid">
+          <figure class="map">
+            <a class="image-link" href="../maps/world-overview.jpg" target="_blank" rel="noopener" aria-label="Åpne den illustrerte verdensoversikten"><img src="../maps/world-overview.jpg" loading="lazy" alt="Illustrert verdensoversikt over områdene rundt SARO, feltstasjonen og motellet."></a>
+            <figcaption><div class="caption-top"><span class="number">A / OVERSIKT</span><span class="status proposed">Illustrert · ikke eksakt</span></div><h3>Områdene i sammenheng</h3><p>En illustrert oversikt for visuell orientering. Avstander, retninger og skala skal ikke leses som et eksakt kart over spillets verden.</p><div class="actions"><a href="../maps/world-overview.jpg" target="_blank" rel="noopener">Åpne original</a><a href="../maps/world-overview.jpg" download>Last ned JPG</a></div></figcaption>
+          </figure>
+          <figure class="map">
+            <a class="image-link" href="../maps/saro-plan.svg" target="_blank" rel="noopener" aria-label="Åpne nærkartet over SARO"><img src="../maps/saro-plan.svg" loading="lazy" alt="Nærkart over SARO avledet fra geometrien i spillkoden."></a>
+            <figcaption><div class="caption-top"><span class="number">B / NÆRKART</span><span class="status">Avledet fra kode</span></div><h3>SARO</h3><p>En skjematisk plan avledet fra den eksisterende spillkoden. Kartet viser områdets organisering, ikke et skjermbilde eller en ny implementering.</p><div class="actions"><a href="../maps/saro-plan.svg" target="_blank" rel="noopener">Åpne original</a><a href="../maps/saro-plan.svg" download>Last ned SVG</a></div></figcaption>
+          </figure>
+          <figure class="map">
+            <a class="image-link" href="../maps/station01-plan.svg" target="_blank" rel="noopener" aria-label="Åpne planforslaget for feltstasjonen"><img src="../maps/station01-plan.svg" loading="lazy" alt="Skjematisk planforslag for feltstasjonen."></a>
+            <figcaption><div class="caption-top"><span class="number">C / PLAN</span><span class="status proposed">Planforslag</span></div><h3>Feltstasjonens oppbygning</h3><p>Et forslag til plassering og bevegelse gjennom feltområdet. Planen viser ikke et ferdig eller vedtatt spillområde.</p><div class="actions"><a href="../maps/station01-plan.svg" target="_blank" rel="noopener">Åpne original</a><a href="../maps/station01-plan.svg" download>Last ned SVG</a></div></figcaption>
+          </figure>
+          <figure class="map">
+            <a class="image-link" href="../maps/motel-plan.svg" target="_blank" rel="noopener" aria-label="Åpne planforslaget for motellet"><img src="../maps/motel-plan.svg" loading="lazy" alt="Skjematisk planforslag for motellet, uten vedtak om romnummer."></a>
+            <figcaption><div class="caption-top"><span class="number">D / PLAN</span><span class="status proposed">Planforslag</span></div><h3>Motellets oppbygning</h3><p>Et mulig oppsett for motellet som spilleområde. Planen avgjør verken romnummer eller endelig romfordeling.</p><div class="actions"><a href="../maps/motel-plan.svg" target="_blank" rel="noopener">Åpne original</a><a href="../maps/motel-plan.svg" download>Last ned SVG</a></div></figcaption>
+          </figure>
+        </div>
+      </section>
+      <aside class="source" aria-labelledby="source-title">
+        <h2 id="source-title">Status og kildegrunnlag</h2>
+        <div><p>Miljøbildene er genererte konsepter etter prosjektets grafikkbrief og referanser. Kartene skiller mellom illustrasjon, kodeavledet plan og forslag. Dette galleriet endrer ikke selve spillet.</p><p>Prompts og opphav: <a href="room-concepts.json">fotolab og motellrom</a>, <a href="exterior-concepts.json">servicegård og feltstasjon</a>, <a href="additional-concepts.json">arkiv, motellgård og oversiktskart</a>. Se også <a href="../maps/map-spec.json">nærkartenes kildegrunnlag</a>.</p><p>Alle bilder åpnes som egne originalfiler. Galleriet bruker bare lokale filer og kan leses uten nett når mappene concept og maps følger med.</p></div>
+      </aside>
+    </main>
+    <footer><p>SIGNAL / 47 · VISUELL RETNING</p><p>Konseptmateriale · 04.10.2026</p><a href="#">Til toppen</a></footer>
+  </div>
+</body>
+</html>

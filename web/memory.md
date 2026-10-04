@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-04: Tom ba om flere konseptbilder og kart over lokasjonene. Seks miljøkonsepter og fire kart ligger under `src/assets/art/concept/` og `maps/`, med galleri og kilde-/promptmanifest. Se `CONCEPT_DELIVERY.md`. Dette er visuell retning, ikke ny kanon eller runtimeinnhold. SARO-nærkartet følger dagens Three.js-koordinater; arkivinngangen og Noras romnummer er fortsatt uavklart. STATION 01 og motellinteriørene er planlagt web-innhold, selv om Unity har feltreferanser.
 - 2026-10-04: Tom ba ChatGPT bygge videre på SIGNAL / 47 med grafikk og teksturer til three.js. Dette passet kobler 17 nye kildeassets til eksisterende web-spill (16 lastes i runtime; slukket motellskilt er bare kildevariant). Ingen Unity-filer, spillkonstanter eller kapittelinnhold er endret. `src/core/art.ts` laster alle runtime-bilder før geometri og High/Low-materialcache bygges. Materialenes repeat-varianter deler THREE.Source. Sju PNG-bilder har WebP-kopier fra `tools/prepare_art.py`; brieforiginalene er bevart. Himmel leveres 4096x2048, men generatorkilden var 1774x887, og spillet bruker 2048x1024. Eksakt bildegeneratormodell er ikke eksponert. Opphav og prompts ligger i JSON-filene under `src/assets/art/`.
 - 2026-10-04: Testkroken `S47.hold` må defineres med `Object.defineProperty`. `Object.assign` kopierte bare getterens verdi og stoppet ikke den vanlige spilløkka. Rettet før dette passets tester. Tidligere testresultater er historikk og er ikke bevis for pauset spilltid.
 

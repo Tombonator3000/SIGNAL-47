@@ -55,3 +55,11 @@ Du lager 2D-grafikk. Claude bygger all 3D-geometri i kode og legger bildene dine
 - 3D-modeller. Claude lager geometrien.
 - Dokumenter i spillet (skiftlogg, utskrifter). Disse lages i HTML og CSS, slik at teksten alltid blir riktig.
 - Brukergrensesnitt og menyer.
+
+## Konsepter og lokasjonskart levert 4. oktober 2026
+
+De tre konseptbildene i runde 2 er levert, sammen med `concept/saro_archive.jpg`, `concept/station01_field.jpg` og `concept/sierra_court.jpg` i 1920×1080. `ch3_room47.jpg` beholder briefens filnavn, men viser ingen romnummer. Rom 6 kontra 47 og kapittelinndeling avgjøres separat.
+
+Toms bestilling om lokasjonskart er levert som `maps/world-overview.jpg` (2400×1350) og redigerbare `maps/saro-plan.svg`, `maps/station01-plan.svg`, `maps/motel-plan.svg`, alle med PNG-kopier (1800×1280). Nærkartene fastlegger ikke nye spillkonstanter. Illustrasjonen er skjematisk; SARO-nærkartet bruker dagens web-geometri, mens målestasjonen og motellet er planforslag.
+
+Alle bildegenererte konsepter er skalert fra 1672×941. Se `CONCEPT_DELIVERY.md`, promptmanifestene og det lokale galleriet `src/assets/art/concept/index.html`.

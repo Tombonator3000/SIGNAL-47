@@ -1,0 +1,76 @@
+{
+  "date": "2026-10-04",
+  "generator": "Built-in ChatGPT image generation",
+  "exactModel": "not exposed",
+  "classification": "CONCEPT_ONLY",
+  "notRuntimeEvidence": true,
+  "assets": [
+    {
+      "output": "saro_archive.jpg",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-f51f8cc8-28a3-4a10-a6f4-3360d09660d4.png",
+      "reference": "web/evidence/art-2026-10-04/room-high.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "prompt": "Use case: stylized-concept.\nCreate one new environment concept image for SIGNAL / 47, a first-person Three.js game set at SARO observatory in New Mexico, 1986.\nReference image is the existing game screenshot: inherit its restrained low-poly geometry, amber hexagonal floor, blue-grey institutional painted walls, cream old equipment and dark wood laminate. This is a new small archive room, not a copy of the screenshot.\nWide cinematic 16:9 image, intended 1920x1080. First-person standing eye height in the doorway of a modest compact archive annex. Focal point is a worn laminate worktable with exactly three organized groups: old paper field journal, two cream protocol sheets side by side, and a folded maintenance plan. Two narrow steel filing cabinets, shelves of archival boxes, one old beige telephone and a small desk lamp. A closed plain door in the back, no windows required. Papers show quiet abstract ruled marks, no legible plot clues.\nStyle: polished stylized low-poly game environment concept with visible planar edges and painted texture surfaces, limited props, plausible for mobile WebGL. Grounded 1986 office, no glossy science-fiction. Warm practical lamp pool, cooler subdued ceiling fill, physically readable walking space and work surface, subtle dust only. Palette midnight navy #0c1220, institutional grey-green, amber #ffb052, paper #ebe3cf. No people, no HUD, no signage, no logo or title, no watermark, no new story events, no glowing supernatural effects. Beautiful calm nocturnal investigation atmosphere.",
+      "notes": [
+        "Planlagt arkivrom, fysisk plassering og inngang er ikke fastlagt."
+      ],
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "d108fefbb8118ff0e45e0f56b6baf05dffdf343d1ae4ffd0553b907b273e8caf",
+      "outputSha256": "c4f738618cc17924283eb4f4a9936cd4efeba45ce8b4d5d164cc948b52ff93f5",
+      "referenceSha256": "2c0609041a5d6c9f37a2fd963aee12c13595cab1b839a3ff78714f1bb48b1575",
+      "encoding": "sRGB JPEG quality90; scaled from generated PNG, not native requested resolution"
+    },
+    {
+      "output": "sierra_court.jpg",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-9614abcd-393c-4399-a18d-ad60c4202701.png",
+      "reference": "web/evidence/art-2026-10-04/motel-high.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "prompt": "Use case: stylized-concept. New environment concept for SIGNAL / 47, a stylized low-poly Three.js first-person mystery game, New Mexico in 1986. Reference screenshot is the established motel silhouette and night palette; create a richer feasible environment concept, no HUD. One wide 16:9 image, intended 1920x1080.\nView at human eye height across the dry parking court of SIERRA MOTOR COURT. A modest single-storey linear motel, cream stucco, dull rusty orange doors, flat low dark roof, shallow continuous covered walkway with thin posts. Small office at one end has warm yellow light through glass, an ordinary wooden counter visible, hanging keys and faded noticeboard. One room elsewhere has its lamp lit; other doors closed and dark, no readable room numbers. One parked unbranded boxy 1970s sedan, small square fenced empty swimming pool off to one side, dry plant pots. Tall period pole sign on left foreground, simple red neon script Sierra above cyan block lettering MOTOR COURT, no extra words. Sign is secondary not dominant.\nHand-painted surface wear over simple geometric meshes, chunky planar silhouettes, coarse restrained texture. Quiet ordinary American desert roadside place, isolated and human, no people or creatures. Practical warm porch lights against deep navy starry desert night, subtle distant milky way, dark angular mesa silhouette. A small amount of localized neon color on dry cracked asphalt, no rainy wet mirror. Calm readable walking route between office and room. Avoid photorealism, glossy modern design, extra large buildings, roadside city, modern cars, science-fiction, dramatic supernatural sky, numbers47 or6, UI, watermarks or captions.",
+      "notes": [
+        "Forslag til spillbart motellområde. Dagens web-versjon har motell som bakgrunn.",
+        "Byggets L-form er visuell utforskning, ikke vedtatt geometri. Ingen romnummer."
+      ],
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "16b28aae8443e445971682fe6cc2c33805dc9ccafd591f428b52e8a0c4e5e840",
+      "outputSha256": "f817d253f41df000067e4fdcb4416182a398b2e08357bcd57fa9c95a55e8c930",
+      "referenceSha256": "0265084206217bbaeac33125c8b45cc5302115217b5ab6ec9a99cfa467ec76e4",
+      "encoding": "sRGB JPEG quality90; scaled from generated PNG, not native requested resolution"
+    },
+    {
+      "output": "../maps/world-overview.jpg",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-31286c55-b365-4f80-bc7d-02dea00c0761.png",
+      "reference": "Docs/WorldCase22/Visuals/world-map-final.png",
+      "size": [
+        2400,
+        1350
+      ],
+      "prompt": "Use case: stylized-concept, illustrated game location map.\nCreate a new beautiful illustrated overview map for SIGNAL / 47, based on the reference's cream paper and green drafting ink art language, but with an entirely NEW layout and CURRENT Three.js concept scope. This is a production concept, not a real map of New Mexico. Wide 16:9, intended 2400x1350. Refined hand-painted isometric low-poly environmental miniatures on lightly aged cream paper, restrained thin topographic lines, navy/forest-green ink and amber dashed route arrows, very clear hierarchy, ample whitespace and elegant thin border.\nExactly THREE separate destination clusters:\n1. SARO in upper LEFT, largest: compact rectangular observatory control room with broad windows, photolab small separate block to its right connected by narrow raised walkway, a small service cabinet halfway along the walkway and slim reference vane at its far end, several representative radio dishes behind/north of the buildings. Keep equipment modest. Label exactly \"SARO\". Under it a small typeset subtitle \"KONTROLLROM / SERVICEGÅRD / FOTOLAB\".\n2. STATION 01 upper RIGHT: ONE tiny weathered survey hut, ONE tripod optical survey transit, THREE small wooden marker posts, a loose cable path across dry ground, a few rocks and shrubs. No radio dishes or water tower here. Label exactly \"STATION 01\". Subtitle exactly \"GAMMEL MÅLESTASJON\".\n3. SIERRA MOTOR COURT lower LEFT / center: one compact single-storey motel strip, office at one end, small parking court with one boxy 1970s sedan, small empty fenced pool and roadside neon sign. Do not number ANY motel doors. Label exactly \"SIERRA MOTOR COURT\". Subtitle exactly \"KONTOR / NORAS ROM\".\nSeparate all three as diagram islands with warm sparse desert between. Dashed amber arrows, with simple arrowheads and NO text on lines, connect SARO → STATION 01 → SIERRA MOTOR COURT → SARO. These are travel relationships, no physical road network, no scale bar, no compass, no invented distances, no extra destinations or towns. Bottom RIGHT reserve a clean legend box with three lines EXACTLY:\n\"HEL LINJE: EKSISTERENDE SARO\"\n\"STIPLET: PLANLAGT REISE\"\n\"KARTET VISER IKKE AVSTANDER\"\nSARO border solid green; Station01 and motel border dashed amber indicating proposed accessible web locations. Title at top exactly \"SIGNAL / 47\". Smaller title exactly \"LOKASJONER / THREE.JS\". Footer exactly \"KONSEPTKART / IKKE SPILLBILDE / IKKE MÅLESTOKK\".\nNo chapter numbers, no room numbers, no puzzles, no skulls, no characters, no glowing portals, no alien structures, no modern cars. The old reference's chapter/room labels and directional SARO layout must NOT be copied. The drawing style and cream/green art direction are the only things to carry across.",
+      "notes": [
+        "Skjematisk illustrert oversikt, ikke kart over ekte geografi eller faktisk kollisjon.",
+        "Antennene er representative ikoner. Spillets antall 27 er uendret.",
+        "Toveispil mellom SARO og STATION 01 viser tillatt retur. Bildeplasserte retningspiler fastlegger ikke reiselogikk.",
+        "Lokalt SARO-oppsett er forenklet; saro-plan.svg er den presise kodebaserte referansen."
+      ],
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "66452a5f60c714d43dfa7f9252a239aee00201467aba15dfc7996a94e72ca8d9",
+      "outputSha256": "bc9d48489fca80a564cc593f1515f10c9bc5b3d3715ce35627ffeedc56d0ebe3",
+      "referenceSha256": "69a784d7c7a4f288230db822699925dee9abd6b01d7538878a7e648d23dfc5a3",
+      "encoding": "sRGB JPEG quality90; scaled from generated PNG, not native requested resolution"
+    }
+  ]
+}

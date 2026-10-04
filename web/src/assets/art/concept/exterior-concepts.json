@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04 07:55:51 UTC",
+  "project": "SIGNAL / 47",
+  "branch_at_creation": "codex/concepts-maps-20261004",
+  "status": "Konseptbilder for visuell utvikling. Ikke faktiske spillbilder og ikke importert som runtime-assets.",
+  "generator": {
+    "tool": "Innebygd ChatGPT image_gen",
+    "calls": 2,
+    "one_call_per_image": true,
+    "exact_model": "Ikke eksponert av verktøyet; ingen bestemt modellversjon påstås.",
+    "external_service": false
+  },
+  "reference_images": [
+    {
+      "path": "web/evidence/art-2026-10-04/yard-high.png",
+      "sha256": "2e1b89a9983067b4671d5f81033b8224730be9078e9f89ce93d7c2c9b64a97d0",
+      "kind": "Faktisk Three.js-skjermbilde",
+      "role": "Eksisterende servicegård, enkel geometri, materialer og nattlys."
+    },
+    {
+      "path": "Docs/DesignBible13/Visuals/concept-01-survey-station.png",
+      "sha256": "00340c4b7cc020f9786a52f31a1e38d961fa2e44898db2e31322b88b23cee242",
+      "kind": "Eldre konseptbilde, ikke gameplay",
+      "role": "Beskjeden feltstasjon, transit på fastmerke, slitte materialer og varm/kald lyskontrast."
+    }
+  ],
+  "output_spec": {
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "format": "JPEG",
+    "mode": "RGB",
+    "jpeg_quality": 85,
+    "color_space": "sRGB med innebygd ICC-profil"
+  },
+  "processing": "Generatorkildene er 1672x941 PNG. Hele bildet er skalert med Lanczos til 1920x1080 og eksportert til JPEG. Ingen innholdsendring, beskjæring eller fargekorrigering. Native 1920x1080-generering påstås ikke.",
+  "preservation": "Begge eldre referansebilder er uendret. Originale genererte PNG ligger bevart i oppgitte verktøystier.",
+  "validation": {
+    "format": "PASS: begge filer dekodet som RGB JPEG 1920x1080 og sRGB-profil kontrollert.",
+    "visual": "PASS: begge eksporterte JPG inspisert i fullformat.",
+    "runtime": "NOT_APPLICABLE: konseptleveranse uten spillkodeendring eller runtimeimport.",
+    "limitations": [
+      "Bildene viser en visuell retning; generert detaljrikdom og lys er ikke ytelsesverifisert i Three.js.",
+      "Små markeringer og instrumentdetaljer er foreløpig konseptgrafikk og definerer ikke spillkanon eller endelige etiketter.",
+      "Romlige plasseringer er konsepter og erstatter ikke kanoniske mål, interaksjonsruter eller kollidere."
+    ]
+  },
+  "assets": [
+    {
+      "file": "web/src/assets/art/concept/ch1_service_yard.jpg",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-34404104-f47d-4561-b528-13660ba64c5c.png",
+      "source_size": [
+        1672,
+        941
+      ],
+      "source_sha256": "3fddaddf0056fc0a1cd48371fa35dfa448fedd1b85ff2b161841dbd4b9798da9",
+      "sha256": "abe3d8938a55ae80a7c81c483b92ae87e66469f6a70d100888377c1000c7a6e7",
+      "bytes": 363033,
+      "prompt": "Use case: stylized-concept. Asset type: 1920 x 1080 landscape 16:9 environment concept illustration for SIGNAL / 47, a stylized low-poly Three.js first-person game. This is concept art, not a gameplay screenshot. Input image 1 (yard-high.png) is the authoritative existing game layout and low-poly style reference: modest metal railings, a narrow concrete service walk, a small S-03 service cabinet and radio dishes beyond. Input image 2 (concept-01-survey-station.png) is reference for worn matte 1986 materials, warm working light against a cold night only; do not copy its interior or its footer. Create one coherent new exterior view along a slightly raised, narrow dusty concrete walkway from the control-room building visible at the left rear edge toward the ordinary S-03 electrical service cabinet in the near middle distance. Simple black painted metal safety railings on both sides guide the path. Place the cabinet beside the walk with one small inset dark green instrument display; only readable cabinet text: S-03. A few large parabolic radio dishes stand behind it, receding into the New Mexico desert. Keep this a compact observatory service yard, no new buildings beyond the existing modest control-room edge, no monumental plaza. Human eye-height perspective with clear walkable route and useful spatial depth. Visual style: stylized low-poly 3D game concept with visibly simplified angular shapes, restrained hand-painted dusty materials, believable 1986 industrial props, sparse dry scrub and fine gravel. Cold deep navy dark night (#05070d / #0c1220), tiny subdued stars and a faint Milky Way, not a luminous galaxy. Small local pools of orange sodium work light (#ffb052, muted #a8641f), large cool dark unlit areas, softly lit silhouettes. All surfaces dry, matte and slightly worn. No wet reflections, no glossy sci-fi, no futuristic architecture, no lasers, no glowing ground paths, no extra control consoles, no people. No UI, HUD, reticle, clock, captions, footer, border, watermark or logos. No text except S-03. Compose the whole image edge to edge in 16:9 with useful environmental detail rather than photographic microtexture.",
+      "reference_order": [
+        "web/evidence/art-2026-10-04/yard-high.png",
+        "Docs/DesignBible13/Visuals/concept-01-survey-station.png"
+      ],
+      "inspection": "Hevet smal betonggang med metallrekkverk, kontrollrom til venstre, lite S-03-skap og antenner bak. Tørr støvete flate, oransje arbeidslys og mørk blå nattehimmel. Ingen HUD eller bildekant."
+    },
+    {
+      "file": "web/src/assets/art/concept/station01_field.jpg",
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-5ab62360-4224-42d5-8e74-16171e67b489.png",
+      "source_size": [
+        1672,
+        941
+      ],
+      "source_sha256": "f77b69da93181321e67e6c88b7717cc683871f835e1e39e8a9597905793da47a",
+      "sha256": "d8ed709a7a9dd1ca56a8d8e1e0345ae039a22e1ececbe6841a3d6b951f40caa6",
+      "bytes": 305703,
+      "prompt": "Use case: stylized-concept. Asset type: 1920 x 1080 landscape 16:9 environment concept illustration for SIGNAL / 47, a stylized low-poly Three.js game. Concept only, not a gameplay screenshot. Input image 1 (concept-01-survey-station.png) is the authoritative source for this modest survey site: an ordinary small weathered field hut, a compact optical transit on a fixed concrete survey monument, small survey stakes and arid New Mexico. Reinterpret its setting from OUTSIDE, do not reproduce its interior or caption. Input image 2 (yard-high.png) supplies the simple low-poly 3D game treatment, cold navy darkness and local orange sodium working lights only; do NOT bring its radio dishes, array, railings or large cabinets into this site. Scene: New Mexico desert in 1986, a remote tiny existing field station called STATION 01. Exactly ONE small one-room field building, about 4 metres wide, at left of composition, low simple roof, ordinary weathered plaster/concrete walls, an open door with dim warm practical light and a single small window. One compact period optical survey transit with a horizontal telescope mounted directly on a low square concrete fixed benchmark, clearly visible in the central foreground; not a big telescope, not a satellite antenna, no tripod. Exactly three modest low marker stakes with small pale target plates are distributed visibly on the gravel to the right and behind the transit, not tall lamps and not glowing. A single dark rubber electrical cable visibly runs from the hut along the ground and forms a loose readable loop beside the instrument; cable has no glow. Tiny dry scrub and a few angular low-poly stones, dry dusty gravel and worn matte concrete. Open dark desert beyond, a low distant mesa silhouette, no other buildings, no roads to cities, no new installation. Eye-height 3/4 exterior composition, calm playable scale, hut / instrument / all three markers / cable loop legible together. Stylized low-poly 3D concept, visibly angular simplified props and rock shapes, restrained hand-painted material detail, deliberately less photorealistic than input image 1. Cold deep dark navy night (#05070d / #0c1220), tiny sparse dim stars, faint understated Milky Way. Only small orange sodium work-light pools near the doorway and transit, large areas remain cool and dark. All surfaces dry and matte. No glossy sci-fi, wet reflections, neon, lasers, giant antennas, radar dishes, domes, industrial complex, dramatic fog, people, vehicles, HUD, reticle, captions, footer, border, watermark, real brand names or logos. Prefer no writing anywhere except a tiny plain STATION 01 plate above the door. Full edge-to-edge landscape image.",
+      "reference_order": [
+        "Docs/DesignBible13/Visuals/concept-01-survey-station.png",
+        "web/evidence/art-2026-10-04/yard-high.png"
+      ],
+      "inspection": "Ett lite feltbygg, én kompakt transit på betongfastmerke, tre lave målplater og tydelig kabelsløyfe. Ingen antennepark, storinstallasjon, kjøretøy eller personer. Stilisert kantet terreng, tørr grus og lokalt oransje arbeidslys."
+    }
+  ]
+}

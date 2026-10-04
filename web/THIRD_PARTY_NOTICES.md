@@ -38,3 +38,5 @@ Geometrien og instrument-/bevisgrafikken er laget i kode for dette prosjektet.
 - `sky/sky_milkyway_equirect.jpg` og `brand/logo_saro.png`.
 
 Stier er relative til `src/assets/art/`. Prompts, kildebaner, eksportmål og SHA-256 står i `room/ROOM_TEXTURES.json`, `ext/EXTERIOR_TEXTURES.json`, `brand/GRAPHICS.json` og `sky/SKY_SIGN_PROMPTS.json`. `runtime/manifest.json` knytter de sju WebP-kopiene til originalene. Kartet er en stilisert spillrekvisitt, ikke et geografisk navigasjonskart. Tidligere lyd- og fontkreditering gjelder uendret.
+
+Samme dato: seks miljøkonsepter i `concept/` og `maps/world-overview.jpg` er laget med den innebygde ChatGPT-bildegeneratoren. Eksakt modellversjon er ikke eksponert. Referanser er prosjektets egne spillbilder og tidligere konseptillustrasjoner, ikke nye nedlastede tredjepartsbilder. Fullstendige prompts og filhash ligger i `concept/room-concepts.json`, `concept/exterior-concepts.json` og `concept/additional-concepts.json`. `maps/*-plan.svg` er prosjektets egne redigerbare kartdiagrammer, med PNG-eksporter og kildegrunnlag i `maps/map-spec.json`. Ingen ny tredjepartslisens eller CC0-status er påstått. Se `CONCEPT_DELIVERY.md`.

@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-04",
+  "language": "nb",
+  "authoring": "Originale redigerbare SVG-former og tekst laget med render_maps.py. Ingen genererte eller eksterne rasterbilder inngår.",
+  "purpose": "Konseptleveranse og produksjonsoversikt, ikke kart som vises til spilleren.",
+  "canvas": [
+    1800,
+    1280
+  ],
+  "palette": {
+    "paper": "#ebe3cf",
+    "ink": "#152b36",
+    "muted": "#637275",
+    "amber": "#a8641f",
+    "plan": "#f0d5a9",
+    "built": "#d4ddd4",
+    "bg": "#d9d5c8",
+    "line": "#b1b4a9",
+    "white": "#f6f0df"
+  },
+  "font": "DejaVu Sans med Arial/sans-serif som reserve. SVG beholder redigerbar tekst.",
+  "status_legend": {
+    "navy": "Eksisterende three.js-kjerne på SARO",
+    "amber_fill": "Planforslag til three.js",
+    "amber_dashed_unfilled": "Eksisterende fotoavgrensning på SARO eller separat arkivinnsett, se lokal tekst",
+    "gray_hatched": "Bakgrunn uten rom- eller gangtilgang"
+  },
+  "sources": [
+    {
+      "path": "web/src/world/ControlRoom.ts",
+      "sha256": "21796eae0d322d60be3870489c2dccbcbf1d4c53db72a480355da4809c54ce8e"
+    },
+    {
+      "path": "web/src/world/ServiceYard.ts",
+      "sha256": "b24aa169d1baf8e9865d31342b8a1b601c8835d430bebbae5624b79cc726547b"
+    },
+    {
+      "path": "web/src/world/Exterior.ts",
+      "sha256": "9d7c729e198201d68d62d275397c668cb373f675d82691671c7239bf233e130a"
+    },
+    {
+      "path": "web/AGENTS.md",
+      "sha256": "087c0728cf75a06ffe6d332fe0ffcc521a58508e0f568126c9019c6d1a6ed3da"
+    },
+    {
+      "path": "web/ART_BRIEF.md",
+      "sha256": "3d6fd9a0b5b2646c8a080512f89655e661c9f9a3e1c7f28489152059b3e3bf63"
+    },
+    {
+      "path": "web/memory.md",
+      "sha256": "eb4df27242428dd6f273099bdc786464f7eb1e6f49cde978c0df735afdb5d3b9"
+    },
+    {
+      "path": "web/todo.md",
+      "sha256": "57e9e610944355a6c61c8292f3a0b93a0fab64004f812cf8f83dfffe91ff11ff"
+    },
+    {
+      "path": "Docs/DesignBible13/design-bible.md",
+      "sha256": "f6ab9be307894f923ac22486ea9d0772f90f0903db6bd34516d08331c5552a69"
+    },
+    {
+      "path": "Docs/WorldCase22/WORLD_DESIGN.md",
+      "sha256": "b7b926c9b680f208e3e6005099da90d4c09cafee45439f2552e1d0354fb9f46b"
+    },
+    {
+      "path": "Docs/CURRENT_HANDOFF.md",
+      "sha256": "d8fb5df0c7bab071264e2027292ce5989014f936770a85b6fa7474bb7a96b560"
+    }
+  ],
+  "saro": {
+    "status": "Forankret i gjeldende three.js-kilde. Ikke oppmåling eller kjørbar navigasjon.",
+    "north": "negative world Z",
+    "control_room_center_xz": [
+      0,
+      0
+    ],
+    "east_door_xz": [
+      6.15,
+      1.6
+    ],
+    "walkway_bounds_xz": [
+      8,
+      11,
+      -19.6,
+      0.5
+    ],
+    "photo_apron_bounds_xz": [
+      8,
+      12.6,
+      -15.2,
+      -8.6
+    ],
+    "physical_s03_side_slab_bounds_xz": [
+      11,
+      12.6,
+      -13.4,
+      -8.6
+    ],
+    "walkable_apron_bounds_xz": [
+      10.2,
+      12.6,
+      -13.4,
+      -8.6
+    ],
+    "photo_lab_bounds_xz": [
+      12.6,
+      19.2,
+      -6,
+      1
+    ],
+    "photo_lab_west_door_xz": [
+      12.6,
+      -1.2
+    ],
+    "b12_vane_xz": [
+      9.9,
+      -18.35
+    ],
+    "b12_control_xz": [
+      8.35,
+      -16.9
+    ],
+    "s03_cabinet_xz": [
+      12.3,
+      -11
+    ],
+    "s03_antenna_xz": [
+      9.5,
+      -42
+    ],
+    "main_projection": "SVG X = 500 + 25 * world x; SVG Y = 1000 + 25 * world z. Antennen er flyttet til øvre bakgrunnsfelt med tydelig utsnittsbrudd.",
+    "archive": "Separat stiplet planinnsett uten fast plassering, dør eller fysisk kobling.",
+    "exceptions": [
+      "WorldCase22s gamle Unity-retning B-12 sør for S-03 overstyres av web/src/world/ServiceYard.ts, der B-12 står nord for motorskapet.",
+      "Fotoakseptflaten er bredere enn sideplattingen og er derfor tegnet som egen stiplet avgrensning, ikke som ekstra gulv.",
+      "Kartet viser forbindelser når dørene er åpne. Tilgang avhenger fortsatt av spillets fase og låsestatus.",
+      "Ganglinjer er skjematiske og viser ikke alle kollidere, stolbein eller bevegelsesmarg."
+    ]
+  },
+  "station01": {
+    "status": "Romlig planforslag til three.js. Unity-felt finnes fra før; kartet er ikke oppmåling av det.",
+    "interiors": 1,
+    "features": [
+      "Feltbygning",
+      "Transitflate",
+      "Tre fastmerker",
+      "Kabel og kabelbrudd",
+      "Kort gangsløyfe",
+      "Ankomst og retur"
+    ],
+    "caveats": [
+      "Geometri, merking og sikteretninger fryses i senere blokkering.",
+      "Plasseringen av fastmerker viser ikke oppgavens fasit.",
+      "Historiske og nye foto må lages fra samme endelige oppstilling."
+    ]
+  },
+  "motel": {
+    "status": "Romlig planforslag til three.js. Eksisterende motellkulisse er ikke en ferdig spillbar scene.",
+    "accessible_interiors": [
+      "Kontor",
+      "Noras rom"
+    ],
+    "background": [
+      "Andre rom",
+      "Basseng",
+      "Ytre vei og terreng"
+    ],
+    "unresolved": "Romnummer 6 kontra 47 er ikke bestemt. Kartet bruker NORAS ROM uten nummer."
+  },
+  "global_caveats": [
+    "Ikke målestokk. Ingen geografiske kilometer, jordkoordinater eller ny motorasimut.",
+    "Ikke spillbilder eller bevis på implementerte framtidige scener.",
+    "SARO viser bare nærutsnitt og én bakgrunnsantenne; spillet beholder 27 antenner.",
+    "Tidsløs produksjonsgrafikk med norske etiketter; tekst inne i spillet forblir engelsk."
+  ],
+  "outputs": [
+    {
+      "svg": "saro-plan.svg",
+      "svg_sha256": "04e4eea75df95bcaef57b55df0063833eb5980efed8480dcd4165f7ef1fca226",
+      "svg_bytes": 14602,
+      "png_rendered": true,
+      "png": "saro-plan.png",
+      "png_sha256": "6bcc8aad28c8e101e21af9ef74947a35be4eb94e3ba8306ee7842bd9e5dc933c",
+      "png_bytes": 251161
+    },
+    {
+      "svg": "station01-plan.svg",
+      "svg_sha256": "7deddcbab1b967df9fc570774f410b9ed9cce26f8a3e76f2bab9d63544cb11a5",
+      "svg_bytes": 12998,
+      "png_rendered": true,
+      "png": "station01-plan.png",
+      "png_sha256": "31c5f77439aec670c1008f80d0440402c842549a827235c3d82da6c2af19058e",
+      "png_bytes": 258731
+    },
+    {
+      "svg": "motel-plan.svg",
+      "svg_sha256": "28ec1d9891323307e6e4732ab3d670d10fbf064b5a707f68eaceb62b08a83016",
+      "svg_bytes": 12042,
+      "png_rendered": true,
+      "png": "motel-plan.png",
+      "png_sha256": "4f1579f66aa4de1b5ca3322865b98f5ea72e29ebf051a6df11d09b5a6976e132",
+      "png_bytes": 240725
+    }
+  ]
+}
