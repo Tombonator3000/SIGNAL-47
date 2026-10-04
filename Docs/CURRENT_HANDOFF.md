@@ -2,7 +2,7 @@
 
 ## Three.js-grafikk, 4. oktober 2026
 
-Ny grafikkandidat bygger videre på `main` ved `47a18b7` (spillkoden er den samme som ved `478bfd1`; PR29s nyere dokumentasjon er bevart). Kode, 17 kildeassets, opphav og lette runtime-kopier ligger i `web/`. Se [`web/ART_DELIVERY.md`](../web/ART_DELIVERY.md) for faktisk teststatus, bevis og begrensninger. Endringen gjelder kontrollrommet, servicegården, fotolaben og utsikten; Unity-arkivet og spillkonstantene er bevart. De tre framtidige konseptbildene i briefen er ikke produsert. Dette er en grafikkleveranse til eksisterende prolog og kapittel 1, ikke portering av alle senere Unity-kapitler.
+[PR #30](https://github.com/Tombonator3000/SIGNAL-47/pull/30) leverer grafikkandidaten uten merge. Kandidaten bygger videre på `main` ved `47a18b7` (spillkoden er den samme som ved `478bfd1`; PR29s nyere dokumentasjon er bevart). Kode, 17 kildeassets, opphav og lette runtime-kopier ligger i `web/`. Se [`web/ART_DELIVERY.md`](../web/ART_DELIVERY.md) for faktisk teststatus, bevis og begrensninger. Endringen gjelder kontrollrommet, servicegården, fotolaben og utsikten; Unity-arkivet og spillkonstantene er bevart. De tre framtidige konseptbildene i briefen er ikke produsert. Dette er en grafikkleveranse til eksisterende prolog og kapittel 1, ikke portering av alle senere Unity-kapitler.
 
 ## Nettversjonen i web/ (3. oktober 2026)
 
