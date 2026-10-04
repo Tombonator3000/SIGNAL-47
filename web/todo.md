@@ -45,7 +45,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] `KAPITLER.md`, ett kapittel om gangen (Night Shift er spesifisert og bygd): The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
 - [x] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen. Walkie-talkien i rom 6 er også bygd.
 - [ ] Endringer i det som finnes: lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»), sluttkortet i kapittel 4 («NEXT: ALL NIGHT»), lastebilen hentes på SARO etter rom 6.
-- [ ] Codex, runde 10 (bestilt 4. oktober kl. 22.25, `ART_BRIEF.md`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Claude kobler inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren; utsnitt A når tråd 7 bygges, hele bildet etter rulleteksten.
+- [ ] Codex, runde 10 (bestilt 4. oktober kl. 22.25, `ART_BRIEF.md`; Codex bekreftet kl. 22.34, gren `codex/round10-story-art-20261004`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Claude kobler inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren; utsnitt A når tråd 7 bygges, hele bildet etter rulleteksten.
 - [ ] Codex, senere: milestolpene og oppmålingsbolten når Roswell-veien er spesifisert.
 - [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [ ] Kapitlet «All Night»: fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien. Området er klart (`World.goDiner`).
