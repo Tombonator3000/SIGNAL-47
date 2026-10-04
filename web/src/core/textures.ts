@@ -233,6 +233,56 @@ export function workOrderSheet() {
   });
 }
 
+// Chapter two: the south corridor and the records room.
+export function vinylTiles() {
+  return canvasTex(256, 256, (g, w, h) => {
+    const r = rng(41);
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
+      const v = 150 + Math.floor(r() * 18);
+      g.fillStyle = `rgb(${v},${v - 6},${v - 18})`; g.fillRect(x * 64, y * 64, 64, 64);
+    }
+    speckle(g, w, h, 3000, 0.12, 42);
+    g.strokeStyle = 'rgba(60,50,35,.35)'; g.lineWidth = 2;
+    for (let i = 0; i <= 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.stroke(); g.beginPath(); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); }
+  }, [5, 5]);
+}
+
+// A drinks and snacks machine, lit from inside. Plain colours, no brands.
+export function vendingFront() {
+  return canvasTex(256, 512, (g, w, h) => {
+    g.fillStyle = '#20262c'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#dfe8ef'; g.fillRect(14, 14, 172, 380);
+    const cols = ['#b8322a', '#2f6db0', '#e0b13a', '#3f8a4c', '#c56a2b', '#7b4fa3'];
+    const r = rng(7);
+    for (let row = 0; row < 6; row++) {
+      g.fillStyle = 'rgba(40,50,60,.5)'; g.fillRect(14, 70 + row * 56, 172, 3);
+      for (let i = 0; i < 5; i++) { g.fillStyle = cols[Math.floor(r() * cols.length)]; g.fillRect(22 + i * 33, 30 + row * 56, 24, 38); }
+    }
+    g.fillStyle = '#c9c2a8'; g.fillRect(196, 40, 46, 120);
+    g.fillStyle = '#10161a'; g.fillRect(206, 56, 26, 8); g.fillRect(212, 90, 14, 40);
+    g.fillStyle = '#1a1f24'; g.fillRect(30, 410, 150, 60);
+    g.fillStyle = '#e8e2cf'; g.font = '600 22px Oswald'; g.textAlign = 'center'; g.fillText('COLD DRINKS', 100, 500 - 2);
+  });
+}
+
+// April 1986. The night of the 13th runs into the 14th (the printout is dated 04/14/86).
+export function calendarApril1986() {
+  return canvasTex(256, 320, (g, w) => {
+    g.fillStyle = '#f2ecdc'; g.fillRect(0, 0, w, 320);
+    g.fillStyle = '#7a2e22'; g.fillRect(0, 0, w, 70);
+    g.fillStyle = '#f2ecdc'; g.font = '600 34px Oswald'; g.textAlign = 'center'; g.fillText('APRIL 1986', w / 2, 48);
+    g.fillStyle = '#2b2a27'; g.font = '15px Oswald';
+    'SMTWTFS'.split('').forEach((d, i) => g.fillText(d, 22 + i * 35, 96));
+    g.font = '18px "Special Elite", serif';
+    for (let d = 1; d <= 30; d++) {
+      const cell = d + 1; // the 1st is a Tuesday
+      const x = 22 + (cell % 7) * 35, y = 128 + Math.floor(cell / 7) * 38;
+      g.fillText(String(d), x, y);
+      if (d === 13) { g.strokeStyle = '#26324f'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 6, 15, 0, Math.PI * 2); g.stroke(); }
+    }
+  });
+}
+
 export function greenbarPaper(lines: string[]) {
   return canvasTex(512, 768, (g, w, h) => {
     g.fillStyle = '#f1efe6'; g.fillRect(0, 0, w, h);

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, faced } from './kit';
+import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, faced, annexFlood } from './kit';
 import * as T from '../core/textures';
 import { fieldCameraModel } from './props';
 
@@ -50,6 +50,7 @@ export class ControlRoom {
   lever!: THREE.Object3D;
   handset!: THREE.Object3D;
   doorHinge!: THREE.Object3D;
+  southDoorHinge!: THREE.Object3D;
   doorLight!: THREE.Mesh;
   fieldCamera!: THREE.Group;
   spawn = { x: 1.55, z: 3.7, yaw: -0.22 };
@@ -101,18 +102,23 @@ export class ControlRoom {
     north(12.6, 0.45, 0, 2.975);
     north(0.9, 1.8, -5.85, 1.85);
     north(0.9, 1.8, 5.85, 1.85);
-    faced(st, 12.6, 3.2, 0.3, ext, wall, 0, 1.6, 4.65, '-z'); // south
+    // south wall, with the corridor door opening (x -2.9 to -1.9)
+    faced(st, 3.4, 3.2, 0.3, ext, wall, -4.6, 1.6, 4.65, '-z');
+    faced(st, 8.2, 3.2, 0.3, ext, wall, 2.2, 1.6, 4.65, '-z');
+    faced(st, 1.0, 1.08, 0.3, ext, wall, -2.4, 2.66, 4.65, '-z');
     faced(st, 0.3, 3.2, 9.6, ext, wall, -6.15, 1.6, 0, '+x'); // west
     // east wall, with the opening for the service yard door (z 1.1 to 2.1)
     faced(st, 0.3, 3.2, 5.9, ext, wall, 6.15, 1.6, -1.85, '-x');
     faced(st, 0.3, 3.2, 2.7, ext, wall, 6.15, 1.6, 3.45, '-x');
     faced(st, 0.3, 1.08, 1.0, ext, wall, 6.15, 2.66, 1.6, '-x');
     // dado band and skirting
-    box(st, 11.98, 0.95, 0.02, wallLow, 0, 0.475, 4.49);
+    box(st, 3.04, 0.95, 0.02, wallLow, -4.47, 0.475, 4.49);
+    box(st, 7.84, 0.95, 0.02, wallLow, 2.07, 0.475, 4.49);
     box(st, 0.02, 0.95, 8.98, wallLow, -5.99, 0.475, 0);
     box(st, 0.02, 0.95, 5.59, wallLow, 5.99, 0.475, -1.695);
     box(st, 0.02, 0.95, 2.39, wallLow, 5.99, 0.475, 3.295);
-    box(st, 11.98, 0.04, 0.04, M.frame, 0, 0.97, 4.47);
+    box(st, 3.04, 0.04, 0.04, M.frame, -4.47, 0.97, 4.47);
+    box(st, 7.84, 0.04, 0.04, M.frame, 2.07, 0.97, 4.47);
     box(st, 0.04, 0.04, 8.98, M.frame, -5.97, 0.97, 0);
     box(st, 0.04, 0.04, 5.59, M.frame, 5.97, 0.97, -1.695);
     box(st, 0.04, 0.04, 2.39, M.frame, 5.97, 0.97, 3.295);
@@ -475,13 +481,27 @@ export class ControlRoom {
   }
 
   // ---------- South wall: corridor door ----------
+  // A real door since chapter two: frame in the wall opening, a panel hinged on the east
+  // jamb that swings out into the corridor, and the old CORRIDOR sign above it.
   private southWall(st: THREE.Group) {
     const door = new THREE.Group();
-    door.position.set(-2.4, 0, 4.47);
-    box(door, 1.06, 2.12, 0.05, M.frame, 0, 1.06, 0);
-    box(door, 0.96, 2.05, 0.04, new THREE.MeshStandardMaterial({ color: 0x6b5a45, roughness: 0.7 }), 0, 1.03, -0.02);
-    box(door, 0.14, 0.04, 0.06, M.steel, 0.36, 1.0, -0.06);
-    const sign = plane(door, 0.5, 0.18, new THREE.MeshStandardMaterial({ map: T.signTex('CORRIDOR'), roughness: 0.7 }), 0, 2.28, -0.035, Math.PI);
+    door.position.set(-2.4, 0, 4.65);
+    const frameMat = floodlit(new THREE.MeshStandardMaterial({ color: 0x2b3033, roughness: 0.5, metalness: 0.5 }), 0.25, annexFlood);
+    box(door, 1.06, 0.07, 0.34, frameMat, 0, 2.155, 0);
+    box(door, 0.05, 2.12, 0.34, frameMat, -0.505, 1.06, 0);
+    box(door, 0.05, 2.12, 0.34, frameMat, 0.505, 1.06, 0);
+    const hinge = new THREE.Group();
+    hinge.position.set(0.47, 0, 0.06);
+    // lit by the room's lamps on one side and the corridor's on the other
+    const panelMat = floodlit(new THREE.MeshStandardMaterial({ color: 0x6b5a45, roughness: 0.7 }), 0.25, annexFlood);
+    box(hinge, 0.93, 2.06, 0.045, panelMat, -0.465, 1.03, 0);
+    box(hinge, 0.14, 0.04, 0.07, M.steel, -0.82, 1.0, -0.045); // handle, room side
+    box(hinge, 0.14, 0.04, 0.07, M.steel, -0.82, 1.0, 0.045);  // handle, corridor side
+    mergeStatic(hinge);
+    noMerge(hinge);
+    door.add(hinge);
+    this.southDoorHinge = hinge;
+    const sign = plane(door, 0.5, 0.18, new THREE.MeshStandardMaterial({ map: T.signTex('CORRIDOR'), roughness: 0.7 }), 0, 2.4, -0.155, Math.PI);
     noMerge(sign);
     mergeStatic(door);
     this.group.add(door);
@@ -498,6 +518,8 @@ export class ControlRoom {
   // ---------- runtime ----------
   // 0 closed, 1 open (swung 90 degrees out into the yard)
   setDoor(open01: number) { this.doorHinge.rotation.y = open01 * Math.PI / 2; }
+  // 0 closed, 1 open (swung 90 degrees out into the corridor)
+  setSouthDoor(open01: number) { this.southDoorHinge.rotation.y = open01 * Math.PI / 2; }
   setDoorLock(unlocked: boolean) { this.doorLight.material = unlocked ? M.ledGreen : M.ledRed; }
 
   setLed(i: number, state: LedState) {

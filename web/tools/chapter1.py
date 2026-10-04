@@ -191,6 +191,8 @@ async def main():
         text = await ev("document.querySelector('.endcard').textContent")
         check('THE SECOND EXPOSURE' in text and ('work lamp' in text if METHOD == 'passive' else 'encoder drift' in text), 'ending card names the test')
         await shot('c12_ending')
+        # the card leads on into chapter two
+        check(await ev("[...document.querySelectorAll('.endcard button')].some(b => b.textContent === 'Continue: the reference record')"), 'ending card offers chapter two')
 
         notes = await ev("S47.game.notes")
         docs = await ev("S47.game.docs.map(d => d.id)")
@@ -206,6 +208,10 @@ async def main():
         if NO_IDB: check('data:image/jpeg' in raw, 'without IndexedDB the photographs stay in localStorage')
         else: check('idb:frame01' in raw and 'idb:frame02' in raw and size < 40000, 'photographs moved to IndexedDB, case text stays small')
 
+        await pg.click('.endcard button:has-text("Continue: the reference record")'); await pg.wait_for_timeout(400)
+        await ev("S47.hold = true; S47.tick(1.5)")
+        check(await ev("S47.game.phase") == 'ch2' and await ev("S47.ch2.ringing"), 'chapter two begins: the supervisor line rings')
+
         # Continue from the title restores the finished case with both prints
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
@@ -214,6 +220,16 @@ async def main():
         check(await stage() == 'complete' and await ev("S47.yard.dryPrints[0].visible && S47.yard.dryPrints[1].visible"), 'Continue restores the case and both prints')
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
         check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
+
+        # the case file spread in the notebook: both prints as pictures, the papers as cards
+        await ev("S47.game.openNotebook()")
+        await pg.click('.notebook [data-t=case]')
+        check(await ev("document.querySelectorAll('.notebook .thumbs img').length") == 2, 'case file shows both photographs')
+        check(await ev("document.querySelectorAll('.notebook .cards button').length") >= 6, 'case file lists the papers')
+        await shot('c13_casefile')
+        await pg.click('.notebook .thumbs button')
+        check(await ev("!!document.querySelector('.docview .page.photo img')"), 'a photograph opens from the case file')
+        await ev("S47.game.d.ui.close(true)")
 
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
         if errs: check(False, 'console clean')

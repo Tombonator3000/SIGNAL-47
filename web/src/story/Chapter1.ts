@@ -741,7 +741,9 @@ export class Chapter1 {
   }
 
   // ---------- per frame ----------
-  update(dt: number, t: number) {
+  // `lead` is false while chapter two runs: the yard and the lab stay as they were,
+  // but chapter two owns the objective line.
+  update(dt: number, t: number, lead = true) {
     if (!this.active) return;
     const { room, yard, fcam, ui, player } = this.d;
     const gt = this.g.gt;
@@ -785,6 +787,6 @@ export class Chapter1 {
         ui.viewfinder(true, { rect: fcam.frameRect(), frame: this.frameNo(), status: this.status.text, ok: this.status.ok, touch: this.touch });
       }
     }
-    ui.objective(this.objective());
+    if (lead) ui.objective(this.objective());
   }
 }

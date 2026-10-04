@@ -68,7 +68,7 @@ export class Exterior {
     while (n < 900) {
       const x = (r() - 0.5) * 420, z = (r() - 0.5) * 420 - 60;
       if (Math.abs(x + 24) < 7) continue;             // road
-      if (x > -9 && x < 40 && z > -8 && z < 9) continue;  // buildings
+      if (x > -9 && x < 40 && z > -8 && z < 13) continue; // buildings and the records annex
       if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
       const k = 0.4 + r() * 1.1;
       p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);

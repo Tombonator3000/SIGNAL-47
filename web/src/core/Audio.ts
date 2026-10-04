@@ -262,6 +262,51 @@ export class AudioSys {
     this.motor = null;
   }
 
+  // An ordinary phone call on the handset: line hiss for `secs`, a click at each end.
+  callLine(secs: number) {
+    const ctx = this.ctx; if (!ctx) return;
+    const line = this.phoneLine();
+    const t = ctx.currentTime;
+    const n = this.noiseSrc(false); const g = ctx.createGain(); g.gain.value = 0.035;
+    n.connect(g); g.connect(line.input); n.start(t); n.stop(t + secs);
+    this.play('click', { gain: 0.6 }); this.play('click', { gain: 0.5, when: secs });
+  }
+
+  // Touch-tone dialling. Returns how long it takes.
+  dial(number: string) {
+    const ctx = this.ctx; if (!ctx) return 1.5;
+    const rows = [697, 770, 852, 941], cols = [1209, 1336, 1477], keys = '123456789*0#';
+    let when = 0.25;
+    for (const ch of number) {
+      const k = keys.indexOf(ch);
+      if (k < 0) { when += 0.2; continue; }
+      const t = ctx.currentTime + when;
+      for (const f of [rows[Math.floor(k / 3)], cols[k % 3]]) {
+        const o = ctx.createOscillator(); o.frequency.value = f;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.01); g.gain.setValueAtTime(0.05, t + 0.09); g.gain.linearRampToValueAtTime(0, t + 0.1);
+        o.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + 0.12);
+      }
+      when += 0.16;
+    }
+    return when;
+  }
+
+  // North American ringback in the earpiece: 440 and 480 Hz together, on for 1.6 s.
+  ringback(times: number, start = 0) {
+    const ctx = this.ctx; if (!ctx) return start + times * 3.2;
+    for (let i = 0; i < times; i++) {
+      const t = ctx.currentTime + start + i * 3.2;
+      for (const f of [440, 480]) {
+        const o = ctx.createOscillator(); o.frequency.value = f;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.04, t + 0.03); g.gain.setValueAtTime(0.04, t + 1.6); g.gain.linearRampToValueAtTime(0, t + 1.65);
+        o.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + 1.7);
+      }
+    }
+    return start + times * 3.2;
+  }
+
   // Positional electrical hum (a transformer cabinet, a lamp ballast): mains and two harmonics.
   private hums = new Map<string, GainNode>();
   hum(key: string, at: THREE.Vector3, gain = 0.05, base = 60) {

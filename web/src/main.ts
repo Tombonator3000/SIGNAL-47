@@ -10,6 +10,7 @@ import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
 import { Prologue, type SavedCase } from './story/Prologue';
 import { ServiceYard } from './world/ServiceYard';
+import { RecordsAnnex } from './world/Annex';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
@@ -58,7 +59,8 @@ async function boot() {
   const ext = new Exterior();
   const room = new ControlRoom();
   const yard = new ServiceYard();
-  scene.add(sky.group, ext.group, room.group, yard.group);
+  const annex = new RecordsAnnex();
+  scene.add(sky.group, ext.group, room.group, yard.group, annex.group);
   const fcam = new FieldCamera(renderer, scene, camera);
 
   let quality: Quality = store.get<Quality>('quality', 'high');
@@ -79,11 +81,11 @@ async function boot() {
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
-  const colliders = [...room.colliders, ...yard.colliders];
-  const player = new Player(camera, colliders, [room.bounds, ...yard.zones]);
+  const colliders = [...room.colliders, ...yard.colliders, ...annex.colliders];
+  const player = new Player(camera, colliders, [room.bounds, ...yard.zones, ...annex.zones]);
   player.onStep = () => audio.play('step' + Math.floor(Math.random() * 3), { gain: 0.22, rate: 0.94 + Math.random() * 0.12 });
   const game = new Prologue({
-    ui, audio, room, ext, player, inter, yard, fcam, colliders,
+    ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
     // The case lives in its own key; photographs go to IndexedDB (core/caseStore.ts).
     saveCase: (c) => cases.save(c),
@@ -92,6 +94,7 @@ async function boot() {
   });
   game.onCheckpoint = (n) => store.set('checkpoint', n);
   const ch1 = game.ch1;
+  const ch2 = game.ch2;
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -264,9 +267,17 @@ async function boot() {
       { label: 'Title', on: () => toTitle() },
     ],
   });
-  // End of chapter one.
+  // End of chapter one: the night goes on in the records room.
   ch1.onEnd = (method) => showCard({
     lines: ch1.endingLines(method),
+    buttons: [
+      { label: 'Continue: the reference record', on: () => backToPlay(() => game.beginChapter2(null)) },
+      { label: 'Title', on: () => toTitle() },
+    ],
+  });
+  // End of chapter two, as far as the night is built.
+  ch2.onEnd = () => showCard({
+    lines: ch2.endingLines(),
     buttons: [
       { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
       { label: 'Title', on: () => toTitle() },
@@ -277,7 +288,7 @@ async function boot() {
   // test hook, handy from the browser console: S47.jump('countdown')
   (window as any).S47 = {
     jump: (p: string) => { if (mode !== 'play') startGame(p); else game.start(p); },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2,
   };
 
   // ---------- resize and adaptive resolution ----------
@@ -315,7 +326,8 @@ async function boot() {
   // which ambience the listener is in (room tone, open yard, photo lab)
   let space: 'room' | 'yard' | 'lab' = 'room';
   const inside = (b: { minX: number; maxX: number; minZ: number; maxZ: number }, p: THREE.Vector3) => p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
-  const spaceOf = (p: THREE.Vector3) => inside(room.bounds, p) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
+  const indoors = [room.bounds, annex.zone.southDoor, annex.zone.corridor, annex.zone.recordsDoor, annex.zone.records];
+  const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
   const dbg = { hold: false };
   function step(dt: number) {
@@ -349,6 +361,7 @@ async function boot() {
     sky.update(dt, t, camera.position);
     ext.update(dt, t);
     yard.update(t);
+    annex.update(t);
     room.lights.hemi.intensity = hemiBase + sky.uniforms.uFlash.value * 2.4;
     audio.listener(camera);
   }
@@ -361,7 +374,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     renderer.render(scene, camera);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;
