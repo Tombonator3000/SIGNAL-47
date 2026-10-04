@@ -87,11 +87,12 @@ export class ControlRoom {
   // ---------- Room shell ----------
   private shell(st: THREE.Group) {
     const wallTex = T.wallPaint();
-    const wall = new THREE.MeshStandardMaterial({ color: 0x3f5a5f, map: wallTex, roughness: 0.92 });
+    // art files come in their own colours, so the tint drops to white when they exist
+    const wall = new THREE.MeshStandardMaterial({ color: T.hasArt('room/tex_wall_paint.jpg') ? 0xffffff : 0x3f5a5f, map: wallTex, roughness: 0.92 });
     const wallLow = new THREE.MeshStandardMaterial({ color: 0x2c3f43, roughness: 0.9 });
     const ext = M.concrete;
-    const floorMat = new THREE.MeshStandardMaterial({ map: T.hexFloor(), roughness: 0.3, metalness: 0.0, color: 0xc9b7a0 });
-    const ceilMat = new THREE.MeshStandardMaterial({ map: T.ceilingTiles(), roughness: 1, color: 0xa8a294 });
+    const floorMat = new THREE.MeshStandardMaterial({ map: T.hexFloor(), roughness: 0.3, metalness: 0.0, color: T.hasArt('room/tex_floor_hextile.jpg') ? 0xffffff : 0xc9b7a0 });
+    const ceilMat = new THREE.MeshStandardMaterial({ map: T.ceilingTiles(), roughness: 1, color: T.hasArt('room/tex_ceiling_tile.jpg') ? 0xffffff : 0xa8a294 });
     const floor = plane(this.group, 12, 9, floorMat, 0, 0, 0, 0, -Math.PI / 2);
     noMerge(floor);
     plane(st, 12, 9, ceilMat, 0, 3.0, 0, 0, Math.PI / 2);

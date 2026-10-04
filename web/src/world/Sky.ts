@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { artTexture } from '../core/art';
 import { rng } from '../core/textures';
 
 // Band of the Milky Way runs diagonally across the north view, as in the concept art.
@@ -76,6 +77,14 @@ export class Sky {
     dome.renderOrder = -10;
     dome.frustumCulled = false;
     this.group.add(dome);
+    // the Milky Way panorama from ART_BRIEF.md, added over the shader stars when the file exists
+    const pano = artTexture('sky/sky_milkyway_equirect.jpg');
+    if (pano) {
+      pano.wrapS = THREE.RepeatWrapping; pano.repeat.x = -1; // seen from inside the sphere
+      const m = new THREE.Mesh(new THREE.SphereGeometry(2900, 48, 24), new THREE.MeshBasicMaterial({
+        map: pano, side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false, opacity: 0.85 }));
+      this.group.add(m);
+    }
     this.group.add(this.makeStars());
   }
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { artTexture } from '../core/art';
 
 // ---------- Exterior floodlights ----------
 // Real three.js point lights cost every material a loop per light. Outside we fake
@@ -77,7 +78,8 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
 // ---------- Materials ----------
 const std = (o: THREE.MeshStandardMaterialParameters) => new THREE.MeshStandardMaterial(o);
 export const M = {
-  deskTop: std({ color: 0x55605f, roughness: 0.5 }),
+  // desk laminate from ART_BRIEF.md when the file is there, else the plain grey-green
+  deskTop: ((map) => std(map ? { color: 0xdddddd, map, roughness: 0.5 } : { color: 0x55605f, roughness: 0.5 }))(artTexture('room/tex_desk_laminate.jpg', [2, 1])),
   deskBody: std({ color: 0x3d4749, roughness: 0.55, metalness: 0.35 }),
   steel: std({ color: 0x7c8387, roughness: 0.4, metalness: 0.7 }),
   beige: std({ color: 0xcfc3a3, roughness: 0.55 }),

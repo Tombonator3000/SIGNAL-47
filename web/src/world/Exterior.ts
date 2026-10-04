@@ -56,7 +56,11 @@ export class Exterior {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.computeVertexNormals();
-    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })));
+    // desert ground from ART_BRIEF.md when it exists: tiled every ten metres or so, tinted by the vertex shading
+    const sand = T.artTexture('ext/tex_desert_ground.jpg', [380, 380]);
+    if (sand) for (let i = 0; i < col.length; i++) col[i] = Math.min(1, col[i] * 3.1);
+    if (sand) geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, map: sand ?? undefined })));
     this.group.add(ground);
 
     // scrub
@@ -195,6 +199,14 @@ export class Exterior {
     const mq = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.4), new THREE.MeshBasicMaterial({ map: T.marquee(), toneMapped: false, color: 0xd8d0bc }));
     mq.position.set(-30.4, 3.6, 30.2); mq.rotation.y = Math.PI / 2 - 0.5;
     [sierra, mc, mq].forEach((m) => { noMerge(m); g.add(m); });
+    const signArt = T.artTexture('ext/sign_sierra_on.png');
+    if (signArt) {
+      // the brief's sign is 2:3 and covers the same height as the three planes (2.4 to 8.8 m)
+      [sierra, mc, mq].forEach((m) => { m.visible = false; });
+      const whole = new THREE.Mesh(new THREE.PlaneGeometry(4.27, 6.4), new THREE.MeshBasicMaterial({ map: signArt, toneMapped: false, transparent: true }));
+      whole.position.set(-30.4, 5.6, 30.2); whole.rotation.y = Math.PI / 2 - 0.5;
+      noMerge(whole); g.add(whole);
+    }
     addFlood(-29, 6, 32, 18, 0xff4a35); addFlood(-29, 4, 32, 6, 0x50f0d8);
     mergeStatic(g);
     this.group.add(g);

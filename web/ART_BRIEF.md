@@ -67,6 +67,13 @@ Ingen tekst i disse bildene. Teksten legges på i kode, slik at den alltid blir 
 
 Legg filene i `web/src/assets/art/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Spillet bruker et bilde automatisk når fila finnes, og faller tilbake på teksturen fra koden når den mangler. Ingen kodeendring trengs.
 
+Slik brukes filene i dag:
+
+- Byttes rett inn: alle `room/`-teksturene, plakatene og kartet, `ext/tex_concrete.jpg`, `ext/tex_asphalt_wet.jpg`, `ext/tex_desert_ground.jpg` (bakken, flislagt omtrent hver tiende meter), `yard/sign_service_yard.png`, `yard/label_s03_procedure.png`, `yard/vane_b12.png` og `yard/board_r07.png`.
+- Ligger under tekst fra koden: `lab/sign_blank.png` (skilt og merkelapper), `lab/tex_paper_card.jpg` (ark og kort), `yard/tex_cabinet_metal.jpg` (skapfrontene, også som stål på sidene), `yard/floor_paint_frame.png` (gulvmerkingen) og `lab/map_field_yard.png` (feltkartet, bare tittelen legges oppå).
+- Egne plasser: `brand/logo_saro.png` på kaffekoppen, `sky/sky_milkyway_equirect.jpg` lagt oppå stjernehimmelen, og `ext/sign_sierra_on.png` som erstatter de tre skiltflatene ved motellet.
+- Ikke i bruk ennå: `ext/sign_sierra_off.png` og konseptbildene i `concept/`.
+
 ## Ikke lag dette
 
 - 3D-modeller. Claude lager geometrien.

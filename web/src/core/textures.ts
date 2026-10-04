@@ -1,9 +1,28 @@
 import * as THREE from 'three';
+import { artImage, swapIn } from './art';
 
 // All textures in the prologue are painted on canvas at startup.
 // When ChatGPT delivers real texture files, swap them in here (same function names).
 
 type Draw = (g: CanvasRenderingContext2D, w: number, h: number) => void;
+
+// Picture files from ART_BRIEF.md replace or sit under these code textures when they exist.
+export { hasArt, swapIn, artTexture } from './art';
+
+// The art file as the background of a canvas texture, then `fg` (the text and marks that
+// must always be right) drawn on top again. Nothing happens when the file is missing.
+function overlayArt(name: string | null, tex: THREE.CanvasTexture, fg: (g: CanvasRenderingContext2D, w: number, h: number) => void) {
+  if (name) artImage(name)?.then((im) => {
+    if (!im) return;
+    const c = tex.image as HTMLCanvasElement, g = c.getContext('2d')!;
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    g.clearRect(0, 0, c.width, c.height);
+    g.drawImage(im, 0, 0, c.width, c.height);
+    fg(g, c.width, c.height);
+    tex.needsUpdate = true;
+  });
+  return tex;
+}
 
 export function canvasTex(w: number, h: number, draw: Draw, repeat?: [number, number]): THREE.CanvasTexture {
   const c = document.createElement('canvas');
@@ -33,7 +52,7 @@ function speckle(g: CanvasRenderingContext2D, w: number, h: number, n: number, a
 }
 
 export function hexFloor() {
-  return canvasTex(512, 512, (g, w, h) => {
+  return swapIn('room/tex_floor_hextile.jpg', canvasTex(512, 512, (g, w, h) => {
     g.fillStyle = '#3a2d22'; g.fillRect(0, 0, w, h);
     const r = rng(7);
     const s = 32; // hex radius in px
@@ -53,52 +72,52 @@ export function hexFloor() {
       }
     }
     speckle(g, w, h, 5000, 0.12, 3);
-  }, [7, 5.2]);
+  }, [7, 5.2]));
 }
 
 export function ceilingTiles() {
-  return canvasTex(256, 256, (g, w, h) => {
+  return swapIn('room/tex_ceiling_tile.jpg', canvasTex(256, 256, (g, w, h) => {
     g.fillStyle = '#b9b3a3'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 4000, 0.25, 11);
     g.strokeStyle = '#6d685d'; g.lineWidth = 4;
     g.strokeRect(0, 0, w, h);
-  }, [10, 8]);
+  }, [10, 8]));
 }
 
 export function wallPaint() {
-  return canvasTex(256, 256, (g, w, h) => {
+  return swapIn('room/tex_wall_paint.jpg', canvasTex(256, 256, (g, w, h) => {
     g.fillStyle = '#7f8a8a'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 3000, 0.08, 5);
-  }, [4, 2]);
+  }, [4, 2]));
 }
 
 export function concrete(seed = 1, rep: [number, number] = [4, 2]) {
-  return canvasTex(256, 256, (g, w, h) => {
+  return swapIn('ext/tex_concrete.jpg', canvasTex(256, 256, (g, w, h) => {
     g.fillStyle = '#8f877a'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 6000, 0.18, seed);
     g.strokeStyle = 'rgba(60,55,48,.35)'; g.lineWidth = 2;
     g.beginPath(); g.moveTo(0, h * 0.5); g.lineTo(w, h * 0.5); g.stroke();
-  }, rep);
+  }, rep));
 }
 
 export function posterListen() {
-  return canvasTex(256, 384, (g, w, h) => {
+  return swapIn('room/poster_listen.png', canvasTex(256, 384, (g, w, h) => {
     g.fillStyle = '#16202b'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#c9b48a';
     g.font = '500 34px Oswald';
     ['LISTEN', 'RECORD', 'ANALYZE', 'UNDERSTAND'].forEach((t, i) => g.fillText(t, 24, 70 + i * 44));
     dishIcon(g, w * 0.5, h * 0.78, 42, '#c9b48a');
     g.font = '15px VT323'; g.fillText('SARO  /  EST. 1972', 24, h - 18);
-  });
+  }));
 }
 
 export function posterSaro() {
-  return canvasTex(256, 384, (g, w, h) => {
+  return swapIn('room/poster_saro.png', canvasTex(256, 384, (g, w, h) => {
     g.fillStyle = '#121a24'; g.fillRect(0, 0, w, h);
     dishIcon(g, w * 0.55, h * 0.32, 70, '#d8cfb9');
     g.fillStyle = '#d8cfb9'; g.font = '500 30px Oswald';
     ['SOUTHWEST', 'ASTRONOMICAL', 'RESEARCH', 'OBSERVATORY'].forEach((t, i) => g.fillText(t, 22, 230 + i * 36));
-  });
+  }));
 }
 
 export function dishIcon(g: CanvasRenderingContext2D, x: number, y: number, s: number, col: string) {
@@ -112,7 +131,7 @@ export function dishIcon(g: CanvasRenderingContext2D, x: number, y: number, s: n
 }
 
 export function mapNM() {
-  return canvasTex(512, 400, (g, w, h) => {
+  return swapIn('room/map_new_mexico.png', canvasTex(512, 400, (g, w, h) => {
     g.fillStyle = '#d9cfb3'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 4000, 0.1, 21);
     // Rough state outline (New Mexico is almost a box with the bootheel in the south-west).
@@ -129,7 +148,7 @@ export function mapNM() {
     g.strokeStyle = '#b3261e'; g.lineWidth = 3;
     g.beginPath(); g.moveTo(150, 228); g.lineTo(166, 244); g.moveTo(166, 228); g.lineTo(150, 244); g.stroke();
     g.fillStyle = '#b3261e'; g.font = '22px Reenie Beanie'; g.fillText('SARO', 128, 268);
-  });
+  }));
 }
 
 export function clockFace() {
@@ -161,12 +180,20 @@ export function keyboard() {
 }
 
 export function mugLogo() {
-  return canvasTex(256, 128, (g, w, h) => {
+  const tex = canvasTex(256, 128, (g, w, h) => {
     g.fillStyle = '#ede8dc'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#2a2f38';
     dishIcon(g, 64, 50, 18, '#2a2f38');
     g.font = '500 30px Oswald'; g.textAlign = 'center'; g.fillText('SARO', 64, 108);
   });
+  artImage('brand/logo_saro.png')?.then((im) => {
+    if (!im) return;
+    const g = (tex.image as HTMLCanvasElement).getContext('2d')!;
+    g.fillStyle = '#ede8dc'; g.fillRect(0, 0, 256, 128);
+    g.drawImage(im, 14, 4, 100, 100);
+    tex.needsUpdate = true;
+  });
+  return tex;
 }
 
 export function logbookCover() {
@@ -207,19 +234,18 @@ export function signTex(text: string, sub = '') {
 }
 
 export function deskPapers(seed = 1) {
-  return canvasTex(128, 160, (g, w, h) => {
-    g.fillStyle = '#e8e1cd'; g.fillRect(0, 0, w, h);
+  const lines = (g: CanvasRenderingContext2D, w: number, h: number) => {
     const r = rng(seed);
     g.fillStyle = 'rgba(40,50,80,.55)';
     for (let y = 18; y < h - 10; y += 9) g.fillRect(12, y, 30 + r() * 80, 2);
-  });
+  };
+  const tex = canvasTex(128, 160, (g, w, h) => { g.fillStyle = '#e8e1cd'; g.fillRect(0, 0, w, h); lines(g, w, h); });
+  return overlayArt('lab/tex_paper_card.jpg', tex, lines);
 }
 
 // The night work order on the supervisor desk: typed form, Ward's initials, a red stamp.
 export function workOrderSheet() {
-  return canvasTex(256, 352, (g, w, h) => {
-    g.fillStyle = '#ece5d1'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 900, 0.05, 23);
+  const typed = (g: CanvasRenderingContext2D) => {
     g.fillStyle = '#26262a'; g.font = '15px "Special Elite", serif';
     const lines = ['SARO / OPERATIONS', 'NIGHT WORK ORDER  04/13/86', '', 'OPERATOR:  REYES', 'ON CALL:   DR. E. WARD', '', '1. RESTORE RX BANK 3.', '   CALIBRATE 1419.900', '2. RUN THE SURVEY SWEEP.', '3. MORNING SERIES 06:00.', '   NOT BEFORE EVERY', '   ANOMALY IS SIGNED.'];
     lines.forEach((l, i) => g.fillText(l, 18, 34 + i * 19));
@@ -230,7 +256,13 @@ export function workOrderSheet() {
     g.strokeStyle = 'rgba(170,40,30,.7)'; g.lineWidth = 2.5; g.strokeRect(-40, -14, 80, 28);
     g.fillStyle = 'rgba(170,40,30,.75)'; g.font = '600 13px Oswald'; g.textAlign = 'center'; g.fillText('WORK ORDER', 0, 5);
     g.restore();
+  };
+  const tex = canvasTex(256, 352, (g, w, h) => {
+    g.fillStyle = '#ece5d1'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 900, 0.05, 23);
+    typed(g);
   });
+  return overlayArt('lab/tex_paper_card.jpg', tex, typed);
 }
 
 // Chapter two: the south corridor and the records room.
@@ -387,12 +419,12 @@ export function chainlink() {
 }
 
 export function roadTex() {
-  return canvasTex(64, 256, (g, w, h) => {
+  return swapIn('ext/tex_asphalt_wet.jpg', canvasTex(64, 256, (g, w, h) => {
     g.fillStyle = '#25262a'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 1500, 0.2, 9);
     g.fillStyle = '#c99a2e'; g.fillRect(29, 0, 3, 140); g.fillRect(34, 0, 3, 140);
     g.fillStyle = '#9a9a92'; g.fillRect(2, 0, 2, h); g.fillRect(w - 4, 0, 2, h);
-  }, [1, 60]);
+  }, [1, 60]));
 }
 
 // ---------- Chapter one: service yard and photo lab ----------
@@ -400,17 +432,22 @@ export function roadTex() {
 // Plain label: dark text on a light card, one line per entry. Size is in canvas pixels.
 export function labelCard(lines: string[], o: { w?: number; h?: number; bg?: string; fg?: string; font?: string; size?: number; border?: boolean; align?: CanvasTextAlign } = {}) {
   const w = o.w ?? 256, h = o.h ?? 160;
-  return canvasTex(w, h, (g) => {
-    g.fillStyle = o.bg ?? '#e6dfca'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, Math.floor(w * h / 60), 0.08, lines.length + w);
-    if (o.border !== false) { g.strokeStyle = o.fg ?? '#25292c'; g.lineWidth = Math.max(2, w / 90); g.strokeRect(w * 0.03, h * 0.04, w * 0.94, h * 0.92); }
+  const text = (g: CanvasRenderingContext2D) => {
     const size = o.size ?? Math.min(34, Math.floor((h * 0.8) / Math.max(1, lines.length) * 0.78));
     g.fillStyle = o.fg ?? '#1f2326'; g.textAlign = o.align ?? 'center'; g.textBaseline = 'middle';
     g.font = `500 ${size}px ${o.font ?? 'Oswald'}`;
     const x = (o.align ?? 'center') === 'center' ? w / 2 : w * 0.1;
     const top = h / 2 - ((lines.length - 1) * size * 1.2) / 2;
     lines.forEach((l, i) => g.fillText(l, x, top + i * size * 1.2));
+  };
+  const tex = canvasTex(w, h, (g) => {
+    g.fillStyle = o.bg ?? '#e6dfca'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, Math.floor(w * h / 60), 0.08, lines.length + w);
+    if (o.border !== false) { g.strokeStyle = o.fg ?? '#25292c'; g.lineWidth = Math.max(2, w / 90); g.strokeRect(w * 0.03, h * 0.04, w * 0.94, h * 0.92); }
+    text(g);
   });
+  // coloured cards (warnings, the darkroom sign) keep the look they have in code
+  return overlayArt(o.bg !== undefined ? null : o.border === false ? 'lab/tex_paper_card.jpg' : 'lab/sign_blank.png', tex, text);
 }
 
 export function cameraCard() {
@@ -419,7 +456,7 @@ export function cameraCard() {
 
 // SARO enamel sign on the yard fence (reference image: service yard at S-03)
 export function yardSign() {
-  return canvasTex(512, 256, (g, w, h) => {
+  return swapIn('yard/sign_service_yard.png', canvasTex(512, 256, (g, w, h) => {
     g.fillStyle = '#d9d4c4'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 4000, 0.14, 61);
     g.strokeStyle = '#2b2f33'; g.lineWidth = 6; g.strokeRect(10, 10, w - 20, h - 20);
@@ -431,16 +468,12 @@ export function yardSign() {
     g.font = '20px Oswald'; g.fillText('AUTHORIZED PERSONNEL ONLY', 36, 236);
     // rust at the bolts
     for (const [x, y] of [[22, 22], [w - 22, 22], [22, h - 22], [w - 22, h - 22]]) { g.fillStyle = 'rgba(120,60,20,.55)'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); }
-  });
+  }));
 }
 
 // Grey steel cabinet door with stencil and a small inspection window
 export function cabinetFace(title: string, sub: string[], seed = 3) {
-  return canvasTex(256, 384, (g, w, h) => {
-    g.fillStyle = '#5b6463'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 5000, 0.18, seed);
-    const r = rng(seed + 7);
-    for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(110,60,25,${0.15 + r() * 0.3})`; g.fillRect(r() < 0.5 ? r() * 14 : w - r() * 14, r() * h, 2 + r() * 6, 2 + r() * 14); }
+  const marks = (g: CanvasRenderingContext2D, w: number, h: number) => {
     g.strokeStyle = 'rgba(20,24,26,.8)'; g.lineWidth = 3; g.strokeRect(10, 10, w - 20, h - 20);
     g.fillStyle = '#e8e2cf'; g.font = '500 64px Oswald'; g.textAlign = 'center'; g.fillText(title, w / 2, 70);
     // inspection window (a screen can sit behind it), py 92 to 176
@@ -452,34 +485,49 @@ export function cabinetFace(title: string, sub: string[], seed = 3) {
     g.fillStyle = '#d1a91f'; g.fillRect(128, 292, 100, 40);
     g.fillStyle = '#16120a'; g.textAlign = 'center'; g.font = '600 19px Oswald'; g.fillText('DANGER', 178, 310);
     g.font = '15px Oswald'; g.fillText('480 VOLTS', 178, 327);
+  };
+  const tex = canvasTex(256, 384, (g, w, h) => {
+    g.fillStyle = '#5b6463'; g.fillRect(0, 0, w, h);
+    speckle(g, w, h, 5000, 0.18, seed);
+    const r = rng(seed + 7);
+    for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(110,60,25,${0.15 + r() * 0.3})`; g.fillRect(r() < 0.5 ? r() * 14 : w - r() * 14, r() * h, 2 + r() * 6, 2 + r() * 14); }
+    marks(g, w, h);
   });
+  return overlayArt('yard/tex_cabinet_metal.jpg', tex, marks);
 }
 
 // Faded paint stencil on the concrete walk
 export function floorStencil(lines: string[], w = 512, h = 256) {
-  const t = canvasTex(w, h, (g) => {
-    g.clearRect(0, 0, w, h);
-    g.fillStyle = 'rgba(232,206,120,.82)'; g.strokeStyle = 'rgba(232,206,120,.82)'; g.lineWidth = 8;
-    g.strokeRect(14, 14, w - 28, h - 28);
+  const paint = 'rgba(232,206,120,.82)';
+  const text = (g: CanvasRenderingContext2D) => {
+    g.fillStyle = paint;
     g.font = `500 ${Math.floor(h / (lines.length + 1.2))}px Oswald`; g.textAlign = 'center'; g.textBaseline = 'middle';
     lines.forEach((l, i) => g.fillText(l, w / 2, h / 2 + (i - (lines.length - 1) / 2) * h / (lines.length + 0.8)));
-    // wear
+  };
+  const wear = (g: CanvasRenderingContext2D) => {
     const r = rng(lines[0].length * 13);
     g.globalCompositeOperation = 'destination-out';
     for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(0,0,0,${r() * 0.8})`; g.fillRect(r() * w, r() * h, 1 + r() * 7, 1 + r() * 3); }
+    g.globalCompositeOperation = 'source-over';
+  };
+  const t = canvasTex(w, h, (g) => {
+    g.clearRect(0, 0, w, h);
+    g.strokeStyle = paint; g.lineWidth = 8;
+    g.strokeRect(14, 14, w - 28, h - 28);
+    text(g); wear(g);
   });
-  return t;
+  return overlayArt('yard/floor_paint_frame.png', t, (g) => { text(g); wear(g); });
 }
 
 // B-12 reference vane: dark board, one ivory stripe, scale ticks (as in the Unity photographs)
 export function vaneFace() {
-  return canvasTex(128, 512, (g, w, h) => {
+  return swapIn('yard/vane_b12.png', canvasTex(128, 512, (g, w, h) => {
     g.fillStyle = '#16191b'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#efe6cd'; g.fillRect(w * 0.22, h * 0.05, w * 0.3, h * 0.9);
     g.fillStyle = '#c9c0a4';
     for (let i = 0; i < 12; i++) g.fillRect(w * 0.66, h * 0.08 + i * h * 0.075, w * 0.18, 4);
     g.strokeStyle = '#3a3f42'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
-  });
+  }));
 }
 export function echoFace() {
   return canvasTex(128, 512, (g, w, h) => {
@@ -491,16 +539,16 @@ export function echoFace() {
 }
 // R-07: the other survey marker, three horizontal bars
 export function barsBoard() {
-  return canvasTex(256, 256, (g, w, h) => {
+  return swapIn('yard/board_r07.png', canvasTex(256, 256, (g, w, h) => {
     g.fillStyle = '#16191b'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#efe6cd'; for (let i = 0; i < 3; i++) g.fillRect(w * 0.12, h * (0.18 + i * 0.25), w * 0.76, h * 0.12);
     g.fillStyle = '#c9c0a4'; g.font = '24px Oswald'; g.textAlign = 'center'; g.fillText('R-07', w / 2, h - 10);
-  });
+  }));
 }
 
 // Field map on the photo lab wall: control room, yard walk, S-03 motor bus, B-12, the lab
 export function fieldMap() {
-  return canvasTex(512, 384, (g, w, h) => {
+  const tex = canvasTex(512, 384, (g, w, h) => {
     g.fillStyle = '#ddd4ba'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 5000, 0.1, 77);
     g.fillStyle = '#2a2a26'; g.font = '500 30px Oswald'; g.fillText('SARO / FIELD MAP', 24, 40);
@@ -518,6 +566,10 @@ export function fieldMap() {
     g.fillStyle = '#2a2a26'; g.font = '22px Reenie Beanie'; g.fillText('fence', 120, 84);
     g.strokeStyle = '#2a2a26'; g.beginPath(); g.moveTo(20, 80); g.lineTo(w - 20, 80); g.stroke();
     g.font = '16px Oswald'; g.fillText('N', w - 40, 40); g.beginPath(); g.moveTo(w - 34, 48); g.lineTo(w - 34, 90); g.stroke();
+  });
+  return overlayArt('lab/map_field_yard.png', tex, (g, w) => {
+    g.fillStyle = 'rgba(221,212,186,.85)'; g.fillRect(0, 0, w, 52);
+    g.fillStyle = '#2a2a26'; g.font = '500 30px Oswald'; g.textAlign = 'left'; g.fillText('SARO / FIELD MAP', 24, 38);
   });
 }
 
