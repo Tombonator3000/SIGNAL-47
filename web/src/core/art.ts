@@ -40,13 +40,18 @@ import motelWindowLit from '../assets/art/motel/window_night_lit.jpg';
 import motelWindowDark from '../assets/art/motel/window_night_dark.jpg';
 import cardField from '../assets/art/docs/card_field_1947.jpg';
 import letterPaper from '../assets/art/docs/letter_paper_1947.jpg';
+// round 10 (Codex, PR #54): the 1947 photograph (one master, three crops), the Halley poster
+// under its code-drawn text, and the fanfold paper behind the exceptions binder
+import photo1947 from '../assets/art/docs/photo_1947_master.jpg';
+import halleyPoster from '../assets/art/docs/poster_halley_1986_blank.jpg';
+import fanfold1986 from '../assets/art/docs/fanfold_1986.jpg';
+import fanfold1947 from '../assets/art/docs/fanfold_1947.jpg';
 // The diner on the Roswell road (round 6, PR #35): loaded with the diner area. The sign and
 // the menu board carry no text; the name, the dishes and the newspaper are drawn in code.
 import dinerSign from '../assets/art/runtime/sign_diner_blank.webp';
 import dinerMenu from '../assets/art/runtime/menu_board_blank.webp';
 import dinerCounter from '../assets/art/diner/tex_counter_laminate.jpg';
 import dinerFloor from '../assets/art/diner/tex_floor_checker.jpg';
-import clipping1947 from '../assets/art/diner/clipping_photo_1947.jpg';
 // round 8 (PR #45): the booths' red vinyl and the knotty pine on the walls
 import dinerBooth from '../assets/art/diner/tex_booth_vinyl.jpg';
 import dinerWall from '../assets/art/diner/tex_wall_panel.jpg';
@@ -100,7 +105,7 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
-  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947, dinerBooth, dinerWall,
+  dinerSign, dinerMenu, dinerCounter, dinerFloor, photo1947, dinerBooth, dinerWall, halleyPoster, fanfold1986, fanfold1947,
   floorN, floorR, ceilingN, ceilingR, wallN, wallR, deskN, deskR, concreteN, concreteR, desertN, desertR, asphaltN, asphaltR, cabinetN, cabinetR, vinylN, vinylR, stuccoN, stuccoR, oldConcreteN, oldConcreteR, weatheredWoodN, weatheredWoodR, floorboardsN, floorboardsR, gravelTrackN, gravelTrackR, motelWallN, motelWallR, dinerCounterN, dinerCounterR, dinerFloorN, dinerFloorR, dinerBoothN, dinerBoothR, dinerWallN, dinerWallR };
 export type ArtId = keyof typeof urls;
 /** Albedo id: its normal map and roughness map (round 9), for the Ultra tier. */
@@ -110,9 +115,13 @@ export const ULTRA_MAPS = Object.fromEntries(MAPPED.map((id) => [id, [id + 'N', 
 export const ULTRA_ART: ArtId[] = MAPPED.flatMap((id) => ULTRA_MAPS[id]);
 // Images an area loads for itself when it is built, not at the start.
 const LATER = new Set<ArtId>([...MAPPED.flatMap((id) => [id + 'N', id + 'R'] as ArtId[]), 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
-  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall']);
+  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall', 'halleyPoster', 'fanfold1986', 'fanfold1947']);
 /** The diner's images (world/Diner.ts loads them before it builds). */
-export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall'];
+export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall'];
+/** The 1947 photograph is one picture shown in three crops (HISTORIE.md, R4): the case
+ *  folder's tight one, the diner's wider one, and the whole of it after the credits.
+ *  [x, y, width, height] in the 2400x1600 master (ART_BRIEF.md, round 10). */
+export const PHOTO_1947 = { A: [600, 300, 960, 720], B: [0, 220, 1840, 1380], C: [0, 0, 2400, 1600] } as const;
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();
@@ -141,6 +150,9 @@ export async function loadArtFor(ids: ArtId[]) {
 
 /** The picture's address, for HTML (a paper under a document): no loading needed first. */
 export function artUrl(id: ArtId) { return urls[id]; }
+
+/** Whether an image has been loaded (a later image may still be on its way). */
+export function artLoaded(id: ArtId) { return images.has(id); }
 
 export function artImage(id: ArtId) {
   const image = images.get(id);

@@ -46,7 +46,7 @@ async def main():
         await tick(0.5); await pg.wait_for_timeout(700)
         check(await ev("S47.world.area") == 'diner' and await ev("S47.world.diner.group.visible && !S47.ext.group.visible"), 'the diner is its own area; SARO is hidden')
         art = await ev("S47.art()")
-        check(all(i in art['loaded'] for i in ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall']), 'the diner brought its seven pictures (round 6 and 8)')
+        check(all(i in art['loaded'] for i in ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall']), 'the diner brought its seven pictures (round 6 and 8, and the 1947 master from round 10)')
         a = await ev("S47.world.diner.anchors")
         check(await ev("Math.hypot(S47.player.pos.x - S47.world.diner.anchors.arrive.x, S47.player.pos.z - S47.world.diner.anchors.arrive.z)") < 0.2 and abs(await ev("S47.player.floorY")) < 0.01,
               'the player stands by the truck, on the ground (y 0)')

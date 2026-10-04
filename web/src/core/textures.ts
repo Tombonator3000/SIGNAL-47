@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { artImage, artTexture } from './art';
+import { artImage, artTexture, artLoaded, loadArtFor } from './art';
 
 // Authored art supplies surfaces and posters. Instrument text, evidence marks and
 // road markings stay deterministic canvas graphics for legibility and story accuracy.
@@ -472,44 +472,101 @@ export function screenCanvas(w = 256, h = 160) {
 
 // The spring 1986 poster for Halley's comet: a night sky, the comet with its tail, a little
 // chart of the southern sky with the comet's places through April, and Ward's note.
+// The picture is Codex's (round 10, poster_halley_1986_blank.jpg, no text); the words, the
+// chart's marks and the note are drawn here (KAPITLER.md, Night Shift, item 4). The picture
+// is a later image: until it has loaded (or if it cannot), a drawn poster stands in, and the
+// texture is redrawn when it arrives.
 export function halleyPosterTex() {
-  return canvasTex(256, 384, (g, w, h) => {
-    const sky = g.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, '#060a1c'); sky.addColorStop(0.65, '#14204a'); sky.addColorStop(1, '#2a2440');
-    g.fillStyle = sky; g.fillRect(0, 0, w, h);
-    const r = rng(1986);
-    for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(255,255,240,${0.3 + r() * 0.7})`; g.fillRect(r() * w, r() * h * 0.7, r() < 0.1 ? 2 : 1, r() < 0.1 ? 2 : 1); }
-    // the comet, head low right, tail up to the left
-    g.save(); g.translate(176, 150); g.rotate(-0.75);
-    const tail = g.createLinearGradient(0, 0, 0, -150);
-    tail.addColorStop(0, 'rgba(220,235,255,.85)'); tail.addColorStop(1, 'rgba(220,235,255,0)');
-    g.fillStyle = tail; g.beginPath(); g.moveTo(-6, 0); g.lineTo(-26, -150); g.lineTo(26, -150); g.lineTo(6, 0); g.fill();
-    const head = g.createRadialGradient(0, 0, 0, 0, 0, 14);
-    head.addColorStop(0, 'rgba(255,255,255,1)'); head.addColorStop(1, 'rgba(200,220,255,0)');
-    g.fillStyle = head; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.fill();
-    g.restore();
-    // mesa along the bottom of the picture
-    g.fillStyle = '#0b0a12'; g.beginPath(); g.moveTo(0, 236); g.lineTo(40, 228); g.lineTo(70, 214); g.lineTo(150, 212); g.lineTo(176, 226); g.lineTo(w, 232); g.lineTo(w, 250); g.lineTo(0, 250); g.fill();
-    g.fillStyle = '#f2e6c4'; g.textAlign = 'center';
-    g.font = '600 30px Oswald'; g.fillText("HALLEY'S COMET", w / 2, 44);
-    g.font = '500 16px Oswald'; g.fillText('APRIL 1986', w / 2, 66);
-    // the chart: horizon line and the comet's places
-    g.fillStyle = '#e9dfc4'; g.fillRect(14, 256, w - 28, 92);
-    g.strokeStyle = '#2b2a27'; g.lineWidth = 1; g.strokeRect(18, 260, w - 36, 84);
-    g.beginPath(); g.moveTo(22, 330); g.lineTo(w - 22, 330); g.stroke();
-    g.fillStyle = '#2b2a27'; g.font = '10px Oswald'; g.textAlign = 'left'; g.fillText('S', w / 2 - 3, 342); g.fillText('SE', w - 40, 342); g.fillText('SW', 26, 342);
-    const pts: [number, number, string][] = [[196, 300, '5'], [160, 316, '10'], [118, 318, '14'], [76, 304, '20']];
-    for (const [x, y, d] of pts) { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); g.fillText(d, x - 4, y - 7); }
-    g.font = '500 12px Oswald'; g.textAlign = 'center'; g.fillStyle = '#f2e6c4';
-    g.fillText('LOOK LOW IN THE SOUTH', w / 2, 372);
-    // Ward's note, taped on
-    g.save(); g.translate(30, 92); g.rotate(-0.08);
-    g.fillStyle = '#efe39a'; g.fillRect(0, 0, 92, 62);
-    g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(30, -6, 34, 12);
-    g.fillStyle = '#26324f'; g.font = '15px "Reenie Beanie", cursive'; g.textAlign = 'left';
-    ['comet calls go', 'to the planetarium', 'not us  E.W.'].forEach((l, i) => g.fillText(l, 5, 18 + i * 17));
-    g.restore();
-  });
+  const c = document.createElement('canvas'); c.width = 512; c.height = 768;
+  const g = c.getContext('2d')!;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const draw = () => {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    if (artLoaded('halleyPoster')) halleyOnArt(g); else { g.scale(2, 2); halleyDrawn(g, 256, 384); }
+    tex.userData.fromArt = artLoaded('halleyPoster');
+    tex.needsUpdate = true;
+  };
+  draw();
+  if (!artLoaded('halleyPoster')) loadArtFor(['halleyPoster']).then(draw).catch(() => { /* the drawn poster stays */ });
+  return tex;
+}
+
+// On the picture, 512 x 768 (half the picture's size; the zones are in ART_BRIEF.md).
+function halleyOnArt(g: CanvasRenderingContext2D) {
+  g.drawImage(artImage('halleyPoster'), 0, 0, 512, 768);
+  g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  g.fillStyle = '#f2e6c4';
+  g.font = '600 60px Oswald'; g.fillText("HALLEY'S COMET", 256, 86, 440);
+  g.font = '500 26px Oswald'; g.fillText('APRIL 1986', 256, 124);
+  // the chart in the cream box: the horizon is printed at y 620; S, SE and SW under it and
+  // the comet's place on four nights, moving west and down through the month
+  g.fillStyle = '#2b2a27'; g.strokeStyle = '#2b2a27';
+  g.font = '500 13px Oswald'; g.textAlign = 'left'; g.fillText('THE SOUTHERN SKY, APRIL', 46, 524);
+  g.textAlign = 'center';
+  for (const [x, l] of [[90, 'SW'], [256, 'S'], [422, 'SE']] as [number, string][]) {
+    g.fillRect(x - 0.5, 616, 1, 8);
+    g.fillText(l, x, 638);
+  }
+  const pts: [number, number, string][] = [[404, 556, 'APR 5'], [338, 575, '10'], [262, 594, '14'], [186, 606, '20']];
+  g.setLineDash([3, 4]); g.lineWidth = 1;
+  g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke();
+  g.setLineDash([]);
+  for (const [x, y, d] of pts) {
+    g.beginPath(); g.arc(x, y, 4, 0, Math.PI * 2); g.fill();
+    g.fillText(d, x, y - 9);
+  }
+  // the five lines
+  g.fillStyle = '#f2e6c4'; g.font = '500 17px Oswald';
+  ['CLOSEST TO EARTH APRIL 11', 'LOOK LOW IN THE SOUTH', 'EARLY APRIL: BEFORE DAWN', 'AFTER THE 12TH: AROUND MIDNIGHT', 'GET AWAY FROM TOWN LIGHTS']
+    .forEach((l, i) => g.fillText(l, 256, 676 + i * 18.5, 440));
+  // Ward's note, taped on in the top left
+  g.save(); g.translate(34, 160); g.rotate(-0.06);
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(3, 4, 150, 104);
+  g.fillStyle = '#efe39a'; g.fillRect(0, 0, 150, 104);
+  g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(52, -8, 46, 16);
+  g.fillStyle = '#26324f'; g.font = '17px "Reenie Beanie", cursive'; g.textAlign = 'left';
+  ['Public line: comet calls', 'go to the planetarium', 'in town. Not us.', 'Not at 3 a.m.', '            E.W.'].forEach((l, i) => g.fillText(l, 8, 20 + i * 18, 136));
+  g.restore();
+}
+
+// The stand-in, drawn at 256 x 384.
+function halleyDrawn(g: CanvasRenderingContext2D, w: number, h: number) {
+  const sky = g.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, '#060a1c'); sky.addColorStop(0.65, '#14204a'); sky.addColorStop(1, '#2a2440');
+  g.fillStyle = sky; g.fillRect(0, 0, w, h);
+  const r = rng(1986);
+  for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(255,255,240,${0.3 + r() * 0.7})`; g.fillRect(r() * w, r() * h * 0.7, r() < 0.1 ? 2 : 1, r() < 0.1 ? 2 : 1); }
+  // the comet, head low right, tail up to the left
+  g.save(); g.translate(176, 150); g.rotate(-0.75);
+  const tail = g.createLinearGradient(0, 0, 0, -150);
+  tail.addColorStop(0, 'rgba(220,235,255,.85)'); tail.addColorStop(1, 'rgba(220,235,255,0)');
+  g.fillStyle = tail; g.beginPath(); g.moveTo(-6, 0); g.lineTo(-26, -150); g.lineTo(26, -150); g.lineTo(6, 0); g.fill();
+  const head = g.createRadialGradient(0, 0, 0, 0, 0, 14);
+  head.addColorStop(0, 'rgba(255,255,255,1)'); head.addColorStop(1, 'rgba(200,220,255,0)');
+  g.fillStyle = head; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.fill();
+  g.restore();
+  // mesa along the bottom of the picture
+  g.fillStyle = '#0b0a12'; g.beginPath(); g.moveTo(0, 236); g.lineTo(40, 228); g.lineTo(70, 214); g.lineTo(150, 212); g.lineTo(176, 226); g.lineTo(w, 232); g.lineTo(w, 250); g.lineTo(0, 250); g.fill();
+  g.fillStyle = '#f2e6c4'; g.textAlign = 'center';
+  g.font = '600 30px Oswald'; g.fillText("HALLEY'S COMET", w / 2, 44);
+  g.font = '500 16px Oswald'; g.fillText('APRIL 1986', w / 2, 66);
+  // the chart: horizon line and the comet's places
+  g.fillStyle = '#e9dfc4'; g.fillRect(14, 256, w - 28, 92);
+  g.strokeStyle = '#2b2a27'; g.lineWidth = 1; g.strokeRect(18, 260, w - 36, 84);
+  g.beginPath(); g.moveTo(22, 330); g.lineTo(w - 22, 330); g.stroke();
+  g.fillStyle = '#2b2a27'; g.font = '10px Oswald'; g.textAlign = 'left'; g.fillText('S', w / 2 - 3, 342); g.fillText('SE', w - 40, 342); g.fillText('SW', 26, 342);
+  const pts: [number, number, string][] = [[196, 300, '5'], [160, 316, '10'], [118, 318, '14'], [76, 304, '20']];
+  for (const [x, y, d] of pts) { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); g.fillText(d, x - 4, y - 7); }
+  g.font = '500 12px Oswald'; g.textAlign = 'center'; g.fillStyle = '#f2e6c4';
+  g.fillText('LOOK LOW IN THE SOUTH', w / 2, 372);
+  // Ward's note, taped on
+  g.save(); g.translate(30, 92); g.rotate(-0.08);
+  g.fillStyle = '#efe39a'; g.fillRect(0, 0, 92, 62);
+  g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(30, -6, 34, 12);
+  g.fillStyle = '#26324f'; g.font = '15px "Reenie Beanie", cursive'; g.textAlign = 'left';
+  ['comet calls go', 'to the planetarium', 'not us  E.W.'].forEach((l, i) => g.fillText(l, 5, 18 + i * 17));
+  g.restore();
 }
 
 // The service record on its clipboard (RX bank 3).

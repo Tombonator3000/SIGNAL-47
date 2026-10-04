@@ -60,6 +60,19 @@ async def main():
         check(await ev("document.querySelector('.page .pencil') === null"), 'no paper left open')
         await use('excBinder'); await tick(0.1)
         check(await ev("[...document.querySelectorAll('.page .pencil')].some(e => e.textContent.includes('keep doing it'))"), 'the pencil in the binder is drawn by hand')
+        # round 10 (Codex): the sheets lie on fanfold, the last one on the old paper of 1947
+        sheets = await ev("""(async()=>{ const s=[...document.querySelectorAll('.sheets .page.sheet')];
+          await Promise.all(s.map(e => new Promise(r => { const i = new Image(); i.onload = () => r(true); i.onerror = () => r(false); i.src = getComputedStyle(e).backgroundImage.slice(5, -2); })));
+          const ok = await Promise.all(s.map(e => new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth); i.onerror = () => r(0); i.src = getComputedStyle(e).backgroundImage.slice(5, -2); })));
+          return { n: s.length, widths: ok, last: s.length ? s[s.length - 1].textContent : '', old: s.length > 2 && getComputedStyle(s[2]).backgroundImage !== getComputedStyle(s[0]).backgroundImage }; })()""")
+        check(sheets['n'] == 3 and all(w == 1024 for w in sheets['widths']) and '07/--/47' in sheets['last'] and sheets['old'],
+              f"the binder's three sheets on fanfold paper, the 1947 sheet on the old paper ({sheets['n']}, {sheets['widths']})")
+        await shot('02c_binder_sheets')
+        await ev("S47.game.d.ui.close()"); await tick(0.1)
+        await pg.wait_for_function("S47.art().loaded.includes('halleyPoster')", timeout=60000)
+        poster = await ev("(()=>{ let t = null; S47.room.objs.halley.traverse(o => { if (o.material && o.material.map && o.material.map.userData) t = o.material.map; }); return !!t && t.userData.fromArt === true; })()")
+        check(poster, "the Halley poster on the wall is Codex's picture with the words drawn on it")
+        await use('halley'); await tick(0.2); await shot('02d_halley_poster')
         await ev("S47.game.d.ui.close()"); await tick(0.1)
         await use('opsTerminal'); await tick(0.1)
         async def term(c):

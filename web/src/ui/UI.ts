@@ -8,6 +8,9 @@ export interface DocSpec {
   image?: string;      // photo prints and maps: the image itself; typed papers: an attached drawing
   paper?: string;      // a picture of the paper itself under the writing (a 1947 field card, a letter)
   paperRatio?: number; // its width over height
+  /** Typed papers kept as separate sheets, each on its own paper (the exceptions binder on
+   *  fanfold). `strip`: a run of continuous paper as long as the text; `term`: printer type. */
+  sheets?: { page: string; paper: string; strip?: boolean; term?: boolean }[];
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -200,6 +203,8 @@ export class UI {
       ? `<div class="page printout"><pre>${esc(doc.page).replace('SOURCE DISTANCE:  -39 LY', '<span class="hot">SOURCE DISTANCE:  -39 LY</span>')}</pre></div>`
       : (doc.kind === 'photo' || doc.kind === 'map') && doc.image
         ? `<div class="page photo${doc.kind === 'map' ? ' map' : ''}"><img alt="${esc(doc.title)}" src="${doc.image}"></div>`
+        : doc.kind === 'typed' && doc.sheets
+          ? `<div class="sheets">${doc.sheets.map((sh, i) => `<div class="page sheet${sh.strip ? ' strip' : ''}${sh.term ? ' term' : ''}" style="background-image:url('${sh.paper}')">${i === 0 && doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${pencil(esc(sh.page))}</pre></div>`).join('')}</div>`
         : doc.kind === 'typed'
           ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${pencil(esc(doc.page))}</pre>${doc.image ? `<img class="attached" alt="" src="${doc.image}">` : ''}</div>`
           : `<div class="page${doc.paper ? ' on-paper' : ''}${(doc.paperRatio ?? 0) > 1 ? ' wide' : ''}"${doc.paper ? ` style="background-image:url('${doc.paper}');aspect-ratio:${doc.paperRatio ?? 0.77}"` : ''}>${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<div class="hand">${esc(doc.page)}</div></div>`;
