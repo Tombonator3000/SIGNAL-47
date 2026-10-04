@@ -2,6 +2,8 @@
 
 Status 4. oktober 2026: en rådgivende gjennomgang, laget etter «advisor»-prinsippet fra Claude Code-dokumentasjonen (https://code.claude.com/docs/en/advisor): en sterkere modell leser hele sammenhengen ved et viktig veiskille og gir råd som utvikleren tar stilling til. Gjennomgangen ble gjort av en egen agent på den sterkeste modellen, med historien, designbibelen, koden og Toms ønsker som grunnlag. Rådene er ikke kanon før de står i `memory.md` som beslutning.
 
+**Oppdatert 4. oktober kveld:** Tom har lagt om historien og slutten (se `HISTORIE.md`). Det endrer tre ting her. Kapittel 5 og 6 finnes ikke lenger, så det som står om K5 under, gjelder ikke. Rådet om bilstoppet (tapt tid, ingen skikkelse) er erstattet av THE EVENT, der Tom har valgt et ansikt som kan minne om en Grey i omtrent tre bilder. Og walkie-talkien og lysene over motellet bør etter den nye slutten droppes helt, fordi de bruker opp finalen før den kommer.
+
 Tre råd går imot det Tom har bedt om, og venter på Tom:
 
 - Walkie-talkien: rådet er at den bare tar inn fragmentet igjen, uten blendende lys og blackout i rom 6. Tom ba om lys, fremmede lyder og at spilleren våkner senere (som i «Signs»).
@@ -55,7 +57,7 @@ De fem største risikoene:
 
 ## Stemning og etterbehandling
 
-R1 betyr at verden er ærlig: ingenting overnaturlig utenfor A, B og C. Uroen må komme fra stillhet og fra at verden lytter, ikke svarer. Ørkennatt i oktober gir tørt lyn langt borte, coyoter mellom 03 og 04, en hund ved motellet, kompressoren på dineren. Ingen av dem reagerer på spilleren.
+R1 betyr at verden er ærlig: ingenting overnaturlig utenfor A, B og C. Uroen må komme fra stillhet og fra at verden lytter, ikke svarer. Ørkennatt i april gir tørt lyn langt borte, coyoter mellom 03 og 04, en hund ved motellet, kompressoren på dineren. Ingen av dem reagerer på spilleren.
 
 Bibelen sier «ingen flimrende fullskjermfilter som standard». Jeg justerer: mild gradering og korn som standard, jitter og sporingslinjer av. Innstilling av, mild, full; av i Low. Ett fullskjermspass i three.js, kornet flyttes fra CSS inn i passet.
 
