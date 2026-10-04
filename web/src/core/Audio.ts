@@ -337,6 +337,46 @@ export class AudioSys {
     this.hums.clear();
   }
 
+  // The valve receiver in the STATION 01 hut: a weak carrier that fades in and out, with
+  // static, from a small speaker. `voice` lays a voice-shaped band of noise under it for
+  // a few seconds (the fragment is captioned; there is no recorded actor).
+  private radioNodes: { out: GainNode; voice: GainNode; stop: () => void } | null = null;
+  radio(at: THREE.Vector3 | null, level = 0.06) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (!at) {
+      const r = this.radioNodes; if (!r) return;
+      this.radioNodes = null;
+      r.out.gain.setTargetAtTime(0, ctx.currentTime, 0.15);
+      setTimeout(() => r.stop(), 1200);
+      return;
+    }
+    if (this.radioNodes) return;
+    const out = ctx.createGain(); out.gain.value = 0;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 0.6;
+    out.connect(bp); bp.connect(this.panner(at, 1.0));
+    const osc = ctx.createOscillator(); osc.frequency.value = 760;
+    const og = ctx.createGain(); og.gain.value = 0.45; osc.connect(og); og.connect(out);
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.21;
+    const lg = ctx.createGain(); lg.gain.value = 0.3; lfo.connect(lg); lg.connect(og.gain);
+    const n = this.noiseSrc(false); const ng = ctx.createGain(); ng.gain.value = 0.3; n.connect(ng); ng.connect(out);
+    // the voice: noise through a speech band, chopped at a syllable rate
+    const vn = this.noiseSrc(true); const vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 650; vb.Q.value = 1.8;
+    const voice = ctx.createGain(); voice.gain.value = 0;
+    const syl = ctx.createOscillator(); syl.type = 'square'; syl.frequency.value = 4.3;
+    const sg = ctx.createGain(); sg.gain.value = 0.5; syl.connect(sg);
+    const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
+    vn.connect(vb); vb.connect(chop); chop.connect(voice); voice.connect(out);
+    for (const x of [osc, lfo, n, vn, syl]) x.start();
+    out.gain.setTargetAtTime(level, ctx.currentTime, 0.5);
+    this.radioNodes = { out, voice, stop: () => { for (const x of [osc, lfo, n, vn, syl]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+  }
+  radioVoice(secs: number, when = 0) {
+    const ctx = this.ctx, r = this.radioNodes; if (!ctx || !r) return;
+    const t = ctx.currentTime + when;
+    r.voice.gain.setTargetAtTime(2.2, t, 0.08);
+    r.voice.gain.setTargetAtTime(0, t + secs, 0.12);
+  }
+
   // Where the listener is. Out in the yard the wind takes over from the room tone;
   // the photo lab is small and closed, with its own ventilation hum.
   setSpace(space: 'room' | 'yard' | 'lab') {

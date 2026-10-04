@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, annexFlood, setFlood, faced } from './kit';
 import { GlowPoints } from './glow';
 import * as T from '../core/textures';
+import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 
@@ -92,8 +93,9 @@ export class RecordsAnnex {
     faced(st, 8.6, 0.4, 6.0, ext, ceil, -2.0, H + 0.2, 7.8, '-y');
     box(st, 9.2, 0.6, 5.3, ext, -2.0, -0.31, 8.45);
     // floors
-    const vinyl = this.mat({ color: 0xcfc4ad, map: T.vinylTiles(8.0, 1.8), roughness: 0.45 });
-    const lino = this.mat({ color: 0x8f8a74, map: T.vinylTiles(5.0, 3.7), roughness: 0.6 });
+    // Codex's vinyl (round 4): four by four 30 cm tiles per 1.2 m; the records room is a darker lino
+    const vinyl = this.mat({ color: 0xf2eee4, map: artTexture('vinyl', [8.0 / 1.2, 1.8 / 1.2]), roughness: 0.45 });
+    const lino = this.mat({ color: 0xa8a28c, map: artTexture('vinyl', [5.0 / 1.2, 3.7 / 1.2]), roughness: 0.6 });
     plane(st, 8.0, 1.8, vinyl, -2.0, 0.002, 5.7, 0, -Math.PI / 2);
     plane(st, 5.0, 3.7, lino, -3.5, 0.002, 8.65, 0, -Math.PI / 2);
     // skirting

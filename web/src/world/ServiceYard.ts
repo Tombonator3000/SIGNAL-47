@@ -17,6 +17,9 @@ export const YARD = {
   sightMark: new THREE.Vector3(10.0, 0, -15.0),                    // FRAME 02 is taken near this
   vane: new THREE.Vector3(9.9, 2.35, -18.35),                      // centre of the B-12 vane board
   echoOffset: 0.45,                                                // film-only stripe, beside the vane
+  // the service truck's pad below the east landing (chapter three drives out from here);
+  // the truck faces south, towards the ramp, with the driver's door on the open side
+  truck: { x: 8.3, z: 8.0, heading: Math.PI },
 };
 
 const VANE_W = 0.34, VANE_H = 1.36;
@@ -80,6 +83,10 @@ export class ServiceYard {
     slabBox(8.0, 11.0, -19.6, -0.6);   // the walk to the fence
     slabBox(11.0, 12.6, -13.4, -8.6);  // S-03 cabinet apron
     slabBox(11.0, 12.6, -1.9, -0.6);   // path to the lab door
+    slabBox(6.6, 13.0, 3.4, 12.4);     // the truck pad below the landing
+    // the ramp the truck uses, down to the desert on the south side
+    const ramp = box(st, 6.4, 0.3, 4.4, slab, 9.8, -0.42, 14.4);
+    ramp.rotation.x = Math.atan2(0.62, 4.4);
 
     // Walkable areas. Where two areas join they overlap by more than the player's
     // diameter, because the player must fit inside one of them at every step.
@@ -88,11 +95,20 @@ export class ServiceYard {
     this.addZone('apron', 10.2, 12.6, -13.4, -8.6);
     this.addZone('labPath', 10.2, 12.7, -1.9, -0.5);
     this.addZone('eastDoor', 5.0, 7.1, 1.12, 2.08, false);
+    // down from the landing through the gap in its railing, to the truck
+    this.addZone('truckPad', 6.6, 13.0, 2.7, 12.4);
+    const tk = YARD.truck;
+    this.col(tk.x - 1.1, tk.x + 1.1, tk.z - 2.75, tk.z + 2.75);
+    this.col(6.3, 9.4, 3.35, 3.45);   // the railing that is left west of the gap
+    this.col(10.95, 11.05, 2.6, 3.45); // the landing's east railing, where the pad overlaps it
+    this.col(6.72, 6.98, 11.47, 11.73); // the pad's lamp post
+    this.proxy('truck', 2.1, 1.9, 5.3, tk.x, 0.95, tk.z);
 
     const v = (x: number, z: number) => new THREE.Vector3(x, 0, z);
     railing(st, v(8.0, -0.6), v(8.0, -19.6));
     railing(st, v(6.3, -0.6), v(8.0, -0.6));
-    railing(st, v(6.3, 3.4), v(11.0, 3.4));
+    railing(st, v(6.3, 3.4), v(9.4, 3.4));      // the gap east of here leads down to the truck pad
+    railing(st, v(13.0, 3.4), v(13.0, 12.4));
     railing(st, v(11.0, 3.4), v(11.0, -0.6));
     railing(st, v(11.0, -1.9), v(11.0, -8.6));
     railing(st, v(11.0, -8.6), v(12.6, -8.6));
@@ -102,7 +118,7 @@ export class ServiceYard {
     railing(st, v(8.0, -19.6), v(11.0, -19.6));
 
     // three warm lamp posts along the walk, shadowless like the Unity yard
-    for (const [x, z, ry] of [[11.25, 1.6, Math.PI], [11.25, -6.0, Math.PI], [7.75, -9.2, 0]]) {
+    for (const [x, z, ry] of [[11.25, 1.6, Math.PI], [11.25, -6.0, Math.PI], [7.75, -9.2, 0], [6.85, 11.6, 0]]) {
       const lp = lampPost(4.4, 0.95);
       lp.group.position.set(x, 0, z); lp.group.rotation.y = ry;
       st.add(lp.group);
@@ -294,9 +310,9 @@ export class ServiceYard {
     box(lab, 0.22, 0.26, 0.24, plastic, 17.0, 1.75, -5.47);
     cyl(lab, 0.05, 0.06, 0.12, plastic, 17.0, 1.56, -5.45, 12);
 
-    // drying line across the room, with clips; developed prints hang here
+    // drying line across the room, with clips; developed prints hang here (frames 01 to 04)
     rod(lab, new THREE.Vector3(13.0, 2.15, -3.0), new THREE.Vector3(18.9, 2.15, -3.0), 0.004, M.darkPlastic, 4);
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 4; i++) {
       const p = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.24), lit(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, side: THREE.DoubleSide })));
       p.position.set(15.0 + i * 0.6, 1.99, -3.0);
       p.visible = false;

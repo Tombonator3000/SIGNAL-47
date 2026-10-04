@@ -8,17 +8,22 @@ import { Player } from './player/Player';
 import { Sky } from './world/Sky';
 import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
-import { Prologue, type SavedCase } from './story/Prologue';
-import { ServiceYard } from './world/ServiceYard';
+import { Prologue } from './story/Prologue';
+import { ServiceYard, YARD } from './world/ServiceYard';
 import { RecordsAnnex } from './world/Annex';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { glowScale } from './world/glow';
-import { CaseStore } from './core/caseStore';
+import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
+import { saveMenu, played } from './ui/SaveMenu';
+import { type GameState, migrateOldSave } from './story/state';
+import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
 import { initArtMaterials } from './world/kit';
+import { World } from './world/World';
+import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
 // because storage can be blocked (private mode, sandboxed frames).
@@ -82,8 +87,11 @@ async function boot() {
     resize();
   }
 
-  // the saved case and its photographs (IndexedDB), read while the title screen is up
-  const cases = new CaseStore<SavedCase>();
+  // saved cases and their photographs (IndexedDB), read while the title screen is up
+  const saves = new SaveStore<GameState>(migrateOldSave);
+  let caseId = 0;                          // the case being played, 0 before a night starts
+  let playtime = 0;                        // seconds of active play in this case
+  let restoring: GameState | null = null;  // the save being opened; the chapters read their case from it
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
   audio.preload(); // decodes while the title screen is up
@@ -91,7 +99,23 @@ async function boot() {
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
   const colliders = [...room.colliders, ...yard.colliders, ...annex.colliders];
-  const player = new Player(camera, colliders, [room.bounds, ...yard.zones, ...annex.zones]);
+  const saroZones = [room.bounds, ...yard.zones, ...annex.zones];
+  const player = new Player(camera, colliders, saroZones);
+  // SARO, the road and STATION 01, and the drive between them (world/World.ts)
+  const world = new World({
+    scene, camera, player,
+    saro: { groups: [ext.group, room.group, yard.group, annex.group], zones: saroZones, colliders, truck: YARD.truck },
+    applyQuality: () => setQuality(scene, quality),
+    audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
+    thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
+    fade: (on, text) => ui.fade(on, text ?? ''),
+    hold: (on) => { game.cinematic = on; if (on) input.reset(); },
+    after: (sec, fn) => game.after(sec, fn),
+    toast: (text, secs) => ui.toast(text, secs),
+    clock: () => clockText(game.clock, false),
+    skipClock: (sec) => { game.clock += sec; },
+    touch: () => input.touchMode,
+  });
   // footsteps: a little deeper and with some grit out on the concrete
   player.onStep = () => {
     const out = space === 'yard';
@@ -101,14 +125,26 @@ async function boot() {
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
-    // The case lives in its own key; photographs go to IndexedDB (core/caseStore.ts).
-    saveCase: (c) => cases.save(c),
-    loadCase: () => cases.load(),
+    // Every bit of progress the chapters record becomes an autosave (core/saves.ts).
+    saveCase: () => requestAutosave(false),
+    loadCase: () => restoring?.case ?? null,
     isTouch: () => input.touchMode,
+    travel: {
+      area: () => world.area, site: () => world.site, driving: () => world.driving,
+      driveOut: () => world.driveOut(), driveBack: () => world.driveBack(),
+    },
+    milestone: () => requestAutosave(true),
   });
-  game.onCheckpoint = (n) => store.set('checkpoint', n);
+  // a new safe point (02:13, a new chapter) starts a new autosave generation
+  game.onCheckpoint = () => requestAutosave(true);
   const ch1 = game.ch1;
   const ch2 = game.ch2;
+  const ch3 = game.ch3;
+  ch3.bindSaroTruck(yard.objs.truck);
+  world.onStationLoaded = (site) => ch3.bindSite(site);
+  world.onArriveStation = () => ch3.arrivedStation();
+  world.onArriveSaro = () => ch3.arrivedSaro();
+  world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -139,7 +175,9 @@ async function boot() {
     if (mode === 'play' && !ui.modal && !game.cinematic) openPause();
   };
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && mode === 'play' && !pausedByMenu) openPause();
+    if (!document.hidden || mode !== 'play') return;
+    autosaveNow(); // a phone may close the tab while it is in the background
+    if (!pausedByMenu) openPause();
   });
 
   // the settings shared by the pause menu and the title screen; all kept on this device
@@ -162,15 +200,28 @@ async function boot() {
     if (pausedByMenu) return;
     pausedByMenu = true;
     audio.suspend(true);
+    const resume = () => { pausedByMenu = false; audio.suspend(false); };
     ui.pause({
       ...settings(),
-      onResume: () => { pausedByMenu = false; audio.suspend(false); },
-      onTitle: () => { pausedByMenu = false; audio.suspend(false); toTitle(); },
+      onResume: resume,
+      onTitle: () => { resume(); autosaveNow(); toTitle(); },
+      // the case menus sit on top of the pause menu and go back to it
+      onSave: () => saveMenu(ui, {
+        mode: 'save', metas: saves.list(), activeCase: caseId, block: saveBlock(), fallback: saves.fallback,
+        onSave: (slot) => { draw(); return writeSave('manual', slot); },
+        onBack: () => { pausedByMenu = false; openPause(); },
+      }),
+      onLoad: () => saveMenu(ui, {
+        mode: 'load', metas: saves.list(), activeCase: caseId, fallback: saves.fallback,
+        onLoad: (m) => { resume(); openSave(m); },
+        onDelete: (m) => saves.remove(m.id),
+        onBack: () => { pausedByMenu = false; openPause(); },
+      }),
     });
   }
 
   function useCurrent() {
-    if (mode !== 'play' || ui.modal || game.cinematic) return;
+    if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
     if (it) it.use();
@@ -189,7 +240,7 @@ async function boot() {
       if (fcam.raised) { ch1.toggleCamera(); return; }
       openPause();
     } else if (code === 'KeyC') {
-      if (!ui.modal && !game.cinematic) ch1.toggleCamera();
+      if (!ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera();
     } else if (code === 'Space') {
       if (fcam.raised && !ui.modal) ch1.shutter();
     }
@@ -199,7 +250,7 @@ async function boot() {
     if (!input.locked) input.requestLock(); else useCurrent();
   });
   input.onTap = (x, y) => {
-    if (mode !== 'play' || ui.modal || game.cinematic) return;
+    if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; }
     const ndc = new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
     const it = inter.pick(camera, ndc, 2.6);
@@ -207,26 +258,55 @@ async function boot() {
   };
   ui.onUse = useCurrent;
   ui.onNotes = () => { if (mode === 'play' && !ui.modal && !game.cinematic) game.openNotebook(); };
-  ui.onCamera = () => { if (mode === 'play' && !ui.modal && !game.cinematic) ch1.toggleCamera(); };
+  ui.onCamera = () => { if (mode === 'play' && !ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera(); };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
   // ---------- flow ----------
   function showTitle() {
+    const cont = saves.continueSave();
     titleEl = ui.title({
-      canContinue: !!store.get<string | null>('checkpoint', null),
-      onStart: () => startGame(),
-      onContinue: () => startGame(store.get<string | null>('checkpoint', null) ?? undefined),
+      cont: cont ? `${cont.chapter} · ${cont.place} · ${cont.clock} · ${played(cont.playtime)} played` : null,
+      onContinue: () => { const m = saves.continueSave(); if (m) openSave(m); },
+      onStart: () => {
+        const free = saves.freeCase();
+        if (free) { startGame({ caseId: free, playtime: 0, state: null }); return; }
+        // every case slot is taken: pick one to replace
+        saveMenu(ui, { mode: 'new', metas: saves.list(), activeCase: saves.active, onNewCase: (c) => {
+          const unlocking = audio.unlock(); // the click is the gesture that may start sound
+          saves.removeCase(c).then(() => startGame({ caseId: c, playtime: 0, state: null, unlocking }));
+        } });
+      },
+      canLoad: saves.list().length > 0,
+      onLoad: () => saveMenu(ui, { mode: 'load', metas: saves.list(), activeCase: saves.active, fallback: saves.fallback,
+        onLoad: (m) => openSave(m), onDelete: (m) => saves.remove(m.id),
+        onBack: () => { if (mode === 'title') { titleEl?.remove(); showTitle(); } } }),
       onSettings: () => ui.pause({ ...settings(), title: 'Settings', settingsOnly: true, onResume: () => {}, onTitle: () => {} }),
     });
   }
 
-  async function startGame(checkpoint?: string) {
-    const unlocking = audio.unlock(); // must start inside the tap/click
+  // Open a save: from the title, the pause menu or Continue. Sound is unlocked first,
+  // inside the click, then the save is read.
+  function openSave(m: SaveMeta) {
+    const unlocking = audio.unlock();
+    if (mode === 'play') leavePlay();
+    saves.load(m.id).then((state) => {
+      if (!state) { ui.toast('That save could not be read. Your other saves are unchanged.', 5); if (mode !== 'play') showTitleAgain(); return; }
+      startGame({ caseId: m.caseId, playtime: m.playtime, state, unlocking });
+    });
+  }
+  function showTitleAgain() { titleEl?.remove(); showTitle(); }
+
+  let restoringNow = false;
+  let starting = false;   // between Start or Continue and the first playable frame
+  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void> }) {
+    starting = true;
+    const unlocking = o.unlocking ?? audio.unlock(); // must start inside the tap/click
     if (input.touchMode) {
       try { const r = document.documentElement.requestFullscreen?.(); if (r) r.catch(() => {}); } catch { /* not allowed here */ }
     }
     titleEl?.remove(); titleEl = null;
     endEl?.remove(); endEl = null;
+    ui.close(true);
     ui.fade(true, '');
     mode = 'play';
     input.enabled = true;
@@ -234,14 +314,105 @@ async function boot() {
     // Normally the sounds are decoded long before anyone taps Start. If not, say so.
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
-    await cases.ready;
+    await saves.ready;
+    // a save made at the station needs the station built first
+    const area = (o.state?.area === 'station01' ? 'station01' : 'saro') as AreaId;
+    try { await world.prepare(area); } catch (e) { console.error(e); }
     clearTimeout(slow);
+    caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
     space = 'room';
-    game.start(checkpoint);
+    world.stopDriving();
+    world.enter('saro');
+    restoring = o.state; restoringNow = true;
+    game.start(o.state?.checkpoint ?? o.jump);
+    restoringNow = false; restoring = null;
+    world.enter(area === 'station01' && world.site ? 'station01' : 'saro');
+    if (world.area === 'station01') world.placeAtStation();
+    // put the player back where they stood, if the restored world lets them stand there
+    const pose = o.state?.pose;
+    if (pose && o.state?.checkpoint !== 'residual' && player.walkable(pose.x, pose.z)) {
+      player.place(pose.x, pose.z, pose.yaw); player.pitch = pose.pitch;
+    }
+    starting = false;
     ui.showHud(true, input.touchMode);
     setTimeout(() => ui.fade(false), 250);
+  }
+
+  // Stop the night that is running, without the title screen (before opening another save).
+  function leavePlay() {
+    ui.fade(true, '');
+    fcam.raise(false); ui.viewfinder(false);
+    ui.close(true);
+    endEl?.remove(); endEl = null;
+    if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); }
+    world.stopDriving();
+    game.reset();
+    world.enter('saro');
+    pendingAuto = false;
+  }
+
+  // ---------- saving ----------
+  let pendingAuto = false;
+  function saveBlock(): string | null {
+    if (mode !== 'play' || !caseId) return 'There is no night running to save.';
+    return game.saveBlock();
+  }
+  function placeName() {
+    const p = player.pos;
+    if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
+    if (world.area === 'road') return 'Highway south';
+    if (game.checkpointName() === 'residual') return 'Control room';
+    if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
+    if (inside(annex.zone.corridor, p) || inside(annex.zone.southDoor, p)) return 'South corridor';
+    if (inside(room.bounds, p)) return 'Control room';
+    if (inside(yard.zone.lab, p)) return 'Photo lab';
+    if (inside(yard.zone.truckPad, p)) return 'Truck pad';
+    return 'Service yard';
+  }
+  // A small picture of what the player sees, taken right after a frame is drawn
+  // (the canvas does not keep its picture between frames).
+  const thumbCanvas = document.createElement('canvas');
+  thumbCanvas.width = 192; thumbCanvas.height = 108;
+  function captureThumb(): string | null {
+    try {
+      const src = renderer.domElement, g = thumbCanvas.getContext('2d')!;
+      const k = Math.max(192 / src.width, 108 / src.height);
+      const w = 192 / k, h = 108 / k;
+      g.drawImage(src, (src.width - w) / 2, (src.height - h) / 2, w, h, 0, 0, 192, 108);
+      return thumbCanvas.toDataURL('image/jpeg', 0.72);
+    } catch { return null; }
+  }
+  function writeSave(kind: SaveKind, slot: number | 'rotate'): Promise<SaveMeta> {
+    const checkpoint = game.checkpointName();
+    const prologue = checkpoint === 'residual';
+    const state: GameState = {
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.area,
+      pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
+    };
+    return saves.save(caseId, kind, slot, state, {
+      chapter: game.chapterTitle(), place: placeName(),
+      clock: prologue ? '02:13' : clockText(game.clock, false), playtime, thumb: captureThumb(),
+    });
+  }
+  // Progress asks for an autosave; it is written after the next frame, once the game may be saved.
+  function requestAutosave(milestone: boolean) {
+    if (!caseId || mode !== 'play' || restoringNow) return;
+    if (milestone) saves.newGeneration(caseId);
+    pendingAuto = true;
+  }
+  function flushAutosave() {
+    if (!pendingAuto || saveBlock()) return;
+    pendingAuto = false;
+    writeSave('auto', 'rotate').catch((e: Error) => ui.toast(`Autosave failed: ${e.message}`, 5));
+  }
+  // Right now, before leaving or when the tab goes to the background.
+  function autosaveNow() {
+    if (saveBlock()) return;
+    draw();
+    pendingAuto = true;
+    flushAutosave();
   }
 
   function toTitle() {
@@ -253,7 +424,10 @@ async function boot() {
     ui.showHud(false, input.touchMode);
     endEl?.remove(); endEl = null;
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); }
+    world.stopDriving();
     game.reset();
+    world.enter('saro');
+    pendingAuto = false;
     ui.fade(false);
     showTitle();
   }
@@ -280,25 +454,52 @@ async function boot() {
     setTimeout(() => ui.fade(false), 300);
   }
 
+  // Between chapters the night goes on: a short card on the black with what was just
+  // closed and the next chapter's title and clock, then straight back into the game.
+  // The next chapter begins behind the black, so the clock and objective are already set.
+  function chapterBreak(o: { closed: string; recap: string; next: string; title: string; begin: () => void }) {
+    fcam.raise(false); ui.viewfinder(false);
+    ui.close(true);
+    game.cinematic = true;
+    ui.fade(true, '');
+    game.after(1.3, () => {
+      o.begin();
+      game.cinematic = true;
+      ui.fade(true, '');
+      ui.chapterCard({ closed: o.closed, recap: o.recap, next: o.next, title: o.title, clock: clockText(game.clock, false) });
+      game.after(6.4, () => {
+        ui.chapterCard(null);
+        ui.fade(false);
+        game.cinematic = false;
+        input.enabled = true;
+        ui.showHud(true, input.touchMode);
+      });
+    });
+  }
   // End of the prologue: the night is not over.
-  game.onFinish = () => showCard({
-    lines: ['Prologue: Night Shift.', 'THE NIGHT IS NOT OVER // CHECK THE LOCAL CONTROLLER'],
-    buttons: [
-      { label: 'Continue: service yard', on: () => backToPlay(() => game.beginChapter1(null)) },
-      { label: 'Title', on: () => toTitle() },
-    ],
+  game.onFinish = () => chapterBreak({
+    closed: 'NIGHT SHIFT // EVERY DISH AT AZ 026',
+    recap: 'The array moved without a command. The phone played the room before it happened. The night is not over.',
+    next: 'CHAPTER ONE', title: 'THE SECOND EXPOSURE',
+    begin: () => game.beginChapter1(null),
   });
-  // End of chapter one: the night goes on in the records room.
-  ch1.onEnd = (method) => showCard({
-    lines: ch1.endingLines(method),
-    buttons: [
-      { label: 'Continue: the reference record', on: () => backToPlay(() => game.beginChapter2(null)) },
-      { label: 'Title', on: () => toTitle() },
-    ],
+  // End of chapter one: Ward has the report, and the night goes on in the records room.
+  ch1.onEnd = (method) => chapterBreak({
+    closed: 'LOCAL INCIDENT S-03 / B-12 // FILED',
+    recap: `${method === 'passive' ? 'The shielded lamp did not explain it.' : 'Simple encoder drift did not explain it.'} The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.`,
+    next: 'CHAPTER TWO', title: 'THE AMENDED RECORD',
+    begin: () => game.beginChapter2(null),
   });
-  // End of chapter two, as far as the night is built.
-  ch2.onEnd = () => showCard({
-    lines: ch2.endingLines(),
+  // End of chapter two: the key holder sends you to the station first.
+  ch2.onEnd = () => chapterBreak({
+    closed: 'THE AMENDED RECORD // P04 AND P05 RECORDED',
+    recap: 'The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her.',
+    next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
+    begin: () => game.beginChapter3(null),
+  });
+  // End of chapter three, as far as the night is built.
+  ch3.onEnd = () => showCard({
+    lines: ch3.endingLines(),
     buttons: [
       { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
       { label: 'Title', on: () => toTitle() },
@@ -309,8 +510,16 @@ async function boot() {
   // test hook, handy from the browser console: S47.jump('countdown')
   (window as any).S47 = {
     art: artStatus,
-    jump: (p: string) => { if (mode !== 'play') startGame(p); else game.start(p); },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2,
+    jump: (p: string) => {
+      if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
+      world.stopDriving(); world.enter('saro'); game.start(p);
+    },
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, saves, world,
+    // write a save now (tests): the frame is drawn first so the save gets its picture
+    saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
+    playtime: () => playtime, caseId: () => caseId,
+    // true once a started or loaded night is running (tests wait for it after Continue)
+    started: () => caseId > 0 && !starting && mode === 'play',
   };
 
   // ---------- resize and adaptive resolution ----------
@@ -353,29 +562,38 @@ async function boot() {
   const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
   const dbg = { hold: false };
+  let inCab = false;
   function step(dt: number) {
     t += dt;
+    if (mode === 'play') playtime += dt;
     const modalOpen = !!ui.modal;
     if (mode === 'title') { titleCam(t); annex.interior.visible = false; }
     else {
-      if (mode === 'play' && !modalOpen && !game.cinematic) {
-        const look = input.consumeLook();
-        player.look(look.x, invertY ? -look.y : look.y);
-        const m = input.move();
-        player.update(dt, m.x, m.z, m.run);
+      const active = mode === 'play' && !modalOpen && !game.cinematic;
+      const look = input.consumeLook();
+      if (world.driving) {
+        // the truck: forward and back are throttle and brake, sideways is steering
+        const m = active ? input.move() : { x: 0, z: 0 };
+        if (!modalOpen) world.update(dt, t, { steer: m.x, throttle: -m.z }, active ? { x: look.x, y: invertY ? -look.y : look.y } : { x: 0, y: 0 });
       } else {
-        input.consumeLook();
-        player.update(dt, 0, 0, false);
+        if (active) {
+          player.look(look.x, invertY ? -look.y : look.y);
+          const m = input.move();
+          player.update(dt, m.x, m.z, m.run);
+        } else player.update(dt, 0, 0, false);
+        world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
-      const sp = spaceOf(player.pos);
+      // in the cab: no crosshair, and the touch buttons for using things and the camera go away
+      if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
+      const sp = world.driving ? 'lab' : world.area === 'station01' ? (world.indoors(player.pos) ? 'room' : 'yard') : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
       annex.interior.visible = indoors.slice(1).some((b) => inside(b, player.pos))
         || (inside(room.bounds, player.pos) && room.southDoorHinge.rotation.y > 0.01);
       crtAcc += dt;
       if (crtAcc > 1 / 12) { crtAcc = 0; game.drawCrts(t); }
-      if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised) {
+      if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised && !world.driving) {
         const it = inter.update(camera);
         ui.prompt(it ? it.label() : null, input.touchMode);
         ui.hint(!input.touchMode && !input.locked);
@@ -400,7 +618,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     renderer.render(scene, camera);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;
@@ -409,6 +627,7 @@ async function boot() {
     if (mode === 'end') return; // the end card covers the whole screen, so let the GPU rest
     step(dt);
     draw();
+    flushAutosave(); // right after the frame, so the save's picture is this frame
     adapt(dt);
     debug?.frame(raw);
   }
@@ -419,7 +638,7 @@ async function boot() {
   });
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame
-    tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); },
+    tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },
     setQuality: (q: 'high' | 'low') => applyQuality(q),
   });
 
@@ -429,6 +648,8 @@ async function boot() {
   renderer.render(scene, camera);
   loading.remove();
   showTitle();
+  // the saves are read from IndexedDB while the title is up; then Continue knows what to offer
+  saves.ready.then(() => { if (mode === 'title' && titleEl) showTitleAgain(); });
   requestAnimationFrame(frame);
 }
 

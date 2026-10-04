@@ -416,6 +416,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .lp-page .lp-two { align-items: start; }
 .lp-figure { margin: 0; }
 .lp-figure img { display: block; width: 100%; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,.45); }
+.lp-figure figcaption { font-family: var(--type); font-size: 14px; line-height: 1.6; color: #cfc8b5; margin-top: 10px; }
 .lp-cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 10px; }
 .lp-choice { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 8px 10px; min-height: 48px; text-align: left;
   font-family: var(--term); font-size: 19px; color: #e9e2cf; border: 1px solid rgba(233,226,207,.25); }
@@ -444,3 +445,54 @@ html.text-large .prompt { font-size: 28px; }
   html.text-large .lp-text { font-size: 16px; }
   html.text-large .lp-paper p { font-size: 15px; }
 }
+
+/* ---------- case menus (save and load) ---------- */
+.savemenu { width: min(820px, 100%); max-height: 100%; overflow: auto; background: rgba(8,11,19,.96); border: 1px solid rgba(255,255,255,.12);
+  padding: 22px 26px; font-family: var(--term); color: #e8e2d2; }
+.savemenu .save-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.savemenu h3 { font-family: var(--display); font-weight: 500; font-size: 32px; margin: 0; color: #f0ead8; letter-spacing: .03em; }
+.savemenu .close { font-size: 24px; color: #cfc8b5; min-height: 44px; }
+.savemenu .close:hover { color: var(--amber); }
+.save-note { font-family: var(--type); font-size: 15px; color: #a39e92; margin: 8px 0 12px; line-height: 1.45; }
+.save-note.warn, .save-block { color: #ffd27a; }
+.save-block { font-family: var(--type); font-size: 16px; margin: 6px 0 12px; }
+.save-case { margin: 14px 0 6px; }
+.save-case h4 { font-family: var(--term); font-weight: normal; font-size: 24px; margin: 0; color: var(--amber); letter-spacing: .06em; }
+.save-case h4 .cur { font-size: 16px; color: var(--phosphor); margin-left: 8px; }
+.save-head { font-family: var(--type); font-size: 14px; color: #a39e92; margin: 2px 0 8px; }
+.save-card { display: grid; grid-template-columns: 112px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.save-thumb { width: 112px; height: 63px; object-fit: cover; background: #10141c; border: 1px solid rgba(255,255,255,.1); display: block; }
+.save-text { min-width: 0; }
+.save-kind { font-size: 16px; color: var(--phosphor); letter-spacing: .08em; }
+.save-chapter { font-family: var(--display); font-size: 18px; color: #f0ead8; }
+.save-where, .save-when { font-family: var(--type); font-size: 14px; color: #b9b2a2; }
+.save-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+.save-btns.row { justify-content: flex-start; margin: 4px 0 6px; }
+.save-btns button { font-family: var(--term); font-size: 20px; min-height: 40px; padding: 2px 12px; color: #11140f; background: var(--amber); border-radius: 2px; }
+.save-btns button.quiet { background: transparent; color: #cfc8b5; border: 1px solid rgba(255,255,255,.2); }
+.save-btns .ask { font-family: var(--type); font-size: 14px; color: #ffd27a; }
+.save-status { min-height: 24px; margin: 10px 0 0; color: var(--phosphor); font-size: 20px; }
+.title-screen .cont-info { font-family: var(--type); font-size: 14px; color: #a39e92; margin: -2px 0 6px 1.4em; }
+@media (max-width: 560px) {
+  .save-card { grid-template-columns: 84px 1fr; }
+  .save-thumb { width: 84px; height: 47px; }
+  .save-btns { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+/* ---------- chapter break: on the black between two chapters ---------- */
+.chapter-card { position: fixed; inset: 0; z-index: 6; pointer-events: none; color: #e8e2d2; text-align: center; }
+.chapter-card .cc-a, .chapter-card .cc-b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; opacity: 0; }
+.chapter-card .cc-a { animation: ccIn .9s ease .3s forwards, ccOut .7s ease 3.2s forwards; }
+.chapter-card .cc-b { animation: ccIn 1.1s ease 3.8s forwards; }
+.chapter-card .cc-closed { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .12em; color: var(--phosphor); }
+.chapter-card .cc-recap { font-family: var(--type); font-size: clamp(15px, 1.9vw, 19px); line-height: 1.5; max-width: 52ch; color: #cfc8b5; margin: 10px 0 0; }
+.chapter-card .cc-next { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .3em; color: var(--amber); }
+.chapter-card h2 { font-family: var(--display); font-weight: 500; font-size: clamp(34px, 6vw, 64px); letter-spacing: .06em; margin: 6px 0; }
+.chapter-card .cc-clock { font-family: var(--term); font-size: clamp(22px, 3vw, 30px); color: var(--phosphor); }
+.chapter-card.out { transition: opacity .8s ease; opacity: 0; }
+@keyframes ccIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ccOut { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .chapter-card .cc-a, .chapter-card .cc-b { animation-duration: .01s !important; } }
+
+/* driving: the cab has no crosshair, and Use and Camera have nothing to do */
+.driving .crosshair, .driving .tbtn.use, .driving .tbtn.camera { display: none !important; }

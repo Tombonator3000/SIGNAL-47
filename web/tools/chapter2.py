@@ -10,6 +10,10 @@ from playwright.async_api import async_playwright
 OUT = sys.argv[1]
 W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
+# Reads one record from the game's IndexedDB (database 's47', version 2).
+IDB_GET = """((store, key) => new Promise((ok) => { const r = indexedDB.open('s47', 2);
+  r.onsuccess = () => { const g = r.result.transaction(store).objectStore(store).get(key);
+    g.onsuccess = () => { ok(g.result ?? null); r.result.close(); }; g.onerror = () => ok(null); }; r.onerror = () => ok(null); }))"""
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -164,14 +168,17 @@ async def main():
         d = await docs()
         check('p05' in d and 'access' in d and 'casemap' in d, 'P05 finding, field access sheet and case map filed')
         await pg.click('.labpanel .lp-close'); await tick(0.1)
+        await tick(0.1)
+        await pg.wait_for_function("S47.saves.list(S47.caseId()).length > 0", polling=300, timeout=20000)
         await pg.wait_for_timeout(300)
-        saved = await ev("JSON.parse(localStorage.getItem('s47.case') || 'null')")
-        check(saved and saved.get('ch2', {}).get('p05') and await ev("localStorage.getItem('s47.checkpoint')") == '"chapter2"', 'chapter two progress saved with checkpoint chapter2')
+        meta = await ev("S47.saves.list(S47.caseId())[0]")
+        rec = await ev(IDB_GET + f"('saves', '{meta['id']}')")
+        check(rec and rec['state']['checkpoint'] == 'chapter2' and rec['state']['case']['ch2']['p05'] and meta['place'] == 'Records room', f"chapter two progress autosaved ({meta['id']}, {meta['place']}, {meta['clock']})")
 
         # ---------- Continue halfway (before the call) ----------
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await ev("S47.game.phase") == 'ch2' and await s2('stage') == 'call-nora' and await s2('p04') and await s2('read.original'), 'Continue restores chapter two halfway')
         check(abs(await ev("S47.room.southDoorHinge.rotation.y") - math.pi / 2) < 0.01, 'Continue keeps the corridor door open')
@@ -189,19 +196,28 @@ async def main():
         check('N. VEGA' in seen and 'cable' in seen and 'originals' in seen, 'N. Vega\'s lines are captioned')
         check(await s2('called') and await s2('stage') == 'complete', 'call made, chapter two complete')
         check(any('Called the key holder' in n for n in await ev("S47.game.notes")), 'notebook records the call')
-        await tick(4.0)
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        text = await ev("document.querySelector('.endcard').textContent")
-        check('THE AMENDED RECORD' in text and 'OLD SURVEY STATION' in text and 'N. Vega' in text, 'end card for chapter two')
-        await shot('d06_ending')
+        # no end card: a chapter card, then chapter three begins in the records room
+        for i in range(24):
+            await tick(0.5)
+            if await ev("!!document.querySelector('.chapter-card')"): break
+        check(await ev("!!document.querySelector('.chapter-card')"), 'chapter card after chapter two')
+        text = await ev("document.querySelector('.chapter-card').textContent")
+        check('THE AMENDED RECORD' in text and 'CHAPTER THREE' in text and 'THE SURVEY STATION' in text, 'chapter card closes chapter two and names chapter three')
+        check(await pg.locator('.endcard').count() == 0, 'no end card between the chapters')
+        await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
+        await shot('d06_chapter_card')
+        await tick(7)
+        check(await ev("S47.game.phase") == 'ch3' and 'TAKE THE SARO TRUCK' in await ev("document.querySelector('.objective').textContent"), 'chapter three begins: take the truck to STATION 01')
+        await pg.wait_for_function("S47.saves.list(S47.caseId()).some(m => m.chapter.startsWith('Chapter 3'))", polling=300, timeout=20000)
 
         # ---------- Continue at the end ----------
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        check('Chapter 3' in await ev("document.querySelector('.cont-info').textContent"), 'title screen offers to continue chapter three')
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
-        check(await ev("S47.game.phase") == 'ch2' and await s2('stage') == 'complete' and await s2('called'), 'Continue restores the finished chapter two')
-        check('FIELD ACCESS PREPARED' in await ev("document.querySelector('.objective').textContent"), 'objective says the next area is not built yet')
+        check(await ev("S47.game.phase") == 'ch3' and await s2('stage') == 'complete' and await s2('called'), 'Continue restores chapter three with chapter two finished')
+        check('TAKE THE SARO TRUCK' in await ev("document.querySelector('.objective').textContent"), 'objective: the service truck')
         await ev("S47.game.openNotebook()")
         await pg.click('.notebook [data-t=case]')
         n = await ev("document.querySelectorAll('.notebook .cards button').length")

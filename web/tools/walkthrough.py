@@ -91,16 +91,23 @@ async def main():
         check(await ev("S47.game.phase") == 'end', 'all dishes arrived')
         az = await ev("S47.ext.dishes.map(d=>Math.round(d.curAz))")
         check(all(a == 26 for a in az), f'all {len(az)} dishes at az 026')
-        await tick(6)
-        await ev("S47.hold = false")
-        check(await pg.locator('.endcard').count() == 1, 'end card shown')
-        # The end card fades in with CSS animations (title after 1 s, buttons after 6.5 s). In the software
-        # renderer that takes far longer than a fixed wait, so wait until the buttons are fully visible.
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        await shot('12_endcard')
-        check(await ev("getComputedStyle(document.querySelector('.endcard h1')).opacity") == '1', 'end card title and buttons visible')
-        saved = await ev("localStorage.getItem('s47.checkpoint')")
-        print('checkpoint in storage:', saved)
+        # No end card any more: the night goes on. A chapter card on the black closes the
+        # prologue and names chapter one, then the yard door is open behind it.
+        for i in range(20):
+            await tick(0.5)
+            if await ev("!!document.querySelector('.chapter-card')"): break
+        check(await ev("!!document.querySelector('.chapter-card')"), 'chapter card after the prologue')
+        text = await ev("document.querySelector('.chapter-card').textContent")
+        check('NIGHT SHIFT' in text and 'CHAPTER ONE' in text and 'THE SECOND EXPOSURE' in text, 'chapter card closes the prologue and names chapter one')
+        check(await pg.locator('.endcard').count() == 0, 'no end card between the prologue and chapter one')
+        await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
+        await shot('12_chapter_card')
+        await tick(7)
+        check(await ev("!document.querySelector('.chapter-card:not(.out)')") and await ev("S47.game.phase") == 'ch1' and not await ev("S47.game.cinematic"), 'chapter one begins behind the card')
+        # the new chapter is an autosave of this case, with a picture and the chapter's name
+        await pg.wait_for_function("S47.saves.list(S47.caseId()).some(m => m.chapter.startsWith('Chapter 1'))", polling=300, timeout=20000)
+        m = await ev("S47.saves.list(S47.caseId())[0]")
+        check(m['kind'] == 'auto' and m['chapter'] == 'Chapter 1: The Second Exposure' and (m['thumb'] or '').startswith('data:image/jpeg'), f"autosave at chapter one: {m['id']}, {m['place']}, {m['clock']}")
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
         if errs: check(False, 'console clean')
         json.dump(checks, open(f'{OUT}/checks.json', 'w'), indent=1)

@@ -13,9 +13,9 @@ export const PRINT = { w: PHOTO_W + BORDER * 2, h: PHOTO_H + BORDER + CAPTION, x
 export const PHOTO_FOV = 44.6; // vertical, degrees: a standard lens
 
 export interface Photo {
-  id: 'frame01' | 'frame02';
+  id: 'frame01' | 'frame02' | 'frame03' | 'frame04';
   subject: string;
-  method: 'baseline' | 'passive' | 'active';
+  method: 'baseline' | 'passive' | 'active' | 'field';
   clock: number;                       // game clock (seconds) when exposed
   url: string;                         // the print as a JPEG data URL
   targets: Record<string, [number, number]>; // features in photo UV, origin top left

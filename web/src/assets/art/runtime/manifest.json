@@ -97,5 +97,16 @@
     "source_sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
     "runtime_sha256": "ee790f3b33531702019bcfa357d8798e2a6e7519ac5fa15ae8bd7c8a16ed927c",
     "bytes": 49274
+  },
+  {
+    "source": "annex/vending_front.png",
+    "runtime": "runtime/vending_front.webp",
+    "dimensions": [
+      512,
+      1024
+    ],
+    "source_sha256": "6e4485ac20c426e406c215ad89375d6fe67723dc20bfdc4f8bc9a7d17f282567",
+    "runtime_sha256": "cd5b7ce484a9496fac9197df1b200c2b430abab9317d934f1806e80476134830",
+    "bytes": 58088
   }
 ]

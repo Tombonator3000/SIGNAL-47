@@ -17,7 +17,8 @@ function shell(ui: UI, title: string, body: string, onClose?: () => void) {
   return el;
 }
 function say(el: HTMLElement, sel: string, r: Result | string) {
-  const box = el.querySelector(sel) as HTMLElement;
+  const box = el.querySelector(sel) as HTMLElement | null;
+  if (!box) return; // a recorded finding replaces the page that had the reply line
   const text = typeof r === 'string' ? r : r.text;
   box.textContent = text;
   box.classList.toggle('bad', typeof r !== 'string' && !r.ok);
@@ -303,4 +304,104 @@ export function archive(ui: UI, o: {
   el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.addEventListener('click', () => render(b.dataset.p as ArchivePage)));
   render(o.page);
   return el;
+}
+
+// ---------- chapter three: the STATION 01 field record ----------
+// One panel for P06 to P09 at the station, after the Unity field record (Station26):
+// the transit record and which fixed point moved, the local lamp null test, the cable
+// break, and the 1947 timing log against tonight's receiver. Opened by the transit, the
+// lamp, the cable and the ledger; the tabs reach the other pages.
+export type FieldPage = 'marker' | 'lamp' | 'cable' | 'timing';
+export function fieldRecord(ui: UI, o: {
+  page: FieldPage;
+  status: () => string;
+  transit: { have: boolean; text: string; image: string; where: string };
+  timing: () => { have: boolean; text: string; where: string };
+  state: () => { covered: boolean; observed: boolean; inspected: boolean; frame04: boolean; p06: boolean; p07: boolean; p08: boolean; p09: boolean };
+  supported: Record<FieldPage, string>;
+  onMarker: (c: 'a' | 'b' | 'lamp') => Result;
+  onLamp: (cover: boolean) => void;
+  onObserve: () => Result;
+  onInspect: () => Result;
+  onCable: (c: 'deliberate-cut' | 'weathering' | 'author-guilt') => Result;
+  onTiming: (c: '02:17:47' | '02:17:00' | '47-minutes') => Result;
+  hints: Record<FieldPage, string[]>;
+}) {
+  const tabs: [FieldPage, string][] = [['marker', 'P06 / TRANSIT'], ['lamp', 'P07 / NULL TEST'], ['cable', 'P08 / CABLE'], ['timing', 'P09 / TIMING']];
+  const el = shell(ui, 'STATION 01 / FIELD RECORD', `
+    <p class="lp-sub" data-status></p>
+    <div class="lp-tabs" role="tablist">${tabs.map(([k, l]) => `<button class="lp-tab" role="tab" data-p="${k}">${l}</button>`).join('')}</div>
+    <div class="lp-page" data-page></div>`);
+  const pageEl = el.querySelector('[data-page]') as HTMLElement;
+  const statusEl = el.querySelector('[data-status]') as HTMLElement;
+  const hint: Record<FieldPage, number> = { marker: 0, lamp: 0, cable: 0, timing: 0 };
+  let page = o.page;
+
+  const paper = (text: string) => `<div class="lp-paper typed">${text.split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>`;
+  const choices = (list: [string, string][]) => `<div class="lp-col">${list.map(([k, l]) => `<button class="lp-btn" data-c="${k}">${esc(l)}</button>`).join('')}</div>`;
+  const tail = () => `<div class="lp-row"><button class="lp-btn" data-a="hint">Hint</button></div><p class="lp-text" data-say></p>`;
+  const wire = (p: FieldPage, on: (c: string) => Result) => {
+    pageEl.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => {
+      const r = on(b.dataset.c!);
+      if (r.ok) { render(p); say(el, '[data-say]', r); return; }
+      say(el, '[data-say]', r);
+    }));
+    pageEl.querySelector('[data-a=hint]')?.addEventListener('click', () => { say(el, '[data-say]', o.hints[p][Math.min(hint[p], o.hints[p].length - 1)]); hint[p]++; });
+  };
+
+  const render = (p: FieldPage) => {
+    page = p;
+    const s = o.state();
+    statusEl.textContent = o.status();
+    el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.p === p)));
+    if (p === 'marker') {
+      const t = o.transit;
+      pageEl.innerHTML = `
+        <div class="lp-two">
+          <div><p class="lp-q">E09A / TRANSIT RECORD</p>${t.have ? paper(t.text) : `<p class="lp-text">Not read yet. ${esc(t.where)}</p>`}</div>
+          <figure class="lp-figure"><img alt="The 1947 arrangement: A, B and C" src="${t.image}"><figcaption>A  FIXED POINT<br>B  COMPARISON VANE<br>C  CLOSING SIGHT LINE</figcaption></figure>
+        </div>
+        ${s.p06 ? paper(o.supported.marker) : `<p class="lp-q">Which fixed position changed?</p>
+          ${choices([['a', 'A / MOVED'], ['b', 'B / MOVED'], ['lamp', 'UNCERTAIN / LOCAL LAMP']])}${tail()}`}`;
+      if (!s.p06) wire(p, (c) => o.onMarker(c as 'a' | 'b' | 'lamp'));
+    } else if (p === 'lamp') {
+      pageEl.innerHTML = `
+        ${paper('Screen the practical lamp and observe the ordinary local null condition. This isolates the source. It does not move the physical reference, and it does not finish the cable finding.')}
+        <p class="lp-q">LAMP STATUS / ${s.covered ? 'COVERED' : 'EXPOSED'}</p>
+        <div class="lp-row"><button class="lp-btn" data-a="cover">${s.covered ? 'UNCOVER LAMP' : 'COVER LAMP'}</button><button class="lp-btn primary" data-a="observe">${s.observed ? 'REVIEW NULL TEST' : 'OBSERVE NULL TEST'}</button><button class="lp-btn" data-a="hint">Hint</button></div>
+        ${s.p07 ? paper(o.supported.lamp) : ''}
+        <p class="lp-text" data-say></p>`;
+      pageEl.querySelector('[data-a=cover]')!.addEventListener('click', () => { o.onLamp(!o.state().covered); render(p); });
+      pageEl.querySelector('[data-a=observe]')!.addEventListener('click', () => { const r = o.onObserve(); if (r.ok) render(p); say(el, '[data-say]', r); });
+      pageEl.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints.lamp[Math.min(hint.lamp, o.hints.lamp.length - 1)]); hint.lamp++; });
+    } else if (p === 'cable') {
+      pageEl.innerHTML = `
+        ${paper('Follow the cable from the local relay. Inspect the opposed cut faces, then expose and inspect the genuine near frame. The retained reference and a deliberate cut are separate findings.')}
+        <div class="lp-row"><button class="lp-btn" data-a="inspect">${s.inspected ? 'CABLE INSPECTED' : 'INSPECT CUT FACES'}</button></div>
+        <p class="lp-q">${s.frame04 ? 'FRAME 04 / EXPOSED, SEALED / PROCESS AT THE SARO WET BENCH' : 'FRAME 04 / NOT EXPOSED YET / A NEAR FRAME OF THE CUT'}</p>
+        ${s.p08 ? paper(o.supported.cable) : `<p class="lp-q">What does the break show?</p>
+          ${choices([['deliberate-cut', 'The cable was cut on purpose: two clean, opposed faces.'], ['weathering', 'The cable failed with age and weather.'], ['author-guilt', 'The cut shows who stopped the 1947 run, and why.']])}${tail()}`}`;
+      pageEl.querySelector('[data-a=inspect]')!.addEventListener('click', () => { const r = o.onInspect(); if (r.ok) render(p); say(el, '[data-say]', r); });
+      if (!s.p08) wire(p, (c) => o.onCable(c as 'deliberate-cut' | 'weathering' | 'author-guilt'));
+    } else {
+      const t = o.timing();
+      pageEl.innerHTML = `
+        <p class="lp-q">E10 / TIMING RECORD</p>
+        ${t.have ? paper(t.text) : `<p class="lp-text">Not read yet. ${esc(t.where)}</p>`}
+        ${s.p09 ? paper(o.supported.timing) : `<p class="lp-q">Match the receiver fragment to the 1947 log. Which reading does T. Vega's correction lead up to?</p>
+          ${choices([['02:17:47', '02:17:47 / Relay impact and reference motion, 47 seconds after the carrier ceased.'], ['02:17:00', '02:17:00 / The moment the carrier ceased.'], ['47-minutes', '47 minutes later / A separate event the log does not record.']])}${tail()}`}`;
+      if (!s.p09) wire(p, (c) => o.onTiming(c as '02:17:47' | '02:17:00' | '47-minutes'));
+    }
+  };
+
+  el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.addEventListener('click', () => render(b.dataset.p as FieldPage)));
+  render(o.page);
+  return { el, refresh: () => render(page) };
+}
+
+// Two developed field prints side by side, for a look before they go into the case file.
+export function fieldPrints(ui: UI, o: { prints: { url: string; caption: string }[]; text: string; onClose?: () => void }) {
+  shell(ui, 'STATION 01 / FIELD PRINTS', `
+    <div class="lp-pair">${o.prints.map((p) => `<figure><img alt="" src="${p.url}"><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div>
+    <p class="lp-text">${esc(o.text)}</p>`, o.onClose);
 }
