@@ -55,13 +55,13 @@ const POST_A = T.clone().addScaledVector(SIGHT, 10).addScaledVector(OFF, 3);
 const POST_B = new THREE.Vector3(-7.4, 0, -10.0);
 const STAKES = Array.from({ length: 13 }, (_, i) => 8 + i * 4);   // x of the C stakes
 const LAMP = new THREE.Vector3(1.6, 0, -2.6);
-const CABLE_R = 0.022;
+const CABLE_R = 0.025;
 const CUT = new THREE.Vector3(3.2, G + CABLE_R, -1.3);
 const CUT_DIR = new THREE.Vector3(0.05, 0, -1).normalize();      // along the cable, towards the pier
 const POLE = new THREE.Vector3(-6.6, 0, 7.0);
 const SHED = { x0: -17.3, x1: -15.1, z0: -1.3, z1: 0.5, h: 2.05 };
 const EXHAUST = new THREE.Vector3(-16.85, 2.95, -0.95);
-const WALL_LAMP = new THREE.Vector3(-9.95, 2.42, 5.0);
+const WALL_LAMP = new THREE.Vector3(-9.95, 2.42, 5.0);   // the bulb
 const BASE = { wall: 6.0, field: 9.0, yard: 12.0, spill: 3.0, shed: 2.4, ceil: 5.0, desk: 2.6, dial: 1.1, door: 1.4 };
 const HOOD_OPEN = 2.1;
 
@@ -71,11 +71,12 @@ const PATHS: [number, number][][] = [
   [[-22.3, 28.5], [-22.3, 24.6], [-19.8, 19.5], [-15.8, 12.8], [-11.8, 7.8], [-9.95, 5.7]],
   [[-9.95, 5.7], [-6.8, 4.2], [-3.2, 2.2], [0.4, -0.6], [2.0, -2.0], [2.2, -3.4], [3.0, -5.0], [6.2, -7.0], [9.4, -9.0]],
   [[9.4, -9.0], [13.6, -6.6], [16.2, -4.8], [14.0, 0.5], [7.0, 7.5], [-2.5, 12.8], [-11.5, 16.8], [-17.6, 20.4]],
-  [[2.0, -2.0], [-1.4, -5.2], [-4.8, -8.0], [-6.9, -9.4]],
+  [[0.4, -0.6], [-1.6, -4.4], [-4.8, -8.0], [-6.9, -9.4]],
 ];
 const RUTS: [number, number][][] = [
-  [[-19.25, 40], [-19.25, 33.5], [-19.25, 26.0], [-18.4, 20.5], [-15.6, 14.0], [-12.8, 9.6], [-10.2, 7.6], [-7.8, 8.4], [-7.6, 10.6], [-10.2, 11.8], [-13.6, 11.2]],
-  [[-19.2, 52], [-19.5, 44], [-21.5, 38.5], [-24.5, 35.5], [-26.0, 31.5], [-23.5, 28.6]],
+  [[-19.3, 60], [-19.4, 48], [-19.25, 38], [-19.25, 30], [-19.25, 26.0], [-18.6, 21.0], [-16.6, 16.0], [-14.0, 12.0], [-11.8, 9.0]],
+  [[-14.0, 12.0], [-11.4, 10.6], [-9.0, 10.0], [-7.6, 9.4]],
+  [[-19.3, 37], [-21.2, 37.6], [-23.8, 36.8], [-25.2, 34.2], [-24.6, 31.0]],
 ];
 const ROAD: [number, number][] = [[-19.25, 38.5], [-19.6, 52], [-22.5, 70], [-29, 92], [-40, 120], [-55, 156], [-74, 200], [-97, 256]];
 
@@ -163,7 +164,7 @@ class Terrain {
 // Box-projected UVs in metres from the mesh's placement in its parent, so a wall built
 // from several pieces runs one texture across the joints. Each texture sets its own tile
 // size with `repeat`.
-function metreUV<M extends THREE.Mesh>(m: M): M {
+function metreUV<M extends THREE.Mesh>(m: M, topAlongX = false): M {
   m.updateMatrix();
   const g = m.geometry;
   const p = g.attributes.position as THREE.BufferAttribute, n = g.attributes.normal as THREE.BufferAttribute;
@@ -174,7 +175,7 @@ function metreUV<M extends THREE.Mesh>(m: M): M {
     v.fromBufferAttribute(p, i).applyMatrix4(m.matrix);
     nn.fromBufferAttribute(n, i).applyMatrix3(nm);
     const ax = Math.abs(nn.x), ay = Math.abs(nn.y), az = Math.abs(nn.z);
-    if (ay > ax && ay > az) uv.setXY(i, v.x, v.z);
+    if (ay > ax && ay > az) { if (topAlongX) uv.setXY(i, v.z, v.x); else uv.setXY(i, v.x, v.z); }
     else if (ax > az) uv.setXY(i, nn.x > 0 ? -v.z : v.z, v.y);
     else uv.setXY(i, nn.z > 0 ? v.x : -v.x, v.y);
   }
@@ -240,8 +241,30 @@ function blot(g: CanvasRenderingContext2D, x: number, y: number, r: number, rgba
   gr.addColorStop(0, rgba); gr.addColorStop(1, rgba.replace(/[\d.]+\)$/, '0)'));
   g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
 }
+function crack(g: CanvasRenderingContext2D, r: () => number, x: number, y: number, len: number, rgba: string, wdt = 1) {
+  g.strokeStyle = rgba; g.lineWidth = wdt; g.beginPath(); g.moveTo(x, y);
+  let a = r() * Math.PI * 2;
+  for (let i = 0; i < len; i++) { a += (r() - 0.5) * 1.1; x += Math.cos(a) * 4; y += Math.sin(a) * 4; g.lineTo(x, y); }
+  g.stroke();
+}
 
 // ---------- canvas surfaces ----------
+// Lime-washed plaster for the inside of the hut: soft, uneven, a few hairline cracks.
+function plasterTex() {
+  return canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#dcd5c4'; g.fillRect(0, 0, w, h);
+    const r = rng(37);
+    for (let i = 0; i < 60; i++) blot(g, r() * w, r() * h, 30 + r() * 90, r() < 0.5 ? 'rgba(255,252,240,.18)' : 'rgba(150,132,104,.12)');
+    for (let i = 0; i < 90; i++) {
+      const x = r() * w, y = r() * h, l = 20 + r() * 60;
+      g.strokeStyle = `rgba(${r() < 0.5 ? '255,250,238' : '120,104,80'},${0.05 + r() * 0.06})`; g.lineWidth = 3 + r() * 6;
+      g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + (r() - 0.5) * 30, y + l / 2, x + (r() - 0.5) * 20, y + l); g.stroke();
+    }
+    for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(90,76,56,${r() * 0.12})`; g.fillRect(r() * w, r() * h, 1 + r(), 1 + r()); }
+    for (let i = 0; i < 6; i++) crack(g, r, r() * w, r() * h, 6 + r() * 14, 'rgba(90,74,56,.35)');
+  }, [1 / 2.4, 1 / 2.4]);
+}
+
 // Crushed gravel over sand: the desert picture under a few thousand stones (drawn wrapped
 // so the tile has no seams).
 function gravelTex() {
@@ -268,9 +291,9 @@ function woodTex(seed: number, base: string, tile: [number, number]) {
   return canvasTex(256, 512, (g, w, h) => {
     g.fillStyle = base; g.fillRect(0, 0, w, h);
     const r = rng(seed);
-    for (let i = 0; i < 190; i++) {
+    for (let i = 0; i < 120; i++) {
       const x = r() * w, y = r() * h, len = 80 + r() * 380, light = r() < 0.45;
-      g.strokeStyle = light ? `rgba(255,246,228,${0.04 + r() * 0.1})` : `rgba(20,14,8,${0.06 + r() * 0.16})`;
+      g.strokeStyle = light ? `rgba(255,246,228,${0.03 + r() * 0.06})` : `rgba(20,14,8,${0.05 + r() * 0.1})`;
       g.lineWidth = 0.6 + r() * 2;
       for (const oy of [0, -h]) {
         g.beginPath(); g.moveTo(x, y + oy);
@@ -321,7 +344,7 @@ function cutFaceTex() {
       const a = k * Math.PI / 2 + Math.PI / 4, x = c + Math.cos(a) * 24, y = c + Math.sin(a) * 24;
       disc(x, y, 19, ins[k]);
       const cu = g.createRadialGradient(x - 3, y - 3, 1, x, y, 11);
-      cu.addColorStop(0, '#f7c08a'); cu.addColorStop(0.6, '#c9793f'); cu.addColorStop(1, '#8a4a22');
+      cu.addColorStop(0, '#ffd8a8'); cu.addColorStop(0.55, '#e0904e'); cu.addColorStop(1, '#9a5226');
       disc(x, y, 11, cu);
     }
     disc(c, c, 8, '#2a2622');
@@ -550,21 +573,30 @@ function groundMapTex(shades: Shade[]) {
     const r = rng(101);
     // soft light and dark drifts break up the repeat of the sand picture
     for (let i = 0; i < 320; i++) blot(g, r() * w, r() * h, 12 + r() * 64, r() < 0.5 ? `rgba(156,154,150,${0.2 + r() * 0.3})` : `rgba(104,102,100,${0.2 + r() * 0.3})`);
+    // lines go through a centripetal spline, so corners become curves
+    const curve = (pts: [number, number][]) => {
+      if (pts.length < 3) return pts;
+      const c = new THREE.CatmullRomCurve3(pts.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'centripetal');
+      return c.getSpacedPoints(Math.ceil(c.getLength() / 0.5)).map((v) => [v.x, v.z] as [number, number]);
+    };
     const line = (pts: [number, number][], wd: number, style: string) => {
       g.strokeStyle = style; g.lineWidth = wd * ppm; g.lineCap = 'round'; g.lineJoin = 'round';
-      g.beginPath(); pts.forEach(([x, z], i) => { const [px, py] = P(x, z); if (i) g.lineTo(px, py); else g.moveTo(px, py); }); g.stroke();
+      g.beginPath(); curve(pts).forEach(([x, z], i) => { const [px, py] = P(x, z); if (i) g.lineTo(px, py); else g.moveTo(px, py); }); g.stroke();
     };
     // footpaths: trodden lighter, a soft edge first
     for (const p of PATHS) { line(p, 1.9, 'rgba(160,156,150,.28)'); line(p, 0.95, 'rgba(172,168,160,.5)'); }
     // tyre ruts: two tracks 1.65 m apart, offset sideways from the centre line
-    for (const p of RUTS) for (const s of [-0.82, 0.82]) {
-      const off: [number, number][] = p.map(([x, z], i) => {
-        const a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)];
-        const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1;
-        return [x - dz / l * s, z + dx / l * s];
-      });
-      line(off, 0.62, 'rgba(98,96,94,.35)');
-      line(off, 0.3, 'rgba(70,68,66,.6)');
+    for (const raw of RUTS) {
+      const p = curve(raw);
+      for (const s of [-0.82, 0.82]) {
+        const off: [number, number][] = p.map(([x, z], i) => {
+          const a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)];
+          const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1;
+          return [x - dz / l * s, z + dx / l * s];
+        });
+        line(off, 0.6, 'rgba(104,102,100,.22)');
+        line(off, 0.28, 'rgba(82,80,78,.38)');
+      }
     }
     // trodden ground at the transit, the lamp and the door
     for (const [x, z, rr] of [[T.x - 0.4, T.z + 1.2, 2.6], [-9.95, 5.9, 1.4], [GATE.w - 0.7, FENCE.z1, 1.6]]) {
@@ -574,6 +606,13 @@ function groundMapTex(shades: Shade[]) {
     { const [px, py] = P(POST_A.x, POST_A.z); blot(g, px, py, 0.9 * ppm, 'rgba(84,80,74,.55)'); }
     // soft shade under things
     for (const s of shades) { const [px, py] = P(s.x, s.z); blot(g, px, py, Math.max(1.5, s.r * ppm), `rgba(40,38,36,${s.k})`); }
+    // fade to neutral towards the edge
+    const band = 48;
+    for (const [x0, y0, x1, y1, rx, ry, rw, rh] of [[0, 0, 0, band, 0, 0, w, band], [0, h, 0, h - band, 0, h - band, w, band], [0, 0, band, 0, 0, 0, band, h], [w, 0, w - band, 0, w - band, 0, band, h]]) {
+      const gr = g.createLinearGradient(x0, y0, x1, y1);
+      gr.addColorStop(0, 'rgb(128,128,128)'); gr.addColorStop(1, 'rgba(128,128,128,0)');
+      g.fillStyle = gr; g.fillRect(rx, ry, rw, rh);
+    }
   });
   t.flipY = false;
   t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
@@ -593,19 +632,22 @@ function rockGeo(seed: number, kind: 'block' | 'slab') {
 function creosoteGeo() {
   const parts: THREE.BufferGeometry[] = [];
   const r = rng(31);
-  for (let i = 0; i < 4; i++) {
-    const g = jitter(new THREE.IcosahedronGeometry(0.42, 0), 40 + i, 0.75, 1.2);
-    const a = i / 4 * Math.PI * 2 + r(), d = i === 0 ? 0 : 0.3;
-    g.scale(0.8 + r() * 0.3, 1.2 + r() * 0.5, 0.8 + r() * 0.3);
-    g.translate(Math.cos(a) * d, 0.5 + r() * 0.35, Math.sin(a) * d);
+  const clumps: THREE.Vector3[] = [];
+  for (let i = 0; i < 7; i++) {
+    const g = jitter(new THREE.IcosahedronGeometry(0.22, 0), 40 + i, 0.7, 1.3);
+    const a = i / 7 * Math.PI * 2 + r() * 0.6, d = i === 0 ? 0.05 : 0.18 + r() * 0.26, y = 0.42 + r() * 0.62;
+    g.scale(0.9 + r() * 0.5, 0.75 + r() * 0.45, 0.9 + r() * 0.5);
+    g.translate(Math.cos(a) * d, y, Math.sin(a) * d);
+    clumps.push(new THREE.Vector3(Math.cos(a) * d, y, Math.sin(a) * d));
     parts.push(g);
   }
-  for (let i = 0; i < 3; i++) {
-    const a = i / 3 * Math.PI * 2 + 0.4;
-    const s = new THREE.CylinderGeometry(0.012, 0.022, 0.5, 3).toNonIndexed();
-    s.rotateZ(Math.cos(a) * 0.35); s.rotateX(Math.sin(a) * 0.35);
-    s.translate(Math.cos(a) * 0.1, 0.2, Math.sin(a) * 0.1);
-    parts.push(s);
+  // thin stems fanning out from the root to the clumps
+  for (const c of clumps.slice(0, 5)) {
+    const len = c.length();
+    const st = new THREE.CylinderGeometry(0.008, 0.016, len, 3).toNonIndexed();
+    st.translate(0, len / 2, 0);
+    st.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), c.clone().normalize()));
+    parts.push(st);
   }
   return faceted(mergeGeometries(parts.map((p) => { p.deleteAttribute('uv'); return p; }), false)!);
 }
@@ -682,7 +724,6 @@ export class Station01 {
     this.plan();
     this.group.add(this.st, this.interior);
     this.interior.add(this.inSt);
-    this.ground();
     this.horizon();
     this.fence();
     this.power();
@@ -693,6 +734,7 @@ export class Station01 {
     this.markers();
     this.lamp();
     this.cable();
+    this.ground();
     this.scatter();
     this.fx();
     mergeStatic(this.st);
@@ -707,7 +749,9 @@ export class Station01 {
     this.hutBounds = { minX: HUT.x0 + ox, maxX: HUT.x1 + ox, minZ: HUT.z0 + oz, maxZ: HUT.z1 + oz };
     this.truckCollider = { minX: TRUCK.x - 1.05 + ox, maxX: TRUCK.x + 1.05 + ox, minZ: TRUCK.z - 2.8 + oz, maxZ: TRUCK.z + 2.8 + oz };
     const mid = FOOT_A.clone().lerp(POST_A, 0.5);
-    const mSpot = { x: 7.45, z: -7.33 }, cSpot = { x: CUT.x - 0.55, z: CUT.z + 0.65 };
+    // FRAME 04 is taken looking along the cable from the hut side, so the far end's cut
+    // face (copper) is seen nearly head-on across the gap
+    const mSpot = { x: 7.45, z: -7.33 }, cSpot = { x: CUT.x - 0.18, z: CUT.z + 1.3 };
     this.anchors = {
       arrive: { x: ARRIVE.x + ox, z: ARRIVE.z + oz, yaw: yawTo(ARRIVE.x, ARRIVE.z, -4, 0) },
       truck: { x: TRUCK.x + ox, z: TRUCK.z + oz, heading: TRUCK.heading },
@@ -742,21 +786,21 @@ export class Station01 {
     const woodIn = this.tex(woodTex(21, '#7a5638', [1 / 0.6, 1 / 1.2]));
     return {
       atlas: this.lit({ map: atlas, roughness: 0.75 }, 0.03),
-      stucco: this.lit({ map: artTexture('stucco', [1 / 2, 1 / 2]), roughness: 0.95 }, 0.035),
-      roof: this.lit({ map: artTexture('asphalt', [1 / 2, 1 / 2]), color: 0x8a8580, roughness: 0.95 }, 0.035),
+      stucco: this.lit({ map: artTexture('stucco', [1 / 2, 1 / 2]), roughness: 0.95 }, 0.03),
+      roof: this.lit({ map: artTexture('asphalt', [1 / 2, 1 / 2]), color: 0x8a8580, roughness: 0.95 }, 0.03),
       concrete: this.lit({ map: artTexture('oldConcrete', [1, 1]), roughness: 0.95 }, 0.03),
       wood: this.lit({ map: artTexture('weatheredWood', [1 / 0.5, 1 / 1.0]), roughness: 0.95 }, 0.03),
-      woodDark: this.lit({ map: artTexture('weatheredWood', [1 / 0.5, 1 / 1.5]), color: 0x7d6a58, roughness: 0.9 }, 0.02),
-      paint: this.lit({ color: 0x31463a, roughness: 0.7 }, 0.035),
+      woodDark: this.lit({ map: artTexture('weatheredWood', [1 / 0.5, 1 / 1.5]), color: 0x7d6a58, roughness: 0.9 }, 0.03),
+      paint: this.lit({ color: 0x31463a, roughness: 0.7 }, 0.03),
       steel: this.lit({ map: artTexture('cabinet', [1 / 0.8, 1 / 0.8]), color: 0xb4b9b2, roughness: 0.5, metalness: 0.45 }, 0.03),
       darkMetal: this.lit({ color: 0x2a2826, roughness: 0.55, metalness: 0.5 }, 0.03),
-      brass: this.lit({ color: 0x9a7a40, roughness: 0.35, metalness: 0.75 }, 0.03),
+      brass: this.lit({ color: 0x6f5a36, roughness: 0.45, metalness: 0.6 }, 0.03),
       corrugated: this.lit({ map: this.tex(corrugatedTex()), roughness: 0.6, metalness: 0.35 }, 0.03),
       rust: this.lit({ color: 0x7a3a22, roughness: 0.8, metalness: 0.3 }, 0.03),
       rubber: this.lit({ color: 0x151413, roughness: 0.5 }, 0.03),
       cutFace: this.lit({ map: this.tex(cutFaceTex()), roughness: 0.45, metalness: 0.2 }, 0.03),
-      fadedPaint: this.lit({ color: 0xc9c1ad, roughness: 0.9 }, 0.03),
-      insulator: this.lit({ color: 0x5f7d6e, roughness: 0.3, metalness: 0.1 }, 0.02),
+      fadedPaint: this.lit({ color: 0xded7c4, roughness: 0.85 }, 0.03),
+      insulator: this.lit({ color: 0x5f7d6e, roughness: 0.3, metalness: 0.1 }, 0.03),
       galv: this.lit({ color: 0x9a9c98, roughness: 0.45, metalness: 0.6 }, 0.03),
       paneOut: this.basic({ color: 0xffb56b, transparent: true, opacity: 0.5, depthWrite: false }),
       paneIn: this.basic({ color: 0x0a0d14, transparent: true, opacity: 0.35, depthWrite: false }),
@@ -764,8 +808,9 @@ export class Station01 {
       fieldBulb: this.basic({ color: 0xfff2d8 }),
       lampBulb: this.basic({ color: 0xffd9a0 }),
       lens: this.basic({ color: 0xffd28a }),
+      shadeOut: this.lit({ color: 0x33403a, roughness: 0.5, metalness: 0.45, side: THREE.DoubleSide }, 0.03),
       // inside
-      plaster: this.litIn({ map: artTexture('concrete', [1 / 2.2, 1 / 2.2]), color: 0xe8e1d0, roughness: 0.95 }),
+      plaster: this.litIn({ map: this.tex(plasterTex()), roughness: 0.95 }),
       dado: this.litIn({ color: 0x3c4a3c, roughness: 0.8 }),
       boards: this.litIn({ map: artTexture('floorboards', [1 / 1.2, 1 / 1.2]), roughness: 0.85 }),
       ceiling: this.litIn({ map: woodIn, color: 0x9a8a78, roughness: 0.9 }),
@@ -781,6 +826,7 @@ export class Station01 {
       doorIn: this.litIn({ color: 0x31463a, roughness: 0.7 }),
       dial: this.basic({ map: this.tex(dialTex()), toneMapped: false }),
       hutBulb: this.basic({ color: 0xfff0d0 }),
+      shadeIn: this.litIn({ color: 0x2f4a3a, roughness: 0.45, metalness: 0.35, side: THREE.DoubleSide }),
     };
   }
 
@@ -828,7 +874,7 @@ export class Station01 {
     };
     // the few big things first, then the small ones fill in
     scatter('block', 10, 0.7, 1.6, 0.9, 'out', 60);
-    scatter('creo', 26, 0.7, 1.25, 0.65, 'in');
+    scatter('creo', 18, 0.7, 1.25, 0.65, 'in');
     scatter('yucca', 12, 0.7, 1.15, 0.5, 'in');
     scatter('block', 26, 0.18, 0.62, 0.9, 'in');
     scatter('slab', 30, 0.15, 0.5, 1.1, 'in');
@@ -861,6 +907,8 @@ export class Station01 {
     for (let x = -13.4; x <= -8.6; x += 0.6) for (const z of [0.85, 5.15]) this.shades.push({ x, z, r: 0.7, k: 0.35 });
     for (let z = 1.0; z <= 5.0; z += 0.6) for (const x of [-13.65, -8.35]) this.shades.push({ x, z, r: 0.7, k: 0.35 });
     for (let x = SHED.x0; x <= SHED.x1; x += 0.5) for (const z of [SHED.z0 - 0.1, SHED.z1 + 0.1]) this.shades.push({ x, z, r: 0.6, k: 0.4 });
+    for (const x of STAKES) this.shades.push({ x, z: T.z, r: 0.15, k: 0.5 });
+    this.shades.push({ x: CUT.x, z: CUT.z, r: 0.35, k: 0.3 });
     this.shades.push({ x: T.x, z: T.z, r: 1.0, k: 0.6 }, { x: FOOT_A.x, z: FOOT_A.z, r: 0.55, k: 0.5 }, { x: POST_B.x, z: POST_B.z, r: 0.5, k: 0.5 },
       { x: POST_A.x, z: POST_A.z, r: 0.4, k: 0.5 }, { x: LAMP.x, z: LAMP.z, r: 0.6, k: 0.35 }, { x: POLE.x, z: POLE.z, r: 0.45, k: 0.5 });
   }
@@ -912,7 +960,7 @@ export class Station01 {
     this.group.add(ground);
 
     // gravel: the pad and the road outside the gate, the track and the yard inside
-    const gravel = groundMap(this.lit({ map: this.tex(gravelTex()), color: 0xc4bcae, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }, 0.04), map);
+    const gravel = groundMap(this.lit({ map: this.tex(gravelTex()), color: 0xc4bcae, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }, 0.04), map);
     const r = rng(303);
     const shape = (pts: [number, number][], jit: number, keepEdge?: (x: number, z: number) => boolean) => {
       const s = new THREE.Shape(pts.map(([x, z]) => {
@@ -935,7 +983,7 @@ export class Station01 {
       return out;
     };
     const atFence = (_x: number, z: number) => Math.abs(z - FENCE.z1) < 0.06;
-    const parts = [
+    const parts: THREE.BufferGeometry[] = [
       shape(dense([[-21.7, 26.0], [-16.8, 26.0], [-15.6, 19.5], [-13.0, 13.6], [-6.4, 10.8], [-6.0, 8.6], [-7.6, 5.2], [-13.8, 5.2], [-16.2, 8.6], [-18.6, 13.6], [-20.7, 19.5]]), 0.7, atFence),
       shape(dense([[-27.2, 26.0], [-12.2, 26.0], [-12.6, 33.5], [-15.2, 39.2], [-23.6, 39.8], [-27.6, 34.8]]), 0.8, atFence),
     ];
@@ -956,13 +1004,13 @@ export class Station01 {
         const px = x + nx * hw * s, pz = z + nz * hw * s;
         pos.push(px, this.y(px, pz) + 0.03, pz); uvs.push(px, pz);
       }
-      if (i) { const k = i * 2; idx.push(k - 2, k, k - 1, k - 1, k, k + 1); }
+      if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
     });
     const road = new THREE.BufferGeometry();
     road.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     road.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     road.setIndex(idx);
-    parts.push(road.toNonIndexed() as THREE.ShapeGeometry);
+    parts.push(road.toNonIndexed());
     const merged = mergeGeometries(parts.map((g) => { const n = g.index ? g.toNonIndexed() : g; n.computeVertexNormals(); return n; }), false)!;
     for (let i = 0; i < (merged.attributes.normal as THREE.BufferAttribute).count; i++) (merged.attributes.normal as THREE.BufferAttribute).setXYZ(i, 0, 1, 0);
     const gm = new THREE.Mesh(merged, gravel);
@@ -970,16 +1018,20 @@ export class Station01 {
     this.group.add(gm);
   }
 
-  // Dark mesas and far ridges on the horizon, like the concept art. Unlit, unfogged.
+  // Dark mesas and far ridges on the horizon, like the concept art. Unlit and unfogged:
+  // a little lighter on the cliffs that face the moon, darker on the slopes and the tops.
   private horizon() {
     const pos: number[] = [], col: number[] = [];
+    const R0 = rng(5);
     const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, ca: number[], cb: number[], cc: number[]) => {
       pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z); col.push(...ca, ...cb, ...cc);
     };
-    const moon = new THREE.Vector3(-0.6, 0, -0.8).normalize();
-    const quad = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3, lo: number[], hi: number[]) => {
+    const moon = new THREE.Vector3(-0.6, 0, 0.8).normalize();
+    const quad = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3, lo: number[], hi: number[], from: THREE.Vector3) => {
       const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(d, a)).normalize();
-      const k = 0.75 + 0.5 * Math.max(0, n.dot(moon));
+      const mid = a.clone().add(b).add(c).add(d).multiplyScalar(0.25);
+      if (n.dot(mid.sub(from)) < 0) n.negate();
+      const k = (0.7 + 0.75 * Math.max(0, n.dot(moon))) * (0.85 + R0() * 0.3);
       const L = lo.map((v) => v * k), H = hi.map((v) => v * k);
       tri(a, b, c, L, L, H); tri(a, c, d, L, H, H);
     };
@@ -987,37 +1039,43 @@ export class Station01 {
       const b = bearing * Math.PI / 180, r = rng(seed);
       const cx = Math.sin(b) * dist, cz = -Math.cos(b) * dist;
       const tx = Math.cos(b), tz = Math.sin(b), rx = Math.sin(b), rz = -Math.cos(b);
-      const N = 18;
+      const centre = new THREE.Vector3(cx, height * 0.5, cz);
+      const N = 34;
       const outline: [number, number][] = [];
       for (let i = 0; i < N; i++) {
         const a = i / N * Math.PI * 2;
-        let k = 0.85 + r() * 0.3;
-        if (r() < 0.18) k *= 0.72;   // a side canyon
+        let k = 0.88 + r() * 0.22;
+        if (r() < 0.14) k *= 0.74;   // a side canyon
         outline.push([Math.cos(a) * len / 2 * k, Math.sin(a) * depth / 2 * k]);
       }
-      const ring = (scale: number, yAt: (x: number, z: number) => number, shift = 0) => outline.map(([u, v]) => {
+      const ring = (scale: number, yAt: (x: number, z: number, i: number) => number, shift = 0) => outline.map(([u, v], i) => {
         const x = cx + (u * scale + shift) * tx + v * scale * rx, z = cz + (u * scale + shift) * tz + v * scale * rz;
-        return new THREE.Vector3(x, yAt(x, z), z);
+        return new THREE.Vector3(x, yAt(x, z, i), z);
       });
-      const foot = ring(1.3, (x, z) => Terrain.height(x, z) - 6);
-      const shoulder = ring(1.07, (x, z) => Math.max(Terrain.height(x, z) + 4, height * 0.38));
-      const rim = ring(1.0, () => height);
-      const talus = [0.016, 0.015, 0.02], cliffLo = [0.024, 0.021, 0.025], cliffHi = [0.052, 0.042, 0.04], cap = [0.013, 0.013, 0.018];
+      const rim0 = outline.map(() => height * (0.97 + r() * 0.04));
+      const foot = ring(1.32, (x, z) => Terrain.height(x, z) - 6);
+      const shoulder = ring(1.09, (x, z) => Math.max(Terrain.height(x, z) + 4, height * 0.36));
+      const ledge = ring(1.03, () => height * 0.66);
+      const ledgeIn = ring(1.0, () => height * 0.67);
+      const rim = ring(0.97, (_x, _z, i) => rim0[i]);
+      const talus = [0.009, 0.0085, 0.011], cliffLo = [0.011, 0.01, 0.013], cliffHi = [0.026, 0.021, 0.022], cap = [0.0075, 0.0075, 0.0105];
       for (let i = 0; i < N; i++) {
         const j = (i + 1) % N;
-        quad(foot[i], foot[j], shoulder[j], shoulder[i], talus, talus);
-        quad(shoulder[i], shoulder[j], rim[j], rim[i], cliffLo, cliffHi);
+        quad(foot[i], foot[j], shoulder[j], shoulder[i], talus, talus, centre);
+        quad(shoulder[i], shoulder[j], ledge[j], ledge[i], cliffLo, cliffHi.map((v) => v * 0.75), centre);
+        quad(ledge[i], ledge[j], ledgeIn[j], ledgeIn[i], cap, cap, centre);
+        quad(ledgeIn[i], ledgeIn[j], rim[j], rim[i], cliffLo, cliffHi, centre);
       }
       let top = rim, topY = height;
       if (tiers > 1) {
         const shift = (r() - 0.5) * len * 0.2, h2 = height * (1.22 + r() * 0.12);
-        const base2 = ring(0.62, () => height, shift), rim2 = ring(0.56, () => h2, shift);
+        const base2 = ring(0.6, () => height, shift), rim2 = ring(0.54, () => h2, shift);
         const c0 = new THREE.Vector3(cx, height, cz);
         for (let i = 0; i < N; i++) { const j = (i + 1) % N; tri(c0, rim[j], rim[i], cap, cap, cap); }
-        for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(base2[i], base2[j], rim2[j], rim2[i], cliffLo, cliffHi); }
+        for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(base2[i], base2[j], rim2[j], rim2[i], cliffLo, cliffHi, centre); }
         top = rim2; topY = h2;
       }
-      const c1 = top.reduce((s, v) => s.add(v), new THREE.Vector3()).multiplyScalar(1 / N).setY(topY);
+      const c1 = top.reduce((sum, v) => sum.add(v), new THREE.Vector3()).multiplyScalar(1 / N).setY(topY);
       for (let i = 0; i < N; i++) { const j = (i + 1) % N; tri(c1, top[j], top[i], cap, cap, cap); }
     };
     mesa(28, 1100, 950, 320, 118, 3, 2);
@@ -1035,8 +1093,8 @@ export class Station01 {
       ridge.push(new THREE.Vector3(x, h, z));
       feet.push(new THREE.Vector3(x * 0.99, Terrain.height(x, z) - 8, z * 0.99));
     }
-    const rc = [0.011, 0.011, 0.016], rt = [0.02, 0.018, 0.022];
-    for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(feet[j], feet[i], ridge[i], ridge[j], rc, rt); }
+    const rc = [0.006, 0.006, 0.009], rt = [0.011, 0.01, 0.013];
+    for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(feet[j], feet[i], ridge[i], ridge[j], rc, rt, ridge[i].clone().multiplyScalar(2)); }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
@@ -1066,8 +1124,8 @@ export class Station01 {
         const d = p.distanceTo(f.p), win = Math.max(0, 1 - d / (f.w * 1.6 + 8));
         k += f.w * win * win / (1 + d * d * 0.05);
       }
-      k = Math.min(1.6, k * 0.12);
-      this.wireCol.push(0.07 + k * 0.6, 0.068 + k * 0.42, 0.066 + k * 0.26);
+      k = Math.min(1, k * 0.05);
+      this.wireCol.push(0.011 + k * 0.2, 0.011 + k * 0.13, 0.012 + k * 0.07);
     }
   }
   private bakeLights = [
@@ -1141,7 +1199,7 @@ export class Station01 {
   // ---------- power line, transformer, yard light ----------
   private power() {
     const st = this.st, m = this.m;
-    const poles: [number, number][] = [[POLE.x, POLE.z], [-25.5, 42], [-33, 72], [-44, 104], [-57, 140], [-71, 178]];
+    const poles: [number, number][] = [[POLE.x, POLE.z], [-3.6, 31.5], [2.5, 58], [9, 85], [16, 112], [23, 140]];
     const tops: THREE.Vector3[][] = [];
     poles.forEach(([x, z], i) => {
       const y0 = this.y(x, z), h = i === 0 ? 8.4 : 9.0;
@@ -1149,9 +1207,9 @@ export class Station01 {
       const next = poles[Math.min(poles.length - 1, i + 1)], prev = poles[Math.max(0, i - 1)];
       const ang = Math.atan2(next[0] - prev[0], next[1] - prev[1]);
       const arm = box(st, 1.7, 0.1, 0.1, m.woodDark, x, y0 + h - 0.45, z);
-      arm.rotation.y = ang + Math.PI / 2;
+      arm.rotation.y = ang;
       metreUV(arm);
-      const ax = Math.cos(ang + Math.PI / 2) * 0.7, az = -Math.sin(ang + Math.PI / 2) * 0.7;
+      const ax = Math.cos(ang) * 0.7, az = -Math.sin(ang) * 0.7;
       const ends = [new THREE.Vector3(x + ax, y0 + h - 0.28, z + az), new THREE.Vector3(x - ax, y0 + h - 0.28, z - az), new THREE.Vector3(x, y0 + h + 0.12, z)];
       for (const e of ends) cyl(st, 0.045, 0.06, 0.16, m.insulator, e.x, e.y - 0.06, e.z, 6);
       tops.push(ends);
@@ -1162,9 +1220,9 @@ export class Station01 {
       }
     });
     for (let i = 0; i < poles.length - 1; i++) for (let k = 0; k < 3; k++) this.wire(tops[i][k], tops[i + 1][k], 0.55, 8);
-    // guy wire on the yard pole
-    this.wire(new THREE.Vector3(POLE.x, G + 7.6, POLE.z), new THREE.Vector3(POLE.x + 2.6, G + 0.05, POLE.z + 2.0), 0, 1);
-    box(st, 0.3, 0.12, 0.3, m.darkMetal, POLE.x + 2.6, G + 0.04, POLE.z + 2.0);
+    // the yard pole ends the line: a guy wire holds it against the pull, to the north
+    this.wire(new THREE.Vector3(POLE.x, G + 7.6, POLE.z), new THREE.Vector3(POLE.x - 0.6, G + 0.05, POLE.z - 3.0), 0, 1);
+    box(st, 0.3, 0.12, 0.3, m.darkMetal, POLE.x - 0.6, G + 0.04, POLE.z - 3.0);
     // transformer can, bushings and the drop to the hut
     const tf = new THREE.Vector3(POLE.x + 0.3, G + 6.4, POLE.z);
     cyl(st, 0.24, 0.24, 0.78, m.galv, tf.x, tf.y, tf.z, 12);
@@ -1244,9 +1302,15 @@ export class Station01 {
     this.occluder(x1 - x0 + 2 * t, h, z1 - z0 + 2 * t, (x0 + x1) / 2, h / 2, (z0 + z1) / 2);
     // roof slab with roll roofing, a stovepipe, the service mast and the meter
     metreUV(box(st, x1 - x0 + 0.9, 0.16, z1 - z0 + 0.9, m.roof, (x0 + x1) / 2, h + 0.08, (z0 + z1) / 2));
-    metreUV(box(st, x1 - x0 + 0.94, 0.05, z1 - z0 + 0.94, m.woodDark, (x0 + x1) / 2, h + 0.005, (z0 + z1) / 2));
-    cyl(st, 0.075, 0.075, 0.9, m.darkMetal, -12.4, h + 0.55, 2.0, 10);
-    cyl(st, 0.14, 0.02, 0.1, m.darkMetal, -12.4, h + 1.05, 2.0, 10);
+    {
+      const fw = x1 - x0 + 0.94, fd = z1 - z0 + 0.94, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+      metreUV(box(st, fw, 0.07, 0.03, m.woodDark, cx, h + 0.03, cz - fd / 2));
+      metreUV(box(st, fw, 0.07, 0.03, m.woodDark, cx, h + 0.03, cz + fd / 2));
+      metreUV(box(st, 0.03, 0.07, fd, m.woodDark, cx - fw / 2, h + 0.03, cz));
+      metreUV(box(st, 0.03, 0.07, fd, m.woodDark, cx + fw / 2, h + 0.03, cz));
+    }
+    cyl(st, 0.075, 0.075, 0.75, m.darkMetal, -12.4, h + 0.53, 2.0, 10);
+    cyl(st, 0.14, 0.02, 0.1, m.darkMetal, -12.4, h + 0.95, 2.0, 10);
     cyl(st, 0.03, 0.03, 0.95, m.galv, -9.05, h + 0.55, 4.45, 6);
     const cap = cyl(st, 0.05, 0.03, 0.1, m.darkMetal, -9.05, h + 1.02, 4.45, 6); cap.rotation.z = 0.5;
     rod(st, new THREE.Vector3(x1 + t + 0.03, 1.72, 4.25), new THREE.Vector3(x1 + t + 0.03, h - 0.05, 4.25), 0.016, m.galv, 5);
@@ -1282,20 +1346,20 @@ export class Station01 {
     this.gx.winE = this.glow.add(x1 + t + 0.08, 1.4, (WIN_E.z0 + WIN_E.z1) / 2, 1.1, 0x6a4018);
 
     // the wall lamp over the door: a goose-neck arm and an enamel shade
-    rod(st, new THREE.Vector3(WALL_LAMP.x, 2.28, z1 + t), new THREE.Vector3(WALL_LAMP.x, 2.56, z1 + t + 0.18), 0.012, m.darkMetal, 5);
-    rod(st, new THREE.Vector3(WALL_LAMP.x, 2.56, z1 + t + 0.18), new THREE.Vector3(WALL_LAMP.x, 2.52, WALL_LAMP.z), 0.012, m.darkMetal, 5);
-    box(st, 0.1, 0.12, 0.03, m.darkMetal, WALL_LAMP.x, 2.28, z1 + t + 0.015);
-    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.11, 14, 1, true), this.track(floodlit(new THREE.MeshStandardMaterial({ color: 0x2f3a33, roughness: 0.5, metalness: 0.4, side: THREE.DoubleSide }), 0.03, fieldFlood)));
-    shade.position.set(WALL_LAMP.x, 2.48, WALL_LAMP.z); st.add(shade);
+    rod(st, new THREE.Vector3(WALL_LAMP.x, 2.48, z1 + t), new THREE.Vector3(WALL_LAMP.x, 2.57, z1 + t + 0.17), 0.012, m.darkMetal, 5);
+    rod(st, new THREE.Vector3(WALL_LAMP.x, 2.57, z1 + t + 0.17), new THREE.Vector3(WALL_LAMP.x, 2.53, WALL_LAMP.z), 0.012, m.darkMetal, 5);
+    box(st, 0.1, 0.12, 0.03, m.darkMetal, WALL_LAMP.x, 2.48, z1 + t + 0.015);
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.11, 14, 1, true), m.shadeOut);
+    shade.position.set(WALL_LAMP.x, 2.475, WALL_LAMP.z); st.add(shade);
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), m.wallBulb);
     bulb.position.set(WALL_LAMP.x, 2.42, WALL_LAMP.z); st.add(bulb);
     this.slot.wall = addFlood(WALL_LAMP.x + this.o.x, 2.2 + this.o.y, WALL_LAMP.z + 0.15 + this.o.z, BASE.wall, 0xffb966, fieldFlood);
     this.gx.wall = this.glow.add(WALL_LAMP.x, 2.4, WALL_LAMP.z, 0.75, 0xffc27a);
     this.slot.spill = addFlood(-9.95 + this.o.x, 0.9 + this.o.y, 5.25 + this.o.z, BASE.spill, 0xffb060, fieldFlood);
     // STATION 01 over the door, the junction box beside it
-    const sign = plane(st, 0.6, 0.1875, m.atlas, WALL_LAMP.x, 2.2, z1 + t + 0.012);
+    const sign = plane(st, 0.6, 0.1875, m.atlas, WALL_LAMP.x, 2.262, z1 + t + 0.012);
     regionUV(sign.geometry, 'station');
-    box(st, 0.62, 0.2, 0.01, m.darkMetal, WALL_LAMP.x, 2.2, z1 + t + 0.005);
+    box(st, 0.62, 0.2, 0.01, m.darkMetal, WALL_LAMP.x, 2.262, z1 + t + 0.005);
     box(st, 0.26, 0.32, 0.12, m.steel, -9.1, 1.25, z1 + t + 0.06);
     const jl = plane(st, 0.2, 0.125, m.atlas, -9.1, 1.27, z1 + t + 0.121);
     regionUV(jl.geometry, 'jbox');
@@ -1330,9 +1394,9 @@ export class Station01 {
 
     // workbench along the north wall
     const bx0 = x0 + 0.05, bx1 = x1 - 0.95, bz = z0 + 0.36, top = 0.8;
-    metreUV(box(s, bx1 - bx0, 0.05, 0.72, m.woodIn, (bx0 + bx1) / 2, top - 0.025, bz));
+    metreUV(box(s, bx1 - bx0, 0.05, 0.72, m.woodIn, (bx0 + bx1) / 2, top - 0.025, bz), true);
     for (const x of [bx0 + 0.05, bx1 - 0.05]) for (const z of [z0 + 0.06, z0 + 0.66]) box(s, 0.06, top - 0.05, 0.06, m.woodIn, x, (top - 0.05) / 2, z);
-    metreUV(box(s, bx1 - bx0 - 0.1, 0.03, 0.6, m.woodIn, (bx0 + bx1) / 2, 0.22, bz));
+    metreUV(box(s, bx1 - bx0 - 0.1, 0.03, 0.6, m.woodIn, (bx0 + bx1) / 2, 0.22, bz), true);
     box(s, bx1 - bx0, 0.1, 0.03, m.woodIn, (bx0 + bx1) / 2, top - 0.1, z0 + 0.71);
     this.col(bx0, bx1, z0, z0 + 0.74);
     // things on the lower shelf: boxes of spare tubes, a coil of wire
@@ -1340,7 +1404,7 @@ export class Station01 {
     const coil = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 5, 12), m.blackIn);
     coil.position.set(bx1 - 0.35, 0.27, bz); coil.rotation.x = Math.PI / 2; s.add(coil);
     // shelf over the left end of the bench
-    box(s, 0.9, 0.03, 0.26, m.woodIn, x0 + 0.5, 1.48, z0 + 0.13);
+    metreUV(box(s, 0.9, 0.03, 0.26, m.woodIn, x0 + 0.5, 1.48, z0 + 0.13), true);
     for (const x of [x0 + 0.1, x0 + 0.9]) box(s, 0.03, 0.16, 0.2, m.woodIn, x, 1.4, z0 + 0.1);
     for (let i = 0; i < 5; i++) box(s, 0.12, 0.16 + (i % 3) * 0.04, 0.12, i % 2 ? m.paperIn : m.cloth, x0 + 0.16 + i * 0.16, 1.58 + (i % 3) * 0.02, z0 + 0.13);
     cyl(s, 0.06, 0.06, 0.17, m.chrome, x0 + 0.85, 1.58, z0 + 0.13, 10);
@@ -1349,11 +1413,10 @@ export class Station01 {
     const rx = new THREE.Vector3(-11.85, top, z0 + 0.3);
     box(s, 0.52, 0.28, 0.34, m.crinkle, rx.x, rx.y + 0.14, rx.z);
     box(s, 0.54, 0.3, 0.02, m.blackIn, rx.x, rx.y + 0.15, rx.z + 0.175);
-    const dial = plane(this.interior, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
+    const dial = plane(s, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
     { const uv = dial.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setY(i, 0.5 + uv.getY(i) * 0.5); }
-    const meter = plane(this.interior, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
+    const meter = plane(s, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
     { const uv = meter.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 0.25, uv.getY(i) * 0.5); }
-    noMerge(dial); noMerge(meter);
     for (let i = 0; i < 5; i++) {
       const k = cyl(s, 0.022, 0.024, 0.03, m.blackIn, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.2, 10);
       k.rotation.x = Math.PI / 2;
@@ -1392,7 +1455,7 @@ export class Station01 {
     cyl(s, 0.07, 0.08, 0.025, m.blackIn, dl.x, dl.y + 0.012, dl.z, 12);
     rod(s, v(dl.x, dl.y + 0.02, dl.z), v(dl.x - 0.05, dl.y + 0.3, dl.z + 0.05), 0.008, m.chrome, 5);
     rod(s, v(dl.x - 0.05, dl.y + 0.3, dl.z + 0.05), v(dl.x - 0.2, dl.y + 0.36, dl.z + 0.12), 0.008, m.chrome, 5);
-    const dsh = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.11, 12, 1, true), this.litIn({ color: 0x2c5a40, roughness: 0.4, metalness: 0.3, side: THREE.DoubleSide }));
+    const dsh = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.11, 12, 1, true), m.shadeIn);
     dsh.position.set(dl.x - 0.24, dl.y + 0.33, dl.z + 0.14); dsh.rotation.z = 0.5; s.add(dsh);
     const db = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), m.hutBulb);
     db.position.set(dl.x - 0.25, dl.y + 0.3, dl.z + 0.14); s.add(db);
@@ -1444,17 +1507,17 @@ export class Station01 {
     this.col(x0, x0 + 0.5, cb.z - 0.47, cb.z + 0.47);
     // a chair pulled out from the bench
     const ch = new THREE.Group();
-    ch.position.set(-12.1, 0, 2.9); ch.rotation.y = 0.6;
+    ch.position.set(-12.0, 0, 3.05); ch.rotation.y = 0.6;
     box(ch, 0.42, 0.04, 0.4, m.woodIn, 0, 0.45, 0);
     box(ch, 0.42, 0.08, 0.03, m.woodIn, 0, 0.82, -0.19);
     box(ch, 0.42, 0.06, 0.03, m.woodIn, 0, 0.62, -0.19);
     for (const [x, z] of [[-0.18, -0.17], [0.18, -0.17]]) box(ch, 0.035, 0.86, 0.035, m.woodIn, x, 0.43, z);
     for (const [x, z] of [[-0.18, 0.17], [0.18, 0.17]]) box(ch, 0.035, 0.45, 0.035, m.woodIn, x, 0.225, z);
     s.add(ch);
-    this.col(-12.38, -11.82, 2.62, 3.18);
+    this.col(-12.15, -11.85, 2.9, 3.2);
     // a bare bulb under a tin shade in the middle of the ceiling
     rod(s, v(-11.0, HUT.h, 3.0), v(-11.0, 2.2, 3.0), 0.004, m.blackIn, 4);
-    const cs = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.08, 12, 1, true), this.litIn({ color: 0x5a5c58, roughness: 0.5, metalness: 0.5, side: THREE.DoubleSide }));
+    const cs = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.08, 12, 1, true), m.shadeIn);
     cs.position.set(-11.0, 2.2, 3.0); s.add(cs);
     const cb2 = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), m.hutBulb);
     cb2.position.set(-11.0, 2.15, 3.0); s.add(cb2);
@@ -1522,7 +1585,7 @@ export class Station01 {
     cyl(tr, 0.06, 0.06, 0.003, m.paneIn, 0, 0.16, 0, 16);
     box(tr, 0.004, 0.003, 0.1, m.galv, 0, 0.162, 0).rotation.y = 0.3;
     for (const x of [-0.065, 0.065]) {
-      const sd = box(tr, 0.014, 0.17, 0.06, b, x, 0.24, 0);
+      const sd = box(tr, 0.014, 0.17, 0.06, k, x, 0.24, 0);
       sd.rotation.z = x > 0 ? -0.08 : 0.08;
     }
     cyl(tr, 0.009, 0.009, 0.15, k, 0, 0.31, 0, 8).rotation.z = Math.PI / 2;
@@ -1559,26 +1622,26 @@ export class Station01 {
     box(st, 0.12, 0.01, 0.12, m.darkMetal, fa.x, G + 0.152, fa.z).rotation.y = 0.15;
     box(st, 0.14, 0.012, 0.025, m.rust, fa.x, G + 0.153, fa.z - 0.07).rotation.y = 0.15;
     for (const [dx, dz] of [[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]]) cyl(st, 0.012, 0.012, 0.03, m.rust, fa.x + dx, G + 0.16, fa.z + dz, 6);
-    const disc = plane(st, 0.1, 0.1, m.atlas, fa.x + 0.12, G + 0.152, fa.z + 0.13, 0.4, -Math.PI / 2);
-    regionUV(disc.geometry, 'disc');
+    const disc = new THREE.Mesh(regionUV(new THREE.CircleGeometry(0.05, 20), 'disc'), m.atlas);
+    disc.position.set(fa.x + 0.12, G + 0.152, fa.z + 0.13); disc.rotation.set(-Math.PI / 2, 0, 0.4);
+    st.add(disc);
     this.col(fa.x - 0.32, fa.x + 0.32, fa.z - 0.32, fa.z + 0.32);
     this.proxy('footing', 0.75, 0.4, 0.75, fa.x, G + 0.15, fa.z);
 
     // A's post, now standing off the line in a pile of stones, the plate facing the transit
-    const pa = POST_A, ya = yawTo(pa.x, pa.z, T.x, T.z);
-    const post = box(st, 0.1, 1.65, 0.1, m.wood, pa.x, G - 0.3 + 0.825, pa.z);
-    post.rotation.set(0.03, ya, -0.04); metreUV(post);
-    const plateA = new THREE.Group();
-    plateA.position.set(pa.x, 1.0, pa.z); plateA.rotation.set(0.03, ya, -0.04, 'YXZ');
-    const pp = plane(plateA, 0.28, 0.28, m.atlas, 0, 0, 0.056);
+    const pa = POST_A, ya = yawTo(pa.x, pa.z, T.x, T.z) + Math.PI;
+    const postA = new THREE.Group();
+    postA.position.set(pa.x, G - 0.3, pa.z); postA.rotation.set(0.03, ya, -0.04, 'YXZ');
+    metreUV(box(postA, 0.1, 1.65, 0.1, m.wood, 0, 0.825, 0));
+    const pp = plane(postA, 0.32, 0.32, m.atlas, 0, 1.45, 0.057);
     regionUV(pp.geometry, 'markA');
-    box(plateA, 0.3, 0.3, 0.01, m.darkMetal, 0, 0, 0.048);
-    st.add(plateA);
+    box(postA, 0.34, 0.34, 0.01, m.darkMetal, 0, 1.45, 0.051);
+    st.add(postA);
     this.col(pa.x - 0.22, pa.x + 0.22, pa.z - 0.22, pa.z + 0.22);
     this.proxy('markerA', 0.6, 1.7, 0.6, pa.x, 0.65, pa.z);
 
     // B: the comparison vane, still in its footing, the vane plate facing the transit
-    const pb = POST_B, yb = yawTo(pb.x, pb.z, T.x, T.z);
+    const pb = POST_B, yb = yawTo(pb.x, pb.z, T.x, T.z) + Math.PI;
     metreUV(box(st, 0.42, 0.22, 0.42, m.concrete, pb.x, G + 0.02, pb.z));
     const bp = box(st, 0.1, 1.55, 0.1, m.wood, pb.x, G + 0.1 + 0.775, pb.z);
     bp.rotation.y = yb; metreUV(bp);
@@ -1595,16 +1658,15 @@ export class Station01 {
     const r = rng(47);
     STAKES.forEach((x, i) => {
       const z = T.z + (r() - 0.5) * 0.16, gy = this.y(x, z);
-      const hgt = i === 5 ? 0.22 : 0.45 + r() * 0.32;
-      const s = box(st, 0.05, hgt + 0.25, 0.05, m.wood, x, gy - 0.25 + (hgt + 0.25) / 2, z);
+      const hgt = i === 5 ? 0.22 : 0.55 + r() * 0.35;
+      const s = box(st, 0.06, hgt + 0.25, 0.06, m.wood, x, gy - 0.25 + (hgt + 0.25) / 2, z);
       s.rotation.set((r() - 0.5) * 0.35, r() * 0.6, (r() - 0.5) * 0.35); metreUV(s);
       if (i !== 5) {
-        const p = box(st, 0.054, 0.07, 0.054, m.fadedPaint, 0, 0, 0);
-        p.position.copy(new THREE.Vector3(0, (hgt + 0.25) / 2 - 0.05, 0).applyEuler(s.rotation).add(s.position));
+        const p = box(st, 0.064, 0.1, 0.064, m.fadedPaint, 0, 0, 0);
+        p.position.copy(new THREE.Vector3(0, (hgt + 0.25) / 2 - 0.07, 0).applyEuler(s.rotation).add(s.position));
         p.rotation.copy(s.rotation);
       }
       if (x < FENCE.x1 - 0.5) this.col(x - 0.06, x + 0.06, z - 0.06, z + 0.06);
-      this.shades.push({ x, z, r: 0.15, k: 0.5 });
     });
     // one has fallen and lies in the dirt
     const fallen = box(st, 0.05, 0.05, 0.62, m.wood, 41.3, G + 0.025, T.z + 0.35); fallen.rotation.y = 0.5;
@@ -1630,8 +1692,7 @@ export class Station01 {
     const head = new THREE.Group();
     head.position.set(L.x, 1.86, L.z);
     head.lookAt(T.x, PIER.top + 0.3, T.z);
-    const hm = this.track(floodlit(new THREE.MeshStandardMaterial({ color: 0x3a3b36, roughness: 0.5, metalness: 0.5, side: THREE.DoubleSide }), 0.03, fieldFlood));
-    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.085, 0.2, 14, 1, true), hm);
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.085, 0.2, 14, 1, true), m.shadeOut);
     shell.rotation.x = Math.PI / 2; head.add(shell);
     cyl(head, 0.085, 0.085, 0.02, m.darkMetal, 0, 0, -0.1, 14).rotation.x = Math.PI / 2;
     const glass = cyl(head, 0.125, 0.125, 0.006, m.fieldBulb, 0, 0, 0.098, 16); glass.rotation.x = Math.PI / 2;
@@ -1645,16 +1706,9 @@ export class Station01 {
     box(this.hood, 0.06, 0.02, 0.02, m.darkMetal, 0, 0, 0);
     box(this.hood, 0.03, 0.04, 0.012, m.darkMetal, 0, -0.27, 0.05);
     this.hood.rotation.x = HOOD_OPEN;
-    head.add(this.hood);
-    noMerge(this.hood);
-    this.group.add(head);
-    head.updateMatrixWorld(true);
     mergeStatic(this.hood);
-    // head parts other than the hood merge with the rest of the head
-    const keep = this.hood;
-    head.remove(keep);
-    mergeStatic(head);
-    head.add(keep);
+    head.add(noMerge(this.hood));
+    st.add(head);   // the rest of the head merges with the static outside
     this.objs.lampHead = head;
     this.objs.lampHood = this.hood;
     const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(head.quaternion);
@@ -1662,21 +1716,20 @@ export class Station01 {
     this.slot.field = addFlood(lp.x + this.o.x, lp.y + this.o.y, lp.z + this.o.z, BASE.field, 0xffc27a, fieldFlood);
     const gp = head.position.clone().addScaledVector(fwd, 0.11);
     this.gx.field = this.glow.add(gp.x, gp.y, gp.z, 0.6, 0xffd29a);
-    this.col(L.x - 0.32, L.x + 0.32, L.z - 0.32, L.z + 0.32);
-    this.col(L.x - 0.5, L.x - 0.14, L.z + 0.24, L.z + 0.48);
+    this.col(L.x - 0.5, L.x + 0.32, L.z - 0.32, L.z + 0.48);
     this.proxy('lamp', 0.75, 2.1, 0.75, L.x, 0.9, L.z);
   }
 
   // ---------- the cable (P08) ----------
   private cable() {
-    const r = rng(9), R = CABLE_R, gy = G + R;
+    const R = CABLE_R, gy = G + R;
     const P = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
     // a loose loop lying on the ground: the cable circles once while going on along `dir`
     const loop = (start: THREE.Vector3, dir: THREE.Vector3, len: number, rad: number) => {
       const out: THREE.Vector3[] = [];
       const side = new THREE.Vector3(-dir.z, 0, dir.x);
-      for (let i = 1; i < 16; i++) {
-        const s = i / 16, a = s * Math.PI * 2;
+      for (let i = 1; i < 28; i++) {
+        const s = i / 28, a = s * Math.PI * 2;
         const u = len * s + rad * Math.sin(a), w = rad * (1 - Math.cos(a));
         // the second pass lies over the first where they cross
         const lift = 2.1 * R * Math.exp(-Math.pow((s - 0.84) / 0.06, 2));
@@ -1685,8 +1738,9 @@ export class Station01 {
       return out;
     };
     const d1 = new THREE.Vector3(1, 0, 0.12).normalize(), d2 = new THREE.Vector3(0.6, 0, -0.8).normalize();
+    const wallFace = HUT.z1 + HUT.t;
     const hutSide = [
-      P(-9.1, 0.02, z1H() + 0.06), P(-9.08, R, 4.96), P(-9.03, -0.05, 5.1), P(-8.9, gy, 5.32),
+      P(-9.1, 0.02, wallFace + 0.06), P(-9.08, R, 4.96), P(-9.03, -0.05, 5.1), P(-8.9, gy, 5.32),
       P(-8.2, gy, 5.75), P(-7.2, gy, 5.95), P(-6.3, gy, 5.72),
       ...loop(P(-6.0, gy, 5.65), d1, 1.3, 0.55),
       P(-4.6, gy, 5.85), P(-3.8, gy, 5.6), P(-2.6, gy, 5.0), P(-1.4, gy, 4.4), P(-0.4, gy, 3.6), P(0.4, gy, 2.9),
@@ -1701,7 +1755,6 @@ export class Station01 {
       P(3.1, 0.12, face(0.12)), P(3.1, 0.55, face(0.55)), P(3.1, 0.98, face(0.98)),
       P(3.1, PIER.top + R, T.z + PIER.half1 - 0.02), P(3.08, PIER.top + R, T.z + 0.15),
     ];
-    for (const p of hutSide) { p.x += (r() - 0.5) * 0.02; }
     const tube = (pts: THREE.Vector3[], radial: number) => {
       const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
       const n = Math.ceil(curve.getLength() / 0.06);
@@ -1718,9 +1771,7 @@ export class Station01 {
     // clips on the pier, the terminal box on its top, the elbow at the junction box
     for (const y of [0.3, 0.75]) box(this.st, 0.07, 0.025, 0.02, this.m.galv, 3.1, y, face(y) + R * 0.6);
     box(this.st, 0.08, 0.05, 0.06, this.m.brass, 3.08, PIER.top + 0.025, T.z + 0.13);
-    this.shades.push({ x: CUT.x, z: CUT.z, r: 0.35, k: 0.3 });
     this.proxy('cable', 0.8, 0.32, 0.8, CUT.x, G + 0.08, CUT.z);
-    function z1H() { return HUT.z1 + HUT.t; }
   }
 
   // ---------- rocks and plants ----------
@@ -1728,7 +1779,7 @@ export class Station01 {
     const kinds: Record<Thing['kind'], { geo: THREE.BufferGeometry; mat: THREE.Material; tones: [THREE.Color, THREE.Color] }> = {
       block: { geo: rockGeo(3, 'block'), mat: this.lit({ color: 0xffffff, roughness: 0.95 }, 0.03), tones: [new THREE.Color(0x8a7a68), new THREE.Color(0x5f5650)] },
       slab: { geo: rockGeo(8, 'slab'), mat: this.lit({ color: 0xffffff, roughness: 0.95 }, 0.03), tones: [new THREE.Color(0x9a8670), new THREE.Color(0x6a5a4c)] },
-      creo: { geo: creosoteGeo(), mat: this.lit({ color: 0xffffff, roughness: 1 }, 0.03), tones: [new THREE.Color(0x4d5032), new THREE.Color(0x3a3d2a)] },
+      creo: { geo: creosoteGeo(), mat: this.lit({ color: 0xffffff, roughness: 1 }, 0.03), tones: [new THREE.Color(0x5a5c40), new THREE.Color(0x45482f)] },
       yucca: { geo: bladeGeo(41, 24, 0.42, 0.82, 0.03, [0.45, 1.3]), mat: this.lit({ color: 0xffffff, roughness: 0.8, side: THREE.DoubleSide }, 0.03), tones: [new THREE.Color(0x5a6a4a), new THREE.Color(0x46523c)] },
       grass: { geo: bladeGeo(57, 9, 0.22, 0.42, 0.012, [0.9, 1.4]), mat: this.lit({ color: 0xffffff, roughness: 1, side: THREE.DoubleSide }, 0.03), tones: [new THREE.Color(0x8a7a52), new THREE.Color(0x6a6048)] },
     };
@@ -1833,9 +1884,9 @@ export class Station01 {
   // the chapter hides while the player is out here.
   private nightLights() {
     const group = new THREE.Group();
-    const hemi = new THREE.HemisphereLight(0x2c3b5e, 0x1b140e, 0.85);
-    const moon = new THREE.DirectionalLight(0xa4b6e0, 0.5);
-    moon.position.set(-60, 80, -45);
+    const hemi = new THREE.HemisphereLight(0x2c3b5e, 0x1b140e, 1.2);
+    const moon = new THREE.DirectionalLight(0xa4b6e0, 1.5);
+    moon.position.set(-50, 70, 55);
     moon.target.position.set(0, 0, 0);
     group.add(hemi, moon, moon.target);
     this.group.add(group);
