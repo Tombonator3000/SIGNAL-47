@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-04T16:29:03.972244+00:00",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 8: rødt knappet kunstskinn og honningfarget furupanel.",
+  "paths_relative_to": "repository_root",
+  "brief": {
+    "commit": "1a6b1f98db0e85b550c5cd9f714405a95af201f8",
+    "path": "web/ART_BRIEF.md",
+    "sha256": "b7511a52f4002b77de8bef77a48e996b9bcd54196fbd38a883e1db0ef0e8ecf4",
+    "bytes": 15431
+  },
+  "generator": {
+    "tool": "built-in image_gen",
+    "calls": 4,
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false,
+    "workflow": "Ett kall per bilde: én ny generering og én målrettet repeat-rettelse for hver av de to flatene.",
+    "originals_preserved": true
+  },
+  "style_references": [
+    {
+      "path": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "role": "Eksisterende dinerlaminat inspisert som stilreferanse, ikke sendt som bildeinput."
+    }
+  ],
+  "postprocess": {
+    "operations": [
+      "Pillow RGB-konvertering",
+      "LANCZOS-skalering av hele kilden til bestilte mål",
+      "JPEG kvalitet 85, chroma subsampling 0, optimize true",
+      "Innebygd sRGB ICC",
+      "Vanlig 2x2 QA-montasje fra uendrede eksporter, JPEG kvalitet 90",
+      "Byteidentisk kopiering av valgte generator-PNG-er til production"
+    ],
+    "programmatic_retoucher_used": false,
+    "cropping": false,
+    "source_colour_assumption": "Genererte RGB-kilder uten ICC er behandlet som sRGB. Ingen fargekorrigering er utført."
+  },
+  "assets": [
+    {
+      "id": "booth",
+      "file": "web/src/assets/art/diner/tex_booth_vinyl.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-94af7196-b41b-489e-9c33-48a863d8ba66.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "physical_size_metres": [
+        0.5,
+        0.5
+      ],
+      "sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+      "bytes": 54802,
+      "format": "JPEG",
+      "mode": "RGB",
+      "opaque": true,
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "82832b6c890a73473c21df58868808ea04ec9fa6e38295eda657bfafc68a691b",
+      "quality": 85,
+      "chroma_subsampling": 0,
+      "source_file": "web/src/assets/art/production/round8-2026-10-04/source-booth-vinyl.png",
+      "source_sha256": "56cd92206d88b47ba11fa69dcc9111dc8f3c2075f8d77e4cdc578c845edf72b0",
+      "source_bytes": 2868843,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_copy_byte_identical": true,
+      "generation_step": "booth-repeat-edit",
+      "resize": {
+        "method": "LANCZOS",
+        "from": [
+          1254,
+          1254
+        ],
+        "to": [
+          512,
+          512
+        ],
+        "cropped": false,
+        "aspect_ratio_changed": false
+      },
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "full_image_metres": [
+          0.5,
+          0.5
+        ],
+        "suggested_wrap": "RepeatWrapping",
+        "orientation": "X er vannrett, Y loddrett. Panelbordene går langs bilde-Y.",
+        "runtime_applied": false
+      },
+      "qa": {
+        "export_status": "PASS",
+        "reviewers": [
+          "produserende agent room_art",
+          "root, uavhengig visuell kontroll"
+        ],
+        "preview": "web/src/assets/art/production/round8-2026-10-04/booth-repeat-preview.jpg",
+        "preview_sha256": "2ea7e0ffe0c96221155fc828244700b8adf693d80cb7c9b57067bbf33bbeacfd",
+        "preview_bytes": 253247,
+        "preview_dimensions": [
+          1024,
+          1024
+        ],
+        "initial_preview": "web/src/assets/art/production/round8-2026-10-04/initial-booth-repeat-preview.jpg",
+        "initial_preview_sha256": "ce52a8b03c12d58076dddcb3d9c601f4ae4b2bb65d4bc78d03e94fe1410bf526",
+        "initial_preview_bytes": 263387,
+        "repeat_method": "Fire uendrede eksportkopier i vanlig 2x2-rutenett. Ingen speiling, offset-retusjering eller pixelblanding.",
+        "text_or_logo_present": false,
+        "visual_status": "PASS",
+        "repeat_status": "PASS_VISUAL",
+        "limitation": "Knapper, diagonal søm og rød tone fortsetter visuelt over repeat-grensene. Ingen vesentlig tonal eller geometrisk skjøt etter rettelsen. Ikke en påstand om pikselidentiske kanter eller ekte geometri/roughness."
+      }
+    },
+    {
+      "id": "panel",
+      "file": "web/src/assets/art/diner/tex_wall_panel.jpg",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-15a078f0-0945-479a-9389-d1b2b547518d.png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "physical_size_metres": [
+        2,
+        2
+      ],
+      "sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+      "bytes": 180536,
+      "format": "JPEG",
+      "mode": "RGB",
+      "opaque": true,
+      "color_space": "sRGB",
+      "icc_profile": "sRGB built-in",
+      "icc_profile_sha256": "82832b6c890a73473c21df58868808ea04ec9fa6e38295eda657bfafc68a691b",
+      "quality": 85,
+      "chroma_subsampling": 0,
+      "source_file": "web/src/assets/art/production/round8-2026-10-04/source-wall-panel.png",
+      "source_sha256": "f00fb8993196127983c63fe50226db327a7c2e41f459956a7a008c58cb331fad",
+      "source_bytes": 1703261,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_icc_present": false,
+      "source_copy_byte_identical": true,
+      "generation_step": "panel-repeat-edit",
+      "resize": {
+        "method": "LANCZOS",
+        "from": [
+          1254,
+          1254
+        ],
+        "to": [
+          1024,
+          1024
+        ],
+        "cropped": false,
+        "aspect_ratio_changed": false
+      },
+      "uv": {
+        "range": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "full_image_metres": [
+          2,
+          2
+        ],
+        "suggested_wrap": "RepeatWrapping",
+        "orientation": "X er vannrett, Y loddrett. Panelbordene går langs bilde-Y.",
+        "runtime_applied": false
+      },
+      "qa": {
+        "export_status": "PASS",
+        "reviewers": [
+          "produserende agent room_art",
+          "root, uavhengig visuell kontroll"
+        ],
+        "preview": "web/src/assets/art/production/round8-2026-10-04/wall-panel-repeat-preview.jpg",
+        "preview_sha256": "79e4c3b7b2818601e0fc850a461b7f28f5e004851aab0b376155a4c86bc546a8",
+        "preview_bytes": 821102,
+        "preview_dimensions": [
+          2048,
+          2048
+        ],
+        "initial_preview": "web/src/assets/art/production/round8-2026-10-04/initial-wall-panel-repeat-preview.jpg",
+        "initial_preview_sha256": "ac7496d5373e0ff839515b09e41db1c5c2a66a1adcab7e60a0fec368141fb29d",
+        "initial_preview_bytes": 864360,
+        "repeat_method": "Fire uendrede eksportkopier i vanlig 2x2-rutenett. Ingen speiling, offset-retusjering eller pixelblanding.",
+        "text_or_logo_present": false,
+        "visual_status": "ACCEPTED_WITH_RECORDED_LIMITATION",
+        "repeat_status": "ACCEPTED_WITH_VISIBLE_FIBER_LIMITATION",
+        "strict_seamless_pass": false,
+        "limitation": "Den doble bordbredden ved venstre/høyre repetisjon er rettet. Ingen vesentlig tonal eller formatskjøt i vanlig 2x2, men små fiberavvik kan sees i nærstudium ved øvre/nedre repeat-grense. Fullstendig sømløshet er derfor ikke påstått.",
+        "placement_note": "Mørkning/slitasje er svak og fordelt i materialet. Ingen permanent mørk stripe nederst eller lokasjonsspesifikk kjøkkenflekk er bakt inn; slike kanter ville bryte vertikal repetisjon."
+      }
+    }
+  ],
+  "generation_steps": [
+    {
+      "id": "booth-initial",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f03f6e8d-3b3d-4e12-960f-f079cf73fb8e.png",
+      "source_sha256": "046eb1d8784719c8076d41372ca8b03645b0e33e8107105914b7e7e2923a6d32",
+      "source_bytes": 3145893,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: seamless square sRGB upholstery base-color texture for the diner booths of SIGNAL / 47, a stylized low-poly Three.js game set in New Mexico, 1986. Create a perfectly front-facing flat material swatch covering 0.5 by 0.5 metres of old red button-tufted imitation leather/vinyl. Restrained warm oxblood and faded diner-red palette, fine shallow vinyl grain, small red covered buttons where the stitched seams intersect, a regular repeating square/diamond quilting grid. Two tuft repeats per axis across the square, with the padded cells and stitched seams continuing cleanly across every boundary. No cut-off cushion outline, no piping or decorative border. Subtle use wear on the raised padded areas, slightly smoother rubbed patches from sitting, no rips or large stains. Button dimples and seams readable but shallow and understated for a low-poly game, not a photorealistic close-up. Seamless tile on both axes: left edge joins right, top joins bottom, repeated cell spacing stays continuous; never an isolated centred cushion. Even diffuse base color, absolutely no directional illumination, cast shadow, bright specular glare, vignette, perspective or light gradient. No furniture silhouette, people, upholstery tools, text, logo or numbers. One square opaque material swatch, intended export 512 by 512 pixels.",
+      "selected": false,
+      "referenced_image_path": null,
+      "note": "Første kandidat, beholdt som kildehistorikk; 2x2 viste repeat-begrensning."
+    },
+    {
+      "id": "booth-repeat-edit",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-94af7196-b41b-489e-9c33-48a863d8ba66.png",
+      "source_sha256": "56cd92206d88b47ba11fa69dcc9111dc8f3c2075f8d77e4cdc578c845edf72b0",
+      "source_bytes": 2868843,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: precise-object-edit. Fix ONLY seamless repeat registration in this red button-tufted diner vinyl texture, keeping its established red colour, diagonal quilt pattern, button sizes, vinyl grain and worn patches. Current defect in a 2x2 repeat: opposing image edges do not meet perfectly, producing cut/split buttons and a faint cross through the repeat boundaries. Move and reshape the edge half-buttons and quarter-buttons so every opposite pair forms one clean complete round button after repeat, all four corner quarters form a single round button, and all diagonal stitched seams join without offsets. Top and bottom edge button centres lie exactly on the boundary; left and right likewise. Match red base tone and fine surface grain across both opposite edge pairs, remove any straight tonal boundary. Do not add a surrounding border or invent an isolated cushion. The surface must be genuinely continuous when repeated left/right and up/down. Keep very restrained uniformly diffuse finish, no directional shadow, shine stripe, vignette, furniture, text, numbers, watermark or other objects. Return one square seamless texture, not a montage or a 2x2 preview.",
+      "selected": true,
+      "referenced_image_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f03f6e8d-3b3d-4e12-960f-f079cf73fb8e.png",
+      "note": "Målrettet rettelse av repeat-grenser; øvrig materialuttrykk bevart."
+    },
+    {
+      "id": "panel-initial",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-6aace478-6d3f-492e-9293-02b7c3e9b59a.png",
+      "source_sha256": "8bbc367d82664e2e0a3a079eaf0c140b9d1ce7bb569b438e9de0b3d1c2005c0f",
+      "source_bytes": 1888360,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: seamless square sRGB wall-panel base-color texture for SIGNAL / 47, a low-poly Three.js game in a New Mexico diner in 1986. Create a completely front-facing flat section of modest 1950s honey-coloured pine wall panelling. Full square represents 2 by 2 metres. Straight vertical tongue-and-groove boards of consistent realistic width, fine longitudinal pine grain and occasional small oval knots, restrained warm honey/ochre/brown colours, thin dark vertical joins. Old matte varnish, very mild scattered smoke and handling discoloration. The boards run uninterrupted vertically beyond the image; NO horizontal end joints, wall top, skirting, floor, window, kitchen opening, frame, trim, board ends or surrounding scene. Any aging remains low contrast and dispersed: do not paint a dark strip along the bottom or a location-specific kitchen stain, since the texture must repeat vertically too. Perfectly seamless both horizontally and vertically: vertical joins and grain align across top/bottom, left/right continue ordinary board spacing, boundaries have the same tonal distribution. Shallow graphic material detail with natural variation, restrained stylized finish rather than photographic. Flat even albedo only, no directional lighting, cast shadows, vignette, gloss reflections, perspective or bevel highlights. No text, letters, symbols, objects or logo. One square opaque surface, intended export 1024 by 1024 pixels.",
+      "selected": false,
+      "referenced_image_path": null,
+      "note": "Første kandidat, beholdt som kildehistorikk; 2x2 viste repeat-begrensning."
+    },
+    {
+      "id": "panel-repeat-edit",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-15a078f0-0945-479a-9389-d1b2b547518d.png",
+      "source_sha256": "f00fb8993196127983c63fe50226db327a7c2e41f459956a7a008c58cb331fad",
+      "source_bytes": 1703261,
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: precise-object-edit. Edit this pine-panelling texture ONLY to make it tile cleanly. Keep the same warm honey pine, narrow vertical boards, knots, muted matte surface and square framing. Current defect: no joint at the left/right boundary means two full outer boards merge into one DOUBLE-WIDTH board in a 2x2 repeat. Correct that: each full vertical board must have the same ordinary narrow width; at the extreme left and right image edges put matching HALF of an ordinary dark vertical tongue-and-groove joint, together forming one normal joint when copied side by side. Keep the inner vertical joints and general pine character. Also align the vertical grain and joint positions across the top and bottom image boundaries so copying above/below does not produce a horizontal seam or sudden colour jump. No horizontal board ends. Low-contrast scattered wear, no darkness strip at bottom. Return a seamless tile, no drawn border/frame. No extra objects, text, perspective, directional light or new decorations. Preserve the image as a flat stylized low-poly-game surface.",
+      "selected": true,
+      "referenced_image_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-6aace478-6d3f-492e-9293-02b7c3e9b59a.png",
+      "note": "Målrettet rettelse av repeat-grenser; øvrig materialuttrykk bevart."
+    }
+  ],
+  "rights": {
+    "origin": "Ny grafikk laget for SIGNAL / 47 med innebygd ChatGPT-bildegenerator.",
+    "note": "Ingen eksterne fotografier eller merker er brukt. Ingen bestemt generatormodell eller separat tredjepartslisens påstås."
+  },
+  "integration": {
+    "status": "UNVERIFIED",
+    "note": "Assetproduksjon og bilde-QA. Ingen loader, Diner-kode, materialintegrasjon, runtime- eller spilltest utført av denne deloppgaven. Root og kodeagent eier dette."
+  },
+  "verification": {
+    "technical_status": "PASS",
+    "assets": [
+      {
+        "file": "web/src/assets/art/diner/tex_booth_vinyl.jpg",
+        "status": "PASS",
+        "checks": [
+          "format JPEG",
+          "mål",
+          "RGB",
+          "sRGB ICC",
+          "JPEG85-kvantisering",
+          "outputhash og bytes",
+          "kildehash og byteidentisk portabel kopi",
+          "QA-mål og hash"
+        ]
+      },
+      {
+        "file": "web/src/assets/art/diner/tex_wall_panel.jpg",
+        "status": "PASS",
+        "checks": [
+          "format JPEG",
+          "mål",
+          "RGB",
+          "sRGB ICC",
+          "JPEG85-kvantisering",
+          "outputhash og bytes",
+          "kildehash og byteidentisk portabel kopi",
+          "QA-mål og hash"
+        ]
+      }
+    ],
+    "visual_status": "ACCEPTED_WITH_RECORDED_PANEL_LIMITATION",
+    "strict_seamless_status": "NOT_CLAIMED_FOR_PANEL",
+    "runtime_verified": false
+  }
+}
