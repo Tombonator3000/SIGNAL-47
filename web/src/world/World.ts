@@ -29,6 +29,7 @@ export interface WorldDeps {
   saro: { groups: THREE.Object3D[]; zones: Zone[]; colliders: Collider[]; truck: { x: number; z: number; heading: number } };
   applyQuality: () => void;
   audio: () => { ctx: AudioContext | null; sfx: AudioNode };
+  thud: (gain: number) => void;
   // story hooks: the fade, a locked moment, and game time
   fade: (on: boolean, text?: string) => void;
   hold: (on: boolean) => void;
@@ -129,7 +130,7 @@ export class World {
 
   private ensureRoad() {
     return this.once('road', async () => {
-      const [{ RoadArea, roadFlood }, { DriveController }, { Truck }] = await Promise.all([this.load('RoadArea'), this.load('Drive'), this.load('Truck')]);
+      const [{ RoadArea, roadFlood }, { DriveController }, { Truck }] = await Promise.all([this.load('RoadArea'), this.load('Drive'), this.load('Truck'), this.load('engine')]);
       const truck = new Truck({ flood: roadFlood });
       truck.headlightFloods(roadFlood, [0, 1, 2]);
       truck.group.visible = false;
@@ -140,6 +141,8 @@ export class World {
       this.d.scene.add(road.group);
       this.road = road;
       this.drive = new DriveController(this.d.camera, truck, road);
+      this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
+      road.onCattleGuard = (speed) => this.engine?.rattle(speed);
       this.d.applyQuality();
     });
   }
@@ -270,8 +273,7 @@ export class World {
       if (this.testInput) input = this.testInput;
       if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
       this.road.update(dt, t, this.drive.pos);
-      this.truck.update(dt, this.drive.speed, 0);
-      this.engine?.set(this.drive.rpm, Math.abs(input?.throttle ?? 0));
+      if (this.engine) { this.engine.set(this.drive.rpm, this.drive.load); this.engine.tyres(this.drive.surface.kind, Math.abs(this.drive.speed)); }
       this.dashT -= dt;
       if (this.dashT <= 0) { this.dashT = 0.1; this.truck.setDash({ mph: this.drive.mph, rpm: this.drive.rpm, clock: this.d.clock(), fuel: 0.62 }); }
     }

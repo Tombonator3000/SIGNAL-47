@@ -107,6 +107,7 @@ async function boot() {
     saro: { groups: [ext.group, room.group, yard.group, annex.group], zones: saroZones, colliders, truck: YARD.truck },
     applyQuality: () => setQuality(scene, quality),
     audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
+    thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
     fade: (on, text) => ui.fade(on, text ?? ''),
     hold: (on) => { game.cinematic = on; if (on) input.reset(); },
     after: (sec, fn) => game.after(sec, fn),
@@ -296,7 +297,9 @@ async function boot() {
   function showTitleAgain() { titleEl?.remove(); showTitle(); }
 
   let restoringNow = false;
+  let starting = false;   // between Start or Continue and the first playable frame
   async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void> }) {
+    starting = true;
     const unlocking = o.unlocking ?? audio.unlock(); // must start inside the tap/click
     if (input.touchMode) {
       try { const r = document.documentElement.requestFullscreen?.(); if (r) r.catch(() => {}); } catch { /* not allowed here */ }
@@ -332,6 +335,7 @@ async function boot() {
     if (pose && o.state?.checkpoint !== 'residual' && player.walkable(pose.x, pose.z)) {
       player.place(pose.x, pose.z, pose.yaw); player.pitch = pose.pitch;
     }
+    starting = false;
     ui.showHud(true, input.touchMode);
     setTimeout(() => ui.fade(false), 250);
   }
@@ -514,6 +518,8 @@ async function boot() {
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
+    // true once a started or loaded night is running (tests wait for it after Continue)
+    started: () => caseId > 0 && !starting && mode === 'play',
   };
 
   // ---------- resize and adaptive resolution ----------

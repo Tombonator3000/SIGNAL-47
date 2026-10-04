@@ -178,7 +178,7 @@ async def main():
         # ---------- Continue halfway (before the call) ----------
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await ev("S47.game.phase") == 'ch2' and await s2('stage') == 'call-nora' and await s2('p04') and await s2('read.original'), 'Continue restores chapter two halfway')
         check(abs(await ev("S47.room.southDoorHinge.rotation.y") - math.pi / 2) < 0.01, 'Continue keeps the corridor door open')
@@ -214,7 +214,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         check('Chapter 3' in await ev("document.querySelector('.cont-info').textContent"), 'title screen offers to continue chapter three')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await ev("S47.game.phase") == 'ch3' and await s2('stage') == 'complete' and await s2('called'), 'Continue restores chapter three with chapter two finished')
         check('TAKE THE SARO TRUCK' in await ev("document.querySelector('.objective').textContent"), 'objective: the service truck')

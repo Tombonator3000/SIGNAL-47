@@ -8,6 +8,7 @@ export class RoadArea {
   end: { pos: THREE.Vector3; heading: number };
   endZone: { minX: number; maxX: number; minZ: number; maxZ: number };
   obstacles = [];
+  onCattleGuard?: (speed: number) => void;
   constructor(origin: THREE.Vector3) {
     this.group.position.copy(origin);
     this.group.add(new THREE.HemisphereLight(0x2c3b5e, 0x1b140e, 0.85));

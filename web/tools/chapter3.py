@@ -263,7 +263,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         check('STATION 01' in await ev("document.querySelector('.cont-info').textContent"), 'title screen offers to continue at STATION 01')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await ev("S47.world.area") == 'station01' and await s3('stage') == 'return' and await s3('lampCovered'), 'Continue brings back the station, the findings and the covered lamp')
         check(await ev("S47.ch3.s.f3.url.length > 50000 && S47.ch3.s.f4.url.length > 50000"), 'Continue brings back both field photographs')

@@ -232,7 +232,7 @@ async def main():
         # Continue from the title restores the finished case with both prints
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-        await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
         await ev("S47.hold = true; S47.tick(0.5)")
         check(await stage() == 'complete' and await ev("S47.yard.dryPrints[0].visible && S47.yard.dryPrints[1].visible"), 'Continue restores the case and both prints')
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
@@ -255,7 +255,7 @@ async def main():
             await ev("sessionStorage.setItem('s47.failreads', '2')")
             await pg.reload()
             await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
             await ev("S47.hold = true; S47.tick(0.5)")
             check(await ev("S47.ch1.s.f1.url.length < 50000 && S47.ch1.s.f2.url.length > 50000"), 'unreadable photograph shows the stand-in print, the other one loads')
             m = await ev("S47.saveNow('manual', 0)")
@@ -265,7 +265,7 @@ async def main():
             await ev("sessionStorage.removeItem('s47.failreads')")
             await pg.reload()
             await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
-            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
             await ev("S47.hold = true; S47.tick(0.5)")
             check(await ev("S47.ch1.s.f1.url") == original, 'next Continue (the manual save) brings the original photograph back')
 
