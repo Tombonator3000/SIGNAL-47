@@ -221,6 +221,38 @@ async def main():
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
         check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
 
+        if not NO_IDB:
+            # A photograph that cannot be read must not be lost (Codex's P1). The next two
+            # IndexedDB reads abort: frame 01 fails twice (the store retries once), frame 02 loads.
+            original = await ev("S47.ch1.s.f1.url")
+            await pg.add_init_script("""(() => {
+              let left = +sessionStorage.getItem('s47.failreads') || 0;
+              if (!left) return;
+              const get = IDBObjectStore.prototype.get;
+              IDBObjectStore.prototype.get = function (key) {
+                const req = get.call(this, key);
+                if (left > 0) { left--; sessionStorage.setItem('s47.failreads', String(left)); this.transaction.abort(); }
+                return req;
+              };
+            })();""")
+            await ev("sessionStorage.setItem('s47.failreads', '2')")
+            await pg.reload()
+            await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await ev("S47.hold = true; S47.tick(0.5)")
+            check(await ev("S47.ch1.s.f1.url.length < 50000 && S47.ch1.s.f2.url.length > 50000"), 'unreadable photograph shows the stand-in print, the other one loads')
+            await ev("S47.ch1.d.save(S47.ch1.s)"); await pg.wait_for_timeout(600)
+            kept = await ev("""new Promise((ok) => { const r = indexedDB.open('s47', 1);
+              r.onsuccess = () => { const g = r.result.transaction('photos').objectStore('photos').get('frame01'); g.onsuccess = () => ok(g.result); }; })""")
+            check(kept == original, 'saving after the read error leaves the original photograph in IndexedDB')
+            check('idb:frame01' in await ev("localStorage.getItem('s47.case') || ''"), 'the saved case still points at the original photograph')
+            await ev("sessionStorage.removeItem('s47.failreads')")
+            await pg.reload()
+            await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+            await pg.click('button[data-a=cont]'); await pg.wait_for_timeout(500)
+            await ev("S47.hold = true; S47.tick(0.5)")
+            check(await ev("S47.ch1.s.f1.url") == original, 'next Continue brings the original photograph back')
+
         # the case file spread in the notebook: both prints as pictures, the papers as cards
         await ev("S47.game.openNotebook()")
         await pg.click('.notebook [data-t=case]')

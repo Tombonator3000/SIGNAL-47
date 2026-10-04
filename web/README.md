@@ -1,6 +1,6 @@
 # SIGNAL / 47 (web)
 
-Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift" og kapittel 1 "The Second Exposure": servicegården øst for kontrollrommet, motorskapet S-03, feltkameraet, fotolaben og B-12-kontrollen, fram til den lokale rapporten er arkivert.
+Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift", kapittel 1 "The Second Exposure" (servicegården øst for kontrollrommet, motorskapet S-03, feltkameraet, fotolaben og B-12-kontrollen, fram til den lokale rapporten er arkivert) og kapittel 2 "The Amended Record" (Ward ringer, korridoren sør for kontrollrommet og arkivet, de to registreringene P04 og P05, og telefonen til Nora Vega på Sierra Motor Court).
 
 Forslag til hva som bør gjøres videre, og hva Tom må bestemme, står i `FORSLAG.md`.
 
@@ -12,11 +12,11 @@ Spill i nettleseren: https://tombonator3000.github.io/SIGNAL-47/
 
 Nettversjonen bruker nå bildegenererte materialer i kontrollrommet, servicegården og fotolaben, et Melkeveis-panorama, to plakater, New Mexico-kart, SARO-logo, prosedyreark og skilt. Originalene med briefens filnavn og mål ligger i `src/assets/art/`. Det slukkede motellskiltet er levert som kildevariant; spillet viser den tente varianten. Prolog, fotobevis og spillkonstanter er beholdt.
 
-`src/core/art.ts` laster 16 bilder før scenen bygges. Tekstene på instrumenter, bevis og veimerking tegnes fortsatt i kode. High og Low deler bildekildene. Himmelen har en 2K-runtimekopi for å begrense GPU-minne. PNG-originalene beholdes, mens sju lette WebP-kopier brukes i spillet. De kan bygges på nytt med `python3 tools/prepare_art.py` (Pillow).
+`src/core/art.ts` laster 22 bilder før scenen bygges: de 16 fra PR #30 og de seks tekstfrie flatene fra runde 3 (PR #31: B-12, R-07, gulvrammen, feltkartet, blankt skilt og papir). Tekstene på instrumenter, bevis, skilt, kart og veimerking tegnes i kode oppå bildene, slik at de alltid er riktige. High og Low deler bildekildene. Himmelen har en 2K-runtimekopi for å begrense GPU-minne. PNG-originalene beholdes, mens ni lette WebP-kopier brukes i spillet. De kan bygges på nytt med `python3 tools/prepare_art.py` (Pillow), som lar uendrede kopier være i fred. Bare bilder som importeres i `art.ts`, kommer med i spillet. `concept/`, `maps/` og `production/` er arbeidsmateriale og havner aldri i bygget.
 
 Se [grafikkontroll og testgrenser](ART_DELIVERY.md). Gulvets øvre/nedre fuge har en liten registreringsfeil ved gjentakelse; alle materialer er derfor ikke godkjent som perfekt sømløse. Nye kunstbilder er assets, mens bildene under `evidence/art-2026-10-04/` er uredigerte opptak fra spillet.
 
-Konsepter, lokasjonskart og seks nye tekstfrie flater er levert separat for videre integrasjon. Se [overleveringen til Claude](CLAUDE_HANDOFF.md), [grafikkgalleriet](src/assets/art/production/index.html) og [konsept- og kartgalleriet](src/assets/art/concept/index.html). Kapittel 2 på Claudes arbeidsgren er ikke flettet inn her.
+Konsepter og lokasjonskart ligger ved siden av. Se [overleveringen fra Codex](CLAUDE_HANDOFF.md), [grafikkgalleriet](src/assets/art/production/index.html) og [konsept- og kartgalleriet](src/assets/art/concept/index.html).
 
 ## Kjør
 
@@ -41,7 +41,7 @@ Pages legger spillet i undermappen `/SIGNAL-47/`. Det virker fordi `base: './'` 
 
 PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for notatboka, Escape for pause. Med feltkameraet: C hever og senker kameraet, mellomrom, E eller klikk tar bildet, Escape senker det.
 Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet. Camera-knappen dukker opp når kameraet er hentet. Mens kameraet er hevet, tar et trykk på skjermen eller på Use-knappen bildet.
-Settings har lydnivå, blikkfart og grafikk (High eller Low). Innstillinger, sjekkpunkt og saken i kapittel 1 (med fotografiene) lagres i nettleseren.
+Settings har lydnivå, blikkfart, invertert blikk opp og ned, synsfelt, større tekst og grafikk (High eller Low). Innstillinger, sjekkpunkt og saken (notater, funn og fotografier) lagres i nettleseren: saken i `localStorage`, fotografiene i IndexedDB. Der IndexedDB mangler, blir fotografiene liggende i `localStorage`.
 
 `?debug` bak adressen viser fps, 95-persentil for bildetid, draw calls og trekanter oppe til venstre. Den er laget for å måle på ekte telefoner.
 
@@ -50,39 +50,47 @@ Settings har lydnivå, blikkfart og grafikk (High eller Low). Innstillinger, sje
 ```
 src/main.ts                oppstart, løkke, menyer, testkroker (window.S47)
 src/core/                  lyd, input, interaksjon, bildeinnlasting, kodeteksturer, grafikknivå
+src/core/art.ts            de 22 bildene, lastet før verden bygges (TRY AGAIN hvis noe mangler)
+src/core/caseStore.ts      saken i localStorage og fotografiene i IndexedDB
 src/core/FieldCamera.ts    søker, eksponering og filmkopi (960x600 med papirkant og håndskrevet tekst)
 src/core/debug.ts          målestripa bak ?debug
 src/player/                førstepersonsspiller med gangbare soner og kollisjon
 src/world/                 kontrollrom, antenner, utendørs, himmel, byggeklosser (kit.ts)
 src/world/ServiceYard.ts   servicegården, S-03, B-12 og fotolaben
+src/world/Annex.ts         korridoren sør for kontrollrommet og arkivrommet (kapittel 2)
 src/world/Dish.ts          de 27 antennene som instanser, med egen synlighetstest
 src/world/glow.ts          alle lampeglød og blinklys i ett tegnekall
 src/world/props.ts         lyktestolper, rekkverk, utklippstavle, feltkamera
 src/story/Prologue.ts      hele prologen som faser og tidsstyrte hendelser
 src/story/Chapter1.ts      kapittel 1 som trinn, med lagring av saken
+src/story/Chapter2.ts      kapittel 2: Ward, arkivet, P04 og P05, telefonen til Nora
+src/story/drawings.ts      tegningene i kapittel 2-dokumentene og saksmappens kart
 src/story/Signal.ts        mottakerlogikken, portert fra Unity
 src/ui/                    HUD, dokumenter, notatbok, RX-konsoll
-src/ui/Panels.ts           fotolabens paneler: våtbenk, kontaktkopi, referansefil, B-12, to eksponeringer, rapport
-src/assets/                lyd og fonter (se THIRD_PARTY_NOTICES.md)
-tools/                     headless-tester med Playwright
+src/ui/Panels.ts           fotolabens paneler og arkivbordet i kapittel 2
+src/assets/                lyd, fonter og grafikk (se THIRD_PARTY_NOTICES.md og ART_BRIEF.md)
+tools/                     headless-tester med Playwright, lagringstest i Node
 ```
 
 ## Testing
 
 `tools/walkthrough.py` spiller hele prologen gjennom de ekte interaksjonene og konsollens glidebrytere, tar skjermbilder og skriver PASS eller FAIL per steg. Løkken holdes og spillet drives med `S47.tick()`, slik at testen går i en programvare-renderer.
 
-`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter og lyder kommer med.
+`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode, og prøver også en simulert lesefeil i IndexedDB: originalfotoet skal ligge der etter neste lagring. `tools/chapter2.py` spiller kapittel 2 fra telefonen ringer til sluttkortet, med gale og riktige valg ved arkivbordet, lagring og Continue. `tools/casestore.cjs` tester lagringen av fotografier i Node, uten nettleser. `tools/artcheck.py` sjekker at alle 22 bildene lastes, at High og Low bruker de samme teksturene, og tar faste bilder av blant annet B-12, R-07, feltkartet og arkivet. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter, lyder og bilder kommer med.
 
 ```sh
 pip install playwright && playwright install chromium
 python3 tools/walkthrough.py shots 844x390 high
 python3 tools/chapter1.py shots/ch1 passive
 python3 tools/chapter1.py shots/ch1 active
+python3 tools/chapter2.py shots/ch2
+node tools/casestore.cjs
+python3 tools/artcheck.py shots/art
 python3 tools/csptest.py
 python3 tools/looks.py shots 844x390 high
 ```
 
-Testene leser `dist-single/index.html` når ikke annet er oppgitt. Med `S47_URL` kan `walkthrough.py` og `chapter1.py` teste et annet bygg, for eksempel Pages-bygget servert fra en undermappe:
+Testene leser `dist-single/index.html` når ikke annet er oppgitt. Med `S47_URL` kan `walkthrough.py`, `chapter1.py`, `chapter2.py` og `artcheck.py` teste et annet bygg, for eksempel Pages-bygget servert fra en undermappe:
 
 ```sh
 npm run build

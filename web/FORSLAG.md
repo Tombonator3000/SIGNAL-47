@@ -4,6 +4,10 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## Status 4. oktober
+
+Tom ba meg gjennomføre forslagene. Gjort og i spillet: arbeidsordren (3.1), kapittel 2 (3.2, heter «The Amended Record» i spillet), saksmappen (3.3), fotografiene i IndexedDB (3.4), de nye innstillingene og fotsteg ute (4). Teksturene (4) kom fra ChatGPT/Codex i PR #30 og #31 og er koblet inn med tekst i kode oppå. Ikke gjort: skjuling av smådetaljer på avstand (4), fordi målingene ikke viser behov ennå, bytte av GitHub-handlinger og npm audit (ingen fiks finnes). Del 2 og 5 gjelder fortsatt. Neste store steg er kapittel 3, feltreisen til STATION 01 (se todo.md).
+
 ## 1. Beslutninger Tom må ta
 
 Avgjort 4. oktober: Tom ba meg gjennomføre forslagene mine, så alle fire er avgjort slik jeg foreslo under. Se memory.md.

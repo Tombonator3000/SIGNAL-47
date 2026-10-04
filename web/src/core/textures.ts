@@ -176,18 +176,19 @@ export function workOrderSheet() {
   });
 }
 
-// Chapter two: the south corridor and the records room.
-export function vinylTiles() {
+// Chapter two: the south corridor and the records room. Quiet 30 cm vinyl tiles, four by
+// four on the picture, so one repeat is 1.2 m: give the floor size to keep them square.
+export function vinylTiles(floorW: number, floorD: number) {
   return canvasTex(256, 256, (g, w, h) => {
     const r = rng(41);
     for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
-      const v = 150 + Math.floor(r() * 18);
+      const v = 152 + Math.floor(r() * 10);
       g.fillStyle = `rgb(${v},${v - 6},${v - 18})`; g.fillRect(x * 64, y * 64, 64, 64);
     }
-    speckle(g, w, h, 3000, 0.12, 42);
-    g.strokeStyle = 'rgba(60,50,35,.35)'; g.lineWidth = 2;
+    speckle(g, w, h, 3000, 0.08, 42);
+    g.strokeStyle = 'rgba(60,50,35,.22)'; g.lineWidth = 2;
     for (let i = 0; i <= 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.stroke(); g.beginPath(); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); }
-  }, [5, 5]);
+  }, [floorW / 1.2, floorD / 1.2]);
 }
 
 // A drinks and snacks machine, lit from inside. Plain colours, no brands.
