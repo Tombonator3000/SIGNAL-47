@@ -25,6 +25,10 @@ async def main():
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
+        # Let the first page finish fetching its sounds. On the Pages build they are separate
+        # files, and a reload in the middle aborts the fetch, so the old page logs a warning.
+        try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 11", timeout=120000)
+        except Exception: pass
         await pg.evaluate("localStorage.clear()")
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
