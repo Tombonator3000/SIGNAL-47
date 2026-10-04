@@ -1,0 +1,29 @@
+{
+  "asset": "fanfold_1986",
+  "source": "src/assets/art/production/round10_qa/sources/fanfold_1986_generated.png",
+  "source_sha256": "328889e8fdc15fde840a7fad55d4255846d9f058c64f9abe00bc70090f1c0aee",
+  "source_size": [
+    1165,
+    1350
+  ],
+  "source_embedded_icc": false,
+  "file": "src/assets/art/docs/fanfold_1986.jpg",
+  "size": [
+    1024,
+    1186
+  ],
+  "sha256": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+  "bytes": 117845,
+  "export": {
+    "pillow": "12.1.1",
+    "resize": "Lanczos, exact-size only",
+    "color": "embedded frozen sRGB ICC, RGB",
+    "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+    "grayscale_rgb": false,
+    "jpeg_quality": 85,
+    "subsampling": 0,
+    "optimize": true
+  },
+  "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+  "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e"
+}

@@ -1,0 +1,94 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-04T23:02:32.668Z",
+  "url": "http://127.0.0.1:8487/src/assets/art/production/round10_qa/index.html",
+  "images": [
+    {
+      "alt": "Hele masterbildet: lys, komet, to ranchere og tre landmålere helt til høyre",
+      "complete": true,
+      "naturalHeight": 1600,
+      "naturalWidth": 2400,
+      "src": "../../docs/photo_1947_master.jpg"
+    },
+    {
+      "alt": "Utsnitt A med lys, komet og mesa, uten personer",
+      "complete": true,
+      "naturalHeight": 720,
+      "naturalWidth": 960,
+      "src": "photo_crop_A.png"
+    },
+    {
+      "alt": "Utsnitt B med to ranchere og uten landmålere",
+      "complete": true,
+      "naturalHeight": 1380,
+      "naturalWidth": 1840,
+      "src": "photo_crop_B.png"
+    },
+    {
+      "alt": "Hele Bs høyre kant, forstørret to ganger",
+      "complete": true,
+      "naturalHeight": 2760,
+      "naturalWidth": 480,
+      "src": "photo_B_right_edge_zoom.png"
+    },
+    {
+      "alt": "De faste A, B og C-rammene over masterbildet",
+      "complete": true,
+      "naturalHeight": 1600,
+      "naturalWidth": 2400,
+      "src": "photo_master_frames.png"
+    },
+    {
+      "alt": "Tekstfri plakat med tom kremfarget kartboks",
+      "complete": true,
+      "naturalHeight": 1536,
+      "naturalWidth": 1024,
+      "src": "../../docs/poster_halley_1986_blank.jpg"
+    },
+    {
+      "alt": "Prøvetekst fra KAPITLER på plakaten",
+      "complete": true,
+      "naturalHeight": 1536,
+      "naturalWidth": 1024,
+      "src": "poster_sample_text.png"
+    },
+    {
+      "alt": "Plakaten med prøvetekst i veggstørrelse",
+      "complete": true,
+      "naturalHeight": 384,
+      "naturalWidth": 256,
+      "src": "poster_sample_256x384.png"
+    },
+    {
+      "alt": "Plakatens fire eksakte skrivefelt",
+      "complete": true,
+      "naturalHeight": 1536,
+      "naturalWidth": 1024,
+      "src": "poster_zones.png"
+    },
+    {
+      "alt": "Rent hvitt fanfoldpapir fra 1986 med 22 hull på hver side",
+      "complete": true,
+      "naturalHeight": 1186,
+      "naturalWidth": 1024,
+      "src": "../../docs/fanfold_1986.jpg"
+    },
+    {
+      "alt": "Gulnet fanfoldpapir fra 1947 med 22 hull på hver side og ett revnet hull",
+      "complete": true,
+      "naturalHeight": 1186,
+      "naturalWidth": 1024,
+      "src": "../../docs/fanfold_1947.jpg"
+    },
+    {
+      "alt": "Begge fanfoldark med lesbar prøvetekst fra unntaksperma",
+      "complete": true,
+      "naturalHeight": 1226,
+      "naturalWidth": 2048,
+      "src": "fanfold_side_by_side_sample.png"
+    }
+  ],
+  "capturedWarningsOrErrors": [],
+  "scope": "Private asset gallery only, not game integration",
+  "screenshot": "browser_preview.jpg"
+}

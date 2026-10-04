@@ -1,0 +1,29 @@
+{
+  "asset": "photo_1947_master",
+  "source": "src/assets/art/production/round10_qa/sources/photo_1947_master_generated.png",
+  "source_sha256": "ed65a48373b33475ca4b927a3b492e7273c3b3edd3533ee3e23adef39770a18f",
+  "source_size": [
+    1536,
+    1024
+  ],
+  "source_embedded_icc": false,
+  "file": "src/assets/art/docs/photo_1947_master.jpg",
+  "size": [
+    2400,
+    1600
+  ],
+  "sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+  "bytes": 1105625,
+  "export": {
+    "pillow": "12.1.1",
+    "resize": "Lanczos, exact-size only",
+    "color": "embedded frozen sRGB ICC, RGB",
+    "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+    "grayscale_rgb": true,
+    "jpeg_quality": 85,
+    "subsampling": 0,
+    "optimize": true
+  },
+  "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+  "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e"
+}

@@ -1,0 +1,316 @@
+{
+  "schema": "signal47-round10-manifest-v1",
+  "created_utc": "2026-10-04T22:54:14.674292+00:00",
+  "base_commit": "2de9947",
+  "branch": "codex/round10-story-art-20261004",
+  "brief": "web/ART_BRIEF.md, Runde 10",
+  "file_path_base": "web/",
+  "origin": {
+    "tool": "built-in ChatGPT image generator",
+    "model_version": "not exposed",
+    "copyright_note": "Original AI-generated fictional assets for SIGNAL / 47; no real people, brands, newspapers or external image-library sources. Not claimed CC0.",
+    "prompts": "src/assets/art/production/round10_qa/sources/prompts.json",
+    "prompts_sha256": "d99f9508bd017bfaa8e7fac43cc6b0b17be584ddcf845c4b2ffcb396fc9e7b17"
+  },
+  "assets": [
+    {
+      "asset": "photo_1947_master",
+      "source": "src/assets/art/production/round10_qa/sources/photo_1947_master_generated.png",
+      "source_sha256": "ed65a48373b33475ca4b927a3b492e7273c3b3edd3533ee3e23adef39770a18f",
+      "source_size": [
+        1536,
+        1024
+      ],
+      "source_embedded_icc": false,
+      "file": "src/assets/art/docs/photo_1947_master.jpg",
+      "size": [
+        2400,
+        1600
+      ],
+      "sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+      "bytes": 1105625,
+      "export": {
+        "pillow": "12.1.1",
+        "resize": "Lanczos, exact-size only",
+        "color": "embedded frozen sRGB ICC, RGB",
+        "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+        "grayscale_rgb": true,
+        "jpeg_quality": 85,
+        "subsampling": 0,
+        "optimize": true
+      },
+      "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+      "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e",
+      "creation": {
+        "tool": "built-in ChatGPT image generator",
+        "selected_prompt_key": "r10photoGeometryGenPrompt",
+        "reference": "src/assets/art/production/round10_qa/sources/photo_composition_guide.png",
+        "reference_sha256": "97f09ee87916b80f3765d0a42ac0aff9cc70d5b0ccffb6813f12cc401740b579",
+        "method": "AI raster generation/edit from technical geometry guide; only exact-size/sRGB/JPEG export in Python. No semantic retouching by scripts."
+      }
+    },
+    {
+      "asset": "poster_halley_1986_blank",
+      "source": "src/assets/art/production/round10_qa/sources/poster_halley_1986_blank_generated.png",
+      "source_sha256": "30d7a645efd359cd7d803297e33842a61adce512839de0e99cabd81dd2bd1863",
+      "source_size": [
+        1024,
+        1536
+      ],
+      "source_embedded_icc": false,
+      "file": "src/assets/art/docs/poster_halley_1986_blank.jpg",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+      "bytes": 293045,
+      "export": {
+        "pillow": "12.1.1",
+        "resize": "Lanczos, exact-size only",
+        "color": "embedded frozen sRGB ICC, RGB",
+        "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+        "grayscale_rgb": false,
+        "jpeg_quality": 85,
+        "subsampling": 0,
+        "optimize": true
+      },
+      "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+      "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e",
+      "creation": {
+        "tool": "built-in ChatGPT image generator",
+        "selected_prompt_key": "r10posterGeometryGenPrompt",
+        "reference": "src/assets/art/production/round10_qa/sources/poster_composition_guide.png",
+        "reference_sha256": "fbf463ce58f1a8f20323b748828ac2b58a0f3482a99fadc9a7e5f9751264b2dc",
+        "method": "AI raster generation/edit from technical geometry guide; only exact-size/sRGB/JPEG export in Python. No semantic retouching by scripts."
+      }
+    },
+    {
+      "asset": "fanfold_1986",
+      "source": "src/assets/art/production/round10_qa/sources/fanfold_1986_generated.png",
+      "source_sha256": "328889e8fdc15fde840a7fad55d4255846d9f058c64f9abe00bc70090f1c0aee",
+      "source_size": [
+        1165,
+        1350
+      ],
+      "source_embedded_icc": false,
+      "file": "src/assets/art/docs/fanfold_1986.jpg",
+      "size": [
+        1024,
+        1186
+      ],
+      "sha256": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+      "bytes": 117845,
+      "export": {
+        "pillow": "12.1.1",
+        "resize": "Lanczos, exact-size only",
+        "color": "embedded frozen sRGB ICC, RGB",
+        "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+        "grayscale_rgb": false,
+        "jpeg_quality": 85,
+        "subsampling": 0,
+        "optimize": true
+      },
+      "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+      "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e",
+      "creation": {
+        "tool": "built-in ChatGPT image generator",
+        "selected_prompt_key": "r10fan1986GeometryGenPrompt",
+        "reference": "src/assets/art/production/round10_qa/sources/fanfold_geometry_guide.png",
+        "reference_sha256": "1097ba1081bb36837d65c7e4d4d2715b91082aab59d5c27f091213d4e492ea59",
+        "method": "AI raster generation/edit from technical geometry guide; only exact-size/sRGB/JPEG export in Python. No semantic retouching by scripts."
+      }
+    },
+    {
+      "asset": "fanfold_1947",
+      "source": "src/assets/art/production/round10_qa/sources/fanfold_1947_generated.png",
+      "source_sha256": "e6bfcc6f9e989f4aaefb12d5cd4b6695f4b02def4a726d06c64890c0851c479e",
+      "source_size": [
+        1165,
+        1350
+      ],
+      "source_embedded_icc": false,
+      "file": "src/assets/art/docs/fanfold_1947.jpg",
+      "size": [
+        1024,
+        1186
+      ],
+      "sha256": "847c21d0175d6d589ac3c6c2d6e6349153fd605df01ed51c584e2c5e2dfacd52",
+      "bytes": 220593,
+      "export": {
+        "pillow": "12.1.1",
+        "resize": "Lanczos, exact-size only",
+        "color": "embedded frozen sRGB ICC, RGB",
+        "source_without_icc": "numeric RGB interpreted as sRGB per art brief",
+        "grayscale_rgb": false,
+        "jpeg_quality": 85,
+        "subsampling": 0,
+        "optimize": true
+      },
+      "srgb_profile": "src/assets/art/production/round10_qa/sources/srgb.icc",
+      "srgb_sha256": "0e0bdda89c24ab861f0180aa7ed5f8c205cdb24590a0eb79eff60b8d497ae02e",
+      "creation": {
+        "tool": "built-in ChatGPT image generator",
+        "selected_prompt_key": "r10fan1947Prompt",
+        "reference": "src/assets/art/production/round10_qa/sources/fanfold_1986_generated.png",
+        "reference_sha256": "328889e8fdc15fde840a7fad55d4255846d9f058c64f9abe00bc70090f1c0aee",
+        "method": "AI raster generation/edit from technical geometry guide; only exact-size/sRGB/JPEG export in Python. No semantic retouching by scripts."
+      }
+    }
+  ],
+  "cropping": {
+    "source": "src/assets/art/docs/photo_1947_master.jpg",
+    "source_sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+    "rectangles_xywh": {
+      "A": [
+        600,
+        300,
+        960,
+        720
+      ],
+      "B": [
+        0,
+        220,
+        1840,
+        1380
+      ],
+      "C": [
+        0,
+        0,
+        2400,
+        1600
+      ]
+    },
+    "rule": "All three are drawImage crops of this SAME master; never generate three separate evidence pictures."
+  },
+  "quality": {
+    "automatic": "PASS",
+    "manual_visual": "PASS",
+    "independent_technical": "PASS",
+    "aged_paper_broad_threshold_alignment": "UNVERIFIED",
+    "runtime": "UNVERIFIED",
+    "reproduction": "PASS: 4/4 byte-identical JPEGs",
+    "private_browser_gallery": "PASS: 12/12 images decoded; no captured console warnings/errors"
+  },
+  "integration": {
+    "owner": "Claude",
+    "later_assets_only": true,
+    "tasks": [
+      "load four assets as later art",
+      "poster text in halleyPosterTex with current fallback",
+      "binder paper backgrounds",
+      "diner crop B; A and C reserved for planned chapters",
+      "add origin credit in THIRD_PARTY_NOTICES.md",
+      "one combined artcheck/CSP/Pages and game integration pass"
+    ],
+    "unchanged": "No runtime, old albedos/material maps, sky, Unity/archive, story files or other Claude files changed."
+  },
+  "tools": [
+    {
+      "file": "tools/round10_export.py",
+      "sha256": "48aa7140656ffe66147660ad4b3735a6ff2d386cab4a75d50be447f76403dae0"
+    },
+    {
+      "file": "tools/round10_guides.py",
+      "sha256": "e7504c1a8b9f0bfb2d2556265cbf851c6f7335c301304f511b816766cc67263b"
+    },
+    {
+      "file": "tools/round10_qa.py",
+      "sha256": "d6fbe12276ff957680a556c7a82b5d779fc2b2fd7ad0a6e1d72d689c839deb8f"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "src/assets/art/production/round10_qa/fanfold_side_by_side_sample.png",
+      "sha256": "855e7396698293a469e8a2ddca67aebde508bd6a996577b28c6c25595f0d34a8",
+      "bytes": 2522483
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/photo_B_right_edge_zoom.png",
+      "sha256": "a2c960c12897eb64e28c446eb5691d21606fe5de0e86a790d6123c8b87e42a8d",
+      "bytes": 449216
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/photo_crop_A.png",
+      "sha256": "d55adc55322c8ad6889cb6fcb4963b8341bfcf1be2e2dd97ba0b47e77dac88a2",
+      "bytes": 977091
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/photo_crop_B.png",
+      "sha256": "466bd375e119fdb7822d3b7a65d0e69be520312cc4814e8084471dc702e7f3b3",
+      "bytes": 3431371
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/photo_crop_C.png",
+      "sha256": "21f777c4f7b1c111a9599d1b37c8b498418926514f2ac041f2f7e24b8ae6968f",
+      "bytes": 5048049
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/photo_master_frames.png",
+      "sha256": "23408f4d18dec6617581169944964f10bbf2e8834d110baf9f81eb53b27ac532",
+      "bytes": 4989597
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/poster_blank_256x384.png",
+      "sha256": "41257a9649ddc923545d950be034e0b4352595e601c97775201249dfae038eef",
+      "bytes": 123620
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/poster_sample_256x384.png",
+      "sha256": "c8564894e4ca3c9c03ef04922c6bf7e6833167b4935a608d1a8ea02a7593b6dc",
+      "bytes": 142981
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/poster_sample_text.png",
+      "sha256": "5e790dfb2ad9372f3022944e70d7cfc770a2c44350f38ec1daea0969062bb6a1",
+      "bytes": 1766823
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/poster_zones.png",
+      "sha256": "78fa022daedddd30f8e03fa8c617af1e33137f19a7fc0dc52383b8beb5a873ee",
+      "bytes": 1768313
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/round10_report.json",
+      "sha256": "555dc5e5b7293589ce3679cc56bef2910fe56a292accd81961894ce80e94fa97",
+      "bytes": 138564
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/manual_review.json",
+      "sha256": "922af37bbe9b21af3f6350a56a048ec86ef9f81bdc688667a6c13dfded23288d",
+      "bytes": 2739
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/independent_audit.json",
+      "sha256": "e9f683b87d3902b95254d10fb43359f4faa61c705834c9c4c5951ab3d9f10374",
+      "bytes": 2399
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/reproduction.json",
+      "sha256": "392d8841b37c698bfaf1854a40708ab656d3467d9ba4b577646cb113665eb6f0",
+      "bytes": 635
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/index.html",
+      "sha256": "affff0a86478f35c21f5550e43b9635e0190ddb6d47c169edb1826335243a77a",
+      "bytes": 4008
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/browser_preview.jpg",
+      "sha256": "6faa297ccb8dba0d51b553d7f1f52aed82cebfbbe24ff1045f40d985b44219af",
+      "bytes": 91642
+    },
+    {
+      "file": "src/assets/art/production/round10_qa/browser_review.json",
+      "sha256": "912a463100089d992f3571e8b74644597a4f389dacaee2b2b53c5156de05efe9",
+      "bytes": 2718
+    }
+  ],
+  "limitations": [
+    "Visual review is not OCR/object detection or runtime verification.",
+    "Exact AI model/version was not exposed.",
+    "Photo native generation 1536x1024, exported with Lanczos to requested 2400x1600; fanfold native 1165x1350 to 1024x1186.",
+    "Broad threshold hole alignment is UNVERIFIED on aged paper; independent low-threshold cores corroborate count and row placement.",
+    "Runtime loading, actual integrated text/crops, CSP, Pages and physical PC/mobile remain with Claude and UNVERIFIED here."
+  ]
+}
