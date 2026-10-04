@@ -1,0 +1,361 @@
+{
+  "captured_utc": "2026-10-04T13:22:50.975248+00:00",
+  "base_commit": "db47e04b95602bb81c96df3734ba934ce5fd44d0",
+  "source_hashes": {
+    "web/src/world/MotelFront.ts": "f615f867e4734541279263d635dc0944eded2c7939d469c5108b5b9f40713716",
+    "web/tools/motelpreview.py": "f3d386dbfd64b463968075a45146837da5314cd7152a63d254a42946134ecf54",
+    "web/src/assets/art/production/round7.html": "da46ac69696268524c507229eaa3946b5ee2cb6f3117838d9ec688926253fdd6"
+  },
+  "ownership": {
+    "preserved_baseline_files": 69,
+    "changed_baseline_files": []
+  },
+  "verification": {
+    "typescript_no_emit": "PASS",
+    "python_syntax": "PASS",
+    "browser_capture_count": 22,
+    "required_main_views": 20,
+    "extra_phone_views": 2,
+    "all_recorded_contract_checks_pass": true,
+    "contract_count_before_recreate": 29,
+    "contract_count_after_recreate": 30,
+    "real_player_routes": 3,
+    "interaction_pick_ids": 11,
+    "range_metres": 2.4,
+    "player_radius_metres": 0.27,
+    "recreations": 3,
+    "draw_calls_min": 15,
+    "draw_calls_max": 38,
+    "context_excluded_from_calls": true,
+    "constructor_ms_samples": [
+      11.2,
+      13.2,
+      23.7,
+      38.7,
+      71.3
+    ],
+    "captured_console": [],
+    "target_device_fps": "UNVERIFIED",
+    "integrated_chapter4": "UNVERIFIED"
+  },
+  "review": {
+    "observed_defect": "Coplanar asphalt, concrete walk and office floor made black horizontal z-fighting stripes.",
+    "corrected": "Split parking and walk slabs; all walking surfaces still y=0; original zones/colliders/proxies unchanged.",
+    "before_module_sha256": "65ca369847ddb1f95cbf6bba197b34332bd0a8a85b3ea09ec6751b18ddaa19d6",
+    "after_module_sha256": "f615f867e4734541279263d635dc0944eded2c7939d469c5108b5b9f40713716",
+    "retained_before_images": [
+      "review-before-floor-fix-lot.jpg",
+      "review-before-floor-fix-room6.jpg"
+    ],
+    "root_review": "Phone views, light-off views and corrected Lot inspected; all six generated exports and normal2x2wall inspected.",
+    "independent_visual_review": {
+      "agent": "exterior_art",
+      "images_inspected": 20,
+      "result": "PASS MotelFront: ingen gjenværende z-fighting, feil flatesider, grov High/Low-forskjell eller UI-overflow; rom6nummer lesbart.",
+      "existing_context_finding": "Beholdt Exterior-skilt viser speilvendt tekst fra baksiden i fire Road-bilder. Forsiden er korrekt i Overview. Eier Claude/Exterior, videreført i handoff."
+    }
+  },
+  "capture_files": [
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-lot.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "8e0a69e200273f0d445c83001f7630f10c442be3ab59baf0344297eaefcd23de",
+      "bytes": 65529,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-office.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "e0758b9bdad2ef4e1fb785df7f0b1505ede6f254467090b12db7627571b5a2d9",
+      "bytes": 71881,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-overview.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "1d8e0043837d828f409ebec90c455211fa439c348adf69ecee44242c21f9a3ad",
+      "bytes": 44307,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-phone.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "b66100b1d649f91eb9bebc117898cf4fa453f955628fcb5460afe88d696fdf18",
+      "bytes": 55206,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-road.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "88a8a6518b3aad3904eba99197afda6f3644032b7d839045ada39f4302e7de9f",
+      "bytes": 44644,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-high-room6.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "fee3ba1dd22c33c604d37f4000898657657f68c672afdd9fbb713af0ee914c69",
+      "bytes": 63437,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-low-lot.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "50cb00372b2eafae1e4266fefb3df1b729867e4c39b6929afb9bb47dc30b25d2",
+      "bytes": 64965,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-low-office.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "1814fd63e76b23c695e47f8f0681f654857aafce44a1b76de07d8de3977f8db2",
+      "bytes": 72054,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-low-overview.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "c7c353bba234d45231826e4fb14ad9db425e5012eae66854febfed25834abf2f",
+      "bytes": 44472,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-low-road.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "01e89bc165095fd8612917840ceba6566b583dd3110b6a37c1dd32808acbb7dc",
+      "bytes": 44441,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/1280x800-low-room6.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "eec86dec1aeef81cedb715ade4e2bd259e8b786c061b4aba3d812114c77d1992",
+      "bytes": 63400,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-lot.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "0815d0c83f76ef6cf010a954ab01b09f27168644b0612fed3ff29aea40ecb428",
+      "bytes": 34839,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-office-light-off.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "3b701053004a3f1d4caa893e0931a29b70b3f5b594dc698b0ec5f5a8f2b6f3ba",
+      "bytes": 29531,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-office.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "9eb210de63af7bd7f221358a05a671429672a39685824c38d60d17229278a3ba",
+      "bytes": 37150,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-overview.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "5baec700b91fd433dbb9c57e0028ab1fa00959d0215bac979c69339d483703ce",
+      "bytes": 26748,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-phone.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "44c69ca583dd4e8ce0d0819c3787d2006457ae64ea369aa592fdde06002b0fc6",
+      "bytes": 32198,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-road.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "82c35a4934999edd3bd6658fef4fbd5a77931143abcee4c2982c4336fd4ac739",
+      "bytes": 26719,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-high-room6.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "18a097648723e620a0a048423d6a3b742b8a74ef10924620a6d9911537488c8f",
+      "bytes": 32399,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-door-open-light-off.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "ce230af507ce345a66a45952dcf799ce2ff012deb180dd41c07545d3e6815951",
+      "bytes": 28986,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-lot.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "7442b40ff546cb47f8441fe0aafdffb718f7694be68bfd725d647c6e7831e48e",
+      "bytes": 34678,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-office-light-off.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "037ee27c26f44956b516e94b901f205656846c56a91078c5568652121075d44c",
+      "bytes": 29564,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-office.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "059f0a692bcb0a9688ff77e7dbea308a6ef1a270f7fd04065d2623be8148550e",
+      "bytes": 37092,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-overview.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "cc09380db8ca749de7ec38bcbac04e1f25ce7793828921d4d6c105a595f64f70",
+      "bytes": 26729,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-recreate-contracts.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "cab7e949a2d05cdacc413ac9714bb0227cbf4febd604fe7e0366fabae6945685",
+      "bytes": 41056,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-road.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "ced11f14086378b9cc75e97e84d2344c0073a8aad7a7c2e26d86af526ab53884",
+      "bytes": 26689,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/844x390-low-room6.jpg",
+      "file_pixels": [
+        844,
+        390
+      ],
+      "sha256": "24b4e38053280acb05b24a02950f614ad756c8fbbc1fb5e7389c519b0e1ad8a0",
+      "bytes": 32408,
+      "kind": "final runtime preview"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/review-before-floor-fix-lot.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "da4d4db233b99208708f10e61411e8db5f7e004ff604dff87bbfcc35e18929a8",
+      "bytes": 67398,
+      "kind": "rejected before floor fix"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/review-before-floor-fix-room6.jpg",
+      "file_pixels": [
+        1280,
+        800
+      ],
+      "sha256": "6c21f0e46d1d3ce71c1c7bdbebf2034e370e654f8191207504f380bb6938e658",
+      "bytes": 65479,
+      "kind": "rejected before floor fix"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/round7-gallery-desktop.jpg",
+      "file_pixels": [
+        1265,
+        1493
+      ],
+      "sha256": "0d79081533d7051a88aaef97afa190d166fd027ba54ad1cbd8ddcadfef116c07",
+      "bytes": 181188,
+      "kind": "asset gallery"
+    },
+    {
+      "path": "web/evidence/motel-2026-10-04/round7-gallery-mobile.jpg",
+      "file_pixels": [
+        375,
+        3653
+      ],
+      "sha256": "ed25cf44561cdada0992e4a1ccbd375b7b7df6ece648eb1ae5d22af077c8be98",
+      "bytes": 168271,
+      "kind": "asset gallery"
+    }
+  ],
+  "limits": "Privat Vite-preview med startupassets og canvas. Nye JPG-er er ikke importert. Browser viewport er bekreftet fra DOM og final runtimefiler er eksakte1280x800/844x390. Galleriets screenshotmål er registrert separat. Dette måler ikke fysisk mobil/FPS/berøring/lyd."
+}

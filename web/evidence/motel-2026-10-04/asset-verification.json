@@ -1,0 +1,415 @@
+{
+  "created_utc": "2026-10-04T13:07:17.206091+00:00",
+  "scope": "Runde7 asset/provenance og lokale gallerifiler; root har separat inspisert alle bilder og repeat.",
+  "summary": {
+    "passed": 57,
+    "total": 57,
+    "assets": 6,
+    "manifests": 2,
+    "gallery_references": 15
+  },
+  "assets": [
+    {
+      "path": "web/src/assets/art/motel/door_room_blank.jpg",
+      "dimensions": [
+        512,
+        1024
+      ],
+      "bytes": 66843,
+      "sha256": "ba26a326824c4cbee819880f99f66707023370a35eee5438d3ad89645bbde439"
+    },
+    {
+      "path": "web/src/assets/art/motel/window_night_lit.jpg",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 40338,
+      "sha256": "e0d108710a79f24c89156d6b0eb1242fb695c1ef246ab2f7786695a5722ffc66"
+    },
+    {
+      "path": "web/src/assets/art/motel/window_night_dark.jpg",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 29733,
+      "sha256": "167a6ea1bd49ca1257bf5efb754f0557c94f1a013c0b49e6e568bbdb6897b7d4"
+    },
+    {
+      "path": "web/src/assets/art/motel/tex_motel_wall.jpg",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "bytes": 407769,
+      "sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf"
+    },
+    {
+      "path": "web/src/assets/art/docs/card_field_1947.jpg",
+      "dimensions": [
+        1024,
+        640
+      ],
+      "bytes": 120139,
+      "sha256": "a69b7cc9fa0340bc62071cb695d879b73a9387d3296639e93e5f6034c7876999"
+    },
+    {
+      "path": "web/src/assets/art/docs/letter_paper_1947.jpg",
+      "dimensions": [
+        1024,
+        1365
+      ],
+      "bytes": 257517,
+      "sha256": "9975313dfe91924f02280082faf84e6c2897728be8fbb7872194c26df2b2dca9"
+    }
+  ],
+  "checks": [
+    {
+      "label": "asset motel/door_room_blank.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          512,
+          1024
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "asset motel/window_night_lit.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "asset motel/window_night_dark.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "asset motel/tex_motel_wall.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          1024,
+          1024
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "asset docs/card_field_1947.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          1024,
+          640
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "asset docs/letter_paper_1947.jpg",
+      "pass": true,
+      "detail": {
+        "dimensions": [
+          1024,
+          1365
+        ],
+        "profile": "sRGB built-in\n"
+      }
+    },
+    {
+      "label": "built-in provenance web/src/assets/art/motel/MOTEL_DOOR_WINDOWS.json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/ART_BRIEF.md",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/concept/sierra_court.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/motel/door_room_blank.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/motel/door_room_blank.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/motel/window_night_lit.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/motel/window_night_lit.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/motel/window_night_dark.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/motel/window_night_dark.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/motel/window-pair-preview.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/motel/window-pair-preview.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-a5744ea8-ef91-4d34-8732-b7c599a0308a.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-a5744ea8-ef91-4d34-8732-b7c599a0308a.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-7fafd656-fd84-41b4-afdc-2c03b9a12a37.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-7fafd656-fd84-41b4-afdc-2c03b9a12a37.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-984169b0-9f67-47b6-be78-a2cf4ab1bc37.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-984169b0-9f67-47b6-be78-a2cf4ab1bc37.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-7fafd656-fd84-41b4-afdc-2c03b9a12a37.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "built-in provenance web/src/assets/art/docs/MOTEL_PAPERS_WALL.json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/ART_BRIEF.md",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/ART_BRIEF.md",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/concept/sierra_court.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/motel/tex_motel_wall.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/motel/tex_motel_wall.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-2151d78d-c02e-4c1e-8fd5-3a32daa2a614.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-2151d78d-c02e-4c1e-8fd5-3a32daa2a614.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/docs/card_field_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/docs/card_field_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-05cb64ea-4d31-4083-820e-ec5e91a6f966.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-05cb64ea-4d31-4083-820e-ec5e91a6f966.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash web/src/assets/art/docs/letter_paper_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes web/src/assets/art/docs/letter_paper_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "hash /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-0135ac0e-5478-4649-b6ed-9a323a3fdc6d.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "bytes /home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-0135ac0e-5478-4649-b6ed-9a323a3fdc6d.png",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/door_room_blank.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/door_room_blank.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/window_night_lit.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/window_night_lit.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/window_night_dark.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/window_night_dark.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/tex_motel_wall.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/tex_motel_wall.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/motel-wall-repeat-preview.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../docs/card_field_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../docs/card_field_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../docs/letter_paper_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../docs/letter_paper_1947.jpg",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../motel/MOTEL_DOOR_WINDOWS.json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "gallery reference ../docs/MOTEL_PAPERS_WALL.json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "label": "capture round7-gallery-desktop.jpg",
+      "pass": true,
+      "detail": {
+        "file_pixels": [
+          1265,
+          1493
+        ]
+      }
+    },
+    {
+      "label": "capture round7-gallery-mobile.jpg",
+      "pass": true,
+      "detail": {
+        "file_pixels": [
+          375,
+          3653
+        ]
+      }
+    }
+  ],
+  "gallery_browser": {
+    "desktop_viewport": [
+      1280,
+      800
+    ],
+    "mobile_viewport": [
+      390,
+      844
+    ],
+    "images_loaded": 6,
+    "horizontal_overflow": false,
+    "captured_console_errors_and_warnings": [],
+    "screenshot_pixels_recorded_separately": true
+  },
+  "visual_review": "PASS ved root: oksblodrød blank dør, matchende lit/dark-vindusgeometri, ingen personer eller tekst; kort med 11 blå linjer og rød marg; brev med to bretter; vanlig2x2 vegg uten tydelig tonal skjøt. Ikke pikselidentiske repeatkanter."
+}
