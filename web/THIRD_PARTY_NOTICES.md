@@ -26,6 +26,15 @@ Brummen, bærebølgen, telefonopptaket, smellet og motorene lages i kode med Web
 
 Fontene er innebygd uendret. Lisenstekstene finnes på https://github.com/google/fonts.
 
+## Grafikk til Roswell-veien og dineren
+
+4. oktober 2026: seks originalbilder laget for SIGNAL / 47 med den innebygde ChatGPT-bildegeneratoren etter runde 6 i Claudes `ART_BRIEF.md` på `1781093`. Eksakt modellversjon er ikke eksponert. Dette er genererte prosjektassets, ikke nedlastede tredjepartsbilder eller en påstått CC0-lisens. Ingen ekstern betalt assettjeneste er brukt.
+
+- `diner/sign_diner_blank.png`, `tex_counter_laminate.jpg`, `tex_floor_checker.jpg`, `menu_board_blank.png` og `clipping_photo_1947.jpg`.
+- `road/tex_gravel_track.jpg`.
+
+Stier er relative til `src/assets/art/`. Prompts, originale kildebaner, hash, eksporter og kontrollnotater står i `diner/DINER_SURFACES.json` og `diner/DINER_ROAD_PROPS.json`. Avisfotoet er oppdiktet for fortellingen og er ikke kopiert fra en historisk avis. Se `ART_ROUND6_DELIVERY.md`. Tidligere kreditering gjelder uendret.
+
 ## Grafikk
 
 Geometrien og instrument-/bevisgrafikken er laget i kode for dette prosjektet.
