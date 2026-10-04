@@ -1,0 +1,118 @@
+{
+  "created_utc": "2026-10-04T11:30:25.215Z",
+  "scope": "asset gallery, not game runtime",
+  "url": "http://127.0.0.1:8479/production/round6.html",
+  "desktop": {
+    "height": 720,
+    "images": [
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/sign_diner_blank.png",
+        "width": 1024
+      },
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/tex_counter_laminate.jpg",
+        "width": 512
+      },
+      {
+        "height": 1024,
+        "loaded": true,
+        "src": "../diner/tex_floor_checker.jpg",
+        "width": 1024
+      },
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/menu_board_blank.png",
+        "width": 1024
+      },
+      {
+        "height": 768,
+        "loaded": true,
+        "src": "../diner/clipping_photo_1947.jpg",
+        "width": 1024
+      },
+      {
+        "height": 1024,
+        "loaded": true,
+        "src": "../road/tex_gravel_track.jpg",
+        "width": 1024
+      }
+    ],
+    "scrollWidth": 1265,
+    "width": 1280
+  },
+  "mobile": {
+    "cards": [
+      {
+        "width": 343,
+        "x": 16
+      },
+      {
+        "width": 343,
+        "x": 16
+      },
+      {
+        "width": 343,
+        "x": 16
+      },
+      {
+        "width": 343,
+        "x": 16
+      },
+      {
+        "width": 343,
+        "x": 16
+      },
+      {
+        "width": 343,
+        "x": 16
+      }
+    ],
+    "height": 844,
+    "images": [
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/sign_diner_blank.png",
+        "width": 1024
+      },
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/tex_counter_laminate.jpg",
+        "width": 512
+      },
+      {
+        "height": 1024,
+        "loaded": true,
+        "src": "../diner/tex_floor_checker.jpg",
+        "width": 1024
+      },
+      {
+        "height": 512,
+        "loaded": true,
+        "src": "../diner/menu_board_blank.png",
+        "width": 1024
+      },
+      {
+        "height": 768,
+        "loaded": true,
+        "src": "../diner/clipping_photo_1947.jpg",
+        "width": 1024
+      },
+      {
+        "height": 1024,
+        "loaded": true,
+        "src": "../road/tex_gravel_track.jpg",
+        "width": 1024
+      }
+    ],
+    "scrollWidth": 375,
+    "width": 390
+  },
+  "console": []
+}

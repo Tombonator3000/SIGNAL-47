@@ -1,0 +1,785 @@
+{
+  "schema": 1,
+  "checked_utc": "2026-10-04T11:32:10.684857+00:00",
+  "pillow_version": "12.1.1",
+  "scope": "Teknisk kontroll av seks runde 6-assets, to manifester, tre 2x2-forhåndsvisninger og galleriets lokale referanser.",
+  "brief": {
+    "ref": "1781093",
+    "path": "web/ART_BRIEF.md",
+    "commit": "17810930a941f574f5cfcb6f0ec373c26292007b",
+    "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+  },
+  "missing": [],
+  "visual_qa": {
+    "status": "NOT_PERFORMED_BY_SCRIPT",
+    "items": [
+      "Synlige sømmer ved vanlig repeat",
+      "8x8 fliser i gulvet",
+      "Neonform, glød og visuell padding",
+      "Tom tekstflate og fravær av feil tekst/merkevarer",
+      "Avismotiv, hjulspor og stil"
+    ]
+  },
+  "runtime": "NOT_TESTED: Ikke integrasjon, spilling eller maskinvareytelse.",
+  "assets": [
+    {
+      "file": "diner/sign_diner_blank.png",
+      "sha256": "66cf970ffaea32671bf7f04a39acb8c0163d98ef011ca1f153df5f321c131637",
+      "bytes": 315692,
+      "dimensions": [
+        1024,
+        512
+      ],
+      "format": "PNG",
+      "mode": "RGBA",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "2a11971fc85e9b16b8f2802a0f20fd2780ee9b6dc3a21a70fd28f1599d7f7e30",
+      "embedded_srgb": true,
+      "alpha": {
+        "range": [
+          0,
+          255
+        ],
+        "transparent_pixels": 360469,
+        "opaque_pixels": 1072,
+        "partial_pixels": 162747,
+        "pixels": 524288,
+        "padding_threshold_rule": "alpha > threshold",
+        "padding_by_threshold": {
+          "0": {
+            "left": 122,
+            "top": 42,
+            "right": 71,
+            "bottom": 13
+          },
+          "8": {
+            "left": 127,
+            "top": 64,
+            "right": 126,
+            "bottom": 68
+          },
+          "32": {
+            "left": 129,
+            "top": 67,
+            "right": 129,
+            "bottom": 68
+          },
+          "128": {
+            "left": 132,
+            "top": 70,
+            "right": 132,
+            "bottom": 69
+          },
+          "254": {
+            "left": 140,
+            "top": 75,
+            "right": 133,
+            "bottom": 70
+          }
+        },
+        "outer_edge_max": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "file": "diner/tex_counter_laminate.jpg",
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "bytes": 42959,
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        85
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 194.467,
+        "stddev": 6.103,
+        "range": [
+          115,
+          232
+        ],
+        "dark_0_to_3_fraction": 0.0,
+        "light_252_to_255_fraction": 0.0
+      },
+      "mean_rgb": [
+        184.621,
+        201.886,
+        181.592
+      ],
+      "status": "PASS"
+    },
+    {
+      "file": "diner/tex_floor_checker.jpg",
+      "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "bytes": 271874,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        85
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 132.262,
+        "stddev": 88.033,
+        "range": [
+          1,
+          250
+        ],
+        "dark_0_to_3_fraction": 4e-06,
+        "light_252_to_255_fraction": 0.0
+      },
+      "mean_rgb": [
+        139.753,
+        131.707,
+        115.108
+      ],
+      "status": "PASS"
+    },
+    {
+      "file": "diner/menu_board_blank.png",
+      "sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1",
+      "bytes": 678936,
+      "dimensions": [
+        1024,
+        512
+      ],
+      "format": "PNG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "embedded_srgb": true,
+      "alpha": null,
+      "status": "PASS"
+    },
+    {
+      "file": "diner/clipping_photo_1947.jpg",
+      "sha256": "9529e5990bd6f9f351bdd7692c0e6645eef806fe186c339602a112e7c1ed7474",
+      "bytes": 288567,
+      "dimensions": [
+        1024,
+        768
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "2a11971fc85e9b16b8f2802a0f20fd2780ee9b6dc3a21a70fd28f1599d7f7e30",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        85
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 57.198,
+        "stddev": 27.076,
+        "range": [
+          1,
+          207
+        ],
+        "dark_0_to_3_fraction": 0.000443,
+        "light_252_to_255_fraction": 0.0
+      },
+      "mean_rgb": [
+        62.24,
+        56.152,
+        48.973
+      ],
+      "status": "PASS"
+    },
+    {
+      "file": "road/tex_gravel_track.jpg",
+      "sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "bytes": 419124,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "2a11971fc85e9b16b8f2802a0f20fd2780ee9b6dc3a21a70fd28f1599d7f7e30",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        85
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 149.586,
+        "stddev": 28.231,
+        "range": [
+          23,
+          254
+        ],
+        "dark_0_to_3_fraction": 0.0,
+        "light_252_to_255_fraction": 3e-05
+      },
+      "mean_rgb": [
+        164.217,
+        146.576,
+        126.75
+      ],
+      "status": "PASS"
+    }
+  ],
+  "manifests": [
+    {
+      "file": "diner/DINER_SURFACES.json",
+      "sha256": "e4116ed80918ca5800bb5b78541159db321c9524a88997777a75f66d78727f6a",
+      "hash_records": 14
+    },
+    {
+      "file": "diner/DINER_ROAD_PROPS.json",
+      "sha256": "ac2ba595a4e2aed3ad941fbefe225759e5e66c4ff1d8c844744937b05805392e",
+      "hash_records": 12
+    }
+  ],
+  "manifest_hash_checks": [
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/brief/sha256",
+      "file": "web/ART_BRIEF.md",
+      "snapshot": "17810930a941f574f5cfcb6f0ec373c26292007b",
+      "expected_sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "actual_sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/style_references/0/sha256",
+      "file": "web/src/assets/art/room/tex_desk_laminate.jpg",
+      "snapshot": null,
+      "expected_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "actual_sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/style_references/1/sha256",
+      "file": "web/src/assets/art/lab/sign_blank.png",
+      "snapshot": null,
+      "expected_sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "actual_sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/0/sha256",
+      "file": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+      "snapshot": null,
+      "expected_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "actual_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "status": "PASS"
+    },
+    {
+      "kind": "embedded_icc",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/0/icc_profile_sha256",
+      "file": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+      "expected_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "actual_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/0/source_sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-0881325d-710f-46a9-afbe-5577f1e4f572.png",
+      "snapshot": null,
+      "expected_sha256": "1af613786f181928dcb177546ad219a5c9a8d3291981629a7b0ba1a60657f386",
+      "actual_sha256": "1af613786f181928dcb177546ad219a5c9a8d3291981629a7b0ba1a60657f386",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/0/qa/preview_sha256",
+      "file": "web/src/assets/art/diner/counter-repeat-preview.jpg",
+      "snapshot": null,
+      "expected_sha256": "61fb4ca65270498196233050dd2865546ffd791deae55ab5c219ff07e877dedc",
+      "actual_sha256": "61fb4ca65270498196233050dd2865546ffd791deae55ab5c219ff07e877dedc",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/1/sha256",
+      "file": "web/src/assets/art/diner/tex_floor_checker.jpg",
+      "snapshot": null,
+      "expected_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "actual_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "status": "PASS"
+    },
+    {
+      "kind": "embedded_icc",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/1/icc_profile_sha256",
+      "file": "web/src/assets/art/diner/tex_floor_checker.jpg",
+      "expected_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "actual_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/1/source_sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-f45ec731-49d6-4650-80a5-299aec593721.png",
+      "snapshot": null,
+      "expected_sha256": "d9080f8c347fb522680f55bfa7a8f671894e95689b6228405db6520909955698",
+      "actual_sha256": "d9080f8c347fb522680f55bfa7a8f671894e95689b6228405db6520909955698",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/1/qa/preview_sha256",
+      "file": "web/src/assets/art/diner/checker-repeat-preview.jpg",
+      "snapshot": null,
+      "expected_sha256": "2ffbf7e092f0bb06c591d0ec398145596337d99fb7bfee8c8d8c0f4c8104557d",
+      "actual_sha256": "2ffbf7e092f0bb06c591d0ec398145596337d99fb7bfee8c8d8c0f4c8104557d",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/2/sha256",
+      "file": "web/src/assets/art/diner/menu_board_blank.png",
+      "snapshot": null,
+      "expected_sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1",
+      "actual_sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1",
+      "status": "PASS"
+    },
+    {
+      "kind": "embedded_icc",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/2/icc_profile_sha256",
+      "file": "web/src/assets/art/diner/menu_board_blank.png",
+      "expected_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "actual_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_SURFACES.json",
+      "field": "/assets/2/source_sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-4af25d6b-6c8e-4312-81ce-a98658cd0d92.png",
+      "snapshot": null,
+      "expected_sha256": "90d1f817cde12b35b4142b910d78cd02b0009cbd0dc8fc14018f9ead0400eaff",
+      "actual_sha256": "90d1f817cde12b35b4142b910d78cd02b0009cbd0dc8fc14018f9ead0400eaff",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/references/0/sha256",
+      "file": "web/ART_BRIEF.md",
+      "snapshot": "17810930a941f574f5cfcb6f0ec373c26292007b",
+      "expected_sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "actual_sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/references/1/sha256",
+      "file": "web/src/assets/art/diner/web/HISTORIE.md",
+      "snapshot": "17810930a941f574f5cfcb6f0ec373c26292007b",
+      "expected_sha256": "9ee42f716845225550efc0708119368836adc416f6a86117bf91e1efc326f580",
+      "actual_sha256": "9ee42f716845225550efc0708119368836adc416f6a86117bf91e1efc326f580",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/0/sha256",
+      "file": "web/src/assets/art/diner/sign_diner_blank.png",
+      "snapshot": null,
+      "expected_sha256": "66cf970ffaea32671bf7f04a39acb8c0163d98ef011ca1f153df5f321c131637",
+      "actual_sha256": "66cf970ffaea32671bf7f04a39acb8c0163d98ef011ca1f153df5f321c131637",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/0/qa/composites/0/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/diner-sign-dark-qa.jpg",
+      "snapshot": null,
+      "expected_sha256": "595b3b466dc5f5e609e06089b3f2f81b5dcf6efc73b20a64f354eb0d22d5daa8",
+      "actual_sha256": "595b3b466dc5f5e609e06089b3f2f81b5dcf6efc73b20a64f354eb0d22d5daa8",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/0/qa/composites/1/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/diner-sign-light-qa.jpg",
+      "snapshot": null,
+      "expected_sha256": "0fbd3b3b1437f5dde2db6eaf9b6805b498c7076f6ec22b78288adc6b30f782f4",
+      "actual_sha256": "0fbd3b3b1437f5dde2db6eaf9b6805b498c7076f6ec22b78288adc6b30f782f4",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/1/sha256",
+      "file": "web/src/assets/art/diner/clipping_photo_1947.jpg",
+      "snapshot": null,
+      "expected_sha256": "9529e5990bd6f9f351bdd7692c0e6645eef806fe186c339602a112e7c1ed7474",
+      "actual_sha256": "9529e5990bd6f9f351bdd7692c0e6645eef806fe186c339602a112e7c1ed7474",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/2/sha256",
+      "file": "web/src/assets/art/road/tex_gravel_track.jpg",
+      "snapshot": null,
+      "expected_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "actual_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/assets/2/qa/preview/sha256",
+      "file": "web/src/assets/art/road/gravel-repeat-preview.jpg",
+      "snapshot": null,
+      "expected_sha256": "0bfdba69823f79ada0641fa85c0bfb5b7e1f52408173a317f83d5741b04c5410",
+      "actual_sha256": "0bfdba69823f79ada0641fa85c0bfb5b7e1f52408173a317f83d5741b04c5410",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/generation_steps/0/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-02a05f42-57d1-4b12-8f0a-f1a4b192ab2a.png",
+      "snapshot": null,
+      "expected_sha256": "ef8367def394fe6cf26f7253929f3ede18af393fca1ee33804d7abb1ab451395",
+      "actual_sha256": "ef8367def394fe6cf26f7253929f3ede18af393fca1ee33804d7abb1ab451395",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/generation_steps/1/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-0635eb14-bed7-466e-afd4-9970f6582777.png",
+      "snapshot": null,
+      "expected_sha256": "88799d87b6ff1fc6d9f1ad2b172169e4e86dd2fb004ebb30580bfc622ce8d8d9",
+      "actual_sha256": "88799d87b6ff1fc6d9f1ad2b172169e4e86dd2fb004ebb30580bfc622ce8d8d9",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/generation_steps/2/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-c830bf22-8dc1-4197-a0dd-142b60699c51.png",
+      "snapshot": null,
+      "expected_sha256": "2e1a7d28ee45509f108cc00afb158f95a105d0225f13db4a25fc757c5b14f5f5",
+      "actual_sha256": "2e1a7d28ee45509f108cc00afb158f95a105d0225f13db4a25fc757c5b14f5f5",
+      "status": "PASS"
+    },
+    {
+      "kind": "file_content",
+      "manifest": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+      "field": "/generation_steps/3/sha256",
+      "file": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-8a7e9166-66c2-4ec6-8652-954a5309adcd.png",
+      "snapshot": null,
+      "expected_sha256": "f6c4fcbc5aca46d6593b6f90252cd3b526378485479b04985c261c297f5c1c3a",
+      "actual_sha256": "f6c4fcbc5aca46d6593b6f90252cd3b526378485479b04985c261c297f5c1c3a",
+      "status": "PASS"
+    }
+  ],
+  "repeat_previews": [
+    {
+      "file": "diner/counter-repeat-preview.jpg",
+      "source": "diner/tex_counter_laminate.jpg",
+      "sha256": "61fb4ca65270498196233050dd2865546ffd791deae55ab5c219ff07e877dedc",
+      "bytes": 199306,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        90
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 194.472,
+        "stddev": 6.267,
+        "range": [
+          113,
+          232
+        ],
+        "dark_0_to_3_fraction": 0.0,
+        "light_252_to_255_fraction": 0.0
+      },
+      "mean_rgb": [
+        184.639,
+        201.886,
+        181.6
+      ],
+      "quadrant_mean_absolute_rgb_error_0_255": [
+        0.6573,
+        0.6573,
+        0.6573,
+        0.6573
+      ],
+      "status": "PASS",
+      "limit": "Kontrollerer ordinære 2x2-kopier med rom for JPEG/resampling. Beviser ikke visuelt sømløs repeat, motiv eller antall fliser."
+    },
+    {
+      "file": "diner/checker-repeat-preview.jpg",
+      "source": "diner/tex_floor_checker.jpg",
+      "sha256": "2ffbf7e092f0bb06c591d0ec398145596337d99fb7bfee8c8d8c0f4c8104557d",
+      "bytes": 1246676,
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "fee2f25a6fdd2e43f5b72140834ac1ca1d17ad73ae2ec223cb963b728f66d424",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        90
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 132.261,
+        "stddev": 88.058,
+        "range": [
+          2,
+          249
+        ],
+        "dark_0_to_3_fraction": 1.1e-05,
+        "light_252_to_255_fraction": 0.0
+      },
+      "mean_rgb": [
+        139.745,
+        131.712,
+        115.099
+      ],
+      "quadrant_mean_absolute_rgb_error_0_255": [
+        1.075,
+        1.075,
+        1.075,
+        1.075
+      ],
+      "status": "PASS",
+      "limit": "Kontrollerer ordinære 2x2-kopier med rom for JPEG/resampling. Beviser ikke visuelt sømløs repeat, motiv eller antall fliser."
+    },
+    {
+      "file": "road/gravel-repeat-preview.jpg",
+      "source": "road/tex_gravel_track.jpg",
+      "sha256": "0bfdba69823f79ada0641fa85c0bfb5b7e1f52408173a317f83d5741b04c5410",
+      "bytes": 2235226,
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "mode": "RGB",
+      "icc_bytes": 588,
+      "icc_description": "sRGB built-in",
+      "icc_sha256": "2a11971fc85e9b16b8f2802a0f20fd2780ee9b6dc3a21a70fd28f1599d7f7e30",
+      "embedded_srgb": true,
+      "alpha": null,
+      "jpeg_quantization_compatible_pillow_quality": [
+        92
+      ],
+      "jpeg_quality_note": "Lik kvantiseringstabell er forenlig med Pillow-standard ved angitt kvalitet, ikke bevis på opprinnelig encoder eller eksakt lagringsparameter.",
+      "srgb_8bit_luma": {
+        "mean": 149.589,
+        "stddev": 28.526,
+        "range": [
+          22,
+          253
+        ],
+        "dark_0_to_3_fraction": 0.0,
+        "light_252_to_255_fraction": 2.8e-05
+      },
+      "mean_rgb": [
+        164.222,
+        146.58,
+        126.746
+      ],
+      "quadrant_mean_absolute_rgb_error_0_255": [
+        0.9036,
+        0.9036,
+        0.9037,
+        0.9037
+      ],
+      "status": "PASS",
+      "limit": "Kontrollerer ordinære 2x2-kopier med rom for JPEG/resampling. Beviser ikke visuelt sømløs repeat, motiv eller antall fliser."
+    }
+  ],
+  "gallery": {
+    "file": "production/round6.html",
+    "sha256": "09b8b076ebac5e2d826e5f00f9a0280eca7c3ff40cb5463897f7dcc0728f2055",
+    "references": [
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/sign_diner_blank.png",
+        "target": "web/src/assets/art/diner/sign_diner_blank.png",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../diner/sign_diner_blank.png",
+        "target": "web/src/assets/art/diner/sign_diner_blank.png",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/tex_counter_laminate.jpg",
+        "target": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../diner/tex_counter_laminate.jpg",
+        "target": "web/src/assets/art/diner/tex_counter_laminate.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/counter-repeat-preview.jpg",
+        "target": "web/src/assets/art/diner/counter-repeat-preview.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/tex_floor_checker.jpg",
+        "target": "web/src/assets/art/diner/tex_floor_checker.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../diner/tex_floor_checker.jpg",
+        "target": "web/src/assets/art/diner/tex_floor_checker.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/checker-repeat-preview.jpg",
+        "target": "web/src/assets/art/diner/checker-repeat-preview.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/menu_board_blank.png",
+        "target": "web/src/assets/art/diner/menu_board_blank.png",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../diner/menu_board_blank.png",
+        "target": "web/src/assets/art/diner/menu_board_blank.png",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/clipping_photo_1947.jpg",
+        "target": "web/src/assets/art/diner/clipping_photo_1947.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../diner/clipping_photo_1947.jpg",
+        "target": "web/src/assets/art/diner/clipping_photo_1947.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../road/tex_gravel_track.jpg",
+        "target": "web/src/assets/art/road/tex_gravel_track.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "img",
+        "attribute": "src",
+        "url": "../road/tex_gravel_track.jpg",
+        "target": "web/src/assets/art/road/tex_gravel_track.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../road/gravel-repeat-preview.jpg",
+        "target": "web/src/assets/art/road/gravel-repeat-preview.jpg",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/DINER_SURFACES.json",
+        "target": "web/src/assets/art/diner/DINER_SURFACES.json",
+        "status": "PASS"
+      },
+      {
+        "tag": "a",
+        "attribute": "href",
+        "url": "../diner/DINER_ROAD_PROPS.json",
+        "target": "web/src/assets/art/diner/DINER_ROAD_PROPS.json",
+        "status": "PASS"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [],
+  "status": "PASS"
+}

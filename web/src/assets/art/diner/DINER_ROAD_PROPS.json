@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-04",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 6: dinerveiskilt, oppdiktet avisfoto og grusvei",
+  "generator": {
+    "tool": "built-in image_gen",
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false,
+    "calls": 4
+  },
+  "references": [
+    {
+      "git_path": "web/ART_BRIEF.md",
+      "git_ref": "17810930a941f574f5cfcb6f0ec373c26292007b",
+      "sha256": "37ea02c74790b9815b0ae5f35ae9043d21207f927ddabf8d50bf4e1f6aa92bbe"
+    },
+    {
+      "git_path": "web/HISTORIE.md",
+      "git_ref": "17810930a941f574f5cfcb6f0ec373c26292007b",
+      "sha256": "9ee42f716845225550efc0708119368836adc416f6a86117bf91e1efc326f580"
+    }
+  ],
+  "rights": {
+    "origin": "Originalgrafikk generert for SIGNAL / 47 med innebygd bildeverktøy. Avisfotoet er oppdiktet og er ikke kopiert fra et historisk foto eller en avis.",
+    "external_source_images": [],
+    "note": "Ingen bestemt generatormodell eller separat tredjepartslisens påstås."
+  },
+  "postprocess": {
+    "tool": "Pillow",
+    "allowed_operations": [
+      "RGB/RGBA formatkonvertering",
+      "LANCZOS skalering av hele bildet",
+      "JPEG kvalitet 85 eller RGBA PNG-eksport",
+      "sRGB ICC-profil",
+      "Vanlig uendret 2x2 repetisjon for QA",
+      "QA-komposisjon av RGBA over ensfarget lys/mørk bakgrunn"
+    ],
+    "image_content_editing_by_code": false,
+    "cropping": false,
+    "colour_assumption": "Profilfrie genererte RGB/RGBA-kilder behandlet som sRGB; ingen fargekorreksjon eller alfaopprydding utført."
+  },
+  "assets": [
+    {
+      "path": "web/src/assets/art/diner/sign_diner_blank.png",
+      "sha256": "66cf970ffaea32671bf7f04a39acb8c0163d98ef011ca1f153df5f321c131637",
+      "bytes": 315692,
+      "size": [
+        1024,
+        512
+      ],
+      "mode": "RGBA",
+      "format": "PNG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "sign-padded",
+      "world_scale_metres": [
+        4,
+        2
+      ],
+      "world_scale_note": "Målet gjelder hele bildeplanet, inkludert transparent padding.",
+      "export": {
+        "source_size": [
+          1774,
+          887
+        ],
+        "output_size": [
+          1024,
+          512
+        ],
+        "method": "LANCZOS, RGBA PNG, innebygd sRGB, originalalfa bevart"
+      },
+      "safe_text": {
+        "coordinates": "normaliserte billedkoordinater, origo øvre venstre",
+        "rect": [
+          0.22,
+          0.33,
+          0.78,
+          0.48
+        ],
+        "pixel_rect": [
+          225,
+          169,
+          799,
+          246
+        ],
+        "suggested_center_baseline_px": [
+          512,
+          230
+        ],
+        "suggested_max_font_px": 50,
+        "suggested_max_width_px": 574,
+        "note": "Forslag for kodeetikett i det tomme kremfeltet. Må verifiseres med endelig navn/font under integrasjon."
+      },
+      "qa": {
+        "status": "PASS",
+        "alpha": {
+          "range": [
+            0,
+            255
+          ],
+          "bbox_nonzero": [
+            122,
+            42,
+            953,
+            499
+          ],
+          "padding_ltrb": [
+            122,
+            42,
+            71,
+            13
+          ],
+          "transparent_pixels": 360469,
+          "opaque_pixels": 1072,
+          "partial_pixels": 162747,
+          "edge_max_alpha": 0,
+          "safe_text_alpha_range": [
+            253,
+            254
+          ],
+          "bbox_atleast_8": [
+            126,
+            64,
+            899,
+            444
+          ],
+          "bbox_atleast_16": [
+            128,
+            66,
+            897,
+            444
+          ],
+          "bbox_atleast_32": [
+            129,
+            67,
+            895,
+            444
+          ],
+          "bbox_atleast_128": [
+            132,
+            70,
+            892,
+            443
+          ]
+        },
+        "neon_target_colours": [
+          "#ff5a45",
+          "#50f0d8"
+        ],
+        "visual_checks": [
+          "Buet matt metallramme, nøyaktig to stolper, helt tomt skrivefelt, ingen bokstaver eller logoer.",
+          "Påslått rød/cyan neon med smal glød, kontrollert over mørk og lys flate.",
+          "Alle fire bildekanter har alfa 0; ingen synlig avkuttet glød, stolper eller føtter.",
+          "Ekte transparens uten innbakt sjakkbrett."
+        ],
+        "limitations": [
+          "Generatoren gir skrivefeltets alfa 253–254 av 255, praktisk nesten opakt men ikke matematisk 255.",
+          "Svært svake alfapiksler under 8 av 255 utvider alfa-boksen utover den synlige gløden. Disse er bevart uten kodebehandling.",
+          "Neonfargene er promptmål; lyskjernen og gløden har naturlige fargevariasjoner."
+        ],
+        "composites": [
+          {
+            "path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/diner-sign-dark-qa.jpg",
+            "sha256": "595b3b466dc5f5e609e06089b3f2f81b5dcf6efc73b20a64f354eb0d22d5daa8",
+            "bytes": 55577,
+            "size": [
+              1024,
+              512
+            ],
+            "mode": "RGB",
+            "format": "JPEG",
+            "colour_profile": "sRGB built-in"
+          },
+          {
+            "path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/diner-sign-light-qa.jpg",
+            "sha256": "0fbd3b3b1437f5dde2db6eaf9b6805b498c7076f6ec22b78288adc6b30f782f4",
+            "bytes": 57085,
+            "size": [
+              1024,
+              512
+            ],
+            "mode": "RGB",
+            "format": "JPEG",
+            "colour_profile": "sRGB built-in"
+          }
+        ]
+      }
+    },
+    {
+      "path": "web/src/assets/art/diner/clipping_photo_1947.jpg",
+      "sha256": "9529e5990bd6f9f351bdd7692c0e6645eef806fe186c339602a112e7c1ed7474",
+      "bytes": 288567,
+      "size": [
+        1024,
+        768
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "clipping-1947",
+      "world_scale_metres": null,
+      "world_scale_note": "Foto inne i et avisutklipp; fysisk innbyggingsstørrelse er ikke fastsatt i briefen.",
+      "export": {
+        "source_size": [
+          1448,
+          1086
+        ],
+        "output_size": [
+          1024,
+          768
+        ],
+        "method": "LANCZOS, RGB JPEG kvalitet 85, innebygd sRGB"
+      },
+      "qa": {
+        "status": "PASS",
+        "human_ranchers": 3,
+        "quiet_lights_above_mesa": 1,
+        "visual_checks": [
+          "Nøyaktig tre separate menneskelige ranchere i forgrunnen, sett bakfra uten gjenkjennelige ansikter.",
+          "Ett lite stille lyspunkt tydelig høyt over en flat mesa.",
+          "Grovt avistrykkraster, dempet varm grå trykkfarge, ingen tekst, nummer, logo, romskip eller identifisert forklaring."
+        ],
+        "limitations": [
+          "Fiktivt illustrert spillbevis, ikke et autentisk historisk fotografi.",
+          "Overskrift, avisnavn, dato og brødtekst må legges i kode."
+        ]
+      }
+    },
+    {
+      "path": "web/src/assets/art/road/tex_gravel_track.jpg",
+      "sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "bytes": 419124,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "gravel-track",
+      "world_scale_metres": [
+        4,
+        4
+      ],
+      "export": {
+        "source_size": [
+          1254,
+          1254
+        ],
+        "output_size": [
+          1024,
+          1024
+        ],
+        "method": "LANCZOS, RGB JPEG kvalitet 85, innebygd sRGB"
+      },
+      "repeat": {
+        "mode": "ordinary",
+        "axes": [
+          "x",
+          "y"
+        ],
+        "ruts_per_tile": 2,
+        "direction": "image Y, from top to bottom"
+      },
+      "qa": {
+        "status": "PASS",
+        "preview": {
+          "path": "web/src/assets/art/road/gravel-repeat-preview.jpg",
+          "sha256": "0bfdba69823f79ada0641fa85c0bfb5b7e1f52408173a317f83d5741b04c5410",
+          "bytes": 2235226,
+          "size": [
+            2048,
+            2048
+          ],
+          "mode": "RGB",
+          "format": "JPEG",
+          "colour_profile": "sRGB built-in"
+        },
+        "preview_layout": "2x2 kopier av dekodet sluttleveranse, uten speiling, sømblanding, rotasjon eller innramming.",
+        "visual_checks": [
+          "Rett ovenfra, to parallelle hjulspor gjennom hele flaten.",
+          "Tørr grus/sand, få små kreosotblader, ingen store objekter eller tekst.",
+          "Vanlig 2x2 repetisjon inspisert; sporene fortsetter og ingen vesentlig kantstripe eller fargetrinn funnet."
+        ],
+        "limitations": [
+          "Bruk én 4 m bred flate med to hjulspor. Gjentakelse på tvers lager flere par hjulspor.",
+          "Dette er albedo uten medlevert normal-, høyde- eller roughnesskart.",
+          "Stil og størrelse er kontrollert som bildefil, ikke i ferdig veigeometri."
+        ]
+      }
+    }
+  ],
+  "generation_steps": [
+    {
+      "sha256": "ef8367def394fe6cf26f7253929f3ede18af393fca1ee33804d7abb1ab451395",
+      "bytes": 1401203,
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "sign-initial",
+      "prompt": "Use case: stylized-concept.\nAsset type: transparent RGBA game sprite, front face of a freestanding roadside diner sign, 2:1 wide composition intended for 1024x512, mapped to 4x2 metres.\nPrimary request: an old American roadside diner sign dating from the 1940s and weathered by New Mexico desert sun until 1986. Straight-on orthographic front view. Broad gently arched metal sign body, a restrained curved top and rounded lower corners, mounted on exactly TWO simple slim steel posts. The posts extend visibly down from the sign, fully contained in the canvas. Keep a little transparent margin around the entire silhouette.\nThe metal frame is dull faded blue-grey with small restrained rust specks at joins, believable stylized low-poly game material. Two thin neon tubes trace the curved frame edge, one muted warm red #ff5a45 and one cyan #50f0d8. Both tubes are switched on, with a restrained luminous core and narrow soft colored glow. A large flat opaque cream enamel centre panel is completely blank and calm, reserved for code-rendered diner name. Keep the centre rectangular safe text area wide and uncluttered. The centre must not be a hole.\nTransparency: true transparent background outside the sign and between the two posts, RGBA alpha including soft neon glow. No scene, no wall, sky or ground behind it. No fake checkerboard. Do not crop the posts.\nStyle: restrained stylized 3D game prop surface, worn matte metal, period-appropriate simple construction. No glossy sci-fi, no photoreal cinematic setting.\nConstraints: absolutely NO text, letters, numbers, word DINER, logos, icons, arrows, stars or emblems anywhere. Do not add extra signs, wires, decorative objects or lights. No perspective or cast shadow. Only this single blank sign on its two posts.",
+      "status": "rejected: neonglød for nær øvre bildekant",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-02a05f42-57d1-4b12-8f0a-f1a4b192ab2a.png"
+    },
+    {
+      "sha256": "88799d87b6ff1fc6d9f1ad2b172169e4e86dd2fb004ebb30580bfc622ce8d8d9",
+      "bytes": 871954,
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "sign-padded",
+      "prompt": "Use case: precise-object-edit. Edit the supplied transparent diner-sign sprite. Change ONLY framing/padding: reduce the entire existing sign, both posts, and its entire soft neon glow uniformly so that it fits inside the central 88% of the canvas width AND central 84% of its height, centered. Leave fully transparent empty padding of at least 6% on left and right, at least 8% at top and bottom. The outermost faint glow must fade to true zero alpha before the padding. The current top glow touches the canvas; correct that.\nPreserve exactly the existing arched blue-grey aged metal sign, blank opaque cream centre, two fully visible posts with feet, small restrained rust, red #ff5a45 outer neon and cyan #50f0d8 inner neon. Preserve the straight-on orthographic view and proportions. Do not enlarge glow or add any content. Keep a real transparent RGBA background, including the gap between the posts. No fake checkerboard or colored rectangle background. No text, letters, logos, symbols, objects, scene or cast shadow. Wide 2:1 composition.",
+      "edit_target": "sign-initial",
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-0635eb14-bed7-466e-afd4-9970f6582777.png"
+    },
+    {
+      "sha256": "2e1a7d28ee45509f108cc00afb158f95a105d0225f13db4a25fc757c5b14f5f5",
+      "bytes": 4147425,
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "clipping-1947",
+      "prompt": "Use case: historical-scene.\nAsset type: fictional newspaper photograph insert for a narrative game, landscape 4:3, intended 1024x768 sRGB JPEG.\nPrimary request: an invented local New Mexico newspaper image from July 1947, printed with visibly coarse black halftone dots on warm grey newsprint. The photograph itself fills the rectangle; no surrounding newspaper layout, article columns, caption, date, headline, border, margin or typography.\nComposition: a quiet flat-topped mesa stretches horizontally across the distant lower-middle horizon under a broad dark night sky. ONE small steady white point of light hangs high above the mesa, clearly distinct from the ridge and well above it. A restrained soft print bloom around the point, no beam or trail.\nIn the foreground stand exactly THREE HUMAN RANCHERS as distinct full human silhouettes, separated so all three are easy to count, wearing ordinary 1940s ranch work clothing and simple brimmed hats, seen from behind or three-quarter back as they look toward the light. Three people only, no horses, animals or extra people. They are human ranch workers, not ranch buildings. Modest figure scale, lower third of frame, with the mesa still visible behind.\nStyle: coarse imperfect monochrome 1947 newspaper halftone, slightly grey warm aged paper, low-detail photographic illustration that reads well in a stylized game. Mild uneven ink, restrained grain, plausible old press reproduction, not modern digital sharpness. This is original fictional game evidence and must not copy any real historical photograph or newspaper.\nConstraints: NO text, letters, numbers, symbols, logos or watermark. No spacecraft, disc, saucer, alien, vehicle, headlights, rays, starburst or dramatic explosion. No moon or additional bright celestial lights. Only the single unexplained quiet point above the mesa. No modern clothing or identifiable real people.",
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-c830bf22-8dc1-4197-a0dd-142b60699c51.png"
+    },
+    {
+      "sha256": "f6c4fcbc5aca46d6593b6f90252cd3b526378485479b04985c261c297f5c1c3a",
+      "bytes": 3697594,
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "gravel-track",
+      "prompt": "Use case: stylized-concept.\nAsset type: seamless opaque sRGB albedo texture for a stylized low-poly Three.js game, square 1024x1024 intended output, one tile represents 4x4 metres.\nPrimary request: an old unpaved New Mexico desert gravel track seen directly overhead, with exactly TWO parallel gently worn wheel ruts running straight vertically from top to bottom. Two compressed tyre tracks, subtle grey-brown and slightly smoother than the surrounding gravel. Their centre lines at roughly 30% and 70% of image width, realistic separation around 1.6m within the 4m width. Each rut approximately 0.35m wide, subtly irregular edges. No tyre tread stamp pattern.\nMaterials: fine dry dusty tan-grey gravel, coarse sand, small low-relief angular stones, and very sparse tiny dried olive-brown creosote leaves. A lightly raised dusty central strip, but no strong lighting or relief shadows. Muted neutral earth colours, low contrast, matte weathered material, gently hand-painted simplified game texture.\nComposition: strictly top-down orthographic full-bleed flat albedo, no perspective, horizon or outside scene. No hard road boundary across the sides; the shoulders merge into similar gravel.\nCritical tiling: truly seamless ordinary repeat in BOTH axes. Both ruts continue smoothly and straight through top and bottom boundaries, with identical alignment, tone and width at the join. Side edges match in fine gravel and colour. No tile-edge stripe, border, vignette, gradient or large memorable rock.\nConstraints: flat unlit base colours only. No cast shadows, dramatic light, night tint, highlights, puddles, wetness, asphalt, concrete, lane paint, text, symbols, objects, footprints, bushes, large plants or debris. Keep sparse leaves tiny and flat. Opaque output.",
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-8a7e9166-66c2-4ec6-8652-954a5309adcd.png"
+    }
+  ],
+  "integration": {
+    "status": "UNVERIFIED",
+    "note": "Kun bildeleveranse og fil-/bilde-QA i separat arbeidsgren. Ingen runtimekode, aktive Claude-filer, fellesdokumenter, commit eller push er endret. Root lager galleri/handoff; Claude eier innbygging og samlet spilltest."
+  }
+}
