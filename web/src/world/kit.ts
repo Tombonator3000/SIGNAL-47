@@ -78,8 +78,7 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
 // ---------- Materials ----------
 const std = (o: THREE.MeshStandardMaterialParameters) => new THREE.MeshStandardMaterial(o);
 export const M = {
-  // desk laminate from ART_BRIEF.md when the file is there, else the plain grey-green
-  deskTop: ((map) => std(map ? { color: 0xdddddd, map, roughness: 0.5 } : { color: 0x55605f, roughness: 0.5 }))(artTexture('room/tex_desk_laminate.jpg', [2, 1])),
+  deskTop: std({ color: 0x55605f, roughness: 0.5 }),
   deskBody: std({ color: 0x3d4749, roughness: 0.55, metalness: 0.35 }),
   steel: std({ color: 0x7c8387, roughness: 0.4, metalness: 0.7 }),
   beige: std({ color: 0xcfc3a3, roughness: 0.55 }),
@@ -108,6 +107,13 @@ export const M = {
   dishMetal: floodlit(std({ color: 0xa8a39a, roughness: 0.55, metalness: 0.3 })),
   pole: floodlit(std({ color: 0x4a4a48, roughness: 0.7, metalness: 0.4 })),
 };
+
+// Called after artwork loading, before world construction and quality swapping.
+export function initArtMaterials() {
+  M.deskTop.map = artTexture('desk', [2, 1]); M.deskTop.color.set(0xbcc5c1);
+  M.cabinet.map = artTexture('cabinet'); M.cabinet.color.set(0xa6b3af);
+  M.concrete.map = artTexture('concrete'); M.concrete.color.set(0xd1c8b8);
+}
 
 // ---------- Mesh helpers ----------
 export function box(parent: THREE.Object3D, w: number, h: number, d: number, mat: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) {

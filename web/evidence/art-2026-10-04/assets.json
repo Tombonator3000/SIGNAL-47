@@ -1,0 +1,242 @@
+[
+  {
+    "file": "brand/logo_saro.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGBA",
+    "bytes": 350713,
+    "sha256": "266d513bd217cc2696b628ab2b55cc17783d5a5a7eec692a6fdf52b1c38cf6da"
+  },
+  {
+    "file": "ext/sign_sierra_off.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "bytes": 2299530,
+    "sha256": "1977636910ede1bcd50ca25654af9722a8c38eaf44bfe143369503f4d5b00cec"
+  },
+  {
+    "file": "ext/sign_sierra_on.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "bytes": 2187102,
+    "sha256": "9fe9f94668b5d8d5a6495ab62d4697ea024b3fe9e1c53b7a9b9b886a4f0c9705"
+  },
+  {
+    "file": "ext/tex_asphalt_wet.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 305609,
+    "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0"
+  },
+  {
+    "file": "ext/tex_concrete.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 309800,
+    "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520"
+  },
+  {
+    "file": "ext/tex_desert_ground.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 372460,
+    "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54"
+  },
+  {
+    "file": "room/map_new_mexico.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 2787808,
+    "sha256": "1fb80e4fd046963434be31d183363758f48c95d7bf3559b8d35d38cabcb27dd1"
+  },
+  {
+    "file": "room/poster_listen.png",
+    "size": [
+      768,
+      1152
+    ],
+    "mode": "RGB",
+    "bytes": 1418998,
+    "sha256": "9757021ce84a4ea93723317ae4ce28f68049bb7dff2261d2464ad83b67adfe38"
+  },
+  {
+    "file": "room/poster_saro.png",
+    "size": [
+      768,
+      1152
+    ],
+    "mode": "RGB",
+    "bytes": 1474820,
+    "sha256": "3911c2ad1f039f7856eefbb7341ac76f8f7ec6e9f50bb64c6776b9fbdd9159ba"
+  },
+  {
+    "file": "room/tex_ceiling_tile.jpg",
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGB",
+    "bytes": 71384,
+    "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699"
+  },
+  {
+    "file": "room/tex_desk_laminate.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 124281,
+    "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e"
+  },
+  {
+    "file": "room/tex_floor_hextile.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 155674,
+    "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9"
+  },
+  {
+    "file": "room/tex_wall_paint.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 168716,
+    "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a"
+  },
+  {
+    "file": "runtime/label_s03_procedure.webp",
+    "size": [
+      512,
+      768
+    ],
+    "mode": "RGB",
+    "bytes": 41612,
+    "sha256": "220e5995ea8f268c3ed52cf5899b301eebb644b4a3bbb27a50a64d4a242c5df1"
+  },
+  {
+    "file": "runtime/logo_saro.webp",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGBA",
+    "bytes": 130862,
+    "sha256": "cedeb1d187f92b931dba9e37ee8dce5bda681e9986e629e8a4a3c505ce453932"
+  },
+  {
+    "file": "runtime/map_new_mexico.webp",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 351500,
+    "sha256": "372a7d8c91a9f1aa80aa2b68a554b7b9f730ad80b921d6376963c6edb6966c15"
+  },
+  {
+    "file": "runtime/poster_listen.webp",
+    "size": [
+      768,
+      1152
+    ],
+    "mode": "RGB",
+    "bytes": 174338,
+    "sha256": "f4cf60387140cbc47ca0501069642741e4379ef903bc9ff5c3bd456ca0a4da10"
+  },
+  {
+    "file": "runtime/poster_saro.webp",
+    "size": [
+      768,
+      1152
+    ],
+    "mode": "RGB",
+    "bytes": 196678,
+    "sha256": "654e8cc7f1338fe9554167a5c5d019de9ad4e0f2cfa94010c66ff40f3a90d51f"
+  },
+  {
+    "file": "runtime/sign_service_yard.webp",
+    "size": [
+      1024,
+      512
+    ],
+    "mode": "RGB",
+    "bytes": 95910,
+    "sha256": "c94a8104e2f70c8e6131cf672629284b8dff0b75d0b3358577316ac378353270"
+  },
+  {
+    "file": "runtime/sign_sierra_on.webp",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "bytes": 239026,
+    "sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4"
+  },
+  {
+    "file": "sky/sky_milkyway_equirect.jpg",
+    "size": [
+      4096,
+      2048
+    ],
+    "mode": "RGB",
+    "bytes": 370451,
+    "sha256": "ee1eb2683e98820718b9fc44826542fefc830989287e108b626c464f273d191f"
+  },
+  {
+    "file": "yard/label_s03_procedure.png",
+    "size": [
+      512,
+      768
+    ],
+    "mode": "RGB",
+    "bytes": 555699,
+    "sha256": "71c2e31632a4dcaebb660c99edad724d7f1d75bd7a8fd6bea240bec51549765a"
+  },
+  {
+    "file": "yard/sign_service_yard.png",
+    "size": [
+      1024,
+      512
+    ],
+    "mode": "RGB",
+    "bytes": 699505,
+    "sha256": "65b4dcaab4c74efb9e872af470e9238f9b29e6423f8ea6c3a8183ddb5afef7a0"
+  },
+  {
+    "file": "yard/tex_cabinet_metal.jpg",
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 143277,
+    "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21"
+  }
+]

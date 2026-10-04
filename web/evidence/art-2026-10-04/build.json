@@ -1,0 +1,147 @@
+{
+  "source_content_sha256": "e32e3e32e95ae5c3c1954e9913f9516ac480f750ffa4801b40ad4f4df9a7bbb6",
+  "single_html_sha256": "f00d0f0e6ccaba017ddc813b0e5ee629c7a06cd8a8b0f91b42e7092ea6caf9ab",
+  "single_html_bytes": 6056870,
+  "dist_files": [
+    {
+      "file": "assets/ceramic-CYs4Yg7c.mp3",
+      "sha256": "4f5faa7709f0caada154b06d104a30c9da0d8334547d018701e6454a962692a6",
+      "bytes": 15196
+    },
+    {
+      "file": "assets/index-BVOX08tY.css",
+      "sha256": "eb8373a421935cba4863c8d43ec14abe0c45accfc5ce166ac17427e6b1cbd115",
+      "bytes": 25987
+    },
+    {
+      "file": "assets/index-CH3yrnap.js",
+      "sha256": "638022ad7e3b16e0b52cb548cbc97c7d962b6f591f764fb8768a901e0a74a37c",
+      "bytes": 691614
+    },
+    {
+      "file": "assets/label_s03_procedure-CXX065Te.webp",
+      "sha256": "220e5995ea8f268c3ed52cf5899b301eebb644b4a3bbb27a50a64d4a242c5df1",
+      "bytes": 41612
+    },
+    {
+      "file": "assets/logo_saro-Bgp4ZRdW.webp",
+      "sha256": "cedeb1d187f92b931dba9e37ee8dce5bda681e9986e629e8a4a3c505ce453932",
+      "bytes": 130862
+    },
+    {
+      "file": "assets/map_new_mexico-B4JTsLo6.webp",
+      "sha256": "372a7d8c91a9f1aa80aa2b68a554b7b9f730ad80b921d6376963c6edb6966c15",
+      "bytes": 351500
+    },
+    {
+      "file": "assets/oswald-B-eyT0Dw.woff2",
+      "sha256": "541b12882301dc44b73eaaed9e230709df1d299379c3594695870fc2f9e3ff0a",
+      "bytes": 12704
+    },
+    {
+      "file": "assets/phone_ring-DMWhUlYR.mp3",
+      "sha256": "971ff167da34d7e9609a5de3d07cd70e3170686644f73e18af1e15adefb186f6",
+      "bytes": 48109
+    },
+    {
+      "file": "assets/poster_listen-DzQ_TlJ3.webp",
+      "sha256": "f4cf60387140cbc47ca0501069642741e4379ef903bc9ff5c3bd456ca0a4da10",
+      "bytes": 174338
+    },
+    {
+      "file": "assets/poster_saro-B6TgLO2l.webp",
+      "sha256": "654e8cc7f1338fe9554167a5c5d019de9ad4e0f2cfa94010c66ff40f3a90d51f",
+      "bytes": 196678
+    },
+    {
+      "file": "assets/printer-BgHr7nD5.mp3",
+      "sha256": "8b07cd55f75874d6c1424d50b5a0398a801c0c11561e463bf4ff231d07b09829",
+      "bytes": 10075
+    },
+    {
+      "file": "assets/reeniebeanie-4a-HEdeI.woff2",
+      "sha256": "f86de18375e3edba402d39ff85030e270f724d7af865f74a74c92f34a947072c",
+      "bytes": 28512
+    },
+    {
+      "file": "assets/sign_service_yard-Bt58Evbl.webp",
+      "sha256": "c94a8104e2f70c8e6131cf672629284b8dff0b75d0b3358577316ac378353270",
+      "bytes": 95910
+    },
+    {
+      "file": "assets/sign_sierra_on-q35jqmeR.webp",
+      "sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4",
+      "bytes": 239026
+    },
+    {
+      "file": "assets/sky_milkyway_equirect-D58-EjC9.jpg",
+      "sha256": "ee1eb2683e98820718b9fc44826542fefc830989287e108b626c464f273d191f",
+      "bytes": 370451
+    },
+    {
+      "file": "assets/specialelite-YjDd9tmf.woff2",
+      "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8",
+      "bytes": 53296
+    },
+    {
+      "file": "assets/tex_asphalt_wet-CdDTEnd8.jpg",
+      "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+      "bytes": 305609
+    },
+    {
+      "file": "assets/tex_cabinet_metal-c_i-ed8n.jpg",
+      "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+      "bytes": 143277
+    },
+    {
+      "file": "assets/tex_ceiling_tile-CWNRSV5r.jpg",
+      "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+      "bytes": 71384
+    },
+    {
+      "file": "assets/tex_concrete-qlyt9Rj6.jpg",
+      "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+      "bytes": 309800
+    },
+    {
+      "file": "assets/tex_desert_ground-B41f7Cix.jpg",
+      "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+      "bytes": 372460
+    },
+    {
+      "file": "assets/tex_desk_laminate-CkaoLgea.jpg",
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "bytes": 124281
+    },
+    {
+      "file": "assets/tex_floor_hextile-BoUw-Xpl.jpg",
+      "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "bytes": 155674
+    },
+    {
+      "file": "assets/tex_wall_paint-BCbWdE2K.jpg",
+      "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+      "bytes": 168716
+    },
+    {
+      "file": "assets/title_music-DikIeeOZ.mp3",
+      "sha256": "0e7ee0c63f757cb4ae2f798cda79f1f89df56827a13596c784f5508c97591f4d",
+      "bytes": 450657
+    },
+    {
+      "file": "assets/vt323-wDgJuOC9.woff2",
+      "sha256": "8ddbebcc1048154132e1d78eb9b1f7850bca1b7d857035ccf1cb4318ebc615b6",
+      "bytes": 17936
+    },
+    {
+      "file": "assets/wind-DS2ae9tG.mp3",
+      "sha256": "562b8dbebc5de50b1f2c674fa4275f50b0cc9be668c13cc1449a038947e31073",
+      "bytes": 116733
+    },
+    {
+      "file": "index.html",
+      "sha256": "87f1e03b59a8913accd872e0fc7054bab9ed1e4f67726012b8a223b763441f94",
+      "bytes": 449
+    }
+  ]
+}

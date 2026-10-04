@@ -27,10 +27,15 @@ async def main():
         await pg.click('button[data-a=start]'); await pg.wait_for_timeout(1500)
         await pg.evaluate("S47.hold = true; S47.tick(1)")
         sounds = await pg.evaluate("Object.keys(S47.game.d.audio.buf || {}).length")
+        art = await pg.evaluate("S47.art()")
         print('fonts loaded:', len(fonts), fonts)
         print('sounds decoded:', sounds)
+        print('art images loaded:', len(art['loaded']), '/', art['expected'])
         print('\n'.join(errs[:15]) or 'no console errors or warnings')
-        print('PASS' if len(fonts) == 4 and sounds == 11 and not errs else 'FAIL')
+        passed = len(fonts) == 4 and sounds == 11 and len(art['loaded']) == art['expected'] == 16 and not errs
+        print('PASS' if passed else 'FAIL')
         await b.close()
+        if not passed:
+            raise SystemExit(1)
 
 asyncio.run(main())

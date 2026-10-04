@@ -1,0 +1,5 @@
+fonts loaded: 4 ['VT323', 'Special Elite', 'Reenie Beanie', 'Oswald']
+sounds decoded: 11
+art images loaded: 16 / 16
+no console errors or warnings
+PASS

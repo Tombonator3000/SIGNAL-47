@@ -17,6 +17,8 @@ import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { glowScale } from './world/glow';
 import { CaseStore } from './core/caseStore';
+import { loadArt, artStatus } from './core/art';
+import { initArtMaterials } from './world/kit';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
 // because storage can be blocked (private mode, sandboxed frames).
@@ -30,7 +32,14 @@ async function boot() {
   const ui = new UI();
   const loading = ui.loading();
   // Textures draw text with these fonts, so they must be ready before the world is built.
-  await Promise.race([loadFonts(), wait(3000)]);
+  try {
+    await Promise.all([Promise.race([loadFonts(), wait(3000)]), loadArt()]);
+  } catch {
+    loading.innerHTML = '<p class="err">The station artwork could not load. Check your connection and try again.</p><button>TRY AGAIN</button>';
+    loading.querySelector('button')!.onclick = () => location.reload();
+    return;
+  }
+  initArtMaterials();
   await wait(30);
 
   const touchGuess = matchMedia('(pointer: coarse)').matches;
@@ -299,6 +308,7 @@ async function boot() {
 
   // test hook, handy from the browser console: S47.jump('countdown')
   (window as any).S47 = {
+    art: artStatus,
     jump: (p: string) => { if (mode !== 'play') startGame(p); else game.start(p); },
     game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2,
   };
@@ -402,9 +412,12 @@ async function boot() {
     adapt(dt);
     debug?.frame(raw);
   }
+  // Object.assign copies accessor values, not their descriptors. Keep hold live
+  // so the automated scenarios really stop the realtime simulation loop.
+  Object.defineProperty((window as any).S47, 'hold', {
+    get: () => dbg.hold, set: (v: boolean) => { dbg.hold = v; }, enumerable: true,
+  });
   Object.assign((window as any).S47, {
-    set hold(v: boolean) { dbg.hold = v; },
-    get hold() { return dbg.hold; },
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); },
     setQuality: (q: 'high' | 'low') => applyQuality(q),

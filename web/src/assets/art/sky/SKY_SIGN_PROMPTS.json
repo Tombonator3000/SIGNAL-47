@@ -1,0 +1,47 @@
+{
+  "generator": "Innebygd ChatGPT-bildegenerator, eksakt modellversjon ikke eksponert",
+  "date": "2026-10-04",
+  "assets": [
+    {
+      "file": "sky/sky_milkyway_equirect.jpg",
+      "prompt": "Use case: stylized-concept. Production texture for SIGNAL / 47, a stylized low-poly first-person investigation game set in New Mexico in 1986. Create ONE seamless 2:1 equirectangular night-sky panorama, target 4096x2048, full sphere latitude-longitude map. Horizon exactly on horizontal center. Entire lower half almost uniform near-black #05070d, no land whatsoever. Upper hemisphere dark midnight blue #0c1220 with a delicate diagonal Milky Way dust band, restrained muted indigo and warm gray starlight, small fine stars. The strongest softly luminous band is above center and slightly right, not a giant bright nebula. Exact left/right wrapping, top pole converges to near-uniform dark blue. A subdued atmospheric painted game texture, not astrophotography, not saturated fantasy, no large stars, no planets, no moon, no aurora, no terrain, no mountains, no buildings, no text, no borders, no watermark. Must stay a dark night under game tonemapping. Flat unlit texture, not a view of a panorama on an object.",
+      "source": "exec-a3805dfe-c98d-40e1-a97d-9e57be0588a0.png",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "deliverySize": [
+        4096,
+        2048
+      ],
+      "mode": "RGB",
+      "bytes": 370451,
+      "sha256": "ee1eb2683e98820718b9fc44826542fefc830989287e108b626c464f273d191f"
+    },
+    {
+      "file": "ext/sign_sierra_on.png",
+      "prompt": "Use case: stylized-concept. ONE production cutout texture for the existing SIGNAL / 47 Three.js game. Portrait 2:3 aspect ratio, target 1024x1536. A vintage 1986 New Mexico roadside motel sign, orthographic FRONT VIEW perfectly straight. Sign assembly only, no poles, no ground, no environment. A small yellow five-point star on top. Main wide rusty dark red enamel panel with exact word \"Sierra\" in elegant flowing RED neon script. A narrower dark teal panel below with exact words \"MOTOR COURT\" in CYAN block neon capitals. Small ivory hanging marquee underneath with exactly three rows \"CLEAN ROOMS\", \"CABLE TV\", \"VACANCY\". All English text spelled exactly, no additional text. Full sign inside frame with clear transparent margins around every side. Stylized hand-painted low-poly game art, lightly chipped enamel and tubing supports, restrained readable surface detail, not photorealistic, not glossy futuristic. Neon ON, subtle red/cyan halo within transparent margin. True transparent background (alpha), no backdrop, no border, no fake checkerboard.",
+      "source": "exec-b02acf0b-d5ec-4eb8-b5e3-95350e84576b.png",
+      "deliverySize": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 2187102,
+      "sha256": "9fe9f94668b5d8d5a6495ab62d4697ea024b3fe9e1c53b7a9b9b886a4f0c9705"
+    },
+    {
+      "file": "ext/sign_sierra_off.png",
+      "prompt": "Edit target: the attached Sierra Motor Court neon sign production texture. Change ONLY the illumination to the OFF state: all red, cyan and yellow neon tubes unlit dull colored glass, no glow halos anywhere; marquee illumination off. Keep EXACT same silhouette, layout, wording, marks, rust, shapes, frontal view and pixel alignment as reference. Same 1024x1536 portrait and genuine transparent background. Preserve all text exactly: Sierra / MOTOR COURT / CLEAN ROOMS / CABLE TV / VACANCY. No added objects, poles, ground or backdrop. This is the matching unlit game texture, not a redesigned sign.",
+      "source": "exec-e7a04eaf-b8f9-4aae-875c-5ae3e2bcd0a3.png",
+      "deliverySize": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 2299530,
+      "sha256": "1977636910ede1bcd50ca25654af9722a8c38eaf44bfe143369503f4d5b00cec"
+    }
+  ],
+  "notes": "Himmelkilden er 1774x887 og eksportert til briefens 4096x2048. Spillet bruker en 2048x1024-sampler. Skiltvariantene er generert hver for seg; OFF er levert som referanse og brukes ikke til animert bytte i spillet."
+}

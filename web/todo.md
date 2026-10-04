@@ -24,11 +24,11 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Grafikk fra ChatGPT (se ART_BRIEF.md)
 
-- [ ] Melkeveis-panorama inn som himmeltekstur, blandet med dagens stjerneshader.
-- [ ] Gulv, tak, vegg og bord som ekte teksturer i stedet for kode-teksturer.
-- [ ] Plakater, kart og SARO-logo.
-- [ ] Neonskiltet til Sierra Motor Court.
-- [ ] Kapittel 1: skapfrontene på S-03 og B-12, B-12-skiltet, feltkartet, gulvmerkingen og skiltene i fotolaben. Legges inn i ART_BRIEF.md med mål og format hvis Tom vil.
+17 kildeassets er levert og 16 koblet inn 4. oktober. Se `ART_DELIVERY.md`, `src/assets/art/` og loggen.
+
+- [ ] Gulvets heksagonfuger: fjern den lille registreringsfeilen i vanlig vertikal repeat. Speiling ble vurdert og forkastet fordi den lager smale romber.
+- [ ] Mål minne og fps med den nye grafikken på ekte mobil og PC; headless draw calls er ikke en fps-måling.
+- [ ] Kapittel 1s feltkart, B-12-stripe og fotolabskilt bruker fortsatt presise kodegrafikker. Nye illustrerte varianter og konseptbildene for videre kapitler er framtidig arbeid.
 
 ## Senere
 

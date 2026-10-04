@@ -1,0 +1,82 @@
+{
+  "created_utc": "2026-10-04T06:48:25.733Z",
+  "generator": "Innebygd ChatGPT-bildegenerator",
+  "model_version": "Verktøyet oppgir ikke et bekreftet modellnavn.",
+  "source_brief": "web/ART_BRIEF.md",
+  "color_space": "sRGB",
+  "usage": "Albedo for SIGNAL / 47 Three.js. Ingen tredjepartsreferanser ble brukt.",
+  "postprocess": "Kun Lanczos-skalering til bestilt mål og JPEG quality=85 med innebygd sRGB-profil på sluttfilene. Inspeksjonsark bruker 2x2 kopier; gulv har også et diagnostisk speilet ark. Ingen søm er malt eller retusjert med kode.",
+  "assets": [
+    {
+      "file": "tex_floor_hextile.jpg",
+      "width": 1024,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept. Asset type: one square seamless tileable sRGB albedo texture for a stylized low-poly Three.js game, SIGNAL / 47, New Mexico 1986. Primary request: warm brown and muted ochre hexagonal vinyl floor tiles with subtly worn dark grout. Straight orthographic top-down view, surface fills the entire square image. Several evenly sized tessellating hexagonal tiles across the image, clean repeating geometry; modest irregular material scuffs and small chips around the grout, restrained simple hand-painted game texture rather than photorealism. Medium muted warm tan/brown values, no glossy highlights. Make opposite image edges line up exactly in shape and color so the texture repeats seamlessly in both X and Y without visible boundaries. Flat unlit base color only; no directional lighting, no ambient occlusion gradient, no shadows, no vignette, no perspective, no frame, no objects, no labels, no letters, no symbols, no watermark. Target final size 1024x1024.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-3c92e410-057c-40f1-a8c2-c1706f9b20fd.png",
+      "validation": {
+        "format_dimensions_profile": "PASS: JPEG RGB, bestilte mål og innebygd sRGB-profil verifisert med Pillow/ImageCms.",
+        "visual": "PASS: Materiale og stil kontrollert visuelt. Ingen skrift, objekter eller perspektiv.",
+        "repeat_2x2": "FAIL: Beste genererte gulv beholder et synlig, lite brudd i fuger ved topp/bunn-overgangen. Ikke godkjent som helt sømløst med vanlig RepeatWrapping.",
+        "runtime": "UNVERIFIED: Ingen spillbygg eller runtime-tester kjørt av grafikkagenten.",
+        "mirrored_repeat_2x2": "PARTIAL: MirroredRepeat fjerner det direkte fugebruddet, men skaper smale sekskanter og rombeformer ved speilsømmen. Må vurderes i runtime; ikke påstå perfekt regulært gulvmønster."
+      },
+      "inspection_sheet": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/tex_floor_hextile_2x2.png",
+      "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "bytes": 155674,
+      "original_source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-cf8d8f5a-d096-44bd-87b3-180a61081d14.png",
+      "edit_prompt": "Use case: precise-object-edit. Edit target: attached original hexagonal vinyl floor albedo texture. Correct only the registration of the tessellating hexagon pattern at the four image boundaries so a 2x2 repeat has NO interrupted grout, NO mismatch in tile color across a seam, NO line at any square image boundary. Presently the bottom and top rows do not quite align when repeated. Make exact whole repeat periods fit the square image; you may gently regularize the hexagonal grid to achieve exact repetition. Keep the warm ochre/brown palette, matte stylized 1986 vinyl material, subtle wear, same amount of dark grout, flat orthographic composition. No lighting, gradient, vignette, shadow, perspective, text, frame or object. Produce ONE corrected square tileable texture, not a preview grid. True seamless X and Y repetition is the only requested change. Final target 1024x1024.",
+      "mirrored_inspection_sheet": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/tex_floor_hextile_mirrored_2x2.png",
+      "rejected_variant_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-7511a710-1f03-4bd7-9204-d4c20704a472.png",
+      "rejected_variant_reason": "Nygenerering hadde dårligere kantregistrering enn valgt variant."
+    },
+    {
+      "file": "tex_ceiling_tile.jpg",
+      "width": 512,
+      "height": 512,
+      "prompt": "Use case: stylized-concept. Asset type: square tileable sRGB base-color albedo texture for a muted stylized low-poly Three.js game set in a New Mexico observatory office, 1986. Primary request: one whole offwhite mineral-fiber acoustic suspended ceiling tile, viewed dead straight on, surface fills the image. Warm pale grey offwhite, restrained stylized hand-painted fine dark flecks and small irregular pinholes distributed evenly. A VERY thin darker recessed edge exactly at all four outside edges creates the narrow joint between adjacent tiles when repeated. Image contains exactly one entire square plate, not a grid, no surrounding frame or floor. Opposite edges must match exactly, seamless and evenly valued when tiled in X and Y. Flat base color texture; no baked lighting, no gradients, no directional shadows, no vignette, no perspective, no glossy highlights, no realistic camera grain. Modest old office wear with subtle grey marks only. No objects, text, writing, logos, watermarks. Square image, target export 512x512.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-abfec95d-d388-49ea-8dd5-8c06459d44cc.png",
+      "validation": {
+        "format_dimensions_profile": "PASS: JPEG RGB, bestilte mål og innebygd sRGB-profil verifisert med Pillow/ImageCms.",
+        "visual": "PASS: Materiale og stil kontrollert visuelt. Ingen skrift, objekter eller perspektiv.",
+        "repeat_2x2": "PASS: 2x2-inspeksjon viser ingen tydelig utilsiktet skjøt.",
+        "runtime": "UNVERIFIED: Ingen spillbygg eller runtime-tester kjørt av grafikkagenten."
+      },
+      "inspection_sheet": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/tex_ceiling_tile_2x2.png",
+      "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+      "bytes": 71384
+    },
+    {
+      "file": "tex_wall_paint.jpg",
+      "width": 1024,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept. Asset type: one square seamless tileable sRGB albedo material texture, for a stylized low-poly Three.js 1986 New Mexico observatory game. Primary request: matte painted lightweight concrete block office wall, muted cool blue-grey paint, slightly dirty and worn. Straight orthographic view exactly perpendicular to the surface; no perspective. Horizontal running-bond rectangular masonry blocks about twice as wide as tall, shallow subtly darker mortar joints. Six rows of blocks across the full texture height, each row exactly two block widths across the full texture width; alternating rows offset half a block, so repeating the square horizontally and vertically preserves running bond without breaks. Low-contrast blue-grey paint, subtle fine concrete pores, sparse scuffs. Restrained hand-painted game texture, readable broad shapes, no photorealism, no dramatic cracks or peeling paint. Surface fills image. Opposite edges must match exactly in alignment and color, true seamless repeating surface in X and Y. Flat diffuse base color only, no lighting, no shadows, no vignette, no bright center, no frame, no objects, no text, no logos, no watermark. Square, target final export 1024x1024.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-af042963-09ec-470d-8690-6dbb8d4857b0.png",
+      "validation": {
+        "format_dimensions_profile": "PASS: JPEG RGB, bestilte mål og innebygd sRGB-profil verifisert med Pillow/ImageCms.",
+        "visual": "PASS: Materiale og stil kontrollert visuelt. Ingen skrift, objekter eller perspektiv.",
+        "repeat_2x2": "PASS: 2x2-inspeksjon viser ingen tydelig utilsiktet skjøt.",
+        "runtime": "UNVERIFIED: Ingen spillbygg eller runtime-tester kjørt av grafikkagenten."
+      },
+      "inspection_sheet": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/tex_wall_paint_2x2.png",
+      "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+      "bytes": 168716
+    },
+    {
+      "file": "tex_desk_laminate.jpg",
+      "width": 1024,
+      "height": 1024,
+      "prompt": "Use case: stylized-concept. Asset type: one square seamless tileable sRGB base-color albedo texture for a stylized low-poly Three.js game set in a New Mexico observatory office in 1986. Primary request: medium grey office desk laminate, subtle fine flecked plastic grain, a few very faint short hairline scratches, one incomplete faded coffee-cup ring and a couple of extremely faint worn coffee traces. Modest muted utilitarian material, clean enough to read as an office desk, not dirty stone. Surface fills the image edge to edge. Straight orthographic top-down, no desk edges or objects. Restrained stylized hand-painted game material, no photorealistic grain. Uniform medium warm grey value with gentle low-contrast material variation; coffee marks and scratches must be low contrast and sparse so tiling is unobtrusive. Opposite edges match exactly in color and features, seamless in both directions. Flat unlit diffuse texture, no lighting gradients, no highlights, no shadows, no vignette, no perspective, no frame, no text, no symbols, no logos, no watermark. Square, target final export 1024x1024.",
+      "source_png": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/exec-3a524541-49e8-4472-8ad3-cb3a6f58cd5b.png",
+      "validation": {
+        "format_dimensions_profile": "PASS: JPEG RGB, bestilte mål og innebygd sRGB-profil verifisert med Pillow/ImageCms.",
+        "visual": "PASS: Materiale og stil kontrollert visuelt. Ingen skrift, objekter eller perspektiv.",
+        "repeat_2x2": "PASS: 2x2-inspeksjon viser ingen tydelig utilsiktet skjøt.",
+        "runtime": "UNVERIFIED: Ingen spillbygg eller runtime-tester kjørt av grafikkagenten."
+      },
+      "inspection_sheet": "/home/tombonator3000t/.codex/generated_images/01a105a9-8c63-7183-9dba-5802782c084b/tex_desk_laminate_2x2.png",
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "bytes": 124281
+    }
+  ],
+  "delivery_note": "Tak, vegg og laminat besto visuell repetisjonskontroll. Gulv har dokumentert repetisjonsbegrensning. Opphav, kildefiler, prompts og sjekksummer er bevart."
+}

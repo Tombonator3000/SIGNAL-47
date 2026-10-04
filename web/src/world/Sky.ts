@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { artTexture } from '../core/art';
 import { rng } from '../core/textures';
+import { artTexture } from '../core/art';
 
 // Band of the Milky Way runs diagonally across the north view, as in the concept art.
 const A = new THREE.Vector3(-0.62, 0.22, -0.75).normalize();
@@ -25,7 +25,7 @@ export class Sky {
     const dome = new THREE.Mesh(
       new THREE.SphereGeometry(3000, 48, 24),
       new THREE.ShaderMaterial({
-        uniforms: this.uniforms,
+        uniforms: { ...this.uniforms, uPanorama: { value: artTexture('sky') } },
         side: THREE.BackSide, depthWrite: false, fog: false,
         vertexShader: /* glsl */`
           varying vec3 vDir;
@@ -36,6 +36,7 @@ export class Sky {
           }`,
         fragmentShader: /* glsl */`
           uniform float uTime, uFlash; uniform vec3 uFlashDir, uBandN, uCore;
+          uniform sampler2D uPanorama;
           varying vec3 vDir;
           float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
           float noise(vec3 x) {
@@ -63,6 +64,11 @@ export class Sky {
             float lum = (band * c1 * 0.65 + core * c2 * 0.9) * bulge;
             lum *= 1.0 - dust * core * 0.9;
             col += mwCol * lum * 0.20 * smoothstep(-0.02, 0.18, h);
+            // The source is a full-sphere equirectangular map, horizon at v=0.5.
+            // sRGB textures are decoded to linear values by WebGL's sampler.
+            vec2 skyUV = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.1415927 + 0.5);
+            vec3 painted = texture2D(uPanorama, skyUV).rgb;
+            col = mix(col, painted * 1.7, 0.72 * smoothstep(-0.03, 0.14, h));
             // distant lightning inside a storm on the horizon
             float fa = max(dot(d, uFlashDir), 0.0);
             col += vec3(0.55, 0.6, 0.85) * uFlash * pow(fa, 18.0) * smoothstep(0.35, 0.0, h) * 1.4;
@@ -77,14 +83,6 @@ export class Sky {
     dome.renderOrder = -10;
     dome.frustumCulled = false;
     this.group.add(dome);
-    // the Milky Way panorama from ART_BRIEF.md, added over the shader stars when the file exists
-    const pano = artTexture('sky/sky_milkyway_equirect.jpg');
-    if (pano) {
-      pano.wrapS = THREE.RepeatWrapping; pano.repeat.x = -1; // seen from inside the sphere
-      const m = new THREE.Mesh(new THREE.SphereGeometry(2900, 48, 24), new THREE.MeshBasicMaterial({
-        map: pano, side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false, opacity: 0.85 }));
-      this.group.add(m);
-    }
     this.group.add(this.makeStars());
   }
 
