@@ -28,4 +28,13 @@ Fontene er innebygd uendret. Lisenstekstene finnes på https://github.com/google
 
 ## Grafikk
 
-All geometri og alle teksturer er laget i kode for dette prosjektet. Grafikk fra ChatGPT føres opp her når den legges inn, med filnavn og dato.
+Geometrien og instrument-/bevisgrafikken er laget i kode for dette prosjektet.
+
+4. oktober 2026: 17 nye bilder laget for SIGNAL / 47 med den innebygde ChatGPT-bildegeneratoren etter `ART_BRIEF.md`. Eksakt modellversjon er ikke oppgitt av verktøyet. Dette er genererte prosjektassets, ikke nedlastede tredjepartsbilder eller en påstått CC0-lisens. Ingen eksterne betalte assettjenester er brukt.
+
+- `room/`: `tex_floor_hextile.jpg`, `tex_ceiling_tile.jpg`, `tex_wall_paint.jpg`, `tex_desk_laminate.jpg`, `poster_listen.png`, `poster_saro.png`, `map_new_mexico.png`.
+- `ext/`: `tex_concrete.jpg`, `tex_desert_ground.jpg`, `tex_asphalt_wet.jpg`, `sign_sierra_on.png`, `sign_sierra_off.png`.
+- `yard/`: `tex_cabinet_metal.jpg`, `sign_service_yard.png`, `label_s03_procedure.png`.
+- `sky/sky_milkyway_equirect.jpg` og `brand/logo_saro.png`.
+
+Stier er relative til `src/assets/art/`. Prompts, kildebaner, eksportmål og SHA-256 står i `room/ROOM_TEXTURES.json`, `ext/EXTERIOR_TEXTURES.json`, `brand/GRAPHICS.json` og `sky/SKY_SIGN_PROMPTS.json`. `runtime/manifest.json` knytter de sju WebP-kopiene til originalene. Kartet er en stilisert spillrekvisitt, ikke et geografisk navigasjonskart. Tidligere lyd- og fontkreditering gjelder uendret.

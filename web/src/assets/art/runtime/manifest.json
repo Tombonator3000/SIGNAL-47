@@ -1,0 +1,79 @@
+[
+  {
+    "source": "room/poster_listen.png",
+    "runtime": "runtime/poster_listen.webp",
+    "dimensions": [
+      768,
+      1152
+    ],
+    "source_sha256": "9757021ce84a4ea93723317ae4ce28f68049bb7dff2261d2464ad83b67adfe38",
+    "runtime_sha256": "f4cf60387140cbc47ca0501069642741e4379ef903bc9ff5c3bd456ca0a4da10",
+    "bytes": 174338
+  },
+  {
+    "source": "room/poster_saro.png",
+    "runtime": "runtime/poster_saro.webp",
+    "dimensions": [
+      768,
+      1152
+    ],
+    "source_sha256": "3911c2ad1f039f7856eefbb7341ac76f8f7ec6e9f50bb64c6776b9fbdd9159ba",
+    "runtime_sha256": "654e8cc7f1338fe9554167a5c5d019de9ad4e0f2cfa94010c66ff40f3a90d51f",
+    "bytes": 196678
+  },
+  {
+    "source": "room/map_new_mexico.png",
+    "runtime": "runtime/map_new_mexico.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "source_sha256": "1fb80e4fd046963434be31d183363758f48c95d7bf3559b8d35d38cabcb27dd1",
+    "runtime_sha256": "372a7d8c91a9f1aa80aa2b68a554b7b9f730ad80b921d6376963c6edb6966c15",
+    "bytes": 351500
+  },
+  {
+    "source": "brand/logo_saro.png",
+    "runtime": "runtime/logo_saro.webp",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "source_sha256": "266d513bd217cc2696b628ab2b55cc17783d5a5a7eec692a6fdf52b1c38cf6da",
+    "runtime_sha256": "cedeb1d187f92b931dba9e37ee8dce5bda681e9986e629e8a4a3c505ce453932",
+    "bytes": 130862
+  },
+  {
+    "source": "yard/sign_service_yard.png",
+    "runtime": "runtime/sign_service_yard.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "65b4dcaab4c74efb9e872af470e9238f9b29e6423f8ea6c3a8183ddb5afef7a0",
+    "runtime_sha256": "c94a8104e2f70c8e6131cf672629284b8dff0b75d0b3358577316ac378353270",
+    "bytes": 95910
+  },
+  {
+    "source": "yard/label_s03_procedure.png",
+    "runtime": "runtime/label_s03_procedure.webp",
+    "dimensions": [
+      512,
+      768
+    ],
+    "source_sha256": "71c2e31632a4dcaebb660c99edad724d7f1d75bd7a8fd6bea240bec51549765a",
+    "runtime_sha256": "220e5995ea8f268c3ed52cf5899b301eebb644b4a3bbb27a50a64d4a242c5df1",
+    "bytes": 41612
+  },
+  {
+    "source": "ext/sign_sierra_on.png",
+    "runtime": "runtime/sign_sierra_on.webp",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "source_sha256": "9fe9f94668b5d8d5a6495ab62d4697ea024b3fe9e1c53b7a9b9b886a4f0c9705",
+    "runtime_sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4",
+    "bytes": 239026
+  }
+]

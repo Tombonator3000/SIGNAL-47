@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import { artImage, artTexture } from './art';
 
-// All textures in the prologue are painted on canvas at startup.
-// When ChatGPT delivers real texture files, swap them in here (same function names).
+// Authored art supplies surfaces and posters. Instrument text, evidence marks and
+// road markings stay deterministic canvas graphics for legibility and story accuracy.
 
 type Draw = (g: CanvasRenderingContext2D, w: number, h: number) => void;
 
@@ -32,74 +33,17 @@ function speckle(g: CanvasRenderingContext2D, w: number, h: number, n: number, a
   }
 }
 
-export function hexFloor() {
-  return canvasTex(512, 512, (g, w, h) => {
-    g.fillStyle = '#3a2d22'; g.fillRect(0, 0, w, h);
-    const r = rng(7);
-    const s = 32; // hex radius in px
-    const dx = s * Math.sqrt(3), dy = s * 1.5;
-    for (let row = -1; row < h / dy + 1; row++) {
-      for (let col = -1; col < w / dx + 1; col++) {
-        const cx = col * dx + (row % 2 ? dx / 2 : 0), cy = row * dy;
-        const t = 0.85 + r() * 0.2;
-        g.fillStyle = `rgb(${Math.round(150 * t)},${Math.round(118 * t)},${Math.round(88 * t)})`;
-        g.beginPath();
-        for (let k = 0; k < 6; k++) {
-          const a = Math.PI / 6 + k * Math.PI / 3;
-          const px = cx + Math.cos(a) * (s - 2), py = cy + Math.sin(a) * (s - 2);
-          k ? g.lineTo(px, py) : g.moveTo(px, py);
-        }
-        g.closePath(); g.fill();
-      }
-    }
-    speckle(g, w, h, 5000, 0.12, 3);
-  }, [7, 5.2]);
-}
+export function hexFloor() { return artTexture('floor', [7, 5.2]); }
 
-export function ceilingTiles() {
-  return canvasTex(256, 256, (g, w, h) => {
-    g.fillStyle = '#b9b3a3'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 4000, 0.25, 11);
-    g.strokeStyle = '#6d685d'; g.lineWidth = 4;
-    g.strokeRect(0, 0, w, h);
-  }, [10, 8]);
-}
+export function ceilingTiles() { return artTexture('ceiling', [10, 8]); }
 
-export function wallPaint() {
-  return canvasTex(256, 256, (g, w, h) => {
-    g.fillStyle = '#7f8a8a'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 3000, 0.08, 5);
-  }, [4, 2]);
-}
+export function wallPaint() { return artTexture('wall', [4, 2]); }
 
-export function concrete(seed = 1, rep: [number, number] = [4, 2]) {
-  return canvasTex(256, 256, (g, w, h) => {
-    g.fillStyle = '#8f877a'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 6000, 0.18, seed);
-    g.strokeStyle = 'rgba(60,55,48,.35)'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(0, h * 0.5); g.lineTo(w, h * 0.5); g.stroke();
-  }, rep);
-}
+export function concrete(_seed = 1, rep: [number, number] = [4, 2]) { return artTexture('concrete', rep); }
 
-export function posterListen() {
-  return canvasTex(256, 384, (g, w, h) => {
-    g.fillStyle = '#16202b'; g.fillRect(0, 0, w, h);
-    g.fillStyle = '#c9b48a';
-    g.font = '500 34px Oswald';
-    ['LISTEN', 'RECORD', 'ANALYZE', 'UNDERSTAND'].forEach((t, i) => g.fillText(t, 24, 70 + i * 44));
-    dishIcon(g, w * 0.5, h * 0.78, 42, '#c9b48a');
-    g.font = '15px VT323'; g.fillText('SARO  /  EST. 1972', 24, h - 18);
-  });
-}
+export function posterListen() { return artTexture('listen'); }
 
-export function posterSaro() {
-  return canvasTex(256, 384, (g, w, h) => {
-    g.fillStyle = '#121a24'; g.fillRect(0, 0, w, h);
-    dishIcon(g, w * 0.55, h * 0.32, 70, '#d8cfb9');
-    g.fillStyle = '#d8cfb9'; g.font = '500 30px Oswald';
-    ['SOUTHWEST', 'ASTRONOMICAL', 'RESEARCH', 'OBSERVATORY'].forEach((t, i) => g.fillText(t, 22, 230 + i * 36));
-  });
-}
+export function posterSaro() { return artTexture('saro'); }
 
 export function dishIcon(g: CanvasRenderingContext2D, x: number, y: number, s: number, col: string) {
   g.save(); g.translate(x, y); g.strokeStyle = col; g.fillStyle = col; g.lineWidth = Math.max(2, s / 18);
@@ -111,26 +55,7 @@ export function dishIcon(g: CanvasRenderingContext2D, x: number, y: number, s: n
   g.restore();
 }
 
-export function mapNM() {
-  return canvasTex(512, 400, (g, w, h) => {
-    g.fillStyle = '#d9cfb3'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 4000, 0.1, 21);
-    // Rough state outline (New Mexico is almost a box with the bootheel in the south-west).
-    g.strokeStyle = '#4a4436'; g.lineWidth = 3;
-    g.beginPath();
-    g.moveTo(70, 60); g.lineTo(440, 60); g.lineTo(440, 330); g.lineTo(200, 330); g.lineTo(200, 350); g.lineTo(110, 350); g.lineTo(110, 370); g.lineTo(70, 370); g.closePath(); g.stroke();
-    g.strokeStyle = '#9b3b2c'; g.lineWidth = 2;
-    const roads = [[[70, 160], [440, 175]], [[230, 60], [240, 330]], [[120, 230], [440, 250]], [[300, 175], [370, 300]]];
-    roads.forEach(([a, b]) => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); });
-    g.fillStyle = '#2d2a22'; g.font = '500 30px Oswald'; g.fillText('NEW MEXICO', 160, 44);
-    g.font = '16px Special Elite';
-    const city = (x: number, y: number, n: string) => { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); g.fillText(n, x + 8, y + 5); };
-    city(236, 168, 'Albuquerque'); city(255, 120, 'Santa Fe'); city(372, 292, 'Roswell'); city(212, 318, 'Las Cruces');
-    g.strokeStyle = '#b3261e'; g.lineWidth = 3;
-    g.beginPath(); g.moveTo(150, 228); g.lineTo(166, 244); g.moveTo(166, 228); g.lineTo(150, 244); g.stroke();
-    g.fillStyle = '#b3261e'; g.font = '22px Reenie Beanie'; g.fillText('SARO', 128, 268);
-  });
-}
+export function mapNM() { return artTexture('map'); }
 
 export function clockFace() {
   return canvasTex(256, 256, (g, w, h) => {
@@ -164,7 +89,7 @@ export function mugLogo() {
   return canvasTex(256, 128, (g, w, h) => {
     g.fillStyle = '#ede8dc'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#2a2f38';
-    dishIcon(g, 64, 50, 18, '#2a2f38');
+    g.drawImage(artImage('logo'), 26, 12, 76, 76);
     g.font = '500 30px Oswald'; g.textAlign = 'center'; g.fillText('SARO', 64, 108);
   });
 }
@@ -319,11 +244,11 @@ export function chainlink() {
 }
 
 export function roadTex() {
-  return canvasTex(64, 256, (g, w, h) => {
-    g.fillStyle = '#25262a'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 1500, 0.2, 9);
+  return canvasTex(512, 512, (g, w, h) => {
+    g.drawImage(artImage('asphalt'), 0, 0, w, h);
+    g.scale(w / 64, h / 256);
     g.fillStyle = '#c99a2e'; g.fillRect(29, 0, 3, 140); g.fillRect(34, 0, 3, 140);
-    g.fillStyle = '#9a9a92'; g.fillRect(2, 0, 2, h); g.fillRect(w - 4, 0, 2, h);
+    g.fillStyle = '#9a9a92'; g.fillRect(2, 0, 2, 256); g.fillRect(60, 0, 2, 256);
   }, [1, 60]);
 }
 
@@ -350,26 +275,12 @@ export function cameraCard() {
 }
 
 // SARO enamel sign on the yard fence (reference image: service yard at S-03)
-export function yardSign() {
-  return canvasTex(512, 256, (g, w, h) => {
-    g.fillStyle = '#d9d4c4'; g.fillRect(0, 0, w, h);
-    speckle(g, w, h, 4000, 0.14, 61);
-    g.strokeStyle = '#2b2f33'; g.lineWidth = 6; g.strokeRect(10, 10, w - 20, h - 20);
-    g.fillStyle = '#23272b'; g.font = '500 70px Oswald'; g.fillText('SARO', 36, 92);
-    dishIcon(g, 270, 62, 22, '#23272b');
-    g.font = '18px Oswald'; g.fillText('SOUTHWEST ASTRONOMICAL', 36, 122); g.fillText('RESEARCH OBSERVATORY', 36, 144);
-    g.fillRect(36, 158, w - 72, 3);
-    g.font = '500 44px Oswald'; g.fillText('SERVICE YARD', 36, 206);
-    g.font = '20px Oswald'; g.fillText('AUTHORIZED PERSONNEL ONLY', 36, 236);
-    // rust at the bolts
-    for (const [x, y] of [[22, 22], [w - 22, 22], [22, h - 22], [w - 22, h - 22]]) { g.fillStyle = 'rgba(120,60,20,.55)'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); }
-  });
-}
+export function yardSign() { return artTexture('yard'); }
 
 // Grey steel cabinet door with stencil and a small inspection window
 export function cabinetFace(title: string, sub: string[], seed = 3) {
   return canvasTex(256, 384, (g, w, h) => {
-    g.fillStyle = '#5b6463'; g.fillRect(0, 0, w, h);
+    g.drawImage(artImage('cabinet'), 0, 0, w, h);
     speckle(g, w, h, 5000, 0.18, seed);
     const r = rng(seed + 7);
     for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(110,60,25,${0.15 + r() * 0.3})`; g.fillRect(r() < 0.5 ? r() * 14 : w - r() * 14, r() * h, 2 + r() * 6, 2 + r() * 14); }

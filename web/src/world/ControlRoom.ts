@@ -86,11 +86,11 @@ export class ControlRoom {
   // ---------- Room shell ----------
   private shell(st: THREE.Group) {
     const wallTex = T.wallPaint();
-    const wall = new THREE.MeshStandardMaterial({ color: 0x3f5a5f, map: wallTex, roughness: 0.92 });
-    const wallLow = new THREE.MeshStandardMaterial({ color: 0x2c3f43, roughness: 0.9 });
+    const wall = new THREE.MeshStandardMaterial({ color: 0xb3c2c4, map: wallTex, roughness: 0.92 });
+    const wallLow = new THREE.MeshStandardMaterial({ color: 0x566b6e, map: wallTex, roughness: 0.9 });
     const ext = M.concrete;
-    const floorMat = new THREE.MeshStandardMaterial({ map: T.hexFloor(), roughness: 0.3, metalness: 0.0, color: 0xc9b7a0 });
-    const ceilMat = new THREE.MeshStandardMaterial({ map: T.ceilingTiles(), roughness: 1, color: 0xa8a294 });
+    const floorMat = new THREE.MeshStandardMaterial({ map: T.hexFloor(), roughness: 0.55, metalness: 0.0, color: 0xdfd3bf });
+    const ceilMat = new THREE.MeshStandardMaterial({ map: T.ceilingTiles(), roughness: 1, color: 0xe2dfd3 });
     const floor = plane(this.group, 12, 9, floorMat, 0, 0, 0, 0, -Math.PI / 2);
     noMerge(floor);
     plane(st, 12, 9, ceilMat, 0, 3.0, 0, 0, Math.PI / 2);
@@ -420,10 +420,11 @@ export class ControlRoom {
 
   // ---------- West wall: map, cabinets, second desk ----------
   private westWall(st: THREE.Group) {
-    const map = plane(this.group, 1.35, 1.05, new THREE.MeshStandardMaterial({ map: T.mapNM(), roughness: 0.85 }), -5.98, 1.75, -3.0, Math.PI / 2);
+    // The backing front is x=-5.975; the print must sit in front of it.
+    const map = plane(this.group, 1.35, 0.9, new THREE.MeshStandardMaterial({ map: T.mapNM(), roughness: 0.85 }), -5.965, 1.75, -3.0, Math.PI / 2);
     noMerge(map);
     this.objs.map = map;
-    box(st, 0.03, 1.12, 1.42, M.frame, -5.99, 1.75, -3.0);
+    box(st, 0.03, 0.97, 1.42, M.frame, -5.99, 1.75, -3.0);
     for (const z of [-1.2, -0.6, 0.0]) {
       box(st, 0.55, 1.32, 0.56, M.cabinet, -5.7, 0.66, z);
       for (let i = 0; i < 4; i++) { box(st, 0.005, 0.01, 0.48, M.frame, -5.42, 0.33 + i * 0.32, z); box(st, 0.02, 0.025, 0.1, M.steel, -5.41, 0.43 + i * 0.32, z); }

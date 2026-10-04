@@ -102,6 +102,10 @@ async def main():
         saved = await ev("localStorage.getItem('s47.checkpoint')")
         print('checkpoint in storage:', saved)
         print('\n'.join(errs[:30]) or 'no console errors/warnings')
+        if errs: check(False, 'console clean')
         json.dump(checks, open(f'{OUT}/checks.json', 'w'), indent=1)
+        fails = [c for c in checks if c[0] == 'FAIL']
+        print(f'{len(checks) - len(fails)} of {len(checks)} PASS')
         await b.close()
+        if fails: raise SystemExit(1)
 asyncio.run(main())

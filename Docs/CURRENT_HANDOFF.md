@@ -1,5 +1,9 @@
 # SIGNAL / 47 — aktuell overlevering
 
+## Three.js-grafikk, 4. oktober 2026
+
+Ny grafikkandidat bygger videre på `main` ved `47a18b7` (spillkoden er den samme som ved `478bfd1`; PR29s nyere dokumentasjon er bevart). Kode, 17 kildeassets, opphav og lette runtime-kopier ligger i `web/`. Se [`web/ART_DELIVERY.md`](../web/ART_DELIVERY.md) for faktisk teststatus, bevis og begrensninger. Endringen gjelder kontrollrommet, servicegården, fotolaben og utsikten; Unity-arkivet og spillkonstantene er bevart. De tre framtidige konseptbildene i briefen er ikke produsert. Dette er en grafikkleveranse til eksisterende prolog og kapittel 1, ikke portering av alle senere Unity-kapitler.
+
 ## Nettversjonen i web/ (3. oktober 2026)
 
 Fra 3. oktober 2026 bygges spillet videre i three.js i [`web/`](../web/README.md) i samme repo. Unity-prosjektet blir liggende som arkiv og referanse. Prologen «Night Shift» ble laget i en Claude-chat og lagt inn i repoet av Claude Code samme kveld, gjennom [PR24](https://github.com/Tombonator3000/SIGNAL-47/pull/24). Kilden bygger til en fil som er byte-identisk med den publiserte claude.ai-artefakten Tom tester på mobil. Headless gjennomspilling ved 844×390 består, mens fps på ekte telefon og PC, ekte berøringsinput og lydmiks er UNVERIFIED. GitHub viser faktisk flettestatus. Spillet publiseres på GitHub Pages fra main, https://tombonator3000.github.io/SIGNAL-47/, med `.github/workflows/pages.yml`.

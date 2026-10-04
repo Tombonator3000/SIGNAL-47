@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "tool": "Innebygd ChatGPT image_gen",
+  "model": "Eksakt modellnavn er ikke eksponert eller bekreftet av verktøyet.",
+  "purpose": "Original grafikk til SIGNAL / 47 i three.js, etter web/ART_BRIEF.md.",
+  "rights": "Generert for dette prosjektet med innebygd ChatGPT-bildegenerator. Ingen nedlastede tredjepartsbilder eller virkelige varemerker er brukt. Dette er kildeopplysning, ikke en påstand om eksklusivitet eller en ny tredjepartslisens.",
+  "processing": "Kun skalering med Pillow LANCZOS, RGB/RGBA-format og PNG-koding i sRGB. Retusj og visuelle rettelser ble gjort med image_gen.",
+  "assets": [
+    {
+      "path": "brand/logo_saro.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-a3057dc7-fe91-43de-b4d2-56db39e1cfee.png",
+      "prompt": "Use case: logo-brand. Create one game texture asset, a clean fictional SARO emblem for a stylized low-poly game set in New Mexico in 1986. A parabolic radio telescope dish tilted upward on a simple two-legged support, crossed by one thin elliptical orbital ring. Bold elegant ivory line art (#ebe3cf), understated institutional observatory identity, symmetrical balance, clear at small size, flat uniform strokes. Square composition 1024x1024 with generous transparent margins. Entirely transparent background, actual alpha. Only the emblem, no text or letters whatsoever, no border, no shadow, no ground, no mockup, no photograph, no real-world logo, no gradients.",
+      "edits": [
+        {
+          "prompt": "Precise edit of the supplied fictional SARO logo asset. Preserve exactly its radio telescope dish, tripod support, orbital ring design and layout. Change every ivory/beige stroke and filled part of the emblem to one flat dark blue-gray color #263d47. Remove any dust, speckles, paper texture, glows or edge noise outside the actual solid emblem. Uniform flat line art only. Keep an actual fully transparent background everywhere outside the emblem, including every enclosed hole. Do not fill the background. Do not add text, shadows, outlines, watermarks or any other elements. Square 1024x1024 game texture with sufficient transparent margin on all sides.",
+          "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-0bab7164-c3b1-4eba-8cf2-64157c4e933a.png"
+        }
+      ],
+      "expected_text": [],
+      "inspection": "Radioantenne med bane, mørk blågrå strek og ekte gjennomsiktighet. Kontrollert visuelt.",
+      "source_dimensions": [
+        1254,
+        1254
+      ],
+      "source_sha256": "2fdd244a3a00834f440ef2ef11ab873bc9ef6f686977382e6888c25de12ab2e8",
+      "transparent_pixel_fraction": 0.83352,
+      "sha256": "266d513bd217cc2696b628ab2b55cc17783d5a5a7eec692a6fdf52b1c38cf6da",
+      "bytes": 350713,
+      "format": "PNG",
+      "mode": "RGBA",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    },
+    {
+      "path": "room/poster_listen.png",
+      "width": 768,
+      "height": 1152,
+      "alpha": false,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-5f2eb9c6-ce5f-4aac-b18c-0b189e215185.png",
+      "prompt": "Use case: historical-scene. Produce one finished flat 2D in-game poster texture for SIGNAL / 47, a stylized low-poly investigation game in New Mexico, 1986. Output portrait 2:3 ratio, intended 768x1152. Full-bleed rectangular printed paper, perfectly front-facing orthographic, no perspective, no wall or surrounding scene. Dark desaturated midnight navy #0c1220 paper background, gently aged slightly scuffed offwhite #ebe3cf paper edges, warm ivory and muted ochre printed ink. Understated authentic 1980s research observatory safety/inspiration poster. A simple large radio telescope silhouette occupies lower third, elegant clean institutional graphic. Large condensed readable uppercase words in exactly four left-aligned lines occupying upper two thirds, with roomy margins. Text verbatim and only: LISTEN\\nRECORD\\nANALYZE\\nUNDERSTAND. Four lines exactly, every letter spelled correctly, do not add any tiny labels, names, numbers, logos or slogans. Crisp legible block lettering integrated into old screen-printed paper. Subtle material wear; no excessive distress over the letters. No photographic shading, no fake frame, no watermark.",
+      "expected_text": [
+        "LISTEN",
+        "RECORD",
+        "ANALYZE",
+        "UNDERSTAND"
+      ],
+      "inspection": "Alle fire ord korrekt stavet på fire linjer. Kontrollert visuelt.",
+      "source_dimensions": [
+        1024,
+        1536
+      ],
+      "source_sha256": "3d0127ae7f8d02fe4fd923be317f095e06f0451edea13969933f2ffb98468e0a",
+      "sha256": "9757021ce84a4ea93723317ae4ce28f68049bb7dff2261d2464ad83b67adfe38",
+      "bytes": 1418998,
+      "format": "PNG",
+      "mode": "RGB",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    },
+    {
+      "path": "room/poster_saro.png",
+      "width": 768,
+      "height": 1152,
+      "alpha": false,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-b8f0e7bc-1392-4094-b92f-4fcb0c493801.png",
+      "reference": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-0bab7164-c3b1-4eba-8cf2-64157c4e933a.png",
+      "prompt": "Use case: historical-scene. Generate one finished flat printed poster texture for a stylized game set at fictional SARO in New Mexico in 1986. Input image is a supporting emblem reference only: preserve its distinctive radio telescope and orbital ring identity and draw it cleanly as flat ivory print on the poster. Poster portrait 2:3, intended 768x1152. Exact orthographic front view, full-bleed rectangular paper only, no wall, no frame, no 3D product mockup. Dark navy #0c1220 background, ivory #ebe3cf ink, slight warm ochre accent, worn paper edge and restrained age speckle. The emblem is large in upper half. Bottom half has elegant bold uppercase institutional sans-serif type, centered, generous clear margins, exactly these four lines of text and no other text: SOUTHWEST\\nASTRONOMICAL\\nRESEARCH\\nOBSERVATORY. Spell all words exactly. Do not add SARO letters, establishment dates, slogans or any tiny text. The complete organization name must be legible and fit fully inside the paper. Simple understated 1980s observatory graphic design, matte old screen print, no glossy science-fiction style.",
+      "expected_text": [
+        "SOUTHWEST",
+        "ASTRONOMICAL",
+        "RESEARCH",
+        "OBSERVATORY"
+      ],
+      "inspection": "Alle fire ord korrekt stavet. Emblemet følger den genererte logoen. Kontrollert visuelt.",
+      "source_dimensions": [
+        1024,
+        1536
+      ],
+      "source_sha256": "fb1684ebf8ab8e52c29f0f43a11d40e094b3138abe46c8765594ffefede34a4d",
+      "sha256": "3911c2ad1f039f7856eefbb7341ac76f8f7ec6e9f50bb64c6776b9fbdd9159ba",
+      "bytes": 1474820,
+      "format": "PNG",
+      "mode": "RGB",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    },
+    {
+      "path": "room/map_new_mexico.png",
+      "width": 1536,
+      "height": 1024,
+      "alpha": false,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-01b092e3-4911-487e-b279-1fe67a4e1a91.png",
+      "prompt": "Use case: historical-scene. Create one flat 2D texture of an old folded New Mexico road map, a stylized atmospheric game prop for a 1986 observatory control room. Landscape 3:2 aspect ratio, 1536x1024 intended. Orthographic straight top-down view, full rectangular paper fills the image edge to edge, no table, pins, shadows, perspective or surrounding scene. Cream paper #ebe3cf, delicate ochre terrain contours, sage gray mountain hatching mostly in the western half, thin faded red and blue roads, understated cartographic linework, small crease intersections and gently worn edges. Clearly recognizable state outline of New Mexico, north upward: broadly rectangular state with the distinctive step-shaped bootheel in its southwest corner, not the shape of Texas or Arizona. It is a stylized fictional map prop, not a usable navigation map. Place the title 'NEW MEXICO' small and clean in the upper left corner. Place one city point in southeast/east-central New Mexico with the correctly spelled label 'Roswell'. A rough handwritten red circle encloses the Roswell point and label, and a single red question mark '?' just beside the circle. Farther north on the eastern plains inside New Mexico, one distinctly separate hand-drawn red X marks the observatory location. Do not connect the X to Roswell. Only text allowed anywhere in the image: NEW MEXICO, Roswell, and the handwritten question mark. No other place names, road numbers, legends, distances, logos, labels or tiny filler text. No extraterrestrial drawings or fantasy symbols. Restrained 1980s printed road-map design with an investigator's red annotations.",
+      "expected_text": [
+        "NEW MEXICO",
+        "Roswell",
+        "?"
+      ],
+      "inspection": "Stilisert kartrekvisitt, ikke et navigasjonskart. Rødt kryss øst på sletten og separat ring rundt Roswell med spørsmålstegn. Kontrollert visuelt.",
+      "source_dimensions": [
+        1536,
+        1024
+      ],
+      "source_sha256": "07a9e8aa29fa5ab0cf698eee500282260ece7205d4e6c8a1a8acad44fb337d0a",
+      "sha256": "1fb80e4fd046963434be31d183363758f48c95d7bf3559b8d35d38cabcb27dd1",
+      "bytes": 2787808,
+      "format": "PNG",
+      "mode": "RGB",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    },
+    {
+      "path": "yard/sign_service_yard.png",
+      "width": 1024,
+      "height": 512,
+      "alpha": false,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-f7337543-8252-420f-9b16-088b667e2a69.png",
+      "prompt": "Use case: historical-scene. Generate one flat two-dimensional rectangular enamel sign texture for a 1986 New Mexico astronomical observatory in a stylized low-poly game. Final intended size 1024x512, landscape exactly 2:1 ratio. Full-bleed flat orthographic front view of the enamel sign face, no perspective or surrounding scene. Warm aged ivory #ebe3cf enamel, dark desaturated navy printed graphics, a narrow rounded navy border inset from the edge, modest rust just around four screw holes and chipped edges. Supporting reference image is the fictional SARO emblem: preserve this radio telescope plus orbital ring identity; print it in dark navy as a medium-sized emblem at the left, no box behind the emblem. Emblem occupies left quarter; the right three quarters contain two lines of very legible bold condensed uppercase lettering. Text verbatim and only: SERVICE YARD\\nAUTHORIZED PERSONNEL ONLY. SERVICE YARD is largest; AUTHORIZED PERSONNEL ONLY is smaller but clear beneath. Do not add SARO letters, organization name, dates, numbers, slogans or any other text. Keep all lettering comfortably inside the sign with margins. Elegant utilitarian institutional safety sign, slight scuffing, not photorealistic, no glossy sci-fi, no watermark.",
+      "reference": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-0bab7164-c3b1-4eba-8cf2-64157c4e933a.png",
+      "edits": [
+        {
+          "prompt": "Precise edit to the supplied SERVICE YARD sign texture. Keep every letter exactly unchanged and legible: SERVICE YARD and AUTHORIZED PERSONNEL ONLY. Preserve the dark navy telescope-and-orbit emblem at the left, aged ivory enamel, rusted screw holes and narrow navy border. Remove all white empty outside margins above and below the physical sign. The entire image canvas must be filled edge to edge by the enamel sign face; there must be no outside background whatsoever. Recompose the sign to a true 2:1 landscape rectangle, suitable for 1024x512 texture, by making the sign taller while keeping natural letter and emblem proportions, with comfortable margins inside its border. Perfectly flat front orthographic view. No perspective, no surrounding surface, no blank strips, no shadows outside the sign, no extra text.",
+          "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-fc2ab023-b9b6-42a8-907d-dc0d5bda0e9f.png"
+        }
+      ],
+      "expected_text": [
+        "SERVICE YARD",
+        "AUTHORIZED PERSONNEL ONLY"
+      ],
+      "inspection": "Begge linjer korrekt stavet. Hvite felt utenfor emaljeskiltet ble fjernet med bildeverktøyet. Endelig skilt fyller bildeflaten. Kontrollert visuelt.",
+      "source_dimensions": [
+        1774,
+        887
+      ],
+      "source_sha256": "8fbffbe4c65b480373b350e55d3906127d09b23925dcdafe05cea67dd55edf94",
+      "sha256": "65b4dcaab4c74efb9e872af470e9238f9b29e6423f8ea6c3a8183ddb5afef7a0",
+      "bytes": 699505,
+      "format": "PNG",
+      "mode": "RGB",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    },
+    {
+      "path": "yard/label_s03_procedure.png",
+      "width": 512,
+      "height": 768,
+      "alpha": false,
+      "source": "/home/tombonator3000t/.codex/generated_images/01a105a9-46d0-7513-8d9d-a07ae280b155/exec-821bd0e9-9a5a-44d5-916f-09613028d88f.png",
+      "prompt": "Use case: historical-scene. One portrait flat in-game texture of a small typewritten service procedure sheet taped to an electrical cabinet at a fictional 1986 New Mexico observatory. Output aspect ratio 2:3, intended 512x768. Perfect flat front-on orthographic view, the cream paper fills the entire rectangle edge to edge, no cabinet, no background surface or perspective, no frame. Aged warm offwhite paper #ebe3cf, slight fingerprint smudges and folded wear near the edge, crisp dark charcoal typewriter text, spare functional layout with generous margins. Exactly four numbered instruction lines, left aligned, centered vertically, each on one line. Text verbatim: 1. VERIFY POWER\\n2. CHECK ALIGNMENT\\n3. LOG ANY ANOMALIES\\n4. NOTIFY OPS. The final instruction is exactly '4. NOTIFY OPS' with no full stop. Do not print a heading or any other text, labels, names, dates, stamps, handwriting or symbols. All four lines must be large enough to read; monospace typewriter capitals; keep line three fully inside margins. Stylized physical paper texture, not photorealistic, no dramatic lighting, no watermark.",
+      "expected_text": [
+        "1. VERIFY POWER",
+        "2. CHECK ALIGNMENT",
+        "3. LOG ANY ANOMALIES",
+        "4. NOTIFY OPS"
+      ],
+      "inspection": "Fire korrekt stavede og nummererte linjer, ingen ekstra tittel eller koder. Kontrollert visuelt.",
+      "source_dimensions": [
+        1024,
+        1536
+      ],
+      "source_sha256": "1238c223bb7753a2499d85548282c6dad3c3fb4fa612aaaa53dc0ad533125d6a",
+      "sha256": "71c2e31632a4dcaebb660c99edad724d7f1d75bd7a8fd6bea240bec51549765a",
+      "bytes": 555699,
+      "format": "PNG",
+      "mode": "RGB",
+      "color_space": "sRGB",
+      "verified_dimensions": true
+    }
+  ],
+  "created_utc": "2026-10-04T06:52:22.469817+00:00"
+}

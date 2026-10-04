@@ -1,0 +1,373 @@
+{
+  "url": "http://127.0.0.1:8477/SIGNAL-47/",
+  "renderer": "Chromium SwiftShader, not hardware FPS",
+  "checks": [
+    [
+      "all 16 runtime images loaded",
+      true
+    ],
+    [
+      "sky runtime limited to 2K",
+      true
+    ],
+    [
+      "High/Low reuse identical texture maps",
+      true
+    ],
+    [
+      "room draw calls at most 300",
+      true
+    ],
+    [
+      "no browser or shader errors",
+      true
+    ],
+    [
+      "failed image shows retry instead of a black screen",
+      true
+    ],
+    [
+      "retry recovers complete artwork",
+      true
+    ],
+    [
+      "retry has no unexpected errors",
+      true
+    ]
+  ],
+  "art": {
+    "expected": 16,
+    "loaded": [
+      "asphalt",
+      "cabinet",
+      "ceiling",
+      "concrete",
+      "desert",
+      "desk",
+      "floor",
+      "listen",
+      "logo",
+      "map",
+      "procedure",
+      "saro",
+      "sierra",
+      "sky",
+      "wall",
+      "yard"
+    ],
+    "textures": [
+      {
+        "name": "art/desk",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          2,
+          1
+        ]
+      },
+      {
+        "name": "art/cabinet",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/sky",
+        "width": 2048,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/desert",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          3,
+          1
+        ]
+      },
+      {
+        "name": "art/sierra",
+        "width": 1024,
+        "height": 1536,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/wall",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          4,
+          2
+        ]
+      },
+      {
+        "name": "art/floor",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          7,
+          5.2
+        ]
+      },
+      {
+        "name": "art/ceiling",
+        "width": 512,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          10,
+          8
+        ]
+      },
+      {
+        "name": "art/saro",
+        "width": 768,
+        "height": 1152,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/map",
+        "width": 1536,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/listen",
+        "width": 768,
+        "height": 1152,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          2,
+          6
+        ]
+      },
+      {
+        "name": "art/procedure",
+        "width": 512,
+        "height": 768,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          3,
+          3
+        ]
+      },
+      {
+        "name": "art/yard",
+        "width": 1024,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          4,
+          1
+        ]
+      }
+    ]
+  },
+  "views": [
+    {
+      "view": "desk",
+      "quality": "high",
+      "calls": 132,
+      "triangles": 71618,
+      "textures": 71
+    },
+    {
+      "view": "room",
+      "quality": "high",
+      "calls": 188,
+      "triangles": 73212,
+      "textures": 71
+    },
+    {
+      "view": "window",
+      "quality": "high",
+      "calls": 66,
+      "triangles": 66832,
+      "textures": 71
+    },
+    {
+      "view": "map",
+      "quality": "high",
+      "calls": 53,
+      "triangles": 65076,
+      "textures": 71
+    },
+    {
+      "view": "listen",
+      "quality": "high",
+      "calls": 52,
+      "triangles": 65074,
+      "textures": 71
+    },
+    {
+      "view": "saro",
+      "quality": "high",
+      "calls": 90,
+      "triangles": 56804,
+      "textures": 71
+    },
+    {
+      "view": "yard",
+      "quality": "high",
+      "calls": 48,
+      "triangles": 64960,
+      "textures": 71
+    },
+    {
+      "view": "cabinet",
+      "quality": "high",
+      "calls": 52,
+      "triangles": 54118,
+      "textures": 71
+    },
+    {
+      "view": "lab",
+      "quality": "high",
+      "calls": 80,
+      "triangles": 67368,
+      "textures": 71
+    },
+    {
+      "view": "desk",
+      "quality": "low",
+      "calls": 135,
+      "triangles": 71922,
+      "textures": 71
+    },
+    {
+      "view": "room",
+      "quality": "low",
+      "calls": 188,
+      "triangles": 73212,
+      "textures": 71
+    },
+    {
+      "view": "window",
+      "quality": "low",
+      "calls": 66,
+      "triangles": 66832,
+      "textures": 71
+    },
+    {
+      "view": "map",
+      "quality": "low",
+      "calls": 53,
+      "triangles": 65076,
+      "textures": 71
+    },
+    {
+      "view": "listen",
+      "quality": "low",
+      "calls": 52,
+      "triangles": 65074,
+      "textures": 71
+    },
+    {
+      "view": "saro",
+      "quality": "low",
+      "calls": 90,
+      "triangles": 56804,
+      "textures": 71
+    },
+    {
+      "view": "yard",
+      "quality": "low",
+      "calls": 48,
+      "triangles": 64960,
+      "textures": 71
+    },
+    {
+      "view": "cabinet",
+      "quality": "low",
+      "calls": 52,
+      "triangles": 54118,
+      "textures": 71
+    },
+    {
+      "view": "lab",
+      "quality": "low",
+      "calls": 80,
+      "triangles": 67368,
+      "textures": 71
+    }
+  ],
+  "errors": [],
+  "expected_failure_errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ]
+}
