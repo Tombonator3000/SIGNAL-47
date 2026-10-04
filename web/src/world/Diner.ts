@@ -55,7 +55,7 @@ export class Diner {
     this.landscape();this.building();this.counter();this.booths();this.papersAndPhone();this.people();this.signAndRig();
     mergeStatic(this.shell);mergeStatic(this.fixed);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
-    this.slots.red=this.light(13,1.4,-11,8,0xff5341);this.slots.cyan=this.light(12.8,1.15,-11,4,0x52ddd7);
+    this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);
     for(const z of [-5,0,5])this.light(-2.0,2.8,z,4.5,0xddeaff);
     this.slots.hatch=this.light(-5.25,2.1,-2.4,2.8,0xffd391);
     this.light(2.5,1.7,-4.8,4,0xffcf98);this.light(2.5,1.7,4.8,4,0xffcf98);
@@ -270,11 +270,13 @@ export class Diner {
   }
   private signAndRig(){
     const s=this.shell,m=this.m;
-    // The alpha artwork includes both posts and feet: its foot baseline is y=0.
-    for(const z of [-12.12,-9.88])this.col(12.85,13.15,z-.15,z+.15);
+    // The alpha artwork includes both posts and feet: its foot baseline is y=0. Drawn at
+    // 1.8 times the brief's 4 x 2 m (Claude, at integration) so it reads from the highway,
+    // and a metre north so it clears the rig's cab.
+    for(const z of [-11.97,-8.03])this.col(12.8,13.2,z-.2,z+.2);
     // Two front-facing copies, so lettering never mirrors from the back.
-    plane(s,4,2,m.sign,13.025,.734,-11,Math.PI/2);plane(s,4,2,m.sign,12.975,.734,-11,-Math.PI/2);
-    this.proxy('sign',.17,.85,3.3,13,1.1,-11);
+    plane(s,7.2,3.6,m.sign,13.025,1.56,-10,Math.PI/2);plane(s,7.2,3.6,m.sign,12.975,1.56,-10,-Math.PI/2);
+    this.proxy('sign',.17,1.3,5.9,13,2.02,-10);
     const z=-14.15;
     box(s,8.0,2.65,2.35,m.cream,7.9,2.2,z);box(s,8.2,.26,2.4,m.black,7.9,.76,z);
     for(let x=4.1;x<11.9;x+=.55)for(const dz of [-1.185,1.185])box(s,.035,2.5,.025,m.steel,x,2.2,z+dz);

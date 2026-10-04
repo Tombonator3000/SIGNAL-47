@@ -135,6 +135,7 @@ async function boot() {
   const surfaceAt = (): Surface => {
     const p = player.pos;
     if (world.area === 'room6') return 'carpet';
+    if (world.area === 'diner') return world.indoors(p) ? 'tile' : 'dirt';
     if (world.area === 'station01') return world.indoors(p) ? 'wood' : 'dirt';
     if (world.area !== 'saro') return 'dirt';
     if (inside(motelOffice, p)) return 'carpet';
@@ -412,6 +413,7 @@ async function boot() {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
+    if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : 'Mesa Diner, the lot';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.crossing.outside(p)) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
     if (game.checkpointName() === 'residual') return 'Control room';
@@ -646,7 +648,7 @@ async function boot() {
       if (mode === 'play') audio.nightLife(dt, player.pos);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
-      const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
+      const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
       annex.interior.visible = world.area === 'saro' && (indoors.slice(1).some((b) => inside(b, player.pos))

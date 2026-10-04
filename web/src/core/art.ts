@@ -47,6 +47,9 @@ import dinerMenu from '../assets/art/runtime/menu_board_blank.webp';
 import dinerCounter from '../assets/art/diner/tex_counter_laminate.jpg';
 import dinerFloor from '../assets/art/diner/tex_floor_checker.jpg';
 import clipping1947 from '../assets/art/diner/clipping_photo_1947.jpg';
+// round 8 (PR #45): the booths' red vinyl and the knotty pine on the walls
+import dinerBooth from '../assets/art/diner/tex_booth_vinyl.jpg';
+import dinerWall from '../assets/art/diner/tex_wall_panel.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -57,13 +60,13 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
-  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947 };
+  dinerSign, dinerMenu, dinerCounter, dinerFloor, clipping1947, dinerBooth, dinerWall };
 export type ArtId = keyof typeof urls;
 // Images an area loads for itself when it is built, not at the start.
 const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
-  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947']);
+  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall']);
 /** The diner's images (world/Diner.ts loads them before it builds). */
-export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947'];
+export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'clipping1947', 'dinerBooth', 'dinerWall'];
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();

@@ -37,6 +37,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 ## Neste
 
 - [ ] Kapittel 4 «Room 6» (neste for Claude): Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.
+- [ ] Kapitlet «All Night» i dineren: servitrisen, sjåføren, avisutklippet (dokument), kaffen, telefonautomaten til Ward, døra (dørbladet `objs.door`), og trefflatene registrert i `Interaction` bare når spilleren er i dineren. Området er klart (`World.goDiner`).
 - [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
 - [ ] Dinerens grafikk fra Codex (PR #35) kobles inn når dineren bygges: skiltet (tekst i kode på baseline (512, 230), høyst 50 px), menytavla (fem linjer), mintlaminatet (0,6 m), rutegulvet (2,4 m) og avisfotoet. PNG-ene får WebP-kopier med `tools/prepare_art.py`, og alfa og tekst kontrolleres etterpå.
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
@@ -47,7 +48,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kl. 16.15: PR #34, #35 og #39 er levert, flettet og publisert. Neste oppgave er dineren (under).
+Status 4. oktober kveld: PR #34, #35, #39 og #45 (dineren og runde 8) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Ingen ny bestilling til Codex før neste behov er spesifisert.
 
 ### Neste oppgave: dineren i «All Night» (4. oktober kl. 16.15)
 

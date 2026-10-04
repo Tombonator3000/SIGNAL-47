@@ -35,6 +35,7 @@ python3 tools/chapter1.py shots/ch1 passive
 python3 tools/chapter2.py shots/ch2
 python3 tools/chapter3.py shots/ch3
 python3 tools/chapter4.py shots/ch4
+python3 tools/diner.py shots/diner
 node tools/saves.cjs
 ```
 
