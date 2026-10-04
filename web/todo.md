@@ -17,28 +17,42 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
 - [ ] Dinerens grafikk fra Codex (PR #35) kobles inn når dineren bygges: skiltet (tekst i kode på baseline (512, 230), høyst 50 px), menytavla (fem linjer), mintlaminatet (0,6 m), rutegulvet (2,4 m) og avisfotoet. PNG-ene får WebP-kopier med `tools/prepare_art.py`, og alfa og tekst kontrolleres etterpå.
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
+- [ ] Kapittel 4, Claudes del: `src/story/Chapter4.ts`, nødutgangen i korridoren og overgangen over veien, `Room6.ts` som eget område i `World.ts`, samtalen (P10 til P12), lagringen og `tools/chapter4.py`. Codex lager motellet utenfra og kontoret (`MotelFront.ts`, se Codex-delen under). Utkast til flyten: spilleren går over veien, inn på kontoret (lappen fra Nora, nøkkel 6 mangler, felttelefonen på veggen), til døra med 6 og inn til Nora.
 - [ ] Koble `Room6.ts` (levert av Codex i PR #34) inn i `World.ts` som eget område når kapittel 4 skrives. Rommet skjules med hele `group` når spilleren er et annet sted, og `motelFlood` hører bare til rommet.
 
 ## Codex (avtalt med Tom 4. oktober 2026)
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kl. 12.00: punkt 1, runde 4 fra punkt 2, SARO-kartet og punkt 3 (`Room6.ts` og `room6preview.py`) er levert i PR #34, og runde 6 (dineren og Roswell-veien) i PR #35. Begge er flettet inn. Flatene fra PR #34 og grusen fra PR #35 er i spillet. Codex lager ikke mer før det finnes et dokumentert behov; neste behov skrives her og i `ART_BRIEF.md` når kapittel 4 og dineren bygges.
+Status 4. oktober kl. 12.40: PR #34 og PR #35 er levert, flettet og publisert (main `29ceb4d`). Alt som var avtalt, er levert.
 
-1. **Grafikk, prioritet 1:** runde 5 i `ART_BRIEF.md`, fire sømløse flater til STATION 01.
-2. **Grafikk, prioritet 2:** runde 4 (arkivgulvet og automatfronten) og runde 6 (Roswell-veien og dineren).
-3. **Kode, prioritet 3, uavhengig:** rom 6 på Sierra Motor Court som eget område til kapittel 4, etter samme mønster som `src/world/Station01.ts`:
-   - Nye filer som Codex eier: `web/src/world/Room6.ts` og `web/tools/room6preview.py`. En midlertidig forhåndsvisningskrok i `main.ts` i Codex sin gren er greit, merket `// PREVIEW ONLY`. Den tas ikke med.
-   - `export class Room6` med `new Room6(origin)`. Origo blir (0, 0, -8000). Alt bygges lokalt i `group`, og det som oppgis i verdenskoordinater (soner, kolliderere, ankere, flomlys), tar med origo. Gulvet er y = 0.
-   - Innhold: motellrom rundt 4,5 × 6 m, natt i 1986. Dør mot sør med vindu ved siden av og gardiner, dobbeltseng, lite bord med to stoler ved vinduet, bordlampe, TV fra 1970-tallet på en kommode, innrammet foto på kommoden, panelovn, lukket baderomsdør, telefon på nattbordet. Nora sitter i stolen ved vinduet: en enkel, stilisert sittende figur i lavpoly, uten ansiktsdetaljer, i en egen gruppe (`objs.nora`) så hodet kan snus. På bordet: en skoeske med papirer, et askebeger, og feltkortet, brevet og den signerte rettelsen som egne objekter (`objs.fieldCard`, `objs.letter`, `objs.correction`). Utenfor døra et par meter overbygd gangvei med romnummer 6 (tekst i kode) og skjæret fra motellskiltet.
-   - Usynlige trefflater (`proxies`) med disse id-ene: `door`, `nora`, `table`, `fieldCard`, `letter`, `correction`, `photo`, `window`, `phone`, `tv`, `bed`, `lamp`, `bathroom`.
-   - `zones` og `colliders` (rektangler i verdenskoordinater, se `Zone` i `Player.ts`; soner som møtes, må overlappe med mer enn 0,6 m), `anchors` med `arrive`, `talk` og `exit` som `{ x, z, yaw }`, `interior`, `setLamp(on)`, `update(dt, t)` og `dispose()`.
-   - Egne lys i gruppa (HemisphereLight og et svakt månelys eller neonskjær), fordi SAROs lys skjules når spilleren er borte. Eget flomlyssett: `export const motelFlood = floodSet(6, 'motel', 0.2)`.
-   - Maks rundt 120 draw calls, skal gå på mobil. Engelsk tekst i spillet, ingen ekte merkenavn.
-   - Grunnlag: `src/assets/art/concept/ch4_room6.jpg`, `maps/motel-plan.png`, designbibelens K4 og `HISTORIE.md`.
-   - Test: `npx tsc --noEmit`, ingen feil i konsollen, skjermbilder i 1280×800 og 844×390 fra døra, ved bordet, mot Nora og mot vinduet, med draw calls.
-   - Claude skriver selve kapittel 4 (samtalen, bevisene, lagringen) og kobler rommet inn i `World.ts`.
-4. **Filer Claude eier nå, ikke endre dem:** `web/src/main.ts`, `web/src/world/World.ts`, `web/src/world/Station01.ts`, `web/src/world/ServiceYard.ts`, `web/src/world/Annex.ts`, `web/src/world/kit.ts`, alt i `web/src/drive/`, `web/src/story/`, `web/src/ui/` og `web/src/core/`, `web/src/style.css`, `web/vite.config.ts`, de eksisterende testene i `web/tools/` og dokumentene `AGENTS.md`, `README.md`, `memory.md`, `todo.md` og `HISTORIE.md`. Nye bilder legges i `src/assets/art/<kategori>/`; Claude kobler dem inn i `art.ts`. `log.md` kan begge skrive i, med egen overskrift.
+### Neste oppgave til kapittel 4 (avtalt 4. oktober kl. 12.45)
+
+Kapittel 4 trenger først at spilleren kan gå fra SARO til motellet. I dag er Sierra Motor Court bare en kulisse i `src/world/Exterior.ts` (en lang boks ved x -46, z 24 til 68, en baldakin og en bil). Rom 6 (`Room6.ts`) er ferdig og blir et eget område. Det som mangler, er motellet utenfra og kontoret.
+
+**Prioritet 1, kode: `src/world/MotelFront.ts`, Sierra Motor Court utenfra og kontoret innenfra.**
+
+- Nye filer som Codex eier: `web/src/world/MotelFront.ts` og `web/tools/motelpreview.py` (egen forhåndsvisning utenfor spillinngangen, som `room6preview.py`). Leveransenotat i `web/MOTEL_DELIVERY.md`.
+- `export class MotelFront` med `new MotelFront()`. Den bygges i SAROs scene og i SAROs koordinater (ingen egen origo), fordi spilleren går dit fra SARO. Claude fjerner den gamle boksen, baldakinen, stolpene, bilen og de to flomlysene i `Exterior.motel()` når modulen kobles inn. Motellskiltet (stolper ved (-31.5, 30) og (-29.3, 30), skiltet ved (-30.4, 5.8, 30.2)), riksveien (x -28 til -20, overflate y -0,58) og veilysene ved x -18,5 blir stående.
+- Plass: bygningen innenfor x -50 til -41 og z 22 til 70, med fasaden og dørene mot øst (+X, mot veien) og en overbygd gangvei foran. Kontoret i nordenden, nærmest skiltet. Rommene nummereres 1 og utover sørover fra kontoret. Rom 6 er ett av dem. Parkeringsplassen mellom fasaden og veien (x -41 til -28). Bassenget med gjerde er bakgrunn. Grunnlag: `src/assets/art/concept/sierra_court.jpg`, `maps/motel-plan.png`, designbibelens K4 og `HISTORIE.md`.
+- Spilleren har ingen høyde, så alt man går på, ligger på y = 0. Bakken utenfor ligger på y -0,62, så plassen og gangveien er en plate med fortauskant ned til bakken. Claude bygger overgangen over veien fra SARO.
+- Soner (`zones`, rektangler i verdenskoordinater som i `Room6.ts`; soner som møtes, overlapper med mer enn 0,6 m): `lot` (parkeringsplassen, må dekke x -30 til -28 for z 2 til 10, der Claude sin sone over veien kommer inn), `walk` (gangveien foran dørene), `office` (inne på kontoret) og `officeDoor` (døråpningen). Kolliderere: bygningen, baldakinstolpene, bilen, skiltstolpene, isautomaten, bassenggjerdet og møblene på kontoret.
+- Kontoret, rundt 4 × 5 m, kan gås inn i: disk med gjesteprotokoll, nøkkeltavle med kroker for alle rommene (nøkkel 6 mangler), tørre potteplanter, regninger på et spyd, en forseglet konvolutt på disken, en lapp på disken, og den gamle felttelefonen på veggen (eik, to bjeller og sveiv, som på STATION 01) med ledningen ut gjennom bakveggen. «This line still rings in the motel office» sier Nora i kapittel 3. Innsiden ligger i en egen gruppe `interior`, slik at Claude kan skjule den når spilleren er ute, som arkivfløyen.
+- Usynlige trefflater (`proxies`): `officeDoor`, `register`, `keyBoard`, `officePhone`, `envelope`, `message`, `room6Door`, `otherDoors` (én for alle de andre dørene), `iceMachine`, `car`, `pool`.
+- Egne objekter (`objs`): `room6DoorLeaf` (dørbladet hengslet, så det kan åpnes), `officePhoneHandset`, `envelope`, `message`, `key6Hook`.
+- Ankre (`anchors`, `{ x, z, yaw }`): `entry` (der spilleren kommer inn fra veien), `officeInside`, `room6Outside` (foran døra, mot døra) og `fromRoom6` (rett utenfor døra, med ryggen mot den, når spilleren kommer ut av rom 6).
+- Metoder: `setRoom6Light(on)` (vindu og lampe over døra), `setOfficeLight(on)`, `update(dt, t)` (neon, lamper som flimrer litt) og `dispose()`.
+- Lys: SAROs lys gjelder, så ingen egne Hemisphere- eller månelys. Eget flomlyssett, `export const courtFlood = floodSet(10, 'court', 0.1)`, for alle modulens materialer: lampene over dørene, lyset fra kontoret og det røde og cyan skjæret fra skiltet. SARO-settet `site` er fullt og skal ikke brukes.
+- Budsjett: høyst rundt 50 draw calls for hele modulen i ett bilde, og den skal bygges på under rundt 150 ms i headless. Den bygges ved start sammen med SARO, fordi motellet synes fra servicegården.
+- Tekst i kode, på engelsk: OFFICE, VACANCY, romnumrene og det som står på lappen og konvolutten (Claude skriver selve teksten i kapittel 4; legg igjen tomme flater). Ingen ekte merkenavn.
+- Bilder: bruk bilder som allerede lastes ved start (`concrete`, `asphalt`, `desert`, `cabinet`, `paper`, `sign`, `sierra`) eller lerretsteksturer i fila. Ikke bruk `stucco`, `oldConcrete`, `weatheredWood` eller `floorboards` (de lastes først med STATION 01). Nye bilder fra runde 7 leveres som filer; Claude kobler dem inn i `art.ts` og bytter dem inn.
+- Test: `npx tsc --noEmit`, ingen feil i konsollen, skjermbilder i 1280×800 og 844×390 fra veien (x -27, z 6, mot sørvest), fra plassen mot kontoret, inne på kontoret, ved døra til rom 6 og en vid oversikt, med draw calls. Ekte `Interaction.pick` på trefflatene. High og Low.
+
+**Prioritet 2, grafikk: runde 7 i `ART_BRIEF.md`** (motelldør, vinduer om natten, motellvegg, feltkortet og brevet fra 1947).
+
+**Filer Claude eier nå, ikke endre dem:** som under, og i tillegg `web/src/world/Room6.ts` (Claude tar den over for å koble den til kapittel 4) og `web/src/world/Exterior.ts`. Claude skriver kapittel 4 (`src/story/Chapter4.ts`), overgangen fra SARO over veien, døra inn til rom 6 som eget område, samtalen, lagringen og den samlede spilltesten.
+
+**Filer Claude eier fra før, ikke endre dem:** `web/src/main.ts`, `web/src/world/World.ts`, `web/src/world/Station01.ts`, `web/src/world/ServiceYard.ts`, `web/src/world/Annex.ts`, `web/src/world/kit.ts`, alt i `web/src/drive/`, `web/src/story/`, `web/src/ui/` og `web/src/core/`, `web/src/style.css`, `web/vite.config.ts`, de eksisterende testene i `web/tools/` og dokumentene `AGENTS.md`, `README.md`, `memory.md`, `todo.md` og `HISTORIE.md`. Nye bilder legges i `src/assets/art/<kategori>/`; Claude kobler dem inn i `art.ts`. `log.md` kan begge skrive i, med egen overskrift.
 
 ## Småting
 

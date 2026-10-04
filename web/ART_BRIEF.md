@@ -63,7 +63,7 @@ Ingen tekst i disse bildene. Teksten legges på i kode, slik at den alltid blir 
 | `lab/sign_blank.png` | 1024×384 | 0,2 til 0,8 m brede | Tomt emaljeskilt, kremhvitt med mørk kant og litt rust. Bakgrunn for skiltene i gården og laben. |
 | `lab/tex_paper_card.jpg` | 512×512, sømløs | kort og ark | Litt gulnet papir med svake bretter. Bakgrunn for prosesskortene og arkene i laben. |
 
-## Runde 4: arkivfløyen i kapittel 2 (ikke levert)
+## Runde 4: arkivfløyen i kapittel 2 (levert i PR #34, i spillet)
 
 Ingen tekst i bildene. Begge tegnes i kode i dag og byttes når filene finnes.
 
@@ -72,7 +72,7 @@ Ingen tekst i bildene. Begge tegnes i kode i dag og byttes når filene finnes.
 | `annex/tex_floor_vinyl.jpg` | 1024×1024, sømløs | 1,2 × 1,2 m (fire ganger fire fliser på 30 cm) | Rolige vinylfliser i lys gråbeige fra 1970-tallet, matte og litt slitte, smale fuger. Brukes i korridoren og arkivrommet. |
 | `annex/vending_front.png` | 512×1024 | 0,74 × 1,48 m | Front på en brus- og snacksautomat uten merkenavn: glassvindu med rader av bokser og poser, myntinnkast og knapper til høyre, uttaksluke nederst. Feltet under vinduet står tomt, der skriver koden COLD DRINKS. |
 
-## Runde 5: STATION 01 (prioritet 1, ønskes nå)
+## Runde 5: STATION 01 (levert i PR #34, i spillet)
 
 Kapittel 3 foregår på målestasjonen fra 1947, rundt klokka 04:00. Se `src/assets/art/concept/station01_field.jpg`, `maps/station01-plan.png` og den bygde stasjonen i `src/world/Station01.ts`. I dag lages disse flatene i kode. Bildene erstatter kodeteksturene, og alt med tekst blir i kode. Alle fire er 1024×1024, sømløse, JPG med kvalitet rundt 85, sett rett forfra eller ovenfra, uten tekst.
 
@@ -83,7 +83,7 @@ Kapittel 3 foregår på målestasjonen fra 1947, rundt klokka 04:00. Se `src/ass
 | `station/tex_wood_weathered.jpg` | 0,5 × 1,0 m | Merkestolpene, stakene til C, portstolpene, hyttedøra | Sølvgrått, sprukket treverk som har stått i ørkensol i førti år, langsgående fiber. |
 | `station/tex_floorboards.jpg` | 1,2 × 1,2 m | Gulvet i hytta | Slitte furugulvbord, 12 cm brede, gangsti mot benken, spikerhoder, litt sand i fugene. |
 
-## Runde 6: Roswell-veien og dineren (kan lages nå, brukes etter rom 6)
+## Runde 6: Roswell-veien og dineren (levert i PR #35; grusen er i spillet, resten kobles inn med dineren)
 
 Historien står i `HISTORIE.md`. Natt mot grålysning, 05:00 til 05:25. Dineren har vært åpen hele natten siden 1940-tallet. Ingen tekst i bildene: navn, overskrifter, priser og skilttekst tegnes i kode oppå. Avisen er oppdiktet, ikke en kopi av en ekte forside.
 
@@ -96,11 +96,24 @@ Historien står i `HISTORIE.md`. Natt mot grålysning, 05:00 til 05:25. Dineren 
 | `diner/clipping_photo_1947.jpg` | 1024×768 | inne i avisutklippet | Avisfoto fra 1947 i grovt raster: natt over en flat mesa, et rolig lys høyt over den, tre rancher i silhuett i forgrunnen. Ingen tekst. |
 | `road/tex_gravel_track.jpg` | 1024×1024, sømløs | 4 × 4 m | Grusvei med to hjulspor og spredt kreosotløv, sett rett ovenfra. |
 
+## Runde 7: Sierra Motor Court og papirene i rom 6 (prioritet 2, etter `MotelFront.ts`)
+
+Kapittel 4 begynner rundt 04:35. Spilleren går fra SARO over veien til motellet, inn på kontoret og videre til rom 6. Se `src/assets/art/concept/sierra_court.jpg`, `maps/motel-plan.png` og oppgaven i `todo.md`. Romnumre, OFFICE, VACANCY og all skrift på papirene tegnes i kode. Ingen tekst og ingen personer i bildene.
+
+| Fil | Størrelse | Mål i spillet | Hva |
+|---|---|---|---|
+| `motel/door_room_blank.jpg` | 512×1024 | 0,92 × 2,03 m | Motelldør fra 1950-tallet rett forfra, malt tre i oksblodrødt som i konseptet, slitt maling ved håndtaket, kikkhull, messinghåndtak, sparkeplate nederst. Ingen nummer. Dørbladet fyller hele bildet. Brukes på alle dørene. |
+| `motel/window_night_lit.jpg` | 512×512 | 1,4 × 1,2 m | Motellvindu sett utenfra om natten: aluminiumskarm, gardinene trukket for, varmt lys bak. Ingen silhuetter. |
+| `motel/window_night_dark.jpg` | 512×512 | 1,4 × 1,2 m | Samme vindu og karm med mørkt rom bak gardinene og et svakt rødt skjær fra skiltet i glasset. |
+| `motel/tex_motel_wall.jpg` | 1024×1024, sømløs | 2,0 × 2,0 m | Malt puss på motellveggen i blek fersken eller sand som i konseptet, litt skitten nederst, uten vinduer, dører eller kanter. |
+| `docs/card_field_1947.jpg` | 1024×640 | i dokumentvisningen | Kartotekkort (5 × 8 tommer) fra 1947: gulnet, trykte blå linjer og rød marglinje, et kaffemerke i ett hjørne, ingen skrift. Rett ovenfra. Bakgrunn for Tomás' feltkort (E11). |
+| `docs/letter_paper_1947.jpg` | 1024×1365 | i dokumentvisningen | Brevark fra 1947 som har vært brettet i tre: tydelige bretter, gulnet, ingen skrift. Rett ovenfra. Bakgrunn for brevet fra Tomás (E13). |
+
 ## Slik kommer bildene inn i spillet
 
-Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Alle bilder i spillet lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
+Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
 
-Slik brukes filene (22 bilder per 4. oktober):
+Slik brukes filene (29 bilder i spillet per 4. oktober kl. 12.40; listen under gjelder de 22 første):
 
 - Rett på flaten: gulv, tak, vegg og bord i kontrollrommet, betong, ørkenbakken, de to plakatene, New Mexico-kartet, servicegårdskiltet, S-03-prosedyren, det tente motellskiltet og `yard/vane_b12.png` (B-12, stripa ligger der stripetesten venter den). Himmelen blandes inn i stjerneshaderen.
 - Under tekst fra koden: `yard/board_r07.png` (R-07 skrives under stripene), `lab/map_field_yard.png` (tittel, alle stedsnavn, fence og N), `yard/floor_paint_frame.png` (S-03 APRON og B-12 SIGHT LINE), `lab/sign_blank.png` (alle skilt og merkelapper med kant, også i arkivet), `lab/tex_paper_card.jpg` (kort, ark, arbeidsordren og papirene på pultene), `yard/tex_cabinet_metal.jpg` (skapfrontene med stensiltekst, og stålet på sidene), `ext/tex_asphalt_wet.jpg` (veimerkingen tegnes oppå) og `brand/logo_saro.png` (kaffekoppen).
