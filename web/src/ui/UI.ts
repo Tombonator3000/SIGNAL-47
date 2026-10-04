@@ -14,6 +14,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 const CREDITS = 'Music: "Signal to Noise" by Scott Buckley, CC BY 4.0, scottbuckley.com.au. Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
+type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos';
 // the picture setting: clean, the 1986 tape look, or a worn tape with tracking trouble
 const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
 
@@ -210,47 +211,65 @@ export class UI {
     this.open(el, onClose);
   }
 
-  // The notebook has two spreads: tonight's tasks and observations, and the case file
-  // with every photograph and paper collected so far. The last spread used is kept.
-  private nbTab: 'notes' | 'case' = 'notes';
-  notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight') {
+  // The journal, in five tabs: tonight's tasks, the observations, the findings recorded
+  // so far (with the evidence board once there is one), the papers and the photographs.
+  // The last tab used is kept. After SPILLDESIGN.md ("Journal med fem faner").
+  private nbTab: NbTab = 'tasks';
+  notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight', onBoard?: () => void) {
     const el = document.createElement('div');
     el.className = 'overlay';
     const photos = docs.filter((d) => d.kind === 'photo' && d.image);
-    const papers = docs.filter((d) => !(d.kind === 'photo' && d.image));
+    const findings = docs.filter((d) => /^p\d\d$/.test(d.id) || d.id === 'finding');
+    const papers = docs.filter((d) => !(d.kind === 'photo' && d.image) && !findings.includes(d));
     const kind = (d: DocSpec) => d.kind === 'hand' ? 'Handwritten' : d.kind === 'printout' ? 'Printout' : d.kind === 'typed' ? 'Typed' : d.kind === 'map' ? 'Map' : 'Print';
+    const count = (n: number) => n ? ` <span class="n">${n}</span>` : '';
+    const excerpt = (d: DocSpec) => {
+      const one = (/^p\d\d$/.test(d.id) ? d.page ?? '' : d.transcript ?? d.page ?? '').replace(/^\S*\s*SUPPORTED \/ /, '').replace(/\s+/g, ' ');
+      return one.length > 150 ? one.slice(0, 147).replace(/[\s.,;:]+\S*$/, '') + '...' : one;
+    };
+    const label = (d: DocSpec) => d.stamp && d.stamp.length <= 6 ? d.stamp : d.title.split(' / ')[0];
     el.innerHTML = `
       <div class="notebook">
         <div class="nb-tabs" role="tablist">
-          <button role="tab" data-t="notes">Notebook</button>
-          <button role="tab" data-t="case">Case file <span class="n">${docs.length}</span></button>
+          <button role="tab" data-t="tasks">Tasks</button>
+          <button role="tab" data-t="notes">Notes${count(notes.length)}</button>
+          <button role="tab" data-t="findings">Findings${count(findings.length)}</button>
+          <button role="tab" data-t="papers">Papers${count(papers.length)}</button>
+          <button role="tab" data-t="photos">Photos${count(photos.length)}</button>
         </div>
         <button class="close">Close  [Tab]</button>
-        <section class="nb-notes">
+        <section class="nb-page" data-p="tasks">
           <h4>${esc(heading)}</h4>
           ${tasks.length ? `<ul>${tasks.map((t) => `<li class="${t.done ? 'done' : ''}"><span class="box">${t.done ? 'x' : '-'}</span>${esc(t.text)}</li>`).join('')}</ul>` : '<p class="empty">Nothing yet. Dale left the shift log on the desk.</p>'}
         </section>
-        <section class="nb-notes">
+        <section class="nb-page" data-p="notes">
           <h4>Observations</h4>
-          ${notes.length ? `<ul>${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : '<p class="empty">Nothing worth writing down. Yet.</p>'}
+          ${notes.length ? `<ul class="nb-cols">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : '<p class="empty">Nothing worth writing down. Yet.</p>'}
         </section>
-        <section class="nb-case">
-          <h4>Photographs</h4>
-          ${photos.length ? `<div class="thumbs">${photos.map((d) => `<button data-d="${d.id}"><img alt="" src="${d.image}"><span>${esc(d.title)}</span></button>`).join('')}</div>` : '<p class="empty">No exposures yet.</p>'}
+        <section class="nb-page" data-p="findings">
+          <h4>Findings</h4>
+          ${onBoard ? '<button class="nb-board" data-a="board">Lay out the evidence board</button>' : ''}
+          ${findings.length ? `<div class="findings">${findings.map((d) => `<button data-d="${d.id}"><b>${esc(label(d))}</b><span>${esc(d.title.split(' / ').slice(1).join(' / ') || d.title)}</span><em>${esc(excerpt(d))}</em></button>`).join('')}</div>` : '<p class="empty">Nothing recorded yet. A finding goes here once the records support it.</p>'}
+        </section>
+        <section class="nb-page nb-case" data-p="papers">
           <h4>Papers</h4>
           ${papers.length ? `<div class="cards">${papers.map((d) => `<button data-d="${d.id}" class="k-${d.kind}"><b>${esc(d.title)}</b><span>${kind(d)}${d.stamp ? ' / ' + esc(d.stamp) : ''}</span></button>`).join('')}</div>` : '<p class="empty">None collected.</p>'}
         </section>
+        <section class="nb-page nb-case" data-p="photos">
+          <h4>Photographs</h4>
+          ${photos.length ? `<div class="thumbs">${photos.map((d) => `<button data-d="${d.id}"><img alt="" src="${d.image}"><span>${esc(d.title)}</span></button>`).join('')}</div>` : '<p class="empty">No exposures yet.</p>'}
+        </section>
       </div>`;
-    const nb = el.querySelector('.notebook') as HTMLElement;
-    const show = (t: 'notes' | 'case') => {
+    const show = (t: NbTab) => {
       this.nbTab = t;
-      nb.classList.toggle('case-on', t === 'case');
+      el.querySelectorAll<HTMLElement>('[data-p]').forEach((p) => p.classList.toggle('on', p.dataset.p === t));
       el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
     };
-    el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => show(b.dataset.t as 'notes' | 'case')));
+    el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => show(b.dataset.t as NbTab)));
     show(this.nbTab);
     el.querySelector('.close')!.addEventListener('click', () => this.close());
     el.addEventListener('click', (e) => { if (e.target === el) this.close(); });
+    el.querySelector('[data-a=board]')?.addEventListener('click', () => { this.close(); onBoard?.(); });
     el.querySelectorAll<HTMLButtonElement>('[data-d]').forEach((b) => b.addEventListener('click', () => {
       const d = docs.find((x) => x.id === b.dataset.d); if (d) onDoc(d);
     }));

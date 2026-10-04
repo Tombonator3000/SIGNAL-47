@@ -22,7 +22,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12.
 - [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
 - [ ] **Tre lysende punkter over motellet:** står stille i en trekant over Sierra Motor Court i kapittel 4 for den som ser opp; et bilde av dem havner i albumet og journalen. Ingen forklaring i spillet (bibelens regel om at fenomenet følger referansene: tre punkter som A, B og C).
-- [ ] **Journal med faner:** oppgaver, notater, dokumenter, bilder, personer, steder og signaler. Oppføringene låses opp etter hvert.
+- [x] **Journal med faner:** Tasks, Notes, Findings (med knapp som legger ut bevisbordet), Papers og Photos, etter `SPILLDESIGN.md`. Gjenstår: personer, steder og signaler (venter til kapittel 5), og notatene kortet ned til én linje i spillerens egne ord uten tolkning.
 - [x] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
 - [ ] Voices of the Void: idéer som passer er samlet i loggen 4. oktober (signalbibliotek, vedlikeholdsturer, basen som hjem). Ikke tilfeldige overnaturlige hendelser.
 

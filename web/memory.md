@@ -4,6 +4,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-04 kveld: Notatboka er nå en journal med fem faner: Tasks, Notes, Findings, Papers og Photos (`UI.notebook`). Findings samler dokumentene med id `p01` til `p99` og den lokale funnrapporten fra kapittel 1, og har en knapp som legger ut bevisbordet fra kapittel 2 når et arkivdokument er lest. Personer, steder og signaler kommer senere.
+
 - 2026-10-04 kveld: Codex tar dineren i «All Night» som neste avgrensede modul (`src/world/Diner.ts`, kontrakten står i `todo.md`). Dineren heter MESA DINER, avisen er den oppdiktede PECOS VALLEY SENTINEL, og utklippet er klippet slik at datoen er borte (bare «July '47» i blyant), så natten i 1947 ikke får en eksakt dato ennå. Området legges ved `DINER_ORIGIN = (-8000, 0, 0)`.
 
 - 2026-10-04 kveld: Bevisbordet v2 (etter `SPILLDESIGN.md`): en tråd går bare mellom to linjer og har tre utfall: holder (rød, og det de viser sammen går selv inn i spørsmålet sitt), motsier (Unity-svaret, teller som feil) eller tom (teller ikke). Spilleren drar ikke lapper. Når alle plassene er fylt, lyser RECORD, og ett trykk registrerer funnet. Tråder uten lapp er tynne bakgrunnstråder; signaturtråden blir en lapp på bordet («hvem, ikke hvorfor»). Fjerde hintnivå kommer først etter tredje nivå og to bom til. Under 700 px høyde eller bredde blir bordet én kolonne med spørsmålene øverst, trykk-så-trykk og koblinger som merkelapper.
