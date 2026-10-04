@@ -14,7 +14,7 @@ Spill i nettleseren: https://tombonator3000.github.io/SIGNAL-47/
 
 Nettversjonen bruker nå bildegenererte materialer i kontrollrommet, servicegården og fotolaben, et Melkeveis-panorama, to plakater, New Mexico-kart, SARO-logo, prosedyreark og skilt. Originalene med briefens filnavn og mål ligger i `src/assets/art/`. Det slukkede motellskiltet er levert som kildevariant; spillet viser den tente varianten. Prolog, fotobevis og spillkonstanter er beholdt.
 
-`src/core/art.ts` laster 24 bilder før scenen bygges: de 16 fra PR #30, de seks tekstfrie flatene fra runde 3 (PR #31: B-12, R-07, gulvrammen, feltkartet, blankt skilt og papir) og arkivfløyens vinylgulv og automatfront fra runde 4 (PR #34). De fire flatene til STATION 01 fra runde 5 (puss, gammel betong, værslitt tre og gulvbord) lastes først når stasjonen bygges, med `loadArtFor`. Tekstene på instrumenter, bevis, skilt, kart og veimerking tegnes i kode oppå bildene, slik at de alltid er riktige. High og Low deler bildekildene. Himmelen har en 2K-runtimekopi for å begrense GPU-minne. PNG-originalene beholdes, mens ni lette WebP-kopier brukes i spillet. De kan bygges på nytt med `python3 tools/prepare_art.py` (Pillow), som lar uendrede kopier være i fred. Bare bilder som importeres i `art.ts`, kommer med i spillet. `concept/`, `maps/` og `production/` er arbeidsmateriale og havner aldri i bygget.
+`src/core/art.ts` laster 24 bilder før scenen bygges: de 16 fra PR #30, de seks tekstfrie flatene fra runde 3 (PR #31: B-12, R-07, gulvrammen, feltkartet, blankt skilt og papir) og arkivfløyens vinylgulv og automatfront fra runde 4 (PR #34). De fire flatene til STATION 01 fra runde 5 (puss, gammel betong, værslitt tre og gulvbord) lastes først når stasjonen bygges, og grusen med hjulspor fra runde 6 (PR #35) når veien bygges, med `loadArtFor`. Resten av runde 6 (dinerens skilt, meny, benk og gulv, og avisfotoet fra 1947) ligger klart og kobles inn når dineren bygges. Tekstene på instrumenter, bevis, skilt, kart og veimerking tegnes i kode oppå bildene, slik at de alltid er riktige. High og Low deler bildekildene. Himmelen har en 2K-runtimekopi for å begrense GPU-minne. PNG-originalene beholdes, mens ti lette WebP-kopier brukes i spillet. De kan bygges på nytt med `python3 tools/prepare_art.py` (Pillow), som lar uendrede kopier være i fred. Bare bilder som importeres i `art.ts`, kommer med i spillet. `concept/`, `maps/` og `production/` er arbeidsmateriale og havner aldri i bygget.
 
 Se [grafikkontroll og testgrenser](ART_DELIVERY.md). Gulvets øvre/nedre fuge har en liten registreringsfeil ved gjentakelse; alle materialer er derfor ikke godkjent som perfekt sømløse. Nye kunstbilder er assets, mens bildene under `evidence/art-2026-10-04/` er uredigerte opptak fra spillet.
 
@@ -59,7 +59,7 @@ Alt ligger i nettleseren: lagringene og fotografiene i IndexedDB (fotografiene �
 ```
 src/main.ts                oppstart, løkke, menyer, testkroker (window.S47)
 src/core/                  lyd, input, interaksjon, bildeinnlasting, kodeteksturer, grafikknivå
-src/core/art.ts            de 28 bildene: 24 lastet før verden bygges (TRY AGAIN hvis noe mangler), 4 med STATION 01
+src/core/art.ts            de 29 bildene: 24 lastet før verden bygges (TRY AGAIN hvis noe mangler), 4 med STATION 01, 1 med veien
 src/core/saves.ts          lagringssystemet: tre saker, autolagring, manuelle plasser, fotografier i IndexedDB
 src/core/FieldCamera.ts    søker, eksponering og filmkopi (960x600 med papirkant og håndskrevet tekst)
 src/core/debug.ts          målestripa bak ?debug

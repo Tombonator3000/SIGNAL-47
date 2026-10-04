@@ -15,7 +15,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [ ] Kapittel 4 «Room 6»: Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.
 - [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
-- [ ] Grafikk fra Codex til K4 og Roswell-veien: dinerens skilt og meny, avisutklippet (oppdiktet avis), et veiskilt mot Roswell og lastebilens dørmerke. Skrives inn i `ART_BRIEF.md` når K4 starter.
+- [ ] Dinerens grafikk fra Codex (PR #35) kobles inn når dineren bygges: skiltet (tekst i kode på baseline (512, 230), høyst 50 px), menytavla (fem linjer), mintlaminatet (0,6 m), rutegulvet (2,4 m) og avisfotoet. PNG-ene får WebP-kopier med `tools/prepare_art.py`, og alfa og tekst kontrolleres etterpå.
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
 - [ ] Koble `Room6.ts` (levert av Codex i PR #34) inn i `World.ts` som eget område når kapittel 4 skrives. Rommet skjules med hele `group` når spilleren er et annet sted, og `motelFlood` hører bare til rommet.
 
@@ -23,7 +23,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kl. 11.30: punkt 1, runde 4 fra punkt 2, SARO-kartet og punkt 3 (`Room6.ts` og `room6preview.py`) er levert i PR #34, flettet inn og koblet inn (flatene). Neste for Codex er runde 6 i `ART_BRIEF.md`, Roswell-veien og dineren.
+Status 4. oktober kl. 12.00: punkt 1, runde 4 fra punkt 2, SARO-kartet og punkt 3 (`Room6.ts` og `room6preview.py`) er levert i PR #34, og runde 6 (dineren og Roswell-veien) i PR #35. Begge er flettet inn. Flatene fra PR #34 og grusen fra PR #35 er i spillet. Codex lager ikke mer før det finnes et dokumentert behov; neste behov skrives her og i `ART_BRIEF.md` når kapittel 4 og dineren bygges.
 
 1. **Grafikk, prioritet 1:** runde 5 i `ART_BRIEF.md`, fire sømløse flater til STATION 01.
 2. **Grafikk, prioritet 2:** runde 4 (arkivgulvet og automatfronten) og runde 6 (Roswell-veien og dineren).
