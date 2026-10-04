@@ -38,6 +38,7 @@ export class ControlRoom {
   group = new THREE.Group();
   colliders: Collider[] = [];
   crtLeft = new Crt(); crtCenter = new Crt(); crtRight = new Crt();
+  crtOps = new Crt();   // the operations terminal on the west desk (story/nightshift.ts)
   lights: { ceiling: THREE.PointLight[]; lamps: THREE.PointLight[]; crt: THREE.PointLight; hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
   tubes: THREE.Mesh[] = [];
   objs: Record<string, THREE.Object3D> = {};
@@ -67,6 +68,7 @@ export class ControlRoom {
     this.eastWall(st);
     this.westWall(st);
     this.southWall(st);
+    this.nightShift(st);
     mergeStatic(st);
     this.group.add(this.blobs);
     mergeStatic(this.blobs);
@@ -510,7 +512,7 @@ export class ControlRoom {
     blob(this.blobs, -5.4, 2.4, 1.4, 1.9);
     this.chair(-4.85, 2.55, Math.PI / 2 + 0.3);
     box(st, 0.35, 0.22, 0.3, M.beigeDark, -5.7, 0.89, 1.95);
-    box(st, 0.3, 0.02, 0.24, M.paper, -5.5, 0.79, 2.6).rotation.y = 0.3;
+    box(st, 0.3, 0.02, 0.24, M.paper, -5.45, 0.79, 3.1).rotation.y = 0.3;
     const lamp = new THREE.Group();
     lamp.position.set(-5.72, 0.78, 3.0);
     cyl(lamp, 0.08, 0.09, 0.03, M.lampShade, 0, 0.015, 0, 16);
@@ -557,6 +559,116 @@ export class ControlRoom {
       const p = plane(st, 0.2, 0.26, new THREE.MeshStandardMaterial({ map: T.deskPapers(i + 9), roughness: 0.9 }), 0.75 + (i % 3) * 0.32, 1.85 - Math.floor(i / 3) * 0.33, 4.46, Math.PI);
       p.rotation.z = (pr() - 0.5) * 0.15;
     }
+  }
+
+  // ---------- What Night Shift adds (KAPITLER.md) ----------
+  // An invisible box around a small thing, so it is easy to aim at.
+  private hit(g: THREE.Object3D, w: number, h: number, d: number, x = 0, y = 0, z = 0) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshBasicMaterial({ visible: false }));
+    m.position.set(x, y, z); noMerge(m); g.add(m);
+  }
+  private nightShift(st: THREE.Group) {
+    // the exceptions binder and two others on a shelf above the printer
+    box(st, 0.28, 0.025, 0.9, M.deskTop, 5.84, 1.5, -0.4);
+    for (const z of [-0.78, -0.02]) box(st, 0.22, 0.12, 0.02, M.steel, 5.9, 1.43, z);
+    const shelf = new THREE.Group();
+    shelf.position.set(5.84, 1.513, -0.4);
+    const spine = new THREE.MeshStandardMaterial({ map: T.binderSpineTex(), roughness: 0.8 });
+    const blue = new THREE.MeshStandardMaterial({ color: 0x2f4a6e, roughness: 0.8 });
+    faced(shelf, 0.26, 0.3, 0.07, blue, spine, 0, 0.15, -0.12, '-x');
+    box(shelf, 0.26, 0.3, 0.07, new THREE.MeshStandardMaterial({ color: 0x6e2f2a, roughness: 0.8 }), 0.0, 0.15, 0.0);
+    box(shelf, 0.26, 0.28, 0.06, new THREE.MeshStandardMaterial({ color: 0x3a3d40, roughness: 0.8 }), 0.0, 0.14, 0.1);
+    this.hit(shelf, 0.3, 0.36, 0.14, 0, 0.16, -0.12);
+    mergeStatic(shelf);
+    this.group.add(shelf);
+    this.objs.binder = shelf;
+
+    // the service record on a clipboard, hung on the rack under the status lights
+    const clip = new THREE.Group();
+    clip.position.set(5.335, 0.68, -2.47); clip.rotation.y = -Math.PI / 2;
+    plane(clip, 0.2, 0.27, new THREE.MeshStandardMaterial({ map: T.serviceRecordTex(), roughness: 0.85 }), 0, 0, 0.004);
+    box(clip, 0.03, 0.02, 0.01, M.steel, 0, 0.15, 0.0);
+    this.hit(clip, 0.26, 0.34, 0.08);
+    mergeStatic(clip);
+    this.group.add(clip);
+    this.objs.serviceRecord = clip;
+
+    // the teleprinter in the corner by the corridor door, with its roll of paper
+    const tx = new THREE.Group();
+    tx.position.set(-4.2, 0, 4.18);
+    box(tx, 0.72, 0.72, 0.5, M.cabinet, 0, 0.36, 0);
+    box(tx, 0.62, 0.16, 0.42, M.beige, 0, 0.8, -0.02);
+    const kb = box(tx, 0.56, 0.05, 0.16, M.beigeDark, 0, 0.75, -0.26); kb.rotation.x = 0.2;
+    plane(tx, 0.5, 0.12, new THREE.MeshStandardMaterial({ map: T.keyboard(), roughness: 0.6 }), 0, 0.78, -0.265, 0, -Math.PI / 2 + 0.2);
+    cyl(tx, 0.05, 0.05, 0.3, M.paper, 0, 0.9, 0.12, 12).rotation.z = Math.PI / 2;
+    const roll = plane(tx, 0.24, 0.42, new THREE.MeshStandardMaterial({ map: T.telexPaperTex(), roughness: 0.9, side: THREE.DoubleSide }), 0, 1.08, 0.02, Math.PI);
+    roll.rotation.x = 0.35;
+    blob(this.blobs, -4.2, 4.18, 0.95, 0.7);
+    mergeStatic(tx);
+    this.group.add(tx);
+    this.col(-4.6, -3.8, 3.9, 4.5);
+    this.objs.telex = tx;
+
+    // the operations terminal on the west desk, facing into the room
+    const ops = new THREE.Group();
+    ops.position.set(-5.6, 0.78, 2.45); ops.rotation.y = Math.PI / 2;
+    box(ops, 0.42, 0.34, 0.34, M.beige, 0, 0.2, -0.04);
+    box(ops, 0.34, 0.26, 0.01, M.darkPlastic, 0, 0.21, 0.131);
+    const scr = plane(ops, 0.3, 0.22, this.crtOps.mat, 0, 0.21, 0.137);
+    noMerge(scr);
+    box(ops, 0.44, 0.03, 0.15, M.beige, 0, 0.015, 0.3);
+    plane(ops, 0.42, 0.13, new THREE.MeshStandardMaterial({ map: T.keyboard(), roughness: 0.6 }), 0, 0.031, 0.3, 0, -Math.PI / 2);
+    mergeStatic(ops);
+    this.group.add(ops);
+    this.objs.opsTerminal = ops;
+    this.crtOps.setPowered(true);
+
+    // the Halley's comet poster on the south wall, behind the supervisor desk
+    const hp = new THREE.Group();
+    hp.position.set(3.0, 1.78, 4.47); hp.rotation.y = Math.PI;
+    plane(hp, 0.5, 0.75, new THREE.MeshStandardMaterial({ map: T.halleyPosterTex(), roughness: 0.8 }), 0, 0, 0);
+    this.hit(hp, 0.5, 0.75, 0.04);
+    mergeStatic(hp);
+    this.group.add(hp);
+    this.objs.halley = hp;
+
+    // Dale's card, taped to the console desk beside the receiver keyboard
+    const card = new THREE.Group();
+    card.position.set(0.42, 0.783, -3.62); card.rotation.y = -0.12;
+    plane(card, 0.14, 0.09, new THREE.MeshStandardMaterial({ map: T.rfiCardTex(), roughness: 0.9 }), 0, 0, 0, 0, -Math.PI / 2);
+    this.hit(card, 0.2, 0.05, 0.15);
+    mergeStatic(card);
+    this.group.add(card);
+    this.objs.rfiCard = card;
+
+    // your jacket on a hook by the service door: SARO navy, a reflective band all round
+    const jk = new THREE.Group();
+    jk.position.set(5.93, 0, 2.42);
+    const navy = new THREE.MeshStandardMaterial({ color: 0x1f2a44, roughness: 0.85 });
+    const band = new THREE.MeshStandardMaterial({ color: 0xc9ccc8, roughness: 0.35, metalness: 0.3 });
+    box(jk, 0.04, 0.03, 0.04, M.steel, 0.04, 1.78, 0);
+    box(jk, 0.1, 0.62, 0.46, navy, -0.02, 1.4, 0);
+    box(jk, 0.11, 0.08, 0.2, navy, -0.02, 1.72, 0);
+    for (const z of [-0.26, 0.26]) box(jk, 0.09, 0.56, 0.09, navy, -0.03, 1.36, z);
+    box(jk, 0.105, 0.05, 0.465, band, -0.02, 1.26, 0);
+    for (const z of [-0.26, 0.26]) box(jk, 0.095, 0.04, 0.095, band, -0.03, 1.2, z);
+    this.hit(jk, 0.2, 0.75, 0.64, 0, 1.4, 0);
+    mergeStatic(jk);
+    this.group.add(jk);
+    this.objs.jacket = jk;
+
+    // a small radio on the filing cabinets, left on by the day shift
+    const rd = new THREE.Group();
+    rd.position.set(-5.68, 1.32, -1.15); rd.rotation.y = Math.PI / 2;
+    box(rd, 0.28, 0.15, 0.1, M.darkPlastic, 0, 0.075, 0);
+    plane(rd, 0.12, 0.1, new THREE.MeshStandardMaterial({ color: 0x8a8473, roughness: 0.9 }), -0.06, 0.075, 0.051);
+    box(rd, 0.09, 0.03, 0.01, M.ledAmber, 0.07, 0.1, 0.052);
+    cyl(rd, 0.015, 0.015, 0.02, M.steel, 0.07, 0.05, 0.06, 8).rotation.x = Math.PI / 2;
+    rod(rd, new THREE.Vector3(0.12, 0.15, 0), new THREE.Vector3(0.2, 0.42, -0.05), 0.003, M.steel, 4);
+    this.hit(rd, 0.32, 0.22, 0.16, 0, 0.09, 0);
+    mergeStatic(rd);
+    this.group.add(rd);
+    this.objs.radio = rd;
   }
 
   // ---------- runtime ----------

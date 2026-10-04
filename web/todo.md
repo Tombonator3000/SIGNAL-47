@@ -4,6 +4,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (prolog og kapittel 1 til 3 er ute på Pages fra 4. oktober kl. 12.39)
 
+- [ ] Tom prøver arkivrommet igjen: døra kan lukkes og åpnes, og telefonen kan nås rundt bordet (rettet 4. oktober kveld).
+- [ ] Tom prøver det nye i Night Shift: perma over skriveren, servicekortet på racket, telexen, plakaten, terminalen på vestpulten, radioen, reléet som slår ut sju sekunder før smellet, og walkie-talkien i rom 6.
+
 - [ ] Tom tester natten fra prologen til og med kapittel 3 på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller, lesbarhet, kameraet, fotopanelene, arkivbordet, telefonsamtalene, kjøringen (taster og venstre stikke på telefon), STATION 01 og om kapittelkortene gir en sammenhengende natt.
 - [ ] Prøv lagringen: Save case og Load case i pausemenyen, Continue og Load case på tittelskjermen, tre saker, og at bildene i saksmappa kommer tilbake etter lasting.
 - [ ] Mål ytelse på STATION 01 og under kjøringen på ekte telefon med `?debug`.
@@ -19,9 +22,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] **Motellet fra Codex (PR #39) koblet inn:** plassen, gangveien, kontoret med lappen fra Nora, rom 6 ved z 55, innkjørselsrampe fra veien, rundt skilt med riktig bakside, de seks bildene i runde 7.
 - [x] P05-siden på arkivbordet var tom hvis E07 ble lest i hylla før bordet ble åpnet (merkeikonene ble aldri tegnet). Rettet, med egen sjekk i `chapter2.py`.
 - [x] **Rom 6:** TV-en står på med sus som lyser opp rommet i blått og flimrer (`Room6.setTv`, `AudioSys.tvHiss`).
-- [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12. Etter Toms nye slutt (4. oktober kveld) er rådet å droppe lysglimtet og blackouten: de bruker opp finalen før den kommer. Venter på Tom.
+- [x] **Walkie-talkien:** avgjort av Tom 4. oktober kveld: ingen blackout, men en guffen lyd som peker fram mot THE EVENT (se `KAPITLER.md`, Room 6). Bygges sammen med Night Shift.
 - [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
-- [ ] **Tre lysende punkter over motellet:** står stille i en trekant over Sierra Motor Court i kapittel 4 for den som ser opp; et bilde av dem havner i albumet og journalen. Ingen forklaring i spillet (bibelens regel om at fenomenet følger referansene: tre punkter som A, B og C). Etter den nye slutten er rådet å droppe dem av samme grunn; lyset over mesaen hører til finalen. Venter på Tom.
+- [x] **Tre lysende punkter over motellet:** droppet av Tom 4. oktober kveld.
 - [x] **Journal med faner:** Tasks, Notes, Findings (med knapp som legger ut bevisbordet), Papers og Photos, etter `SPILLDESIGN.md`. Gjenstår: personer, steder og signaler (venter til kapittel 5), og notatene kortet ned til én linje i spillerens egne ord uten tolkning.
 - [x] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
 - [ ] Voices of the Void: idéer som passer er samlet i loggen 4. oktober (signalbibliotek, vedlikeholdsturer, basen som hjem). Ikke tilfeldige overnaturlige hendelser.
@@ -38,14 +41,26 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ### Historien etter Toms nye slutt (4. oktober kveld)
 
-- [ ] Tom svarer på de to spørsmålene under Night Shift i `KAPITLER.md` (kometen som bevis, reléet under nedtellingen) og leser `HISTORIE.md`.
-- [ ] `KAPITLER.md`, ett kapittel om gangen: The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
-- [ ] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen.
+- [x] Tom svarte ja på begge spørsmålene (kometen, reléet) 4. oktober kveld.
+- [ ] `KAPITLER.md`, ett kapittel om gangen (Night Shift er spesifisert og bygd): The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
+- [x] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen. Walkie-talkien i rom 6 er også bygd.
 - [ ] Endringer i det som finnes: lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»), sluttkortet i kapittel 4 («NEXT: ALL NIGHT»), lastebilen hentes på SARO etter rom 6.
 - [ ] Codex, neste runde når All Night er spesifisert: avisbildet fra 1947 som ett hovedbilde med tre utsnitt (saksmappa, dineren, etter rulleteksten), Halley-plakaten uten tekst, gulnet fanfoldpapir, milestolper og oppmålingsbolt.
-- [ ] Himmelen: Halleys komet lavt i sør-sørvest fra The Second Exposure.
+- [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [ ] Kapitlet «All Night»: fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien. Området er klart (`World.goDiner`).
 - [ ] Roswell Road og THE EVENT: kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
+
+### Grafikk på PC (Tom 4. oktober kveld: «bedre grafikk og lys/skygge, shaders, post processing på PC, mobil kan beholde den enkle stilen»)
+
+Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler på PC, er ekte skygger, omgivelsesskygge, ekte glød og lys i lufta. Forslaget er et tredje nivå, Ultra, bare på PC (ikke berøringsskjerm), mens High og Low blir som i dag:
+
+- [ ] Ultra-nivået i `core/quality.ts` og Settings, med Ultra som standard på PC med et ordentlig skjermkort.
+- [ ] Ekte skygger: månelyset som retningslys med myke skygger ute (antennene, gjerdene og lastebilen kaster skygge på bakken), og skyggekastende spotlys for de nærmeste lampene (natriumlampene i gården, skrivebordslampene, lampa i rom 6). Resten blir falske flomlys som nå.
+- [ ] Omgivelsesskygge (GTAO) inne: kontaktskygger under pulter, i hjørner og rundt møbler.
+- [ ] Ekte glød (bloom) før VHS-passet, i stedet for den enkle gløden i passet.
+- [ ] Lys i lufta: svake lyskjegler under natriumlampene og bakkedis ute.
+- [ ] Teksturer med normal- og ruhetskart fra Codex for betong, gulv, asfalt og grus (bare Ultra laster dem).
+- [ ] Måle fps på Toms PC før og etter hvert steg, med `?debug`.
 
 ### Annet
 

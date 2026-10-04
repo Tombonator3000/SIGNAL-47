@@ -50,7 +50,7 @@ Nettene SARO har fått en negativ avstand. Datoene er valgt slik at avstanden er
 
 ## Valgfrie spor
 
-Fjorten spor ved siden av hovedruten. Seks av dem bærer avsløringen (merket **bærer**). Resten gir stemning, flere steder eller sjekker for den som vil være sikker. Ingen av dem kreves for å komme til slutten. Plasseringen er et utkast; den låses når kapitlet skrives i `KAPITLER.md`.
+Femten spor ved siden av hovedruten. Seks av dem bærer avsløringen (merket **bærer**). Resten gir stemning, flere steder eller sjekker for den som vil være sikker. Ingen av dem kreves for å komme til slutten. Plasseringen er et utkast; den låses når kapitlet skrives i `KAPITLER.md`.
 
 | # | Spor | Kapittel | Rolle |
 | --- | --- | --- | --- |
@@ -68,6 +68,7 @@ Fjorten spor ved siden av hovedruten. Seks av dem bærer avsløringen (merket **
 | 12 | Datafila `RUN860414_0529.DAT`, 0 blokker, FILE INCOMPLETE, opprettet 05:29 mens klokka er rundt 05:00 | All Night, terminalen på SARO | **bærer** 05:29 |
 | 13 | Dineren: sjåføren, servitrisen og det brede avisbildet | All Night | **bærer** andre har sett det |
 | 14 | Ward i telefonautomaten: «Hondo called. So did Site 11.» | All Night | andre steder 3 |
+| 15 | Tomás' feltradio uten batteri i rom 6: en motor som hoster og stopper, stillhet, klikk i fire og sju, noen som puster | Room 6 | frempek for THE EVENT |
 
 Hint om andre steder: høyst disse tre (9, 11 og 14). Fenomenet er større enn SARO, men spillet sier aldri hvor stort.
 
@@ -91,7 +92,7 @@ Dineren ligger der den gamle Roswell-veien går ut fra riksveien, og har vært �
 - **Sjåføren** fikk motoren til å dø på samme strekning i oktober i fjor, rett forbi åttemilsstolpen. Han trodde det var batteriet. Nytt batteri dagen etter, og det har ikke skjedd siden.
 - **Servitrisen** har sett lys over mesaen siden hun var jente, første gang da hun var elleve. Hun er lei av folk fra byen som spør etter romvesener, og hun sier det.
 - **Utklippet fra 1947** henger innrammet på veggen. Det er samme bilde som i saksmappa, men dinerens utgave har mer av bildet. Ved kanten er det noe uklart.
-- **Radioen:** værmelding, Jack Nicklaus som vant Masters i går, 46 år gammel, og en påminnelse om at Halleys komet står lavt i sør før det lysner. Alt dette er ekte for natten.
+- **Radioen:** værmelding, Jack Nicklaus som vant Masters i går, 46 år gammel, og en påminnelse om at Halleys komet står lavt i sør rundt midnatt denne uka. Alt dette er ekte for natten.
 - **Telefonautomaten:** Ward har lest telexene. Hun vil ha deg tilbake før morgenserien. Spilleren vil sjekke veien først.
 - **Kaffen** blir stående på disken når spilleren går.
 
@@ -140,7 +141,7 @@ Bildet har aldri endret seg (R4). Saksmappa hadde et tett utsnitt, dineren et br
 
 - **Terminal:** en tekstskjerm i kontrollrommet i stil med 1986 (grønn fosfor, 80 tegn, kommandoer å velge i, tasting valgfritt), med katalog, unntak, båndkatalog og konsollogg. Ingen ekte merkenavn.
 - **Papir og maskiner:** unntaksperma, servicekortet, telexmaskin med rull, båndspoler i arkivet og en båndstasjon i racket.
-- **Himmelen:** Halleys komet lavt i sør-sørvest, svak og uklar med en kort hale, og et lys som kan stå over mesaen.
+- **Himmelen:** Halleys komet lavt i sør-sørvest til den går ned litt over tre (bygd), svak og uklar med en kort hale, og et lys som kan stå over mesaen.
 - **Grafikk fra Codex:** avisbildet fra 1947 som ett hovedbilde med tre utsnitt (saksmappa, dineren, etter rulleteksten), Halley-plakaten, milestolpene og oppmålingsbolten.
 - **Lastebilen:** dashbordlamper, klokke og radio, motorstopp (`EngineSound.stall`), lysnivå og farger på frontlysene (`Truck.setLightLevel`).
 - **Kjøring:** den gamle Roswell-veien fra dineren til C, med milestolper.

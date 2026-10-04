@@ -2,7 +2,7 @@
 
 Status 4. oktober 2026: en rådgivende gjennomgang, laget etter «advisor»-prinsippet fra Claude Code-dokumentasjonen (https://code.claude.com/docs/en/advisor): en sterkere modell leser hele sammenhengen ved et viktig veiskille og gir råd som utvikleren tar stilling til. Gjennomgangen ble gjort av en egen agent på den sterkeste modellen, med historien, designbibelen, koden og Toms ønsker som grunnlag. Rådene er ikke kanon før de står i `memory.md` som beslutning.
 
-**Oppdatert 4. oktober kveld:** Tom har lagt om historien og slutten (se `HISTORIE.md`). Det endrer tre ting her. Kapittel 5 og 6 finnes ikke lenger, så det som står om K5 under, gjelder ikke. Rådet om bilstoppet (tapt tid, ingen skikkelse) er erstattet av THE EVENT, der Tom har valgt et ansikt som kan minne om en Grey i omtrent tre bilder. Og walkie-talkien og lysene over motellet bør etter den nye slutten droppes helt, fordi de bruker opp finalen før den kommer.
+**Oppdatert 4. oktober kveld:** Tom har lagt om historien og slutten (se `HISTORIE.md`). Det endrer tre ting her. Kapittel 5 og 6 finnes ikke lenger, så det som står om K5 under, gjelder ikke. Rådet om bilstoppet (tapt tid, ingen skikkelse) er erstattet av THE EVENT, der Tom har valgt et ansikt som kan minne om en Grey i omtrent tre bilder. Tom har også droppet blackouten med walkie-talkien og lysene over motellet. Walkie-talkien blir med en lyd som peker fram mot slutten, uten lysglimt (se `KAPITLER.md`).
 
 Tre råd går imot det Tom har bedt om, og venter på Tom:
 

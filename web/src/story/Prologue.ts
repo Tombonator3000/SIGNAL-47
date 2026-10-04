@@ -19,6 +19,9 @@ import type { RecordsAnnex } from '../world/Annex';
 import type { ServiceYard } from '../world/ServiceYard';
 import type { FieldCamera } from '../core/FieldCamera';
 import type { Collider } from '../world/ControlRoom';
+import { openTerminal } from '../ui/Terminal';
+import { halleyPosterTex } from '../core/textures';
+import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
@@ -105,7 +108,10 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
   };
 }
 
-export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; notes: string[]; clock: number }
+// What Night Shift leaves behind besides the notes: which of the room's papers were read,
+// whether relay K3 is still open, and tonight's lines in the console log (story/nightshift.ts).
+export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean }
+export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ns?: NightShiftState; notes: string[]; clock: number }
 export interface PrologueDeps {
   ui: UI; audio: AudioSys; room: ControlRoom; ext: Exterior; player: Player; inter: Interaction;
   yard: ServiceYard; fcam: FieldCamera; colliders: Collider[]; annex: RecordsAnnex;
@@ -140,6 +146,15 @@ export class Prologue {
   ch4: Chapter4;
   decoder: DecoderDesk;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
+  ns: NightShiftState = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
+  radioOn = false;
+  private radioHeard = false;
+  private lineDeadClock = 0;
+  private opsLines: string[] = [];
+  private opsDirty = true;
+  private opsT = 0;
+  private halleyImg: string | undefined;
+  readonly ops = new OpsTerminal(() => ({ clock: this.clock, solveAt: this.ns.solveAt, log: this.ns.log, future: false }));
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
   private bootT = -1;
@@ -178,7 +193,7 @@ export class Prologue {
     this.interactables();
     // the signal processor holds the tape once the anomaly is locked (02:14 and after)
     this.decoder = new DecoderDesk({ ui: d.ui, audio: d.audio, room: d.room, inter: d.inter,
-      locked: () => this.rx.stage >= 3, recorded: () => '02:14', busy: () => this.cinematic });
+      locked: () => this.rx.stage >= 3, recorded: () => '02:14', busy: () => this.cinematic, power: () => this.powered && !this.ns.k3Open });
     this.ch1 = new Chapter1(this, {
       ui: d.ui, audio: d.audio, room: d.room, ext: d.ext, player: d.player, inter: d.inter,
       yard: d.yard, fcam: d.fcam, colliders: d.colliders, view: d.view, isTouch: d.isTouch,
@@ -241,7 +256,8 @@ export class Prologue {
   }
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
-    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, notes: [...this.notes], clock: this.clock };
+    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined,
+      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket }, notes: [...this.notes], clock: this.clock };
   }
   private setPhase(p: Phase) { this.phase = p; }
 
@@ -315,8 +331,9 @@ export class Prologue {
         else toast('Empty. The coffee machine is in the corner.');
       } });
 
-    inter.add({ id: 'rack', object: o.rack, label: () => this.powered ? 'RX bank 3' : 'Power up RX bank 3',
+    inter.add({ id: 'rack', object: o.rack, label: () => this.ns.k3Open ? 'Reset RX bank 3' : this.powered ? 'RX bank 3' : 'Power up RX bank 3',
       use: () => {
+        if (this.ns.k3Open) { this.resetK3(); return; }
         if (this.powered) { toast('Bank 3 online. Sixteen green, two amber. Amber is normal, according to Dale.'); return; }
         this.powerUp(false);
       } });
@@ -325,6 +342,7 @@ export class Prologue {
       label: () => this.cinematic ? null : !this.powered ? 'Receiver console' : this.alarmOn ? 'Check the spectrum' : 'Use receiver console',
       use: () => {
         if (!this.powered) { toast('Dead screen. RX bank 3 is still off.'); audio.play('click', { gain: 0.4 }); return; }
+        if (this.ns.k3Open) { toast('Dead screen. Bank 3 has tripped again. The lever is on the rack.'); audio.play('click', { gain: 0.4 }); return; }
         this.alarmOn = false;
         audio.play('click', { gain: 0.5 });
         this.rxc.show(() => this.consoleClosed());
@@ -368,6 +386,94 @@ export class Prologue {
     inter.add({ id: 'clock', object: o.clock, range: 3.5, label: () => 'Wall clock', use: () => toast(`${clockText(this.clock, false)}. ${this.at('residual') ? 'Where did the night go?' : 'Six hours and change to go.'}`) });
     inter.add({ id: 'map', object: o.map, range: 2.8, label: () => 'Map of New Mexico',
       use: () => toast('SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.') });
+
+    // ---------- what Night Shift adds (KAPITLER.md) ----------
+    const paper = (id: string, object: THREE.Object3D, label: string, doc: () => DocSpec, range = 2.4) =>
+      inter.add({ id, object, range, label: () => this.cinematic ? null : label, use: () => { const d = doc(); ui.document(d, () => this.filePaper(d)); } });
+    paper('excBinder', o.binder, 'Exceptions binder', () => BINDER);   // not 'binder': that is the archive's service copies
+    paper('serviceRecord', o.serviceRecord, 'Service record', () => SERVICE);
+    paper('telex', o.telex, 'Telex roll', () => telex(TELEX_EVENING));
+    paper('rfiCard', o.rfiCard, "Dale's card", () => interferenceCard(this.rx.stage >= 3));
+    paper('halley', o.halley, "Halley's comet poster", () => halleyPoster(this.halleyImage()), 2.8);
+    inter.add({ id: 'opsTerminal', object: o.opsTerminal, range: 2.4, label: () => this.cinematic ? null : 'Operations terminal', use: () => this.openOps() });
+    inter.add({ id: 'jacket', object: o.jacket, range: 2.4, label: () => this.cinematic || this.ns.jacket ? null : 'Your jacket',
+      use: () => ui.toast('SARO issue, with a reflective band all the way round. Too warm for in here.', 3.2) });
+    inter.add({ id: 'radio', object: o.radio, range: 2.6, label: () => this.radioOn ? 'Turn the radio off' : 'Turn the radio on', use: () => this.toggleRadio() });
+  }
+
+  private filePaper(doc: DocSpec) {
+    if (!this.ns.papers.includes(doc.id)) this.ns.papers.push(doc.id);
+    const i = this.docs.findIndex((x) => x.id === doc.id);
+    if (i < 0) this.docs.push(doc); else this.docs[i] = doc;
+  }
+  private paperById(id: string): DocSpec | null {
+    return ({ binder: BINDER, service: SERVICE, telex: telex(TELEX_EVENING), rfiCard: interferenceCard(this.rx.stage >= 3), halley: halleyPoster(this.halleyImage()) } as Record<string, DocSpec>)[id] ?? null;
+  }
+  private halleyImage() {
+    if (!this.halleyImg) { const t = halleyPosterTex(); this.halleyImg = (t.image as HTMLCanvasElement).toDataURL('image/png'); t.dispose(); }
+    return this.halleyImg;
+  }
+
+  // the console log: what the operations terminal shows under SHOW LOG
+  private log(text: string) { this.ns.log.push([Math.round(this.clock), text]); this.opsDirty = true; }
+
+  private openOps() {
+    const { ui, audio } = this.d;
+    audio.play('click', { gain: 0.4 });
+    openTerminal(ui, {
+      header: () => this.ops.header(),
+      run: (c) => { const r = this.ops.run(c); this.opsLines = ['$ ' + c.toUpperCase(), ...r.split('\n')].slice(-9); this.opsDirty = true; return r; },
+      buttons: () => this.ops.buttons(),
+      touch: this.d.isTouch(),
+      onCommand: () => audio.beep(1400, 0.02, 0.02),
+    });
+  }
+
+  private toggleRadio() {
+    const { audio, room, ui } = this.d;
+    this.radioOn = !this.radioOn;
+    audio.play('click', { gain: 0.35, rate: 1.3 });
+    audio.amRadio(this.radioOn ? this.worldPos(room.objs.radio).setY(1.45) : null);
+    if (this.radioOn && !this.radioHeard) { this.radioHeard = true; ui.toast('A station a long way off, coming and going in the static.', 3); }
+    if (this.radioOn && (this.at('countdown') && !this.at('turning'))) audio.amRadioJam(true);
+  }
+
+  // Relay K3 drops RX bank 3 out, seven seconds before the impact (KAPITLER.md: the
+  // service record says it trips before the power goes, not after).
+  private tripK3() {
+    const { room, audio } = this.d;
+    if (!this.powered || this.ns.k3Open) return;
+    this.ns.k3Open = true;
+    this.log('RX BANK 3  K3 OPEN');
+    const at = this.worldPos(room.objs.rack);
+    audio.play('switch', { gain: 1.0, rate: 0.62, at });
+    audio.play('thudSoft', { gain: 0.45, rate: 1.4, at, when: 0.03 });
+    this.decoder.stop();
+    this.applyK3(true);
+  }
+  private applyK3(open: boolean) {
+    const { room, audio } = this.d;
+    this.rx.powered = !open;
+    room.lever.rotation.z = open ? -0.6 : 0.6;
+    this.setLeds(!open);
+    room.crtCenter.setPowered(!open);
+    room.lights.crt.intensity = open ? 0.45 : 0.9;
+    if (open && audio.ctx) { audio.setCarrier(0, 0, 0); audio.signalOff(); }
+  }
+  private resetK3() {
+    const { room, audio, ui } = this.d;
+    if (this.cinematic) return;
+    this.ns.k3Open = false;
+    this.log('RX BANK 3  K3 CLOSED');
+    const at = this.worldPos(room.objs.rack);
+    audio.play('switch', { gain: 0.9, at });
+    audio.play('thudSoft', { gain: 0.5, at, when: 0.12 });
+    this.applyK3(false);
+    room.lever.rotation.z = -0.6;
+    let k = 0;
+    const anim = () => { k++; room.lever.rotation.z = -0.6 + Math.min(1, k / 8) * 1.2; if (k < 8) requestAnimationFrame(anim); };
+    anim();
+    ui.toast('Bank 3 back on. Sixteen green, two amber.', 2.6);
   }
 
   // ---------- beats ----------
@@ -389,6 +495,7 @@ export class Prologue {
     const { room, audio } = this.d;
     this.powered = true;
     this.rx.powered = true;
+    if (!instant) this.log('RX BANK 3  K3 CLOSED');
     room.lever.rotation.z = 0.6;
     audio.startCarrier();
     if (instant) {
@@ -484,6 +591,8 @@ export class Prologue {
     for (let i = 0; i < 14; i++) audio.beep(600 + (i % 4) * 180, 0.025, 0.035, i * 0.28);
     this.after(4.2, () => {
       this.rx.solved = true;
+      this.ns.solveAt = Math.round(this.clock);
+      this.log('SOLVE  RANGE NEGATIVE');
       this.note('Direction solve: RA 05h 17m, Dec -05. Somewhere in Orion.');
       audio.beep(1500, 0.12, 0.06);
       this.startPrint();
@@ -558,6 +667,10 @@ export class Prologue {
     const { audio, room } = this.d;
     this.setPhase('countdown');
     this.lineDeadT = this.gt;
+    this.lineDeadClock = this.clock;
+    this.log('STATION CLOCK  WWVB REFERENCE LOST');
+    if (this.radioOn) audio.amRadioJam(true);
+    this.after(40, () => this.tripK3());
     this.after(16, () => audio.beep(52, 2.8, 0.09, 0, 'sine'));
     this.after(31, () => audio.play('printer', { gain: 0.35, rate: 1.35, at: this.worldPos(room.objs.printer) }));
     this.after(47, () => this.event());
@@ -567,6 +680,9 @@ export class Prologue {
     const { audio, player, ui } = this.d;
     this.setPhase('event');
     this.eventClock = this.clock;
+    this.log('LINE POWER  DIP 1.2 S');
+    this.log('STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47');
+    if (this.radioOn) this.after(3.5, () => audio.amRadioJam(false));
     audio.boom(1.25);
     audio.gasp(undefined, 0.3);
     player.shake = 1.25;
@@ -611,6 +727,7 @@ export class Prologue {
     this.cinematic = true;
     this.lookAssist = 1;
     audio.startMotors();
+    this.log('ARRAY  S-01 TO S-27 MOTION  NO COMMAND');
     this.pointDishes(EVENT_AZ, EVENT_EL, 2.2);
     ui.toast('Outside, every dish in the array is turning.', 3.5);
     this.after(4.5, () => ui.toast('Nobody sent a command.', 3));
@@ -720,7 +837,7 @@ export class Prologue {
     room.handset.rotation.z = this.ringing || this.ch2.ringing ? Math.sin(t * 70) * 0.05 * (Math.sin(t * 2.2) > -0.2 ? 1 : 0) : 0;
 
     // receiver tone
-    if (this.powered && audio.carrier) {
+    if (this.powered && audio.carrier && !this.ns.k3Open) {
       const open = this.rxc.open;
       const rx = this.rx;
       if (this.at('end')) { audio.setCarrier(0, 0, 0); audio.signalOff(); }
@@ -738,7 +855,7 @@ export class Prologue {
     this.rxc.update(t);
 
     // rack LEDs flicker a little when live
-    if (this.powered) {
+    if (this.powered && !this.ns.k3Open) {
       this.ledT -= dt;
       if (this.ledT <= 0) {
         this.ledT = 0.18;
@@ -793,6 +910,14 @@ export class Prologue {
     }
     if (this.spill && this.spillT < 1) { this.spillT = Math.min(1, this.spillT + dt * 0.7); this.spill.scale.setScalar(0.1 + 0.9 * Math.sqrt(this.spillT)); }
 
+    // the first time out in the yard the jacket comes off its hook (it is the silhouette in
+    // the photograph after the credits, HISTORIE.md)
+    if (!this.ns.jacket && this.at('ch1') && !paused && player.pos.x > 6.3) {
+      this.ns.jacket = true;
+      room.objs.jacket.visible = false;
+      this.d.ui.toast('Cold out. You take your jacket.', 2.6);
+    }
+
     // dishes arrive
     if (this.phase === 'turning' && !ext.dishes.some((x) => x.moving)) this.arrived();
     if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
@@ -818,10 +943,12 @@ export class Prologue {
   // ---------- CRT screens (called ~12 times a second) ----------
   drawCrts(t: number) {
     const { room } = this.d;
+    this.drawOps(t);
     if (!this.powered) return;
     const glitch = this.crtGlitch > 0 && Math.random() < 0.6;
     const booting = this.bootT >= 0 && this.gt - this.bootT < 2.6;
     for (const [crt, fn] of [[room.crtLeft, this.drawStatus], [room.crtCenter, this.drawSpectrumCrt], [room.crtRight, this.drawTracking]] as [Crt, (g: CanvasRenderingContext2D, t: number) => void][]) {
+      if (crt === room.crtCenter && this.ns.k3Open) continue;
       const g = crt.ctx;
       if (glitch) { g.fillStyle = '#000'; g.fillRect(0, 0, 512, 384); }
       else if (booting) this.drawBoot(g, this.gt - this.bootT);
@@ -832,6 +959,24 @@ export class Prologue {
       g.drawImage(this.scan, 0, 0);
       crt.commit();
     }
+  }
+
+  // The operations terminal on the west desk: its header, the last command and a cursor.
+  private drawOps(t: number) {
+    const crt = this.d.room.crtOps;
+    const blink = Math.floor(t * 2) % 2;
+    if (!this.opsDirty && blink === this.opsT) return;
+    this.opsDirty = false; this.opsT = blink;
+    const g = crt.ctx;
+    this.clear(g);
+    const head = this.ops.header().split('\n');
+    this.txt(g, head[0].replace(/\s+/g, ' '), 14, 30, 22);
+    this.txt(g, head[1], 14, 56, 22);
+    const lines = this.opsLines.slice(-10);
+    lines.forEach((l, i) => this.txt(g, l.slice(0, 40), 14, 92 + i * 26, 22));
+    this.txt(g, '$ ' + (blink ? '_' : ''), 14, 92 + lines.length * 26, 22);
+    g.drawImage(this.scan, 0, 0);
+    crt.commit();
   }
 
   private txt(g: CanvasRenderingContext2D, s: string, x: number, y: number, size = 24, col = '#8cffa4') {
@@ -923,6 +1068,11 @@ export class Prologue {
     this.logRead = false; this.coffee = 'none'; this.powered = false; this.answered = false;
     this.notes = []; this.docs = [];
     this.bootT = this.solveT = this.printT = this.lineDeadT = -1;
+    this.ns = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
+    room.objs.jacket.visible = true;
+    this.opsLines = []; this.opsDirty = true;
+    if (this.radioOn && audio.ctx) audio.amRadio(null);
+    this.radioOn = false;
     this.alarmOn = false; this.skipQueued = false; this.ringPending = false; this.ringing = false;
     this.flicker = 0; this.crtGlitch = 0; this.mugFall = null; this.lookAssist = 0;
     Object.assign(this.rx, new Rx());
@@ -973,6 +1123,7 @@ export class Prologue {
     this.logRead = true; this.docs = [LOG]; this.phase = 'shift';
     if (idx >= 1) {
       this.powerUp(true);
+      this.ns.log.push([23 * 3600 + 44 * 60, 'RX BANK 3  K3 CLOSED']);
       this.rx.advance(); this.rx.advance();
       this.note(PROFILES[0].note); this.note(PROFILES[1].note);
       this.clock = SKIP_CLOCK;
@@ -1097,6 +1248,18 @@ export class Prologue {
     room.mug.visible = false;
     room.printerPaper.visible = false;
     for (const dish of ext.dishes) dish.snap(EVENT_AZ, EVENT_EL);
+    // Night Shift's papers, relay K3 and the console log: as saved, or as the night left them
+    // (a save from before 4 October has none of it; then K3 was reset after the impact)
+    const e = saved?.s?.eventClock ?? this.eventClock;
+    this.ns = saved?.ns
+      ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket }
+      : { papers: [], k3Open: false, solveAt: e - 60, log: [[23 * 3600 + 44 * 60, 'RX BANK 3  K3 CLOSED'], [e - 60, 'SOLVE  RANGE NEGATIVE'],
+        [e - 47, 'STATION CLOCK  WWVB REFERENCE LOST'], [e - 7, 'RX BANK 3  K3 OPEN'], [e, 'LINE POWER  DIP 1.2 S'],
+        [e, 'STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47'], [e + 3, 'ARRAY  S-01 TO S-27 MOTION  NO COMMAND'], [e + 70, 'RX BANK 3  K3 CLOSED']] };
+    for (const id of this.ns.papers) { const d = this.paperById(id); if (d) this.docs.push(d); }
+    this.applyK3(this.ns.k3Open);
+    room.objs.jacket.visible = !this.ns.jacket;
+    this.opsDirty = true;
     this.phase = 'end';
   }
 }

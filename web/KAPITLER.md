@@ -8,11 +8,11 @@ Status:
 
 | Kapittel | Spesifisert | Bygd |
 | --- | --- | --- |
-| Night Shift | Ja, under | Grunnløpet er bygd. Det nye i dette dokumentet er ikke bygd |
-| The Second Exposure | Neste | Grunnløpet er bygd |
+| Night Shift | Ja, under | Bygd 4. oktober kveld (se loggen) |
+| The Second Exposure | Ja, under (venter på Tom) | Grunnløpet er bygd |
 | The Amended Record | | Grunnløpet er bygd |
 | The Survey Station | | Grunnløpet er bygd |
-| Room 6 | | Grunnløpet er bygd |
+| Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
 | All Night | | Området er bygd |
 | Roswell Road og THE EVENT | | |
 
@@ -145,9 +145,13 @@ NNNN
 HALLEY'S COMET
 APRIL 1986
 CLOSEST TO EARTH APRIL 11
-LOOK LOW IN THE SOUTH BEFORE DAWN
+LOOK LOW IN THE SOUTH
+EARLY APRIL: BEFORE DAWN
+AFTER THE 12TH: AROUND MIDNIGHT
 GET AWAY FROM TOWN LIGHTS
 ```
+
+Etter nærmeste punkt 11. april flyttet kometen seg fort vestover på himmelen. Natt til 14. april sto den lavt i sør rundt midnatt (rundt 12 grader over horisonten) og gikk ned litt over tre. I spillet står den lavt i sør-sørvest til 03:05.
 
 En liten stjernekart-skisse med kometens plass for 5., 10., 14. og 20. april. Teipet i hjørnet, Wards hånd: *Public line: comet calls go to the planetarium in town. Not us. Not at 3 a.m. E.W.*
 
@@ -160,13 +164,13 @@ KNOWN INTERFERENCE
           ANYTHING ELSE: LOG IT.
 ```
 
-**6. Jakka** (kroken ved østdøra, `Your jacket`): «SARO issue, with a reflective band across the back. Too warm for in here.» Spilleren tar den på seg av seg selv første gang hen går ut i The Second Exposure («You take your jacket.»). Det er silhuetten i bildet etter rulleteksten, så den skal være lett å huske, men ikke pekt på.
+**6. Jakka** (kroken ved østdøra, `Your jacket`): «SARO issue, with a reflective band all the way round. Too warm for in here.» Spilleren tar den på seg av seg selv første gang hen går ut i The Second Exposure («You take your jacket.»). Det er silhuetten i bildet etter rulleteksten, så den skal være lett å huske, men ikke pekt på.
 
-**7. Radioen** (hylla): ingen tekst, bare lyd. Den faller ut i sus i det linja dør, og kommer tilbake etter smellet.
+**7. Radioen** (på arkivskapene ved vestveggen): ingen tekst, bare lyd. En vals i tre akkorder fra en liten høyttaler, laget i koden, som kommer og går i suset. Den faller ut i sus i det linja dør, og kommer tilbake etter smellet.
 
 ### Terminalfiler
 
-En ny terminal på pulten ved skriveren: SAROs driftssystem, grønn skjerm, 80 tegn. Kommandoene velges i en liste nederst (trykk eller klikk). På PC kan de også skrives. Svarene er korte. Tidspunktene i loggen kommer fra spillets egen klokke.
+En ny terminal på den andre pulten ved vestveggen (ved skriveren var det ikke plass): SAROs driftssystem, grønn skjerm, 80 tegn. Kommandoene velges i en liste nederst (trykk eller klikk). På PC kan de også skrives. Svarene er korte. Tidspunktene i loggen kommer fra spillets egen klokke.
 
 ```
 SARO OPERATIONS SYSTEM   V4.2        13-APR-1986 23:52
@@ -204,6 +208,8 @@ DATE       TIME      RANGE    CLASS
 RAW TAPE CATALOGUE   SARO   1979-1986
 REELS ON FILE: 001-046, 048-1311
 ```
+
+`TYPE` på en fil viser hodet: når den ble åpnet, operatør og antall poster. Den framtidige fila i All Night viser `OPERATOR REYES`, `RECORDS 0` og `FILE INCOMPLETE. RECORD NOT CLOSED.`
 
 `SHOW TAPES 045-049` gir datoene: 045 08-AUG-79, 046 09-AUG-79, 048 11-AUG-79, 049 12-AUG-79. Spole 047 (10. august 1979) finnes ikke i databasen. Den står i arkivet, og det hører til The Amended Record.
 
@@ -299,7 +305,135 @@ Begge er bakgrunnstråder, ikke funn. De hjelper den som vil skjønne, og stoppe
 - Draw calls ved pulten før og etter, i High og Low.
 - Leveransetestene i `AGENTS.md` som vanlig.
 
-### Spørsmål til Tom
+### Avklart med Tom
 
-1. **Kometen som bevis.** Tom ba om et bilde fra 1947 der stjernefeltet stemmer med himmelen i natt. Få spillere kjenner igjen et stjernefelt. Halleys komet var faktisk synlig lavt i sør i april 1986, og var umulig å se i 1947. Med plakaten her og kometen på himmelen kan alle se at bildet fra 1947 har den. Forslaget er å bruke kometen som det tydelige tegnet. Ok?
-2. **Reléet under nedtellingen.** Det gjør prologen litt mer dramatisk for alle, og gir den som leste servicekortet, en egen grunn til å grue seg de siste sju sekundene. Bank 3 må slås inn igjen etterpå. Ok?
+1. **Kometen som bevis: ja** (4. oktober kveld). Halleys komet var synlig lavt i sør i april 1986 og umulig å se i 1947. Plakaten her, kometen på himmelen og kometen i avisbildet fra 1947.
+2. **Reléet under nedtellingen: ja.** K3 slår ut sju sekunder før smellet, og bank 3 må slås inn igjen etterpå.
+
+## The Second Exposure (02:16 til 02:55)
+
+### Lag
+
+- **Det spilleren tror først:** lampa, framkallingen eller motoren lager et ekstra merke på filmen.
+- **Det nye laget:** filmen beholder en referanse øyet ikke ser. Og SARO har sett det samme på film før, og kalt det rystelse, slør og framkallingsfeil. Det er de samme nettene som i perma.
+- **Det som holdes tilbake:** hva referansen er. Rapporten sier bare hva prøven viser.
+
+### Det som finnes og blir
+
+Alt i dagens kapittel 1 blir: feltkameraet ved østdøra, S-03-loggen (enkoder 026, planlagt 042, ingen kommando), FRAME 01 fra S-03-plattformen, framkallingen på våtbenken, merkingen av referansen på kopien, hypotesen, B-12 med passiv eller aktiv kontroll, FRAME 02, sammenligningen, den lokale rapporten, og Ward som ringer etterpå. Ingen tekster skrives om. Jakka og kometen er allerede bygd.
+
+### Nytt
+
+1. **Telexen fra Hondo Valley, 02:29.** Mens spilleren er i gården, skramler telexmaskinen i kontrollrommet. Den høres gjennom den åpne østdøra. Rullen får en melding til, og konsolloggen får `TELEX RECEIVED  HONDO VALLEY`. Ingen tekst på skjermen sier noe om den; den som går inn, finner den.
+
+```
+ZCZC HVR0229
+SARO OPS
+FM HONDO VALLEY RADIO STN
+0229 MST 14 APR 86
+RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE.
+NNNN
+```
+
+2. **Mørkeromsboka** på hylla over våtbenken i fotolaben (`Darkroom log`). Åpen på siste side, med eldre sider bak:
+
+```
+SARO PHOTO LAB / DARKROOM LOG
+DATE      FILM  FR  BY    NOTES
+04/02/86  ---   --  D.    FIXER CHANGED. DEV 68 F.
+04/11/86  HP5   6   D.    CAL TARGETS. OK.
+- - - - - - - - - - - - - - - - - - - - -
+10/20/85  TX    2   M.O.  S-03 SURVEY 10/19.
+                          EXTRA MARK ON BOTH.
+                          DEV FAULT?
+03/03/83  TX    1   R.K.  APRON, 03/02. FAINT
+                          SECOND VANE. FOG ON
+                          EMULSION, PROBABLY.
+09/23/81  TX    2   ---   REF CHECK 09/22.
+                          DOUBLE IMAGE B-12.
+                          CAMERA SHOOK. REJECT.
+```
+
+Blyant ved 1985-linja, Dales hånd: *Same as the binder.* Beskrivelse i spillet: «The log is open at this month. Further back, three entries say the same thing in three different ways.»
+
+3. **Historikken i S-03-kontrolleren.** Motorskapet får en side til etter den første loggen (`S-03 / Controller history`):
+
+```
+SARO ARRAY / MOTOR BUS S-03
+MOTION WITHOUT COMMAND / HISTORY
+
+09/22/81  01:52:07  ENCODER 026
+03/02/83  03:10:44  ENCODER 026
+10/19/85  23:58:31  ENCODER 026
+04/14/86  02:14:52  ENCODER 026
+```
+
+Samme asimut hver gang, på klokkeslett som står i perma. Tidspunktet i natt kommer fra spillets klokke.
+
+4. **Fikserflaska og lappen på laboratorieveggen:** «Fixer changed on the 2nd. Developer at 68. Dale.» Den vanlige forklaringen (gammel fikser) faller før spilleren rekker å tenke den.
+
+5. **Merket under malingen på B-12.** Når spilleren ser nøye på vingen, står det et stemplet merke under malingen på braketten: «STA 01 / B». Det betyr ingenting ennå, men det er det The Amended Record leter etter.
+
+### Gåter
+
+Hovedkjeden er som før og følger allerede rekkefølgen: observer (S-03 sto feil), dokumenter (FRAME 01), sammenlign (merket mot installasjonsarket), konkluder (hypotese), test (B-12-kontrollen og FRAME 02). Det nye er valgfritt:
+
+- **Er det nytt?** Mørkeromsboka, S-03-historikken og perma fra Night Shift har de samme datoene. Det er tre bakgrunnstråder på bordet når det kommer i The Amended Record: «The same three nights in three records.»
+- **Hva peker 026 mot?** Ingen svarer på det i dette kapitlet. Det står igjen som et spørsmål i notatene: «Every time: 026.»
+
+### Falske forklaringer
+
+| Forklaring | Fra | Det som skiller den ut |
+| --- | --- | --- |
+| Arbeidslampa lager et gjenskinn | Hypotesen, spilleren | Den passive kontrollen: lampa skjermet, merket blir |
+| Motoren har drevet | S-03 | Den aktive kontrollen: vingen flyttes, merket blir stående der det var |
+| Framkallingsfeil | Mørkeromsboka 1985, rapporten fra 1947 senere | Fersk fikser, og merket står på begge bildene på samme sted |
+| Kameraet ristet | Mørkeromsboka 1981 | Begge bildene i natt er skarpe |
+| Dugg på glasset | S-03-loggen | Duggen er på inspeksjonsglasset, ikke på linsa |
+
+### Callbacks
+
+| Settes opp her | Betales tilbake |
+| --- | --- |
+| «DEV FAULT?» i mørkeromsboka | Den endrede rapporten fra 1947 i The Amended Record, som sier akkurat det |
+| «STA 01 / B» på braketten | B-12-linjekortet og STATION 01 |
+| Hondo Valley på telexen | Nettverksstatusen senere og Wards «Hondo called» i dineren |
+| 026 hver gang | Holdes åpent til slutten |
+| Rødt lys i fotolaben | Frontlysene i THE EVENT, der rødt er den siste fargen |
+| FRAME 01 og 02: filmen ser det øyet ikke ser | Avisbildet fra 1947, og bildet etter rulleteksten |
+
+### Hva som bygges
+
+- `ServiceYard.ts`: mørkeromsboka på hylla over våtbenken, fikserflaska og lappen, trefflater.
+- `Chapter1.ts`: dokumentene (mørkeromsboka, S-03-historikken), merket under malingen i teksten til vingen, telexen klokka 02:29 med lyd fra maskinen i kontrollrommet, og nye linjer i konsolloggen.
+- `nightshift.ts`: telexmeldingen fra Hondo Valley på rullen.
+- Lyd: telexmaskinen som skriver (syntese: rytmiske slag og en motor).
+- Test i `chapter1.py`: mørkeromsboka og historikken kan leses, telexen kommer 02:29, og en lagring tar dem med.
+
+## Room 6, avklart på forhånd: walkie-talkien
+
+Tom 4. oktober kveld: ingen blackout og ingen lys over motellet, men walkie-talkien skal ha en guffen lyd som skaper uro og peker fram. Resten av Room 6 spesifiseres når kapitlet står for tur.
+
+**Tingen.** Tomás' feltradio fra 1947 ligger på bordet i rom 6, ved siden av skoesken. Olivengrønn, på størrelse med en murstein, med en pisketantenne som er slått ned. Den er en del av referansen: Tomás hadde den i hånda ute på C (R1). Ingen merkenavn.
+
+**Lyden når spilleren slår den på** (rundt 18 sekunder, lyden kommer fra radioen, og den samme hver gang, som en referanse):
+
+| Tid | Hva |
+| --- | --- |
+| 0 s | Bryteren er stiv. Et klikk. Ingenting. |
+| 1 s | Sus som stiger sakte, tynt, som fra en liten høyttaler. |
+| 3 s | Inni suset: en motor på tomgang, langt borte. Den hoster to ganger. |
+| 7 s | Motoren stopper. Suset faller helt bort. Stillhet i to sekunder, mens radioen fortsatt står på. |
+| 9 s | Klikk som fra et relé: fire, pause, sju. |
+| 13 s | Noen puster, tett inntil mikrofonen, sakte. To ganger. |
+| 16 s | Suset kommer tilbake, lavt, og blir stående. |
+
+Dette er THE EVENT spilt omtrent en time før det skjer: motoren som dør, dashbordlampene i 4/7 og spilleren som sitter alene i bilen. Ingen sier det. Ingen tekst forklarer det.
+
+**Trykk for å snakke.** Når suset står, kan spilleren trykke. Suset forsvinner mens knappen holdes (radioen sender og kan ikke ta imot). Når den slippes: et sekund stille, så kommer klikkene tilbake, fire og sju. Det er det spilleren sendte, organisert (R5). Ingen stemme.
+
+**Nora** sier én ting første gang sekvensen er ferdig, uten å se på radioen: «I took the battery out in 1947.» Første gang spilleren trykker: «He pressed it too. Twice.»
+
+**Tekst:** merkelapp «Field radio, 1947», så «Press to talk» og «Turn it off». Første gang: «The switch is stiff. There is no battery in it.» Notatet i journalen er bare det spilleren hørte: «Tomás' field radio. No battery. An engine far off, coughing, then stopping. Silence. Clicks, four and seven. Someone breathing.» Etter trykket: «I pressed to talk once. Four clicks and seven came back.»
+
+**Bygges:** radioen i `Room6.ts` (modell og trefflate), lyden som syntese i `core/walkie.ts` (motor, sus, relé, pust, alt gjennom et smalt båndfilter som en liten høyttaler), og samspillet i `Chapter4.ts`. Den holder seg stille mens Nora snakker. Suset stopper når spilleren går ut av rommet.

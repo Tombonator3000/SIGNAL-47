@@ -17,6 +17,10 @@ export class Sky {
     uBandN: { value: BAND_N },
     uCore: { value: CORE },
   };
+  // Halley's comet, April 1986: low in the south-southwest, a smudge with a short tail.
+  // After its closest approach on the 11th it stood in the south around midnight and set
+  // a little after three (HISTORIE.md, KAPITLER.md). It cannot have been in a 1947 sky.
+  comet: THREE.Mesh;
   private flashT = 0;
   private nextFlash = 9;
   onThunder?: (delay: number, strength: number) => void;
@@ -84,6 +88,34 @@ export class Sky {
     dome.frustumCulled = false;
     this.group.add(dome);
     this.group.add(this.makeStars());
+    this.comet = this.makeComet();
+    this.group.add(this.comet);
+  }
+
+  private makeComet() {
+    const c = document.createElement('canvas'); c.width = 64; c.height = 192;
+    const g = c.getContext('2d')!;
+    const tail = g.createLinearGradient(0, 170, 0, 0);
+    tail.addColorStop(0, 'rgba(200,220,255,.55)'); tail.addColorStop(1, 'rgba(200,220,255,0)');
+    g.fillStyle = tail; g.beginPath(); g.moveTo(28, 170); g.lineTo(14, 0); g.lineTo(50, 0); g.lineTo(36, 170); g.fill();
+    const head = g.createRadialGradient(32, 168, 0, 32, 168, 16);
+    head.addColorStop(0, 'rgba(255,255,255,1)'); head.addColorStop(0.35, 'rgba(220,232,255,.55)'); head.addColorStop(1, 'rgba(200,220,255,0)');
+    g.fillStyle = head; g.fillRect(0, 140, 64, 52);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(16, 48), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false, opacity: 0.8 }));
+    // az 200 (north is -Z, east +X), 7 degrees up, 2600 m out; the tail leans up and west
+    const az = 200 * Math.PI / 180, el = 7 * Math.PI / 180, R = 2600;
+    m.position.set(Math.sin(az) * Math.cos(el) * R, Math.sin(el) * R + 14, -Math.cos(az) * Math.cos(el) * R);
+    m.lookAt(0, m.position.y, 0);
+    m.rotateZ(0.5);
+    m.renderOrder = -8;
+    m.frustumCulled = false;
+    return m;
+  }
+  /** The comet is up from the evening until it sets a little after three in the morning. */
+  setCometClock(clock: number) {
+    const s = ((clock % 86400) + 86400) % 86400;
+    this.comet.visible = s > 20 * 3600 || s < 3 * 3600 + 5 * 60;
   }
 
   private makeStars() {

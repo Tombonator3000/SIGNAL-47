@@ -12,6 +12,7 @@ import type { Chapter3, AreaId } from './Chapter3';
 import * as P from '../ui/Panels';
 import { clockText } from './time';
 import { artUrl } from '../core/art';
+import { WalkieSound } from '../core/walkie';
 
 // Chapter four, "Room 6" (K4 in the design bible). N. Vega is waiting in room 6 at Sierra
 // Motor Court, across the highway from SARO. The player walks there from the fire exit at
@@ -213,7 +214,7 @@ export class Chapter4 {
         }
         return 'ROOM 6 // ASK HER WHERE C WENT';
       case 'leave': return room ? 'ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6' : 'SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT';
-      case 'complete': return 'THE ROSWELL ROAD // NEXT AREA NOT YET PLAYABLE';
+      case 'complete': return 'ALL NIGHT // NEXT PART NOT YET PLAYABLE';
     }
   }
 
@@ -308,6 +309,7 @@ export class Chapter4 {
       add('bed', 'bed', () => 'Bed', () => ui.toast('Made, and not slept in.', 2.6));
       add('lamp', 'lamp', () => 'Table lamp', () => { room.setLamp(!room.lampOn); this.d.audio.play('switch', { gain: 0.3, rate: 1.4 }); });
       add('bathroom', 'bathroom', () => 'Bathroom door', () => ui.toast('Shut. A tap drips behind it.', 2.6));
+      add('walkie', 'walkie', () => this.walkieLabel(), () => this.useWalkie());
       add('door', 'door', () => this.s.stage === 'leave' ? 'Leave room 6' : 'Door to the walk', () => this.useDoor(), 2.6);
     }
     if (this.active) this.applyWorld();
@@ -347,9 +349,69 @@ export class Chapter4 {
       this.d.milestone();
     }
   }
+  // ---------- Tomás' field radio (KAPITLER.md, Room 6; core/walkie.ts) ----------
+  // It plays the road an hour before it happens: an engine dying, the hiss gone, relay
+  // clicks in four and seven, someone breathing. Nobody says so. It has no battery.
+  private walkie: WalkieSound | null = null;
+  private walkieState: 'off' | 'playing' | 'on' | 'sending' = 'off';
+  private walkiePressed = false;     // pressed to talk since it was switched on
+  private walkieHeard = false;       // Nora's lines come once each
+  private walkieSent = false;
+  private walkieLabel() {
+    if (this.walkieState === 'playing' || this.walkieState === 'sending') return null;
+    if (this.walkieState === 'on') return this.walkiePressed ? 'Turn the field radio off' : 'Press to talk';
+    return 'Field radio, 1947';
+  }
+  private useWalkie() {
+    const { audio, ui } = this.d;
+    const room = this.d.motel.room(), o = room?.objs.walkie;
+    if (!o || !audio.ctx) { ui.toast('The switch is stiff. Nothing.', 2.4); return; }
+    if (this.walkieState === 'on' && !this.walkiePressed) { this.walkiePress(); return; }
+    if (this.walkieState === 'on') { this.walkieOff(); audio.play('click', { gain: 0.35, rate: 0.8, at: o.getWorldPosition(new THREE.Vector3()) }); return; }
+    const at = o.getWorldPosition(new THREE.Vector3()).setY(0.95);
+    const dest = audio.spatial(at, 0.7), noise = audio.noiseBuffer();
+    if (!dest || !noise) return;
+    audio.play('click', { gain: 0.45, rate: 0.7, at });
+    this.walkie?.stop();
+    this.walkie = new WalkieSound(audio.ctx, dest, noise);
+    this.walkieState = 'playing'; this.walkiePressed = false;
+    if (!this.walkieHeard) ui.toast('The switch is stiff. There is no battery in it.', 3);
+    const secs = this.walkie.start();
+    this.g.after(secs, () => {
+      if (this.walkieState !== 'playing') return;
+      this.walkieState = 'on';
+      if (!this.walkieHeard) {
+        this.walkieHeard = true;
+        ui.toast('N. VEGA: "I took the battery out in 1947."', 3.4);
+        this.g.note('Tomás\' field radio, on her table. No battery. An engine far off, coughing, then stopping. Silence. Clicks, four and seven. Someone breathing.');
+      }
+    });
+  }
+  private walkiePress() {
+    const { audio, ui } = this.d;
+    if (!this.walkie) return;
+    this.walkieState = 'sending'; this.walkiePressed = true;
+    audio.play('click', { gain: 0.5, rate: 1.2 });
+    const secs = this.walkie.pressToTalk();
+    this.g.after(secs, () => {
+      if (this.walkieState !== 'sending') return;
+      this.walkieState = 'on';
+      if (!this.walkieSent) {
+        this.walkieSent = true;
+        ui.toast('N. VEGA: "He pressed it too. Twice."', 3.2);
+        this.g.note('I pressed to talk once. Four clicks and seven came back.');
+      }
+    });
+  }
+  private walkieOff() {
+    this.walkie?.stop();
+    this.walkieState = 'off'; this.walkiePressed = false;
+  }
+
   // Called by World when the player has stepped out of room 6.
   leftRoom() {
     this.d.audio.tvHiss(null);
+    this.walkieOff();
     if (!this.active) return;
     this.setLeaf(this.s.stage === 'leave' ? 0 : 0.35);
     if (this.s.stage === 'leave') this.finish();
@@ -389,6 +451,7 @@ export class Chapter4 {
   // ---------- the conversation ----------
   private openTalk() {
     const s = this.s;
+    if (this.walkieState !== 'off') this.walkieOff();   // it keeps quiet while she talks
     if (!s.greeted) {
       s.greeted = true;
       this.mode = 'table';
@@ -723,7 +786,7 @@ export class Chapter4 {
       'SIERRA MOTOR COURT // P10 TO P12 RECORDED',
       'Tonight\'s control print carries the same mark as her plate from 1947: a reference that stays on the film after its source is gone.',
       'She left C out of the record and blamed development. She cut the cable herself, with her brother Tomás standing on C. He was not there afterwards. The line still repeats his last correction, and it does not answer.',
-      'C crosses the old highway to Roswell. NEXT: THE ROSWELL ROAD. This part of the night is still being built.',
+      'C crosses the old highway to Roswell. NEXT: ALL NIGHT. This part of the night is still being built.',
     ];
   }
 

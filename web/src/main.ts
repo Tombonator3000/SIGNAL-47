@@ -576,7 +576,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors, sky,
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -668,6 +668,7 @@ async function boot() {
       }
     }
     sky.update(dt, t, camera.position);
+    sky.setCometClock(game.clock);
     ext.update(dt, t);
     yard.update(t);
     annex.update(t);
