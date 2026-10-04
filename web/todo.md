@@ -45,7 +45,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] `KAPITLER.md`, ett kapittel om gangen (Night Shift er spesifisert og bygd): The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
 - [x] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen. Walkie-talkien i rom 6 er også bygd.
 - [ ] Endringer i det som finnes: lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»), sluttkortet i kapittel 4 («NEXT: ALL NIGHT»), lastebilen hentes på SARO etter rom 6.
-- [ ] Codex, neste runde når All Night er spesifisert: avisbildet fra 1947 som ett hovedbilde med tre utsnitt (saksmappa, dineren, etter rulleteksten), Halley-plakaten uten tekst, gulnet fanfoldpapir, milestolper og oppmålingsbolt.
+- [ ] Codex, runde 10 (bestilt 4. oktober kl. 22.25, `ART_BRIEF.md`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Claude kobler inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren; utsnitt A når tråd 7 bygges, hele bildet etter rulleteksten.
+- [ ] Codex, senere: milestolpene og oppmålingsbolten når Roswell-veien er spesifisert.
 - [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [ ] Kapitlet «All Night»: fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien. Området er klart (`World.goDiner`).
 - [ ] Roswell Road og THE EVENT: kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
@@ -73,7 +74,7 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kveld: PR #34, #35, #39 og #45 (dineren og runde 8) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Ingen ny bestilling til Codex før neste behov er spesifisert.
+Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom #52) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er bestilt kl. 22.25 (`ART_BRIEF.md`). Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Ingen kodeoppgave til Codex før Roswell-veien er spesifisert.
 
 ### Neste oppgave: dineren i «All Night» (4. oktober kl. 16.15)
 
