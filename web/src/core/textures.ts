@@ -269,18 +269,6 @@ export function marquee() {
   });
 }
 
-export function motelFacade() {
-  return canvasTex(1024, 128, (g, w, h) => {
-    g.fillStyle = '#b48c63'; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 10; i++) {
-      const x = i * 102 + 12;
-      g.fillStyle = i % 3 === 1 ? '#7a2b22' : '#8c3a2c'; g.fillRect(x, 30, 26, 92);
-      g.fillStyle = Math.random() < 0.6 ? '#ffcf86' : '#2a2620'; g.fillRect(x + 40, 44, 46, 40);
-      g.fillStyle = '#ffe9b0'; g.fillRect(x + 12, 14, 4, 6);
-    }
-  });
-}
-
 export function glowSprite(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,0)') {
   const t = canvasTex(64, 64, (g, w, h) => {
     const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);

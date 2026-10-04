@@ -195,116 +195,9 @@ export function localReport(ui: UI, o: { text: string; filed: boolean; onFile: (
   el.querySelector('[data-a=file]')?.addEventListener('click', () => { ui.close(); o.onFile(); });
 }
 
-// ---------- chapter two: the archive table ----------
-// One panel at the records room work table, after the Unity dossier (WorldCase22): the
-// four sources as tabs, then P04 (what changed) and P05 (where the reference leads).
-// A source that is still on the shelf says where it is instead.
-export type ArchivePage = 'original' | 'amended' | 'lineage' | 'index' | 'compare' | 'route';
+// ---------- chapter two ----------
+// The archive table is the evidence board (ui/Board.ts); the four sources keep their keys.
 export type SourceKey = 'original' | 'amended' | 'lineage' | 'index';
-export interface ArchiveSource { have: boolean; heading: string; text: string; image?: string; where: string }
-type Marker = 'triangle-bar' | 'triangle' | 'three-bars';
-
-export function archive(ui: UI, o: {
-  page: ArchivePage;
-  sources: Record<SourceKey, ArchiveSource>;
-  status: () => string;
-  p04: () => boolean; p05: () => boolean;
-  supported04: string; supported05: string;
-  onCompare: (c: 'author-guilt' | 'omitted-c' | 'development-only') => Result;
-  onRoute: (destination: string, survey: string, marker: Marker) => Result;
-  hints04: string[]; hints05: string[];
-  icons: Record<Marker, string>;
-}) {
-  const tabs: [ArchivePage, string][] = [['original', 'E07 / ORIGINAL'], ['amended', 'E06 / AMENDED'], ['lineage', 'B-12 / LINEAGE'], ['index', 'E08 / INDEX'], ['compare', 'P04 / COMPARE'], ['route', 'P05 / DESTINATION']];
-  const el = shell(ui, 'SARO ARCHIVE / THE AMENDED RECORD', `
-    <p class="lp-sub" data-status></p>
-    <div class="lp-tabs" role="tablist">${tabs.map(([k, l]) => `<button class="lp-tab" role="tab" data-p="${k}">${l}</button>`).join('')}</div>
-    <div class="lp-page" data-page></div>`);
-  const pageEl = el.querySelector('[data-page]') as HTMLElement;
-  const statusEl = el.querySelector('[data-status]') as HTMLElement;
-  let hint04 = 0, hint05 = 0;
-  const sel: { destination?: string; survey?: string; marker?: Marker } = {};
-
-  const paper = (text: string) => `<div class="lp-paper typed">${text.split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>`;
-  const render = (page: ArchivePage) => {
-    statusEl.textContent = o.status();
-    el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.p === page)));
-    if (page === 'compare') return compare();
-    if (page === 'route') return route();
-    const src = o.sources[page];
-    pageEl.innerHTML = src.have
-      ? `<div class="lp-two"><div><p class="lp-q">${esc(src.heading)}</p>${paper(src.text)}</div>${src.image ? `<figure class="lp-figure"><img alt="" src="${src.image}"></figure>` : ''}</div>
-         <p class="lp-small">Read in any order. Use COMPARE and DESTINATION to record findings.</p>`
-      : `<p class="lp-text">Not on the table yet. ${esc(src.where)}</p>`;
-  };
-
-  const compare = () => {
-    const s = o.sources;
-    if (o.p04()) { pageEl.innerHTML = `${paper(o.supported04)}<p class="lp-small">P04 recorded. The sources stay available above.</p>`; return; }
-    const both = s.original.have && s.amended.have;
-    pageEl.innerHTML = `
-      <div class="lp-two">
-        <div><p class="lp-q">ORIGINAL / E07</p>${paper('Three references: A, the fixed survey point; B, the optical comparison vane; C, the closing sight line.\n\nThe mark remained in the plate with the lamp circuit opened.')}</div>
-        <div><p class="lp-q">AMENDED / E06</p>${paper('The incomplete closing sight line has been omitted.\n\nThe additional mark is attributed to a fault in plate development. No repeat observation is required.')}</div>
-      </div>
-      <p class="lp-q">${both ? 'Which finding is supported by the source records?' : 'Read E07 and E06 before recording a finding. The source tabs stay available above.'}</p>
-      <div class="lp-col">
-        <button class="lp-btn" data-c="author-guilt">The signature proves that the author caused the anomaly.</button>
-        <button class="lp-btn" data-c="omitted-c">The amended copy removes C and replaces the retained-mark observation with a development explanation.</button>
-        <button class="lp-btn" data-c="development-only">The development explanation accounts for both versions without an omitted reference.</button>
-      </div>
-      <div class="lp-row"><button class="lp-btn" data-a="hint">Hint</button></div>
-      <p class="lp-text" data-say></p>`;
-    pageEl.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => {
-      const r = o.onCompare(b.dataset.c as 'author-guilt' | 'omitted-c' | 'development-only');
-      if (r.ok) { render('compare'); return; }
-      say(el, '[data-say]', r);
-    }));
-    pageEl.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints04[Math.min(hint04, o.hints04.length - 1)]); hint04++; });
-  };
-
-  const route = () => {
-    if (o.p05()) { pageEl.innerHTML = `${paper(o.supported05)}<p class="lp-small">P05 recorded. The sources stay available above.</p>`; return; }
-    const s = o.sources;
-    const lead = !o.p04() ? 'First record the comparison in P04. You can inspect all four source cards now.'
-      : !s.lineage.have || !s.index.have ? 'Read the B-12 lineage card and E08 index before preparing the destination.'
-        : 'Match both source identifiers. Select a destination, survey ID and fixed-point mark.';
-    const choice = (group: string, key: string, label: string, icon?: string) =>
-      `<button class="lp-choice" data-g="${group}" data-k="${key}" aria-pressed="false">${icon ? `<img alt="" src="${icon}">` : ''}<span>${esc(label)}</span></button>`;
-    pageEl.innerHTML = `
-      <p class="lp-q">${esc(lead)}</p>
-      <div class="lp-cols3">
-        <div><p class="lp-small">FIELD DESTINATION</p>${choice('destination', 'old-survey-station', 'OLD SURVEY STATION')}${choice('destination', 'saro-apron', 'SARO ARRAY APRON')}${choice('destination', 'unlisted', 'UNLISTED FIELD SITE')}</div>
-        <div><p class="lp-small">SURVEY IDENTIFIER</p>${choice('survey', 'STATION 01', 'STATION 01')}${choice('survey', 'S-03', 'S-03')}${choice('survey', '-39 LY AS A YEAR CODE', '-39 LY AS A YEAR CODE')}</div>
-        <div><p class="lp-small">FIXED-POINT MARK</p>${choice('marker', 'triangle-bar', 'OUTLINED TRIANGLE + BAR', o.icons['triangle-bar'])}${choice('marker', 'triangle', 'TRIANGLE / NO BAR', o.icons.triangle)}${choice('marker', 'three-bars', 'THREE HORIZONTAL BARS', o.icons['three-bars'])}</div>
-      </div>
-      <p class="lp-small">SOURCE CHECK / The maintenance card must connect today's B-12 to the same survey and fixed-point reference in the sleeve. A place name alone is insufficient.</p>
-      <div class="lp-row"><button class="lp-btn primary" data-a="record">RECORD SUPPORTED FIELD DESTINATION</button><button class="lp-btn" data-a="hint">Hint</button></div>
-      <p class="lp-text" data-say></p>`;
-    const rec = pageEl.querySelector('[data-a=record]') as HTMLButtonElement;
-    const sync = () => { rec.disabled = !(sel.destination && sel.survey && sel.marker); };
-    pageEl.querySelectorAll<HTMLButtonElement>('[data-g]').forEach((b) => {
-      const g = b.dataset.g as 'destination' | 'survey' | 'marker';
-      if (sel[g] === b.dataset.k) b.setAttribute('aria-pressed', 'true');
-      b.addEventListener('click', () => {
-        (sel as Record<string, string>)[g] = b.dataset.k!;
-        pageEl.querySelectorAll<HTMLButtonElement>(`[data-g=${g}]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-        sync();
-      });
-    });
-    rec.addEventListener('click', () => {
-      const r = o.onRoute(sel.destination!, sel.survey!, sel.marker!);
-      if (r.ok) { render('route'); return; }
-      say(el, '[data-say]', r);
-    });
-    pageEl.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints05[Math.min(hint05, o.hints05.length - 1)]); hint05++; });
-    sync();
-  };
-
-  el.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) => b.addEventListener('click', () => render(b.dataset.p as ArchivePage)));
-  render(o.page);
-  return el;
-}
 
 // ---------- chapter three: the STATION 01 field record ----------
 // One panel for P06 to P09 at the station, after the Unity field record (Station26):
@@ -459,4 +352,65 @@ export function talk(ui: UI, o: {
   };
   render();
   return { el, refresh: render };
+}
+
+// ---------- the signal processor on the control room rack ----------
+export interface DecoderView {
+  tape: string;
+  mode: 'raw' | 'harmonized'; pitch: number; stretch: number; space: number;
+  playing: boolean;
+  current: () => number;   // which pulse sounds (0..10), -1 between
+}
+export function decoderPanel(ui: UI, o: {
+  view: () => DecoderView;
+  onMode: (m: 'raw' | 'harmonized') => void;
+  onParam: (k: 'pitch' | 'stretch' | 'space', v: number) => void;
+  onPlay: (play: boolean) => void;
+  onClose?: () => void;
+}) {
+  const v0 = o.view();
+  const el = shell(ui, 'SIGNAL PROCESSOR / DSP-4', `
+    <p class="lp-sub" data-tape></p>
+    <canvas class="dsp-scope" width="640" height="120" aria-hidden="true"></canvas>
+    <div class="lp-row" role="group" aria-label="Mode">
+      <button class="lp-choice dsp-mode" data-m="raw">RAW TAPE</button>
+      <button class="lp-choice dsp-mode" data-m="harmonized">HARMONIZED</button>
+    </div>
+    <div class="dsp-knobs">
+      <label>PITCH <span data-o="pitch"></span><input type="range" min="-12" max="12" step="1" data-k="pitch" value="${v0.pitch}"></label>
+      <label>TIME <span data-o="stretch"></span><input type="range" min="1" max="6" step="0.5" data-k="stretch" value="${v0.stretch}"></label>
+      <label>SPACE <span data-o="space"></span><input type="range" min="0" max="1" step="0.05" data-k="space" value="${v0.space}"></label>
+    </div>
+    <div class="lp-row"><button class="lp-btn primary" data-a="play"></button></div>
+    <p class="lp-small">The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the rack while you walk around.</p>`, () => { cancelAnimationFrame(raf); o.onClose?.(); });
+  const scope = el.querySelector('.dsp-scope') as HTMLCanvasElement;
+  const g = scope.getContext('2d')!;
+  const sync = () => {
+    const v = o.view();
+    (el.querySelector('[data-tape]') as HTMLElement).textContent = v.tape;
+    el.querySelectorAll<HTMLButtonElement>('[data-m]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === v.mode)));
+    (el.querySelector('[data-o=pitch]') as HTMLElement).textContent = `${v.pitch > 0 ? '+' : ''}${v.pitch} st`;
+    (el.querySelector('[data-o=stretch]') as HTMLElement).textContent = `x${v.stretch.toFixed(1)}`;
+    (el.querySelector('[data-o=space]') as HTMLElement).textContent = `${Math.round(v.space * 100)}%`;
+    (el.querySelector('[data-a=play]') as HTMLElement).textContent = v.playing ? 'STOP' : 'PLAY TAPE';
+  };
+  el.querySelectorAll<HTMLButtonElement>('[data-m]').forEach((b) => b.addEventListener('click', () => { o.onMode(b.dataset.m as 'raw' | 'harmonized'); sync(); }));
+  el.querySelectorAll<HTMLInputElement>('[data-k]').forEach((i) => i.addEventListener('input', () => { o.onParam(i.dataset.k as 'pitch' | 'stretch' | 'space', Number(i.value)); sync(); }));
+  el.querySelector('[data-a=play]')!.addEventListener('click', () => { o.onPlay(!o.view().playing); sync(); });
+  // the eleven pulses of one group cycle, the sounding one lit
+  let raf = 0;
+  const draw = () => {
+    const v = o.view(), w = scope.width, h = scope.height, cur = v.playing ? v.current() : -1;
+    g.fillStyle = '#04110a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 11; i++) {
+      const x = 30 + (i < 4 ? i : i + 1.5) * 47, hh = (i < 4 ? 0.55 : 0.75) * h * (v.mode === 'raw' ? 0.8 : 0.5 + 0.05 * ((i < 4 ? [0, 3, 7, 10][i] : [12, 10, 7, 5, 3, 2, 0][i - 4])));
+      g.fillStyle = i === cur ? '#b9ffc7' : 'rgba(110,220,150,.35)';
+      g.fillRect(x, h - 10 - hh, 30, hh);
+    }
+    g.fillStyle = 'rgba(140,255,164,.8)'; g.font = '18px VT323';
+    g.fillText(`${v.mode === 'raw' ? 'RAW' : 'HARM'}  4 / 7  ${v.playing ? 'PLAY' : 'STOP'}`, 12, 22);
+    raf = requestAnimationFrame(draw);
+  };
+  sync(); draw();
+  return { el, refresh: sync };
 }

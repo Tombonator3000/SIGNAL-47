@@ -10,7 +10,7 @@ import type { Zone } from '../player/Player';
 // Office: x[-45.6,-41.2], z[22.2,27.6]. Door: east wall, z[23.4,24.8].
 // Eight rooms run south; room 6's threshold is (-41.1,0,55).
 // Only one live court owns this shader set; old instances cannot reset a new one.
-export const courtFlood = floodSet(10, 'court', 0.1);
+export const courtFlood = floodSet(12, 'court', 0.1);
 let owner: MotelFront | null = null;
 type Anchor = { x: number; z: number; yaw: number };
 export type MotelFrontAnchors = { entry: Anchor; officeInside: Anchor; room6Outside: Anchor; fromRoom6: Anchor };
@@ -81,6 +81,10 @@ export class MotelFront {
       this.slots[name] = this.light(-40.7, 2.24, z, name==='room6'?4:5, 0xffbd72);
     this.slots.red = this.light(-30.9, 4.6, 30, 9, 0xff4839);
     this.slots.cyan = this.light(-30.0, 3.8, 30, 4, 0x51cad6);
+    // the highway's sodium lamps (Exterior's floods at x -20) reach the front of the lot too,
+    // so the asphalt does not go black at the road's edge
+    this.slots.roadN = this.light(-20, 6, 24, 40, 0xff9a45);
+    this.slots.roadS = this.light(-20, 6, 58, 40, 0xff9a45);
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.group.updateMatrixWorld(true);
   }
@@ -96,24 +100,11 @@ export class MotelFront {
     this.textures.add(t);return t;
   }
   private makeMaterials() {
-    const plaster=this.tex(128,128,g=>{
-      g.fillStyle='#d0ad91';g.fillRect(0,0,128,128);
-      let s=1947;for(let i=0;i<1900;i++){s=(s*1664525+1013904223)>>>0;const x=s%128;s=(s*1664525+1013904223)>>>0;g.fillStyle=i%2?'#d7b79d':'#c5a38a';g.fillRect(x,s%128,1,1);}
-    },[.5,.5]);
-    const door=this.tex(128,256,g=>{
-      g.fillStyle='#78352d';g.fillRect(0,0,128,256);
-      g.strokeStyle='#542923';g.lineWidth=2;for(const y of [20,128])g.strokeRect(14,y,100,94);
-      g.fillStyle='#a27245';g.fillRect(3,229,122,24);g.fillStyle='#a27050';
-      for(let i=0;i<28;i++)g.fillRect(15+(i*17)%19,132+(i*13)%39,1,4);
-    });
-    const win=(on:boolean)=>this.tex(128,128,g=>{
-      g.fillStyle=on?'#ba9463':'#272c32';g.fillRect(0,0,128,128);
-      for(let x=4;x<124;x+=7){g.fillStyle=on?(x%3?'#d3b17a':'#ad8259'):(x%3?'#34323a':'#242a30');g.fillRect(x,3,3,121);}
-      g.fillStyle=on?'#876641':'#432d32';g.fillRect(62,0,4,128);
-      g.strokeStyle='#77766c';g.lineWidth=5;g.strokeRect(2.5,2.5,123,123);
-      g.lineWidth=3;g.beginPath();g.moveTo(64,0);g.lineTo(64,128);g.stroke();
-    });
-    this.litWindow=win(true);this.darkWindow=win(false);
+    // Codex's round 7 (art.ts): the painted wall (2 m per repeat in metre UVs), the room
+    // door without its number (drawn from the atlas), and the window lit and dark.
+    const plaster=artTexture('motelWall',[.5,.5]);
+    const door=artTexture('motelDoor');
+    this.litWindow=artTexture('motelWindowLit');this.darkWindow=artTexture('motelWindowDark');
     const atlas=this.tex(1024,512,g=>{
       g.fillStyle='#ded3b9';g.fillRect(0,0,1024,512);g.textAlign='center';g.textBaseline='middle';
       for(let n=1;n<=8;n++){g.fillStyle='#57372b';g.font='bold 72px serif';g.fillText(String(n),(n-.5)*128,64);}
@@ -125,7 +116,7 @@ export class MotelFront {
     });
     return {
       plaster:this.mat({map:plaster,roughness:1}), concrete:this.mat({map:artTexture('concrete',[.5,.5]),color:0xc0af96,roughness:1}),
-      asphalt:this.mat({map:artTexture('asphalt',[.2,.2]),color:0x817668,roughness:.95}),
+      asphalt:this.mat({map:artTexture('asphalt',[.2,.2]),color:0xe2d6c2,roughness:.95}),
       trim:this.mat({color:0x435b53,roughness:.8}), wood:this.mat({color:0x775039,roughness:.75}),
       door:this.mat({map:door,roughness:.8}), metal:this.mat({color:0x9c9988,roughness:.55,metalness:.5}),
       black:this.mat({color:0x202425,roughness:.7}), brass:this.mat({color:0xaa8954,roughness:.45,metalness:.55}),

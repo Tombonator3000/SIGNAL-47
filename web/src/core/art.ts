@@ -32,6 +32,14 @@ import weatheredWood from '../assets/art/station/tex_wood_weathered.jpg';
 import floorboards from '../assets/art/station/tex_floorboards.jpg';
 // Round 6 (PR #35): the survey track's gravel, loaded with the road.
 import gravelTrack from '../assets/art/road/tex_gravel_track.jpg';
+// Round 7 (PR #39): Sierra Motor Court, loaded with SARO (the motel is seen from the yard),
+// and the 1947 papers under E11 and E13, shown by URL in the document view.
+import motelWall from '../assets/art/motel/tex_motel_wall.jpg';
+import motelDoor from '../assets/art/motel/door_room_blank.jpg';
+import motelWindowLit from '../assets/art/motel/window_night_lit.jpg';
+import motelWindowDark from '../assets/art/motel/window_night_dark.jpg';
+import cardField from '../assets/art/docs/card_field_1947.jpg';
+import letterPaper from '../assets/art/docs/letter_paper_1947.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -40,10 +48,11 @@ import gravelTrack from '../assets/art/road/tex_gravel_track.jpg';
 const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   listen, saro, map, logo, yard, procedure, sky, sierra,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
-  stucco, oldConcrete, weatheredWood, floorboards, gravelTrack };
+  stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
+  motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper };
 export type ArtId = keyof typeof urls;
 // Images an area loads for itself when it is built, not at the start.
-const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack']);
+const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper']);
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();
@@ -69,6 +78,9 @@ export async function loadArtFor(ids: ArtId[]) {
     img.src = urls[id];
   })));
 }
+
+/** The picture's address, for HTML (a paper under a document): no loading needed first. */
+export function artUrl(id: ArtId) { return urls[id]; }
 
 export function artImage(id: ArtId) {
   const image = images.get(id);

@@ -6,6 +6,7 @@ import type { Exterior } from '../world/Exterior';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { Collider } from '../world/ControlRoom';
+import type { Doors } from '../world/Doors';
 import { FieldCamera, type Photo } from '../core/FieldCamera';
 import { ServiceYard, YARD } from '../world/ServiceYard';
 import { eachVariant } from '../core/quality';
@@ -53,6 +54,7 @@ export interface Chapter1Deps {
   view: { restore: () => void; draw: () => void };
   save: (s: CaseState | null) => void;
   isTouch: () => boolean;
+  doors: Doors;
 }
 
 const fresh = (eventClock: number): CaseState => ({
@@ -62,7 +64,7 @@ const fresh = (eventClock: number): CaseState => ({
 });
 
 const MARK_R1 = 0.095, MARK_R2 = 0.115; // how close a click must be to a reference, in print UV
-const VANE_TIME = 1.8, DOOR_TIME = 0.75, TANK_TIME = 2.2, FIX_TIME = 1.5;
+const VANE_TIME = 1.8, TANK_TIME = 2.2, FIX_TIME = 1.5;
 
 // Later chapters take over the camera and the wet bench while they run (chapter three's
 // field frames): the viewfinder, the shutter rules and the bench go to them.
@@ -80,13 +82,11 @@ export class Chapter1 {
   field: FieldShots | null = null;          // set by a later chapter while it runs
   lab: (() => boolean) | null = null;       // a later chapter's use of the wet bench; true when handled
   private images: Record<string, THREE.Texture> = {};
-  private anim: { vane?: { from: number; to: number; t0: number }; door?: number; labDoor?: number; fix?: number } = {};
+  private anim: { vane?: { from: number; to: number; t0: number }; fix?: number } = {};
   private busy: string | null = null;     // a timed step at the wet bench
   private settled = false;
   private status = { text: '', ok: false };
   private busT = 0;
-  private doorCol: Collider = { minX: 6.06, maxX: 7.0, minZ: 1.08, maxZ: 1.18 };
-  private labDoorCol: Collider = { minX: 12.8, maxX: 13.75, minZ: -0.78, maxZ: -0.68 };
 
   constructor(private g: ChapterHost, private d: Chapter1Deps) {
     this.interactables();
@@ -117,25 +117,21 @@ export class Chapter1 {
     fcam.raise(false); fcam.have = false;
     ui.viewfinder(false); ui.cameraButton(false); ui.objective(null);
     this.showCamera(true);
-    room.setDoor(0); room.setDoorLock(false);
-    yard.labDoorHinge.rotation.y = 0;
     yard.setVane(0); yard.setWorkLamp(1);
     yard.wetPrint.visible = false;
     yard.dryPrints.forEach((p) => { p.visible = false; });
-    yard.zone.eastDoor.enabled = false; yard.zone.labDoor.enabled = false;
-    this.setCollider(this.doorCol, false); this.setCollider(this.labDoorCol, false);
   }
 
   // Puts the world in the state described by this.s (after begin or a restore).
   private applyWorld() {
     const { room, yard, fcam, ui } = this.d;
     const s = this.s;
-    room.setDoorLock(true);
     this.showCamera(!s.camera);
     fcam.have = s.camera;
     ui.cameraButton(s.camera && this.touch);
-    if (s.door) { room.setDoor(1); yard.zone.eastDoor.enabled = true; this.setCollider(this.doorCol, true); }
-    if (s.labDoor) { yard.labDoorHinge.rotation.y = -Math.PI / 2; yard.zone.labDoor.enabled = true; this.setCollider(this.labDoorCol, true); }
+    // a case from before the doors were free remembers which of its doors were open
+    if (s.door) this.d.doors.set('east', true, true);
+    if (s.labDoor) this.d.doors.set('lab', true, true);
     if (s.method) {
       yard.setVane(s.method === 'passive' ? -60 : 45);
       yard.setWorkLamp(s.method === 'passive' ? 0 : 1.35);
@@ -162,12 +158,6 @@ export class Chapter1 {
   private save() { this.d.save(this.s); }
   private get touch() { return this.d.isTouch(); }
 
-  private setCollider(c: Collider, on: boolean) {
-    const list = this.d.colliders;
-    const i = list.indexOf(c);
-    if (on && i < 0) list.push(c);
-    if (!on && i >= 0) list.splice(i, 1);
-  }
 
   private file(doc: DocSpec) {
     const i = this.g.docs.findIndex((x) => x.id === doc.id);
@@ -265,18 +255,6 @@ export class Chapter1 {
         });
       } });
 
-    inter.add({ id: 'labDoor', object: yard.objs.labDoor, range: 2.4,
-      label: () => !this.active ? null : this.s.labDoor ? null : 'Open lab door',
-      use: () => {
-        this.s.labDoor = true;
-        this.anim.labDoor = this.g.gt;
-        yard.zone.labDoor.enabled = true;
-        this.setCollider(this.labDoorCol, true);
-        audio.play('switch', { gain: 0.5, at: pos(yard.objs.labDoor) });
-        audio.play('thudSoft', { gain: 0.35, when: 0.6, at: pos(yard.objs.labDoor) });
-        this.save();
-      } });
-
     inter.add({ id: 'wetBench', object: yard.objs.wetBench, range: 2.6,
       label: () => {
         if (!this.active) return null;
@@ -328,19 +306,11 @@ export class Chapter1 {
       use: () => toast('R-07. Three horizontal bars on the west fence. Not on the sight line from the apron.', 4) });
   }
 
-  // East door: called by the prologue's door interactable once the chapter is active.
-  doorLabel() { return this.s.door ? null : 'Open service door'; }
-  useDoor() {
-    if (this.s.door) return;
-    const { room, yard, audio } = this.d;
-    this.s.door = true;
-    this.anim.door = this.g.gt;
-    yard.zone.eastDoor.enabled = true;
-    this.setCollider(this.doorCol, true);
-    const at = room.objs.doorEast.getWorldPosition(new THREE.Vector3());
-    audio.play('switch', { gain: 0.6, at });
-    audio.play('thudSoft', { gain: 0.4, when: 0.65, at });
-    this.save();
+  // The doors are free (world/Doors.ts); the case remembers which ones were opened.
+  doorChanged(id: string, open: boolean) {
+    if (!this.active) return;
+    if (id === 'east' && open && !this.s.door) { this.s.door = true; this.save(); }
+    if (id === 'lab' && open && !this.s.labDoor) { this.s.labDoor = true; this.save(); }
   }
 
   // ---------- wet bench ----------
@@ -758,16 +728,6 @@ export class Chapter1 {
     if (!this.active) return;
     const { room, yard, fcam, ui, player } = this.d;
     const gt = this.g.gt;
-    if (this.anim.door !== undefined) {
-      const k = Math.min(1, (gt - this.anim.door) / DOOR_TIME);
-      room.setDoor(1 - Math.pow(1 - k, 3));
-      if (k >= 1) this.anim.door = undefined;
-    }
-    if (this.anim.labDoor !== undefined) {
-      const k = Math.min(1, (gt - this.anim.labDoor) / DOOR_TIME);
-      yard.labDoorHinge.rotation.y = -(1 - Math.pow(1 - k, 3)) * Math.PI / 2;
-      if (k >= 1) this.anim.labDoor = undefined;
-    }
     if (this.anim.vane) {
       const a = this.anim.vane;
       const k = Math.min(1, (gt - a.t0) / VANE_TIME);

@@ -2,7 +2,7 @@
 # The render loop is held and the game is advanced with S47.tick(), so it runs
 # in a software renderer too. Usage: python3 tools/walkthrough.py OUTDIR WxH quality
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
-import asyncio, sys, json, time, os
+import asyncio, math, sys, json, time, os
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in sys.argv[2].split('x')); Q = sys.argv[3] if len(sys.argv) > 3 else 'high'
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -59,11 +59,31 @@ async def main():
         await tick(7)
         check(await ev("S47.game.rxc.residualVisible") is True, 'residual appears on the spectrum')
         await use('crtCenter'); await tick(0.2)
-        await setrx(1420.405, 90, 10, 83); await tick(0.3); await shot('06_console_residual')
+        # the signal comes through as the receiver closes on 1420.405 (core/signalVoice.ts)
+        await setrx(1420.30, 90, 10, 83); await tick(0.5)
+        off = await ev("S47.game.d.audio.signal ? S47.game.d.audio.signal.level : 0")
+        await setrx(1420.405, 90, 10, 83); await tick(0.5); await shot('06_console_residual')
+        on = await ev("S47.game.d.audio.signal ? S47.game.d.audio.signal.level : 0")
+        check(on > 0.8 and on - off > 0.4, f'the signal gets clearer as the receiver closes on 1420.405 ({off:.2f} off the peak, {on:.2f} on it)')
         await pg.click('[data-a=act]')
         check(await ev("S47.game.rx.stage") == 3 and await ev("S47.game.phase") == 'locked', 'pattern 4/7 locked at 1420.405')
         await tick(1.5); await shot('07_console_locked')
         await pg.click('[data-a=exit]'); await tick(0.5)
+        # the signal processor has the tape now: play it harmonized, then stop
+        await use('decoder'); await tick(0.2)
+        check(await ev("!!document.querySelector('.dsp-scope')"), 'the signal processor opens with the tape')
+        await pg.click('.labpanel [data-a=play]'); await tick(0.6)
+        check(await ev("S47.game.decoder.playing"), 'the tape plays harmonized from the rack')
+        await pg.wait_for_timeout(1500); await tick(0.5); await shot('07b_signal_processor')
+        await pg.click('.labpanel [data-a=play]'); await tick(0.2)
+        check(not await ev("S47.game.decoder.playing"), 'and stops')
+        await ev("S47.game.d.ui.close()"); await tick(0.2)
+        # the doors are free, even in the prologue: open the service door and shut it again
+        await look(4.5, 1.6, -math.pi / 2, 0.0); await tick(0.1)
+        await use('doorEast'); await tick(1.2)
+        check(await ev("S47.doors.isOpen('east') && S47.yard.zone.eastDoor.enabled"), 'the service door opens in the prologue')
+        await use('doorEast'); await tick(1.2)
+        check(await ev("!S47.doors.isOpen('east') && !S47.yard.zone.eastDoor.enabled"), 'and shuts again')
         await use('crtRight'); await tick(5)
         check(await ev("S47.game.phase") == 'printing', 'direction solve starts printer')
         await tick(6)

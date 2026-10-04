@@ -5,7 +5,9 @@ import type { ControlRoom, Collider } from '../world/ControlRoom';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { RecordsAnnex } from '../world/Annex';
+import type { Doors } from '../world/Doors';
 import * as P from '../ui/Panels';
+import { board } from '../ui/Board';
 import * as D from './drawings';
 import { clockText } from './time';
 
@@ -31,6 +33,7 @@ export interface Ch2State {
   finding: string; destination: string; surveyId: string; marker: string;
   wrong04: number; wrong05: number;
   called: boolean;
+  links?: string[];         // threads on the evidence board, 'a|b' sorted, in the order made
 }
 
 export interface Chapter2Host {
@@ -46,6 +49,7 @@ export interface Chapter2Host {
 export interface Chapter2Deps {
   ui: UI; audio: AudioSys; room: ControlRoom; annex: RecordsAnnex; player: Player; inter: Interaction;
   colliders: Collider[];
+  doors: Doors;
   save: () => void;
 }
 
@@ -53,7 +57,7 @@ const fresh = (): Ch2State => ({
   v: 1, stage: 'ward-call', answered: false, door: false, entered: false,
   read: { original: false, amended: false, lineage: false, index: false },
   p04: false, p05: false, finding: '', destination: '', surveyId: '', marker: '',
-  wrong04: 0, wrong05: 0, called: false,
+  wrong04: 0, wrong05: 0, called: false, links: [],
 });
 
 // ---------- the sources (Unity WorldCase22 text) ----------
@@ -68,8 +72,41 @@ const SUPPORTED_04 = 'SUPPORTED / E07 records A, B and C and a retained mark wit
 const SUPPORTED_05 = 'SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.';
 
 // Design bible section 08 (three levels) and the facilitator hints from the P04/P05 paper test.
-const HINTS_04 = ['What is different between the two versions?', 'Which field is in the original and missing from the service copy? Compare the arrangement, not only the conclusion.', 'Put the original plan beside the amended copy and find the connection that is missing.'];
-const HINTS_05 = ['Where does today\'s B-12 reference come from?', 'Find both the site ID and the reference mark in the lineage card and in the sleeve.', 'Match STATION 01 and the triangle with a bar, then choose the place the sleeve names.'];
+const HINTS_04 = ['What is different between the two versions?', 'Which field is in the original and missing from the service copy? Compare the arrangement, not only the conclusion.', 'Put the original plan beside the amended copy and find the connection that is missing.',
+  'Thread the three references in E07 to the omitted sight line in E06, and the retained mark in E07 to the development fault in E06. Pin both notes to P04.'];
+const HINTS_05 = ['Where does today\'s B-12 reference come from?', 'Find both the site ID and the reference mark in the lineage card and in the sleeve.', 'Match STATION 01 and the triangle with a bar, then choose the place the sleeve names.',
+  'Thread STATION 01 on the B-12 card to STATION 01 on the sleeve, and the two triangle-with-bar marks to each other. Pin both notes to P05, then the field destination.'];
+
+// ---------- the evidence board ----------
+// The lines that matter on each record. A thread between two lines that say something
+// about each other holds; some leave a note to pin on a question. P04 needs the two notes
+// on what the copy changed; P05 the two matches between B-12 and the sleeve, then the
+// destination. Wrong threads get the Unity replies and count as before.
+const NOTES: Record<string, string> = {
+  'n.c': 'C, the closing sight line, is in the original. The service copy leaves it out.',
+  'n.mark': 'The original kept the mark with the lamp isolated. The copy calls it a development fault.',
+  'n.sig': 'The same name signs both versions. It says who changed the record, not why.',
+  'n.id': 'Same survey: STATION 01 on the B-12 card and on the 1947 sleeve.',
+  'n.mark2': 'Same fixed-point mark: the outlined triangle with the bar.',
+};
+type Rule = { a: string; b: string; note?: keyof typeof NOTES; text: string; wrong?: 4 | 5 };
+const ELEVATION = 'A triangle without the bar is only an elevation symbol. The matching fixed-point mark has a short bar beneath the outlined triangle.';
+const LY = 'The dated archive supplies 1947; -39 LY is not a calendar code or a survey ID.';
+const RULES: Rule[] = [
+  { a: 'e07.abc', b: 'e06.omit', note: 'n.c', text: NOTES['n.c'] },
+  { a: 'e07.mark', b: 'e06.fault', note: 'n.mark', text: NOTES['n.mark'] },
+  { a: 'e07.sig', b: 'e06.sig', note: 'n.sig', text: NOTES['n.sig'] },
+  { a: 'b12.id', b: 'e08.id', note: 'n.id', text: NOTES['n.id'] },
+  { a: 'b12.mark', b: 'e08.mark', note: 'n.mark2', text: NOTES['n.mark2'] },
+  { a: 'e07.head', b: 'e08.id', text: 'The sleeve belongs with the 1947 record: same survey, same year.' },
+  { a: 'e07.head', b: 'b12.id', text: 'Today\'s B-12 vane keeps the survey from the 1947 record.' },
+  { a: 'b12.site', b: 'e08.dest', text: 'Both name OLD SURVEY STATION.' },
+  { a: 'b12.mark', b: 'e08.elev', text: ELEVATION, wrong: 5 },
+  { a: 'rx.dist', b: 'e08.id', text: LY, wrong: 5 },
+  { a: 'rx.dist', b: 'e07.head', text: LY, wrong: 5 },
+];
+const pair = (a: string, b: string) => [a, b].sort().join('|');
+const QUESTIONS = ['P04', 'P05'];
 
 const WHERE: Record<P.SourceKey, string> = {
   original: 'The 1947 field records are in a box on the west shelves, marked STATION 01.',
@@ -78,7 +115,6 @@ const WHERE: Record<P.SourceKey, string> = {
   index: 'The archive sleeve is in the same box as the 1947 field record.',
 };
 
-const DOOR_TIME = 0.75;
 
 export class Chapter2 {
   active = false;
@@ -86,11 +122,9 @@ export class Chapter2 {
   ringing = false;
   s: Ch2State = fresh();
   onEnd?: () => void;
-  /** Chapter four takes over the fire exit at the end of the corridor while it runs. */
-  exit: { label: () => string | null; use: () => void } | null = null;
-  private anim: { door?: number } = {};
-  private doorCol: Collider = { minX: -1.99, maxX: -1.87, minZ: 4.72, maxZ: 5.66 };
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
+  private hint04 = 0;
+  private hint05 = 0;
 
   constructor(private g: Chapter2Host, private d: Chapter2Deps) {
     this.interactables();
@@ -107,18 +141,15 @@ export class Chapter2 {
   }
 
   reset() {
-    const { room, annex, audio } = this.d;
+    const { audio } = this.d;
     this.active = false; this.started = false; this.ringing = false;
-    this.s = fresh(); this.anim = {};
+    this.s = fresh();
     if (audio.ctx) audio.stop('ring2');
-    room.setSouthDoor(0);
-    annex.zone.southDoor.enabled = false;
-    this.setCollider(this.doorCol, false);
   }
 
   private applyWorld() {
     const s = this.s;
-    if (s.door) { this.d.room.setSouthDoor(1); this.d.annex.zone.southDoor.enabled = true; this.setCollider(this.doorCol, true); }
+    if (s.door) this.d.doors.set('south', true, true); // a case from before the doors were free
     if (s.read.original) this.file(this.docOriginal());
     if (s.read.index) this.file(this.docIndex());
     if (s.read.amended) this.file(this.docAmended());
@@ -127,12 +158,6 @@ export class Chapter2 {
     if (s.p05) { this.file(this.docFinding05()); this.file(this.docAccess()); this.file(this.docMap()); }
   }
 
-  private setCollider(c: Collider, on: boolean) {
-    const list = this.d.colliders;
-    const i = list.indexOf(c);
-    if (on && i < 0) list.push(c);
-    if (!on && i >= 0) list.splice(i, 1);
-  }
   private file(doc: DocSpec) {
     const i = this.g.docs.findIndex((x) => x.id === doc.id);
     if (i >= 0) { this.g.docs[i] = doc; return false; }
@@ -205,24 +230,14 @@ export class Chapter2 {
     });
   }
 
-  // ---------- the corridor door (the prologue's doorSouth) ----------
-  southDoorLabel() {
-    if (this.s.door) return null;
-    return this.s.answered ? 'Open corridor door' : 'Corridor';
-  }
-  useSouthDoor() {
-    const { ui, audio, room, annex } = this.d;
-    if (this.s.door) return;
-    if (!this.s.answered) { ui.toast(this.ringing ? 'The phone first.' : 'Vending machine, restrooms, Dale\'s empty office.'); return; }
+  // ---------- the corridor door ----------
+  // The doors are free (world/Doors.ts); the case remembers that this one was opened.
+  doorChanged(id: string, open: boolean) {
+    if (!this.active || id !== 'south' || !open || this.s.door) return;
     this.s.door = true;
-    this.anim.door = this.g.gt;
-    annex.zone.southDoor.enabled = true;
-    this.setCollider(this.doorCol, true);
-    const at = this.pos(room.objs.doorSouth);
-    audio.play('switch', { gain: 0.5, at });
-    audio.play('thudSoft', { gain: 0.35, when: 0.6, at });
     this.save();
   }
+
 
   // ---------- the records room ----------
   private interactables() {
@@ -237,8 +252,6 @@ export class Chapter2 {
     inter.add({ id: 'vending', object: o.vending, label: () => on() ? 'Vending machine' : null, use: () => ui.toast('Cola, orange soda, peanut butter crackers. Somebody\'s dime is stuck in the coin return.') });
     inter.add({ id: 'officeDoor', object: o.officeDoor, label: () => on() ? 'Operations office' : null, use: () => ui.toast('Locked. Dale took the key home.') });
     inter.add({ id: 'restroomDoor', object: o.restroomDoor, label: () => on() ? 'Restrooms' : null, use: () => ui.toast('Not now.') });
-    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => this.exit ? this.exit.label() : on() ? 'Fire exit' : null,
-      use: () => this.exit ? this.exit.use() : ui.toast('The fire exit to the west lot. The push bar is alarmed, and the yard is easier by the east door.') });
   }
   private anyRead() { const r = this.s.read; return r.original || r.amended || r.lineage || r.index; }
 
@@ -282,32 +295,129 @@ export class Chapter2 {
     const { ui } = this.d;
     if (!this.anyRead()) { ui.toast('Nothing on the table yet. The records are on the shelves, the bookcase and in the card index.', 4); return; }
     const s = this.s;
-    if (!this.images.original) {
-      this.images = {
-        original: D.arrangement(true), amended: D.arrangement(false), index: D.sleeveMark(),
-        icons: { 'triangle-bar': D.markIcon('triangle-bar'), triangle: D.markIcon('triangle'), 'three-bars': D.markIcon('three-bars') },
-      };
-    }
+    // Each picture on its own: reading E07, E06 or E08 on the shelf already drew that one,
+    // and the mark icons were then never drawn, which left P05 an empty page.
     const im = this.images;
-    const page: P.ArchivePage = s.p05 ? 'route' : s.p04 ? (s.read.lineage && s.read.index ? 'route' : s.read.lineage ? 'index' : 'lineage') : s.read.original && s.read.amended ? 'compare' : s.read.original ? 'original' : s.read.amended ? 'amended' : s.read.lineage ? 'lineage' : 'index';
-    P.archive(ui, {
-      page,
-      sources: {
-        original: { have: s.read.original, heading: 'ORIGINAL FIELD PROTOCOL / E07', text: ORIGINAL, image: im.original, where: WHERE.original },
-        amended: { have: s.read.amended, heading: 'AMENDED SERVICE COPY / E06', text: AMENDED, image: im.amended, where: WHERE.amended },
-        lineage: { have: s.read.lineage, heading: 'MODERN MAINTENANCE CARD / B-12', text: LINEAGE, where: WHERE.lineage },
-        index: { have: s.read.index, heading: 'ARCHIVE SLEEVE / E08 INDEX', text: INDEX, image: im.index, where: WHERE.index },
-      },
-      status: () => this.s.p05 ? 'P04 RECORDED  /  P05 RECORDED  /  Sources remain available for review'
+    im.original ??= D.arrangement(true);
+    im.amended ??= D.arrangement(false);
+    im.index ??= D.sleeveMark();
+    im.icons ??= { 'triangle-bar': D.markIcon('triangle-bar'), triangle: D.markIcon('triangle'), 'three-bars': D.markIcon('three-bars') };
+    this.backfillLinks();
+    const tb = (x: number, y: number) => ({ x, y });
+    board(ui, {
+      key: 'ch2',
+      title: 'SARO ARCHIVE / THE AMENDED RECORD',
+      status: () => this.s.p05 ? 'P04 RECORDED  /  P05 RECORDED'
         : this.s.p04 ? 'P04 RECORDED  /  P05: Trace the reference from B-12 to a field destination'
           : 'P04: Establish what changed  /  P05: Identify a supported field destination',
-      p04: () => this.s.p04, p05: () => this.s.p05,
-      supported04: SUPPORTED_04, supported05: SUPPORTED_05,
-      onCompare: (c) => this.compare(c),
-      onRoute: (dest, survey, marker) => this.route(dest, survey, marker),
-      hints04: HINTS_04, hints05: HINTS_05,
-      icons: im.icons!,
+      cards: [
+        { id: 'e07', stamp: 'E07', title: 'ORIGINAL FIELD RECORD', have: s.read.original, where: WHERE.original, image: im.original, full: ORIGINAL, x: 14, y: 14, w: 272, lines: [
+          { id: 'e07.head', text: 'FIELD SURVEY RECORD / STATION 01 / 1947' },
+          { id: 'e07.mark', text: 'The retained mark did not follow the new position of the physical vane.' },
+          { id: 'e07.abc', text: 'Three references: A, the fixed survey point; B, the optical comparison vane; C, the closing sight line.' },
+          { id: 'e07.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
+        { id: 'e06', stamp: 'E06', title: 'AMENDED SERVICE COPY', have: s.read.amended, where: WHERE.amended, image: im.amended, full: AMENDED, x: 298, y: 14, w: 272, lines: [
+          { id: 'e06.fault', text: 'The additional mark is attributed to a fault in plate development.' },
+          { id: 'e06.omit', text: 'The incomplete closing sight line has been omitted from the service copy.' },
+          { id: 'e06.repeat', text: 'No repeat observation is required.' },
+          { id: 'e06.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
+        { id: 'rx', stamp: 'RX', title: 'PRINTOUT, 02:14', have: true, where: '', x: 898, y: 640, w: 266, lines: [
+          { id: 'rx.dist', text: 'SOURCE DISTANCE:  -39 LY' }] },
+        { id: 'b12', stamp: 'B-12', title: 'LINEAGE CARD', have: s.read.lineage, where: WHERE.lineage, full: LINEAGE, x: 600, y: 14, w: 278, lines: [
+          { id: 'b12.id', text: 'The B-12 vane retains the fixed-point survey identified as STATION 01.' },
+          { id: 'b12.mark', text: 'Register mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
+          { id: 'b12.site', text: 'SITE REGISTER: STATION 01 / OLD SURVEY STATION.' }] },
+        { id: 'e08', stamp: 'E08', title: 'ARCHIVE SLEEVE', have: s.read.index, where: WHERE.index, image: im.index, full: INDEX, x: 600, y: 274, w: 278, lines: [
+          { id: 'e08.id', text: 'PLATE / 1947 / STATION 01' },
+          { id: 'e08.mark', text: 'Fixed-point mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
+          { id: 'e08.dest', text: 'Field destination: OLD SURVEY STATION.' },
+          { id: 'e08.elev', text: 'A similar triangle without the bar is a general elevation symbol.', icon: im.icons.triangle }] },
+      ],
+      questions: [
+        { id: 'P04', stamp: 'P04', text: 'What changed in the 1947 record after the run?', slots: 2, x: 14, y: 452, w: 272 },
+        { id: 'P05', stamp: 'P05', text: 'Where does the B-12 reference lead in the field?', slots: 3, x: 898, y: 14, w: 266 },
+      ],
+      noteAt: (id) => ({ 'n.c': tb(304, 432), 'n.mark': tb(318, 526), 'n.sig': tb(304, 626), 'n.id': tb(912, 330), 'n.mark2': tb(960, 440) } as Record<string, { x: number; y: number }>)[id],
+      state: () => {
+        const links = this.s.links ?? [];
+        return {
+          notes: RULES.filter((r) => r.note && links.includes(pair(r.a, r.b))).map((r) => ({ id: r.note!, text: NOTES[r.note!], from: [r.a, r.b] as [string, string] })),
+          threads: links.map((k) => k.split('|') as [string, string]),
+          pinned: (q) => links.filter((k) => k.split('|').includes(q)).map((k) => k.split('|').find((x) => x !== q)!),
+          done: (q) => q === 'P04' ? (this.s.p04 ? SUPPORTED_04 : null) : (this.s.p05 ? SUPPORTED_05 : null),
+        };
+      },
+      connect: (a, b) => this.connect(a, b),
+      hint: (q) => {
+        const list = q === 'P04' ? HINTS_04 : HINTS_05;
+        const i = q === 'P04' ? this.hint04++ : this.hint05++;
+        return list[Math.min(i, list.length - 1)];
+      },
     });
+  }
+
+  // Saves from before the board recorded P04 and P05 without threads: lay them out.
+  private backfillLinks() {
+    const s = this.s, links = (s.links ??= []);
+    const add = (a: string, b: string) => { if (!links.includes(pair(a, b))) links.push(pair(a, b)); };
+    if (s.p04) { add('e07.abc', 'e06.omit'); add('e07.mark', 'e06.fault'); add('n.c', 'P04'); add('n.mark', 'P04'); }
+    if (s.p05) { add('b12.id', 'e08.id'); add('b12.mark', 'e08.mark'); add('n.id', 'P05'); add('n.mark2', 'P05'); add('e08.dest', 'P05'); }
+  }
+
+  // A thread on the board, from a to b (lines, notes or a question).
+  private connect(a: string, b: string): { ok: boolean; text: string } {
+    const s = this.s, links = (s.links ??= []);
+    if (a === b) return { ok: false, text: 'Pull the thread to another line.' };
+    if (links.includes(pair(a, b))) return { ok: true, text: 'Those two are already connected.' };
+    const q = QUESTIONS.find((x) => x === a || x === b);
+    if (q) return this.pin(q, q === a ? b : a);
+    if (a.startsWith('n.') || b.startsWith('n.')) return { ok: false, text: 'A note goes on a question. Pin it to P04 or P05.' };
+    if (a.split('.')[0] === b.split('.')[0]) return { ok: false, text: 'Both lines are on the same record. Compare it with another one.' };
+    const r = RULES.find((x) => pair(x.a, x.b) === pair(a, b));
+    if (!r) return { ok: false, text: 'Those two lines do not say anything about each other.' };
+    if (r.wrong) {
+      if (r.wrong === 4) s.wrong04++; else s.wrong05++;
+      this.save();
+      return { ok: false, text: r.text };
+    }
+    links.push(pair(a, b)); this.save();
+    return { ok: true, text: r.text };
+  }
+
+  // Pinning a note (or a line) on P04 or P05.
+  private pin(q: string, x: string): { ok: boolean; text: string } {
+    const s = this.s, links = s.links!;
+    const pinned = (id: string) => links.includes(pair(id, q));
+    const put = () => { links.push(pair(x, q)); this.save(); };
+    if (q === 'P04') {
+      if (s.p04) return { ok: false, text: 'P04 is recorded. The board keeps it.' };
+      if (!s.read.original || !s.read.amended) return this.compare('omitted-c');   // the Unity refusal
+      if (x === 'n.sig') return this.compare('author-guilt');
+      if (x === 'e06.fault' || x === 'e06.repeat') return this.compare('development-only');
+      if (x === 'n.c' || x === 'n.mark') {
+        put();
+        if (pinned('n.c') && pinned('n.mark')) return this.compare('omitted-c');
+        return { ok: true, text: 'Pinned. What else does the service copy change?' };
+      }
+      if (x.startsWith('n.')) return { ok: false, text: 'That note belongs to the other question.' };
+      return { ok: false, text: 'Pin what two lines show together. Connect two lines first, then pin the note.' };
+    }
+    // P05
+    if (s.p05) return { ok: false, text: 'P05 is recorded. The board keeps it.' };
+    if (!s.p04 || !s.read.lineage || !s.read.index) return this.route('', '', 'triangle');   // the Unity refusals, in order
+    if (x === 'rx.dist') { s.wrong05++; this.save(); return { ok: false, text: LY }; }
+    if (x === 'e08.elev') { s.wrong05++; this.save(); return { ok: false, text: ELEVATION }; }
+    if (x === 'e08.dest' || x === 'b12.site') {
+      if (!pinned('n.id') || !pinned('n.mark2')) return { ok: false, text: 'A place name alone does not establish the connection. Match the survey ID and the fixed-point mark first, and pin both.' };
+      put();
+      return this.route('old-survey-station', 'STATION 01', 'triangle-bar');
+    }
+    if (x === 'n.id' || x === 'n.mark2') {
+      put();
+      return { ok: true, text: pinned('n.id') && pinned('n.mark2') ? 'Pinned. Both sources agree. Now the place they name.' : 'Pinned. What else must match before the place counts?' };
+    }
+    if (x.startsWith('n.')) return { ok: false, text: 'That note belongs to the other question.' };
+    return { ok: false, text: 'Pin what two lines show together. Connect two lines first, then pin the note.' };
   }
 
   // P04: the Unity rules and replies.
@@ -423,12 +533,6 @@ export class Chapter2 {
   update(dt: number, _t: number) {
     if (!this.active) return;
     const { room, ui, player, annex } = this.d;
-    const gt = this.g.gt;
-    if (this.anim.door !== undefined) {
-      const k = Math.min(1, (gt - this.anim.door) / DOOR_TIME);
-      room.setSouthDoor(1 - Math.pow(1 - k, 3));
-      if (k >= 1) this.anim.door = undefined;
-    }
     const z = annex.zone.records, p = player.pos;
     if (!this.s.entered && p.x >= z.minX && p.x <= z.maxX && p.z >= z.minZ && p.z <= z.maxZ) {
       this.s.entered = true;

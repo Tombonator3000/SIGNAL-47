@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { SignalVoice } from './signalVoice';
 import phoneRing from '../assets/audio/phone_ring.mp3';
 import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
@@ -30,6 +31,7 @@ export class AudioSys {
   ready = false;
   private loops = new Map<string, { src: AudioBufferSourceNode; gain: GainNode }>();
   carrier: { osc: OscillatorNode; gain: GainNode; stat: GainNode } | null = null;
+  signal: SignalVoice | null = null;   // the anomaly as it comes in (core/signalVoice.ts)
   roomTone: GainNode | null = null;
   motor: { gain: GainNode; osc: OscillatorNode } | null = null;
 
@@ -162,6 +164,19 @@ export class AudioSys {
     const stat = ctx.createGain(); stat.gain.value = 0; n.connect(bp); bp.connect(stat); stat.connect(this.sfx); n.start();
     this.carrier = { osc, gain, stat };
   }
+  /** The anomaly near 1420.405 as the receiver hears it: clarity 0 (static) to 1 (locked). */
+  signalFrame(clarity: number, level: number, t: number) {
+    if (!this.ctx || !this.noise) return;
+    if (!this.signal) {
+      if (clarity <= 0 || level <= 0) return;
+      this.signal = new SignalVoice(this.ctx, this.sfx, this.noise);
+    }
+    this.signal.frame(clarity, level, t);
+  }
+  signalOff() { this.signal?.stop(); this.signal = null; }
+  /** White noise, for synths elsewhere (core/decoder.ts). Null until unlock(). */
+  noiseBuffer(): AudioBuffer | null { return this.ctx ? this.noise : null; }
+
   setCarrier(level: number, pitchOffset: number, staticLevel: number) {
     if (!this.carrier || !this.ctx) return;
     const t = this.ctx.currentTime;

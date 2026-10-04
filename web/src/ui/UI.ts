@@ -6,6 +6,8 @@ export interface DocSpec {
   transcript: string;  // the readable transcription on the right
   stamp?: string;
   image?: string;      // photo prints and maps: the image itself; typed papers: an attached drawing
+  paper?: string;      // a picture of the paper itself under the writing (a 1947 field card, a letter)
+  paperRatio?: number; // its width over height
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -189,7 +191,7 @@ export class UI {
         ? `<div class="page photo${doc.kind === 'map' ? ' map' : ''}"><img alt="${esc(doc.title)}" src="${doc.image}"></div>`
         : doc.kind === 'typed'
           ? `<div class="page typed">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<pre>${esc(doc.page)}</pre>${doc.image ? `<img class="attached" alt="" src="${doc.image}">` : ''}</div>`
-          : `<div class="page">${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<div class="hand">${esc(doc.page)}</div></div>`;
+          : `<div class="page${doc.paper ? ' on-paper' : ''}${(doc.paperRatio ?? 0) > 1 ? ' wide' : ''}"${doc.paper ? ` style="background-image:url('${doc.paper}');aspect-ratio:${doc.paperRatio ?? 0.77}"` : ''}>${doc.stamp ? `<div class="stamp">${esc(doc.stamp)}</div>` : ''}<div class="hand">${esc(doc.page)}</div></div>`;
     el.innerHTML = `
       <div class="page-wrap">${page}</div>
       <div class="text">

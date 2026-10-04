@@ -13,6 +13,8 @@ import { Chapter1, type CaseState } from './Chapter1';
 import { Chapter2, type Ch2State } from './Chapter2';
 import { Chapter3, type Ch3State, type Travel } from './Chapter3';
 import { Chapter4, type Ch4State, type Motel } from './Chapter4';
+import type { Doors } from '../world/Doors';
+import { DecoderDesk } from './Decoder';
 import type { RecordsAnnex } from '../world/Annex';
 import type { ServiceYard } from '../world/ServiceYard';
 import type { FieldCamera } from '../core/FieldCamera';
@@ -113,6 +115,7 @@ export interface PrologueDeps {
   isTouch: () => boolean;
   travel: Travel;
   motel: Motel;
+  doors: Doors;
   milestone: () => void;
 }
 
@@ -135,6 +138,7 @@ export class Prologue {
   ch2: Chapter2;
   ch3: Chapter3;
   ch4: Chapter4;
+  decoder: DecoderDesk;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
@@ -172,13 +176,16 @@ export class Prologue {
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
     g.fillStyle = v; g.fillRect(0, 0, 512, 384);
     this.interactables();
+    // the signal processor holds the tape once the anomaly is locked (02:14 and after)
+    this.decoder = new DecoderDesk({ ui: d.ui, audio: d.audio, room: d.room, inter: d.inter,
+      locked: () => this.rx.stage >= 3, recorded: () => '02:14', busy: () => this.cinematic });
     this.ch1 = new Chapter1(this, {
       ui: d.ui, audio: d.audio, room: d.room, ext: d.ext, player: d.player, inter: d.inter,
       yard: d.yard, fcam: d.fcam, colliders: d.colliders, view: d.view, isTouch: d.isTouch,
-      save: (c) => d.saveCase(c ? this.composeCase(c) : null),
+      save: (c) => d.saveCase(c ? this.composeCase(c) : null), doors: d.doors,
     });
     this.ch2 = new Chapter2(this, {
-      ui: d.ui, audio: d.audio, room: d.room, annex: d.annex, player: d.player, inter: d.inter, colliders: d.colliders,
+      ui: d.ui, audio: d.audio, room: d.room, annex: d.annex, player: d.player, inter: d.inter, colliders: d.colliders, doors: d.doors,
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
     });
     this.ch3 = new Chapter3(this, {
@@ -187,7 +194,7 @@ export class Prologue {
       milestone: () => { this.onCheckpoint?.('chapter3'); },
     });
     this.ch4 = new Chapter4(this, {
-      ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, annex: d.annex, colliders: d.colliders,
+      ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, doors: d.doors,
       ch1: this.ch1, ch2: this.ch2, ch3: this.ch3, motel: d.motel,
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
       milestone: () => { this.onCheckpoint?.('chapter4'); },
@@ -196,6 +203,13 @@ export class Prologue {
   }
 
   at(p: Phase) { return ORDER.indexOf(this.phase) >= ORDER.indexOf(p); }
+
+  // The doors are free at any time (world/Doors.ts); the chapters that care remember them.
+  doorChanged(id: string, open: boolean) {
+    this.ch1.doorChanged(id, open);
+    this.ch2.doorChanged(id, open);
+    this.ch4.doorChanged(id, open);
+  }
 
   // ---------- saving ----------
   // Where a save resumes. The prologue only has safe points at the start of the night and
@@ -352,14 +366,6 @@ export class Prologue {
     inter.add({ id: 'clock', object: o.clock, range: 3.5, label: () => 'Wall clock', use: () => toast(`${clockText(this.clock, false)}. ${this.at('residual') ? 'Where did the night go?' : 'Six hours and change to go.'}`) });
     inter.add({ id: 'map', object: o.map, range: 2.8, label: () => 'Map of New Mexico',
       use: () => toast('SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.') });
-    inter.add({ id: 'doorEast', object: o.doorEast, label: () => this.ch1.active ? this.ch1.doorLabel() : 'Service yard door',
-      use: () => {
-        if (this.ch1.active) { this.ch1.useDoor(); return; }
-        audio.play('click', { gain: 0.6, at: this.worldPos(o.doorEast) });
-        toast(this.at('event') ? 'Service access is locked while the array is tracking.' : 'Locked at night. Day crew has the key to the service yard.');
-      } });
-    inter.add({ id: 'doorSouth', object: o.doorSouth, label: () => this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4' ? this.ch2.southDoorLabel() : 'Corridor',
-      use: () => this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4' ? this.ch2.useSouthDoor() : toast(this.phase === 'ch1' ? 'Vending machine, restrooms, Dale\'s empty office. The work tonight is out in the yard.' : this.at('event') ? 'You are not walking away from this console now.' : 'Vending machine, restrooms, Dale\'s empty office. Nothing for you out there tonight.') });
   }
 
   // ---------- beats ----------
@@ -621,7 +627,7 @@ export class Prologue {
   private finish() {
     const { ui, audio } = this.d;
     ui.fade(true, '');
-    audio.setCarrier(0, 0, 0);
+    audio.setCarrier(0, 0, 0); audio.signalOff();
     this.after(1.6, () => { this.cinematic = true; this.onFinish?.(); });
   }
 
@@ -715,10 +721,13 @@ export class Prologue {
     if (this.powered && audio.carrier) {
       const open = this.rxc.open;
       const rx = this.rx;
-      if (this.at('end')) audio.setCarrier(0, 0, 0);
-      else if (rx.stage >= 3) {
-        const p = rx.pulse(t) > 0.5 ? 1 : 0;
-        audio.setCarrier((open ? 0.085 : 0.03) * p, 0, open ? 0.015 : 0.004);
+      if (this.at('end')) { audio.setCarrier(0, 0, 0); audio.signalOff(); }
+      else if (rx.stage >= 3 || (rx.stage === 2 && this.rxc.residualVisible)) {
+        // the anomaly (core/signalVoice.ts): static that turns into the pulsing signal as the
+        // receiver closes on 1420.405, then the locked signal; louder with the console open
+        const c = rx.stage >= 3 ? 1 : rx.quality(PROFILES[2]);
+        audio.setCarrier(0, 0, 0);
+        audio.signalFrame(Math.max(0.02, c), open ? 0.9 : 0.3, t);
       } else {
         const q = this.rxc.surveyOnly ? 0.05 : rx.quality();
         audio.setCarrier(open ? 0.06 * q * q : 0, (q - 1) * 0.03, open ? 0.03 * (1 - q) + 0.008 : 0.003);
@@ -788,6 +797,7 @@ export class Prologue {
     if (this.phase === 'ch2') this.ch2.update(paused ? 0 : dt, t);
     if (this.phase === 'ch3') this.ch3.update(paused ? 0 : dt, t);
     if (this.phase === 'ch4') this.ch4.update(paused ? 0 : dt, t);
+    this.decoder.update(dt);
 
     // gentle camera assist so the player sees the array turn
     if (this.lookAssist > 0 && (this.phase === 'turning' || this.phase === 'end')) {
@@ -930,11 +940,13 @@ export class Prologue {
     this.shards = [];
     if (this.spill) { room.group.remove(this.spill); this.spill.geometry.dispose(); this.spill = null; }
     for (const dish of ext.dishes) dish.snap(PARK_AZ, SURVEY_EL);
-    if (audio.ctx) { audio.stop('ring'); audio.stop('printer'); audio.setCarrier(0, 0, 0); audio.stopMotors(); }
+    if (audio.ctx) { audio.stop('ring'); audio.stop('printer'); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.stopMotors(); }
     this.ch1?.reset();
     this.ch2?.reset();
     this.ch3?.reset();
     this.ch4?.reset();
+    this.d.doors.closeAll();
+    this.decoder?.stop();
   }
 
   start(checkpoint?: string) {
