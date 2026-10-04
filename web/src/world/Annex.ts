@@ -219,7 +219,7 @@ export class RecordsAnnex {
     const fb = new THREE.Group();
     fb.position.set(-5.62, 1.135, 8.6);
     box(fb, 0.38, 0.28, 0.34, this.mat({ color: 0x8c6d48, roughness: 0.9 }), 0, 0.14, 0);
-    plane(fb, 0.26, 0.17, this.card(['STATION 01', 'FIELD RECORDS', '1947'], { w: 192, h: 128, font: 'Special Elite', size: 22 }), 0.191, 0.15, 0, Math.PI / 2);
+    plane(fb, 0.26, 0.17, this.card(['STATION 01', 'FIELD RECORDS', '1947'], { w: 192, h: 128, font: 'Special Elite', size: 22, surface: 'paper' }), 0.191, 0.15, 0, Math.PI / 2);
     mergeStatic(fb);
     this.interior.add(fb);
     this.objs.fieldBoxModel = fb;
@@ -243,7 +243,7 @@ export class RecordsAnnex {
     const bd = new THREE.Group();
     bd.position.set(-2.32, 0.9, 10.24); bd.rotation.y = 0.25;
     box(bd, 0.3, 0.06, 0.34, this.mat({ color: 0x2f4a6e, roughness: 0.8 }), 0, 0.03, 0);
-    plane(bd, 0.2, 0.12, this.card(['SERVICE COPIES', 'REFERENCE RECORDS'], { w: 192, h: 112, size: 20 }), 0, 0.061, 0, 0, -Math.PI / 2);
+    plane(bd, 0.2, 0.12, this.card(['SERVICE COPIES', 'REFERENCE RECORDS'], { w: 192, h: 112, size: 20, surface: 'paper' }), 0, 0.061, 0, 0, -Math.PI / 2);
     mergeStatic(bd);
     this.interior.add(bd);
     this.proxy('binder', 0.45, 0.25, 0.45, -2.32, 1.0, 10.2);

@@ -8,6 +8,7 @@ from playwright.async_api import async_playwright
 
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else 'shots/art')
 URL = os.environ.get('S47_URL') or Path('dist-single/index.html').resolve().as_uri()
+ART_COUNT = 22  # 16 from PR #30, 6 round 3 surfaces from PR #31
 VIEWS = [
     ('desk', 2.6, 3.5, 0, -0.50),
     ('room', -4.7, 3.5, -0.65, -0.16),
@@ -18,6 +19,15 @@ VIEWS = [
     ('yard', 9.5, -8.2, 0, -0.12),
     ('cabinet', 10.7, -11.0, -1.57, -0.26),
     ('lab', 14.5, -1.4, 0.3, -0.12),
+    # round 3 surfaces with the words drawn in code
+    ('b12', 9.9, -16.6, 0, 0.40),
+    ('r07', 7.22, -18.22, 0.5, -0.33),
+    ('fieldmap', 17.0, -0.55, 3.1416, 0.08),
+    ('apron', 9.5, -9.3, 0, -0.6),
+    ('labsigns', 14.7, -3.8, 0, 0.1),
+    # chapter two: the corridor and the records room
+    ('corridor', 0.8, 5.7, 1.5708, 0.0),
+    ('archive', -2.0, 7.6, 2.135, -0.1),
 ]
 
 async def main():
@@ -33,7 +43,7 @@ async def main():
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
         art = await pg.evaluate('S47.art()')
-        checks.append(('all 16 runtime images loaded', len(art['loaded']) == art['expected'] == 16))
+        checks.append((f'all {ART_COUNT} runtime images loaded', len(art['loaded']) == art['expected'] == ART_COUNT))
         checks.append(('sky runtime limited to 2K', any(t['name'] == 'art/sky' and t['width'] == 2048 and t['height'] == 1024 for t in art['textures'])))
         await pg.click('button[data-a=start]')
         await pg.evaluate("S47.hold=true; S47.jump('chapter1'); S47.game.d.ui.close(); S47.tick(1)")
@@ -67,7 +77,7 @@ async def main():
             await pg.unroute('**/*tex_wall_paint*')
             await pg.get_by_role('button', name='TRY AGAIN').click()
             await pg.wait_for_selector('button[data-a=start]')
-            checks.append(('retry recovers complete artwork', len((await pg.evaluate('S47.art()'))['loaded']) == 16))
+            checks.append(('retry recovers complete artwork', len((await pg.evaluate('S47.art()'))['loaded']) == ART_COUNT))
             checks.append(('retry has no unexpected errors', not errors))
         report = dict(url=URL, renderer='Chromium SwiftShader, not hardware FPS', checks=checks, art=art, views=views, errors=errors, expected_failure_errors=expected_failures)
         (OUT / 'report.json').write_text(json.dumps(report, indent=2))

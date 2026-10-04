@@ -69,6 +69,10 @@ export class CaseStore<T extends object> {
   private cache: T | null = null;
   private db: Promise<IDBDatabase | null>;
   private stored = new Map<string, string>(); // photo id -> url known to be in IndexedDB
+  // photo id -> the stand-in shown and the reference it replaced, for photographs that could
+  // not be read. The original may still be in IndexedDB, so a save writes the reference back,
+  // never the stand-in (found by Codex, see evidence/claude-handoff-2026-10-04).
+  private unread = new Map<string, { shown: string; ref: string }>();
   ready: Promise<void>;
 
   constructor() {
@@ -87,8 +91,10 @@ export class CaseStore<T extends object> {
         // a browser that never answers must not hold up Continue for ever
         const db = await within(this.db, 10000, null);
         const id = p.url.slice(REF.length);
-        const url = db ? await idb<string>(db, 'readonly', (s) => s.get(id)) : undefined;
-        if (url) { p.url = url; this.stored.set(id, url); } else p.url = missingPrint();
+        const read = () => db ? idb<string>(db, 'readonly', (s) => s.get(id)) : Promise.resolve(undefined);
+        const url = (await read()) ?? (await read()); // one more try: a failed transaction is often a one-off
+        if (url) { p.url = url; this.stored.set(id, url); }
+        else { this.unread.set(p.id, { shown: missingPrint(), ref: p.url }); p.url = this.unread.get(p.id)!.shown; }
       } else migrate = true; // an older save with the photograph inline
     }
     this.cache = raw;
@@ -104,8 +110,10 @@ export class CaseStore<T extends object> {
     const pending: Photoish[] = [];
     for (const p of photos(slim)) {
       if (!p.url.startsWith('data:')) continue;
-      if (this.stored.get(p.id) === p.url) p.url = REF + p.id; // already safe in IndexedDB
-      else pending.push({ id: p.id, url: p.url });             // inline for now, a reference once written
+      const lost = this.unread.get(p.id);
+      if (lost && lost.shown === p.url) p.url = lost.ref;           // still the stand-in: keep pointing at the original
+      else if (this.stored.get(p.id) === p.url) p.url = REF + p.id; // already safe in IndexedDB
+      else pending.push({ id: p.id, url: p.url });                  // inline for now, a reference once written
     }
     this.write(slim);
     if (!pending.length) return;
@@ -114,7 +122,8 @@ export class CaseStore<T extends object> {
       return Promise.all(pending.map((p) => idb(db, 'readwrite', (s) => s.put(p.url, p.id)).then((r) => r !== undefined ? p : null)))
         .then((done) => {
           let changed = false;
-          for (const p of done) if (p) { this.stored.set(p.id, p.url); changed = true; }
+          // a new photograph under the same id has replaced the one that could not be read
+          for (const p of done) if (p) { this.stored.set(p.id, p.url); this.unread.delete(p.id); changed = true; }
           // write the slim version again, unless a newer save has replaced the case meanwhile
           if (changed && this.cache === c) this.save(c);
         });

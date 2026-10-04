@@ -32,7 +32,7 @@ async def main():
         print('sounds decoded:', sounds)
         print('art images loaded:', len(art['loaded']), '/', art['expected'])
         print('\n'.join(errs[:15]) or 'no console errors or warnings')
-        passed = len(fonts) == 4 and sounds == 11 and len(art['loaded']) == art['expected'] == 16 and not errs
+        passed = len(fonts) == 4 and sounds == 11 and len(art['loaded']) == art['expected'] == 22 and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:

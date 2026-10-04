@@ -75,5 +75,27 @@
     "source_sha256": "9fe9f94668b5d8d5a6495ab62d4697ea024b3fe9e1c53b7a9b9b886a4f0c9705",
     "runtime_sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4",
     "bytes": 239026
+  },
+  {
+    "source": "lab/sign_blank.png",
+    "runtime": "runtime/sign_blank.webp",
+    "dimensions": [
+      1024,
+      384
+    ],
+    "source_sha256": "460782a6b9b11a48650da45e917139c63df2e3584b3ab5abd699d0bfa24864c8",
+    "runtime_sha256": "288e7ee2e7d9cad10840c869346d7495d3e64aedb95d66cf413125711b226de1",
+    "bytes": 13710
+  },
+  {
+    "source": "yard/floor_paint_frame.png",
+    "runtime": "runtime/floor_paint_frame.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "bccf84fbb3c78d815b7e44246df09f75aa0433f7aac1f9b14bad5cf7ba9f82ac",
+    "runtime_sha256": "ee790f3b33531702019bcfa357d8798e2a6e7519ac5fa15ae8bd7c8a16ed927c",
+    "bytes": 49274
   }
 ]
