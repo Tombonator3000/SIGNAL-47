@@ -30,7 +30,7 @@ VIEWS = [
     ('corridor', 0.8, 5.7, 1.5708, 0.0),
     ('archive', -2.0, 7.6, 2.135, -0.1),
     # round 4 (PR #34): the vending front with COLD DRINKS drawn in code
-    ('vending', 1.35, 5.0, 3.1416, -0.05),
+    ('vending', 0.2, 5.1, -2.1, -0.3),
 ]
 
 async def main():
