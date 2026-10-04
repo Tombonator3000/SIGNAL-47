@@ -20,6 +20,25 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Codex: oppdater SARO-nærkartet (`src/assets/art/maps/saro-plan.svg`) med korridoren og arkivrommet slik de ligger i `src/world/Annex.ts` (sør for kontrollrommet, x fra -5,75 til 1,75 og z fra 4,65 til 10,25).
 - [ ] Codex: runde 4 i ART_BRIEF.md, arkivgulvet og automatfronten. Claude kobler dem inn når de er levert.
 
+## Codex (avtalt med Tom 4. oktober 2026)
+
+Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
+
+1. **Grafikk, prioritet 1:** runde 5 i `ART_BRIEF.md`, fire sømløse flater til STATION 01.
+2. **Grafikk, prioritet 2:** runde 4 (arkivgulvet og automatfronten) og runde 6 (Roswell-veien og dineren).
+3. **Kode, prioritet 3, uavhengig:** rom 6 på Sierra Motor Court som eget område til kapittel 4, etter samme mønster som `src/world/Station01.ts`:
+   - Nye filer som Codex eier: `web/src/world/Room6.ts` og `web/tools/room6preview.py`. En midlertidig forhåndsvisningskrok i `main.ts` i Codex sin gren er greit, merket `// PREVIEW ONLY`. Den tas ikke med.
+   - `export class Room6` med `new Room6(origin)`. Origo blir (0, 0, -8000). Alt bygges lokalt i `group`, og det som oppgis i verdenskoordinater (soner, kolliderere, ankere, flomlys), tar med origo. Gulvet er y = 0.
+   - Innhold: motellrom rundt 4,5 × 6 m, natt i 1986. Dør mot sør med vindu ved siden av og gardiner, dobbeltseng, lite bord med to stoler ved vinduet, bordlampe, TV fra 1970-tallet på en kommode, innrammet foto på kommoden, panelovn, lukket baderomsdør, telefon på nattbordet. Nora sitter i stolen ved vinduet: en enkel, stilisert sittende figur i lavpoly, uten ansiktsdetaljer, i en egen gruppe (`objs.nora`) så hodet kan snus. På bordet: en skoeske med papirer, et askebeger, og feltkortet, brevet og den signerte rettelsen som egne objekter (`objs.fieldCard`, `objs.letter`, `objs.correction`). Utenfor døra et par meter overbygd gangvei med romnummer 6 (tekst i kode) og skjæret fra motellskiltet.
+   - Usynlige trefflater (`proxies`) med disse id-ene: `door`, `nora`, `table`, `fieldCard`, `letter`, `correction`, `photo`, `window`, `phone`, `tv`, `bed`, `lamp`, `bathroom`.
+   - `zones` og `colliders` (rektangler i verdenskoordinater, se `Zone` i `Player.ts`; soner som møtes, må overlappe med mer enn 0,6 m), `anchors` med `arrive`, `talk` og `exit` som `{ x, z, yaw }`, `interior`, `setLamp(on)`, `update(dt, t)` og `dispose()`.
+   - Egne lys i gruppa (HemisphereLight og et svakt månelys eller neonskjær), fordi SAROs lys skjules når spilleren er borte. Eget flomlyssett: `export const motelFlood = floodSet(6, 'motel', 0.2)`.
+   - Maks rundt 120 draw calls, skal gå på mobil. Engelsk tekst i spillet, ingen ekte merkenavn.
+   - Grunnlag: `src/assets/art/concept/ch4_room6.jpg`, `maps/motel-plan.png`, designbibelens K4 og `HISTORIE.md`.
+   - Test: `npx tsc --noEmit`, ingen feil i konsollen, skjermbilder i 1280×800 og 844×390 fra døra, ved bordet, mot Nora og mot vinduet, med draw calls.
+   - Claude skriver selve kapittel 4 (samtalen, bevisene, lagringen) og kobler rommet inn i `World.ts`.
+4. **Filer Claude eier nå, ikke endre dem:** `web/src/main.ts`, `web/src/world/World.ts`, `web/src/world/Station01.ts`, `web/src/world/ServiceYard.ts`, `web/src/world/Annex.ts`, `web/src/world/kit.ts`, alt i `web/src/drive/`, `web/src/story/`, `web/src/ui/` og `web/src/core/`, `web/src/style.css`, `web/vite.config.ts`, de eksisterende testene i `web/tools/` og dokumentene `AGENTS.md`, `README.md`, `memory.md`, `todo.md` og `HISTORIE.md`. Nye bilder legges i `src/assets/art/<kategori>/`; Claude kobler dem inn i `art.ts`. `log.md` kan begge skrive i, med egen overskrift.
+
 ## Småting
 
 - [ ] GitHub varsler at configure-pages v5, setup-node v4 og upload-artifact v4 (via upload-pages-artifact v3) er laget for Node 20 og tvinges over på Node 24. Publiseringen virker i dag. Bytt til versjoner laget for Node 24 når det passer.

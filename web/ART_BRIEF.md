@@ -72,7 +72,18 @@ Ingen tekst i bildene. Begge tegnes i kode i dag og byttes når filene finnes.
 | `annex/tex_floor_vinyl.jpg` | 1024×1024, sømløs | 1,2 × 1,2 m (fire ganger fire fliser på 30 cm) | Rolige vinylfliser i lys gråbeige fra 1970-tallet, matte og litt slitte, smale fuger. Brukes i korridoren og arkivrommet. |
 | `annex/vending_front.png` | 512×1024 | 0,74 × 1,48 m | Front på en brus- og snacksautomat uten merkenavn: glassvindu med rader av bokser og poser, myntinnkast og knapper til høyre, uttaksluke nederst. Feltet under vinduet står tomt, der skriver koden COLD DRINKS. |
 
-## Runde 5: Roswell-veien og dineren (kan lages nå, brukes etter rom 6)
+## Runde 5: STATION 01 (prioritet 1, ønskes nå)
+
+Kapittel 3 foregår på målestasjonen fra 1947, rundt klokka 04:00. Se `src/assets/art/concept/station01_field.jpg`, `maps/station01-plan.png` og den bygde stasjonen i `src/world/Station01.ts`. I dag lages disse flatene i kode. Bildene erstatter kodeteksturene, og alt med tekst blir i kode. Alle fire er 1024×1024, sømløse, JPG med kvalitet rundt 85, sett rett forfra eller ovenfra, uten tekst.
+
+| Fil | Mål per bilde i spillet | Hvor | Hva |
+|---|---|---|---|
+| `station/tex_stucco_wall.jpg` | 2,0 × 2,0 m | Hyttas yttervegger (4 × 3 m, 2,6 m høy) og generatorbua | Solbleket kremgul puss over murblokk, hårfine sprekker, lappede flekker, rustrenner nederst. Ingen vinduer eller dører i bildet. |
+| `station/tex_concrete_old.jpg` | 1,0 × 1,0 m | Transittpilaren, fundamentene til A og B | Gammel betong fra 1940-tallet med grov tilslag, avskallede kanter, lav og grå. |
+| `station/tex_wood_weathered.jpg` | 0,5 × 1,0 m | Merkestolpene, stakene til C, portstolpene, hyttedøra | Sølvgrått, sprukket treverk som har stått i ørkensol i førti år, langsgående fiber. |
+| `station/tex_floorboards.jpg` | 1,2 × 1,2 m | Gulvet i hytta | Slitte furugulvbord, 12 cm brede, gangsti mot benken, spikerhoder, litt sand i fugene. |
+
+## Runde 6: Roswell-veien og dineren (kan lages nå, brukes etter rom 6)
 
 Historien står i `HISTORIE.md`. Natt mot grålysning, 05:00 til 05:25. Dineren har vært åpen hele natten siden 1940-tallet. Ingen tekst i bildene: navn, overskrifter, priser og skilttekst tegnes i kode oppå. Avisen er oppdiktet, ikke en kopi av en ekte forside.
 
