@@ -17,12 +17,13 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Roswell-veien (nytt, etter K4): samme lastebil og kjøresystem. Motoren dør der C krysser veien, lysene blinker i grupper på 4 og 7 (`Truck.setLightLevel`, `EngineSound.stall`), et rolig lys over mesaen, et bilde som beholder lyset. Deretter dineren med servitrisen, sjåføren, avisutklippet fra 1947 og telefonautomaten til Ward.
 - [ ] Grafikk fra Codex til K4 og Roswell-veien: dinerens skilt og meny, avisutklippet (oppdiktet avis), et veiskilt mot Roswell og lastebilens dørmerke. Skrives inn i `ART_BRIEF.md` når K4 starter.
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
-- [ ] Codex: oppdater SARO-nærkartet (`src/assets/art/maps/saro-plan.svg`) med korridoren og arkivrommet slik de ligger i `src/world/Annex.ts` (sør for kontrollrommet, x fra -5,75 til 1,75 og z fra 4,65 til 10,25).
-- [ ] Codex: runde 4 i ART_BRIEF.md, arkivgulvet og automatfronten. Claude kobler dem inn når de er levert.
+- [ ] Koble `Room6.ts` (levert av Codex i PR #34) inn i `World.ts` som eget område når kapittel 4 skrives. Rommet skjules med hele `group` når spilleren er et annet sted, og `motelFlood` hører bare til rommet.
 
 ## Codex (avtalt med Tom 4. oktober 2026)
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
+
+Status 4. oktober kl. 11.30: punkt 1, runde 4 fra punkt 2, SARO-kartet og punkt 3 (`Room6.ts` og `room6preview.py`) er levert i PR #34, flettet inn og koblet inn (flatene). Neste for Codex er runde 6 i `ART_BRIEF.md`, Roswell-veien og dineren.
 
 1. **Grafikk, prioritet 1:** runde 5 i `ART_BRIEF.md`, fire sømløse flater til STATION 01.
 2. **Grafikk, prioritet 2:** runde 4 (arkivgulvet og automatfronten) og runde 6 (Roswell-veien og dineren).
@@ -46,7 +47,7 @@ Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren m
 
 ## Grafikk fra ChatGPT (se ART_BRIEF.md)
 
-22 bilder er i spillet fra 4. oktober: 16 fra PR #30 og de seks fra runde 3 i PR #31. Se `ART_DELIVERY.md`, `CLAUDE_HANDOFF.md` og loggen.
+28 bilder er i spillet fra 4. oktober: 16 fra PR #30, de seks fra runde 3 i PR #31 og de seks fra rundene 4 og 5 i PR #34. 24 lastes ved start; de fire til STATION 01 lastes når stasjonen bygges. Se `ART_DELIVERY.md`, `ART_ROUND45_DELIVERY.md`, `CLAUDE_HANDOFF.md` og loggen.
 
 - [ ] Gulvets heksagonfuger: fjern den lille registreringsfeilen i vanlig vertikal repeat. Speiling ble vurdert og forkastet fordi den lager smale romber.
 - [ ] Mål minne og fps med den nye grafikken på ekte mobil og PC; headless draw calls er ikke en fps-måling.

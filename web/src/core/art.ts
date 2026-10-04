@@ -25,7 +25,7 @@ import paper from '../assets/art/lab/tex_paper_card.jpg';
 // Rounds 4 and 5 (PR #34): the archive wing, loaded with SARO, and STATION 01's surfaces,
 // loaded only when the station is built (loadArtFor), so the start does not wait on them.
 import vinyl from '../assets/art/annex/tex_floor_vinyl.jpg';
-import vending from '../assets/art/annex/vending_front.png';
+import vending from '../assets/art/runtime/vending_front.webp';
 import stucco from '../assets/art/station/tex_stucco_wall.jpg';
 import oldConcrete from '../assets/art/station/tex_concrete_old.jpg';
 import weatheredWood from '../assets/art/station/tex_wood_weathered.jpg';
