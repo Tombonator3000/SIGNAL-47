@@ -299,6 +299,9 @@ export class Chapter2 {
     });
   }
 
+  /** The evidence board from the journal (the same board as on the archive table). */
+  openBoard() { this.openTable(); }
+
   private openTable() {
     const { ui } = this.d;
     if (!this.anyRead()) { ui.toast('Nothing on the table yet. The records are on the shelves, the bookcase and in the card index.', 4); return; }

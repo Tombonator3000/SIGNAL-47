@@ -8,10 +8,11 @@ import type { DriveController } from '../drive/Drive';
 import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
+import type { Diner } from './Diner';
 import { Crossing, type CourtSite } from './Crossing';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood } from './kit';
-import { loadArtFor } from '../core/art';
+import { loadArtFor, artTexture, DINER_ART } from '../core/art';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -23,12 +24,14 @@ import { loadArtFor } from '../core/art';
 //   road        around (8000, 0, 0)     the drive south to the survey track
 //   STATION 01  around (0, 0, 8000)     the survey station, chapter three
 //   room 6      around (0, 0, -8000)    Nora's room at Sierra Motor Court, chapter four
+//   diner       around (-8000, 0, 0)    Mesa Diner on the Roswell road (Diner.ts, by Codex), «All Night»
 //
 // The walk from SARO's fire exit over the highway to the motel is part of SARO (Crossing.ts).
 
 export const ROAD_ORIGIN = new THREE.Vector3(8000, 0, 0);
 export const STATION_ORIGIN = new THREE.Vector3(0, 0, 8000);
 export const ROOM6_ORIGIN = new THREE.Vector3(0, 0, -8000);
+export const DINER_ORIGIN = new THREE.Vector3(-8000, 0, 0);
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -55,6 +58,7 @@ type Modules = {
   Truck: typeof import('../drive/Truck');
   engine: typeof import('../drive/engineSound');
   Room6: typeof import('./Room6');
+  Diner: typeof import('./Diner');
 };
 
 export class World {
@@ -68,6 +72,9 @@ export class World {
   onEnterRoom6?: () => void;
   onLeaveRoom6?: () => void;
   room6: Room6 | null = null;
+  diner: Diner | null = null;
+  onDinerLoaded?: (diner: Diner) => void;
+  private dinerTruck: Truck | null = null;
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
   motel: MotelFront;
@@ -126,6 +133,7 @@ export class World {
           : k === 'Drive' ? await import('../drive/Drive')
             : k === 'Truck' ? await import('../drive/Truck')
               : k === 'Room6' ? await import('./Room6')
+                : k === 'Diner' ? await import('./Diner')
                 : await import('../drive/engineSound');
       (this.mods as Record<string, unknown>)[k] = m;
     }
@@ -190,6 +198,7 @@ export class World {
     if (area === 'station01') await this.ensureStation();
     if (area === 'road') await this.ensureRoad();
     if (area === 'room6') await this.ensureRoom6();
+    if (area === 'diner') await this.ensureDiner();
   }
 
   private ensureRoom6() {
@@ -205,6 +214,28 @@ export class World {
     });
   }
 
+  // The diner, its pictures (round 6 and 8) and SARO's truck parked on its lot
+  private ensureDiner() {
+    return this.once('diner', async () => {
+      const [{ Diner, dinerFlood }, { Truck }] = await Promise.all([this.load('Diner'), this.load('Truck'), loadArtFor(DINER_ART)]);
+      const d = new Diner(DINER_ORIGIN.clone());
+      d.setSurfaceArt(artTexture('dinerBooth', [2, 2]), artTexture('dinerWall', [0.5, 0.5]));
+      d.group.visible = false;
+      this.d.scene.add(d.group);
+      const t = new Truck({ flood: dinerFlood });
+      const a = d.anchors.truckPark;
+      t.group.position.set(a.x, 0, a.z);
+      t.group.rotation.y = a.yaw;
+      t.group.visible = false;
+      this.d.scene.add(t.group);
+      this.dinerTruck = t;
+      this.diner = d;
+      this.d.applyQuality();
+      this.onDinerLoaded?.(d);
+      return d;
+    });
+  }
+
   // ---------- areas ----------
   /** Show one area and walk in it. The area must be prepared. */
   enter(area: AreaId) {
@@ -217,14 +248,18 @@ export class World {
     if (this.truck) this.truck.group.visible = area === 'road';
     if (this.parked) this.parked.group.visible = area === 'station01';
     if (this.room6) this.room6.group.visible = area === 'room6';
+    if (this.diner) this.diner.group.visible = area === 'diner';
+    if (this.dinerTruck) this.dinerTruck.group.visible = area === 'diner';
     player.floor = area === 'saro' ? this.crossing.floorAt : null;
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
+    if (area === 'diner' && this.diner) { player.zones = this.diner.zones; player.colliders = this.diner.colliders; }
   }
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
     if (this.area === 'room6') return !!this.room6 && p.z < ROOM6_ORIGIN.z + 3.0;   // in the room, not on the walk outside
+    if (this.area === 'diner') return !!this.diner && this.diner.zones.some((z) => (z.id === 'inside' || z.id === 'phone') && p.x >= z.minX && p.x <= z.maxX && p.z >= z.minZ && p.z <= z.maxZ);
     if (this.area !== 'station01' || !this.site) return false;
     const b = this.site.hutBounds;
     return p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
@@ -238,6 +273,25 @@ export class World {
   placeOutsideRoom6() {
     const a = this.court.anchors.fromRoom6;
     this.d.player.place(a.x, a.z, a.yaw);
+  }
+
+  /** Put the player at one of the diner's anchors (by the truck when they arrive). */
+  placeAtDiner(at: 'arrive' | 'outside' | 'inside' | 'stool' | 'phone' = 'arrive') {
+    const a = this.diner!.anchors[at];
+    this.d.player.place(a.x, a.z, a.yaw);
+  }
+  /** To the diner (a fade; it loads the first time). The chapter on the Roswell road calls
+   *  this when the truck pulls in; until then only the tests and ?debug use it. */
+  goDiner(at: 'arrive' | 'outside' | 'inside' | 'stool' | 'phone' = 'arrive') {
+    if (this.busy) return Promise.resolve();
+    this.busy = true;
+    const { fade, hold } = this.d;
+    hold(true);
+    fade(true, '');
+    return Promise.all([this.ensureDiner(), new Promise((r) => setTimeout(r, 500))]).then(() => {
+      this.enter('diner');
+      this.placeAtDiner(at);
+    }).finally(() => { this.busy = false; hold(false); fade(false); });
   }
 
   // ---------- room 6 ----------
@@ -375,6 +429,7 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
+    if (this.area === 'diner') this.diner?.update(dt, t);
     if (this.area === 'saro') this.motel.update(dt, t);
     if (this.area === 'road' && this.road && this.drive && this.truck) {
       if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;

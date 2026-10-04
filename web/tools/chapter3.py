@@ -346,9 +346,9 @@ async def main():
         # ---------- the case file ----------
         await ev("S47.hold = true; S47.tick(0.3)")
         await ev("S47.game.openNotebook()")
-        await pg.click('.notebook [data-t=case]')
+        await pg.click('.notebook [data-t=photos]')
         # S47.jump('chapter3') starts after a chapter one without photographs: frames 03 and 04
-        ids = await ev("[...document.querySelectorAll('.notebook .thumbs button')].map(b => b.dataset.d)")
+        ids = await ev("[...document.querySelectorAll('.notebook .nb-page.on .thumbs button')].map(b => b.dataset.d)")
         check(ids == ['frame03', 'frame04'], f'case file shows both field photographs ({ids})')
         bright = await ev("""Promise.all(['frame03', 'frame04'].map((id) => new Promise((ok) => {
           const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = 96; c.height = 60;

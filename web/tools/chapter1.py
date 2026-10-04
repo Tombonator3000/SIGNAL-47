@@ -271,11 +271,14 @@ async def main():
 
         # the case file spread in the notebook: both prints as pictures, the papers as cards
         await ev("S47.game.openNotebook()")
-        await pg.click('.notebook [data-t=case]')
-        check(await ev("document.querySelectorAll('.notebook .thumbs img').length") == 2, 'case file shows both photographs')
-        check(await ev("document.querySelectorAll('.notebook .cards button').length") >= 6, 'case file lists the papers')
+        await pg.click('.notebook [data-t=findings]')
+        check(await ev("!!document.querySelector('.notebook .nb-page.on .findings [data-d=finding]')"), 'the journal lists the local finding under Findings')
+        await pg.click('.notebook [data-t=papers]')
+        check(await ev("document.querySelectorAll('.notebook .nb-page.on .cards button').length") >= 5, 'the journal lists the papers (the local finding is under Findings)')
+        await pg.click('.notebook [data-t=photos]')
+        check(await ev("document.querySelectorAll('.notebook .nb-page.on .thumbs img').length") == 2, 'the journal shows both photographs')
         await shot('c13_casefile')
-        await pg.click('.notebook .thumbs button')
+        await pg.click('.notebook .nb-page.on .thumbs button')
         check(await ev("!!document.querySelector('.docview .page.photo img')"), 'a photograph opens from the case file')
         await ev("S47.game.d.ui.close(true)")
 

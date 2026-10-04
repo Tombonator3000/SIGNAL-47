@@ -224,9 +224,10 @@ async def main():
         await pg.click('.endcard button:has-text("Return to the observatory")'); await pg.wait_for_timeout(400)
         await ev("S47.hold = true; S47.tick(0.3)")
         await ev("S47.game.openNotebook()")
-        await pg.click('.notebook [data-t=case]')
+        await pg.click('.notebook [data-t=findings]')
         ids = await ev("[...document.querySelectorAll('.notebook [data-d]')].map(b => b.dataset.d)")
-        check(all(i in ids for i in ('e11', 'e12', 'e13', 'p10', 'p11', 'p12')), 'the case file has her papers and P10 to P12')
+        found = await ev("[...document.querySelectorAll('.notebook .nb-page.on .findings [data-d]')].map(b => b.dataset.d)")
+        check(all(i in ids for i in ('e11', 'e12', 'e13')) and all(i in found for i in ('p10', 'p11', 'p12')), 'the journal has her papers, and P10 to P12 under Findings')
         await shot('f11_casefile')
         await ev("S47.game.d.ui.close(true)")
 
