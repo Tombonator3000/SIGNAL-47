@@ -1,24 +1,22 @@
 import * as THREE from 'three';
 import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood } from './kit';
-import { GlowPoints } from './glow';
-import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { courtFlood } from './MotelFront';
 
 // Chapter four: the way from SARO across the road to Sierra Motor Court. Part of SARO's
 // scene. The corridor's fire exit (Annex.ts) opens onto a concrete step; a ramp goes
-// down to the ground, a worn path runs west to the highway, and on the far side is the
-// motel. The ground out here is 0.6 m below SARO's floors, so this file also gives the
+// down to the ground, a worn path runs west to the highway, and on the far side a short
+// driveway ramp climbs to the motel's lot (world/MotelFront.ts, by Codex), which is level
+// with SARO's floors. The ground out here is 0.6 m lower, so this file also gives the
 // player the height of the ground (floorAt).
 //
-//   x -7.6 to -6.3     the step outside the fire exit (floor level)
-//   x -10.6 to -7.6    the ramp down (z 5.05 to 6.35)
-//   x -42.3 to -10     the west lot, the highway (x -28 to -20) and the motel's front
-//
-// Until Codex's MotelFront.ts is in, the motel is the old backdrop in Exterior.ts, and
-// this file marks room 6 on it: a number, a lit window, a lamp and a door to use. The
-// rest of the game only sees the CourtSite below, which MotelFront will provide too.
+//   x -7.6 to -6.3      the step outside the fire exit (floor level)
+//   x -10.6 to -7.6     the ramp down (z 5.05 to 6.35)
+//   x -27.7 to -10      the open ground and the highway (x -28 to -20), 0.6 m down
+//   x -27.7 to -26.2    the driveway ramp up to the lot (z 2 to 10)
+//   x below -27.7       the motel's lot, walk and office (MotelFront's own zones)
 
 export type Anchor = { x: number; z: number; yaw: number };
 export interface CourtSite {
@@ -30,48 +28,45 @@ export interface CourtSite {
 
 const GROUND = -0.6;
 const RAMP = { x0: -10.6, x1: -7.6, z0: 5.05, z1: 6.35 };
-// room 6 on the old backdrop: the sixth painted door from the north end of the facade
-const R6 = { x: -42.5, z: 49.4 };
+const DRIVE = { x0: -27.7, x1: -26.2, z0: 2, z1: 10 };   // the driveway ramp up to the lot
 
 export class Crossing {
   group = new THREE.Group();
   zones: Zone[] = [];
   zone: Record<string, Zone> = {};
   colliders: Collider[] = [];
-  glow = new GlowPoints();
-  court: CourtSite;
   brick!: THREE.Object3D;
-  private window!: THREE.MeshBasicMaterial;
 
   constructor() {
     const st = new THREE.Group();
     this.group.add(st);
     this.step(st);
     this.path(st);
-    this.court = this.room6(st);
+    this.driveway(st);
     mergeStatic(st);
-    this.group.add(this.glow.build());
 
     this.addZone('stoop', -7.75, -6.0, 4.75, 6.65);
     this.addZone('ramp', -10.9, -7.0, RAMP.z0, RAMP.z1);
-    this.addZone('west', -42.3, -10.0, -4, 64);
-    // the road lamps, the canopy posts, the parked car and the sign poles
+    // the open ground between SARO and the lot (the lot's edge is a 0.6 m step: the
+    // driveway ramp is the way up), and the ramp itself, overlapping both
+    this.addZone('west', -27.7, -10.0, -4, 64);
+    this.addZone('driveway', -28.6, -25.9, DRIVE.z0 + 0.5, DRIVE.z1 - 0.5);
+    // the road lamps
     const post = (x: number, z: number, r = 0.25) => this.col(x - r, x + r, z - r, z + r);
     post(-18.5, 36); post(-18.5, 2);
-    for (let z = 26; z <= 66; z += 5) post(-40.4, z, 0.2);
-    post(-31.5, 30, 0.32); post(-29.3, 30, 0.32);
-    this.col(-38.6, -36.4, 31.6, 36.4);
   }
 
   /** Height of the ground under the player in SARO's scene (0 on SARO's floors). */
   floorAt = (x: number, z: number) => {
     if (x > RAMP.x1) return 0;
+    if (x <= DRIVE.x0) return 0;                                   // the motel's lot
+    if (x < DRIVE.x1 && z > DRIVE.z0 && z < DRIVE.z1) return GROUND * (x - DRIVE.x0) / (DRIVE.x1 - DRIVE.x0);
     if (x >= RAMP.x0 && z > RAMP.z0 - 0.1 && z < RAMP.z1 + 0.1) return GROUND * (RAMP.x1 - x) / (RAMP.x1 - RAMP.x0);
     return GROUND;
   };
   /** Out on the west side (for the sound of the space and the place name of a save). */
-  outside(p: THREE.Vector3) { return p.x < -6.3 && p.x > -43 && p.z > -5 && p.z < 65; }
-  atMotel(p: THREE.Vector3) { return p.x < -28.5; }
+  outside(p: THREE.Vector3) { return p.x < -6.3 && p.x > -41.2 && p.z > -5 && p.z < 71; }
+  atMotel(p: THREE.Vector3) { return p.x < -27.7; }
 
   private addZone(id: string, minX: number, maxX: number, minZ: number, maxZ: number) {
     const z: Zone = { id, minX, maxX, minZ, maxZ, enabled: true };
@@ -112,33 +107,17 @@ export class Crossing {
     plane(st, 9.4, 1.6, earth, -15.3, GROUND - 0.008, 5.7, 0, -Math.PI / 2);
   }
 
-  // ---------- room 6 on the old motel backdrop (until MotelFront.ts) ----------
-  private room6(st: THREE.Group): CourtSite {
-    const x = R6.x + 0.03;
-    // the number on the door, a lamp over it, and the lit window to the south of it
-    const num = plane(this.group, 0.18, 0.18, new THREE.MeshBasicMaterial({ map: T.labelCard(['6'], { w: 64, h: 64, size: 50, bg: '#d8c69a', fg: '#3a2616', border: false }), toneMapped: false }), x, 1.45, R6.z, Math.PI / 2);
-    noMerge(num);
-    box(st, 0.18, 0.12, 0.18, M.steel, R6.x + 0.09, 2.0, R6.z + 0.75);
-    this.glow.add(R6.x + 0.12, 1.93, R6.z + 0.75, 0.9, 0xffc47a);
-    this.window = new THREE.MeshBasicMaterial({ color: 0xffc27a, toneMapped: false });
-    const win = plane(this.group, 1.95, 1.0, this.window, x, 1.0, 47.25, Math.PI / 2);
-    noMerge(win);
-    // curtains drawn across the light
-    const curtain = new THREE.MeshBasicMaterial({ color: 0x7a4a2a, transparent: true, opacity: 0.55, toneMapped: false });
-    for (const dz of [-0.62, 0.62]) { const c = plane(this.group, 0.7, 1.0, curtain, x + 0.005, 1.0, 47.25 + dz, Math.PI / 2); noMerge(c); }
-    // what the player uses: the door
-    const proxy = box(this.group, 0.4, 2.2, 1.2, new THREE.MeshBasicMaterial({ visible: false }), R6.x + 0.25, 0.55, R6.z);
-    proxy.name = 'room6Door';
-    noMerge(proxy);
-    return {
-      proxies: { room6Door: proxy },
-      objs: {},
-      anchors: {
-        entry: { x: -27.0, z: 6.0, yaw: Math.atan2(-27.0 - R6.x, 6.0 - R6.z) },   // facing room 6
-        room6Outside: { x: R6.x + 1.0, z: R6.z, yaw: Math.PI / 2 },
-        fromRoom6: { x: R6.x + 1.2, z: R6.z, yaw: -Math.PI / 2 },
-      },
-      setRoom6Light: (on) => { this.window.color.set(on ? 0xffc27a : 0x2a2018); },
-    };
+  // ---------- the driveway ramp up to the motel's lot ----------
+  private driveway(st: THREE.Group) {
+    const shape = new THREE.Shape();
+    shape.moveTo(DRIVE.x1, GROUND + 0.02); shape.lineTo(DRIVE.x0, 0); shape.lineTo(DRIVE.x0, GROUND - 0.02); shape.closePath();
+    // the lot's own asphalt under the lot's own lights, so the ramp reads as part of it
+    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('asphalt', [0.2, 0.2]), color: 0xe2d6c2, roughness: 0.95 }), 0.055, courtFlood);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: DRIVE.z1 - DRIVE.z0, bevelEnabled: false });
+    const uv = geo.attributes.uv, pos = geo.attributes.position;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getZ(i), pos.getX(i) + pos.getY(i));   // metres, as the lot
+    const wedge = new THREE.Mesh(geo, asphalt);
+    wedge.position.z = DRIVE.z0;
+    st.add(wedge);
   }
 }

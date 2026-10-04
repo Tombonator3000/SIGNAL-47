@@ -162,7 +162,8 @@ async def main():
         check(await ev("S47.world.area === 'station01' && !S47.world.driving"), 'arrived at STATION 01 and out of the truck')
         check(await s3('stage') == 'station' and await s3('arrived'), 'chapter three notes the arrival')
         art = await ev("S47.art()")
-        check(all(i in art['loaded'] for i in art['later']) and len(art['later']) == 5
+        station = ['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack']
+        check(all(i in art['later'] and i in art['loaded'] for i in station)
               and any(t['name'] == 'art/stucco' for t in art['textures']), 'the road and the station brought their five images')
         await tick(0.5)
         await shot('e05_arrival')

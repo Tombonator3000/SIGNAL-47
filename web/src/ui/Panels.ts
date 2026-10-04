@@ -460,3 +460,64 @@ export function talk(ui: UI, o: {
   render();
   return { el, refresh: render };
 }
+
+// ---------- the signal processor on the control room rack ----------
+export interface DecoderView {
+  tape: string;
+  mode: 'raw' | 'harmonized'; pitch: number; stretch: number; space: number;
+  playing: boolean;
+  current: () => number;   // which pulse sounds (0..10), -1 between
+}
+export function decoderPanel(ui: UI, o: {
+  view: () => DecoderView;
+  onMode: (m: 'raw' | 'harmonized') => void;
+  onParam: (k: 'pitch' | 'stretch' | 'space', v: number) => void;
+  onPlay: (play: boolean) => void;
+  onClose?: () => void;
+}) {
+  const v0 = o.view();
+  const el = shell(ui, 'SIGNAL PROCESSOR / DSP-4', `
+    <p class="lp-sub" data-tape></p>
+    <canvas class="dsp-scope" width="640" height="120" aria-hidden="true"></canvas>
+    <div class="lp-row" role="group" aria-label="Mode">
+      <button class="lp-choice dsp-mode" data-m="raw">RAW TAPE</button>
+      <button class="lp-choice dsp-mode" data-m="harmonized">HARMONIZED</button>
+    </div>
+    <div class="dsp-knobs">
+      <label>PITCH <span data-o="pitch"></span><input type="range" min="-12" max="12" step="1" data-k="pitch" value="${v0.pitch}"></label>
+      <label>TIME <span data-o="stretch"></span><input type="range" min="1" max="6" step="0.5" data-k="stretch" value="${v0.stretch}"></label>
+      <label>SPACE <span data-o="space"></span><input type="range" min="0" max="1" step="0.05" data-k="space" value="${v0.space}"></label>
+    </div>
+    <div class="lp-row"><button class="lp-btn primary" data-a="play"></button></div>
+    <p class="lp-small">The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the rack while you walk around.</p>`, () => { cancelAnimationFrame(raf); o.onClose?.(); });
+  const scope = el.querySelector('.dsp-scope') as HTMLCanvasElement;
+  const g = scope.getContext('2d')!;
+  const sync = () => {
+    const v = o.view();
+    (el.querySelector('[data-tape]') as HTMLElement).textContent = v.tape;
+    el.querySelectorAll<HTMLButtonElement>('[data-m]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === v.mode)));
+    (el.querySelector('[data-o=pitch]') as HTMLElement).textContent = `${v.pitch > 0 ? '+' : ''}${v.pitch} st`;
+    (el.querySelector('[data-o=stretch]') as HTMLElement).textContent = `x${v.stretch.toFixed(1)}`;
+    (el.querySelector('[data-o=space]') as HTMLElement).textContent = `${Math.round(v.space * 100)}%`;
+    (el.querySelector('[data-a=play]') as HTMLElement).textContent = v.playing ? 'STOP' : 'PLAY TAPE';
+  };
+  el.querySelectorAll<HTMLButtonElement>('[data-m]').forEach((b) => b.addEventListener('click', () => { o.onMode(b.dataset.m as 'raw' | 'harmonized'); sync(); }));
+  el.querySelectorAll<HTMLInputElement>('[data-k]').forEach((i) => i.addEventListener('input', () => { o.onParam(i.dataset.k as 'pitch' | 'stretch' | 'space', Number(i.value)); sync(); }));
+  el.querySelector('[data-a=play]')!.addEventListener('click', () => { o.onPlay(!o.view().playing); sync(); });
+  // the eleven pulses of one group cycle, the sounding one lit
+  let raf = 0;
+  const draw = () => {
+    const v = o.view(), w = scope.width, h = scope.height, cur = v.playing ? v.current() : -1;
+    g.fillStyle = '#04110a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 11; i++) {
+      const x = 30 + (i < 4 ? i : i + 1.5) * 47, hh = (i < 4 ? 0.55 : 0.75) * h * (v.mode === 'raw' ? 0.8 : 0.5 + 0.05 * ((i < 4 ? [0, 3, 7, 10][i] : [12, 10, 7, 5, 3, 2, 0][i - 4])));
+      g.fillStyle = i === cur ? '#b9ffc7' : 'rgba(110,220,150,.35)';
+      g.fillRect(x, h - 10 - hh, 30, hh);
+    }
+    g.fillStyle = 'rgba(140,255,164,.8)'; g.font = '18px VT323';
+    g.fillText(`${v.mode === 'raw' ? 'RAW' : 'HARM'}  4 / 7  ${v.playing ? 'PLAY' : 'STOP'}`, 12, 22);
+    raf = requestAnimationFrame(draw);
+  };
+  sync(); draw();
+  return { el, refresh: sync };
+}

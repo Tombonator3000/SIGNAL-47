@@ -324,12 +324,10 @@ export class RecordsAnnex {
     box(st, 0.04, 0.06, 0.2, steel, -4.75, 0.6, 6.83);
   }
 
-  /** Opens (1) or closes (0) the fire exit, in between while it swings. The doorway zone
-   *  opens with it; chapter four adds the open leaf's collider. */
+  /** Swings the fire exit: 0 shut, 1 open (world/Doors.ts opens its doorway zone). */
   setExitDoor(k: number) {
     this.exitOpen = k;
     this.exitHinge.rotation.y = -1.4 * k;
-    this.zone.exitDoor.enabled = k > 0.6;
   }
 
   // A tired tube flickers now and then.

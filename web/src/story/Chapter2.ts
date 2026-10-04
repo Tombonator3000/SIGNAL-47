@@ -5,6 +5,7 @@ import type { ControlRoom, Collider } from '../world/ControlRoom';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { RecordsAnnex } from '../world/Annex';
+import type { Doors } from '../world/Doors';
 import * as P from '../ui/Panels';
 import * as D from './drawings';
 import { clockText } from './time';
@@ -46,6 +47,7 @@ export interface Chapter2Host {
 export interface Chapter2Deps {
   ui: UI; audio: AudioSys; room: ControlRoom; annex: RecordsAnnex; player: Player; inter: Interaction;
   colliders: Collider[];
+  doors: Doors;
   save: () => void;
 }
 
@@ -78,7 +80,6 @@ const WHERE: Record<P.SourceKey, string> = {
   index: 'The archive sleeve is in the same box as the 1947 field record.',
 };
 
-const DOOR_TIME = 0.75;
 
 export class Chapter2 {
   active = false;
@@ -86,10 +87,6 @@ export class Chapter2 {
   ringing = false;
   s: Ch2State = fresh();
   onEnd?: () => void;
-  /** Chapter four takes over the fire exit at the end of the corridor while it runs. */
-  exit: { label: () => string | null; use: () => void } | null = null;
-  private anim: { door?: number } = {};
-  private doorCol: Collider = { minX: -1.99, maxX: -1.87, minZ: 4.72, maxZ: 5.66 };
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
 
   constructor(private g: Chapter2Host, private d: Chapter2Deps) {
@@ -107,18 +104,15 @@ export class Chapter2 {
   }
 
   reset() {
-    const { room, annex, audio } = this.d;
+    const { audio } = this.d;
     this.active = false; this.started = false; this.ringing = false;
-    this.s = fresh(); this.anim = {};
+    this.s = fresh();
     if (audio.ctx) audio.stop('ring2');
-    room.setSouthDoor(0);
-    annex.zone.southDoor.enabled = false;
-    this.setCollider(this.doorCol, false);
   }
 
   private applyWorld() {
     const s = this.s;
-    if (s.door) { this.d.room.setSouthDoor(1); this.d.annex.zone.southDoor.enabled = true; this.setCollider(this.doorCol, true); }
+    if (s.door) this.d.doors.set('south', true, true); // a case from before the doors were free
     if (s.read.original) this.file(this.docOriginal());
     if (s.read.index) this.file(this.docIndex());
     if (s.read.amended) this.file(this.docAmended());
@@ -127,12 +121,6 @@ export class Chapter2 {
     if (s.p05) { this.file(this.docFinding05()); this.file(this.docAccess()); this.file(this.docMap()); }
   }
 
-  private setCollider(c: Collider, on: boolean) {
-    const list = this.d.colliders;
-    const i = list.indexOf(c);
-    if (on && i < 0) list.push(c);
-    if (!on && i >= 0) list.splice(i, 1);
-  }
   private file(doc: DocSpec) {
     const i = this.g.docs.findIndex((x) => x.id === doc.id);
     if (i >= 0) { this.g.docs[i] = doc; return false; }
@@ -205,24 +193,14 @@ export class Chapter2 {
     });
   }
 
-  // ---------- the corridor door (the prologue's doorSouth) ----------
-  southDoorLabel() {
-    if (this.s.door) return null;
-    return this.s.answered ? 'Open corridor door' : 'Corridor';
-  }
-  useSouthDoor() {
-    const { ui, audio, room, annex } = this.d;
-    if (this.s.door) return;
-    if (!this.s.answered) { ui.toast(this.ringing ? 'The phone first.' : 'Vending machine, restrooms, Dale\'s empty office.'); return; }
+  // ---------- the corridor door ----------
+  // The doors are free (world/Doors.ts); the case remembers that this one was opened.
+  doorChanged(id: string, open: boolean) {
+    if (!this.active || id !== 'south' || !open || this.s.door) return;
     this.s.door = true;
-    this.anim.door = this.g.gt;
-    annex.zone.southDoor.enabled = true;
-    this.setCollider(this.doorCol, true);
-    const at = this.pos(room.objs.doorSouth);
-    audio.play('switch', { gain: 0.5, at });
-    audio.play('thudSoft', { gain: 0.35, when: 0.6, at });
     this.save();
   }
+
 
   // ---------- the records room ----------
   private interactables() {
@@ -237,8 +215,6 @@ export class Chapter2 {
     inter.add({ id: 'vending', object: o.vending, label: () => on() ? 'Vending machine' : null, use: () => ui.toast('Cola, orange soda, peanut butter crackers. Somebody\'s dime is stuck in the coin return.') });
     inter.add({ id: 'officeDoor', object: o.officeDoor, label: () => on() ? 'Operations office' : null, use: () => ui.toast('Locked. Dale took the key home.') });
     inter.add({ id: 'restroomDoor', object: o.restroomDoor, label: () => on() ? 'Restrooms' : null, use: () => ui.toast('Not now.') });
-    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => this.exit ? this.exit.label() : on() ? 'Fire exit' : null,
-      use: () => this.exit ? this.exit.use() : ui.toast('The fire exit to the west lot. The push bar is alarmed, and the yard is easier by the east door.') });
   }
   private anyRead() { const r = this.s.read; return r.original || r.amended || r.lineage || r.index; }
 
@@ -282,13 +258,13 @@ export class Chapter2 {
     const { ui } = this.d;
     if (!this.anyRead()) { ui.toast('Nothing on the table yet. The records are on the shelves, the bookcase and in the card index.', 4); return; }
     const s = this.s;
-    if (!this.images.original) {
-      this.images = {
-        original: D.arrangement(true), amended: D.arrangement(false), index: D.sleeveMark(),
-        icons: { 'triangle-bar': D.markIcon('triangle-bar'), triangle: D.markIcon('triangle'), 'three-bars': D.markIcon('three-bars') },
-      };
-    }
+    // Each picture on its own: reading E07, E06 or E08 on the shelf already drew that one,
+    // and the mark icons were then never drawn, which left P05 an empty page.
     const im = this.images;
+    im.original ??= D.arrangement(true);
+    im.amended ??= D.arrangement(false);
+    im.index ??= D.sleeveMark();
+    im.icons ??= { 'triangle-bar': D.markIcon('triangle-bar'), triangle: D.markIcon('triangle'), 'three-bars': D.markIcon('three-bars') };
     const page: P.ArchivePage = s.p05 ? 'route' : s.p04 ? (s.read.lineage && s.read.index ? 'route' : s.read.lineage ? 'index' : 'lineage') : s.read.original && s.read.amended ? 'compare' : s.read.original ? 'original' : s.read.amended ? 'amended' : s.read.lineage ? 'lineage' : 'index';
     P.archive(ui, {
       page,
@@ -423,12 +399,6 @@ export class Chapter2 {
   update(dt: number, _t: number) {
     if (!this.active) return;
     const { room, ui, player, annex } = this.d;
-    const gt = this.g.gt;
-    if (this.anim.door !== undefined) {
-      const k = Math.min(1, (gt - this.anim.door) / DOOR_TIME);
-      room.setSouthDoor(1 - Math.pow(1 - k, 3));
-      if (k >= 1) this.anim.door = undefined;
-    }
     const z = annex.zone.records, p = player.pos;
     if (!this.s.entered && p.x >= z.minX && p.x <= z.maxX && p.z >= z.minZ && p.z <= z.maxZ) {
       this.s.entered = true;

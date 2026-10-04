@@ -207,6 +207,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
   background-image: linear-gradient(to right, transparent 9.5%, rgba(200,70,70,.45) 9.5%, rgba(200,70,70,.45) 9.8%, transparent 9.8%),
                     repeating-linear-gradient(to bottom, transparent 0 31px, rgba(80,110,170,.28) 31px 32px);
   background-position: 0 0, 0 58px; overflow: hidden; }
+.page.on-paper { background-size: cover; background-position: center; background-color: var(--paper); }
+.page.on-paper .hand { color: #24324a; text-shadow: 0 0 1px rgba(36,50,74,.25); }
+.page.on-paper.wide { width: min(640px, 100%); padding: 7% 7% 5% 12%; transform: rotate(-1.2deg); }
+.page.on-paper.wide .hand { font-size: clamp(14px, 1.6vw, 19px); line-height: 1.32; }
 .page .hand { font-family: var(--hand); font-size: clamp(20px, 2.5vw, 30px); line-height: 32px; white-space: pre-line; }
 .page .stamp { position: absolute; right: 8%; top: 5%; font-family: var(--type); font-size: 13px; color: #8b2d2d; border: 2px solid #8b2d2d; padding: 2px 8px; transform: rotate(6deg); opacity: .8; }
 .page.printout { aspect-ratio: auto; padding: 22px 34px; color: #26262a; transform: rotate(1.4deg);
@@ -417,6 +421,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .lp-figure { margin: 0; }
 .lp-figure img { display: block; width: 100%; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,.45); }
 .lp-figure figcaption { font-family: var(--type); font-size: 14px; line-height: 1.6; color: #cfc8b5; margin-top: 10px; }
+/* the signal processor on the control room rack */
+.dsp-scope { display: block; width: 100%; height: auto; max-height: 120px; margin: 4px 0 10px; border: 1px solid rgba(140,255,164,.25); image-rendering: pixelated; }
+.dsp-knobs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 10px 0; }
+.dsp-knobs label { display: grid; gap: 6px; font-family: var(--term); font-size: 19px; color: #f0e7d0; }
+.dsp-knobs label span { color: var(--amber); }
+.dsp-knobs input[type=range] { width: 100%; min-height: 32px; accent-color: #c9d6c2; }
+.dsp-mode { width: auto; margin-top: 0; }
+@media (max-width: 760px) { .dsp-knobs { grid-template-columns: 1fr; gap: 6px; } }
 /* chapter four: the conversation in room 6 */
 .talk-lines { display: grid; gap: 8px; margin: 4px 0 14px; padding: 12px 14px; border-left: 2px solid rgba(255,183,164,.5); background: rgba(255,200,150,.035); }
 .talk-line { margin: 0; font-size: 16.5px; line-height: 1.5; color: #f0e7d0; }

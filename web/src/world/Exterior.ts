@@ -177,30 +177,21 @@ export class Exterior {
     this.group.add(g);
   }
 
+  // Sierra Motor Court itself is world/MotelFront.ts (Codex, chapter four); only its road
+  // sign stands here. The sign is double-faced: the back is the same picture, not mirrored.
   private motel() {
     const g = new THREE.Group();
-    const face = floodlit(new THREE.MeshStandardMaterial({ map: T.motelFacade(), roughness: 0.9 }), 0.05);
-    const wall = floodlit(new THREE.MeshStandardMaterial({ color: 0x8f6c4b, roughness: 0.95 }), 0.05);
-    const mats = [face, wall, M.concrete, M.concrete, wall, wall];
-    const b = box(g, 7, 3.2, 44, mats, -46, 1.0, 46);
-    b.rotation.y = 0;
-    // the facade texture is mapped to +X (facing the road)
-    noMerge(b);
-    box(g, 9, 0.3, 45, M.concrete, -44.5, 2.75, 46); // canopy
-    for (let z = 26; z <= 66; z += 5) cyl(g, 0.08, 0.08, 3.2, M.pole, -40.4, 1.0, z, 6);
-    addFlood(-40, 2.4, 36, 8, 0xffc070); addFlood(-40, 2.4, 56, 8, 0xffc070);
-    // parked sedan
-    const car = floodlit(new THREE.MeshStandardMaterial({ color: 0x8a8273, roughness: 0.4, metalness: 0.4 }), 0.05);
-    box(g, 2.0, 0.7, 4.6, car, -37.5, -0.15, 34);
-    box(g, 1.8, 0.55, 2.4, car, -37.5, 0.45, 34.2);
-    box(g, 1.82, 0.4, 2.2, M.darkPlastic, -37.5, 0.48, 34.2);
-    // sign
     cyl(g, 0.22, 0.22, 9, M.pole, -31.5, 3.9, 30, 8);
     cyl(g, 0.22, 0.22, 9, M.pole, -29.3, 3.9, 30, 8);
-    const sierra = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 7.8), new THREE.MeshBasicMaterial({ map: artTexture('sierra'), transparent: true, alphaTest: 0.02, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
-    sierra.name = 'Sierra Motor Court';
-    sierra.position.set(-30.4, 5.8, 30.2); sierra.rotation.y = Math.PI / 2 - 0.5;
-    noMerge(sierra); g.add(sierra);
+    const face = (back: boolean) => {
+      const map = back ? artTexture('sierra').clone() : artTexture('sierra');
+      if (back) { map.wrapS = THREE.RepeatWrapping; map.repeat.x = -1; map.offset.x = 1; map.needsUpdate = true; }
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 7.8), new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.02, depthWrite: false, side: back ? THREE.BackSide : THREE.FrontSide, toneMapped: false }));
+      m.name = back ? 'Sierra Motor Court (back)' : 'Sierra Motor Court';
+      m.position.set(-30.4, 5.8, 30.2); m.rotation.y = Math.PI / 2 - 0.5;
+      noMerge(m); g.add(m);
+    };
+    face(false); face(true);
     addFlood(-29, 6, 32, 18, 0xff4a35); addFlood(-29, 4, 32, 6, 0x50f0d8);
     mergeStatic(g);
     this.group.add(g);

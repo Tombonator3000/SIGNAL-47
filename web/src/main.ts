@@ -23,6 +23,7 @@ import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
 import { initArtMaterials } from './world/kit';
 import { World } from './world/World';
+import { Doors } from './world/Doors';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -122,6 +123,18 @@ async function boot() {
     audio.play('step' + Math.floor(Math.random() * 3), { gain: out ? 0.26 : 0.22, rate: (out ? 0.82 : 0.94) + Math.random() * 0.12 });
     if (out) audio.grit(0.045);
   };
+  // SARO's doors open and shut at any time of the night (world/Doors.ts)
+  const doors = new Doors({ inter, audio, colliders, player, toast: (text, secs) => ui.toast(text, secs), busy: () => game.cinematic || !!ui.modal });
+  doors.add({ id: 'east', inter: 'doorEast', name: 'service door', proxy: room.objs.doorEast, set: (k) => room.setDoor(k),
+    zones: [yard.zone.eastDoor], leaf: { minX: 6.06, maxX: 7.0, minZ: 1.08, maxZ: 1.18 } });
+  doors.add({ id: 'south', inter: 'doorSouth', name: 'corridor door', proxy: room.objs.doorSouth, set: (k) => room.setSouthDoor(k),
+    zones: [annex.zone.southDoor], leaf: { minX: -1.99, maxX: -1.87, minZ: 4.72, maxZ: 5.66 }, sound: 'light' });
+  doors.add({ id: 'lab', inter: 'labDoor', name: 'lab door', proxy: yard.objs.labDoor, set: (k) => { yard.labDoorHinge.rotation.y = -k * Math.PI / 2; },
+    zones: [yard.zone.labDoor], leaf: { minX: 12.8, maxX: 13.75, minZ: -0.78, maxZ: -0.68 } });
+  doors.add({ id: 'exit', inter: 'exitDoor', name: 'the fire exit', proxy: annex.objs.exitDoor, set: (k) => annex.setExitDoor(k),
+    zones: [annex.zone.exitDoor], leaf: annex.exitLeafCol });
+  room.setDoorLock(true);
+  const motelOffice = world.motel.zones.find((z) => z.id === 'office')!;
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
     view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
@@ -137,8 +150,10 @@ async function boot() {
       area: () => world.area, room: () => world.room6, court: () => world.court,
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
     },
+    doors,
     milestone: () => requestAutosave(true),
   });
+  doors.onChange = (id, open) => { game.doorChanged(id, open); if (mode === 'play' && !restoringNow) requestAutosave(false); };
   // a new safe point (02:13, a new chapter) starts a new autosave generation
   game.onCheckpoint = () => requestAutosave(true);
   const ch1 = game.ch1;
@@ -336,6 +351,7 @@ async function boot() {
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     game.start(o.state?.checkpoint ?? o.jump);
+    if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
@@ -356,7 +372,7 @@ async function boot() {
     fcam.raise(false); ui.viewfinder(false);
     ui.close(true);
     endEl?.remove(); endEl = null;
-    if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); }
+    if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); }
     world.stopDriving();
     game.reset();
     world.enter('saro');
@@ -374,6 +390,7 @@ async function boot() {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
+    if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.crossing.outside(p)) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
@@ -400,7 +417,7 @@ async function boot() {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area,
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(),
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -435,7 +452,7 @@ async function boot() {
     ui.close(true);
     ui.showHud(false, input.touchMode);
     endEl?.remove(); endEl = null;
-    if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); }
+    if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); }
     world.stopDriving();
     game.reset();
     world.enter('saro');
@@ -533,7 +550,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors,
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -603,9 +620,10 @@ async function boot() {
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
+      doors.update(dt);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
-      const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' ? (world.indoors(player.pos) ? 'room' : 'yard') : spaceOf(player.pos);
+      const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
       annex.interior.visible = world.area === 'saro' && (indoors.slice(1).some((b) => inside(b, player.pos))

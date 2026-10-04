@@ -53,6 +53,8 @@ export class ControlRoom {
   southDoorHinge!: THREE.Object3D;
   doorLight!: THREE.Mesh;
   fieldCamera!: THREE.Group;
+  dspScreen!: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; tex: THREE.CanvasTexture };
+  reels: THREE.Object3D[] = [];
   spawn = { x: 1.55, z: 3.7, yaw: -0.22 };
   bounds = { minX: -5.75, maxX: 5.75, minZ: -4.22, maxZ: 4.22 };
 
@@ -344,6 +346,47 @@ export class ControlRoom {
     this.lever = arm;
     this.group.add(lev);
     this.objs.rack = lev;
+
+    // the signal processor: a short rack between RX bank 3 and the printer, with the
+    // processor unit (its display is drawn while it plays) and a reel-to-reel deck on top
+    const dsp = new THREE.Group();
+    dsp.position.set(5.72, 0, -1.55);
+    box(dsp, 0.5, 0.95, 0.62, M.cabinet, 0, 0.475, 0);
+    const front = T.canvasTex(512, 160, (g, w, h) => {
+      g.fillStyle = '#26292b'; g.fillRect(0, 0, w, h);
+      g.fillStyle = '#3a3e40'; g.fillRect(6, 6, w - 12, h - 12);
+      g.fillStyle = '#d9d2bf'; g.font = '600 22px Oswald'; g.textBaseline = 'top';
+      g.fillText('SIGNAL PROCESSOR', 22, 18);
+      g.font = '15px Oswald'; g.fillStyle = '#9fa4a0'; g.fillText('DSP-4   HARMONIC / TIME', 22, 46);
+      g.fillStyle = '#0b0f0d'; g.fillRect(260, 20, 220, 64); // the display goes here
+      for (let i = 0; i < 6; i++) { g.fillStyle = i === 0 ? '#b3261e' : '#c9c1a8'; g.fillRect(24 + i * 38, 104, 26, 18); }
+      g.fillStyle = '#9fa4a0'; g.font = '12px Oswald';
+      ['PLAY', 'RAW', 'HARM', 'PITCH', 'TIME', 'SPACE'].forEach((l, i) => g.fillText(l, 24 + i * 38, 128));
+    });
+    plane(dsp, 0.6, 0.19, new THREE.MeshStandardMaterial({ map: front, roughness: 0.55 }), -0.252, 0.83, 0, -Math.PI / 2);
+    const scr = document.createElement('canvas'); scr.width = 256; scr.height = 72;
+    this.dspScreen = { canvas: scr, ctx: scr.getContext('2d')!, tex: new THREE.CanvasTexture(scr) };
+    this.dspScreen.tex.colorSpace = THREE.SRGBColorSpace;
+    const screen = plane(dsp, 0.255, 0.075, new THREE.MeshBasicMaterial({ map: this.dspScreen.tex, toneMapped: false }), -0.254, 0.848, -0.077, -Math.PI / 2);
+    noMerge(screen);
+    cyl(dsp, 0.035, 0.035, 0.03, M.darkPlastic, -0.262, 0.78, -0.2, 16).rotation.z = Math.PI / 2;
+    // the deck: two reels on the front, a head block between them
+    box(dsp, 0.3, 0.52, 0.6, M.beigeDark, 0.08, 1.21, 0);
+    box(dsp, 0.02, 0.48, 0.56, M.darkPlastic, -0.075, 1.21, 0);
+    box(dsp, 0.04, 0.06, 0.12, M.steel, -0.09, 1.05, 0);
+    this.reels = [-0.15, 0.15].map((z) => {
+      const reel = new THREE.Group();
+      reel.position.set(-0.1, 1.29, z);
+      const disc = cyl(reel, 0.115, 0.115, 0.012, M.steel, 0, 0, 0, 20); disc.rotation.z = Math.PI / 2;
+      const tape = cyl(reel, 0.07, 0.07, 0.016, new THREE.MeshStandardMaterial({ color: 0x3a2a1c, roughness: 0.6 }), -0.004, 0, 0, 18); tape.rotation.z = Math.PI / 2;
+      for (let k = 0; k < 3; k++) box(reel, 0.016, 0.02, 0.17, M.darkPlastic, -0.01, 0, 0).rotation.x = k * Math.PI / 3;
+      noMerge(reel); dsp.add(reel);
+      return reel;
+    });
+    this.col(5.4, 6, -1.92, -1.18);
+    mergeStatic(dsp);
+    this.group.add(dsp);
+    this.objs.decoder = dsp;
 
     // printer table and dot matrix printer
     box(st, 0.72, 0.04, 1.15, M.deskTop, 5.6, 0.72, -0.4);

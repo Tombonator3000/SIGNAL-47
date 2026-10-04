@@ -150,7 +150,13 @@ async def main():
         check('p04' in await docs(), 'P04 finding filed')
 
         # ---------- P05 ----------
+        # a player who read E07 on the shelf before laying out the table has only that picture
+        # drawn; the table must still draw the mark icons (the P05 page was empty otherwise)
+        await pg.click('.labpanel .lp-close'); await tick(0.1)
+        await ev("S47.ch2.images = { original: S47.ch2.images.original }")
+        await use('workTable'); await tick(0.1)
         await pg.click('.labpanel [data-p=route]')
+        check(await ev("document.querySelectorAll('.labpanel [data-g]').length") == 9, 'P05 page shows its choices also when E07 was read before the table')
         async def choose(g, k): await pg.click(f'.labpanel [data-g={g}][data-k="{k}"]')
         await choose('destination', 'old-survey-station'); await choose('survey', '-39 LY AS A YEAR CODE'); await choose('marker', 'triangle-bar')
         await pg.click('.labpanel [data-a=record]')

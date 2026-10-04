@@ -3,8 +3,7 @@ import type { DocSpec, UI } from '../ui/UI';
 import type { AudioSys } from '../core/Audio';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
-import type { Collider } from '../world/ControlRoom';
-import type { RecordsAnnex } from '../world/Annex';
+import type { Doors } from '../world/Doors';
 import type { Room6 } from '../world/Room6';
 import type { CourtSite } from '../world/Crossing';
 import type { Chapter1 } from './Chapter1';
@@ -12,6 +11,7 @@ import type { Chapter2 } from './Chapter2';
 import type { Chapter3, AreaId } from './Chapter3';
 import * as P from '../ui/Panels';
 import { clockText } from './time';
+import { artUrl } from '../core/art';
 
 // Chapter four, "Room 6" (K4 in the design bible). N. Vega is waiting in room 6 at Sierra
 // Motor Court, across the highway from SARO. The player walks there from the fire exit at
@@ -69,7 +69,7 @@ export interface Chapter4Host {
 
 export interface Chapter4Deps {
   ui: UI; audio: AudioSys; player: Player; inter: Interaction;
-  annex: RecordsAnnex; colliders: Collider[];
+  doors: Doors;
   ch1: Chapter1; ch2: Chapter2; ch3: Chapter3;
   motel: Motel;
   save: () => void;
@@ -124,7 +124,6 @@ export class Chapter4 {
   private panel: { refresh: () => void } | null = null;
   private roomBound = false;
   private courtBound = false;
-  private exitT = -1;
   private headYaw = 0;
 
   constructor(private g: Chapter4Host, private d: Chapter4Deps) {}
@@ -141,7 +140,6 @@ export class Chapter4 {
       expose: () => {},
       rejected: () => {},
     };
-    this.d.ch2.exit = { label: () => this.exitLabel(), use: () => this.useExit() };
     this.bindCourt();
     this.applyWorld();
     if (!saved) {
@@ -153,12 +151,10 @@ export class Chapter4 {
 
   reset() {
     this.active = false; this.started = false;
-    this.s = fresh(); this.lines = []; this.mode = 'menu'; this.reply = null; this.panel = null; this.exitT = -1;
-    this.d.ch2.exit = null;
-    this.d.annex.setExitDoor(0);
-    this.setLeaf(false);
+    this.s = fresh(); this.lines = []; this.mode = 'menu'; this.reply = null; this.panel = null;
     const brick = this.d.motel.brick(); if (brick) brick.visible = false;
     this.d.motel.court().setRoom6Light?.(true);
+    this.setLeaf(0);
     const room = this.d.motel.room();
     if (room) { for (const k of ['fieldCard', 'letter', 'correction']) { const o = room.objs[k]; if (o) o.visible = false; } room.setLamp(true); }
   }
@@ -166,9 +162,9 @@ export class Chapter4 {
   // Puts the world in the state of this.s (after begin, and when room 6 has loaded).
   private applyWorld() {
     const s = this.s;
-    this.d.annex.setExitDoor(s.exitOpen ? 1 : 0);
-    this.setLeaf(s.exitOpen);
-    const brick = this.d.motel.brick(); if (brick) brick.visible = s.exitOpen;
+    if (s.exitOpen) this.d.doors.set('exit', true, true); // a case from before the doors were saved
+    const brick = this.d.motel.brick(); if (brick) brick.visible = this.d.doors.isOpen('exit');
+    this.setLeaf(s.stage === 'complete' ? 0 : 0.35);   // her door stands ajar while she waits
     const room = this.d.motel.room();
     if (room) {
       const o = room.objs;
@@ -203,7 +199,7 @@ export class Chapter4 {
     const room = this.inRoom();
     switch (s.stage) {
       case 'to-motel':
-        if (!s.exitOpen && this.d.motel.area() === 'saro') return 'SIERRA MOTOR COURT // ROOM 6 IS ACROSS THE ROAD. THE FIRE EXIT IS AT THE END OF THE SOUTH CORRIDOR';
+        if (!this.d.doors.isOpen('exit') && this.d.motel.area() === 'saro') return 'SIERRA MOTOR COURT // ROOM 6 IS ACROSS THE ROAD. THE FIRE EXIT IS AT THE END OF THE SOUTH CORRIDOR';
         return 'SIERRA MOTOR COURT // CROSS THE ROAD TO ROOM 6';
       case 'room':
         if (!room) return 'SIERRA MOTOR COURT // N. VEGA IS STILL WAITING IN ROOM 6';
@@ -236,29 +232,22 @@ export class Chapter4 {
     return t;
   }
 
-  // ---------- the fire exit and the road ----------
-  private exitLabel() {
-    if (!this.active) return null;
-    return this.s.exitOpen ? 'Fire exit (propped open)' : 'Open the fire exit';
+  // The door of room 6 on the motel's front (MotelFront's hinged leaf): 0 shut, 1 open.
+  private setLeaf(k: number) {
+    const leaf = this.d.motel.court().objs.room6DoorLeaf;
+    if (leaf) leaf.rotation.y = k * Math.PI / 2;
   }
-  private useExit() {
-    const { ui, audio, annex } = this.d;
-    if (this.s.exitOpen) { ui.toast('Propped open with a brick. The road is past the end of the ramp.', 3.2); return; }
+
+  // ---------- the fire exit ----------
+  // The doors are free (world/Doors.ts). Opened in this chapter, a brick props the fire exit.
+  doorChanged(id: string, open: boolean) {
+    if (id !== 'exit') return;
+    const brick = this.d.motel.brick();
+    if (brick) brick.visible = open;
+    if (!this.active || !open || this.s.exitOpen) return;
     this.s.exitOpen = true;
-    this.exitT = this.g.gt;
-    const at = this.pos(annex.objs.exitDoor);
-    audio.play('switch', { gain: 0.6, rate: 0.7, at });
-    audio.play('thudSoft', { gain: 0.4, when: 0.5, at });
-    ui.toast('The alarm on the push bar was disconnected years ago. You prop the door with the brick on the step.', 4.2);
-    this.g.after(0.9, () => { const b = this.d.motel.brick(); if (b) b.visible = true; });
-    this.setLeaf(true);
+    this.d.ui.toast('The alarm on the push bar was disconnected years ago. A brick on the step holds the door.', 4.2);
     this.save();
-  }
-  private setLeaf(open: boolean) {
-    const cols = this.d.colliders, c = this.d.annex.exitLeafCol;
-    const i = cols.indexOf(c);
-    if (open && i < 0) cols.push(c);
-    if (!open && i >= 0) cols.splice(i, 1);
   }
 
   // The motel's front: room 6 (and, with MotelFront.ts, the office).
@@ -274,6 +263,7 @@ export class Chapter4 {
       use: () => {
         if (!this.active) { ui.toast('Room 6. There is a light behind the curtains.', 3); return; }
         if (this.s.stage === 'complete') { ui.toast('The light is still on. She said what she had to say.', 3.2); return; }
+        this.setLeaf(1);
         this.d.motel.goIn();
       } });
     const extra = (id: string, label: string, text: string) => {
@@ -284,7 +274,11 @@ export class Chapter4 {
     extra('keyBoard', 'Key board', 'Ten hooks with brass tags. The hook for 6 is empty.');
     extra('officePhone', 'Field telephone', 'An oak wall telephone with a crank. The cable runs out through the back wall and on to STATION 01.');
     extra('envelope', 'Sealed envelope', 'An envelope addressed to T. Vega, care of Sierra Motor Court. Postmarked July 1947, never opened.');
-    extra('message', 'A note on the counter', '"Room 6. The door is open. N."');
+    if (px.message) inter.add({ id: 'court:message', object: px.message, label: () => on() ? 'A note on the counter' : null,
+      use: () => {
+        ui.toast('In pencil, on the back of a bill: "Room 6. The door is open. N."', 4);
+        if (this.active && !this.g.notes.some((x) => x.includes('the back of a bill'))) this.g.note('A note on the office counter, in pencil on the back of a bill: "Room 6. The door is open. N."');
+      } });
     extra('otherDoors', 'Motel room', 'Dark. Nobody else is staying tonight.');
     extra('iceMachine', 'Ice machine', 'It hums. Nobody has opened it in a while.');
     extra('car', 'Parked car', 'A dusty sedan with New Mexico plates. Her car, by the look of the survey stakes on the back seat.');
@@ -334,6 +328,7 @@ export class Chapter4 {
   // Called by World when the player has stepped out of room 6.
   leftRoom() {
     if (!this.active) return;
+    this.setLeaf(this.s.stage === 'leave' ? 0 : 0.35);
     if (this.s.stage === 'leave') this.finish();
   }
 
@@ -711,11 +706,11 @@ export class Chapter4 {
 
   // ---------- documents ----------
   private docCard(): DocSpec {
-    return { id: 'e11', title: 'E11 / T. Vega, last observation card', kind: 'hand', stamp: 'E11', page: CARD,
+    return { id: 'e11', title: 'E11 / T. Vega, last observation card', kind: 'hand', stamp: 'E11', page: CARD, paper: artUrl('cardField'), paperRatio: 1.6,
       transcript: 'A field card in pencil, from Tomás Vega\'s coat. She has kept it for thirty-nine years.\n\nThe first half separates opening the lamp from masking C. The second half says how the last reading must be taken, and who should not take it.' };
   }
   private docLetter(): DocSpec {
-    return { id: 'e13', title: 'E13 / A letter from T. Vega, 1947', kind: 'hand', stamp: 'E13', page: LETTER,
+    return { id: 'e13', title: 'E13 / A letter from T. Vega, 1947', kind: 'hand', stamp: 'E13', page: LETTER, paper: artUrl('letterPaper'), paperRatio: 0.75,
       transcript: 'Tomás to his sister, the day before the last observation. No instrument language. The spare key is the key to the field hut.' };
   }
   private docCorrection(): DocSpec {
@@ -734,12 +729,6 @@ export class Chapter4 {
   // ---------- per frame ----------
   update(_dt: number, _t: number) {
     if (!this.active) return;
-    // the fire exit swings out
-    if (this.exitT >= 0) {
-      const k = Math.min(1, (this.g.gt - this.exitT) / 0.8);
-      this.d.annex.setExitDoor(1 - (1 - k) * (1 - k));
-      if (k >= 1) this.exitT = -1;
-    }
     // N. Vega turns her head to whoever is in the room with her
     const room = this.d.motel.room();
     const head = room?.objs.noraHead;

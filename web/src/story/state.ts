@@ -11,6 +11,7 @@ export interface GameState {
   case: SavedCase | null;
   area: string;         // 'saro' | 'station01' (a save is never made on the road)
   pose: { x: number; z: number; yaw: number; pitch: number } | null;
+  doors?: Record<string, boolean>;   // open doors at SARO (saves from before 4 October 2026 have none)
 }
 
 const CHAPTERS: Record<string, string> = {

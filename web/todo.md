@@ -13,9 +13,11 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Fra Tom 4. oktober ettermiddag (i arbeid, i denne rekkefølgen)
 
-- [ ] **Fri bevegelse:** alle dører kan åpnes og lukkes når som helst, ingen kapitler stenger spilleren inne (kodet i `world/Doors.ts`, testes).
-- [ ] **Signalet som i «Contact»:** suset går over i pulserende struktur, tunge slag i 4/7-mønsteret og en metallisk hvin, tydeligere jo nærmere 1420.405 (kodet i `core/signalVoice.ts`, testes).
-- [ ] **Signalprosessoren** ved RX bank 3 spiller båndet av, rått eller harmonisert, nesten som musikk (kodet i `core/decoder.ts` og `story/Decoder.ts`, testes).
+- [x] **Fri bevegelse:** alle dører kan åpnes og lukkes når som helst, ingen kapitler stenger spilleren inne (`world/Doors.ts`).
+- [x] **Signalet som i «Contact»:** suset går over i pulserende struktur, tunge slag i 4/7-mønsteret og en metallisk hvin, tydeligere jo nærmere 1420.405 (`core/signalVoice.ts`).
+- [x] **Signalprosessoren** ved RX bank 3 spiller båndet av, rått eller harmonisert, nesten som musikk (`core/decoder.ts` og `story/Decoder.ts`).
+- [x] **Motellet fra Codex (PR #39) koblet inn:** plassen, gangveien, kontoret med lappen fra Nora, rom 6 ved z 55, innkjørselsrampe fra veien, rundt skilt med riktig bakside, de seks bildene i runde 7.
+- [x] P05-siden på arkivbordet var tom hvis E07 ble lest i hylla før bordet ble åpnet (merkeikonene ble aldri tegnet). Rettet, med egen sjekk i `chapter2.py`.
 - [ ] **Rom 6:** TV-en står på med sus som lyser opp rommet i blått og flimrer.
 - [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12.
 - [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
@@ -23,6 +25,12 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] **Journal med faner:** oppgaver, notater, dokumenter, bilder, personer, steder og signaler. Oppføringene låses opp etter hvert.
 - [ ] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
 - [ ] Voices of the Void: idéer som passer er samlet i loggen 4. oktober (signalbibliotek, vedlikeholdsturer, basen som hjem). Ikke tilfeldige overnaturlige hendelser.
+
+## Fra Tom 4. oktober kveld (neste runder)
+
+- [ ] **Bevisbord i stedet for faner (Tom: «knotete og vanskelig å forstå»).** Et korkbord / arbeidsbord der bevisene ligger som kort og bilder. Spilleren drar dem fritt rundt og trekker en rød tråd mellom to bevis. En tråd mellom to ting som faktisk henger sammen gir en ny lapp på bordet (for eksempel E07 + E06 gir «C er fjernet»); feil kobling får et kort svar og tråden slakker av. Funnene (P04 og videre) registreres ved å koble sammen, ikke ved å velge blant tre setninger. Samme bord brukes i alle kapitler og samler alt fra journalen. Må gå med mus og berøring.
+- [ ] **VHS / X-Files-etterbehandling:** ett fullskjermspass etter at scenen er tegnet: litt lavere oppløsning, fargegradering (knuste svarte, grønnblå skygger, varme lys), lett kromatisk forskyvning ytterst, støy og sporingslinjer, glød rundt sterke lys. Valg i innstillingene (av, mild, full) og av på svake telefoner. Camcorder-modus med REC, dato og klokke når kameraet er oppe.
+- [ ] **Bilen stopper (abduksjonsscenen):** på Roswell-veien dør motoren der C krysser veien (regel R1, ser tilfeldig ut for spilleren). Lys over bilen, lyset blinker i 4/7, hvitt, så svart. Spilleren våkner i bilen med tapt tid (klokka har hoppet), bilen står vendt en annen vei. Ingen tydelig romvesen i bildet; høyst en skikkelse i motlys, uklar. Må avgjøres med Tom før den bygges.
 
 ## Neste
 

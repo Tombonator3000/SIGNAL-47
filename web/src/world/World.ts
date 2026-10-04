@@ -9,6 +9,7 @@ import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
 import { Crossing, type CourtSite } from './Crossing';
+import { MotelFront } from './MotelFront';
 import { flood as siteFlood } from './kit';
 import { loadArtFor } from '../core/art';
 
@@ -69,6 +70,7 @@ export class World {
   room6: Room6 | null = null;
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
+  motel: MotelFront;
   court: CourtSite;
   saroTruck: Truck | null = null;
   /** Tests steer the truck through this instead of the keys (tools/chapter3.py): fixed
@@ -88,11 +90,16 @@ export class World {
     // the walk over the road belongs to SARO: built now, shown and walked with SARO
     const c = new Crossing();
     this.crossing = c;
-    this.court = c.court;
-    d.scene.add(c.group);
-    d.saro.groups.push(c.group);
-    d.saro.zones.push(...c.zones);
-    d.saro.colliders.push(...c.colliders);
+    // Sierra Motor Court from the outside, and its office (MotelFront.ts, by Codex)
+    const m = new MotelFront();
+    this.motel = m;
+    this.court = m;
+    for (const part of [c, m]) {
+      d.scene.add(part.group);
+      d.saro.groups.push(part.group);
+      d.saro.zones.push(...part.zones);
+      d.saro.colliders.push(...part.colliders);
+    }
     d.player.floor = c.floorAt;
   }
 
@@ -368,6 +375,7 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
+    if (this.area === 'saro') this.motel.update(dt, t);
     if (this.area === 'road' && this.road && this.drive && this.truck) {
       if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
       if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
