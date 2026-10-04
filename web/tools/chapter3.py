@@ -36,22 +36,21 @@ STAND = """((key, d, dy) => { const s = S47.world.site, p = S47.player, r = p.ra
   return null; })"""
 # An autopilot for the truck: aims at the next waypoint of road.route, slows down for bends,
 # on gravel and before the gate. Positive steer turns right; heading h faces (-sin h, -cos h).
-AUTOPILOT = """(() => { const w = S47.world, r = w.road, d = w.drive, route = r.route; let i = 0;
-  const ang = (a, b) => Math.atan2(-(b.x - a.x), -(b.z - a.z));
-  const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+# An autopilot for the truck (the path follower from the drive preview): pure pursuit along
+# road.route with a look-ahead that grows with speed, slow for the turn-off and the gate.
+# Positive steer turns right; heading h faces (-sin h, -cos h).
+AUTOPILOT = """(() => { const w = S47.world, road = w.road, drive = w.drive, R = road.route, o = road.group.position; let wp = 0;
   w.testInput = () => {
-    const p = d.pos;
-    while (i < route.length - 1 && Math.hypot(route[i].x - p.x, route[i].z - p.z) < 10) i++;
-    const err = wrap(ang(p, route[i]) - d.heading);
-    const a = route[Math.min(route.length - 1, i)], b = route[Math.min(route.length - 1, i + 1)], c = route[Math.min(route.length - 1, i + 2)];
-    const bend = Math.abs(wrap(ang(b, c) - ang(a, b))) + Math.abs(err);
-    const end = route[route.length - 1], left = Math.hypot(end.x - p.x, end.z - p.z);
-    let want = d.surface.kind === 'asphalt' ? 15 : 9;
-    if (bend > 0.3) want = Math.min(want, 6);
-    if (left < 60) want = Math.min(want, 4);
-    const v = d.speed;
-    const throttle = v < want - 0.5 ? 1 : v > want + 1.5 ? -0.5 : 0.12;
-    return { steer: Math.max(-1, Math.min(1, -err * 2.4)), throttle };
+    const p = drive.pos;
+    for (let i = wp; i < Math.min(R.length, wp + 20); i++) if (R[i].distanceToSquared(p) < R[wp].distanceToSquared(p)) wp = i;
+    const ahead = 7 + Math.abs(drive.speed) * 0.8;
+    let tg = R[R.length - 1];
+    for (let i = wp; i < R.length; i++) if (R[i].distanceTo(p) > ahead) { tg = R[i]; break; }
+    let err = Math.atan2(-(tg.x - p.x), -(tg.z - p.z)) - drive.heading;
+    err = Math.atan2(Math.sin(err), Math.cos(err));
+    const lx = p.x - o.x, lz = p.z - o.z, dEnd = p.distanceTo(road.end.pos);
+    const vT = lx > -7 ? (lz < 400 ? 25 : 6) : dEnd > 70 ? 14 : Math.max(0, (dEnd - 4) / 4);
+    return { steer: Math.max(-1, Math.min(1, -err * 2.2)), throttle: Math.max(-1, Math.min(1, (vT - drive.speed) * 0.6)) };
   }; })()"""
 checks = []
 def check(ok, what):
