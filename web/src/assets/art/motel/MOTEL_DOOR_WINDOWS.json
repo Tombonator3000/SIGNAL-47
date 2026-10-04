@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-04",
+  "project": "SIGNAL / 47",
+  "scope": "Runde 7: tekstfri motelldør og matchende tente/slukkede vinduer",
+  "generator": {
+    "tool": "built-in image_gen",
+    "exact_model": "Ikke eksponert eller bekreftet av verktøyet.",
+    "external_api": false,
+    "calls": 3
+  },
+  "references": [
+    {
+      "path": "web/ART_BRIEF.md",
+      "sha256": "502a18d5590ba95a637bba05e3df8f8446c84832ac5f7747008bcb9d60428632",
+      "git_ref": "db47e04b95602bb81c96df3734ba934ce5fd44d0",
+      "role": "Gjeldende filnavn, mål og innholdsbrief."
+    },
+    {
+      "path": "web/src/assets/art/concept/sierra_court.jpg",
+      "sha256": "f817d253f41df000067e4fdcb4416182a398b2e08357bcd57fa9c95a55e8c930",
+      "git_ref": "db47e04b95602bb81c96df3734ba934ce5fd44d0",
+      "role": "Visuelt inspisert stilreferanse. Ikke brukt som direkte bildeinput til generatoren."
+    }
+  ],
+  "rights": {
+    "origin": "Originalgrafikk generert for prosjektet med innebygd bildeverktøy. Kun prosjektets konsept er inspisert som stilgrunnlag; ingen eksterne fotografier brukt.",
+    "note": "Ingen bestemt generatormodell eller separat tredjepartslisens påstås."
+  },
+  "postprocess": {
+    "tool": "Pillow",
+    "allowed_operations": [
+      "RGB-konvertering",
+      "LANCZOS skalering av hele bildet",
+      "JPEG eksport kvalitet 85",
+      "Innbygging av sRGB ICC-profil",
+      "Side-ved-side QA av vindusparet"
+    ],
+    "image_content_editing_by_code": false,
+    "cropping": false,
+    "colour_assumption": "Profilfrie genererte RGB-kilder behandlet som sRGB. Ingen fargekorrigering, håndmalt innhold, forskyvning eller retusjering utført."
+  },
+  "assets": [
+    {
+      "path": "web/src/assets/art/motel/door_room_blank.jpg",
+      "sha256": "ba26a326824c4cbee819880f99f66707023370a35eee5438d3ad89645bbde439",
+      "bytes": 66843,
+      "size": [
+        512,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "door",
+      "world_scale_metres": [
+        0.92,
+        2.03
+      ],
+      "export": {
+        "source_size": [
+          887,
+          1774
+        ],
+        "output_size": [
+          512,
+          1024
+        ],
+        "quality": 85,
+        "method": "LANCZOS, RGB JPEG, sRGB ICC"
+      },
+      "safe_text": {
+        "coordinates": "normaliserte billedkoordinater, origo øvre venstre",
+        "rect": [
+          0.25,
+          0.07,
+          0.75,
+          0.18
+        ],
+        "pixel_rect": [
+          128,
+          72,
+          384,
+          184
+        ],
+        "note": "Rolig felt over kikkhullet for romnummer lagt i kode. Bildet har ingen nummerplate eller skrift."
+      },
+      "qa": {
+        "status": "PASS",
+        "visual_checks": [
+          "Hele dørbladet fyller bildet uten karm, vegg, gulv eller perspektiv.",
+          "Matt oksblodrødt slitt tre, kikkhull, ett messingdørgrep og sparkeplate.",
+          "Ingen nummer, skrift, logo, personer eller symboler."
+        ],
+        "landmarks_normalized_approx": {
+          "peephole": [
+            0.5,
+            0.239
+          ],
+          "handle": [
+            0.903,
+            0.5
+          ],
+          "kickplate_rect": [
+            0.07,
+            0.847,
+            0.928,
+            0.948
+          ]
+        },
+        "limitations": [
+          "En flat dørtekstur med inntegnede beslag, ikke separat 3D-geometri.",
+          "Bildeformatet 1:2 mappes til briefens 0,92×2,03 m; naturlig svak sidejustering følger UV-mappingen.",
+          "Ingen in-game material-/lysverifikasjon utført."
+        ]
+      }
+    },
+    {
+      "path": "web/src/assets/art/motel/window_night_lit.jpg",
+      "sha256": "e0d108710a79f24c89156d6b0eb1242fb695c1ef246ab2f7786695a5722ffc66",
+      "bytes": 40338,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "window-lit",
+      "world_scale_metres": [
+        1.4,
+        1.2
+      ],
+      "export": {
+        "source_size": [
+          1254,
+          1254
+        ],
+        "output_size": [
+          512,
+          512
+        ],
+        "quality": 85,
+        "method": "LANCZOS, RGB JPEG, sRGB ICC"
+      },
+      "variant_pair": "window_night_dark.jpg",
+      "qa": {
+        "status": "PASS",
+        "visual_checks": [
+          "Aluminiumskarm ved alle kanter, én midtpost, trukne beige gardiner.",
+          "Dempet varmt lys bak gardinene, ingen synlige lamper eller romobjekter.",
+          "Ingen mennesker, silhuetter, tekst, nummer eller merker."
+        ],
+        "limitations": [
+          "Gardinenes varme lys er innbakt i den bestilte vindusvarianten; en emisjonsstyrke i spillet er ikke fastsatt.",
+          "Kvadratbildet mappes til 1,4×1,2 m som briefen angir."
+        ]
+      }
+    },
+    {
+      "path": "web/src/assets/art/motel/window_night_dark.jpg",
+      "sha256": "167a6ea1bd49ca1257bf5efb754f0557c94f1a013c0b49e6e568bbdb6897b7d4",
+      "bytes": 29733,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in",
+      "source_step": "window-dark",
+      "world_scale_metres": [
+        1.4,
+        1.2
+      ],
+      "export": {
+        "source_size": [
+          1254,
+          1254
+        ],
+        "output_size": [
+          512,
+          512
+        ],
+        "quality": 85,
+        "method": "LANCZOS, RGB JPEG, sRGB ICC"
+      },
+      "variant_pair": "window_night_lit.jpg",
+      "qa": {
+        "status": "PASS",
+        "visual_checks": [
+          "Mørkt rom bak gardinene og et svakt, abstrakt rødt skiltrefleks i glasset.",
+          "Karm, midtpost, gardinfolder og utsnitt samsvarer visuelt med tent versjon.",
+          "Ingen mennesker, silhuetter, tekst, nummer eller tegnede skilt."
+        ],
+        "limitations": [
+          "Lysvarianten ble laget med imagegen-edit av tent original. Geometrisamsvar er visuelt kontrollert; identiske piksler er ikke påstått.",
+          "Refleksen er innbakt og endrer ikke posisjon med kamera eller spillverdenens neon."
+        ]
+      }
+    }
+  ],
+  "pair_qa": {
+    "status": "PASS",
+    "preview": {
+      "path": "web/src/assets/art/motel/window-pair-preview.jpg",
+      "sha256": "863b371bc427d872c1c4f7a57d2bd43b94dd104d0893d062cf2cc7b0da3ab27a",
+      "bytes": 88116,
+      "size": [
+        1024,
+        512
+      ],
+      "mode": "RGB",
+      "format": "JPEG",
+      "colour_profile": "sRGB built-in"
+    },
+    "method": "To ferdige 512×512 JPEG-er lagt uendret side ved side, tent til venstre og mørk til høyre, eksportert som QA JPEG92.",
+    "visual_alignment": "Ytterramme, midtpost, gardinfoldenes hovedkanter og nedre gardinkant følger samme plassering.",
+    "curtain_mean_luma": {
+      "window_night_lit.jpg": 106.893,
+      "window_night_dark.jpg": 34.854
+    },
+    "measurement_note": "Pillow L-gjennomsnitt i pikselrect [32,32,480,480], 0–255 kodet gråtone. Dette er bilde-QA, ikke fysisk luminans eller runtime-lys."
+  },
+  "generation_steps": [
+    {
+      "sha256": "aa6e0f1757cf95c0da9976605267c19d0767bcabf473366c7f9974b6152b178e",
+      "bytes": 2163252,
+      "size": [
+        887,
+        1774
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "door",
+      "prompt": "Use case: stylized-concept.\nAsset type: opaque sRGB door-slab surface texture for a stylized low-poly Three.js game. Portrait 1:2 canvas, intended export 512x1024. Whole image maps to a 0.92m wide by 2.03m high motel door.\nPrimary request: straight-on orthographic front of a plain 1950s wood motel door, weathered by New Mexico desert sun until 1986, painted a deep muted oxblood red. Match the simple older motel doors of Sierra Motor Court: modest utilitarian construction, restrained matte painted wood, fine vertical woodgrain under thick old paint, small subdued scuffs and dry wear concentrated beside the handle and near the base.\nThe door leaf fills the entire rectangular canvas edge to edge with NO frame, jamb, surrounding wall, floor, threshold, margin, perspective or visible side thickness. A flat flush door, no ornate recessed panels.\nHardware: exactly one small circular peephole near upper centre at about x50%, y30%; one period-appropriate dull brass round doorknob with a plain matching small escutcheon on the right near x87%, y53%; a simple tarnished brass rectangular kick plate across the lower portion, inset slightly from the side edges at y85%-97%. Keep hardware modest and fully inside the image. Reserve the upper central area above the peephole as plain paint for a room number added by code. Do not draw a number plate.\nLighting and style: flat neutral albedo under very even diffuse light, subdued soft form cues on metal only, no outdoor night tint, strong highlight, glossy finish, cast shadow, vignette or baked lamp glow. Gently simplified hand-painted material detail suited to stylized low-poly mobile 3D, not a photograph or cinematic scene.\nConstraints: NO text, numbers, letters, logos, symbols, people or silhouettes. No additional lock, chain, letter slot, decoration or stickers. No extra door or object. Opaque.",
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-a5744ea8-ef91-4d34-8732-b7c599a0308a.png"
+    },
+    {
+      "sha256": "c3485fb284498649a000f828bb9255d86e60764cd65cdd298f31425f0ad7db09",
+      "bytes": 2122662,
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "window-lit",
+      "prompt": "Use case: stylized-concept.\nAsset type: opaque sRGB motel-window facade texture for a stylized low-poly Three.js game. Square canvas, intended 512x512 export, mapped onto a 1.4m wide by 1.2m high window.\nPrimary request: a modest rectangular 1950s aluminium-framed motel window seen exactly straight-on from outside at night in New Mexico, 1986. Thin weathered dull silver aluminium outer frame runs exactly along all four image edges. A single thin straight vertical mullion divides two equal glazed panes. Fully closed old plain warm beige curtains behind both panes, simple softly folded cloth; curtains meet with a very narrow closed join at the centre behind the mullion. Restrained warm amber indoor light glows diffusely through the curtains, slightly uneven because of folds, without revealing anything in the room.\nThe complete window fills the entire square edge-to-edge; no outer wall, door, plants, sill projection, surrounding scene, margin, border outside the frame or perspective. Aluminium frame approximately 3% of image width, simple straight extrusion, not an ornate architectural surround. Repeated vertical curtain folds at medium scale suitable for 512x512. Keep the geometry clean and easy to match in an unlit version.\nStyle: subdued stylized painted 3D material for mobile game, believable slightly worn matte aluminium and dusty glass, not photorealism or glossy sci-fi. Outside is dark with a slight cool cast on aluminium only; curtains glow muted orange-gold. Glass reflections very faint and abstract, not recognizable objects or letters. No extreme bloom or blown highlights.\nConstraints: no people, faces, human silhouettes, plants, objects, visible furniture, text, numbers, logos, symbols or decorative curtain prints. Do not show the lamp itself. No drawn signs or neon lettering. Opaque full window texture.",
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-7fafd656-fd84-41b4-afdc-2c03b9a12a37.png"
+    },
+    {
+      "sha256": "6b268c38fa345e6bc7dcc89e643e0d39ac59304f573e4d4e7d6facdb6afcfede",
+      "bytes": 1757652,
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB",
+      "format": "PNG",
+      "colour_profile": null,
+      "id": "window-dark",
+      "prompt": "Use case: lighting-weather.\nEdit target: the supplied square front-view motel window image.\nPrimary request: make the same window at night with the room lights switched OFF. Preserve the exact image geometry and framing: identical aluminium frame on all four edges, same centre vertical mullion, same curtain outlines and folds, same dusty glass, wear marks, position, proportions and crop. Do not redesign or move any part of the window.\nOnly lighting changes. Remove all warm backlighting from behind the closed curtains. The room behind is dark, so curtain fabric is barely readable in very muted deep brown charcoal tones. The outer aluminium frame remains dim cool silver-grey under weak ambient night illumination. Add a very faint diffuse dark-red reflected glow from an unseen roadside neon sign in the glass, subtle enough not to light up the curtains; no reflected letters or recognizable sign shape. Avoid a bright red stripe or large red blob.\nKeep the restrained stylized painted material language of the source. No added objects, silhouettes, people, faces, interior furniture, text, numbers, symbols or decoration. No stars, moon, scenery, artificial vignette, dramatic glow or glossy sci-fi. Entire square filled by the same opaque window, no surrounding wall. This is the exact dark companion texture to the source lit variant, intended 512x512 sRGB JPEG.",
+      "edit_target": "window-lit",
+      "edit_input": {
+        "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-7fafd656-fd84-41b4-afdc-2c03b9a12a37.png",
+        "sha256": "c3485fb284498649a000f828bb9255d86e60764cd65cdd298f31425f0ad7db09"
+      },
+      "status": "selected",
+      "source_path": "/home/tombonator3000t/.codex/generated_images/01a105a9-a92b-7cb1-b1b5-f57af1ead498/exec-984169b0-9f67-47b6-be78-a2cf4ab1bc37.png"
+    }
+  ],
+  "integration": {
+    "status": "UNVERIFIED",
+    "note": "Kun assetproduksjon og fil-/bildekontroll. Ingen runtime, loader, fellesdokumenter, commit eller push er endret av denne deloppgaven. Root lager samlet notat, kreditering og galleri; Claude eier integrasjonen."
+  }
+}
