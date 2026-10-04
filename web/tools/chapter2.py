@@ -98,14 +98,29 @@ async def main():
         check(abs(await ev("S47.room.southDoorHinge.rotation.y") - math.pi / 2) < 0.01, 'corridor door swings open')
         await place(-2.4, 3.2, math.pi, 0.0); await tick(0.1)
         await shot('d02_corridor_door')
-        check(await walk([(-2.4, 3.0), (-2.4, 5.7), (-3.9, 5.7), (-3.9, 7.6), (-4.9, 7.6)]), 'walk through the corridor door, along the corridor and into the records room')
+        check(await walk([(-2.4, 3.0), (-2.4, 5.7), (-3.9, 5.7), (-3.9, 6.0)]), 'walk through the corridor door and along the corridor')
+        # the records room door is a real door (Tom, 4 October: it could not be shut, and the
+        # leaf that stood open inside the room closed off the wall phone)
+        await aim_at(-3.9, 6.0, -3.9, 1.2, 6.7)
+        check(await aimed() == 'recordsDoor' and await label('recordsDoor') == 'Open records room door', 'the records room door is shut and can be opened')
+        await use('recordsDoor'); await tick(1.0)
+        check(await walk([(-3.9, 6.0), (-3.9, 7.45), (-2.6, 7.45)]), 'walk through the records doorway into the room')
+        await aim_at(-2.6, 7.45, -2.9, 1.2, 6.85)
+        check(await aimed() == 'recordsDoor' and await label('recordsDoor') == 'Close records room door', 'the open door lies flat against the wall beside the doorway and can be shut')
+        await use('recordsDoor'); await tick(1.0)
+        check(not await ev("S47.annex.zone.recordsDoor.enabled") and abs(await ev("S47.annex.objs.recordsDoor.children[0].rotation.y")) < 0.01, 'shut, the doorway is closed')
+        await use('recordsDoor'); await tick(1.0)
+        check(await ev("S47.annex.zone.recordsDoor.enabled") and abs(await ev("S47.annex.objs.recordsDoor.children[0].rotation.y") - math.pi) < 0.01, 'and open again')
+        # the far side of the room, past the table and the card index, to the wall phone
+        check(await walk([(-3.9, 7.45), (-2.3, 7.45), (-2.3, 8.9), (-1.6, 9.25)]), 'walk around the table to the wall phone')
+        check(await walk([(-1.6, 9.25), (-2.3, 8.9), (-2.3, 7.45), (-4.9, 7.6)]), 'and back to the west side of the room')
         await tick(0.1)  # the chapter notices where the player is on its next frame
         check(await s2('entered'), 'records room entered')
         await place(-2.0, 7.4, math.atan2(-(-5.0 + 2.0), -(9.6 - 7.4)), -0.1)
         await shot('d03_records')
 
         # ---------- the table before anything is on it ----------
-        await aim_at(-3.4, 7.75, -3.4, 0.9, 8.6)
+        await aim_at(-3.65, 7.75, -3.65, 0.9, 8.6)
         check(await aimed() == 'workTable' and await label('workTable') == 'Work table', 'work table can be aimed at')
         await use('workTable'); await tick(0.1)
         check('Nothing on the table yet' in await toasts(), 'empty table says where the records are')
@@ -119,7 +134,7 @@ async def main():
         check(await s2('read.lineage') and 'b12lineage' in await docs(), 'lineage card filed')
 
         # P04 cannot be recorded yet
-        await aim_at(-3.4, 7.75, -3.4, 0.9, 8.6)
+        await aim_at(-3.65, 7.75, -3.65, 0.9, 8.6)
         check(await label('workTable') == 'Lay out the records', 'table offers the records once one is collected')
         await use('workTable'); await tick(0.1)
         check(await has('.board-wrap') and 'SARO ARCHIVE' in await ev("document.querySelector('.board-wrap h3').textContent"), 'archive board opens')
@@ -147,7 +162,7 @@ async def main():
         check(await s2('read.amended') and 'e06' in await docs(), 'amended copy filed')
 
         # ---------- P04 on the evidence board ----------
-        await aim_at(-3.4, 7.75, -3.4, 0.9, 8.6)
+        await aim_at(-3.65, 7.75, -3.65, 0.9, 8.6)
         await use('workTable'); await tick(0.1)
         check(await has('.bcard[data-card=e07] .bcard-img') and await has('[data-node="e07.abc"]') and await has('[data-node="e06.omit"]'), 'E07 and E06 lie on the board with their drawings and lines')
         await pg.click('.bcard[data-card=e07] [data-more]')
@@ -233,7 +248,8 @@ async def main():
         check('access' in await docs() and 'e06' in await docs(), 'Continue restores the archive papers')
 
         # ---------- the key holder ----------
-        await aim_at(-1.85, 9.25, -1.12, 1.42, 9.25)
+        check(await walk([(-3.9, 7.45), (-2.3, 7.45), (-2.3, 8.9), (-1.75, 9.25)]), 'after Continue: walk from the door round the table to the phone')
+        await aim_at(-1.75, 9.25, -1.12, 1.42, 9.25)
         check(await aimed() == 'recPhone' and await label('recPhone') == 'Call the key holder', 'wall phone offers the call')
         await use('recPhone')
         seen = ''
