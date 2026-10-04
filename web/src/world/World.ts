@@ -8,6 +8,7 @@ import type { DriveController } from '../drive/Drive';
 import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
 import { flood as siteFlood } from './kit';
+import { loadArtFor } from '../core/art';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -109,7 +110,10 @@ export class World {
 
   private ensureStation() {
     return this.once('station', async () => {
-      const [{ Station01, fieldFlood }, { Truck }] = await Promise.all([this.load('Station01'), this.load('Truck')]);
+      // the station's own pictures (render, old concrete, weathered wood, floor boards)
+      // come with it, so the start of the game does not wait for them
+      const [{ Station01, fieldFlood }, { Truck }] = await Promise.all([this.load('Station01'), this.load('Truck'),
+        loadArtFor(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards'])]);
       const s = new Station01(STATION_ORIGIN.clone()) as Station01 & FieldSite;
       s.group.visible = false;
       s.colliders.push(s.truckCollider); // the truck the player came in stands on the pad

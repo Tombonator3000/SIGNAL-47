@@ -8,7 +8,8 @@ from playwright.async_api import async_playwright
 
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else 'shots/art')
 URL = os.environ.get('S47_URL') or Path('dist-single/index.html').resolve().as_uri()
-ART_COUNT = 22  # 16 from PR #30, 6 round 3 surfaces from PR #31
+ART_COUNT = 24  # 16 from PR #30, 6 round 3 surfaces from PR #31, vinyl and vending from PR #34
+LATER = 4       # STATION 01's surfaces from PR #34, loaded when the station is built
 VIEWS = [
     ('desk', 2.6, 3.5, 0, -0.50),
     ('room', -4.7, 3.5, -0.65, -0.16),
@@ -28,6 +29,8 @@ VIEWS = [
     # chapter two: the corridor and the records room
     ('corridor', 0.8, 5.7, 1.5708, 0.0),
     ('archive', -2.0, 7.6, 2.135, -0.1),
+    # round 4 (PR #34): the vending front with COLD DRINKS drawn in code
+    ('vending', 1.35, 5.0, 3.1416, -0.05),
 ]
 
 async def main():
@@ -44,6 +47,7 @@ async def main():
         await pg.wait_for_selector('button[data-a=start]')
         art = await pg.evaluate('S47.art()')
         checks.append((f'all {ART_COUNT} runtime images loaded', len(art['loaded']) == art['expected'] == ART_COUNT))
+        checks.append((f'{LATER} station images wait for the station', len(art['later']) == LATER and not set(art['later']) & set(art['loaded'])))
         checks.append(('sky runtime limited to 2K', any(t['name'] == 'art/sky' and t['width'] == 2048 and t['height'] == 1024 for t in art['textures'])))
         await pg.click('button[data-a=start]')
         await pg.evaluate("S47.hold=true; S47.jump('chapter1'); S47.game.d.ui.close(); S47.tick(1)")

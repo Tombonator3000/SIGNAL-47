@@ -240,72 +240,8 @@ function blot(g: CanvasRenderingContext2D, x: number, y: number, r: number, rgba
   gr.addColorStop(0, rgba); gr.addColorStop(1, rgba.replace(/[\d.]+\)$/, '0)'));
   g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
 }
-function crack(g: CanvasRenderingContext2D, r: () => number, x: number, y: number, len: number, rgba: string, wdt = 1) {
-  g.strokeStyle = rgba; g.lineWidth = wdt; g.beginPath(); g.moveTo(x, y);
-  let a = r() * Math.PI * 2;
-  for (let i = 0; i < len; i++) { a += (r() - 0.5) * 1.1; x += Math.cos(a) * 4; y += Math.sin(a) * 4; g.lineTo(x, y); }
-  g.stroke();
-}
 
 // ---------- canvas surfaces ----------
-// Lime-washed render over adobe: patches have fallen off and show the bricks. One tile is
-// the wall height (2.6 m), so the bottom of the picture is splashed dirt and the top has
-// drip stains under the roof edge.
-function stuccoTex() {
-  return canvasTex(512, 512, (g, w, h) => {
-    g.drawImage(artImage('concrete'), 0, 0, w, h);
-    g.globalCompositeOperation = 'multiply'; g.fillStyle = '#efdcb9'; g.fillRect(0, 0, w, h);
-    g.globalCompositeOperation = 'source-over';
-    const r = rng(19);
-    for (let i = 0; i < 46; i++) blot(g, r() * w, r() * h, 20 + r() * 70, r() < 0.5 ? 'rgba(255,246,226,.16)' : 'rgba(96,74,50,.13)');
-    for (let i = 0; i < 6; i++) {
-      const cx = 70 + r() * (w - 140), cy = 90 + r() * (h - 200), rad = 16 + r() * 36;
-      g.save(); g.beginPath();
-      for (let k = 0; k < 11; k++) { const a = k / 11 * Math.PI * 2, rr = rad * (0.6 + r() * 0.6); g.lineTo(cx + Math.cos(a) * rr * 1.3, cy + Math.sin(a) * rr); }
-      g.closePath();
-      g.fillStyle = '#7a5a40'; g.fill();
-      g.save(); g.clip();
-      g.strokeStyle = 'rgba(46,30,20,.6)'; g.lineWidth = 2;
-      for (let y = cy - rad - 2, row = 0; y < cy + rad + 4; y += 13, row++) {
-        g.beginPath(); g.moveTo(cx - rad * 2, y); g.lineTo(cx + rad * 2, y); g.stroke();
-        for (let x = cx - rad * 2 + (row % 2) * 16; x < cx + rad * 2; x += 32) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 13); g.stroke(); }
-      }
-      g.restore();
-      g.strokeStyle = 'rgba(255,248,232,.55)'; g.lineWidth = 2.5; g.stroke();
-      g.restore();
-    }
-    for (let i = 0; i < 16; i++) crack(g, r, r() * w, r() * h, 8 + r() * 18, 'rgba(60,44,30,.45)');
-    // dirt splashed up from the ground, drips under the roof edge
-    const dirt = g.createLinearGradient(0, h, 0, h - 70);
-    dirt.addColorStop(0, 'rgba(92,70,46,.55)'); dirt.addColorStop(1, 'rgba(92,70,46,0)');
-    g.fillStyle = dirt; g.fillRect(0, h - 70, w, 70);
-    for (let i = 0; i < 30; i++) {
-      const x = r() * w, l = 20 + r() * 90;
-      const s = g.createLinearGradient(0, 0, 0, l);
-      s.addColorStop(0, 'rgba(70,56,40,.35)'); s.addColorStop(1, 'rgba(70,56,40,0)');
-      g.fillStyle = s; g.fillRect(x, 0, 2 + r() * 5, l);
-    }
-  }, [1 / 2.6, 1 / 2.6]);
-}
-
-// Old concrete for the pier and the footings: lichen-dark patches, cracks, rust runs.
-function oldConcreteTex() {
-  return canvasTex(512, 512, (g, w, h) => {
-    g.drawImage(artImage('concrete'), 0, 0, w, h);
-    g.globalCompositeOperation = 'multiply'; g.fillStyle = '#e4d8c2'; g.fillRect(0, 0, w, h);
-    g.globalCompositeOperation = 'source-over';
-    const r = rng(29);
-    for (let i = 0; i < 40; i++) blot(g, r() * w, r() * h, 12 + r() * 60, r() < 0.6 ? 'rgba(52,48,40,.16)' : 'rgba(255,250,236,.12)');
-    for (let i = 0; i < 12; i++) crack(g, r, r() * w, r() * h, 10 + r() * 22, 'rgba(36,30,24,.55)', 1.4);
-    for (let i = 0; i < 6; i++) {
-      const x = r() * w, y = r() * h * 0.6, l = 40 + r() * 140;
-      const s = g.createLinearGradient(0, y, 0, y + l);
-      s.addColorStop(0, 'rgba(120,64,28,.35)'); s.addColorStop(1, 'rgba(120,64,28,0)');
-      g.fillStyle = s; g.fillRect(x, y, 3 + r() * 6, l);
-    }
-  }, [1 / 1.3, 1 / 1.3]);
-}
-
 // Crushed gravel over sand: the desert picture under a few thousand stones (drawn wrapped
 // so the tile has no seams).
 function gravelTex() {
@@ -348,31 +284,6 @@ function woodTex(seed: number, base: string, tile: [number, number]) {
     }
     for (let i = 0; i < 10; i++) { const x = r() * w; g.fillStyle = 'rgba(12,8,4,.55)'; g.fillRect(x, r() * h, 1.2, 30 + r() * 120); }
   }, tile);
-}
-
-// Floor boards, 15 cm wide, running east-west.
-function boardsTex() {
-  return canvasTex(512, 512, (g, w, h) => {
-    const r = rng(23), n = 8, bh = h / n;
-    for (let i = 0; i < n; i++) {
-      const y0 = i * bh, v = 0.8 + r() * 0.35;
-      g.fillStyle = `rgb(${118 * v | 0},${88 * v | 0},${60 * v | 0})`; g.fillRect(0, y0, w, bh);
-      for (let k = 0; k < 26; k++) {
-        g.strokeStyle = r() < 0.5 ? `rgba(30,18,8,${0.1 + r() * 0.2})` : `rgba(255,236,206,${0.04 + r() * 0.06})`;
-        g.lineWidth = 0.7 + r() * 1.4;
-        const y = y0 + 3 + r() * (bh - 6);
-        g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(w * 0.3, y + (r() - 0.5) * 5, w * 0.6, y + (r() - 0.5) * 5, w, y); g.stroke();
-      }
-      const jx = r() * w;
-      g.fillStyle = 'rgba(14,8,4,.75)'; g.fillRect(jx, y0, 2, bh);
-      g.fillStyle = 'rgba(10,8,6,.7)';
-      for (const dx of [-7, 7]) for (const dy of [0.3, 0.7]) { g.beginPath(); g.arc(jx + dx, y0 + bh * dy, 1.6, 0, 7); g.fill(); }
-      g.fillStyle = 'rgba(8,5,3,.85)'; g.fillRect(0, y0, w, 2);
-    }
-    const scuff = g.createRadialGradient(w * 0.5, h * 0.5, 10, w * 0.5, h * 0.5, w * 0.5);
-    scuff.addColorStop(0, 'rgba(230,214,190,.12)'); scuff.addColorStop(1, 'rgba(230,214,190,0)');
-    g.fillStyle = scuff; g.fillRect(0, 0, w, h);
-  }, [1 / 1.2, 1 / 1.2]);
 }
 
 // Galvanised corrugated sheet with rust runs, for the generator shed. One tile is the
@@ -824,16 +735,18 @@ export class Station01 {
 
   private materials() {
     const atlas = this.tex(signAtlas());
-    const wood = this.tex(woodTex(13, '#7d7468', [1 / 0.5, 1 / 1.0]));
-    const woodDark = this.tex(woodTex(17, '#4a3a2c', [1 / 0.5, 1 / 1.5]));
+    // Codex's surfaces (round 5, metre UVs): render 2 x 2 m, concrete 1 x 1 m, weathered
+    // wood 0.5 x 1 m with the grain along the length, floor boards 1.2 x 1.2 m. World loads
+    // them (loadArtFor) before it builds the station. The hut's furniture keeps its
+    // varnished canvas wood.
     const woodIn = this.tex(woodTex(21, '#7a5638', [1 / 0.6, 1 / 1.2]));
     return {
       atlas: this.lit({ map: atlas, roughness: 0.75 }, 0.03),
-      stucco: this.lit({ map: this.tex(stuccoTex()), roughness: 0.95 }, 0.035),
+      stucco: this.lit({ map: artTexture('stucco', [1 / 2, 1 / 2]), roughness: 0.95 }, 0.035),
       roof: this.lit({ map: artTexture('asphalt', [1 / 2, 1 / 2]), color: 0x8a8580, roughness: 0.95 }, 0.035),
-      concrete: this.lit({ map: this.tex(oldConcreteTex()), roughness: 0.95 }, 0.03),
-      wood: this.lit({ map: wood, roughness: 0.95 }, 0.03),
-      woodDark: this.lit({ map: woodDark, roughness: 0.9 }, 0.02),
+      concrete: this.lit({ map: artTexture('oldConcrete', [1, 1]), roughness: 0.95 }, 0.03),
+      wood: this.lit({ map: artTexture('weatheredWood', [1 / 0.5, 1 / 1.0]), roughness: 0.95 }, 0.03),
+      woodDark: this.lit({ map: artTexture('weatheredWood', [1 / 0.5, 1 / 1.5]), color: 0x7d6a58, roughness: 0.9 }, 0.02),
       paint: this.lit({ color: 0x31463a, roughness: 0.7 }, 0.035),
       steel: this.lit({ map: artTexture('cabinet', [1 / 0.8, 1 / 0.8]), color: 0xb4b9b2, roughness: 0.5, metalness: 0.45 }, 0.03),
       darkMetal: this.lit({ color: 0x2a2826, roughness: 0.55, metalness: 0.5 }, 0.03),
@@ -854,7 +767,7 @@ export class Station01 {
       // inside
       plaster: this.litIn({ map: artTexture('concrete', [1 / 2.2, 1 / 2.2]), color: 0xe8e1d0, roughness: 0.95 }),
       dado: this.litIn({ color: 0x3c4a3c, roughness: 0.8 }),
-      boards: this.litIn({ map: this.tex(boardsTex()), roughness: 0.85 }),
+      boards: this.litIn({ map: artTexture('floorboards', [1 / 1.2, 1 / 1.2]), roughness: 0.85 }),
       ceiling: this.litIn({ map: woodIn, color: 0x9a8a78, roughness: 0.9 }),
       woodIn: this.litIn({ map: woodIn, roughness: 0.75 }),
       blackIn: this.litIn({ color: 0x1c1b1a, roughness: 0.55, metalness: 0.2 }),

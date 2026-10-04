@@ -22,6 +22,14 @@ import frame from '../assets/art/runtime/floor_paint_frame.webp';
 import fieldMap from '../assets/art/lab/map_field_yard.png';
 import sign from '../assets/art/runtime/sign_blank.webp';
 import paper from '../assets/art/lab/tex_paper_card.jpg';
+// Rounds 4 and 5 (PR #34): the archive wing, loaded with SARO, and STATION 01's surfaces,
+// loaded only when the station is built (loadArtFor), so the start does not wait on them.
+import vinyl from '../assets/art/annex/tex_floor_vinyl.jpg';
+import vending from '../assets/art/annex/vending_front.png';
+import stucco from '../assets/art/station/tex_stucco_wall.jpg';
+import oldConcrete from '../assets/art/station/tex_concrete_old.jpg';
+import weatheredWood from '../assets/art/station/tex_wood_weathered.jpg';
+import floorboards from '../assets/art/station/tex_floorboards.jpg';
 
 // Static Vite imports work both under /SIGNAL-47/ and in the offline single file.
 // Images are decoded before constructing the world or caching Low materials.
@@ -29,21 +37,29 @@ import paper from '../assets/art/lab/tex_paper_card.jpg';
 // pictures in the same folder tree are never bundled.
 const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   listen, saro, map, logo, yard, procedure, sky, sierra,
-  vane, bars, frame, fieldMap, sign, paper };
+  vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
+  stucco, oldConcrete, weatheredWood, floorboards };
 export type ArtId = keyof typeof urls;
+// Images an area loads for itself when it is built, not at the start.
+const LATER = new Set<ArtId>(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards']);
 const images = new Map<ArtId, HTMLImageElement>();
 const textures = new Map<string, THREE.Texture>();
 const sources = new Map<ArtId, THREE.Source>();
 
 // Observation only, for the existing S47 diagnostics and offline-load checks.
 export function artStatus() {
-  return { expected: Object.keys(urls).length, loaded: [...images.keys()].sort(),
+  return { expected: Object.keys(urls).length - LATER.size, later: [...LATER], loaded: [...images.keys()].sort(),
     textures: [...textures.values()].map(t => ({ name: t.name, width: t.image.width, height: t.image.height,
       colorSpace: t.colorSpace, repeat: t.repeat.toArray() })) };
 }
 
 export async function loadArt() {
-  await Promise.all((Object.keys(urls) as ArtId[]).map(id => new Promise<void>((resolve, reject) => {
+  await loadArtFor((Object.keys(urls) as ArtId[]).filter((id) => !LATER.has(id)));
+}
+
+/** Load the given images (once); an area calls this before it builds. */
+export async function loadArtFor(ids: ArtId[]) {
+  await Promise.all(ids.filter((id) => !images.has(id)).map(id => new Promise<void>((resolve, reject) => {
     const img = new Image();
     const timeout = setTimeout(() => { img.src = ''; reject(new Error(`Artwork timed out: ${id}`)); }, 30000);
     img.onload = () => { clearTimeout(timeout); images.set(id, img); resolve(); };

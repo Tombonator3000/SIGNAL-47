@@ -178,34 +178,13 @@ export function workOrderSheet() {
 
 // Chapter two: the south corridor and the records room. Quiet 30 cm vinyl tiles, four by
 // four on the picture, so one repeat is 1.2 m: give the floor size to keep them square.
-export function vinylTiles(floorW: number, floorD: number) {
-  return canvasTex(256, 256, (g, w, h) => {
-    const r = rng(41);
-    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
-      const v = 152 + Math.floor(r() * 10);
-      g.fillStyle = `rgb(${v},${v - 6},${v - 18})`; g.fillRect(x * 64, y * 64, 64, 64);
-    }
-    speckle(g, w, h, 3000, 0.08, 42);
-    g.strokeStyle = 'rgba(60,50,35,.22)'; g.lineWidth = 2;
-    for (let i = 0; i <= 4; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.stroke(); g.beginPath(); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); }
-  }, [floorW / 1.2, floorD / 1.2]);
-}
-
-// A drinks and snacks machine, lit from inside. Plain colours, no brands.
+// A drinks and snacks machine, lit from inside: Codex's text-free front (round 4), with
+// COLD DRINKS written in code where its manifest puts it. No brands.
 export function vendingFront() {
   return canvasTex(256, 512, (g, w, h) => {
-    g.fillStyle = '#20262c'; g.fillRect(0, 0, w, h);
-    g.fillStyle = '#dfe8ef'; g.fillRect(14, 14, 172, 380);
-    const cols = ['#b8322a', '#2f6db0', '#e0b13a', '#3f8a4c', '#c56a2b', '#7b4fa3'];
-    const r = rng(7);
-    for (let row = 0; row < 6; row++) {
-      g.fillStyle = 'rgba(40,50,60,.5)'; g.fillRect(14, 70 + row * 56, 172, 3);
-      for (let i = 0; i < 5; i++) { g.fillStyle = cols[Math.floor(r() * cols.length)]; g.fillRect(22 + i * 33, 30 + row * 56, 24, 38); }
-    }
-    g.fillStyle = '#c9c2a8'; g.fillRect(196, 40, 46, 120);
-    g.fillStyle = '#10161a'; g.fillRect(206, 56, 26, 8); g.fillRect(212, 90, 14, 40);
-    g.fillStyle = '#1a1f24'; g.fillRect(30, 410, 150, 60);
-    g.fillStyle = '#e8e2cf'; g.font = '600 22px Oswald'; g.textAlign = 'center'; g.fillText('COLD DRINKS', 100, 500 - 2);
+    g.drawImage(artImage('vending'), 0, 0, w, h);
+    g.fillStyle = '#e8e2cf'; g.font = '600 22px Oswald'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('COLD DRINKS', 116, 491, 187);
   });
 }
 
