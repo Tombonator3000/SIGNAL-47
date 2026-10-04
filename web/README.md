@@ -1,6 +1,6 @@
 # SIGNAL / 47 (web)
 
-Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift", kapittel 1 "The Second Exposure" (servicegården øst for kontrollrommet, motorskapet S-03, feltkameraet, fotolaben og B-12-kontrollen, fram til den lokale rapporten er arkivert), kapittel 2 "The Amended Record" (Ward ringer, korridoren sør for kontrollrommet og arkivet, de to registreringene P04 og P05, og telefonen til Nora Vega på Sierra Motor Court) og kapittel 3 "The Survey Station" (lastebilen, kjøreturen sørover, målestasjonen STATION 01 med P06 til P09, Nora på felttelefonen og framkallingen av feltbildene).
+Nettversjonen av SIGNAL / 47, bygget med three.js, TypeScript og Vite. Førstepersons etterforskning ved SARO i New Mexico, 1986. Denne mappen inneholder prologen "Night Shift", kapittel 1 "The Second Exposure" (servicegården øst for kontrollrommet, motorskapet S-03, feltkameraet, fotolaben og B-12-kontrollen, fram til den lokale rapporten er arkivert), kapittel 2 "The Amended Record" (Ward ringer, korridoren sør for kontrollrommet og arkivet, de to registreringene P04 og P05, og telefonen til Nora Vega på Sierra Motor Court) kapittel 3 "The Survey Station" (lastebilen, kjøreturen sørover, målestasjonen STATION 01 med P06 til P09, Nora på felttelefonen og framkallingen av feltbildene) og kapittel 4 "Room 6" (nødutgangen og veien over riksveien til Sierra Motor Court, og samtalen med Nora Vega i rom 6 med P10 til P12).
 
 Natten henger sammen: mellom kapitlene kommer et kort kapittelkort, ikke en sluttskjerm. Hele historien fra 23:41 til morgen, også det som ikke er bygd ennå (rom 6, Roswell-veien, dineren), står i `HISTORIE.md`.
 
@@ -77,11 +77,14 @@ src/story/Prologue.ts      hele prologen som faser og tidsstyrte hendelser
 src/story/Chapter1.ts      kapittel 1 som trinn, med lagring av saken
 src/story/Chapter2.ts      kapittel 2: Ward, arkivet, P04 og P05, telefonen til Nora
 src/story/Chapter3.ts      kapittel 3: STATION 01, P06 til P09, feltbildene, Nora på felttelefonen
+src/story/Chapter4.ts      kapittel 4: rom 6, samtalen med Nora (P10 til P12), feltkortet, brevet og rettelsen
+src/world/Crossing.ts      nødutgangen, rampa og veien over til motellet (del av SARO), og bakkehøyden der ute
+src/world/Room6.ts         rom 6 på Sierra Motor Court (laget av Codex), lastes først når spilleren går inn
 src/story/state.ts         det en lagring inneholder
 src/story/drawings.ts      tegningene i kapittel 2-dokumentene og saksmappens kart
 src/story/Signal.ts        mottakerlogikken, portert fra Unity
 src/ui/                    HUD, dokumenter, notatbok, RX-konsoll
-src/ui/Panels.ts           fotolabens paneler, arkivbordet i kapittel 2 og feltjournalen i kapittel 3
+src/ui/Panels.ts           fotolabens paneler, arkivbordet i kapittel 2, feltjournalen i kapittel 3 og samtalen i kapittel 4
 src/ui/SaveMenu.ts         menyene Load case, Save case og New case
 src/assets/                lyd, fonter og grafikk (se THIRD_PARTY_NOTICES.md og ART_BRIEF.md)
 tools/                     headless-tester med Playwright, lagringstest i Node
@@ -91,7 +94,7 @@ tools/                     headless-tester med Playwright, lagringstest i Node
 
 `tools/walkthrough.py` spiller hele prologen gjennom de ekte interaksjonene og konsollens glidebrytere, tar skjermbilder og skriver PASS eller FAIL per steg. Løkken holdes og spillet drives med `S47.tick()`, slik at testen går i en programvare-renderer.
 
-`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode, og prøver også en simulert lesefeil i IndexedDB: originalfotoet skal ligge der etter neste lagring. `tools/chapter2.py` spiller kapittel 2 fra telefonen ringer til kapittelkortet, med gale og riktige valg ved arkivbordet, lagring og Continue. `tools/chapter3.py` spiller kapittel 3: lastebilen, kjøringen, P06 til P09 med gale og riktige svar, begge feltbildene, Nora, Continue på stasjonen, turen tilbake og framkallingen. `tools/saves.cjs` tester lagringssystemet i Node, uten nettleser. `tools/artcheck.py` sjekker at de 24 startbildene lastes og at de fire til stasjonen venter, at High og Low bruker de samme teksturene, og tar faste bilder av blant annet B-12, R-07, feltkartet og arkivet. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter, lyder og bilder kommer med.
+`tools/chapter1.py` spiller kapittel 1 fra start til sluttkort med ekte klikk i panelene: gange gjennom døra og opp gangveien, begge eksponeringene, framkalling, merking på kopiene, valg av referanse, hypotese, metode og konklusjon, og til slutt Continue etter omlasting. Den tar enten passiv eller aktiv metode, og prøver også en simulert lesefeil i IndexedDB: originalfotoet skal ligge der etter neste lagring. `tools/chapter2.py` spiller kapittel 2 fra telefonen ringer til kapittelkortet, med gale og riktige valg ved arkivbordet, lagring og Continue. `tools/chapter3.py` spiller kapittel 3: lastebilen, kjøringen, P06 til P09 med gale og riktige svar, begge feltbildene, Nora, Continue på stasjonen, turen tilbake og framkallingen. `tools/chapter4.py` spiller kapittel 4: nødutgangen, rampa ned og veien over riksveien, døra til rom 6, samtalen med gale og riktige svar, papirene på bordet, Continue i rom 6, sluttkortet og saksmappa. `tools/saves.cjs` tester lagringssystemet i Node, uten nettleser. `tools/artcheck.py` sjekker at de 24 startbildene lastes og at de fire til stasjonen venter, at High og Low bruker de samme teksturene, og tar faste bilder av blant annet B-12, R-07, feltkartet og arkivet. `tools/csptest.py` laster enkeltfila under en streng innholdspolicy og sjekker at alle fonter, lyder og bilder kommer med.
 
 ```sh
 pip install playwright && playwright install chromium
@@ -100,6 +103,7 @@ python3 tools/chapter1.py shots/ch1 passive
 python3 tools/chapter1.py shots/ch1 active
 python3 tools/chapter2.py shots/ch2
 python3 tools/chapter3.py shots/ch3
+python3 tools/chapter4.py shots/ch4
 node tools/saves.cjs
 python3 tools/artcheck.py shots/art
 python3 tools/csptest.py

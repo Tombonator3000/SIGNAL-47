@@ -42,7 +42,10 @@ export class Exterior {
   }
 
   private ground() {
-    const geo = new THREE.CircleGeometry(1900, 96, 0, Math.PI * 2);
+    // Rings every 95 m, so the ground within 300 m is really flat at -0.62. (A plain circle
+    // has only a centre and a rim: its triangles sloped from SARO out to the rolling rim
+    // and rose over the highway in places.)
+    const geo = new THREE.RingGeometry(0.01, 1900, 96, 20);
     geo.rotateX(-Math.PI / 2);
     const pos = geo.attributes.position as THREE.BufferAttribute;
     const col = new Float32Array(pos.count * 3);
@@ -74,6 +77,8 @@ export class Exterior {
       if (Math.abs(x + 24) < 7) continue;             // road
       if (x > -9 && x < 40 && z > -8 && z < 13) continue; // buildings and the records annex
       if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
+      if (x > -17 && x < -6 && z > 3 && z < 8.5) continue;  // the path from the fire exit
+      if (x > -50 && x < -28 && z > 0 && z < 70) continue;  // the motel's lot and front
       const k = 0.4 + r() * 1.1;
       p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);
       scrub.setMatrixAt(n++, m.compose(p, q, s));

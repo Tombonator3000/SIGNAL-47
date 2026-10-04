@@ -658,7 +658,7 @@ export class Chapter4 {
     if (id !== 'retained') {
       s.wrong12++;
       this.reply = { ok: false, text: id === 'alive'
-        ? (s.read.letter ? 'He did not answer the question. His letter says where the key was: in the mug. The line said nothing about it.' : 'He did not answer her question. It is the same fragment as in the 1947 timing log.')
+        ? (s.topics.tomas ? 'He did not answer the question. His letter says where the key was: in the mug. The line said nothing about it.' : 'He did not answer her question. It is the same fragment as in the 1947 timing log.')
         : 'Crosstalk does not repeat the same correction in the same place, every time.' };
       this.save();
       return;
