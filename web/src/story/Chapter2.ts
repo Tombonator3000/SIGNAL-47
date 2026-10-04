@@ -86,6 +86,8 @@ export class Chapter2 {
   ringing = false;
   s: Ch2State = fresh();
   onEnd?: () => void;
+  /** Chapter four takes over the fire exit at the end of the corridor while it runs. */
+  exit: { label: () => string | null; use: () => void } | null = null;
   private anim: { door?: number } = {};
   private doorCol: Collider = { minX: -1.99, maxX: -1.87, minZ: 4.72, maxZ: 5.66 };
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
@@ -235,7 +237,8 @@ export class Chapter2 {
     inter.add({ id: 'vending', object: o.vending, label: () => on() ? 'Vending machine' : null, use: () => ui.toast('Cola, orange soda, peanut butter crackers. Somebody\'s dime is stuck in the coin return.') });
     inter.add({ id: 'officeDoor', object: o.officeDoor, label: () => on() ? 'Operations office' : null, use: () => ui.toast('Locked. Dale took the key home.') });
     inter.add({ id: 'restroomDoor', object: o.restroomDoor, label: () => on() ? 'Restrooms' : null, use: () => ui.toast('Not now.') });
-    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => on() ? 'Fire exit' : null, use: () => ui.toast('The fire exit to the west lot. The push bar is alarmed, and the yard is easier by the east door.') });
+    inter.add({ id: 'exitDoor', object: o.exitDoor, label: () => this.exit ? this.exit.label() : on() ? 'Fire exit' : null,
+      use: () => this.exit ? this.exit.use() : ui.toast('The fire exit to the west lot. The push bar is alarmed, and the yard is easier by the east door.') });
   }
   private anyRead() { const r = this.s.read; return r.original || r.amended || r.lineage || r.index; }
 
