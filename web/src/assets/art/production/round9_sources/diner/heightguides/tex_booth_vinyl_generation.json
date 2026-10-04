@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "diner/tex_booth_vinyl.jpg",
+  "albedo_sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-df6844b8-e5f0-4520-a0a8-c9f18a08da5b.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_booth_vinyl_height_original.png",
+  "saved_original_sha256": "b7103a7083bd673dc0b782c0789083603539b95d19dce952ff3be04735562278",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT red diamond-tufted vinyl albedo. Preserve square framing, exact diagonal seam paths, all button center positions and all partial buttons at image boundaries. Button centers are at (0,0),(256,0),(512,0),(128,128),(384,128),(0,256),(256,256),(512,256),(128,384),(384,384),(0,512),(256,512),(512,512) in a 512x512 coordinate system. Translate geometry only: each existing diamond cushion is a broad softly rounded raised dome, each existing stitched seam is a narrow shallow lowered channel, button centers are lowered dimples (even if their visible cap color looks bright). Keep the two axes and all edge continuations exact. Remove red pigment, lighting and baked shadow. Leather grain is effectively flat or extremely subtle to avoid sparkle. Output smooth low-contrast grayscale HEIGHT GUIDE, not a normal map: brighter=raised, darker=lower. No new buttons, no different quilting, no text, border, crop, rotation or cast shadows.",
+  "prompt_sha256_utf8": "2aad5ea757494cf8b3fbb92d9561a94e0f410e23b7b2217c522de678147b076b",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}

@@ -1,0 +1,381 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/station/tex_wood_weathered.jpg",
+    "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+    "bytes": 302855,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/station/weathered_wood_height_original.png",
+    "sha256": "dfe4c22e0e81d41f8f10893ac8f3d175f6c7f1363b63383bffb24e63b0e7924a",
+    "bytes": 1949327,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "weathered_wood",
+  "parameters": {
+    "kind": "wood_local_v",
+    "rough": [
+      0.85,
+      0.85
+    ],
+    "depth": 1.1,
+    "guide": 0.03
+  },
+  "method": {
+    "geometry": "connected local high-contrast fragmented cracks with five-row vertical support plus very weak local fibre; no full-column extrusion",
+    "guide_weight_height_pixels": 0.03,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.0846710205078125,
+    "strong_slope_support_fraction": 0.2699241638183594,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/station/tex_wood_weathered_n.png",
+      "sha256": "1c2c9cf96dbc726ba88224c9df7b9b4ffc1657de83f178cf2f53aaee303aef9d",
+      "bytes": 113902,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/station/tex_wood_weathered_r.jpg",
+      "sha256": "463f01f7f3793689f5c6e9f807ad554a7cd00666d261124290d606c744d705f5",
+      "bytes": 1185,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_normal_2x2.png",
+      "sha256": "b67267b08f5b4f8dd2488d38b7206085b36862159e831197b6138b1bfe8f6f7f",
+      "bytes": 253246,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_overlay.png",
+      "sha256": "1bb2f7de6b9bcdac9909c0e72a5d2bdef184723dd24d41c5523de126dde4d6a1",
+      "bytes": 350918,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_light_top.png",
+      "sha256": "e903be5dd45384f30b833f963959453da5ebb64954164d22fff7ede16e64ac0c",
+      "bytes": 88348,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_mask.png",
+      "sha256": "39ce8ef8468418bf7666f73d93ecb8f29b82d8026a88d2831c914c5947e33966",
+      "bytes": 15829,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_derived_height.png",
+      "sha256": "a1965ae56c5c81d5e45a3aeb14878f9ef06293e7d705364165615a081cd9fd3b",
+      "bytes": 42126,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 10.79296875,
+      "p95_abs_byte_delta": 26,
+      "max_abs_byte_delta": 45
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 241
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9947729595546565,
+          "max": 1.0052916508878742
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 27.585614035744324,
+          "pixels_over15": 18827
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.8509803921568627,
+      "max": 0.8509803921568627,
+      "mean": 0.8509803921568627
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 0.31775544206983286,
+    "feature_max_degrees": 27.585614035744324,
+    "calm_pixel_count": 191425,
+    "feature_pixel_count": 70719,
+    "roughness_intended_range": [
+      0.85,
+      0.85
+    ],
+    "roughness_pre_jpeg_range": [
+      0.8500000238418579,
+      0.8500000238418579
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+    "reviewer": "Codex B1 asset inspection",
+    "reviewed_views": [
+      "original albedo",
+      "original generated height guide",
+      "normal 2x2",
+      "normal over albedo at 50%",
+      "flat top lighting",
+      "roughness grayscale"
+    ],
+    "note": "Lokale, fragmenterte vertikale sprekknett følger de bølgete kildesporene. Ingen nye rette helhøyde fuger; rolig lokal fiber.",
+    "inspection": {
+      "path": "src/assets/art/production/round9_qa/station/tex_wood_weathered_inspection.png",
+      "sha256": "07f692025b673578d0b387b3b5385b2c863907e288b0fe3c6b7878be8790f655"
+    }
+  }
+}

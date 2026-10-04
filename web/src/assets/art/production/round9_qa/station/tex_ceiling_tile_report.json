@@ -1,0 +1,384 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/room/tex_ceiling_tile.jpg",
+    "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+    "bytes": 71384,
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/station/ceiling_height_original.png",
+    "sha256": "f5c13d74c268583a5c78ccd30773da0bcda8eecc9617faf1c172c5fa13e6de13",
+    "bytes": 1979524,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "ceiling",
+  "parameters": {
+    "kind": "porous",
+    "rough": [
+      0.95,
+      0.95
+    ],
+    "depth": 0.5,
+    "guide": 0.025
+  },
+  "method": {
+    "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+    "guide_weight_height_pixels": 0.025,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.23695755004882812,
+    "strong_slope_support_fraction": 0.9847373962402344,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/room/tex_ceiling_tile_n.png",
+      "sha256": "faa3bbaabf69c3a8831129589a0ac06f14700dcd841b3ce6f209b722ae288943",
+      "bytes": 271966,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/room/tex_ceiling_tile_r.jpg",
+      "sha256": "03321a7087e9ff15fc0cf7c8df4c2121f083fcabf5bca346e9f445d39b530545",
+      "bytes": 1185,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_normal_2x2.png",
+      "sha256": "8eda2beadeacfa65042395b922a6280dc9c7867bd320ef1d5d6e55a735b5b340",
+      "bytes": 575432,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_overlay.png",
+      "sha256": "8168b49063b30eaa6f3374e62fcfb31ad0e1c7c92c6a177c1fcb18e014fda78b",
+      "bytes": 424359,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_light_top.png",
+      "sha256": "ac6ad398fbda6fb8e3d74d3d575cd5a2c39f959ae3a1cfc88f86ef1aa952c095",
+      "bytes": 166372,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_mask.png",
+      "sha256": "e334d0156559abe0d82fb7d3e8373af1421ad11c1b0b0a54f70729de886d83b8",
+      "bytes": 172437,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_derived_height.png",
+      "sha256": "438111b62a52017bf6b3532054a4b85105c39d35b758aa8b9cb35c13d6fc66b3",
+      "bytes": 170610,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 9.764322916666666,
+      "p95_abs_byte_delta": 25,
+      "max_abs_byte_delta": 45
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 252
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9952675408618118,
+          "max": 1.0048020036369751
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 13.123481944903466,
+          "pixels_over15": 0
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.9490196078431372,
+      "max": 0.9490196078431372,
+      "mean": 0.9490196078431372
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 1.3099244053779315,
+    "feature_max_degrees": 13.123481944903466,
+    "calm_pixel_count": 4001,
+    "feature_pixel_count": 258143,
+    "roughness_intended_range": [
+      0.95,
+      0.95
+    ],
+    "roughness_pre_jpeg_range": [
+      0.949999988079071,
+      0.949999988079071
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "f83831b01bdfe5bb3327c3da43854111bb4c89b9eb15017761f9aead33f4848f",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "reviewed_utc": "2026-10-04T20:49:24.933157+00:00",
+    "reviewer": "Codex B1 asset inspection",
+    "reviewed_views": [
+      "original albedo",
+      "original generated height guide",
+      "normal 2x2",
+      "normal over albedo at 50%",
+      "flat top lighting",
+      "roughness grayscale"
+    ],
+    "note": "En plate, eksisterende kantfuge og lokal porøshet beholdes. Rolig relieff uten nytt rutemønster.",
+    "inspection": {
+      "path": "src/assets/art/production/round9_qa/station/tex_ceiling_tile_inspection.png",
+      "sha256": "8511b44171233c39b029a46eeb694939f1cee27b5762ed3a1f6cd77468ed9d49"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "asset_owner": "ultra_b_diner",
+  "tool_planned": "built-in ChatGPT image generator",
+  "batch_status": "six_generated_converted_reviewed_PASS; runtime_UNVERIFIED",
+  "entries": [
+    {
+      "albedo": "road/tex_gravel_track.jpg",
+      "source_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_mode": "RGB",
+      "inspection": "Grus med to vertikale hjulspor ved ca. x=.30 og .70, synlige småstein. Jordfarge og steinskygge er ikke direkte høyde.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input image is the exact albedo and geometry reference. Preserve its square framing, both wheel track paths around x=30% and x=70%, every clearly visible medium stone location, direction and edge continuation. Translate material geometry into grayscale height: neutral midgray ground, very shallow broad lowered wheel tracks, existing medium pebbles gently raised with soft domed tops. The stones keep their positions; remove all color and all baked illumination and cast shadows. Distinguish pigment and dark shading from geometric depth. No new stones, no new tracks, no deep trenches. Keep tiny gravel below the resolution of the final 512x512 output quiet, without salt-and-pepper noise. The output is a HEIGHT GUIDE, not a purple normal map: higher=brighter, lower=darker, gentle low contrast. No light direction, border, text, objects or crop. Preserve the original edge structure; do not invent a different seamless composition.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.95,
+        0.95
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_gravel_track_height_original.png",
+      "generated_original_sha256": "64ae1d0301994a5648140aeb4de91c8b9de9d891a89e6bd5d43c04fbc7b24f6c",
+      "visual_status": "PASS"
+    },
+    {
+      "albedo": "motel/tex_motel_wall.jpg",
+      "source_sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_mode": "RGB",
+      "inspection": "Malt puss, svak finkornet struktur og noen hårfine sprekker. Flekket maling og brunt smuss forblir pigment.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input image is the exact painted stucco albedo reference. Preserve the exact square crop, all visible fissure positions, plaster patch boundaries and edge continuation. Make a mostly neutral midgray smooth plane with only shallow gently rounded stucco relief and existing hairline cracks depressed slightly. Remove color, lighting, cast shadow and dirt stain contrast. Large peach/brown color variations are paint or dirt and MUST NOT become bumps or depressions. Avoid exaggerated rough rock, cliffs, pits and isolated grains. The output is a HEIGHT GUIDE, not a normal map: brighter is higher, darker is lower. Gentle low contrast, quiet broad plaster forms, no fine noisy sparkling relief. No added seams, new cracks, border, text, objects, crop or rotation. Preserve the original edge structure.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.85,
+        0.85
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_motel_wall_height_original.png",
+      "generated_original_sha256": "1f80b01a9a8ceb00d4210a8802b72b737e19827182abd9176509cea4b71f74c0",
+      "visual_status": "PASS"
+    },
+    {
+      "albedo": "diner/tex_floor_checker.jpg",
+      "source_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_mode": "RGB",
+      "inspection": "8x8 rutete fliser; svart og krem er pigment med lik høyde. Tynne beige fuger og litt avfaset kant har relieff.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. The input is an EXACT 8 by 8 checker tile floor albedo. Preserve its square framing, the exact 8x8 layout and every thin joint at x/y multiples of 1/8 including border joints. Both BLACK and CREAM tile faces MUST become the SAME uniform light-midgray height; their color difference is printed pigment and MUST NOT become alternating height. Lower only the narrow grout lines to a dark-midgray shallow groove, with very narrow softly rounded bevels along the exact visible tile edges. Tile faces remain flat, equally tall and calm; remove all stains, print, scratches, brightness gradients, light and shadow. The output is grayscale height, NOT purple normal map: higher=brighter, lower=darker. No new lines, no displaced grid, no thick joints, no crop, no rotation, no frame or text. Preserve exact border continuation.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.35,
+        0.5
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_floor_checker_height_original.png",
+      "generated_original_sha256": "2a3ffb284d43777e283a8c11076bf9b321820ad718dd3826025c17711fe21a89",
+      "visual_status": "PASS"
+    },
+    {
+      "albedo": "diner/tex_wall_panel.jpg",
+      "source_sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_mode": "RGB",
+      "inspection": "13 vertikale bord; de svarte bordsporene er fuger. Kvist/pigment holdes nesten flat og langsgående fiber meget svak.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT vertical wood panel albedo. Preserve square framing, all 13 vertical board strips and their exact narrow joint positions, original knot locations and edge continuation. Convert all differently colored board faces to approximately the SAME quiet midgray height; the orange/brown colors are wood pigment, not raised planks. Lower the existing thin vertical joints gently; give the edges a narrow soft roundover. Add only extremely weak lengthwise fiber relief and a very subtle rounded grain change at original knots. Do not turn every dark knot or fiber into a hole. Remove all color, directional illumination, shadows and stains. Output a low-contrast grayscale HEIGHT GUIDE, NOT a normal map: higher=brighter, lower=darker. No extra planks, no changed board width, no new knots, no wide trenches, no crop, no rotation, no border or text. Preserve the original pattern including top/bottom grain differences.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.55,
+        0.65
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_wall_panel_height_original.png",
+      "generated_original_sha256": "b37eb6d5fcd94dd9af85f8489de3aa5696b18b8b2c1f3017e3b4b0ef5b7f00bc",
+      "visual_status": "PASS"
+    },
+    {
+      "albedo": "diner/tex_booth_vinyl.jpg",
+      "source_sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_mode": "RGB",
+      "inspection": "512x512 diamantstopping. Buer/puter opp, tynne sømmer og knapper ned. Mørke skygger er ikke negativ høyde.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT red diamond-tufted vinyl albedo. Preserve square framing, exact diagonal seam paths, all button center positions and all partial buttons at image boundaries. Button centers are at (0,0),(256,0),(512,0),(128,128),(384,128),(0,256),(256,256),(512,256),(128,384),(384,384),(0,512),(256,512),(512,512) in a 512x512 coordinate system. Translate geometry only: each existing diamond cushion is a broad softly rounded raised dome, each existing stitched seam is a narrow shallow lowered channel, button centers are lowered dimples (even if their visible cap color looks bright). Keep the two axes and all edge continuations exact. Remove red pigment, lighting and baked shadow. Leather grain is effectively flat or extremely subtle to avoid sparkle. Output smooth low-contrast grayscale HEIGHT GUIDE, not a normal map: brighter=raised, darker=lower. No new buttons, no different quilting, no text, border, crop, rotation or cast shadows.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.3,
+        0.45
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_booth_vinyl_height_original.png",
+      "generated_original_sha256": "b7103a7083bd673dc0b782c0789083603539b95d19dce952ff3be04735562278",
+      "visual_status": "PASS"
+    },
+    {
+      "albedo": "diner/tex_counter_laminate.jpg",
+      "source_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_mode": "RGB",
+      "inspection": "512x512 laminat med trykte atomstjerner. Nesten flat, pigmentstjerner må ikke bli relieff.",
+      "height_guide_prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT pale-green atomic-star laminate albedo. Preserve square crop and orientation. The laminate is almost perfectly FLAT: output an almost uniform neutral midgray height plane, with only extremely faint existing physical scratches if visible. All atomic stars, flecks, color variations and green/gray print are pigment below a smooth laminate finish and MUST NOT become bumps, grooves or holes. Remove all pattern contrast, lighting, shadows and color. This is an intentionally nearly flat low-contrast grayscale HEIGHT GUIDE, NOT a purple normal map or decorative recolor. No added seams, stones, grains, cracks, bevels, border, text, crop or rotation.",
+      "status": "generated_and_converted",
+      "roughness_target": [
+        0.3,
+        0.4
+      ],
+      "generated_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_counter_laminate_height_original.png",
+      "generated_original_sha256": "dcffd7b53fe30e9f3e3619eeb7eb7b951e26221a8affaf9b22c024dbd7429778",
+      "visual_status": "PASS"
+    }
+  ]
+}

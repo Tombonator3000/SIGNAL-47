@@ -1,0 +1,384 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/motel/tex_motel_wall.jpg",
+    "sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+    "bytes": 407769,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/diner/heightguides/tex_motel_wall_height_original.png",
+    "sha256": "1f80b01a9a8ceb00d4210a8802b72b737e19827182abd9176509cea4b71f74c0",
+    "bytes": 3080987,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "motel_wall",
+  "parameters": {
+    "kind": "cracks",
+    "rough": [
+      0.85,
+      0.85
+    ],
+    "depth": 0.35,
+    "guide": 0.04
+  },
+  "method": {
+    "geometry": "small narrow local valleys only; broad albedo colour/shading excluded",
+    "guide_weight_height_pixels": 0.04,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.2540931701660156,
+    "strong_slope_support_fraction": 0.9974021911621094,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/motel/tex_motel_wall_n.png",
+      "sha256": "91e5c05e03f5a8f50ab845997f0c972a15173a12e95fed6b8028913a180fd7d7",
+      "bytes": 223666,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/motel/tex_motel_wall_r.jpg",
+      "sha256": "463f01f7f3793689f5c6e9f807ad554a7cd00666d261124290d606c744d705f5",
+      "bytes": 1185,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_normal_2x2.png",
+      "sha256": "2e4bfb8983ac74b14096f36c0f4efff28f4af57ff851f20d629e237f5b4ba78b",
+      "bytes": 484336,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_overlay.png",
+      "sha256": "f3251293b38a58ba73442f30c7166bf382428b4ee75f012633aab7c81cc83c13",
+      "bytes": 454961,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_light_top.png",
+      "sha256": "41d68bcc73941b5d3bb3e51eeba163c8a052eef7f59d5249d379affc62414969",
+      "bytes": 136186,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_mask.png",
+      "sha256": "cf41a8dae7be2b320a7fb7f4ee3e6ffedcb494e653dde41aba0e6b61a9c26739",
+      "bytes": 177007,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/motel/tex_motel_wall_derived_height.png",
+      "sha256": "91aedd6c8cf37fa89593e9ffde12fe50cc062df4c23ca979d7a6ec712c64cab4",
+      "bytes": 182769,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 11.042643229166666,
+      "p95_abs_byte_delta": 29,
+      "max_abs_byte_delta": 57
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 254
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9957618765172253,
+          "max": 1.0042508651113493
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 7.9803371744474845,
+          "pixels_over15": 0
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.8509803921568627,
+      "max": 0.8509803921568627,
+      "mean": 0.8509803921568627
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 0.9531881531811416,
+    "feature_max_degrees": 7.9803371744474845,
+    "calm_pixel_count": 673,
+    "feature_pixel_count": 261471,
+    "roughness_intended_range": [
+      0.85,
+      0.85
+    ],
+    "roughness_pre_jpeg_range": [
+      0.8500000238418579,
+      0.8500000238418579
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "visual_review": {
+    "reviewer": "ultra_b_diner",
+    "status": "PASS",
+    "reviewed_views": [
+      "source albedo",
+      "original generated height guide",
+      "source-feature mask",
+      "derived height",
+      "50% normal/albedo overlay",
+      "normal 2x2",
+      "top-lit diagnostic plane",
+      "roughness image"
+    ],
+    "notes": "PASS: Svak puss og kildestøttede små spor. Store malings-/smussfelt blir ikke store bulker. Normalen er rolig i toplys.",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "conversion_tool_sha256_preserved": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
+    "runtime_status": "UNVERIFIED",
+    "source_albedo_sha256_verified_unchanged": true
+  },
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf"
+  }
+}

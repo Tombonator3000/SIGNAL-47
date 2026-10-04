@@ -1,0 +1,390 @@
+{
+  "schema": "signal47-round9-map-report-v1",
+  "tool": {
+    "file": "tools/round9_maps.py",
+    "sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "pillow": "12.1.1",
+    "checker_sha256": "9162d54d00ba210de8e75258b01c233e9a7997a20fa2b1278caefd30f815b4cb"
+  },
+  "albedo": {
+    "path": "src/assets/art/diner/tex_floor_checker.jpg",
+    "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+    "bytes": 271874,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGB",
+    "format": "JPEG"
+  },
+  "height_guide": {
+    "path": "src/assets/art/production/round9_sources/diner/heightguides/tex_floor_checker_height_original.png",
+    "sha256": "2a3ffb284d43777e283a8c11076bf9b321820ad718dd3826025c17711fe21a89",
+    "bytes": 955260,
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "format": "PNG"
+  },
+  "profile": "checker",
+  "parameters": {
+    "kind": "grid8",
+    "rough": [
+      0.35,
+      0.5
+    ],
+    "depth": 0.75,
+    "guide": 0.012
+  },
+  "method": {
+    "grid": {
+      "count_per_axis": 8,
+      "phase_pixels": [
+        63,
+        1
+      ],
+      "period_pixels": 64.0
+    },
+    "geometry": "source-edge fitted regular joints, no height from tile colour",
+    "guide_weight_height_pixels": 0.012,
+    "guide_method": "periodic Gaussian 2px minus 14px, gated outside source features",
+    "feature_mask_fraction": 0.150146484375,
+    "strong_slope_support_fraction": 0.364990234375,
+    "puddle_candidate_fraction": 0.0
+  },
+  "outputs": {
+    "normal": {
+      "path": "src/assets/art/diner/tex_floor_checker_n.png",
+      "sha256": "d4cda4aaaaf94a0c62d1478ddcb5569fd28ed52e5515f84906ecf57e13d0fb9d",
+      "bytes": 66042,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "roughness": {
+      "path": "src/assets/art/diner/tex_floor_checker_r.jpg",
+      "sha256": "9b2cd41ade8fff855b3ac3f083698f0ae97e0eabbdcd08834ccb29748e5c382f",
+      "bytes": 9905,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "JPEG"
+    }
+  },
+  "qa": {
+    "normal_2x2": {
+      "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_normal_2x2.png",
+      "sha256": "1f9a192b547d5c0feb64f88226db980e3a0151f08b82f330da98649ff54f98b3",
+      "bytes": 151240,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "overlay": {
+      "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_overlay.png",
+      "sha256": "8ede23ac70bc411ac85c3ad4a6beda48c8edcd753366d56c468163ea052dae39",
+      "bytes": 337505,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "light_top": {
+      "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_light_top.png",
+      "sha256": "c7eab5550520f2c78b6ea9a2fecd1c9f366131b5ad2011eab727da8763411828",
+      "bytes": 41963,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "format": "PNG"
+    },
+    "mask": {
+      "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_mask.png",
+      "sha256": "fc3264d3962e386263500d9c1418aec4c12f9f4dd6924720ff31cd15d394ea21",
+      "bytes": 1310,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    },
+    "derived_height": {
+      "path": "src/assets/art/production/round9_qa/diner/tex_floor_checker_derived_height.png",
+      "sha256": "1abcf5b94a98d23a889ab8b62a29f2a8b1b47be0196b3e40433e094f208250ac",
+      "bytes": 2953,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "L",
+      "format": "PNG"
+    }
+  },
+  "normal_convention": "OpenGL +Y; image row increases downward; N=(-dh/dx,+dh/drow,1)",
+  "roughness_convention": "absolute linear grayscale values; integration chooses material multiplier",
+  "seam_conditioning": {
+    "data_only": true,
+    "band_pixels": 8,
+    "flat_boundary_pixels": 2,
+    "normal_edges": {
+      "mean_abs_byte_delta": 0.0,
+      "p95_abs_byte_delta": 0,
+      "max_abs_byte_delta": 0
+    },
+    "albedo_edges_unmodified": {
+      "mean_abs_byte_delta": 10.5751953125,
+      "p95_abs_byte_delta": 26,
+      "max_abs_byte_delta": 46
+    }
+  },
+  "slope_clamped_pixel_count": 0,
+  "technical": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "normal format RGB 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "PNG",
+          "mode": "RGB",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "normal no gamma/profile/alpha",
+        "status": "PASS",
+        "detail": [
+          "IHDR",
+          "IDAT",
+          "IDAT",
+          "IEND"
+        ]
+      },
+      {
+        "check": "normal B >= 128",
+        "status": "PASS",
+        "detail": 251
+      },
+      {
+        "check": "normal vector length 0.95..1.05",
+        "status": "PASS",
+        "detail": {
+          "min": 0.9957618765172253,
+          "max": 1.0037607101520292
+        }
+      },
+      {
+        "check": "normal slope <= 40 degrees",
+        "status": "PASS",
+        "detail": {
+          "max_degrees": 13.88850337039678,
+          "pixels_over15": 0
+        }
+      },
+      {
+        "check": "normal opposite border pixels identical",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "check": "roughness JPEG L 512x512",
+        "status": "PASS",
+        "detail": {
+          "format": "JPEG",
+          "mode": "L",
+          "size": [
+            512,
+            512
+          ]
+        }
+      },
+      {
+        "check": "roughness no profile/EXIF/gamma",
+        "status": "PASS",
+        "detail": [
+          "jfif",
+          "jfif_density",
+          "jfif_unit",
+          "jfif_version"
+        ]
+      },
+      {
+        "check": "roughness JPEG quality90 table",
+        "status": "PASS",
+        "detail": {
+          "0": [
+            3,
+            2,
+            2,
+            3,
+            5,
+            8,
+            10,
+            12,
+            2,
+            2,
+            3,
+            4,
+            5,
+            12,
+            12,
+            11,
+            3,
+            3,
+            3,
+            5,
+            8,
+            11,
+            14,
+            11,
+            3,
+            3,
+            4,
+            6,
+            10,
+            17,
+            16,
+            12,
+            4,
+            4,
+            7,
+            11,
+            14,
+            22,
+            21,
+            15,
+            5,
+            7,
+            11,
+            13,
+            16,
+            21,
+            23,
+            18,
+            10,
+            13,
+            16,
+            17,
+            21,
+            24,
+            24,
+            20,
+            14,
+            18,
+            19,
+            20,
+            22,
+            20,
+            21,
+            20
+          ]
+        }
+      }
+    ],
+    "roughness_readback": {
+      "min": 0.4196078431372549,
+      "max": 0.4980392156862745,
+      "mean": 0.4288910211301317
+    }
+  },
+  "material_contract": {
+    "calm_max_degrees": 2.927041436948962,
+    "feature_max_degrees": 13.88850337039678,
+    "calm_pixel_count": 166056,
+    "feature_pixel_count": 96088,
+    "roughness_intended_range": [
+      0.35,
+      0.5
+    ],
+    "roughness_pre_jpeg_range": [
+      0.42500001192092896,
+      0.49352940917015076
+    ],
+    "status": "PASS"
+  },
+  "analytic_positive_y": {
+    "status": "PASS",
+    "upper_normal": [
+      0.0039215686274509665,
+      0.43529411764705883,
+      0.8980392156862744
+    ],
+    "lower_normal": [
+      0.0039215686274509665,
+      -0.43529411764705883,
+      0.8980392156862744
+    ],
+    "left_normal": [
+      -0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "right_normal": [
+      0.43529411764705883,
+      0.0039215686274509665,
+      0.8980392156862744
+    ],
+    "upper_light": 0.9428090415820632,
+    "lower_light": 0.3272101967843631,
+    "light_direction": [
+      0,
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  },
+  "visual_status": "PASS with documented source limits",
+  "runtime_status": "UNVERIFIED",
+  "limitations": [
+    "Semantic feature masks require visual review per source.",
+    "The guide does not replace source geometry.",
+    "Normal direction test verifies the converter, not semantic correctness of every bump.",
+    "Equal data-map borders do not fix or certify albedo seams.",
+    "PNG QA lighting is diagnostic, not an in-game screenshot.",
+    "No exact image-generator model version is inferred by this tool."
+  ],
+  "visual_review": {
+    "reviewer": "ultra_b_diner",
+    "status": "PASS",
+    "reviewed_views": [
+      "source albedo",
+      "original generated height guide",
+      "source-feature mask",
+      "derived height",
+      "50% normal/albedo overlay",
+      "normal 2x2",
+      "top-lit diagnostic plane",
+      "roughness image"
+    ],
+    "notes": "PASS: 8x8 fuger ligger på kildekantene. Svart og krem har lik høyde. Begge farger har lik grunnruhet og roligere flater.",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "conversion_tool_sha256_preserved": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
+    "runtime_status": "UNVERIFIED",
+    "source_albedo_sha256_verified_unchanged": true
+  },
+  "reproduction": {
+    "status": "PASS",
+    "verified_utc": "2026-10-04T20:57:14.500044+00:00",
+    "outputs_byte_identical": true,
+    "previous_converter_sha256": "80fffb46e7621698bfff44fb739dc4023b1db7ff3eb505a25bdfc8ac92a53fd6",
+    "current_converter_sha256": "057cfb121bcc63d64cd9d3f99e4bbc653246aed9ce4c49401d4ae2ee2a80ab3a",
+    "unchanged_albedo_sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "scope": "all 64 source tile face centers have equal derived height regardless of black/cream pigment",
+  "derived_height_sha256": "1abcf5b94a98d23a889ab8b62a29f2a8b1b47be0196b3e40433e094f208250ac",
+  "sample_positions": "x,y=32+64*k for k=0..7",
+  "sample_count": 64,
+  "height_gray_min": 255,
+  "height_gray_max": 255,
+  "note": "Comparison checks material meaning rather than the source color alternating pattern."
+}

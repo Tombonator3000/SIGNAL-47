@@ -1,0 +1,195 @@
+{
+  "source_commit": "7e0aad8b6568025d639145372ff290b0f2f6b7d9",
+  "albedos": [
+    {
+      "albedo": "room/tex_floor_hextile.jpg",
+      "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 155674
+    },
+    {
+      "albedo": "room/tex_wall_paint.jpg",
+      "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 168716
+    },
+    {
+      "albedo": "ext/tex_concrete.jpg",
+      "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 309800
+    },
+    {
+      "albedo": "ext/tex_desert_ground.jpg",
+      "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 372460
+    },
+    {
+      "albedo": "ext/tex_asphalt_wet.jpg",
+      "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 305609
+    },
+    {
+      "albedo": "annex/tex_floor_vinyl.jpg",
+      "sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 111439
+    },
+    {
+      "albedo": "yard/tex_cabinet_metal.jpg",
+      "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 143277
+    },
+    {
+      "albedo": "room/tex_desk_laminate.jpg",
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 124281
+    },
+    {
+      "albedo": "room/tex_ceiling_tile.jpg",
+      "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "bytes": 71384
+    },
+    {
+      "albedo": "station/tex_stucco_wall.jpg",
+      "sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 315151
+    },
+    {
+      "albedo": "station/tex_concrete_old.jpg",
+      "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 335151
+    },
+    {
+      "albedo": "station/tex_wood_weathered.jpg",
+      "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 302855
+    },
+    {
+      "albedo": "station/tex_floorboards.jpg",
+      "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 265958
+    },
+    {
+      "albedo": "road/tex_gravel_track.jpg",
+      "sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 419124
+    },
+    {
+      "albedo": "motel/tex_motel_wall.jpg",
+      "sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 407769
+    },
+    {
+      "albedo": "diner/tex_floor_checker.jpg",
+      "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 271874
+    },
+    {
+      "albedo": "diner/tex_wall_panel.jpg",
+      "sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 180536
+    },
+    {
+      "albedo": "diner/tex_booth_vinyl.jpg",
+      "sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "bytes": 54802
+    },
+    {
+      "albedo": "diner/tex_counter_laminate.jpg",
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "bytes": 42959
+    }
+  ]
+}

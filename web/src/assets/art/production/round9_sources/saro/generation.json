@@ -1,0 +1,65 @@
+{
+  "wall": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Painted concrete blocks. The existing staggered mortar lines are recessed and must remain at their exact original positions. Broad block faces are flat at the same elevation with only very faint plaster irregularities. No height changes from blue-gray paint or dark stains. No new block layout.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/room/tex_wall_paint.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-78286dde-400d-4584-8a85-ae93f5ab4a8d.png"
+  },
+  "concrete": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Weathered outdoor concrete. This original has fine exposed aggregate and only faint pits, no major panel seam. Keep the slab nearly flat, slightly raise visible tiny aggregate and recess visible small pits and existing hairline marks. Broad beige discoloration is pigment, not height. Avoid broad blobs or inventing joint lines.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/ext/tex_concrete.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-1259f2cb-c21b-4dff-b18f-e14f3d3ca4a4.png"
+  },
+  "desert": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Dry desert soil seen vertically from above. Existing pebbles and twig/grass tufts slightly raised, fine existing dry cracks recessed. Keep their exact positions. Sand nearly flat, with broad ochre pigment variation removed. No hills, landscape, directional shadows or new foliage.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/ext/tex_desert_ground.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-e6c87572-997c-45fa-94ab-9bb7c02fac16.png"
+  },
+  "asphalt": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Cracked damp asphalt seen vertically from above. Existing thin branching cracks recessed, visible aggregate very slightly raised. Darker damp/puddle fields remain flat, no elevation from wet pigment. Keep every crack position exactly, do not invent stones or broaden cracks. Most of surface very flat.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/ext/tex_asphalt_wet.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-171b94e7-afad-4f1a-bf01-e64a81f7b7e6.png"
+  },
+  "vinyl": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Sixteen square vinyl tiles in a 4x4 grid, existing very thin seams at x and y 0/256/512/768/1024 in the supplied 1024 target. Recess only these actual seams with a tiny soft bevel; all tile interiors at the same uniform height. Speckled beige marbling, dirt and wear patches are pigment and must not be bumps. Do not create extra tile lines.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/annex/tex_floor_vinyl.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-1e79b7a8-a3be-4392-a099-874c60581bc1.png"
+  },
+  "metal": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Asset type: grayscale HEIGHT GUIDE for tangent-space PBR data maps for SIGNAL / 47. The supplied image is the exact edit target and geometric authority. Keep its crop, orientation and every feature at the same pixel coordinates. Full square 1024x1024. Convert surface geometry into grayscale height only: neutral middle-light gray for flat top, darker for recessed seams/cracks, slightly lighter for raised aggregate. No color, lighting, shadows, ambient occlusion, perspective, labels, frame or text. Remove broad pigment/stain/color changes from elevation. Quiet stylized material, no extra noise or invented cracks. Opaque image. Specific surface: Gray painted steel cabinet surface with sparse thin scratches and tiny rust flecks. Almost perfectly flat paint, only existing fine scratches subtly recessed and identified brown rust flecks slightly raised. Do not give dark scuffs or paint discoloration height. No new panels, frames, rivets, seams or rust patches. Ignore broad lighting/color variation.",
+      "referenced_image_paths": [
+        "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/src/assets/art/yard/tex_cabinet_metal.jpg"
+      ],
+      "transparent_background": false
+    },
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-ba145dab-54a1-404e-a3ae-fb0264ca6f77.png"
+  },
+  "hex": {
+    "source": "/home/tombonator3000t/.codex/generated_images/01a105a8-96c5-7003-8874-45f031b6d721/exec-bb03699d-eba6-459a-a68e-ebba05f72d8d.png"
+  }
+}

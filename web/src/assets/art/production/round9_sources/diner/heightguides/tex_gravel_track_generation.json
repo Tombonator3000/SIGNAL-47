@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "road/tex_gravel_track.jpg",
+  "albedo_sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-ab06102a-3257-49eb-9576-a2a5127fe2a7.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_gravel_track_height_original.png",
+  "saved_original_sha256": "64ae1d0301994a5648140aeb4de91c8b9de9d891a89e6bd5d43c04fbc7b24f6c",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input image is the exact albedo and geometry reference. Preserve its square framing, both wheel track paths around x=30% and x=70%, every clearly visible medium stone location, direction and edge continuation. Translate material geometry into grayscale height: neutral midgray ground, very shallow broad lowered wheel tracks, existing medium pebbles gently raised with soft domed tops. The stones keep their positions; remove all color and all baked illumination and cast shadows. Distinguish pigment and dark shading from geometric depth. No new stones, no new tracks, no deep trenches. Keep tiny gravel below the resolution of the final 512x512 output quiet, without salt-and-pepper noise. The output is a HEIGHT GUIDE, not a purple normal map: higher=brighter, lower=darker, gentle low contrast. No light direction, border, text, objects or crop. Preserve the original edge structure; do not invent a different seamless composition.",
+  "prompt_sha256_utf8": "ab86bda95e5b8a11e353e7d8002886515b6cec167d4f7a0025f507edf2998e10",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}

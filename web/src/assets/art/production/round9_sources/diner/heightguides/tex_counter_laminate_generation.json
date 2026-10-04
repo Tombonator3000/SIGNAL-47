@@ -1,0 +1,24 @@
+{
+  "schema": "signal47-round9-height-guide-v1",
+  "albedo": "diner/tex_counter_laminate.jpg",
+  "albedo_sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+  "operation": "source-referenced height-guide generation",
+  "tool": "built-in ChatGPT image generator",
+  "model_version": "not exposed by tool",
+  "original_builtin_path": "/home/tombonator3000t/.codex/generated_images/01a10898-20de-72b2-84c0-4cf15e8a713d/exec-f3232c2d-bded-41a8-80c2-42e7660526f2.png",
+  "saved_original": "src/assets/art/production/round9_sources/diner/heightguides/tex_counter_laminate_height_original.png",
+  "saved_original_sha256": "dcffd7b53fe30e9f3e3619eeb7eb7b951e26221a8affaf9b22c024dbd7429778",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "prompt": "Use case: precise-object-edit. Asset type: source-aligned grayscale HEIGHT GUIDE for a tangent-space normal map. Input is the EXACT pale-green atomic-star laminate albedo. Preserve square crop and orientation. The laminate is almost perfectly FLAT: output an almost uniform neutral midgray height plane, with only extremely faint existing physical scratches if visible. All atomic stars, flecks, color variations and green/gray print are pigment below a smooth laminate finish and MUST NOT become bumps, grooves or holes. Remove all pattern contrast, lighting, shadows and color. This is an intentionally nearly flat low-contrast grayscale HEIGHT GUIDE, NOT a purple normal map or decorative recolor. No added seams, stones, grains, cracks, bevels, border, text, crop or rotation.",
+  "prompt_sha256_utf8": "e2da6cd0a15cddaf519b10ddff296a62348a23727309d6c5178258944acc68c5",
+  "reference_invariants": "Original albedo is untouched. Output is only supplemental guide; final geometric features come from original-source masks.",
+  "limitations": [
+    "The generated guide is not accepted as an exact per-pixel geometry match.",
+    "Generated guides can contain interpreted shading; periodic bandpass and tiny guide weight suppress it.",
+    "Exact model version is not exposed."
+  ]
+}
