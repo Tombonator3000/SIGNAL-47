@@ -133,6 +133,10 @@ async function boot() {
       area: () => world.area, site: () => world.site, driving: () => world.driving,
       driveOut: () => world.driveOut(), driveBack: () => world.driveBack(),
     },
+    motel: {
+      area: () => world.area, room: () => world.room6, court: () => world.court,
+      goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
+    },
     milestone: () => requestAutosave(true),
   });
   // a new safe point (02:13, a new chapter) starts a new autosave generation
@@ -144,6 +148,10 @@ async function boot() {
   world.onStationLoaded = (site) => ch3.bindSite(site);
   world.onArriveStation = () => ch3.arrivedStation();
   world.onArriveSaro = () => ch3.arrivedSaro();
+  const ch4 = game.ch4;
+  world.onRoom6Loaded = (r) => ch4.bindRoom(r);
+  world.onEnterRoom6 = () => ch4.enteredRoom();
+  world.onLeaveRoom6 = () => ch4.leftRoom();
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
@@ -315,8 +323,9 @@ async function boot() {
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
     await saves.ready;
-    // a save made at the station needs the station built first
-    const area = (o.state?.area === 'station01' ? 'station01' : 'saro') as AreaId;
+    // a save made at the station or in room 6 needs that area built first
+    const savedArea = o.state?.area;
+    const area = (savedArea === 'station01' || savedArea === 'room6' ? savedArea : 'saro') as AreaId;
     try { await world.prepare(area); } catch (e) { console.error(e); }
     clearTimeout(slow);
     caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
@@ -328,8 +337,9 @@ async function boot() {
     restoring = o.state; restoringNow = true;
     game.start(o.state?.checkpoint ?? o.jump);
     restoringNow = false; restoring = null;
-    world.enter(area === 'station01' && world.site ? 'station01' : 'saro');
+    world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
+    if (world.area === 'room6') world.placeAtRoom6();
     // put the player back where they stood, if the restored world lets them stand there
     const pose = o.state?.pose;
     if (pose && o.state?.checkpoint !== 'residual' && player.walkable(pose.x, pose.z)) {
@@ -363,6 +373,8 @@ async function boot() {
     const p = player.pos;
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
+    if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
+    if (world.crossing.outside(p)) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
     if (inside(annex.zone.corridor, p) || inside(annex.zone.southDoor, p)) return 'South corridor';
@@ -497,9 +509,16 @@ async function boot() {
     next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
     begin: () => game.beginChapter3(null),
   });
-  // End of chapter three, as far as the night is built.
-  ch3.onEnd = () => showCard({
-    lines: ch3.endingLines(),
+  // End of chapter three: the prints are filed, and N. Vega is waiting across the road.
+  ch3.onEnd = () => chapterBreak({
+    closed: 'THE SURVEY STATION // P06 TO P09 RECORDED',
+    recap: 'Fixed point A was moved. The cable was cut on purpose. The receiver in the hut still carries T. Vega\'s correction. N. Vega is waiting in room 6, across the road.',
+    next: 'CHAPTER FOUR', title: 'ROOM 6',
+    begin: () => game.beginChapter4(null),
+  });
+  // End of chapter four, as far as the night is built.
+  ch4.onEnd = () => showCard({
+    lines: ch4.endingLines(),
     buttons: [
       { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
       { label: 'Title', on: () => toTitle() },
@@ -514,7 +533,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, saves, world,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world,
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -586,11 +605,12 @@ async function boot() {
       game.update(dt, t, modalOpen);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
-      const sp = world.driving ? 'lab' : world.area === 'station01' ? (world.indoors(player.pos) ? 'room' : 'yard') : spaceOf(player.pos);
+      const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' ? (world.indoors(player.pos) ? 'room' : 'yard') : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
-      annex.interior.visible = indoors.slice(1).some((b) => inside(b, player.pos))
-        || (inside(room.bounds, player.pos) && room.southDoorHinge.rotation.y > 0.01);
+      annex.interior.visible = world.area === 'saro' && (indoors.slice(1).some((b) => inside(b, player.pos))
+        || (inside(room.bounds, player.pos) && room.southDoorHinge.rotation.y > 0.01)
+        || (annex.exitOpen > 0.01 && inside(world.crossing.zone.stoop, player.pos)) || inside(annex.zone.exitDoor, player.pos));
       crtAcc += dt;
       if (crtAcc > 1 / 12) { crtAcc = 0; game.drawCrts(t); }
       if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised && !world.driving) {
@@ -618,7 +638,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     renderer.render(scene, camera);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

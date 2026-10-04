@@ -11,6 +11,19 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Prøv de nye innstillingene (invertert blikk, synsfelt, større tekst) på telefon.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
 
+## Fra Tom 4. oktober ettermiddag (i arbeid, i denne rekkefølgen)
+
+- [ ] **Fri bevegelse:** alle dører kan åpnes og lukkes når som helst, ingen kapitler stenger spilleren inne (kodet i `world/Doors.ts`, testes).
+- [ ] **Signalet som i «Contact»:** suset går over i pulserende struktur, tunge slag i 4/7-mønsteret og en metallisk hvin, tydeligere jo nærmere 1420.405 (kodet i `core/signalVoice.ts`, testes).
+- [ ] **Signalprosessoren** ved RX bank 3 spiller båndet av, rått eller harmonisert, nesten som musikk (kodet i `core/decoder.ts` og `story/Decoder.ts`, testes).
+- [ ] **Rom 6:** TV-en står på med sus som lyser opp rommet i blått og flimrer.
+- [ ] **Walkie-talkien (etter «Signs»):** Tomás' radio fra 1947 i Noras skoeske. Slått på gir den rare lyder (bærebølgen, 4/7, brokker). Trykker spilleren for å snakke, pulserer rommet i blendende, skiftende farger med fremmede lyder, så blir alt svart og spilleren våkner senere. Nora: han trykket også. Valgfritt, etter P12.
+- [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
+- [ ] **Tre lysende punkter over motellet:** står stille i en trekant over Sierra Motor Court i kapittel 4 for den som ser opp; et bilde av dem havner i albumet og journalen. Ingen forklaring i spillet (bibelens regel om at fenomenet følger referansene: tre punkter som A, B og C).
+- [ ] **Journal med faner:** oppgaver, notater, dokumenter, bilder, personer, steder og signaler. Oppføringene låses opp etter hvert.
+- [ ] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
+- [ ] Voices of the Void: idéer som passer er samlet i loggen 4. oktober (signalbibliotek, vedlikeholdsturer, basen som hjem). Ikke tilfeldige overnaturlige hendelser.
+
 ## Neste
 
 - [ ] Kapittel 4 «Room 6» (neste for Claude): Sierra Motor Court, rett over veien fra SARO, og Noras rom 6 (designbibelens K4). Samtalen åpnes med bevisene: originalen fra 1947, FRAME 03 og FRAME 04. Hun gir feltkortet, brevet og den signerte rettelsen, og forteller hvor C krysset riksveien. Se `HISTORIE.md`.

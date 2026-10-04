@@ -16,10 +16,14 @@ export class Player {
   stepDist = 0;
   shake = 0;
   onStep?: () => void;
+  /** Ground height under the player, where it is not the floor at y = 0 (the walk down
+   *  from SARO's fire exit and over the road). The eye follows it smoothly. */
+  floor: ((x: number, z: number) => number) | null = null;
+  floorY = 0;
 
   constructor(public camera: THREE.PerspectiveCamera, public colliders: Collider[], public zones: Zone[]) {}
 
-  place(x: number, z: number, yaw: number) { this.pos.set(x, 0, z); this.yaw = yaw; this.pitch = -0.06; }
+  place(x: number, z: number, yaw: number) { this.pos.set(x, 0, z); this.yaw = yaw; this.pitch = -0.06; this.floorY = this.floor ? this.floor(x, z) : 0; }
 
   look(dx: number, dy: number) {
     this.yaw -= dx;
@@ -42,11 +46,13 @@ export class Player {
       if (this.stepDist > 0.62) { this.stepDist = 0; this.onStep?.(); }
     } else this.bob *= 0.9;
 
+    const fy = this.floor ? this.floor(this.pos.x, this.pos.z) : 0;
+    this.floorY += (fy - this.floorY) * Math.min(1, dt * 14);
     this.shake = Math.max(0, this.shake - dt * 1.4);
     const sh = this.shake * this.shake;
     this.camera.position.set(
       this.pos.x + (Math.random() - 0.5) * sh * 0.08,
-      this.eye + Math.sin(this.bob) * 0.018 + (Math.random() - 0.5) * sh * 0.06,
+      this.floorY + this.eye + Math.sin(this.bob) * 0.018 + (Math.random() - 0.5) * sh * 0.06,
       this.pos.z + (Math.random() - 0.5) * sh * 0.08,
     );
     this.camera.rotation.set(this.pitch + (Math.random() - 0.5) * sh * 0.02, this.yaw, Math.sin(this.bob * 0.5) * 0.004, 'YXZ');
