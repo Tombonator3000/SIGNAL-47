@@ -4,6 +4,10 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-03: Kapittel 1 "The Second Exposure" er portert fra Unity (`Chapter09`, `Visual10`, `ChapterInvestigation.cs`, `FieldCamera.cs`): kamera ved østdøra, S-03-loggen, FRAME 01 fra S-03-plattformen, framkalling i fotolaben, merking på kopien, referanse og hypotese, B-12 med passiv eller aktiv metode, FRAME 02, sammenligning og lokal rapport. Tekstene i spillet er Unitys, ordrett der det gikk. Tilpasninger: arrayet ligger nord (-Z) og servicegården øst for kontrollrommet, fotolaben ligger øst for gangveien, motorskapets logg heter SARO ARRAY (Unity: SIERRA ARRAY) og er stemplet med klokkeslettet for smellet i prologen (Unity: 23:44), og merket med tre striper heter R-07 fordi S-07 er en av de 27 antennene her.
+- 2026-10-03: Prolog og kapittel 1 sammen tilsvarer K1 i designbibelen. Arbeidsordren med Ward og overgangen til arkivet (K2) mangler. Se `FORSLAG.md`.
+- 2026-10-03: Ytelse: antennene tegnes som instanser (`DishArray`) med egen synlighetstest per antenne, alle lampeglød i ett tegnekall (`GlowPoints`), lysdioder i racket som instanser, og bokser med ulik inn- og utside lages med `faced()` (to tegnekall i stedet for seks). Målt i skyen: tittel 451 til 198 draw calls, start ved pulten 388 til 157, vinduet 262 til 74. Ute og i laben 34 til 202.
+- 2026-10-03: Lagring: `s47.checkpoint` er `residual` eller `chapter1`. Saken i kapittel 1 ligger i `s47.case`, med begge fotografiene som JPEG-tekst.
 - 2026-10-03: Tom ba om at spillet skal kunne spilles fra GitHub Pages. Det publiseres på https://tombonator3000.github.io/SIGNAL-47/ med `.github/workflows/pages.yml` hver gang main får endringer i `web/`. Det vanlige bygget (`npm run build`, `dist/`) publiseres, fordi kode, lyd og fonter da mellomlagres hver for seg. `build:single` brukes fortsatt til artefakter og deling som én fil.
 - 2026-10-03: web/ ble lagt inn av Claude Code (commit `3dd5b37` på grenen `ccr-30e38858-767d90`) og føres til main gjennom [PR #24](https://github.com/Tombonator3000/SIGNAL-47/pull/24), fordi Tom ba om PR og merge. Grenen `web/threejs-prologue` som chatloggen nevner, ble aldri pushet.
 - 2026-10-03: Spillet bygges videre i three.js i `web/` i samme repo (Tombonator3000/SIGNAL-47). Unity-prosjektet blir liggende som arkiv. Vi tar med design, historie og konstanter, ikke kode.
@@ -28,7 +32,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 - Telefonen: framtidsopptak av kontrollrommet (romlyd, skriver, dunk, gisp, keramikk som knuses). Etter at linjen dør går det nøyaktig 47 sekunder til smellet, koppen faller og knuses.
 - Antennene: 27 stykk, S-01 til S-27. Etter smellet snur alle samtidig til az 026, el 32, uten styrekommando.
 - Neste kapittel: S-03 i servicegården. Planlagt 042°, enkoder 026°, commands received 0.
-- Hele historien med tre slutter (Silence, Answer, Listen) står i ChatGPT-samtalen "Utvikle spillområde visuelt" og i Unity-repoets `Docs/DesignBible13`.
+- Slutter: designbibelen (`Docs/DesignBible13/design-bible.md`) har to, A "Bryt referansen" og B "Fullfør én registrering", og sier at det ikke finnes en tredje. Tre slutter (Silence, Answer, Listen) står bare i ChatGPT-samtalen "Utvikle spillområde visuelt". Her stod det tidligere at designbibelen også hadde tre. Det var feil. Tom har ikke valgt ennå.
+- Navn i designbibelen: spilleren heter Reyes, vaktansvarlig er Dr. Evelyn Ward, vitnet er Nora Vega (rom 6 på Sierra Motor Court), broren hennes Tomás Vega. ART_BRIEF.md og todo.md sier rom 47. Ikke avgjort.
 
 ## Referansebilder
 
@@ -40,7 +45,10 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 
 ## Arkitektur
 
-- `src/main.ts`: oppstart, step/draw-løkke, menyer, adaptiv oppløsning, testkroker på `window.S47` (hold, tick, jump, setQuality, game, room, ext, player, renderer, scene).
+- `src/main.ts`: oppstart, step/draw-løkke, menyer, adaptiv oppløsning, testkroker på `window.S47` (hold, tick, jump, setQuality, game, room, ext, yard, fcam, ch1, player, renderer, scene, camera). `S47.jump('chapter1')` hopper rett til kapittel 1.
+- `src/story/Chapter1.ts`: kapitlet som trinn (`Stage`) med en lagringsbar `CaseState`. Alle regler for når lukkeren kan utløses står i `check()`.
+- `src/world/ServiceYard.ts`: gangvei, S-03, B-12, fotolab og detaljer. Gangbare flater er soner (`zones`), hindringer er `colliders`.
+- `src/core/FieldCamera.ts`: søkeren gir skjermkameraet det synsfeltet som gjør at rammen viser nøyaktig det fotografiet får med (44,6 grader vertikalt). Eksponeringen tegner scenen på nytt i 960x600.
 - `src/story/Prologue.ts`: faser i rekkefølge intro, shift, survey, skip, residual, locked, solving, printing, printed, ringing, call, countdown, event, turning, end. Alle forsinkelser bruker spilltid (`after()`), så pause og omstart virker.
 - `src/world/kit.ts`: materialer, byggeklosser, statisk sammenslåing, falske natriumflomlys (`addFlood`, `floodlit`).
 - `src/world/Dish.ts`: antenne med asimut- og elevasjonsledd. lod 1 for fjerne antenner.
@@ -49,6 +57,11 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 
 ## Kjente fallgruver
 
+- Spilleren må alltid stå inne i minst én sone. Der to soner møtes, må de overlappe med mer enn spillerens diameter, ellers blir spilleren stående fast i skjøten.
+- three.js treffer også usynlige objekter med stråler. Det som skal være skjult for interaksjon, flyttes til lag 31 (`layers.set(31)`). Små eller sammenslåtte ting får en usynlig boks (`proxy()`) som strålen kan treffe.
+- `mergeStatic()` slår sammen alt i en gruppe. Objekter som skal kunne brukes, flyttes eller skjules, må få `noMerge()` eller ligge utenfor gruppa.
+- Flomlyssett (`floodSet`): ute brukes settet `site` med 20 plasser, fotolaben har sitt eget sett med 5. Et fullt sett gir en advarsel i konsollen.
+- I testene vises merkelappen til et objekt et øyeblikk etter et hopp, fordi teksten tones ut med CSS. Det er ikke en feil i spillet.
 - Fullskjermlag i `#ui` får `pointer-events: auto` fra `#ui > *`. Lag som dekker skjermen må overstyres eksplisitt, ellers sluker de klikk og berøring.
 - Headless Chromium stopper skjermbilder mens pekeren er låst. Testene erstatter `requestPointerLock`.
 - Flomlysene var for sterke og gjorde natten til dag i High. Nå har de vindusavtagning og skala 0.07.

@@ -4,7 +4,7 @@ Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
 ## Nettversjonen i `web/`
 
-Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md), med three.js, TypeScript og Vite. Prologen «Night Shift» kan spilles fra start til sluttkort i nettleseren, med mus og tastatur eller berøringskontroller. Spill den på https://tombonator3000.github.io/SIGNAL-47/. Den publiseres automatisk fra main med `.github/workflows/pages.yml`. Ytelse og berøring på ekte telefon er ikke testet ennå. Arbeid i mappen følger [`web/AGENTS.md`](web/AGENTS.md), og status står i `web/memory.md`, `web/todo.md` og `web/log.md`. Unity-prosjektet som beskrives under, er arkiv og referanse.
+Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md), med three.js, TypeScript og Vite. Prologen «Night Shift» og kapittel 1 «The Second Exposure» (servicegården, S-03, feltkameraet, fotolaben og B-12) kan spilles fra start til sluttkort i nettleseren, med mus og tastatur eller berøringskontroller. Forslag til veien videre står i [`web/FORSLAG.md`](web/FORSLAG.md). Spill den på https://tombonator3000.github.io/SIGNAL-47/. Den publiseres automatisk fra main med `.github/workflows/pages.yml`. Ytelse og berøring på ekte telefon er ikke testet ennå. Arbeid i mappen følger [`web/AGENTS.md`](web/AGENTS.md), og status står i `web/memory.md`, `web/todo.md` og `web/log.md`. Unity-prosjektet som beskrives under, er arkiv og referanse.
 
 ## Unity-versjonen (arkiv)
 

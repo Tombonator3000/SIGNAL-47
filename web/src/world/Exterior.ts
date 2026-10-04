@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './kit';
-import { Dish } from './Dish';
+import { Dish, DishArray } from './Dish';
+import { GlowPoints } from './glow';
 import * as T from '../core/textures';
 
 // World layout (metres): control room centred at the origin, windows face north (-Z).
 // The road runs north-south west of SARO; Sierra Motor Court sits on the far side of it.
+// S-03 is the central antenna at the end of the east service walk (chapter one).
 const DISH_LAYOUT: [string, number, number, number][] = [
-  ['S-01', 24, -40, 0.9], ['S-02', -16, -52, 0.85], ['S-03', -48, -66, 0.85], ['S-04', 6, -88, 0.85],
+  ['S-01', -48, -66, 0.85], ['S-02', -16, -52, 0.85], ['S-03', 9.5, -42, 0.9], ['S-04', 6, -88, 0.85],
   ['S-05', 44, -96, 0.85], ['S-06', -30, -116, 0.85], ['S-07', -80, -104, 0.85], ['S-08', 20, -146, 0.85],
   ['S-09', 66, -156, 0.85], ['S-10', -58, -168, 0.85], ['S-11', -10, -200, 0.85], ['S-12', 100, -120, 0.85],
   ['S-13', -120, -150, 0.85], ['S-14', 40, -230, 0.85], ['S-15', -96, -230, 0.85],
@@ -21,7 +23,10 @@ const DISH_LAYOUT_FAR: [string, number, number, number][] = [
 export class Exterior {
   group = new THREE.Group();
   dishes: Dish[] = [];
-  lampSprites: THREE.Sprite[] = [];
+  dishArray!: DishArray;
+  // Lamp glows, poles and fence posts are batched: one point cloud and one merged group.
+  glow = new GlowPoints();
+  private statics = new THREE.Group();
 
   constructor() {
     this.ground();
@@ -31,6 +36,8 @@ export class Exterior {
     this.building();
     this.motel();
     this.fence();
+    mergeStatic(this.statics);
+    this.group.add(this.statics, this.glow.build());
   }
 
   private ground() {
@@ -61,7 +68,8 @@ export class Exterior {
     while (n < 900) {
       const x = (r() - 0.5) * 420, z = (r() - 0.5) * 420 - 60;
       if (Math.abs(x + 24) < 7) continue;             // road
-      if (x > -9 && x < 24 && z > -8 && z < 9) continue; // building
+      if (x > -9 && x < 40 && z > -8 && z < 9) continue;  // buildings
+      if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
       const k = 0.4 + r() * 1.1;
       p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);
       scrub.setMatrixAt(n++, m.compose(p, q, s));
@@ -97,25 +105,16 @@ export class Exterior {
   }
 
   private array() {
-    for (const [id, x, z, s] of DISH_LAYOUT) {
-      const d = new Dish(id, x, z, s, 42, 48);
-      this.dishes.push(d);
-      this.group.add(d.root);
-    }
-    for (const [id, x, z, s] of DISH_LAYOUT_FAR) {
-      const d = new Dish(id, x, z, s, 42, 48, 1);
-      this.dishes.push(d);
-      this.group.add(d.root);
-    }
+    for (const [id, x, z, s] of DISH_LAYOUT) this.dishes.push(new Dish(id, x, z, s, 42, 48));
+    for (const [id, x, z, s] of DISH_LAYOUT_FAR) this.dishes.push(new Dish(id, x, z, s, 42, 48, 1));
+    this.dishArray = new DishArray(this.dishes);
+    this.group.add(this.dishArray.group);
     // sodium floods near the closest dishes
     addFlood(30, 3, -30, 46); addFlood(-10, 3, -42, 40); addFlood(-40, 3, -56, 34);
     addFlood(12, 3, -78, 30); addFlood(48, 3, -86, 28);
-    const lampTex = T.glowSprite('rgba(255,180,90,1)', 'rgba(255,140,50,0)');
     const lamp = (x: number, z: number, h = 7) => {
-      cyl(this.group, 0.12, 0.16, h, M.pole, x, h / 2 - 0.6, z, 6);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lampTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
-      sp.position.set(x, h - 0.5, z); sp.scale.setScalar(2.6);
-      this.group.add(sp); this.lampSprites.push(sp);
+      cyl(this.statics, 0.12, 0.16, h, M.pole, x, h / 2 - 0.6, z, 6);
+      this.glow.add(x, h - 0.5, z, 2.6, 0xffb45a);
     };
     lamp(30, -30); lamp(-10, -42); lamp(-40, -56); lamp(12, -78); lamp(48, -86);
     [[-70, -94], [-24, -106], [60, -146], [-52, -158], [-4, -190], [94, -110]].forEach(([x, z]) => lamp(x, z, 6));
@@ -125,13 +124,10 @@ export class Exterior {
     const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: T.roadTex(), roughness: 0.55 }), 0.02);
     const r = plane(this.group, 8, 480, asphalt, -24, -0.58, 20, 0, -Math.PI / 2);
     noMerge(r);
-    const lampTex = T.glowSprite('rgba(255,175,85,1)', 'rgba(255,140,50,0)');
     for (let z = 70; z > -200; z -= 34) {
-      cyl(this.group, 0.12, 0.16, 8, M.pole, -18.5, 3.4, z, 6);
-      box(this.group, 1.8, 0.12, 0.2, M.pole, -19.3, 7.3, z);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lampTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
-      sp.position.set(-20.1, 7.1, z); sp.scale.setScalar(3);
-      this.group.add(sp);
+      cyl(this.statics, 0.12, 0.16, 8, M.pole, -18.5, 3.4, z, 6);
+      box(this.statics, 1.8, 0.12, 0.2, M.pole, -19.3, 7.3, z);
+      this.glow.add(-20.1, 7.1, z, 3, 0xffaf55);
     }
     addFlood(-20, 6, 58, 30); addFlood(-20, 6, 24, 30); addFlood(-20, 6, -10, 28);
   }
@@ -148,28 +144,26 @@ export class Exterior {
       new THREE.MeshStandardMaterial({ map: T.facadeWindows(8, 1, 8), roughness: 0.9 }),
     ];
     wingMats.forEach((m) => floodlit(m as THREE.MeshStandardMaterial, 0.03));
-    const wing = box(g, 18, 4.2, 11, wingMats, 15.2, 1.5, 0);
+    const wing = box(g, 18, 4.2, 11, wingMats, 29.6, 1.5, 0);
     noMerge(wing);
     // lettering on the south face of the wing
     const letters = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), new THREE.MeshBasicMaterial({ map: T.saroLettering(), transparent: true, toneMapped: false, color: 0xd9cfb6 }));
-    letters.position.set(12, 2.0, 5.53);
+    letters.position.set(26.4, 2.0, 5.53);
     noMerge(letters);
     g.add(letters);
     // roof parapet of the control room
     box(g, 12.6, 0.5, 9.6, M.concrete, 0, 3.35, 0);
     box(g, 0.6, 0.3, 0.6, M.steel, -3, 3.75, 2);
     box(g, 1.4, 0.8, 1.1, M.steel, 2.5, 3.95, -1.5);
-    // plinth
-    box(g, 30, 0.6, 11.8, M.concrete, 9, -0.31, 0);
+    // plinths under the control room and the east wing (the service yard has its own slabs)
+    box(g, 13.4, 0.6, 11.8, M.concrete, 0, -0.31, 0);
+    box(g, 18.8, 0.6, 11.8, M.concrete, 29.6, -0.31, 0);
     // wall pack lights
-    const packTex = T.glowSprite('rgba(255,190,110,1)', 'rgba(255,150,60,0)');
-    [[-6.4, 2.6, 2], [6.5, 2.8, 5.8], [16, 2.8, 5.8], [-6.4, 2.6, -3]].forEach(([x, y, z]) => {
+    [[-6.4, 2.6, 2], [20.9, 2.8, 5.8], [30.4, 2.8, 5.8], [-6.4, 2.6, -3]].forEach(([x, y, z]) => {
       box(g, 0.35, 0.25, 0.25, M.steel, x, y, z);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: packTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
-      sp.position.set(x, y - 0.1, z + (z > 0 ? 0.25 : 0)); sp.scale.setScalar(1.6);
-      noMerge(sp); g.add(sp);
+      this.glow.add(x, y - 0.1, z + (z > 0 ? 0.25 : 0), 1.6, 0xffbe6e);
     });
-    addFlood(-7.5, 2.4, 2, 10); addFlood(10, 2.6, 7, 14);
+    addFlood(-7.5, 2.4, 2, 10); addFlood(24.4, 2.6, 7, 14);
     mergeStatic(g);
     this.group.add(g);
   }
@@ -211,10 +205,11 @@ export class Exterior {
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x6d6a62 });
     const f = plane(this.group, 140, 2.4, mat, -10, 0.6, -20);
     noMerge(f);
-    for (let x = -80; x <= 60; x += 7) cyl(this.group, 0.05, 0.05, 2.6, M.pole, x, 0.6, -20, 5);
+    for (let x = -80; x <= 60; x += 7) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, -20, 5);
   }
 
   update(dt: number, t: number) {
-    for (const d of this.dishes) d.update(dt, t);
+    this.dishArray.update(dt, t);
+    this.glow.update(t);
   }
 }

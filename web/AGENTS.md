@@ -30,7 +30,10 @@ npm install
 npm run typecheck
 npm run build:single
 python3 tools/walkthrough.py shots 844x390 high
+python3 tools/chapter1.py shots/ch1 passive
 ```
+
+`chapter1.py` kom inn 3. oktober sammen med kapittel 1. Den dekker alt etter prologen og bør kjøres med begge metodene (`passive` og `active`) når kapittel 1 endres.
 
 Merk resultat som PASS, FAIL eller UNVERIFIED med faktisk grunnlag. Headless-testen bruker programvare-rendering og sier ingenting om ekte fps. Ytelse er UNVERIFIED til noen har målt på ekte maskinvare.
 

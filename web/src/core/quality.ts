@@ -65,3 +65,11 @@ export function setQuality(scene: THREE.Object3D, q: Quality) {
 export function materialFor<T extends THREE.Material>(m: T): THREE.Material {
   return swap(m, current);
 }
+
+// Calls fn on a material and on its swapped twin (if one exists), so runtime changes
+// such as assigning a photograph as a map survive a quality switch.
+export function eachVariant(m: THREE.Material, fn: (v: THREE.Material) => void) {
+  fn(m);
+  const twin = toLow.get(m) ?? toHigh.get(m);
+  if (twin) fn(twin);
+}

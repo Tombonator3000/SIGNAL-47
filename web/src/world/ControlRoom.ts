@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit } from './kit';
+import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, faced } from './kit';
 import * as T from '../core/textures';
+import { fieldCameraModel } from './props';
 
 export type Collider = { minX: number; maxX: number; minZ: number; maxZ: number };
 
@@ -24,11 +25,14 @@ export class Crt {
 }
 
 const blobMat = new THREE.MeshBasicMaterial({ map: T.blobShadow(), transparent: true, depthWrite: false });
+// Soft contact shadows. They are collected in one group and merged into a single mesh.
 function blob(parent: THREE.Object3D, x: number, z: number, w: number, d: number, y = 0.003) {
-  const m = plane(parent, w, d, blobMat, x, y, z, 0, -Math.PI / 2);
-  noMerge(m);
-  return m;
+  return plane(parent, w, d, blobMat, x, y, z, 0, -Math.PI / 2);
 }
+
+// Rack status lights: one instanced mesh, coloured per light.
+export type LedState = 'off' | 'green' | 'amber';
+const LED_COL: Record<LedState, THREE.Color> = { off: new THREE.Color(0x141619), green: new THREE.Color(0x45ff7a), amber: new THREE.Color(0xffb040) };
 
 export class ControlRoom {
   group = new THREE.Group();
@@ -40,9 +44,14 @@ export class ControlRoom {
   mug!: THREE.Group; coffee!: THREE.Mesh; mugHome = new THREE.Vector3();
   printerPaper!: THREE.Mesh;
   clockHands!: { h: THREE.Object3D; m: THREE.Object3D; s: THREE.Object3D };
-  leds: THREE.Mesh[] = [];
+  leds!: THREE.InstancedMesh;
+  ledCount = 18;
+  private blobs = new THREE.Group();
   lever!: THREE.Object3D;
   handset!: THREE.Object3D;
+  doorHinge!: THREE.Object3D;
+  doorLight!: THREE.Mesh;
+  fieldCamera!: THREE.Group;
   spawn = { x: 1.55, z: 3.7, yaw: -0.22 };
   bounds = { minX: -5.75, maxX: 5.75, minZ: -4.22, maxZ: 4.22 };
 
@@ -56,6 +65,8 @@ export class ControlRoom {
     this.westWall(st);
     this.southWall(st);
     mergeStatic(st);
+    this.group.add(this.blobs);
+    mergeStatic(this.blobs);
 
     const hemi = new THREE.HemisphereLight(0x22304f, 0x2a1b10, 0.9);
     const moon = new THREE.DirectionalLight(0x8ea4d8, 0.45);
@@ -85,21 +96,26 @@ export class ControlRoom {
     plane(st, 12, 9, ceilMat, 0, 3.0, 0, 0, Math.PI / 2);
 
     // box faces: [+x, -x, +y, -y, +z, -z]
-    const north = (w: number, h: number, x: number, y: number) => box(st, w, h, 0.3, [ext, ext, ext, ext, wall, ext], x, y, -4.65);
+    const north = (w: number, h: number, x: number, y: number) => faced(st, w, h, 0.3, ext, wall, x, y, -4.65, '+z');
     north(12.6, 0.95, 0, 0.475);
     north(12.6, 0.45, 0, 2.975);
     north(0.9, 1.8, -5.85, 1.85);
     north(0.9, 1.8, 5.85, 1.85);
-    box(st, 12.6, 3.2, 0.3, [ext, ext, ext, ext, ext, wall], 0, 1.6, 4.65); // south
-    box(st, 0.3, 3.2, 9.6, [wall, ext, ext, ext, ext, ext], -6.15, 1.6, 0); // west
-    box(st, 0.3, 3.2, 9.6, [ext, wall, ext, ext, ext, ext], 6.15, 1.6, 0); // east
+    faced(st, 12.6, 3.2, 0.3, ext, wall, 0, 1.6, 4.65, '-z'); // south
+    faced(st, 0.3, 3.2, 9.6, ext, wall, -6.15, 1.6, 0, '+x'); // west
+    // east wall, with the opening for the service yard door (z 1.1 to 2.1)
+    faced(st, 0.3, 3.2, 5.9, ext, wall, 6.15, 1.6, -1.85, '-x');
+    faced(st, 0.3, 3.2, 2.7, ext, wall, 6.15, 1.6, 3.45, '-x');
+    faced(st, 0.3, 1.08, 1.0, ext, wall, 6.15, 2.66, 1.6, '-x');
     // dado band and skirting
     box(st, 11.98, 0.95, 0.02, wallLow, 0, 0.475, 4.49);
     box(st, 0.02, 0.95, 8.98, wallLow, -5.99, 0.475, 0);
-    box(st, 0.02, 0.95, 8.98, wallLow, 5.99, 0.475, 0);
+    box(st, 0.02, 0.95, 5.59, wallLow, 5.99, 0.475, -1.695);
+    box(st, 0.02, 0.95, 2.39, wallLow, 5.99, 0.475, 3.295);
     box(st, 11.98, 0.04, 0.04, M.frame, 0, 0.97, 4.47);
     box(st, 0.04, 0.04, 8.98, M.frame, -5.97, 0.97, 0);
-    box(st, 0.04, 0.04, 8.98, M.frame, 5.97, 0.97, 0);
+    box(st, 0.04, 0.04, 5.59, M.frame, 5.97, 0.97, -1.695);
+    box(st, 0.04, 0.04, 2.39, M.frame, 5.97, 0.97, 3.295);
     // window frame: sill, head, mullions
     box(st, 10.9, 0.06, 0.42, M.frame, 0, 0.95, -4.38);
     box(st, 10.9, 0.1, 0.2, M.frame, 0, 2.75, -4.55);
@@ -142,9 +158,10 @@ export class ControlRoom {
       box(kb, 0.46, 0.03, 0.17, M.beige, 0, 0.015, 0);
       plane(kb, 0.44, 0.15, new THREE.MeshStandardMaterial({ map: T.keyboard(), roughness: 0.6 }), 0, 0.031, 0, 0, -Math.PI / 2);
       g.add(kb);
+      mergeStatic(g);
       this.group.add(g);
       this.objs[id] = g;
-      blob(this.group, x, -2.95, 0.9, 0.9);
+      blob(this.blobs, x, -2.95, 0.9, 0.9);
       this.chair(x + (x === 0 ? 0.05 : -0.08), -2.95, x === 0 ? 0.08 : -0.15);
     }
     // clutter on the console desk
@@ -183,14 +200,18 @@ export class ControlRoom {
     box(st, 1.8, 0.55, 0.03, M.deskBody, 2.6, 0.45, 2.98);
     box(st, 0.04, 0.73, 0.84, M.deskBody, 1.72, 0.37, 2.55);
     this.col(1.68, 3.52, 2.08, 3.02);
-    blob(this.group, 2.6, 2.55, 2.4, 1.4);
+    blob(this.blobs, 2.6, 2.55, 2.4, 1.4);
     this.chair(2.45, 3.3, 0.2);
 
     // NIGHT SHIFT logbook
     const coverMat = new THREE.MeshStandardMaterial({ map: T.logbookCover(), roughness: 0.85 });
     const bookSide = new THREE.MeshStandardMaterial({ color: 0x1b2433, roughness: 0.9 });
-    const log = box(this.group, 0.24, 0.032, 0.31, [bookSide, bookSide, coverMat, bookSide, M.paper, bookSide], 2.2, 0.796, 2.5);
+    const log = new THREE.Group();
+    log.position.set(2.2, 0.796, 2.5);
     log.rotation.y = 0.18;
+    faced(log, 0.24, 0.032, 0.31, bookSide, coverMat, 0, 0, 0, '+y');
+    plane(log, 0.23, 0.026, M.paper, 0, 0, 0.156);
+    this.group.add(log);
     this.objs.logbook = log;
     // papers and a pen
     const paperMat = new THREE.MeshStandardMaterial({ map: T.deskPapers(4), roughness: 0.9 });
@@ -210,11 +231,14 @@ export class ControlRoom {
     box(hs, 0.055, 0.05, 0.06, M.beige, -0.085, -0.015, 0);
     box(hs, 0.055, 0.05, 0.06, M.beige, 0.085, -0.015, 0);
     ph.add(hs);
+    noMerge(hs);
     this.handset = hs;
     const pts: THREE.Vector3[] = [];
     for (let i = 0; i <= 80; i++) { const t = i / 80; const a = t * Math.PI * 28; pts.push(new THREE.Vector3(-0.1 - t * 0.1 + Math.cos(a) * 0.012, 0.03 + Math.sin(t * Math.PI) * -0.02 + Math.sin(a) * 0.012, -0.03 + t * 0.08)); }
     const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, 0.004, 4), M.beigeDark);
     ph.add(cord);
+    mergeStatic(ph);
+    mergeStatic(hs);
     this.group.add(ph);
     this.objs.phone = ph;
 
@@ -234,6 +258,8 @@ export class ControlRoom {
     mug.add(handle);
     this.coffee = cyl(mug, 0.037, 0.037, 0.004, M.coffee, 0, 0.02, 0, 20);
     this.coffee.visible = false;
+    noMerge(this.coffee);
+    mergeStatic(mug);
     this.group.add(mug);
     this.mug = mug; this.mugHome.copy(mug.position);
     this.objs.mug = mug;
@@ -251,6 +277,7 @@ export class ControlRoom {
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), M.lampBulb);
     bulb.position.set(-0.02, 0.39, -0.3);
     lamp.add(bulb);
+    mergeStatic(lamp);
     this.group.add(lamp);
 
     // coffee corner
@@ -266,6 +293,8 @@ export class ControlRoom {
     const brew = cyl(cm, 0.06, 0.066, 0.07, M.coffee, 0, 0.05, -0.11, 14);
     noMerge(brew);
     box(cm, 0.03, 0.015, 0.01, M.ledRed, 0.07, 0.03, 0.135);
+    carafe.userData.noMerge = false; brew.userData.noMerge = false;
+    mergeStatic(cm);
     this.group.add(cm);
     this.objs.coffeePot = cm;
     const cups = new THREE.Group();
@@ -279,14 +308,17 @@ export class ControlRoom {
   private eastWall(st: THREE.Group) {
     // RX bank 3 rack
     const rackTex = new THREE.MeshStandardMaterial({ map: T.rackFront(), roughness: 0.6 });
-    box(st, 0.62, 1.95, 0.62, [M.cabinet, rackTex, M.cabinet, M.cabinet, M.cabinet, M.cabinet], 5.66, 0.975, -2.4);
+    faced(st, 0.62, 1.95, 0.62, M.cabinet, rackTex, 5.66, 0.975, -2.4, '-x');
     this.col(5.3, 6, -2.75, -2.05);
-    blob(this.group, 5.5, -2.4, 1.0, 1.0);
-    for (let i = 0; i < 18; i++) {
-      const led = box(this.group, 0.005, 0.016, 0.016, M.darkPlastic, 5.347, 1.55 - Math.floor(i / 6) * 0.22, -2.62 + (i % 6) * 0.068);
-      noMerge(led);
-      this.leds.push(led);
+    blob(this.blobs, 5.5, -2.4, 1.0, 1.0);
+    this.leds = new THREE.InstancedMesh(new THREE.BoxGeometry(0.005, 0.016, 0.016), new THREE.MeshBasicMaterial({ color: 0xffffff }), this.ledCount);
+    const lm = new THREE.Matrix4();
+    for (let i = 0; i < this.ledCount; i++) {
+      this.leds.setMatrixAt(i, lm.makeTranslation(5.347, 1.55 - Math.floor(i / 6) * 0.22, -2.62 + (i % 6) * 0.068));
+      this.leds.setColorAt(i, LED_COL.off);
     }
+    noMerge(this.leds);
+    this.group.add(this.leds);
     // power lever
     const lev = new THREE.Group();
     lev.position.set(5.34, 1.05, -2.24);
@@ -323,6 +355,8 @@ export class ControlRoom {
     paper.scale.y = 0.001;
     paper.visible = false;
     pr.add(paper);
+    noMerge(paper);
+    mergeStatic(pr);
     this.printerPaper = paper;
     this.objs.printer = pr;
 
@@ -333,22 +367,52 @@ export class ControlRoom {
     clk.add(face);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.175, 0.012, 6, 32), M.frame);
     clk.add(ring);
-    const hand = (len: number, w: number, z: number, mat: THREE.Material) => { const p = new THREE.Group(); p.position.z = z; box(p, w, len, 0.004, mat, 0, len / 2 - 0.015, 0); clk.add(p); return p; };
+    const hand = (len: number, w: number, z: number, mat: THREE.Material) => { const p = new THREE.Group(); p.position.z = z; box(p, w, len, 0.004, mat, 0, len / 2 - 0.015, 0); noMerge(p); clk.add(p); return p; };
     this.clockHands = { h: hand(0.09, 0.012, 0.006, M.darkPlastic), m: hand(0.13, 0.008, 0.009, M.darkPlastic), s: hand(0.14, 0.003, 0.012, M.ledRed) };
+    mergeStatic(clk);
     this.group.add(clk);
     this.objs.clock = clk;
 
-    // east door to the service yard
+    // east door to the service yard: frame, a hinged panel that swings out, lock light
     const door = new THREE.Group();
-    door.position.set(5.97, 0, 1.6);
-    box(door, 0.05, 2.12, 1.06, M.frame, 0, 1.06, 0);
-    box(door, 0.04, 2.05, 0.96, new THREE.MeshStandardMaterial({ color: 0x5a6466, roughness: 0.5, metalness: 0.4 }), -0.02, 1.03, 0);
-    box(door, 0.06, 0.04, 0.14, M.steel, -0.06, 1.0, -0.36);
-    box(door, 0.02, 0.18, 0.12, M.ledGreen, -0.02, 1.25, -0.38).visible = false;
-    const sign = plane(door, 0.6, 0.22, new THREE.MeshStandardMaterial({ map: T.signTex('SERVICE YARD', 'AUTHORIZED PERSONNEL'), roughness: 0.7 }), -0.035, 2.3, 0, -Math.PI / 2);
+    door.position.set(6.0, 0, 1.6);
+    box(door, 0.34, 0.07, 1.06, M.frame, 0.15, 2.155, 0);
+    box(door, 0.34, 2.12, 0.05, M.frame, 0.15, 1.06, -0.505);
+    box(door, 0.34, 2.12, 0.05, M.frame, 0.15, 1.06, 0.505);
+    const hinge = new THREE.Group();
+    hinge.position.set(0.06, 0, -0.47); // hinge on the north jamb
+    const panelMat = new THREE.MeshStandardMaterial({ color: 0x5a6466, roughness: 0.5, metalness: 0.4 });
+    box(hinge, 0.045, 2.06, 0.93, panelMat, 0, 1.03, 0.47);
+    box(hinge, 0.07, 0.04, 0.14, M.steel, -0.045, 1.0, 0.82); // handle, room side
+    box(hinge, 0.07, 0.04, 0.14, M.steel, 0.045, 1.0, 0.82);  // handle, yard side
+    box(hinge, 0.02, 0.3, 0.01, M.frame, 0.026, 1.6, 0.47);
+    mergeStatic(hinge);
+    noMerge(hinge);
+    door.add(hinge);
+    this.doorHinge = hinge;
+    this.doorLight = box(door, 0.02, 0.05, 0.05, M.ledRed, -0.03, 1.25, 0.72);
+    noMerge(this.doorLight);
+    const sign = plane(door, 0.6, 0.22, new THREE.MeshStandardMaterial({ map: T.signTex('SERVICE YARD', 'AUTHORIZED PERSONNEL'), roughness: 0.7 }), -0.025, 2.4, 0, -Math.PI / 2);
     noMerge(sign);
+    mergeStatic(door);
     this.group.add(door);
     this.objs.doorEast = door;
+
+    // field camera on a small equipment shelf beside the door
+    box(st, 0.36, 0.95, 0.7, M.cabinet, 5.81, 0.475, 0.67);
+    box(st, 0.36, 0.02, 0.7, M.deskTop, 5.81, 0.96, 0.67);
+    this.col(5.6, 6, 0.3, 1.05);
+    const card = plane(st, 0.34, 0.22, new THREE.MeshStandardMaterial({ map: T.cameraCard(), roughness: 0.85 }), 5.985, 1.32, 0.67, -Math.PI / 2);
+    card.name = 'cameraCard';
+    this.fieldCamera = fieldCameraModel();
+    // a larger invisible box around the small camera, so it is easy to aim at
+    const camHit = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.34), new THREE.MeshBasicMaterial({ visible: false }));
+    camHit.position.y = 0.06;
+    this.fieldCamera.add(camHit);
+    this.fieldCamera.position.set(5.8, 0.97, 0.66);
+    this.fieldCamera.rotation.y = -Math.PI / 2 + 0.35;
+    this.group.add(this.fieldCamera);
+    this.objs.fieldCamera = this.fieldCamera;
 
     const poster = plane(st, 0.7, 1.05, new THREE.MeshStandardMaterial({ map: T.posterSaro(), roughness: 0.8 }), 5.98, 1.8, 3.1, -Math.PI / 2);
     poster.name = 'posterSaro';
@@ -365,7 +429,7 @@ export class ControlRoom {
       for (let i = 0; i < 4; i++) { box(st, 0.005, 0.01, 0.48, M.frame, -5.42, 0.33 + i * 0.32, z); box(st, 0.02, 0.025, 0.1, M.steel, -5.41, 0.43 + i * 0.32, z); }
     }
     this.col(-6, -5.4, -1.5, 0.3);
-    blob(this.group, -5.6, -0.6, 1.0, 2.0);
+    blob(this.blobs, -5.6, -0.6, 1.0, 2.0);
     const lp = plane(st, 0.62, 0.92, new THREE.MeshStandardMaterial({ map: T.posterListen(), roughness: 0.8 }), -5.98, 2.12, -0.6, Math.PI / 2);
     lp.name = 'posterListen';
     // fan and plant on cabinets / floor
@@ -387,7 +451,7 @@ export class ControlRoom {
     box(st, 0.74, 0.7, 0.44, M.deskBody, -5.58, 0.38, 1.88);
     box(st, 0.03, 0.72, 1.46, M.deskBody, -5.95, 0.37, 2.4);
     this.col(-6, -5.15, 1.62, 3.18);
-    blob(this.group, -5.4, 2.4, 1.4, 1.9);
+    blob(this.blobs, -5.4, 2.4, 1.4, 1.9);
     this.chair(-4.85, 2.55, Math.PI / 2 + 0.3);
     box(st, 0.35, 0.22, 0.3, M.beigeDark, -5.7, 0.89, 1.95);
     box(st, 0.3, 0.02, 0.24, M.paper, -5.5, 0.79, 2.6).rotation.y = 0.3;
@@ -413,6 +477,7 @@ export class ControlRoom {
     box(door, 0.14, 0.04, 0.06, M.steel, 0.36, 1.0, -0.06);
     const sign = plane(door, 0.5, 0.18, new THREE.MeshStandardMaterial({ map: T.signTex('CORRIDOR'), roughness: 0.7 }), 0, 2.28, -0.035, Math.PI);
     noMerge(sign);
+    mergeStatic(door);
     this.group.add(door);
     this.objs.doorSouth = door;
     // bulletin board
@@ -425,6 +490,16 @@ export class ControlRoom {
   }
 
   // ---------- runtime ----------
+  // 0 closed, 1 open (swung 90 degrees out into the yard)
+  setDoor(open01: number) { this.doorHinge.rotation.y = open01 * Math.PI / 2; }
+  setDoorLock(unlocked: boolean) { this.doorLight.material = unlocked ? M.ledGreen : M.ledRed; }
+
+  setLed(i: number, state: LedState) {
+    this.leds.setColorAt(i, LED_COL[state]);
+    this.leds.instanceColor!.needsUpdate = true;
+  }
+  ledState(i: number): LedState { return i === 7 || i === 15 ? 'amber' : 'green'; }
+
   setClock(seconds: number) {
     const s = seconds % 60, m = (seconds / 60) % 60, h = (seconds / 3600) % 12;
     this.clockHands.s.rotation.z = -Math.floor(s) / 60 * Math.PI * 2;

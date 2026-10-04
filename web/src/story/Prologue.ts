@@ -9,11 +9,15 @@ import { Rx, PROFILES, drawSpectrum } from './Signal';
 import { RxConsole } from '../ui/RxConsole';
 import { M } from '../world/kit';
 import { materialFor } from '../core/quality';
+import { Chapter1, type CaseState } from './Chapter1';
+import type { ServiceYard } from '../world/ServiceYard';
+import type { FieldCamera } from '../core/FieldCamera';
+import type { Collider } from '../world/ControlRoom';
 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
 const ORDER = ['intro', 'shift', 'survey', 'skip', 'residual', 'locked', 'solving', 'printing', 'printed',
-  'ringing', 'call', 'countdown', 'event', 'turning', 'end'] as const;
+  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1'] as const;
 export type Phase = typeof ORDER[number];
 
 const START_CLOCK = 23 * 3600 + 41 * 60;        // 23:41:00
@@ -21,12 +25,8 @@ const SKIP_CLOCK = 2 * 3600 + 13 * 60 + 41;     // 02:13:41, residual shows at 0
 const EVENT_AZ = 26, EVENT_EL = 32;
 const PARK_AZ = 18, SURVEY_EL = 48;
 
-const pad = (n: number, w = 2) => String(Math.floor(n)).padStart(w, '0');
-export function clockText(sec: number, withSeconds = true) {
-  const s = ((sec % 86400) + 86400) % 86400;
-  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
-  return withSeconds ? `${pad(h)}:${pad(m)}:${pad(s % 60)}` : `${pad(h)}:${pad(m)}`;
-}
+import { pad, clockText } from './time';
+export { clockText };
 
 const LOG: DocSpec = {
   id: 'log', title: "Dale's shift log", kind: 'hand', stamp: 'NIGHT SHIFT',
@@ -77,8 +77,14 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
   };
 }
 
+export interface SavedCase { s: CaseState; notes: string[]; clock: number }
 export interface PrologueDeps {
   ui: UI; audio: AudioSys; room: ControlRoom; ext: Exterior; player: Player; inter: Interaction;
+  yard: ServiceYard; fcam: FieldCamera; colliders: Collider[];
+  view: { restore: () => void; draw: () => void };
+  saveCase: (c: SavedCase | null) => void;
+  loadCase: () => SavedCase | null;
+  isTouch: () => boolean;
 }
 
 export class Prologue {
@@ -96,6 +102,8 @@ export class Prologue {
   docs: DocSpec[] = [];
   onFinish?: () => void;
   onCheckpoint?: (name: string) => void;
+  ch1: Chapter1;
+  eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
   private bootT = -1;
@@ -132,6 +140,11 @@ export class Prologue {
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
     g.fillStyle = v; g.fillRect(0, 0, 512, 384);
     this.interactables();
+    this.ch1 = new Chapter1(this, {
+      ui: d.ui, audio: d.audio, room: d.room, ext: d.ext, player: d.player, inter: d.inter,
+      yard: d.yard, fcam: d.fcam, colliders: d.colliders, view: d.view, isTouch: d.isTouch,
+      save: (c) => d.saveCase(c ? { s: c, notes: [...this.notes], clock: this.clock } : null),
+    });
     this.reset();
   }
 
@@ -144,6 +157,7 @@ export class Prologue {
 
   // ---------- notebook ----------
   tasks() {
+    if (this.phase === 'ch1') return this.ch1.tasks();
     const t: { text: string; done: boolean }[] = [{ text: "Read Dale's shift log", done: this.logRead }];
     if (this.logRead || this.at('residual')) {
       t.push({ text: 'Power up RX bank 3', done: this.powered });
@@ -161,7 +175,7 @@ export class Prologue {
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
   openNotebook() {
     const ui = this.d.ui;
-    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}));
+    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : 'Tonight');
   }
 
   // ---------- world helpers ----------
@@ -171,7 +185,8 @@ export class Prologue {
   private worldPos(o: THREE.Object3D) { return o.getWorldPosition(new THREE.Vector3()); }
 
   private setLeds(on: boolean) {
-    this.d.room.leds.forEach((l, i) => { l.material = on ? (i === 7 || i === 15 ? M.ledAmber : M.ledGreen) : materialFor(M.darkPlastic); });
+    const room = this.d.room;
+    for (let i = 0; i < room.ledCount; i++) room.setLed(i, on ? room.ledState(i) : 'off');
   }
 
   // ---------- interactables ----------
@@ -249,10 +264,14 @@ export class Prologue {
     inter.add({ id: 'clock', object: o.clock, range: 3.5, label: () => 'Wall clock', use: () => toast(`${clockText(this.clock, false)}. ${this.at('residual') ? 'Where did the night go?' : 'Six hours and change to go.'}`) });
     inter.add({ id: 'map', object: o.map, range: 2.8, label: () => 'Map of New Mexico',
       use: () => toast('SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.') });
-    inter.add({ id: 'doorEast', object: o.doorEast, label: () => 'Service yard door',
-      use: () => { audio.play('click', { gain: 0.6, at: this.worldPos(o.doorEast) }); toast(this.at('event') ? 'Still locked. Whatever is happening out there, the yard waits until morning.' : 'Locked at night. Day crew has the key to the service yard.'); } });
+    inter.add({ id: 'doorEast', object: o.doorEast, label: () => this.ch1.active ? this.ch1.doorLabel() : 'Service yard door',
+      use: () => {
+        if (this.ch1.active) { this.ch1.useDoor(); return; }
+        audio.play('click', { gain: 0.6, at: this.worldPos(o.doorEast) });
+        toast(this.at('event') ? 'Service access is locked while the array is tracking.' : 'Locked at night. Day crew has the key to the service yard.');
+      } });
     inter.add({ id: 'doorSouth', object: o.doorSouth, label: () => 'Corridor',
-      use: () => toast(this.at('event') ? 'You are not walking away from this console now.' : 'Vending machine, restrooms, Dale\'s empty office. Nothing for you out there tonight.') });
+      use: () => toast(this.phase === 'ch1' ? 'Vending machine, restrooms, Dale\'s empty office. The work tonight is out in the yard.' : this.at('event') ? 'You are not walking away from this console now.' : 'Vending machine, restrooms, Dale\'s empty office. Nothing for you out there tonight.') });
   }
 
   // ---------- beats ----------
@@ -284,7 +303,7 @@ export class Prologue {
     let k = 0;
     const animLever = () => { k++; room.lever.rotation.z = -0.6 + Math.min(1, k / 8) * 1.2; if (k < 8) requestAnimationFrame(animLever); };
     animLever();
-    room.leds.forEach((l, i) => this.after(0.3 + i * 0.07, () => { l.material = i === 7 || i === 15 ? M.ledAmber : M.ledGreen; if (i % 6 === 0) audio.beep(900 + i * 20, 0.03, 0.03); }));
+    for (let i = 0; i < room.ledCount; i++) this.after(0.3 + i * 0.07, () => { room.setLed(i, room.ledState(i)); if (i % 6 === 0) audio.beep(900 + i * 20, 0.03, 0.03); });
     this.after(1.6, () => {
       [room.crtLeft, room.crtCenter, room.crtRight].forEach((c) => c.setPowered(true));
       room.lights.crt.intensity = 0.9;
@@ -445,6 +464,7 @@ export class Prologue {
   private event() {
     const { audio, player, ui } = this.d;
     this.setPhase('event');
+    this.eventClock = this.clock;
     audio.boom(1.25);
     audio.gasp(undefined, 0.3);
     player.shake = 1.25;
@@ -500,6 +520,7 @@ export class Prologue {
     audio.stopMotors();
     audio.beep(1760, 0.18, 0.08); audio.beep(1760, 0.18, 0.08, 0.3); audio.beep(2350, 0.4, 0.08, 0.6);
     this.note('Every dish moved to az 026, el 32. Console shows no control command.');
+    this.note('All dishes left their scheduled track and aligned together.');
     this.after(3.2, () => this.finish());
   }
 
@@ -508,6 +529,21 @@ export class Prologue {
     ui.fade(true, '');
     audio.setCarrier(0, 0, 0);
     this.after(1.6, () => { this.cinematic = true; this.onFinish?.(); });
+  }
+
+  // ---------- chapter one ----------
+  // From the end of the prologue (or a checkpoint): the night continues in the yard.
+  beginChapter1(saved: SavedCase | null) {
+    const { player, ui } = this.d;
+    this.setPhase('ch1');
+    this.cinematic = false;
+    this.lookAssist = 0;
+    this.timers = []; // nothing from the prologue may fire inside the chapter
+    if (saved) { this.notes = [...saved.notes]; this.clock = saved.clock; }
+    else player.place(3.4, 1.4, -Math.PI / 2);
+    ui.fade(false);
+    this.ch1.begin(saved?.s ?? null, saved?.s.eventClock ?? this.eventClock);
+    this.onCheckpoint?.('chapter1');
   }
 
   // ---------- per frame ----------
@@ -551,8 +587,8 @@ export class Prologue {
       this.ledT -= dt;
       if (this.ledT <= 0) {
         this.ledT = 0.18;
-        const i = Math.floor(Math.random() * room.leds.length);
-        room.leds[i].material = Math.random() < 0.3 ? materialFor(M.darkPlastic) : (i === 7 || i === 15 ? M.ledAmber : M.ledGreen);
+        const i = Math.floor(Math.random() * room.ledCount);
+        room.setLed(i, Math.random() < 0.3 ? 'off' : room.ledState(i));
       }
     }
 
@@ -604,6 +640,7 @@ export class Prologue {
 
     // dishes arrive
     if (this.phase === 'turning' && !ext.dishes.some((x) => x.moving)) this.arrived();
+    if (this.phase === 'ch1') this.ch1.update(paused ? 0 : dt, t);
 
     // gentle camera assist so the player sees the array turn
     if (this.lookAssist > 0 && (this.phase === 'turning' || this.phase === 'end')) {
@@ -747,6 +784,7 @@ export class Prologue {
     if (this.spill) { room.group.remove(this.spill); this.spill.geometry.dispose(); this.spill = null; }
     for (const dish of ext.dishes) dish.snap(PARK_AZ, SURVEY_EL);
     if (audio.ctx) { audio.stop('ring'); audio.stop('printer'); audio.setCarrier(0, 0, 0); audio.stopMotors(); }
+    this.ch1?.reset();
   }
 
   start(checkpoint?: string) {
@@ -761,6 +799,7 @@ export class Prologue {
   // Jump straight to a beat. Used by Continue and for testing (window.S47.jump).
   jump(target: string) {
     const { player, room, ui } = this.d;
+    if (target === 'chapter1') { this.jumpChapter1(); return; }
     const steps = ['shift', 'residual', 'locked', 'printed', 'countdown', 'event'];
     const idx = steps.indexOf(target);
     if (idx < 0) return;
@@ -800,5 +839,32 @@ export class Prologue {
       if (idx === 4) { this.timers = this.timers.filter((x) => x.at - this.gt < 40); this.after(4, () => this.event()); }
     }
     if (idx >= 5) { this.timers = []; this.event(); }
+  }
+
+  // Everything the prologue leaves behind, then chapter one (fresh or from the saved case).
+  private jumpChapter1() {
+    const { room, ext } = this.d;
+    const saved = this.d.loadCase();
+    this.logRead = true; this.answered = true;
+    this.powerUp(true);
+    this.rx.advance(); this.rx.advance(); this.rx.advance();
+    this.rx.solved = true;
+    this.rxc.residualVisible = true;
+    this.clock = saved?.clock ?? this.eventClock + 70;
+    this.docs = [LOG, printout(this.eventClock - 60)];
+    this.notes = [];
+    for (const n of [PROFILES[0].note, PROFILES[1].note,
+      '02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.',
+      '02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.',
+      'Direction solve: RA 05h 17m, Dec -05. Somewhere in Orion.',
+      'Source distance on the solve: -39 light years. A negative distance. The solver cannot produce that.',
+      'Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.',
+      'Every dish moved to az 026, el 32. Console shows no control command.',
+      'All dishes left their scheduled track and aligned together.']) this.note(n);
+    room.mug.visible = false;
+    room.printerPaper.visible = false;
+    for (const dish of ext.dishes) dish.snap(EVENT_AZ, EVENT_EL);
+    this.phase = 'end';
+    this.beginChapter1(saved);
   }
 }

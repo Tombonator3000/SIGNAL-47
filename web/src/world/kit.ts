@@ -4,26 +4,35 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 // ---------- Exterior floodlights ----------
 // Real three.js point lights cost every material a loop per light. Outside we fake
 // sodium floodlights with a tiny shader add-on that only exterior materials pay for.
-export const FLOOD_N = 16;
-export const flood = {
-  pos: Array.from({ length: FLOOD_N }, () => new THREE.Vector4(0, -999, 0, 0)),
-  col: Array.from({ length: FLOOD_N }, () => new THREE.Color(1, 0.6, 0.25)),
-  count: 0,
-  scale: { value: 0.07 },
-};
-export function addFlood(x: number, y: number, z: number, intensity: number, color = 0xff9a45) {
-  if (flood.count >= FLOOD_N) return;
-  flood.pos[flood.count].set(x, y, z, intensity);
-  flood.col[flood.count].set(color);
-  flood.count++;
+// A material belongs to one set of fake lights. The big outdoor set lights the site;
+// small sets light a single interior (the photo lab) without paying for the site.
+export type FloodSet = { n: number; pos: THREE.Vector4[]; col: THREE.Color[]; count: number; scale: { value: number }; key: string };
+export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
+  return {
+    n, key, count: 0, scale: { value: scale },
+    pos: Array.from({ length: n }, () => new THREE.Vector4(0, -999, 0, 0)),
+    col: Array.from({ length: n }, () => new THREE.Color(1, 0.6, 0.25)),
+  };
 }
+export const FLOOD_N = 20;
+export const flood = floodSet(FLOOD_N, 'site');
 
-export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012): T {
+// Returns the index, so a lamp can be dimmed or switched later with setFlood().
+export function addFlood(x: number, y: number, z: number, intensity: number, color: THREE.ColorRepresentation = 0xff9a45, set = flood) {
+  if (set.count >= set.n) { console.warn('flood set full', set.key); return -1; }
+  set.pos[set.count].set(x, y, z, intensity);
+  set.col[set.count].set(color);
+  return set.count++;
+}
+export function setFlood(i: number, intensity: number, set = flood) { if (i >= 0) set.pos[i].w = intensity; }
+
+export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012, set = flood): T {
+  const FLOOD_N = set.n;
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uFloodPos = { value: flood.pos };
-    sh.uniforms.uFloodCol = { value: flood.col };
+    sh.uniforms.uFloodPos = { value: set.pos };
+    sh.uniforms.uFloodCol = { value: set.col };
     sh.uniforms.uFloodFall = { value: falloff };
-    sh.uniforms.uFloodScale = flood.scale;
+    sh.uniforms.uFloodScale = set.scale;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vFWorld;\nvarying vec3 vFNormal;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
@@ -47,6 +56,7 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
         vec3 fAcc = vec3(0.0);
         vec3 fN = normalize(vFNormal);
         for (int i = 0; i < ${FLOOD_N}; i++) {
+          if (uFloodPos[i].w <= 0.0) continue;
           vec3 L = uFloodPos[i].xyz - vFWorld;
           float d2 = dot(L, L);
           L *= inversesqrt(max(d2, 1e-4));
@@ -57,7 +67,7 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
         }
         totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;`);
   };
-  m.customProgramCacheKey = () => 'flood' + falloff;
+  m.customProgramCacheKey = () => 'flood' + set.key + falloff;
   return m;
 }
 
@@ -125,6 +135,25 @@ export function rod(parent: THREE.Object3D, a: THREE.Vector3, b: THREE.Vector3, 
   return m;
 }
 export function noMerge(o: THREE.Object3D) { o.userData.noMerge = true; return o; }
+
+// A box in `outer` with one face covered by a plane in `inner` (a painted room side,
+// a printed cabinet door). Same look as a six-material box, but both parts merge with
+// other meshes of the same material, where a multi-material box costs six draw calls.
+export type Side = '+x' | '-x' | '+y' | '-y' | '+z' | '-z';
+export function faced(parent: THREE.Object3D, w: number, h: number, d: number, outer: THREE.Material, inner: THREE.Material, x: number, y: number, z: number, side: Side) {
+  const b = box(parent, w, h, d, outer, x, y, z);
+  const e = 0.002;
+  let p: THREE.Mesh;
+  switch (side) {
+    case '+x': p = plane(parent, d, h, inner, x + w / 2 + e, y, z, Math.PI / 2); break;
+    case '-x': p = plane(parent, d, h, inner, x - w / 2 - e, y, z, -Math.PI / 2); break;
+    case '+z': p = plane(parent, w, h, inner, x, y, z + d / 2 + e, 0); break;
+    case '-z': p = plane(parent, w, h, inner, x, y, z - d / 2 - e, Math.PI); break;
+    case '+y': p = plane(parent, w, d, inner, x, y + h / 2 + e, z, 0, -Math.PI / 2); break;
+    case '-y': p = plane(parent, w, d, inner, x, y - h / 2 - e, z, 0, Math.PI / 2); break;
+  }
+  return { box: b, face: p };
+}
 
 // ---------- Batching ----------
 // Merge all static meshes under `root` into one mesh per material. Big win on mobile.

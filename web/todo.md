@@ -2,22 +2,26 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
-## Nå (prolog ferdig til mobiltest)
+## Nå (prolog og kapittel 1 ferdig til test)
 
-- [ ] Tom tester spillet på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller og lesbarhet.
-- [ ] Mål ytelse på ekte telefon. Fps-telleren bak `?debug` som var tenkt til dette, finnes ikke i koden ennå og må lages først.
+- [ ] Tom tester prologen og kapittel 1 på mobil og PC på https://tombonator3000.github.io/SIGNAL-47/. Noter fps-følelse, kontroller, lesbarhet, kameraet og fotopanelene, og om det tar merkbar tid fra Start til prologen begynner.
+- [ ] Mål ytelse på ekte telefon med `?debug` bak adressen: ved pulten, ute på gangveien og inne i fotolaben.
+- [ ] Tom bestemmer punktene i `FORSLAG.md` del 1: rom 6 eller 47, to eller tre slutter, Dale, R. og Reyes, og om bilen og telefonnummeret skal inn i kapittel 1.
 - [ ] RX-konsollen i stående mobil: kontroller at alt får plass uten mye scrolling.
-- [ ] Sjekkpunkt etter fullført prolog: Continue starter i dag fra 02:13. Lagre et "ferdig"-punkt som går rett til kapittel 1 når det finnes.
-- [ ] Toasts kan stable seg oppå hverandre når mange kommer tett. Legg dem i kø.
 
-## Småting funnet da web/ ble lagt inn (3. oktober)
+## Neste (se FORSLAG.md del 3)
 
-- [ ] Sluttkortet får ikke plass i liggende mobil. Ved 844×390 kuttes toppen av tittelen (20 px) og siste kredittlinje (8 px), ved 667×375 toppen av tittelen (9 px). Knappene er synlige, og stående mobil og PC er OK. Målt headless.
-- [ ] Etter Start venter spillet til all lyd er dekodet (`audio.unlock()`) før prologen begynner, og skjermen er svart så lenge. Noter under mobiltesten om det tar merkbar tid.
-- [ ] Spillet tegner hele 3D-scenen hver frame bak sluttkortet, selv om kortet dekker alt med svart. Stopp tegningen mens kortet vises, for å spare batteri og varme på mobil.
-- [ ] `tools/csptest.py` leser `/tmp/csp_test.html`, men ingen skript i repoet lager den fila. Lag den i skriptet eller fjern testen.
+- [ ] Arbeidsordren om morgenserien, med Reyes og Dr. Evelyn Ward, på pulten i prologen.
+- [ ] Saksmappe i notatboka med små utgaver av fotografiene og dokumentene.
+- [ ] Flytt fotografiene fra `localStorage` til IndexedDB før det kommer flere eksponeringer.
+- [ ] Kapittel 2 "Den strøkne protokollen": arkivrom på SARO, tre samlinger, to sammenkoblinger, telefon til Nora.
+
+## Småting
+
 - [ ] GitHub varsler at configure-pages v5, setup-node v4 og upload-artifact v4 (via upload-pages-artifact v3) er laget for Node 20 og tvinges over på Node 24. Publiseringen virker i dag. Bytt til versjoner laget for Node 24 når det passer.
 - [ ] `npm audit` melder 3 high i byggverktøyet (braces via vite-plugin-singlefile). Gjelder bare bygging. Oppgrader når pluginen får en fiks.
+- [ ] Innstillinger: invertert Y-akse, synsfelt og tekststørrelse.
+- [ ] Fotsteg ute: litt annen lyd på betongen enn inne.
 
 ## Grafikk fra ChatGPT (se ART_BRIEF.md)
 
@@ -25,18 +29,11 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Gulv, tak, vegg og bord som ekte teksturer i stedet for kode-teksturer.
 - [ ] Plakater, kart og SARO-logo.
 - [ ] Neonskiltet til Sierra Motor Court.
-
-## Kapittel 1: S-03 og servicegården
-
-- [ ] Østdøren låses opp etter prologen. Gå ut i servicegården.
-- [ ] S-03-skapet med logg: planlagt 042°, enkoder 026°, commands received 0.
-- [ ] Feltkamera: søker, eksponering, film.
-- [ ] Fotolab: framkalling og sammenligning med S-03-loggen.
-- [ ] Bilen bak gjerdet på bildet, telefonnummeret til Sierra Motor Court.
+- [ ] Kapittel 1: skapfrontene på S-03 og B-12, B-12-skiltet, feltkartet, gulvmerkingen og skiltene i fotolaben. Legges inn i ART_BRIEF.md med mål og format hvis Tom vil.
 
 ## Senere
 
 - [ ] Kjøring mellom områder (kompakte håndlagde områder).
-- [ ] Sierra Motor Court og rom 47.
+- [ ] Sierra Motor Court og Noras rom (rom 6 i designbibelen, rom 47 i ART_BRIEF.md).
 - [ ] Evidence board med hypoteser som kan være feil.
-- [ ] Lagring av hele saken, ikke bare ett sjekkpunkt.
+- [ ] Lagring av hele saken på tvers av kapitler, med flere lagringsplasser som i designbibelen.

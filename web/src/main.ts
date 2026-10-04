@@ -8,9 +8,13 @@ import { Player } from './player/Player';
 import { Sky } from './world/Sky';
 import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
-import { Prologue } from './story/Prologue';
+import { Prologue, type SavedCase } from './story/Prologue';
+import { ServiceYard } from './world/ServiceYard';
+import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { loadFonts } from './core/fonts';
+import { DebugHud, debugOn } from './core/debug';
+import { glowScale } from './world/glow';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
 // because storage can be blocked (private mode, sandboxed frames).
@@ -52,7 +56,9 @@ async function boot() {
   const sky = new Sky();
   const ext = new Exterior();
   const room = new ControlRoom();
-  scene.add(sky.group, ext.group, room.group);
+  const yard = new ServiceYard();
+  scene.add(sky.group, ext.group, room.group, yard.group);
+  const fcam = new FieldCamera(renderer, scene, camera);
 
   let quality: Quality = store.get<Quality>('quality', 'high');
   function applyQuality(q: Quality) {
@@ -66,13 +72,23 @@ async function boot() {
 
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
+  audio.preload(); // decodes while the title screen is up
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
-  const player = new Player(camera, room.colliders, room.bounds);
+  const colliders = [...room.colliders, ...yard.colliders];
+  const player = new Player(camera, colliders, [room.bounds, ...yard.zones]);
   player.onStep = () => audio.play('step' + Math.floor(Math.random() * 3), { gain: 0.22, rate: 0.94 + Math.random() * 0.12 });
-  const game = new Prologue({ ui, audio, room, ext, player, inter });
+  const game = new Prologue({
+    ui, audio, room, ext, player, inter, yard, fcam, colliders,
+    view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
+    // The chapter-one case, photographs included, lives in its own key.
+    saveCase: (c) => store.set('case', c),
+    loadCase: () => store.get<SavedCase | null>('case', null),
+    isTouch: () => input.touchMode,
+  });
   game.onCheckpoint = (n) => store.set('checkpoint', n);
+  const ch1 = game.ch1;
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -86,6 +102,7 @@ async function boot() {
   // ---------- modal / pointer lock plumbing ----------
   ui.onModalChange = (open) => {
     if (mode !== 'play') return;
+    if (open && fcam.raised) { fcam.raise(false); ui.viewfinder(false); ui.cameraButton(input.touchMode && fcam.have, false); }
     if (open) {
       input.enabled = false; input.reset();
       ui.showHud(false, input.touchMode);
@@ -121,6 +138,7 @@ async function boot() {
 
   function useCurrent() {
     if (mode !== 'play' || ui.modal || game.cinematic) return;
+    if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
     if (it) it.use();
   }
@@ -135,7 +153,12 @@ async function boot() {
       if (!game.cinematic) game.openNotebook();
     } else if (code === 'Escape' || code === 'KeyP') {
       if (ui.modal) { ui.close(); return; }
+      if (fcam.raised) { ch1.toggleCamera(); return; }
       openPause();
+    } else if (code === 'KeyC') {
+      if (!ui.modal && !game.cinematic) ch1.toggleCamera();
+    } else if (code === 'Space') {
+      if (fcam.raised && !ui.modal) ch1.shutter();
     }
   };
   renderer.domElement.addEventListener('click', () => {
@@ -144,12 +167,14 @@ async function boot() {
   });
   input.onTap = (x, y) => {
     if (mode !== 'play' || ui.modal || game.cinematic) return;
+    if (fcam.raised) { ch1.shutter(); return; }
     const ndc = new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
     const it = inter.pick(camera, ndc, 2.6);
     if (it) it.use();
   };
   ui.onUse = useCurrent;
   ui.onNotes = () => { if (mode === 'play' && !ui.modal && !game.cinematic) game.openNotebook(); };
+  ui.onCamera = () => { if (mode === 'play' && !ui.modal && !game.cinematic) ch1.toggleCamera(); };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
   // ---------- flow ----------
@@ -179,9 +204,13 @@ async function boot() {
     mode = 'play';
     input.enabled = true;
     input.requestLock();
+    // Normally the sounds are decoded long before anyone taps Start. If not, say so.
+    const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
+    clearTimeout(slow);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
+    space = 'room';
     game.start(checkpoint);
     ui.showHud(true, input.touchMode);
     setTimeout(() => ui.fade(false), 250);
@@ -189,6 +218,7 @@ async function boot() {
 
   function toTitle() {
     mode = 'title';
+    fcam.raise(false); ui.viewfinder(false);
     input.enabled = false; input.reset();
     if (input.locked) { releasingLock = true; input.releaseLock(); }
     ui.close(true);
@@ -200,20 +230,50 @@ async function boot() {
     showTitle();
   }
 
-  game.onFinish = () => {
+  function showCard(o: Parameters<typeof ui.endcard>[0]) {
     mode = 'end';
+    fcam.raise(false); ui.viewfinder(false);
     input.enabled = false; input.reset();
     if (input.locked) { releasingLock = true; input.releaseLock(); }
     ui.showHud(false, input.touchMode);
     audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.9 });
-    endEl = ui.endcard(() => { audio.stop('music', 0.8); endEl?.remove(); endEl = null; startGame(); }, () => toTitle());
+    endEl = ui.endcard(o);
     setTimeout(() => ui.fade(false), 400);
-  };
+  }
+  function backToPlay(then: () => void) {
+    audio.stop('music', 0.8);
+    endEl?.remove(); endEl = null;
+    ui.fade(true, '');
+    mode = 'play';
+    input.enabled = true;
+    input.requestLock();
+    then();
+    ui.showHud(true, input.touchMode);
+    setTimeout(() => ui.fade(false), 300);
+  }
+
+  // End of the prologue: the night is not over.
+  game.onFinish = () => showCard({
+    lines: ['Prologue: Night Shift.', 'THE NIGHT IS NOT OVER // CHECK THE LOCAL CONTROLLER'],
+    buttons: [
+      { label: 'Continue: service yard', on: () => backToPlay(() => game.beginChapter1(null)) },
+      { label: 'Title', on: () => toTitle() },
+    ],
+  });
+  // End of chapter one.
+  ch1.onEnd = (method) => showCard({
+    lines: ch1.endingLines(method),
+    buttons: [
+      { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
+      { label: 'Title', on: () => toTitle() },
+    ],
+    credits: true,
+  });
 
   // test hook, handy from the browser console: S47.jump('countdown')
   (window as any).S47 = {
     jump: (p: string) => { if (mode !== 'play') startGame(p); else game.start(p); },
-    game, room, ext, camera, player, renderer, scene,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1,
   };
 
   // ---------- resize and adaptive resolution ----------
@@ -248,6 +308,10 @@ async function boot() {
   // step() advances the simulation, draw() renders. Tests can hold the loop and
   // drive both by hand (S47.hold / S47.tick), which keeps headless runs fast.
   let last = performance.now(), t = 0, crtAcc = 0;
+  // which ambience the listener is in (room tone, open yard, photo lab)
+  let space: 'room' | 'yard' | 'lab' = 'room';
+  const inside = (b: { minX: number; maxX: number; minZ: number; maxZ: number }, p: THREE.Vector3) => p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
+  const spaceOf = (p: THREE.Vector3) => inside(room.bounds, p) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
   const dbg = { hold: false };
   function step(dt: number) {
@@ -265,27 +329,45 @@ async function boot() {
         player.update(dt, 0, 0, false);
       }
       game.update(dt, t, modalOpen);
+      const sp = spaceOf(player.pos);
+      if (sp !== space) { space = sp; audio.setSpace(sp); }
       crtAcc += dt;
       if (crtAcc > 1 / 12) { crtAcc = 0; game.drawCrts(t); }
-      if (mode === 'play' && !modalOpen && !game.cinematic) {
+      if (mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised) {
         const it = inter.update(camera);
         ui.prompt(it ? it.label() : null, input.touchMode);
         ui.hint(!input.touchMode && !input.locked);
-      } else { ui.prompt(null, input.touchMode); ui.hint(false); }
+      } else {
+        ui.prompt(fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        ui.hint(false);
+      }
     }
     sky.update(dt, t, camera.position);
     ext.update(dt, t);
+    yard.update(t);
     room.lights.hemi.intensity = hemiBase + sky.uniforms.uFlash.value * 2.4;
     audio.listener(camera);
   }
-  function draw() { renderer.render(scene, camera); }
+  const buf = new THREE.Vector2();
+  function draw() {
+    camera.updateMatrixWorld();
+    // glow points keep their size in metres: pixels per metre at one metre distance.
+    // Set every frame, because the viewfinder and the adaptive resolution change both.
+    glowScale.value = renderer.getDrawingBufferSize(buf).y / (2 * Math.tan(camera.fov * Math.PI / 360));
+    ext.dishArray.cull(camera);
+    renderer.render(scene, camera);
+  }
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const raw = (now - last) / 1000; last = now;
+    const dt = Math.min(0.05, raw);
     if (pausedByMenu || dbg.hold) return;
+    if (mode === 'end') return; // the end card covers the whole screen, so let the GPU rest
     step(dt);
     draw();
     adapt(dt);
+    debug?.frame(raw);
   }
   Object.assign((window as any).S47, {
     set hold(v: boolean) { dbg.hold = v; },
