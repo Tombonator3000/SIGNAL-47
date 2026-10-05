@@ -609,7 +609,9 @@ export class World {
 
   // Every frame of a trip, after the truck has moved: on into the next area, or arrived.
   private tripStep(dt: number) {
-    const id = this.leg!, L = this.legs[id]!, D = L.drive, legs = this.mods.legs!;
+    const id = this.leg!, L = this.legs[id]!, D = L.drive, legs = this.mods.legs;
+    // (chapter six's old road is not a trip: the ways between areas may never have been loaded)
+    if (!legs) return;
     const ex = legs.exitFrom(id, D.pos.x, D.pos.z, D.heading);
     if (ex && this.legs[ex.to]) { this.transfer(ex); return; }
     const trip = this.trip;
