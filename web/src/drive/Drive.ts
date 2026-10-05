@@ -71,6 +71,13 @@ const MAX_STEER = 32 * Math.PI / 180;
 const LF = 1.8, LR = WHEELBASE - LF;          // centre of the truck to the front and rear axles
 const HALF_W = 1.0, HALF_L = 2.65, TRACK = 0.84;
 const ACCEL = 3.5, BRAKE = 8, REVERSE = 5, LAT = 7.5;
+/** Full lock at a speed on ground of this grip: less as the speed rises, so the truck holds to
+ *  about LAT m/s² sideways, and less again on loose ground. Physics, the drawn wheels and the
+ *  autopilot (steerFor) all turn the wheel through this one limit. */
+const lockAt = (speed: number, grip: number) => {
+  const v = Math.max(1, Math.abs(speed));
+  return Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT * (0.45 + 0.55 * grip) / (v * v)));
+};
 const RATIOS = [2.48, 1.48, 1.0], FINAL = 3.08, IDLE = 650;
 const ROUGH: Record<SurfaceKind, number> = { asphalt: 0.05, gravel: 0.4, dirt: 0.8 };
 const YAW_MAX = 110 * Math.PI / 180, PITCH0 = -0.08;
@@ -110,6 +117,15 @@ export class DriveController {
 
   constructor(public camera: THREE.PerspectiveCamera, public truck: Truck, public area: DriveArea) {
     if (area.headlights) truck.headlightFloods(area.headlights.set, area.headlights.slots);
+  }
+
+  /** The steer input (-1 to 1) that bends the centre's path to curvature `kappa` (1/m, positive
+   *  to the right, as steer is) at the speed and on the ground the truck has now. The inverse of
+   *  the bicycle step in update(); clamped at full lock. */
+  steerFor(kappa: number) {
+    const beta = Math.asin(THREE.MathUtils.clamp(LR * kappa, -1, 1));
+    const wheel = Math.atan(WHEELBASE / LR * Math.tan(beta));
+    return THREE.MathUtils.clamp(wheel / lockAt(this.speed, this.surface.grip), -1, 1);
   }
 
   /** Put the truck at a world position and heading, standing still, view straight ahead. */
@@ -179,9 +195,7 @@ export class DriveController {
       this.speed += a * h;
       // brakes and drag stop the truck; they never push it the other way
       if (!pulling && before !== 0 && Math.sign(this.speed) !== Math.sign(before)) { this.speed = 0; a = 0; }
-      const vmax = Math.max(1, Math.abs(this.speed));
-      const lock = Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT * (0.45 + 0.55 * s.grip) / (vmax * vmax)));
-      const beta = Math.atan(LR / WHEELBASE * Math.tan(this.steer * lock));
+      const beta = Math.atan(LR / WHEELBASE * Math.tan(this.steer * lockAt(this.speed, s.grip)));
       const ox = this.pos.x, oz = this.pos.z, oh = this.heading;
       this.yawRate = -this.speed / LR * Math.sin(beta);
       this.heading += this.yawRate * h;
@@ -226,7 +240,7 @@ export class DriveController {
       this.yaw += (0 - this.yaw) * k; this.pitch += (PITCH0 - this.pitch) * k;
     }
     this.truck.setBrake(braking);
-    this.pose(dt, this.steer * Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT / Math.max(1, this.speed * this.speed))));
+    this.pose(dt, this.steer * lockAt(this.speed, s.grip));
   }
 
   // Heights under the four wheels give the body its height, pitch and roll.

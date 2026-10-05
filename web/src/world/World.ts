@@ -724,10 +724,10 @@ export class World {
     // wanting to go but not going (a post, a kerb): back off for a moment
     A.stuck = v > 0.8 && sp < 0.15 ? A.stuck + dt : 0;
     if (A.stuck > 1.5) { A.stuck = 0; A.back = 1.4; }
-    // pure pursuit: the curvature that reaches the aim point, as a turn of the wheel
+    // pure pursuit: the curvature that reaches the aim point, turned into the wheel the truck
+    // has at this speed on this ground (the same lock as the physics, Drive.ts)
     const kappa = 2 * Math.sin(err) / look;
-    const steer = -Math.atan(kappa * 3.3) / (32 * Math.PI / 180);   // the truck's wheelbase and full lock (Truck.ts, Drive.ts)
-    return { steer: THREE.MathUtils.clamp(steer, -1, 1), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
+    return { steer: D.steerFor(-kappa), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
   }
 
   private startEngine() {
