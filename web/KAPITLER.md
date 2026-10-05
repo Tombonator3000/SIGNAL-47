@@ -13,7 +13,7 @@ Status:
 | The Amended Record | | Grunnløpet er bygd |
 | The Survey Station | | Grunnløpet er bygd |
 | Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
-| All Night | | Området er bygd |
+| All Night | Ja, under | Bygd 5. oktober (se loggen) |
 | Roswell Road og THE EVENT | | |
 
 ## Night Shift (23:41 til 02:16)
@@ -437,3 +437,69 @@ Dette er THE EVENT spilt omtrent en time før det skjer: motoren som dør, dashb
 **Tekst:** merkelapp «Field radio, 1947», så «Press to talk» og «Turn it off». Første gang: «The switch is stiff. There is no battery in it.» Notatet i journalen er bare det spilleren hørte: «Tomás' field radio. No battery. An engine far off, coughing, then stopping. Silence. Clicks, four and seven. Someone breathing.» Etter trykket: «I pressed to talk once. Four clicks and seven came back.»
 
 **Bygges:** radioen i `Room6.ts` (modell og trefflate), lyden som syntese i `core/walkie.ts` (motor, sus, relé, pust, alt gjennom et smalt båndfilter som en liten høyttaler), og samspillet i `Chapter4.ts`. Den holder seg stille mens Nora snakker. Suset stopper når spilleren går ut av rommet.
+
+## All Night (05:00 til 05:20)
+
+Tom 5. oktober: «Bygg All Night». Spesifisert og bygd samme dag etter `HISTORIE.md`. Roswell Road og THE EVENT kommer etter.
+
+### Lag
+
+| Det spilleren tror først | Det nye laget |
+| --- | --- |
+| Lysene over mesaen er en lokal skrøne, og motoren som døde i fjor var batteriet | Folk her har sett det samme i 39 år, og avisbildet fra 1947 viser mer enn det som står i saksmappa |
+
+### Rekkefølgen
+
+1. **05:00, ut av rom 6.** Kapittelkortet (CHAPTER FIVE / ALL NIGHT) kommer mens spilleren står utenfor døra til rom 6. Lastebilen står på SARO. Kapittel 4 slutter ikke lenger med et sluttkort; natten går rett videre.
+2. **Forbi SARO.** Når spilleren kommer nær kontrollrommet, ringer driftsterminalen én gang (`beep`). En ny fil står i katalogen: `RUN860414_0529.DAT`, 0 blokker, åpnet 05:29. Valgfri (tråd 12, bærer 05:29).
+3. **Lastebilen.** «Drive to Mesa Diner». Ingen kjøring, bare en overgang med tittelen MESA DINER og ni minutter på klokka. Servicekartet fra dørlomma blir med (E14).
+4. **Dineren, 05:11.** Grålysning i øst, lysrør, kaffe, en trøtt servitrise, en sjåfør og radioen som står lavt. Spilleren kan gjøre dette i hvilken rekkefølge hen vil:
+   - **Servitrisen:** kaffe, og lysene over mesaen siden hun var elleve. Hun er lei av folk fra byen som spør etter romvesener.
+   - **Sjåføren:** han tar den gamle veien fordi den sparer elleve miles. Motoren døde på ham der i oktober i fjor, rett forbi åttemilsstolpen. Han trodde det var batteriet.
+   - **Utklippet** (E15): avisbildet fra 1947, utsnitt B av masteren. Kometen står lavt til høyre for mesaen. Ingen sier noe om den.
+   - **Radioen** bak disken: været etter tørrtordenen vest for Magdalena-fjellene, Jack Nicklaus som vant Masters i går, 46 år gammel, og at Halleys komet står lavt i sør rundt midnatt denne uka.
+   - **Telefonautomaten** (valgfri, tråd 14): Ward. «Hondo called. So did Site 11.» Hun vil ha spilleren tilbake før morgenserien klokka seks.
+5. **Kartgåta (P13).** Ved båsen legger spilleren servicekartet ut og E09A oppå (avtegnet på kalkerpapir). Når transitten på kalken ligger på STATION 01 på kartet, går C rett øst og krysser den gamle Roswell-veien rett forbi åttemilsstolpen, ved en oppmålingsbolt. Spørsmålet: hvor krysser C den gamle veien?
+6. **Sjåføren bekrefter** (etter P13): «Brass thing in the shoulder? That is right where she quit on me.» Han vet ikke hva han bekrefter.
+7. **Ut.** Lastebilen: «Drive the old road». Kaffen blir stående på disken. Sluttkortet: NEXT: ROSWELL ROAD. Den delen av natten er ikke bygd ennå.
+
+### Dokumenter
+
+**E14 / SARO 07 service map** (kart, tegnet i kode). Riksveien nord-sør, SARO og motellet i nord, Mesa Diner der den gamle Roswell-veien går ut, veien østover og så nordøstover med milestolper fra dineren (1 til 11), STATION 01 nord for veien, og oppmålingsbolter (BM) i veikanten ved fire steder. Ingen C. Teksten: «SARO 07 / SERVICE MAP / ACCESS AND OLD SURVEY ROADS», «Mileposts from the junction at the diner. BM: survey bolt in the shoulder.»
+
+**E15 / The Sentinel clipping** (bilde). Utklippet fra veggen i dineren slik det henger der: avisnavn, tittel, undertittel, bildet (utsnitt B) og bildeteksten. Transkripsjonen beskriver bare: lyset, mesaen, to ranchere ved et gjerde, og lavt til høyre for mesaen en flekk med en kort hale. Den høyre kanten av bildet er klippet tett.
+
+### Terminalfiler
+
+`DIR SURVEY.RAW` viser `RUN860414_0529.DAT` med 0 blokker og datoen 14-APR-1986 05:29 fra kapittelstart. `TYPE` gir: `OPENED 14-APR-1986 05:29:00`, `OPERATOR REYES`, `RECORDS 0`, `FILE INCOMPLETE. RECORD NOT CLOSED.` Første gang blir notatet: klokka nå, filen, og at den ble åpnet 05:29.
+
+### Gåte
+
+**P13 / Where does C cross the old Roswell road?** Observer (E09A og servicekartet), sammenlign (legg kalken på STATION 01), konkluder (C krysser rett forbi åttemilsstolpen), test (sjåføren). Kalken kan dras med mus eller finger; den smetter på plass når transitten er under 18 piksler fra STATION 01. Svaralternativer: bolten rett forbi åttemilsstolpen (riktig), bolten ved seksmilsstolpen, bolten forbi timilsstolpen, og «C går klar av veien». Gale svar får et kort hint og ingen straff.
+
+### Falske forklaringer
+
+- Lysene over mesaen er Hæren eller været (servitrisens far og Hæren i 1947).
+- Motoren som døde var batteriet (sjåføren skiftet det, og det har ikke skjedd siden).
+
+### Callbacks
+
+| Her | Fra eller til |
+| --- | --- |
+| `RUN860414_0529.DAT` | THE EVENT 05:29, «forløpet i forkant» |
+| Sjåføren, «last October» | Perma og servicekortet: 19. oktober 1985, -38 |
+| Kometen i utklippet | Halley-plakaten og kometen på himmelen |
+| «Hondo called. So did Site 11.» | Telexen (tråd 9 og 11) |
+| Kaffen på disken | Kaffen på pulten i prologen |
+| «Do not stop on the line.» | Nora i rom 6; THE EVENT |
+
+### Hva som bygges
+
+- `story/Chapter5.ts` (All Night), fase `ch5`, sjekkpunkt `chapter5`, lagring i `SavedCase.ch5`.
+- `ui/MapOverlay.ts`: kartet med kalken som kan dras, spørsmålet og svarene. Tegningene i `story/drawings.ts` (`serviceMap`, `serviceTracing`).
+- Dineren: alle 13 trefflater får interaksjoner, også når kapitlet ikke er aktivt (da bare korte beskrivelser), radioen spiller lavt ved disken, grålysningen følger klokka, lastebilen på plassen får en trefflate. Lagring i dineren gjenoppretter området.
+- Lastebilen på SARO får «Drive to Mesa Diner» gjennom kapittel 3 sin interaksjon.
+
+### Test
+
+`tools/chapter5.py`: fra `S47.jump('chapter5')`: klokka, terminalklokka og fila, lastebilen, overgangen til dineren, servitrisen og kaffen, utklippet (E15), radioen, Ward, kartgåta med ekte dra (galt svar, så riktig), sjåføren som bekrefter, lagring og Continue i dineren, ut med lastebilen og sluttkortet. `chapter4.py` slutter nå på kapittelkortet til All Night. `reachcheck.py` sjekker at alle dinerens trefflater kan nås.
