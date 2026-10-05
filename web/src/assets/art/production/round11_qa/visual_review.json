@@ -1,0 +1,54 @@
+{
+  "checked_at_utc": "2026-10-05T09:38:03.404415+00:00",
+  "basis": "Manuell gjennomgang av generatorbilder og sluttfiler i målstørrelse, tekst-/stempeloverlegg på checkerboard, FLASH fullsize og320x200 samt asfalt2x2. Uavhengig readonly review ved /root/votv_binary_audit, seks låste motiv og to reviderte motiv. Ingen P2-funn.",
+  "assets": {
+    "road/milepost_blank.png": {
+      "sha256": "6c5a58b34c8215f3fa7a916b21eac10b8cb89ef63908d9a339fd0394f249965a",
+      "visual_status": "PASS"
+    },
+    "road/witness_post.png": {
+      "sha256": "79f25e92001bf2f756faabd5a375f013e43df3132773161aa2061747b1882402",
+      "visual_status": "PASS"
+    },
+    "road/survey_disk_brass.png": {
+      "sha256": "f2cd813854e1e18a75243e48e7755623da72c28ca688650206ceb76926da46c6",
+      "visual_status": "PASS"
+    },
+    "road/tex_oldroad_asphalt.jpg": {
+      "sha256": "fa3de283b8232146eb55dcb5ce80696cc5d514bfc7b9ae83d9a9f5fa24f7d106",
+      "visual_status": "PASS"
+    },
+    "flash/flash_eye.jpg": {
+      "sha256": "fbe1c82cbba714a908f1d1298532a7b8817c285513548cc917d84bf9c6b755fb",
+      "visual_status": "PASS"
+    },
+    "flash/flash_hand.jpg": {
+      "sha256": "474a18306da5130d8d9e4d4bb4bd9cf93df8d8ad8600e5088f3610addbacff6b",
+      "visual_status": "PASS"
+    },
+    "flash/flash_face.jpg": {
+      "sha256": "006be279d5d83a3c95136f7fba0afd44eb9ad9ee14b39304613654547fd954d9",
+      "visual_status": "PASS"
+    },
+    "flash/flash_man.jpg": {
+      "sha256": "e4e88d2732538e71f8b668cd805b66e67030b0038e2964eac986d0838ffeeb9f",
+      "visual_status": "PASS"
+    }
+  },
+  "text_free": "PASS, bare QA-overlegg har tekst",
+  "labels": "PASS, MILE/8 innen reservasjon; SURVEY MARK og STA01/C/1947+pil lesbare",
+  "asphalt": "PASS, ingen tydelig rett skjøt/fargekant i2x2; forventet mønsterrepetisjon, ikke påstått pikselidentiske kanter",
+  "flash": "PASS, originale oppdiktede motiver; hånden viser mesa og ørken, ikke skog",
+  "runtime_status": "UNVERIFIED, Claude eier én samlet integrasjonstest",
+  "qa_images": [
+    "src/assets/art/production/round11_qa/asphalt_2x2.png",
+    "src/assets/art/production/round11_qa/flash_320x200_row.png",
+    "src/assets/art/production/round11_qa/flash_fullsize_row.png",
+    "src/assets/art/production/round11_qa/milepost_text_checkerboard.png",
+    "src/assets/art/production/round11_qa/milepost_text_overlay.png",
+    "src/assets/art/production/round11_qa/survey_disk_stamp_checkerboard.png",
+    "src/assets/art/production/round11_qa/survey_disk_stamp_overlay.png",
+    "src/assets/art/production/round11_qa/witness_vertical_stamp_checkerboard.png",
+    "src/assets/art/production/round11_qa/witness_vertical_stamp_overlay.png"
+  ]
+}
