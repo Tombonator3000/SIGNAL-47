@@ -9,6 +9,8 @@ import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
 import type { Diner } from './Diner';
+import type { OldRoad } from '../drive/OldRoad';
+import type { DriveInput } from '../drive/Drive';
 import { Crossing, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
@@ -26,6 +28,7 @@ import { loadArtFor, artTexture, DINER_ART } from '../core/art';
 //   STATION 01  around (0, 0, 8000)     the survey station, chapter three
 //   room 6      around (0, 0, -8000)    Nora's room at Sierra Motor Court, chapter four
 //   diner       around (-8000, 0, 0)    Mesa Diner on the Roswell road (Diner.ts, by Codex), «All Night»
+//   roswell     around (0, 0, -24000)   the old Roswell road at dawn, chapter six (drive/OldRoad.ts)
 //
 // The walk from SARO's fire exit over the highway to the motel is part of SARO (Crossing.ts).
 
@@ -33,6 +36,10 @@ export const ROAD_ORIGIN = new THREE.Vector3(8000, 0, 0);
 export const STATION_ORIGIN = new THREE.Vector3(0, 0, 8000);
 export const ROOM6_ORIGIN = new THREE.Vector3(0, 0, -8000);
 export const DINER_ORIGIN = new THREE.Vector3(-8000, 0, 0);
+export const OLDROAD_ORIGIN = new THREE.Vector3(0, 0, -24000);
+// The night areas see the camera's far plane at 5 km and thick haze; the old road at dawn
+// sees farther (the camera goes up at the end).
+const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -50,6 +57,8 @@ export interface WorldDeps {
   clock: () => string;
   skipClock: (sec: number) => void;
   touch: () => boolean;
+  /** The dawn now (0..1) and the colour of the haze, from the sky. */
+  sky: () => { dawn: number; fog: THREE.Color };
 }
 
 type Modules = {
@@ -60,6 +69,7 @@ type Modules = {
   engine: typeof import('../drive/engineSound');
   Room6: typeof import('./Room6');
   Diner: typeof import('./Diner');
+  OldRoad: typeof import('../drive/OldRoad');
 };
 
 export class World {
@@ -79,6 +89,13 @@ export class World {
   /** An invisible box round the truck on the diner's lot, for interaction (chapter five). */
   dinerTruckProxy: THREE.Object3D | null = null;
   onDinerTruck?: (proxy: THREE.Object3D) => void;
+  /** The old Roswell road (chapter six), its truck and its controller, once loaded. */
+  oldRoad: OldRoad | null = null;
+  oldTruck: Truck | null = null;
+  oldDrive: DriveController | null = null;
+  /** Chapter six takes over: the pedals and wheel (input), or the camera (the pull-out at the
+   *  end, while the truck stands). Cleared when the drive stops. */
+  oldControl: { input?: (dt: number) => DriveInput; camera?: (dt: number) => void } | null = null;
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
   grounds: Grounds;
@@ -141,7 +158,8 @@ export class World {
             : k === 'Truck' ? await import('../drive/Truck')
               : k === 'Room6' ? await import('./Room6')
                 : k === 'Diner' ? await import('./Diner')
-                : await import('../drive/engineSound');
+                  : k === 'OldRoad' ? await import('../drive/OldRoad')
+                    : await import('../drive/engineSound');
       (this.mods as Record<string, unknown>)[k] = m;
     }
     return this.mods[k] as Modules[K];
@@ -197,6 +215,60 @@ export class World {
       this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
       this.d.applyQuality();
+    });
+  }
+
+  // The old road at dawn, its own truck lit by its own floods, and a controller for it
+  private ensureOldRoad() {
+    return this.once('oldroad', async () => {
+      const [{ OldRoad, oldFlood, OLD_HEADLIGHTS }, { DriveController }, { Truck }] = await Promise.all([this.load('OldRoad'), this.load('Drive'), this.load('Truck'), this.load('engine')]);
+      const truck = new Truck({ flood: oldFlood });
+      truck.headlightFloods(oldFlood, OLD_HEADLIGHTS);
+      truck.group.visible = false;
+      this.d.scene.add(truck.group);
+      const road = new OldRoad(OLDROAD_ORIGIN.clone());
+      road.group.visible = false;
+      this.d.scene.add(road.group);
+      const drive = new DriveController(this.d.camera, truck, road);
+      drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
+      this.oldRoad = road; this.oldTruck = truck; this.oldDrive = drive;
+      this.d.applyQuality();
+      return road;
+    });
+  }
+  /** The engine sound, for the chapter that stops it. */
+  get engineSound() { return this.engine; }
+
+  /** From the diner's lot out onto the old road (chapter six): a cut with the road's name,
+   *  then the truck in the right lane just before the six-mile post, the engine running.
+   *  ready() runs behind the black, before the picture comes back. */
+  driveOldRoad(ready: () => void) {
+    if (this.busy) return;
+    this.busy = true;
+    const { fade, hold, toast } = this.d;
+    hold(true);
+    fade(true, 'THE OLD ROAD');
+    const loaded = this.ensureOldRoad();
+    this.d.after(2.4, () => {
+      void loaded.then(() => {
+        this.enter('roswell');
+        const road = this.oldRoad!, drive = this.oldDrive!, truck = this.oldTruck!;
+        road.hitBack = false;
+        drive.place(road.start.pos, road.start.heading);
+        truck.setDriving(true);
+        truck.setHeadlights(true);
+        truck.setLightLevel(1);
+        truck.setHeadColor(null);
+        truck.setDashLevel(null);
+        this.oldControl = null;
+        this.startEngine();
+        this.driving = true;
+        ready();
+        toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake. A and D: steer.', 4.5);
+      }).catch((e) => {
+        console.error(e);
+        toast('The old road could not be loaded. Check your connection and try the truck again.', 5);
+      }).finally(() => { this.busy = false; hold(false); fade(false); });
     });
   }
 
@@ -262,6 +334,12 @@ export class World {
     if (this.room6) this.room6.group.visible = area === 'room6';
     if (this.diner) this.diner.group.visible = area === 'diner';
     if (this.dinerTruck) this.dinerTruck.group.visible = area === 'diner';
+    if (this.oldRoad) this.oldRoad.group.visible = area === 'roswell';
+    if (this.oldTruck) this.oldTruck.group.visible = area === 'roswell';
+    const cam = this.d.camera, far = area === 'roswell' ? FAR_OLDROAD : FAR;
+    if (cam.far !== far) { cam.far = far; cam.updateProjectionMatrix(); }
+    const fog = this.d.scene.fog as THREE.FogExp2 | null;
+    if (fog) fog.density = area === 'roswell' ? FOG_OLDROAD : FOG;
     player.floor = area === 'saro' ? this.grounds.floorAt : null;
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
@@ -456,6 +534,7 @@ export class World {
   /** Stop driving without arriving (a save is opened, or the title). */
   stopDriving() {
     this.driving = false;
+    this.oldControl = null;
     this.engine?.stop();
   }
 
@@ -465,6 +544,20 @@ export class World {
     if (this.area === 'room6') this.room6?.update(dt, t);
     if (this.area === 'diner') this.diner?.update(dt, t);
     if (this.area === 'saro') this.motel.update(dt, t);
+    if (this.area === 'roswell' && this.oldRoad && this.oldDrive && this.oldTruck) {
+      const c = this.oldControl, drive = this.oldDrive;
+      if (c?.camera) c.camera(dt);
+      else if (this.driving) {
+        if (c?.input) input = c.input(dt);
+        else if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
+        drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
+      }
+      const sky = this.d.sky();
+      this.oldRoad.update(dt, t, this.d.camera.position, sky.dawn, sky.fog);
+      if (this.engine) { this.engine.set(drive.rpm, drive.load); this.engine.tyres(drive.surface.kind, Math.abs(drive.speed)); }
+      this.dashT -= dt;
+      if (this.dashT <= 0) { this.dashT = 0.1; this.oldTruck.setDash({ mph: drive.mph, rpm: drive.rpm, clock: this.d.clock(), fuel: 0.55 }); }
+    }
     if (this.area === 'road' && this.road && this.drive && this.truck) {
       if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
       if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);

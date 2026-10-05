@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { box, cyl, rod, floodlit, floodSet } from '../world/kit';
+import { box, cyl, rod, floodlit, floodSet, type FloodSet } from '../world/kit';
 import type { GlowPoints } from '../world/glow';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
@@ -16,13 +16,15 @@ export const HEADLIGHT_SLOTS = [0, 1, 2];
 
 // Retroreflective sheeting: road signs shine back at the headlights from far away. The
 // beam comes from the truck (RoadArea.update reads it from the headlight floods).
-export const retroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir: { value: new THREE.Vector3(0, 0, -1) } };
-function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: number): T {
-  floodlit(m, falloff, roadFlood);
+export type RetroBeam = { pos: { value: THREE.Vector4 }; dir: { value: THREE.Vector3 } };
+export const retroBeam: RetroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir: { value: new THREE.Vector3(0, 0, -1) } };
+/** A sign material that shines back at the headlights, lit by a flood set (the old road has its own). */
+export function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: number, set: FloodSet = roadFlood, beam: RetroBeam = retroBeam): T {
+  floodlit(m, falloff, set);
   const flood = m.onBeforeCompile;
   m.onBeforeCompile = (sh, r) => {
     flood.call(m, sh, r);
-    sh.uniforms.uRetroPos = retroBeam.pos; sh.uniforms.uRetroDir = retroBeam.dir;
+    sh.uniforms.uRetroPos = beam.pos; sh.uniforms.uRetroDir = beam.dir;
     sh.fragmentShader = sh.fragmentShader
       .replace('uniform float uFloodScale;', 'uniform float uFloodScale; uniform vec4 uRetroPos; uniform vec3 uRetroDir;')
       .replace('totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;', `totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;
@@ -31,7 +33,7 @@ function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: number): T {
         float rBeam = smoothstep(0.74, 0.97, dot(-rL, uRetroDir));
         totalEmissiveRadiance += diffuseColor.rgb * uRetroPos.w * rFace * rBeam / (1.0 + rD * rD * 0.00012);`);
   };
-  m.customProgramCacheKey = () => 'flood' + roadFlood.key + falloff + 'retro';
+  m.customProgramCacheKey = () => 'flood' + set.key + falloff + 'retro';
   return m;
 }
 

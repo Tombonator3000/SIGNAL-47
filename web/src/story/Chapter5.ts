@@ -92,6 +92,7 @@ export class Chapter5 {
   private clippingUrl: string | null = null;
   private mapUrl: string | null = null;
   private radioAt: THREE.Vector3 | null = null;
+  private leaving = false;
 
   constructor(private g: Chapter5Host, private d: Chapter5Deps) {}
 
@@ -115,7 +116,7 @@ export class Chapter5 {
 
   reset() {
     this.active = false; this.started = false;
-    this.s = fresh(); this.lines = []; this.who = null; this.panel = null;
+    this.s = fresh(); this.lines = []; this.who = null; this.panel = null; this.leaving = false;
     this.d.ch3.truckOverride = null;
     this.d.audio.amRadio(null);
     this.applyWorld();
@@ -470,13 +471,21 @@ export class Chapter5 {
   }
 
   // ---------- out ----------
+  // Out to the truck: the case is saved here first, with the truck ready, so the end of
+  // the night can be played again from the diner. Then chapter six takes the road.
   private finish() {
     const s = this.s;
-    if (s.stage === 'complete') return;
-    s.stage = 'complete';
-    this.g.note(`${this.time()}. Out to the truck. ${s.coffee ? 'The coffee stays on the counter, half drunk.' : 'The waitress is wiping the counter.'} The old road goes off south-east in the grey.`);
+    if (s.stage !== 'road' || this.leaving) return;
+    this.leaving = true;
+    // the autosave is written after this frame; the state must still say 'road' then
     this.d.milestone();
-    this.g.after(1.0, () => this.onEnd?.());
+    this.save();
+    this.g.after(0.4, () => {
+      this.leaving = false;
+      s.stage = 'complete';
+      this.g.note(`${this.time()}. Out to the truck. ${s.coffee ? 'The coffee stays on the counter, half drunk.' : 'The waitress is wiping the counter.'} The old road goes off east into the grey.`);
+      this.onEnd?.();
+    });
   }
 
   endingLines() {

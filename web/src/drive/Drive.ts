@@ -60,6 +60,8 @@ export interface DriveArea {
   height?(x: number, z: number): number;
   obstacles: Obstacle[];
   endZone: Box2;
+  /** true where the truck's centre may not go (a curved right of way; the old road). */
+  blocked?(x: number, z: number): boolean;
   /** Flood slots for the headlight pools; the controller hands them to the truck. */
   headlights?: { set: FloodSet; slots: number[] };
 }
@@ -226,6 +228,7 @@ export class DriveController {
   // Overlap of the truck's footprint (an oriented rectangle) with any obstacle.
   private hit() {
     const c = Math.cos(this.heading), sn = Math.sin(this.heading), x = this.pos.x, z = this.pos.z;
+    if (this.area.blocked?.(x, z)) return true;
     for (const o of this.area.obstacles) {
       if (o.kind === 'circle') {
         const dx = o.x - x, dz = o.z - z;
