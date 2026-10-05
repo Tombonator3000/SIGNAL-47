@@ -1,77 +1,73 @@
-# Reachcheck, gangbare områder og ting spilleren kan nå
+# Reachcheck som vakt
 
-Bestilt av Claude i `todo.md` gjennom PR #56 og avtalt med Tom i SIGNAL / 47-samtalen. Baseline: `609701226d3f1405276d4951f8dfb1d6ce25222c`. Gren: `codex/reachcheck-20261005`.
+Vaktene for SARO, STATION 01, rom 6 og dineren gir **PASS, exit 0** på det faktisk kjørte bygget fra Claude-commit `c96e082`, med motellrettingen `b4d20cb`. Nye lommer, manglende startforbindelser og målte gulvhopp gir FAIL. Ufullstendig kontroll eller ukjent interaksjonsdekning gir UNVERIFIED, med exit 2 når ingen målt feil allerede krever exit 1.
 
-Codex eier bare `tools/reachcheck.py`, dette notatet, `production/reachcheck/` og eget loggavsnitt. Ingen spillkode, eksisterende tester, Unity-filer eller skrivebeskyttede prosjektkilder endres. Claude retter spillfunn og legger verktøyet inn i én samlet integrasjonstest før eventuell fletting.
+Oppfølgingen er bestilt i `todo.md` på `c96e082`, kl. 00.52 UTC 5. oktober, og avtalt i SIGNAL / 47-samtalen. Gren: `codex/reachcheck-guard-20261005`. Codex eier bare `tools/reachcheck.py`, dette notatet, `production/reachcheck/` og eget loggavsnitt. Claude beholder spillrettinger og én samlet integrasjonstest.
 
-Verktøyet undersøker SARO med fem åpne dører, STATION 01, rom 6 og dineren. Rutenettet har 0,15 m avstand. Flomfyllingen bruker rettede nabokanter bekreftet med den faktiske `Player.update`, og bruker gulvhøyden til å rapportere hopp over 0,12 m separat. Bratte kanter som spillet faktisk lar spilleren gå over, skal fortsatt være med i ganggrafen. Aktive ting undersøkes med den faktiske `Interaction.pick` fra nådde steder. Inaktive ting og manglende kroker må oppgis som UNVERIFIED.
+## Kontrollregler
 
-Dette er en romlig kontroll gjennom spillets testkrok i en egen, midlertidig nettleserprofil. Den dokumenterer ikke manuell spillerforståelse, ekte tastatur/berøring, lydmiks eller fps på PC og mobil. De uendrede grønne spilltestene i PR #55 gjenbrukes; en full kapitteltestrekke gjentas ikke for et separat kontrollverktøy.
+Gyldige punkter følger motorens faktiske firkantklarering, identisk med `Player.resolve`, og `Player.walkable`. Rutenettet har 0,15 m avstand. Rettede nabokanter testes med ekte `Player.update` i steg på høyst 0,04 m; endepunktavvik må være høyst 0,0001 m. Gulvhopp over 0,12 m rapporteres separat og fjernes ikke fra ganggrafen. Aktive interaksjoner prøves med den faktiske `Interaction.pick`, hele registeret og identiteten til det registrerte målet.
 
-## Testgrunnlag
+Tre dokumenterte, ubrukte lommer er EXPECTED. Hele komponenten må bestå av de opprinnelige, faste rutenettpunktene, med høyst det opprinnelige antallet. Boksene er ikke en generell tillatelse til nye punkter: også et nytt punkt inne i samme boks gir FAIL. Koordinattoleransen på 0,000001 m absorberer bare flyttallsstøy.
 
-Typekontroll og enkeltfilbygg av baseline: PASS. Bygget er 18 555 832 byte og SHA-256 `ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648`.
+| Lomme | Verdenskoordinater, x / z i meter | Maksimalt antall |
+|---|---|---:|
+| Bak B-12-skiltet | x 8,4–10,65 / z -19,2–-17,55 | 56 |
+| Hjørnet ved stasjonshytta | x -12,6–-12,3 / z 8002,65–8003,1 | 5 |
+| Dinerens nordhjørne | x -8000,4–-7998,6 / z -8,4–-7,65 | 72 |
 
-## Faktisk kjøring og funn
+Dinerboksen er lokalt x -0,4–1,4, med verdensforskyvning x -8000. Nøyaktige punktrader, koordinater og begrunnelser ligger i verktøyet og komponentfunnene.
 
-Alle fire områder fullført 5. oktober 00:33 UTC med Playwright Chromium og ANGLE swiftshader, på **20,716 sekunder totalt**. Ingen fangede `pageerror`, og alle fire JSON-rapporter og PNG-kart er skrevet og kontrollert. Oppsummeringen inneholder filhashene. Verktøyet returnerte **1, målte FAIL**, fordi det fant avvik i det forespurte rutenettet. Det er ikke en grønn spilltest.
+En smal, positiv råoverlapp gir PASS bare når begge sonene har dokumenterte, rettede bevegelsesbaner fra det eksakte startpunktet. Kompakte polylinjer og seed-vitner følger rapporten. Direkte toveis gange inne på en isolert øy kan ikke sertifisere adgang. Råoverlapp og rett gjennomgang rapporteres separat; en alternativ rute kan forbinde sonene.
 
-| Område | Nådde / gyldige punkter | Aktive interaksjoner | Passérbare høydehopp > 0,12 m | Smale positive soneoverlapp |
-|---|---:|---:|---:|---:|
-| SARO | 208 334 / 208 516 | 34 / 34 PASS | 12 FAIL | 3 FAIL etter geometriregelen |
-| STATION 01 | 128 260 / 128 463 | 14 / 14 PASS | 0, PASS | 0, PASS |
-| Rom 6 | 705 / 711 | 11 / 11 PASS | 0, PASS | 0, PASS |
-| Dineren | 19 336 / 19 417 | UNVERIFIED, 13 ubundne treffflater | 0, PASS | 3 FAIL etter geometriregelen |
+**PASS gjelder vakten, ikke full interaksjonsdekning.** SARO og rom 6 har henholdsvis ni og tre inaktive kapittelobjekter, fortsatt UNVERIFIED. Dineren har ingen registrerte kapittelinteraksjoner: dekningen er UNVERIFIED. Den avtalte vaktforventningen krever både null registrerte interaksjoner og det eksakte settet med 13 navngitte treffflater. Ukjent label, ny tom interaksjonsliste eller endret proxiesett slipper ikke gjennom dette unntaket.
 
-**Funn Claude bør undersøke først:**
+## Faktisk kjøring
 
-- Motellinnkjørselen: 12 nabokanter ved z 1,95 til 2,10 og z 9,90 til 10,05, x -27,30 til -26,55. Gulvhøyden hopper 0,14 til 0,44 m, og den faktiske bevegelsen passerte alle kantene i begge retninger. Dette er innkjørselen til motellet, ikke rekkverket ved nødutgangen.
-- SARO: en komponent med 59 ikke nådde gridpunkter ved x 8,40 til 10,65, z -19,20 til -17,55. 56 av punktene er også frie etter motorens AABB-klarering; tre skyldes sirkel/AABB-forskjellen.
-- STATION 01: seks ikke nådde punkter ved x -12,60 til -12,30, z 8002,65 til 8003,10. Fem er AABB-frie. Felttelefonen selv er nåbar.
-- Dineren: 73 ikke nådde punkter ved x -8000,40 til -7998,60, z -8,40 til -7,65, altså lokalt x -0,40 til 1,40. 72 er AABB-frie. Ingen kapittelinteraksjoner er koblet inn i dineren ennå.
+Endelig kjøring startet **5. oktober 2026 kl. 01.26.57 UTC**, fullførte alle fire områder på **37,864 sekunder**, og returnerte **exit 0**. Ingen fangede `pageerror`, ingen uventede lommer og ingen passérbare gulvhopp over 0,12 m. Alle fire kompakte JSON-filer og PNG-kart er skrevet og hashkontrollert.
 
-Dette er lommer som ikke ble nådd i det avtalte 0,15 m-rutenettet med fire kardinalnaboer. Det er ikke et bevis for at alle mulige kontinuerlige eller diagonale spillerbaner er stengt. Kart og koordinater lar Claude undersøke om lommene skal kunne nås, eller om sonene bør følge den tilsiktede geometrien bedre.
+| Område | Nådde / gyldige punkter | Forventet ikke nådd | Aktive faktiske treff | Forbundne smale skjøter | Interaksjonsdekning |
+|---|---:|---:|---:|---:|---|
+| SARO | 208 161 / 208 217 | 56 | 34 / 34 | 3 | UNVERIFIED, ni inaktive |
+| STATION 01 | 128 241 / 128 246 | 5 | 14 / 14 | 0 | PASS |
+| Rom 6 | 705 / 705 | 0 | 11 / 11 | 0 | UNVERIFIED, tre inaktive |
+| Dineren | 19 324 / 19 396 | 72 | Ingen registrerte | 3 | UNVERIFIED, 13 ubundne |
 
-339 av totalt 472 røde punkter skyldes at briefen krever sirkelklarering mens `Player.resolve` bruker en firkant rundt spilleren. De er beholdt og merket i rapportene, ikke skjult for å få grønt resultat. Rom 6 har bare seks slike hjørnepunkter og ingen større isolert komponent.
+Enkeltfilbygget ble laget fra en isolert `git archive` av `c96e082`, uten kildeendringer. Vite-bygg: PASS, 192 moduler, 2,57 s. HTML: 18 556 096 byte, SHA-256 `c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa`. Frosset verktøy-SHA: `cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa`.
 
-**Smale skjøter betyr ikke seks nye usynlige vegger.** Alle seks sonepar har faktiske startforbindelser. Fem har også et rett toveis bevegelsesvitne; dinerens `walk`/`phone` nås via en annen rute. Råoverlappene bryter den bestilte grensen på mer enn 0,6 m i begge retninger, men rapporten skiller dette fra faktisk forbindelse. Parene er SAROs `landing`/`labPath`, `exitDoor`/`west`, motellets `walk`/`office`, og dinerens `lot`/`door`, `walk`/`inside`, `walk`/`phone`.
+Rapportens `git_base` er kontrollverktøyets checkout ved kjøring (`9a6270d`), ikke byggkildens commit. `validation.json` knytter den faktisk kjørte HTML-hashen til full Claude-commit. På den eldre, urettede `6097012` gir vakten fortsatt **FAIL, exit 1**, med alle 12 gulvhopp ved motellet. Det gamle bygget er ikke erklært grønt. PR #57 og #58 er nå flettet. Main `9fc1ab8` har byteidentiske runtimekilder og bygginnstillinger med det faktisk kjørte `c96e082`-snapshotet; den uendrede grønne kontrollen gjenbrukes. Et nytt enkeltfilbygg etter rebase på main er også byteidentisk med den allerede kjørte HTML-fila, PASS på 2,54 s. Sammenligningen er dokumentert i `validation.json`.
 
-## Målrettet kontroll av verktøyet
+## Målrettet verifikasjon
 
-- Python-syntaks og 17 adversarielle fixtures: PASS. Disse prøver blant annet fastlåst bevegelse, rettede kanter, en isolert øy, sirkel/AABB-forskjellen, den faktisk brukte gulvgrensen, målidentitet, ukjent label og tom interaksjonsliste. Raycast-fixturene er stubs; den faktiske Three.js-kontrollen er hovedkjøringen med 59 bevis fra `inter.pick`.
-- 43 uavhengige rapportkontroller: PASS. Filhashene, unike punktsett, foreldre som tidligere nådde kardinalnaboer, komponentregnskap, start-/bevegelsesvitner, faktisk mål-ID/UUID og hit-avstand innen original rekkevidde er kontrollert. Dette er kontroll av registrerte bevis, ikke ny kjøring av alle kanter.
-- Fire utvalgte ruter fulgt på nytt fra det faktiske startpunktet, med `Player.update` hele veien og uten nye `place` underveis: PASS. Våtbordet 146 punkter, arkivtelefonen 89 (aktivert i kapittel 2), felttelefonen 247, telefonen i rom 6 48. Endelig faktisk `inter.pick` traff hver registrert ting. Største endepunktavvik under 2e-12 m. Arkivtelefonen er fortsatt UNVERIFIED i standardrapportens kapittel 1; dette er en separat kapittel 2-prøve.
-- Tilsiktede hindringer: PASS i egen prøve. Smugpunktene (7,2, -3) og (11,7, -3) er ikke gangbare; direkte tilnærming fra siden av nødutgangsrampa stoppet ved (-9,1, 4,43), før målet (-9,1, 5,7). Ingen passérbare høydefeil er funnet ved dette rekkverket. Generiske sirkel/AABB-hjørnepunkter ved rekkverket dokumenterer modellforskjellen, ikke at den tilsiktede avsperringen er feil.
-- Negativ punktgrense: PASS. `--areas room6 --max-cells 1` ga exit 2, UNVERIFIED, fordi hele rutenettet på 2072 celler ble avvist. Ingen avkuttet del ble rapportert bestått.
-- To uavhengige kodegjennomganger fant feil i statusoppsummeringen. Ukjent label, `pageerror` og mislykket kartskriving håndteres nå uttrykkelig før levering. Alle fire kart er inspisert; tettliggende navn kan overlappe på SARO, og de presise koordinatene står i JSON.
+- 40 JavaScript- og 28 Python-fixtures på endelig verktøy: PASS. Dekker nye punkter innenfor kjent boks, utvidede komponenter, isolerte skjøter, proxyidentitet, ukjente labels, statuspresedens og skriveavbrudd. Dette er syntetiske prøver, ikke kapitteltester.
+- 38 kontroller av registrerte runtimebevis: PASS. Omfatter filhash, fullføring, tellinger, ekstern fullgrid, kompaktformat og kartdekoding. Separat lesekontroll bekreftet 14 hasher, alle 356 427 foreldrekanter, de 133 eksakte lommepunktene, 59 treffbevis og alle 12 rekonstruerte startpolylinjer.
+- 12 skjøteruter fulgt på nytt fra eksakt start gjennom ekte `Player.update`, med bare én plassering per rute: PASS. Ingen `place` underveis; største endepunktavvik 5,37e-11 m. Bevis: `guard_join_replays.json`.
+- Faktiske, midlertidige nettleserprøver: ny sperre i rom 6 gir FAIL; kastende telefonlabel og endret dinerproxy gir UNVERIFIED. Alle tre negative prøver: PASS. Dette er kontroll av motorens rapportstatus, ikke CLI-exitprøver. Bevis: `guard_runtime_qa.json`.
+- Faktiske CLI-prøver: gammelt motelbygg gir exit 1; punktgrense 1 avviser hele rom 6 med exit 2. Disse ble kjørt før siste, rene legend-layoutrettelse; uendret sampling/status gjenbrukes. Direkte og symlinket fullgrid-mål under `production` avvises med exit 2 på endelig verktøy.
+- Python-syntaks, diffkontroll og separat kodegjennomgang: PASS. Kartene er visuelt kontrollert; rom 6 har nå plass til hele tegnforklaringen.
 
-Kjøringer og uavhengige kontroller står i `production/reachcheck/summary.json`, `validation.json` og `targeted_replays.json`. Script-SHA ved kjøring: `d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6`.
+Uendrede grønne spilltester gjenbrukes. Codex kjører ingen parallell full kapitteltestrekke; Claude eier den avtalte samlede integrasjonen. Programvare-rendering verifiserer ikke PC-/mobil-fps, ekte tastatur/berøring, manuell spillerforståelse, lydmiks eller Pages-publisering. Det endelige rutenettet er fortsatt en endelig sampling, ikke et bevis for alle kontinuerlige eller diagonale baner.
 
-## P2-rettelse: målte FAIL beholder prioritet
+## Bruk og små rapporter
 
-Review av PR #57 fant at egendefinert rutenettavstand overskrev målte FAIL med UNVERIFIED. Faktisk reproduksjon med `--areas room6 --spacing .2`: 373/375 punkter nådd og to målte hjørneavvik, men exit 2 før rettelsen. Etter rettelsen gir de samme punktene og funnene **FAIL/exit 1**, mens undersjekken `required_spacing` fortsatt er UNVERIFIED.
-
-Én felles statusfunksjon per språk bevarer målte FAIL gjennom custom spacing, avbrutt gulvskanning, sidefeil og rapportskriving. `completed=false`, manglende kart og andre begrensninger oppgis fortsatt. Ingen bevegelses-, gulvmålings-, rutenett- eller pick-algoritme er endret.
-
-23 JavaScript-fixtures og 13 Python-fixtures PASS. Målrettet faktisk standardkjøring i rom 6 ga uendrede 705/711 og FAIL/exit 1; `--max-cells 1` uten målte feil ga fortsatt UNVERIFIED/exit 2. En separat lokal HTML-fixture som kaster `pageerror` før testkroken finnes, ga FAIL/exit 1 og `completed=false`. Dette er kontroll av oppstartsfeilhåndtering, ikke et spillfunn. Etter denne kontrollen ble bare feilprefikset på stderr rettet; eksakt enkeltlinjeforskjell er kontrollert, og oppstarts-fixturen kjørt på nytt. Uendrede kontroller gjenbrukes.
-
-Gjeldende verktøy-SHA: `5d359c15a7ea16d74cc25ebd5a42aff47205ab8995998dd45adaa1357463612a`. Bevis og før/etter-hasher står i `production/reachcheck/review_status_qa.json`. De opprinnelige fire rapportene/kartene og valideringen er byteidentiske med leveransen på `77b751f` og identifiserer fortsatt det opprinnelige verktøyet `d497c2b04e...`. Ingen full spilltestrekke gjentas; Claude beholder samlet integrasjon.
-
-## Bruk og integrasjon
-
-Krever Python, Playwright med Chromium og Pillow (den størrelsesstyrte standardfonten krever Pillow 10.1 eller nyere). Node trengs bare til `--self-test`. De eksisterende lokale avhengighetene ble gjenbrukt; ingen ny pakke ble installert.
+Fra `web/`, med Python, Playwright Chromium og Pillow >= 10.1 tilgjengelig:
 
 ```sh
-# Fra web/, etter bygging:
-python3 tools/reachcheck.py --self-test
 python3 tools/reachcheck.py
-
-# Samme verktøy kan prøve et vanlig bygg under Pages-undermappen:
-S47_URL=http://127.0.0.1:8047/SIGNAL-47/ python3 tools/reachcheck.py --out-dir production/reachcheck-pages
+python3 tools/reachcheck.py --url http://localhost:5173/SIGNAL-47/ --areas room6
+python3 tools/reachcheck.py --self-test
 ```
 
-Standard er alle fire områder, 0,15 m og 540 sekunders tidsbudsjett. `--spacing` som avviker fra 0,15 merker dekningen UNVERIFIED; målte FAIL beholder prioritet i samlet status. En manglende krok, ukjent label, avvist rutenett eller ufullstendig kjøring blir uttrykkelig merket. Exit 0 betyr PASS, 1 betyr minst ett målt FAIL, 2 betyr UNVERIFIED uten målte FAIL. Se hvert områdes `checks` ved blandede resultater.
+`S47_URL` kan velge byggadresse. `--self-test` trenger også Node og verifiserer bare fixtures. Avvikende spacing er UNVERIFIED, men skjuler aldri målt FAIL.
 
-`git_base` er lokalt HEAD ved oppstart, og HTML-hashen identifiserer faktisk innlest HTML. Et bygg eller en ekstern URL må ikke antas å tilhøre denne Git-revisjonen ut fra `git_base` alene. Denne leveransen ble kjørt mot det nye, uendrede bygget fra `6097012` med HTML-hashen over.
+Vanlige JSON-rapporter utelater `valid_indices`, `reached_indices`, `parents` og komponentenes indekslister. De beholder tellinger, funn, koordinater, forventninger, faktiske vitner og opphav. Kartene tegnes fra hele rutenettet før komprimering. Karttitlene sier «sampling» og henviser til `summary.json` for endelig leveransestatus.
 
-Ingen nødvendige geometri-/bevegelseskroker manglet. Standardrapportens ni inaktive SARO-ting og tre inaktive dokumenter i rom 6 er individuelt UNVERIFIED; senere tilstander er ikke gjennomspilt av verktøyet. Claude kobler inn dinerens 13 interaksjoner når All Night bygges og kan kjøre kontrollen i den tilstanden. Claude vurderer og retter de målte spillfunnene, og eier én samlet integrasjonstest. Pages-kjøring med dette nye verktøyet, ekte input og PC-/mobil-fps er fortsatt UNVERIFIED hos Codex.
+Detaljer skrives bare ved uttrykkelig flagg, utenfor `web/production`:
+
+```sh
+python3 tools/reachcheck.py --full-grid --full-grid-dir /tmp/s47-reachcheck-detail
+```
+
+Uten katalogvalg brukes en midlertidig `s47-reachcheck-full`-mappe. Direkte og symlinkede stier inn i `production` avvises. `.full.json` er sampledokumentasjon og har ingen egen samlet PASS-status; den kompakte rapporten er autoritativ for vakt og skrivefullføring. Endelige detaljer fra denne kjøringen ligger lokalt i `/tmp/s47-reach-guard-full-c96e082`, og kan forsvinne ved tempopprydding.
+
+De fire områdenes JSON er samlet rundt 185 kB. Hele `production/reachcheck/`, inkludert kart og aktuelle QA-notater, er rundt 412 kB. Tidligere fullgrid og daterte prøvebevis kan hentes fra commit `77b751f`; P2-reviewbevis fra `9a6270d`. Git-historikken er beholdt. Rapportene i arbeidstreet viser nå den aktuelle vakten.

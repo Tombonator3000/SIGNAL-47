@@ -1,0 +1,340 @@
+{
+  "type": "Independent continuous replay of the compact join polylines through actual Player.update; one placement at the exact anchor per route",
+  "generated_utc": "2026-10-05T01:28:53.234776+00:00",
+  "runtime_source_commit": "c96e082",
+  "runtime_html_sha256": "c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa",
+  "script_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+  "routes": [
+    {
+      "area": "saro",
+      "zones": [
+        "landing",
+        "labPath"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": 6.599999999999994,
+        "z": -0.3000000000000007
+      },
+      "status": "PASS",
+      "steps": 263,
+      "max_endpoint_error_m": 4.705040823708615e-15,
+      "max_step_m": 0.04,
+      "endpoint": {
+        "x": 6.599999999999994,
+        "z": -0.30000000000000066,
+        "error_m": 5.551115123125783e-17
+      },
+      "place_count": 1,
+      "polyline_points": 7
+    },
+    {
+      "area": "saro",
+      "zones": [
+        "landing",
+        "labPath"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": 10.5,
+        "z": -1.5
+      },
+      "status": "PASS",
+      "steps": 352,
+      "max_endpoint_error_m": 4.796214865319367e-14,
+      "max_step_m": 0.03995633187772928,
+      "endpoint": {
+        "x": 10.499999999999952,
+        "z": -1.4999999999999998,
+        "error_m": 4.796214865319367e-14
+      },
+      "place_count": 1,
+      "polyline_points": 5
+    },
+    {
+      "area": "saro",
+      "zones": [
+        "exitDoor",
+        "west"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": -6,
+        "z": 5.550000000000001
+      },
+      "status": "PASS",
+      "steps": 244,
+      "max_endpoint_error_m": 1.7517616622445346e-14,
+      "max_step_m": 0.03999999999999968,
+      "endpoint": {
+        "x": -6.000000000000005,
+        "z": 5.5500000000000025,
+        "error_m": 5.617333549722722e-15
+      },
+      "place_count": 1,
+      "polyline_points": 6
+    },
+    {
+      "area": "saro",
+      "zones": [
+        "exitDoor",
+        "west"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": -27.3,
+        "z": -19.2
+      },
+      "status": "PASS",
+      "steps": 1405,
+      "max_endpoint_error_m": 1.3884021420316467e-13,
+      "max_step_m": 0.03999999999999968,
+      "endpoint": {
+        "x": -27.300000000000008,
+        "z": -19.199999999999974,
+        "error_m": 2.58641459868177e-14
+      },
+      "place_count": 1,
+      "polyline_points": 11
+    },
+    {
+      "area": "saro",
+      "zones": [
+        "walk",
+        "office"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": -39.6,
+        "z": 21.9
+      },
+      "status": "PASS",
+      "steps": 1493,
+      "max_endpoint_error_m": 7.351971643599789e-13,
+      "max_step_m": 0.04,
+      "endpoint": {
+        "x": -39.599999999999326,
+        "z": 21.899999999999707,
+        "error_m": 7.351971643599789e-13
+      },
+      "place_count": 1,
+      "polyline_points": 9
+    },
+    {
+      "area": "saro",
+      "zones": [
+        "walk",
+        "office"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": 0,
+        "z": 2
+      },
+      "target": {
+        "x": -45.300000000000004,
+        "z": 22.5
+      },
+      "status": "PASS",
+      "steps": 1714,
+      "max_endpoint_error_m": 7.424151600833202e-13,
+      "max_step_m": 0.04,
+      "endpoint": {
+        "x": -45.300000000000004,
+        "z": 22.499999999999996,
+        "error_m": 3.552713678800501e-15
+      },
+      "place_count": 1,
+      "polyline_points": 15
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "lot",
+        "door"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -7996.799999999999,
+        "z": -15.600000000000001
+      },
+      "status": "PASS",
+      "steps": 618,
+      "max_endpoint_error_m": 1.4552165026403376e-11,
+      "max_step_m": 0.039980544747081716,
+      "endpoint": {
+        "x": -7996.799999999985,
+        "z": -15.599999999999916,
+        "error_m": 1.4552165026403376e-11
+      },
+      "place_count": 1,
+      "polyline_points": 3
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "lot",
+        "door"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -7998.9,
+        "z": -0.3000000000000007
+      },
+      "status": "PASS",
+      "steps": 288,
+      "max_endpoint_error_m": 5.3660187404602766e-11,
+      "max_step_m": 0.03999999999999991,
+      "endpoint": {
+        "x": -7998.899999999997,
+        "z": -0.3000000000000008,
+        "error_m": 2.728484107577539e-12
+      },
+      "place_count": 1,
+      "polyline_points": 5
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "walk",
+        "inside"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -7997.7,
+        "z": -9
+      },
+      "status": "PASS",
+      "steps": 475,
+      "max_endpoint_error_m": 5.3660194931538e-11,
+      "max_step_m": 0.039971346704871055,
+      "endpoint": {
+        "x": -7997.699999999946,
+        "z": -9.000000000000028,
+        "error_m": 5.3660194931538e-11
+      },
+      "place_count": 1,
+      "polyline_points": 3
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "walk",
+        "inside"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -8003.7,
+        "z": -8.400000000000002
+      },
+      "status": "PASS",
+      "steps": 613,
+      "max_endpoint_error_m": 5.3660187404602766e-11,
+      "max_step_m": 0.03991935483870821,
+      "endpoint": {
+        "x": -8003.7,
+        "z": -8.400000000000004,
+        "error_m": 1.7763568394002505e-15
+      },
+      "place_count": 1,
+      "polyline_points": 7
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "walk",
+        "phone"
+      ],
+      "side": 0,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -7997.7,
+        "z": -9
+      },
+      "status": "PASS",
+      "steps": 475,
+      "max_endpoint_error_m": 5.3660194931538e-11,
+      "max_step_m": 0.039971346704871055,
+      "endpoint": {
+        "x": -7997.699999999946,
+        "z": -9.000000000000028,
+        "error_m": 5.3660194931538e-11
+      },
+      "place_count": 1,
+      "polyline_points": 3
+    },
+    {
+      "area": "diner",
+      "zones": [
+        "walk",
+        "phone"
+      ],
+      "side": 1,
+      "exact_start": {
+        "x": -7992.75,
+        "z": 4.9,
+        "yaw": 0.8198672643969563
+      },
+      "target": {
+        "x": -8001.299999999999,
+        "z": 7.799999999999997
+      },
+      "status": "PASS",
+      "steps": 521,
+      "max_endpoint_error_m": 5.3660187404602766e-11,
+      "max_step_m": 0.039999999999407815,
+      "endpoint": {
+        "x": -8001.299999999967,
+        "z": 7.800000000000025,
+        "error_m": 3.183232646968784e-11
+      },
+      "place_count": 1,
+      "polyline_points": 5
+    }
+  ],
+  "status": "PASS"
+}
