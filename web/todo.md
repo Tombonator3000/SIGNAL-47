@@ -4,7 +4,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
-- [ ] Ekte kjøreturer uten kutt (Tom 5. oktober ettermiddag): fra lastebilplassen på SARO ut serviceveien og sørover til STATION 01, og hele veien tilbake. Fra SARO til Mesa Diner, som i dag er et kutt med ni minutter. Fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15. Områdene må henge sammen der bilen kjører, og testene for kapittel 3, 5 og 6 må følge med.
+- [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
+- [ ] Ekte kjøretur fra SARO til Mesa Diner (i dag et kutt med ni minutter): veien må forlenges sør til dineren, og dineren må få sin del av veien (som `corridors.ts`). `chapter5.py` må følge med.
+- [ ] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (i dag et kutt til 5,9 mi). `chapter6.py` må følge med.
+- [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
 - [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kjøreturene lages slik at program kan legges inn.
 - [ ] Tom: svar på om lastebilen skal kunne brukes når som helst også i vanlig spill (ikke bare i utviklermenyen). Da må historien tåle at man kjører ut før kapitlet ber om det.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.

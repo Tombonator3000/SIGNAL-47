@@ -203,7 +203,9 @@ export class Chapter3 {
     const s = this.s;
     const area = this.d.travel.area();
     switch (s.stage) {
-      case 'to-truck': return area === 'road' ? 'STATION 01 // SOUTH ON THE HIGHWAY, THEN THE SURVEY TRACK' : 'SERVICE YARD // TAKE THE SARO TRUCK TO STATION 01';
+      case 'to-truck':
+        if (!this.d.travel.driving()) return 'SERVICE YARD // TAKE THE SARO TRUCK TO STATION 01';
+        return area === 'station01' ? 'STATION 01 // LEAVE THE TRUCK ON THE GRAVEL OUTSIDE THE GATE' : 'STATION 01 // SOUTH ON THE HIGHWAY, RIGHT ONTO THE SURVEY TRACK';
       case 'station':
         if (!s.p06 && !s.p07) return 'STATION 01 // DOCUMENT THE MOVED MARKER OR RUN A LOCAL LAMP NULL TEST';
         if (!s.p06) return 'STATION 01 // EXPOSE FRAME 03 AND RECORD WHICH FIXED MARKER MOVED';
@@ -211,7 +213,9 @@ export class Chapter3 {
         if (!s.p08) return 'STATION 01 // INSPECT THE CABLE BREAK AND EXPOSE FRAME 04';
         return 'STATION 01 // MATCH THE 1947 AND 1986 TIMING RECORDS';
       case 'call': return this.ringing ? 'STATION 01 // THE FIELD TELEPHONE IS RINGING' : 'STATION 01 // FIELD RECORD COMPLETE';
-      case 'return': return area === 'road' ? 'SARO // BACK UP THE HIGHWAY' : 'STATION 01 // DRIVE BACK TO SARO WITH THE FIELD ROLL';
+      case 'return':
+        if (!this.d.travel.driving()) return 'STATION 01 // DRIVE BACK TO SARO WITH THE FIELD ROLL';
+        return area === 'saro' ? 'SARO // THE SERVICE ROAD, UP THE RAMP, THE TRUCK ON ITS PAD' : 'SARO // THE TRACK OUT TO THE HIGHWAY, LEFT, NORTH';
       case 'develop':
         if (s.dev === 0) return 'SARO PHOTOLAB // DEVELOP FRAMES 03 AND 04 AT THE WET BENCH';
         if (s.dev === 1) return 'SARO PHOTOLAB // TRANSFER THE FIELD PRINTS TO THE FIXER';

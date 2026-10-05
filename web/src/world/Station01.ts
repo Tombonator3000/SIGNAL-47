@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from './stationLayout';
+import { stationMesas, roadMesas, STATION_FAR_LIGHTS } from './horizon';
+import { fromRoad, stationToRoad, stationLand, outside, inRect, STATION_PATCH } from './geo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, type FloodSet } from './kit';
 import { GlowPoints, glowScale } from './glow';
@@ -35,13 +38,13 @@ export const fieldFlood = floodSet(10, 'field', 0.085);
 // work lights outside do not light the room. Slot 4 is free.
 export const hutFlood = floodSet(5, 'hut', 0.2);
 
-const G = -0.15;
-const FENCE = { x0: -30, x1: 30, z0: -24, z1: 26 };
-const GATE = { w: -21.6, e: -16.9 };
+const G = STATION_GROUND;
+const FENCE = STATION_FENCE;
+const GATE = STATION_GATE;
 const GAP_W = -23.0;
-const TRUCK = { x: -19.25, z: 31.4, heading: 0 };
+const TRUCK = STATION_TRUCK;
 const ARRIVE = { x: -21.4, z: 30.2 };
-const HUT = { x0: -13, x1: -9, z0: 1.5, z1: 4.5, t: 0.2, h: 2.6 };
+const HUT = STATION_HUT;
 const DOOR = { x0: -10.5, x1: -9.4, h: 2.0 };       // opening in the south wall; jambs inside it
 const WIN_S = { x0: -12.3, x1: -11.3 };             // south window
 const WIN_E = { z0: 2.3, z1: 3.3 };                 // east window, towards the transit
@@ -58,8 +61,8 @@ const LAMP = new THREE.Vector3(1.6, 0, -2.6);
 const CABLE_R = 0.025;
 const CUT = new THREE.Vector3(3.2, G + CABLE_R, -1.3);
 const CUT_DIR = new THREE.Vector3(0.05, 0, -1).normalize();      // along the cable, towards the pier
-const POLE = new THREE.Vector3(-6.6, 0, 7.0);
-const SHED = { x0: -17.3, x1: -15.1, z0: -1.3, z1: 0.5, h: 2.05 };
+const POLE = new THREE.Vector3(STATION_POLE.x, 0, STATION_POLE.z);
+const SHED = STATION_SHED;
 const EXHAUST = new THREE.Vector3(-16.85, 2.95, -0.95);
 const WALL_LAMP = new THREE.Vector3(-9.95, 2.42, 5.0);   // the bulb
 const BASE = { wall: 6.0, field: 9.0, yard: 12.0, spill: 3.0, shed: 2.4, ceil: 5.0, desk: 2.6, dial: 1.1, door: 1.4 };
@@ -78,7 +81,6 @@ const RUTS: [number, number][][] = [
   [[-14.0, 12.0], [-11.4, 10.6], [-9.0, 10.0], [-7.6, 9.4]],
   [[-19.3, 37], [-21.2, 37.6], [-23.8, 36.8], [-25.2, 34.2], [-24.6, 31.0]],
 ];
-const ROAD: [number, number][] = [[-19.25, 38.5], [-19.6, 52], [-22.5, 70], [-29, 92], [-40, 120], [-55, 156], [-74, 200], [-97, 256]];
 
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function segDist(px: number, pz: number, ax: number, az: number, bx: number, bz: number) {
@@ -114,7 +116,18 @@ class Terrain {
     return [...v.slice(1).reverse().map((a) => -a), ...v];
   }
   static height(x: number, z: number) {
-    const k = smooth(70, 260, Math.hypot(x, z - 8)) * smooth(10, 40, polyDist(x, z, ROAD));
+    const own = Terrain.own(x, z);
+    // round the last of the survey track the ground is the road's land (world/geo.ts), and
+    // under the road's own piece of it (drive/corridors.ts) it keeps out of the way; by the
+    // gate that land is the station's flat ground, and the pad itself stays as it is
+    const [rx, rz] = stationToRoad(x, z);
+    const w = (1 - smooth(60, 360, outside(STATION_PATCH, rx, rz))) * smooth(0, 8, outside(STATION_PAD, x, z));
+    if (w <= 0) return own;
+    const land = stationLand(rx, rz) - (inRect(STATION_PATCH, rx, rz, -2) ? 0.7 : 0);
+    return own + (land - own) * w;
+  }
+  private static own(x: number, z: number) {
+    const k = smooth(70, 260, Math.hypot(x, z - 8)) * smooth(10, 40, polyDist(x, z, STATION_TRACK));
     if (k <= 0) return G;
     const n = Math.sin(x * 0.0043 + z * 0.0031) * 9 + Math.sin(x * 0.011 + 1.3) * Math.cos(z * 0.009 - 0.4) * 5
       + Math.sin(x * 0.027 - z * 0.019 + 2.0) * 2.2;
@@ -846,7 +859,8 @@ export class Station01 {
       if (Math.hypot(x - POLE.x, z - POLE.z) < 1.2 + rad) return false;
       if (Math.hypot(x - 7.45, z + 7.33) < 1.4 + rad) return false;                              // photo spot for A
       if (x > 6 && x < 60 && Math.abs(z - T.z) < 1.1 + rad) return false;                       // the C stakes
-      if (polyDist(x, z, ROAD) < 3.4 + rad) return false;
+      if (polyDist(x, z, STATION_TRACK) < 3.4 + rad) return false;
+      if (inRect(STATION_PATCH, ...stationToRoad(x, z), -(rad + 1))) return false;              // the road's own plants are there
       for (const p of PATHS) if (polyDist(x, z, p) < 1.0 + rad) return false;
       if (polyDist(x, z, this.cablePath2D()) < 0.9 + rad) return false;
       const onFence = (Math.abs(z - FENCE.z1) < 0.8 + rad || Math.abs(z - FENCE.z0) < 0.8 + rad) && x > FENCE.x0 - 1 && x < FENCE.x1 + 1
@@ -950,6 +964,8 @@ export class Station01 {
     col.setXYZ(i, c.r, c.g, c.b); col.needsUpdate = true;
   }
   private y(x: number, z: number) { return this.terrain.surface(x, z); }
+  /** Height of the ground as drawn, at a world point (the truck drives on it). */
+  groundAt(x: number, z: number) { return this.o.y + this.terrain.surface(x - this.o.x, z - this.o.z); }
 
   // ---------- ground, gravel, road ----------
   private ground() {
@@ -987,30 +1003,7 @@ export class Station01 {
       shape(dense([[-21.7, 26.0], [-16.8, 26.0], [-15.6, 19.5], [-13.0, 13.6], [-6.4, 10.8], [-6.0, 8.6], [-7.6, 5.2], [-13.8, 5.2], [-16.2, 8.6], [-18.6, 13.6], [-20.7, 19.5]]), 0.7, atFence),
       shape(dense([[-27.2, 26.0], [-12.2, 26.0], [-12.6, 33.5], [-15.2, 39.2], [-23.6, 39.8], [-27.6, 34.8]]), 0.8, atFence),
     ];
-    // the road: a strip along the polyline, with ragged edges
-    const pos: number[] = [], uvs: number[] = [], idx: number[] = [];
-    const pts: [number, number][] = [];
-    for (let i = 0; i < ROAD.length - 1; i++) {
-      const a = ROAD[i], b = ROAD[i + 1], n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 2.5);
-      for (let k = 0; k < n; k++) pts.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
-    }
-    pts.push(ROAD[ROAD.length - 1]);
-    pts.forEach(([x, z], i) => {
-      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
-      const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1;
-      const nx = -dz / l, nz = dx / l;
-      for (const s of [-1, 1]) {
-        const hw = 2.1 + (r() - 0.5) * 0.5;
-        const px = x + nx * hw * s, pz = z + nz * hw * s;
-        pos.push(px, this.y(px, pz) + 0.03, pz); uvs.push(px, pz);
-      }
-      if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
-    });
-    const road = new THREE.BufferGeometry();
-    road.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    road.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    road.setIndex(idx);
-    parts.push(road.toNonIndexed());
+    // the track itself is the road's (drive/corridors.ts), from the pad out
     const merged = mergeGeometries(parts.map((g) => { const n = g.index ? g.toNonIndexed() : g; n.computeVertexNormals(); return n; }), false)!;
     for (let i = 0; i < (merged.attributes.normal as THREE.BufferAttribute).count; i++) (merged.attributes.normal as THREE.BufferAttribute).setXYZ(i, 0, 1, 0);
     const gm = new THREE.Mesh(merged, gravel);
@@ -1018,93 +1011,13 @@ export class Station01 {
     this.group.add(gm);
   }
 
-  // Dark mesas and far ridges on the horizon, like the concept art. Unlit and unfogged:
-  // a little lighter on the cliffs that face the moon, darker on the slopes and the tops.
+  // Dark mesas and far ridges on the horizon (horizon.ts), and the road's far rings round
+  // the drive, placed as they lie on the map (geo.ts): the skyline is the road's too.
   private horizon() {
-    const pos: number[] = [], col: number[] = [];
-    const R0 = rng(5);
-    const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, ca: number[], cb: number[], cc: number[]) => {
-      pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z); col.push(...ca, ...cb, ...cc);
-    };
-    const moon = new THREE.Vector3(-0.6, 0, 0.8).normalize();
-    const quad = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3, lo: number[], hi: number[], from: THREE.Vector3) => {
-      const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(d, a)).normalize();
-      const mid = a.clone().add(b).add(c).add(d).multiplyScalar(0.25);
-      if (n.dot(mid.sub(from)) < 0) n.negate();
-      const k = (0.7 + 0.75 * Math.max(0, n.dot(moon))) * (0.85 + R0() * 0.3);
-      const L = lo.map((v) => v * k), H = hi.map((v) => v * k);
-      tri(a, b, c, L, L, H); tri(a, c, d, L, H, H);
-    };
-    const mesa = (bearing: number, dist: number, len: number, depth: number, height: number, seed: number, tiers: number) => {
-      const b = bearing * Math.PI / 180, r = rng(seed);
-      const cx = Math.sin(b) * dist, cz = -Math.cos(b) * dist;
-      const tx = Math.cos(b), tz = Math.sin(b), rx = Math.sin(b), rz = -Math.cos(b);
-      const centre = new THREE.Vector3(cx, height * 0.5, cz);
-      const N = 34;
-      const outline: [number, number][] = [];
-      for (let i = 0; i < N; i++) {
-        const a = i / N * Math.PI * 2;
-        let k = 0.88 + r() * 0.22;
-        if (r() < 0.14) k *= 0.74;   // a side canyon
-        outline.push([Math.cos(a) * len / 2 * k, Math.sin(a) * depth / 2 * k]);
-      }
-      const ring = (scale: number, yAt: (x: number, z: number, i: number) => number, shift = 0) => outline.map(([u, v], i) => {
-        const x = cx + (u * scale + shift) * tx + v * scale * rx, z = cz + (u * scale + shift) * tz + v * scale * rz;
-        return new THREE.Vector3(x, yAt(x, z, i), z);
-      });
-      const rim0 = outline.map(() => height * (0.97 + r() * 0.04));
-      const foot = ring(1.32, (x, z) => Terrain.height(x, z) - 6);
-      const shoulder = ring(1.09, (x, z) => Math.max(Terrain.height(x, z) + 4, height * 0.36));
-      const ledge = ring(1.03, () => height * 0.66);
-      const ledgeIn = ring(1.0, () => height * 0.67);
-      const rim = ring(0.97, (_x, _z, i) => rim0[i]);
-      const talus = [0.009, 0.0085, 0.011], cliffLo = [0.011, 0.01, 0.013], cliffHi = [0.026, 0.021, 0.022], cap = [0.0075, 0.0075, 0.0105];
-      for (let i = 0; i < N; i++) {
-        const j = (i + 1) % N;
-        quad(foot[i], foot[j], shoulder[j], shoulder[i], talus, talus, centre);
-        quad(shoulder[i], shoulder[j], ledge[j], ledge[i], cliffLo, cliffHi.map((v) => v * 0.75), centre);
-        quad(ledge[i], ledge[j], ledgeIn[j], ledgeIn[i], cap, cap, centre);
-        quad(ledgeIn[i], ledgeIn[j], rim[j], rim[i], cliffLo, cliffHi, centre);
-      }
-      let top = rim, topY = height;
-      if (tiers > 1) {
-        const shift = (r() - 0.5) * len * 0.2, h2 = height * (1.22 + r() * 0.12);
-        const base2 = ring(0.6, () => height, shift), rim2 = ring(0.54, () => h2, shift);
-        const c0 = new THREE.Vector3(cx, height, cz);
-        for (let i = 0; i < N; i++) { const j = (i + 1) % N; tri(c0, rim[j], rim[i], cap, cap, cap); }
-        for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(base2[i], base2[j], rim2[j], rim2[i], cliffLo, cliffHi, centre); }
-        top = rim2; topY = h2;
-      }
-      const c1 = top.reduce((sum, v) => sum.add(v), new THREE.Vector3()).multiplyScalar(1 / N).setY(topY);
-      for (let i = 0; i < N; i++) { const j = (i + 1) % N; tri(c1, top[j], top[i], cap, cap, cap); }
-    };
-    mesa(28, 1100, 950, 320, 118, 3, 2);
-    mesa(62, 1500, 520, 260, 82, 5, 1);
-    mesa(84, 900, 150, 120, 66, 7, 1);
-    mesa(-38, 1450, 700, 300, 86, 9, 2);
-    mesa(-95, 1750, 900, 300, 48, 11, 1);
-    mesa(150, 2000, 700, 300, 40, 13, 1);
-    // far ridges all round
-    const R = rng(17), N = 160, ridge: THREE.Vector3[] = [], feet: THREE.Vector3[] = [];
-    for (let i = 0; i < N; i++) {
-      const a = i / N * Math.PI * 2, rad = 2250 + Math.sin(a * 3 + 1) * 120;
-      const h = 14 + 22 * (0.5 + 0.5 * Math.sin(a * 5 + 2)) + 14 * (0.5 + 0.5 * Math.sin(a * 13)) + R() * 8;
-      const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
-      ridge.push(new THREE.Vector3(x, h, z));
-      feet.push(new THREE.Vector3(x * 0.99, Terrain.height(x, z) - 8, z * 0.99));
-    }
-    const rc = [0.006, 0.006, 0.009], rt = [0.011, 0.01, 0.013];
-    for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(feet[j], feet[i], ridge[i], ridge[j], rc, rt, ridge[i].clone().multiplyScalar(2)); }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-    const mesh = new THREE.Mesh(g, this.basic({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
+    const mesh = new THREE.Mesh(stationMesas((x, z) => Terrain.height(x, z)), this.basic({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
     mesh.name = 'mesas';
-    this.group.add(mesh);
-    // a relay tower's red light on the far ridge to the south-east, a ranch light west
-    this.glow.add(1500, 52, 1650, 14, 0xff3020, 1.4, 0.3);
-    this.glow.add(-2100, 22, 600, 9, 0xffc070);
-    this.glow.add(-1900, 18, 1100, 7, 0xffb060);
+    this.group.add(mesh, fromRoad(roadMesas(), 'station01'));
+    for (const l of STATION_FAR_LIGHTS) this.glow.add(l.x, l.y, l.z, l.size, l.color, l.blink, l.phase);
   }
 
   // ---------- fence, gate, wires ----------

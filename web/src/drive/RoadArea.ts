@@ -4,7 +4,8 @@ import { mergeStatic, addFlood } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { roadFlood, HEADLIGHT_SLOTS, retroBeam, roadMaterials, type Build, poles, fences, delineators, signs, cattleGuard, wireMesh } from './roadProps';
-import { station, ranch, plants, mesas, saroLights, trackRoute } from './roadPlaces';
+import { station, ranch, plants, saroLights, trackRoute } from './roadPlaces';
+import { sharedHorizon } from '../world/horizon';
 import { HWY, TRK, GUARD, START, END, ENDZONE, trackNearest, trackHalf, surfaceY, smooth, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry } from './roadTerrain';
 
 export { roadFlood, HEADLIGHT_SLOTS };
@@ -77,7 +78,7 @@ export class RoadArea implements DriveArea {
     poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
-    this.group.add(b.statics, wireMesh(b), mesas(), saroLights(b), this.glow.build());
+    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build());
 
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }

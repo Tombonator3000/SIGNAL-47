@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { smooth, hash, START, END, hLow, washAt } from './roadShape';
+
+export { smooth, hash, START, END, hLow };
 
 // Layout of the drive in metres, local to RoadArea.group (whose origin is the start).
 // North is -Z. The state highway runs north-south along x = 0, and the truck starts in the
@@ -9,15 +12,11 @@ import * as THREE from 'three';
 export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 2200 };
 export const TRK = { half: 2.3, soft: 0.7, flat: 11.5, margin: 13 };
 export const GUARD = { x0: -22.2, x1: -19.8, z0: 517.6, z1: 522.4 };
-export const START = { x: -1.8, z: 0, heading: Math.PI };
 export const GATE = { x: -612, z: 532, half: 5 };                  // closed double gate, station fence
-export const END = { x: -603, z: 532, heading: Math.PI / 2 };       // parked, facing the gate
 export const ENDZONE = { minX: -609, maxX: -585, minZ: 524, maxZ: 540 };
 export const PASTURE = { west: -760, north: 300, south: 720 };
 export const DRIVE_N = -120, DRIVE_S = 900;                          // invisible ends of the highway
 
-export const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-export const hash = (x: number, z: number) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return s - Math.floor(s); };
 
 // ---------- the survey track: a smooth curve through hand-placed points, every 3 m ----------
 const KEYS = [[-5, 520], [-24, 520], [-70, 518], [-150, 507], [-240, 496], [-330, 497], [-420, 508], [-500, 522], [-560, 530], [-606, 532]];
@@ -49,21 +48,14 @@ export function trackNearest(x: number, z: number) {
 }
 
 // ---------- heights ----------
-const base = (x: number, z: number) => 1.1 * Math.sin(x * 0.0061 + 0.7) * Math.cos(z * 0.0047 + 0.3)
-  + 0.7 * Math.sin((x + z) * 0.0032 + 1.9) + 0.4 * Math.sin(z * 0.011 - x * 0.004 + 0.4);
-const B0 = base(START.x, START.z);
-const washAt = (x: number, z: number) => { const w = x + 330 + 0.25 * (z - 500); return Math.exp(-w * w / 520) * smooth(-150, 60, z); };
-/** The graded land the roads follow: long swells, a dry wash across the track, hills far out. */
-export function hLow(x: number, z: number) {
-  const dx = x + 250, dz = z - 300, a = Math.atan2(dz, dx);
-  const hills = smooth(1300, 2400, Math.hypot(dx, dz)) * (12 + 9 * Math.sin(a * 5 + 1.3) + 5 * Math.sin(a * 13));
-  return base(x, z) - B0 - 1.3 * washAt(x, z) + hills;
-}
 const detail = (x: number, z: number) => 0.16 * Math.sin(x * 0.13 + 1.7) * Math.sin(z * 0.11 + 0.3) + 0.08 * Math.sin(x * 0.31 - z * 0.23 + 0.9);
 /** Height of the desert grid at a vertex: small bumps away from the roads, sunk under the road strips. */
 function gridH(x: number, z: number) {
   const hd = Math.abs(x), td = trackNearest(x, z).d;
-  let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin));
+  // no small bumps where the land meets another area's ground: north towards SARO, and by
+  // the station's gate (drive/corridors.ts)
+  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z));
+  let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin)) * meet;
   if (hd < HWY.flat || td < TRK.flat) h -= 0.45; // hidden under the road strips: no z-fighting
   return h;
 }
@@ -118,14 +110,19 @@ function attrs(g: THREE.BufferGeometry, pos: number[], uv: number[], col: number
   g.setIndex(idx);
   return g;
 }
-export function groundGeometry() {
-  const n = GX.length, pos: number[] = [], uv: number[] = [], col: number[] = [], idx: number[] = [];
-  for (let j = 0; j < GZ.length; j++) for (let i = 0; i < n; i++) {
+/** The desert grid; with a rectangle, only the cells inside it (the same vertices, so the
+ *  piece drawn in another area is the same ground: drive/corridors.ts). */
+export function groundGeometry(r?: { minX: number; maxX: number; minZ: number; maxZ: number }) {
+  const N = GX.length, pos: number[] = [], uv: number[] = [], col: number[] = [], idx: number[] = [];
+  const xs = GX.map((_, i) => i).filter((i) => !r || (GX[i] >= r.minX && GX[i] <= r.maxX));
+  const zs = GZ.map((_, j) => j).filter((j) => !r || (GZ[j] >= r.minZ && GZ[j] <= r.maxZ));
+  const n = xs.length;
+  for (const j of zs) for (const i of xs) {
     const x = GX[i], z = GZ[j];
-    pos.push(x, gridHeights[j * n + i], z); uv.push(x / 5, z / 5);
+    pos.push(x, gridHeights[j * N + i], z); uv.push(x / 5, z / 5);
     tint(x, z, col, col.length);
   }
-  for (let j = 0; j < GZ.length - 1; j++) for (let i = 0; i < n - 1; i++) {
+  for (let j = 0; j < zs.length - 1; j++) for (let i = 0; i < n - 1; i++) {
     const a = j * n + i, b = a + 1, c = a + n, d = c + 1;
     idx.push(a, c, b, b, c, d);
   }
@@ -154,34 +151,36 @@ function ribbon(path: Path, cols: (p: Path[number]) => { o: number; y: number; u
   }
   return attrs(new THREE.BufferGeometry(), pos, uv, col, idx);
 }
-function highwayPath(step = 8): Path {
+function highwayPath(z0 = HWY.z0, z1 = HWY.z1, step = 8): Path {
   const p: Path = [];
-  for (let z = HWY.z0; z <= HWY.z1; z += step) p.push({ x: 0, z, tx: 0, tz: 1, s: z });
+  for (let z = z0; z <= z1; z += step) p.push({ x: 0, z, tx: 0, tz: 1, s: z });
   return p;
 }
-function trackPath(): Path {
+function trackPath(s0 = 0, s1 = Infinity): Path {
   return track.pts.map((q, i) => {
     const a = track.pts[Math.max(0, i - 1)], b = track.pts[Math.min(track.pts.length - 1, i + 1)];
     const l = Math.hypot(b.x - a.x, b.y - a.y);
     return { x: q.x, z: q.y, tx: (b.x - a.x) / l, tz: (b.y - a.y) / l, s: track.s[i] };
-  });
+  }).filter((p, i) => track.s[Math.min(track.s.length - 1, i + 1)] >= s0 && track.s[Math.max(0, i - 1)] <= s1);
 }
 /** Asphalt with paved and gravel shoulders; u spans 12 m across, the texture repeats every 24 m. */
-export function highwayGeometry() {
-  return ribbon(highwayPath(), (p) => [-6, -4.8, -2.4, 0, 2.4, 4.8, 6].map((o) => ({ o, y: hLow(-p.tz * o, p.z) + hwyLift(Math.abs(o)), u: (o + 6) / 12 })), false, 1 / 24);
+export function highwayGeometry(z0 = HWY.z0, z1 = HWY.z1) {
+  return ribbon(highwayPath(z0, z1), (p) => [-6, -4.8, -2.4, 0, 2.4, 4.8, 6].map((o) => ({ o, y: hLow(-p.tz * o, p.z) + hwyLift(Math.abs(o)), u: (o + 6) / 12 })), false, 1 / 24);
 }
 /** The gravel track, its soft edges blending into the desert; 12 m per texture repeat. */
-export function trackGeometry() {
-  return ribbon(trackPath(), (p) => {
+export function trackGeometry(s0 = 0) {
+  return ribbon(trackPath(s0), (p) => {
     const w = trackHalf(p.s), e = w + TRK.soft;
     return [-e, -w, -w / 2, 0, w / 2, w, e].map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + trkLift(Math.abs(o), w), u: 0.5 + o / (2 * e) }));
   }, false, 1 / 8); // 8 m per repeat: the gravel picture is 4 m long, laid twice
 }
 /** Verges beside both roads, in the desert's own material: flat, then dipping under the grid. */
-export function vergeGeometry() {
+export function vergeGeometry(o: { hwy?: [number, number] | null; track?: [number, number] | null } = {}) {
   const side = (path: Path, inner: (p: Path[number]) => number, flat: number, edge: number) => [-1, 1].map((sg) => ribbon(path, (p) => {
     const os = [inner(p), (inner(p) + flat) / 2, flat, edge];
     return (sg < 0 ? os.map((o) => -o).reverse() : os).map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + dropY(Math.abs(o), flat, edge), u: 0 }));
   }, true, 0));
-  return [...side(highwayPath(), () => HWY.shoulder, HWY.flat, HWY.margin), ...side(trackPath(), (p) => trackHalf(p.s) + TRK.soft, TRK.flat, TRK.margin)];
+  const hwy = o.hwy === null ? [] : side(highwayPath(...(o.hwy ?? [HWY.z0, HWY.z1])), () => HWY.shoulder, HWY.flat, HWY.margin);
+  const trk = o.track === null ? [] : side(trackPath(...(o.track ?? [0, Infinity])), (p) => trackHalf(p.s) + TRK.soft, TRK.flat, TRK.margin);
+  return [...hwy, ...trk];
 }

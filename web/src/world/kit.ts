@@ -20,7 +20,7 @@ export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
   floodSets.push(set);
   return set;
 }
-export const FLOOD_N = 22;
+export const FLOOD_N = 25;   // three of them for the truck's headlights when it is driven at SARO
 export const flood = floodSet(FLOOD_N, 'site');
 // The south corridor and the records room (chapter two). The control room's corridor
 // door uses it too, so the open door is lit from the corridor side.

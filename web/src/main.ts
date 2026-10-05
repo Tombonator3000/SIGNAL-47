@@ -130,7 +130,7 @@ async function boot() {
   // SARO, the road and STATION 01, and the drive between them (world/World.ts)
   const world = new World({
     scene, camera, player,
-    saro: { groups: [ext.group, room.group, yard.group, annex.group], zones: saroZones, colliders, truck: YARD.truck },
+    saro: { groups: [ext.group, room.group, yard.group, annex.group], zones: saroZones, colliders, truck: YARD.truck, truckCol: yard.truckCol, truckProxy: yard.objs.truck },
     applyQuality: () => { setQuality(scene, quality); ultra.mark(scene); },
     audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
     thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
@@ -423,7 +423,8 @@ async function boot() {
     audio.startNight();
     if (!score && audio.ctx) score = new Score(audio.ctx, audio.music);
     space = 'room';
-    world.stopDriving();
+    // the truck where the story left it: outside the station's gate, on the diner's lot or on SARO's pad
+    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : 'saro');
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     game.start(o.state?.checkpoint ?? o.jump);
@@ -659,7 +660,7 @@ async function boot() {
     art: artStatus,
     jump: (p: string) => {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
-      world.stopDriving(); world.enter('saro'); game.start(p);
+      world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
     game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
@@ -695,7 +696,7 @@ async function boot() {
         { label: '1 The Second Exposure', run: () => devStart('chapter1') },
         { label: '2 The Amended Record', run: () => devStart('chapter2') },
         { label: '3 The Survey Station', run: () => devStart('chapter3') },
-        { label: '3 On the highway', run: () => devStart('chapter3', () => waitFor(() => !starting && ch3.s.stage === 'to-truck', () => world.driveOut())) },
+        { label: '3 On the highway', run: () => devStart('chapter3', () => waitFor(() => !starting && ch3.s.stage === 'to-truck', () => world.driveOut(true))) },
         { label: '4 Room 6', run: () => devStart('chapter4') },
         { label: '5 All Night', run: () => devStart('chapter5') },
         { label: '6 Roswell Road', run: () => devStart('chapter6') },

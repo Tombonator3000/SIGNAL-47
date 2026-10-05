@@ -94,6 +94,8 @@ export class DriveController {
   engine = true;
   onArrive?: () => void;
   onBump?: (speed: number) => void;
+  /** In reverse gear (S held at a stop). */
+  get reversing() { return this.reverse; }
 
   private steer = 0;
   private reverse = false;
@@ -120,6 +122,17 @@ export class DriveController {
     Object.assign(this.body, { y: g.y, vy: 0, pitch: g.pitch, vp: 0, roll: g.roll, vr: 0 });
     this.surface = this.area.surface(this.pos.x, this.pos.z);
     this.truck.setDriving(true);
+    this.pose(0, 0);
+  }
+
+  /** Go on from another controller's truck in another area (the hand-over between two
+   *  areas on a drive): this truck at (x, z, heading), moving and steering as that one was. */
+  adopt(o: DriveController, x: number, z: number, heading: number) {
+    this.place(new THREE.Vector3(x, 0, z), heading);
+    this.speed = o.speed; this.steer = o.steer; this.reverse = o.reverse; this.gear = o.gear; this.rpm = o.rpm; this.load = o.load;
+    this.accel = o.accel; this.yawRate = o.yawRate; this.yaw = o.yaw; this.pitch = o.pitch; this.idle = o.idle; this.t = o.t; this.engine = o.engine;
+    this.body.vy = o.body.vy; this.body.vp = o.body.vp; this.body.vr = o.body.vr;
+    this.mph = o.mph;
     this.pose(0, 0);
   }
 

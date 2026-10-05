@@ -1,5 +1,5 @@
 # Chapter three, "The Survey Station", played through in a headless browser: the truck at
-# SARO, the drive south, STATION 01 with P06 to P09 in the Unity order rules (wrong answers
+# SARO, the drive south the whole way (the game's own autopilot, drive/legs.ts), STATION 01 with P06 to P09 in the Unity order rules (wrong answers
 # and the Unity replies included), both field photographs from the real camera, Nora on
 # the field telephone, Continue at the station, the way back, developing the field roll at
 # the SARO wet bench, and the chapter card into chapter four. Starts from S47.jump('chapter3').
@@ -34,24 +34,6 @@ STAND = """((key, d, dy) => { const s = S47.world.site, p = S47.player, r = p.ra
     }
   }
   return null; })"""
-# An autopilot for the truck: aims at the next waypoint of road.route, slows down for bends,
-# on gravel and before the gate. Positive steer turns right; heading h faces (-sin h, -cos h).
-# An autopilot for the truck (the path follower from the drive preview): pure pursuit along
-# road.route with a look-ahead that grows with speed, slow for the turn-off and the gate.
-# Positive steer turns right; heading h faces (-sin h, -cos h).
-AUTOPILOT = """(() => { const w = S47.world, road = w.road, drive = w.drive, R = road.route, o = road.group.position; let wp = 0;
-  w.testInput = () => {
-    const p = drive.pos;
-    for (let i = wp; i < Math.min(R.length, wp + 20); i++) if (R[i].distanceToSquared(p) < R[wp].distanceToSquared(p)) wp = i;
-    const ahead = 4.5 + Math.abs(drive.speed) * 0.5;
-    let tg = R[R.length - 1];
-    for (let i = wp + 1; i < R.length; i++) if (R[i].distanceTo(p) > ahead) { tg = R[i]; break; }
-    let err = Math.atan2(-(tg.x - p.x), -(tg.z - p.z)) - drive.heading;
-    err = Math.atan2(Math.sin(err), Math.cos(err));
-    const lx = p.x - o.x, lz = p.z - o.z, dEnd = p.distanceTo(road.end.pos);
-    const vT = lx > -7 ? (lz < 400 ? 25 : 5) : lx > -32 ? 4 : dEnd > 70 ? 13 : Math.max(0, (dEnd - 4) / 4);
-    return { steer: Math.max(-1, Math.min(1, -err * 2.2)), throttle: Math.max(-1, Math.min(1, (vT - drive.speed) * 0.6)) };
-  }; })()"""
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -119,45 +101,30 @@ async def main():
         for _ in range(40):
             await tick(0.25)
             if await ev("S47.world.driving"): break
-        check(await ev("S47.world.driving && S47.world.area === 'road'"), 'the drive begins on the highway')
-        check(await ev("!S47.world.saroTruck.group.visible && !S47.yard.group.visible"), 'SARO is hidden while away')
+        check(await ev("S47.world.driving && S47.world.area === 'saro' && S47.world.leg === 'saro'"), 'the drive begins in the truck on its pad (no cut)')
         await tick(1.2)
         await shot('e03_cab')
         check(await ev("S47.game.saveBlock()") is not None, 'no saving while driving')
-        # The whole way with an autopilot along road.route: steer at the next waypoint, slow
-        # for bends, the gravel and the gate. If it gets stuck, the truck is put down before
-        # the gate instead, so the rest of the chapter is still tested.
-        await ev(AUTOPILOT)
+        # The whole way with the game's own autopilot (drive/legs.ts routes): down the ramp, out
+        # onto the highway, into the road area, the survey track, into the station's area and
+        # onto the gravel by the gate, where it stops and the player gets out.
+        await ev("S47.world.autopilot = 13")
         shots = {'e04_highway': False, 'e04b_track': False, 'e04c_gate': False}
-        best, still, t_drive = 1e9, 0, 0.0
-        for _ in range(400):
+        seen, t_drive = [], 0.0
+        for _ in range(500):
             await tick(0.5); t_drive += 0.5
-            if await ev("S47.world.area === 'station01'"): break
-            st = await ev("(() => { const d = S47.world.drive, r = S47.world.road, e = r.route[r.route.length - 1]; return { mph: d.mph, kind: d.surface.kind, left: Math.hypot(e.x - d.pos.x, e.z - d.pos.z), calls: S47.renderer.info.render.calls }; })()")
-            if not shots['e04_highway'] and st['mph'] > 25:
+            st = await ev("(() => { const w = S47.world, L = w.leg && w.legs[w.leg], d = L && L.drive; return { leg: w.leg, area: w.area, driving: w.driving, mph: d ? d.mph : 0, kind: d ? d.surface.kind : '', calls: S47.renderer.info.render.calls, saro: S47.yard.group.visible }; })()")
+            if st['leg'] and (not seen or seen[-1] != st['leg']): seen.append(st['leg'])
+            if not st['driving']: break
+            if not shots['e04_highway'] and st['area'] == 'road' and st['mph'] > 25:
                 shots['e04_highway'] = True; await shot('e04_highway'); print(f"highway at {st['mph']:.0f} mph, {st['calls']} draw calls", flush=True)
-            if not shots['e04b_track'] and st['kind'] == 'gravel' and st['left'] < 520:
+                check(not st['saro'], 'SARO is hidden while away')
+            if not shots['e04b_track'] and st['area'] == 'road' and st['kind'] == 'gravel':
                 shots['e04b_track'] = True; await shot('e04b_track'); print(f"survey track, {st['calls']} draw calls", flush=True)
-            if not shots['e04c_gate'] and st['left'] < 45:
-                shots['e04c_gate'] = True; await shot('e04c_gate'); print(f"at the gate, {st['calls']} draw calls", flush=True)
-            if st['left'] < best - 1: best, still = st['left'], 0
-            else: still += 0.5
-            if still > 12: break
-        drove = await ev("S47.world.area === 'station01'")
-        check(drove, f'the autopilot drives the whole way to the gate ({t_drive:.0f} s of game time, {best:.0f} m left at worst)')
-        check(all(shots.values()), 'highway, survey track and gate were all passed')
-        if not drove:
-            # roll into the end zone at the gate
-            await ev("""(() => { const r = S47.world.road, z = r.endZone, e = r.end;
-              const cx = (z.minX + z.maxX) / 2, cz = (z.minZ + z.maxZ) / 2;
-              const back = 14, h = e.heading;
-              S47.world.drive.place(S47.camera.position.clone().set(cx + Math.sin(h) * back, 0, cz + Math.cos(h) * back), h); })()""")
-            await ev("S47.world.testInput = { steer: 0, throttle: 0.4 }")
-            for _ in range(60):
-                await tick(0.25)
-                if await ev("S47.world.area === 'station01'"): break
-                if await ev("S47.world.drive.mph > 9"): await ev("S47.world.testInput = { steer: 0, throttle: -0.3 }")
-        await ev("S47.world.testInput = null")
+            if not shots['e04c_gate'] and st['area'] == 'station01':
+                shots['e04c_gate'] = True; await shot('e04c_gate'); print(f"towards the gate, {st['calls']} draw calls", flush=True)
+        check(seen == ['saro', 'road', 'station01'], f'driven the whole way: SARO, the road, the station ({seen}, {t_drive:.0f} s of game time)')
+        check(all(shots.values()), 'highway, survey track and the way to the gate were all passed')
         await tick(1.5)
         check(await ev("S47.world.area === 'station01' && !S47.world.driving"), 'arrived at STATION 01 and out of the truck')
         check(await s3('stage') == 'station' and await s3('arrived'), 'chapter three notes the arrival')
@@ -313,9 +280,14 @@ async def main():
         check(await stand('truckSpot', 2.0) is not None, 'the truck at the station can be reached')
         check(await aimed() == 's1truck' and await label('s1truck') == 'Drive back to SARO', 'the truck offers the way back')
         await use('s1truck')
-        for _ in range(20):
+        for _ in range(40):
+            await tick(0.25)
+            if await ev("S47.world.driving"): break
+        check(await ev("S47.world.leg === 'station01'"), 'the way back starts in the truck at the station (no cut)')
+        await ev("S47.world.autopilot = 13")
+        for _ in range(500):
             await tick(0.5)
-            if await ev("S47.world.area === 'saro' && !S47.game.cinematic"): break
+            if await ev("!S47.world.driving && S47.world.area === 'saro' && !S47.game.cinematic"): break
         check(await ev("S47.world.area") == 'saro' and await s3('stage') == 'develop', 'back at SARO with the field roll')
         check('DEVELOP FRAMES 03 AND 04' in await objective(), 'objective: the wet bench')
         await shot('e13_back')
