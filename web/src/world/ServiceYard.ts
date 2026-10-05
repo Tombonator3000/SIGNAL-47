@@ -30,6 +30,8 @@ export class ServiceYard {
   zones: Zone[] = [];
   colliders: Collider[] = [];
   objs: Record<string, THREE.Object3D> = {};
+  /** The parked truck's collider (World.ts moves it with the truck). */
+  truckCol!: Collider;
   occluders: THREE.Object3D[] = [];
   glow = new GlowPoints();
   labFlood = floodSet(5, 'lab', 0.22);
@@ -99,7 +101,9 @@ export class ServiceYard {
     // down from the landing through the gap in its railing, to the truck
     this.addZone('truckPad', 6.6, 13.0, 2.7, 12.4);
     const tk = YARD.truck;
-    this.col(tk.x - 1.1, tk.x + 1.1, tk.z - 2.75, tk.z + 2.75);
+    // the truck's own collider moves with it when it is driven away and parked again (World.ts)
+    this.truckCol = { minX: tk.x - 1.1, maxX: tk.x + 1.1, minZ: tk.z - 2.75, maxZ: tk.z + 2.75 };
+    this.colliders.push(this.truckCol);
     this.col(6.3, 9.4, 3.35, 3.45);   // the railing that is left west of the gap
     this.col(10.95, 11.05, 2.6, 3.45); // the landing's east railing, where the pad overlaps it
     this.col(6.72, 6.98, 11.47, 11.73); // the pad's lamp post

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:single": "vite build --mode single",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "steercheck": "esbuild tools/steercheck.ts --bundle --platform=node --format=esm --log-level=warning --outfile=node_modules/.cache/steercheck.mjs --loader:.jpg=empty --loader:.png=empty --loader:.webp=empty --loader:.mp3=empty --loader:.ogg=empty --loader:.wav=empty --loader:.svg=empty && node node_modules/.cache/steercheck.mjs"
   },
   "dependencies": {
     "three": "^0.170.0"

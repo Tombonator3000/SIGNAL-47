@@ -71,6 +71,13 @@ const MAX_STEER = 32 * Math.PI / 180;
 const LF = 1.8, LR = WHEELBASE - LF;          // centre of the truck to the front and rear axles
 const HALF_W = 1.0, HALF_L = 2.65, TRACK = 0.84;
 const ACCEL = 3.5, BRAKE = 8, REVERSE = 5, LAT = 7.5;
+/** Full lock at a speed on ground of this grip: less as the speed rises, so the truck holds to
+ *  about LAT m/s² sideways, and less again on loose ground. Physics, the drawn wheels and the
+ *  autopilot (steerFor) all turn the wheel through this one limit. */
+const lockAt = (speed: number, grip: number) => {
+  const v = Math.max(1, Math.abs(speed));
+  return Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT * (0.45 + 0.55 * grip) / (v * v)));
+};
 const RATIOS = [2.48, 1.48, 1.0], FINAL = 3.08, IDLE = 650;
 const ROUGH: Record<SurfaceKind, number> = { asphalt: 0.05, gravel: 0.4, dirt: 0.8 };
 const YAW_MAX = 110 * Math.PI / 180, PITCH0 = -0.08;
@@ -94,6 +101,8 @@ export class DriveController {
   engine = true;
   onArrive?: () => void;
   onBump?: (speed: number) => void;
+  /** In reverse gear (S held at a stop). */
+  get reversing() { return this.reverse; }
 
   private steer = 0;
   private reverse = false;
@@ -110,6 +119,15 @@ export class DriveController {
     if (area.headlights) truck.headlightFloods(area.headlights.set, area.headlights.slots);
   }
 
+  /** The steer input (-1 to 1) that bends the centre's path to curvature `kappa` (1/m, positive
+   *  to the right, as steer is) at the speed and on the ground the truck has now. The inverse of
+   *  the bicycle step in update(); clamped at full lock. */
+  steerFor(kappa: number) {
+    const beta = Math.asin(THREE.MathUtils.clamp(LR * kappa, -1, 1));
+    const wheel = Math.atan(WHEELBASE / LR * Math.tan(beta));
+    return THREE.MathUtils.clamp(wheel / lockAt(this.speed, this.surface.grip), -1, 1);
+  }
+
   /** Put the truck at a world position and heading, standing still, view straight ahead. */
   place(pos: THREE.Vector3, heading: number) {
     this.pos.set(pos.x, 0, pos.z);
@@ -121,6 +139,20 @@ export class DriveController {
     this.surface = this.area.surface(this.pos.x, this.pos.z);
     this.truck.setDriving(true);
     this.pose(0, 0);
+  }
+
+  /** Go on from another controller's truck in another area (the hand-over between two
+   *  areas on a drive): this truck at (x, z, heading), moving and steering as that one was. */
+  adopt(o: DriveController, x: number, z: number, heading: number) {
+    this.place(new THREE.Vector3(x, 0, z), heading);
+    this.speed = o.speed; this.steer = o.steer; this.reverse = o.reverse; this.gear = o.gear; this.rpm = o.rpm; this.load = o.load;
+    this.accel = o.accel; this.yawRate = o.yawRate; this.yaw = o.yaw; this.pitch = o.pitch; this.idle = o.idle; this.t = o.t; this.engine = o.engine;
+    // the body sits on its springs as it did: the same give over the new ground
+    const og = o.ground(), b = this.body;
+    b.y += o.body.y - og.y; b.pitch += o.body.pitch - og.pitch; b.roll += o.body.roll - og.roll;
+    b.vy = o.body.vy; b.vp = o.body.vp; b.vr = o.body.vr;
+    this.mph = o.mph;
+    this.pose(0, 0, false);   // drawn as it is, the springs left as they were
   }
 
   update(dt: number, input: DriveInput, look: { x: number; y: number }) {
@@ -163,9 +195,7 @@ export class DriveController {
       this.speed += a * h;
       // brakes and drag stop the truck; they never push it the other way
       if (!pulling && before !== 0 && Math.sign(this.speed) !== Math.sign(before)) { this.speed = 0; a = 0; }
-      const vmax = Math.max(1, Math.abs(this.speed));
-      const lock = Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT * (0.45 + 0.55 * s.grip) / (vmax * vmax)));
-      const beta = Math.atan(LR / WHEELBASE * Math.tan(this.steer * lock));
+      const beta = Math.atan(LR / WHEELBASE * Math.tan(this.steer * lockAt(this.speed, s.grip)));
       const ox = this.pos.x, oz = this.pos.z, oh = this.heading;
       this.yawRate = -this.speed / LR * Math.sin(beta);
       this.heading += this.yawRate * h;
@@ -210,7 +240,7 @@ export class DriveController {
       this.yaw += (0 - this.yaw) * k; this.pitch += (PITCH0 - this.pitch) * k;
     }
     this.truck.setBrake(braking);
-    this.pose(dt, this.steer * Math.min(MAX_STEER, Math.atan(WHEELBASE * LAT / Math.max(1, this.speed * this.speed))));
+    this.pose(dt, this.steer * lockAt(this.speed, s.grip));
   }
 
   // Heights under the four wheels give the body its height, pitch and roll.
@@ -249,8 +279,9 @@ export class DriveController {
     return false;
   }
 
-  // Body on its springs, then the camera at the driver's eye.
-  private pose(dt: number, wheelAngle: number) {
+  // Body on its springs, then the camera at the driver's eye. With dt 0 the body settles on
+  // its springs (place()), unless settle is false (adopt(): it keeps its give and speed).
+  private pose(dt: number, wheelAngle: number, settle = true) {
     const g = this.ground(), b = this.body;
     const rough = this.surface.rough ?? ROUGH[this.surface.kind];
     const fast = Math.min(1, Math.abs(this.speed) / 12);
@@ -261,7 +292,7 @@ export class DriveController {
     const tp = g.pitch + THREE.MathUtils.clamp(this.accel * 0.0025, -0.03, 0.015) + bump * 0.6;
     const tr = g.roll + THREE.MathUtils.clamp(latAcc * 0.005, -0.05, 0.05);
     const spring = (x: number, vx: number, target: number) => {
-      if (dt <= 0) return [target, 0];
+      if (dt <= 0) return settle ? [target, 0] : [x, vx];
       const k = 140, c = 18;
       const acc = k * (target - x) - c * vx;
       vx += acc * dt; return [x + vx * dt, vx];

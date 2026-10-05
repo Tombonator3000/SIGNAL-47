@@ -10,12 +10,14 @@ import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
 import type { Diner } from './Diner';
 import type { OldRoad } from '../drive/OldRoad';
-import type { DriveInput } from '../drive/Drive';
+import type { DriveInput, DriveArea } from '../drive/Drive';
+import type { LegId, Exit } from '../drive/legs';
 import { Crossing, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
-import { flood as siteFlood } from './kit';
+import { flood as siteFlood, addFlood, type FloodSet } from './kit';
 import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
+import { STATION_TURN } from './geo';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -45,7 +47,7 @@ export interface WorldDeps {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   player: Player;
-  saro: { groups: THREE.Object3D[]; zones: Zone[]; colliders: Collider[]; truck: { x: number; z: number; heading: number } };
+  saro: { groups: THREE.Object3D[]; zones: Zone[]; colliders: Collider[]; truck: { x: number; z: number; heading: number }; truckCol: Collider; truckProxy: THREE.Object3D };
   applyQuality: () => void;
   audio: () => { ctx: AudioContext | null; sfx: AudioNode };
   thud: (gain: number) => void;
@@ -70,6 +72,7 @@ type Modules = {
   Room6: typeof import('./Room6');
   Diner: typeof import('./Diner');
   OldRoad: typeof import('../drive/OldRoad');
+  legs: typeof import('../drive/legs');
 };
 
 export class World {
@@ -86,6 +89,8 @@ export class World {
   diner: Diner | null = null;
   onDinerLoaded?: (diner: Diner) => void;
   private dinerTruck: Truck | null = null;
+  /** The diner's collider round its parked truck (it moves with the truck). */
+  private dinerCol: Collider | null = null;
   /** An invisible box round the truck on the diner's lot, for interaction (chapter five). */
   dinerTruckProxy: THREE.Object3D | null = null;
   onDinerTruck?: (proxy: THREE.Object3D) => void;
@@ -105,6 +110,16 @@ export class World {
   /** Tests steer the truck through this instead of the keys (tools/chapter3.py): fixed
    *  input, or a function asked every step (an autopilot along road.route). */
   testInput: { steer: number; throttle: number } | (() => { steer: number; throttle: number }) | null = null;
+
+  // ---------- trips: the truck driven from one place to another, the whole way ----------
+  /** Where the truck stands when nobody drives it (null while it is out on a trip). */
+  truckAt: LegId | null = 'saro';
+  /** The area being driven in on a trip, or null. */
+  leg: LegId | null = null;
+  /** Drive by itself along the way at about this speed in m/s (tests, the developer menu), or null. */
+  autopilot: number | null = null;
+  private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
+  private trip: { from: LegId; to: LegId | null; rate: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string } | null = null;
 
   private mods: Partial<Modules> = {};
   private road: RoadArea | null = null;
@@ -148,6 +163,21 @@ export class World {
     this.d.saro.groups[0].parent!.add(t.group);
     this.saroTruck = t;
     this.d.applyQuality();
+    // the highway south of the site is the road's own stretch (drive/corridors.ts): the truck
+    // goes from SARO onto the road without anything changing in front of it
+    const { saroCorridor } = await import('../drive/corridors');
+    const c = saroCorridor(siteFlood);
+    this.d.saro.groups[0].parent!.add(c.group);
+    c.group.visible = this.area === 'saro';
+    this.d.saro.groups.push(c.group);
+    this.saroRoad = c.obstacles;
+    this.d.applyQuality();
+  }
+  private saroRoad: { kind: 'circle'; x: number; z: number; r: number }[] = [];
+  /** Three flood slots for the headlight pools in an area's own set of floods. */
+  private headlightSlots(set: FloodSet) {
+    const slots = [0, 1, 2].map(() => addFlood(0, -999, 0, 0, 0xfff0d8, set)).filter((i) => i >= 0);
+    return slots.length ? { set, slots } : undefined;
   }
 
   private async load<K extends keyof Modules>(k: K): Promise<Modules[K]> {
@@ -159,7 +189,8 @@ export class World {
               : k === 'Room6' ? await import('./Room6')
                 : k === 'Diner' ? await import('./Diner')
                   : k === 'OldRoad' ? await import('../drive/OldRoad')
-                    : await import('../drive/engineSound');
+                    : k === 'legs' ? await import('../drive/legs')
+                      : await import('../drive/engineSound');
       (this.mods as Record<string, unknown>)[k] = m;
     }
     return this.mods[k] as Modules[K];
@@ -177,8 +208,8 @@ export class World {
     return this.once('station', async () => {
       // the station's own pictures (render, old concrete, weathered wood, floor boards)
       // come with it, so the start of the game does not wait for them
-      const [{ Station01, fieldFlood }, { Truck }] = await Promise.all([this.load('Station01'), this.load('Truck'),
-        loadArtFor(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards'])]);
+      const [{ Station01, fieldFlood }, { Truck }, { DriveController }, { StationDrive }, { stationCorridor }] = await Promise.all([this.load('Station01'), this.load('Truck'),
+        this.load('Drive'), this.load('legs'), import('../drive/corridors'), loadArtFor(['stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack'])]);
       const s = new Station01(STATION_ORIGIN.clone()) as Station01 & FieldSite;
       s.group.visible = false;
       s.colliders.push(s.truckCollider); // the truck the player came in stands on the pad
@@ -192,6 +223,16 @@ export class World {
       this.d.scene.add(t.group);
       this.parked = t;
       this.site = s;
+      // the last of the survey track is the road's own (drive/corridors.ts), and the truck can
+      // be driven from here and back to SARO on it (drive/legs.ts)
+      const road = stationCorridor(fieldFlood);
+      s.group.add(road.group);
+      const area = new StationDrive(s.colliders.filter((c) => c !== s.truckCollider), (x, z) => s.groundAt(x, z), road.obstacles);
+      area.headlights = this.headlightSlots(fieldFlood);
+      const drive = new DriveController(this.d.camera, t, area);
+      drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
+      this.legs.station01 = { area, drive, truck: t };
+      this.parkAt('station01');
       this.d.applyQuality();
       this.onStationLoaded?.(s);
       return s;
@@ -214,6 +255,7 @@ export class World {
       this.drive = new DriveController(this.d.camera, truck, road);
       this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
+      this.legs.road = { area: road, drive: this.drive, truck };
       this.d.applyQuality();
     });
   }
@@ -233,6 +275,7 @@ export class World {
       const drive = new DriveController(this.d.camera, truck, road);
       drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       this.oldRoad = road; this.oldTruck = truck; this.oldDrive = drive;
+      this.legs.roswell = { area: road, drive, truck };
       this.d.applyQuality();
       return road;
     });
@@ -262,6 +305,8 @@ export class World {
         truck.setHeadColor(null);
         truck.setDashLevel(null);
         this.oldControl = null;
+        this.truckAt = null; this.leg = 'roswell';
+        this.parkAt('diner');
         this.startEngine();
         this.driving = true;
         ready();
@@ -309,12 +354,14 @@ export class World {
       t.group.visible = false;
       this.d.scene.add(t.group);
       this.dinerTruck = t;
+      this.dinerCol = d.colliders.find((c) => Math.abs(c.minX - (DINER_ORIGIN.x + 7.85)) < 0.01 && Math.abs(c.minZ - (DINER_ORIGIN.z + 3.2)) < 0.01) ?? null;
       const px = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.9, 5.4), new THREE.MeshBasicMaterial({ visible: false }));
       px.position.set(a.x, 0.95, a.z); px.rotation.y = a.yaw; px.name = 'dinerTruck';
       t.group.parent!.add(px);
       this.dinerTruckProxy = px;
       this.onDinerTruck?.(px);
       this.diner = d;
+      this.parkAt('diner');
       this.d.applyQuality();
       this.onDinerLoaded?.(d);
       return d;
@@ -327,14 +374,16 @@ export class World {
     const { player, saro } = this.d;
     this.area = area;
     for (const g of saro.groups) g.visible = area === 'saro';
-    if (this.saroTruck) this.saroTruck.group.visible = area === 'saro';
+    // a truck shows where it stands, or where it is being driven
+    const here = (id: LegId) => area === id && (this.truckAt === id || this.leg === id);
+    if (this.saroTruck) this.saroTruck.group.visible = here('saro');
     if (this.site) this.site.group.visible = area === 'station01';
     if (this.road) this.road.group.visible = area === 'road';
-    if (this.truck) this.truck.group.visible = area === 'road';
-    if (this.parked) this.parked.group.visible = area === 'station01';
+    if (this.truck) this.truck.group.visible = here('road');
+    if (this.parked) this.parked.group.visible = here('station01');
     if (this.room6) this.room6.group.visible = area === 'room6';
     if (this.diner) this.diner.group.visible = area === 'diner';
-    if (this.dinerTruck) this.dinerTruck.group.visible = area === 'diner';
+    if (this.dinerTruck) this.dinerTruck.group.visible = here('diner');
     if (this.oldRoad) this.oldRoad.group.visible = area === 'roswell';
     if (this.oldTruck) this.oldTruck.group.visible = area === 'roswell';
     const cam = this.d.camera, far = area === 'roswell' ? FAR_OLDROAD : FAR;
@@ -347,6 +396,10 @@ export class World {
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
     if (area === 'diner' && this.diner) { player.zones = this.diner.zones; player.colliders = this.diner.colliders; }
   }
+  /** How the sky is turned in the current area: the areas lie on one map (geo.ts), and the
+   *  station's terms are the road's turned a quarter round, so its sky is turned with them,
+   *  or the stars would swing round where the truck comes in. */
+  get skyYaw() { return this.area === 'station01' ? STATION_TURN : 0; }
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
     if (this.area === 'room6') return !!this.room6 && p.z < ROOM6_ORIGIN.z + 3.0;   // in the room, not on the walk outside
@@ -430,55 +483,12 @@ export class World {
   }
 
   // ---------- the drive ----------
-  /** From the truck at SARO to the station gate. */
-  driveOut() {
-    if (this.busy) return;
-    this.busy = true;
-    const { fade, hold, toast } = this.d;
-    hold(true);
-    fade(true, '');
-    // the fade takes a moment; loading may take longer on a slow connection
-    Promise.all([this.ensureRoad(), this.ensureStation(), new Promise((r) => setTimeout(r, 700))]).then(() => {
-      this.enter('road');
-      const road = this.road!, drive = this.drive!, truck = this.truck!;
-      drive.place(road.start.pos, road.start.heading);
-      drive.onArrive = () => this.arrive();
-      truck.setDriving(true);
-      truck.setHeadlights(true);
-      truck.setLightLevel(1);
-      this.startEngine();
-      this.driving = true;
-      this.busy = false;
-      hold(false);
-      fade(false);
-      toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake. A and D: steer.', 4.5);
-      this.d.after(5, () => { if (this.driving) toast('South on the highway. STATION 01 is off the old survey track.', 4); });
-    }).catch((e: Error) => {
-      console.error(e);
-      this.busy = false;
-      hold(false);
-      fade(false);
-      toast('The road could not be loaded. Check your connection and try the truck again.', 5);
-    });
-  }
-
-  // The drive reaches the gate: park, and walk in.
-  private arrive() {
-    if (!this.driving) return;
-    const { fade, hold } = this.d;
-    this.driving = false;
-    this.engine?.stop();
-    hold(true);
-    fade(true, '');
-    this.d.after(1.0, () => {
-      this.truck!.setHeadlights(false);
-      this.truck!.setDriving(false);
-      this.enter('station01');
-      this.placeAtStation();
-      this.onArriveStation?.();
-      hold(false);
-      fade(false);
-    });
+  /** From the truck at SARO to STATION 01: out of the yard, south on the highway, the
+   *  survey track to the gate, driven the whole way. Parked on the pad, the player gets out. */
+  driveOut(onTheRoad = false) {
+    const go = () => this.startTrip(onTheRoad ? 'road' : 'saro', 'station01', { at: onTheRoad ? this.road!.start : undefined,
+      hint: 'Leave the truck on the gravel outside the gate: stop there.', onArrive: () => this.onArriveStation?.() });
+    if (onTheRoad) void this.ensureRoad().then(go); else go();
   }
 
   /** From the truck on SARO's pad to the diner where the old road leaves the highway
@@ -493,6 +503,8 @@ export class World {
     this.d.after(2.2, () => {
       void ready.then(() => {
         this.d.skipClock(9 * 60);
+        this.truckAt = 'diner';
+        for (const id of ['saro', 'diner'] as LegId[]) this.parkAt(id);
         this.enter('diner');
         this.placeAtDiner('arrive');
         onArrive();
@@ -503,22 +515,221 @@ export class World {
     });
   }
 
-  /** From the truck at the station back to SARO. The way back is not driven again. */
+  /** From the truck at the station back to SARO, the whole way, onto the pad. */
   driveBack() {
-    if (this.busy) return;
+    this.startTrip('station01', 'saro', { hint: 'The truck goes back on its pad by the service yard: up the ramp, and stop there.',
+      onArrive: () => { this.onArriveSaro?.(); this.d.toast(`${this.d.clock()}. The truck is back on its pad.`, 3); } });
+  }
+
+  // ---------- trips ----------
+  // The truck is driven from one place to another the whole way (drive/legs.ts). Each area it
+  // passes through is a leg with its own copy of the truck and its own controller; where two
+  // areas meet on a road the truck is handed from one to the next between two frames.
+  private trucksHome: { t: Truck; x: number; y: number; z: number; h: number }[] = [];
+
+  /** SARO's own ground to drive on: the pad, the ramp, the service road, the highway. */
+  private ensureSaroLeg() {
+    return this.once('saroLeg', async () => {
+      const [{ DriveController }, { SaroDrive }] = await Promise.all([this.load('Drive'), this.load('legs'), this.load('engine')]);
+      const t = this.saroTruck!;
+      const area = new SaroDrive(this.d.saro.colliders.filter((c) => c !== this.d.saro.truckCol), this.grounds.floorAt, this.saroRoad);
+      area.headlights = this.headlightSlots(siteFlood);
+      const drive = new DriveController(this.d.camera, t, area);
+      drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
+      this.legs.saro = { area, drive, truck: t };
+    });
+  }
+  private ensureLeg(id: LegId): Promise<unknown> {
+    return id === 'saro' ? this.ensureSaroLeg() : id === 'road' ? this.ensureRoad() : id === 'station01' ? this.ensureStation()
+      : id === 'diner' ? this.ensureDiner() : this.ensureOldRoad();
+  }
+  private truckOf(id: LegId) { return id === 'saro' ? this.saroTruck : id === 'station01' ? this.parked : id === 'diner' ? this.dinerTruck : null; }
+
+  /** The parked truck's collider and its handle for "use" go where the truck stands, or out
+   *  of the way while it is gone. */
+  private parkAt(id: LegId) {
+    const t = this.truckOf(id);
+    if (!t) return;
+    const here = this.truckAt === id;
+    const col = id === 'saro' ? this.d.saro.truckCol : id === 'station01' ? this.site?.truckCollider : id === 'diner' ? this.dinerCol : null;
+    const proxy = id === 'saro' ? this.d.saro.truckProxy : id === 'station01' ? this.site?.proxies.truckSpot : id === 'diner' ? this.dinerTruckProxy : null;
+    const g = t.group, h = g.rotation.y, c = Math.abs(Math.cos(h)), sn = Math.abs(Math.sin(h));
+    const hx = 1.05 * c + 2.75 * sn, hz = 1.05 * sn + 2.75 * c;
+    if (col) Object.assign(col, here ? { minX: g.position.x - hx, maxX: g.position.x + hx, minZ: g.position.z - hz, maxZ: g.position.z + hz }
+      : { minX: 1e9, maxX: 1e9, minZ: 1e9, maxZ: 1e9 });
+    if (proxy) {
+      const parent = proxy.parent;
+      parent?.updateMatrixWorld();
+      const at = parent ? parent.worldToLocal(g.position.clone()) : g.position.clone();
+      proxy.position.set(at.x, here ? 0.95 : -500, at.z);
+      proxy.rotation.y = h;
+    }
+  }
+
+  /** Get in and drive from where the truck stands to another place, the whole way.
+   *  to null: drive anywhere; at: start there, not where the truck stands; free: the trucks
+   *  stay where they are and go back to their places afterwards (the developer menu);
+   *  hint: said once on coming into the area where the truck is to be left. */
+  startTrip(from: LegId, to: LegId | null, o: { rate?: number; onArrive?: () => void; onStart?: () => void; at?: { pos: THREE.Vector3; heading: number };
+    legs?: LegId[]; free?: boolean; hint?: string } = {}) {
+    if (this.busy || this.driving) return;
+    this.busy = true;
     const { fade, hold, toast } = this.d;
     hold(true);
-    fade(true, 'BACK TO SARO');
-    this.d.after(2.2, () => {
-      this.d.skipClock(9 * 60);
-      this.enter('saro');
-      const p = this.d.saro.truck;
-      this.d.player.place(p.x + 2.0, p.z - 3.6, 0);
-      this.onArriveSaro?.();
+    fade(true, '');
+    this.load('legs').then(({ legsBetween }) => {
+      const need = o.legs ?? (to ? legsBetween(from, to) : [from]);
+      return Promise.all([...need.map((l) => this.ensureLeg(l)), this.load('engine'), new Promise((r) => setTimeout(r, 400))]);
+    }).then(() => {
+      const L = this.legs[from]!;
+      const g = L.truck.group;
+      // where every parked truck stands now, so a trip that is given up puts them back
+      this.trucksHome = (['saro', 'station01', 'diner'] as LegId[]).map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
+        .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
+      this.trip = { from, to, rate: o.rate ?? 1, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint };
+      this.leg = from;
+      if (!o.free) { this.truckAt = null; for (const id of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(id); }
+      L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
+      this.lightsOn(L.truck);
+      this.enter(from);
+      this.startEngine();
+      this.driving = true;
+      Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
+      if (o.onStart) o.onStart();
+      else if (from === to && o.hint) toast(o.hint, 5);
+      else toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer.', 4.5);
+    }).catch((e: Error) => {
+      console.error(e);
+      toast('The way could not be loaded. Check your connection and try the truck again.', 5);
+    }).finally(() => { this.busy = false; hold(false); fade(false); });
+  }
+  private lightsOn(t: Truck) {
+    t.setDriving(true); t.setHeadlights(true); t.setLightLevel(1); t.setHeadColor(null); t.setDashLevel(null);
+  }
+
+  // Every frame of a trip, after the truck has moved: on into the next area, or arrived.
+  private tripStep(dt: number) {
+    const id = this.leg!, L = this.legs[id]!, D = L.drive, legs = this.mods.legs;
+    // (chapter six's old road is not a trip: the ways between areas may never have been loaded)
+    if (!legs) return;
+    const ex = legs.exitFrom(id, D.pos.x, D.pos.z, D.heading);
+    if (ex && this.legs[ex.to]) { this.transfer(ex); return; }
+    const trip = this.trip;
+    if (!trip) return;
+    if (trip.rate !== 1) this.d.skipClock(dt * (trip.rate - 1));
+    const P = (L.area as { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null }).park;
+    // where to leave the truck, said once it is in sight
+    if (trip.hint && trip.to === id && P && Math.hypot(D.pos.x - (P.minX + P.maxX) / 2, D.pos.z - (P.minZ + P.maxZ) / 2) < 110) {
+      this.d.toast(trip.hint, 5); trip.hint = undefined;
+    }
+    if (trip.to === id && P && D.pos.x >= P.minX && D.pos.x <= P.maxX && D.pos.z >= P.minZ && D.pos.z <= P.maxZ && Math.abs(D.speed) < 0.35) {
+      trip.still += dt;
+      if (trip.still > 0.7) this.park();
+    } else trip.still = 0;
+  }
+  // Into the next area: its truck goes on from here, as fast and as turned as this one.
+  private transfer(ex: Exit) {
+    const from = this.legs[this.leg!]!, to = this.legs[ex.to]!;
+    this.leg = ex.to;
+    to.drive.adopt(from.drive, ex.x, ex.z, ex.heading);
+    to.truck.copyCab(from.truck);
+    this.dashT = 0;   // the clock on its dash is set this frame
+    this.lightsOn(to.truck);
+    from.truck.setDriving(false);
+    this.enter(ex.to);
+
+  }
+  // Stopped where the truck is left: the engine off, and the player gets out by the door.
+  private park() {
+    const id = this.leg!, L = this.legs[id]!, trip = this.trip;
+    this.driving = false;
+    this.engine?.stop();
+    L.truck.setDriving(false);
+    L.truck.setHeadlights(false);
+    this.truckAt = id; this.leg = null; this.trip = null; this.autopilot = null;
+    this.parkAt(id);
+    const { fade, hold } = this.d;
+    hold(true);
+    fade(true, '');
+    this.d.after(0.4, () => {
+      this.enter(id);
+      this.getOut(L.truck);
       hold(false);
       fade(false);
-      toast(`${this.d.clock()}. The truck is back on its pad.`, 3);
+      trip?.onArrive?.();
     });
+  }
+  private getOut(t: Truck) {
+    const g = t.group, h = g.rotation.y, p = this.d.player, up = new THREE.Vector3(0, 1, 0);
+    for (const side of [-1, 1, -1.4, 1.4]) {
+      const v = new THREE.Vector3(side * 1.75, 0, -0.3).applyAxisAngle(up, h).add(g.position);
+      if (p.walkable(v.x, v.z)) { p.place(v.x, v.z, h); return; }
+    }
+    const v = new THREE.Vector3(-1.75, 0, -0.3).applyAxisAngle(up, h).add(g.position);
+    p.place(v.x, v.z, h);
+  }
+
+  // The autopilot (tests, the developer menu): along the way to the next area, or to where
+  // the truck is left. Pure pursuit, slowed in time for the bends ahead; when the way lies
+  // behind, a turn in three points (forward on full lock, back on the other lock when it can
+  // go no further, and so on until it faces the way).
+  private auto = { rev: false, stall: 0, back: 0, stuck: 0 };
+  /** dt: the step (the stall timer of the turn); 0 to only look. */
+  private autoInput(dt = 0): DriveInput {
+    const id = this.leg!, L = this.legs[id]!, D = L.drive, trip = this.trip, legs = this.mods.legs!;
+    const next = !trip?.to ? null : trip.to === id ? 'park' : legs.legsBetween(id, trip.to)[1];
+    const route = next ? (id === 'road' ? legs.roadRoute(next as LegId) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[next]) : null;
+    if (!route?.length) return { steer: 0, throttle: D.speed > 0.2 ? -0.6 : 0 };
+    let k = 0, best = Infinity;
+    for (let i = 0; i < route.length; i++) { const d = route[i].distanceToSquared(D.pos); if (d < best) { best = d; k = i; } }
+    const sp = Math.abs(D.speed), look = THREE.MathUtils.clamp(3.5 + sp * 0.7, 4, 16);
+    let j = k;
+    while (j < route.length - 1 && route[j].distanceTo(D.pos) < look) j++;
+    const tg = route[j];
+    let err = Math.atan2(-(tg.x - D.pos.x), -(tg.z - D.pos.z)) - D.heading;
+    err = Math.atan2(Math.sin(err), Math.cos(err));
+    const A = this.auto;
+    // ---------- stuck against something: back off a little, then on ----------
+    if (A.back > 0) {
+      A.back -= dt;
+      if (!D.reversing) return { steer: 0, throttle: -1 };
+      return { steer: err > 0 ? 0.6 : -0.6, throttle: sp < 1.2 ? -0.6 : 0 };
+    }
+    // ---------- turning round ----------
+    if (Math.abs(err) > 0.9 || A.rev) {
+      const want = A.rev ? -1 : 1, moving = D.reversing === A.rev && sp > 0.25;
+      A.stall = moving ? 0 : A.stall + dt;
+      if (A.rev && (Math.abs(err) < 0.6 || A.stall > 1.2)) { A.rev = false; A.stall = 0; }
+      else if (!A.rev && A.stall > 1.2 && Math.abs(err) > 0.9) { A.rev = true; A.stall = 0; }
+      const lock = err > 0 ? 1 : -1;
+      if (A.rev) return { steer: lock, throttle: D.reversing ? (sp < 1.8 ? -0.7 : 0) : -1 };
+      if (D.reversing) return { steer: -lock, throttle: 1 };
+      return { steer: -lock, throttle: THREE.MathUtils.clamp((2 * want - D.speed) * 0.6, -1, 0.7) };
+    }
+    A.stall = 0;
+    if (D.reversing) return { steer: 0, throttle: 1 };
+    // ---------- along the way: the speed each bend ahead allows, braked to in time ----------
+    let v = Math.min(this.autopilot ?? 15, D.surface.top * 0.7);
+    let dist = route[k].distanceTo(D.pos);
+    for (let i = k; i < route.length - 2 && dist < 90; i++) {
+      const p0 = route[i], p1 = route[i + 1], p2 = route[i + 2];
+      const h1 = Math.atan2(p1.x - p0.x, p1.z - p0.z), h2 = Math.atan2(p2.x - p1.x, p2.z - p1.z);
+      const bend = Math.abs(Math.atan2(Math.sin(h2 - h1), Math.cos(h2 - h1)));
+      const curv = bend / Math.max((p1.distanceTo(p0) + p2.distanceTo(p1)) / 2, 0.5);
+      const vb = Math.sqrt(2.2 / Math.max(curv, 1e-4));       // about 2.2 m/s² sideways
+      v = Math.min(v, Math.sqrt(vb * vb + 2 * 2.5 * dist));   // braking at 2.5 m/s²
+      dist += p1.distanceTo(p0);
+    }
+    const end = next === 'park' ? route[route.length - 1].distanceTo(D.pos) : Infinity;
+    v = Math.min(v, Math.max(0, (end - 2.2) * 0.6)) * THREE.MathUtils.clamp(1.15 - Math.abs(err) * 1.4, 0.3, 1);
+    if (end < 2.2) v = 0;
+    // wanting to go but not going (a post, a kerb): back off for a moment
+    A.stuck = v > 0.8 && sp < 0.15 ? A.stuck + dt : 0;
+    if (A.stuck > 1.5) { A.stuck = 0; A.back = 1.4; }
+    // pure pursuit: the curvature that reaches the aim point, turned into the wheel the truck
+    // has at this speed on this ground (the same lock as the physics, Drive.ts)
+    const kappa = 2 * Math.sin(err) / look;
+    return { steer: D.steerFor(-kappa), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
   }
 
   private startEngine() {
@@ -532,57 +743,67 @@ export class World {
     this.engine.start();
   }
 
-  /** Stop driving without arriving (a save is opened, or the title). */
+  /** Stop driving without arriving (a save is opened, or the title). A trip that is given up
+   *  puts the trucks back where they stood when it began. */
   stopDriving() {
+    const id = this.leg, trip = this.trip;
     this.driving = false;
     this.oldControl = null;
     this.engine?.stop();
+    if (id) { this.legs[id]?.truck.setDriving(false); this.legs[id]?.truck.setHeadlights(false); }
+    if (trip) {
+      for (const h of this.trucksHome) { h.t.group.position.set(h.x, h.y, h.z); h.t.group.rotation.y = h.h; h.t.setDriving(false); }
+      this.truckAt = trip.home;
+    }
+    this.leg = null; this.trip = null; this.autopilot = null;
+    for (const p of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(p);
     this.free = null; this.freeBack = null;
+  }
+
+  /** The truck stands where the story has left it (a new night or a restored save): on
+   *  SARO's pad, outside STATION 01's gate or on the diner's lot. */
+  placeTruck(at: LegId) {
+    this.stopDriving();
+    this.truckAt = at;
+    const put = (t: Truck | null, x: number, z: number, h: number) => { if (t) { t.group.position.set(x, 0, z); t.group.rotation.y = h; t.setDriving(false); } };
+    const p = this.d.saro.truck;
+    put(this.saroTruck, p.x, p.z, p.heading);
+    const a = this.site?.anchors.truck;
+    if (a) put(this.parked, a.x, a.z, a.heading);
+    const b = this.diner?.anchors.truckPark;
+    if (b) put(this.dinerTruck, b.x, b.z, b.yaw);
+    for (const id of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(id);
   }
 
   // ---------- free drive (the developer menu): the truck on a road, any time, no story ----------
   /** Which road the truck is out on in a free drive, or null. */
   free: 'road' | 'oldroad' | null = null;
   private freeBack: { area: AreaId; x: number; z: number; yaw: number; pitch: number } | null = null;
-  /** Out on the highway to STATION 01 or on the old Roswell road, from wherever the player is.
-   *  Nothing in the story happens on the way; endFreeDrive() puts the player back. */
+  /** Out on the highway (and on to SARO and STATION 01, the whole way) or on the old Roswell
+   *  road, from wherever the player is. Nothing in the story happens on the way, and the
+   *  truck is not left anywhere; endFreeDrive() puts everything back. */
   freeDrive(which: 'road' | 'oldroad') {
     if (this.busy) return;
-    this.busy = true;
-    const { fade, hold, toast, player } = this.d;
-    if (!this.free) this.freeBack = { area: this.area, x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch };
-    hold(true);
-    fade(true, which === 'road' ? 'FREE DRIVE: HIGHWAY' : 'FREE DRIVE: THE OLD ROAD');
-    const loaded = which === 'road' ? this.ensureRoad() : this.ensureOldRoad();
-    Promise.all([loaded, new Promise((r) => setTimeout(r, 700))]).then(() => {
-      this.driving = false; this.oldControl = null;
-      const road = which === 'road' ? this.road! : this.oldRoad!;
-      const drive = which === 'road' ? this.drive! : this.oldDrive!;
-      const truck = which === 'road' ? this.truck! : this.oldTruck!;
-      this.enter(which === 'road' ? 'road' : 'roswell');
-      if (which === 'oldroad') this.oldRoad!.hitBack = false;
-      drive.place(road.start.pos, road.start.heading);
-      drive.onArrive = undefined;               // the station gate is only a gate today
-      truck.setDriving(true);
-      truck.setHeadlights(true);
-      truck.setLightLevel(1);
-      truck.setHeadColor(null);
-      truck.setDashLevel(null);
-      this.free = which;
-      this.startEngine();
-      this.driving = true;
-      toast('Free drive. The developer menu takes you back.', 3.5);
-    }).catch((e: Error) => {
-      console.error(e);
-      toast('That road could not be loaded.', 4);
-    }).finally(() => { this.busy = false; hold(false); fade(false); });
+    const { player } = this.d;
+    const back = this.freeBack ?? { area: this.area, x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch };
+    if (this.driving) this.stopDriving();
+    this.freeBack = back;
+    const leg: LegId = which === 'road' ? 'road' : 'roswell';
+    const ready = which === 'road' ? this.ensureRoad() : this.ensureOldRoad();
+    void ready.then(() => {
+      const start = which === 'road' ? this.road!.start : this.oldRoad!.start;
+      if (this.oldRoad) this.oldRoad.hitBack = false;
+      this.startTrip(leg, null, { at: start, free: true, legs: which === 'road' ? ['saro', 'road', 'station01'] : ['roswell'], onStart: () => {
+        this.free = which; this.freeBack = back;
+        this.d.toast('Free drive. The developer menu takes you back.', 3.5);
+      } });
+    }).catch((e: Error) => { console.error(e); this.d.toast('That road could not be loaded.', 4); });
   }
   /** Out of the free drive: back where the player stood before it. */
   endFreeDrive() {
     const back = this.freeBack;
     if (!this.free || !back) return;
     this.stopDriving();
-    this.truck?.setDriving(false); this.oldTruck?.setDriving(false);
     this.enter(back.area);
     this.d.player.place(back.x, back.z, back.yaw);
     this.d.player.pitch = back.pitch;
@@ -594,27 +815,33 @@ export class World {
     if (this.area === 'room6') this.room6?.update(dt, t);
     if (this.area === 'diner') this.diner?.update(dt, t);
     if (this.area === 'saro') this.motel.update(dt, t);
-    if (this.area === 'roswell' && this.oldRoad && this.oldDrive && this.oldTruck) {
-      const c = this.oldControl, drive = this.oldDrive;
-      if (c?.camera) c.camera(dt);
-      else if (this.driving) {
-        if (c?.input) input = c.input(dt);
-        else if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
-        drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
-      }
-      const sky = this.d.sky();
-      this.oldRoad.update(dt, t, this.d.camera.position, sky);
-      if (this.engine) { this.engine.set(drive.rpm, drive.load); this.engine.tyres(drive.surface.kind, Math.abs(drive.speed)); }
-      this.dashT -= dt;
-      if (this.dashT <= 0) { this.dashT = 0.1; this.oldTruck.setDash({ mph: drive.mph, rpm: drive.rpm, clock: this.d.clock(), fuel: 0.55 }); }
+    if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
+    if (this.area === 'road' && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
+    this.drivingStep(dt, input, look);
+    // out on the track in the truck the station's moonlight gives way to the road's
+    // (Station01.nightBlend); after the step, so it is right in the frame the truck comes in
+    if (this.area === 'station01' && this.site) {
+      const L = this.leg === 'station01' ? this.legs.station01 : null;
+      const d = L ? Math.hypot(L.drive.pos.x - STATION_ORIGIN.x, L.drive.pos.z - STATION_ORIGIN.z - 8) : 0;
+      this.site.nightBlend(1 - THREE.MathUtils.smoothstep(d, 110, 290));
     }
-    if (this.area === 'road' && this.road && this.drive && this.truck) {
-      if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
-      if (this.driving) this.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
-      this.road.update(dt, t, this.drive.pos);
-      if (this.engine) { this.engine.set(this.drive.rpm, this.drive.load); this.engine.tyres(this.drive.surface.kind, Math.abs(this.drive.speed)); }
-      this.dashT -= dt;
-      if (this.dashT <= 0) { this.dashT = 0.1; this.truck.setDash({ mph: this.drive.mph, rpm: this.drive.rpm, clock: this.d.clock(), fuel: 0.62 }); }
+  }
+  // the truck being driven: by the keys, by chapter six, by the autopilot or by a test
+  private drivingStep(dt: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
+    const id = this.leg, L = id && id === this.area ? this.legs[id] : null;
+    if (!L) return;
+    const c = id === 'roswell' ? this.oldControl : null;
+    if (c?.camera) c.camera(dt);
+    else if (this.driving) {
+      if (c?.input) input = c.input(dt);
+      else if (this.autopilot !== null) input = this.autoInput(dt);
+      else if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
+      L.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
+      this.tripStep(dt);
     }
+    const N = (this.leg && this.legs[this.leg]) || L, D = N.drive;
+    if (this.engine) { this.engine.set(D.rpm, D.load); this.engine.tyres(D.surface.kind, Math.abs(D.speed)); }
+    this.dashT -= dt;
+    if (this.dashT <= 0) { this.dashT = 0.1; N.truck.setDash({ mph: D.mph, rpm: D.rpm, clock: this.d.clock(), fuel: id === 'roswell' ? 0.55 : 0.62 }); }
   }
 }

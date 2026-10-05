@@ -37,21 +37,24 @@ export function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: numbe
   return m;
 }
 
-export function roadMaterials() {
-  const std = (o: THREE.MeshStandardMaterialParameters, fall = 0.012) => floodlit(new THREE.MeshStandardMaterial(o), fall, roadFlood);
+/** The road's materials, lit by the road's floods; a stretch of the road drawn in another
+ *  area (drive/corridors.ts) takes that area's floods. Without the track's gravel picture
+ *  (it comes with the road, art.ts), gravel is a plain colour. */
+export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
+  const std = (o: THREE.MeshStandardMaterialParameters, fall = 0.012) => floodlit(new THREE.MeshStandardMaterial(o), fall, set);
   // road surfaces lie a few centimetres over the verges: pull them forward in depth
   const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
   const link = chainlink(); link.repeat.set(1, 1);
   return {
     ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }),
     asphalt: std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01),
-    gravel: std({ map: gravelTex(), color: 0xf2ece0, roughness: 0.95, ...top }, 0.01),
+    gravel: gravelArt ? std({ map: gravelTex(), color: 0xf2ece0, roughness: 0.95, ...top }, 0.01) : std({ color: 0x8a8070, roughness: 0.95, ...top }, 0.01),
     steel: std({ color: 0x8b9094, roughness: 0.45, metalness: 0.4 }),
     wood: std({ color: 0x6e5d4b, roughness: 0.92 }),
     concrete: std({ map: artTexture('concrete'), color: 0xbab2a2, roughness: 0.95 }),
     dark: std({ color: 0x0b0b0c, roughness: 0.9, ...top }),
     paint: std({ color: 0x8a6a4e, roughness: 0.9 }),
-    sign: retro(new THREE.MeshStandardMaterial({ map: signAtlas(), roughness: 0.55 }), 0.004),
+    sign: retro(new THREE.MeshStandardMaterial({ map: signAtlas(), roughness: 0.55 }), 0.004, set),
     fence: std({ map: link, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x9a9a92, roughness: 0.6 }),
     vc: std({ vertexColors: true, roughness: 0.9 }),
     bush: std({ color: 0x4b4a2f, roughness: 1, flatShading: true }),
@@ -99,7 +102,10 @@ export function wireMesh(b: Build) {
 const inDrive = (x: number, z: number) => Math.abs(x) < HWY.fence && z > DRIVE_N - 5 && z < DRIVE_S + 5;
 
 // ---------- telephone line along the east side, and a branch to the ranch ----------
-export function poles(b: Build) {
+/** keep (here and below): only what stands at road-local (x, z) where it says yes (a
+ *  stretch of the road drawn in another area). */
+export type Keep = (x: number, z: number) => boolean;
+export function poles(b: Build, keep: Keep = () => true) {
   const wood = [0.3, 0.24, 0.17], glassC = [0.32, 0.48, 0.4];
   const parts = [colored(new THREE.CylinderGeometry(0.11, 0.15, 9.8, 6).translate(0, 4.7, 0), wood),
     colored(new THREE.BoxGeometry(2.4, 0.1, 0.1).translate(0, 8.7, 0), wood)];
@@ -110,6 +116,7 @@ export function poles(b: Build) {
   const line = (pts: [number, number][], ry: number) => {
     let prev: THREE.Vector3[] | null = null;
     for (const [x, z] of pts) {
+      if (!keep(x, z)) { prev = null; continue; }
       const m = place(x, surfaceY(x, z), z, ry + (hash(x, z) - 0.5) * 0.06, 1, (hash(z, x) - 0.5) * 0.03);
       list.push(m);
       const tops = INS.map((ix) => new THREE.Vector3(ix, 8.9, 0).applyMatrix4(m));
@@ -128,14 +135,14 @@ export function poles(b: Build) {
 }
 
 // ---------- barbed wire fences: steel T-posts, a wooden post every tenth, four strands ----------
-export function fences(b: Build) {
+export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
   const line = (ax: number, az: number, bx: number, bz: number, gap?: [number, number]) => {
     const len = Math.hypot(bx - ax, bz - az), n = Math.ceil(len / 4.5);
     let prev: THREE.Vector3 | null = null;
     for (let i = 0; i <= n; i++) {
       const x = ax + (bx - ax) * i / n, z = az + (bz - az) * i / n;
-      if (gap && z > gap[0] && z < gap[1]) { prev = null; continue; }
+      if ((gap && z > gap[0] && z < gap[1]) || !keep(x, z)) { prev = null; continue; }
       const y = surfaceY(x, z), lean = (hash(x * 3, z) - 0.5) * 0.06;
       (i % 10 === 0 || i === n ? wpost : tpost).push(place(x, y, z, hash(z, x) * 3, 1, lean));
       const p = new THREE.Vector3(x, y, z);
@@ -161,11 +168,12 @@ export function fences(b: Build) {
 }
 
 // ---------- delineator posts: the reflectors glint in the headlights (RoadArea.update) ----------
-export function delineators(b: Build) {
+export function delineators(b: Build, keep: Keep = () => true) {
   const list: THREE.Matrix4[] = [], glints: { i: number; p: THREE.Vector3 }[] = [];
   for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 1600; z += 80) {
     if (side < 0 && z > 470 && z < 570) continue; // the mouth of the survey track
     const x = side * 7.2, y = surfaceY(x, z);
+    if (!keep(x, z)) continue;
     list.push(place(x, y, z, 0, 1, (hash(x, z) - 0.5) * 0.05));
     const p = new THREE.Vector3(x, y + 1.05, z);
     glints.push({ i: b.glow.add(p.x, p.y, p.z, 0.5, 0), p });

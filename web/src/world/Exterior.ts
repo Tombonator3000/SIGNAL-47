@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './kit';
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
+import { sharedHorizon } from './horizon';
+import { SARO_IN_ROAD, SARO_PATCH, inRect, outside } from './geo';
+import { hLow, smooth } from '../drive/roadShape';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 
@@ -31,13 +34,14 @@ export class Exterior {
 
   constructor() {
     this.ground();
-    this.mountains();
     this.array();
     this.road();
     this.building();
     this.motel();
     this.fence();
     mergeStatic(this.statics);
+    // the skyline of the whole map (horizon.ts): the road's far mesas, and those near STATION 01
+    this.group.add(sharedHorizon('saro', this.glow));
     this.group.add(this.statics, this.glow.build());
   }
 
@@ -67,8 +71,13 @@ export class Exterior {
       const n = 0.75 + 0.25 * Math.sin(x * 0.013) * Math.cos(z * 0.011) + r() * 0.12;
       col.set([n, n, n], i * 3);
       const far = Math.hypot(x, z);
-      if (far > 300) pos.setY(i, -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600));
-      else pos.setY(i, -0.62);
+      let y = far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
+      // south along the highway the ground is the road's land (drive/roadShape.ts), and under
+      // the road's own piece of ground (geo.ts, SARO_PATCH) it keeps out of the way
+      const rx = x + SARO_IN_ROAD.x, rz = z + SARO_IN_ROAD.z;
+      const w = smooth(40, 100, z) * (1 - smooth(0, 160, outside(SARO_PATCH, rx, rz)));
+      if (w > 0) y += (hLow(rx, rz) - (inRect(SARO_PATCH, rx, rz, -2) ? 0.7 : 0.05) - y) * w;
+      pos.setY(i, y);
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.computeVertexNormals();
@@ -101,33 +110,6 @@ export class Exterior {
     this.group.add(scrub);
   }
 
-  private mountains() {
-    const ring = (radius: number, peaks: number, hMin: number, hMax: number, color: number, seed: number) => {
-      const r = T.rng(seed);
-      const N = 220;
-      const heights: number[] = [];
-      for (let i = 0; i < N; i++) {
-        const a = i / N * Math.PI * 2;
-        let h = 0;
-        for (let k = 1; k <= 4; k++) h += Math.sin(a * peaks * k + seed * k) / k;
-        heights.push(hMin + (hMax - hMin) * (0.5 + 0.35 * h + 0.15 * r()));
-      }
-      const pos: number[] = [];
-      for (let i = 0; i < N; i++) {
-        const a0 = i / N * Math.PI * 2, a1 = (i + 1) / N * Math.PI * 2;
-        const h0 = heights[i], h1 = heights[(i + 1) % N];
-        const x0 = Math.cos(a0) * radius, z0 = Math.sin(a0) * radius, x1 = Math.cos(a1) * radius, z1 = Math.sin(a1) * radius;
-        pos.push(x0, -5, z0, x1, -5, z1, x1 * 0.97, h1, z1 * 0.97, x0, -5, z0, x1 * 0.97, h1, z1 * 0.97, x0 * 0.97, h0, z0 * 0.97);
-      }
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      const mat = new THREE.MeshBasicMaterial({ color, fog: false, side: THREE.DoubleSide });
-      this.group.add(new THREE.Mesh(g, mat));
-    };
-    ring(1500, 3, 30, 150, 0x0d1220, 3);
-    ring(1100, 5, 10, 70, 0x0a0d14, 9);
-  }
-
   private array() {
     for (const [id, x, z, s] of DISH_LAYOUT) this.dishes.push(new Dish(id, x, z, s, 42, 48));
     for (const [id, x, z, s] of DISH_LAYOUT_FAR) this.dishes.push(new Dish(id, x, z, s, 42, 48, 1));
@@ -145,8 +127,12 @@ export class Exterior {
   }
 
   private road() {
-    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: T.roadTex(), roughness: 0.55 }), 0.02);
-    const r = plane(this.group, 8, 480, asphalt, -24, -0.58, 20, 0, -Math.PI / 2);
+    // the site's own highway ends at z 36; south of it the road's own stretch takes over
+    // (drive/corridors.ts), the same road the truck goes on in the road area
+    const tex = T.roadTex();
+    tex.repeat.set(1, 32);
+    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 }), 0.02);
+    const r = plane(this.group, 8, 256, asphalt, -24, -0.58, -92, 0, -Math.PI / 2);
     noMerge(r);
     for (let z = 70; z > -200; z -= 34) {
       cyl(this.statics, 0.12, 0.16, 8, M.pole, -18.5, 3.4, z, 6);
