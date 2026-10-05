@@ -139,10 +139,10 @@ async def main():
         hc = await ev(f"(c => [c.r, c.g, c.b])({priv('truck', 'headColor')})")
         check(hc[2] > hc[0] and hc[2] > hc[1], f'+10 s: the headlights wake deep blue {[round(v, 2) for v in hc]}')
         await shot('k05_blue')
-        await tick(5.2)                                   # + 16.6, green
+        await tick(4.0)                                   # + 15.4, green (about 2.2 s per colour)
         hc = await ev(f"(c => [c.r, c.g, c.b])({priv('truck', 'headColor')})")
         check(hc[1] > hc[0] and hc[1] > hc[2], f'then amber, then green {[round(v, 2) for v in hc]}')
-        await tick(7.6)                                   # + 24.2
+        await tick(8.8)                                   # + 24.2
         check('Reference west. No. East.' in await toasts(), '+24 s: on the radio, Tomás')
         await tick(3.0)                                   # + 27.2
         check('Do not stop on the line.' in await toasts(), '+27 s: Nora')
