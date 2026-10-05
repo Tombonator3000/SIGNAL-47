@@ -1,0 +1,588 @@
+{
+  "type": "P2 measured FAIL precedence regression evidence",
+  "generated_utc": "2026-10-05T00:58:37.148174+00:00",
+  "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+  "syntax": "PASS",
+  "historical_reports": "Unchanged reports from d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6; this file records only the status correction.",
+  "runs": [
+    {
+      "name": "required_spacing",
+      "exit_code": 1,
+      "status": "PASS",
+      "stdout": "room6: FAIL (705/711 reached)\n",
+      "stderr": "",
+      "report": {
+        "status": "FAIL",
+        "completed": true,
+        "checks": {
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "FAIL",
+            "unreachable_count": 6,
+            "explanation": "Every valid point is required. Small corner discrepancies are identified, not whitelisted."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 0,
+            "explanation": "Raw geometry rule and real connection evidence are separate. Zero overlap, gaps and disabled zones are not failures."
+          },
+          "interactions": {
+            "status": "PASS",
+            "area_registered_count": 14,
+            "active_count": 11,
+            "reachable_active_count": 11,
+            "inactive_count": 3,
+            "unknown_count": 0,
+            "reason": "Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED"
+          },
+          "runtime_errors": {
+            "status": "PASS",
+            "page_errors": []
+          },
+          "output_completeness": {
+            "status": "PASS",
+            "errors": []
+          }
+        },
+        "findings": [
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -0.7499999999999998,
+              "z": -8001.9
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": 0.30000000000000027,
+              "z": -7999.95
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": 1.2000000000000002,
+              "z": -7999.95
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -1.6499999999999997,
+              "z": -7998.299999999999
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -0.1499999999999999,
+              "z": -7997.849999999999
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -1.6499999999999997,
+              "z": -7996.799999999999
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          }
+        ],
+        "provenance": {
+          "generated_utc": "2026-10-05T00:58:37.273991+00:00",
+          "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+          "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+          "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+          "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+          "browser": "Playwright Chromium, ANGLE swiftshader",
+          "requested_areas": [
+            "room6"
+          ]
+        },
+        "runtime_page_errors": []
+      },
+      "summary": {
+        "generated_utc": "2026-10-05T00:58:37.273991+00:00",
+        "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+        "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ],
+        "status": "FAIL",
+        "elapsed_seconds": 13.415111747017363,
+        "areas": [
+          {
+            "area": "room6",
+            "status": "FAIL",
+            "completed": true,
+            "report": "room6.json",
+            "report_sha256": "c85934b849e9a5bc931c6e90ba0365d6c0d181ba2035b1ea53bf20c07eba8f38",
+            "map": "room6.png",
+            "map_sha256": "bf5540785b098e1cadb16f0f469c15c466b60ee0ea7c8ccd125b5224cd224877",
+            "findings": 6
+          }
+        ],
+        "limitations": [
+          "Checker uses finite samples, not a continuous-space proof.",
+          "Swiftshader does not verify hardware fps."
+        ]
+      }
+    },
+    {
+      "name": "negative_budget",
+      "exit_code": 2,
+      "status": "PASS",
+      "stdout": "room6: UNVERIFIED (0/0 reached)\nError: Grid 2072 exceeds explicit max-cells 1; no subset tested\n",
+      "stderr": "",
+      "report": {
+        "status": "UNVERIFIED",
+        "completed": false,
+        "checks": {
+          "completeness": {
+            "status": "UNVERIFIED",
+            "reason": "Grid 2072 exceeds explicit max-cells 1; no subset tested"
+          },
+          "runtime_errors": {
+            "status": "PASS",
+            "page_errors": []
+          },
+          "output_completeness": {
+            "status": "PASS",
+            "errors": []
+          }
+        },
+        "findings": [],
+        "provenance": {
+          "generated_utc": "2026-10-05T00:58:50.754165+00:00",
+          "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+          "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+          "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+          "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+          "browser": "Playwright Chromium, ANGLE swiftshader",
+          "requested_areas": [
+            "room6"
+          ]
+        },
+        "runtime_page_errors": []
+      },
+      "summary": {
+        "generated_utc": "2026-10-05T00:58:50.754165+00:00",
+        "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+        "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ],
+        "status": "UNVERIFIED",
+        "elapsed_seconds": 13.693809307995252,
+        "areas": [
+          {
+            "area": "room6",
+            "status": "UNVERIFIED",
+            "completed": false,
+            "report": "room6.json",
+            "report_sha256": "71cdd82acdacc09ac74b838097adfd0aa54140695421a71919888afbd36fe594",
+            "map": "room6.png",
+            "map_sha256": "c405eeeb9e5d67eb5da2fd0d4be3fd2a4481722c8cf91f3e3d2cc3841e88bf21",
+            "findings": 0
+          }
+        ],
+        "limitations": [
+          "Checker uses finite samples, not a continuous-space proof.",
+          "Swiftshader does not verify hardware fps."
+        ]
+      }
+    },
+    {
+      "name": "bootstrap_pageerror",
+      "exit_code": 1,
+      "status": "PASS",
+      "stdout": "",
+      "stderr": "UNVERIFIED Page.wait_for_function: Timeout 3000ms exceeded.\n",
+      "report": {
+        "status": "FAIL",
+        "completed": false,
+        "checks": {
+          "runtime_errors": {
+            "status": "FAIL",
+            "page_errors": [
+              "reachcheck fixture startup pageerror"
+            ]
+          },
+          "output_completeness": {
+            "status": "PASS",
+            "errors": []
+          }
+        },
+        "findings": [],
+        "provenance": {
+          "generated_utc": "2026-10-05T00:59:04.513394+00:00",
+          "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+          "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+          "source_url": "file:///tmp/s47-reach-bootstrap-fixture.html",
+          "source_html_sha256": "e6141792e77b89392f751336fd9e8199ffbf6ed15edf1a148af8e205179c5a38",
+          "browser": "Playwright Chromium, ANGLE swiftshader",
+          "requested_areas": [
+            "room6"
+          ]
+        },
+        "runtime_page_errors": [
+          "reachcheck fixture startup pageerror"
+        ]
+      },
+      "summary": {
+        "generated_utc": "2026-10-05T00:59:04.513394+00:00",
+        "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+        "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+        "source_url": "file:///tmp/s47-reach-bootstrap-fixture.html",
+        "source_html_sha256": "e6141792e77b89392f751336fd9e8199ffbf6ed15edf1a148af8e205179c5a38",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ],
+        "status": "FAIL",
+        "elapsed_seconds": 3.439659967989428,
+        "areas": [
+          {
+            "area": "room6",
+            "status": "FAIL",
+            "completed": false,
+            "report": "room6.json",
+            "report_sha256": "1afc6e150011d9a286ef27223a394e660a84e77fdfa347aafe3f8276bab645de",
+            "map": "room6.png",
+            "map_sha256": "ad66b3a6aa46652a59558d69679c3448914ba89dd734b312b663ed08d7330757",
+            "findings": 0
+          }
+        ],
+        "limitations": [
+          "Checker uses finite samples, not a continuous-space proof.",
+          "Swiftshader does not verify hardware fps."
+        ]
+      }
+    },
+    {
+      "name": "spacing_before",
+      "exit_code": 2,
+      "status": "REPRODUCED BUG",
+      "report": {
+        "status": "UNVERIFIED",
+        "completed": true,
+        "checks": {
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "FAIL",
+            "unreachable_count": 2,
+            "explanation": "Every valid point is required. Small corner discrepancies are identified, not whitelisted."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 0,
+            "explanation": "Raw geometry rule and real connection evidence are separate. Zero overlap, gaps and disabled zones are not failures."
+          },
+          "interactions": {
+            "status": "PASS",
+            "area_registered_count": 14,
+            "active_count": 11,
+            "reachable_active_count": 11,
+            "inactive_count": 3,
+            "unknown_count": 0,
+            "reason": "Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED"
+          },
+          "runtime_errors": {
+            "status": "PASS",
+            "page_errors": []
+          },
+          "output_completeness": {
+            "status": "PASS",
+            "errors": []
+          }
+        },
+        "findings": [
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -0.19999999999999973,
+              "z": -7999.2
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": 1.6,
+              "z": -7999.2
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          }
+        ],
+        "provenance": {
+          "generated_utc": "2026-10-05T00:53:21.037611+00:00",
+          "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+          "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+          "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+          "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+          "browser": "Playwright Chromium, ANGLE swiftshader",
+          "requested_areas": [
+            "room6"
+          ]
+        },
+        "runtime_page_errors": []
+      },
+      "summary": {
+        "generated_utc": "2026-10-05T00:53:21.037611+00:00",
+        "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+        "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ],
+        "status": "UNVERIFIED",
+        "elapsed_seconds": 12.921214535977924,
+        "areas": [
+          {
+            "area": "room6",
+            "status": "UNVERIFIED",
+            "completed": true,
+            "report": "room6.json",
+            "report_sha256": "2862f67ca2389c95fe796876c9cb4d34a3631a48ff3945df93374a7338cd1e03",
+            "map": "room6.png",
+            "map_sha256": "4ad2e29e0a95b1c1dcacb6b9a3950994906c871d4b242f7f94fcb2c6ad18df14",
+            "findings": 2
+          }
+        ],
+        "limitations": [
+          "Checker uses finite samples, not a continuous-space proof.",
+          "Swiftshader does not verify hardware fps."
+        ]
+      },
+      "exit_evidence": "Exit observed in direct exec before this harness; output report and summary verified here."
+    },
+    {
+      "name": "spacing_final",
+      "exit_code": 1,
+      "status": "PASS",
+      "report": {
+        "status": "FAIL",
+        "completed": true,
+        "checks": {
+          "required_spacing": {
+            "status": "UNVERIFIED",
+            "reason": "Custom spacing does not satisfy the required 0.15 m full check."
+          },
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "FAIL",
+            "unreachable_count": 2,
+            "explanation": "Every valid point is required. Small corner discrepancies are identified, not whitelisted."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 0,
+            "explanation": "Raw geometry rule and real connection evidence are separate. Zero overlap, gaps and disabled zones are not failures."
+          },
+          "interactions": {
+            "status": "PASS",
+            "area_registered_count": 14,
+            "active_count": 11,
+            "reachable_active_count": 11,
+            "inactive_count": 3,
+            "unknown_count": 0,
+            "reason": "Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED"
+          },
+          "runtime_errors": {
+            "status": "PASS",
+            "page_errors": []
+          },
+          "output_completeness": {
+            "status": "PASS",
+            "errors": []
+          }
+        },
+        "findings": [
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -0.19999999999999973,
+              "z": -7999.2
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": 1.6,
+              "z": -7999.2
+            },
+            "count": 1,
+            "reason": "circle/AABB corner discrepancy"
+          }
+        ],
+        "provenance": {
+          "generated_utc": "2026-10-05T00:57:35.503692+00:00",
+          "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+          "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+          "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+          "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+          "browser": "Playwright Chromium, ANGLE swiftshader",
+          "requested_areas": [
+            "room6"
+          ]
+        },
+        "runtime_page_errors": []
+      },
+      "summary": {
+        "generated_utc": "2026-10-05T00:57:35.503692+00:00",
+        "script_sha256": "a3e46a8eaccbb45bb9731f902cc0aa251c25baaa797c246c492bf5f19d2a0b67",
+        "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ],
+        "status": "FAIL",
+        "elapsed_seconds": 13.70077052601846,
+        "areas": [
+          {
+            "area": "room6",
+            "status": "FAIL",
+            "completed": true,
+            "report": "room6.json",
+            "report_sha256": "aa96efa17f494eb4215ea57e27b59ec37f4043e90386a2e425a4488d258b699c",
+            "map": "room6.png",
+            "map_sha256": "95ec5d9f4044fd3f4d8d39ea62e58f1f6be3a97f870de51d62423ef624c21d6d",
+            "findings": 2
+          }
+        ],
+        "limitations": [
+          "Checker uses finite samples, not a continuous-space proof.",
+          "Swiftshader does not verify hardware fps."
+        ]
+      },
+      "exit_evidence": "Exit observed in direct exec before this harness; output report and summary verified here."
+    }
+  ],
+  "fixtures": {
+    "exit_code": 0,
+    "js_count": 23,
+    "python_count": 13,
+    "status": "PASS",
+    "stdout": "PASS circle-clear diagonal is distinct from actual AABB overlap\nPASS circle-collider diagonal rejection\nPASS 0.15 m edge cannot PASS without update progress\nPASS short-step movement reaches exact endpoint\nPASS directed edge is not mirrored\nPASS disconnected valid island stays unreachable\nPASS inert front proxy remains a blocker in actual pick\nPASS same id is not proof of exact registered target identity\nPASS actual target pick accepted\nPASS overlap exactly 0.60 m violates strictly greater than 0.60\nPASS overlap 0.601 m in both dimensions is sufficient\nPASS mere touching without positive overlap is not narrow-join failure\nPASS actual floor helper distinguishes 0.121 and 0.119 m in both directions\nPASS height QA does not remove movement edges\nPASS successful active target cannot hide label exception\nPASS label exception cannot hide a measured interaction failure\nPASS empty area interactions are not 0/0 PASS\nPASS custom spacing preserves a measured failure\nPASS custom spacing without failures stays unverified\nPASS incomplete run preserves already measured findings\nPASS incomplete run without measured failures never passes\nPASS complete required spacing passes when all checks pass\nPASS interrupted floor scan retains an already measured steep edge\nCHECKER SELF-TEST PASS (fixtures only; real runtime unverified)\nPASS Python complete required spacing passes\nPASS Python custom spacing preserves measured FAIL\nPASS Python custom spacing without FAIL stays unverified\nPASS Python incomplete checks never pass\nPASS Python partial findings retain FAIL\nPASS Python incomplete runtime failure retains FAIL\nPASS Python interrupted floor scan retains measured FAIL\nPASS Python summary retains FAIL beside UNVERIFIED\nPASS Python map write failure with FAIL yields FAIL\nPASS Python map write failure with PASS yields UNVERIFIED\nPASS Python final JSON failure with FAIL yields FAIL\nPASS Python final JSON failure with PASS yields UNVERIFIED\nPASS Python successful outputs do not verify an incomplete run\nPYTHON STATUS SELF-TEST PASS (fixtures only)\n",
+    "scope": "Synthetic fixtures, not game integration"
+  },
+  "status": "PASS",
+  "final_script_sha256": "5d359c15a7ea16d74cc25ebd5a42aff47205ab8995998dd45adaa1357463612a",
+  "final_prefix_check": {
+    "status": "PASS",
+    "exit_code": 1,
+    "syntax": "PASS",
+    "stdout": "",
+    "stderr": "FAIL Page.wait_for_function: Timeout 3000ms exceeded.\n",
+    "summary": {
+      "generated_utc": "2026-10-05T01:00:18.267110+00:00",
+      "script_sha256": "5d359c15a7ea16d74cc25ebd5a42aff47205ab8995998dd45adaa1357463612a",
+      "git_base": "77b751fbad2924e965cf1cd21c6603daec0cfb39",
+      "source_url": "file:///tmp/s47-reach-bootstrap-fixture.html",
+      "source_html_sha256": "e6141792e77b89392f751336fd9e8199ffbf6ed15edf1a148af8e205179c5a38",
+      "browser": "Playwright Chromium, ANGLE swiftshader",
+      "requested_areas": [
+        "room6"
+      ],
+      "status": "FAIL",
+      "elapsed_seconds": 3.4459316410066094,
+      "areas": [
+        {
+          "area": "room6",
+          "status": "FAIL",
+          "completed": false,
+          "report": "room6.json",
+          "report_sha256": "d79c5e2fb84c49c9f72cca320687dfbdd0566cef14cd85c4dc2917edb933125d",
+          "map": "room6.png",
+          "map_sha256": "ad66b3a6aa46652a59558d69679c3448914ba89dd734b312b663ed08d7330757",
+          "findings": 0
+        }
+      ],
+      "limitations": [
+        "Checker uses finite samples, not a continuous-space proof.",
+        "Swiftshader does not verify hardware fps."
+      ]
+    },
+    "report": {
+      "status": "FAIL",
+      "completed": false,
+      "checks": {
+        "runtime_errors": {
+          "status": "FAIL",
+          "page_errors": [
+            "reachcheck fixture startup pageerror"
+          ]
+        },
+        "output_completeness": {
+          "status": "PASS",
+          "errors": []
+        }
+      },
+      "findings": [],
+      "runtime_page_errors": [
+        "reachcheck fixture startup pageerror"
+      ]
+    },
+    "reuse_reason": "Only stderr prefix changed after the complete regression run; exact full-text replacement verified. Unchanged sampling/status/fixture results are reused."
+  }
+}

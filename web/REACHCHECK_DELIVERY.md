@@ -47,6 +47,16 @@ Dette er lommer som ikke ble nådd i det avtalte 0,15 m-rutenettet med fire kard
 
 Kjøringer og uavhengige kontroller står i `production/reachcheck/summary.json`, `validation.json` og `targeted_replays.json`. Script-SHA ved kjøring: `d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6`.
 
+## P2-rettelse: målte FAIL beholder prioritet
+
+Review av PR #57 fant at egendefinert rutenettavstand overskrev målte FAIL med UNVERIFIED. Faktisk reproduksjon med `--areas room6 --spacing .2`: 373/375 punkter nådd og to målte hjørneavvik, men exit 2 før rettelsen. Etter rettelsen gir de samme punktene og funnene **FAIL/exit 1**, mens undersjekken `required_spacing` fortsatt er UNVERIFIED.
+
+Én felles statusfunksjon per språk bevarer målte FAIL gjennom custom spacing, avbrutt gulvskanning, sidefeil og rapportskriving. `completed=false`, manglende kart og andre begrensninger oppgis fortsatt. Ingen bevegelses-, gulvmålings-, rutenett- eller pick-algoritme er endret.
+
+23 JavaScript-fixtures og 13 Python-fixtures PASS. Målrettet faktisk standardkjøring i rom 6 ga uendrede 705/711 og FAIL/exit 1; `--max-cells 1` uten målte feil ga fortsatt UNVERIFIED/exit 2. En separat lokal HTML-fixture som kaster `pageerror` før testkroken finnes, ga FAIL/exit 1 og `completed=false`. Dette er kontroll av oppstartsfeilhåndtering, ikke et spillfunn. Etter denne kontrollen ble bare feilprefikset på stderr rettet; eksakt enkeltlinjeforskjell er kontrollert, og oppstarts-fixturen kjørt på nytt. Uendrede kontroller gjenbrukes.
+
+Gjeldende verktøy-SHA: `5d359c15a7ea16d74cc25ebd5a42aff47205ab8995998dd45adaa1357463612a`. Bevis og før/etter-hasher står i `production/reachcheck/review_status_qa.json`. De opprinnelige fire rapportene/kartene og valideringen er byteidentiske med leveransen på `77b751f` og identifiserer fortsatt det opprinnelige verktøyet `d497c2b04e...`. Ingen full spilltestrekke gjentas; Claude beholder samlet integrasjon.
+
 ## Bruk og integrasjon
 
 Krever Python, Playwright med Chromium og Pillow (den størrelsesstyrte standardfonten krever Pillow 10.1 eller nyere). Node trengs bare til `--self-test`. De eksisterende lokale avhengighetene ble gjenbrukt; ingen ny pakke ble installert.
@@ -60,7 +70,7 @@ python3 tools/reachcheck.py
 S47_URL=http://127.0.0.1:8047/SIGNAL-47/ python3 tools/reachcheck.py --out-dir production/reachcheck-pages
 ```
 
-Standard er alle fire områder, 0,15 m og 540 sekunders tidsbudsjett. `--spacing` som avviker fra 0,15 gir UNVERIFIED. En manglende krok, ukjent label, avvist rutenett eller ufullstendig kjøring blir uttrykkelig merket. Exit 0 betyr PASS, 1 betyr minst ett målt FAIL, 2 betyr UNVERIFIED uten målte FAIL. Se hvert områdes `checks` ved blandede resultater.
+Standard er alle fire områder, 0,15 m og 540 sekunders tidsbudsjett. `--spacing` som avviker fra 0,15 merker dekningen UNVERIFIED; målte FAIL beholder prioritet i samlet status. En manglende krok, ukjent label, avvist rutenett eller ufullstendig kjøring blir uttrykkelig merket. Exit 0 betyr PASS, 1 betyr minst ett målt FAIL, 2 betyr UNVERIFIED uten målte FAIL. Se hvert områdes `checks` ved blandede resultater.
 
 `git_base` er lokalt HEAD ved oppstart, og HTML-hashen identifiserer faktisk innlest HTML. Et bygg eller en ekstern URL må ikke antas å tilhøre denne Git-revisjonen ut fra `git_base` alene. Denne leveransen ble kjørt mot det nye, uendrede bygget fra `6097012` med HTML-hashen over.
 
