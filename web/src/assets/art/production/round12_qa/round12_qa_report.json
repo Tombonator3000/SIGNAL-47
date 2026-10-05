@@ -1,0 +1,117 @@
+{
+  "checked_at_utc": "2026-10-05T12:45:24.212584+00:00",
+  "contract": "SIGNAL-47 main 1e27e6c:web/ART_BRIEF.md, Runde 12",
+  "asset": "road/tex_oldroad_macro.jpg",
+  "sha256": "724fa3c6dc99487fcb634112fb18415354e4acd2d9bb0aee9b45500c43553dfe",
+  "size_bytes": 844774,
+  "width": 2048,
+  "height": 2048,
+  "format": "JPEG",
+  "mode": "RGB",
+  "icc": {
+    "present": true,
+    "status": "PASS",
+    "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+    "size_bytes": 588,
+    "description": "sRGB built-in",
+    "color_space": "RGB"
+  },
+  "checks": {
+    "dimensions_2048x2048": "PASS",
+    "format_JPEG": "PASS",
+    "mode_RGB": "PASS",
+    "no_alpha": "PASS",
+    "srgb_ICC": "PASS",
+    "bytes_at_most_900000": "PASS",
+    "mean_each_channel_within_10": "PASS"
+  },
+  "automatic_status": "PASS",
+  "RGB_mean": [
+    164.84538650512695,
+    142.20056128501892,
+    119.66681170463562
+  ],
+  "RGB_target_mean": [
+    164,
+    145,
+    123
+  ],
+  "RGB_mean_delta": [
+    0.8453865051269531,
+    -2.799438714981079,
+    -3.33318829536438
+  ],
+  "RGB_min": [
+    67,
+    49,
+    35
+  ],
+  "RGB_max": [
+    253,
+    232,
+    210
+  ],
+  "contrast_reference": {
+    "reference": [
+      60,
+      225
+    ],
+    "all_channels_strictly_within_reference": false,
+    "per_channel_fraction_below_60": [
+      0.0,
+      2.384185791015625e-06,
+      7.963180541992188e-05
+    ],
+    "per_channel_fraction_above_225": [
+      8.153915405273438e-05,
+      1.9073486328125e-06,
+      0.0
+    ],
+    "manual_status": "UNVERIFIED",
+    "note": "Brief says around 60/225; measured extrema do not replace manual contrast review"
+  },
+  "seam_measurements": {
+    "left_right_MAD_RGB": [
+      8.0927734375,
+      8.03466796875,
+      8.57666015625
+    ],
+    "top_bottom_MAD_RGB": [
+      8.02490234375,
+      8.2607421875,
+      7.7861328125
+    ],
+    "visual_seam_status": "UNVERIFIED",
+    "note": "Measurements have no automatic seam PASS threshold",
+    "internal_adjacent_MAD_RGB_x": [
+      4.343450877045677,
+      4.333634921149853,
+      4.17921400792318
+    ],
+    "internal_adjacent_MAD_RGB_y": [
+      4.239101094971299,
+      4.214059923821446,
+      4.046910303187592
+    ]
+  },
+  "export": null,
+  "qa_artifacts": [
+    {
+      "file": "macro_2x2_full.png",
+      "width": 4096,
+      "height": 4096,
+      "sha256": "8163f1933a3e18413e61749669b013e300468968a4a584f4fc9bff9483166085",
+      "size_bytes": 11182111
+    },
+    {
+      "file": "macro_3x3_1536.png",
+      "width": 1536,
+      "height": 1536,
+      "sha256": "d78e632a4b97f3c0f03563e9fb638e05638e0cd57a019023de7a1626864e970c",
+      "size_bytes": 1563912
+    }
+  ],
+  "runtime_status": "UNVERIFIED",
+  "visual_review": "visual_review.json",
+  "asset_sha_unchanged_after_QA": true
+}
