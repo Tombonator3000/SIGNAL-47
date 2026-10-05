@@ -80,9 +80,11 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom #52) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Neste oppgave er en kontroll av hvor spilleren kan gå og hva hen kan nå (under). Roswell-briefen kommer når All Night er spesifisert.
+Status 5. oktober natt: PR #34, #35, #39, #45, #51 (runde 9), #54 (runde 10), #57 og #59 (reachcheck) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Reachcheck (PR #57) og vakten (PR #59) er levert og står i testrekka. Ingen ny bestilling til Codex før neste behov er spesifisert; Roswell-briefen kommer når All Night er spesifisert.
 
-### Neste oppgave: reachcheck som vakt, oppfølging av PR #57 (5. oktober kl. 00.52)
+### Ferdig: reachcheck som vakt, oppfølging av PR #57 (5. oktober kl. 00.52)
+
+Levert i PR #59 (`2791a7c`) og tatt inn i testrekka: exit 0 på main.
 
 PR #57 er tatt inn. Det eneste ekte spillfunnet (sidene av motellinnkjørselen kunne gås av og på, 0,14 til 0,44 m) er rettet med kantstein og kolliderere i `Crossing.ts`; ny kjøring gir 0 gulvhopp. Det som står igjen som FAIL, er ikke feil i spillet: 
 
@@ -93,7 +95,9 @@ PR #57 er tatt inn. Det eneste ekte spillfunnet (sidene av motellinnkjørselen k
 
 Målet er at verktøyet gir exit 0 på dagens main, og exit 1 bare når noe nytt er galt, så det kan stå i den samlede testrekka. Codex eier fortsatt bare `tools/reachcheck.py`, notatet og `production/reachcheck/`.
 
-### Neste oppgave: `tools/reachcheck.py`, kan spilleren gå dit og nå det? (5. oktober kl. 00.10)
+### Ferdig: `tools/reachcheck.py`, kan spilleren gå dit og nå det? (5. oktober kl. 00.10)
+
+Levert i PR #57 (`9a6270d`), funnet ved motellinnkjørselen rettet i PR #58.
 
 Codex bekreftet kl. 00.14 fra main `6097012`, gren `codex/reachcheck-20261005`.
 
