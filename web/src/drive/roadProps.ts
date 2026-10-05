@@ -5,7 +5,7 @@ import type { GlowPoints } from '../world/glow';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
-import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, surfaceY, hash } from './roadTerrain';
+import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, surfaceY, hash } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
 import type { Rect } from './truckTextures';
 
@@ -126,7 +126,7 @@ export function poles(b: Build, keep: Keep = () => true) {
     }
   };
   const main: [number, number][] = [];
-  for (let z = -1900; z <= 2100; z += 45) main.push([15, z + (hash(z, 1) - 0.5) * 4]);
+  for (let z = -1900; z <= 3400; z += 45) main.push([15, z + (hash(z, 1) - 0.5) * 4]);
   line(main, 0);
   const branch: [number, number][] = [];
   for (let x = 75; x <= 435; x += 60) branch.push([x, 190 + (x - 15) * 0.012]);
@@ -135,14 +135,16 @@ export function poles(b: Build, keep: Keep = () => true) {
 }
 
 // ---------- barbed wire fences: steel T-posts, a wooden post every tenth, four strands ----------
+// The fence on the west side stops at the diner's ground (roadShape.ts, DINER).
+const DINER_GAP: [number, number] = [DINER.z - 40, DINER.z + 45];
 export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
-  const line = (ax: number, az: number, bx: number, bz: number, gap?: [number, number]) => {
+  const line = (ax: number, az: number, bx: number, bz: number, ...gaps: [number, number][]) => {
     const len = Math.hypot(bx - ax, bz - az), n = Math.ceil(len / 4.5);
     let prev: THREE.Vector3 | null = null;
     for (let i = 0; i <= n; i++) {
       const x = ax + (bx - ax) * i / n, z = az + (bz - az) * i / n;
-      if ((gap && z > gap[0] && z < gap[1]) || !keep(x, z)) { prev = null; continue; }
+      if (gaps.some((g) => z > g[0] && z < g[1]) || !keep(x, z)) { prev = null; continue; }
       const y = surfaceY(x, z), lean = (hash(x * 3, z) - 0.5) * 0.06;
       (i % 10 === 0 || i === n ? wpost : tpost).push(place(x, y, z, hash(z, x) * 3, 1, lean));
       const p = new THREE.Vector3(x, y, z);
@@ -150,8 +152,8 @@ export function fences(b: Build, keep: Keep = () => true) {
       prev = p;
     }
   };
-  line(HWY.fence, -1000, HWY.fence, 1700);
-  line(-HWY.fence, -1000, -HWY.fence, 1700, [GUARD.z0 - 0.6, GUARD.z1 + 0.6]);
+  line(HWY.fence, -1000, HWY.fence, 2900);
+  line(-HWY.fence, -1000, -HWY.fence, 2900, [GUARD.z0 - 0.6, GUARD.z1 + 0.6], DINER_GAP);
   line(-HWY.fence - 0.3, PASTURE.north, PASTURE.west, PASTURE.north);
   line(-HWY.fence - 0.3, PASTURE.south, PASTURE.west, PASTURE.south);
   line(PASTURE.west, PASTURE.north, PASTURE.west, PASTURE.south);
@@ -160,7 +162,7 @@ export function fences(b: Build, keep: Keep = () => true) {
   // the fences hold the truck, and invisible ends close the highway north and south
   const t = 0.15, F = HWY.fence;
   wall(b, F - t, F + t, DRIVE_N, DRIVE_S);
-  wall(b, -F - t, -F + t, DRIVE_N, GUARD.z0 - 0.6); wall(b, -F - t, -F + t, GUARD.z1 + 0.6, DRIVE_S);
+  wall(b, -F - t, -F + t, DRIVE_N, GUARD.z0 - 0.6); wall(b, -F - t, -F + t, GUARD.z1 + 0.6, DINER_GAP[0]); wall(b, -F - t, -F + t, DINER_GAP[1], DRIVE_S);
   wall(b, PASTURE.west, -F, PASTURE.north - t, PASTURE.north + t);
   wall(b, PASTURE.west, -F, PASTURE.south - t, PASTURE.south + t);
   wall(b, PASTURE.west - t, PASTURE.west + t, PASTURE.north, PASTURE.south);
@@ -170,8 +172,9 @@ export function fences(b: Build, keep: Keep = () => true) {
 // ---------- delineator posts: the reflectors glint in the headlights (RoadArea.update) ----------
 export function delineators(b: Build, keep: Keep = () => true) {
   const list: THREE.Matrix4[] = [], glints: { i: number; p: THREE.Vector3 }[] = [];
-  for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 1600; z += 80) {
+  for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 2900; z += 80) {
     if (side < 0 && z > 470 && z < 570) continue; // the mouth of the survey track
+    if (side < 0 && z > DINER.z - 30 && z < DINER.z + 30) continue; // the way into the diner's lot
     const x = side * 7.2, y = surfaceY(x, z);
     if (!keep(x, z)) continue;
     list.push(place(x, y, z, 0, 1, (hash(x, z) - 0.5) * 0.05));

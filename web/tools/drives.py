@@ -4,6 +4,7 @@
 # pad. The truck drives itself (S47.world.autopilot). Just before and just after each change
 # of area the picture is saved, and the change must look like any other step of the drive:
 # the difference across it is compared with the difference between the two frames before.
+# Last, the drive to Mesa Diner, which stands in the road's own area 2 km south (no change).
 # Usage: python3 tools/drives.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, os, math
@@ -109,6 +110,18 @@ async def main():
         check(st['area'] == 'saro' and not st['driving'] and st['at'] == 'saro', f'back: parked on the pad, out of the truck ({mins:.1f} game minutes)')
         check(await ev("S47.world.saroTruck.group.visible && Math.abs(S47.world.saroTruck.group.position.x - 9.8) < 3.5 && S47.world.saroTruck.group.position.z < 13"), 'back: the truck stands on its pad again')
         await shot('back_99_arrived')
+
+        # ---------- to Mesa Diner: 2 km south on the highway, the diner in the road's own area ----------
+        # a new night has the truck on its pad facing out (back from the station it faces the building)
+        await ev("S47.world.placeTruck('saro'); S47.world.enter('saro'); S47.tick(0.1)")
+        st, ch, mins = await drive('diner', 'diner', "S47.world.driveToDiner(() => {})")
+        check([c[:2] for c in ch] == [('saro', 'road')], f"diner: out of SARO onto the road, then the diner without another change {[c[:2] for c in ch]}")
+        await tick(1.0)
+        st = await state()
+        check(st['area'] == 'diner' and not st['driving'] and st['at'] == 'diner', f'diner: left on the lot, out of the truck ({mins:.1f} game minutes)')
+        check(6 <= mins <= 12, f'diner: the clock went on about nine minutes ({mins:.1f})')
+        check(await ev("S47.world.diner.group.visible && S47.world.road.group.visible && S47.world['truck'].group.visible"), 'diner: the diner, the road round it and the truck on the lot are all there')
+        await shot('diner_99_arrived')
 
         # the springs go across a change as they are: the same give over the ground, the same speed
         r = await ev("""(() => { const w = S47.world, A = w.legs.road.drive, B = w.legs.station01.drive;

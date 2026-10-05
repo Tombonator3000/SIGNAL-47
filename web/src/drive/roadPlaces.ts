@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, addFlood } from '../world/kit';
 import { rng } from '../core/textures';
-import { track, trackHalf, trackNearest, surfaceY, hash } from './roadTerrain';
+import { track, trackHalf, trackNearest, surfaceY, hash, DINER } from './roadTerrain';
 import { stationToRoad } from '../world/geo';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
 import { horizonGlowTex } from './roadTextures';
@@ -116,11 +116,28 @@ export function plants(b: Build, keep: Keep = () => true) {
     if (t.d < trackHalf(t.s) + 1.8) return false;
     if (x > -672 && x < -598 && z > 500 && z < 566) return false;   // station
     if (x > 395 && x < 485 && z > 150 && z < 235) return false;     // ranch yard
+    if (x > DINER.x - 30 && x < -3 && z > DINER.z - 45 && z < DINER.z + 45) return false;   // the diner
     return !(x > -26 && x < -14 && z > 510 && z < 530);             // cattle guard
+  };
+  let made = 0;
+  const add = (rr: () => number, x: number, z: number, d: number) => {
+    // the same random numbers are drawn whether or not the plant is kept, so a stretch
+    // drawn in another area has the very same plants
+    const k = rr(), y = surfaceY(x, z), here = keep(x, z);
+    if (k < 0.72) {
+      const sc = 0.45 + rr() * 1.0;
+      const m = place(x, y - 0.08 * sc, z, rr() * 6, sc, 0, sc * (0.7 + rr() * 0.5));
+      const c = new THREE.Color().setHSL(0.15 + rr() * 0.06, 0.22 + rr() * 0.15, 0.27 + rr() * 0.13);
+      made++;
+      if (here) { bush.push(m); tints.push(c); }
+    } else if (k < 0.96) {
+      const sc = rr() < 0.85 ? 0.15 + rr() * 0.45 : 0.6 + rr() * 0.8;
+      const m = place(x, y - 0.12 * sc, z, rr() * 6, sc, (rr() - 0.5) * 0.5);
+      if (here) { rock.push(m); if (sc > 0.7 && d < 40) circle(b, x, z, 0.4 * sc); }
+    } else { const m = place(x, y - 0.05, z, rr() * 6, 0.8 + rr() * 0.5); if (here) yucca.push(m); }
   };
   // half of the candidates fall beside the way (where the headlights pass), half anywhere
   const P = track.pts;
-  let made = 0;
   for (let n = 0; n < 30000 && made < 1300; n++) {
     let x: number, z: number;
     const near = r() < 0.5, side = r() < 0.5 ? -1 : 1, off = r() * r();
@@ -131,20 +148,18 @@ export function plants(b: Build, keep: Keep = () => true) {
     } else { x = -820 + r() * 1300; z = -420 + r() * 1600; }
     const d = Math.min(z > -320 && z < 1150 ? Math.abs(x) : 1e9, trackNearest(x, z).d);
     if ((!near && r() > (d < 45 ? 1 : d < 160 ? 0.3 : 0.1)) || !free(x, z)) continue;
-    // the same random numbers are drawn whether or not the plant is kept, so a stretch
-    // drawn in another area has the very same plants
-    const k = r(), y = surfaceY(x, z), here = keep(x, z);
-    if (k < 0.72) {
-      const sc = 0.45 + r() * 1.0;
-      const m = place(x, y - 0.08 * sc, z, r() * 6, sc, 0, sc * (0.7 + r() * 0.5));
-      const c = new THREE.Color().setHSL(0.15 + r() * 0.06, 0.22 + r() * 0.15, 0.27 + r() * 0.13);
-      made++;
-      if (here) { bush.push(m); tints.push(c); }
-    } else if (k < 0.96) {
-      const sc = r() < 0.85 ? 0.15 + r() * 0.45 : 0.6 + r() * 0.8;
-      const m = place(x, y - 0.12 * sc, z, r() * 6, sc, (r() - 0.5) * 0.5);
-      if (here) { rock.push(m); if (sc > 0.7 && d < 40) circle(b, x, z, 0.4 * sc); }
-    } else { const m = place(x, y - 0.05, z, r() * 6, 0.8 + r() * 0.5); if (here) yucca.push(m); }
+    add(r, x, z, d);
+  }
+  // the highway on south to the diner (2 km) and past it: beside the way only, a sequence of
+  // its own, so the stretch to the station keeps its plants
+  const r2 = rng(78);
+  for (let n = 0, more = 0; n < 12000 && more < 900; n++) {
+    const side = r2() < 0.5 ? -1 : 1, off = r2() * r2();
+    const x = side * (9.5 + off * 60), z = 950 + r2() * 1950;
+    if (!free(x, z)) continue;
+    const was = made;
+    add(r2, x, z, Math.abs(x));
+    more += made - was;
   }
   const lobe = (rad: number, x: number, y: number, z: number) => new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.6, 1).translate(x, y, z);
   const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.4, 0.2, 0.18)])!, b.m.bush, bush);

@@ -123,7 +123,7 @@ export interface PrologueDeps {
   isTouch: () => boolean;
   travel: Travel;
   motel: Motel;
-  allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner'>;
+  allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner' | 'driving'>;
   roswell: Omit<Chapter6Deps, 'ui' | 'audio'>;
   doors: Doors;
   milestone: () => void;

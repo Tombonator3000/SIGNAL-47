@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { smooth, hash, START, END, hLow, washAt } from './roadShape';
+import { smooth, hash, START, END, DINER, hLow, washAt } from './roadShape';
 
-export { smooth, hash, START, END, hLow };
+export { smooth, hash, START, END, DINER, hLow };
 
 // Layout of the drive in metres, local to RoadArea.group (whose origin is the start).
 // North is -Z. The state highway runs north-south along x = 0, and the truck starts in the
@@ -9,13 +9,13 @@ export { smooth, hash, START, END, hLow };
 // About 520 m south the graded survey track leaves to the west (the right), crosses the
 // right-of-way fence on a cattle guard and runs about 600 m to the STATION 01 gate.
 
-export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 2200 };
+export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 3400 };
 export const TRK = { half: 2.3, soft: 0.7, flat: 11.5, margin: 13 };
 export const GUARD = { x0: -22.2, x1: -19.8, z0: 517.6, z1: 522.4 };
 export const GATE = { x: -612, z: 532, half: 5 };                  // closed double gate, station fence
 export const ENDZONE = { minX: -609, maxX: -585, minZ: 524, maxZ: 540 };
 export const PASTURE = { west: -760, north: 300, south: 720 };
-export const DRIVE_N = -120, DRIVE_S = 900;                          // invisible ends of the highway
+export const DRIVE_N = -120, DRIVE_S = 2700;                         // invisible ends of the highway (past the diner)
 
 
 // ---------- the survey track: a smooth curve through hand-placed points, every 3 m ----------
@@ -54,7 +54,7 @@ function gridH(x: number, z: number) {
   const hd = Math.abs(x), td = trackNearest(x, z).d;
   // no small bumps where the land meets another area's ground: north towards SARO, and by
   // the station's gate (drive/corridors.ts)
-  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z));
+  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z)) * smooth(40, 90, Math.hypot(x - DINER.flatX, z - DINER.z));
   let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin)) * meet;
   if (hd < HWY.flat || td < TRK.flat) h -= 0.45; // hidden under the road strips: no z-fighting
   return h;
@@ -74,7 +74,7 @@ function axis(c0: number, c1: number, step: number, lo: number, hi: number) {
   for (let s = step, v = c1; v < hi;) { s = Math.min(120, s * 1.25); v = Math.min(hi, v + s); right.push(v); }
   return [...left.reverse(), ...mid, ...right];
 }
-export const GX = axis(-800, 60, 10, -3000, 2300), GZ = axis(-480, 1040, 10, -2700, 3300);
+export const GX = axis(-800, 60, 10, -3000, 2300), GZ = axis(-480, 2760, 10, -2700, 4400);
 export const gridHeights = new Float32Array(GX.length * GZ.length);
 for (let j = 0; j < GZ.length; j++) for (let i = 0; i < GX.length; i++) gridHeights[j * GX.length + i] = gridH(GX[i], GZ[j]);
 

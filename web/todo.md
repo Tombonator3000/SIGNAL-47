@@ -5,7 +5,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
-- [ ] Ekte kjøretur fra SARO til Mesa Diner (i dag et kutt med ni minutter): veien må forlenges sør til dineren, og dineren må få sin del av veien (som `corridors.ts`). `chapter5.py` må følge med.
+- [x] Ekte kjøretur fra SARO til Mesa Diner (5. oktober kveld): dineren står i veiens eget område 2 km sør, så turen har bare byttet ved SARO (`drives.py`, `chapter5.py`).
+- [ ] Frontlysene lyser ikke opp dineren, og neonen på dineren lyser ikke opp bilen: dineren og veien har hver sine lyspunkter (`dinerFlood`, `roadFlood`). Kan løses ved å la dineren bruke veiens lyspunkter når den står i veiområdet.
 - [ ] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (i dag et kutt til 5,9 mi). `chapter6.py` må følge med.
 - [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
 - [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kjøreturene lages slik at program kan legges inn.

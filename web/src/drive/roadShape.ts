@@ -14,9 +14,20 @@ const base = (x: number, z: number) => 1.1 * Math.sin(x * 0.0061 + 0.7) * Math.c
   + 0.7 * Math.sin((x + z) * 0.0032 + 1.9) + 0.4 * Math.sin(z * 0.011 - x * 0.004 + 0.4);
 const B0 = base(START.x, START.z);
 export const washAt = (x: number, z: number) => { const w = x + 330 + 0.25 * (z - 500); return Math.exp(-w * w / 520) * smooth(-150, 60, z); };
-/** The graded land the roads follow: long swells, a dry wash across the track, hills far out. */
-export function hLow(x: number, z: number) {
+function raw(x: number, z: number) {
   const dx = x + 250, dz = z - 300, a = Math.atan2(dz, dx);
   const hills = smooth(1300, 2400, Math.hypot(dx, dz)) * (12 + 9 * Math.sin(a * 5 + 1.3) + 5 * Math.sin(a * 13));
   return base(x, z) - B0 - 1.3 * washAt(x, z) + hills;
+}
+/** Mesa Diner stands beside the highway 2 km south of the start (world/Diner.ts, placed by
+ *  World.ts): its own origin is here, its x 20 the highway's centre, and the land round its
+ *  lot is flat at DINER.y. */
+// (x and z sit on whole 0.15 m steps from where the diner stood before, so tools/reachcheck.py
+// samples it as it always has)
+export const DINER = { x: -20.05, z: 1999.95, flatX: -11.05, y: raw(-11.05, 1999.95) };
+/** The graded land the roads follow: long swells, a dry wash across the track, hills far out,
+ *  and flat round the diner. */
+export function hLow(x: number, z: number) {
+  const r = raw(x, z), d = Math.hypot(x - DINER.flatX, z - DINER.z);
+  return d > 110 ? r : r + (DINER.y - r) * (1 - smooth(45, 110, d));
 }

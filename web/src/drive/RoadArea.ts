@@ -46,6 +46,9 @@ export class RoadArea implements DriveArea {
   onCattleGuard?: (speed: number) => void;
 
   private origin: THREE.Vector3;
+  private night: { hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
+  /** Places on the road with ground of their own (the diner's gravel lot), world boxes and heights. */
+  private lots: { box: Box2; surface: Surface; y: number }[] = [];
   private glow = new GlowPoints();
   private glints: { i: number; p: THREE.Vector3 }[];
   private last = new THREE.Vector3();
@@ -65,6 +68,7 @@ export class RoadArea implements DriveArea {
     const moon = new THREE.DirectionalLight(0x8ea4d8, 0.45);
     moon.position.set(-40, 80, -60);
     this.group.add(hemi, moon, moon.target);
+    this.night = { hemi, moon };
 
     const m = roadMaterials();
     const b: Build = { root: this.group, statics: new THREE.Group(), glow: this.glow, m, obstacles: [], wires: [] };
@@ -92,8 +96,23 @@ export class RoadArea implements DriveArea {
     for (const p of trackRoute()) if (p.x < -6) this.route.push(w(p.x, p.y));
   }
 
+  /** A place beside the road (the diner): its walls and posts hold the truck, its lot is gravel
+   *  with its top at world height y. */
+  addPlace(obstacles: Box2[], lot: Box2, y: number) {
+    this.obstacles.push(...obstacles.map((b) => ({ kind: 'box' as const, ...b })));
+    this.lots.push({ box: lot, surface: SURF.gravel, y });
+  }
+  private lotAt(x: number, z: number) {
+    for (const l of this.lots) if (x >= l.box.minX && x <= l.box.maxX && z >= l.box.minZ && z <= l.box.maxZ) return l;
+    return null;
+  }
+  /** How much of the road's own night light is on (the diner has its own, at dawn, World.ts). */
+  setNight(k: number) { this.night.hemi.intensity = 0.9 * k; this.night.moon.intensity = 0.45 * k; }
+
   /** What the ground is like at a world point: asphalt, gravel (track, shoulder, cattle guard) or dirt. */
   surface(x: number, z: number): Surface {
+    const lot = this.lotAt(x, z);
+    if (lot) return lot.surface;
     const lx = x - this.origin.x, lz = z - this.origin.z, ax = Math.abs(lx);
     if (lx > GUARD.x0 && lx < GUARD.x1 && lz > GUARD.z0 && lz < GUARD.z1) return SURF.guard;
     if (ax <= HWY.paved) return SURF.asphalt;
@@ -104,7 +123,7 @@ export class RoadArea implements DriveArea {
   }
 
   /** World height of the surface at a world point. */
-  height(x: number, z: number) { return this.origin.y + surfaceY(x - this.origin.x, z - this.origin.z); }
+  height(x: number, z: number) { return this.lotAt(x, z)?.y ?? this.origin.y + surfaceY(x - this.origin.x, z - this.origin.z); }
 
   /** Every frame while the area is shown. Reads the headlight beam from flood slots 0 to 2. */
   update(dt: number, t: number, truckPos: THREE.Vector3) {

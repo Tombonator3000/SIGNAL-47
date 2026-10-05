@@ -452,7 +452,7 @@ Tom 5. oktober: «Bygg All Night». Spesifisert og bygd samme dag etter `HISTORI
 
 1. **05:00, ut av rom 6.** Kapittelkortet (CHAPTER FIVE / ALL NIGHT) kommer mens spilleren står utenfor døra til rom 6. Lastebilen står på SARO. Kapittel 4 slutter ikke lenger med et sluttkort; natten går rett videre.
 2. **Forbi SARO.** Når spilleren kommer nær kontrollrommet, ringer driftsterminalen én gang (`beep`). En ny fil står i katalogen: `RUN860414_0529.DAT`, 0 blokker, åpnet 05:29. Valgfri (tråd 12, bærer 05:29).
-3. **Lastebilen.** «Drive to Mesa Diner». Ingen kjøring, bare en overgang med tittelen MESA DINER og ni minutter på klokka. Servicekartet fra dørlomma blir med (E14).
+3. **Lastebilen.** «Drive to Mesa Diner». Kjøres hele veien: ut av gården, 2 km sør på riksveien, og dineren står på høyre side. Klokka går fortere for hver meter (0,19 s per meter), så turen tar rundt ni minutter på klokka i fart, og ikke mye mer om spilleren kjører sakte. Lastebilen settes på grusplassen. Servicekartet fra dørlomma blir med (E14).
 4. **Dineren, 05:11.** Grålysning i øst, lysrør, kaffe, en trøtt servitrise, en sjåfør og radioen som står lavt. Spilleren kan gjøre dette i hvilken rekkefølge hen vil:
    - **Servitrisen:** kaffe, og lysene over mesaen siden hun var elleve. Hun er lei av folk fra byen som spør etter romvesener.
    - **Sjåføren:** han tar den gamle veien fordi den sparer elleve miles. Motoren døde på ham der i oktober i fjor, rett forbi åttemilsstolpen. Han trodde det var batteriet.

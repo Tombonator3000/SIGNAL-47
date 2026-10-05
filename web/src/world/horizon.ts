@@ -8,6 +8,26 @@ import { fromRoad, fromStation, stationLand, stationToRoad } from './geo';
 // the truck goes from one area into the next. Unlit and unfogged, very dark: silhouettes
 // against the night sky.
 
+// ---------- the haze of the dawn on them ----------
+// Unfogged, the far mesas stay black when the land in front of them goes into the grey of the
+// dawn haze, and the far land shows as a pale band under them. At dawn they take some of the
+// haze too (World.update sets it from the sky each frame; none at night).
+// As much as the scene's own fog would give at that distance (density), times k.
+export const horizonHaze = { color: { value: new THREE.Color() }, k: { value: 0 }, density: { value: 0.0021 } };
+export function hazed<M extends THREE.Material>(m: M): M {
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (sh, r) => {
+    prev.call(m, sh, r);
+    sh.uniforms.uHazeCol = horizonHaze.color; sh.uniforms.uHazeK = horizonHaze.k; sh.uniforms.uHazeDen = horizonHaze.density;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vHzD;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n  vHzD = -mvPosition.z;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uHazeCol; uniform float uHazeK; uniform float uHazeDen; varying float vHzD;')
+      .replace('#include <opaque_fragment>', '#include <opaque_fragment>\n  gl_FragColor.rgb = mix(gl_FragColor.rgb, uHazeCol, uHazeK * (1.0 - exp(-uHazeDen * uHazeDen * vHzD * vHzD)));');
+  };
+  m.customProgramCacheKey = () => 'horizon-haze';
+  return m;
+}
+
 // ---------- mesas on the horizon: two dark rings of flat tops and cliffs, no fog ----------
 const MESAS: [number, number, number][] = [[18, 9, 150], [57, 5, 95], [96, 12, 175], [148, 6, 115], [201, 14, 155], [246, 4, 85], [273, 10, 195], [314, 7, 125], [346, 5, 100]];
 export function roadMesas() {
@@ -34,7 +54,7 @@ export function roadMesas() {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
+  const mesh = new THREE.Mesh(g, hazed(new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide })));
   mesh.frustumCulled = false;
   return mesh;
 }
@@ -135,7 +155,7 @@ export function sharedHorizon(area: 'saro' | 'road', glow: { add: (x: number, y:
   group.name = 'horizon';
   if (area === 'saro') group.add(fromRoad(roadMesas(), 'saro')); else group.add(roadMesas());
   // on the station's land out there (the road's own, geo.ts), so the very same mesas as the station's
-  const st = new THREE.Mesh(stationMesas((x, z) => stationLand(...stationToRoad(x, z))), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
+  const st = new THREE.Mesh(stationMesas((x, z) => stationLand(...stationToRoad(x, z))), hazed(new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide })));
   st.frustumCulled = false;
   fromStation(st, area);
   st.updateMatrix();
