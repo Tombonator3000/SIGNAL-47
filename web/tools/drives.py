@@ -110,6 +110,16 @@ async def main():
         check(await ev("S47.world.saroTruck.group.visible && Math.abs(S47.world.saroTruck.group.position.x - 9.8) < 3.5 && S47.world.saroTruck.group.position.z < 13"), 'back: the truck stands on its pad again')
         await shot('back_99_arrived')
 
+        # the springs go across a change as they are: the same give over the ground, the same speed
+        r = await ev("""(() => { const w = S47.world, A = w.legs.road.drive, B = w.legs.station01.drive;
+          A.body.vy = 0.31; A.body.vp = -0.12; A.body.vr = 0.05; A.body.y += 0.04; A.body.pitch += 0.01;
+          const ga = A.ground(), d = [A.body.y - ga.y, A.body.pitch - ga.pitch, A.body.roll - ga.roll];
+          B.adopt(A, B.pos.x, B.pos.z, B.heading); const gb = B.ground();
+          const out = [B.body.vy, B.body.vp, B.body.vr, B.body.y - gb.y - d[0], B.body.pitch - gb.pitch - d[1], B.body.roll - gb.roll - d[2]];
+          B.truck.setDriving(false); return out; })()""")
+        check(abs(r[0] - 0.31) < 1e-6 and abs(r[1] + 0.12) < 1e-6 and abs(r[2] - 0.05) < 1e-6 and all(abs(v) < 1e-6 for v in r[3:]),
+              f'a change of area keeps the springs, their give and their speed ({[round(v, 4) for v in r]})')
+
         bad = [e for e in errs if 'favicon' not in e]
         print('\n'.join(bad[:12]) if bad else 'no console errors/warnings')
         check(not bad, 'no console errors or warnings')

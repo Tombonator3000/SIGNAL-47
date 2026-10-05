@@ -136,7 +136,7 @@ export class DriveController {
     b.y += o.body.y - og.y; b.pitch += o.body.pitch - og.pitch; b.roll += o.body.roll - og.roll;
     b.vy = o.body.vy; b.vp = o.body.vp; b.vr = o.body.vr;
     this.mph = o.mph;
-    this.pose(0, 0);
+    this.pose(0, 0, false);   // drawn as it is, the springs left as they were
   }
 
   update(dt: number, input: DriveInput, look: { x: number; y: number }) {
@@ -265,8 +265,9 @@ export class DriveController {
     return false;
   }
 
-  // Body on its springs, then the camera at the driver's eye.
-  private pose(dt: number, wheelAngle: number) {
+  // Body on its springs, then the camera at the driver's eye. With dt 0 the body settles on
+  // its springs (place()), unless settle is false (adopt(): it keeps its give and speed).
+  private pose(dt: number, wheelAngle: number, settle = true) {
     const g = this.ground(), b = this.body;
     const rough = this.surface.rough ?? ROUGH[this.surface.kind];
     const fast = Math.min(1, Math.abs(this.speed) / 12);
@@ -277,7 +278,7 @@ export class DriveController {
     const tp = g.pitch + THREE.MathUtils.clamp(this.accel * 0.0025, -0.03, 0.015) + bump * 0.6;
     const tr = g.roll + THREE.MathUtils.clamp(latAcc * 0.005, -0.05, 0.05);
     const spring = (x: number, vx: number, target: number) => {
-      if (dt <= 0) return [target, 0];
+      if (dt <= 0) return settle ? [target, 0] : [x, vx];
       const k = 140, c = 18;
       const acc = k * (target - x) - c * vx;
       vx += acc * dt; return [x + vx * dt, vx];
