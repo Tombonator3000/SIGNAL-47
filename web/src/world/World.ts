@@ -17,6 +17,7 @@ import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, type FloodSet } from './kit';
 import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
+import { STATION_TURN } from './geo';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -395,6 +396,10 @@ export class World {
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
     if (area === 'diner' && this.diner) { player.zones = this.diner.zones; player.colliders = this.diner.colliders; }
   }
+  /** How the sky is turned in the current area: the areas lie on one map (geo.ts), and the
+   *  station's terms are the road's turned a quarter round, so its sky is turned with them,
+   *  or the stars would swing round where the truck comes in. */
+  get skyYaw() { return this.area === 'station01' ? STATION_TURN : 0; }
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
     if (this.area === 'room6') return !!this.room6 && p.z < ROOM6_ORIGIN.z + 3.0;   // in the room, not on the walk outside

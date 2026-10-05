@@ -846,6 +846,7 @@ async function boot() {
         ui.hint(false);
       }
     }
+    sky.group.rotation.y = world.skyYaw;
     sky.update(dt, t, camera.position, renderer.getPixelRatio());
     const [lampSets, roomLamps] = ultraLamps(player.pos);
     ultra.update(dt, player.pos, lampSets, roomLamps);

@@ -550,6 +550,7 @@ export class Truck {
     Object.assign(this.gauge, o.gauge);
     Object.assign(this.swing, o.swing);
     this.keys.rotation.copy(o.keys.rotation);
+    this.update(0, 0, o.wheelAngle);   // the needles drawn where they are now, in this frame
   }
   /** Dashboard values. Needles ease in update(); the clock canvas redraws at most 10 times a second. */
   setDash(o: { mph: number; rpm: number; clock: string; fuel: number }) {
