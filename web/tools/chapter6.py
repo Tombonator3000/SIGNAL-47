@@ -86,8 +86,8 @@ async def main():
         await shot('k02_past_mile6')
         # the invisible end behind the start
         await place(5.78, back=True)
-        await ev(AUTO + "(8)")
-        for _ in range(30): await tick(0.25)
+        await ev("S47.world.testInput = { steer: 0, throttle: 0.7 }")
+        for _ in range(48): await tick(0.25)
         st = await where()
         check(st['s'] > s_at(5.9) - 252 and 'Ward can wait' in await toasts(), f"turned back, the truck stops at the end behind the start ({st['s'] - s_at(5.9):.0f} m) and Ward can wait")
 
