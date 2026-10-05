@@ -29,6 +29,7 @@ export interface CourtSite {
 export const GROUND = -0.6;
 export const RAMP = { x0: -10.6, x1: -7.6, z0: 5.05, z1: 6.35 };
 export const DRIVE = { x0: -27.7, x1: -26.2, z0: 2, z1: 10 };   // the driveway ramp up to the lot
+const CURB_TO = -26.5;   // the driveway's side curbs end here, where it is 0.12 m above the ground
 
 export class Crossing {
   group = new THREE.Group();
@@ -55,6 +56,11 @@ export class Crossing {
     this.col(RAMP.x0 + 0.05, -6.6, 4.7, RAMP.z0 - 0.05);
     this.col(RAMP.x0 + 0.05, -6.6, RAMP.z1 + 0.05, 6.7);
     this.addZone('driveway', -28.6, -25.9, DRIVE.z0 + 0.5, DRIVE.z1 - 0.5);
+    // the driveway's sides are walls where it stands more than a step above the ground
+    // (tools/reachcheck.py found the player could walk off and on them, 0.14 to 0.44 m);
+    // the low end, where it meets the ground, stays open from the sides
+    this.col(DRIVE.x0 - 0.05, CURB_TO, DRIVE.z0 - 0.1, DRIVE.z0);
+    this.col(DRIVE.x0 - 0.05, CURB_TO, DRIVE.z1, DRIVE.z1 + 0.1);
     // the road lamps
     const post = (x: number, z: number, r = 0.25) => this.col(x - r, x + r, z - r, z + r);
     post(-18.5, 36); post(-18.5, 2);
@@ -124,5 +130,11 @@ export class Crossing {
     const wedge = new THREE.Mesh(geo, asphalt);
     wedge.position.z = DRIVE.z0;
     st.add(wedge);
+    // a low concrete curb along each side, as high as the colliders reach
+    const len = Math.hypot(DRIVE.x1 - DRIVE.x0, GROUND), slope = Math.atan2(-GROUND, DRIVE.x1 - DRIVE.x0);
+    for (const z of [DRIVE.z0 - 0.05, DRIVE.z1 + 0.05]) {
+      const curb = box(st, len, 0.12, 0.1, M.concrete, (DRIVE.x0 + DRIVE.x1) / 2, GROUND / 2 + 0.06, z);
+      curb.rotation.z = -slope;
+    }
   }
 }
