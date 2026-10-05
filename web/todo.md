@@ -82,6 +82,17 @@ Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren m
 
 Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom #52) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Neste oppgave er en kontroll av hvor spilleren kan gå og hva hen kan nå (under). Roswell-briefen kommer når All Night er spesifisert.
 
+### Neste oppgave: reachcheck som vakt, oppfølging av PR #57 (5. oktober kl. 00.52)
+
+PR #57 er tatt inn. Det eneste ekte spillfunnet (sidene av motellinnkjørselen kunne gås av og på, 0,14 til 0,44 m) er rettet med kantstein og kolliderere i `Crossing.ts`; ny kjøring gir 0 gulvhopp. Det som står igjen som FAIL, er ikke feil i spillet: 
+
+- Bestillingen min ba om sirkelklarering, men `Player.resolve` bruker en firkant rundt spilleren. Det var min feil. Bruk motorens firkant (samme regel som `Player.resolve`) når et punkt er gyldig, så forsvinner de rundt 339 hjørnepunktene.
+- De tre lommene er kjente og ufarlige: bak B-12-skiltet ved enden av østgangen (x 8,4 til 10,65, z -19,2 til -17,55), et hjørne ved stasjonshytta (x -12,6 til -12,3, z 8002,65 til 8003,1) og nordhjørnet inne i dineren (lokalt x -0,4 til 1,4, z -8,4 til -7,65). Før dem som forventet med koordinater og grunn, slik at en ny lomme et annet sted gir FAIL.
+- Smale skjøter der verktøyet har vist en faktisk forbindelse, er PASS med vitnet; bare skjøter uten forbindelse er FAIL.
+- Hold rapportene små i repoet: sammendrag, funn og kart. De fulle rutenettene (rundt 11 MB JSON) skrives bare med et eget flagg og legges ikke i `production/`.
+
+Målet er at verktøyet gir exit 0 på dagens main, og exit 1 bare når noe nytt er galt, så det kan stå i den samlede testrekka. Codex eier fortsatt bare `tools/reachcheck.py`, notatet og `production/reachcheck/`.
+
 ### Neste oppgave: `tools/reachcheck.py`, kan spilleren gå dit og nå det? (5. oktober kl. 00.10)
 
 Codex bekreftet kl. 00.14 fra main `6097012`, gren `codex/reachcheck-20261005`.
