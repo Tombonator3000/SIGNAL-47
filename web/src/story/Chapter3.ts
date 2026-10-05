@@ -111,6 +111,8 @@ const TANK_TIME = 2.2, FIX_TIME = 1.5;
 const RING = 'ring3';
 
 export class Chapter3 {
+  /** A later chapter that drives the truck from its pad (All Night) takes over its label and use. */
+  truckOverride: { label: () => string | null; use: () => void } | null = null;
   active = false;
   started = false;
   ringing = false;
@@ -244,8 +246,9 @@ export class Chapter3 {
   bindSaroTruck(object: THREE.Object3D) {
     const { inter, ui } = this.d;
     inter.add({ id: 'truck', object, range: 3.2,
-      label: () => this.active && this.s.stage === 'to-truck' ? 'Drive to STATION 01' : 'Service truck',
+      label: () => this.truckOverride?.label() ?? (this.active && this.s.stage === 'to-truck' ? 'Drive to STATION 01' : 'Service truck'),
       use: () => {
+        if (this.truckOverride?.label()) { this.truckOverride.use(); return; }
         if (!this.active) { ui.toast('SARO 07, the service truck. The keys are in it, like always.', 3.4); return; }
         if (this.s.stage === 'to-truck') { this.d.travel.driveOut(); return; }
         ui.toast(this.s.stage === 'develop' ? 'The field roll goes to the wet bench first.' : 'You have been out once tonight. The truck can stay where it is.', 3.4);

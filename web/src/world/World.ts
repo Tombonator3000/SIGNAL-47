@@ -76,6 +76,9 @@ export class World {
   diner: Diner | null = null;
   onDinerLoaded?: (diner: Diner) => void;
   private dinerTruck: Truck | null = null;
+  /** An invisible box round the truck on the diner's lot, for interaction (chapter five). */
+  dinerTruckProxy: THREE.Object3D | null = null;
+  onDinerTruck?: (proxy: THREE.Object3D) => void;
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
   grounds: Grounds;
@@ -233,6 +236,11 @@ export class World {
       t.group.visible = false;
       this.d.scene.add(t.group);
       this.dinerTruck = t;
+      const px = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.9, 5.4), new THREE.MeshBasicMaterial({ visible: false }));
+      px.position.set(a.x, 0.95, a.z); px.rotation.y = a.yaw; px.name = 'dinerTruck';
+      t.group.parent!.add(px);
+      this.dinerTruckProxy = px;
+      this.onDinerTruck?.(px);
       this.diner = d;
       this.d.applyQuality();
       this.onDinerLoaded?.(d);
@@ -391,6 +399,28 @@ export class World {
       this.onArriveStation?.();
       hold(false);
       fade(false);
+    });
+  }
+
+  /** From the truck on SARO's pad to the diner where the old road leaves the highway
+   *  (chapter five). Not driven: a cut with the place's name, nine minutes on the clock. */
+  driveToDiner(onArrive: () => void) {
+    if (this.busy) return;
+    this.busy = true;
+    const { fade, hold, toast } = this.d;
+    hold(true);
+    fade(true, 'MESA DINER');
+    const ready = this.ensureDiner();
+    this.d.after(2.2, () => {
+      void ready.then(() => {
+        this.d.skipClock(9 * 60);
+        this.enter('diner');
+        this.placeAtDiner('arrive');
+        onArrive();
+      }).catch((e) => {
+        console.error(e);
+        toast('The diner could not be loaded. Check your connection and try the truck again.', 5);
+      }).finally(() => { this.busy = false; hold(false); fade(false); });
     });
   }
 

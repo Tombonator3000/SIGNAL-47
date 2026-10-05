@@ -183,6 +183,10 @@ async function boot() {
       area: () => world.area, room: () => world.room6, court: () => world.court,
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
     },
+    allNight: {
+      area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
+      driveToDiner: (onArrive) => world.driveToDiner(onArrive),
+    },
     doors,
     milestone: () => requestAutosave(true),
   });
@@ -200,6 +204,9 @@ async function boot() {
   world.onRoom6Loaded = (r) => ch4.bindRoom(r);
   world.onEnterRoom6 = () => ch4.enteredRoom();
   world.onLeaveRoom6 = () => ch4.leftRoom();
+  const ch5 = game.ch5;
+  world.onDinerLoaded = (d) => ch5.bindDiner(d);
+  world.onDinerTruck = (px) => ch5.bindDinerTruck(px);
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
@@ -374,7 +381,7 @@ async function boot() {
     await saves.ready;
     // a save made at the station or in room 6 needs that area built first
     const savedArea = o.state?.area;
-    const area = (savedArea === 'station01' || savedArea === 'room6' ? savedArea : 'saro') as AreaId;
+    const area = (savedArea === 'station01' || savedArea === 'room6' || savedArea === 'diner' ? savedArea : 'saro') as AreaId;
     try { await world.prepare(area); } catch (e) { console.error(e); }
     clearTimeout(slow);
     caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
@@ -388,9 +395,10 @@ async function boot() {
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
-    world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : 'saro');
+    world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
     if (world.area === 'room6') world.placeAtRoom6();
+    if (world.area === 'diner') world.placeAtDiner('inside');
     // put the player back where they stood, if the restored world lets them stand there
     const pose = o.state?.pose;
     if (pose && o.state?.checkpoint !== 'residual' && player.walkable(pose.x, pose.z)) {
@@ -571,9 +579,16 @@ async function boot() {
     next: 'CHAPTER FOUR', title: 'ROOM 6',
     begin: () => game.beginChapter4(null),
   });
-  // End of chapter four, as far as the night is built.
-  ch4.onEnd = () => showCard({
-    lines: ch4.endingLines(),
+  // End of chapter four: she has told you where C goes, and it is five in the morning.
+  ch4.onEnd = () => chapterBreak({
+    closed: 'ROOM 6 // P10 TO P12 RECORDED',
+    recap: 'She cut the cable in 1947 with her brother standing on C, and he was not there afterwards. C crosses the old road to Roswell. The truck is on its pad.',
+    next: 'CHAPTER FIVE', title: 'ALL NIGHT',
+    begin: () => game.beginChapter5(null),
+  });
+  // End of chapter five, as far as the night is built.
+  ch5.onEnd = () => showCard({
+    lines: ch5.endingLines(),
     buttons: [
       { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
       { label: 'Title', on: () => toTitle() },
@@ -588,7 +603,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors, sky, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, saves, world, doors, sky, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -715,7 +730,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

@@ -414,3 +414,6 @@ export function decoderPanel(ui: UI, o: {
   sync(); draw();
   return { el, refresh: sync };
 }
+
+// shared with panels in other files (ui/MapOverlay.ts)
+export { shell as panelShell, say as panelSay };
