@@ -73,7 +73,7 @@ const HALF_W = 1.0, HALF_L = 2.65, TRACK = 0.84;
 const ACCEL = 3.5, BRAKE = 8, REVERSE = 5, LAT = 7.5;
 const RATIOS = [2.48, 1.48, 1.0], FINAL = 3.08, IDLE = 650;
 const ROUGH: Record<SurfaceKind, number> = { asphalt: 0.05, gravel: 0.4, dirt: 0.8 };
-const YAW_MAX = 110 * Math.PI / 180, PITCH0 = -0.04;
+const YAW_MAX = 110 * Math.PI / 180, PITCH0 = -0.08;
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3();
 
 export class DriveController {
@@ -216,13 +216,13 @@ export class DriveController {
   // Heights under the four wheels give the body its height, pitch and roll.
   private ground() {
     const h = this.area.height;
-    if (!h) return { y: 0, pitch: 0, roll: 0 };
+    if (!h) return { y: 0, pitch: 0, roll: 0, at: [0, 0, 0, 0] };
     const sx = -Math.sin(this.heading), sz = -Math.cos(this.heading); // forward
     const rx = Math.cos(this.heading), rz = -Math.sin(this.heading);  // right
     const at = (f: number, r: number) => h.call(this.area, this.pos.x + sx * f + rx * r, this.pos.z + sz * f + rz * r);
     const fl = at(LF, -TRACK), fr = at(LF, TRACK), rl = at(-LR, -TRACK), rr = at(-LR, TRACK);
     const front = (fl + fr) / 2, rear = (rl + rr) / 2;
-    return { y: rear + (front - rear) * LR / WHEELBASE, pitch: Math.atan2(front - rear, WHEELBASE), roll: Math.atan2((fr + rr - fl - rl) / 2, 2 * TRACK) };
+    return { y: rear + (front - rear) * LR / WHEELBASE, pitch: Math.atan2(front - rear, WHEELBASE), roll: Math.atan2((fr + rr - fl - rl) / 2, 2 * TRACK), at: [fl, fr, rl, rr] };
   }
 
   // Overlap of the truck's footprint (an oriented rectangle) with any obstacle.
@@ -275,6 +275,10 @@ export class DriveController {
     tg.updateMatrixWorld();
     this.truck.setDriving(true);
     this.truck.setSteer(this.steer);
+    // the wheels stay on the ground while the body rides its springs: each one hangs as far
+    // below its place on the body as the ground is (fl, fr, rl, rr)
+    const sr = Math.sin(b.roll) * Math.cos(b.pitch), sp = Math.sin(b.pitch);
+    this.truck.setWheelDrops(g.at.map((h, i) => h - (b.y + (i % 2 ? TRACK : -TRACK) * sr - (i < 2 ? -LF : LR) * sp)));
     this.truck.update(dt, this.speed, wheelAngle);
     // camera: the eye, a little engine shake and road vibration
     const eng = this.rpm > 50 ? (0.0004 + 0.0008 * Math.min(1, this.rpm / 3000)) * (0.5 + this.load) : 0;
