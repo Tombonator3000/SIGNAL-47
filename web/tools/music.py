@@ -1,6 +1,6 @@
 # The music under the night (core/score.ts), on the Pages build served over HTTP (the
 # single-file build has no music files beside it and plays none; that is checked too).
-# A cue chosen by place (the yard, indoors, the truck), streamed from music/, playing, held
+# The title screen's music on the first click, and gone when the night starts. A cue chosen by place (the yard, indoors, the truck), streamed from music/, playing, held
 # back by a scene, and every cue file there with no 404.
 # Usage: S47_URL=http://127.0.0.1:PORT/SIGNAL-47/ python3 tools/music.py
 #        python3 tools/music.py            (the single-file build: no music, no requests)
@@ -24,9 +24,15 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL); await pg.evaluate("localStorage.clear()"); await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]')
         ev = pg.evaluate
+        # the title screen: its music comes in with the first click
+        check(not await ev("S47.audio['loops'].has('music')"), 'the title screen is quiet before anything is clicked')
+        await pg.mouse.click(8, 8)
+        await asyncio.sleep(1.5)
+        check(await ev("S47.audio['loops'].has('music') && S47.audio.ctx.state === 'running'"), 'the first click brings in the title music')
+        await pg.click('button[data-a=start]')
         await pg.wait_for_function("S47.started()")
+        check(not await ev("S47.audio['loops'].has('music')"), 'and it stops when the night starts')
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1)")
         check(await ev("!!S47.score()"), 'the music starts with the night')
         await ev("S47.player.place(12, 6, 0); S47.tick(0.5)")
