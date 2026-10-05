@@ -545,6 +545,12 @@ export class Truck {
     if (this.camW.setFromMatrixPosition(cam.matrixWorld).distanceTo(this.eyeW) > 0.9) this.setDriving(false);
   }
 
+  /** Take over another copy's needles and swinging keys (the truck goes on in another area). */
+  copyCab(o: Truck) {
+    Object.assign(this.gauge, o.gauge);
+    Object.assign(this.swing, o.swing);
+    this.keys.rotation.copy(o.keys.rotation);
+  }
   /** Dashboard values. Needles ease in update(); the clock canvas redraws at most 10 times a second. */
   setDash(o: { mph: number; rpm: number; clock: string; fuel: number }) {
     this.gauge.tSpeed = THREE.MathUtils.clamp(o.mph / 85, 0, 1);

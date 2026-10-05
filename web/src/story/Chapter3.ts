@@ -205,7 +205,9 @@ export class Chapter3 {
     switch (s.stage) {
       case 'to-truck':
         if (!this.d.travel.driving()) return 'SERVICE YARD // TAKE THE SARO TRUCK TO STATION 01';
-        return area === 'station01' ? 'STATION 01 // LEAVE THE TRUCK ON THE GRAVEL OUTSIDE THE GATE' : 'STATION 01 // SOUTH ON THE HIGHWAY, RIGHT ONTO THE SURVEY TRACK';
+        // one line the whole way: a change of line where the truck goes from one area into
+        // the next would give the change away (World.ts)
+        return 'STATION 01 // SOUTH ON THE HIGHWAY, RIGHT ONTO THE SURVEY TRACK TO THE GATE';
       case 'station':
         if (!s.p06 && !s.p07) return 'STATION 01 // DOCUMENT THE MOVED MARKER OR RUN A LOCAL LAMP NULL TEST';
         if (!s.p06) return 'STATION 01 // EXPOSE FRAME 03 AND RECORD WHICH FIXED MARKER MOVED';
@@ -215,7 +217,7 @@ export class Chapter3 {
       case 'call': return this.ringing ? 'STATION 01 // THE FIELD TELEPHONE IS RINGING' : 'STATION 01 // FIELD RECORD COMPLETE';
       case 'return':
         if (!this.d.travel.driving()) return 'STATION 01 // DRIVE BACK TO SARO WITH THE FIELD ROLL';
-        return area === 'saro' ? 'SARO // THE SERVICE ROAD, UP THE RAMP, THE TRUCK ON ITS PAD' : 'SARO // THE TRACK OUT TO THE HIGHWAY, LEFT, NORTH';
+        return 'SARO // THE TRACK TO THE HIGHWAY, NORTH, UP THE RAMP TO THE TRUCK PAD';
       case 'develop':
         if (s.dev === 0) return 'SARO PHOTOLAB // DEVELOP FRAMES 03 AND 04 AT THE WET BENCH';
         if (s.dev === 1) return 'SARO PHOTOLAB // TRANSFER THE FIELD PRINTS TO THE FIXER';
@@ -785,7 +787,7 @@ export class Chapter3 {
       this.d.audio.radio(want && o ? this.pos(o) : null);
     }
     if (this.callT >= 0 && this.g.gt >= this.callT && !this.g.cinematic && !this.d.ui.modal) { this.callT = -1; this.ring(); }
-    if (this.d.travel.area() === 'station01' && !this.s.arrived) this.arrivedStation();
+    if (this.d.travel.area() === 'station01' && !this.d.travel.driving() && !this.s.arrived) this.arrivedStation();
     this.d.ui.objective(this.objective());
   }
 }

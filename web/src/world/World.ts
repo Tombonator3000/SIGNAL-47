@@ -612,6 +612,10 @@ export class World {
     if (!trip) return;
     if (trip.rate !== 1) this.d.skipClock(dt * (trip.rate - 1));
     const P = (L.area as { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null }).park;
+    // where to leave the truck, said once it is in sight
+    if (trip.hint && trip.to === id && P && Math.hypot(D.pos.x - (P.minX + P.maxX) / 2, D.pos.z - (P.minZ + P.maxZ) / 2) < 110) {
+      this.d.toast(trip.hint, 5); trip.hint = undefined;
+    }
     if (trip.to === id && P && D.pos.x >= P.minX && D.pos.x <= P.maxX && D.pos.z >= P.minZ && D.pos.z <= P.maxZ && Math.abs(D.speed) < 0.35) {
       trip.still += dt;
       if (trip.still > 0.7) this.park();
@@ -622,11 +626,12 @@ export class World {
     const from = this.legs[this.leg!]!, to = this.legs[ex.to]!;
     this.leg = ex.to;
     to.drive.adopt(from.drive, ex.x, ex.z, ex.heading);
+    to.truck.copyCab(from.truck);
+    this.dashT = 0;   // the clock on its dash is set this frame
     this.lightsOn(to.truck);
     from.truck.setDriving(false);
     this.enter(ex.to);
-    const trip = this.trip;
-    if (trip?.hint && trip.to === ex.to) { this.d.toast(trip.hint, 5); trip.hint = undefined; }
+
   }
   // Stopped where the truck is left: the engine off, and the player gets out by the door.
   private park() {
@@ -634,6 +639,7 @@ export class World {
     this.driving = false;
     this.engine?.stop();
     L.truck.setDriving(false);
+    L.truck.setHeadlights(false);
     this.truckAt = id; this.leg = null; this.trip = null; this.autopilot = null;
     this.parkAt(id);
     const { fade, hold } = this.d;
@@ -704,7 +710,7 @@ export class World {
     this.driving = false;
     this.oldControl = null;
     this.engine?.stop();
-    if (id) this.legs[id]?.truck.setDriving(false);
+    if (id) { this.legs[id]?.truck.setDriving(false); this.legs[id]?.truck.setHeadlights(false); }
     if (trip) {
       for (const h of this.trucksHome) { h.t.group.position.set(h.x, h.y, h.z); h.t.group.rotation.y = h.h; h.t.setDriving(false); }
       this.truckAt = trip.home;
@@ -771,7 +777,17 @@ export class World {
     if (this.area === 'saro') this.motel.update(dt, t);
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if (this.area === 'road' && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
-    // the truck being driven: by the keys, by chapter six, by the autopilot or by a test
+    this.drivingStep(dt, input, look);
+    // out on the track in the truck the station's moonlight gives way to the road's
+    // (Station01.nightBlend); after the step, so it is right in the frame the truck comes in
+    if (this.area === 'station01' && this.site) {
+      const L = this.leg === 'station01' ? this.legs.station01 : null;
+      const d = L ? Math.hypot(L.drive.pos.x - STATION_ORIGIN.x, L.drive.pos.z - STATION_ORIGIN.z - 8) : 0;
+      this.site.nightBlend(1 - THREE.MathUtils.smoothstep(d, 110, 290));
+    }
+  }
+  // the truck being driven: by the keys, by chapter six, by the autopilot or by a test
+  private drivingStep(dt: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     const id = this.leg, L = id && id === this.area ? this.legs[id] : null;
     if (!L) return;
     const c = id === 'roswell' ? this.oldControl : null;

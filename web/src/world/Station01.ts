@@ -39,6 +39,10 @@ export const fieldFlood = floodSet(10, 'field', 0.085);
 export const hutFlood = floodSet(5, 'hut', 0.2);
 
 const G = STATION_GROUND;
+// the station's night light, and the road's (RoadArea.ts) turned into the station's terms (world/geo.ts)
+const NIGHT = { sky: 0x2c3b5e, ground: 0x1b140e, hemi: 1.2, moon: 0xa4b6e0, moonI: 1.5, moonAt: new THREE.Vector3(-50, 70, 55) };
+const ROAD_NIGHT = { sky: 0x22304f, ground: 0x2a1b10, hemi: 0.9, moon: 0x8ea4d8, moonI: 0.45, moonAt: new THREE.Vector3(60, 80, -40) };
+const _c = new THREE.Color();
 const FENCE = STATION_FENCE;
 const GATE = STATION_GATE;
 const GAP_W = -23.0;
@@ -1797,13 +1801,25 @@ export class Station01 {
   // the chapter hides while the player is out here.
   private nightLights() {
     const group = new THREE.Group();
-    const hemi = new THREE.HemisphereLight(0x2c3b5e, 0x1b140e, 1.2);
-    const moon = new THREE.DirectionalLight(0xa4b6e0, 1.5);
-    moon.position.set(-50, 70, 55);
+    const hemi = new THREE.HemisphereLight(NIGHT.sky, NIGHT.ground, NIGHT.hemi);
+    const moon = new THREE.DirectionalLight(NIGHT.moon, NIGHT.moonI);
+    moon.position.copy(NIGHT.moonAt);
     moon.target.position.set(0, 0, 0);
     group.add(hemi, moon, moon.target);
     this.group.add(group);
     return { group, hemi, moon };
+  }
+  /** Out on the track in the truck, the station's bright moonlight gives way to the road's
+   *  (RoadArea.ts), so that nothing changes where the truck goes from one area into the
+   *  other (drive/legs.ts): 1 at the station, 0 at the change. */
+  nightBlend(w: number) {
+    const { hemi, moon } = this.lights, a = ROAD_NIGHT, b = NIGHT;
+    hemi.color.setHex(a.sky).lerp(_c.setHex(b.sky), w);
+    hemi.groundColor.setHex(a.ground).lerp(_c.setHex(b.ground), w);
+    hemi.intensity = a.hemi + (b.hemi - a.hemi) * w;
+    moon.color.setHex(a.moon).lerp(_c.setHex(b.moon), w);
+    moon.intensity = a.moonI + (b.moonI - a.moonI) * w;
+    moon.position.copy(a.moonAt).lerp(b.moonAt, w);
   }
 
   // ---------- switches ----------
