@@ -626,6 +626,8 @@ export class AudioSys {
 
   /** Every frame while a night runs: the desert outside moves on (clock: the night's clock). */
   nightLife(dt: number, at: THREE.Vector3, clock = 0) { this.night?.update(dt, at, clock); }
+  /** A recording far off in a random direction (an owl, a dog): through the desert outside. */
+  far(name: string, at: THREE.Vector3, gain: number, rate = 1) { this.night?.far(name, at, gain, rate); }
 
   duckAll(seconds: number) {
     if (!this.ctx) return;

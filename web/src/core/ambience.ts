@@ -213,7 +213,8 @@ export class Ambience {
     setTimeout(() => { inp.disconnect(); d.disconnect(); }, 30000);
     return inp;
   }
-  private far(name: string, at: THREE.Vector3, gain: number, rate = 1) {
+  /** A recording far off in a random direction: panned, quiet and dull with distance. */
+  far(name: string, at: THREE.Vector3, gain: number, rate = 1) {
     const b = this.buf[name]; if (!b) return;
     const d = rnd(30, 60);
     const g = this.distant(at, d, gain, 2600 - d * 20);
