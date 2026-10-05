@@ -1,0 +1,768 @@
+{
+  "checked_at_utc": "2026-10-05T09:34:22.310210+00:00",
+  "contract_source": "origin/ccr-30e38858-767d90:web/ART_BRIEF.md, Runde 11",
+  "automatic_status": "PASS",
+  "asset_count": 8,
+  "assets": {
+    "road/milepost_blank.png": {
+      "file": "road/milepost_blank.png",
+      "expected": {
+        "width": 256,
+        "height": 640,
+        "format": "PNG",
+        "alpha": true,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 336958,
+      "sha256": "6c5a58b34c8215f3fa7a916b21eac10b8cb89ef63908d9a339fd0394f249965a",
+      "width": 256,
+      "height": 640,
+      "format": "PNG",
+      "mode": "RGBA",
+      "bands": [
+        "R",
+        "G",
+        "B",
+        "A"
+      ],
+      "alpha_present": true,
+      "png_ihdr": {
+        "width": 256,
+        "height": 640,
+        "bit_depth": 8,
+        "color_type": 6
+      },
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "fully_transparent_pixels": 571,
+        "partly_transparent_pixels": 161776,
+        "opaque_pixels": 1493,
+        "nonzero_bbox": [
+          0,
+          0,
+          256,
+          640
+        ],
+        "corner_values": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "road/witness_post.png": {
+      "file": "road/witness_post.png",
+      "expected": {
+        "width": 128,
+        "height": 768,
+        "format": "PNG",
+        "alpha": true,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 197005,
+      "sha256": "79f25e92001bf2f756faabd5a375f013e43df3132773161aa2061747b1882402",
+      "width": 128,
+      "height": 768,
+      "format": "PNG",
+      "mode": "RGBA",
+      "bands": [
+        "R",
+        "G",
+        "B",
+        "A"
+      ],
+      "alpha_present": true,
+      "png_ihdr": {
+        "width": 128,
+        "height": 768,
+        "bit_depth": 8,
+        "color_type": 6
+      },
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "fully_transparent_pixels": 8653,
+        "partly_transparent_pixels": 89372,
+        "opaque_pixels": 279,
+        "nonzero_bbox": [
+          0,
+          0,
+          128,
+          768
+        ],
+        "corner_values": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "road/survey_disk_brass.png": {
+      "file": "road/survey_disk_brass.png",
+      "expected": {
+        "width": 512,
+        "height": 512,
+        "format": "PNG",
+        "alpha": true,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 519412,
+      "sha256": "f2cd813854e1e18a75243e48e7755623da72c28ca688650206ceb76926da46c6",
+      "width": 512,
+      "height": 512,
+      "format": "PNG",
+      "mode": "RGBA",
+      "bands": [
+        "R",
+        "G",
+        "B",
+        "A"
+      ],
+      "alpha_present": true,
+      "png_ihdr": {
+        "width": 512,
+        "height": 512,
+        "bit_depth": 8,
+        "color_type": 6
+      },
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "fully_transparent_pixels": 55814,
+        "partly_transparent_pixels": 205321,
+        "opaque_pixels": 1009,
+        "nonzero_bbox": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "corner_values": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "road/tex_oldroad_asphalt.jpg": {
+      "file": "road/tex_oldroad_asphalt.jpg",
+      "expected": {
+        "width": 1024,
+        "height": 1024,
+        "format": "JPEG",
+        "alpha": false,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 465303,
+      "sha256": "fa3de283b8232146eb55dcb5ce80696cc5d514bfc7b9ae83d9a9f5fa24f7d106",
+      "width": 1024,
+      "height": 1024,
+      "format": "JPEG",
+      "mode": "RGB",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "alpha_present": false,
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "flash/flash_eye.jpg": {
+      "file": "flash/flash_eye.jpg",
+      "expected": {
+        "width": 1280,
+        "height": 800,
+        "format": "JPEG",
+        "alpha": false,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 170483,
+      "sha256": "fbe1c82cbba714a908f1d1298532a7b8817c285513548cc917d84bf9c6b755fb",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "mode": "RGB",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "alpha_present": false,
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "flash/flash_hand.jpg": {
+      "file": "flash/flash_hand.jpg",
+      "expected": {
+        "width": 1280,
+        "height": 800,
+        "format": "JPEG",
+        "alpha": false,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 153384,
+      "sha256": "474a18306da5130d8d9e4d4bb4bd9cf93df8d8ad8600e5088f3610addbacff6b",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "mode": "RGB",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "alpha_present": false,
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "flash/flash_face.jpg": {
+      "file": "flash/flash_face.jpg",
+      "expected": {
+        "width": 1280,
+        "height": 800,
+        "format": "JPEG",
+        "alpha": false,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 152281,
+      "sha256": "006be279d5d83a3c95136f7fba0afd44eb9ad9ee14b39304613654547fd954d9",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "mode": "RGB",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "alpha_present": false,
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    },
+    "flash/flash_man.jpg": {
+      "file": "flash/flash_man.jpg",
+      "expected": {
+        "width": 1280,
+        "height": 800,
+        "format": "JPEG",
+        "alpha": false,
+        "size_bytes_strictly_below": 600000
+      },
+      "status": "PASS",
+      "size_bytes": 176592,
+      "sha256": "e4e88d2732538e71f8b668cd805b66e67030b0038e2964eac986d0838ffeeb9f",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "mode": "RGB",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "alpha_present": false,
+      "icc": {
+        "present": true,
+        "status": "PASS",
+        "size_bytes": 588,
+        "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e",
+        "description": "sRGB built-in",
+        "color_space": "RGB",
+        "basis": "ICC parsed by LittleCMS; profile description identifies sRGB and RGB color space"
+      },
+      "checks": {
+        "exact_dimensions": "PASS",
+        "exact_format": "PASS",
+        "alpha_contract": "PASS",
+        "srgb_icc": "PASS",
+        "size_strictly_below_600000_bytes": "PASS"
+      },
+      "source_hash_unchanged_after_qa": true
+    }
+  },
+  "qa_artifacts": [
+    {
+      "file": "milepost_text_overlay.png",
+      "width": 256,
+      "height": 640,
+      "mode": "RGBA",
+      "size_bytes": 307873,
+      "sha256": "4f50e175d001204d413095668a54c2892e54cac9b0fa32165c8990ee38398fd7"
+    },
+    {
+      "file": "milepost_text_checkerboard.png",
+      "width": 256,
+      "height": 640,
+      "mode": "RGB",
+      "size_bytes": 265540,
+      "sha256": "304f84c7552e82a816280e07cd243c920905a53e3cf971dc48fef24d518af9e7"
+    },
+    {
+      "file": "witness_vertical_stamp_overlay.png",
+      "width": 128,
+      "height": 768,
+      "mode": "RGBA",
+      "size_bytes": 196293,
+      "sha256": "f3ee990f24fbae15aced643afa45f6f54689cdbf529374dcdf6b5296bb7415a3"
+    },
+    {
+      "file": "witness_vertical_stamp_checkerboard.png",
+      "width": 128,
+      "height": 768,
+      "mode": "RGB",
+      "size_bytes": 165804,
+      "sha256": "771a2cce50bd75130e74cbf6400dd02eae0b5951b9995b89bfe8993d7a5ad244"
+    },
+    {
+      "file": "survey_disk_stamp_overlay.png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "size_bytes": 515343,
+      "sha256": "8d59ad5fa6fba1e53fefb53192e5bb5fbdc7708d33bc6857521d6697caaa33f0"
+    },
+    {
+      "file": "survey_disk_stamp_checkerboard.png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGB",
+      "size_bytes": 447137,
+      "sha256": "c67661b936e0ffc369f28e692476b20aa987e5ffc3975d0792922644ca50f7b3"
+    },
+    {
+      "file": "asphalt_2x2.png",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "size_bytes": 5040212,
+      "sha256": "d2a7e9d090ca35619ca5ee42a24b57450e5a47b1c8966ca322304fcd59fd333d"
+    },
+    {
+      "file": "flash_fullsize_row.png",
+      "width": 5120,
+      "height": 800,
+      "mode": "RGB",
+      "size_bytes": 3881012,
+      "sha256": "23d93b1b9f28bee02dd5d1419b15471afc6a841a5bca92dd122f799f5f8dd3f6"
+    },
+    {
+      "file": "flash_320x200_row.png",
+      "width": 1280,
+      "height": 200,
+      "mode": "RGB",
+      "size_bytes": 326697,
+      "sha256": "8d4b17bbb84cf5b13e7f240710340f35b75c3e54e9b51e146f0969cc6c0f51db"
+    }
+  ],
+  "overlay_layouts": {
+    "road/milepost_blank.png": {
+      "reserved_zone_xyxy": [
+        30,
+        60,
+        226,
+        580
+      ],
+      "labels": [
+        {
+          "text": "MILE",
+          "fit_box": [
+            36,
+            78,
+            220,
+            174
+          ],
+          "drawn_bounds": [
+            63.5,
+            108.5,
+            192.5,
+            143.5
+          ]
+        },
+        {
+          "text": "8",
+          "fit_box": [
+            36,
+            210,
+            220,
+            548
+          ],
+          "drawn_bounds": [
+            36.0,
+            278.5,
+            220.0,
+            479.5
+          ]
+        }
+      ],
+      "source_alpha_unchanged": true
+    },
+    "road/witness_post.png": {
+      "orientation": "vertical stacked letters, top-to-bottom",
+      "labels": [
+        {
+          "text": "S",
+          "fit_box": [
+            32,
+            156,
+            96,
+            197
+          ],
+          "drawn_bounds": [
+            52.0,
+            164.0,
+            76.0,
+            189.0
+          ]
+        },
+        {
+          "text": "U",
+          "fit_box": [
+            32,
+            199,
+            96,
+            240
+          ],
+          "drawn_bounds": [
+            50.0,
+            207.0,
+            78.0,
+            232.0
+          ]
+        },
+        {
+          "text": "R",
+          "fit_box": [
+            32,
+            242,
+            96,
+            283
+          ],
+          "drawn_bounds": [
+            51.0,
+            250.0,
+            77.0,
+            275.0
+          ]
+        },
+        {
+          "text": "V",
+          "fit_box": [
+            32,
+            285,
+            96,
+            326
+          ],
+          "drawn_bounds": [
+            50.5,
+            293.0,
+            77.5,
+            318.0
+          ]
+        },
+        {
+          "text": "E",
+          "fit_box": [
+            32,
+            328,
+            96,
+            369
+          ],
+          "drawn_bounds": [
+            52.5,
+            336.0,
+            75.5,
+            361.0
+          ]
+        },
+        {
+          "text": "Y",
+          "fit_box": [
+            32,
+            371,
+            96,
+            412
+          ],
+          "drawn_bounds": [
+            51.0,
+            379.0,
+            77.0,
+            404.0
+          ]
+        },
+        {
+          "text": "M",
+          "fit_box": [
+            32,
+            457,
+            96,
+            498
+          ],
+          "drawn_bounds": [
+            47.0,
+            465.0,
+            81.0,
+            490.0
+          ]
+        },
+        {
+          "text": "A",
+          "fit_box": [
+            32,
+            500,
+            96,
+            541
+          ],
+          "drawn_bounds": [
+            50.5,
+            508.0,
+            77.5,
+            533.0
+          ]
+        },
+        {
+          "text": "R",
+          "fit_box": [
+            32,
+            543,
+            96,
+            584
+          ],
+          "drawn_bounds": [
+            51.0,
+            551.0,
+            77.0,
+            576.0
+          ]
+        },
+        {
+          "text": "K",
+          "fit_box": [
+            32,
+            586,
+            96,
+            627
+          ],
+          "drawn_bounds": [
+            50.0,
+            594.0,
+            78.0,
+            619.0
+          ]
+        }
+      ],
+      "source_alpha_unchanged": true
+    },
+    "road/survey_disk_brass.png": {
+      "labels": [
+        {
+          "text": "STA 01",
+          "fit_box": [
+            142,
+            119,
+            370,
+            192
+          ],
+          "drawn_bounds": [
+            162.0,
+            136.5,
+            350.0,
+            174.5
+          ]
+        },
+        {
+          "text": "C",
+          "fit_box": [
+            197,
+            206,
+            315,
+            293
+          ],
+          "drawn_bounds": [
+            226.5,
+            219.0,
+            285.5,
+            280.0
+          ]
+        },
+        {
+          "text": "1947",
+          "fit_box": [
+            157,
+            325,
+            355,
+            390
+          ],
+          "drawn_bounds": [
+            188.0,
+            338.5,
+            324.0,
+            376.5
+          ]
+        }
+      ],
+      "arrow": {
+        "direction": "right",
+        "bbox_xyxy": [
+          235,
+          295,
+          288,
+          317
+        ]
+      },
+      "source_alpha_unchanged": true
+    }
+  },
+  "flash_row_order": [
+    "flash/flash_eye.jpg",
+    "flash/flash_hand.jpg",
+    "flash/flash_face.jpg",
+    "flash/flash_man.jpg"
+  ],
+  "asphalt_seam_measurements": {
+    "left_right_mean_absolute_rgb_difference": [
+      23.0205078125,
+      23.3623046875,
+      23.3955078125
+    ],
+    "top_bottom_mean_absolute_rgb_difference": [
+      21.673828125,
+      22.111328125,
+      21.693359375
+    ],
+    "visual_seamlessness": "UNVERIFIED",
+    "note": "Edge differences are measurements, not an automatic seamlessness verdict"
+  },
+  "visual_checks": {
+    "text_free_generated_assets": "UNVERIFIED",
+    "milepost_quiet_text_zone_and_material": "UNVERIFIED",
+    "witness_post_stamp_readability_and_shape": "UNVERIFIED",
+    "survey_disk_stamp_readability_and_surface": "UNVERIFIED",
+    "asphalt_seamlessness_and_no_road_markings": "UNVERIFIED",
+    "flash_content_style_tone_and_unrecognizable_faces": "UNVERIFIED"
+  },
+  "runtime_status": "UNVERIFIED; Claude owns integration and runtime validation",
+  "scope": "QA previews and metadata only; game assets were not modified; no image generation or runtime tests"
+}

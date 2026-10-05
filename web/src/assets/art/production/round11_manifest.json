@@ -1,0 +1,487 @@
+{
+  "round": 11,
+  "created_utc": "2026-10-05T09:38:03.404415+00:00",
+  "brief": {
+    "file": "web/ART_BRIEF.md",
+    "commit": "d539c4dea2c72ff471fcddf050aeeb7f7e7af6fb",
+    "section": "Runde 11: Roswell-veien og FLASH"
+  },
+  "branch_base": "5a0282d349dc837f84543924a50b575e4c3a99a0",
+  "asset_count": 8,
+  "method": "Original generering og målrettede edits med innebygd ChatGPT-bildegenerator. Vitnestolpe og hånd er editerte; asfalten er regenerert. PNG beskjæres til alfa>=128-boks med2pxmargin (kun utsnitt, ingen alfamaskeforandring), Lanczos måltilpasning, RGBA-PNG eller RGB-JPEG85/subsampling0 med frosset sRGB ICC. Ingen motivmaling i Python.",
+  "export_runtime": {
+    "Pillow": "12.1.1"
+  },
+  "provenance": "Original oppdiktet grafikk laget for SIGNAL / 47. Ingen eksterne bildearkiver eller ekte personer/merker. Ikke hevdet CC0. Claude fører opphavet i THIRD_PARTY_NOTICES ved integrasjon.",
+  "assets": [
+    {
+      "file": "src/assets/art/road/milepost_blank.png",
+      "width": 256,
+      "height": 640,
+      "format": "PNG",
+      "bytes": 336958,
+      "sha256": "6c5a58b34c8215f3fa7a916b21eac10b8cb89ef63908d9a339fd0394f249965a",
+      "prompt": "Use case: stylized-concept. Asset type: a single game texture, 256 x 640 px, RGBA. Primary request: orthographic straight-on front face of a blank 1986 New Mexico roadside mile marker. A tall green reflective metal plate with a thin worn ivory-white border and gently rounded corners. The plate fills almost the entire 2:5 canvas, leaving transparent pixels outside the rounded silhouette. The central area x30..226,y60..580 in the intended 256x640 texture must be quiet, medium-dark green for code to overlay MILE and a large number. A few small stone pocks near the edge, restrained scratches, a little reddish dust at the bottom. Materials subtly stylized for a low-poly game, matte aged surfaces, uniform neutral illumination without baked dramatic light. No pole, screws protruding, extra objects, letters, numbers, emblems, watermark or cast shadow. Genuine transparent background. One asset only, not a contact sheet.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/milepost_blank_generated.png",
+      "source_sha256": "8e77c88488b30292f76ee24afe6751a2be70a78c69c5feea74e03583c2657690",
+      "export": {
+        "file": "road/milepost_blank.png",
+        "source": "production/round11_qa/sources/milepost_blank_generated.png",
+        "source_size": [
+          793,
+          1983
+        ],
+        "crop": [
+          108,
+          48,
+          683,
+          1920
+        ],
+        "size": [
+          256,
+          640
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": null,
+        "jpeg_subsampling": null,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 336958
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    },
+    {
+      "file": "src/assets/art/road/witness_post.png",
+      "width": 128,
+      "height": 768,
+      "format": "PNG",
+      "bytes": 197005,
+      "sha256": "79f25e92001bf2f756faabd5a375f013e43df3132773161aa2061747b1882402",
+      "prompt": "Use case: stylized-concept. Asset type: a single RGBA texture for a survey witness post, target 128 x 768 px. Orthographic straight-on front view of one very tall slender flat fiberglass or steel survey witness post, circa 1986 New Mexico. Faded dusty orange, an ivory-white reflective horizontal band near the top, slightly uneven weathered edges and a mild bend; reddish dirt at the bottom. Keep most of the middle orange surface quiet for code to place vertical SURVEY MARK lettering later. The single post occupies the full-height center of a 1:6 canvas with just a small transparent gutter either side; preserve slim proportions. Subtly stylized aged material, neutral flat diffuse light. Transparent outside the post silhouette. No letters, numbers, logos, arrows, base, background, cast shadow, other posts or decorative frame.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate + edit",
+      "source_file": "src/assets/art/production/round11_qa/sources/witness_post_generated.png",
+      "source_sha256": "6da6bfc3e2317ba6dc8ddfb96be3173ede4c2ddf6223dd1b4adaa035f5bc7f1f",
+      "export": {
+        "file": "road/witness_post.png",
+        "source": "production/round11_qa/sources/witness_post_generated.png",
+        "source_size": [
+          1024,
+          1536
+        ],
+        "crop": [
+          446,
+          11,
+          578,
+          1525
+        ],
+        "size": [
+          128,
+          768
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": null,
+        "jpeg_subsampling": null,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 197005
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "edit_prompt": "Use case: background-extraction. Edit target: the supplied orange witness-post image. Preserve only the single slim orange post and its white reflective stripe, weathering and front-facing shape. REMOVE every pixel of the orange atmospheric haze/glow/gradient and black backdrop surrounding it. Outside the physical post must be fully transparent, with clean hard silhouette edges and only narrow antialiasing. The solid post itself must be fully opaque. No light bloom, no cast shadow, no semitransparent halo. Keep the tall 1:6 post proportions; tightly frame the post with a tiny transparent gutter, suitable for a 128x768 texture. No text, numbers, logo or added objects. Genuine transparent background.",
+      "edit_reference": "src/assets/art/production/round11_qa/sources/witness_post_initial_generated.png",
+      "edit_reference_sha256": "f9001f86a09e3f26b6a34ec3ae08241ddf0670de3be47e0dcf53c88c5825a772",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    },
+    {
+      "file": "src/assets/art/road/survey_disk_brass.png",
+      "width": 512,
+      "height": 512,
+      "format": "PNG",
+      "bytes": 519412,
+      "sha256": "f2cd813854e1e18a75243e48e7755623da72c28ca688650206ceb76926da46c6",
+      "prompt": "Use case: stylized-concept. Asset type: single top-down RGBA survey marker texture, target 512x512px. Primary request: perfectly orthographic overhead view of a round brass survey disk, about 9 cm across, seated flush in coarse aged concrete. ONLY the circular brass face is opaque; the concrete pedestal is separate game geometry and must NOT extend outside the disk silhouette. Suggest a fine rough concrete contact rim at its circumference within the circle. Old golden brass darkened by weather, restrained verdigris near its edge, fine scratches. Smooth blank central field and smooth blank annular area for code to stamp STA 01 / C / 1947 and an arrow later. Soft neutral diffuse illumination, no cast shadow or specular glare, subtly stylized for a low-poly game. Transparent pixels everywhere outside the circular disk. No text, numbers, letters, arrow, logos, extra objects or perspective.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/survey_disk_brass_generated.png",
+      "source_sha256": "8996086c81c097faf870e1ca6fe5a2d8af04f221dcf01a4728ca8634b397bb97",
+      "export": {
+        "file": "road/survey_disk_brass.png",
+        "source": "production/round11_qa/sources/survey_disk_brass_generated.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "crop": [
+          47,
+          42,
+          1209,
+          1201
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": null,
+        "jpeg_subsampling": null,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 519412
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    },
+    {
+      "file": "src/assets/art/road/tex_oldroad_asphalt.jpg",
+      "width": 1024,
+      "height": 1024,
+      "format": "JPEG",
+      "bytes": 465303,
+      "sha256": "fa3de283b8232146eb55dcb5ce80696cc5d514bfc7b9ae83d9a9f5fa24f7d106",
+      "prompt": "Use case: stylized-concept. Asset type: a SINGLE seamless 1024x1024 square game albedo tile. A flat top-down pale gray sun-bleached OLD ASPHALT surface near Roswell, New Mexico, 1986. Fine worn aggregate and matte gray binder; a little muted reddish dust in crevices. Uniform small-scale texture and average brightness across the entire tile. Subtle SHORT alligator cracks and narrow worn dark tar repairs ONLY in the middle, all tapering and ending well BEFORE the outer 200px band. The broad outer band is uniform fine gray aggregate with no long crack, dark patch or dust ribbon, so copies join without a straight visible seam or broken line. All opposite edges match visually. Edge to edge surface, no road shoulders, painted lines, scenery, objects, text, perspective, shadow or vignette. Restrained stylization matching a low-poly game, no glossy wet material. One tile, no contact sheet.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/tex_oldroad_asphalt_generated.png",
+      "source_sha256": "cba1cd94b7eadcefdc9c6199bd1193f017e6ed755c93f7e2fd2798fec28202b9",
+      "export": {
+        "file": "road/tex_oldroad_asphalt.jpg",
+        "source": "production/round11_qa/sources/tex_oldroad_asphalt_generated.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "crop": null,
+        "size": [
+          1024,
+          1024
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": 85,
+        "jpeg_subsampling": 0,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 465303
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json",
+      "iteration_note": "Sluttfilen er en ny generering. Første generering og forkastet edit finnes i QA/sources med egne promter i prompts.json/asphalt_edit_prompt.txt."
+    },
+    {
+      "file": "src/assets/art/flash/flash_eye.jpg",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "bytes": 170483,
+      "sha256": "fbe1c82cbba714a908f1d1298532a7b8817c285513548cc917d84bf9c6b755fb",
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape cinematic FLASH still for SIGNAL / 47. Extreme close view of one ambiguous human-like eye at the center. The pupil is unusually large and glassy with one tiny bright point reflected; the iris is barely visible. The eye fills the central image, anatomical surface suggested through shadow, not gore. A frame from an impossible damaged 1986 film or videotape: almost grayscale, slight cold green tint, strong grain and analog video noise, mild blur, dark vignette, edges near black, a small blown-out highlight. Hint of unease rather than a clearly depicted monster. Restrained stylized image, not glossy CGI or polished photorealism. No text, timecode, UI, letters, logos, film border, extra eyes or watermark.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/flash_eye_generated.png",
+      "source_sha256": "55351cc5853e4d67093aeb7564d1cfb9b69b2615038370d5d2cd6d256d719ca3",
+      "export": {
+        "file": "flash/flash_eye.jpg",
+        "source": "production/round11_qa/sources/flash_eye_generated.png",
+        "source_size": [
+          1586,
+          992
+        ],
+        "crop": null,
+        "size": [
+          1280,
+          800
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": 85,
+        "jpeg_subsampling": 0,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 170483
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    },
+    {
+      "file": "src/assets/art/flash/flash_hand.jpg",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "bytes": 153384,
+      "sha256": "474a18306da5130d8d9e4d4bb4bd9cf93df8d8ad8600e5088f3610addbacff6b",
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. Viewed from INSIDE a 1986 truck cab, a single ambiguous hand pressed against the OUTSIDE of a fogged windscreen, centered. Five unusually long thin fingers spread and flattened on the condensation, palm mostly lost in fog, no identifiable arm. Blown-out dawn behind glass, windshield edges disappearing into almost-black vignette. Nearly grayscale with faint cold green tint, thick analog film grain/video noise, slight motion blur, dirty condensation. A moment from an impossible old tape. Suggestion, not a clear monster or gore; subtly stylized image, avoid polished CGI. No text, timecode, UI, logos, six fingers, second hand or watermark.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate + edit",
+      "source_file": "src/assets/art/production/round11_qa/sources/flash_hand_generated.png",
+      "source_sha256": "24e2266920e1445149d887ed17f7dfa290ba54d9b2d409bd28ebd74210aad43e",
+      "export": {
+        "file": "flash/flash_hand.jpg",
+        "source": "production/round11_qa/sources/flash_hand_generated.png",
+        "source_size": [
+          1586,
+          992
+        ],
+        "crop": null,
+        "size": [
+          1280,
+          800
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": 85,
+        "jpeg_subsampling": 0,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 153384
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json",
+      "edit_prompt": "Use case: precise-object-edit. Edit target: the supplied FLASH hand against a fogged truck windshield. Change ONLY the outdoor background visible through the glass. Remove all tall trees, conifers and forest silhouettes. Replace them with an almost indiscernible low, flat mesa/desert horizon in dawn haze, consistent with the old road near Roswell, New Mexico. Keep the hand with five long slender fingers pressed against condensation, hidden arm, truck interior, windshield, grain, blur, nearly grayscale cold green tone, vignette and blown-out dawn exactly as they are. 1280x800 landscape still. No text, timecode, logos or added figures.",
+      "edit_reference": "src/assets/art/production/round11_qa/sources/flash_hand_initial_generated.png",
+      "edit_reference_sha256": "a4d1f060987c5cf1658f63bc3975e496d5551f135bafc8e33e1486f74325e7f4"
+    },
+    {
+      "file": "src/assets/art/flash/flash_face.jpg",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "bytes": 152281,
+      "sha256": "006be279d5d83a3c95136f7fba0afd44eb9ad9ee14b39304613654547fd954d9",
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. An ambiguous face briefly suggested at the center: an unusually large smooth head and large dark eyes, reminiscent of a generic Grey but entirely original and NOT a recognizable movie creature. At least half the face obscured by deep shadow, strong slight lateral motion smear and damaged-film noise, so its anatomy never becomes clear. Near grayscale with very faint cold green tint, coarse film grain/analog tape noise, a dim blown-out patch of side light, heavy dark vignette with near-black edges. Cropped intimate frame from an impossible 1986 recording, no detailed body. Unease by suggestion, not gore, teeth, screaming, or a clean monster portrait. Subtly stylized rather than glossy CGI. No text, timecode, UI, logos or watermark.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/flash_face_generated.png",
+      "source_sha256": "08e5a2f2019dbb5ba80f53bea83c82afea8f3c98a89a05272d9aaf490b633732",
+      "export": {
+        "file": "flash/flash_face.jpg",
+        "source": "production/round11_qa/sources/flash_face_generated.png",
+        "source_size": [
+          1586,
+          992
+        ],
+        "crop": null,
+        "size": [
+          1280,
+          800
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": 85,
+        "jpeg_subsampling": 0,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 152281
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    },
+    {
+      "file": "src/assets/art/flash/flash_man.jpg",
+      "width": 1280,
+      "height": 800,
+      "format": "JPEG",
+      "bytes": 176592,
+      "sha256": "e4e88d2732538e71f8b668cd805b66e67030b0038e2964eac986d0838ffeeb9f",
+      "prompt": "Use case: historical-scene. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. Reference image: supplied photo_1947_master.jpg is STYLE AND SILHOUETTE reference only, specifically the right-background surveyor holding a staff in a broad-brimmed work hat; do not reproduce the whole landscape. Primary request: a fictional young male surveyor in 1940s New Mexico field clothes, rolled-up shirt sleeves and broad-brimmed practical work hat, with survey staff faintly alongside him. Waist-up figure centered, half illuminated by dim stark side light, the face impossible to recognize through darkness and blur. Grainy old photographic/tape fragment that might show the man from the reference, not an identifiable real person. Almost grayscale with faint cold green tone, severe film grain, slightly defocused motion smear, heavy vignette, edges nearly black. Restrained stylized archival image, no glossy CGI. No text, timecode, insignia, logos, watermark or extra people.",
+      "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+      "exact_model_version": "ikke eksponert",
+      "generation_kind": "generate",
+      "source_file": "src/assets/art/production/round11_qa/sources/flash_man_generated.png",
+      "source_sha256": "00354f1f81a513814959c8b7198d758a7758b6e9fbdf96bc23e9fccbceca4cc6",
+      "export": {
+        "file": "flash/flash_man.jpg",
+        "source": "production/round11_qa/sources/flash_man_generated.png",
+        "source_size": [
+          1586,
+          992
+        ],
+        "crop": null,
+        "size": [
+          1280,
+          800
+        ],
+        "resample": "Pillow LANCZOS",
+        "jpeg_quality": 85,
+        "jpeg_subsampling": 0,
+        "icc": "production/round11_qa/sources/srgb.icc",
+        "bytes": 176592
+      },
+      "automatic_status": "PASS",
+      "visual_status": "PASS",
+      "runtime_integration": "UNVERIFIED, Claude eier innkobling og én samlet test",
+      "reference": {
+        "file": "src/assets/art/docs/photo_1947_master.jpg",
+        "sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+        "role": "stil og silhuett, oppdiktet landmåler i høyre bakgrunn, ingen identitetskopi"
+      },
+      "visual_evidence": "src/assets/art/production/round11_qa/visual_review.json"
+    }
+  ],
+  "automatic_qa": {
+    "file": "src/assets/art/production/round11_qa/round11_qa_report.json",
+    "sha256": "9361df45cea5a4571e870f60bc9be09093a767846308937796f641f8095a70cf",
+    "status": "PASS"
+  },
+  "runtime_test_owner": "Claude, én samlet integrasjonstest etter innkobling; uendret grønn baseline gjenbrukes.",
+  "runtime_status": "UNVERIFIED",
+  "support_files": [
+    {
+      "file": "src/assets/art/production/round11_qa/asphalt_2x2.png",
+      "bytes": 5040212,
+      "sha256": "d2a7e9d090ca35619ca5ee42a24b57450e5a47b1c8966ca322304fcd59fd333d"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/asphalt_2x2_initial.jpg",
+      "bytes": 1980663,
+      "sha256": "c3e67d46cb61173d1d898ec01e69fe4b7ec0541e59e358ec1bdf9cca53d57962"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/flash_320x200_row.png",
+      "bytes": 326697,
+      "sha256": "8d4b17bbb84cf5b13e7f240710340f35b75c3e54e9b51e146f0969cc6c0f51db"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/flash_fullsize_row.png",
+      "bytes": 3881012,
+      "sha256": "23d93b1b9f28bee02dd5d1419b15471afc6a841a5bca92dd122f799f5f8dd3f6"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/milepost_text_checkerboard.png",
+      "bytes": 265540,
+      "sha256": "304f84c7552e82a816280e07cd243c920905a53e3cf971dc48fef24d518af9e7"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/milepost_text_overlay.png",
+      "bytes": 307873,
+      "sha256": "4f50e175d001204d413095668a54c2892e54cac9b0fa32165c8990ee38398fd7"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/round11_qa_report.json",
+      "bytes": 18862,
+      "sha256": "9361df45cea5a4571e870f60bc9be09093a767846308937796f641f8095a70cf"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/asphalt_edit_prompt.txt",
+      "bytes": 866,
+      "sha256": "8c1e1db31ae13199a0f36d2aeeed55abea81c42ee6251193d761ce7ead08bb48"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/export_recipe.json",
+      "bytes": 3281,
+      "sha256": "b111dbb0f09297787996d6b3b18e4e9ff4ac9ee8e27903feefabc7c9d60eeb09"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/flash_eye_generated.png",
+      "bytes": 2271995,
+      "sha256": "55351cc5853e4d67093aeb7564d1cfb9b69b2615038370d5d2cd6d256d719ca3"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/flash_face_generated.png",
+      "bytes": 2282745,
+      "sha256": "08e5a2f2019dbb5ba80f53bea83c82afea8f3c98a89a05272d9aaf490b633732"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/flash_hand_generated.png",
+      "bytes": 2215791,
+      "sha256": "24e2266920e1445149d887ed17f7dfa290ba54d9b2d409bd28ebd74210aad43e"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/flash_hand_initial_generated.png",
+      "bytes": 2370001,
+      "sha256": "a4d1f060987c5cf1658f63bc3975e496d5551f135bafc8e33e1486f74325e7f4"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/flash_man_generated.png",
+      "bytes": 2461045,
+      "sha256": "00354f1f81a513814959c8b7198d758a7758b6e9fbdf96bc23e9fccbceca4cc6"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/milepost_blank_generated.png",
+      "bytes": 2187916,
+      "sha256": "8e77c88488b30292f76ee24afe6751a2be70a78c69c5feea74e03583c2657690"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/prompts.json",
+      "bytes": 11357,
+      "sha256": "276ca0c47f56a9e5a12621c86fea98742de74d077f0a5d53d2ac431702162710"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/srgb.icc",
+      "bytes": 588,
+      "sha256": "b8edca7563c5d047741ad81bee2699f7be5a0ed3ccf4ae5300732b98b6c8e15e"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/survey_disk_brass_generated.png",
+      "bytes": 2710219,
+      "sha256": "8996086c81c097faf870e1ca6fe5a2d8af04f221dcf01a4728ca8634b397bb97"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/tex_oldroad_asphalt_generated.png",
+      "bytes": 3724191,
+      "sha256": "cba1cd94b7eadcefdc9c6199bd1193f017e6ed755c93f7e2fd2798fec28202b9"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/tex_oldroad_asphalt_initial_generated.png",
+      "bytes": 3824882,
+      "sha256": "c81f02cc2328ffeae65c79d27672d389b13e3a452cfbd472f8acf385de1fb0e9"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/tex_oldroad_asphalt_rejected_edit_generated.png",
+      "bytes": 3670815,
+      "sha256": "c9ab2cc558fc16bc247d4e54dcf299886f3d76327ba925cf9f0c81dba6de0e53"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/witness_post_generated.png",
+      "bytes": 1211377,
+      "sha256": "6da6bfc3e2317ba6dc8ddfb96be3173ede4c2ddf6223dd1b4adaa035f5bc7f1f"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/sources/witness_post_initial_generated.png",
+      "bytes": 1188812,
+      "sha256": "f9001f86a09e3f26b6a34ec3ae08241ddf0670de3be47e0dcf53c88c5825a772"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/survey_disk_stamp_checkerboard.png",
+      "bytes": 447137,
+      "sha256": "c67661b936e0ffc369f28e692476b20aa987e5ffc3975d0792922644ca50f7b3"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/survey_disk_stamp_overlay.png",
+      "bytes": 515343,
+      "sha256": "8d59ad5fa6fba1e53fefb53192e5bb5fbdc7708d33bc6857521d6697caaa33f0"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/visual_review.json",
+      "bytes": 2689,
+      "sha256": "d2b3f60021c2e35d6bc923967053fe83237cdf12e057c1b780cb7a3e081aaa39"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/witness_vertical_stamp_checkerboard.png",
+      "bytes": 165804,
+      "sha256": "771a2cce50bd75130e74cbf6400dd02eae0b5951b9995b89bfe8993d7a5ad244"
+    },
+    {
+      "file": "src/assets/art/production/round11_qa/witness_vertical_stamp_overlay.png",
+      "bytes": 196293,
+      "sha256": "f3ee990f24fbae15aced643afa45f6f54689cdbf529374dcdf6b5296bb7415a3"
+    }
+  ],
+  "visual_qa": {
+    "file": "src/assets/art/production/round11_qa/visual_review.json",
+    "sha256": "d2b3f60021c2e35d6bc923967053fe83237cdf12e057c1b780cb7a3e081aaa39",
+    "status": "PASS"
+  }
+}
