@@ -594,7 +594,7 @@ export class World {
       this.enter(from);
       this.startEngine();
       this.driving = true;
-      this.auto.rev = false; this.auto.stall = 0;
+      Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
       if (o.onStart) o.onStart();
       else if (from === to && o.hint) toast(o.hint, 5);
       else toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer.', 4.5);
@@ -671,7 +671,7 @@ export class World {
   // the truck is left. Pure pursuit, slowed in time for the bends ahead; when the way lies
   // behind, a turn in three points (forward on full lock, back on the other lock when it can
   // go no further, and so on until it faces the way).
-  private auto = { rev: false, stall: 0 };
+  private auto = { rev: false, stall: 0, back: 0, stuck: 0 };
   /** dt: the step (the stall timer of the turn); 0 to only look. */
   private autoInput(dt = 0): DriveInput {
     const id = this.leg!, L = this.legs[id]!, D = L.drive, trip = this.trip, legs = this.mods.legs!;
@@ -680,13 +680,19 @@ export class World {
     if (!route?.length) return { steer: 0, throttle: D.speed > 0.2 ? -0.6 : 0 };
     let k = 0, best = Infinity;
     for (let i = 0; i < route.length; i++) { const d = route[i].distanceToSquared(D.pos); if (d < best) { best = d; k = i; } }
-    const sp = Math.abs(D.speed);
+    const sp = Math.abs(D.speed), look = THREE.MathUtils.clamp(3.5 + sp * 0.7, 4, 16);
     let j = k;
-    while (j < route.length - 1 && route[j].distanceTo(D.pos) < THREE.MathUtils.clamp(3.5 + sp * 0.7, 4, 16)) j++;
+    while (j < route.length - 1 && route[j].distanceTo(D.pos) < look) j++;
     const tg = route[j];
     let err = Math.atan2(-(tg.x - D.pos.x), -(tg.z - D.pos.z)) - D.heading;
     err = Math.atan2(Math.sin(err), Math.cos(err));
     const A = this.auto;
+    // ---------- stuck against something: back off a little, then on ----------
+    if (A.back > 0) {
+      A.back -= dt;
+      if (!D.reversing) return { steer: 0, throttle: -1 };
+      return { steer: err > 0 ? 0.6 : -0.6, throttle: sp < 1.2 ? -0.6 : 0 };
+    }
     // ---------- turning round ----------
     if (Math.abs(err) > 0.9 || A.rev) {
       const want = A.rev ? -1 : 1, moving = D.reversing === A.rev && sp > 0.25;
@@ -715,7 +721,13 @@ export class World {
     const end = next === 'park' ? route[route.length - 1].distanceTo(D.pos) : Infinity;
     v = Math.min(v, Math.max(0, (end - 2.2) * 0.6)) * THREE.MathUtils.clamp(1.15 - Math.abs(err) * 1.4, 0.3, 1);
     if (end < 2.2) v = 0;
-    return { steer: THREE.MathUtils.clamp(-err * 2.4, -1, 1), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
+    // wanting to go but not going (a post, a kerb): back off for a moment
+    A.stuck = v > 0.8 && sp < 0.15 ? A.stuck + dt : 0;
+    if (A.stuck > 1.5) { A.stuck = 0; A.back = 1.4; }
+    // pure pursuit: the curvature that reaches the aim point, as a turn of the wheel
+    const kappa = 2 * Math.sin(err) / look;
+    const steer = -Math.atan(kappa * 3.3) / (32 * Math.PI / 180);   // the truck's wheelbase and full lock (Truck.ts, Drive.ts)
+    return { steer: THREE.MathUtils.clamp(steer, -1, 1), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
   }
 
   private startEngine() {
