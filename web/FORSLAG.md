@@ -4,6 +4,24 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## Innlevelse, lyd, grafikk og Unreal (5. oktober)
+
+Tom spurte hva spillet trenger for mer innlevelse, om prosjektbiblioteket har noe vi trenger, om vi bør dekompilere Voices of the Void, og om spillet kan flyttes til Unreal. Hele natten er nå bygd, så dette handler om å løfte det som finnes.
+
+**Det som gir mest, i rekkefølge:**
+
+1. **Stemmer.** Tomás, Nora, Ward, radioen og telefonen er i dag sus i et stemmebånd med tekst under. Ekte stemmer på de 15 til 20 replikkene som høres (ikke alt som står i panelene) gir mer enn noe annet. Enklest: Tom og to eller tre andre leser dem inn med telefonen, og jeg legger på telefon-, radio- og båndfilter i koden. Alternativt designede stemmer (ikke kloning av ekte personer) laget lokalt på Toms PC.
+2. **Lydbilde per sted.** Fugler som begynner ved gryet, vind og grus på den gamle veien, lysrørsus og kjøleskap i dineren, aircondition og tv-sus på motellet, metallknepp i antennene når de snur. Lydene finnes som CC0 (Freesound, Kenney) eller kan lages i koden.
+3. **Musikk, sparsomt.** Spillet har bare tittelmusikken. Lave flater og stikk i noen få øyeblikk (utskriften kl. 02:13, kabelbruddet, Nora), ikke under kjøringen ut på veien. Kan lages i koden med Web Audio, eller hentes fra Scott Buckley (samme lisens som tittelmusikken).
+4. **Grafikk i three.js.** Gryet over mesaen med skyer og lysstråler, tettere vegetasjon og steiner nær veiene, bedre folk i dineren og på motellet (enkle animasjoner), og på PC fargegradering og dybdeskarphet i overgangene. På sikt WebGPU-rendereren i three.js for PC.
+5. **Kroppen.** Hender som holder kameraet og lommelykta, pust når det er kaldt, at hodet ser ned på papirene.
+
+**Prosjektbiblioteket:** relevant er `scottstts/Threejs-Awesome-Graphics-Agent-Skills` (MIT: lys, atmosfære, vær, materialer i three.js), `ektogamat/threejs-conference` (MIT: WebGPU og TSL, våt asfalt, regn, filmisk etterbehandling i førsteperson) og `debpalash/VoiceStudio` (AGPL, lokale designede stemmer; programmet må kjøres på Toms PC, og lisensen gjelder programmet, ikke det som lages). `YuE` (musikkgenerering) krever et kraftig skjermkort og er ikke nødvendig. Lydene vi allerede bruker fra Morbidium og Loincloth Legends står i `THIRD_PARTY_NOTICES.md`.
+
+**Voices of the Void:** ingen dekompilering for SIGNAL / 47. Spillets kode og assets har ingen lisens for gjenbruk, og kopien ligger bare på Toms PC. Det nyttige er å spille det og skrive ned hva som gjør stemningen (lyden i basen, signalbehandlingen, radioprat, døgnrytmen), så lager jeg vår egen versjon fra beskrivelsen.
+
+**Unreal:** mulig, men ikke nå. Det gir mye bedre lys og folk (Lumen, MetaHuman, volumetrisk tåke, Sequencer for slutten), men Unreal kan ikke lenger lage nettversjoner, så Pages og spilling på telefon i nettleseren forsvinner. Alt spillet gjør (kapitlene, gåtene, panelene, lagringen) må skrives på nytt i C++ og Blueprints, og Unreal-editoren kan ikke kjøres i skymiljøet jeg jobber i, så all bygging og testing må skje på Toms PC. Forslag: gjør nettversjonen ferdig og spill den igjennom. Vil Tom prøve Unreal, start med en liten bit (den gamle veien i gry og THE EVENT) som egen prøve på hans PC, og bestem etter den.
+
 ## Status 4. oktober
 
 Tom ba meg gjennomføre forslagene. Gjort og i spillet: arbeidsordren (3.1), kapittel 2 (3.2, heter «The Amended Record» i spillet), saksmappen (3.3), fotografiene i IndexedDB (3.4), de nye innstillingene og fotsteg ute (4). Teksturene (4) kom fra ChatGPT/Codex i PR #30 og #31 og er koblet inn med tekst i kode oppå. Ikke gjort: skjuling av smådetaljer på avstand (4), fordi målingene ikke viser behov ennå, bytte av GitHub-handlinger og npm audit (ingen fiks finnes). Del 2 og 5 gjelder fortsatt. Neste store steg er kapittel 3, feltreisen til STATION 01 (se todo.md).
