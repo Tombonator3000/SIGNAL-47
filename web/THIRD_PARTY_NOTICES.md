@@ -6,6 +6,15 @@ Alt under er hentet fra Unity-prosjektet i samme repo, med samme lisens som der 
 
 - "Signal to Noise" av Scott Buckley, CC BY 4.0. https://www.scottbuckley.com.au/library/signal-to-noise/ (`title_music.mp3`)
 
+Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de ligger under CC BY 4.0 (https://www.scottbuckley.com.au/library/using-this-music/; bruk i spill er gratis med kreditering). Hvert er kuttet til et utdrag fra starten, tonet inn 3 s og ut 12 s, lydnivåjustert (loudnorm, -22 LUFS) og kodet som MP3 96 kbps i `public/music/`. De strømmes når spillet spiller dem (`core/score.ts`). Kreditering står i rulleteksten (`ui/Ending.ts`) og på tittelskjermens info (`ui/UI.ts`).
+
+- "Shadows and Dust", de første 210 s. https://www.scottbuckley.com.au/library/shadows-and-dust/ (`shadows_and_dust.mp3`)
+- "Decoherence", de første 230 s. https://www.scottbuckley.com.au/library/decoherence/ (`decoherence.mp3`)
+- "The Old Ones", de første 190 s. https://www.scottbuckley.com.au/library/the-old-ones/ (`the_old_ones.mp3`)
+- "In Search of Solitude", de første 240 s. https://www.scottbuckley.com.au/library/in-search-of-solitude/ (`in_search_of_solitude.mp3`)
+- "Neon", de første 200 s. https://www.scottbuckley.com.au/library/neon/ (`neon.mp3`)
+- "Hymn to the Dawn", de første 200 s. https://www.scottbuckley.com.au/library/hymn-to-the-dawn/ (`hymn_to_the_dawn.mp3`)
+
 ## Lydeffekter, CC0 1.0
 
 - old dot-matrix printer, viertelnachvier, Freesound 181420 (`printer.mp3`)

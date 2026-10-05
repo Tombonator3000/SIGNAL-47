@@ -98,7 +98,7 @@ export class AudioSys {
     this.ctx = ctx;
     this.master = ctx.createGain(); this.master.gain.value = this.volume; this.master.connect(ctx.destination);
     this.sfx = ctx.createGain(); this.sfx.connect(this.master);
-    this.music = ctx.createGain(); this.music.gain.value = 0.7; this.music.connect(this.master);
+    this.music = ctx.createGain(); this.music.gain.value = this.musicLevel; this.music.connect(this.master);
     this.amb = ctx.createGain(); this.amb.gain.value = 1; this.amb.connect(this.master);
     this.noise = this.makeNoise(false); this.brown = this.makeNoise(true);
     // A silent blip satisfies iOS's "sound must start inside the gesture" rule.
@@ -109,6 +109,9 @@ export class AudioSys {
   }
 
   setVolume(v: number) { this.volume = v; if (this.master) this.master.gain.value = v; }
+  /** The music's own level (the pause menu), 0..1. */
+  musicLevel = 0.7;
+  setMusic(v: number) { this.musicLevel = v; if (this.music) this.music.gain.value = v; }
 
   private makeNoise(brown: boolean) {
     const ctx = this.ctx!;
@@ -216,6 +219,8 @@ export class AudioSys {
   // The tune is made here, a slow three-chord waltz on a tinny little speaker; no
   // recording, so no licence. amRadioJam() drops it into the hiss while the line is dead.
   private am: { out: GainNode; music: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  /** The radio on the filing cabinets is playing (the music waits for it). */
+  get radioOn() { return !!this.am; }
   amRadio(at: THREE.Vector3 | null) {
     const ctx = this.ctx; if (!ctx) return;
     if (!at) {

@@ -18,6 +18,7 @@ import { Ultra } from './core/ultra';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
+import { Score, CUES, type Cue } from './core/score';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -118,6 +119,7 @@ async function boot() {
   let restoring: GameState | null = null;  // the save being opened; the chapters read their case from it
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
+  audio.setMusic(store.get('music', 0.7));
   audio.preload(); // decodes while the title screen is up
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
@@ -225,6 +227,7 @@ async function boot() {
   let endEl: HTMLElement | null = null;
   let pausedByMenu = false;
   let devRun = false;   // a run started from the developer menu: never saved
+  let score: Score | null = null;   // the music under the night (core/score.ts)
   let dev: DevMenu | null = null;   // the developer menu, with ?dev in the address
   let devWait: { ok: () => boolean; fn: () => void } | null = null;
   let releasingLock = false;
@@ -265,6 +268,7 @@ async function boot() {
   const settings = () => ({
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
+    music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
     onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
     quality, onQuality: (q: Quality) => applyQuality(q), ultraOk,
     picture: vhs.picture, onPicture: (p: Picture) => applyPicture(p),
@@ -279,8 +283,8 @@ async function boot() {
   function openPause() {
     if (pausedByMenu) return;
     pausedByMenu = true;
-    audio.suspend(true);
-    const resume = () => { pausedByMenu = false; audio.suspend(false); };
+    audio.suspend(true); score?.pause(true);
+    const resume = () => { pausedByMenu = false; audio.suspend(false); score?.pause(false); };
     ui.pause({
       ...settings(),
       onResume: resume,
@@ -407,6 +411,7 @@ async function boot() {
     caseId = o.caseId; playtime = o.playtime; if (caseId) saves.setActive(caseId);
     audio.startRoomTone();
     audio.startNight();
+    if (!score && audio.ctx) score = new Score(audio.ctx, audio.music);
     space = 'room';
     world.stopDriving();
     world.enter('saro');
@@ -434,6 +439,7 @@ async function boot() {
     fcam.raise(false); ui.viewfinder(false);
     ui.close(true);
     endEl?.remove(); endEl = null;
+    score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
@@ -519,6 +525,7 @@ async function boot() {
     ui.close(true);
     ui.showHud(false, input.touchMode);
     endEl?.remove(); endEl = null;
+    score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
@@ -623,6 +630,7 @@ async function boot() {
     world.stopDriving();
     audio.cabRadio(null);
     audio.silence(false);
+    score?.stop();
     if (!end) { toTitle(); return; }
     end.black(true, 0);
     audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.9 });
@@ -646,7 +654,7 @@ async function boot() {
     game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
-    playtime: () => playtime, caseId: () => caseId,
+    playtime: () => playtime, caseId: () => caseId, score: () => score,
     // true once a started or loaded night is running (tests wait for it after Continue)
     started: () => caseId > 0 && !starting && mode === 'play',
   };
@@ -700,6 +708,12 @@ async function boot() {
       groups.push({ title: 'Clock', items: [
         { label: '+5 minutes', run: () => { game.clock += 300; } },
         { label: '+30 minutes', run: () => { game.clock += 1800; } },
+      ] });
+    }
+    if (mode === 'play' && score) {
+      groups.push({ title: 'Music', note: 'Each cue once, from the start. The game also plays them by itself now and then.', items: [
+        ...(Object.keys(CUES) as Cue[]).map((c) => ({ label: CUES[c].title, run: () => score!.start(c), on: score!.playing === c })),
+        ...(score.playing ? [{ label: 'Stop the music', run: () => score!.fade(1.5, 120) }] : []),
       ] });
     }
     groups.push({ title: 'Tools', items: [
@@ -764,6 +778,18 @@ async function boot() {
   };
   const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
+  // What music fits where the player is (core/score.ts), and when it must keep out of the way.
+  function musicWant(): Cue | null {
+    if (game.phase === 'ch6') return null;                    // the old road has its radio and its silence
+    if (world.driving) return 'drive';
+    if (world.area === 'station01') return 'tension';
+    if (world.area === 'room6') return 'motel';
+    const hour = (((game.clock % 86400) + 86400) % 86400) / 3600;
+    if (world.area === 'diner' || (hour >= 5 && hour < 12)) return 'dawn';
+    return space === 'yard' ? 'night' : 'eerie';
+  }
+  const HELD = ['ringing', 'call', 'countdown', 'event', 'turning', 'end'];
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard'); }
   const dbg = { hold: false };
   let inCab = false;
   function step(dt: number) {
@@ -789,7 +815,7 @@ async function boot() {
       game.update(dt, t, modalOpen);
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
-      if (mode === 'play') audio.nightLife(dt, player.pos, game.clock);
+      if (mode === 'play') { audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
@@ -833,7 +859,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}`);
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing : ''}`);
   let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
