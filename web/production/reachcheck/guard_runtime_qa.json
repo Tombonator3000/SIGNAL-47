@@ -1,0 +1,272 @@
+{
+  "type": "Independent actual-runtime negative probes; temporary browser-only changes, no source edits",
+  "generated_utc": "2026-10-05T01:26:57.657413+00:00",
+  "script_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+  "runtime_source_commit": "c96e082",
+  "runtime_html_sha256": "c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa",
+  "probes": [
+    {
+      "name": "new_room6_barrier",
+      "actual_guard_status": "FAIL",
+      "status": "PASS",
+      "page_errors": [],
+      "evidence": {
+        "completed": true,
+        "checks": {
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "FAIL",
+            "unreachable_count": 188,
+            "unexpected_count": 188,
+            "expected_count": 0,
+            "explanation": "Exact engine square clearance; only whole components made of documented immutable baseline points are expected."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 0,
+            "connected_count": 0,
+            "explanation": "A narrow join passes only with actual directed paths from the exact start to both sides; unvisited direct candidates never suffice. Zero overlaps, gaps and disabled zones are excluded."
+          },
+          "interactions": {
+            "status": "FAIL",
+            "area_registered_count": 14,
+            "active_count": 11,
+            "reachable_active_count": 9,
+            "inactive_count": 3,
+            "unknown_count": 0,
+            "reason": "Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED"
+          }
+        },
+        "findings": [
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": -1.9499999999999997,
+              "z": -8002.65
+            },
+            "count": 128,
+            "bounds": {
+              "minX": -1.9499999999999997,
+              "maxX": -0.1499999999999999,
+              "minZ": -8002.65,
+              "maxZ": -8000.4
+            },
+            "reason": "new or expanded unreached AABB-clear component",
+            "expectation": null
+          },
+          {
+            "check": "reachability",
+            "status": "FAIL",
+            "at": {
+              "x": 1.35,
+              "z": -7999.65
+            },
+            "count": 60,
+            "bounds": {
+              "minX": 1.35,
+              "maxX": 1.9499999999999997,
+              "minZ": -7999.65,
+              "maxZ": -7997.4
+            },
+            "reason": "new or expanded unreached AABB-clear component",
+            "expectation": null
+          },
+          {
+            "check": "interactions",
+            "status": "FAIL",
+            "id": "r6:phone",
+            "at": {
+              "x": -0.27,
+              "z": -8002.22
+            },
+            "reason": "No reached grid point and sampled legal aim picked this actual registered target"
+          },
+          {
+            "check": "interactions",
+            "status": "FAIL",
+            "id": "r6:bathroom",
+            "at": {
+              "x": -0.97,
+              "z": -8002.94
+            },
+            "reason": "No reached grid point and sampled legal aim picked this actual registered target"
+          }
+        ],
+        "grid_counts": {
+          "valid_count": 645,
+          "reached_count": 457,
+          "unreachable_count": 188
+        },
+        "unknown_objects": []
+      }
+    },
+    {
+      "name": "unknown_room6_label",
+      "actual_guard_status": "UNVERIFIED",
+      "status": "PASS",
+      "page_errors": [],
+      "evidence": {
+        "completed": true,
+        "checks": {
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "PASS",
+            "unreachable_count": 0,
+            "unexpected_count": 0,
+            "expected_count": 0,
+            "explanation": "Exact engine square clearance; only whole components made of documented immutable baseline points are expected."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 0,
+            "connected_count": 0,
+            "explanation": "A narrow join passes only with actual directed paths from the exact start to both sides; unvisited direct candidates never suffice. Zero overlaps, gaps and disabled zones are excluded."
+          },
+          "interactions": {
+            "status": "UNVERIFIED",
+            "area_registered_count": 14,
+            "active_count": 10,
+            "reachable_active_count": 10,
+            "inactive_count": 3,
+            "unknown_count": 1,
+            "reason": "Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED"
+          }
+        },
+        "findings": [],
+        "grid_counts": {
+          "valid_count": 705,
+          "reached_count": 705,
+          "unreachable_count": 0
+        },
+        "unknown_objects": [
+          {
+            "id": "r6:phone",
+            "status": "UNVERIFIED",
+            "label_error": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "changed_diner_proxy_name",
+      "actual_guard_status": "UNVERIFIED",
+      "status": "PASS",
+      "page_errors": [],
+      "evidence": {
+        "completed": true,
+        "checks": {
+          "start": {
+            "status": "PASS",
+            "evidence": "Exact anchor to grid movement witness recorded"
+          },
+          "reachability": {
+            "status": "PASS",
+            "unreachable_count": 72,
+            "unexpected_count": 0,
+            "expected_count": 72,
+            "explanation": "Exact engine square clearance; only whole components made of documented immutable baseline points are expected."
+          },
+          "floor_steps": {
+            "status": "PASS",
+            "passable_above_0_12m": 0,
+            "blocked_height_boundaries": 0
+          },
+          "zone_joins": {
+            "status": "PASS",
+            "narrow_positive_overlaps": 3,
+            "connected_count": 3,
+            "explanation": "A narrow join passes only with actual directed paths from the exact start to both sides; unvisited direct candidates never suffice. Zero overlaps, gaps and disabled zones are excluded."
+          },
+          "interactions": {
+            "status": "UNVERIFIED",
+            "area_registered_count": 0,
+            "active_count": 0,
+            "reachable_active_count": 0,
+            "inactive_count": 0,
+            "unknown_count": 0,
+            "reason": "No active registered area interactions; geometry proxies alone cannot verify gameplay coverage",
+            "unbound_proxy_count": 13,
+            "unbound_proxy_ids": [
+              "booth",
+              "clipping",
+              "coffee",
+              "counter",
+              "door",
+              "driver",
+              "jukebox",
+              "menu",
+              "payphone",
+              "sign",
+              "unexpectedRig",
+              "waitress",
+              "window"
+            ]
+          }
+        },
+        "findings": [
+          {
+            "check": "reachability",
+            "status": "EXPECTED",
+            "at": {
+              "x": -8000.25,
+              "z": -8.400000000000002
+            },
+            "count": 72,
+            "bounds": {
+              "minX": -8000.25,
+              "maxX": -7998.599999999999,
+              "minZ": -8.400000000000002,
+              "maxZ": -7.65
+            },
+            "reason": "documented unused baseline pocket",
+            "expectation": {
+              "id": "north_inside_corner",
+              "reason": "Known unused north interior corner of the diner; Claude accepted 2026-10-05 00:52 UTC.",
+              "box": {
+                "minX": -8000.4,
+                "maxX": -7998.6,
+                "minZ": -8.4,
+                "maxZ": -7.65
+              },
+              "local_box": {
+                "minX": -0.4,
+                "maxX": 1.4,
+                "minZ": -8.4,
+                "maxZ": -7.65
+              },
+              "baseline_max_count": 72,
+              "spacing_m": 0.15,
+              "coordinate_tolerance_m": 1e-06,
+              "rule": "Entire component is inside the box and every point matches an immutable baseline row; total expected points may not exceed the baseline."
+            }
+          }
+        ],
+        "grid_counts": {
+          "valid_count": 19396,
+          "reached_count": 19324,
+          "unreachable_count": 72
+        },
+        "unknown_objects": []
+      }
+    }
+  ],
+  "status": "PASS",
+  "probe_harness_sha256": "be42e8d845d8c5cefa7ab0b30ed0080e6c94b681733f38d6651feef915d81ed3"
+}

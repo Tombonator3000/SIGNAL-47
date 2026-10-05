@@ -1,368 +1,396 @@
 {
-  "type": "independent recorded-evidence validation",
-  "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
-  "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+  "type": "Current guard delivery QA; recorded evidence and actual negative/replay runs, no full chapter suite",
+  "generated_utc": "2026-10-05T01:31:13.343481+00:00",
   "status": "PASS",
+  "script_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+  "runtime_source_commit": "c96e082eb92e9d26b9c64e0a147cc26576744055",
+  "runtime_source_method": "git archive c96e082 web; isolated build, no edits to src",
+  "source_html_sha256": "c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa",
+  "source_html_bytes": 18556096,
+  "all_area_actual_cli_exit_code": 0,
   "checks": [
     {
       "status": "PASS",
-      "check": "whole scanner below 10 minute limit"
+      "check": "all-area CLI exit 0, completed below ten minute limit"
     },
     {
       "status": "PASS",
-      "check": "final checker SHA matches executed checker"
+      "check": "source HTML hash matches frozen c96e082 build"
     },
     {
       "status": "PASS",
-      "check": "frozen build SHA matches all-area run"
+      "check": "saro compact/map/full file hashes"
     },
     {
       "status": "PASS",
-      "check": "saro: complete 0.15 m coverage"
+      "check": "saro completed guard, no page or output errors"
     },
     {
       "status": "PASS",
-      "check": "saro: report/map hashes"
+      "check": "saro counts match recorded runtime"
     },
     {
       "status": "PASS",
-      "check": "saro: unique reached subset and counts"
+      "check": "saro no new pocket or passable height jump"
     },
     {
       "status": "PASS",
-      "check": "saro: parent vector size"
+      "check": "saro compact report omits sampled arrays"
     },
     {
       "status": "PASS",
-      "check": "saro: directed acyclic cardinal parent tree"
+      "check": "saro external detail does not claim final delivery status"
     },
     {
       "status": "PASS",
-      "check": "saro: unreachable component accounting"
+      "check": "saro external grid counts retained"
     },
     {
       "status": "PASS",
-      "check": "saro: recorded real movement endpoints"
+      "check": "saro map decodes"
     },
     {
       "status": "PASS",
-      "check": "saro: actual pick witnesses on reached points and within range"
+      "check": "station01 compact/map/full file hashes"
     },
     {
       "status": "PASS",
-      "check": "saro: no page errors and complete outputs"
+      "check": "station01 completed guard, no page or output errors"
     },
     {
       "status": "PASS",
-      "check": "saro: decodable PNG"
+      "check": "station01 counts match recorded runtime"
     },
     {
       "status": "PASS",
-      "check": "station01: complete 0.15 m coverage"
+      "check": "station01 no new pocket or passable height jump"
     },
     {
       "status": "PASS",
-      "check": "station01: report/map hashes"
+      "check": "station01 compact report omits sampled arrays"
     },
     {
       "status": "PASS",
-      "check": "station01: unique reached subset and counts"
+      "check": "station01 external detail does not claim final delivery status"
     },
     {
       "status": "PASS",
-      "check": "station01: parent vector size"
+      "check": "station01 external grid counts retained"
     },
     {
       "status": "PASS",
-      "check": "station01: directed acyclic cardinal parent tree"
+      "check": "station01 map decodes"
     },
     {
       "status": "PASS",
-      "check": "station01: unreachable component accounting"
+      "check": "room6 compact/map/full file hashes"
     },
     {
       "status": "PASS",
-      "check": "station01: recorded real movement endpoints"
+      "check": "room6 completed guard, no page or output errors"
     },
     {
       "status": "PASS",
-      "check": "station01: actual pick witnesses on reached points and within range"
+      "check": "room6 counts match recorded runtime"
     },
     {
       "status": "PASS",
-      "check": "station01: no page errors and complete outputs"
+      "check": "room6 no new pocket or passable height jump"
     },
     {
       "status": "PASS",
-      "check": "station01: decodable PNG"
+      "check": "room6 compact report omits sampled arrays"
     },
     {
       "status": "PASS",
-      "check": "room6: complete 0.15 m coverage"
+      "check": "room6 external detail does not claim final delivery status"
     },
     {
       "status": "PASS",
-      "check": "room6: report/map hashes"
+      "check": "room6 external grid counts retained"
     },
     {
       "status": "PASS",
-      "check": "room6: unique reached subset and counts"
+      "check": "room6 map decodes"
     },
     {
       "status": "PASS",
-      "check": "room6: parent vector size"
+      "check": "diner compact/map/full file hashes"
     },
     {
       "status": "PASS",
-      "check": "room6: directed acyclic cardinal parent tree"
+      "check": "diner completed guard, no page or output errors"
     },
     {
       "status": "PASS",
-      "check": "room6: unreachable component accounting"
+      "check": "diner counts match recorded runtime"
     },
     {
       "status": "PASS",
-      "check": "room6: recorded real movement endpoints"
+      "check": "diner no new pocket or passable height jump"
     },
     {
       "status": "PASS",
-      "check": "room6: actual pick witnesses on reached points and within range"
+      "check": "diner compact report omits sampled arrays"
     },
     {
       "status": "PASS",
-      "check": "room6: no page errors and complete outputs"
+      "check": "diner external detail does not claim final delivery status"
     },
     {
       "status": "PASS",
-      "check": "room6: decodable PNG"
+      "check": "diner external grid counts retained"
     },
     {
       "status": "PASS",
-      "check": "diner: complete 0.15 m coverage"
+      "check": "diner map decodes"
     },
     {
       "status": "PASS",
-      "check": "diner: report/map hashes"
+      "check": "old 6097012 runtime still reports all twelve motel height jumps and CLI exit 1"
     },
     {
       "status": "PASS",
-      "check": "diner: unique reached subset and counts"
+      "check": "actual max-cells 1 rejects entire room6 scan and CLI exit 2"
     },
     {
       "status": "PASS",
-      "check": "diner: parent vector size"
+      "check": "40 JS and 28 Python adversarial fixtures, final tool CLI exit 0"
     },
     {
       "status": "PASS",
-      "check": "diner: directed acyclic cardinal parent tree"
-    },
-    {
-      "status": "PASS",
-      "check": "diner: unreachable component accounting"
-    },
-    {
-      "status": "PASS",
-      "check": "diner: recorded real movement endpoints"
-    },
-    {
-      "status": "PASS",
-      "check": "diner: actual pick witnesses on reached points and within range"
-    },
-    {
-      "status": "PASS",
-      "check": "diner: no page errors and complete outputs"
-    },
-    {
-      "status": "PASS",
-      "check": "diner: decodable PNG"
+      "check": "all twelve join-side routes replayed through actual movement without intermediate placement"
     }
   ],
-  "limits": "This validates recorded evidence and accounting; it does not replay every graph edge.",
+  "areas": [
+    {
+      "area": "saro",
+      "reached": 208161,
+      "valid": 208217,
+      "expected_unreached": 56,
+      "active_picks": 34,
+      "connected_narrow_joins": 3,
+      "interaction_coverage": "UNVERIFIED",
+      "map_dimensions": [
+        1820,
+        1898
+      ]
+    },
+    {
+      "area": "station01",
+      "reached": 128241,
+      "valid": 128246,
+      "expected_unreached": 5,
+      "active_picks": 14,
+      "connected_narrow_joins": 0,
+      "interaction_coverage": "PASS",
+      "map_dimensions": [
+        1727,
+        1920
+      ]
+    },
+    {
+      "area": "room6",
+      "reached": 705,
+      "valid": 705,
+      "expected_unreached": 0,
+      "active_picks": 11,
+      "connected_narrow_joins": 0,
+      "interaction_coverage": "UNVERIFIED",
+      "map_dimensions": [
+        564,
+        928
+      ]
+    },
+    {
+      "area": "diner",
+      "reached": 19324,
+      "valid": 19396,
+      "expected_unreached": 72,
+      "active_picks": 0,
+      "connected_narrow_joins": 3,
+      "interaction_coverage": "UNVERIFIED",
+      "map_dimensions": [
+        1227,
+        1920
+      ]
+    }
+  ],
   "checker_fixtures": {
     "status": "PASS",
-    "count": 17,
-    "scope": "Synthetic cases, not Three.js integration"
+    "actual_exit_code": 0,
+    "names": [
+      "circle-clear diagonal is distinct from actual AABB overlap",
+      "circle-collider diagonal rejection",
+      "0.15 m edge cannot PASS without update progress",
+      "short-step movement reaches exact endpoint",
+      "directed edge is not mirrored",
+      "disconnected valid island stays unreachable",
+      "inert front proxy remains a blocker in actual pick",
+      "same id is not proof of exact registered target identity",
+      "actual target pick accepted",
+      "overlap exactly 0.60 m violates strictly greater than 0.60",
+      "overlap 0.601 m in both dimensions is sufficient",
+      "mere touching without positive overlap is not narrow-join failure",
+      "actual floor helper distinguishes 0.121 and 0.119 m in both directions",
+      "height QA does not remove movement edges",
+      "successful active target cannot hide label exception",
+      "label exception cannot hide a measured interaction failure",
+      "empty area interactions are not 0/0 PASS",
+      "custom spacing preserves a measured failure",
+      "custom spacing without failures stays unverified",
+      "incomplete run preserves already measured findings",
+      "incomplete run without measured failures never passes",
+      "complete required spacing passes when all checks pass",
+      "interrupted floor scan retains an already measured steep edge",
+      "exact Player.resolve square rule allows touching but rejects overlap",
+      "known baseline pocket points are expected with coordinates and reason",
+      "new point inside the broad known box is not whitelisted",
+      "expanded component fails as a whole rather than hiding its old points",
+      "new pocket elsewhere fails",
+      "baseline coordinates allow sub-micrometre floating-point noise only",
+      "one millimetre shift is not baseline sampling tolerance",
+      "custom spacing cannot inherit 0.15 m pocket expectations",
+      "expected point count cannot exceed the frozen area baseline",
+      "alternate route with both exact-start paths passes narrow join",
+      "unvisited component cannot pass merely because its direct join works",
+      "two unvisited components with bidirectional direct movement still fail",
+      "known diner geometry-only coverage gap has all thirteen named proxies",
+      "missing or unexpected proxy inventory and other empty areas do not get a coverage exception",
+      "explicit expected diner coverage gap does not block a complete regression guard",
+      "even an erroneous guard exception cannot hide a measured interaction FAIL",
+      "unexplained interaction uncertainty still blocks the guard",
+      "Python complete required spacing passes",
+      "Python custom spacing preserves measured FAIL",
+      "Python custom spacing without FAIL stays unverified",
+      "Python incomplete checks never pass",
+      "Python partial findings retain FAIL",
+      "Python incomplete runtime failure retains FAIL",
+      "Python interrupted floor scan retains measured FAIL",
+      "Python summary retains FAIL beside UNVERIFIED",
+      "Python explicit expected coverage gap can pass the guard",
+      "Python coverage exception cannot hide measured FAIL",
+      "Python unknown interaction coverage without exception still blocks",
+      "Python map write failure with FAIL yields FAIL",
+      "Python map write failure with PASS yields UNVERIFIED",
+      "Python final JSON failure with FAIL yields FAIL",
+      "Python surviving draft after final JSON failure never claims PASS with FAIL",
+      "Python final JSON failure with PASS yields UNVERIFIED",
+      "Python surviving draft after final JSON failure never claims PASS with PASS",
+      "Python successful outputs do not verify an incomplete run",
+      "Python map sees full grid while default JSON omits all bulk arrays without mutating evidence",
+      "Python optional external full-grid file preserves details and ordinary JSON stays compact",
+      "Python full sampling evidence never claims a green overall artifact verdict after map failure",
+      "Python rejects full-grid directory in production: production",
+      "Python rejects full-grid directory in production: production/reachcheck/detail",
+      "Python rejects symlink alias into production",
+      "Python rejected detail destination retains measured FAIL and never claims a file",
+      "Python pure summary output failure returns UNVERIFIED exit 2",
+      "Python summary output failure preserves measured FAIL exit 1",
+      "Python output directory failure is caught before browser execution"
+    ],
+    "stdout_sha256": "5f68d45c3aadf5f89c592fa59fa94f4f429e14e14102171828161528125d15ad"
   },
-  "negative_point_budget": {
-    "status": "PASS",
-    "actual_checker_status": "UNVERIFIED",
-    "completed": false,
-    "actual_exit_code": 2,
-    "reason": "Explicit max-cells=1 rejected full grid; no truncated subset passed",
-    "area_report": {
-      "area": "room6",
+  "actual_negative_cli_runs": [
+    {
+      "name": "unchanged 6097012 motel crossings",
+      "actual_exit_code": 1,
+      "runtime_source_commit": "6097012",
+      "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+      "tested_script_sha256": "62ccdf17474125ab651494c15060d71b2e86fbda3a9ea773d35c8492d1f7db82",
+      "status": "FAIL",
+      "floor_steps": {
+        "status": "FAIL",
+        "passable_above_0_12m": 12,
+        "blocked_height_boundaries": 0
+      }
+    },
+    {
+      "name": "room6 max-cells 1",
+      "actual_exit_code": 2,
+      "runtime_source_commit": "c96e082",
+      "tested_script_sha256": "62ccdf17474125ab651494c15060d71b2e86fbda3a9ea773d35c8492d1f7db82",
       "status": "UNVERIFIED",
       "completed": false,
-      "checks": {
-        "completeness": {
-          "status": "UNVERIFIED",
-          "reason": "Grid 2072 exceeds explicit max-cells 1; no subset tested"
-        },
-        "runtime_errors": {
-          "status": "PASS",
-          "page_errors": []
-        },
-        "output_completeness": {
-          "status": "PASS",
-          "errors": []
-        }
-      },
-      "findings": [],
-      "method": {
-        "spacing_m": 0.15,
-        "endpoint_tolerance_m": 0.0001,
-        "max_movement_step_m": 0.04,
-        "validity": "Player.walkable plus Euclidean circle/rectangle clearance, as requested",
-        "actual_physics": "Existing Player.place/update, including actual AABB collision resolution",
-        "graph": "Four cardinal neighbours; directed, tested parent tree. Reverse edges are never inferred.",
-        "floor": "Height changes are measured separately and never removed from the reach graph.",
-        "pick": "Actual inter.pick, full unmodified registry, exact target identity; legal camera pitch.",
-        "limitations": [
-          "Finite 0.15 m grid and finite aim samples are not a continuous-space proof.",
-          "Circle-clear corners may be rejected by the actual AABB resolver; those remain in the requested grid.",
-          "No hardware performance or complete chapter playthrough is verified."
-        ]
-      },
-      "phase": "ch4",
-      "zones": [
-        {
-          "id": "room6",
-          "minX": -2.25,
-          "maxX": 2.25,
-          "minZ": -8003,
-          "maxZ": -7997,
-          "enabled": true
-        },
-        {
-          "id": "room6Door",
-          "minX": -1.98,
-          "maxX": -0.82,
-          "minZ": -7997.95,
-          "maxZ": -7996.05,
-          "enabled": true
-        },
-        {
-          "id": "room6Walk",
-          "minX": -2.6,
-          "maxX": 2.6,
-          "minZ": -7996.75,
-          "maxZ": -7994.95,
-          "enabled": true
-        }
-      ],
-      "colliders": [
-        {
-          "id": null,
-          "minX": -2.62,
-          "maxX": -2.48,
-          "minZ": -7995.02,
-          "maxZ": -7994.88,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": 2.48,
-          "maxX": 2.62,
-          "minZ": -7995.02,
-          "maxZ": -7994.88,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": -2,
-          "maxX": -1.89,
-          "minZ": -7998.1,
-          "maxZ": -7996.95,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": 0.15,
-          "maxX": 2.12,
-          "minZ": -8002.98,
-          "maxZ": -8000.38,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": -0.57,
-          "maxX": 0.04,
-          "minZ": -8002.85,
-          "maxZ": -8002.14,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": -2.25,
-          "maxX": -1.48,
-          "minZ": -8001.58,
-          "maxZ": -8000.02,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": 0.025,
-          "maxX": 1.375,
-          "minZ": -7999.025,
-          "maxZ": -7998.075,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": 0.46,
-          "maxX": 1.04,
-          "minZ": -7997.99,
-          "maxZ": -7997.41,
-          "enabled": true
-        },
-        {
-          "id": null,
-          "minX": 0.46,
-          "maxX": 1.04,
-          "minZ": -7999.73,
-          "maxZ": -7999.15,
-          "enabled": true
-        }
-      ],
-      "player": {
-        "radius_m": 0.27,
-        "eye_m": 1.62,
-        "speed_mps": 1.9
-      },
-      "start": {
-        "x": -1.4,
-        "z": -7995.7,
-        "floor": 0,
-        "walkable": true,
-        "circle_clear": true,
-        "seed_witnesses": []
-      },
-      "error": "Error: Grid 2072 exceeds explicit max-cells 1; no subset tested\n    at Object.run (eval at evaluate (:311:30), <anonymous>:108:34)\n    at async eval (eval at evaluate (:311:30), <anonymous>:281:10)\n    at async <anonymous>:337:30",
-      "elapsed_seconds": 6.709599999994039,
-      "provenance": {
-        "generated_utc": "2026-10-05T00:40:08.882035+00:00",
-        "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
-        "git_base": "609701226d3f1405276d4951f8dfb1d6ce25222c",
-        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
-        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
-        "browser": "Playwright Chromium, ANGLE swiftshader",
-        "requested_areas": [
-          "room6"
-        ]
-      },
-      "runtime_page_errors": [],
-      "artifacts": {
-        "json_written": true,
-        "map_written": true,
-        "map_sha256": "f1f9fe366d988aff88fdb8bc0c45e3faf4f106fe30c6c4e127e4c31adbfc0ba2"
-      }
+      "error": "Error: Grid 2072 exceeds explicit max-cells 1; no subset tested\n    at Object.run (eval at evaluate (:311:30), <anonymous>:168:34)\n    at async eval (eval at evaluate (:311:30), <anonymous>:381:10)\n    at async <anonymous>:337:30"
     }
+  ],
+  "reuse_basis_for_negative_cli_runs": "Only diagnostic legend layout changed after these runs; sampling/status/output logic was unchanged. Final all-area run and browser negative probes use the final hash.",
+  "actual_cli_destination_rejections": {
+    "script_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+    "tests": [
+      {
+        "name": "production full-grid destination rejected",
+        "status": "PASS",
+        "actual_exit_code": 2,
+        "stderr": "reachcheck.py: error: Full grids must be outside web/production, including symlink aliases"
+      },
+      {
+        "name": "symlink production destination rejected",
+        "status": "PASS",
+        "actual_exit_code": 2,
+        "stderr": "reachcheck.py: error: Full grids must be outside web/production, including symlink aliases"
+      }
+    ],
+    "status": "PASS"
   },
-  "environment": {
-    "python": "3.12.14",
-    "playwright": "1.63.0",
-    "pillow": "12.3.0",
-    "browser_installation": "chromium_headless_shell-1243",
-    "rendering": "ANGLE swiftshader"
+  "runtime_negative_probes": "guard_runtime_qa.json; temporary browser-only changes, not CLI exit-code tests",
+  "continuous_join_replays": "guard_join_replays.json",
+  "visual_inspection": {
+    "status": "PASS",
+    "areas": [
+      "saro",
+      "station01",
+      "room6",
+      "diner"
+    ],
+    "room6_legend": "Dynamic footer verified; all eight entries visible"
+  },
+  "limits": [
+    "Finite 0.15 m grid, not continuous-space proof",
+    "Inactive objects and unbound diner remain UNVERIFIED coverage",
+    "No complete chapter suite, real keyboard/touch, Pages deployment or hardware fps verified by this contribution"
+  ],
+  "historical_evidence": "Original reports/routes/validation are recoverable at 77b751f; P2 QA at 9a6270d. Working reports now represent the current guard.",
+  "main_runtime_source_equivalence": {
+    "status": "PASS",
+    "main_commit": "9fc1ab8126682ee9ea3acfe0934e8ea2d51adcb2",
+    "compared_to": "c96e082eb92e9d26b9c64e0a147cc26576744055",
+    "compared_paths": [
+      "web/src",
+      "web/package.json",
+      "web/package-lock.json",
+      "web/index.html",
+      "web/vite.config.ts",
+      "web/tsconfig.json"
+    ],
+    "changed_files": [],
+    "meaning": "Current main has identical runtime source/build inputs to the actually tested c96e082 snapshot; reuse the unchanged green runtime scan."
+  },
+  "independent_recorded_evidence_review": {
+    "status": "PASS",
+    "tool_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+    "verified_hashes": 14,
+    "reached_points": 356431,
+    "valid_points": 356564,
+    "parent_edges_checked": 356427,
+    "exact_start_seeds": 4,
+    "active_pick_evidence_checked": 59,
+    "join_polylines_reconstructed": 12,
+    "expected_points_exactly_match_original_baseline": 133,
+    "unexpected_points": 0,
+    "height_jumps": 0,
+    "note": "Read-only independent reconstruction and identity/range check; not a second browser run"
+  },
+  "rebased_delivery_build": {
+    "status": "PASS",
+    "checkout_commit_at_build": "b7b73c263127368dccb606f36236af793b84fdfa",
+    "main_base": "9fc1ab8126682ee9ea3acfe0934e8ea2d51adcb2",
+    "elapsed_seconds": 2.54,
+    "modules": 192,
+    "html_sha256": "c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa",
+    "html_byteidentical_to_actual_runtime": true,
+    "reuse": "The exact HTML already exercised by the final four-area scan; no duplicate scan needed.",
+    "build_attempts": "An initial call from repository root could not locate index.html; corrected web working directory succeeded."
   }
 }
