@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { mergeStatic, addFlood } from '../world/kit';
+import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { roadFlood, HEADLIGHT_SLOTS, retroBeam, roadMaterials, type Build, poles, fences, delineators, signs, cattleGuard, wireMesh } from './roadProps';
 import { station, ranch, plants, saroLights, trackRoute } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
-import { HWY, TRK, GUARD, START, END, ENDZONE, trackNearest, trackHalf, surfaceY, smooth, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry } from './roadTerrain';
+import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, smooth, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
+import { oldAsphaltTex } from './oldRoadTextures';
 
 export { roadFlood, HEADLIGHT_SLOTS };
 
@@ -50,6 +51,7 @@ export class RoadArea implements DriveArea {
   /** Places on the road with ground of their own (the diner's gravel lot), world boxes and heights. */
   private lots: { box: Box2; surface: Surface; y: number }[] = [];
   private glow = new GlowPoints();
+  private oldAsphalt: THREE.MeshStandardMaterial;
   private glints: { i: number; p: THREE.Vector3 }[];
   private last = new THREE.Vector3();
   private haveLast = false;
@@ -74,7 +76,9 @@ export class RoadArea implements DriveArea {
     const b: Build = { root: this.group, statics: new THREE.Group(), glow: this.glow, m, obstacles: [], wires: [] };
     const ground = new THREE.Mesh(mergeGeometries([groundGeometry(), ...vergeGeometry()])!, m.ground);
     ground.name = 'desert';
-    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), new THREE.Mesh(trackGeometry(), m.gravel));
+    // the old Roswell road going off east across from the diner (OldRoad.ts has the rest of it)
+    this.oldAsphalt = floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood);
+    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), new THREE.Mesh(trackGeometry(), m.gravel), new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));
     ranch(b);    // flood slot 3
     station(b);  // flood slot 4
     // the builders placed their lamps in local terms; floods live in world terms
@@ -106,6 +110,8 @@ export class RoadArea implements DriveArea {
     for (const l of this.lots) if (x >= l.box.minX && x <= l.box.maxX && z >= l.box.minZ && z <= l.box.maxZ) return l;
     return null;
   }
+  /** The old road's asphalt again, once its own picture is in (round 11, loaded with the diner). */
+  refreshOldRoad() { this.oldAsphalt.map?.dispose(); this.oldAsphalt.map = oldAsphaltTex(); this.oldAsphalt.needsUpdate = true; }
   /** How much of the road's own night light is on (the diner has its own, at dawn, World.ts). */
   setNight(k: number) { this.night.hemi.intensity = 0.9 * k; this.night.moon.intensity = 0.45 * k; }
 
@@ -117,6 +123,9 @@ export class RoadArea implements DriveArea {
     if (lx > GUARD.x0 && lx < GUARD.x1 && lz > GUARD.z0 && lz < GUARD.z1) return SURF.guard;
     if (ax <= HWY.paved) return SURF.asphalt;
     if (ax <= HWY.shoulder) return SURF.shoulder;
+    const od = oldNearest(lx, lz).d;
+    if (od <= OLD.half + 0.2) return SURF.asphalt;
+    if (od <= OLD.shoulder + 0.6) return SURF.shoulder;
     const t = trackNearest(lx, lz);
     if (t.d <= trackHalf(t.s)) return SURF.gravel;
     return ax <= HWY.margin || t.d <= TRK.margin ? SURF.verge : SURF.dirt;

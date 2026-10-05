@@ -32,7 +32,8 @@ import { DINER } from '../drive/roadShape';
 //   STATION 01  around (0, 0, 8000)     the survey station, chapter three
 //   room 6      around (0, 0, -8000)    Nora's room at Sierra Motor Court, chapter four
 //   diner       in the road area        Mesa Diner on the highway, 2 km south (Diner.ts, by Codex), «All Night»
-//   roswell     around (0, 0, -24000)   the old Roswell road at dawn, chapter six (drive/OldRoad.ts)
+//   roswell     on the road's map       the old Roswell road at dawn, chapter six (drive/OldRoad.ts): mile 0
+//                                       is across the highway from the diner, and C 13 km on
 //
 // The walk from SARO's fire exit over the highway to the motel is part of SARO (Crossing.ts).
 
@@ -41,7 +42,6 @@ export const STATION_ORIGIN = new THREE.Vector3(0, 0, 8000);
 export const ROOM6_ORIGIN = new THREE.Vector3(0, 0, -8000);
 // Mesa Diner stands in the road area, beside the highway 2 km south of the start (roadShape.ts)
 export const DINER_ORIGIN = new THREE.Vector3(8000 + DINER.x, DINER.y + 0.1, DINER.z);
-export const OLDROAD_ORIGIN = new THREE.Vector3(0, 0, -24000);
 // The night areas see the camera's far plane at 5 km and thick haze; the old road at dawn
 // sees farther (the camera goes up at the end).
 const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
@@ -262,18 +262,22 @@ export class World {
     });
   }
 
-  // The old road at dawn, its own truck lit by its own floods, and a controller for it
+  // The old road at dawn, its own truck lit by its own floods, and a controller for it. It
+  // begins at the diner (on the road's map), so the diner and the road come first.
   private ensureOldRoad() {
     return this.once('oldroad', async () => {
       const [{ OldRoad, oldFlood, OLD_HEADLIGHTS }, { DriveController }, { Truck }] = await Promise.all([this.load('OldRoad'), this.load('Drive'), this.load('Truck'), this.load('engine'),
-        loadArtFor(OLDROAD_ART)]); // round 11: the road's own pictures come with it
+        loadArtFor(OLDROAD_ART), this.ensureDiner()]); // round 11: the road's own pictures come with it
       const truck = new Truck({ flood: oldFlood });
       truck.headlightFloods(oldFlood, OLD_HEADLIGHTS);
       truck.group.visible = false;
       this.d.scene.add(truck.group);
-      const road = new OldRoad(OLDROAD_ORIGIN.clone());
+      const road = new OldRoad(ROAD_ORIGIN);
       road.group.visible = false;
       this.d.scene.add(road.group);
+      // the diner's walls, sign and rig, and its lot, as in the road area (ensureDiner)
+      const o = DINER_ORIGIN, d = this.diner!;
+      road.addPlace(d.colliders.filter((c) => c !== this.dinerCol), { minX: o.x + 3.6, maxX: o.x + 16, minZ: o.z - 16, maxZ: o.z + 16 }, o.y);
       const drive = new DriveController(this.d.camera, truck, road);
       drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       this.oldRoad = road; this.oldTruck = truck; this.oldDrive = drive;
@@ -285,39 +289,20 @@ export class World {
   /** The engine sound, for the chapter that stops it. */
   get engineSound() { return this.engine; }
 
-  /** From the diner's lot out onto the old road (chapter six): a cut with the road's name,
-   *  then the truck in the right lane just before the six-mile post, the engine running.
-   *  ready() runs behind the black, before the picture comes back. */
+  /** From the diner's lot out onto the old road (chapter six), driven the whole way: the truck
+   *  where it was left on the lot, now the old road's (its area has the diner too), across the
+   *  highway and out to C. ready() runs behind the black, before the picture comes back. */
   driveOldRoad(ready: () => void) {
-    if (this.busy) return;
-    this.busy = true;
-    const { fade, hold, toast } = this.d;
-    hold(true);
-    fade(true, 'THE OLD ROAD');
-    const loaded = this.ensureOldRoad();
-    this.d.after(2.4, () => {
-      void loaded.then(() => {
-        this.enter('roswell');
-        const road = this.oldRoad!, drive = this.oldDrive!, truck = this.oldTruck!;
-        road.hitBack = false;
-        drive.place(road.start.pos, road.start.heading);
-        truck.setDriving(true);
-        truck.setHeadlights(true);
-        truck.setLightLevel(1);
-        truck.setHeadColor(null);
-        truck.setDashLevel(null);
+    void this.ensureDiner().then(() => {
+      // (a chapter started from the menu has the truck somewhere else)
+      if (this.truckAt !== 'diner') this.placeTruck('diner');
+      this.startTrip('diner', 'roswell', { leg: 'roswell', onStart: () => {
+        this.oldRoad!.hitBack = false;
         this.oldControl = null;
-        this.truckAt = null; this.leg = 'roswell';
-        this.parkAt('diner');
-        this.startEngine();
-        this.driving = true;
         ready();
-        toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake. A and D: steer.', 4.5);
-      }).catch((e) => {
-        console.error(e);
-        toast('The old road could not be loaded. Check your connection and try the truck again.', 5);
-      }).finally(() => { this.busy = false; hold(false); fade(false); });
-    });
+        this.d.toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer.', 4.5);
+      } });
+    }).catch((e: Error) => { console.error(e); this.d.toast('The diner could not be loaded. Check your connection and try the truck again.', 5); });
   }
 
   /** Load what an area needs before entering it (a restored save, or a drive). */
@@ -346,7 +331,8 @@ export class World {
   private dinerPark: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
   private ensureDiner() {
     return this.once('diner', async () => {
-      const [{ Diner }] = await Promise.all([this.load('Diner'), this.ensureRoad(), loadArtFor(DINER_ART)]);
+      const [{ Diner }] = await Promise.all([this.load('Diner'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt'])]);
+      this.road!.refreshOldRoad();   // the old road going off across from it, in its own asphalt (round 11)
       const d = new Diner(DINER_ORIGIN.clone(), true);
       d.setSurfaceArt(artTexture('dinerBooth', [2, 2]), artTexture('dinerWall', [0.5, 0.5]));
       d.group.visible = this.area === 'road' || this.area === 'diner';
@@ -385,7 +371,7 @@ export class World {
     if (this.truck) this.truck.group.visible = onRoad && (this.leg === 'road' || this.truckAt === 'diner');
     if (this.parked) this.parked.group.visible = here('station01');
     if (this.room6) this.room6.group.visible = area === 'room6';
-    if (this.diner) this.diner.group.visible = onRoad;
+    if (this.diner) this.diner.group.visible = onRoad || area === 'roswell';
     if (this.oldRoad) this.oldRoad.group.visible = area === 'roswell';
     if (this.oldTruck) this.oldTruck.group.visible = area === 'roswell';
     const cam = this.d.camera, far = area === 'roswell' ? FAR_OLDROAD : FAR;
@@ -556,9 +542,10 @@ export class World {
   /** Get in and drive from where the truck stands to another place, the whole way.
    *  to null: drive anywhere; at: start there, not where the truck stands; free: the trucks
    *  stay where they are and go back to their places afterwards (the developer menu);
-   *  hint: said once on coming into the area where the truck is to be left. */
+   *  hint: said once on coming into the area where the truck is to be left; leg: start in this
+   *  leg's area, with its truck where the place's truck stands (the old road from the diner). */
   startTrip(from: LegId, to: LegId | null, o: { perMetre?: number; onArrive?: () => void; onStart?: () => void; at?: { pos: THREE.Vector3; heading: number };
-    legs?: LegId[]; free?: boolean; hint?: string } = {}) {
+    legs?: LegId[]; free?: boolean; hint?: string; leg?: LegId } = {}) {
     if (this.busy || this.driving) return;
     this.busy = true;
     const { fade, hold, toast } = this.d;
@@ -570,8 +557,8 @@ export class World {
       return Promise.all([...need.map((l) => this.ensureLeg(l)), ...places, this.load('engine'), new Promise((r) => setTimeout(r, 400))]);
     }).then(() => {
       // a place can stand in another's area (the diner in the road's): the trip starts in that leg
-      const leg0 = this.mods.legs!.legOf(from), L = this.legs[leg0]!;
-      const g = L.truck.group;
+      const leg0 = o.leg ?? this.mods.legs!.legOf(from), L = this.legs[leg0]!;
+      const g = (this.truckOf(from) ?? L.truck).group;
       // where every parked truck stands now, so a trip that is given up puts them back
       this.trucksHome = (['saro', 'station01', 'diner'] as LegId[]).map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
         .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
@@ -809,7 +796,14 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
-    if (this.area === 'diner' || this.area === 'road') this.diner?.update(dt, t);
+    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') this.diner?.update(dt, t);
+    // on the old road the diner is there behind the truck until it is far off in the haze, lit
+    // by the road's dawn
+    if (this.area === 'roswell' && this.diner) {
+      const c = this.d.camera.position;
+      this.diner.group.visible = Math.hypot(c.x - DINER_ORIGIN.x, c.z - DINER_ORIGIN.z) < 2600;
+      this.diner.setNear(0);
+    }
     if (this.area === 'saro') this.motel.update(dt, t);
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if ((this.area === 'road' || this.area === 'diner') && this.road && this.drive) this.road.update(dt, t, this.drive.pos);

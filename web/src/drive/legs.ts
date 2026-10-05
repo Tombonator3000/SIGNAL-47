@@ -32,9 +32,11 @@ export interface TripArea extends DriveArea {
   routes: Partial<Record<LegId | 'park', THREE.Vector3[]>>;
 }
 
+// The diner stands in the road area; the old road's area lies on the road's map too, its own
+// origin where C crosses (OldRoad.ts works it out from the road's), and has no ways out here.
 export const ORIGINS: Record<LegId, THREE.Vector3> = {
   saro: new THREE.Vector3(0, 0, 0), road: new THREE.Vector3(8000, 0, 0), station01: new THREE.Vector3(0, 0, 8000),
-  diner: new THREE.Vector3(8000, 0, 0), roswell: new THREE.Vector3(0, 0, -24000),
+  diner: new THREE.Vector3(8000, 0, 0), roswell: new THREE.Vector3(8000, 0, 0),
 };
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });

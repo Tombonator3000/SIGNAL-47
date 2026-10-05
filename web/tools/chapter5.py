@@ -4,9 +4,10 @@
 # the mesa, the clipping), the driver (the old road, last October), the radio, the clipping
 # itself (E15), Ward on the payphone, and the map puzzle at the booth with a real drag of
 # the tracing (wrong answers, then P13). After P13 the driver confirms the bolt. Save and
-# Continue inside the diner, out to the truck: the case is saved there, the cut takes the
-# truck onto the old road (chapter six), and Continue from the title gives the diner back
-# with the truck ready, so the end of the night can be played again. Starts from
+# Continue inside the diner, out to the truck: the case is saved there, and the player is
+# in the truck on the lot with the old road across the highway (chapter six, no cut).
+# Continue from the title gives the diner back with the truck ready, so the end of the
+# night can be played again. Starts from
 # S47.jump('chapter5'). Usage: python3 tools/chapter5.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
@@ -240,8 +241,10 @@ async def main():
         for _ in range(30):
             await tick(0.25)
             if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
-        check(await ev("S47.game.phase") == 'ch6' and await ev("S47.ch6.stage") == 'drive' and await s5('stage') == 'complete', 'the cut: chapter six, on the old road')
-        check(await ev("S47.game.clock") >= 5 * 3600 + 26 * 60 and 'MILE 8' in await objective(), 'the clock is past 05:26 and the objective is the line past mile 8')
+        check(await ev("S47.game.phase") == 'ch6' and await ev("S47.ch6.stage") == 'drive' and await s5('stage') == 'complete', 'chapter six: in the truck on the lot, no cut')
+        lot = await ev("(() => { const d = S47.world.oldDrive.pos, a = S47.world.diner.anchors.truckPark; return Math.hypot(d.x - a.x, d.z - a.z); })()")
+        check(lot < 6 and await ev("S47.world.diner.group.visible"), f'the truck is where it was left by the diner ({lot:.1f} m)')
+        check(abs(await ev("S47.game.clock") - (5 * 3600 + 20 * 60)) < 3 and 'MILE 8' in await objective(), 'the clock says 05:20 and the objective is the line past mile 8')
         check(any('coffee stays on the counter' in n for n in await notes()), 'the coffee stays on the counter')
         check(await ev("S47.game.saveBlock()") == 'Not on the road.', 'no saving on the road')
         await shot('h09_old_road')

@@ -8,9 +8,9 @@ import { flashFrames, type Frame } from './flashFrames';
 import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
 
-// Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot out onto the
-// old road at 05:26, east-north-east and then north-east into the dawn, past the six-, seven-
-// and eight-mile posts to where C crosses, just past the eight. On the line the night takes
+// Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
+// highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
+// the mile posts to where C crosses, just past the eight: 13 km, driven the whole way. On the line the night takes
 // the truck for exactly 47 seconds: the radio goes to carrier, the engine dies, the dash
 // blinks four and seven, the headlights wake in the wrong colours, the radio plays the night
 // back in pieces, FLASH, silence. At 05:29:47 the camera leaves the cab and does not come
@@ -40,8 +40,19 @@ export interface Chapter6Deps {
 }
 
 const T = 5 * 3600 + 29 * 60;            // 05:29:00
-const START = 5 * 3600 + 26 * 60 + 20;   // the cut puts the truck on the road at 05:26:20
+const LEAVE = 5 * 3600 + 20 * 60;        // the truck leaves the diner's lot at 05:20
+// At 55 mph the truck is on C at 05:29:00. The clock goes as it goes, but it is never ahead of
+// that pace (driven slower, or stopped, it waits) and never more than a minute behind it.
+const PACE = 24.6;
 const EVENT = 47, PULL = 34;
+/** The morning programme on the AM station, a line at a time as the miles go by (KAPITLER.md). */
+const RADIO: [number, string][] = [
+  [0.15, 'The radio, low: "...cattle at the sale barn steady, a dollar higher on calves..."'],
+  [1.4, 'The radio: "...clear today, high near seventy-four in Roswell, light winds out of the southwest..."'],
+  [2.9, 'The radio: "...road crews on the highway north of town all week, so give yourself a few extra minutes..."'],
+  [4.3, 'The radio: "...and Halley\'s comet is still low in the south after midnight this week, if you can get away from the town lights."'],
+  [5.5, 'The radio: "...if you\'re out on the county roads this early, watch the low spots, there\'s deer..."'],
+];
 const sm = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const dir = (deg: number) => new THREE.Vector3(Math.sin(deg * Math.PI / 180), 0, -Math.cos(deg * Math.PI / 180));
 const UP = new THREE.Vector3(0, 1, 0);
@@ -72,7 +83,7 @@ export class Chapter6 {
   constructor(private g: Chapter6Host, private d: Chapter6Deps) {}
 
   // ---------- lifecycle ----------
-  /** From the diner's lot: the cut onto the old road (the case was saved in the diner first). */
+  /** From the diner's lot onto the old road, driven (the case was saved in the diner first). */
   begin() {
     this.reset();
     this.active = true; this.started = true;
@@ -81,13 +92,9 @@ export class Chapter6 {
     void loadArtFor(['photo1947', ...FLASH_ART]).then(() => { if (this.active && this.stage === 'drive') this.frames = flashFrames(); }).catch(() => {});
     this.d.audio.amRadio(null);   // the diner's radio stays at the diner
     this.d.world.driveOldRoad(() => {
-      this.g.clock = START;
+      this.g.clock = LEAVE;
       this.d.audio.cabRadio('talk');
-      this.g.note(`${this.time()}. The old road, out past the six-mile post. The sky is coming up grey in the east, and the road goes off into it. C crosses just past the eight.`);
-      const radio = (at: number, text: string) => this.g.after(at, () => { if (this.stage === 'drive') this.d.ui.toast(text, 5); });
-      radio(7, 'The radio, low: "...cattle at the sale barn steady, a dollar higher on calves..."');
-      radio(34, 'The radio: "...clear today, high near seventy-four in Roswell, light winds..."');
-      radio(78, 'The radio: "...and Halley\'s comet is still low in the south after midnight this week, if you can get away from the town lights."');
+      this.g.note(`${this.time()}. Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post.`);
     });
     // the frames of FLASH are drawn now, so the moment itself does not wait for them
     this.g.after(3, () => { if (this.active && !this.frames) this.frames = flashFrames(); });
@@ -119,7 +126,10 @@ export class Chapter6 {
   private drive(dt: number) {
     const w = this.d.world, road = w.oldRoad, drv = w.oldDrive;
     if (!road || !drv || w.area !== 'roswell') return;
-    // the clock never shows 05:29 before the line: it slows to a crawl in the last 20 seconds
+    // the clock keeps to the pace of the drive (PACE), and never shows 05:29 before the line:
+    // it slows to a crawl in the last 20 seconds
+    const at = road.where(drv.pos.x, drv.pos.z), pace = T - Math.max(0, -at.s) / PACE;
+    this.g.clock = THREE.MathUtils.clamp(this.g.clock, pace - 60, pace);
     const left = T - this.g.clock;
     if (left < 20) this.g.clock -= dt * (1 - Math.max(0.02, left / 20));
     this.g.clock = Math.min(this.g.clock, T - 0.05);
@@ -129,7 +139,10 @@ export class Chapter6 {
     if (road.hitBack) { road.hitBack = false; if (this.backT <= 0) { this.d.ui.toast('Ward can wait. The bolt is ahead.', 3.4); this.backT = 6; } }
     this.backT -= dt;
     this.idle = Math.abs(drv.speed) < 0.5 ? this.idle + dt : 0;
-    if (this.idle > 40 && !this.done.has('nudge')) { this.done.add('nudge'); this.d.ui.toast('The line is just ahead, past the eight-mile post.', 4); }
+    // (a truck put further on by the developer menu skips what it has passed)
+    for (const [mi, text] of RADIO) if (at.mi >= mi && !this.done.has(text)) { this.done.add(text); if (at.mi < mi + 0.4) this.d.ui.toast(text, 5); }
+    if (this.idle > 40 && at.mi > 7.6 && !this.done.has('nudge')) { this.done.add('nudge'); this.d.ui.toast('The line is just ahead, past the eight-mile post.', 4); }
+    if (this.idle > 40 && at.mi < 0.2 && !this.done.has('across')) { this.done.add('across'); this.d.ui.toast('The old road is across the highway, going off to the east.', 4); }
   }
 
   // ---------- THE EVENT ----------

@@ -31,3 +31,21 @@ export function hLow(x: number, z: number) {
   const r = raw(x, z), d = Math.hypot(x - DINER.flatX, z - DINER.z);
   return d > 110 ? r : r + (DINER.y - r) * (1 - smooth(45, 110, d));
 }
+
+// ---------- the old Roswell road (drive/oldRoadLayout.ts) ----------
+export const MILE = 1609.34;
+/** Where C crosses the old road, in miles from the diner. */
+export const CROSS_MI = 8.15;
+/** The old road's heading in degrees from north (clockwise), by miles from the diner, where it
+ *  leaves the highway across the road from Mesa Diner (as on SARO's service map, E14). */
+export function oldRoadBearing(mi: number) {
+  const b = (a: number, c: number, m0: number, m1: number) => a + (c - a) * smooth(m0, m1, mi);
+  if (mi < 5.6) {
+    // off the highway due east, round into the east-north-east, then long easy bends
+    const lead = 63 + 27 * (1 - smooth(0.02, 0.3, mi)), m = mi - 0.3;
+    return lead + (8 * Math.sin(m * 2.3) + 4 * Math.sin(m * 5.1 + 1)) * smooth(0.3, 1.0, mi) * (1 - smooth(4.6, 5.5, mi));
+  }
+  if (mi < 6.75) return b(63, 45, 6.25, 6.75);
+  if (mi < 7.75) return b(45, 35, 7.25, 7.75);
+  return b(35, 27, 8.5, 8.9);
+}
