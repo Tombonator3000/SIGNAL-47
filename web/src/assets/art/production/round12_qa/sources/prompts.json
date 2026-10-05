@@ -1,0 +1,167 @@
+{
+  "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+  "exact_model_version": "ikke eksponert",
+  "asset": "road/tex_oldroad_macro.jpg",
+  "stages": [
+    {
+      "id": "initial",
+      "kind": "generate",
+      "source": "tex_oldroad_macro_initial_generated.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: one seamless macro albedo texture for the desert ground in SIGNAL / 47, viewed by a game camera 126–650 metres above it.\nCreate a square 2048×2048 image, filling the entire canvas. True vertical orthographic top-down aerial view of a natural high desert plain near Roswell, New Mexico, in April. Scale is one output pixel per metre: the square represents approximately 2×2 kilometres, not a close-up gravel surface. This must be a repeatable material tile in BOTH horizontal and vertical directions, with matching opposite edges and landforms that continue naturally across them.\nMuted light yellow-brown and reddish-brown sandy soil, small irregular caliche patches, patchy short dry grass in grey brown and pale dull green. Scattered tiny creosote and mesquite dots only 1–4 output pixels wide, unevenly distributed, denser in shallow drainages and sparse on flats. One or two very shallow dry sandy washes, approximately 4–10 pixels wide, with subtly denser dark shrub dots along them. Let the washes cross the boundaries and continue at corresponding locations on opposite sides without discontinuity. Keep their bends gentle and visually unobtrusive. Add faint meandering animal trails and a few small bare wind-scoured spots. Plenty of fine local variation, no large standout patches or memorable isolated meander bigger than about 300 metres. No focal point; modest distributed terrain variation, natural asymmetry within a periodic tile.\nLighting is perfectly flat diffuse overcast, an unlit albedo image: no directional shadows, relief shading, vignette or horizon. Low to moderate contrast. Strict overall palette: mean sRGB close to RGB 164,145,123, within ten values per channel. Dark shrub values should stay around 60 or lighter; light caliche no brighter than approximately 225. Avoid white highlights and black shadows. Quiet dusty grey-brown colours rather than saturated orange or green.\nNo roads, tire tracks, fences, buildings, vehicles, water, snow, text, map symbols, grid, border or north arrow. No perspective, mountains, cliffs, large boulders or cloud shadows. Original fictional landscape texture, not an identifiable real satellite image. One tile, not a contact sheet.",
+      "disposition": "Avvist: middelfarge for mørk; senere søm-/skalareview.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        151.1384272083718,
+        128.58471265157237,
+        103.39310887774751
+      ],
+      "source_sha256": "539c37579a51d8038ae0ffd2ac06ad29706591c559866f930183cd72ca65ea64",
+      "reference_sha256": {}
+    },
+    {
+      "id": "palette_edit",
+      "kind": "edit",
+      "source": "tex_oldroad_macro_palette_edit_generated.png",
+      "references": [
+        "tex_oldroad_macro_initial_generated.png"
+      ],
+      "prompt": "Use case: lighting-weather. Edit this existing desert macro albedo texture ONLY to correct its tonal palette; preserve the exact top-down composition, small shrub distribution, dry washes, trails, caliche patterns, tiny detail scale, boundary topology and seamless tile intent. No new objects or altered terrain layout.\nMeasured original average sRGB is (151,129,103). The required average is (164,145,123), within ten values per channel. Lighten the material slightly and make it a less saturated dusty grey-brown: lift the red by about13, green by16 and blue by20 on average. Use a controlled soft low-to-moderate contrast palette. Very darkest individual shrubs must be around RGB60 or brighter in every channel, and lightest caliche should be no higher than around225 in any channel; there should be NO black pinholes and no nearly-white pinpoints. This is flat diffuse overcast unlit albedo, with no shadows, directional lighting or vignette.\nOne square seamless tile, preferably2048x2048, not a contact sheet. Maintain 1–4m shrubs and 4–10m shallow sand washes within a2km tile. No text, symbols, tracks, roads, buildings, water or borders.",
+      "disposition": "Avvist: synlig wash-brudd og stor diagonal form; grove busker.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        167.64271905659464,
+        148.23746276667455,
+        129.55873644528896
+      ],
+      "source_sha256": "637e39e33a798322a7522dbf7198e018edd3d5206f2466d00a463715f241ce27",
+      "reference_sha256": {
+        "tex_oldroad_macro_initial_generated.png": "539c37579a51d8038ae0ffd2ac06ad29706591c559866f930183cd72ca65ea64"
+      }
+    },
+    {
+      "id": "seam_edit",
+      "kind": "edit",
+      "source": "tex_oldroad_macro_seam_edit_generated.png",
+      "references": [
+        "tex_oldroad_macro_palette_edit_generated.png"
+      ],
+      "prompt": "Use case: texture-generation / composition-edit. Correct this existing overhead desert albedo into a TRULY seamless periodic macro terrain tile. This is ONE square texture tile, no contact sheet, no surrounding frame. Preserve the muted dusty sand / caliche / dull grass palette: target mean sRGB RGB(164,145,123) within +/-10. Output requested2048x2048; every pixel represents1metre, so this tile is a2km by2km desert plain near Roswell in April.\nThe current diagonal curved wash is too conspicuous and terminates at mismatched edges when tiled. REPLACE that long diagonal sweeping arc. Use only ONE extremely faint, narrow, nearly east-west dry sand drainage, crossing the LEFT and RIGHT boundary at exactly the same vertical coordinate and angle, approximately65% down from the top. Match its width and the nearby tiny shrub pattern at those opposite edges so a neighbouring copy joins seamlessly. Gently irregular with very small local meanders, not a big memorable bend. Pale sand channel only4–10pixels wide at final2048, with tiny dark shrub specks at the edges, not a broad dark stripe. Top and bottom boundaries must also match seamlessly: no wash crosses them. ALL opposite edge terrain pattern, brightness and colour must join with no seam, no cut-off feature, no rectangular colour blocks, no gradient.\nFlatten and randomize the broad caliche clusters: small subtly scattered light mineral mottles everywhere, no large distinctive patch or single identifiable shape bigger than300pixels/metres. Individually visible creosote/mesquite bushes must be tiny round flecks1–4pixels at2048, not large bush silhouettes; they cluster subtly near the one faint drainage and remain sparse elsewhere. Short dusty grass, muted pale dull green and grey-brown flecks, faint narrow animal trails and bare wind spots. Low-to-moderate contrast: darkest shrub flecks approximately RGB65–80 with every channel at least60, lightest caliche around RGB210–220 with every channel below225. No black pinholes, no white pins.\nDirect vertical orthographic aerial view, flat diffuse overcast albedo: no horizon, perspective, raised 3D terrain, directional shadows, vignette or edge lighting. No roads, tire tracks, fences, buildings, vehicles, water, snow, text, symbols, maps, borders or grid. Natural restrained game terrain detail, not a close-up gravel texture. It must repeat invisibly left/right and top/bottom.",
+      "disposition": "Avvist: kanal kontinuerlig, men markant bånd og grove busker.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        167.17119889400172,
+        146.15781842601282,
+        126.49753325244386
+      ],
+      "source_sha256": "5c7811058a81896816055ec346db9097247636155c7e1dda8148c3e5759704e5",
+      "reference_sha256": {
+        "tex_oldroad_macro_palette_edit_generated.png": "637e39e33a798322a7522dbf7198e018edd3d5206f2466d00a463715f241ce27"
+      }
+    },
+    {
+      "id": "scale_edit",
+      "kind": "edit",
+      "source": "tex_oldroad_macro_scale_edit_generated.png",
+      "references": [
+        "tex_oldroad_macro_seam_edit_generated.png"
+      ],
+      "prompt": "Use case: texture-generation. Edit this ONE top-down aerial desert macro tile, preserving its muted brown average colour and the thin nearly horizontal drainage crossing at the same height on the left and right edge. Solve ONLY the detail scale and contrast while keeping opposite edges continuous.\nThis image covers TWO KILOMETRES by TWO KILOMETRES. It must look like a VERY DISTANT orthographic aerial photograph, much farther away than the current texture. The dark bush crowns in the supplied texture are much too large. Reduce all recognizable shrub crowns by roughly a factor of five in diameter and leave mostly very fine unrecognizable pepper-like dots; no tree canopy shapes. At the actual1254pixel generator image, shrub specks must be ONE or TWO pixels wide, equivalent to1–4px after2048x2048 export. Each represents a real1–4m desert bush, not an8–20m tree. Most of the plain is soft subtly mottled dusty soil and tiny dry grass flecks, not a gravel closeup. Denser specks very gently cluster at the drainage, never broad dark bush bands.\nKeep exactly ONE shallow dry drainage, pale sandy centre4–10m wide, almost horizontal with only small local wiggles, crossing both LEFT and RIGHT edges at the same y about65percent and the same angle. No diagonal S-curve. Match the surrounding edge pixels' texture and colour too. Top and bottom must also connect seamlessly with no rectangular brightness seam. No big identifiable caliche blobs, only many small low-contrast speckled flecks; no coherent feature wider than300m.\nReduce the whole image's contrast substantially. Soil mean sRGB RGB(164,145,123), within10perchannel. All shrub pixels are dull warm grey-brown, approximately RGB(110,102,88), NOT nearly black. Light caliche is dusty tan-grey around RGB(200,183,160), NOT pure white. Keep every channel safely between75 and220, with soft low-contrast transitions. No bright white pinpoints or black pits. Overall the terrain should be quiet, soft and dusty, with subtle varied warm sand, pale mineral mottles, short muted grass, tiny shrubs, and faint animal trails.\nCompletely flat diffuse unlit albedo under overcast light, no shadows, sunbeam, perspective, mountain, horizon, vignette, road, tyre track, fence, building, vehicle, water, snow, text, symbol, frame or grid. ONE seamless periodic square texture, not a contact sheet. Requested2048x2048. Preserve invisible periodic joins in both directions.",
+      "disposition": "Avvist: detaljskala visuelt for lik forrige variant.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        167.87951283166595,
+        145.2052239850024,
+        123.65743496409576
+      ],
+      "source_sha256": "56aee60a4a6323580ae4ec1e7b393e9847451e3cae60a0f6b68cf68017188be1",
+      "reference_sha256": {
+        "tex_oldroad_macro_seam_edit_generated.png": "5c7811058a81896816055ec346db9097247636155c7e1dda8148c3e5759704e5"
+      }
+    },
+    {
+      "id": "regenerated",
+      "kind": "generate",
+      "source": "tex_oldroad_macro_regenerated_generated.png",
+      "prompt": "Create ONE original seamless square diffuse-albedo texture for a low-poly Three.js game, intended2048x2048 RGB. This is a flat New Mexico desert plain near Roswell in April, seen exactly vertically from VERY HIGH ABOVE, covering TWO KILOMETRES by TWO KILOMETRES. This is a distant land-cover macro map, NOT a close-up soil texture and NOT a landscape scene.\nThe entire image has VERY LOW CONTRAST, quiet nearly uniform dusty warm grey-brown base colour averaging sRGB(164,145,123). Gently mottled sand, softly scattered tiny caliche specks aroundRGB(193,176,152), wisps of short pale dull grass. Individual shrubs are ONLY TINY ONE-PIXEL or TWO-PIXEL dots, faint warm grey-brown aroundRGB(119,111,96). No visible tree-crown silhouettes, no large dark spots, no coarse gravel shapes. Each shrub represents1–4metres at2048pixels. Make the tiny scattered dots subtle and uneven, slightly denser in shallow depressions, sparse on flat soil. Large patches of soil must remain understated. No recognizable single patch or bend larger than300metres.\nONE shallow faint dry drainage crosses approximately horizontally from left edge to right edge at about65percent height. It is barely distinguishable, only4–8pixels wide at2048, a very thin pale dusty sand thread with small local meanders. The sand is only5–8RGB levels lighter than adjacent soil, no bright cream stripe. Shrub density at its banks is only slightly denser, not a dark belt. Its exact y/width/tangent AND surrounding terrain join perfectly at both opposite boundaries. Top/bottom terrain must also join. This is a periodic repeating tile: ALL opposite-edge pixels form visually continuous terrain, no cut-off features, brightness steps, borders or vignette. No long diagonal arc or broad recognizable S-shaped drainage. Faint animal trails may be hairline and low contrast.\nAll tones restrained: no pixel channel below80 or above220; no black dots, white patches, directional shadow, relief shadow or sunlight. Flat diffuse overcast albedo. Intended blending with an existing ground material, not a high-detail photograph.\nNo road, tire track, fence, building, vehicle, water, snow, words, symbols, compass, legend, map border, contact sheet, horizon, mountain, perspective, tree silhouette or close-up pebbles. ONE unframed seamless texture covering2km, with mostly very small subtle details.",
+      "disposition": "Avvist: blå middelverdi litt utenfor strict10; videre sømretting.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        157.69777922768353,
+        136.986293303216,
+        112.74516252934788
+      ],
+      "source_sha256": "3c674c839606db50b53cf4884bcb11f5a810ca0723b2773a1dc586b0dbb6349a",
+      "reference_sha256": {}
+    },
+    {
+      "id": "wrap_edit",
+      "kind": "edit",
+      "source": "tex_oldroad_macro_wrap_edit_generated.png",
+      "references": [
+        "tex_oldroad_macro_regenerated_generated.png",
+        "tex_oldroad_macro_regenerated_3x3_edit_reference.png"
+      ],
+      "prompt": "Use case: texture-generation, targeted seam repair of reference1. Reference1 is ONE aerial desert texture tile. Reference2 is ONLY its3x3 repeating diagnostic: it shows visible jumps where the thin drainage reaches the vertical seams. Return ONE corrected tile, not the diagnostic grid and not a contact sheet.\nPreserve reference1's quiet sand texture, subtle caliche flecks, tiny shrub specks, top-down viewpoint, scale and low contrast. Correct the dry drainage's periodic geometry: it must cross BOTH left and right boundaries at EXACTLY THE SAME HEIGHT,56percent of the full image height, with an identical nearly-horizontal tangent and width. Make the first and last50pixels of the channel near those two edges straight and level at56percent, so a copy connects precisely with no vertical jump. The rest may have subtle small meanders. Extremely faint4–8metre-wide sand channel, barely distinguishable from the dusty ground, no broad dark shrubbelt. Remove every leftover boundary crossing at another height. Surrounding colour/dots at opposite edges must match seamlessly, and top/bottom must also tile invisibly. Do not add big features.\nAlso gently lift only the material's blue component by approximately3levels on average; retain muted warm sand and an overall average sRGB approximately(158,137,116), within10of required(164,145,123). No black or white pixels; the darkest tiny shrub is muted grey-brown and caliche stays dusty tan, low-to-moderate contrast. At2048x2048, individual shrubs remain1–4pixels, channel4–8pixels. Output requested2048x2048; one tile represents2048metres. Shrubs are tiny specks rather than recognizable foliage. Preserve the fine detail scale, no enlargement.\nAll light remains completely flat diffuse albedo. No shadow, relief lighting, perspective, horizon, roads, tracks, fences, buildings, vehicles, water, snow, text, symbols, grid or border. One periodic square texture with continuous repeated geometry and NO VISIBLE TILE SEAM.",
+      "disposition": "Avvist: sømmer OK, enkelte mørke buskkjerner5x5/6x5px.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        161.9243384487026,
+        140.46338034080415,
+        120.24374569161776
+      ],
+      "source_sha256": "ee2aaef4089b310e9b15cfd7f68555a65c85f09e708f2116986e8a41c5479a99",
+      "reference_sha256": {
+        "tex_oldroad_macro_regenerated_generated.png": "3c674c839606db50b53cf4884bcb11f5a810ca0723b2773a1dc586b0dbb6349a",
+        "tex_oldroad_macro_regenerated_3x3_edit_reference.png": "b0a7b7e956a436f494d45f3e0b335db35b15326ab33a0ea7648cb464bece07e7"
+      }
+    },
+    {
+      "id": "pinpoint_edit",
+      "kind": "edit",
+      "source": "tex_oldroad_macro_pinpoint_edit_generated.png",
+      "references": [
+        "tex_oldroad_macro_wrap_edit_generated.png"
+      ],
+      "prompt": "Rebuild this texture's small vegetation detail, do not preserve its existing large dark spots. ONE seamless square game terrain ALBEDO, stylized painted material, not photorealistic gravel. Keep the sand colour average approximately sRGB(164,145,123) and the same single very faint left/right continuous shallow drainage. Flat top-down2km square aerial coverage, requested2048x2048. No perspective, lighting or shadows.\nCRITICAL VISIBLE CHANGE: replace every existing bush crown with much smaller isolated pinpoint marks, ONE QUARTER of the current diameter. Remove the big clumps and recognizable shrub-crown outlines completely. This must visibly look as if seen from four times farther away, with extremely fine dots and very soft non-directional soil mottling. The smallest readable dark point is only one native image pixel; most are1pixel and at most2pixels at the generator's square source resolution. Do not draw5pixel blobs, gravel chunks, tree crowns, dark rings or broad groups. Do not upscale the current image or preserve its coarse texture; REPAINT the plain with restrained fine pinpoint stipple. Each resulting small shrub core is1–4px in the2048x2048 final tile. Dots are muted grey-brown aroundRGB(115,107,92), only slightly darker than the sand; no black pigment. Pale caliche specks must be subtle matte tanRGB(195,180,160), not white stony objects or rimlit rocks. Soft patches of short dull grey-green grass, not noisy gravel relief.\nThe very faint sand drainage is4–8pixels at2048, not a broad cream stripe, with a few tiny shrub pinpoints near it. It connects both vertical edges at EXACTLY y56percent with identical level near-edge segments and width. Make left/right and top/bottom joins visually seamless; no severed features or brightness gradient, no large recognizable bend or patch larger than300metres.\nLOW CONTRAST only: all channels approximately80–220, no brilliant white dots or black holes. Sand average(164,145,123), +/-10perchannel. No baked directional illumination, texture shadows or embossed relief. No road, track, fence, building, vehicle, water, snow, lettering, symbol, border or grid. The output is ONE calm finely stippled material tile, no contact sheet.",
+      "disposition": "Valgt sluttkandidat, kontrollert separat.",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_mode": "RGB",
+      "source_RGB_mean": [
+        164.77935741194366,
+        142.0908951005904,
+        119.83916983992532
+      ],
+      "source_sha256": "92d7f31eb6396d63588a92b9ad0442b70ab835b8829a36ee82d2898b46a1dfa2",
+      "reference_sha256": {
+        "tex_oldroad_macro_wrap_edit_generated.png": "ee2aaef4089b310e9b15cfd7f68555a65c85f09e708f2116986e8a41c5479a99"
+      }
+    }
+  ]
+}
