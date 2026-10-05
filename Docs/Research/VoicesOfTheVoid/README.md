@@ -28,7 +28,7 @@ Lokale mapper:
 | `private/tools/` | Portable verktøy, nedlastinger, lisenser og isolerte innstillinger |
 | `private/toolchain.json` | Verifiserte verktøyversjoner, nedlastingshash og lokale stier |
 
-På Toms PC ligger denne katalogen i `/home/tombonator3000t/Documents/Codex/signal-47-threejs/Docs/Research/VoicesOfTheVoid/`.
+Katalogen ligger i `<din SIGNAL-47-klone>/Docs/Research/VoicesOfTheVoid/`. De konkrete lokale stiene står i Git-ignorerte `private/reports/preparation.json`.
 
 ## Hva pakken faktisk inneholder
 
@@ -67,9 +67,9 @@ Bruk `--list` for filnavn, `--files` for navn i JSON og `--sha256` for full pakk
 
 ## Læring som kan brukes i SIGNAL / 47
 
-Undersøk ett avgrenset system om gangen, eksempelvis signalbearbeiding, interaksjonsrekkevidde eller lagring. Først observeres faktisk spilloppførsel; deretter brukes metadata og avgrenset kodeanalyse til å forklare den. Filnavn alene beviser ingen algoritme eller spillmekanikk. Unreal-motorkode må skilles fra spillets egen logikk, og native analyse må skilles fra cooked Blueprint-innhold.
+Undersøk ett avgrenset system om gangen, eksempelvis signalbearbeiding, interaksjonsrekkevidde eller lagring. Dokumenter faktisk spilloppførsel med observasjoner først. Teknisk binærundersøkelse er et separat forskningsspor. Filnavn alene beviser ingen algoritme eller spillmekanikk. Unreal-motorkode må skilles fra spillets egen logikk, og native analyse må skilles fra cooked Blueprint-innhold.
 
-Skriv funn med kildeversjon, adresse/asset-identifikator, observasjon og usikkerhet. Beskriv ønsket oppførsel før en selvstendig Three.js-implementasjon avtales med Claude. Test SIGNAL / 47-implementasjonen mot prosjektets egne krav og bevar spillkonstantene.
+Tekniske funn skrives lokalt med kildeversjon, adresse/asset-identifikator, observasjon og usikkerhet. Til SIGNAL / 47 lages en egen oppførselsbeskrivelse fra det som er observert under spilling, uten dekompilert kode, pseudokode eller asset-innhold. Claude får denne beskrivelsen når en Three.js-oppgave avtales. Test implementasjonen mot prosjektets egne krav og bevar spillkonstantene. Dette oppsettet dokumenterer ingen gjennomført prosess der implementatøren er skjermet fra dekompilert kode, og skal ikke omtales som bevis på en slik prosess.
 
 Ingen lisens for gjenbruk av VotVs egen kode er etablert i denne gjennomgangen. Medfølgende FFmpeg/SVT-AV1-lisenser gjelder sine komponenter. En gratis nedlasting eller rekonstruert pseudokode dokumenterer ikke tillatelse til å kopiere spillkode eller assets inn i SIGNAL / 47. Direkte kode-/asset-gjenbruk må derfor avklares før innlemming. Observasjoner, egne analyseverktøy og en selvstendig implementasjon er den planlagte arbeidsformen.
 
