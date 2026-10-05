@@ -4,6 +4,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
+- [ ] Tom: svar på om lastebilen skal kunne brukes når som helst også i vanlig spill (ikke bare i utviklermenyen). Da må historien tåle at man kjører ut før kapitlet ber om det.
+- [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
+
 - [ ] Tom går rundt SARO på Pages: ut østdøra, rundt lastebilen, ned rampa, langs serviceveien og gangstien til nødutgangen, opp vestsiden, langs vinduene og opp trappa til østgangen. Si fra om noe står i veien, ser feil ut eller mangler.
 - [ ] Tom ser på stjernehimmelen på PC og mobil: er stjernene små og skarpe nok, og er Melkeveien like fin som før?
 - [ ] Tom ser på Halley-plakaten og perma i Night Shift (fanfoldpapiret, arket fra 1947 på det gamle papiret) og utklippet i dineren.
@@ -62,8 +65,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] `tools/chapter3.py`: skjermbildet på grusveien (`e04b_track`) brukte mer enn 240 s to ganger da en annen nettleser kjørte samtidig (5. oktober morgen). Alene går testen. Kjør den alene til skjermbildene får lengre tid eller tas uten å vente på en ny ramme.
 - [x] Roswell Road og THE EVENT (spesifisert og bygd 5. oktober morgen, se `KAPITLER.md` og loggen): kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
 - [x] Runde 11 fra Codex (PR #64, `0175e32`) koblet inn 5. oktober: milestolpen, vitnestolpen, messingskiva, den gamle asfalten og fire FLASH-bilder. Reservene i kode står til bildene er lastet.
-- [ ] Runde 12 fra Codex (bestilt 5. oktober kl. 12:17 i `ART_BRIEF.md`): ørkenen sett ovenfra i uttrekket, `road/tex_oldroad_macro.jpg`. Koble inn når den kommer.
-- [ ] Uttrekket: det grå båndet mellom himmel og bakke ved horisonten (tåkefargen mot himmelen), og sollys på mesaenes østside. Gjøres sammen med runde 12.
+- [x] Runde 12 fra Codex (PR #68): ørkenen sett ovenfra, koblet inn 5. oktober ettermiddag.
+- [x] Uttrekket: båndet ved horisonten er borte (dis i himmelens horisontfarge), og åsene på motsatt side av sola lyser når den er oppe.
 - [ ] Tom: spill slutten på PC og mobil. Fps på den gamle veien og i uttrekket er UNVERIFIED; lyden av motoren som dør, radioen og stillheten er bare hørt i koden, ikke på ekte høyttalere.
 
 ### Grafikk på PC (Tom 4. oktober kveld: «bedre grafikk og lys/skygge, shaders, post processing på PC, mobil kan beholde den enkle stilen»)

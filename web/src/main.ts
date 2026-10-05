@@ -141,7 +141,7 @@ async function boot() {
     clock: () => clockText(game.clock, false),
     skipClock: (sec) => { game.clock += sec; },
     touch: () => input.touchMode,
-    sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor }),
+    sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor, sunDir: sky.uniforms.uSunDir.value, sun: sky.uniforms.uSun.value }),
   });
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard and
   // on the motel's walk, dirt between them, boards in the hut, carpet at the motel

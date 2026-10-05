@@ -58,7 +58,7 @@ export interface WorldDeps {
   skipClock: (sec: number) => void;
   touch: () => boolean;
   /** The dawn now (0..1) and the colour of the haze, from the sky. */
-  sky: () => { dawn: number; fog: THREE.Color };
+  sky: () => { dawn: number; fog: THREE.Color; sunDir: THREE.Vector3; sun: number };
 }
 
 type Modules = {
@@ -603,7 +603,7 @@ export class World {
         drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
       }
       const sky = this.d.sky();
-      this.oldRoad.update(dt, t, this.d.camera.position, sky.dawn, sky.fog);
+      this.oldRoad.update(dt, t, this.d.camera.position, sky);
       if (this.engine) { this.engine.set(drive.rpm, drive.load); this.engine.tyres(drive.surface.kind, Math.abs(drive.speed)); }
       this.dashT -= dt;
       if (this.dashT <= 0) { this.dashT = 0.1; this.oldTruck.setDash({ mph: drive.mph, rpm: drive.rpm, clock: this.d.clock(), fuel: 0.55 }); }

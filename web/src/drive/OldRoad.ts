@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { floodSet, addFlood, floodlit, mergeStatic, box, cyl } from '../world/kit';
 import { GlowPoints } from '../world/glow';
-import { artTexture } from '../core/art';
+import { artTexture, artLoaded } from '../core/art';
 import { rng } from '../core/textures';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { retro, colored, instances, place, type RetroBeam } from './roadProps';
@@ -29,6 +29,47 @@ const beam: RetroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir:
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = { asphalt: S('asphalt', 1, 30, 0.08), shoulder: S('gravel', 0.85, 22, 0.3), verge: S('dirt', 0.6, 12, 0.6), dirt: S('dirt', 0.55, 10, 0.8) };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Color();
+
+// The haze at the horizon, the way the sky draws it (world/Sky.ts): blue-grey away from the
+// sun, warm towards it. The far ground and the hills take this colour instead of the scene's
+// one fog colour, so the land goes into the sky without a grey band between them.
+const RIM = { sun: { value: new THREE.Vector3(0, 0, -1) }, dawn: { value: 0 }, up: { value: 0 } };
+const RIM_GLSL = `
+  uniform vec3 uRimSun; uniform float uRimDawn;
+  vec3 rimHaze(vec3 dir, vec3 night) {
+    vec3 h = normalize(vec3(dir.x, 0.0, dir.z) + vec3(1e-5, 0.0, 0.0));
+    float east = 0.5 + 0.5 * dot(h, normalize(vec3(uRimSun.x, 0.0, uRimSun.z) + vec3(1e-5, 0.0, 0.0)));
+    vec3 rim = mix(vec3(0.20, 0.23, 0.30), vec3(0.62, 0.42, 0.26), pow(east, 3.0)) + vec3(0.55, 0.30, 0.12) * pow(east, 8.0) * 0.8;
+    return mix(night, rim * 0.92, smoothstep(0.0, 1.0, uRimDawn));
+  }`;
+// The mean of round 12's desert in linear light: the picture changes the colour of the ground
+// from far off, but not its brightness on the whole.
+const MACRO_MEAN = '0.3766, 0.2722, 0.1874';
+/** Fog towards the haze of the horizon; with macro, the desert from above laid over the near
+ *  tile from about 25 m out (round 12, 1 m to a pixel, 2 km to a repeat). */
+function hazed(m: THREE.MeshStandardMaterial, macro: THREE.Texture | null) {
+  const prev = m.onBeforeCompile, key = m.customProgramCacheKey.bind(m);
+  m.onBeforeCompile = (sh, r) => {
+    prev.call(m, sh, r);
+    sh.uniforms.uRimSun = RIM.sun; sh.uniforms.uRimDawn = RIM.dawn;
+    if (macro) sh.uniforms.uMacro = { value: macro };
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>\n${RIM_GLSL}${macro ? '\nuniform sampler2D uMacro;' : ''}`)
+      .replace('#include <fog_fragment>', `#ifdef USE_FOG
+          float fogF = 1.0 - exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, rimHaze(normalize(vFWorld - cameraPosition), fogColor), fogF);
+        #endif`);
+    if (macro) sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+        {
+          float md = length(vFWorld - cameraPosition);
+          float mk = 0.35 * smoothstep(25.0, 140.0, md) + 0.65 * smoothstep(140.0, 450.0, md);
+          vec3 mc = texture2D(uMacro, vFWorld.xz / 2048.0).rgb / vec3(${MACRO_MEAN});
+          diffuseColor.rgb *= mix(vec3(1.0), mc, mk);
+        }`);
+  };
+  m.customProgramCacheKey = () => key() + (macro ? 'rim+macro' : 'rim');
+  return m;
+}
 
 // the desert's colour at a point: slow patches and grain, a little redder than the highway's
 function tint(x: number, z: number, out: number[]) {
@@ -79,7 +120,7 @@ export class OldRoad implements DriveArea {
   private hemi: THREE.HemisphereLight;
   private sun: THREE.DirectionalLight;
   private far: THREE.Mesh;
-  private farMat: THREE.MeshBasicMaterial;
+  private farMat: THREE.ShaderMaterial;
   private saroMat: THREE.MeshBasicMaterial;
 
   constructor(origin: THREE.Vector3) {
@@ -99,8 +140,8 @@ export class OldRoad implements DriveArea {
     const std = (o: THREE.MeshStandardMaterialParameters, fall = 0.012) => floodlit(new THREE.MeshStandardMaterial(o), fall, oldFlood);
     const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
     const m = {
-      ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1 }),
-      asphalt: std({ map: oldAsphaltTex(), roughness: 0.7, ...top }, 0.01),
+      ground: hazed(std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1 }), artLoaded('oldMacro') ? artTexture('oldMacro', [1, 1]) : null),
+      asphalt: hazed(std({ map: oldAsphaltTex(), roughness: 0.7, ...top }, 0.01), null),
       vc: std({ vertexColors: true, roughness: 0.9 }),
       steel: std({ color: 0x6f7a70, roughness: 0.5, metalness: 0.3 }),
       concrete: std({ map: artTexture('concrete'), color: 0xb8b0a0, roughness: 0.95 }),
@@ -284,7 +325,7 @@ export class OldRoad implements DriveArea {
 
     // ---------- far away: the mesas round the horizon (they follow the camera), SARO, the diner ----------
     {
-      const pos: number[] = [], col: number[] = [], N = 540, R = 4300;
+      const pos: number[] = [], col: number[] = [], lit: number[] = [], N = 540, R = 4300;
       const ROAD_Y = path[I0].y;
       // flat-topped mesas: [azimuth, half width, top]; the one in the east-north-east is where
       // the sun comes up, its top 0.6 degrees over the road (KAPITLER.md: the sun takes its edge at 05:30)
@@ -301,12 +342,31 @@ export class OldRoad implements DriveArea {
         const a0 = i / N * 360, a1 = (i + 1) / N * 360;
         const p = (deg: number, y: number) => [Math.sin(deg * Math.PI / 180) * R, ROAD_Y + y, -Math.cos(deg * Math.PI / 180) * R];
         const q = [p(a0, -60), p(a1, -60), p(a1, h(a1)), p(a0, h(a0))];
-        for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(...q[k]); col.push(...(k < 2 ? [0.55, 0.55, 0.6] : [0.42, 0.4, 0.44])); }
+        // the sides of the hills that face the sun light up once it is over the edge: the far
+        // ones, on the other side of the sky from it
+        const litA = Math.max(0, -Math.cos((a0 - SUN_AZ) * Math.PI / 180)), litB = Math.max(0, -Math.cos((a1 - SUN_AZ) * Math.PI / 180));
+        for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(...q[k]); col.push(k < 2 ? 0 : 1, 0, 0); lit.push(k === 1 || k === 2 ? litB : litA); }
       }
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-      this.farMat = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide });
+      g.setAttribute('aLit', new THREE.Float32BufferAttribute(lit, 1));
+      // the hills: the haze of the horizon behind them, a little darker, darker at the tops
+      this.farMat = new THREE.ShaderMaterial({
+        uniforms: { uRimSun: RIM.sun, uRimDawn: RIM.dawn, uSunUp: RIM.up, uNight: { value: new THREE.Color() } },
+        vertexColors: true, side: THREE.DoubleSide,
+        vertexShader: `attribute float aLit; varying vec3 vDir; varying float vTop; varying float vLit;
+          void main() { vec4 w = modelMatrix * vec4(position, 1.0); vDir = w.xyz - cameraPosition; vTop = color.r; vLit = aLit;
+            gl_Position = projectionMatrix * viewMatrix * w; }`,
+        fragmentShader: `${RIM_GLSL}
+          uniform float uSunUp; uniform vec3 uNight; varying vec3 vDir; varying float vTop; varying float vLit;
+          void main() {
+            vec3 col = rimHaze(normalize(vDir), uNight) * mix(0.86, 0.6, vTop) + vec3(0.55, 0.34, 0.18) * uSunUp * vLit * (0.25 + 0.2 * vTop);
+            gl_FragColor = vec4(col, 1.0);
+            #include <tonemapping_fragment>
+            #include <colorspace_fragment>
+          }`,
+      });
       this.far = new THREE.Mesh(g, this.farMat);
       this.far.frustumCulled = false;
       this.far.renderOrder = -5;
@@ -380,14 +440,16 @@ export class OldRoad implements DriveArea {
 
   /** Every frame while the area is shown: the dawn light (0..1), glints in the headlights, and
    *  the far horizon kept round the camera. fog is the colour of the haze now. */
-  update(_dt: number, t: number, cam: THREE.Vector3, dawn: number, fog: THREE.Color) {
+  update(_dt: number, t: number, cam: THREE.Vector3, sky: { dawn: number; fog: THREE.Color; sunDir: THREE.Vector3; sun: number }) {
+    const { dawn, fog } = sky;
+    RIM.sun.value.copy(sky.sunDir); RIM.dawn.value = dawn; RIM.up.value = sky.sun;
     this.glow.update(t);
     this.hemi.intensity = 0.2 + 0.75 * dawn;
     this.hemi.color.setRGB(0.13, 0.19, 0.31).lerp(_c.setRGB(0.56, 0.64, 0.8), dawn);
     this.hemi.groundColor.setRGB(0.16, 0.11, 0.06).lerp(_c.setRGB(0.29, 0.23, 0.17), dawn);
     this.sun.intensity = 0.55 * smooth(0.85, 1.0, dawn);
     this.far.position.set(cam.x - this.origin.x, 0, cam.z - this.origin.z);
-    this.farMat.color.copy(fog).multiplyScalar(0.55 + 0.25 * dawn);
+    (this.farMat.uniforms.uNight.value as THREE.Color).copy(fog).multiplyScalar(0.45);
     this.saroMat.color.copy(fog).multiplyScalar(0.7);
     // reflectors: bright inside the headlight beam, facing the truck
     const f0 = oldFlood.pos[OLD_HEADLIGHTS[0]], f2 = oldFlood.pos[OLD_HEADLIGHTS[2]];
