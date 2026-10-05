@@ -526,7 +526,6 @@ export class World {
   // passes through is a leg with its own copy of the truck and its own controller; where two
   // areas meet on a road the truck is handed from one to the next between two frames.
   private trucksHome: { t: Truck; x: number; y: number; z: number; h: number }[] = [];
-  private autoRev = false;
 
   /** SARO's own ground to drive on: the pad, the ramp, the service road, the highway. */
   private ensureSaroLeg() {
@@ -595,7 +594,7 @@ export class World {
       this.enter(from);
       this.startEngine();
       this.driving = true;
-      this.autoRev = false;
+      this.auto.rev = false; this.auto.stall = 0;
       if (o.onStart) o.onStart();
       else if (from === to && o.hint) toast(o.hint, 5);
       else toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer.', 4.5);
@@ -668,31 +667,53 @@ export class World {
     p.place(v.x, v.z, h);
   }
 
-  // The autopilot: along the way to the next area, or to where the truck is left. It backs
-  // round when the way lies behind it.
-  private autoInput(): DriveInput {
+  // The autopilot (tests, the developer menu): along the way to the next area, or to where
+  // the truck is left. Pure pursuit, slowed in time for the bends ahead; when the way lies
+  // behind, a turn in three points (forward on full lock, back on the other lock when it can
+  // go no further, and so on until it faces the way).
+  private auto = { rev: false, stall: 0 };
+  /** dt: the step (the stall timer of the turn); 0 to only look. */
+  private autoInput(dt = 0): DriveInput {
     const id = this.leg!, L = this.legs[id]!, D = L.drive, trip = this.trip, legs = this.mods.legs!;
     const next = !trip?.to ? null : trip.to === id ? 'park' : legs.legsBetween(id, trip.to)[1];
     const route = next ? (id === 'road' ? legs.roadRoute(next as LegId) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[next]) : null;
     if (!route?.length) return { steer: 0, throttle: D.speed > 0.2 ? -0.6 : 0 };
     let k = 0, best = Infinity;
     for (let i = 0; i < route.length; i++) { const d = route[i].distanceToSquared(D.pos); if (d < best) { best = d; k = i; } }
-    // aim at a point further along the faster the truck goes, and slow down for the bends
-    // further ahead still
-    const sp = Math.abs(D.speed), along = (from: number, dist: number) => {
-      let j = from;
-      while (j < route.length - 1 && route[j].distanceTo(D.pos) < dist) j++;
-      const tg = route[j];
-      const a = Math.atan2(-(tg.x - D.pos.x), -(tg.z - D.pos.z)) - D.heading;
-      return Math.atan2(Math.sin(a), Math.cos(a));
-    };
-    const err = along(k, THREE.MathUtils.clamp(3.5 + sp * 0.7, 4, 16)), far = along(k, 18 + sp * 1.6);
-    if (Math.abs(err) > 2.0) this.autoRev = true; else if (Math.abs(err) < 1.0) this.autoRev = false;
-    if (this.autoRev) return { steer: err > 0 ? 1 : -1, throttle: D.reversing ? (Math.abs(D.speed) < 3 ? -1 : 0) : -1 };
+    const sp = Math.abs(D.speed);
+    let j = k;
+    while (j < route.length - 1 && route[j].distanceTo(D.pos) < THREE.MathUtils.clamp(3.5 + sp * 0.7, 4, 16)) j++;
+    const tg = route[j];
+    let err = Math.atan2(-(tg.x - D.pos.x), -(tg.z - D.pos.z)) - D.heading;
+    err = Math.atan2(Math.sin(err), Math.cos(err));
+    const A = this.auto;
+    // ---------- turning round ----------
+    if (Math.abs(err) > 0.9 || A.rev) {
+      const want = A.rev ? -1 : 1, moving = D.reversing === A.rev && sp > 0.25;
+      A.stall = moving ? 0 : A.stall + dt;
+      if (A.rev && (Math.abs(err) < 0.6 || A.stall > 1.2)) { A.rev = false; A.stall = 0; }
+      else if (!A.rev && A.stall > 1.2 && Math.abs(err) > 0.9) { A.rev = true; A.stall = 0; }
+      const lock = err > 0 ? 1 : -1;
+      if (A.rev) return { steer: lock, throttle: D.reversing ? (sp < 1.8 ? -0.7 : 0) : -1 };
+      if (D.reversing) return { steer: -lock, throttle: 1 };
+      return { steer: -lock, throttle: THREE.MathUtils.clamp((2 * want - D.speed) * 0.6, -1, 0.7) };
+    }
+    A.stall = 0;
     if (D.reversing) return { steer: 0, throttle: 1 };
+    // ---------- along the way: the speed each bend ahead allows, braked to in time ----------
+    let v = Math.min(this.autopilot ?? 15, D.surface.top * 0.7);
+    let dist = route[k].distanceTo(D.pos);
+    for (let i = k; i < route.length - 2 && dist < 90; i++) {
+      const p0 = route[i], p1 = route[i + 1], p2 = route[i + 2];
+      const h1 = Math.atan2(p1.x - p0.x, p1.z - p0.z), h2 = Math.atan2(p2.x - p1.x, p2.z - p1.z);
+      const bend = Math.abs(Math.atan2(Math.sin(h2 - h1), Math.cos(h2 - h1)));
+      const curv = bend / Math.max((p1.distanceTo(p0) + p2.distanceTo(p1)) / 2, 0.5);
+      const vb = Math.sqrt(2.2 / Math.max(curv, 1e-4));       // about 2.2 m/s² sideways
+      v = Math.min(v, Math.sqrt(vb * vb + 2 * 2.5 * dist));   // braking at 2.5 m/s²
+      dist += p1.distanceTo(p0);
+    }
     const end = next === 'park' ? route[route.length - 1].distanceTo(D.pos) : Infinity;
-    let v = Math.min(this.autopilot ?? 15, D.surface.top * 0.7, Math.max(0, (end - 2.2) * 0.6))
-      * THREE.MathUtils.clamp(1.15 - Math.abs(err) * 1.4, 0.3, 1) * THREE.MathUtils.clamp(1.2 - Math.abs(far) * 1.1, 0.3, 1);
+    v = Math.min(v, Math.max(0, (end - 2.2) * 0.6)) * THREE.MathUtils.clamp(1.15 - Math.abs(err) * 1.4, 0.3, 1);
     if (end < 2.2) v = 0;
     return { steer: THREE.MathUtils.clamp(-err * 2.4, -1, 1), throttle: THREE.MathUtils.clamp((v - D.speed) * 0.5, -1, 1) };
   }
@@ -799,7 +820,7 @@ export class World {
     if (c?.camera) c.camera(dt);
     else if (this.driving) {
       if (c?.input) input = c.input(dt);
-      else if (this.autopilot !== null) input = this.autoInput();
+      else if (this.autopilot !== null) input = this.autoInput(dt);
       else if (this.testInput) input = typeof this.testInput === 'function' ? this.testInput() : this.testInput;
       L.drive.update(dt, input ?? { steer: 0, throttle: 0 }, look);
       this.tripStep(dt);
