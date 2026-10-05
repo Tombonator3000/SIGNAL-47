@@ -53,14 +53,14 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»).
 - [x] Codex, runde 10 (PR #54, `56fa505`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Koblet inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren.
 - [ ] Utsnitt A av avisbildet i saksmappa når tråd 7 bygges i The Amended Record, og hele bildet (C) etter rulleteksten.
-- [ ] Codex, senere: milestolpene og oppmålingsbolten når Roswell-veien er spesifisert.
+- [ ] Codex, runde 11 (bestilt 5. oktober morgen i `ART_BRIEF.md`): milestolpen, vitnestolpen, messingskiva, den gamle asfalten og fire FLASH-bilder. Kapitlet har reserver i kode og venter ikke.
 - [x] PR #62 (Codex, Voices of the Void-oppsett under `Docs/Research/`): gjennomgått, 11 av 11 tester OK, begge funnene rettet i `29bed78`, flettet til main `3df5072` etter Toms ja (5. oktober morgen). Funn fra spilling kommer som oppførselsbeskrivelse, ikke som kode.
 - [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [x] Kapitlet «All Night» (5. oktober morgen): fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien (P13). Test: `tools/chapter5.py`.
 - [ ] All Night: himmelen ved dineren er fortsatt natt; daggry i himmelen (ikke bare i vinduene) før Roswell Road.
 - [ ] Ta bort de ubrukte `endingLines()` i kapittel 3 og 4 (kapittelkortene i `main.ts` har tatt over).
 - [ ] `tools/chapter3.py`: skjermbildet på grusveien (`e04b_track`) brukte mer enn 240 s to ganger da en annen nettleser kjørte samtidig (5. oktober morgen). Alene går testen. Kjør den alene til skjermbildene får lengre tid eller tas uten å vente på en ny ramme.
-- [ ] Roswell Road og THE EVENT: kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
+- [ ] Roswell Road og THE EVENT (spesifisert 5. oktober morgen i `KAPITLER.md`, bygges nå): kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
 
 ### Grafikk på PC (Tom 4. oktober kveld: «bedre grafikk og lys/skygge, shaders, post processing på PC, mobil kan beholde den enkle stilen»)
 

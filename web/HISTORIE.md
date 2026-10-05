@@ -98,7 +98,7 @@ Dineren ligger der den gamle Roswell-veien går ut fra riksveien, og har vært �
 
 ## Roswell Road og THE EVENT
 
-Kjøringen fra dineren sørover på den gamle veien. Ingen musikk, bare motor, dekk og en svak radio. Himmelen begynner å lysne i øst. Milestolpene kommer forbi i lyset.
+Kjøringen fra dineren øst-nordøst og så nordøst på den gamle veien, slik den står på servicekartet (E14). Ingen musikk, bare motor, dekk og en svak radio. Himmelen lysner foran, i øst. Milestolpene kommer forbi i lyset. Detaljene står i `KAPITLER.md`.
 
 Rett forbi åttemilsstolpen, der C krysser veien, skjer dette i nøyaktig 47 sekunder spilltid (samme regel som telefonen i prologen og tidsloggen fra 1947):
 
