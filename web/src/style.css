@@ -640,3 +640,5 @@ html.text-large .prompt { font-size: 28px; }
 .mapov { margin: 4px 0 10px; }
 .mapov canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
 .mapov canvas:active { cursor: grabbing; }
+/* on a screen tall enough, the whole map and the answers fit without scrolling */
+@media (min-height: 640px) { .mapov canvas { max-width: calc((100vh - 300px) * 1.5); margin: 0 auto; } }
