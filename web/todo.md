@@ -2,7 +2,7 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
-## Nå (prolog og kapittel 1 til 3 er ute på Pages fra 4. oktober kl. 12.39)
+## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
 - [ ] Tom går rundt SARO på Pages: ut østdøra, rundt lastebilen, ned rampa, langs serviceveien og gangstien til nødutgangen, opp vestsiden, langs vinduene og opp trappa til østgangen. Si fra om noe står i veien, ser feil ut eller mangler.
 - [ ] Tom ser på stjernehimmelen på PC og mobil: er stjernene små og skarpe nok, og er Melkeveien like fin som før?
@@ -47,7 +47,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 ### Historien etter Toms nye slutt (4. oktober kveld)
 
 - [x] Tom svarte ja på begge spørsmålene (kometen, reléet) 4. oktober kveld.
-- [ ] `KAPITLER.md`, ett kapittel om gangen (Night Shift er spesifisert og bygd): The Second Exposure er neste, så The Amended Record, The Survey Station, Room 6, All Night og Roswell Road med THE EVENT.
+- [ ] `KAPITLER.md`, ett kapittel om gangen. Spesifisert og bygd: Night Shift, All Night og Roswell Road med THE EVENT. The Second Exposure er spesifisert (telexen 02:29, mørkeromsboka, historikken i S-03, merket under malingen), men ikke bygd. The Amended Record, The Survey Station og Room 6 er ikke skrevet inn ennå (kapitlene finnes i spillet fra før).
 - [x] Bygg Night Shift etter `KAPITLER.md`: perma, servicekortet, telexmaskinen, terminalen (`ui/Terminal.ts`), Halley-plakaten, jakka, radioen, K3 og klokka i nedtellingen, månefasene på kalenderen. Walkie-talkien i rom 6 er også bygd.
 - [x] Sluttkortet i kapittel 4 går videre til ALL NIGHT, og lastebilen hentes på SARO etter rom 6 (5. oktober morgen).
 - [ ] Lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»).
