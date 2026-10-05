@@ -636,3 +636,9 @@ html.text-large .prompt { font-size: 28px; }
 
 /* Pencil on typed paper and printouts: lines that start with "~ " in the document text. */
 .page .pencil { font-family: var(--hand); font-size: 1.4em; line-height: 1.1; color: #4b4a52; display: inline-block; transform: rotate(-1.2deg); white-space: pre-wrap; }
+/* All Night: the service map with the tracing on top (ui/MapOverlay.ts) */
+.mapov { margin: 4px 0 10px; }
+.mapov canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+.mapov canvas:active { cursor: grabbing; }
+/* on a screen tall enough, the whole map and the answers fit without scrolling */
+@media (min-height: 640px) { .mapov canvas { max-width: calc((100vh - 300px) * 1.5); margin: 0 auto; } }

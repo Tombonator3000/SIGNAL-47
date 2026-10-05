@@ -3,7 +3,8 @@
 # ground height), the door of room 6, the conversation with N. Vega with wrong and right
 # answers (P10, the three parts of P11 with her correction, Tomas' letter and his field
 # card, P12 on the old field line, where C goes), the papers on the table, Continue inside
-# room 6, leaving, and the end card. Starts from S47.jump('chapter4').
+# room 6, leaving, and the chapter card that leads into All Night. Starts from
+# S47.jump('chapter4').
 # Usage: python3 tools/chapter4.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
@@ -230,13 +231,17 @@ async def main():
             await tick(0.25)
             if await ev("S47.world.area === 'saro'"): break
         check(await ev("S47.world.area") == 'saro' and await s4('stage') == 'complete', 'out on the motel front; chapter four complete')
-        await ev("S47.hold = false")
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        text = await ev("document.querySelector('.endcard').textContent")
-        check('ROOM 6' in text and 'ALL NIGHT' in text, 'end card for chapter four names All Night next')
+        # the night goes on: a chapter card, and chapter five begins behind it (All Night)
+        for _ in range(40):
+            await tick(0.25)
+            if await ev("!!document.querySelector('.chapter-card')"): break
+        text = await ev("(document.querySelector('.chapter-card') || {}).textContent || ''")
+        check('ROOM 6' in text and 'ALL NIGHT' in text and 'CHAPTER FIVE' in text, 'the chapter card closes room 6 and names All Night')
         await shot('f10_ending')
-        await ev("S47.hold = true")
-        await pg.click('.endcard button:has-text("Return to the observatory")'); await pg.wait_for_timeout(400)
+        for _ in range(40):
+            await tick(0.25)
+            if not await ev("!!document.querySelector('.chapter-card')"): break
+        check(await ev("S47.game.phase") == 'ch5' and await ev("S47.ch5.s.stage") == 'to-truck' and await ev("S47.game.clock % 86400 >= 5 * 3600"), 'chapter five begins at five: back to the truck')
         await ev("S47.hold = true; S47.tick(0.3)")
         await ev("S47.game.openNotebook()")
         await pg.click('.notebook [data-t=findings]')

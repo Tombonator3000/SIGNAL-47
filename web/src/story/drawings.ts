@@ -6,15 +6,19 @@
 
 const PAPER = '#efe8d6', INK = '#22372e';
 
+// The paper, with a little age on it.
+function paperBg(g: CanvasRenderingContext2D, w: number, h: number) {
+  g.fillStyle = PAPER; g.fillRect(0, 0, w, h);
+  let s = w * 31 + h;
+  const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(90,70,40,${r() * 0.05})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
+}
+
 function sheet(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d')!;
-  g.fillStyle = PAPER; g.fillRect(0, 0, w, h);
-  // a little age on the paper
-  let s = w * 31 + h;
-  const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-  for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(90,70,40,${r() * 0.05})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
+  paperBg(g, w, h);
   g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = 3; g.lineCap = 'round'; g.lineJoin = 'round';
   draw(g);
   return c.toDataURL('image/png');
@@ -169,4 +173,144 @@ export function transitRecord(o: { a: [number, number]; b: [number, number]; c: 
     g.font = '17px "Special Elite", serif';
     g.fillText('FIELD COPY / KEEP WITH THE TRANSIT', 40, 600);
   });
+}
+
+// ---------- All Night: SARO 07's service map and the tracing of E09A ----------
+// The map is north up, 1200 x 800, not to any survey scale. The old Roswell road leaves
+// the highway at the diner; its mileposts count from there. C runs due east from the
+// transit at STATION 01 (as the stakes do at the built station), so on the map it is the
+// horizontal through STATION 01. The road is laid so that line meets it 8.15 miles from
+// the junction, just past the eight-mile post, where a survey bolt sits in the shoulder.
+type Pt = [number, number];
+const ROAD: Pt[] = [[200, 560], [330, 585], [470, 600], [610, 600], [740, 575], [850, 520], [930, 440], [985, 360], [1030, 270], [1080, 180], [1140, 110], [1190, 70]];
+const STATION: Pt = [470, 360];
+const CROSS_MILES = 8.15;
+// distance along the road to a point on it, and the point at a distance along it
+function along(pts: Pt[]) {
+  const cum = [0];
+  for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const at = (d: number): Pt => {
+    for (let i = 1; i < pts.length; i++) if (d <= cum[i]) {
+      const k = (d - cum[i - 1]) / (cum[i] - cum[i - 1]);
+      return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * k, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * k];
+    }
+    return pts[pts.length - 1];
+  };
+  return { cum, at, total: cum[cum.length - 1] };
+}
+// where the line east from STATION 01 meets the road, as a distance along it
+function crossing() {
+  const { cum } = along(ROAD);
+  for (let i = 1; i < ROAD.length; i++) {
+    const [ax, ay] = ROAD[i - 1], [bx, by] = ROAD[i];
+    if ((ay - STATION[1]) * (by - STATION[1]) <= 0 && ay !== by) {
+      const k = (STATION[1] - ay) / (by - ay), x = ax + (bx - ax) * k;
+      if (x > STATION[0]) return cum[i - 1] + Math.hypot(bx - ax, by - ay) * k;
+    }
+  }
+  return cum[cum.length - 1];
+}
+export const SERVICE_MAP = (() => {
+  const a = along(ROAD), cross = crossing(), perMile = cross / CROSS_MILES;
+  // the bolts: the one where C crosses, and three others along the shoulder
+  const bolts = [3.3, 6.0, CROSS_MILES, 10.4].map((mi) => ({ mi, at: a.at(mi * perMile) }));
+  return { w: 1200, h: 800, station: STATION, road: ROAD, perMile, miles: a.total / perMile, bolts, post: (mi: number) => a.at(mi * perMile), snap: 18 };
+})();
+
+function drawServiceMap(g: CanvasRenderingContext2D) {
+  const M = SERVICE_MAP;
+  g.fillStyle = INK; g.strokeStyle = INK; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.font = '600 30px Oswald, sans-serif'; g.fillText('SARO 07 / SERVICE MAP', 40, 54);
+  g.font = '19px "Special Elite", serif'; g.fillText('Access and old survey roads. Mileposts from the junction at the diner. BM: survey bolt in the shoulder.', 40, 86, 1120);
+  // north arrow
+  g.lineWidth = 3;
+  g.beginPath(); g.moveTo(1130, 200); g.lineTo(1130, 140); g.lineTo(1120, 160); g.moveTo(1130, 140); g.lineTo(1140, 160); g.stroke();
+  g.font = '24px "Special Elite", serif'; g.fillText('N', 1121, 228);
+  // the highway, north to south
+  g.lineWidth = 9; g.strokeStyle = '#3d4a44';
+  g.beginPath(); g.moveTo(200, 110); g.lineTo(200, 780); g.stroke();
+  g.lineWidth = 2; g.strokeStyle = PAPER; g.setLineDash([14, 12]);
+  g.beginPath(); g.moveTo(200, 110); g.lineTo(200, 780); g.stroke();
+  g.setLineDash([]); g.strokeStyle = INK;
+  g.save(); g.translate(176, 760); g.rotate(-Math.PI / 2); g.font = '18px "Special Elite", serif'; g.fillText('HIGHWAY', 0, 0); g.restore();
+  // SARO and its array, Sierra Motor Court across the road
+  g.lineWidth = 2.5;
+  for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(300 + (i % 3) * 30, 128 + Math.floor(i / 3) * 22, 7, 0, Math.PI * 2); g.stroke(); }
+  g.strokeRect(286, 200, 52, 32);
+  g.font = '600 22px Oswald, sans-serif'; g.fillText('SARO', 348, 224);
+  g.strokeRect(96, 196, 66, 24);
+  g.font = '17px "Special Elite", serif'; g.fillText('SIERRA MOTOR CT', 40, 248);
+  // the diner at the junction
+  g.fillRect(150, 548, 34, 22);
+  g.font = '600 20px Oswald, sans-serif'; g.fillText('MESA DINER', 40, 600);
+  // the old Roswell road
+  g.lineWidth = 6; g.strokeStyle = '#4a5550';
+  g.beginPath(); M.road.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke();
+  g.strokeStyle = INK;
+  g.font = '18px "Special Elite", serif';
+  g.save(); g.translate(560, 632); g.fillText('OLD ROAD TO ROSWELL', 0, 0); g.restore();
+  // mileposts: a tick across the road and the number
+  g.lineWidth = 2;
+  for (let mi = 1; mi <= Math.floor(M.miles); mi++) {
+    const [x, y] = M.post(mi), [x2, y2] = M.post(mi + 0.02);
+    const nx = -(y2 - y), ny = x2 - x, l = Math.hypot(nx, ny) || 1;
+    g.beginPath(); g.moveTo(x - nx / l * 9, y - ny / l * 9); g.lineTo(x + nx / l * 9, y + ny / l * 9); g.stroke();
+    g.font = '600 19px Oswald, sans-serif';
+    g.fillText(String(mi), x + nx / l * 16 - 5, y + ny / l * 16 + 7);
+  }
+  // survey bolts on the shoulder: a small triangle with a dot
+  for (const b of M.bolts) {
+    const [x, y] = b.at;
+    g.beginPath(); g.moveTo(x - 9, y - 13); g.lineTo(x + 9, y - 13); g.lineTo(x, y - 27); g.closePath(); g.stroke();
+    g.beginPath(); g.arc(x, y - 18, 2.2, 0, Math.PI * 2); g.fill();
+    g.font = '16px "Special Elite", serif'; g.fillText('BM', x - 30, y - 16);
+  }
+  // STATION 01 north of the road, with its fence
+  const [sx, sy] = M.station;
+  g.lineWidth = 2; g.setLineDash([5, 5]); g.strokeRect(sx - 30, sy - 24, 60, 48); g.setLineDash([]);
+  g.lineWidth = 3; mark(g, sx, sy + 2, 22);
+  g.font = '600 20px Oswald, sans-serif'; g.fillText('STATION 01', sx - 52, sy - 34);
+  g.font = '16px "Special Elite", serif'; g.fillText('old survey station, 1947', sx - 82, sy + 50);
+  g.font = '16px "Special Elite", serif';
+  g.fillText('SARO 07 / KEEP IN THE DOOR POCKET', 40, 780);
+}
+
+/** E14, the service map as a picture for the case file. */
+export function serviceMap() {
+  return sheet(SERVICE_MAP.w, SERVICE_MAP.h, drawServiceMap);
+}
+/** The service map on a canvas, for the overlay at the diner (ui/MapOverlay.ts). */
+export function serviceMapCanvas() {
+  const c = document.createElement('canvas'); c.width = SERVICE_MAP.w; c.height = SERVICE_MAP.h;
+  const g = c.getContext('2d')!;
+  paperBg(g, c.width, c.height);
+  drawServiceMap(g);
+  return c;
+}
+/** E09A traced onto onion-skin: the transit at (x, y), C running east to the edge of the
+ *  sheet, A and B close by, and the north arrow. Drawn over the service map. */
+export function drawTracing(g: CanvasRenderingContext2D, x: number, y: number) {
+  const W = 620, H = 300, left = x - 70, top = y - H / 2;
+  g.save();
+  g.fillStyle = 'rgba(214,226,232,.38)'; g.strokeStyle = 'rgba(40,70,110,.55)'; g.lineWidth = 1.5;
+  g.fillRect(left, top, W, H); g.strokeRect(left, top, W, H);
+  g.strokeStyle = '#1d3f7a'; g.fillStyle = '#1d3f7a'; g.lineCap = 'round';
+  // the transit
+  g.lineWidth = 2.5;
+  g.beginPath(); g.arc(x, y, 12, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.moveTo(x - 18, y); g.lineTo(x + 18, y); g.moveTo(x, y - 18); g.lineTo(x, y + 18); g.stroke();
+  // C, the closing line, east to the edge of the sheet
+  g.lineWidth = 3;
+  g.beginPath(); g.moveTo(x + 12, y); g.lineTo(left + W - 8, y); g.stroke();
+  g.font = '24px "Special Elite", serif'; g.fillText('C', left + W - 34, y - 12);
+  // A to the north on the sight line, B to the west
+  g.lineWidth = 2; g.setLineDash([6, 5]);
+  g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x, y - 60); g.stroke(); g.setLineDash([]);
+  g.font = '19px "Special Elite", serif'; g.fillText('A', x + 8, y - 52); g.fillText('B', x - 58, y + 6);
+  g.beginPath(); g.moveTo(x - 12, y); g.lineTo(x - 44, y); g.stroke();
+  // north arrow and the note
+  g.beginPath(); g.moveTo(left + W - 30, top + 74); g.lineTo(left + W - 30, top + 30); g.lineTo(left + W - 37, top + 44); g.moveTo(left + W - 30, top + 30); g.lineTo(left + W - 23, top + 44); g.stroke();
+  g.font = '15px "Special Elite", serif';
+  g.fillText('E09A, traced. Transit on the station.', left + 12, top + H - 14);
+  g.restore();
 }

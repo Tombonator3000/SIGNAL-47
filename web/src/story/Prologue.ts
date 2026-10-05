@@ -13,6 +13,7 @@ import { Chapter1, type CaseState } from './Chapter1';
 import { Chapter2, type Ch2State } from './Chapter2';
 import { Chapter3, type Ch3State, type Travel } from './Chapter3';
 import { Chapter4, type Ch4State, type Motel } from './Chapter4';
+import { Chapter5, type Ch5State, type Chapter5Deps } from './Chapter5';
 import type { Doors } from '../world/Doors';
 import { DecoderDesk } from './Decoder';
 import type { RecordsAnnex } from '../world/Annex';
@@ -26,7 +27,7 @@ import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
 const ORDER = ['intro', 'shift', 'survey', 'skip', 'residual', 'locked', 'solving', 'printing', 'printed',
-  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2', 'ch3', 'ch4'] as const;
+  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5'] as const;
 export type Phase = typeof ORDER[number];
 
 const START_CLOCK = 23 * 3600 + 41 * 60;        // 23:41:00
@@ -111,7 +112,7 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
 // What Night Shift leaves behind besides the notes: which of the room's papers were read,
 // whether relay K3 is still open, and tonight's lines in the console log (story/nightshift.ts).
 export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean }
-export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ns?: NightShiftState; notes: string[]; clock: number }
+export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ch5?: Ch5State; ns?: NightShiftState; notes: string[]; clock: number }
 export interface PrologueDeps {
   ui: UI; audio: AudioSys; room: ControlRoom; ext: Exterior; player: Player; inter: Interaction;
   yard: ServiceYard; fcam: FieldCamera; colliders: Collider[]; annex: RecordsAnnex;
@@ -121,6 +122,7 @@ export interface PrologueDeps {
   isTouch: () => boolean;
   travel: Travel;
   motel: Motel;
+  allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner'>;
   doors: Doors;
   milestone: () => void;
 }
@@ -144,6 +146,7 @@ export class Prologue {
   ch2: Chapter2;
   ch3: Chapter3;
   ch4: Chapter4;
+  ch5: Chapter5;
   decoder: DecoderDesk;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
   ns: NightShiftState = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
@@ -154,7 +157,7 @@ export class Prologue {
   private opsDirty = true;
   private opsT = 0;
   private halleyImg: string | undefined;
-  readonly ops = new OpsTerminal(() => ({ clock: this.clock, solveAt: this.ns.solveAt, log: this.ns.log, future: false }));
+  readonly ops = new OpsTerminal(() => ({ clock: this.clock, solveAt: this.ns.solveAt, log: this.ns.log, future: this.phase === 'ch5' }));
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
   private bootT = -1;
@@ -214,6 +217,12 @@ export class Prologue {
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
       milestone: () => { this.onCheckpoint?.('chapter4'); },
     });
+    this.ch5 = new Chapter5(this, {
+      ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, ch3: this.ch3, ...d.allNight,
+      terminal: () => d.room.objs.opsTerminal.getWorldPosition(new THREE.Vector3()),
+      save: () => d.saveCase(this.composeCase(this.ch1.s)),
+      milestone: () => { this.onCheckpoint?.('chapter5'); },
+    });
     this.reset();
   }
 
@@ -230,6 +239,7 @@ export class Prologue {
   // Where a save resumes. The prologue only has safe points at the start of the night and
   // at 02:13; inside a chapter the chapter's own state is the resume point.
   checkpointName(): string {
+    if (this.phase === 'ch5') return 'chapter5';
     if (this.phase === 'ch4') return 'chapter4';
     if (this.phase === 'ch3') return 'chapter3';
     if (this.phase === 'ch2') return 'chapter2';
@@ -243,11 +253,13 @@ export class Prologue {
     if (this.at('ringing') && !this.at('ch1')) return 'Not during the call and what follows it. The game saves again when the night moves on.';
     if (this.phase === 'ch3') return this.ch3.saveBlock();
     if (this.phase === 'ch4') return this.ch4.saveBlock();
+    if (this.phase === 'ch5') return this.ch5.saveBlock();
     return null;
   }
   /** The case as it stands, for a save. Null in the prologue, which keeps no case. */
   snapshotCase(): SavedCase | null { return this.at('ch1') ? this.composeCase(this.ch1.s) : null; }
   chapterTitle(): string {
+    if (this.phase === 'ch5') return 'Chapter 5: All Night';
     if (this.phase === 'ch4') return 'Chapter 4: Room 6';
     if (this.phase === 'ch3') return 'Chapter 3: The Survey Station';
     if (this.phase === 'ch2') return 'Chapter 2: The Amended Record';
@@ -256,7 +268,7 @@ export class Prologue {
   }
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
-    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined,
+    return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, ch5: this.ch5?.started ? this.ch5.s : undefined,
       ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket }, notes: [...this.notes], clock: this.clock };
   }
   private setPhase(p: Phase) { this.phase = p; }
@@ -271,6 +283,7 @@ export class Prologue {
     if (this.phase === 'ch2') return this.ch2.tasks();
     if (this.phase === 'ch3') return this.ch3.tasks();
     if (this.phase === 'ch4') return this.ch4.tasks();
+    if (this.phase === 'ch5') return this.ch5.tasks();
     const t: { text: string; done: boolean }[] = [{ text: "Read Dale's shift log", done: this.logRead }];
     if (this.logRead || this.at('residual')) {
       t.push({ text: 'Power up RX bank 3', done: this.powered });
@@ -288,7 +301,7 @@ export class Prologue {
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
   openNotebook() {
     const ui = this.d.ui;
-    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : 'Tonight',
+    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : 'Tonight',
       // the evidence board can be laid out from the journal once a record from the archive is in it
       this.ch2.started && Object.values(this.ch2.s.read).some(Boolean) ? () => this.ch2.openBoard() : undefined);
   }
@@ -377,7 +390,7 @@ export class Prologue {
       label: () => this.phase === 'ch2' ? this.ch2.phoneLabel() : this.ringing ? 'Answer the phone' : this.phase === 'call' ? null : 'Telephone',
       use: () => {
         if (this.phase === 'ch2') { this.ch2.usePhone(); return; }
-        if (this.phase === 'ch3' || this.phase === 'ch4') { toast(this.phase === 'ch3' ? 'The supervisor line is quiet. Ward wants a field record, not a phone call.' : 'The supervisor line is quiet. N. Vega is waiting across the road.'); return; }
+        if (this.phase === 'ch3' || this.phase === 'ch4' || this.phase === 'ch5') { toast(this.phase === 'ch3' ? 'The supervisor line is quiet. Ward wants a field record, not a phone call.' : this.phase === 'ch4' ? 'The supervisor line is quiet. N. Vega is waiting across the road.' : 'The supervisor line is quiet. Ward will be up by now; there is a payphone at the diner.'); return; }
         if (this.ringing) { this.answer(); return; }
         if (this.answered) toast('Dead line. Not even a dial tone.');
         else toast('Internal line and one outside line. Nobody calls out here after midnight.');
@@ -430,7 +443,7 @@ export class Prologue {
       run: (c) => { const r = this.ops.run(c); this.opsLines = ['$ ' + c.toUpperCase(), ...r.split('\n')].slice(-9); this.opsDirty = true; return r; },
       buttons: () => this.ops.buttons(),
       touch: this.d.isTouch(),
-      onCommand: () => audio.beep(1400, 0.02, 0.02),
+      onCommand: (c) => { audio.beep(1400, 0.02, 0.02); if (this.phase === 'ch5') this.ch5.terminalCommand(c); },
     });
   }
 
@@ -820,6 +833,22 @@ export class Prologue {
     this.onCheckpoint?.('chapter4');
   }
 
+  // ---------- chapter five ----------
+  // Out of room 6 at five: back to the truck, and out to the diner on the old road.
+  beginChapter5(saved: SavedCase | null) {
+    const { ui } = this.d;
+    this.ch4.active = false; // she has said what she had to say; room 6 stays as it is
+    this.setPhase('ch5');
+    this.cinematic = false;
+    this.lookAssist = 0;
+    this.timers = [];
+    if (saved?.ch5) { this.notes = [...saved.notes]; this.clock = saved.clock; }
+    else this.clock = Math.max(this.clock, 5 * 3600);
+    ui.fade(false);
+    this.ch5.begin(saved?.ch5 ?? null);
+    this.onCheckpoint?.('chapter5');
+  }
+
   // ---------- per frame ----------
   update(dt: number, t: number, paused: boolean) {
     const { room, audio, player, ext } = this.d;
@@ -925,10 +954,11 @@ export class Prologue {
 
     // dishes arrive
     if (this.phase === 'turning' && !ext.dishes.some((x) => x.moving)) this.arrived();
-    if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
+    if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4' || this.phase === 'ch5') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
     if (this.phase === 'ch2') this.ch2.update(paused ? 0 : dt, t);
     if (this.phase === 'ch3') this.ch3.update(paused ? 0 : dt, t);
     if (this.phase === 'ch4') this.ch4.update(paused ? 0 : dt, t);
+    if (this.phase === 'ch5') this.ch5.update(paused ? 0 : dt, t);
     this.decoder.update(dt);
 
     // gentle camera assist so the player sees the array turn
@@ -1102,6 +1132,7 @@ export class Prologue {
     this.ch2?.reset();
     this.ch3?.reset();
     this.ch4?.reset();
+    this.ch5?.reset();
     this.d.doors.closeAll();
     this.decoder?.stop();
   }
@@ -1122,6 +1153,7 @@ export class Prologue {
     if (target === 'chapter2') { this.jumpChapter2(); return; }
     if (target === 'chapter3') { this.jumpChapter3(); return; }
     if (target === 'chapter4') { this.jumpChapter4(); return; }
+    if (target === 'chapter5') { this.jumpChapter5(); return; }
     const steps = ['shift', 'residual', 'locked', 'printed', 'countdown', 'event'];
     const idx = steps.indexOf(target);
     if (idx < 0) return;
@@ -1229,6 +1261,24 @@ export class Prologue {
     this.beginChapter2(done);
     this.beginChapter3(done);
     this.beginChapter4(done.ch4 ? done : null);
+  }
+
+  // Chapter five from a checkpoint, or for testing straight after room 6 when there is no
+  // saved case (chapter four complete, without photographs).
+  private jumpChapter5() {
+    const saved = this.d.loadCase();
+    this.jumpChapter4();
+    if (saved?.ch5) { this.beginChapter5(saved); return; }
+    const ch4: Ch4State = { v: 1, stage: 'complete', exitOpen: true, arrived: true, greeted: true,
+      placed: ['frame01', 'frame02', 'e07'], shown: true, p10: true, wrong10: 0,
+      topics: { record: true, tomas: true, cable: true }, tone: 'mild', p11: true, wrong11: 0,
+      line: true, p12: true, wrong12: 0, told: true,
+      read: { card: true, letter: true, correction: true }, seen: { photo: false, window: false } };
+    if (this.ch4.s.stage !== 'complete') {
+      this.beginChapter4({ ...this.composeCase(this.ch1.s), ch4, clock: 4 * 3600 + 58 * 60 });
+      this.clock = 4 * 3600 + 58 * 60;
+    }
+    this.beginChapter5(null);
   }
 
   // Everything the prologue leaves behind.
