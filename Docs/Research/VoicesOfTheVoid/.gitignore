@@ -1,0 +1,4 @@
+# Local third-party game files and analysis output are not repository source.
+/private
+__pycache__/
+*.pyc

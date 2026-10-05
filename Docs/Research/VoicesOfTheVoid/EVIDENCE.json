@@ -1,0 +1,143 @@
+{
+  "checked_at_utc": "2026-10-05T07:52:09.259559+00:00",
+  "scope": "Preparation and read-only metadata inspection; no game-code reuse",
+  "release": "0.9.0n",
+  "source": {
+    "official_archive_sha256": "4b80dacb0926d21d6650c6842e17785c3d9dbeaade5e2a3159346c39bba20799",
+    "official_archive_bytes": 2310549280,
+    "archive_hash_verified_during_installation": true,
+    "loose_file_count": 111,
+    "loose_total_bytes": 8517921954,
+    "complete_inventory_sha256": "cb1da6f1dc1da40ebc7c7dd42dd55181c8709b76d956dfba83a4d84f496852fa",
+    "all_copy_hashes_match_source": true,
+    "all_copied_files_read_only": true,
+    "copy_has_no_shared_file_inodes": true
+  },
+  "pe": {
+    "machine": "AMD64",
+    "format": "PE32+",
+    "native_code": true,
+    "clr_directory": [
+      0,
+      0
+    ],
+    "file_version": "4.27.2.0",
+    "product_version": "++UE4+Release-4.27-CL-18319896",
+    "fixed_file_info_offset": 83421720,
+    "codeview_references": [
+      {
+        "pdb_name": "VotV-Win64-Shipping.pdb",
+        "guid": "8c54cd07-cb48-4247-8e20-d59c3b5e93f0",
+        "age": 1
+      }
+    ]
+  },
+  "pak": {
+    "pak_version": 11,
+    "encrypted_index": false,
+    "size_bytes": 8170868477,
+    "file_count": 42941,
+    "directory_count": 1505,
+    "extensions": {
+      ".bin": 4,
+      ".brk": 9,
+      ".cfu": 1,
+      ".icu": 4,
+      ".ini": 33,
+      ".locmeta": 4,
+      ".locres": 57,
+      ".nrm": 3,
+      ".png": 282,
+      ".res": 648,
+      ".tps": 3,
+      ".ttf": 14,
+      ".uasset": 19429,
+      ".ubulk": 2360,
+      ".uexp": 19693,
+      ".ufont": 13,
+      ".umap": 264,
+      ".uplugin": 110,
+      ".upluginmanifest": 1,
+      ".uproject": 1,
+      ".uptnl": 2,
+      ".ushaderbytecode": 6
+    },
+    "indexes": {
+      "main": {
+        "offset": 8168293782,
+        "size_bytes": 641734,
+        "sha1": "56065b874f3bfc685e67b17e96cfcbbad9c55248",
+        "hash_valid": true
+      },
+      "path_hash": {
+        "offset": 8168935516,
+        "size_bytes": 549164,
+        "sha1": "37921fbbc50319d4b21d5abd23c2f952af470bd4",
+        "hash_valid": true
+      },
+      "full_directory": {
+        "offset": 8169484680,
+        "size_bytes": 1383576,
+        "sha1": "265d4c4850ae333302f0fb5cafad1cce845fa614",
+        "hash_valid": true
+      }
+    },
+    "project_descriptors": [
+      "VotV/VotV.uproject"
+    ],
+    "source_or_symbol_candidates": []
+  },
+  "toolchain": {
+    "ghidra": "12.1.4",
+    "jdk": "21.0.12.1+1",
+    "both_download_sha256_checks_pass": true,
+    "java_version_pass": true,
+    "headless_help_pass": true,
+    "global_installation": false
+  },
+  "ghidra_import": {
+    "exit_code": 0,
+    "import_pass": true,
+    "program": "VotV-Win64-Shipping.exe",
+    "program_sha256": "ad478218ec5513cc4c1682937db3214cbf2694d1dcd0583eb423447c049dd3ae",
+    "ghidra_version": "12.1.4",
+    "java_version": "21.0.12.1+1",
+    "max_heap": "2G",
+    "max_cpu": 2,
+    "automatic_analysis": false,
+    "decompilation_done": false
+  },
+  "checks": {
+    "synthetic_metadata_and_copy_protection_tests": {
+      "pass": true,
+      "tests": 11,
+      "command": "python3 -m unittest discover -s Docs/Research/VoicesOfTheVoid/scripts -p 'test_*.py' -v"
+    },
+    "repeat_import_refuses_project_overwrite": true,
+    "primary_private_payload_paths_git_ignored": true,
+    "support_private_symlink_git_ignored": true
+  },
+  "script_sha256": {
+    "ghidra.py": "b49c1a87421288d99eea976e18bfab7641f5f69859a0c0007e5a6e50af22a203",
+    "pak_inspect.py": "a826cb327ffd72a65c84f93279351af4626a8c97f9b3f95594b5b777c8a13d39",
+    "prepare.py": "462a3ebd9894e3fa6834b9ff8e1b054c0897a68b13847dc7fe486b504c472666",
+    "test_pak_inspect.py": "41d08e14e7157637338bd9d3ec1a8ea7a89d295e11f6168bd9369eb07369ef20",
+    "test_prepare.py": "d6b2808665731e014b3e3b312d378ceeabb57a6c99d70462992fa4ff3bbe8d24"
+  },
+  "not_performed": [
+    "Ghidra GUI inspection",
+    "Automatic whole-program analysis",
+    "Native or Blueprint decompilation",
+    "PAK asset-payload extraction",
+    "SIGNAL / 47 runtime changes or game integration"
+  ],
+  "license_status": "No license for reuse of VotV own code established; third-party component licenses are retained locally",
+  "private_evidence": [
+    "private/reports/preparation.json",
+    "private/reports/source-files.json",
+    "private/reports/pak-files.txt",
+    "private/reports/ghidra-import.json",
+    "private/reports/ghidra-import.log",
+    "private/toolchain.json"
+  ]
+}

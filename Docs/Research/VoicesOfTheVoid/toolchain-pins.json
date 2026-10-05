@@ -1,0 +1,23 @@
+{
+  "platform": "Linux x86_64",
+  "ghidra": {
+    "version": "12.1.4",
+    "directory": "ghidra_12.1.4_PUBLIC",
+    "url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.4_build/ghidra_12.1.4_PUBLIC_20260921.zip",
+    "sha256": "ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+    "size_bytes": 569649598,
+    "license": "Apache-2.0; bundled components retain their own licenses",
+    "required_jdk_major": 21,
+    "requirements": "https://github.com/NationalSecurityAgency/ghidra/blob/Ghidra_12.1.4_build/GhidraDocs/GettingStarted.md"
+  },
+  "java": {
+    "distribution": "Eclipse Temurin",
+    "version": "21.0.12.1+1",
+    "directory": "jdk-21.0.12.1+1",
+    "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz",
+    "sha256": "ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94",
+    "size_bytes": 207473347,
+    "checksum_url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz.sha256.txt",
+    "license": "GPLv2 with Classpath Exception; retain distribution legal/ directory"
+  }
+}
