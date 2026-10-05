@@ -347,7 +347,16 @@ async function boot() {
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
   // ---------- flow ----------
+  // Music on the title screen ("Signal to Noise", the end's music too). A browser lets sound
+  // start only from a click or a key, so it comes in with the first one on the title screen;
+  // back from a night, the sound is already allowed and it starts at once.
+  function menuMusic() {
+    if (mode !== 'title') return;
+    audio.unlock().then(() => { if (mode === 'title') audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }); }).catch(() => {});
+  }
+  const firstTouch = () => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true); menuMusic(); };
   function showTitle() {
+    if (audio.ctx) menuMusic(); else { addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true); }
     const cont = saves.continueSave();
     titleEl = ui.title({
       cont: cont ? `${cont.chapter} · ${cont.place} · ${cont.clock} · ${played(cont.playtime)} played` : null,
@@ -402,6 +411,7 @@ async function boot() {
     // Normally the sounds are decoded long before anyone taps Start. If not, say so.
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
+    audio.stop('music', 1.2);   // the title screen's music
     await saves.ready;
     // a save made at the station or in room 6 needs that area built first
     const savedArea = o.state?.area;
