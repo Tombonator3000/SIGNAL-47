@@ -537,6 +537,55 @@ export class World {
     this.driving = false;
     this.oldControl = null;
     this.engine?.stop();
+    this.free = null; this.freeBack = null;
+  }
+
+  // ---------- free drive (the developer menu): the truck on a road, any time, no story ----------
+  /** Which road the truck is out on in a free drive, or null. */
+  free: 'road' | 'oldroad' | null = null;
+  private freeBack: { area: AreaId; x: number; z: number; yaw: number; pitch: number } | null = null;
+  /** Out on the highway to STATION 01 or on the old Roswell road, from wherever the player is.
+   *  Nothing in the story happens on the way; endFreeDrive() puts the player back. */
+  freeDrive(which: 'road' | 'oldroad') {
+    if (this.busy) return;
+    this.busy = true;
+    const { fade, hold, toast, player } = this.d;
+    if (!this.free) this.freeBack = { area: this.area, x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch };
+    hold(true);
+    fade(true, which === 'road' ? 'FREE DRIVE: HIGHWAY' : 'FREE DRIVE: THE OLD ROAD');
+    const loaded = which === 'road' ? this.ensureRoad() : this.ensureOldRoad();
+    Promise.all([loaded, new Promise((r) => setTimeout(r, 700))]).then(() => {
+      this.driving = false; this.oldControl = null;
+      const road = which === 'road' ? this.road! : this.oldRoad!;
+      const drive = which === 'road' ? this.drive! : this.oldDrive!;
+      const truck = which === 'road' ? this.truck! : this.oldTruck!;
+      this.enter(which === 'road' ? 'road' : 'roswell');
+      if (which === 'oldroad') this.oldRoad!.hitBack = false;
+      drive.place(road.start.pos, road.start.heading);
+      drive.onArrive = undefined;               // the station gate is only a gate today
+      truck.setDriving(true);
+      truck.setHeadlights(true);
+      truck.setLightLevel(1);
+      truck.setHeadColor(null);
+      truck.setDashLevel(null);
+      this.free = which;
+      this.startEngine();
+      this.driving = true;
+      toast('Free drive. The developer menu takes you back.', 3.5);
+    }).catch((e: Error) => {
+      console.error(e);
+      toast('That road could not be loaded.', 4);
+    }).finally(() => { this.busy = false; hold(false); fade(false); });
+  }
+  /** Out of the free drive: back where the player stood before it. */
+  endFreeDrive() {
+    const back = this.freeBack;
+    if (!this.free || !back) return;
+    this.stopDriving();
+    this.truck?.setDriving(false); this.oldTruck?.setDriving(false);
+    this.enter(back.area);
+    this.d.player.place(back.x, back.z, back.yaw);
+    this.d.player.pitch = back.pitch;
   }
 
   // ---------- per frame ----------

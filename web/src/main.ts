@@ -17,6 +17,7 @@ import { setQuality, type Quality } from './core/quality';
 import { Ultra } from './core/ultra';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
+import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -223,6 +224,9 @@ async function boot() {
   let titleEl: HTMLElement | null = null;
   let endEl: HTMLElement | null = null;
   let pausedByMenu = false;
+  let devRun = false;   // a run started from the developer menu: never saved
+  let dev: DevMenu | null = null;   // the developer menu, with ?dev in the address
+  let devWait: { ok: () => boolean; fn: () => void } | null = null;
   let releasingLock = false;
 
   // ---------- modal / pointer lock plumbing ----------
@@ -304,6 +308,7 @@ async function boot() {
   }
 
   input.onKey = (code) => {
+    if (code === 'F2' && dev) { dev.toggle(); return; }
     if (mode !== 'play') return;
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
@@ -376,8 +381,9 @@ async function boot() {
 
   let restoringNow = false;
   let starting = false;   // between Start or Continue and the first playable frame
-  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void> }) {
+  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void>; dev?: boolean }) {
     starting = true;
+    devRun = !!o.dev;
     const unlocking = o.unlocking ?? audio.unlock(); // must start inside the tap/click
     if (input.touchMode) {
       try { const r = document.documentElement.requestFullscreen?.(); if (r) r.catch(() => {}); } catch { /* not allowed here */ }
@@ -398,7 +404,7 @@ async function boot() {
     const area = (savedArea === 'station01' || savedArea === 'room6' || savedArea === 'diner' ? savedArea : 'saro') as AreaId;
     try { await world.prepare(area); } catch (e) { console.error(e); }
     clearTimeout(slow);
-    caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
+    caseId = o.caseId; playtime = o.playtime; if (caseId) saves.setActive(caseId);
     audio.startRoomTone();
     audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
     audio.loop('crickets', 'crickets', { dest: audio.amb, gain: 0.02 });
@@ -439,6 +445,7 @@ async function boot() {
   // ---------- saving ----------
   let pendingAuto = false;
   function saveBlock(): string | null {
+    if (devRun) return 'This is a developer run. Nothing is saved.';
     if (mode !== 'play' || !caseId) return 'There is no night running to save.';
     return game.saveBlock();
   }
@@ -645,6 +652,63 @@ async function boot() {
     started: () => caseId > 0 && !starting && mode === 'play',
   };
 
+  // ---------- the developer menu (?dev in the address) ----------
+  let devPaused = false;
+  dev = devOn ? new DevMenu(ui, devGroups, {
+    onOpen: () => { if (mode === 'play' && !pausedByMenu) { devPaused = true; pausedByMenu = true; audio.suspend(true); } },
+    onClose: () => { if (devPaused) { devPaused = false; pausedByMenu = false; audio.suspend(false); } },
+  }) : null;
+  // Start a run from a chapter or beat: a new night that is never saved.
+  function devStart(jump?: string, then?: () => void) {
+    const unlocking = audio.unlock(); // inside the click
+    devWait = null;
+    if (mode !== 'title') leavePlay();
+    void startGame({ caseId: 0, playtime: 0, state: null, jump, unlocking, dev: true }).then(() => then?.());
+  }
+  // then: once ok() holds, checked every frame (the new run may take a while to load)
+  function waitFor(ok: () => boolean, fn: () => void) { devWait = { ok, fn }; }
+  function devGroups(): DevGroup[] {
+    const groups: DevGroup[] = [{
+      title: 'Start at', note: 'A new run from there, with everything before it done.',
+      items: [
+        { label: 'Prologue 23:41', run: () => devStart() },
+        { label: 'Prologue 02:13', run: () => devStart('residual') },
+        { label: 'Prologue: locked on', run: () => devStart('locked') },
+        { label: 'Prologue: countdown', run: () => devStart('countdown') },
+        { label: '1 The Second Exposure', run: () => devStart('chapter1') },
+        { label: '2 The Amended Record', run: () => devStart('chapter2') },
+        { label: '3 The Survey Station', run: () => devStart('chapter3') },
+        { label: '3 On the highway', run: () => devStart('chapter3', () => waitFor(() => !starting && ch3.s.stage === 'to-truck', () => world.driveOut())) },
+        { label: '4 Room 6', run: () => devStart('chapter4') },
+        { label: '5 All Night', run: () => devStart('chapter5') },
+        { label: '6 Roswell Road', run: () => devStart('chapter6') },
+        { label: '6 At the line', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
+          const p = world.oldRoad!.poseAt(8.06);
+          world.oldDrive!.place(p.pos, p.heading);
+          game.clock = 5 * 3600 + 28 * 60 + 30;
+        })) },
+      ],
+    }];
+    if (mode === 'play') {
+      groups.push({
+        title: 'Truck', note: 'Out on a road from wherever you are. Nothing in the story happens there.',
+        items: [
+          { label: 'Drive the highway', run: () => world.freeDrive('road'), on: world.free === 'road' },
+          { label: 'Drive the old road', run: () => world.freeDrive('oldroad'), on: world.free === 'oldroad' },
+          ...(world.free ? [{ label: 'Back on foot', run: () => world.endFreeDrive() }] : []),
+        ],
+      });
+      groups.push({ title: 'Clock', items: [
+        { label: '+5 minutes', run: () => { game.clock += 300; } },
+        { label: '+30 minutes', run: () => { game.clock += 1800; } },
+      ] });
+    }
+    groups.push({ title: 'Tools', items: [
+      { label: debug ? 'Hide fps' : 'Show fps', run: () => { if (debug) { debug.dispose(); debug = null; } else debug = hud(); }, on: !!debug },
+    ] });
+    return groups;
+  }
+
   // ---------- resize and adaptive resolution ----------
   function resize() {
     const w = innerWidth, h = innerHeight;
@@ -724,6 +788,7 @@ async function boot() {
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
+      if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') audio.nightLife(dt, player.pos);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
@@ -769,7 +834,8 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}`) : null;
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}`);
+  let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

@@ -352,6 +352,11 @@ export class OldRoad implements DriveArea {
     const b = beside(s, o);
     return out.set(b.x + this.origin.x, this.origin.y + heightAt(b.x, b.z), b.z + this.origin.z);
   }
+  /** The truck's pose in the right lane at a mile, facing the dawn (the developer menu). */
+  poseAt(mi: number) {
+    const s = (mi - 8.15) * 1609.34, a = this.lane(s), b = this.lane(s + 4);
+    return { pos: a, heading: Math.atan2(-(b.x - a.x), -(b.z - a.z)) };
+  }
   /** Signed distance of a world point past C (positive once over the line, going north-east). */
   pastC(x: number, z: number) { return -(z - this.origin.z - C_LINE.z); }
   /** The local frame: world position of a local point. */
