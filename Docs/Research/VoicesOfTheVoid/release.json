@@ -1,0 +1,20 @@
+{
+  "game": "Voices of the Void",
+  "version": "0.9.0n",
+  "source_page": "https://mrdrnose.itch.io/votv",
+  "archive_listing": "https://archive.votv.dev/games/votv/",
+  "archive": {
+    "url": "https://r2.votv.dev/archive/votv/090n.7z",
+    "size_bytes": 2310549280,
+    "sha256": "4b80dacb0926d21d6650c6842e17785c3d9dbeaade5e2a3159346c39bba20799"
+  },
+  "extracted_game_directory": "a09n/WindowsNoEditor",
+  "loose_file_count": 111,
+  "loose_total_bytes": 8517921954,
+  "source_inventory_sha256": "cb1da6f1dc1da40ebc7c7dd42dd55181c8709b76d956dfba83a4d84f496852fa",
+  "files": {
+    "VotV.exe": {"size_bytes": 166400, "sha256": "3eebb091c5f08b2324dd6c859d89ff299c6dbe4f0168b840687ba86dbe8b15b5"},
+    "VotV/Binaries/Win64/VotV-Win64-Shipping.exe": {"size_bytes": 84751360, "sha256": "ad478218ec5513cc4c1682937db3214cbf2694d1dcd0583eb423447c049dd3ae"},
+    "VotV/Content/Paks/VotV-WindowsNoEditor.pak": {"size_bytes": 8170868477, "sha256": "eb95dec3f2e5bb80941a4e080c8b8e72bacd5cf8ff4d5848e64f7e4d2f6d7b1e"}
+  }
+}
