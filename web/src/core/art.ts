@@ -55,6 +55,17 @@ import dinerFloor from '../assets/art/diner/tex_floor_checker.jpg';
 // round 8 (PR #45): the booths' red vinyl and the knotty pine on the walls
 import dinerBooth from '../assets/art/diner/tex_booth_vinyl.jpg';
 import dinerWall from '../assets/art/diner/tex_wall_panel.jpg';
+// round 11 (Codex, PR #64): the old Roswell road (loaded with drive/OldRoad.ts) and the
+// four drawn frames of FLASH (loaded when chapter six starts). Mile post, witness post and
+// brass disk carry no text: the numbers, words and stamp are drawn in code.
+import milepostBlank from '../assets/art/runtime/milepost_blank.webp';
+import witnessPost from '../assets/art/runtime/witness_post.webp';
+import surveyDisk from '../assets/art/runtime/survey_disk_brass.webp';
+import oldAsphalt from '../assets/art/road/tex_oldroad_asphalt.jpg';
+import flashEye from '../assets/art/flash/flash_eye.jpg';
+import flashHand from '../assets/art/flash/flash_hand.jpg';
+import flashFace from '../assets/art/flash/flash_face.jpg';
+import flashMan from '../assets/art/flash/flash_man.jpg';
 // Round 9 (Codex, PR #51): normal and roughness maps for the Ultra tier only (core/ultra.ts).
 // Data, not colour: they load when Ultra is switched on, never on High or Low.
 import floorN from '../assets/art/room/tex_floor_hextile_n.png';
@@ -106,6 +117,7 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
   dinerSign, dinerMenu, dinerCounter, dinerFloor, photo1947, dinerBooth, dinerWall, halleyPoster, fanfold1986, fanfold1947,
+  milepostBlank, witnessPost, surveyDisk, oldAsphalt, flashEye, flashHand, flashFace, flashMan,
   floorN, floorR, ceilingN, ceilingR, wallN, wallR, deskN, deskR, concreteN, concreteR, desertN, desertR, asphaltN, asphaltR, cabinetN, cabinetR, vinylN, vinylR, stuccoN, stuccoR, oldConcreteN, oldConcreteR, weatheredWoodN, weatheredWoodR, floorboardsN, floorboardsR, gravelTrackN, gravelTrackR, motelWallN, motelWallR, dinerCounterN, dinerCounterR, dinerFloorN, dinerFloorR, dinerBoothN, dinerBoothR, dinerWallN, dinerWallR };
 export type ArtId = keyof typeof urls;
 /** Albedo id: its normal map and roughness map (round 9), for the Ultra tier. */
@@ -115,7 +127,12 @@ export const ULTRA_MAPS = Object.fromEntries(MAPPED.map((id) => [id, [id + 'N', 
 export const ULTRA_ART: ArtId[] = MAPPED.flatMap((id) => ULTRA_MAPS[id]);
 // Images an area loads for itself when it is built, not at the start.
 const LATER = new Set<ArtId>([...MAPPED.flatMap((id) => [id + 'N', id + 'R'] as ArtId[]), 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
-  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall', 'halleyPoster', 'fanfold1986', 'fanfold1947']);
+  'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall', 'halleyPoster', 'fanfold1986', 'fanfold1947',
+  'milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'flashEye', 'flashHand', 'flashFace', 'flashMan']);
+/** The old Roswell road's images (World loads them before it builds the road). */
+export const OLDROAD_ART: ArtId[] = ['milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt'];
+/** The drawn frames of FLASH (chapter six loads them when it starts). */
+export const FLASH_ART: ArtId[] = ['flashEye', 'flashHand', 'flashFace', 'flashMan'];
 /** The diner's images (world/Diner.ts loads them before it builds). */
 export const DINER_ART: ArtId[] = ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall'];
 /** The 1947 photograph is one picture shown in three crops (HISTORIE.md, R4): the case

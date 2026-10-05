@@ -15,7 +15,7 @@ import { Crossing, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood } from './kit';
-import { loadArtFor, artTexture, DINER_ART } from '../core/art';
+import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -221,7 +221,8 @@ export class World {
   // The old road at dawn, its own truck lit by its own floods, and a controller for it
   private ensureOldRoad() {
     return this.once('oldroad', async () => {
-      const [{ OldRoad, oldFlood, OLD_HEADLIGHTS }, { DriveController }, { Truck }] = await Promise.all([this.load('OldRoad'), this.load('Drive'), this.load('Truck'), this.load('engine')]);
+      const [{ OldRoad, oldFlood, OLD_HEADLIGHTS }, { DriveController }, { Truck }] = await Promise.all([this.load('OldRoad'), this.load('Drive'), this.load('Truck'), this.load('engine'),
+        loadArtFor(OLDROAD_ART)]); // round 11: the road's own pictures come with it
       const truck = new Truck({ flood: oldFlood });
       truck.headlightFloods(oldFlood, OLD_HEADLIGHTS);
       truck.group.visible = false;

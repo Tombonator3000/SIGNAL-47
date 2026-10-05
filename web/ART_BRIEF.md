@@ -273,6 +273,8 @@ Bakgrunn for sidene i unntaksperma i Night Shift. Det siste arket er datert 1947
 
 ## Runde 11: Roswell-veien og FLASH
 
+Levert i PR #64 (`0175e32`) og koblet inn 5. oktober kl. 09:47: asfalten, milestolpen og vitnestolpen under teksten fra koden, messingskiva under stempelet, og de fire bildene i FLASH. Se `ART_ROUND11_DELIVERY.md`.
+
 Bestilt 5. oktober 2026 morgen, etter at Roswell Road og THE EVENT er spesifisert i `KAPITLER.md`. Tom ba om Roswell Road samme morgen. Claude bygger kapitlet med reserver tegnet i kode, så ingenting her blokkerer bygging eller testing. Bildene kobles inn når de kommer.
 
 Ingen tekst i noen av bildene; tall, stempler og ord tegnes i kode. Ingen ekte personer, merkenavn, ekte skilt med kallesignaler eller kopier av kjente filmers romvesener. Codex lager bildene, manifestet og kontrollen i egen gren og eier bare de filene og et eget loggavsnitt. Claude kobler dem inn og tar den samlede testen.

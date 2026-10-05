@@ -5,7 +5,7 @@ import type { World } from '../world/World';
 import type { DriveInput } from '../drive/Drive';
 import { Ending } from '../ui/Ending';
 import { flashFrames, type Frame } from './flashFrames';
-import { artLoaded, artImage, loadArtFor } from '../core/art';
+import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot out onto the
@@ -77,7 +77,8 @@ export class Chapter6 {
     this.reset();
     this.active = true; this.started = true;
     this.stage = 'drive';
-    void loadArtFor(['photo1947']).catch(() => {});
+    // the photograph and Codex's frames of FLASH; the frames are drawn again once they are in
+    void loadArtFor(['photo1947', ...FLASH_ART]).then(() => { if (this.active && this.stage === 'drive') this.frames = flashFrames(); }).catch(() => {});
     this.d.audio.amRadio(null);   // the diner's radio stays at the diner
     this.d.world.driveOldRoad(() => {
       this.g.clock = START;

@@ -12,7 +12,8 @@ FILES = ['room/poster_listen.png', 'room/poster_saro.png', 'room/map_new_mexico.
          'brand/logo_saro.png', 'yard/sign_service_yard.png', 'yard/label_s03_procedure.png',
          'ext/sign_sierra_on.png', 'lab/sign_blank.png', 'yard/floor_paint_frame.png',
          'annex/vending_front.png',
-         'diner/sign_diner_blank.png', 'diner/menu_board_blank.png']
+         'diner/sign_diner_blank.png', 'diner/menu_board_blank.png',
+         'road/milepost_blank.png', 'road/witness_post.png', 'road/survey_disk_brass.png']
 OUT = ROOT / 'runtime'
 OUT.mkdir(exist_ok=True)
 sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()

@@ -71,7 +71,10 @@ async def main():
         check(await ev("S47.game.phase") == 'ch6' and st['stage'] == 'drive' and abs(st['mi'] - 5.9) < 0.01 and abs(st['o'] - 1.6) < 0.05, f"the old road: the right lane at {st['mi']:.2f} miles")
         check(abs(st['clock'] - (5 * 3600 + 26 * 60 + 20)) < 3, f"the clock: {st['clock'] / 3600:.4f} h, about 05:26:20")
         check('MILE 8' in await ev("document.querySelector('.objective').textContent") and await ev("S47.game.saveBlock()") == 'Not on the road.', 'objective: the line past mile 8; no saving on the road')
+        await tick(0.1)   # the truck is put on the road after a promise; the sky follows on the next frame
         check(await ev("S47.sky.uniforms.uDawn.value") > 0.8 and await ev("S47.camera.far") >= 10000, 'dawn in the sky, and the far plane opened for the old road')
+        art = await ev("S47.art().loaded")
+        check(all(x in art for x in ('milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt')), 'the road came with its pictures from round 11 (mile post, witness post, brass disk, asphalt)')
         await ev("S47.camera.rotation.set(0,0,0)"); await tick(0.2)
         calls = {'start': await ev("S47.renderer.info.render.calls")}
         await shot('k01_start')
@@ -92,12 +95,12 @@ async def main():
         check(st['s'] > s_at(5.9) - 252 and 'Ward can wait' in await toasts(), f"turned back, the truck stops at the end behind the start ({st['s'] - s_at(5.9):.0f} m) and Ward can wait")
 
         # ---------- towards the line: the clock holds at 05:28 ----------
-        await place(7.92)
+        await place(8.02)
         await ev(f"S47.game.clock = {T - 25}")
-        await ev(AUTO + "(18)")
-        for _ in range(20):
+        await ev(AUTO + "(14)")
+        for _ in range(80):
             await tick(0.25)
-            if (await where())['mi'] > 8.05: break
+            if (await where())['mi'] > 8.085: break
         await ev(AUTO + "(null)")
         await shot('k03_before_the_line')
         for _ in range(12): await tick(4)
@@ -108,7 +111,7 @@ async def main():
 
         # ---------- THE EVENT ----------
         await ev(AUTO + "(16)")
-        for _ in range(80):
+        for _ in range(900):
             await tick(1 / 30)
             if (await where())['stage'] == 'event': break
         st = await where()
@@ -150,6 +153,8 @@ async def main():
         await tick(32.03 - (await ev("S47.game.clock") - T))
         fr = await ev("(() => { const f = document.querySelector('.ending-frame'); return { o: +getComputedStyle(f).opacity, img: !!f.querySelector('canvas') }; })()")
         check(fr['o'] == 1 and fr['img'], '+32 s: FLASH, a frame over the screen')
+        art = await ev("S47.art().loaded")
+        check(all(x in art for x in ('flashEye', 'flashHand', 'flashFace', 'flashMan')), 'the frames of FLASH from round 11 were loaded for it')
         await shot('k07_flash')
         seen = set()
         for _ in range(40):
@@ -212,7 +217,7 @@ async def main():
             if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
         await place(8.12)
         await ev(AUTO + "(10)")
-        for _ in range(120):
+        for _ in range(600):
             await tick(1 / 15)
             if (await where())['stage'] == 'event': break
         await tick(32.5)

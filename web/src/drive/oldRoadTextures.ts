@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { canvasTex, rng } from '../core/textures';
-import { artImage } from '../core/art';
+import { artImage, artLoaded } from '../core/art';
 
 // Canvas textures for the old Roswell road (chapter six). The asphalt and desert art from
 // earlier rounds are the base; the paint, the numbers on the mile posts and the stamp on
@@ -14,12 +14,19 @@ const PX = 256 / 8.8; // the road texture is 8.8 m across: 6.4 m of asphalt and 
 export function oldAsphaltTex() {
   return canvasTex(256, 768, (g, w, h) => {
     const r = rng(1986);
-    const asphalt = artImage('asphalt'), desert = artImage('desert');
-    for (let y = 0; y < h; y += 128) for (let x = 0; x < w; x += 128) g.drawImage(asphalt, x, y, 128, 128);
-    g.fillStyle = 'rgba(150,146,138,.32)'; g.fillRect(0, 0, w, h);          // bleached by forty summers
-    for (let i = 0; i < 5000; i++) {                                          // chip seal
-      const v = r() < 0.5 ? 70 + r() * 40 : 150 + r() * 50;
-      g.fillStyle = `rgba(${v},${v * 0.97},${v * 0.92},${0.25 + r() * 0.4})`; g.fillRect(r() * w, r() * h, 1 + r() * 1.5, 1 + r() * 1.5);
+    const own = artLoaded('oldAsphalt'), desert = artImage('desert');
+    if (own) {
+      // Codex's old county asphalt (round 11), four tiles of about 6.6 m down the 24 m repeat
+      const tile = artImage('oldAsphalt'), t = h / 4;
+      for (let y = 0; y < h; y += t) g.drawImage(tile, w / 2 - t / 2, y, t, t);
+    } else {
+      const asphalt = artImage('asphalt');
+      for (let y = 0; y < h; y += 128) for (let x = 0; x < w; x += 128) g.drawImage(asphalt, x, y, 128, 128);
+      g.fillStyle = 'rgba(150,146,138,.32)'; g.fillRect(0, 0, w, h);          // bleached by forty summers
+      for (let i = 0; i < 5000; i++) {                                          // chip seal
+        const v = r() < 0.5 ? 70 + r() * 40 : 150 + r() * 50;
+        g.fillStyle = `rgba(${v},${v * 0.97},${v * 0.92},${0.25 + r() * 0.4})`; g.fillRect(r() * w, r() * h, 1 + r() * 1.5, 1 + r() * 1.5);
+      }
     }
     // the wheel tracks are darker and smoother
     for (const m of [-1.6, 1.6]) for (const k of [-0.75, 0.75]) {
@@ -36,9 +43,9 @@ export function oldAsphaltTex() {
       const left = r() < 0.5, x = left ? 1.2 * PX + (r() - 0.3) * 7 : w - 1.2 * PX + (r() - 0.7) * 7;
       g.fillStyle = `rgba(${r() < 0.5 ? '70,66,60' : '150,136,116'},.8)`; g.fillRect(x, r() * h, 1 + r() * 3, 1 + r() * 3);
     }
-    // cracks across and along, sealed with tar long ago
+    // cracks across and along, sealed with tar long ago (the picture has its own)
     g.strokeStyle = 'rgba(12,12,12,.7)'; g.lineCap = 'round';
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < (own ? 0 : 12); i++) {
       let x = 1.3 * PX + r() * (w - 2.6 * PX), y = r() * h;
       g.lineWidth = 1.5 + r() * 2; g.beginPath(); g.moveTo(x, y);
       for (let k = 0; k < 9; k++) { x += (r() - 0.5) * 30; y += (r() - 0.35) * 26; g.lineTo(Math.min(w - 1.3 * PX, Math.max(1.3 * PX, x)), y); }
@@ -59,19 +66,23 @@ export const POST_NUMBERS = [5, 6, 7, 8, 9];
 export const postRect = (i: number): [number, number, number, number] => [i * 128 / 640, 0, (i + 1) * 128 / 640, 1];
 export function milepostAtlas() {
   return canvasTex(640, 320, (g) => {
+    const own = artLoaded('milepostBlank');
     POST_NUMBERS.forEach((n, i) => {
       const x = i * 128, r = rng(40 + n);
-      g.fillStyle = '#1f5a3c'; g.fillRect(x, 0, 128, 320);
-      g.strokeStyle = '#e8eee6'; g.lineWidth = 5;
-      g.beginPath(); g.roundRect(x + 7, 7, 114, 306, 9); g.stroke();
-      g.fillStyle = '#e8eee6'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.font = '500 30px Oswald'; g.fillText('MILE', x + 64, 64, 100);
-      g.font = '600 132px Oswald'; g.fillText(String(n), x + 64, 196, 104);
+      if (own) g.drawImage(artImage('milepostBlank'), x, 0, 128, 320);   // Codex's blank plate (round 11)
+      else {
+        g.fillStyle = '#1f5a3c'; g.fillRect(x, 0, 128, 320);
+        g.strokeStyle = '#e8eee6'; g.lineWidth = 5;
+        g.beginPath(); g.roundRect(x + 7, 7, 114, 306, 9); g.stroke();
+      }
+      g.fillStyle = '#ecefe4'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '500 30px Oswald'; g.fillText('MILE', x + 64, 64, 96);
+      g.font = '600 132px Oswald'; g.fillText(String(n), x + 64, 196, 96);
       // dust at the bottom, sun-faded spots, a dent or two
       const gr = g.createLinearGradient(0, 230, 0, 320);
-      gr.addColorStop(0, 'rgba(150,120,90,0)'); gr.addColorStop(1, 'rgba(150,120,90,.45)');
+      gr.addColorStop(0, 'rgba(150,120,90,0)'); gr.addColorStop(1, `rgba(150,120,90,${own ? 0.2 : 0.45})`);
       g.fillStyle = gr; g.fillRect(x, 230, 128, 90);
-      for (let k = 0; k < 160; k++) { g.fillStyle = r() < 0.6 ? 'rgba(120,100,80,.3)' : 'rgba(240,240,230,.25)'; g.fillRect(x + r() * 128, r() * 320, 1 + r() * 2, 1 + r() * 2); }
+      for (let k = 0; k < (own ? 40 : 160); k++) { g.fillStyle = r() < 0.6 ? 'rgba(120,100,80,.3)' : 'rgba(240,240,230,.25)'; g.fillRect(x + r() * 128, r() * 320, 1 + r() * 2, 1 + r() * 2); }
       if (n === 8) {   // the one by the line: a bullet hole, like most of them out here
         g.fillStyle = 'rgba(110,55,20,.5)'; g.beginPath(); g.arc(x + 92, 258, 8, 0, 7); g.fill();
         g.fillStyle = '#121212'; g.beginPath(); g.arc(x + 92, 258, 3.5, 0, 7); g.fill();
@@ -85,9 +96,21 @@ export function milepostAtlas() {
 export function boltTex(label: string[]) {
   return canvasTex(256, 256, (g, w) => {
     const r = rng(label.join('').length * 7);
+    const c = w / 2, R = 78;
+    if (artLoaded('surveyDisk')) {
+      // Codex's brass disk in its concrete collar (round 11): only the stamp is drawn here
+      g.fillStyle = '#8c877c'; g.fillRect(0, 0, w, w);
+      g.drawImage(artImage('surveyDisk'), 0, 0, w, w);
+      g.fillStyle = 'rgba(40,28,10,.88)'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '600 24px "Special Elite", monospace';
+      label.forEach((s, i) => g.fillText(s, c, c - (label.length - 1) * 15 + i * 30, 120));
+      if (label.length > 1) {   // the arrow along C, east
+        g.fillRect(c - 16, c + 46, 26, 3); g.beginPath(); g.moveTo(c + 18, c + 47.5); g.lineTo(c + 8, c + 41); g.lineTo(c + 8, c + 54); g.fill();
+      }
+      return;
+    }
     g.fillStyle = '#8c877c'; g.fillRect(0, 0, w, w);                      // concrete
     for (let i = 0; i < 900; i++) { const v = 100 + r() * 90; g.fillStyle = `rgba(${v},${v},${v * 0.95},.5)`; g.fillRect(r() * w, r() * w, 2, 2); }
-    const c = w / 2, R = 78;
     const gr = g.createRadialGradient(c - 20, c - 25, 6, c, c, R);
     gr.addColorStop(0, '#c9a35a'); gr.addColorStop(0.7, '#9a7838'); gr.addColorStop(1, '#5d4b26');
     g.fillStyle = gr; g.beginPath(); g.arc(c, c, R, 0, 7); g.fill();
@@ -110,6 +133,14 @@ export function boltTex(label: string[]) {
 export function witnessTex() {
   return canvasTex(64, 384, (g, w, h) => {
     const r = rng(11);
+    if (artLoaded('witnessPost')) {
+      // Codex's post (round 11), with the words stencilled down it
+      g.drawImage(artImage('witnessPost'), 0, 0, w, h);
+      g.save(); g.translate(w / 2, 230); g.rotate(-Math.PI / 2);
+      g.fillStyle = 'rgba(30,22,14,.9)'; g.font = '600 24px Oswald'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('SURVEY MARK', 0, 0, 250); g.restore();
+      return;
+    }
     g.fillStyle = '#c4672a'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#e9e6dc'; g.fillRect(0, 18, w, 54);
     for (let i = 0; i < 400; i++) { g.fillStyle = r() < 0.5 ? 'rgba(90,60,40,.3)' : 'rgba(250,230,200,.25)'; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }

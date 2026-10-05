@@ -105,7 +105,7 @@ export class OldRoad implements DriveArea {
       steel: std({ color: 0x6f7a70, roughness: 0.5, metalness: 0.3 }),
       concrete: std({ map: artTexture('concrete'), color: 0xb8b0a0, roughness: 0.95 }),
       post: retro(new THREE.MeshStandardMaterial({ map: milepostAtlas(), roughness: 0.55 }), 0.004, oldFlood, beam),
-      witness: retro(new THREE.MeshStandardMaterial({ map: witnessTex(), roughness: 0.6 }), 0.006, oldFlood, beam),
+      witness: retro(new THREE.MeshStandardMaterial({ map: witnessTex(), roughness: 0.6, alphaTest: 0.5, side: THREE.DoubleSide }), 0.006, oldFlood, beam),
       bush: std({ color: 0x4f4c31, roughness: 1, flatShading: true }),
       rock: std({ color: 0x8a7c6a, roughness: 0.95, flatShading: true }),
       wire: std({ color: 0x5a5650, roughness: 0.6, metalness: 0.3 }),
@@ -169,7 +169,7 @@ export class OldRoad implements DriveArea {
       post.position.set(w.x, wy, w.z); post.rotation.set(0.04, Math.atan2(-w.p.tx, -w.p.tz), -0.05);
       const f = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 1.25), m.witness);
       f.position.set(0, 0.62, 0.007); post.add(f);
-      box(post, 0.1, 1.25, 0.012, m.steel, 0, 0.62, 0);
+      box(post, 0.06, 1.2, 0.01, m.steel, 0, 0.6, -0.004);
       statics.add(post);
       glint(new THREE.Vector3(w.x, wy + 1.05, w.z), 0.7);
     }

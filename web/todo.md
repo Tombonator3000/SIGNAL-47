@@ -53,7 +53,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Lokkesvaret om -39 LY i kapittel 2 (ikke lenger «not a calendar code»).
 - [x] Codex, runde 10 (PR #54, `56fa505`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Koblet inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren.
 - [ ] Utsnitt A av avisbildet i saksmappa når tråd 7 bygges i The Amended Record, og hele bildet (C) etter rulleteksten.
-- [ ] Codex, runde 11 (bestilt 5. oktober morgen i `ART_BRIEF.md`): milestolpen, vitnestolpen, messingskiva, den gamle asfalten og fire FLASH-bilder. Kapitlet har reserver i kode og venter ikke.
+- [x] Codex, runde 11 (bestilt 5. oktober morgen i `ART_BRIEF.md`, levert i PR #64).
 - [x] PR #62 (Codex, Voices of the Void-oppsett under `Docs/Research/`): gjennomgått, 11 av 11 tester OK, begge funnene rettet i `29bed78`, flettet til main `3df5072` etter Toms ja (5. oktober morgen). Funn fra spilling kommer som oppførselsbeskrivelse, ikke som kode.
 - [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [x] Kapitlet «All Night» (5. oktober morgen): fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien (P13). Test: `tools/chapter5.py`.
@@ -61,7 +61,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Ta bort de ubrukte `endingLines()` i kapittel 3 og 4 (kapittelkortene i `main.ts` har tatt over).
 - [ ] `tools/chapter3.py`: skjermbildet på grusveien (`e04b_track`) brukte mer enn 240 s to ganger da en annen nettleser kjørte samtidig (5. oktober morgen). Alene går testen. Kjør den alene til skjermbildene får lengre tid eller tas uten å vente på en ny ramme.
 - [x] Roswell Road og THE EVENT (spesifisert og bygd 5. oktober morgen, se `KAPITLER.md` og loggen): kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
-- [ ] Runde 11 fra Codex kobles inn når den kommer: milestolpen, vitnestolpen, messingskiva, den gamle asfalten og fire FLASH-bilder erstatter reservene i kode (`oldRoadTextures.ts`, `flashFrames.ts`).
+- [x] Runde 11 fra Codex (PR #64, `0175e32`) koblet inn 5. oktober: milestolpen, vitnestolpen, messingskiva, den gamle asfalten og fire FLASH-bilder. Reservene i kode står til bildene er lastet.
 - [ ] Tom: spill slutten på PC og mobil. Fps på den gamle veien og i uttrekket er UNVERIFIED; lyden av motoren som dør, radioen og stillheten er bare hørt i koden, ikke på ekte høyttalere.
 
 ### Grafikk på PC (Tom 4. oktober kveld: «bedre grafikk og lys/skygge, shaders, post processing på PC, mobil kan beholde den enkle stilen»)

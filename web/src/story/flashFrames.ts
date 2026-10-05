@@ -1,5 +1,5 @@
 import { rng } from '../core/textures';
-import { artLoaded, artImage, PHOTO_1947 } from '../core/art';
+import { artLoaded, artImage, PHOTO_1947, type ArtId } from '../core/art';
 
 // The single frames of FLASH in THE EVENT (KAPITLER.md): an eye, a hand with too long
 // fingers on the glass, a face that could be a Grey (three frames), the light over the mesa
@@ -29,7 +29,19 @@ function make(seed: number, draw: (g: CanvasRenderingContext2D, r: () => number)
   return c;
 }
 
+// Codex's frame (round 11) when it has loaded, drawn over the whole frame; k varies it a
+// little (the face is shown three times).
+function art(id: ArtId, seed: number, k = 0) {
+  return make(seed, (g) => {
+    const im = artImage(id), s = 1 + k * 0.05;
+    g.filter = k ? `blur(${k * 1.5}px)` : 'none';
+    g.drawImage(im, (W - W * s) / 2 + k * 9, (H - H * s) / 2 + k * 5, W * s, H * s);
+    g.filter = 'none';
+  });
+}
+
 function eye() {
+  if (artLoaded('flashEye')) return art('flashEye', 1);
   return make(1, (g) => {
     g.save(); g.translate(W / 2, H / 2);
     const lid = (k: number) => { g.beginPath(); g.moveTo(-260, 0); g.quadraticCurveTo(0, -150 * k, 260, 0); g.quadraticCurveTo(0, 150 * k, -260, 0); };
@@ -48,6 +60,7 @@ function eye() {
 }
 
 function hand() {
+  if (artLoaded('flashHand')) return art('flashHand', 2);
   return make(2, (g, r) => {
     // dawn behind a fogged windshield, the hand dark against it
     const sky = g.createLinearGradient(0, 0, 0, H);
@@ -73,6 +86,7 @@ function hand() {
 }
 
 function face(k: number) {
+  if (artLoaded('flashFace')) return art('flashFace', 3 + k, k);
   return make(3 + k, (g, r) => {
     g.save(); g.translate(W / 2 + (k - 1) * 14, H / 2 + 20 + (k - 1) * 6);
     g.filter = `blur(${3 + k * 2}px)`;
@@ -110,6 +124,7 @@ function mesaLight() {
   });
 }
 function man() {
+  if (artLoaded('flashMan')) return art('flashMan', 8);
   // the surveyor with the rod, far right in the 1947 picture, enlarged until it falls apart
   return fromPhoto(8, [2030, 930, 220, 138], (g) => {
     g.fillStyle = '#2a2a28';
