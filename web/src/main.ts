@@ -406,8 +406,7 @@ async function boot() {
     clearTimeout(slow);
     caseId = o.caseId; playtime = o.playtime; if (caseId) saves.setActive(caseId);
     audio.startRoomTone();
-    audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
-    audio.loop('crickets', 'crickets', { dest: audio.amb, gain: 0.02 });
+    audio.startNight();
     space = 'room';
     world.stopDriving();
     world.enter('saro');
@@ -790,7 +789,7 @@ async function boot() {
       game.update(dt, t, modalOpen);
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
-      if (mode === 'play') audio.nightLife(dt, player.pos);
+      if (mode === 'play') audio.nightLife(dt, player.pos, game.clock);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
