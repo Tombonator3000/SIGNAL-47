@@ -509,6 +509,87 @@ export class AudioSys {
     r.voice.gain.setTargetAtTime(0, t + secs, 0.12);
   }
 
+  // The radio in the truck's dash on the old road (chapter six): not placed in the world,
+  // a small speaker in front of the driver. 'talk' is the morning programme from Roswell,
+  // too low to follow (a speech band chopped at a talking rate, a little music under it);
+  // 'carrier' is the bare carrier when the night takes the station; null fades it out.
+  // radioIn() is where the fragments of the night are played through the same speaker.
+  private cab: { out: GainNode; spk: AudioNode; talk: GainNode; car: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  cabRadio(mode: 'talk' | 'carrier' | 'hiss' | null) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (!mode) {
+      const r = this.cab; if (!r) return;
+      this.cab = null;
+      r.out.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+      setTimeout(() => r.stop(), 700);
+      return;
+    }
+    if (!this.cab) {
+      const out = ctx.createGain(); out.gain.value = 0;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1250; bp.Q.value = 0.8;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400;
+      out.connect(bp); bp.connect(lp); lp.connect(this.sfx);
+      // talk: noise in a voice band, chopped at a syllable rate, with pauses between phrases
+      const vn = this.noiseSrc(true), vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 700; vb.Q.value = 1.6;
+      const syl = ctx.createOscillator(); syl.type = 'square'; syl.frequency.value = 4.6;
+      const sg = ctx.createGain(); sg.gain.value = 0.5; syl.connect(sg);
+      const phr = ctx.createOscillator(); phr.type = 'square'; phr.frequency.value = 0.31;
+      const pg = ctx.createGain(); pg.gain.value = 0.5; phr.connect(pg);
+      const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
+      const pause = ctx.createGain(); pause.gain.value = 0.5; pg.connect(pause.gain);
+      const talk = ctx.createGain(); talk.gain.value = 0;
+      vn.connect(vb); vb.connect(chop); chop.connect(pause); pause.connect(talk); talk.connect(out);
+      const car = ctx.createGain(); car.gain.value = 0;
+      const osc = ctx.createOscillator(); osc.frequency.value = 760; osc.connect(car); car.connect(out);
+      const n = this.noiseSrc(false), hiss = ctx.createGain(); hiss.gain.value = 0.25; n.connect(hiss); hiss.connect(out);
+      for (const x of [vn, syl, phr, osc, n]) x.start();
+      this.cab = { out, spk: bp, talk, car, hiss, stop: () => { for (const x of [vn, syl, phr, osc, n]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+    }
+    const r = this.cab, t = ctx.currentTime;
+    r.out.gain.setTargetAtTime(0.09, t, 0.2);
+    r.talk.gain.setTargetAtTime(mode === 'talk' ? 1.6 : 0, t, mode === 'talk' ? 0.4 : 0.01);
+    r.car.gain.setTargetAtTime(mode === 'carrier' ? 0.22 : 0, t, 0.01);
+    r.hiss.gain.setTargetAtTime(mode === 'talk' ? 0.22 : mode === 'carrier' ? 0.08 : 0.35, t, 0.02);
+  }
+  /** The cab speaker's input (null when the radio is off): sounds played here come out of it. */
+  radioIn(): AudioNode | null { return this.cab?.spk ?? null; }
+  /** A voice on the cab radio, as noise in a speech band (no recorded actor; it is captioned).
+   *  formant: lower for a man (about 520 Hz), higher for a woman (about 820 Hz). */
+  cabVoice(secs: number, formant: number) {
+    const ctx = this.ctx, r = this.cab; if (!ctx || !r) return;
+    const t = ctx.currentTime;
+    const vn = this.noiseSrc(true, true), vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = formant; vb.Q.value = 2.2;
+    const vb2 = ctx.createBiquadFilter(); vb2.type = 'peaking'; vb2.frequency.value = formant * 2.6; vb2.gain.value = 8;
+    const syl = ctx.createOscillator(); syl.type = 'triangle'; syl.frequency.value = 3.9 + (formant > 700 ? 0.8 : 0);
+    const sg = ctx.createGain(); sg.gain.value = 0.55; syl.connect(sg);
+    const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
+    const g = ctx.createGain(); g.gain.value = 0;
+    vn.connect(vb); vb.connect(vb2); vb2.connect(chop); chop.connect(g); g.connect(r.spk);
+    g.gain.setTargetAtTime(3.2, t, 0.05); g.gain.setTargetAtTime(0, t + secs, 0.08);
+    vn.start(t); syl.start(t); vn.stop(t + secs + 0.6); syl.stop(t + secs + 0.6);
+  }
+  /** A cup set down on a saucer: two short bright rings. dest: where it plays (the cab radio). */
+  cupDown(dest?: AudioNode | null) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, out = dest ?? this.sfx;
+    for (const [dt, f, a] of [[0, 2380, 0.22], [0.012, 3710, 0.12], [0.09, 2390, 0.07], [0.1, 5120, 0.05]] as const) {
+      const o = ctx.createOscillator(); o.frequency.value = f;
+      const g = ctx.createGain(); g.gain.value = 0;
+      g.gain.setValueAtTime(0, t + dt); g.gain.linearRampToValueAtTime(a, t + dt + 0.002); g.gain.exponentialRampToValueAtTime(0.0005, t + dt + 0.35);
+      o.connect(g); g.connect(out); o.start(t + dt); o.stop(t + dt + 0.4);
+    }
+    const n = this.noiseSrc(false, false), ng = ctx.createGain(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2500;
+    ng.gain.setValueAtTime(0.18, t); ng.gain.exponentialRampToValueAtTime(0.0005, t + 0.04);
+    n.connect(hp); hp.connect(ng); ng.connect(out); n.start(t); n.stop(t + 0.06);
+  }
+  /** Total silence (THE EVENT): every sound and the ambience off; music is left alone. */
+  silence(on: boolean) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime;
+    this.sfx.gain.setTargetAtTime(on ? 0 : 1, t, on ? 0.04 : 0.3);
+    this.amb.gain.setTargetAtTime(on ? 0 : 1, t, on ? 0.08 : 0.5);
+  }
+
   // Where the listener is. Out in the yard the wind and the crickets take over from the
   // room tone; the photo lab is small and closed, with its own ventilation hum.
   private space: 'room' | 'yard' | 'lab' = 'room';

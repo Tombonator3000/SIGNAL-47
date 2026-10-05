@@ -19,7 +19,7 @@ import { clockText } from './time';
 // SARO wet bench (Unity did the same with a travel folio).
 
 export type Stage3 = 'to-truck' | 'station' | 'call' | 'return' | 'develop' | 'complete';
-export type AreaId = 'saro' | 'road' | 'station01' | 'room6' | 'diner';
+export type AreaId = 'saro' | 'road' | 'station01' | 'room6' | 'diner' | 'roswell';
 
 export interface Ch3State {
   v: 1;

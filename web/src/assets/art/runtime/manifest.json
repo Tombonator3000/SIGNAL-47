@@ -130,5 +130,38 @@
     "source_sha256": "aecdb411881c8e3bcb4cfbf39a14d3fe64c211eb6651af1e7aae5293ed8d80e1",
     "runtime_sha256": "93fd04c6e2e25f98bf2294b385e5087ba1375d542c41845dbab14732768faf7a",
     "bytes": 42780
+  },
+  {
+    "source": "road/milepost_blank.png",
+    "runtime": "runtime/milepost_blank.webp",
+    "dimensions": [
+      256,
+      640
+    ],
+    "source_sha256": "6c5a58b34c8215f3fa7a916b21eac10b8cb89ef63908d9a339fd0394f249965a",
+    "runtime_sha256": "ceb4edf7ed8845ab9b1dc9dc8749f26a49a19ba9ed0ac906e00732c989fb9e4c",
+    "bytes": 47256
+  },
+  {
+    "source": "road/witness_post.png",
+    "runtime": "runtime/witness_post.webp",
+    "dimensions": [
+      128,
+      768
+    ],
+    "source_sha256": "79f25e92001bf2f756faabd5a375f013e43df3132773161aa2061747b1882402",
+    "runtime_sha256": "0b2e20e4d906afefe5165cfb3ba6ad91aeab9c366532f8d0fafb182a357cf87f",
+    "bytes": 40096
+  },
+  {
+    "source": "road/survey_disk_brass.png",
+    "runtime": "runtime/survey_disk_brass.webp",
+    "dimensions": [
+      512,
+      512
+    ],
+    "source_sha256": "f2cd813854e1e18a75243e48e7755623da72c28ca688650206ceb76926da46c6",
+    "runtime_sha256": "2b785c52a092bc152beffbe3294d7d6a93d8b332e43f3b57ad2db4bffda46b42",
+    "bytes": 100682
   }
 ]

@@ -14,6 +14,7 @@ import { Chapter2, type Ch2State } from './Chapter2';
 import { Chapter3, type Ch3State, type Travel } from './Chapter3';
 import { Chapter4, type Ch4State, type Motel } from './Chapter4';
 import { Chapter5, type Ch5State, type Chapter5Deps } from './Chapter5';
+import { Chapter6, type Chapter6Deps } from './Chapter6';
 import type { Doors } from '../world/Doors';
 import { DecoderDesk } from './Decoder';
 import type { RecordsAnnex } from '../world/Annex';
@@ -27,7 +28,7 @@ import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
 const ORDER = ['intro', 'shift', 'survey', 'skip', 'residual', 'locked', 'solving', 'printing', 'printed',
-  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5'] as const;
+  'ringing', 'call', 'countdown', 'event', 'turning', 'end', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6'] as const;
 export type Phase = typeof ORDER[number];
 
 const START_CLOCK = 23 * 3600 + 41 * 60;        // 23:41:00
@@ -123,6 +124,7 @@ export interface PrologueDeps {
   travel: Travel;
   motel: Motel;
   allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner'>;
+  roswell: Omit<Chapter6Deps, 'ui' | 'audio'>;
   doors: Doors;
   milestone: () => void;
 }
@@ -147,6 +149,7 @@ export class Prologue {
   ch3: Chapter3;
   ch4: Chapter4;
   ch5: Chapter5;
+  ch6: Chapter6;
   decoder: DecoderDesk;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
   ns: NightShiftState = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
@@ -217,6 +220,7 @@ export class Prologue {
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
       milestone: () => { this.onCheckpoint?.('chapter4'); },
     });
+    this.ch6 = new Chapter6(this, { ui: d.ui, audio: d.audio, ...d.roswell });
     this.ch5 = new Chapter5(this, {
       ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, ch3: this.ch3, ...d.allNight,
       terminal: () => d.room.objs.opsTerminal.getWorldPosition(new THREE.Vector3()),
@@ -239,7 +243,7 @@ export class Prologue {
   // Where a save resumes. The prologue only has safe points at the start of the night and
   // at 02:13; inside a chapter the chapter's own state is the resume point.
   checkpointName(): string {
-    if (this.phase === 'ch5') return 'chapter5';
+    if (this.phase === 'ch5' || this.phase === 'ch6') return 'chapter5';
     if (this.phase === 'ch4') return 'chapter4';
     if (this.phase === 'ch3') return 'chapter3';
     if (this.phase === 'ch2') return 'chapter2';
@@ -254,11 +258,13 @@ export class Prologue {
     if (this.phase === 'ch3') return this.ch3.saveBlock();
     if (this.phase === 'ch4') return this.ch4.saveBlock();
     if (this.phase === 'ch5') return this.ch5.saveBlock();
+    if (this.phase === 'ch6') return this.ch6.saveBlock();
     return null;
   }
   /** The case as it stands, for a save. Null in the prologue, which keeps no case. */
   snapshotCase(): SavedCase | null { return this.at('ch1') ? this.composeCase(this.ch1.s) : null; }
   chapterTitle(): string {
+    if (this.phase === 'ch6') return 'Chapter 6: Roswell Road';
     if (this.phase === 'ch5') return 'Chapter 5: All Night';
     if (this.phase === 'ch4') return 'Chapter 4: Room 6';
     if (this.phase === 'ch3') return 'Chapter 3: The Survey Station';
@@ -284,6 +290,7 @@ export class Prologue {
     if (this.phase === 'ch3') return this.ch3.tasks();
     if (this.phase === 'ch4') return this.ch4.tasks();
     if (this.phase === 'ch5') return this.ch5.tasks();
+    if (this.phase === 'ch6') return this.ch6.tasks();
     const t: { text: string; done: boolean }[] = [{ text: "Read Dale's shift log", done: this.logRead }];
     if (this.logRead || this.at('residual')) {
       t.push({ text: 'Power up RX bank 3', done: this.powered });
@@ -301,7 +308,7 @@ export class Prologue {
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
   openNotebook() {
     const ui = this.d.ui;
-    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : 'Tonight',
+    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : this.phase === 'ch6' ? 'Chapter six' : 'Tonight',
       // the evidence board can be laid out from the journal once a record from the archive is in it
       this.ch2.started && Object.values(this.ch2.s.read).some(Boolean) ? () => this.ch2.openBoard() : undefined);
   }
@@ -848,6 +855,16 @@ export class Prologue {
     this.ch5.begin(saved?.ch5 ?? null);
     this.onCheckpoint?.('chapter5');
   }
+  // ---------- chapter six ----------
+  // From the diner's lot onto the old road (the case was saved in the diner just before).
+  beginChapter6() {
+    this.ch5.active = false;
+    this.d.audio.amRadio(null);
+    this.setPhase('ch6');
+    this.cinematic = false;
+    this.ch6.begin();
+  }
+
 
   // ---------- per frame ----------
   update(dt: number, t: number, paused: boolean) {
@@ -954,11 +971,12 @@ export class Prologue {
 
     // dishes arrive
     if (this.phase === 'turning' && !ext.dishes.some((x) => x.moving)) this.arrived();
-    if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4' || this.phase === 'ch5') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
+    if (this.phase === 'ch1' || this.phase === 'ch2' || this.phase === 'ch3' || this.phase === 'ch4' || this.phase === 'ch5' || this.phase === 'ch6') this.ch1.update(paused ? 0 : dt, t, this.phase === 'ch1');
     if (this.phase === 'ch2') this.ch2.update(paused ? 0 : dt, t);
     if (this.phase === 'ch3') this.ch3.update(paused ? 0 : dt, t);
     if (this.phase === 'ch4') this.ch4.update(paused ? 0 : dt, t);
     if (this.phase === 'ch5') this.ch5.update(paused ? 0 : dt, t);
+    if (this.phase === 'ch6') this.ch6.update(paused ? 0 : dt, t);
     this.decoder.update(dt);
 
     // gentle camera assist so the player sees the array turn
@@ -1133,6 +1151,7 @@ export class Prologue {
     this.ch3?.reset();
     this.ch4?.reset();
     this.ch5?.reset();
+    this.ch6?.reset();
     this.d.doors.closeAll();
     this.decoder?.stop();
   }
@@ -1154,6 +1173,7 @@ export class Prologue {
     if (target === 'chapter3') { this.jumpChapter3(); return; }
     if (target === 'chapter4') { this.jumpChapter4(); return; }
     if (target === 'chapter5') { this.jumpChapter5(); return; }
+    if (target === 'chapter6') { this.jumpChapter6(); return; }
     const steps = ['shift', 'residual', 'locked', 'printed', 'countdown', 'event'];
     const idx = steps.indexOf(target);
     if (idx < 0) return;
@@ -1279,6 +1299,14 @@ export class Prologue {
       this.clock = 4 * 3600 + 58 * 60;
     }
     this.beginChapter5(null);
+  }
+
+  // Chapter six, for testing: chapter five done in the diner (P13 found), straight out
+  // onto the old road. A player gets here from the diner, after a save.
+  private jumpChapter6() {
+    this.jumpChapter5();
+    this.ch5.s = { ...this.ch5.s, stage: 'road', arrived: true, p13: true, confirmed: true };
+    this.beginChapter6();
   }
 
   // Everything the prologue leaves behind.

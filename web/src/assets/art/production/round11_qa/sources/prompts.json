@@ -1,0 +1,83 @@
+{
+  "brief_commit": "d539c4dea2c72ff471fcddf050aeeb7f7e7af6fb",
+  "tool": "image_gen.imagegen (innebygd ChatGPT-bildegenerator)",
+  "exact_model_version": "ikke eksponert",
+  "assets": [
+    {
+      "file": "road/milepost_blank.png",
+      "size": [
+        256,
+        640
+      ],
+      "alpha": true,
+      "prompt": "Use case: stylized-concept. Asset type: a single game texture, 256 x 640 px, RGBA. Primary request: orthographic straight-on front face of a blank 1986 New Mexico roadside mile marker. A tall green reflective metal plate with a thin worn ivory-white border and gently rounded corners. The plate fills almost the entire 2:5 canvas, leaving transparent pixels outside the rounded silhouette. The central area x30..226,y60..580 in the intended 256x640 texture must be quiet, medium-dark green for code to overlay MILE and a large number. A few small stone pocks near the edge, restrained scratches, a little reddish dust at the bottom. Materials subtly stylized for a low-poly game, matte aged surfaces, uniform neutral illumination without baked dramatic light. No pole, screws protruding, extra objects, letters, numbers, emblems, watermark or cast shadow. Genuine transparent background. One asset only, not a contact sheet."
+    },
+    {
+      "file": "road/witness_post.png",
+      "size": [
+        128,
+        768
+      ],
+      "alpha": true,
+      "prompt": "Use case: stylized-concept. Asset type: a single RGBA texture for a survey witness post, target 128 x 768 px. Orthographic straight-on front view of one very tall slender flat fiberglass or steel survey witness post, circa 1986 New Mexico. Faded dusty orange, an ivory-white reflective horizontal band near the top, slightly uneven weathered edges and a mild bend; reddish dirt at the bottom. Keep most of the middle orange surface quiet for code to place vertical SURVEY MARK lettering later. The single post occupies the full-height center of a 1:6 canvas with just a small transparent gutter either side; preserve slim proportions. Subtly stylized aged material, neutral flat diffuse light. Transparent outside the post silhouette. No letters, numbers, logos, arrows, base, background, cast shadow, other posts or decorative frame."
+    },
+    {
+      "file": "road/survey_disk_brass.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true,
+      "prompt": "Use case: stylized-concept. Asset type: single top-down RGBA survey marker texture, target 512x512px. Primary request: perfectly orthographic overhead view of a round brass survey disk, about 9 cm across, seated flush in coarse aged concrete. ONLY the circular brass face is opaque; the concrete pedestal is separate game geometry and must NOT extend outside the disk silhouette. Suggest a fine rough concrete contact rim at its circumference within the circle. Old golden brass darkened by weather, restrained verdigris near its edge, fine scratches. Smooth blank central field and smooth blank annular area for code to stamp STA 01 / C / 1947 and an arrow later. Soft neutral diffuse illumination, no cast shadow or specular glare, subtly stylized for a low-poly game. Transparent pixels everywhere outside the circular disk. No text, numbers, letters, arrow, logos, extra objects or perspective."
+    },
+    {
+      "file": "road/tex_oldroad_asphalt.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha": false,
+      "prompt": "Use case: stylized-concept. Asset type: seamless repeatable albedo texture, 1024x1024px square, fills canvas edge to edge. Orthographic top-down surface of a bleached old narrow county road in 1986 New Mexico. Gray old asphalt, visible pale stone aggregate, scattered fine alligator cracking with a few subdued tar repairs, a little reddish desert dust in the crevices. Gently stylized real matte material for a low-poly game. Uniform diffuse lighting, no baked shadows, perspective, center stripe, road markings, letters, objects or vegetation. PERFECTLY seamless tile in both axes: crack paths and dust continue smoothly over each pair of opposing edges. Homogeneous large-scale brightness and restrained dust throughout, no visible road border or single directional edge band. No text or watermark."
+    },
+    {
+      "file": "flash/flash_eye.jpg",
+      "size": [
+        1280,
+        800
+      ],
+      "alpha": false,
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape cinematic FLASH still for SIGNAL / 47. Extreme close view of one ambiguous human-like eye at the center. The pupil is unusually large and glassy with one tiny bright point reflected; the iris is barely visible. The eye fills the central image, anatomical surface suggested through shadow, not gore. A frame from an impossible damaged 1986 film or videotape: almost grayscale, slight cold green tint, strong grain and analog video noise, mild blur, dark vignette, edges near black, a small blown-out highlight. Hint of unease rather than a clearly depicted monster. Restrained stylized image, not glossy CGI or polished photorealism. No text, timecode, UI, letters, logos, film border, extra eyes or watermark."
+    },
+    {
+      "file": "flash/flash_hand.jpg",
+      "size": [
+        1280,
+        800
+      ],
+      "alpha": false,
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. Viewed from INSIDE a 1986 truck cab, a single ambiguous hand pressed against the OUTSIDE of a fogged windscreen, centered. Five unusually long thin fingers spread and flattened on the condensation, palm mostly lost in fog, no identifiable arm. Blown-out dawn behind glass, windshield edges disappearing into almost-black vignette. Nearly grayscale with faint cold green tint, thick analog film grain/video noise, slight motion blur, dirty condensation. A moment from an impossible old tape. Suggestion, not a clear monster or gore; subtly stylized image, avoid polished CGI. No text, timecode, UI, logos, six fingers, second hand or watermark."
+    },
+    {
+      "file": "flash/flash_face.jpg",
+      "size": [
+        1280,
+        800
+      ],
+      "alpha": false,
+      "prompt": "Use case: stylized-concept. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. An ambiguous face briefly suggested at the center: an unusually large smooth head and large dark eyes, reminiscent of a generic Grey but entirely original and NOT a recognizable movie creature. At least half the face obscured by deep shadow, strong slight lateral motion smear and damaged-film noise, so its anatomy never becomes clear. Near grayscale with very faint cold green tint, coarse film grain/analog tape noise, a dim blown-out patch of side light, heavy dark vignette with near-black edges. Cropped intimate frame from an impossible 1986 recording, no detailed body. Unease by suggestion, not gore, teeth, screaming, or a clean monster portrait. Subtly stylized rather than glossy CGI. No text, timecode, UI, logos or watermark."
+    },
+    {
+      "file": "flash/flash_man.jpg",
+      "size": [
+        1280,
+        800
+      ],
+      "alpha": false,
+      "prompt": "Use case: historical-scene. Asset type: single 1280x800 landscape FLASH still for SIGNAL / 47. Reference image: supplied photo_1947_master.jpg is STYLE AND SILHOUETTE reference only, specifically the right-background surveyor holding a staff in a broad-brimmed work hat; do not reproduce the whole landscape. Primary request: a fictional young male surveyor in 1940s New Mexico field clothes, rolled-up shirt sleeves and broad-brimmed practical work hat, with survey staff faintly alongside him. Waist-up figure centered, half illuminated by dim stark side light, the face impossible to recognize through darkness and blur. Grainy old photographic/tape fragment that might show the man from the reference, not an identifiable real person. Almost grayscale with faint cold green tone, severe film grain, slightly defocused motion smear, heavy vignette, edges nearly black. Restrained stylized archival image, no glossy CGI. No text, timecode, insignia, logos, watermark or extra people."
+    }
+  ],
+  "witness_edit_prompt": "Use case: background-extraction. Edit target: the supplied orange witness-post image. Preserve only the single slim orange post and its white reflective stripe, weathering and front-facing shape. REMOVE every pixel of the orange atmospheric haze/glow/gradient and black backdrop surrounding it. Outside the physical post must be fully transparent, with clean hard silhouette edges and only narrow antialiasing. The solid post itself must be fully opaque. No light bloom, no cast shadow, no semitransparent halo. Keep the tall 1:6 post proportions; tightly frame the post with a tiny transparent gutter, suitable for a 128x768 texture. No text, numbers, logo or added objects. Genuine transparent background.",
+  "asphalt_edit_prompt": "Use case: precise-object-edit. Edit target Image1: square old New Mexico asphalt texture. Image2 is ONLY a 2x2 seam-check reference showing the repeated texture, not the desired output composition. Return ONE 1024x1024 seamless texture tile, not a grid. Keep the pale gray aged asphalt with exposed fine aggregate and restrained red dust, no road markings. Fix opposing edges so there is no straight join or brightness band when repeated horizontally or vertically. Left/right cracks must meet and top/bottom cracks must meet. Small-scale fine random aggregate and hairline dark tar repairs, reduce large isolated distinctive dark patches that terminate abruptly at the tile boundaries. Uniform albedo illumination and average brightness across the whole tile, no vignette or gradient. Perfect periodic texture, no frame, perspective, objects, letters or watermark.",
+  "asphalt_final_prompt": "Use case: stylized-concept. Asset type: a SINGLE seamless 1024x1024 square game albedo tile. A flat top-down pale gray sun-bleached OLD ASPHALT surface near Roswell, New Mexico, 1986. Fine worn aggregate and matte gray binder; a little muted reddish dust in crevices. Uniform small-scale texture and average brightness across the entire tile. Subtle SHORT alligator cracks and narrow worn dark tar repairs ONLY in the middle, all tapering and ending well BEFORE the outer 200px band. The broad outer band is uniform fine gray aggregate with no long crack, dark patch or dust ribbon, so copies join without a straight visible seam or broken line. All opposite edges match visually. Edge to edge surface, no road shoulders, painted lines, scenery, objects, text, perspective, shadow or vignette. Restrained stylization matching a low-poly game, no glossy wet material. One tile, no contact sheet.",
+  "hand_edit_prompt": "Use case: precise-object-edit. Edit target: the supplied FLASH hand against a fogged truck windshield. Change ONLY the outdoor background visible through the glass. Remove all tall trees, conifers and forest silhouettes. Replace them with an almost indiscernible low, flat mesa/desert horizon in dawn haze, consistent with the old road near Roswell, New Mexico. Keep the hand with five long slender fingers pressed against condensation, hidden arm, truck interior, windshield, grain, blur, nearly grayscale cold green tone, vignette and blown-out dawn exactly as they are. 1280x800 landscape still. No text, timecode, logos or added figures."
+}

@@ -4,7 +4,9 @@
 # the mesa, the clipping), the driver (the old road, last October), the radio, the clipping
 # itself (E15), Ward on the payphone, and the map puzzle at the booth with a real drag of
 # the tracing (wrong answers, then P13). After P13 the driver confirms the bolt. Save and
-# Continue inside the diner, out to the truck, and the end card. Starts from
+# Continue inside the diner, out to the truck: the case is saved there, the cut takes the
+# truck onto the old road (chapter six), and Continue from the title gives the diner back
+# with the truck ready, so the end of the night can be played again. Starts from
 # S47.jump('chapter5'). Usage: python3 tools/chapter5.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
@@ -209,18 +211,31 @@ async def main():
         check(all(x in dd for x in ('e14', 'e15', 'p13')), 'and the papers: the service map, the clipping, P13')
         await shot('h08_continue')
 
-        # ---------- out to the truck, and the end card ----------
+        # ---------- out to the truck: saved in the diner, then the old road ----------
         ok = await walk([[i['x'], i['z']], [o['x'], o['z']], [a['x'], a['z']]])
         tk = await ev("(()=>{const v=S47.world.dinerTruckProxy.getWorldPosition(S47.camera.position.clone()); return [v.x,v.y,v.z]})()")
         await face(tk[0], tk[1], tk[2])
         check(ok[0] and await aimed() == 'dinerTruck' and await label('dinerTruck') == 'Drive the old road', 'out by the truck: drive the old road')
         await use('dinerTruck')
-        await ev("S47.hold = false")
-        await pg.wait_for_function("() => { const a = document.querySelector('.endcard .after'); return !!a && getComputedStyle(a).opacity === '1'; }", polling=500)
-        text = await ev("document.querySelector('.endcard').textContent")
-        check('ALL NIGHT' in text and 'ROSWELL ROAD' in text and await s5('stage') == 'complete', 'end card for chapter five names the Roswell road next')
+        await tick(0.2); await pg.wait_for_timeout(800)
+        cont = await ev("(() => { const m = S47.saves.continueSave(); return m ? { chapter: m.chapter, place: m.place } : null; })()")
+        check(cont is not None and cont['chapter'] == 'Chapter 5: All Night' and 'Mesa Diner' in cont['place'], f'the case is saved in the diner before the road: {cont}')
+        for _ in range(30):
+            await tick(0.25)
+            if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
+        check(await ev("S47.game.phase") == 'ch6' and await ev("S47.ch6.stage") == 'drive' and await s5('stage') == 'complete', 'the cut: chapter six, on the old road')
+        check(await ev("S47.game.clock") >= 5 * 3600 + 26 * 60 and 'MILE 8' in await objective(), 'the clock is past 05:26 and the objective is the line past mile 8')
         check(any('coffee stays on the counter' in n for n in await notes()), 'the coffee stays on the counter')
-        await shot('h09_ending')
+        check(await ev("S47.game.saveBlock()") == 'Not on the road.', 'no saving on the road')
+        await shot('h09_old_road')
+        # out to the title now, as after the ending, and Continue: the diner with the truck ready
+        await ev("S47.hold = false")
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(400)
+        await pg.click('[data-a=title]')
+        await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
+        await ev("S47.hold = true; S47.tick(0.5)")
+        check(await ev("S47.world.area") == 'diner' and await s5('stage') == 'road' and await ev("S47.game.phase") == 'ch5', 'Continue after the road: the diner again, the truck ready')
         await ev("S47.hold = true")
 
         print('\n'.join(errs[:30]) or 'no console errors/warnings')

@@ -271,6 +271,56 @@ Bakgrunn for sidene i unntaksperma i Night Shift. Det siste arket er datert 1947
 
 `art.ts` får de fire bildene som senere bilder (de lastes der de trengs, ikke ved start). Plakaten får teksten i `halleyPosterTex`, med den tegnede plakaten som reserve. Perma viser sidene på fanfoldpapiret og det siste arket på papiret fra 1947. Dineren bytter til utsnitt B. Utsnitt A kommer i saksmappa når tråd 7 bygges i The Amended Record, og hele bildet kommer etter rulleteksten.
 
+## Runde 11: Roswell-veien og FLASH
+
+Levert i PR #64 (`0175e32`) og koblet inn 5. oktober kl. 09:47: asfalten, milestolpen og vitnestolpen under teksten fra koden, messingskiva under stempelet, og de fire bildene i FLASH. Se `ART_ROUND11_DELIVERY.md`.
+
+Bestilt 5. oktober 2026 morgen, etter at Roswell Road og THE EVENT er spesifisert i `KAPITLER.md`. Tom ba om Roswell Road samme morgen. Claude bygger kapitlet med reserver tegnet i kode, så ingenting her blokkerer bygging eller testing. Bildene kobles inn når de kommer.
+
+Ingen tekst i noen av bildene; tall, stempler og ord tegnes i kode. Ingen ekte personer, merkenavn, ekte skilt med kallesignaler eller kopier av kjente filmers romvesener. Codex lager bildene, manifestet og kontrollen i egen gren og eier bare de filene og et eget loggavsnitt. Claude kobler dem inn og tar den samlede testen.
+
+### Prioritet A: veien (`road/`)
+
+Lyset på veien er gry: blått omgivelseslys, varm horisont, og frontlysene. Flatene ses mest fra førersetet i 50 mph og i frontlysene.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `road/milepost_blank.png` | 256×640, PNG med alfa utenfor platen | Milestolpe fra New Mexico i 1986, sett rett forfra: grønn refleksplate med hvit kant og avrundede hjørner, slitt, støv nederst, noen hagl- eller steinmerker. Ingen tekst. Koden skriver `MILE` øverst og tallet stort under (sonen x 30 til 226, y 60 til 580 skal være rolig). |
+| `road/witness_post.png` | 128×768, PNG med alfa | Vitnestolpe ved en oppmålingsbolt: en flat stolpe av glassfiber eller stål, falmet oransje med en hvit refleksstripe øverst, litt bøyd og skitten nederst. Ingen tekst (koden skriver `SURVEY MARK` loddrett). |
+| `road/survey_disk_brass.png` | 512×512, PNG med alfa utenfor skiva | Oppmålingsbolt sett rett ovenfra: messingskive rundt 9 cm i diameter, mørknet og grønnspansk i kanten, satt i en grov betongtopp. Midten og ringen langs kanten skal være glatte nok til at koden kan stemple `STA 01 / C / 1947` og en pil. |
+| `road/tex_oldroad_asphalt.jpg` | 1024×1024, JPG rundt 85, sømløs | Gammel smal fylkesvei: grå og bleket asfalt med pukk som stikker opp, krakelering og tjærestriper over sprekkene, rød støv i kantene. Ingen oppmerking (koden tegner midtstripa). |
+
+### Prioritet B: FLASH (`flash/`)
+
+Fire enkeltbilder som vises i 70 til 120 ms hver, med svart mellom, 32 sekunder ut i hendelsen (`KAPITLER.md`, THE EVENT). De skal føles som ruter fra en film eller et videobånd som ikke burde finnes: kornete, litt uskarpe, mørke, med lys som slår ut. Ikke blodige, ikke grove. Antydning, ikke monster.
+
+- Alle fire: 1280×800, JPG rundt 85, sRGB, nesten gråtoner med en svak kald eller grønn tone, kraftig filmkorn eller videostøy, vignett. Motivet fyller midten; kantene kan være nesten svarte. Ingen tekst, ingen tidsstempel.
+
+| Fil | Motiv |
+| --- | --- |
+| `flash/flash_eye.jpg` | Et øye helt nær. Det kan være menneskelig, men noe er feil med det (pupillen for stor eller for blank). Et lite lyspunkt speiles i det. |
+| `flash/flash_hand.jpg` | Sett innenfra førerhuset: en hånd med for lange, tynne fingre presset mot en dugget frontrute. Gry bak, utbrent. Ingen arm synes tydelig. |
+| `flash/flash_face.jpg` | Et ansikt som kan minne om en Grey: stort, glatt hode og store mørke øyne, men delvis skjult i mørke og bevegelsesuskarphet, så det aldri blir tydelig. Ingen kopi av en kjent filmfigur. Vises i rundt tre bilder på rad. |
+| `flash/flash_man.jpg` | En ung mann i feltklær fra 1940-tallet (skjorteermer, hatt), halvt opplyst, uskarp, som et gammelt fotografi. Han kan være Tomás fra avisbildet (samme silhuett som landmåleren med stanga i `docs/photo_1947_master.jpg`), men ansiktet skal ikke kunne kjennes igjen. |
+
+Lyset over mesaen, stjernehimmelen, terminalen og avisbildet i FLASH lager Claude selv av det som finnes.
+
+### Ikke i denne runden
+
+- Ingen kode og ingen endringer i filene Claude eier.
+- Ingen nye himmelbilder; gryet lages i himmelshaderen.
+
+### Manifest og kontroll
+
+- `production/round11_manifest.json`: metode og verktøy, størrelse, sha256 og promter for hver fil.
+- Kontrollbilder i `production/round11_qa/` (kommer aldri med i spillet): milestolpen med prøvetekst `MILE` og `8` i sonen, vitnestolpen og skiva med prøvestempel, asfalten 2×2 for sømmene, og de fire FLASH-bildene side om side i full størrelse og i 320×200.
+- Automatisk sjekk: riktig størrelse, alfa der det står PNG med alfa og ellers ingen, sRGB, filstørrelser (høyst rundt 600 kB per bilde).
+- Leveransenotat `ART_ROUND11_DELIVERY.md` med PASS, FAIL eller UNVERIFIED, som tidligere runder.
+
+### Hvordan Claude kobler dem inn
+
+`art.ts` får veibildene som senere bilder som lastes med den gamle veien, og FLASH-bildene lastes når kapittel 6 starter. Reservene i kode står til bildene er lastet. Tallene på milestolpene, stempelet på skiva og teksten på vitnestolpen tegnes i kode oppå. Opphavet føres i `THIRD_PARTY_NOTICES.md`.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.

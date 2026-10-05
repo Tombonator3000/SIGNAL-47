@@ -35,11 +35,13 @@ python3 tools/chapter1.py shots/ch1 passive
 python3 tools/chapter2.py shots/ch2
 python3 tools/chapter3.py shots/ch3
 python3 tools/chapter4.py shots/ch4
+python3 tools/chapter5.py shots/ch5
+python3 tools/chapter6.py shots/ch6
 python3 tools/diner.py shots/diner
 node tools/saves.cjs
 ```
 
-`chapter1.py` kom inn 3. oktober sammen med kapittel 1 og bør kjøres med begge metodene (`passive` og `active`) når kapittel 1 endres. `chapter2.py` kom inn 4. oktober med kapittel 2. `saves.cjs` (lagringssystemet i Node, uten nettleser) og `chapter3.py` (kjøreturen, STATION 01 og framkallingen) kom inn senere samme dag, og `chapter4.py` (veien over til motellet og samtalen i rom 6) med kapittel 4. Når lagringen endres, kjøres også `S47_NO_IDB=1 python3 tools/chapter1.py shots/ch1-noidb passive`, som prøver lagring uten IndexedDB. Ved endringer i grafikk eller bildeinnlasting kjøres også `python3 tools/artcheck.py shots/art` og `python3 tools/csptest.py`.
+`chapter1.py` kom inn 3. oktober sammen med kapittel 1 og bør kjøres med begge metodene (`passive` og `active`) når kapittel 1 endres. `chapter2.py` kom inn 4. oktober med kapittel 2. `saves.cjs` (lagringssystemet i Node, uten nettleser) og `chapter3.py` (kjøreturen, STATION 01 og framkallingen) kom inn senere samme dag, og `chapter4.py` (veien over til motellet og samtalen i rom 6) med kapittel 4. `chapter5.py` (All Night, dineren og kartgåta) og `chapter6.py` (den gamle Roswell-veien, THE EVENT, uttrekket og slutten) kom inn 5. oktober. `chapter6.py` tar lang tid i programvare-rendering; kjør den med høyst én annen nettleser samtidig. Når lagringen endres, kjøres også `S47_NO_IDB=1 python3 tools/chapter1.py shots/ch1-noidb passive`, som prøver lagring uten IndexedDB. Ved endringer i grafikk eller bildeinnlasting kjøres også `python3 tools/artcheck.py shots/art` og `python3 tools/csptest.py`.
 
 Merk resultat som PASS, FAIL eller UNVERIFIED med faktisk grunnlag. Headless-testen bruker programvare-rendering og sier ingenting om ekte fps. Ytelse er UNVERIFIED til noen har målt på ekte maskinvare.
 

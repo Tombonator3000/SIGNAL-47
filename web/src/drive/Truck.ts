@@ -75,6 +75,7 @@ export class Truck {
   private glow = new GlowPoints();
   private gi = { head: [] as number[], park: [] as number[], tail: [] as number[] };
   private level = 1; private headOn = false; private brakeOn = false;
+  private headColor = new THREE.Color().copy(HEAD); private dashLevel: number | null = null;
   private spin = 0; private wheelAngle = 0;
   private flood: { set: FloodSet; slots: number[] } | null = null;
   private dash = dashAtlas();
@@ -310,21 +311,25 @@ export class Truck {
   /** 0..1: headlights, tail lights and dash light together (0 is dark). */
   setLightLevel(level: number) { this.level = THREE.MathUtils.clamp(level, 0, 1); this.applyLights(); }
   setBrake(on: boolean) { if (on !== this.brakeOn) { this.brakeOn = on; this.applyLights(); } }
+  /** The headlights' colour (white when null): the lamps, their glow and the pools on the ground. */
+  setHeadColor(c: THREE.Color | null) { this.headColor.copy(c ?? HEAD); this.applyLights(); }
+  /** The instrument lights on their own, 0..1 (null: they follow setLightLevel). */
+  setDashLevel(k: number | null) { this.dashLevel = k; this.applyLights(); }
   /** Use these slots of a flood set as headlight pools on the ground (moved in update()). */
   headlightFloods(set: FloodSet, slots: number[]) { this.flood = { set, slots: slots.slice(0, FLOODS.length) }; this.placeFloods(); }
 
   private applyLights() {
-    const L = this.level, head = this.headOn ? L : 0;
+    const L = this.level, head = this.headOn ? L : 0, D = this.dashLevel ?? L;
     const tail = L * Math.max(this.headOn ? 0.5 : 0, this.brakeOn ? 1.5 : 0);
     const m = this.m;
-    lens(m.head, 0x3e3e3a, HEAD, 1.6 * head);
+    lens(m.head, 0x3e3e3a, this.headColor, 1.6 * head);
     lens(m.park, 0x4a3a18, AMBER, 0.8 * head);
     lens(m.tail, 0x420a08, TAIL, tail);
-    m.gauge.color.setScalar(0.03 + 0.85 * L);
-    m.needle.color.setRGB(1, 0.42, 0.19).multiplyScalar(0.04 + 0.96 * L);
+    m.gauge.color.setScalar(0.03 + 0.85 * D);
+    m.needle.color.setRGB(1, 0.42, 0.19).multiplyScalar(0.04 + 0.96 * D);
     const col = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
     const put = (ids: number[], c: THREE.Color, k: number) => ids.forEach((i) => col.setXYZ(i, c.r * k, c.g * k, c.b * k));
-    put(this.gi.head, HEAD, 0.9 * head); put(this.gi.park, AMBER, 0.3 * head); put(this.gi.tail, TAIL, 0.4 * tail);
+    put(this.gi.head, this.headColor, 0.9 * head); put(this.gi.park, AMBER, 0.3 * head); put(this.gi.tail, TAIL, 0.4 * tail);
     col.needsUpdate = true;
     this.placeFloods();
   }
@@ -332,8 +337,9 @@ export class Truck {
   private placeFloods() {
     this.group.updateWorldMatrix(true, false);
     const c = this.cabFlood.pos[0].set(-0.42, 1.12, -0.28, 1).applyMatrix4(this.group.matrixWorld);
-    c.w = this.level > 0.01 ? 1.6 : 0;
-    this.cabFlood.col[0].setRGB(0.6, 0.78, 0.68).multiplyScalar(this.level);
+    const D = this.dashLevel ?? this.level;
+    c.w = D > 0.01 ? 1.6 : 0;
+    this.cabFlood.col[0].setRGB(0.6, 0.78, 0.68).multiplyScalar(D);
     if (!this.flood) return;
     const { set, slots } = this.flood;
     const on = this.headOn && this.level > 0.01;
@@ -342,7 +348,7 @@ export class Truck {
       const p = set.pos[i].set(f.p.x, f.p.y, f.p.z, 1).applyMatrix4(this.group.matrixWorld);
       p.w = on ? f.w : 0;
       // dim by colour, not by intensity: the pools fade instead of shrinking
-      set.col[i].copy(HEAD).multiplyScalar(this.level);
+      set.col[i].copy(this.headColor).multiplyScalar(this.level);
     });
   }
 

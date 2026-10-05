@@ -138,6 +138,7 @@ async function boot() {
     clock: () => clockText(game.clock, false),
     skipClock: (sec) => { game.clock += sec; },
     touch: () => input.touchMode,
+    sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor }),
   });
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard and
   // on the motel's walk, dirt between them, boards in the hut, carpet at the motel
@@ -186,6 +187,12 @@ async function boot() {
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
       driveToDiner: (onArrive) => world.driveToDiner(onArrive),
+    },
+    roswell: {
+      world, camera,
+      settings: () => ({ calmFlash, stillShots }),
+      fog: (density) => { (scene.fog as THREE.FogExp2).density = density ?? (world.area === 'roswell' ? 0.00055 : 0.0021); },
+      finale: () => { void finale(); },
     },
     doors,
     milestone: () => requestAutosave(true),
@@ -248,6 +255,9 @@ async function boot() {
   let baseFov = store.get('fov', 70);
   const setLargeText = (on: boolean) => document.documentElement.classList.toggle('text-large', on);
   setLargeText(store.get('largeText', false));
+  // the end of the night: flashes or slow fades, a moving camera or still shots (KAPITLER.md)
+  let calmFlash = store.get('calmFlash', false);
+  let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
@@ -258,6 +268,8 @@ async function boot() {
     fov: baseFov, onFov: (v: number) => { baseFov = v; store.set('fov', v); resize(); },
     largeText: document.documentElement.classList.contains('text-large'),
     onLargeText: (v: boolean) => { setLargeText(v); store.set('largeText', v); },
+    calmFlash, onCalmFlash: (v: boolean) => { calmFlash = v; store.set('calmFlash', v); },
+    stillShots, onStillShots: (v: boolean) => { stillShots = v; store.set('stillShots', v); },
   });
 
   function openPause() {
@@ -345,6 +357,8 @@ async function boot() {
         onLoad: (m) => openSave(m), onDelete: (m) => saves.remove(m.id),
         onBack: () => { if (mode === 'title') { titleEl?.remove(); showTitle(); } } }),
       onSettings: () => ui.pause({ ...settings(), title: 'Settings', settingsOnly: true, onResume: () => {}, onTitle: () => {} }),
+      // the warning before the night: flashing images near the end, or slow fades instead
+      flash: { calm: calmFlash, onPick: (calm) => { calmFlash = calm; store.set('calmFlash', calm); } },
     });
   }
 
@@ -434,6 +448,7 @@ async function boot() {
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
     if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : 'Mesa Diner, the lot';
+    if (world.area === 'roswell') return 'The old Roswell road';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
     if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
@@ -587,14 +602,33 @@ async function boot() {
     begin: () => game.beginChapter5(null),
   });
   // End of chapter five, as far as the night is built.
-  ch5.onEnd = () => showCard({
-    lines: ch5.endingLines(),
-    buttons: [
-      { label: 'Return to the observatory', on: () => backToPlay(() => {}) },
-      { label: 'Title', on: () => toTitle() },
-    ],
-    credits: true,
-  });
+  // End of chapter five: out of the diner and onto the old road (chapter six)
+  ch5.onEnd = () => game.beginChapter6();
+  // The end of the night: the 3D game stops on the black, then the title, the credits and the
+  // whole photograph from 1947, and back to the title screen. Continue gives the diner again.
+  async function finale() {
+    const ch6 = game.ch6, end = ch6.ending;
+    mode = 'end';
+    fcam.raise(false); ui.viewfinder(false);
+    input.enabled = false; input.reset();
+    if (input.locked) { releasingLock = true; input.releaseLock(); }
+    ui.close(true); ui.clearToasts();
+    ui.showHud(false, input.touchMode);
+    world.stopDriving();
+    audio.cabRadio(null);
+    audio.silence(false);
+    if (!end) { toTitle(); return; }
+    end.black(true, 0);
+    audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.9 });
+    await end.title();
+    if (end.disposed) return;
+    await end.credits();
+    if (end.disposed) return;
+    audio.stop('music', 2.5);
+    await end.photo(ch6.photo(), () => audio.play('paper0', { gain: 0.9 }));
+    if (end.disposed) return;
+    toTitle();
+  }
 
   // test hook, handy from the browser console: S47.jump('countdown')
   (window as any).S47 = {
@@ -603,7 +637,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, saves, world, doors, sky, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -661,6 +695,7 @@ async function boot() {
       case 'station01': return [world.indoors(p) ? ['hut'] : ['field'], false];
       case 'room6': return [['motel'], false];
       case 'diner': return [['diner'], false];
+      case 'roswell': return [['oldroad'], false];
       default: return [['road'], false];
     }
   };
@@ -714,6 +749,10 @@ async function boot() {
     const [lampSets, roomLamps] = ultraLamps(player.pos);
     ultra.update(dt, player.pos, lampSets, roomLamps);
     sky.setCometClock(game.clock);
+    // the dawn follows the clock; the night areas are lit for the night, so they show less of it
+    sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
+    sky.setClock(mode === 'title' ? 0 : game.clock, mode === 'title' ? null : game.ch6.sunElev);
+    (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
     ext.update(dt, t);
     yard.update(t);
     annex.update(t);
@@ -730,7 +769,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}`) : null;
+  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}`) : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

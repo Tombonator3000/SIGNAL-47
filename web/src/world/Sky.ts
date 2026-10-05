@@ -7,6 +7,7 @@ const A = new THREE.Vector3(-0.62, 0.22, -0.75).normalize();
 const B = new THREE.Vector3(0.5, 0.78, -0.36).normalize();
 const BAND_N = new THREE.Vector3().crossVectors(A, B).normalize();
 const CORE = new THREE.Vector3(-0.25, 0.42, -0.87).normalize();
+const _fog = new THREE.Color();
 
 export class Sky {
   group = new THREE.Group();
@@ -16,7 +17,14 @@ export class Sky {
     uFlashDir: { value: new THREE.Vector3(1, 0.05, -0.3).normalize() },
     uBandN: { value: BAND_N },
     uCore: { value: CORE },
+    // the dawn: 0 is night, 1 is sunrise (setClock); the sun's direction, and how much of it shows
+    uDawn: { value: 0 },
+    uSunDir: { value: new THREE.Vector3(0.98, -0.02, -0.19).normalize() },
+    uSun: { value: 0 },
   };
+  /** Colour of the haze at the horizon now: the scene's fog follows it (main.ts). */
+  fogColor = new THREE.Color(0x0b0f19);
+  private dawnLift = 1;
   // Halley's comet, April 1986: low in the south-southwest, a smudge with a short tail.
   // After its closest approach on the 11th it stood in the south around midnight and set
   // a little after three (HISTORIE.md, KAPITLER.md). It cannot have been in a 1947 sky.
@@ -40,7 +48,7 @@ export class Sky {
             gl_Position = p.xyww;
           }`,
         fragmentShader: /* glsl */`
-          uniform float uTime, uFlash; uniform vec3 uFlashDir, uBandN, uCore;
+          uniform float uTime, uFlash, uDawn, uSun; uniform vec3 uFlashDir, uBandN, uCore, uSunDir;
           uniform sampler2D uPanorama;
           varying vec3 vDir;
           float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
@@ -79,6 +87,18 @@ export class Sky {
             float fa = max(dot(d, uFlashDir), 0.0);
             col += vec3(0.55, 0.6, 0.85) * uFlash * pow(fa, 18.0) * smoothstep(0.35, 0.0, h) * 1.4;
             col += vec3(0.25, 0.28, 0.4) * uFlash * pow(fa, 4.0) * 0.12;
+            // The dawn (HISTORIE.md: civil twilight from 05:05, sunrise 05:30 near Roswell).
+            // The night fades out, a blue sky comes in from the top, the east warms at the horizon.
+            float sa = dot(normalize(vec3(d.x, 0.0, d.z)), normalize(vec3(uSunDir.x, 0.0, uSunDir.z)));
+            float east = 0.5 + 0.5 * sa;
+            vec3 zenith = vec3(0.055, 0.085, 0.17), rim = mix(vec3(0.20, 0.23, 0.30), vec3(0.62, 0.42, 0.26), pow(east, 3.0));
+            vec3 dawn = mix(rim, zenith, smoothstep(-0.02, 0.45, h));
+            dawn += vec3(0.55, 0.30, 0.12) * pow(east, 8.0) * exp(-max(h, 0.0) * 9.0) * 0.8;
+            col = mix(col * (1.0 - 0.85 * smoothstep(0.1, 0.7, uDawn)), dawn, smoothstep(0.0, 1.0, uDawn) * 0.92);
+            // the sun at the horizon: a hard bright disc and a warm glow round it
+            float sd = dot(d, normalize(uSunDir));
+            col += vec3(1.0, 0.62, 0.30) * uSun * (pow(max(sd, 0.0), 60.0) * 0.9 + pow(max(sd, 0.0), 900.0) * 3.0);
+            col += vec3(4.0, 3.2, 2.2) * uSun * smoothstep(0.99996, 0.99999, sd);
             if (h < 0.0) col *= 0.5;
             gl_FragColor = vec4(col, 1.0);
             #include <tonemapping_fragment>
@@ -116,6 +136,23 @@ export class Sky {
     m.frustumCulled = false;
     return m;
   }
+  /** The dawn from the game clock: 0 until 04:40, sunrise (1) at 05:30, 14 April 1986 near
+   *  Roswell. Areas built for the night show only part of it (setDawnLift). */
+  setClock(clock: number, sunElevDeg: number | null = null) {
+    const s = ((clock % 86400) + 86400) % 86400;
+    const k = s > 12 * 3600 ? 0 : THREE.MathUtils.clamp((s - (4 * 3600 + 40 * 60)) / (50 * 60), 0, 1);
+    const dawn = Math.pow(k, 1.6) * this.dawnLift;
+    this.uniforms.uDawn.value = dawn;
+    this.fogColor.setRGB(0.043, 0.059, 0.098).lerp(_fog.setRGB(0.19, 0.2, 0.25), dawn * 0.8);
+    // the sun: azimuth 79 degrees, rising about 0.18 degrees a minute; its upper limb reaches
+    // the horizon at 05:30, so the glow shows a few minutes before
+    const el = (sunElevDeg ?? 0.33 + (s - (5 * 3600 + 30 * 60)) / 60 * 0.18) * Math.PI / 180, az = 79 * Math.PI / 180;
+    this.uniforms.uSunDir.value.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
+    this.uniforms.uSun.value = s > 12 * 3600 ? 0 : sunElevDeg !== null ? 1 : THREE.MathUtils.clamp((s - (5 * 3600 + 26 * 60)) / 240, 0, 1) * this.dawnLift;
+  }
+  /** 0..1: how much of the dawn an area shows (the old road shows all of it). */
+  setDawnLift(k: number) { this.dawnLift = k; }
+
   /** The comet is up from the evening until it sets a little after three in the morning. */
   setCometClock(clock: number) {
     const s = ((clock % 86400) + 86400) % 86400;
@@ -231,11 +268,11 @@ export class Sky {
     g.setAttribute('aCol', new THREE.BufferAttribute(col, 3));
     g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uTime: this.uniforms.uTime, uPR: this.pixelRatio },
+      uniforms: { uTime: this.uniforms.uTime, uPR: this.pixelRatio, uDawn: this.uniforms.uDawn },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: /* glsl */`
         attribute float aSize; attribute vec3 aCol; attribute float aPh;
-        uniform float uTime, uPR; varying vec3 vCol; varying float vSharp;
+        uniform float uTime, uPR, uDawn; varying vec3 vCol; varying float vSharp;
         void main() {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_Position = projectionMatrix * mv;
@@ -245,6 +282,8 @@ export class Sky {
           float tw = 1.0 - amp * (0.5 + 0.5 * sin(uTime * (1.7 + fract(aPh) * 3.0) + aPh));
           float horizon = smoothstep(0.0, 0.12, up);
           vCol = aCol * tw * (0.3 + 0.7 * horizon);
+          // at dawn the faint stars go first; the brightest hang on until near sunrise
+          vCol *= clamp(1.0 - uDawn * (2.2 - 1.2 * min(length(aCol), 1.0)), 0.0, 1.0);
           gl_PointSize = max(1.0, aSize * uPR);
           vSharp = aSize > 1.2 ? 1.0 : 0.0;
           gl_Position.z = gl_Position.w * 0.99999;

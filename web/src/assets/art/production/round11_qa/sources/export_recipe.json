@@ -1,0 +1,161 @@
+[
+  {
+    "file": "road/milepost_blank.png",
+    "source": "production/round11_qa/sources/milepost_blank_generated.png",
+    "source_size": [
+      793,
+      1983
+    ],
+    "crop": [
+      108,
+      48,
+      683,
+      1920
+    ],
+    "size": [
+      256,
+      640
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": null,
+    "jpeg_subsampling": null,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 336958
+  },
+  {
+    "file": "road/witness_post.png",
+    "source": "production/round11_qa/sources/witness_post_generated.png",
+    "source_size": [
+      1024,
+      1536
+    ],
+    "crop": [
+      446,
+      11,
+      578,
+      1525
+    ],
+    "size": [
+      128,
+      768
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": null,
+    "jpeg_subsampling": null,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 197005
+  },
+  {
+    "file": "road/survey_disk_brass.png",
+    "source": "production/round11_qa/sources/survey_disk_brass_generated.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "crop": [
+      47,
+      42,
+      1209,
+      1201
+    ],
+    "size": [
+      512,
+      512
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": null,
+    "jpeg_subsampling": null,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 519412
+  },
+  {
+    "file": "road/tex_oldroad_asphalt.jpg",
+    "source": "production/round11_qa/sources/tex_oldroad_asphalt_generated.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "crop": null,
+    "size": [
+      1024,
+      1024
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": 85,
+    "jpeg_subsampling": 0,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 465303
+  },
+  {
+    "file": "flash/flash_eye.jpg",
+    "source": "production/round11_qa/sources/flash_eye_generated.png",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": null,
+    "size": [
+      1280,
+      800
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": 85,
+    "jpeg_subsampling": 0,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 170483
+  },
+  {
+    "file": "flash/flash_hand.jpg",
+    "source": "production/round11_qa/sources/flash_hand_generated.png",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": null,
+    "size": [
+      1280,
+      800
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": 85,
+    "jpeg_subsampling": 0,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 153384
+  },
+  {
+    "file": "flash/flash_face.jpg",
+    "source": "production/round11_qa/sources/flash_face_generated.png",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": null,
+    "size": [
+      1280,
+      800
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": 85,
+    "jpeg_subsampling": 0,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 152281
+  },
+  {
+    "file": "flash/flash_man.jpg",
+    "source": "production/round11_qa/sources/flash_man_generated.png",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": null,
+    "size": [
+      1280,
+      800
+    ],
+    "resample": "Pillow LANCZOS",
+    "jpeg_quality": 85,
+    "jpeg_subsampling": 0,
+    "icc": "production/round11_qa/sources/srgb.icc",
+    "bytes": 176592
+  }
+]

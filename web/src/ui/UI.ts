@@ -169,7 +169,8 @@ export class UI {
     return el;
   }
 
-  title(opts: { onStart: () => void; cont: string | null; onContinue: () => void; canLoad: boolean; onLoad: () => void; onSettings: () => void }) {
+  title(opts: { onStart: () => void; cont: string | null; onContinue: () => void; canLoad: boolean; onLoad: () => void; onSettings: () => void;
+    flash: { calm: boolean; onPick: (calm: boolean) => void } }) {
     const el = document.createElement('div');
     el.className = 'title-screen';
     el.innerHTML = `
@@ -182,8 +183,17 @@ export class UI {
         <button data-a="load" ${opts.canLoad ? '' : 'disabled'}>Load case</button>
         <button data-a="set">Settings</button>
       </div>
+      <p class="note flash-note">Near the end of the night there is a short sequence of flashing images.
+        <span class="pick"><button data-a="fl-keep" aria-pressed="${!opts.flash.calm}">Flashes</button><button data-a="fl-calm" aria-pressed="${opts.flash.calm}">Slow fades</button></span></p>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">The prologue and chapters one to four, from the control room to the survey station and room 6 at Sierra Motor Court. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+    const pick = (calm: boolean) => {
+      el.querySelector('[data-a=fl-keep]')!.setAttribute('aria-pressed', String(!calm));
+      el.querySelector('[data-a=fl-calm]')!.setAttribute('aria-pressed', String(calm));
+      opts.flash.onPick(calm);
+    };
+    el.querySelector('[data-a=fl-keep]')!.addEventListener('click', () => pick(false));
+    el.querySelector('[data-a=fl-calm]')!.addEventListener('click', () => pick(true));
     el.querySelector('[data-a=start]')!.addEventListener('click', opts.onStart);
     el.querySelector('[data-a=cont]')!.addEventListener('click', opts.onContinue);
     el.querySelector('[data-a=load]')!.addEventListener('click', opts.onLoad);
@@ -291,6 +301,7 @@ export class UI {
     quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
     invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
+    calmFlash: boolean; onCalmFlash: (v: boolean) => void; stillShots: boolean; onStillShots: (v: boolean) => void;
   }) {
     const el = document.createElement('div');
     el.className = 'overlay';
@@ -307,6 +318,8 @@ export class UI {
         <div class="set"><span class="lbl">Text</span><button class="opt qual" data-a="txt" aria-label="Text size">${o.largeText ? 'Large' : 'Normal'}</button></div>
         <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${QUALITY[o.quality]}</button></div>
         <div class="set"><span class="lbl">Picture</span><button class="opt qual" data-a="pic" aria-label="Picture: clean or video tape">${PICTURE[o.picture]}</button></div>
+        <div class="set"><span class="lbl">Flashing images</span><button class="opt qual" data-a="flash" aria-label="Flashing images near the end: flashes or slow fades">${o.calmFlash ? 'Slow fades' : 'Flashes'}</button></div>
+        <div class="set"><span class="lbl">Ending camera</span><button class="opt qual" data-a="still" aria-label="Camera at the end: moving or still shots">${o.stillShots ? 'Still shots' : 'Moving'}</button></div>
         ${o.settingsOnly ? '' : '<button class="opt" data-a="title">Quit to title</button>'}
         <p class="small">${o.settingsOnly ? 'Settings are kept on this device.' : 'Nothing in the control room moves on while the game is paused.'}</p>
       </div>`;
@@ -317,7 +330,9 @@ export class UI {
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
     (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
-    let inv = o.invertY, big = o.largeText;
+    let inv = o.invertY, big = o.largeText, calm = o.calmFlash, still = o.stillShots;
+    el.querySelector('[data-a=flash]')!.addEventListener('click', (e) => { calm = !calm; (e.target as HTMLElement).textContent = calm ? 'Slow fades' : 'Flashes'; o.onCalmFlash(calm); });
+    el.querySelector('[data-a=still]')!.addEventListener('click', (e) => { still = !still; (e.target as HTMLElement).textContent = still ? 'Still shots' : 'Moving'; o.onStillShots(still); });
     el.querySelector('[data-a=inv]')!.addEventListener('click', (e) => { inv = !inv; (e.target as HTMLElement).textContent = inv ? 'On' : 'Off'; o.onInvertY(inv); });
     el.querySelector('[data-a=txt]')!.addEventListener('click', (e) => { big = !big; (e.target as HTMLElement).textContent = big ? 'Large' : 'Normal'; o.onLargeText(big); });
     let q = o.quality;

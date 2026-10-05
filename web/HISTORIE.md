@@ -18,7 +18,7 @@ Spillet er én natt, natt til mandag 14. april 1986, i New Mexico. Kapitlene er 
 | THE EVENT | 05:29:00 til 05:29:47 | Der C krysser veien | Spilleren observerer fenomenet | Fenomenet observerer spilleren |
 | Rulletekst | | | | |
 
-Night Shift til All Night er bygd og spillbare. Roswell Road, THE EVENT, rulleteksten og scenen etter rulleteksten er ikke bygd.
+Hele natten er bygd og spillbar, fra Night Shift til THE EVENT, rulleteksten og scenen etter rulleteksten (5. oktober). Detaljene står i `KAPITLER.md`.
 
 **Klokka er ekte for 1986.** New Mexico gikk på normaltid (MST) til sommertiden startet 27. april 1986. Ved Roswell 14. april 1986 begynner det borgerlige gryet 05:05, og sola står opp 05:30. Dineren ligger derfor i første grålysning, himmelen lysner i øst på veien, og hendelsen er 05:29, ett minutt før soloppgang. Ikke 05:47: da står sola oppe, og frontlysene i finalen hadde ikke synes. Det er også ett 47-tall mindre, og Tom ba oss passe på hvor ofte det dukker opp.
 
@@ -98,7 +98,7 @@ Dineren ligger der den gamle Roswell-veien går ut fra riksveien, og har vært �
 
 ## Roswell Road og THE EVENT
 
-Kjøringen fra dineren sørover på den gamle veien. Ingen musikk, bare motor, dekk og en svak radio. Himmelen begynner å lysne i øst. Milestolpene kommer forbi i lyset.
+Kjøringen fra dineren øst-nordøst og så nordøst på den gamle veien, slik den står på servicekartet (E14). Ingen musikk, bare motor, dekk og en svak radio. Himmelen lysner foran, i øst. Milestolpene kommer forbi i lyset. Detaljene står i `KAPITLER.md`.
 
 Rett forbi åttemilsstolpen, der C krysser veien, skjer dette i nøyaktig 47 sekunder spilltid (samme regel som telefonen i prologen og tidsloggen fra 1947):
 

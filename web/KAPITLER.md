@@ -14,7 +14,7 @@ Status:
 | The Survey Station | | Grunnløpet er bygd |
 | Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
 | All Night | Ja, under | Bygd 5. oktober (se loggen) |
-| Roswell Road og THE EVENT | | |
+| Roswell Road og THE EVENT | Ja, under | Bygd 5. oktober (se loggen) |
 
 ## Night Shift (23:41 til 02:16)
 
@@ -503,3 +503,120 @@ Tom 5. oktober: «Bygg All Night». Spesifisert og bygd samme dag etter `HISTORI
 ### Test
 
 `tools/chapter5.py`: fra `S47.jump('chapter5')`: klokka, terminalklokka og fila, lastebilen, overgangen til dineren, servitrisen og kaffen, utklippet (E15), radioen, Ward, kartgåta med ekte dra (galt svar, så riktig), sjåføren som bekrefter, lagring og Continue i dineren, ut med lastebilen og sluttkortet. `chapter4.py` slutter nå på kapittelkortet til All Night. `reachcheck.py` sjekker at alle dinerens trefflater kan nås.
+
+## Roswell Road og THE EVENT (05:20 til 05:29:47), rulleteksten og scenen etter
+
+Tom 5. oktober: «Fortsetter roswell road». Spesifisert samme dag etter `HISTORIE.md` og servicekartet (E14), som spilleren nettopp har brukt i All Night. Dette er slutten. Det er ingen gåte her og ingen valg; spilleren kjører, og så kjører ikke spilleren lenger.
+
+### Lag
+
+| Det spilleren tror først | Det nye laget |
+| --- | --- |
+| Siste kontroll: kjør ut og se om linja holder | Linja holder deg |
+| Spilleren observerer fenomenet | Fenomenet observerer spilleren |
+
+### Veien
+
+Veien går slik den står på E14, ikke sørover som `HISTORIE.md` sa før: fra dineren øst-nordøst, så i en lang sving mot nordøst. Ved åttemilsstolpen går den mot nordøst (kurs rundt 35 grader). C går rett øst fra STATION 01 og krysser veien 8,15 miles fra dineren, rett forbi åttemilsstolpen. Spilleren kjører altså mot den lyse delen av himmelen, og sola står opp litt til høyre for veien (asimut rundt 79 grader, 14. april ved Roswell).
+
+Den kjørte strekningen er fra like før seksmilsstolpen til krysset med C, rundt 3,6 km på ekte avstand. Resten av veien fra dineren er et kutt, som de andre kjøreturene. Veien er en gammel smal asfaltvei med slitt midtstripe, myke skuldre, et gjerde langs veiretten, en kraftlinje på trestolper et stykke unna, og lave høyder med mesaer i horisonten. Ingen trafikk.
+
+Langs veien, i rekkefølge:
+
+| Hvor | Hva |
+| --- | --- |
+| Start, 5,9 mi | Lastebilen står i høyre fil, motoren går. Bak: veien mot dineren og en svak lysning i vest der dineren er. |
+| 6,0 mi | Seksmilsstolpen. Oppmålingsbolten ved seksmilsstolpen i høyre skulder, med en vitnestolpe. Det er bolten fra et av de gale svarene i P13: den ligger sør for linja. |
+| 7,0 mi | Sjumilsstolpen. Veien svinger mot nordøst. |
+| 8,0 mi | Åttemilsstolpen. |
+| 8,15 mi | C. Gamle oppmålingsstikker av tre står i en rett rekke øst-vest over terrenget, med en rusten kabel som henger mellom noen av dem. De går over veien og videre mot øst, rett mot der sola skal opp. Bolten i høyre skulder er av messing i en liten betongsokkel, med vitnestolpe og refleks. Messingskiva er stemplet `STA 01 / C / 1947` (tegnet i kode). |
+| Videre | Veien fortsetter mot nordøst til den forsvinner i disen. Spilleren kommer aldri dit. |
+
+Bak starten er veien sperret av en usynlig vegg rundt 250 m bak lastebilen. Snur spilleren og kjører dit, stopper lastebilen, og en lapp sier: `Ward can wait. The bolt is ahead.` Kjører spilleren utenfor veien, er det myk jord og gjerdet langs veiretten. Spilleren kan ikke gå ut av lastebilen i dette kapitlet.
+
+### Klokka
+
+Kuttet fra dineren setter klokka til 05:26:20. Klokka går som vanlig, men den viser aldri 05:29 før lastebilen er på linja: de siste 20 sekundene før 05:29:00 går den saktere og saktere og står til slutt nesten stille på 05:28:59. Når fronten på lastebilen når C, settes klokka til 05:29:00 og hendelsen begynner. Med vanlig fart (45 til 55 mph) kommer spilleren fram rundt 05:29, så de fleste merker ingenting. Den som stopper før linja, ser dashbordklokka stå på 05:28.
+
+Himmelen følger klokka: borgerlig gry begynte 05:05, og ved 05:29 er østhimmelen lys og varm mot horisonten, de fleste stjernene er borte, og landskapet ligger i blått lys. Frontlysene synes fortsatt. Samme himmel gjelder ved dineren (der var den natt til nå).
+
+### Radioen og lyden på veien
+
+Ingen musikk. Motor, dekk, vind mot ruta, og radioen i dashbordet som står svakt på en AM-stasjon: en morgensending fra Roswell med kvegpriser, været («clear, high near 74, light winds») og at Halleys komet står lavt i sør før gryet denne uka. Ingen kallesignaler og ingen ekte navn. Radioen tekstes bare der den sier noe historien bruker.
+
+### THE EVENT, 05:29:00 til 05:29:47
+
+Som i `HISTORIE.md`, nøyaktig 47 sekunder spilltid fra fronten krysser C:
+
+| Tid | Hva | Hvordan |
+| --- | --- | --- |
+| 05:29:00 | Radioen kutter til bærebølgen. Motoren hoster og stopper. Instrumentlysene dør. Lastebilen ruller ut og står. Stillhet. | Spilleren mister rattet og pedalene; blikket er fritt. `EngineSound.stall()`, `DriveController.engine = false`, lastebilen bremser seg selv ned og holder seg i fila. Dashbordet mørkt, frontlysene svake. Vinden faller. |
+| + 4 s | Dashbordlampene blinker fire ganger, pause, sju ganger. | Bare instrumentlyset, rundt 0,25 s på og 0,25 s av, 1,2 s pause. |
+| + 10 s | Frontlysene våkner, først dypblått, så rav, grønt og rødt, sakte. | Fargen og styrken på frontlysene og lyktene, rundt 2 s per farge, myke overganger. Lysene på bakken følger fargen. |
+| + 18 s | Radioen kommer tilbake og spiller brokker fra hele natten i feil rekkefølge. | Gjennom en liten høyttaler med sus: skriveren, telefonen som ringer, Tomás (tekst: «Reference west. No. East.»), Nora (tekst: «Do not stop on the line.»), en kaffekopp som settes ned på et fat. |
+| + 32 s | FLASH. | Enkeltbilder i rundt 2 s til sammen, hvert i 70 til 120 ms med svart mellom: et øye. En hånd med for lange fingre mot glasset. Et ansikt som kan minne om en Grey, i rundt tre bilder. Lyset over mesaen fra 1947. Tomás, eller en ung mann som kan være ham. Stjernehimmel. Den grønne terminalen med `RUN860414_0529.DAT` på skjermen. Avisbildet fra 1947. Med «Slow fades» blir det samme rekka som rolige overtoninger på svakt nivå i rundt 8 s, uten blink. |
+| + 34 til 47 s | Total stillhet. | All lyd av, også vinden. Frontlysene pulserer svakt. |
+| 05:29:47 | Kameraet forlater førsteperson. | Se uttrekket under. |
+
+Ingenting av dette forklares. Ingen tekst på skjermen utenom radiotekstene.
+
+### Uttrekket
+
+Fra 05:29:47, rundt 32 sekunder:
+
+1. Kameraet glir fram gjennom frontruta og ut, snur seg og ser tilbake på lastebilen. Lastebilen står alene på veien med frontlysene som pulserer svakt. Førersetet er tomt (spilleren har aldri hatt en kropp; det understrekes ikke).
+2. Høyere. Ørkenen blir liten, veien blir en strek, rekka av stikker over veien synes som en tynn linje mot øst. Langt i vest står SAROs antenner svakt, med de røde lysene.
+3. Klokka 05:30 tar sola kanten av mesaen i øst-nordøst, som den skal.
+4. Helt opp til stjernene: jo høyere kameraet kommer, jo mørkere blir himmelen igjen, og stjernene og Melkeveien kommer tilbake. Kameraet vender seg opp mot dem.
+
+Så `SIGNAL / 47` på svart, og rulleteksten. Med «Still shots» blir uttrekket fire faste bilder med overtoning: foran lastebilen, over veien, høyt over ørkenen med sola på mesaen, og stjernehimmelen.
+
+### Rulleteksten
+
+Hvit tekst på svart, rolig rulling, tittelmusikken (Scott Buckley, «Signal to Noise», CC BY 4.0). Kan hoppes over etter noen sekunder. Innhold: tittelen, «A night in New Mexico, 14 April 1986», hvem som har laget hva (Tom: idé, historie og retning; Claude: kode, kapitler, lyd i kode og tester; Codex og ChatGPT: grafikk og bilder), musikk, lyder og fonter med lisens fra `THIRD_PARTY_NOTICES.md`, three.js, og til slutt: «Everything in this story is invented. The comet was real.»
+
+### Etter rulleteksten
+
+Svart. Lyden av papir. Avisbildet fra 1947, utsnitt C, hele bildet, toner fram over seks sekunder: i bakgrunnen står tre personer ved oppmålingsutstyret. Ingen tekst. Det står i rundt åtte sekunder og toner ut. Svart, og så tittelskjermen.
+
+### Lagring
+
+Når spilleren bruker «Drive the old road» i dineren, lagres det først (sjekkpunkt `chapter5`, trinn `road`). Så kuttet. På veien og i slutten kan det ikke lagres («Not on the road.»). Etter slutten går spillet til tittelskjermen, og Continue tar spilleren tilbake til dineren med lastebilen klar, så slutten kan ses igjen. Pause virker hele veien.
+
+### Tilgjengelighet
+
+- **Advarsel før spillet starter:** en linje på tittelskjermen, over menyen: «Near the end of the night there is a short sequence of flashing images.» med to knapper, «Flashes» og «Slow fades». Valget huskes. Det er en linje og ikke et vindu som må lukkes, så ingen må klikke seg forbi den for å starte (og de automatiske testene og Codex sitt reachcheck går som før).
+- **Settings:** «Flashing images: Flashes / Slow fades» og «Ending camera: Moving / Still shots». «Still shots» er standard når nettleseren ber om redusert bevegelse.
+- Radiotekstene vises som de andre tekstene i spillet, også med større tekst.
+
+### Callbacks
+
+| Her | Fra |
+| --- | --- |
+| 05:29:00 | `RUN860414_0529.DAT` (All Night), «opened 05:29:00» |
+| 47 sekunder | Telefonen i prologen, klokkeloggen (00:00:47), tidsloggen fra 1947 (02:17:00 til 02:17:47) |
+| Motoren som hoster og stopper | Sjåføren i dineren («right past the eight-mile post»), Tomás' feltradio i rom 6 |
+| Fire og sju | Klikkene i feltradioen i rom 6 |
+| «Do not stop on the line.» | Nora i rom 6. Spilleren stopper ikke. Lastebilen gjør det. |
+| «Reference west. No. East.» | Mottakeren i hytta på STATION 01 og E10 |
+| Kaffekoppen | Kaffen på disken i dineren og på pulten i prologen |
+| Den grønne terminalen | Fila i All Night |
+| Det tomme setet | «He was not there afterwards.» |
+| Hele avisbildet | Utsnitt A (saksmappa), B (dineren), jakka ved østdøra |
+
+### Hva som bygges
+
+- `src/drive/OldRoad.ts` og `src/drive/oldRoadLayout.ts`: den gamle veien som eget område (rundt (0, 0, -16000)), med terreng, veibane, milestolper, boltene, stikkene langs C, gjerde, kraftlinje, mesaer, SAROs antenner langt unna og eget lyssett for gryet. Lastes når spilleren kjører fra dineren.
+- `src/story/Chapter6.ts`: kapitlet (fase `ch6`, trinn `drive`, `event`, `pullout`, `credits`, `after`), klokka, radioen, tidslinja for de 47 sekundene, uttrekket.
+- `src/ui/Ending.ts`: FLASH-laget, tittelen, rulleteksten og bildet etter rulleteksten. `src/story/flashFrames.ts`: bildene i FLASH tegnet i kode til Codex sine kommer.
+- `Truck`: farge på frontlysene og eget nivå for instrumentlyset. `Sky`: gry og sol etter klokka. `World`: området `roswell`, kjøringen fra dineren og kamerastyring i uttrekket. `Audio`: radiohøyttaler for brokkene, stillhet.
+- `main.ts`: advarselen før start, de to innstillingene, slutten til tittelskjermen. `Chapter5`: «Drive the old road» lagrer og starter kapittel 6.
+- `S47.jump('chapter6')` for testene.
+
+### Grafikk fra Codex (runde 11 i `ART_BRIEF.md`)
+
+Milestolpen uten tall, vitnestolpen, messingskiva uten tekst, den gamle asfalten, og fire bilder til FLASH (øyet, hånden mot glasset, ansiktet og den unge mannen). Alt har en reserve tegnet i kode, så kapitlet bygges og testes uten å vente på bildene.
+
+### Test
+
+`tools/chapter6.py`: fra `S47.jump('chapter6')`: lagringen før kuttet, kuttet til veien og klokka 05:26:20, kjøring med autopilot forbi seks-, sju- og åttemilsstolpen, at klokka ikke viser 05:29 før linja, at lagring er sperret, hendelsen på linja: motoren av og lastebilen står, dashbordet blinker 4 og 7, frontlysene skifter farge, radiotekstene, FLASH (og «Slow fades» i en egen kjøring), stillheten, uttrekket (kameraet ute av førerhuset, høyere og høyere, sola), tittelen, rulleteksten, bildet etter rulleteksten og tittelskjermen. Til slutt Continue: dineren med lastebilen klar. Tegnekall på veien.

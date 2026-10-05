@@ -642,3 +642,28 @@ html.text-large .prompt { font-size: 28px; }
 .mapov canvas:active { cursor: grabbing; }
 /* on a screen tall enough, the whole map and the answers fit without scrolling */
 @media (min-height: 640px) { .mapov canvas { max-width: calc((100vh - 300px) * 1.5); margin: 0 auto; } }
+
+/* ---------- the end of the night (ui/Ending.ts) ---------- */
+.ending { position: fixed; inset: 0; z-index: 8; pointer-events: none; }
+.ending-frame { position: absolute; inset: 0; opacity: 0; background: #000; }
+.ending-frame:empty { background: none; }
+.ending-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ending-cover { position: absolute; inset: 0; background: #000; opacity: 0; }
+.ending-card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; opacity: 0; transition: opacity 1.4s ease; color: #e8e2d2; }
+.ending-card.on { opacity: 1; }
+.ending-title h1 { font-family: var(--display); font-weight: 500; font-size: clamp(64px, 14vw, 180px); margin: 0; color: #f3efe4; }
+.ending-title .slash, .ending-credits .slash { color: var(--neon); font-weight: 300; margin: 0 .12em; }
+.ending-credits { justify-content: flex-start; overflow: hidden; pointer-events: auto; background: #000; }
+.ending-credits .roll { padding-top: 100vh; width: min(560px, 88vw); }
+.ending-credits h2 { font-family: var(--display); font-weight: 500; font-size: clamp(40px, 8vw, 84px); margin: 0 0 8vh; color: #f3efe4; }
+.ending-credits .cr { margin: 0 0 5.5vh; }
+.ending-credits .cr-k { font-family: var(--term); font-size: 18px; letter-spacing: .1em; text-transform: uppercase; color: #8f8a7c; margin-bottom: .4em; }
+.ending-credits .cr-v { font-family: var(--type); font-size: 18px; line-height: 1.55; color: #d9d2c0; }
+.text-large .ending-credits .cr-v { font-size: 22px; }
+.ending-credits .skip { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 18px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); font-family: var(--term); font-size: 20px; background: none; color: #8f8a7c; border: 1px solid #4a463e; padding: 6px 16px; cursor: pointer; }
+.ending-photo { background: #000; transition: opacity 6s ease; }
+.ending-photo .ending-img { object-fit: contain; filter: grayscale(1) contrast(1.05); }
+.title-screen .flash-note { color: #b9b2a0; }
+.title-screen .flash-note .pick { display: inline-flex; gap: 6px; margin-left: 6px; pointer-events: auto; }
+.title-screen .flash-note .pick button { font: inherit; font-size: .95em; background: none; color: #8f8a7c; border: 1px solid #4a463e; padding: 1px 8px; cursor: pointer; }
+.title-screen .flash-note .pick button[aria-pressed="true"] { color: #f3efe4; border-color: #a49c88; }
