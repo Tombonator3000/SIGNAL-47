@@ -80,7 +80,25 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
-Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom #52) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Ingen kodeoppgave til Codex før Roswell-veien er spesifisert.
+Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom #52) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Neste oppgave er en kontroll av hvor spilleren kan gå og hva hen kan nå (under). Roswell-briefen kommer når All Night er spesifisert.
+
+### Neste oppgave: `tools/reachcheck.py`, kan spilleren gå dit og nå det? (5. oktober kl. 00.10)
+
+Bakgrunn: de verste feilene hittil har vært steder og ting spilleren ikke kunne nå i spillet, selv om testene teleporterte dit og brukte dem (telefonen i arkivrommet, en dør som stengte halve rommet). Med bakken rundt SARO (`world/Grounds.ts`, PR #55) er det mange flere soner og kanter. Oppgaven er et kontrollverktøy som finner slike feil av seg selv, i alle områdene. Uavhengig av Toms test på PC og mobil.
+
+**Codex eier:** `tools/reachcheck.py`, leveransenotatet `REACHCHECK_DELIVERY.md`, rapporter og kart i `production/reachcheck/` (kommer aldri med i spillet), og eget avsnitt i `log.md`. **Ingen endringer** i `src/`, eksisterende tester eller andre dokumenter. Mangler en testkrok, skriv det i notatet, så legger Claude den til.
+
+**Slik:**
+- Leser `dist-single/index.html`, eller `S47_URL` som de andre testene. Playwright med swiftshader som i `tools/ultra.py`.
+- Områdene: SARO (`S47.jump('chapter1')`, alle dører åpne med `S47.doors.set(id, true, true)` for `east`, `south`, `lab`, `exit`, `records`), STATION 01, rom 6 og dineren (`await S47.world.prepare(id)` og `S47.world.enter(id)`; `S47.player.zones` og `S47.player.colliders` er det spilleren går i der).
+- **Rutenett:** punkter hver 0,15 m innenfor sonene. Et punkt er gyldig når `S47.player.walkable(x, z)` er sant og spillerens sirkel (`player.radius`) ikke treffer en kollider. To naboer henger sammen bare når den ekte bevegelsen (`player.place` på det ene, `player.update` mot det andre i korte steg) kommer fram. Flomfyll fra startpunktet i hvert område (SARO: kontrollrommet ved (0, 2)).
+- **Bratte kanter:** mellom to naboer skal `floorAt` (`S47.world.grounds.floorAt` i SARO, `player.floor` ellers) ikke endre seg mer enn 0,12 m. Større hopp er en kant spilleren går rett opp eller ned; rapporter hvor.
+- **Skjøter:** to påslåtte soner som berører hverandre, skal enten ikke overlappe eller overlappe med mer enn 0,6 m i begge retninger der de møtes. Mindre er en usynlig vegg; rapporter paret.
+- **Ting å bruke:** for hver `Interactable` i `S47.game.d.inter.items` som har en synlig label der og da: finnes det et nådd punkt der et sikte fra øyehøyde (`player.floorY + player.eye`) mot midten av trefflata faktisk gir den tingen med `inter.pick` innenfor `range` (standard 2,4 m)? Prøv noen retninger og høyder på siktet. Rapporter dem som ikke kan nås. Ting som bare er aktive i et senere kapittel, kan stå som UNVERIFIED med grunn.
+- **Ut:** én JSON-rapport og ett kart sett ovenfra per område i `production/reachcheck/` (nådd grønt, gyldig men ikke nådd rødt, bratte kanter oransje, skjøter gule, ting som kan nås blå og ting som ikke kan nås svarte). PASS, FAIL eller UNVERIFIED per sjekk, og en kort liste over funn med koordinater. Kjøretid høyst rundt 10 minutter i swiftshader.
+- **Kjente forventninger** (skal ikke gi FAIL): smugene mellom kontrollrommet og østgangen og mellom gangen og fotolaben er ikke gangbare med vilje; rampa ved nødutgangen er rekkverk fra siden.
+
+**Leveranse:** egen gren `codex/reachcheck-<dato>`, én PR. Claude retter funnene i spillkoden og tar verktøyet inn i den samlede testrekka.
 
 ### Neste oppgave: dineren i «All Night» (4. oktober kl. 16.15)
 
