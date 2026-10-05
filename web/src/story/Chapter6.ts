@@ -183,8 +183,8 @@ export class Chapter6 {
     if (e >= 10 && e < 34) {
       const t = (e - 10) / 2.2, i = Math.min(HEADS.length - 1, Math.floor(t)), k = sm(0.55, 1, t - i);
       _c.copy(HEADS[i]).lerp(HEADS[Math.min(HEADS.length - 1, i + 1)], i < HEADS.length - 1 ? k : 0);
-      truck.setHeadColor(_c);
-      truck.setLightLevel(0.16 + 0.74 * sm(10, 11.2, e));
+      truck.setHeadColor(_c.multiplyScalar(1.6));
+      truck.setLightLevel(0.16 + 0.84 * sm(10, 11.2, e));
     }
     // + 18 s: the radio comes back with the night in pieces, in the wrong order
     if (e >= 18) this.once('radio', () => audio.cabRadio('hiss'));

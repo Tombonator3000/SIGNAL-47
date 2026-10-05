@@ -182,11 +182,11 @@ export class OldRoad implements DriveArea {
     };
     const rust: number[] = [];
     let prev: THREE.Vector3 | null = null;
-    for (let x = C_LINE.x0; x <= C_LINE.x1; x += 25) {
+    for (let x = C_LINE.x0; x <= C_LINE.x1; x += 18) {
       const xx = x + (r() - 0.5) * 2;
       const n = nearest(xx, C_LINE.z);
       if (n.d < 9.5) { prev = null; continue; }   // not on the road or its shoulders
-      const y = heightAt(xx, C_LINE.z), broken = r() < 0.18, hgt = broken ? 0.45 + r() * 0.3 : 1.0 + r() * 0.25;
+      const y = heightAt(xx, C_LINE.z), broken = r() < 0.15, hgt = broken ? 0.5 + r() * 0.3 : 1.15 + r() * 0.3;
       const lean = (r() - 0.5) * (broken ? 0.5 : 0.16);
       stakes.push(place(xx, y, C_LINE.z, r() * 3, 1, lean, hgt));
       const topP = new THREE.Vector3(xx, y + hgt * 0.95, C_LINE.z);
@@ -197,7 +197,10 @@ export class OldRoad implements DriveArea {
       }
       prev = topP;
     }
-    this.group.add(instances(colored(new THREE.BoxGeometry(0.065, 1, 0.065).translate(0, 0.45, 0), [STAKE.r, STAKE.g, STAKE.b]), m.vc, stakes));
+    // weathered wood with the faded red paint the survey put on their tops, so they read as a line
+    const stakeGeo = mergeGeometries([colored(new THREE.BoxGeometry(0.09, 0.86, 0.09).translate(0, 0.38, 0), [STAKE.r, STAKE.g, STAKE.b]),
+      colored(new THREE.BoxGeometry(0.095, 0.16, 0.095).translate(0, 0.88, 0), [0.62, 0.22, 0.16])])!;
+    this.group.add(instances(stakeGeo, m.vc, stakes));
 
     // ---------- the right-of-way fences along the driven part, the power line on the left ----------
     const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
@@ -316,9 +319,9 @@ export class OldRoad implements DriveArea {
       for (let i = 0; i < 27; i++) {
         const x = sx + (dr() - 0.5) * 700, z = sz + (dr() - 0.5) * 420, y = terrain(x, z) - 1;
         dishes.push(place(x, y, z, 0.45 + (dr() - 0.5) * 0.1, 1));
-        this.glow.add(x, y + 17, z, 9, 0xff3a26, 1.6, dr() * 6);
+        this.glow.add(x, y + 17, z, 24, 0xff3a26, 1.6, dr() * 6);
       }
-      for (let i = 0; i < 6; i++) this.glow.add(sx + (dr() - 0.5) * 300, terrain(sx, sz) + 5, sz + 180 + dr() * 60, 10, 0xffb45a);
+      for (let i = 0; i < 6; i++) this.glow.add(sx + (dr() - 0.5) * 300, terrain(sx, sz) + 5, sz + 180 + dr() * 60, 18, 0xffb45a);
       this.saroMat = new THREE.MeshBasicMaterial({ color: 0x3a3f4a, fog: false });
       const saro = instances(dish, this.saroMat, dishes);
       saro.frustumCulled = false;

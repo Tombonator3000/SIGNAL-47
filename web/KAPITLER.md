@@ -14,7 +14,7 @@ Status:
 | The Survey Station | | Grunnløpet er bygd |
 | Room 6 | Walkie-talkien, under | Grunnløpet er bygd |
 | All Night | Ja, under | Bygd 5. oktober (se loggen) |
-| Roswell Road og THE EVENT | Ja, under | Under bygging 5. oktober |
+| Roswell Road og THE EVENT | Ja, under | Bygd 5. oktober (se loggen) |
 
 ## Night Shift (23:41 til 02:16)
 
@@ -585,7 +585,7 @@ Når spilleren bruker «Drive the old road» i dineren, lagres det først (sjekk
 
 ### Tilgjengelighet
 
-- **Advarsel før spillet starter:** første gang spilleren trykker Start eller Continue på en enhet: «Near the end of the night there is a short sequence of flashing images.» med to valg, «Keep flashes» og «Use slow fades». Valget huskes.
+- **Advarsel før spillet starter:** en linje på tittelskjermen, over menyen: «Near the end of the night there is a short sequence of flashing images.» med to knapper, «Flashes» og «Slow fades». Valget huskes. Det er en linje og ikke et vindu som må lukkes, så ingen må klikke seg forbi den for å starte (og de automatiske testene og Codex sitt reachcheck går som før).
 - **Settings:** «Flashing images: Flashes / Slow fades» og «Ending camera: Moving / Still shots». «Still shots» er standard når nettleseren ber om redusert bevegelse.
 - Radiotekstene vises som de andre tekstene i spillet, også med større tekst.
 
