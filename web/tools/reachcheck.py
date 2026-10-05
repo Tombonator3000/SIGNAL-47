@@ -3,7 +3,7 @@
 
 Run from web, or pass --url / S47_URL. No gameplay hooks or source are changed.
 --self-test checks the checker with adversarial fixtures, not the real game.
-Exit codes: 0 PASS, 1 a measured FAIL, 2 incomplete/UNVERIFIED.
+Exit codes: 0 PASS, 1 a measured FAIL, 2 incomplete/UNVERIFIED without measured FAIL.
 """
 from __future__ import annotations
 
@@ -37,6 +37,13 @@ function makeReachEngine() {
   });
   const aabbClear = (x,z,r,cs) => cs.every(c => x+r<=c.minX || x-r>=c.maxX || z+r<=c.minZ || z-r>=c.maxZ);
   const isSteep = delta => Math.abs(delta)>.12+1e-9;
+  const reportStatus = report => {
+    const statuses=Object.values(report.checks??{}).map(c=>c.status);
+    if(report.status==='FAIL'||(report.findings??[]).some(f=>f.status==='FAIL'))statuses.push('FAIL');
+    if(report.steep_edges?.length)statuses.push('FAIL');
+    if(!report.completed||(report.method?.spacing_m??.15)!==.15)statuses.push('UNVERIFIED');
+    return statuses.includes('FAIL')?'FAIL':statuses.includes('UNVERIFIED')?'UNVERIFIED':'PASS';
+  };
   const interactionSummary = rows => {
     const active=rows.filter(o=>o.label),failed=active.filter(o=>o.status==='FAIL'),
       unknown=rows.filter(o=>o.label_error || (o.label&&o.status==='UNVERIFIED'));
@@ -95,6 +102,10 @@ function makeReachEngine() {
           'Circle-clear corners may be rejected by the actual AABB resolver; those remain in the requested grid.',
           'No hardware performance or complete chapter playthrough is verified.']}};
     let p,saved;
+    if(cfg.spacing!==.15){
+      report.checks.required_spacing={status:'UNVERIFIED',reason:'Custom spacing does not satisfy the required 0.15 m full check.'};
+      report.method.limitations.push(report.checks.required_spacing.reason);
+    }
     try {
       const needed=['player','world','camera','scene','game'];
       if(!s || needed.some(k=>!s[k]) || !s.game.d?.inter || typeof s.jump!=='function' || typeof s.tick!=='function')
@@ -291,20 +302,18 @@ function makeReachEngine() {
           'Current active labels sampled; inactive conditional/later labels remain individually UNVERIFIED'};
       if(cfg.area==='diner'&&!report.objects.length)report.checks.interactions.unbound_proxy_count=model?.proxies?Object.keys(model.proxies).length:null;
       report.completed=true;
-      const statuses=Object.values(report.checks).map(c=>c.status);
-      report.status=statuses.includes('FAIL')?'FAIL':statuses.includes('UNVERIFIED')?'UNVERIFIED':'PASS';
-      if(cfg.spacing!==.15){report.status='UNVERIFIED';report.method.limitations.push('Custom spacing does not satisfy the required 0.15 m full check.');}
-    } catch(e) {report.error=String(e.stack??e);report.status='UNVERIFIED';report.completed=false;
+    } catch(e) {report.error=String(e.stack??e);report.completed=false;
       report.checks.completeness={status:'UNVERIFIED',reason:String(e.message??e)};
     } finally {
       if(p&&saved){p.onStep=saved.onStep;p.pos.copy(saved.pos);p.yaw=saved.yaw;p.pitch=saved.pitch;
         p.floorY=saved.floorY;p.bob=saved.bob;p.stepDist=saved.stepDist;p.shake=saved.shake;
         s.camera.position.copy(saved.cameraPosition);s.camera.rotation.copy(saved.cameraRotation);s.camera.updateMatrixWorld(true);}
       report.elapsed_seconds=(performance.now()-started)/1000;
+      report.status=reportStatus(report);
     }
     return report;
   }
-  return {run,circleClear,aabbClear,narrowJoin,movement,flood,acceptedPick,isSteep,interactionSummary};
+  return {run,circleClear,aabbClear,narrowJoin,movement,flood,acceptedPick,isSteep,interactionSummary,reportStatus};
 }
 """
 
@@ -338,6 +347,18 @@ assert(e.interactionSummary([{label:'active',status:'PASS'},{label_error:true,st
 assert(e.interactionSummary([{label:'active',status:'FAIL'},{label_error:true,status:'UNVERIFIED'}]).status==='FAIL',
   'label exception cannot hide a measured interaction failure');
 assert(e.interactionSummary([]).status==='UNVERIFIED','empty area interactions are not 0/0 PASS');
+assert(e.reportStatus({completed:true,method:{spacing_m:.2},checks:{reachability:{status:'FAIL'}}})==='FAIL',
+  'custom spacing preserves a measured failure');
+assert(e.reportStatus({completed:true,method:{spacing_m:.2},checks:{reachability:{status:'PASS'}}})==='UNVERIFIED',
+  'custom spacing without failures stays unverified');
+assert(e.reportStatus({completed:false,checks:{completeness:{status:'UNVERIFIED'}},findings:[{status:'FAIL'}]})==='FAIL',
+  'incomplete run preserves already measured findings');
+assert(e.reportStatus({completed:false,checks:{completeness:{status:'UNVERIFIED'}}})==='UNVERIFIED',
+  'incomplete run without measured failures never passes');
+assert(e.reportStatus({completed:true,method:{spacing_m:.15},checks:{reachability:{status:'PASS'}}})==='PASS',
+  'complete required spacing passes when all checks pass');
+assert(e.reportStatus({completed:false,steep_edges:[{delta_m:.44}]})==='FAIL',
+  'interrupted floor scan retains an already measured steep edge');
 console.log('CHECKER SELF-TEST PASS (fixtures only; real runtime unverified)');
 """
 
@@ -348,6 +369,17 @@ def sha(data: bytes) -> str:
 
 def aggregate(statuses: list[str]) -> str:
     return "FAIL" if "FAIL" in statuses else "UNVERIFIED" if "UNVERIFIED" in statuses else "PASS"
+
+
+def report_status(report: dict) -> str:
+    statuses = [c["status"] for c in report.get("checks", {}).values()]
+    if report.get("status") == "FAIL" or any(f.get("status") == "FAIL" for f in report.get("findings", [])):
+        statuses.append("FAIL")
+    if report.get("steep_edges"):
+        statuses.append("FAIL")
+    if not report.get("completed") or report.get("method", {}).get("spacing_m", .15) != .15:
+        statuses.append("UNVERIFIED")
+    return aggregate(statuses)
 
 
 def git_commit() -> str | None:
@@ -447,17 +479,74 @@ def write_artifacts(report: dict, out: Path) -> None:
     except Exception as exc:
         problems.append("Map output: "+str(exc))
     report.setdefault("checks",{})["output_completeness"] = {"status":"UNVERIFIED" if problems else "PASS","errors":problems}
-    if report.get("completed"):
-        report["status"] = aggregate([c["status"] for c in report["checks"].values()])
-        if report.get("method",{}).get("spacing_m",.15) != .15:
-            report["status"] = "UNVERIFIED"
+    report["status"] = report_status(report)
     try:
         json_path.write_text(json.dumps(report,indent=1,ensure_ascii=False)+"\n")
         report["artifacts"]["json_written"] = True
     except (OSError, TypeError, ValueError) as exc:
         report["artifacts"]["json_written"] = False
         report["checks"]["output_completeness"] = {"status":"UNVERIFIED","errors":problems+["Final JSON output: "+str(exc)]}
-        report["status"] = "UNVERIFIED"
+        report["status"] = report_status(report)
+
+
+def self_test_status() -> None:
+    """Exercise Python status/output failures; fixture maps are not game evidence."""
+    from copy import deepcopy
+    from tempfile import TemporaryDirectory
+    from unittest.mock import patch
+
+    def expect(ok: bool, name: str) -> None:
+        if not ok:
+            raise AssertionError(name)
+        print("PASS " + name, flush=True)
+
+    def fixture(status: str, *, completed: bool = True, spacing: float = .15) -> dict:
+        return {"area":"fixture", "status":"UNVERIFIED", "completed":completed,
+                "method":{"spacing_m":spacing}, "checks":{"reachability":{"status":status}}, "findings":[]}
+
+    cases = [
+        (fixture("PASS"), "PASS", "Python complete required spacing passes"),
+        (fixture("FAIL", spacing=.2), "FAIL", "Python custom spacing preserves measured FAIL"),
+        (fixture("PASS", spacing=.2), "UNVERIFIED", "Python custom spacing without FAIL stays unverified"),
+        (fixture("PASS", completed=False), "UNVERIFIED", "Python incomplete checks never pass"),
+        ({**fixture("PASS", completed=False), "findings":[{"status":"FAIL"}]}, "FAIL", "Python partial findings retain FAIL"),
+        ({**fixture("PASS", completed=False), "checks":{"runtime_errors":{"status":"FAIL"}}}, "FAIL", "Python incomplete runtime failure retains FAIL"),
+        ({**fixture("PASS", completed=False), "steep_edges":[{"delta_m":.44}]}, "FAIL", "Python interrupted floor scan retains measured FAIL"),
+    ]
+    for report, expected, name in cases:
+        expect(report_status(report) == expected, name)
+    expect(aggregate(["UNVERIFIED", "FAIL"]) == "FAIL", "Python summary retains FAIL beside UNVERIFIED")
+    with TemporaryDirectory(prefix="s47-status-fixtures-") as folder:
+        out = Path(folder)
+        for measured, expected in (("FAIL", "FAIL"), ("PASS", "UNVERIFIED")):
+            report = fixture(measured)
+            with patch(__name__ + ".draw_map", side_effect=OSError("fixture map write failure")):
+                write_artifacts(report, out)
+            expect(report["status"] == expected and not report["artifacts"]["map_written"]
+                   and json.loads((out/"fixture.json").read_text())["status"] == expected,
+                   "Python map write failure with " + measured + " yields " + expected)
+        for measured, expected in (("FAIL", "FAIL"), ("PASS", "UNVERIFIED")):
+            report = fixture(measured)
+            original_write = Path.write_text
+            writes = 0
+
+            def fail_final_json(path: Path, *args, **kwargs):
+                nonlocal writes
+                writes += 1
+                if writes == 2:
+                    raise OSError("fixture final JSON write failure")
+                return original_write(path, *args, **kwargs)
+
+            with patch(__name__ + ".draw_map", side_effect=lambda r, dest: dest.write_bytes(b"fixture only")), \
+                 patch.object(Path, "write_text", fail_final_json):
+                write_artifacts(report, out)
+            expect(report["status"] == expected and not report["artifacts"]["json_written"],
+                   "Python final JSON failure with " + measured + " yields " + expected)
+        partial = deepcopy(fixture("PASS", completed=False))
+        with patch(__name__ + ".draw_map", side_effect=lambda r, dest: dest.write_bytes(b"fixture only")):
+            write_artifacts(partial, out)
+        expect(partial["status"] == "UNVERIFIED", "Python successful outputs do not verify an incomplete run")
+    print("PYTHON STATUS SELF-TEST PASS (fixtures only)", flush=True)
 
 
 async def check(args: argparse.Namespace) -> int:
@@ -501,10 +590,7 @@ async def check(args: argparse.Namespace) -> int:
                 report["provenance"] = dict(metadata)
                 report["runtime_page_errors"] = list(errors)
                 report["checks"]["runtime_errors"] = {"status":"FAIL" if errors else "PASS","page_errors":list(errors)}
-                if report.get("completed"):
-                    report["status"] = aggregate([c["status"] for c in report["checks"].values()])
-                    if args.spacing != .15:
-                        report["status"] = "UNVERIFIED"
+                report["status"] = report_status(report)
                 reports.append(report)
                 write_artifacts(report,args.out_dir)
                 print(f"{area}: {report['status']} ({report.get('grid',{}).get('reached_count',0)}/{report.get('grid',{}).get('valid_count',0)} reached)",flush=True)
@@ -515,10 +601,13 @@ async def check(args: argparse.Namespace) -> int:
         for area in args.areas:
             if area in {r["area"] for r in reports}:
                 continue
-            report={"area":area,"status":"UNVERIFIED","completed":False,"error":str(exc),"checks":{},"findings":[],"provenance":dict(metadata)}
+            report={"area":area,"status":"UNVERIFIED","completed":False,"error":str(exc),
+                    "checks":{"runtime_errors":{"status":"FAIL" if errors else "PASS","page_errors":list(errors)}},
+                    "runtime_page_errors":list(errors),"findings":[],"provenance":dict(metadata)}
+            report["status"] = report_status(report)
             reports.append(report)
             write_artifacts(report,args.out_dir)
-        print("UNVERIFIED "+str(exc),file=sys.stderr,flush=True)
+        print(aggregate([r["status"] for r in reports])+" "+str(exc),file=sys.stderr,flush=True)
     status=aggregate([r["status"] for r in reports])
     summary={**metadata,"status":status,"elapsed_seconds":time.monotonic()-started,
              "areas":[{"area":r["area"],"status":r["status"],"completed":r["completed"],
@@ -536,7 +625,7 @@ def main() -> int:
     parser.add_argument("--url",default=os.environ.get("S47_URL") or (WEB/"dist-single/index.html").as_uri())
     parser.add_argument("--out-dir",type=Path,default=WEB/"production/reachcheck")
     parser.add_argument("--areas",nargs="+",choices=AREAS,default=list(AREAS))
-    parser.add_argument("--spacing",type=float,default=.15,help="Required full-check spacing is 0.15 m; overrides are UNVERIFIED")
+    parser.add_argument("--spacing",type=float,default=.15,help="Required full-check spacing is 0.15 m; overrides are UNVERIFIED unless a measured FAIL takes precedence")
     parser.add_argument("--timeout",type=float,default=540,help="Total browser/check budget in seconds (default 9 minutes)")
     parser.add_argument("--max-cells",type=int,default=3000000,help="Reject, never truncate, a grid above this safety limit")
     parser.add_argument("--self-test",action="store_true",help="Adversarial checker fixtures only; no real-game execution")
@@ -551,7 +640,11 @@ def main() -> int:
         if not node:
             print("UNVERIFIED: Node unavailable for embedded checker fixtures",file=sys.stderr)
             return 2
-        return subprocess.run([node],input=ENGINE_JS+SELFTEST_JS,text=True,timeout=30).returncode
+        code = subprocess.run([node],input=ENGINE_JS+SELFTEST_JS,text=True,timeout=30).returncode
+        if code:
+            return code
+        self_test_status()
+        return 0
     return asyncio.run(check(args))
 
 
