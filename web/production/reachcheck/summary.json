@@ -1,9 +1,9 @@
 {
-  "generated_utc": "2026-10-05T00:33:13.436843+00:00",
-  "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
-  "git_base": "609701226d3f1405276d4951f8dfb1d6ce25222c",
-  "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
-  "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+  "generated_utc": "2026-10-05T01:26:57.708808+00:00",
+  "script_sha256": "cc5a2da23a9a5750fea144036f5400734405909503661ca9576531908ad6b2fa",
+  "git_base": "9a6270d23aef68d1f575cdd0ad969be3a07a7e4a",
+  "source_url": "file:///tmp/s47-reach-guard-runtime-c96e082/web/dist-single/index.html",
+  "source_html_sha256": "c66c2af86d6a49b1b4c3eb393fccd986293a197ed68ff9f3fece0b7ed560a7aa",
   "browser": "Playwright Chromium, ANGLE swiftshader",
   "requested_areas": [
     "saro",
@@ -11,51 +11,72 @@
     "room6",
     "diner"
   ],
-  "status": "FAIL",
-  "elapsed_seconds": 20.715964769013226,
+  "status_semantics": "Regression guard; interaction coverage is reported separately and can remain UNVERIFIED.",
+  "report_format": "compact",
+  "full_grid_requested": true,
+  "full_grid_dir": "/tmp/s47-reach-guard-full-c96e082",
+  "status": "PASS",
+  "elapsed_seconds": 37.86385237198556,
   "areas": [
     {
       "area": "saro",
-      "status": "FAIL",
+      "status": "PASS",
+      "guard_status": "PASS",
       "completed": true,
+      "interaction_coverage_status": "UNVERIFIED",
       "report": "saro.json",
-      "report_sha256": "6260beb4ca13160897053e858ad3b5aca18c1f7aee1852060547532076a5e378",
+      "report_sha256": "65addc6ceb49cf3e6c8002794b7ddcb754005b3d63622bc4878966c15f0a4e7b",
       "map": "saro.png",
-      "map_sha256": "23911771ece9b9268237566360403870cd879aacde84aa9bc2d3c27bf65bf999",
-      "findings": 139
+      "map_sha256": "5e6d3edaf5db1906dfec3c317919fbc62e101ef18f29b5dc773753f57884da3e",
+      "full_grid": "/tmp/s47-reach-guard-full-c96e082/saro.full.json",
+      "full_grid_sha256": "7728f52eb477dec335ea71359de99533e308de0884b2504849acae4fcb9ac4e3",
+      "findings": 1
     },
     {
       "area": "station01",
-      "status": "FAIL",
+      "status": "PASS",
+      "guard_status": "PASS",
       "completed": true,
+      "interaction_coverage_status": "PASS",
       "report": "station01.json",
-      "report_sha256": "0866f92452d1f4505ceabc195a27d7ece932788347bfeb8e85df02a63cb76a19",
+      "report_sha256": "920d7e436b11cdb56555cafee91599b9bf05138c2e56c93ebf2d8e152beb72a9",
       "map": "station01.png",
-      "map_sha256": "ac524af9f734553ac7612170841db7eaf147b5f711413a5038c799ce279745d0",
-      "findings": 172
+      "map_sha256": "52fed96c889eb0028d4c98b7b20b7b8ef575ed7ec5a8f5ac637716a79c5e0cfc",
+      "full_grid": "/tmp/s47-reach-guard-full-c96e082/station01.full.json",
+      "full_grid_sha256": "30666faa7adf630d3524a62ee2a73e96c96725f8250fc533edc24b194cf9476c",
+      "findings": 1
     },
     {
       "area": "room6",
-      "status": "FAIL",
+      "status": "PASS",
+      "guard_status": "PASS",
       "completed": true,
+      "interaction_coverage_status": "UNVERIFIED",
       "report": "room6.json",
-      "report_sha256": "f65a1291ac557afeab32576f3f392814961df8a960e117478ffab09ca379e83a",
+      "report_sha256": "ad395da85443c376261e66fa9c660edb6d4d1585ab243924fe9b0a060fc1e0f5",
       "map": "room6.png",
-      "map_sha256": "bf5540785b098e1cadb16f0f469c15c466b60ee0ea7c8ccd125b5224cd224877",
-      "findings": 6
+      "map_sha256": "cac8dd2923bdb677e2b1e7fd67de3996966333780e1f4eef8cbf25a312b99ccc",
+      "full_grid": "/tmp/s47-reach-guard-full-c96e082/room6.full.json",
+      "full_grid_sha256": "b5bfdc2820ed6058b2c856c7fcaf8a7ff90ac746287766c4d8e740ab41cf1fb6",
+      "findings": 0
     },
     {
       "area": "diner",
-      "status": "FAIL",
+      "status": "PASS",
+      "guard_status": "PASS",
       "completed": true,
+      "interaction_coverage_status": "UNVERIFIED",
       "report": "diner.json",
-      "report_sha256": "7dd54d10c71b53e4cf215ec6c4b8f1a314ef24c908b2a39918a47bc8d0244cef",
+      "report_sha256": "4c3f81c833dae6695fe3e843506af21f02508cdd1e9c6d9ecfb7a6f34a8a1754",
       "map": "diner.png",
-      "map_sha256": "30eef1bfb9664223ba5a4ad76bc223f21bdc44c765399ebe7343579ee3c2b572",
-      "findings": 12
+      "map_sha256": "c5aaeb9a02b46442121555e3312f0bc0a6208c611f0535917ddb264df82b883f",
+      "full_grid": "/tmp/s47-reach-guard-full-c96e082/diner.full.json",
+      "full_grid_sha256": "1ddfaf3ab84568c8588811160a49e77a631b78292a938bfa86effae223302f32",
+      "findings": 1
     }
   ],
   "limitations": [
+    "PASS is the regression guard; expected unbound/inactive interactions retain UNVERIFIED coverage.",
     "Checker uses finite samples, not a continuous-space proof.",
     "Swiftshader does not verify hardware fps."
   ]
