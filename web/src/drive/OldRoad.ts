@@ -361,7 +361,7 @@ export class OldRoad implements DriveArea {
         fragmentShader: `${RIM_GLSL}
           uniform float uSunUp; uniform vec3 uNight; varying vec3 vDir; varying float vTop; varying float vLit;
           void main() {
-            vec3 col = rimHaze(normalize(vDir), uNight) * mix(0.86, 0.6, vTop) + vec3(0.55, 0.34, 0.18) * uSunUp * vLit * (0.25 + 0.2 * vTop);
+            vec3 col = rimHaze(normalize(vDir), uNight) * mix(0.86, 0.6, vTop) + vec3(0.55, 0.34, 0.18) * uSunUp * vLit * (0.15 + 0.15 * vTop);
             gl_FragColor = vec4(col, 1.0);
             #include <tonemapping_fragment>
             #include <colorspace_fragment>
@@ -442,7 +442,8 @@ export class OldRoad implements DriveArea {
    *  the far horizon kept round the camera. fog is the colour of the haze now. */
   update(_dt: number, t: number, cam: THREE.Vector3, sky: { dawn: number; fog: THREE.Color; sunDir: THREE.Vector3; sun: number }) {
     const { dawn, fog } = sky;
-    RIM.sun.value.copy(sky.sunDir); RIM.dawn.value = dawn; RIM.up.value = sky.sun;
+    // the hills light up once the sun is over the edge (its glow comes a few minutes before)
+    RIM.sun.value.copy(sky.sunDir); RIM.dawn.value = dawn; RIM.up.value = smooth(-0.002, 0.012, sky.sunDir.y) * sky.sun;
     this.glow.update(t);
     this.hemi.intensity = 0.2 + 0.75 * dawn;
     this.hemi.color.setRGB(0.13, 0.19, 0.31).lerp(_c.setRGB(0.56, 0.64, 0.8), dawn);
