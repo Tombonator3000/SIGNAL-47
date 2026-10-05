@@ -58,6 +58,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Kapitlet «All Night» (5. oktober morgen): fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien (P13). Test: `tools/chapter5.py`.
 - [ ] All Night: himmelen ved dineren er fortsatt natt; daggry i himmelen (ikke bare i vinduene) før Roswell Road.
 - [ ] Ta bort de ubrukte `endingLines()` i kapittel 3 og 4 (kapittelkortene i `main.ts` har tatt over).
+- [ ] `tools/chapter3.py`: skjermbildet på grusveien (`e04b_track`) brukte mer enn 240 s to ganger da en annen nettleser kjørte samtidig (5. oktober morgen). Alene går testen. Kjør den alene til skjermbildene får lengre tid eller tas uten å vente på en ny ramme.
 - [ ] Roswell Road og THE EVENT: kjøringen fra dineren, milestolpene, 47 sekunder (radio, motor, dashbord 4/7, frontlys i farger, brokker, FLASH, stillhet), uttrekket, `SIGNAL / 47`, rulletekst, scenen etter rulleteksten. Advarsel og innstilling for blinking, redusert bevegelse, lagring før veien.
 
 ### Grafikk på PC (Tom 4. oktober kveld: «bedre grafikk og lys/skygge, shaders, post processing på PC, mobil kan beholde den enkle stilen»)
