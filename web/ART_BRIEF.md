@@ -321,6 +321,46 @@ Lyset over mesaen, stjernehimmelen, terminalen og avisbildet i FLASH lager Claud
 
 `art.ts` får veibildene som senere bilder som lastes med den gamle veien, og FLASH-bildene lastes når kapittel 6 starter. Reservene i kode står til bildene er lastet. Tallene på milestolpene, stempelet på skiva og teksten på vitnestolpen tegnes i kode oppå. Opphavet føres i `THIRD_PARTY_NOTICES.md`.
 
+## Runde 12: ørkenen sett ovenfra i uttrekket
+
+Bestilt 5. oktober 2026 kl. 12:17, etter at Codex spurte om neste avgrensede behov. Lydforslaget som Tom vurderer, berøres ikke; ingen lyd i denne runden.
+
+**Hvorfor:** De siste 34 sekundene i spillet ser kameraet ned på ørkenen fra 126 til 650 m over bakken. Der er bakken ørkenflisa fra runde 1 (`ext/tex_desert_ground.jpg`) gjentatt hver 5. meter, og på den avstanden blir det én flat brun flate. Eneste variasjon er en fargetone per rute på 160 m. Skjermbildene `k10_high` og `k11_sun` fra `tools/chapter6.py` viser det.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `road/tex_oldroad_macro.jpg` | 2048×2048, JPG, sRGB, høyst 900 kB, sømløs i begge retninger | Høyslette ved Roswell i New Mexico i april, sett rett ovenfra som et ortofoto (ikke perspektiv). 1 piksel er 1 m, så bildet dekker 2 × 2 km. |
+
+**Innhold:**
+- Lys gulbrun til rødbrun sandjord med hvite kalkflekker (caliche), og flekkvis tørt, kort gress i gråbrunt og blekt grønt.
+- Kreosot og mesquite som mørke prikker på 1 til 4 px, ujevnt fordelt: tettere i drag, glissent på flatene.
+- Ett eller to grunne, tørre bekkefar: lysere sandløp 4 til 10 px brede med tettere og mørkere busker langs kantene. De går over kanten av bildet og fortsetter sømløst på motsatt side.
+- Svake dyretråkk som tynne, lysere, buktende linjer, og noen nakne, lysere vindflekker.
+
+**Ikke med:** veier, hjulspor, gjerder, bygninger, kjøretøy, vann, snø, tekst, kartmerker, rammer eller nordpil. Ingen harde skygger fra en bestemt sol, for spillet lyser bakken selv med sola lavt i øst-nordøst. Lyset skal være flatt, som en overskyet dag.
+
+**Krav til helheten:**
+- Middelfargen ligger innen rundt ±10 per kanal fra ørkenflisa, som har RGB (164, 145, 123). Kontrasten er lav til moderat: de mørkeste buskene ikke under rundt 60, den lyseste kalken ikke over rundt 225.
+- Ingen enkeltform større enn rundt 300 m som skiller seg ut, som en tydelig sving eller en stor flekk. Bildet gjentas hver 2. km, og fra 650 m kan kameraet se to gjentak.
+
+**Kontroll i `production/round12_qa/`** (kommer aldri med i spillet):
+- 2×2 i full størrelse for sømmene
+- 3×3 forminsket til 1536×1536 for å se gjentak
+- middelfarge og minste og største verdi per kanal, ført i `production/round12_manifest.json`
+
+Manifest og leveransenotat (`ART_ROUND12_DELIVERY.md`) som i tidligere runder, med PASS, FAIL eller UNVERIFIED.
+
+**Filansvar:**
+- **Codex:** bildet, manifestet, kontrollmappa, leveransenotatet og eget loggavsnitt, i egen gren fra main. Ingen kode.
+- **Claude:**
+  - `art.ts`: bildet lastes med veien i `OLDROAD_ART` og blir senere bilde nummer 64.
+  - `OldRoad.ts`: bildet legges over ørkenflisa på sletta og den ytre bakken. Det tones inn fra rundt 150 m fra kameraet, så bakken ved lastebilen blir som i dag.
+  - `tools/artcheck.py` (64 senere bilder) og `THIRD_PARTY_NOTICES.md`.
+  - én sjekk i `tools/chapter6.py`, og den samlede testen.
+- **Reserve:** uten bildet blir bakken som i dag.
+
+**Claude gjør selv, uten bilder:** det grå båndet mellom himmel og bakke i uttrekket (tåkefargen mot himmelen ved horisonten), og lys på mesaene på siden som vender mot sola.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
