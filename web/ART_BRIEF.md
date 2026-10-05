@@ -323,6 +323,8 @@ Lyset over mesaen, stjernehimmelen, terminalen og avisbildet i FLASH lager Claud
 
 ## Runde 12: ørkenen sett ovenfra i uttrekket
 
+Levert i PR #68 (`5c26c87`) og koblet inn 5. oktober ettermiddag: lastes med den gamle veien og ganges over ørkenflisa fra rundt 25 m ut. Se `ART_ROUND12_DELIVERY.md`.
+
 Bestilt 5. oktober 2026 kl. 12:17, etter at Codex spurte om neste avgrensede behov. Lydforslaget som Tom vurderer, berøres ikke; ingen lyd i denne runden.
 
 **Hvorfor:** De siste 34 sekundene i spillet ser kameraet ned på ørkenen fra 126 til 650 m over bakken. Der er bakken ørkenflisa fra runde 1 (`ext/tex_desert_ground.jpg`) gjentatt hver 5. meter, og på den avstanden blir det én flat brun flate. Eneste variasjon er en fargetone per rute på 160 m. Skjermbildene `k10_high` og `k11_sun` fra `tools/chapter6.py` viser det.

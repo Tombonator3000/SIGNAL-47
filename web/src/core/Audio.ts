@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SignalVoice } from './signalVoice';
+import { Ambience } from './ambience';
 import phoneRing from '../assets/audio/phone_ring.mp3';
 import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
@@ -97,7 +98,7 @@ export class AudioSys {
     this.ctx = ctx;
     this.master = ctx.createGain(); this.master.gain.value = this.volume; this.master.connect(ctx.destination);
     this.sfx = ctx.createGain(); this.sfx.connect(this.master);
-    this.music = ctx.createGain(); this.music.gain.value = 0.7; this.music.connect(this.master);
+    this.music = ctx.createGain(); this.music.gain.value = this.musicLevel; this.music.connect(this.master);
     this.amb = ctx.createGain(); this.amb.gain.value = 1; this.amb.connect(this.master);
     this.noise = this.makeNoise(false); this.brown = this.makeNoise(true);
     // A silent blip satisfies iOS's "sound must start inside the gesture" rule.
@@ -108,6 +109,9 @@ export class AudioSys {
   }
 
   setVolume(v: number) { this.volume = v; if (this.master) this.master.gain.value = v; }
+  /** The music's own level (the pause menu), 0..1. */
+  musicLevel = 0.7;
+  setMusic(v: number) { this.musicLevel = v; if (this.music) this.music.gain.value = v; }
 
   private makeNoise(brown: boolean) {
     const ctx = this.ctx!;
@@ -215,6 +219,8 @@ export class AudioSys {
   // The tune is made here, a slow three-chord waltz on a tinny little speaker; no
   // recording, so no licence. amRadioJam() drops it into the hiss while the line is dead.
   private am: { out: GainNode; music: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  /** The radio on the filing cabinets is playing (the music waits for it). */
+  get radioOn() { return !!this.am; }
   amRadio(at: THREE.Vector3 | null) {
     const ctx = this.ctx; if (!ctx) return;
     if (!at) {
@@ -597,10 +603,17 @@ export class AudioSys {
     this.space = space;
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
-    const [tone, wind, bugs] = space === 'room' ? [0.5, 0.14, 0.02] : space === 'lab' ? [0.3, 0.05, 0] : [0.1, 0.34, 0.16];
-    this.roomTone?.gain.setTargetAtTime(tone, t, 0.7);
-    this.loops.get('wind')?.gain.gain.setTargetAtTime(wind, t, 0.7);
-    this.loops.get('crickets')?.gain.gain.setTargetAtTime(bugs, t, 1.2);
+    this.roomTone?.gain.setTargetAtTime(space === 'room' ? 0.5 : space === 'lab' ? 0.3 : 0.1, t, 0.7);
+    this.night?.setSpace(space);
+  }
+
+  // The desert outside (core/ambience.ts): wind, crickets and far-off things, never quite
+  // the same, through one outdoor level that setSpace() turns down indoors and in the cab.
+  night: Ambience | null = null;
+  startNight() {
+    if (!this.ctx || this.night) return;
+    this.night = new Ambience(this.ctx, this.amb, this.buf, this.noise, this.brown);
+    this.night.setSpace(this.space);
   }
 
   /** One step on a surface (Player.onStep). */
@@ -611,33 +624,10 @@ export class AudioSys {
     if (s.grit) this.grit(s.grit);
   }
 
-  // The desert at night, far from everything: an owl, a dog at a ranch, a gust in the
-  // scrub, now and then, from a random direction. Only outside; nothing answers the player.
-  private nextLife = 20;
-  nightLife(dt: number, at: THREE.Vector3) {
-    if (!this.ctx || this.space !== 'yard') return;
-    this.nextLife -= dt;
-    if (this.nextLife > 0) return;
-    this.nextLife = 25 + Math.random() * 45;
-    const r = Math.random();
-    const name = r < 0.35 ? 'owl' : r < 0.6 ? (Math.random() < 0.5 ? 'dog0' : 'dog1') : 'gust';
-    this.far(name, at, name === 'gust' ? 0.35 : name === 'owl' ? 0.3 : 0.22, name === 'owl' ? 0.9 + Math.random() * 0.15 : 1);
-  }
-  /** A sound far off in a random direction: panned, quiet and dull with distance. */
-  far(name: string, at: THREE.Vector3, gain: number, rate = 1) {
-    const ctx = this.ctx; const b = this.buf[name];
-    if (!ctx || !b) return;
-    const a = Math.random() * Math.PI * 2, d = 30 + Math.random() * 30;
-    const pos = new THREE.Vector3(at.x + Math.cos(a) * d, at.y + 2, at.z + Math.sin(a) * d);
-    const p = ctx.createPanner();
-    p.panningModel = 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = 30; p.rolloffFactor = 1; p.maxDistance = 200;
-    if ((p as any).positionX) { p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; } else (p as any).setPosition(pos.x, pos.y, pos.z);
-    const src = ctx.createBufferSource(); src.buffer = b; src.playbackRate.value = rate;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600 - d * 20;
-    const g = ctx.createGain(); g.gain.value = gain;
-    src.connect(lp); lp.connect(g); g.connect(p); p.connect(this.amb);
-    src.start();
-  }
+  /** Every frame while a night runs: the desert outside moves on (clock: the night's clock). */
+  nightLife(dt: number, at: THREE.Vector3, clock = 0) { this.night?.update(dt, at, clock); }
+  /** A recording far off in a random direction (an owl, a dog): through the desert outside. */
+  far(name: string, at: THREE.Vector3, gain: number, rate = 1) { this.night?.far(name, at, gain, rate); }
 
   duckAll(seconds: number) {
     if (!this.ctx) return;

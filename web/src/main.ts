@@ -17,6 +17,8 @@ import { setQuality, type Quality } from './core/quality';
 import { Ultra } from './core/ultra';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
+import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
+import { Score, CUES, type Cue } from './core/score';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -117,6 +119,7 @@ async function boot() {
   let restoring: GameState | null = null;  // the save being opened; the chapters read their case from it
   const audio = new AudioSys();
   audio.setVolume(store.get('vol', 0.8));
+  audio.setMusic(store.get('music', 0.7));
   audio.preload(); // decodes while the title screen is up
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
@@ -138,7 +141,7 @@ async function boot() {
     clock: () => clockText(game.clock, false),
     skipClock: (sec) => { game.clock += sec; },
     touch: () => input.touchMode,
-    sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor }),
+    sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor, sunDir: sky.uniforms.uSunDir.value, sun: sky.uniforms.uSun.value }),
   });
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard and
   // on the motel's walk, dirt between them, boards in the hut, carpet at the motel
@@ -223,6 +226,10 @@ async function boot() {
   let titleEl: HTMLElement | null = null;
   let endEl: HTMLElement | null = null;
   let pausedByMenu = false;
+  let devRun = false;   // a run started from the developer menu: never saved
+  let score: Score | null = null;   // the music under the night (core/score.ts)
+  let dev: DevMenu | null = null;   // the developer menu, with ?dev in the address
+  let devWait: { ok: () => boolean; fn: () => void } | null = null;
   let releasingLock = false;
 
   // ---------- modal / pointer lock plumbing ----------
@@ -261,6 +268,7 @@ async function boot() {
   const settings = () => ({
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
+    music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
     onSens: (v: number) => { input.sensitivity = v; store.set('sens', v); },
     quality, onQuality: (q: Quality) => applyQuality(q), ultraOk,
     picture: vhs.picture, onPicture: (p: Picture) => applyPicture(p),
@@ -275,8 +283,8 @@ async function boot() {
   function openPause() {
     if (pausedByMenu) return;
     pausedByMenu = true;
-    audio.suspend(true);
-    const resume = () => { pausedByMenu = false; audio.suspend(false); };
+    audio.suspend(true); score?.pause(true);
+    const resume = () => { pausedByMenu = false; audio.suspend(false); score?.pause(false); };
     ui.pause({
       ...settings(),
       onResume: resume,
@@ -304,6 +312,7 @@ async function boot() {
   }
 
   input.onKey = (code) => {
+    if (code === 'F2' && dev) { dev.toggle(); return; }
     if (mode !== 'play') return;
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
@@ -376,8 +385,9 @@ async function boot() {
 
   let restoringNow = false;
   let starting = false;   // between Start or Continue and the first playable frame
-  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void> }) {
+  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void>; dev?: boolean }) {
     starting = true;
+    devRun = !!o.dev;
     const unlocking = o.unlocking ?? audio.unlock(); // must start inside the tap/click
     if (input.touchMode) {
       try { const r = document.documentElement.requestFullscreen?.(); if (r) r.catch(() => {}); } catch { /* not allowed here */ }
@@ -398,10 +408,10 @@ async function boot() {
     const area = (savedArea === 'station01' || savedArea === 'room6' || savedArea === 'diner' ? savedArea : 'saro') as AreaId;
     try { await world.prepare(area); } catch (e) { console.error(e); }
     clearTimeout(slow);
-    caseId = o.caseId; playtime = o.playtime; saves.setActive(caseId);
+    caseId = o.caseId; playtime = o.playtime; if (caseId) saves.setActive(caseId);
     audio.startRoomTone();
-    audio.loop('wind', 'wind', { dest: audio.amb, gain: 0.14 });
-    audio.loop('crickets', 'crickets', { dest: audio.amb, gain: 0.02 });
+    audio.startNight();
+    if (!score && audio.ctx) score = new Score(audio.ctx, audio.music);
     space = 'room';
     world.stopDriving();
     world.enter('saro');
@@ -429,6 +439,7 @@ async function boot() {
     fcam.raise(false); ui.viewfinder(false);
     ui.close(true);
     endEl?.remove(); endEl = null;
+    score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
@@ -439,6 +450,7 @@ async function boot() {
   // ---------- saving ----------
   let pendingAuto = false;
   function saveBlock(): string | null {
+    if (devRun) return 'This is a developer run. Nothing is saved.';
     if (mode !== 'play' || !caseId) return 'There is no night running to save.';
     return game.saveBlock();
   }
@@ -513,6 +525,7 @@ async function boot() {
     ui.close(true);
     ui.showHud(false, input.touchMode);
     endEl?.remove(); endEl = null;
+    score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
     game.reset();
@@ -617,6 +630,7 @@ async function boot() {
     world.stopDriving();
     audio.cabRadio(null);
     audio.silence(false);
+    score?.stop();
     if (!end) { toTitle(); return; }
     end.black(true, 0);
     audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.9 });
@@ -640,10 +654,73 @@ async function boot() {
     game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
-    playtime: () => playtime, caseId: () => caseId,
+    playtime: () => playtime, caseId: () => caseId, score: () => score,
     // true once a started or loaded night is running (tests wait for it after Continue)
     started: () => caseId > 0 && !starting && mode === 'play',
   };
+
+  // ---------- the developer menu (?dev in the address) ----------
+  let devPaused = false;
+  dev = devOn ? new DevMenu(ui, devGroups, {
+    onOpen: () => { if (mode === 'play' && !pausedByMenu) { devPaused = true; pausedByMenu = true; audio.suspend(true); } },
+    onClose: () => { if (devPaused) { devPaused = false; pausedByMenu = false; audio.suspend(false); } },
+  }) : null;
+  // Start a run from a chapter or beat: a new night that is never saved.
+  function devStart(jump?: string, then?: () => void) {
+    const unlocking = audio.unlock(); // inside the click
+    devWait = null;
+    if (mode !== 'title') leavePlay();
+    void startGame({ caseId: 0, playtime: 0, state: null, jump, unlocking, dev: true }).then(() => then?.());
+  }
+  // then: once ok() holds, checked every frame (the new run may take a while to load)
+  function waitFor(ok: () => boolean, fn: () => void) { devWait = { ok, fn }; }
+  function devGroups(): DevGroup[] {
+    const groups: DevGroup[] = [{
+      title: 'Start at', note: 'A new run from there, with everything before it done.',
+      items: [
+        { label: 'Prologue 23:41', run: () => devStart() },
+        { label: 'Prologue 02:13', run: () => devStart('residual') },
+        { label: 'Prologue: locked on', run: () => devStart('locked') },
+        { label: 'Prologue: countdown', run: () => devStart('countdown') },
+        { label: '1 The Second Exposure', run: () => devStart('chapter1') },
+        { label: '2 The Amended Record', run: () => devStart('chapter2') },
+        { label: '3 The Survey Station', run: () => devStart('chapter3') },
+        { label: '3 On the highway', run: () => devStart('chapter3', () => waitFor(() => !starting && ch3.s.stage === 'to-truck', () => world.driveOut())) },
+        { label: '4 Room 6', run: () => devStart('chapter4') },
+        { label: '5 All Night', run: () => devStart('chapter5') },
+        { label: '6 Roswell Road', run: () => devStart('chapter6') },
+        { label: '6 At the line', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
+          const p = world.oldRoad!.poseAt(8.06);
+          world.oldDrive!.place(p.pos, p.heading);
+          game.clock = 5 * 3600 + 28 * 60 + 30;
+        })) },
+      ],
+    }];
+    if (mode === 'play') {
+      groups.push({
+        title: 'Truck', note: 'Out on a road from wherever you are. Nothing in the story happens there.',
+        items: [
+          { label: 'Drive the highway', run: () => world.freeDrive('road'), on: world.free === 'road' },
+          { label: 'Drive the old road', run: () => world.freeDrive('oldroad'), on: world.free === 'oldroad' },
+          ...(world.free ? [{ label: 'Back on foot', run: () => world.endFreeDrive() }] : []),
+        ],
+      });
+      groups.push({ title: 'Clock', items: [
+        { label: '+5 minutes', run: () => { game.clock += 300; } },
+        { label: '+30 minutes', run: () => { game.clock += 1800; } },
+      ] });
+    }
+    if (mode === 'play' && score) {
+      groups.push({ title: 'Music', note: 'Each cue once, from the start. The game also plays them by itself now and then.', items: [
+        ...(Object.keys(CUES) as Cue[]).map((c) => ({ label: CUES[c].title, run: () => score!.start(c), on: score!.playing === c })),
+        ...(score.playing ? [{ label: 'Stop the music', run: () => score!.fade(1.5, 120) }] : []),
+      ] });
+    }
+    groups.push({ title: 'Tools', items: [
+      { label: debug ? 'Hide fps' : 'Show fps', run: () => { if (debug) { debug.dispose(); debug = null; } else debug = hud(); }, on: !!debug },
+    ] });
+    return groups;
+  }
 
   // ---------- resize and adaptive resolution ----------
   function resize() {
@@ -701,6 +778,18 @@ async function boot() {
   };
   const spaceOf = (p: THREE.Vector3) => indoors.some((b) => inside(b, p)) ? 'room' : inside(yard.zone.lab, p) ? 'lab' : 'yard';
   const hemiBase = room.lights.hemi.intensity;
+  // What music fits where the player is (core/score.ts), and when it must keep out of the way.
+  function musicWant(): Cue | null {
+    if (game.phase === 'ch6') return null;                    // the old road has its radio and its silence
+    if (world.driving) return 'drive';
+    if (world.area === 'station01') return 'tension';
+    if (world.area === 'room6') return 'motel';
+    const hour = (((game.clock % 86400) + 86400) % 86400) / 3600;
+    if (world.area === 'diner' || (hour >= 5 && hour < 12)) return 'dawn';
+    return space === 'yard' ? 'night' : 'eerie';
+  }
+  const HELD = ['ringing', 'call', 'countdown', 'event', 'turning', 'end'];
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard'); }
   const dbg = { hold: false };
   let inCab = false;
   function step(dt: number) {
@@ -724,8 +813,9 @@ async function boot() {
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
+      if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
-      if (mode === 'play') audio.nightLife(dt, player.pos);
+      if (mode === 'play') { audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
@@ -769,7 +859,8 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const debug = debugOn ? new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}`) : null;
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing : ''}`);
+  let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000; last = now;

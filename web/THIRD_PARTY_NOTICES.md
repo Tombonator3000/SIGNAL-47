@@ -6,6 +6,15 @@ Alt under er hentet fra Unity-prosjektet i samme repo, med samme lisens som der 
 
 - "Signal to Noise" av Scott Buckley, CC BY 4.0. https://www.scottbuckley.com.au/library/signal-to-noise/ (`title_music.mp3`)
 
+Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de ligger under CC BY 4.0 (https://www.scottbuckley.com.au/library/using-this-music/; bruk i spill er gratis med kreditering). Hvert er kuttet til et utdrag fra starten, tonet inn 3 s og ut 12 s, lydnivåjustert (loudnorm, -22 LUFS) og kodet som MP3 96 kbps i `public/music/`. De strømmes når spillet spiller dem (`core/score.ts`). Kreditering står i rulleteksten (`ui/Ending.ts`) og på tittelskjermens info (`ui/UI.ts`).
+
+- "Shadows and Dust", de første 210 s. https://www.scottbuckley.com.au/library/shadows-and-dust/ (`shadows_and_dust.mp3`)
+- "Decoherence", de første 230 s. https://www.scottbuckley.com.au/library/decoherence/ (`decoherence.mp3`)
+- "The Old Ones", de første 190 s. https://www.scottbuckley.com.au/library/the-old-ones/ (`the_old_ones.mp3`)
+- "In Search of Solitude", de første 240 s. https://www.scottbuckley.com.au/library/in-search-of-solitude/ (`in_search_of_solitude.mp3`)
+- "Neon", de første 200 s. https://www.scottbuckley.com.au/library/neon/ (`neon.mp3`)
+- "Hymn to the Dawn", de første 200 s. https://www.scottbuckley.com.au/library/hymn-to-the-dawn/ (`hymn_to_the_dawn.mp3`)
+
 ## Lydeffekter, CC0 1.0
 
 - old dot-matrix printer, viertelnachvier, Freesound 181420 (`printer.mp3`)
@@ -93,3 +102,5 @@ Runde 9, 4. oktober 2026: 19 supplerende høydeskisser er laget med innebygd Cha
 Runde 10, 4. oktober 2026: `docs/photo_1947_master.jpg`, `docs/poster_halley_1986_blank.jpg`, `docs/fanfold_1986.jpg` og `docs/fanfold_1947.jpg` er fire originale, oppdiktede dokumentbilder laget for SIGNAL / 47 med innebygd ChatGPT-bildegenerator; tekniske komposisjonsguider og mål-, sRGB- og JPEG-eksport ved Codex. Ingen ekte avis, personer, merkenavn eller eksternt bildearkiv. Promter og originale kilder ligger i `production/round10_qa/sources/`, sjekksummer i `production/round10_manifest.json`. Eksakt modellversjon er ikke eksponert, og bildene er ikke hevdet CC0. Teksten på plakaten og papirene er tegnet i kode for prosjektet. Se `ART_ROUND10_DELIVERY.md`.
 
 Runde 11, 5. oktober 2026: `road/milepost_blank.png`, `road/witness_post.png`, `road/survey_disk_brass.png`, `road/tex_oldroad_asphalt.jpg`, `flash/flash_eye.jpg`, `flash/flash_hand.jpg`, `flash/flash_face.jpg` og `flash/flash_man.jpg` er åtte originale, oppdiktede bilder laget for SIGNAL / 47 med innebygd ChatGPT-bildegenerator; mål-, sRGB-, PNG- og JPEG-eksport og kontroll ved Codex (PR #64). Promter og originale kilder ligger i `production/round11_qa/sources/`, sjekksummer i `production/round11_manifest.json`. Eksakt modellversjon er ikke eksponert, og bildene er ikke hevdet CC0. Ingen ekte personer, merkenavn eller eksterne bildearkiv. Tallene på milestolpene, ordene på vitnestolpen og stempelet på messingskiva er tegnet i kode for prosjektet. De tre PNG-ene brukes i spillet som WebP-kopier i `runtime/` (`tools/prepare_art.py`). Se `ART_ROUND11_DELIVERY.md`.
+
+Runde 12, 5. oktober 2026: `road/tex_oldroad_macro.jpg` er et originalt, oppdiktet ovenfra-bilde av høysletta (2048×2048, 1 m per piksel) laget for SIGNAL / 47 med innebygd ChatGPT-bildegenerator; mål-, sRGB- og JPEG-eksport og kontroll ved Codex (PR #68). Generatorens kilde var 1254×1254 og er tilpasset til 2048×2048. Promter og originalkilder ligger i `production/round12_qa/sources/`, sjekksummer i `production/round12_manifest.json`. Eksakt modellversjon er ikke eksponert, og bildet er ikke hevdet CC0. Se `ART_ROUND12_DELIVERY.md`.

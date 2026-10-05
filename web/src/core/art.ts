@@ -62,6 +62,8 @@ import milepostBlank from '../assets/art/runtime/milepost_blank.webp';
 import witnessPost from '../assets/art/runtime/witness_post.webp';
 import surveyDisk from '../assets/art/runtime/survey_disk_brass.webp';
 import oldAsphalt from '../assets/art/road/tex_oldroad_asphalt.jpg';
+// Round 12 (Codex, PR #68): the desert seen from above, 2 x 2 km, for the pull-out at the end.
+import oldMacro from '../assets/art/road/tex_oldroad_macro.jpg';
 import flashEye from '../assets/art/flash/flash_eye.jpg';
 import flashHand from '../assets/art/flash/flash_hand.jpg';
 import flashFace from '../assets/art/flash/flash_face.jpg';
@@ -117,7 +119,7 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
   dinerSign, dinerMenu, dinerCounter, dinerFloor, photo1947, dinerBooth, dinerWall, halleyPoster, fanfold1986, fanfold1947,
-  milepostBlank, witnessPost, surveyDisk, oldAsphalt, flashEye, flashHand, flashFace, flashMan,
+  milepostBlank, witnessPost, surveyDisk, oldAsphalt, oldMacro, flashEye, flashHand, flashFace, flashMan,
   floorN, floorR, ceilingN, ceilingR, wallN, wallR, deskN, deskR, concreteN, concreteR, desertN, desertR, asphaltN, asphaltR, cabinetN, cabinetR, vinylN, vinylR, stuccoN, stuccoR, oldConcreteN, oldConcreteR, weatheredWoodN, weatheredWoodR, floorboardsN, floorboardsR, gravelTrackN, gravelTrackR, motelWallN, motelWallR, dinerCounterN, dinerCounterR, dinerFloorN, dinerFloorR, dinerBoothN, dinerBoothR, dinerWallN, dinerWallR };
 export type ArtId = keyof typeof urls;
 /** Albedo id: its normal map and roughness map (round 9), for the Ultra tier. */
@@ -128,9 +130,9 @@ export const ULTRA_ART: ArtId[] = MAPPED.flatMap((id) => ULTRA_MAPS[id]);
 // Images an area loads for itself when it is built, not at the start.
 const LATER = new Set<ArtId>([...MAPPED.flatMap((id) => [id + 'N', id + 'R'] as ArtId[]), 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
   'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall', 'halleyPoster', 'fanfold1986', 'fanfold1947',
-  'milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'flashEye', 'flashHand', 'flashFace', 'flashMan']);
+  'milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'oldMacro', 'flashEye', 'flashHand', 'flashFace', 'flashMan']);
 /** The old Roswell road's images (World loads them before it builds the road). */
-export const OLDROAD_ART: ArtId[] = ['milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt'];
+export const OLDROAD_ART: ArtId[] = ['milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'oldMacro'];
 /** The drawn frames of FLASH (chapter six loads them when it starts). */
 export const FLASH_ART: ArtId[] = ['flashEye', 'flashHand', 'flashFace', 'flashMan'];
 /** The diner's images (world/Diner.ts loads them before it builds). */

@@ -99,7 +99,9 @@ export class Sky {
             float sd = dot(d, normalize(uSunDir));
             col += vec3(1.0, 0.62, 0.30) * uSun * (pow(max(sd, 0.0), 60.0) * 0.9 + pow(max(sd, 0.0), 900.0) * 3.0);
             col += vec3(4.0, 3.2, 2.2) * uSun * smoothstep(0.99996, 0.99999, sd);
-            if (h < 0.0) col *= 0.5;
+            // under the horizon the night sky is halved; at dawn it darkens gently further down, so
+            // the haze of a far horizon (the old road seen from above) meets a sky of its own colour
+            if (h < 0.0) col *= mix(0.5, 1.0 - 0.5 * smoothstep(-0.015, -0.12, h), smoothstep(0.0, 1.0, uDawn));
             gl_FragColor = vec4(col, 1.0);
             #include <tonemapping_fragment>
             #include <colorspace_fragment>

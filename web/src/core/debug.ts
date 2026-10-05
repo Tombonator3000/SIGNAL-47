@@ -14,6 +14,8 @@ export class DebugHud {
     document.body.appendChild(this.el);
   }
 
+  dispose() { this.el.remove(); }
+
   frame(seconds: number) {
     this.times.push(seconds);
     if (this.times.length > 240) this.times.shift();

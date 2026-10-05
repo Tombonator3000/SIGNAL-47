@@ -1,0 +1,76 @@
+{
+  "asset": "road/tex_oldroad_macro.jpg",
+  "asset_sha256": "724fa3c6dc99487fcb634112fb18415354e4acd2d9bb0aee9b45500c43553dfe",
+  "reviewers": [
+    "Codex hovedagent",
+    "Uavhengig read-only kontrollagent"
+  ],
+  "checked_at_utc": "2026-10-05T12:52:49.262371+00:00",
+  "overall_visual_status": "PASS",
+  "universal_exact_brief_conformance": "FAIL",
+  "method": "2x2 fullstor kontrollflate, 3x3 ved1536, native512px-utsnitt og separate4xnearest-punktkontroller. Visuell vurdering, ikke uttømmende semantisk telling av hver busk.",
+  "checks": {
+    "orthographic_flat_light_no_hard_sun_shadows": {
+      "status": "PASS",
+      "notes": "Rett ovenfra, ingen tydelige harde retningsskygger."
+    },
+    "sand_caliche_grass_and_dominant_shrub_core_size": {
+      "status": "PASS",
+      "notes": "Rolig sand/caliche/gress, utvalget har hovedsakelig1–4px mørke buskkjerner. Tidligere groveclumps er fjernet."
+    },
+    "every_shrub_core_1_to_4_px": {
+      "status": "FAIL",
+      "notes": "To isolerte P3-restavvik:5x4px ved final(x488,y384),4x6px ved(x1760,y493). Ingen universell eksakt4px-påstand."
+    },
+    "dry_drainages_4_to_10_px_with_opposite_edge_continuity": {
+      "status": "PASS",
+      "notes": "En meget svak kanal, lys kjerne anslagsvis4–10px. Sammenheng ved venstre/høyre skjøt, ingen nivåhopp."
+    },
+    "no_roads_tracks_fences_buildings_water_text_or_map_symbols": {
+      "status": "PASS",
+      "notes": "Ingen forbudte objekter eller tekst funnet i gjennomgåtte bilder."
+    },
+    "low_to_moderate_contrast_around_60_to_225": {
+      "status": "PASS",
+      "notes": "Lav/moderat helhetskontrast; få pikseluteliggere er målt separat, ikke skjult."
+    },
+    "all_pixel_channels_strictly_60_to_225": {
+      "status": "FAIL",
+      "notes": "Målt minimum67/49/35 og maksimum253/232/210. Blå under60:0.007963%; rød over225:0.008154%. Briefen bruker omtrentlige kontrastgrenser."
+    },
+    "no_distinctive_single_shape_larger_than_300_m": {
+      "status": "PASS",
+      "notes": "Ingen stor særpreget S-bøy eller fremtredende stor enkeltflekk. Den svake gjennomgående kanalen er tilsiktet."
+    },
+    "seams_both_directions_in_2x2": {
+      "status": "PASS",
+      "notes": "Ingen tydelig rett fargekant eller kanalbrudd. Randpiksler er ikke matematisk identiske."
+    },
+    "repetition_in_3x3": {
+      "status": "PASS",
+      "notes": "Rolig repetisjon. Den tilsiktede svake kanalen kan gjenkjennes ved tre repetisjoner; endelig effekt fra650m avgjøres i spillet."
+    }
+  },
+  "remaining_deviations": [
+    {
+      "severity": "P3",
+      "kind": "shrub_core_size",
+      "samples": [
+        {
+          "x": 488,
+          "y": 384,
+          "width": 5,
+          "height": 4
+        },
+        {
+          "x": 1760,
+          "y": 493,
+          "width": 4,
+          "height": 6
+        }
+      ],
+      "resolution": "Dokumentert; uavhengig kontroll anbefaler levering uten ny generering."
+    }
+  ],
+  "runtime_status": "UNVERIFIED; Claude eier innbygging og den samlede testen."
+}

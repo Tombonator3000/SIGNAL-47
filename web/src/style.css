@@ -667,3 +667,17 @@ html.text-large .prompt { font-size: 28px; }
 .title-screen .flash-note .pick { display: inline-flex; gap: 6px; margin-left: 6px; pointer-events: auto; }
 .title-screen .flash-note .pick button { font: inherit; font-size: .95em; background: none; color: #8f8a7c; border: 1px solid #4a463e; padding: 1px 8px; cursor: pointer; }
 .title-screen .flash-note .pick button[aria-pressed="true"] { color: #f3efe4; border-color: #a49c88; }
+
+/* the developer menu (?dev): a small button at the top, a panel of chapters and tools */
+.devbtn { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 60;
+  font-family: var(--term); font-size: 16px; letter-spacing: .12em; padding: 4px 12px; min-height: 30px; color: #9fe8b0;
+  background: rgba(8,11,19,.6); border: 1px solid rgba(159,232,176,.35); border-radius: 3px; opacity: .7; }
+.devbtn:hover { opacity: 1; }
+.devmenu { z-index: 61; }
+.devmenu .panel { width: min(640px, 100%); max-height: calc(100vh - 24px); overflow-y: auto; padding: 18px 22px; }
+.devmenu .panel h3 { font-size: 26px; margin-bottom: 8px; }
+.devmenu h4 { font-family: var(--term); font-weight: 400; font-size: 18px; color: #9fe8b0; margin: 12px 0 4px; letter-spacing: .08em; text-transform: uppercase; }
+.devmenu .panel .small { margin: 0 0 6px; }
+.devmenu .devgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 2px 14px; }
+.devmenu .panel .opt.dev { font-size: 21px; min-height: 36px; padding: 3px 0; }
+.devmenu .panel .opt.dev.on { color: var(--amber); }
