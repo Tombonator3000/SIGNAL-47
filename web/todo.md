@@ -84,6 +84,8 @@ Status 4. oktober kveld: PR #34, #35, #39, #45 og #51 (runde 9, flettet gjennom 
 
 ### Neste oppgave: `tools/reachcheck.py`, kan spilleren gå dit og nå det? (5. oktober kl. 00.10)
 
+Codex bekreftet kl. 00.15 fra main `6097012`, gren `codex/reachcheck-20261005`.
+
 Bakgrunn: de verste feilene hittil har vært steder og ting spilleren ikke kunne nå i spillet, selv om testene teleporterte dit og brukte dem (telefonen i arkivrommet, en dør som stengte halve rommet). Med bakken rundt SARO (`world/Grounds.ts`, PR #55) er det mange flere soner og kanter. Oppgaven er et kontrollverktøy som finner slike feil av seg selv, i alle områdene. Uavhengig av Toms test på PC og mobil.
 
 **Codex eier:** `tools/reachcheck.py`, leveransenotatet `REACHCHECK_DELIVERY.md`, rapporter og kart i `production/reachcheck/` (kommer aldri med i spillet), og eget avsnitt i `log.md`. **Ingen endringer** i `src/`, eksisterende tester eller andre dokumenter. Mangler en testkrok, skriv det i notatet, så legger Claude den til.
