@@ -119,23 +119,14 @@ class Terrain {
     while (x < 2600) { if (x >= 60) step *= 1.2; x += step; v.push(Math.round(x * 100) / 100); }
     return [...v.slice(1).reverse().map((a) => -a), ...v];
   }
+  // The station's land is the road's (world/geo.ts), so the far ground meets the sky where it
+  // does seen from the road; round the hut and the pad it is flat, and under the road's own
+  // piece of ground by the track (drive/corridors.ts) it keeps out of the way.
   static height(x: number, z: number) {
-    const own = Terrain.own(x, z);
-    // round the last of the survey track the ground is the road's land (world/geo.ts), and
-    // under the road's own piece of it (drive/corridors.ts) it keeps out of the way; by the
-    // gate that land is the station's flat ground, and the pad itself stays as it is
-    const [rx, rz] = stationToRoad(x, z);
-    const w = (1 - smooth(60, 360, outside(STATION_PATCH, rx, rz))) * smooth(0, 8, outside(STATION_PAD, x, z));
-    if (w <= 0) return own;
-    const land = stationLand(rx, rz) - (inRect(STATION_PATCH, rx, rz, -2) ? 0.7 : 0);
-    return own + (land - own) * w;
-  }
-  private static own(x: number, z: number) {
-    const k = smooth(70, 260, Math.hypot(x, z - 8)) * smooth(10, 40, polyDist(x, z, STATION_TRACK));
-    if (k <= 0) return G;
-    const n = Math.sin(x * 0.0043 + z * 0.0031) * 9 + Math.sin(x * 0.011 + 1.3) * Math.cos(z * 0.009 - 0.4) * 5
-      + Math.sin(x * 0.027 - z * 0.019 + 2.0) * 2.2;
-    return G + k * (n + 3);
+    const [rx, rz] = stationToRoad(x, z), land = stationLand(rx, rz);
+    if (inRect(STATION_PATCH, rx, rz, -2)) return land - 0.7;
+    const flat = Math.max(1 - smooth(70, 130, Math.hypot(x, z - 8)), 1 - smooth(0, 8, outside(STATION_PAD, x, z)));
+    return land + (G - land) * flat;
   }
   private static find(a: number[], v: number) {
     let lo = 0, hi = a.length - 2;

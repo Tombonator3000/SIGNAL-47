@@ -131,7 +131,10 @@ export class DriveController {
     this.place(new THREE.Vector3(x, 0, z), heading);
     this.speed = o.speed; this.steer = o.steer; this.reverse = o.reverse; this.gear = o.gear; this.rpm = o.rpm; this.load = o.load;
     this.accel = o.accel; this.yawRate = o.yawRate; this.yaw = o.yaw; this.pitch = o.pitch; this.idle = o.idle; this.t = o.t; this.engine = o.engine;
-    this.body.vy = o.body.vy; this.body.vp = o.body.vp; this.body.vr = o.body.vr;
+    // the body sits on its springs as it did: the same give over the new ground
+    const og = o.ground(), b = this.body;
+    b.y += o.body.y - og.y; b.pitch += o.body.pitch - og.pitch; b.roll += o.body.roll - og.roll;
+    b.vy = o.body.vy; b.vp = o.body.vp; b.vr = o.body.vr;
     this.mph = o.mph;
     this.pose(0, 0);
   }

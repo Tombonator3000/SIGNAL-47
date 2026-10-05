@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { rng } from '../core/textures';
-import { fromRoad, fromStation } from './geo';
+import { fromRoad, fromStation, stationLand, stationToRoad } from './geo';
 
 // The skyline of the night, one for the whole map (geo.ts): the road's two far rings of
 // mesas round the drive, and the mesas and ridges near STATION 01. Every area that the truck
@@ -41,8 +41,8 @@ export function roadMesas() {
 
 // ---------- near STATION 01: mesas and far ridges, like the concept art ----------
 // A little lighter on the cliffs that face the moon, darker on the slopes and the tops.
-// Station-local terms; ground: the height under them (the station's own terrain there; deep
-// down elsewhere, where the area's own ground hides the feet).
+// Station-local terms; ground: the height under them (the station's land, which out there is
+// the road's, geo.ts).
 export function stationMesas(ground: (x: number, z: number) => number) {
   const pos: number[] = [], col: number[] = [];
   const R0 = rng(5);
@@ -134,7 +134,8 @@ export function sharedHorizon(area: 'saro' | 'road', glow: { add: (x: number, y:
   const group = new THREE.Group();
   group.name = 'horizon';
   if (area === 'saro') group.add(fromRoad(roadMesas(), 'saro')); else group.add(roadMesas());
-  const st = new THREE.Mesh(stationMesas(() => -20), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
+  // on the station's land out there (the road's own, geo.ts), so the very same mesas as the station's
+  const st = new THREE.Mesh(stationMesas((x, z) => stationLand(...stationToRoad(x, z))), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
   st.frustumCulled = false;
   fromStation(st, area);
   st.updateMatrix();

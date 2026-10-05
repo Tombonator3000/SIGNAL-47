@@ -32,8 +32,9 @@ export const inRect = (r: Rect, x: number, z: number, m = 0) => x >= r.minX + m 
 export const outside = (r: Rect, x: number, z: number) => Math.hypot(Math.max(r.minX - x, 0, x - r.maxX), Math.max(r.minZ - z, 0, z - r.maxZ));
 /** The road's land rises a little away from the gate; the station's ground round the hut and
  *  the pad is flat. In the station's copy of the road the land is brought down to it over the
- *  last 40 m (road-local x, z; metres to take off). */
-export const stationBend = (x: number, z: number) => (hLow(x, z) - hLow(END.x, END.z)) * (1 - smooth(-600, -560, x));
+ *  last 40 m of the track, and only there (road-local x, z; metres to take off). */
+export const stationBend = (x: number, z: number) =>
+  (hLow(x, z) - hLow(END.x, END.z)) * (1 - smooth(-600, -560, x)) * (1 - smooth(60, 160, Math.hypot(x - END.x, z - END.z)));
 /** The road's land at a road-local point, in the station's terms (bent as above). */
 export const stationLand = (x: number, z: number) => hLow(x, z) + STATION_DY - stationBend(x, z);
 
