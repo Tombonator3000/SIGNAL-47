@@ -1,5 +1,6 @@
 import type { DocSpec } from '../ui/UI';
 import { clockText, pad } from './time';
+import { artUrl } from '../core/art';
 
 // What Night Shift leaves in the control room besides the receiver (KAPITLER.md, Night
 // Shift): the exceptions binder above the printer, the service record on the rack, the
@@ -8,9 +9,10 @@ import { clockText, pad } from './time';
 // catalogue and the console log. Nothing here explains anything. Lines that start with
 // "~ " are pencil on the paper (UI.document draws them by hand).
 
-export const BINDER: DocSpec = {
-  id: 'binder', title: 'Solver exceptions binder', kind: 'typed', stamp: 'EXCEPTIONS',
-  page: `SARO RX/DSP
+// The binder's sheets: Systems' note, the three printouts the solver made before tonight,
+// and the last one. In the document view they lie on fanfold paper (round 10, Codex): the
+// note and the printouts on the white paper of 1986, the last sheet on the old paper.
+const BINDER_NOTE = `SARO RX/DSP
 DIRECTION SOLVE - EXCEPTIONS
 FILE COPIES. DO NOT REMOVE.
 
@@ -20,40 +22,40 @@ BY THE SOLVER. RANGE IS COMPUTED FROM
 DELAY AND IS UNSIGNED. ANY NEGATIVE
 RANGE IS AN INPUT ERROR.
 RECLASSIFY AND FILE HERE.
-~ Then why does it keep doing it?
-
-- - - - - - - - - - - - - - - - - -
-DATE    09/22/81   01:52:07
+~ Then why does it keep doing it?`;
+const BINDER_PRINTS = [`DATE    09/22/81   01:52:07
 FREQ    1420.405 MHz
 PATTERN PULSE GROUP 4 / 7
 SOURCE DISTANCE:  -34 LY
 ** CHECK SOLVE INPUTS **
 RECLASSIFIED: INPUT ERROR
-~ clock?
-
-- - - - - - - - - - - - - - - - - -
-DATE    03/02/83   03:10:44
+~ clock?`, `DATE    03/02/83   03:10:44
 FREQ    1420.405 MHz
 PATTERN PULSE GROUP 4 / 7
 SOURCE DISTANCE:  -36 LY
 ** CHECK SOLVE INPUTS **
 RECLASSIFIED: INPUT ERROR
-~ baseline file reloaded
-
-- - - - - - - - - - - - - - - - - -
-DATE    10/19/85   23:58:31
+~ baseline file reloaded`, `DATE    10/19/85   23:58:31
 FREQ    1420.405 MHz
 PATTERN PULSE GROUP 4 / 7
 SOURCE DISTANCE:  -38 LY
 ** CHECK SOLVE INPUTS **
 RECLASSIFIED: INPUT ERROR
-~ third time. Ask Systems.
-
-- - - - - - - - - - - - - - - - - -
-DATE    07/--/47   02:17:00
+~ third time. Ask Systems.`];
+const BINDER_1947 = `DATE    07/--/47   02:17:00
 FREQ    1420.405 MHz
 PATTERN PULSE GROUP 4 / 7
-SOURCE DISTANCE:  -00 LY`,
+SOURCE DISTANCE:  -00 LY`;
+const RULE = '\n\n- - - - - - - - - - - - - - - - - -\n';
+
+export const BINDER: DocSpec = {
+  id: 'binder', title: 'Solver exceptions binder', kind: 'typed', stamp: 'EXCEPTIONS',
+  page: [BINDER_NOTE, ...BINDER_PRINTS, BINDER_1947].join(RULE),
+  sheets: [
+    { page: BINDER_NOTE, paper: artUrl('fanfold1986') },
+    { page: BINDER_PRINTS.join('\n\n\n'), paper: artUrl('fanfold1986'), strip: true, term: true },
+    { page: BINDER_1947, paper: artUrl('fanfold1947'), term: true },
+  ],
   transcript: `A ring binder from the shelf above the printer. The note from Systems is typed. The pencil under it looks like the hand in the shift log.
 
 Three printouts in the same format as tonight's, from September 1981, March 1983 and October 1985. Each one is stamped as an input error.

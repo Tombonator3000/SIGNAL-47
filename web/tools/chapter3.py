@@ -109,8 +109,8 @@ async def main():
         check(await ev("!!S47.world.saroTruck && S47.world.saroTruck.group.visible"), 'the service truck stands on its pad')
         await place(9.6, 1.6, math.pi, -0.05)
         await shot('e01_landing_to_pad')
-        check(await walk([(5.0, 1.6), (7.2, 1.6), (10.2, 2.0), (10.2, 4.2), (10.3, 8.6)]), 'walk out the east door, through the gap in the railing and down to the truck')
-        await place(10.3, 8.6, math.pi / 2, -0.1)
+        check(await walk([(5.0, 1.6), (7.2, 1.6), (10.2, 2.0), (10.6, 4.2), (10.6, 8.6)]), 'walk out the east door, through the gap in the railing and down to the truck')
+        await place(10.6, 8.6, math.pi / 2, -0.1)
         check(await aimed() == 'truck' and await label('truck') == 'Drive to STATION 01', 'the truck offers the drive')
         await shot('e02_truck')
 

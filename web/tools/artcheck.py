@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else 'shots/art')
 URL = os.environ.get('S47_URL') or Path('dist-single/index.html').resolve().as_uri()
 ART_COUNT = 28  # 16 from PR #30, 6 round 3 surfaces from PR #31, vinyl and vending from PR #34, 4 motel images from PR #39
-LATER = 52      # STATION 01's surfaces (PR #34), the track gravel and the diner's five (PR #35), the 1947 papers (PR #39), the diner's two (PR #45), the 38 round 9 maps that load only in Ultra (PR #51)
+LATER = 55      # STATION 01's surfaces (PR #34), the track gravel and the diner's five (PR #35, the clipping photo now replaced by the 1947 master), the 1947 papers (PR #39), the diner's two (PR #45), the 38 round 9 maps that load only in Ultra (PR #51), and round 10's master photo, Halley poster and two fanfold sheets (PR #54)
 VIEWS = [
     ('desk', 2.6, 3.5, 0, -0.50),
     ('room', -4.7, 3.5, -0.65, -0.16),
@@ -46,9 +46,14 @@ async def main():
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
         art = await pg.evaluate('S47.art()')
-        checks.append((f'all {ART_COUNT} runtime images loaded', len(art['loaded']) == art['expected'] == ART_COUNT))
-        checks.append((f'{LATER} later images wait for their areas', len(art['later']) == LATER and not set(art['later']) & set(art['loaded'])))
-        checks.append(('sky runtime limited to 2K', any(t['name'] == 'art/sky' and t['width'] == 2048 and t['height'] == 1024 for t in art['textures'])))
+        start = [i for i in art['loaded'] if i not in art['later']]
+        checks.append((f'all {ART_COUNT} runtime images loaded', len(start) == art['expected'] == ART_COUNT))
+        # the Halley poster (round 10) is a later image the control room asks for right after the start
+        early = set(art['later']) & set(art['loaded'])
+        checks.append((f'{LATER} later images wait for their areas (the poster may already be on its way)', len(art['later']) == LATER and early <= {'halleyPoster'}))
+        sky = await pg.evaluate("""(()=>{ let t = null; S47.sky.group.traverse(o => { const u = o.material && o.material.uniforms; if (u && u.uPanorama) t = u.uPanorama.value; });
+          return t && { name: t.name, w: t.image.width, h: t.image.height }; })()""")
+        checks.append(('sky runtime limited to 2K, painted stars taken out', bool(sky) and sky['w'] == 2048 and sky['h'] == 1024 and sky['name'] == 'art/sky (stars removed)'))
         await pg.click('button[data-a=start]')
         await pg.evaluate("S47.hold=true; S47.jump('chapter1'); S47.game.d.ui.close(); S47.tick(1)")
         maps_by_quality = []
@@ -81,7 +86,8 @@ async def main():
             await pg.unroute('**/*tex_wall_paint*')
             await pg.get_by_role('button', name='TRY AGAIN').click()
             await pg.wait_for_selector('button[data-a=start]')
-            checks.append(('retry recovers complete artwork', len((await pg.evaluate('S47.art()'))['loaded']) == ART_COUNT))
+            again = await pg.evaluate('S47.art()')
+            checks.append(('retry recovers complete artwork', len([i for i in again['loaded'] if i not in again['later']]) == ART_COUNT))
             checks.append(('retry has no unexpected errors', not errors))
         report = dict(url=URL, renderer='Chromium SwiftShader, not hardware FPS', checks=checks, art=art, views=views, errors=errors, expected_failure_errors=expected_failures)
         (OUT / 'report.json').write_text(json.dumps(report, indent=2))

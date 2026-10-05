@@ -91,6 +91,9 @@ export class Exterior {
       if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
       if (x > -17 && x < -6 && z > 3 && z < 8.5) continue;  // the path from the fire exit
       if (x > -50 && x < -28 && z > 0 && z < 70) continue;  // the motel's lot and front
+      if (x > -21 && x < 15 && z > 11 && z < 29) continue;  // the service road, the path and the yard behind the annex (Grounds.ts)
+      if (x > -11 && x < -6 && z > -20 && z < 12) continue;  // the west side of the house
+      if (x > -11 && x < 8 && z > -20 && z < -5) continue;  // the windows side
       const k = 0.4 + r() * 1.1;
       p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);
       scrub.setMatrixAt(n++, m.compose(p, q, s));
@@ -212,9 +215,16 @@ export class Exterior {
   private fence() {
     const tex = T.chainlink();
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x6d6a62 });
-    const f = plane(this.group, 140, 2.4, mat, -10, 0.6, -20);
-    noMerge(f);
-    for (let x = -80; x <= 60; x += 7) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, -20, 5);
+    // two runs with the highway between them (it goes on north through the array)
+    for (const [x0, x1] of [[-80, -28.6], [-19.4, 60]]) {
+      const f = plane(this.group, x1 - x0, 2.4, mat.clone(), (x0 + x1) / 2, 0.6, -20);
+      (f.material as THREE.MeshBasicMaterial).map = tex.clone();
+      (f.material as THREE.MeshBasicMaterial).map!.repeat.x = tex.repeat.x * (x1 - x0) / 140;
+      (f.material as THREE.MeshBasicMaterial).map!.needsUpdate = true;
+      noMerge(f);
+    }
+    for (let x = -80; x <= 60; x += 7) if (x < -28.6 || x > -19.4) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, -20, 5);
+    for (const x of [-28.6, -19.4]) cyl(this.statics, 0.06, 0.06, 2.7, M.pole, x, 0.6, -20, 5);
   }
 
   update(dt: number, t: number) {

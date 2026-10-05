@@ -10,6 +10,7 @@ import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
 import type { Diner } from './Diner';
 import { Crossing, type CourtSite } from './Crossing';
+import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood } from './kit';
 import { loadArtFor, artTexture, DINER_ART } from '../core/art';
@@ -77,6 +78,7 @@ export class World {
   private dinerTruck: Truck | null = null;
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
+  grounds: Grounds;
   motel: MotelFront;
   court: CourtSite;
   saroTruck: Truck | null = null;
@@ -94,20 +96,22 @@ export class World {
   private busy = false;
 
   constructor(private d: WorldDeps) {
-    // the walk over the road belongs to SARO: built now, shown and walked with SARO
+    // the walk over the road and SARO's grounds belong to SARO: built now, shown and walked with SARO
     const c = new Crossing();
     this.crossing = c;
+    const g = new Grounds();
+    this.grounds = g;
     // Sierra Motor Court from the outside, and its office (MotelFront.ts, by Codex)
     const m = new MotelFront();
     this.motel = m;
     this.court = m;
-    for (const part of [c, m]) {
+    for (const part of [c, g, m]) {
       d.scene.add(part.group);
       d.saro.groups.push(part.group);
       d.saro.zones.push(...part.zones);
       d.saro.colliders.push(...part.colliders);
     }
-    d.player.floor = c.floorAt;
+    d.player.floor = g.floorAt;
   }
 
   // ---------- loading ----------
@@ -250,7 +254,7 @@ export class World {
     if (this.room6) this.room6.group.visible = area === 'room6';
     if (this.diner) this.diner.group.visible = area === 'diner';
     if (this.dinerTruck) this.dinerTruck.group.visible = area === 'diner';
-    player.floor = area === 'saro' ? this.crossing.floorAt : null;
+    player.floor = area === 'saro' ? this.grounds.floorAt : null;
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }

@@ -149,6 +149,7 @@ async function boot() {
     if (world.area !== 'saro') return 'dirt';
     if (inside(motelOffice, p)) return 'carpet';
     if (space !== 'yard') return 'tile';
+    if (world.grounds.onRoad(p)) return 'concrete';
     return player.floorY < -0.3 ? 'dirt' : 'concrete';
   };
   player.onStep = () => audio.step(surfaceAt());
@@ -426,7 +427,9 @@ async function boot() {
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
     if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : 'Mesa Diner, the lot';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
-    if (world.crossing.outside(p)) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
+    if (world.grounds.onRoad(p)) return 'Service road';
+    if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
+    if (world.grounds.onGround(p)) return 'SARO grounds';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
     if (inside(annex.zone.corridor, p) || inside(annex.zone.southDoor, p)) return 'South corridor';
@@ -585,7 +588,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.stopDriving(); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors, sky,
+    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, saves, world, doors, sky, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId,
@@ -692,7 +695,7 @@ async function boot() {
         ui.hint(false);
       }
     }
-    sky.update(dt, t, camera.position);
+    sky.update(dt, t, camera.position, renderer.getPixelRatio());
     const [lampSets, roomLamps] = ultraLamps(player.pos);
     ultra.update(dt, player.pos, lampSets, roomLamps);
     sky.setCometClock(game.clock);

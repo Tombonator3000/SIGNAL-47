@@ -409,9 +409,14 @@ export class Prologue {
   private paperById(id: string): DocSpec | null {
     return ({ binder: BINDER, service: SERVICE, telex: telex(TELEX_EVENING), rfiCard: interferenceCard(this.rx.stage >= 3), halley: halleyPoster(this.halleyImage()) } as Record<string, DocSpec>)[id] ?? null;
   }
+  // the poster as a picture for the document view; kept once it is drawn on Codex's picture
   private halleyImage() {
-    if (!this.halleyImg) { const t = halleyPosterTex(); this.halleyImg = (t.image as HTMLCanvasElement).toDataURL('image/png'); t.dispose(); }
-    return this.halleyImg;
+    if (this.halleyImg) return this.halleyImg;
+    const t = halleyPosterTex();
+    const url = (t.image as HTMLCanvasElement).toDataURL('image/jpeg', 0.9);
+    if (t.userData.fromArt) this.halleyImg = url;
+    t.dispose();
+    return url;
   }
 
   // the console log: what the operations terminal shows under SHOW LOG

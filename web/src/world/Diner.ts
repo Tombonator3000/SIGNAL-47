@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { artImage, artTexture } from '../core/art';
+import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood } from './kit';
 import type { Collider } from './ControlRoom';
@@ -95,7 +95,8 @@ export class Diner {
       g.fillStyle='#d3c8ad';g.fillRect(0,0,1024,1536);g.fillStyle='#302f2a';g.textAlign='center';g.font='bold 54px Georgia,serif';g.fillText('PECOS VALLEY SENTINEL',512,106,932);
       g.fillRect(48,137,928,3);g.font='bold 64px Georgia,serif';g.fillText('LIGHT HELD OVER MESA',512,228,928);g.fillText('FOR AN HOUR',512,304,928);
       g.font='31px Georgia,serif';['Ranchers on the old survey road watched a steady','glow; Army field office cites weather equipment'].forEach((s,i)=>g.fillText(s,512,365+i*39,928));
-      g.drawImage(artImage('clipping1947'),72,464,880,660);g.font='italic 29px Georgia,serif';g.fillText('Seen from the Kessler ranch, 3 a.m.',512,1178,880);
+      {const [sx,sy,sw,sh]=PHOTO_1947.B;g.drawImage(artImage('photo1947'),sx,sy,sw,sh,72,464,880,660);}   // crop B of the 1947 master (round 10)
+      g.font='italic 29px Georgia,serif';g.fillText('Seen from the Kessler ranch, 3 a.m.',512,1178,880);
       g.fillStyle='#7b7463';for(let col=0;col<3;col++)for(let i=0;i<12;i++)g.fillRect(72+col*306,1230+i*19,260-(i%4)*11,3);
       // The clipping has no printed date. The separate pencil note is on its frame.
     });
