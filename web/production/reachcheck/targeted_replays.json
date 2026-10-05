@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+  "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+  "checks": [
+    {
+      "area": "saro",
+      "target": "wetBench",
+      "chapter": "chapter1",
+      "status": "PASS",
+      "label": "Wet bench",
+      "path_points": 146,
+      "update_steps": 582,
+      "worst_endpoint_error_m": 1.7763568394002505e-15,
+      "final": {
+        "x": 15.149999999999999,
+        "z": -4.649999999999997
+      },
+      "actual_pick": "wetBench",
+      "no_intermediate_place_calls": true
+    },
+    {
+      "area": "saro",
+      "target": "recPhone",
+      "chapter": "chapter2",
+      "status": "PASS",
+      "label": "Wall phone",
+      "path_points": 89,
+      "update_steps": 354,
+      "worst_endpoint_error_m": 3.552713678800501e-15,
+      "final": {
+        "x": -1.6500000000000057,
+        "z": 9.300000000000004
+      },
+      "actual_pick": "recPhone",
+      "no_intermediate_place_calls": true
+    },
+    {
+      "area": "station01",
+      "target": "s1phone",
+      "chapter": "chapter3",
+      "status": "PASS",
+      "label": "Field telephone",
+      "path_points": 247,
+      "update_steps": 986,
+      "worst_endpoint_error_m": 1.8189928729894997e-12,
+      "final": {
+        "x": -13.5,
+        "z": 8002.5
+      },
+      "actual_pick": "s1phone",
+      "no_intermediate_place_calls": true
+    },
+    {
+      "area": "room6",
+      "target": "r6:phone",
+      "chapter": "chapter4",
+      "status": "PASS",
+      "label": "Phone on the nightstand",
+      "path_points": 48,
+      "update_steps": 190,
+      "worst_endpoint_error_m": 1.8189894035458565e-12,
+      "final": {
+        "x": -0.2999999999999998,
+        "z": -8001.749999999998
+      },
+      "actual_pick": "r6:phone",
+      "no_intermediate_place_calls": true
+    },
+    {
+      "name": "control room/east walk alley",
+      "at": {
+        "x": 7.2,
+        "z": -3
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "east walk/photo lab alley",
+      "at": {
+        "x": 11.7,
+        "z": -3
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "fire-exit ramp rail blocks direct side approach",
+      "from": {
+        "x": -9.1,
+        "z": 4.3
+      },
+      "to": {
+        "x": -9.1,
+        "z": 5.7
+      },
+      "actual_endpoint": {
+        "x": -9.1,
+        "z": 4.43
+      },
+      "status": "PASS"
+    }
+  ],
+  "limitations": "Four witnessed interaction paths replayed without intermediate teleporting; not exhaustive hardware/input verification."
+}

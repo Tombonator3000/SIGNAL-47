@@ -1,0 +1,368 @@
+{
+  "type": "independent recorded-evidence validation",
+  "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+  "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+  "status": "PASS",
+  "checks": [
+    {
+      "status": "PASS",
+      "check": "whole scanner below 10 minute limit"
+    },
+    {
+      "status": "PASS",
+      "check": "final checker SHA matches executed checker"
+    },
+    {
+      "status": "PASS",
+      "check": "frozen build SHA matches all-area run"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: complete 0.15 m coverage"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: report/map hashes"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: unique reached subset and counts"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: parent vector size"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: directed acyclic cardinal parent tree"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: unreachable component accounting"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: recorded real movement endpoints"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: actual pick witnesses on reached points and within range"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: no page errors and complete outputs"
+    },
+    {
+      "status": "PASS",
+      "check": "saro: decodable PNG"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: complete 0.15 m coverage"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: report/map hashes"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: unique reached subset and counts"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: parent vector size"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: directed acyclic cardinal parent tree"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: unreachable component accounting"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: recorded real movement endpoints"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: actual pick witnesses on reached points and within range"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: no page errors and complete outputs"
+    },
+    {
+      "status": "PASS",
+      "check": "station01: decodable PNG"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: complete 0.15 m coverage"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: report/map hashes"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: unique reached subset and counts"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: parent vector size"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: directed acyclic cardinal parent tree"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: unreachable component accounting"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: recorded real movement endpoints"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: actual pick witnesses on reached points and within range"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: no page errors and complete outputs"
+    },
+    {
+      "status": "PASS",
+      "check": "room6: decodable PNG"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: complete 0.15 m coverage"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: report/map hashes"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: unique reached subset and counts"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: parent vector size"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: directed acyclic cardinal parent tree"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: unreachable component accounting"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: recorded real movement endpoints"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: actual pick witnesses on reached points and within range"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: no page errors and complete outputs"
+    },
+    {
+      "status": "PASS",
+      "check": "diner: decodable PNG"
+    }
+  ],
+  "limits": "This validates recorded evidence and accounting; it does not replay every graph edge.",
+  "checker_fixtures": {
+    "status": "PASS",
+    "count": 17,
+    "scope": "Synthetic cases, not Three.js integration"
+  },
+  "negative_point_budget": {
+    "status": "PASS",
+    "actual_checker_status": "UNVERIFIED",
+    "completed": false,
+    "actual_exit_code": 2,
+    "reason": "Explicit max-cells=1 rejected full grid; no truncated subset passed",
+    "area_report": {
+      "area": "room6",
+      "status": "UNVERIFIED",
+      "completed": false,
+      "checks": {
+        "completeness": {
+          "status": "UNVERIFIED",
+          "reason": "Grid 2072 exceeds explicit max-cells 1; no subset tested"
+        },
+        "runtime_errors": {
+          "status": "PASS",
+          "page_errors": []
+        },
+        "output_completeness": {
+          "status": "PASS",
+          "errors": []
+        }
+      },
+      "findings": [],
+      "method": {
+        "spacing_m": 0.15,
+        "endpoint_tolerance_m": 0.0001,
+        "max_movement_step_m": 0.04,
+        "validity": "Player.walkable plus Euclidean circle/rectangle clearance, as requested",
+        "actual_physics": "Existing Player.place/update, including actual AABB collision resolution",
+        "graph": "Four cardinal neighbours; directed, tested parent tree. Reverse edges are never inferred.",
+        "floor": "Height changes are measured separately and never removed from the reach graph.",
+        "pick": "Actual inter.pick, full unmodified registry, exact target identity; legal camera pitch.",
+        "limitations": [
+          "Finite 0.15 m grid and finite aim samples are not a continuous-space proof.",
+          "Circle-clear corners may be rejected by the actual AABB resolver; those remain in the requested grid.",
+          "No hardware performance or complete chapter playthrough is verified."
+        ]
+      },
+      "phase": "ch4",
+      "zones": [
+        {
+          "id": "room6",
+          "minX": -2.25,
+          "maxX": 2.25,
+          "minZ": -8003,
+          "maxZ": -7997,
+          "enabled": true
+        },
+        {
+          "id": "room6Door",
+          "minX": -1.98,
+          "maxX": -0.82,
+          "minZ": -7997.95,
+          "maxZ": -7996.05,
+          "enabled": true
+        },
+        {
+          "id": "room6Walk",
+          "minX": -2.6,
+          "maxX": 2.6,
+          "minZ": -7996.75,
+          "maxZ": -7994.95,
+          "enabled": true
+        }
+      ],
+      "colliders": [
+        {
+          "id": null,
+          "minX": -2.62,
+          "maxX": -2.48,
+          "minZ": -7995.02,
+          "maxZ": -7994.88,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": 2.48,
+          "maxX": 2.62,
+          "minZ": -7995.02,
+          "maxZ": -7994.88,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": -2,
+          "maxX": -1.89,
+          "minZ": -7998.1,
+          "maxZ": -7996.95,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": 0.15,
+          "maxX": 2.12,
+          "minZ": -8002.98,
+          "maxZ": -8000.38,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": -0.57,
+          "maxX": 0.04,
+          "minZ": -8002.85,
+          "maxZ": -8002.14,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": -2.25,
+          "maxX": -1.48,
+          "minZ": -8001.58,
+          "maxZ": -8000.02,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": 0.025,
+          "maxX": 1.375,
+          "minZ": -7999.025,
+          "maxZ": -7998.075,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": 0.46,
+          "maxX": 1.04,
+          "minZ": -7997.99,
+          "maxZ": -7997.41,
+          "enabled": true
+        },
+        {
+          "id": null,
+          "minX": 0.46,
+          "maxX": 1.04,
+          "minZ": -7999.73,
+          "maxZ": -7999.15,
+          "enabled": true
+        }
+      ],
+      "player": {
+        "radius_m": 0.27,
+        "eye_m": 1.62,
+        "speed_mps": 1.9
+      },
+      "start": {
+        "x": -1.4,
+        "z": -7995.7,
+        "floor": 0,
+        "walkable": true,
+        "circle_clear": true,
+        "seed_witnesses": []
+      },
+      "error": "Error: Grid 2072 exceeds explicit max-cells 1; no subset tested\n    at Object.run (eval at evaluate (:311:30), <anonymous>:108:34)\n    at async eval (eval at evaluate (:311:30), <anonymous>:281:10)\n    at async <anonymous>:337:30",
+      "elapsed_seconds": 6.709599999994039,
+      "provenance": {
+        "generated_utc": "2026-10-05T00:40:08.882035+00:00",
+        "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+        "git_base": "609701226d3f1405276d4951f8dfb1d6ce25222c",
+        "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+        "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+        "browser": "Playwright Chromium, ANGLE swiftshader",
+        "requested_areas": [
+          "room6"
+        ]
+      },
+      "runtime_page_errors": [],
+      "artifacts": {
+        "json_written": true,
+        "map_written": true,
+        "map_sha256": "f1f9fe366d988aff88fdb8bc0c45e3faf4f106fe30c6c4e127e4c31adbfc0ba2"
+      }
+    }
+  },
+  "environment": {
+    "python": "3.12.14",
+    "playwright": "1.63.0",
+    "pillow": "12.3.0",
+    "browser_installation": "chromium_headless_shell-1243",
+    "rendering": "ANGLE swiftshader"
+  }
+}

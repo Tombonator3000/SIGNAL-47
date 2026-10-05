@@ -1,0 +1,62 @@
+{
+  "generated_utc": "2026-10-05T00:33:13.436843+00:00",
+  "script_sha256": "d497c2b04e21e2d2d40ec71f240d2bc4baff407c4db83bf26d532b894b6dd0d6",
+  "git_base": "609701226d3f1405276d4951f8dfb1d6ce25222c",
+  "source_url": "file:///home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/dist-single/index.html",
+  "source_html_sha256": "ace95864919c8db4a9e8b9f1169ea43e7497e8e7881a688a62fa94528fdcd648",
+  "browser": "Playwright Chromium, ANGLE swiftshader",
+  "requested_areas": [
+    "saro",
+    "station01",
+    "room6",
+    "diner"
+  ],
+  "status": "FAIL",
+  "elapsed_seconds": 20.715964769013226,
+  "areas": [
+    {
+      "area": "saro",
+      "status": "FAIL",
+      "completed": true,
+      "report": "saro.json",
+      "report_sha256": "6260beb4ca13160897053e858ad3b5aca18c1f7aee1852060547532076a5e378",
+      "map": "saro.png",
+      "map_sha256": "23911771ece9b9268237566360403870cd879aacde84aa9bc2d3c27bf65bf999",
+      "findings": 139
+    },
+    {
+      "area": "station01",
+      "status": "FAIL",
+      "completed": true,
+      "report": "station01.json",
+      "report_sha256": "0866f92452d1f4505ceabc195a27d7ece932788347bfeb8e85df02a63cb76a19",
+      "map": "station01.png",
+      "map_sha256": "ac524af9f734553ac7612170841db7eaf147b5f711413a5038c799ce279745d0",
+      "findings": 172
+    },
+    {
+      "area": "room6",
+      "status": "FAIL",
+      "completed": true,
+      "report": "room6.json",
+      "report_sha256": "f65a1291ac557afeab32576f3f392814961df8a960e117478ffab09ca379e83a",
+      "map": "room6.png",
+      "map_sha256": "bf5540785b098e1cadb16f0f469c15c466b60ee0ea7c8ccd125b5224cd224877",
+      "findings": 6
+    },
+    {
+      "area": "diner",
+      "status": "FAIL",
+      "completed": true,
+      "report": "diner.json",
+      "report_sha256": "7dd54d10c71b53e4cf215ec6c4b8f1a314ef24c908b2a39918a47bc8d0244cef",
+      "map": "diner.png",
+      "map_sha256": "30eef1bfb9664223ba5a4ad76bc223f21bdc44c765399ebe7343579ee3c2b572",
+      "findings": 12
+    }
+  ],
+  "limitations": [
+    "Checker uses finite samples, not a continuous-space proof.",
+    "Swiftshader does not verify hardware fps."
+  ]
+}
