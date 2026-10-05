@@ -90,9 +90,7 @@ async def main():
             st = await where()
             if st['mi'] > 0.06: break
         check(st['mi'] > 0.06 and abs(st['o'] - 1.6) < 1.2, f"out of the lot and across the highway, in the old road's right lane ({st['mi']:.3f} mi, {st['o']:.2f} m)")
-        await ev("S47.camera.rotation.set(0, Math.PI, 0)"); await tick(0.05)
-        await shot('k01b_diner_behind')
-        await ev("S47.camera.rotation.set(0, 0, 0)")
+        await shot('k01b_on_the_old_road')
         # all the way out, past the mile posts: the clock keeps to the drive (never ahead of 55 mph)
         for _ in range(500):
             await tick(2)
