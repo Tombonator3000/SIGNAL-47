@@ -54,6 +54,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Codex, runde 10 (PR #54, `56fa505`): avisbildet fra 1947 som ett hovedbilde med tre utsnitt, Halley-plakaten uten tekst og to fanfoldark. Koblet inn: plakaten med tekst i kode, perma på fanfoldpapir, utsnitt B i dineren.
 - [ ] Utsnitt A av avisbildet i saksmappa når tråd 7 bygges i The Amended Record, og hele bildet (C) etter rulleteksten.
 - [ ] Codex, senere: milestolpene og oppmålingsbolten når Roswell-veien er spesifisert.
+- [ ] PR #62 (Codex, Voices of the Void-oppsett under `Docs/Research/`): gjennomgått 5. oktober morgen, 11 av 11 tester OK, ikke flettet. Venter på Toms ja. Hjemmestien i README bør ut før fletting.
 - [x] Himmelen: Halleys komet lavt i sør-sørvest til 03:05.
 - [x] Kapitlet «All Night» (5. oktober morgen): fila `RUN860414_0529.DAT` på SARO, dineren (servitrisen, sjåføren, utklippet, kaffen, radioen, telefonautomaten til Ward), og kartgåta om hvor C krysser den gamle veien (P13). Test: `tools/chapter5.py`.
 - [ ] All Night: himmelen ved dineren er fortsatt natt; daggry i himmelen (ikke bare i vinduene) før Roswell Road.
