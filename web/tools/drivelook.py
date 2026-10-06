@@ -4,7 +4,8 @@
 python3 tools/drivelook.py OUTDIR [WxH]
 S47_URL selects a build; S47_CHROMIUM optionally selects an installed browser.
 Each trip uses a fresh context. Importing this module does not launch a browser.
-Exit 0 means capture completed without console errors, not a visual/gameplay PASS.
+Exit 0 means capture completed without blocking console errors, not a visual/gameplay
+PASS. URL-confirmed missing favicon HTTP 404s remain in the recorded diagnostics.
 """
 from __future__ import annotations
 
@@ -18,9 +19,11 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import time
+from urllib.parse import urlsplit
 
 WEB = Path(__file__).resolve().parents[1]
 INTERVAL = 400.0
@@ -91,6 +94,28 @@ def path_increment(previous, current) -> float:
 
 def code_fingerprint(resources: dict) -> str:
     return hashlib.sha256(json.dumps(resources, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def record_console(trip: dict, kind: str, text: str, location: dict, *, page_url: str):
+    """Preserve every error/warning; exempt only a proven missing browser icon."""
+    if kind not in ('error', 'warning'):
+        return
+    event = {'type': kind, 'text': text, 'location': location}
+    trip['console_messages'].append(event)
+    try:
+        source = urlsplit(location.get('url', ''))
+        expected = urlsplit(page_url)
+        missing_icon = (kind == 'error' and source.scheme in ('http', 'https')
+                        and bool(source.netloc) and source.path == '/favicon.ico'
+                        and (source.scheme, source.netloc) == (expected.scheme, expected.netloc)
+                        and re.fullmatch(r'Failed to load resource: the server responded with a status of 404 \([^)]*\)', text))
+    except ValueError:
+        missing_icon = False
+    if missing_icon:
+        event['non_blocking_reason'] = 'missing_favicon_http_404'
+        trip['warnings'].append(f"Missing favicon (HTTP 404): {source.geturl()}")
+    else:
+        trip['errors' if kind == 'error' else 'warnings'].append(text)
 
 
 def shot_metadata(state: dict, *, name: str, filename: str, reason: str, distance: float,
@@ -205,9 +230,7 @@ async def run_trip(browser, args, report, trip_id, url, out):
                                         'resource_type':response.request.resource_type})
         tasks.append(asyncio.create_task(record_code(response)))
     def on_console(message):
-        if message.type in ('error','warning'):
-            trip['console_messages'].append({'type':message.type,'text':message.text,'location':message.location})
-            trip['errors' if message.type=='error' else 'warnings'].append(message.text)
+        record_console(trip, message.type, message.text, message.location, page_url=page.url)
     page.on('response', on_response)
     page.on('console', on_console)
     page.on('pageerror', lambda e: trip['errors'].append('PAGEERROR: ' + str(e)))
@@ -366,6 +389,7 @@ def main(argv=None) -> int:
               'url':os.environ.get('S47_URL') or (WEB / 'dist-single/index.html').as_uri(),
               'interval_m':INTERVAL,'step_s':STEP,'fps':FPS,'autopilot_mps':20,
               'wall_timeout_s':args.timeout,'limitations':['Autopilot capture, not manual controls or hardware fps verification.',
+              'Only same-origin, URL-confirmed /favicon.ico HTTP 404 console messages are non-blocking; raw diagnostics are retained.',
               'Side shots use held camera rotation and view.draw without ticking; truck/clock preservation is checked.',
               'No automatic visual PASS; source/build byte equivalence is UNVERIFIED.']}
     started = time.monotonic()
