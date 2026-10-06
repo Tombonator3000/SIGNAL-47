@@ -100,6 +100,119 @@ def code_fingerprint(resources: dict) -> str:
     return hashlib.sha256(json.dumps(resources, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def code_hash_errors(trip: dict, *, require_closed: bool = False) -> list[str]:
+    """Reject incomplete code evidence, including warnings in historical captures."""
+    errors = [w for w in trip.get('warnings', []) if w.startswith('Could not hash loaded')]
+    policy = trip.get('code_hash_policy')
+    if 'code_hash_policy' in trip and policy != 'observed_responses_v1':
+        errors.append(f'Unknown code hash policy: {policy}')
+    observed = trip.get('observed_code_responses')
+    if policy == 'observed_responses_v1' and not observed:
+        errors.append('No observed document/script responses')
+    if policy == 'observed_responses_v1' and require_closed and trip.get('code_observation_closed') is not True:
+        errors.append('Code response observation did not finish with the closed context')
+    if observed is not None:
+        if not isinstance(observed, list) or any(not isinstance(r, dict) for r in observed):
+            return errors + ['Malformed observed code response list']
+        resources = trip.get('loaded_code_sha256', {})
+        for response in observed:
+            digest = response.get('sha256', '')
+            if (response.get('hash_state') != 'hashed' or response.get('error')
+                    or not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest)
+                    or response.get('resource_type') not in ('document', 'script')
+                    or resources.get(response.get('url')) != digest):
+                errors.append(f'Incomplete or inconsistent code hash: {response.get("url")}')
+        if {r.get('url') for r in observed} != set(resources):
+            errors.append('Observed responses and code hash registry differ')
+    return errors
+
+
+def observe_response(trip: dict, response, tasks: list):
+    """Record code responses synchronously, before their asynchronous body read."""
+    if trip.get('code_observation_sealed'): return
+    kind = response.request.resource_type
+    if response.status >= 400:
+        trip['failed_http'].append({'url': response.url, 'status': response.status,
+                                    'resource_type': kind})
+    if kind not in ('document', 'script'):
+        return
+    observed = {'url': response.url, 'resource_type': kind, 'status': response.status,
+                'hash_state': 'pending'}
+    trip['observed_code_responses'].append(observed)
+
+    async def read_body():
+        try:
+            digest = hashlib.sha256(await response.body()).hexdigest()
+            observed['sha256'] = digest
+            observed['hash_state'] = 'hashed'
+            trip['loaded_code_sha256'][response.url] = digest
+        except asyncio.CancelledError:
+            observed['hash_state'] = 'cancelled'
+            observed['error'] = 'Code body read cancelled'
+            trip['errors'].append(f'Could not hash loaded {kind}: {response.url}: cancelled')
+            raise
+        except Exception as e:
+            observed['hash_state'] = 'failed'
+            observed['error'] = f'{type(e).__name__}: {e}'
+            trip['errors'].append(f'Could not hash loaded {kind}: {response.url}: {e}')
+    tasks.append(asyncio.create_task(read_body()))
+
+
+async def wait_code_hashes(trip: dict, tasks: list):
+    # A response callback can append more work while a body read is awaited.
+    cursor = 0
+    try:
+        while cursor < len(tasks):
+            batch = tasks[cursor:]
+            cursor += len(batch)
+            await asyncio.gather(*batch)
+    except BaseException:
+        await cancel_code_hashes(trip, tasks)
+        raise
+    errors = code_hash_errors(trip)
+    if errors:
+        raise RuntimeError('; '.join(errors))
+
+
+async def cancel_code_hashes(trip: dict, tasks: list):
+    trip['code_observation_sealed'] = True
+    for task in tasks:
+        if not task.done(): task.cancel()
+    if tasks: await asyncio.gather(*tasks, return_exceptions=True)
+    for response in trip['observed_code_responses']:
+        if response['hash_state'] == 'pending':
+            response['hash_state'] = 'cancelled'
+            response['error'] = 'Capture ended before body read completed'
+
+
+def check_capture_diagnostics(trip: dict, page_url: str, *, strict_http: bool = False):
+    if trip['errors']:
+        raise RuntimeError(f'{len(trip["errors"])} console/page/code errors; see manifest')
+    if strict_http:
+        expected = urlsplit(page_url)
+        bad = []
+        for event in trip['failed_http']:
+            source = urlsplit(event['url'])
+            if not (event['status'] == 404 and source.path == '/favicon.ico'
+                    and source.scheme in ('http', 'https')
+                    and (source.scheme, source.netloc) == (expected.scheme, expected.netloc)):
+                bad.append(event)
+        if bad: raise RuntimeError(f'{len(bad)} non-favicon HTTP failures; see manifest')
+
+
+def observe_page(page, trip: dict, tasks: list):
+    handlers = {'response': lambda response: observe_response(trip, response, tasks),
+                'console': lambda m: record_console(trip, m.type, m.text, m.location, page_url=page.url),
+                'pageerror': lambda e: trip['errors'].append('PAGEERROR: ' + str(e))}
+    for kind, callback in handlers.items(): page.on(kind, callback)
+    return handlers
+
+
+def stop_observing(page, trip: dict, handlers: dict):
+    for kind, callback in handlers.items(): page.remove_listener(kind, callback)
+    trip['code_observation_sealed'] = True
+
+
 def record_console(trip: dict, kind: str, text: str, location: dict, *, page_url: str):
     """Preserve every error/warning; exempt only a proven missing browser icon."""
     if kind not in ('error', 'warning'):
@@ -332,24 +445,15 @@ async def run_kessler_trip(browser, args, report, url, out):
     """Drive uninterrupted first; separate, explicitly placed still fixtures follow."""
     trip = {'id':'kessler','status':'CAPTURING','visual_review':'UNVERIFIED','shots':[],
             'errors':[],'warnings':[],'console_messages':[],'failed_http':[],
-            'loaded_code_sha256':{},'quality_requested':args.quality,'flicker_pairs':[],
+            'loaded_code_sha256':{},'observed_code_responses':[],
+            'code_hash_policy':'observed_responses_v1','quality_requested':args.quality,'flicker_pairs':[],
             'route_placement_calls':0,'fixture_placement_calls':0,'side_capture_checks':[]}
     report['trips'].append(trip)
     context = await browser.new_context(viewport={'width':args.size[0],'height':args.size[1]},
                                         device_scale_factor=1,has_touch=False,is_mobile=False)
     page = await context.new_page();page.set_default_timeout(60000)
     tasks = [];previous = None;distance = 0.0;elapsed = 0.0
-    async def response_body(response):
-        if response.request.resource_type in ('document','script'):
-            try: trip['loaded_code_sha256'][response.url] = hashlib.sha256(await response.body()).hexdigest()
-            except Exception as e: trip['warnings'].append(f'Could not hash loaded code: {response.url}: {e}')
-    def response_seen(response):
-        if response.status>=400:
-            trip['failed_http'].append({'url':response.url,'status':response.status,'resource_type':response.request.resource_type})
-        tasks.append(asyncio.create_task(response_body(response)))
-    page.on('response',response_seen)
-    page.on('console',lambda m:record_console(trip,m.type,m.text,m.location,page_url=page.url))
-    page.on('pageerror',lambda e:trip['errors'].append('PAGEERROR: '+str(e)))
+    handlers=observe_page(page,trip,tasks)
     async def state():
         nonlocal previous,distance
         st=await page.evaluate(STATE);st.update(await page.evaluate(KESSLER_EXTRA))
@@ -360,7 +464,7 @@ async def run_kessler_trip(browser, args, report, url, out):
         await page.evaluate('([s,f])=>S47.tick(s,f)',[seconds,FPS]);elapsed+=max(1,round(seconds*FPS))/FPS
         return await state()
     async def shot(name,reason,thresholds=None,fixture=None):
-        if tasks: await asyncio.gather(*tasks)
+        await wait_code_hashes(trip,tasks)
         st=await state();filename=f'kessler_{len(trip["shots"]):03d}_{name}.png'
         await page.screenshot(path=str(out/filename),timeout=120000)
         st=shot_metadata(st,name=name,filename=filename,reason=reason,thresholds=thresholds or [],
@@ -460,22 +564,29 @@ async def run_kessler_trip(browser, args, report, url, out):
                 trip['flicker_pairs'].append(pair);write_report(out,report)
                 if not proof['frozen']: raise RuntimeError('Fixture camera/truck was not restored exactly')
             if default_picture!='off': await page.evaluate('p=>S47.setPicture(p)',default_picture)
-        if trip['errors']: raise RuntimeError(f'{len(trip["errors"])} console/page errors; see manifest')
-        expected=urlsplit(page.url)
-        bad_http=[]
-        for event in trip['failed_http']:
-            source=urlsplit(event['url'])
-            if not (event['status']==404 and source.path=='/favicon.ico' and
-                    source.scheme in ('http','https') and
-                    (source.scheme,source.netloc)==(expected.scheme,expected.netloc)):
-                bad_http.append(event)
-        if bad_http: raise RuntimeError(f'{len(bad_http)} non-favicon HTTP failures; see manifest')
+        await wait_code_hashes(trip,tasks)
+        check_capture_diagnostics(trip,page.url,strict_http=True)
         trip['status']='CAPTURED'
     except BaseException as e:
         trip['status']='FAIL';trip['failure']=f'{type(e).__name__}: {e}';raise
     finally:
-        trip['path_distance_m']=distance;trip['simulation_elapsed_s']=elapsed
-        write_report(out,report);await asyncio.wait_for(context.close(),timeout=10)
+        try:
+            try:
+                await asyncio.wait_for(context.close(),timeout=10)
+                trip['code_observation_closed']=True
+            finally:
+                stop_observing(page,trip,handlers)
+            await asyncio.wait_for(wait_code_hashes(trip,tasks),timeout=10)
+            if trip['status']=='CAPTURED': check_capture_diagnostics(trip,page.url,strict_http=True)
+        except BaseException as e:
+            already_failed=trip['status']=='FAIL'
+            trip['status']='FAIL';trip.setdefault('failure',f'{type(e).__name__}: {e}')
+            trip['cleanup_failure']=f'{type(e).__name__}: {e}'
+            await cancel_code_hashes(trip,tasks)
+            if not already_failed: raise
+        finally:
+            trip['path_distance_m']=distance;trip['simulation_elapsed_s']=elapsed
+            write_report(out,report)
 
 
 async def run_trip(browser, args, report, trip_id, url, out):
@@ -483,30 +594,14 @@ async def run_trip(browser, args, report, trip_id, url, out):
         return await run_kessler_trip(browser, args, report, url, out)
     trip = {'id': trip_id, 'status': 'CAPTURING', 'visual_review': 'UNVERIFIED',
             'shots': [], 'errors': [], 'warnings': [], 'console_messages': [],
-            'failed_http': [], 'loaded_code_sha256': {}}
+            'failed_http': [], 'loaded_code_sha256': {}, 'observed_code_responses': [],
+            'code_hash_policy': 'observed_responses_v1'}
     report['trips'].append(trip)
     context = await browser.new_context(viewport={'width': args.size[0], 'height': args.size[1]}, device_scale_factor=1)
     page = await context.new_page()
     page.set_default_timeout(60000)
     tasks = []
-    async def record_code(response):
-        kind = response.request.resource_type
-        if kind not in ('document', 'script'):
-            return
-        try:
-            trip['loaded_code_sha256'][response.url] = hashlib.sha256(await response.body()).hexdigest()
-        except Exception as e:
-            trip['warnings'].append(f'Could not hash loaded {kind}: {response.url}: {e}')
-    def on_response(response):
-        if response.status >= 400:
-            trip['failed_http'].append({'url':response.url,'status':response.status,
-                                        'resource_type':response.request.resource_type})
-        tasks.append(asyncio.create_task(record_code(response)))
-    def on_console(message):
-        record_console(trip, message.type, message.text, message.location, page_url=page.url)
-    page.on('response', on_response)
-    page.on('console', on_console)
-    page.on('pageerror', lambda e: trip['errors'].append('PAGEERROR: ' + str(e)))
+    handlers = observe_page(page, trip, tasks)
     previous = None
     distance = 0.0
     elapsed = 0.0
@@ -522,8 +617,7 @@ async def run_trip(browser, args, report, trip_id, url, out):
         elapsed += max(1, round(seconds * FPS)) / FPS
         return await state()
     async def shot(name, reason, thresholds=None):
-        if tasks:
-            await asyncio.gather(*tasks)
+        await wait_code_hashes(trip, tasks)
         st = await state()
         filename = f'{trip_id}_{len(trip["shots"]):03d}_{name}.png'
         await page.screenshot(path=str(out / filename), timeout=120000)
@@ -616,17 +710,32 @@ async def run_trip(browser, args, report, trip_id, url, out):
                 raise RuntimeError(f'Stalled trip: no 1 m net goal progress for {monitor.patience:g} simulated seconds')
         else:
             raise RuntimeError('Trip exhausted 2600 bounded steps before its endpoint')
-        if trip['errors']:
-            raise RuntimeError(f'{len(trip["errors"])} console/page errors; see manifest')
+        await wait_code_hashes(trip, tasks)
+        check_capture_diagnostics(trip, page.url)
     except BaseException as e:
         trip['status'] = 'FAIL'
         trip['failure'] = f'{type(e).__name__}: {e}'
         raise
     finally:
-        trip['path_distance_m'] = distance
-        trip['simulation_elapsed_s'] = elapsed
-        write_report(out, report)
-        await asyncio.wait_for(context.close(), timeout=10)
+        try:
+            try:
+                await asyncio.wait_for(context.close(), timeout=10)
+                trip['code_observation_closed'] = True
+            finally:
+                stop_observing(page, trip, handlers)
+            await asyncio.wait_for(wait_code_hashes(trip, tasks), timeout=10)
+            if trip['status'] == 'CAPTURED': check_capture_diagnostics(trip, page.url)
+        except BaseException as e:
+            already_failed = trip['status'] == 'FAIL'
+            trip['status'] = 'FAIL'
+            trip.setdefault('failure', f'{type(e).__name__}: {e}')
+            trip['cleanup_failure'] = f'{type(e).__name__}: {e}'
+            await cancel_code_hashes(trip, tasks)
+            if not already_failed: raise
+        finally:
+            trip['path_distance_m'] = distance
+            trip['simulation_elapsed_s'] = elapsed
+            write_report(out, report)
 
 
 async def capture(args, report, out):
