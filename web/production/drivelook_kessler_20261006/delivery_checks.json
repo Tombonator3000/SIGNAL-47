@@ -1,0 +1,22 @@
+{
+  "checked_utc": "2026-10-06T09:09:08.029935+00:00",
+  "status": "PASS",
+  "local_links_checked": 1162,
+  "broken_links": [],
+  "integrity_checks_passed": 788,
+  "configs": 6,
+  "original_pngs": 234,
+  "route_frames": 174,
+  "stationary_pairs": 30,
+  "loaded_code_matches_frozen_artifact": true,
+  "all_run_errors_empty": true,
+  "six_route_and_side_poses_identical": true,
+  "route_placements_per_config": 0,
+  "fixture_placements_per_config": 3,
+  "raw_capture_hashes_unchanged": true,
+  "frozen_tool_hash_matches_checks": true,
+  "largest_file_bytes": 2331516,
+  "evidence_bytes_before_this_proof": 247735253,
+  "reused_runtime_tools_build_delta_8225bdc_to_eb09d86": "",
+  "scope": "Delivery integrity only, not a visual/gameplay/hardware PASS."
+}

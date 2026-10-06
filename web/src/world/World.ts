@@ -45,6 +45,10 @@ export const DINER_ORIGIN = new THREE.Vector3(8000 + DINER.x, DINER.y + 0.1, DIN
 // The night areas see the camera's far plane at 5 km and thick haze; the old road at dawn
 // sees farther (the camera goes up at the end).
 const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
+/** The truck's headlights on the diner and the diner's neon on the road (Diner.shine, Diner.neon),
+ *  to look about as strong as in their own sets: the diner's lamps fall off about ten times faster
+ *  (falloff 0.14 against 0.012), and a lamp's strength sets how far it reaches. */
+const HEAD_ON_DINER = 2.5, NEON_REACH = 2, NEON_ON_ROAD = 0.3;
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -93,6 +97,8 @@ export class World {
   onDinerLoaded?: (diner: Diner) => void;
   /** The diner's collider round its parked truck (it moves with the truck). */
   private dinerCol: Collider | null = null;
+  /** The diner's neon as lamps in the road's set and the old road's (Diner.neon). */
+  private neonSlots = { road: [] as number[], old: [] as number[] };
   /** An invisible box round the truck on the diner's lot, for interaction (chapter five). */
   dinerTruckProxy: THREE.Object3D | null = null;
   onDinerTruck?: (proxy: THREE.Object3D) => void;
@@ -275,6 +281,8 @@ export class World {
       const road = new OldRoad(ROAD_ORIGIN);
       road.group.visible = false;
       this.d.scene.add(road.group);
+      this.neonSlots.old = [0, 1].map(() => addFlood(0, -999, 0, 0, 0, oldFlood));
+      for (const i of this.neonSlots.old) oldFlood.skip.add(i);
       // the diner's walls, sign and rig, and its lot, as in the road area (ensureDiner)
       const o = DINER_ORIGIN, d = this.diner!;
       road.addPlace(d.colliders.filter((c) => c !== this.dinerCol), { minX: o.x + 3.6, maxX: o.x + 16, minZ: o.z - 16, maxZ: o.z + 16 }, o.y);
@@ -341,6 +349,8 @@ export class World {
       this.dinerCol = d.colliders.find((c) => Math.abs(c.minX - (o.x + 7.85)) < 0.01 && Math.abs(c.minZ - (o.z + 3.2)) < 0.01) ?? null;
       // its walls, the sign's posts and the rig hold the truck; the lot is gravel, and the truck is left on it
       this.road!.addPlace(d.colliders.filter((c) => c !== this.dinerCol), { minX: o.x + 3.6, maxX: o.x + 16, minZ: o.z - 16, maxZ: o.z + 16 }, o.y);
+      this.neonSlots.road = [0, 1].map(() => addFlood(0, -999, 0, 0, 0, this.road!.headlights.set));
+      for (const i of this.neonSlots.road) this.road!.headlights.set.skip.add(i);
       this.dinerPark = { minX: o.x + 5, maxX: o.x + 14, minZ: o.z - 4, maxZ: o.z + 14 };
       const px = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.9, 5.4), new THREE.MeshBasicMaterial({ visible: false }));
       px.position.set(a.x, o.y + 0.95, a.z); px.rotation.y = a.yaw; px.name = 'dinerTruck';
@@ -808,6 +818,15 @@ export class World {
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if ((this.area === 'road' || this.area === 'diner') && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
     this.drivingStep(dt, input, look);
+    // each area lights its own materials from its own lamps: the truck's headlights go to the
+    // diner's, and the diner's neon to the road's and the old road's (after the step, which has
+    // just put the headlights where the truck is now)
+    if (this.diner) {
+      const hl = this.area === 'roswell' ? this.oldRoad?.headlights : this.area === 'road' || this.area === 'diner' ? this.road?.headlights : undefined;
+      this.diner.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_DINER);
+      if (this.road) this.diner.neon(this.road.headlights.set, this.neonSlots.road, NEON_REACH, NEON_ON_ROAD);
+      if (this.oldRoad) this.diner.neon(this.oldRoad.headlights.set, this.neonSlots.old, NEON_REACH, NEON_ON_ROAD);
+    }
     // the dawn's haze on the far mesas (horizon.ts), as on the land in front of them; none at night
     if (this.area !== 'roswell') {
       const sk = this.d.sky();

@@ -178,6 +178,7 @@ export class Ultra {
       for (const set of floodSets) {
         if (set.key === 'cab' || (keys && !keys.includes(set.key))) continue;
         for (let i = 0; i < set.count; i++) {
+          if (set.skip.has(i)) continue;
           const p = set.pos[i];
           const w = p.w === OFF ? (this.held.find((h) => h && h.set === set && h.i === i)?.want ?? 0) : p.w;
           // overhead lamps only; the wide area floods over the array stay fake (a spot would

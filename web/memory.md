@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-06 morgen: Lys mellom områder som står i samme bilde: hvert område lyser sine materialer fra sitt eget sett falske lamper (`kit.floodSet`), og et sett kan ikke se et annet. Der to møtes, kopierer `World.update` lampene etter at bilen er flyttet: bilens frontlys inn i dinerens sett (`Diner.shine`), dinerens neon inn i veiens og den gamle veiens (`Diner.neon`). Styrken (`w`) bestemmer også hvor langt en lampe når, så en kopi justeres med fargen når kjeglen skal beholde størrelsen. Lamper som flytter seg eller er kopier, står i settets `skip`-liste og blir aldri ekte spotlys i Ultra (`core/ultra.ts`).
 - 2026-10-06 morgen: Landemerker langs den gamle veien bygges av Codex som egne moduler etter en kontrakt, og Claude kobler dem inn. Første er Kessler-ranchens innkjørsel ved mile 3,2 på venstre side (PR #76, `drive/oldRoadLandmarks.ts`, kontrakt i `production/kessler_20261006/contract.md`). Modulen får veiens egne funksjoner (`beside`, `heightAt`, `sAt`, `rnd`, `std`) og gir tilbake en gruppe, hindringer, gjerdegap og lyspunkter, alt i veiens lokale koordinater. `OldRoad.ts` legger hindringene over i verdenskoordinater, åpner gjerdet der gapet er (før gjerdet bygges) og tegner gårdslampa som et fast glødepunkt som svinner når dagen kommer. Ranchen er den fra avisutklippet på dineren. Ingen folk, ingen hendelse, og lastebilen holdes på veiretten. Utenfor 260 m-stripa langs veien ligger den grove bakken rundt én meter under `heightAt`; modulen tar høyde for det selv.
 - 2026-10-05 kveld: Tom: «ikke teleportering når man kjører bil. Når man skal kjøre til eller fra et sted, så må man faktisk kjøre.» Planen hans er radioprogram under kjøringen.
   - **Turer:** `World.startTrip(fra, til)` kjører bilen hele veien gjennom områdene (`drive/legs.ts`). Hvert område har sin egen kopi av bilen og sin egen kjørekontroll. Der to områder møtes på en vei, gis bilen videre mellom to bilder (`DriveController.adopt`). Bilen parkeres ved å stoppe på plassen (SARO-plassen, grusplassen ved porten), og `World.truckAt` sier hvor den står. Et avbrutt tur (lagring åpnes, tittelskjermen) setter bilene tilbake der de sto.
@@ -145,6 +146,8 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 - Sjekkpunkt: lagringens `checkpoint` er `residual` (02:13), `chapter1`, `chapter2`, `chapter3`, `chapter4` eller `chapter5`. Før 4. oktober lå det i `localStorage` under `s47.checkpoint`.
 
 ## Kjente fallgruver
+
+- Ultra (`core/vhs.ts`): skyggeleggingen i krokene (GTAO) blandes ut mellom 120 og 400 m. Uten det fikk fjernt terreng og mesaer harde trappetrinn langs kantene (drivelook K01), siden dybden er grov flere kilometer ute med nærplan på 3 cm.
 
 - Alt spilleren må nå, må testes med ekte gange (`Player.update`), ikke bare med `place()`. Arkivtelefonen kunne brukes i testen, men ikke nås i spillet, fordi testen teleporterte. Et dørblad, et bord og en stol kan til sammen stenge av halve rommet.
 - Spilleren må alltid stå inne i minst én sone. Der to soner møtes, må de overlappe med mer enn spillerens diameter, ellers blir spilleren stående fast i skjøten.

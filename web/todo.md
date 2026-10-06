@@ -6,7 +6,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
 - [x] Ekte kjøretur fra SARO til Mesa Diner (5. oktober kveld): dineren står i veiens eget område 2 km sør, så turen har bare byttet ved SARO (`drives.py`, `chapter5.py`).
-- [ ] Frontlysene lyser ikke opp dineren, og neonen på dineren lyser ikke opp bilen: dineren og veien har hver sine lyspunkter (`dinerFlood`, `roadFlood`). Kan løses ved å la dineren bruke veiens lyspunkter når den står i veiområdet.
+- [x] Frontlysene lyser opp dineren, og neonen gir bilen og riksveien et rødt skjær (6. oktober morgen): `World.update` kopierer lampene mellom settene (`Diner.shine`, `Diner.neon`).
 - [x] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (6. oktober natt, `chapter6.py`). Ingen kjøretur i spillet er et kutt lenger.
 - [x] Kessler-ranchens innkjørsel ved mile 3,2 på den gamle veien (Codex, PR #76), koblet inn 6. oktober morgen med gap i gjerdet og gårdslampe.
 - [ ] Flere rolige landemerker på den gamle veien etter samme kontrakt, hvis Tom vil ha dem (for eksempel en postkasse ved en sidevei eller en nedlagt bensinpumpe), så de 13 km har noe å se på før seksmilsstolpen.
@@ -98,6 +98,11 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 - [ ] Kjøreturen tilbake fra STATION 01 er et kutt. Vurder om den skal kjøres når Roswell-veien er bygd.
 
 ## Codex (avtalt med Tom 4. oktober 2026)
+
+### Levert 6. oktober kl. 09.16 (PR #78): drivelook av Kessler-strekningen i kapittel 6
+- [x] K01 (Ultra, trappetrinn langs fjernt terreng) rettet i `core/vhs.ts`. Ingen har sett gården fra en lastebil i fart, på Low eller Ultra eller i telefonstørrelse. Codex utvider sin `tools/drivelook.py` med en tur for strekningen (for eksempel `--trip kessler`): kapittel 6 slik spilleren får det, autopilot i kapitlets fart fra mile 2,9 til 3,5, klokka som kapitlet setter den (rundt 05:22). Bilder framover hver 40. meter, og blikk til venstre (yaw +1,2) ved 3,15, 3,20 og 3,25. Nivåene `low`, `high` og `ultra` (`localStorage` `s47.quality`, JSON-streng), størrelsene 844x390 og 1280x800. Flimmerkontroll: stående kamera 400, 200 og 80 m før porten, to bilder med 1/30 s mellom, andel endrede piksler rundt gården og grussporet (kandidater: grusbåndene side om side, skuldrene, feristen, navnebrettet). Samme strenge konsollregel som i PR #74.
+- Levering som PR #73: `production/drivelook_kessler_20261006/` med bilder, kontaktark, `review.md` og `review.json`, én funnliste med mile, koordinater, blikkretning, nivå, størrelse og alvor (P1 til P3), og et eget loggavsnitt. Funn inne i `oldRoadLandmarks.ts` retter Codex selv i en liten egen PR (modulen er Codex sin). Funn i `OldRoad.ts`, `World.ts`, lys og gjerder melder Codex til Claude, som retter dem.
+- Ikke i denne runden: endringer i `OldRoad.ts`, `World.ts`, eksisterende tester eller grafikk, nye assets.
 
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 

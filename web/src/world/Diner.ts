@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood } from './kit';
+import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
 // Load DINER_ART before construction. The five diner images are the only required art.
 // The SARO truck is owned by World; this module supplies its parking anchor/collider.
-export const dinerFlood = floodSet(10, 'diner', .14);
+// ten lamps of its own, and three for the driven truck's headlights (shine)
+export const dinerFlood = floodSet(13, 'diner', .14);
 let floodOwner: Diner | null = null;
 type Anchor = { x: number; z: number; yaw: number };
 export type DinerAnchors = Record<'truckPark'|'arrive'|'outside'|'inside'|'stool'|'phone', Anchor>;
@@ -63,6 +64,7 @@ export class Diner {
     this.light(2.5,1.7,-4.8,4,0xffcf98);this.light(2.5,1.7,4.8,4,0xffcf98);
     this.slots.dawn=this.light(16,7,3,0,0xaac7df);
     this.slots.phone=this.light(.5,2.6,8.1,1.8,0xddddd2);
+    this.head=[0,1,2].map(()=>addFlood(0,-999,0,0,0xfff0d8,dinerFlood));for(const h of this.head)dinerFlood.skip.add(h);
     this.zone('lot',2.8,16.7,-16,16);this.zone('walk',1.55,3.7,-9.4,9.4);
     this.zone('door',.7,3.3,-.6,.6);this.zone('inside',-4.05,1.8,-8.8,8.8);
     this.zone('phone',-1.6,1.8,7.4,8.8);
@@ -318,6 +320,20 @@ export class Diner {
    *  road, whose night light takes over there (World.ts). */
   setNear(w:number){this.near=THREE.MathUtils.clamp(w,0,1);this.lights.hemi.intensity=(.55+this.dawn*.3)*this.near;}
   private near=1;
+  private head:number[]=[];
+  /** The driven truck's headlights on the diner: the lamps of another set (the road's, the old
+   *  road's) copied into the diner's own three each frame, their colour k times as strong, since
+   *  the diner's light falls off faster than the road's (by colour, so the pools keep their size).
+   *  src null: none. */
+  shine(src:FloodSet|null,slots:readonly number[],k:number){if(floodOwner!==this)return;
+    this.head.forEach((h,j)=>{const i=slots[j],p=dinerFlood.pos[h];if(!src||i===undefined||i<0){p.w=0;return;}p.copy(src.pos[i]);dinerFlood.col[h].copy(src.col[i]).multiplyScalar(k);});
+  }
+  /** The sign's red and cyan neon as two lamps in another set (out: the road's, the old road's):
+   *  they light the truck and the highway by the lot. reach widens the pool (the strength sets
+   *  how far a lamp reaches), k scales the colour. */
+  neon(out:FloodSet,slots:readonly number[],reach:number,k:number){if(floodOwner!==this)return;
+    [this.slots.red,this.slots.cyan].forEach((i,j)=>{const o=slots[j];if(o===undefined||o<0)return;out.pos[o].copy(dinerFlood.pos[i]);out.pos[o].w*=reach;out.col[o].copy(dinerFlood.col[i]).multiplyScalar(k);});
+  }
   update(_dt:number,t:number){if(this.disposed||floodOwner!==this)return;
     if(this.signLit){setFlood(this.slots.red,8*(.965+.035*Math.sin(t*7.3)),dinerFlood);setFlood(this.slots.cyan,4*(.985+.015*Math.sin(t*4.7)),dinerFlood);}
     const k=.98+.02*Math.sin(t*8.1)*Math.sin(t*.9);setFlood(3,4.5*k,dinerFlood);eachVariant(this.m.tube,v=>(v as THREE.MeshStandardMaterial).emissiveIntensity=.75*k);

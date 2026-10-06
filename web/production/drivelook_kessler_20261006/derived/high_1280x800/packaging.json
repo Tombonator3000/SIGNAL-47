@@ -1,0 +1,1416 @@
+{
+  "config": "high_1280x800",
+  "integrity_status": "PASS",
+  "visual_status": "UNVERIFIED; manual review is owned separately",
+  "manifest_sha256": "71ee4d121d3ae23402219bf393d6c10223d83e248d3e0ecef78b5091fc9e3f31",
+  "checks": [
+    {
+      "status": "PASS",
+      "check": "completed capture without failures",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "exactly one Kessler trip",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "trip completed",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "40 metre schedule and 30 Hz physics",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "no route placement; three explicitly placed fixtures",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "requested quality",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "route evidence present",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "all thresholds 40..960 once in order",
+      "detail": [
+        40.0,
+        80.0,
+        120.0,
+        160.0,
+        200.0,
+        240.0,
+        280.0,
+        320.0,
+        360.0,
+        400.0,
+        440.0,
+        480.0,
+        520.0,
+        560.0,
+        600.0,
+        640.0,
+        680.0,
+        720.0,
+        760.0,
+        800.0,
+        840.0,
+        880.0,
+        920.0,
+        960.0
+      ]
+    },
+    {
+      "status": "PASS",
+      "check": "actual start crossing mile 2.9",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "actual end crossing mile 3.5",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "real chapter-six diner-lot start",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "held chapter-six cab throughout route",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "route mile/time progression never regresses",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "threshold captures use actual nearby poses (maximum 14m overshoot)",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "three requested yaw +1.2 shots preserve truck/clock/camera",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "left captures at requested mile crossings",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "effective quality and Ultra state on every image",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "route uses player-default picture mode",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "effective postprocessing follows each recorded picture/quality",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "actual render buffers and DPR match requested screenshot size",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_000_start_mile2_9.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_001_forward_0040m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_002_forward_0080m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_003_forward_0120m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_004_forward_0160m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_005_forward_0200m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_006_forward_0240m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_007_forward_0280m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_008_forward_0320m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_009_forward_0360m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_010_forward_0400m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_011_mile3.15_left.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_012_forward_0440m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_013_forward_0480m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_014_mile3.20_left.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_015_forward_0520m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_016_forward_0560m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_017_mile3.25_left.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_018_forward_0600m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_019_forward_0640m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_020_forward_0680m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_021_forward_0720m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_022_forward_0760m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_023_forward_0800m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_024_forward_0840m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_025_forward_0880m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_026_forward_0920m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_027_forward_0960m.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_028_end_mile3_5.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_029_fixture_400m_player_default_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_030_fixture_400m_player_default_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_031_fixture_400m_picture_off_repeatability_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_032_fixture_400m_picture_off_repeatability_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_033_fixture_200m_player_default_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_034_fixture_200m_player_default_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_035_fixture_200m_picture_off_repeatability_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_036_fixture_200m_picture_off_repeatability_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_037_fixture_80m_player_default_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_038_fixture_80m_player_default_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_039_fixture_80m_picture_off_repeatability_a.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "lossless PNG hash/dimensions: kessler_040_fixture_80m_picture_off_repeatability_b.png",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "unique image filenames",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "strict console policy and no page errors",
+      "detail": {
+        "errors": [],
+        "replayed_errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "status": "PASS",
+      "check": "no non-favicon HTTP failures",
+      "detail": []
+    },
+    {
+      "status": "PASS",
+      "check": "all loaded document/script hashes match immutable Pages artifact",
+      "detail": [
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/",
+          "artifact_file": "index.html",
+          "captured_sha256": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+          "artifact_sha256": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js",
+          "artifact_file": "assets/three-BmJFo-nY.js",
+          "captured_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+          "artifact_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js",
+          "artifact_file": "assets/index-6zErlevA.js",
+          "captured_sha256": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+          "artifact_sha256": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js",
+          "artifact_file": "assets/Truck-BjHqOuqb.js",
+          "captured_sha256": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+          "artifact_sha256": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js",
+          "artifact_file": "assets/corridors-vcV_KWGQ.js",
+          "captured_sha256": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+          "artifact_sha256": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js",
+          "artifact_file": "assets/roadProps-BkmlbaRJ.js",
+          "captured_sha256": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+          "artifact_sha256": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js",
+          "artifact_file": "assets/roadPlaces-D4d7psiq.js",
+          "captured_sha256": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+          "artifact_sha256": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js",
+          "artifact_file": "assets/Diner-40I9Zmgv.js",
+          "captured_sha256": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+          "artifact_sha256": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js",
+          "artifact_file": "assets/oldRoadTextures-BJadX3oc.js",
+          "captured_sha256": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+          "artifact_sha256": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js",
+          "artifact_file": "assets/RoadArea-0LJIUHZH.js",
+          "captured_sha256": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+          "artifact_sha256": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js",
+          "artifact_file": "assets/Drive-DT2ONwUm.js",
+          "captured_sha256": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+          "artifact_sha256": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js",
+          "artifact_file": "assets/engineSound-CO3P3YJA.js",
+          "captured_sha256": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+          "artifact_sha256": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js",
+          "artifact_file": "assets/legs-C0NAVXJZ.js",
+          "captured_sha256": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+          "artifact_sha256": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+          "matches": true
+        },
+        {
+          "url": "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js",
+          "artifact_file": "assets/OldRoad-Dc8h7dCB.js",
+          "captured_sha256": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b",
+          "artifact_sha256": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b",
+          "matches": true
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "check": "integrated OldRoad chunk was loaded",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "image source baseline is recorded main",
+      "detail": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d"
+    },
+    {
+      "status": "PASS",
+      "check": "all requested stationary fixture pairs captured",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 400m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 400m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 400m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 400m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 400m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 400m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 400m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 400m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 400m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 400m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 400m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 400m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 400m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 400m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 200m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 200m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 200m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 200m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 200m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 200m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 200m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 200m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 200m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 200m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 200m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 200m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 200m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 200m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 80m/player_default",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 80m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 80m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 80m/player_default/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 80m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 80m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 80m/player_default/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "explicit fixture provenance 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair pose and camera matrices restored exactly 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "fixture truck remains stationary and RAF held 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair materials and render settings remain stable 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "separate exact simulation/render timing 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "pair picture mode 80m/picture_off_repeatability",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 80m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 80m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 80m/picture_off_repeatability/farm",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "measured component rectangle is valid 80m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed component pixel thresholds 80m/picture_off_repeatability/gravel_track",
+      "detail": null
+    },
+    {
+      "status": "PASS",
+      "check": "recomputed mean/max/percentiles 80m/picture_off_repeatability/gravel_track",
+      "detail": null
+    }
+  ],
+  "originals_unchanged": true,
+  "derived_assets": [
+    {
+      "file": "route-contact-01.png",
+      "width": 1152,
+      "height": 1288,
+      "kind": "contact_sheet",
+      "originals": [
+        "kessler_000_start_mile2_9.png",
+        "kessler_001_forward_0040m.png",
+        "kessler_002_forward_0080m.png",
+        "kessler_003_forward_0120m.png",
+        "kessler_004_forward_0160m.png",
+        "kessler_005_forward_0200m.png",
+        "kessler_006_forward_0240m.png",
+        "kessler_007_forward_0280m.png",
+        "kessler_008_forward_0320m.png",
+        "kessler_009_forward_0360m.png",
+        "kessler_010_forward_0400m.png",
+        "kessler_012_forward_0440m.png"
+      ]
+    },
+    {
+      "file": "route-contact-02.png",
+      "width": 1152,
+      "height": 1288,
+      "kind": "contact_sheet",
+      "originals": [
+        "kessler_013_forward_0480m.png",
+        "kessler_015_forward_0520m.png",
+        "kessler_016_forward_0560m.png",
+        "kessler_018_forward_0600m.png",
+        "kessler_019_forward_0640m.png",
+        "kessler_020_forward_0680m.png",
+        "kessler_021_forward_0720m.png",
+        "kessler_022_forward_0760m.png",
+        "kessler_023_forward_0800m.png",
+        "kessler_024_forward_0840m.png",
+        "kessler_025_forward_0880m.png",
+        "kessler_026_forward_0920m.png"
+      ]
+    },
+    {
+      "file": "route-contact-03.png",
+      "width": 1152,
+      "height": 373,
+      "kind": "contact_sheet",
+      "originals": [
+        "kessler_027_forward_0960m.png",
+        "kessler_028_end_mile3_5.png"
+      ]
+    },
+    {
+      "file": "left-contact.png",
+      "width": 1152,
+      "height": 373,
+      "kind": "contact_sheet",
+      "originals": [
+        "kessler_011_mile3.15_left.png",
+        "kessler_014_mile3.20_left.png",
+        "kessler_017_mile3.25_left.png"
+      ]
+    },
+    {
+      "file": "fixture-contact-01.png",
+      "width": 1152,
+      "height": 1288,
+      "kind": "contact_sheet",
+      "originals": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png",
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png",
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png",
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png",
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png",
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ]
+    },
+    {
+      "file": "fixture-400m-player_default-plate.png",
+      "raw_difference": "fixture-400m-player_default-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ]
+    },
+    {
+      "file": "fixture-400m-picture_off_repeatability-plate.png",
+      "raw_difference": "fixture-400m-picture_off_repeatability-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png"
+      ]
+    },
+    {
+      "file": "fixture-200m-player_default-plate.png",
+      "raw_difference": "fixture-200m-player_default-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png"
+      ]
+    },
+    {
+      "file": "fixture-200m-picture_off_repeatability-plate.png",
+      "raw_difference": "fixture-200m-picture_off_repeatability-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png"
+      ]
+    },
+    {
+      "file": "fixture-80m-player_default-plate.png",
+      "raw_difference": "fixture-80m-player_default-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png"
+      ]
+    },
+    {
+      "file": "fixture-80m-picture_off_repeatability-plate.png",
+      "raw_difference": "fixture-80m-picture_off_repeatability-raw-difference.png",
+      "kind": "fixture_pair_component_differences",
+      "width": 1152,
+      "height": 720,
+      "originals": [
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ]
+    }
+  ],
+  "image_hashes": [
+    {
+      "file": "kessler_000_start_mile2_9.png",
+      "sha256": "cf61017d561309df0500a0d81dbe10866038a4842b8bb7cfc9dea82e39ccb4a1",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_001_forward_0040m.png",
+      "sha256": "df6753085514e56ea5a364da2937e3f21d561d1af23df45329b535afa1b5619c",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_002_forward_0080m.png",
+      "sha256": "2bc22a4f299ef621ba27cf571ca7ab2105cf801e2f621f7b0c8cc56816b03a1f",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_003_forward_0120m.png",
+      "sha256": "63f01e595e6974370f3f4e236fa8444e1f7b938f3c5fecd0d56e400fce4f71d3",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_004_forward_0160m.png",
+      "sha256": "db71e4e9a0cf3d6a1df6c91491047bfd8cc1d00571e3d3319ccfae6997b6be70",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_005_forward_0200m.png",
+      "sha256": "c1658b25f4571e4dda3f3369ede0c3ce44d76178e00b26768a853059295c09cf",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_006_forward_0240m.png",
+      "sha256": "3ff28706d7fb74e8f6ae3b2bcbb8cefe141387cdc38db09f2cc1c9b1ec68f6d8",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_007_forward_0280m.png",
+      "sha256": "80d88fcdf1372d92a5f532caee0c3e68c540080dba6c926350c5b7dc580c2259",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_008_forward_0320m.png",
+      "sha256": "6be93df5303aa1a5c4b4820b0a7f166ee9c05c8fdd4eccdc508368d2749ea3d1",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_009_forward_0360m.png",
+      "sha256": "c95e7c091cdf76899fa4a6f78951403ea8bcdf49af84f8087a7358165ee100f5",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_010_forward_0400m.png",
+      "sha256": "f51bce4300f51370983737f92e48eee69e1ccf8f119eda9dc52c67fad4eed0c8",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_011_mile3.15_left.png",
+      "sha256": "809bd930c8328f46b4ac070552ce1082351d575254d6326d97d12edd0ed561c7",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_012_forward_0440m.png",
+      "sha256": "63516eb3c54dcf994a98075b4e2bb10b4432abfb85f5a7f6edfd98b1610edad0",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_013_forward_0480m.png",
+      "sha256": "9964cbdcfe64c42c8760781180d798a536367eaac66bf8d039191b31caf64a9c",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_014_mile3.20_left.png",
+      "sha256": "4abcec3369b022f39052380656e2122c4f135bd11810806e6b2cad7fd0ee3b44",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_015_forward_0520m.png",
+      "sha256": "8da23f128369cf612f3e1c4d218d1f113d952d6204a073484dc24b61b81e7a9f",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_016_forward_0560m.png",
+      "sha256": "e4fe179d1f088bacd1cc85325f3f87930f05a763d2a85efe222a4bef71128249",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_017_mile3.25_left.png",
+      "sha256": "02260a727c7897b1af545de133a9a87989e33d29649f006d00c3e706b9bbc372",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_018_forward_0600m.png",
+      "sha256": "d7df38acbb155de6a74b2d249b7839396b6cb54cc5e6c13fbcb0a11894c4d7e8",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_019_forward_0640m.png",
+      "sha256": "46e62c506a04d5d18b03112b2cb19b2d6ffa5eab9d3f0366ec0373a4a7c4adfc",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_020_forward_0680m.png",
+      "sha256": "efde0032f332cc94895543ad8cb0256498cb6b2a3cbab36507acdf0c2487da32",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_021_forward_0720m.png",
+      "sha256": "f045e4f6c42b14e4088a4eb4d2a37b26c90328a42ceca59586f37bdb4cb555e4",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_022_forward_0760m.png",
+      "sha256": "f7f4fc720ce7b33a1420cbfe75d7dd5df0bbd6512651fe6efac97158f3559701",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_023_forward_0800m.png",
+      "sha256": "fa68bce852baee7edc20bd6a2924d1f1bd7659ff510e7d34a3b7daba09324cec",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_024_forward_0840m.png",
+      "sha256": "c930d3db907c143eb6cf4288fc9c35a89bf05922a5a5c5a28305648311da6a82",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_025_forward_0880m.png",
+      "sha256": "817ae1f475597df7a7fdaac68a65d19ee2244435f6dd6ba6151e5f8497985196",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_026_forward_0920m.png",
+      "sha256": "8547d7929248e63f9ea5007a54037890c86b53d5a72e42b547887d0c2473adad",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_027_forward_0960m.png",
+      "sha256": "c5b7a0c86d91a845be9c6a9b13ad2c34133e57bc35d6c35e3e2f9d9a5db82c0e",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_028_end_mile3_5.png",
+      "sha256": "371d2b338d0d9211a08782ce6730947d6e7794eda713cb9465095510f7c3f4db",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_029_fixture_400m_player_default_a.png",
+      "sha256": "412628eb0cbf2bc39ef463cc17a31280dfb336d51b43eaeafb1df859289e423d",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_030_fixture_400m_player_default_b.png",
+      "sha256": "af96122bcb4721ceb6396281c94ffd9f62705f4db518f7695cfe8ae7bc60fb38",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+      "sha256": "63da31a8152676cd8cca1051ebd2b7a8a48f339da96815ecf7fd7e03996edcf5",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_032_fixture_400m_picture_off_repeatability_b.png",
+      "sha256": "a8a670f4b7b7f614035900a72641c661044b2ce8c64bbc71b73ed0c52937be8e",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_033_fixture_200m_player_default_a.png",
+      "sha256": "3f00499030888e5dccd9d2b1a21872942b6fb40a7dd279b3135e7f4e434b4b92",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_034_fixture_200m_player_default_b.png",
+      "sha256": "63c9e5eb2fe6dd306fc6e37b6d119968b0c874557d21677892190ba84fff6e9d",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+      "sha256": "faef3d45350e0d9fcd93b3a0c1dafc47637f3dcfbafecf51b533d1fe236df3c0",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_036_fixture_200m_picture_off_repeatability_b.png",
+      "sha256": "85d71e21d7736a89e908fd457a68a69569535964747e5f7fdbc72176282f7a0e",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_037_fixture_80m_player_default_a.png",
+      "sha256": "990198cedc3eabd215f40367a32a0af49f83e8b7bf5e4686fa054b34b77b9145",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_038_fixture_80m_player_default_b.png",
+      "sha256": "1edbd972eafc675923a935bfa542be9ecc751b4eed11fd0d58481d1f2a9d7a0b",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+      "sha256": "6ed25fc04c07db17c574ea03adc4ffad73c2a0de26495c7b3eb93cc63f21761d",
+      "size": [
+        1280,
+        800
+      ]
+    },
+    {
+      "file": "kessler_040_fixture_80m_picture_off_repeatability_b.png",
+      "sha256": "f7d05ce0b5e659cce92a1a39f3633698a0e6814c6f122b0fdf5c95c011eec083",
+      "size": [
+        1280,
+        800
+      ]
+    }
+  ],
+  "resource_hashes": [
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/",
+      "artifact_file": "index.html",
+      "captured_sha256": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+      "artifact_sha256": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js",
+      "artifact_file": "assets/three-BmJFo-nY.js",
+      "captured_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+      "artifact_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js",
+      "artifact_file": "assets/index-6zErlevA.js",
+      "captured_sha256": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+      "artifact_sha256": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js",
+      "artifact_file": "assets/Truck-BjHqOuqb.js",
+      "captured_sha256": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+      "artifact_sha256": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js",
+      "artifact_file": "assets/corridors-vcV_KWGQ.js",
+      "captured_sha256": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+      "artifact_sha256": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js",
+      "artifact_file": "assets/roadProps-BkmlbaRJ.js",
+      "captured_sha256": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+      "artifact_sha256": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js",
+      "artifact_file": "assets/roadPlaces-D4d7psiq.js",
+      "captured_sha256": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+      "artifact_sha256": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js",
+      "artifact_file": "assets/Diner-40I9Zmgv.js",
+      "captured_sha256": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+      "artifact_sha256": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js",
+      "artifact_file": "assets/oldRoadTextures-BJadX3oc.js",
+      "captured_sha256": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+      "artifact_sha256": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js",
+      "artifact_file": "assets/RoadArea-0LJIUHZH.js",
+      "captured_sha256": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+      "artifact_sha256": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js",
+      "artifact_file": "assets/Drive-DT2ONwUm.js",
+      "captured_sha256": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+      "artifact_sha256": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js",
+      "artifact_file": "assets/engineSound-CO3P3YJA.js",
+      "captured_sha256": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+      "artifact_sha256": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js",
+      "artifact_file": "assets/legs-C0NAVXJZ.js",
+      "captured_sha256": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+      "artifact_sha256": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+      "matches": true
+    },
+    {
+      "url": "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js",
+      "artifact_file": "assets/OldRoad-Dc8h7dCB.js",
+      "captured_sha256": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b",
+      "artifact_sha256": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b",
+      "matches": true
+    }
+  ]
+}
