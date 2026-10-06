@@ -1,0 +1,12 @@
+{
+  "checked_utc": "2026-10-06T14:15:21.438Z",
+  "status": "VISIBLE_MESSAGE_SENT",
+  "session_url": "https://claude.ai/code/session_01LVHLZRk2YVK6KDkobNYQQv",
+  "message": 103,
+  "pr": "https://github.com/Tombonator3000/SIGNAL-47/pull/80",
+  "head": "7fa22190ea771fa01a977d874455ff313b775512",
+  "receipt": "Message 103 with delivery links visible; prompt empty; Claude responding",
+  "screenshot_local_path": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight-final-handoff-20261006.png",
+  "screenshot_sha256": "be7c156c63f8c7d167eadc646f2e23dd26374fab94ac5bfcd2f9ff75a1a238ab",
+  "scope": "Visible submission of message 103; does not claim Claude reviewed or accepted contents."
+}
