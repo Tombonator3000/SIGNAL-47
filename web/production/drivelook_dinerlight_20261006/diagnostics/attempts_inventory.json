@@ -1,0 +1,680 @@
+{
+  "checked_utc": "2026-10-06T13:38:11.656915+00:00",
+  "status": "SUPERSEDED_PROBES",
+  "final_evidence_suffix": "_v4",
+  "policy": "Original images/manifests retained locally without overwrite. Representative original camera/clock probes copied byte-identically into diagnostics. Original CAPTURED/FAIL/CAPTURING status preserved; none used as final game evidence.",
+  "attempts": [
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_high_844x390_20261006",
+      "manifest_sha256": "4d16147d0478a2b89a7c7be15506d0b361381dc745eb30a954cb2cb895aafadb",
+      "original_status": "CAPTURED",
+      "failures": [],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "CAPTURED",
+          "PNG_count": 15,
+          "foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURED",
+          "PNG_count": 9,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "35ce532cf8bd356eac194259ee0bc2f43c7ccb8d3ea52ec88a159c8ffdda70e8"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "592526285381c546fdb049459a77a4c8f21655ea9035fe31feba5c84b431e582"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "3fe14113c9b3d1c2028908c1a684d042ebadf023a78ecc05b2f13fc89b9c17c7"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "ec17680e9e9d3f9feb938f03f021ce37fbd963a4f73ce0e0e3a056291f3a195e"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "86dfb1343cb3c6d5c623d0a54fd0e0a607ddee3a054eff4ad127b9b63fdd0064"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "9b535edd9d921cbf4048c22664b0a2a436adc03b097948c96121ddfb35df66f3"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "e0b8c2cb5d8f103e6ef379ca4e8de7c7c63380c167fab6d60e6925d500bb9835"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "8d4b26a10712cc91d22e6980cde6887cb5fdb3e0c6107158d4e6a62006fb7869"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "705256705b8a329017ff45017637f8e62f2fa228763328544225af4a710c5b55"
+        },
+        {
+          "file": "dinerlight_arrival_009_prepark_forward_lights_on.png",
+          "sha256": "e7d5fbcb3b7a3d5f6196a25b85431cbc087bb4b79c9107b8a766903cce14719a"
+        },
+        {
+          "file": "dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "sha256": "e88c2fef19d4fc66f1e7229488ba8117cf210a4edb41074555099eb7dda44b5f"
+        },
+        {
+          "file": "dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "sha256": "ff4f057281004282ba38b869a83958ee5d006019e15a66a74914c495404c2370"
+        },
+        {
+          "file": "dinerlight_arrival_012_arrival_end_parked.png",
+          "sha256": "f72640bb1d110cc57d9c9bcbb1c207a8e0924b80c40b08dfb8192f5648ba3df4"
+        },
+        {
+          "file": "dinerlight_arrival_013_parked_facade_lights_off.png",
+          "sha256": "2e2bcc405781fa18359d358688957deca6e01009050edf99ff682a4d91f6ebe5"
+        },
+        {
+          "file": "dinerlight_arrival_014_parked_sign_lights_off.png",
+          "sha256": "5a1765c83e2d4c9f7e0dfbb0c9c1a83561efb9490db5c718fa869037f9fb7879"
+        },
+        {
+          "file": "dinerlight_departure_000_route_start.png",
+          "sha256": "5557384b22ecc978041ec8c63eb318edd5742ac1319ac05da9592672a6e5090f"
+        },
+        {
+          "file": "dinerlight_departure_001_forward_040m.png",
+          "sha256": "1c1fbc9592582dd535841566738c293ab9848d55bf1543710f8c3824e9b80291"
+        },
+        {
+          "file": "dinerlight_departure_002_forward_080m.png",
+          "sha256": "0ff24c326306318269cefc4c88c965b0c463a2d437bcc10a5b049b3638f64864"
+        },
+        {
+          "file": "dinerlight_departure_003_forward_120m.png",
+          "sha256": "ddb941633ffc83574051e93cfdfaa151d63d6c5b1a5560e1d5f0ee88f1a8f673"
+        },
+        {
+          "file": "dinerlight_departure_004_forward_160m.png",
+          "sha256": "3799620d89d9c1ac8c0a3e64f12ba05e01bbad9613c5d2cd30d5bb26b52aac43"
+        },
+        {
+          "file": "dinerlight_departure_005_forward_200m.png",
+          "sha256": "d3856be519fc28756dbfac5df14d158699678914a538ffe9c7c9a48c67044765"
+        },
+        {
+          "file": "dinerlight_departure_006_forward_240m.png",
+          "sha256": "377bf0ff11b878069791ac0c7291475b1f6fbc5175bfba4557f289fd7e57efb8"
+        },
+        {
+          "file": "dinerlight_departure_007_forward_280m.png",
+          "sha256": "ffb0709c4ceebb8f36d8a216ceecf19147523513c39980ba95c614d5ab7af5c0"
+        },
+        {
+          "file": "dinerlight_departure_008_departure_end_300m.png",
+          "sha256": "a9ceb41044c7352c5b9c97a9ca919d88e04423fe4d34ec0f35bf29d6ade6cb0a"
+        }
+      ]
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_high_844x390_20261006_v2",
+      "manifest_sha256": "5b43130a51fdb62e76c91a9c3fa0643566a63760868601f4e374fc0f35c10df3",
+      "original_status": "CAPTURED",
+      "failures": [],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "CAPTURED",
+          "PNG_count": 15,
+          "foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURED",
+          "PNG_count": 9,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "bc2e2ebe4eb13d6cf05dca9bff8ea326bc35f0d9a644fd6c53ff698103ffd3b5"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "7bef2567ccf4171a5257e34ca9ddf95ab18f383944764e8c00689e0d3878559b"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "b79ea06981856d0ceef1eea4b0b0d938428b4b7115ddd2136fd3d1d53a18248d"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "36b881aa9437661204f22027c87d7a643e761f5fb4d5bcd4ab7fc0c5c5038396"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "cdddbf16235a0fb173bad930ce5781279ca3453e3b1f7c86764d8c1eaa242fed"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "5c25bc27dceeacf479d526c3dd78811c6f9287249fea5d6e3cace3c8805cb532"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "a8d8c6c9e208738eabe371b238d7f7a43ad97cbf19a4e958282dc50f85570391"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "68381e58ffffe170e202faf050401fe630ce383510d5981eba4313fcf1be8f87"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "3eecf2e8630ccb85d234a31d190e1c220237c85d3e9c1eb6ac244b870d7b80ae"
+        },
+        {
+          "file": "dinerlight_arrival_009_prepark_forward_lights_on.png",
+          "sha256": "d70c87c74ef7b11e0d8f2e7081c5b1b8d4072bf13eb5b1a8c07f5a45a5ff9581"
+        },
+        {
+          "file": "dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "sha256": "633901c61f81e3f3e8edbb97265b4f2c5a03c4644c1146a6c6bdbe0cefdfbb79"
+        },
+        {
+          "file": "dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "sha256": "71071ddf953fa052b64bdab9fcf546d375b862111f3671a2c81be492a26c37b9"
+        },
+        {
+          "file": "dinerlight_arrival_012_arrival_end_parked.png",
+          "sha256": "54c51a87a2ae41efe66b0ede5d72a1689d160ea9680d67317f50c3717d25edee"
+        },
+        {
+          "file": "dinerlight_arrival_013_parked_facade_lights_off.png",
+          "sha256": "bf1976f99c5942bf323badd26beebb1b766ce0ce6043377ae5c07a0215832146"
+        },
+        {
+          "file": "dinerlight_arrival_014_parked_sign_lights_off.png",
+          "sha256": "f18dd1de5967bad59363a2dfb5941254ad5af423a41c25f58c7eafcb24ce6531"
+        },
+        {
+          "file": "dinerlight_departure_000_route_start.png",
+          "sha256": "326f886334463160da8cf1e0a4ededf7fc2c032f2e7cdc296fc41186fe090982"
+        },
+        {
+          "file": "dinerlight_departure_001_forward_040m.png",
+          "sha256": "80a808b81601fb532f1118d363ecce3c55293934b06d3321b64e4533a608a00e"
+        },
+        {
+          "file": "dinerlight_departure_002_forward_080m.png",
+          "sha256": "8526f9db2162fc8030424262b2a23ae0c8595303b0d7516c320d7cbfb53a5333"
+        },
+        {
+          "file": "dinerlight_departure_003_forward_120m.png",
+          "sha256": "56ccad8d9c6d3faf1593e7fd61e2755844ec501ad13c575ae9058aa94c693fba"
+        },
+        {
+          "file": "dinerlight_departure_004_forward_160m.png",
+          "sha256": "809b8b2b96690fe6ba19afb5ff92da3660f28502ebb0b66274c6fdaf571eda56"
+        },
+        {
+          "file": "dinerlight_departure_005_forward_200m.png",
+          "sha256": "b9d70a800564cad3b827ed89e5bfd846434f204c1a52c79f6af727a3a16e2f9f"
+        },
+        {
+          "file": "dinerlight_departure_006_forward_240m.png",
+          "sha256": "820f1081d02d46eb242d6976a093c4dc1212ec5a9c592320dbd9665b474273fe"
+        },
+        {
+          "file": "dinerlight_departure_007_forward_280m.png",
+          "sha256": "e5348fb71099f5da5ca1b5999e52da725213e05477512af622243eb5161859ba"
+        },
+        {
+          "file": "dinerlight_departure_008_departure_end_300m.png",
+          "sha256": "29aef855782920dda9b643b210ba092c40e7c191fd8b2858845148902c3e4412"
+        }
+      ]
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_low_844x390_20261006",
+      "manifest_sha256": "c58e1816cdfac533ce6e46bf3787677aa29c16843eb3f5c94289ac60b432de13",
+      "original_status": "CAPTURED",
+      "failures": [],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "CAPTURED",
+          "PNG_count": 15,
+          "foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURED",
+          "PNG_count": 9,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "a7a8b7ae3a04daa3a2e2ff46aac87bc174b239cd22bd2d14b88ab41297e13f2d"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "3cd0f0ed65c0c69c8599ac7947a5c6b9ad19e59d5a7c64b24702f5181f0ef60b"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "303ad1f3735a05dead0838e42a761152ed126395f326a6342b8f9bdba11a4d50"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "ac6cb0ff1de22976bf1b360510fe30649d5456f8ade5eec1ead791508847f68d"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "e739f9c95bc0bcd5b38aa1d998aa4a600fc753e23ea475d7eb0d98453890680c"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "c5a4836160d42f903c17a06503c9f92d3be3ef992a42f063eb5e6b33e57d9c58"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "1d915627ade6c829e3fbff2461297d03d156180a96e7802db1d892c88b349228"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "ac9726b573fd6edaeb041115697fe62734f4c703c4f9af6a19088a5e80a12e85"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "b58a517bd512b1f7e7d484a33fa39b89413b781bfbb8359dcf829a75a346c6fb"
+        },
+        {
+          "file": "dinerlight_arrival_009_prepark_forward_lights_on.png",
+          "sha256": "cb6aefdd1f2ab4d820d43c245a37c8cae9d512737b946cc89ce893e6f7481955"
+        },
+        {
+          "file": "dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "sha256": "ee10816abd88e599f661d0d74d80348c33da8cb4ab2d677385bbb720c9870fd2"
+        },
+        {
+          "file": "dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "sha256": "beed85754d026fdc188accf1938ca48a858bf640097b79050f67e452eb8e880e"
+        },
+        {
+          "file": "dinerlight_arrival_012_arrival_end_parked.png",
+          "sha256": "33fa8c7ef82ba0053ca6d706af2d2cbcbf29c2a319dd2468a3509d0c9563762c"
+        },
+        {
+          "file": "dinerlight_arrival_013_parked_facade_lights_off.png",
+          "sha256": "f4c8f2e12e75132cd229fb5cd0baeee8b99169cc6615b20f5ff41073dc7f9f88"
+        },
+        {
+          "file": "dinerlight_arrival_014_parked_sign_lights_off.png",
+          "sha256": "e02ba0335826e1724d41d1c2f9ddd678c884daf061be3c15697e66b59bbb976d"
+        },
+        {
+          "file": "dinerlight_departure_000_route_start.png",
+          "sha256": "b36779a1968056e007c9f82e833fdaf5f6476ae955514209e0dcd9229e92f2c7"
+        },
+        {
+          "file": "dinerlight_departure_001_forward_040m.png",
+          "sha256": "e5e3eb3891775f81787c28d3a07ce8fd6eb8ece06d2f8a7b346cd6e694c4fbf0"
+        },
+        {
+          "file": "dinerlight_departure_002_forward_080m.png",
+          "sha256": "0bf786ea8e230d6263e24d498907057e574b6b99cdd06ec9b1d73fd9c4dffa63"
+        },
+        {
+          "file": "dinerlight_departure_003_forward_120m.png",
+          "sha256": "c3f1564f5cba235b618de62f865fae68e69532c0e1c2ad241232374e5bd1a773"
+        },
+        {
+          "file": "dinerlight_departure_004_forward_160m.png",
+          "sha256": "f89b5a21bf81f9808f68ae75e0d8cf910f04226c8c15708b84acf3b8963f6600"
+        },
+        {
+          "file": "dinerlight_departure_005_forward_200m.png",
+          "sha256": "b0826cf404a4a278b5b0563ce92ab21abb5035ed9b23780fc93015f3c7930a7e"
+        },
+        {
+          "file": "dinerlight_departure_006_forward_240m.png",
+          "sha256": "1fb71561eecc5e20437e0091cd43cd0bc7e612f109d0af5445473ebb4b254c43"
+        },
+        {
+          "file": "dinerlight_departure_007_forward_280m.png",
+          "sha256": "bfbc58b4a7fd8495a5c2af4047d4af4b79791dfd5e4ca5780c1df9a631377045"
+        },
+        {
+          "file": "dinerlight_departure_008_departure_end_300m.png",
+          "sha256": "57c57347586207b270fe65fb6f78e34dbe54560a1bc2c72648a3a674fdac92bc"
+        }
+      ]
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_low_844x390_20261006_v2",
+      "manifest_sha256": "eb7e8fc76f22d1ef06b3c76f7b996db8b0ceb3378b899044d377c2e27b2da2a5",
+      "original_status": "CAPTURED",
+      "failures": [],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "CAPTURED",
+          "PNG_count": 15,
+          "foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURED",
+          "PNG_count": 9,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "a1e0f0ee495038a60771e14b4de73e6f036090eb50b3cb086595303da15e1228"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "2bf94e0c4a17a219296732efba6282533ea4029579a35e45cb7d34a6b855a909"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "7b84d68d7d4035cd1adaf0c0707950763396d654733f25bb0cb6e9d638d7b05e"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "5ee1688a0be8c1eb790e254fe74f0f7988bc688b2688593b3ec3b51a5aeda0f6"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "58642b14b1467beba2fa6ab477e53d6320ba9b45c2737486c5a4bef42208402e"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "d87faf9b5cbd3b1bcdf5b4d710d3840b754401a7c3e4184d18b6cf49665cbd46"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "dd247432ca0558f7ebd8ee0ba677cc949dc4a345baebe9ed5df5c0c383f480c5"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "91ca9c3f0f0a2081230f2291ca0da1a8fe460d6b226f3d0dde517b219175a1f4"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "92b12c0f7cd809c38f77695768b44c97998ccfbc8743416227ce703e626f0e91"
+        },
+        {
+          "file": "dinerlight_arrival_009_prepark_forward_lights_on.png",
+          "sha256": "ed7deaf610d51d9b493b2f9c18446e0a6d8d6232d1690be11e78f030b71bc8b8"
+        },
+        {
+          "file": "dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "sha256": "aef646b3648a354177591ae1cefd13be170585cfdaa7afdfa68379d9634db820"
+        },
+        {
+          "file": "dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "sha256": "0fdbc530677c34899b5431abea05f1948627b2e8948a72ae847f36c9146de9ff"
+        },
+        {
+          "file": "dinerlight_arrival_012_arrival_end_parked.png",
+          "sha256": "b7fa7491e9ccfc82e936b838dbd1fa42d1ec8f669f9d3107e58bb5ec10af20ca"
+        },
+        {
+          "file": "dinerlight_arrival_013_parked_facade_lights_off.png",
+          "sha256": "da4a6abfe8ab92d22de6217368581eb1235e37e3fb03d29d46126e9e264d9909"
+        },
+        {
+          "file": "dinerlight_arrival_014_parked_sign_lights_off.png",
+          "sha256": "a6e687c25fbea458962a4db1d1d8d0c7c825000b7ee341e96d5838ac12dff5e2"
+        },
+        {
+          "file": "dinerlight_departure_000_route_start.png",
+          "sha256": "f8f3f4797a8c74bc2c6d02eff3914baf06930e2120bbb760e6737f8f86d2187e"
+        },
+        {
+          "file": "dinerlight_departure_001_forward_040m.png",
+          "sha256": "1387dc301f1e7aed2224bd3ef1272d3161da0ac1fab60480f8835650464fc10a"
+        },
+        {
+          "file": "dinerlight_departure_002_forward_080m.png",
+          "sha256": "926719951fade28b956b7d4acabd87a9923d7556aec22c3eab0b1ec504d132f7"
+        },
+        {
+          "file": "dinerlight_departure_003_forward_120m.png",
+          "sha256": "8dc25c7c1d5448180e65f45f63e90fec7c5733dc5e992f7613a016596b3cafab"
+        },
+        {
+          "file": "dinerlight_departure_004_forward_160m.png",
+          "sha256": "59bcb0efa7a4f8ef500e410d41980b39066ad79bbd2f6d82009fc402d767e9f4"
+        },
+        {
+          "file": "dinerlight_departure_005_forward_200m.png",
+          "sha256": "c31e4e539d4ceb96f4a5c02cfc07086238ae667fcc5ac06388344e5c9dec2435"
+        },
+        {
+          "file": "dinerlight_departure_006_forward_240m.png",
+          "sha256": "fbf9445ae91dfbba190a6315864c1939f0ec9cb2bf6f20b7d9c5c8b0e16bf4ba"
+        },
+        {
+          "file": "dinerlight_departure_007_forward_280m.png",
+          "sha256": "5aace10d7538fd926d8cb46fc17488a41e23e9da882284ccf9485c711138ddb3"
+        },
+        {
+          "file": "dinerlight_departure_008_departure_end_300m.png",
+          "sha256": "97e235f3ac4c757c785a0d7cc153687aae224844cefe9cf353cbb6690834087e"
+        }
+      ]
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_ultra_844x390_20261006",
+      "manifest_sha256": "30e9c476d7fb45ec0969526b54525ea52499effcd894a3fc572aa440a3ba095b",
+      "original_status": "CAPTURING",
+      "failures": [],
+      "phases": [],
+      "PNG_files": []
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_ultra_844x390_20261006_v2",
+      "manifest_sha256": "14f8b7bbc83a0516257022f22447640bcdd3187a882be473bc46860227542a42",
+      "original_status": "CAPTURING",
+      "failures": [],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "CAPTURED",
+          "PNG_count": 18,
+          "foot_states": 16
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURING",
+          "PNG_count": 9,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "96973c7360248f9910ce4d67d44da92369f4e4fd09a2e9d44c044f714f1fc0d1"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "7550b57ee4cf25a224dfe5ce8caeb1781a77def4e403c43edc7b4e996a300369"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "e354b8b2db148092a8473b32efcfd485869dc28db819065c2b16ab2bbdfd5d33"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "24da0a349d825a1b8e2208372ad4ce5056b32ccb8ef2a457280102189542b47b"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "a9c36a63a088c7b25cb0e764da3f0aaa543f1d27e93d373425c3b691447319d7"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "282387d41d12d064ac8ade1ebf8150b7f68a28acf944cb2f1859c90ee282352d"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "58228dd4ca65bf0c284ed6318042c9cc1c99ef023bf2fc53a29e87407ed45d07"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "6e9054a03be906c2933e9a1b6bca23b54a4f31c8e2ea9e91e9a4c9002c0a726d"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "e3da477822e97bd001e3649762ca0989220dc6905cf906d0e4f3ee5fb8a87d55"
+        },
+        {
+          "file": "dinerlight_arrival_009_prepark_forward_lights_on.png",
+          "sha256": "9b407223a3e68ed5a2520d44d6e2f55e838321c9dfd0eb249722e177d326c856"
+        },
+        {
+          "file": "dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "sha256": "5f8f446f3955fccb34a9a8e60dcfe2f409a0ef1abd7bed7af33ff3b1cc6749f8"
+        },
+        {
+          "file": "dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "sha256": "072967c678dc8ecf1d591e6e2d6f28af01e83f8da546bf311a6dd38b4956b80f"
+        },
+        {
+          "file": "dinerlight_arrival_012_arrival_end_parked.png",
+          "sha256": "e66d2238acfae77e0ee03e8bafffdfe85a97622d04fd9bdc92838c90b3f34d86"
+        },
+        {
+          "file": "dinerlight_arrival_013_parked_facade_lights_off.png",
+          "sha256": "b5174d4ccbcade9cc7d652a746eadb5df3ba387545a657661a46ee0fb222a8e7"
+        },
+        {
+          "file": "dinerlight_arrival_014_parked_sign_lights_off.png",
+          "sha256": "7fde02bf31aeaa0d90990a7a0339cb6f0ec40228dc8899a0d3f6d256e6698876"
+        },
+        {
+          "file": "dinerlight_arrival_015_ultra_onfoot_after_0_5s.png",
+          "sha256": "08459184af414617d95048dc91c8022b8267f412c1d2b4933d9b55f2a4c3c0b5"
+        },
+        {
+          "file": "dinerlight_arrival_016_ultra_onfoot_facade.png",
+          "sha256": "f4b3206ecb3e64c61e76168f4cfa1e1ed0b42b04da65f79c7f6d94814aa7f512"
+        },
+        {
+          "file": "dinerlight_arrival_017_ultra_onfoot_sign.png",
+          "sha256": "142e9dc5cd51c7399d9fa90d61b6b9d00adda72f17842d871448480da71ca478"
+        },
+        {
+          "file": "dinerlight_departure_000_route_start.png",
+          "sha256": "511035e6891932cd6f8cfaf22ba9bbe5a7701a5e0eaef7db6ca7f7c14331f778"
+        },
+        {
+          "file": "dinerlight_departure_001_forward_040m.png",
+          "sha256": "5417a42d9a6e29d3eaec9c69091861a556704c5cde769b21bf3c2853326d04d5"
+        },
+        {
+          "file": "dinerlight_departure_002_forward_080m.png",
+          "sha256": "69b699090cc947bb36ea111b953916f8e697e5508227944b4f8a4a3247548ce6"
+        },
+        {
+          "file": "dinerlight_departure_003_forward_120m.png",
+          "sha256": "50c5ebdfdaba3ff83bc7228c29d4d2ae86c16bd7bb2c172dceb22c7a89b0f3fd"
+        },
+        {
+          "file": "dinerlight_departure_004_forward_160m.png",
+          "sha256": "05c1e7f737a99e8b9d19b1bd08d9886f8d5a749f17c800b186a83b60db8a79ed"
+        },
+        {
+          "file": "dinerlight_departure_005_forward_200m.png",
+          "sha256": "a1f3e58c2340c35f2c015f8cfefd2fc40d58d8e3870a3649ebe6297e70a7a5e2"
+        },
+        {
+          "file": "dinerlight_departure_006_forward_240m.png",
+          "sha256": "47536253ee9c94ad11248cecf33d8ee935194d53d8658c42eeef1332e9570746"
+        },
+        {
+          "file": "dinerlight_departure_007_forward_280m.png",
+          "sha256": "9260739f8eda105e683c2ad22fc3aa0208af09117a78a6380a5d2f5e1dc09eea"
+        },
+        {
+          "file": "dinerlight_departure_008_departure_end_300m.png",
+          "sha256": "ce22762e13f81566bf6a5cc312d30dec930a17b13c9faf76480cbf47d64dbddd"
+        }
+      ]
+    },
+    {
+      "directory": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_ultra_844x390_20261006_v3",
+      "manifest_sha256": "85fe44a4f39ded9564db49876bdbf9d66e582a28e6196a0af4ca540301c0a24d",
+      "original_status": "FAIL",
+      "failures": [
+        "KeyboardInterrupt: ",
+        "dinerlight_arrival: RuntimeError: Page.screenshot: Event loop is closed",
+        "dinerlight_departure: RuntimeError: Browser.new_context: no running event loop"
+      ],
+      "phases": [
+        {
+          "id": "dinerlight_arrival",
+          "original_status": "FAIL",
+          "PNG_count": 9,
+          "foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "original_status": "CAPTURING",
+          "PNG_count": 0,
+          "foot_states": 0
+        }
+      ],
+      "PNG_files": [
+        {
+          "file": "dinerlight_arrival_000_route_start.png",
+          "sha256": "37925f1a25a9b39d0e9f3e70427bb3856f0426d5bccc0ad3a65469106aafd53c"
+        },
+        {
+          "file": "dinerlight_arrival_001_approach_start_300m.png",
+          "sha256": "2eeddff5ad7bbd5d2f189f506092356b20246e7a68cc18e60a1b0cab7abaeecf"
+        },
+        {
+          "file": "dinerlight_arrival_002_forward_040m.png",
+          "sha256": "6b2ff57deae30110f3a9b7adfa273d929ddedb55140f0b8967eb7d146e7ccd22"
+        },
+        {
+          "file": "dinerlight_arrival_003_forward_080m.png",
+          "sha256": "549bf24aa1e63a9e04ffa2e8949669d3201008efc7aee1170cad975e7d481548"
+        },
+        {
+          "file": "dinerlight_arrival_004_forward_120m.png",
+          "sha256": "1d8b3d4a26bbb304b608f084bdbe217015834579a78f6180e4931c79c8f11bff"
+        },
+        {
+          "file": "dinerlight_arrival_005_forward_160m.png",
+          "sha256": "facf1188698dffd339c0b15eb512f943d99ba0402d2727dfcbc67b49370583c7"
+        },
+        {
+          "file": "dinerlight_arrival_006_forward_200m.png",
+          "sha256": "e487d0d8a9849f13f81f0974bf4846394c7a45caec8e3b3ce848053f0b60daaa"
+        },
+        {
+          "file": "dinerlight_arrival_007_forward_240m.png",
+          "sha256": "20e787a1416b4145c28d895b3fdd57d7fd197393172858180656c44c88a7e957"
+        },
+        {
+          "file": "dinerlight_arrival_008_forward_280m.png",
+          "sha256": "1f0a97a37a1db14b797d79896788b2ebffb6f9b6732b934dc45a34f45fb6c50b"
+        }
+      ]
+    }
+  ]
+}

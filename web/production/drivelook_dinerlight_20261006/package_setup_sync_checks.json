@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "tests_run": 20,
+  "failures": 0,
+  "errors": 0,
+  "browser_launched": false,
+  "evidence_kind": "synthetic_package_contracts_with_optional_read_only_capture_controls",
+  "rendered_lighting": "UNVERIFIED",
+  "checked_utc": "2026-10-06T13:35:02.766714+00:00",
+  "packager_sha256": "50db0b96287b2ea16693c70b4221c11bf3b9786cbeeabb8311cd1abb1097f047",
+  "test_sha256": "7821c88a2c39e2702aac3364f345eb9e5c927831e22908944d0b734a193c2374",
+  "capture_helper_sha256": "e1c78264cfdd971b0f49d5d1f8521f95eafe44a120759e86d6c711ca9d13ed30",
+  "fixture_helper_sha256": "3e932d99b6641b587162accf18ecce20ee3337615439e6160c003e1677bf7863",
+  "skipped": [],
+  "recorded_controls_status": "CHECKED",
+  "recorded_controls": [
+    {
+      "input": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_low_844x390_20261006_v4",
+      "expected_integrity_status": "PASS",
+      "observed_integrity_status": "PASS",
+      "checks": 362,
+      "checks_passed": 362,
+      "images": 24,
+      "raw_files_unchanged": true
+    },
+    {
+      "input": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/shots/dinerlight_low_844x390_20261006_v2",
+      "expected_integrity_status": "FAIL",
+      "observed_integrity_status": "FAIL",
+      "checks": 362,
+      "checks_passed": 322,
+      "images": 24,
+      "raw_files_unchanged": true
+    }
+  ],
+  "output": "test_actual_v4_positive_and_v2_stale_setup_negative_are_read_only_controls (__main__.PackageContracts.test_actual_v4_positive_and_v2_stale_setup_negative_are_read_only_controls) ... ok\ntest_clock_roundoff_is_allowed_but_sky_changes_above_tolerance_are_blocking (__main__.PackageContracts.test_clock_roundoff_is_allowed_but_sky_changes_above_tolerance_are_blocking) ... ok\ntest_every_png_rejects_stale_hud_or_sky_and_missing_observed_clock_inputs (__main__.PackageContracts.test_every_png_rejects_stale_hud_or_sky_and_missing_observed_clock_inputs) ... ok\ntest_exact_six_configurations_package_and_preserve_every_synthetic_raw_file (__main__.PackageContracts.test_exact_six_configurations_package_and_preserve_every_synthetic_raw_file) ... ok\ntest_existing_target_is_refused_without_touching_any_bytes (__main__.PackageContracts.test_existing_target_is_refused_without_touching_any_bytes) ... ok\ntest_late_console_and_nonfavicon_http_are_strict (__main__.PackageContracts.test_late_console_and_nonfavicon_http_are_strict) ... ok\ntest_loaded_code_mismatch_png_hash_wrong_dpr_or_picture_preserves_fail_evidence (__main__.PackageContracts.test_loaded_code_mismatch_png_hash_wrong_dpr_or_picture_preserves_fail_evidence) ... ok\ntest_malformed_manifest_preserves_raw_input_and_partial_failure_report (__main__.PackageContracts.test_malformed_manifest_preserves_raw_input_and_partial_failure_report) ... ok\ntest_missing_inventory_or_unclosed_pending_response_cannot_pass (__main__.PackageContracts.test_missing_inventory_or_unclosed_pending_response_cannot_pass) ... ok\ntest_natural_park_camera_sync_is_observed_not_invented_for_old_or_stale_rows (__main__.PackageContracts.test_natural_park_camera_sync_is_observed_not_invented_for_old_or_stale_rows) ... ok\ntest_only_url_confirmed_favicon_is_nonblocking (__main__.PackageContracts.test_only_url_confirmed_favicon_is_nonblocking) ... ok\ntest_require_all_blocks_subset_and_duplicate_configs_are_not_filtered (__main__.PackageContracts.test_require_all_blocks_subset_and_duplicate_configs_are_not_filtered) ... ok\ntest_setup_sync_requires_one_ordinary_rest_frame_with_no_assignments_or_movement (__main__.PackageContracts.test_setup_sync_requires_one_ordinary_rest_frame_with_no_assignments_or_movement) ... ok\ntest_sideproof_without_required_image_is_not_complete_evidence (__main__.PackageContracts.test_sideproof_without_required_image_is_not_complete_evidence) ... ok\ntest_target_confinement_and_unsafe_tar_are_blocking (__main__.PackageContracts.test_target_confinement_and_unsafe_tar_are_blocking) ... ok\ntest_ultra_final_camera_must_sync_but_immediate_diagnostic_can_be_stale (__main__.PackageContracts.test_ultra_final_camera_must_sync_but_immediate_diagnostic_can_be_stale) ... ok\ntest_ultra_trace_requires_raw_ledger_pose_preset_and_candidates (__main__.PackageContracts.test_ultra_trace_requires_raw_ledger_pose_preset_and_candidates) ... ok\ntest_unsafe_image_name_and_extra_png_cannot_be_silently_dropped (__main__.PackageContracts.test_unsafe_image_name_and_extra_png_cannot_be_silently_dropped) ... ok\ntest_valid_subset_preserves_raw_and_has_labelled_contact_sheets (__main__.PackageContracts.test_valid_subset_preserves_raw_and_has_labelled_contact_sheets) ... ok\ntest_wrong_manifest_containers_are_explicit_preserved_failures (__main__.PackageContracts.test_wrong_manifest_containers_are_explicit_preserved_failures) ... ok\n\n----------------------------------------------------------------------\nRan 20 tests in 16.471s\n\nOK\n"
+}

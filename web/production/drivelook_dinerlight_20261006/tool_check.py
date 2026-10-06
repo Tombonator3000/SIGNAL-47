@@ -245,6 +245,8 @@ class DinerPage(hash_checks.Page):
         self.parked = self.onfoot = False
         self.init_scripts, self.calls, self.tick_args, self.looks = [], [], [], []
         self.camera, self.camera_q = [0, 2, 0], [0, 0, 0, 1]
+        self.autopilot = None
+        self.render_clock = 0.
 
     async def add_init_script(self, code): self.init_scripts.append(code)
     async def wait_for_timeout(self, _): pass
@@ -278,7 +280,7 @@ class DinerPage(hash_checks.Page):
               'truck_at': 'diner', 'mile': None if arrival else self.travel / 1609.34,
               'oldroad_s_m': None, 'oldroad_distance_to_center_m': None,
               'oldroad_distance_finite': True, 'road_local_z': xyz[2],
-              'speed_mps': .2 if arrival and self.travel >= 696 and driving else 20 if driving else 0,
+              'speed_mps': .2 if arrival and self.travel >= 696 and driving else 20 if driving and self.autopilot else 0,
               'chapter6_stage': 'drive', 'chapter_phase': 'ch5' if arrival else 'ch6',
               'chapter5_stage': 'diner' if natural_diner else 'to-truck',
               'chapter5_arrived': natural_diner and self.fail_at != 'missing_callback',
@@ -287,6 +289,9 @@ class DinerPage(hash_checks.Page):
               'camera_world': [1] * 16, 'truck_quaternion': [0, 0, 0, 1],
               'player_xyz': player, 'headlights_active': headlights and not self.onfoot,
               'sky_uniforms': {}, 'diner_dawn': 0, 'diner_origin': [0, 0, 0],
+              'hud_clock':f'{int(self.render_clock//3600)%24:02d}:{int(self.render_clock//60)%60:02d}',
+              'sky_clock_inputs':{'dawn_lift':1.,'sun_elev_deg':None},
+              'autopilot_mps':self.autopilot,'test_input_active':self.fail_at=='setup_override','old_control_active':False,
               'truck_view_state': {'driving': driving, 'group_visible': True, 'body_visible': True,
                                    'cab_visible': driving, 'shell_visible': not driving},
               'road_origin': [0, 0, 0],
@@ -296,6 +301,12 @@ class DinerPage(hash_checks.Page):
         st['render_state'].update(buffer_width=844, buffer_height=390,
                                   tone_mapping=0, exposure=1, ultra_mapped=0)
         st['body_light_ledger'] = light_ledger()
+        s=self.render_clock%86400; el=math.radians(.33+(s-19800)/60*.18);az=math.radians(79)
+        st['sky_uniforms']={'uDawn': min(1,max(0,(s-16800)/3000))**1.6 if s<=43200 else 0,
+            'uSun':min(1,max(0,(s-19560)/240)) if s<=43200 else 0,
+            'uSunDir':[math.sin(az)*math.cos(el),math.sin(el),-math.cos(az)*math.cos(el)]}
+        if self.fail_at=='render_hud_stale': st['hud_clock']='05:00'
+        if self.fail_at=='render_sky_stale': st['sky_uniforms']['uDawn']=.16186974
         st['body_light_ledger']['player_xyz'] = player
         # Keep the mocked real source near the modelled player in every phase.
         spot = st['body_light_ledger']['spots'][0]
@@ -333,14 +344,27 @@ class DinerPage(hash_checks.Page):
                     'render_time_s': arg['render_time_s'], 'after': self.frozen()}
         if code == 'chapter=>{S47.hold=true;S47.jump(chapter);}':
             self.phase = arg
+            self.clock=19200. if arg=='chapter6' else 18000.
+            self.render_clock=18000.
             return True
         if 'S47.ch3.truckOverride.use()' in code: return True
         if code in ('S47.hold=true', 'S47.tick(0.25,30)'): return True
         if code.startswith('S47.world.driving && !S47.world.busy'): return True
         if code.startswith('([seconds,fps])'):
             seconds, fps = arg; self.tick_args.append((seconds, fps)); self.clock += seconds
-            if self.onfoot: return True
-            if self.parked: self.park_ticks += 1; return True
+            self.render_clock=self.clock
+            if not self.autopilot and not self.parked and not self.onfoot:
+                if self.fail_at=='setup_motion': self.travel+=1
+                return True
+            if self.onfoot:
+                if self.fail_at!='foot_camera_stale': self.camera=[100,2,0]
+                return True
+            if self.parked:
+                self.park_ticks += 1
+                # Real getOut/Player.place changes player on frame 2, whereas
+                # Player.update synchronises the camera on the following frame.
+                if self.park_ticks>=3 and self.fail_at!='park_camera_stale': self.camera=[100,2,0]
+                return True
             if self.phase == 'chapter5' and self.travel >= 696:
                 self.parked = True
             else:
@@ -351,7 +375,8 @@ class DinerPage(hash_checks.Page):
         if 'world.enter(\'diner\')' in code:
             self.onfoot, self.parked, self.park_ticks = True, True, 2
             return True
-        if code in ('S47.hold=true;S47.world.autopilot=20', 'S47.world.autopilot=null'): return True
+        if code == 'S47.hold=true;S47.world.autopilot=20': self.autopilot=20;return True
+        if code == 'S47.world.autopilot=null': self.autopilot=None;return True
         if 'getContext()' in code: return {'renderer': 'mock API model, not a GPU test', 'pixel_ratio': 1}
         raise AssertionError(f'Unexpected fake-page API call: {code[:90]}')
 
@@ -403,6 +428,29 @@ class RunnerContracts(unittest.IsolatedAsyncioTestCase):
         self.assertFalse([t for t in asyncio.all_tasks() if t is not asyncio.current_task() and not t.done()])
         return saved, browser, failure
 
+    async def test_setup_frame_syncs_async_clock_before_motion_or_png(self):
+        trip,browser,failure=await self.run_fake('dinerlight_departure')
+        self.assertIsNone(failure)
+        sync=trip['setup_sync']
+        self.assertEqual(sync['before']['hud_clock'],'05:00')
+        self.assertEqual(sync['before']['clock_seconds'],19200.)
+        self.assertEqual(sync['after']['hud_clock'],'05:20')
+        self.assertGreater(sync['after']['sky_uniforms']['uDawn'],.69)
+        self.assertEqual(sync['before']['driver_xyz'],sync['after']['driver_xyz'])
+        self.assertEqual(sync['normal_frames'],1)
+        self.assertIsNone(sync['after']['autopilot_mps'])
+        self.assertTrue(sync['driver_pose_unchanged'])
+        self.assertEqual(trip['shots'][0]['hud_clock'],'05:20')
+        self.assertAlmostEqual(trip['shots'][0]['clock_seconds'],19200+1/30)
+
+    async def test_setup_motion_control_or_permanent_stale_render_blocks_images(self):
+        for mode,message in [('setup_motion','moved truck'),('setup_override','input override'),
+                              ('render_hud_stale','HUD clock'),('render_sky_stale','Sky uDawn')]:
+            with self.subTest(mode=mode):
+                trip,browser,failure=await self.run_fake('dinerlight_departure',mode)
+                self.assertIsNotNone(failure);self.assertIn(message,str(failure))
+                self.assertEqual(trip['status'],'FAIL');self.assertEqual(browser.contexts[0].page.screenshots,0)
+
     async def test_full_arrival_and_departure_default_quality_contracts(self):
         for identity in ('dinerlight_arrival', 'dinerlight_departure'):
             for quality in ('low', 'high', 'ultra'):
@@ -430,6 +478,9 @@ class RunnerContracts(unittest.IsolatedAsyncioTestCase):
                         parked = next(s for s in trip['shots'] if s['name'] == 'arrival_end_parked')
                         self.assertFalse(parked['headlights_active']); self.assertTrue(parked['chapter5_arrived'])
                         self.assertEqual(parked['area'], 'diner')
+                        self.assertGreater(trip['park_callback_state']['camera_player_horizontal_m'],.1)
+                        self.assertEqual(trip['park_camera_sync']['normal_tick_frames'],1)
+                        self.assertEqual(parked['camera_player_horizontal_m'],0)
                         self.assertEqual(len(trip['side_capture_checks']), 6 if quality == 'ultra' else 4)
                         self.assertEqual(trip['park_cab_pose']['clock_seconds'], trip['route_end']['clock_seconds'])
                     else:
@@ -439,6 +490,29 @@ class RunnerContracts(unittest.IsolatedAsyncioTestCase):
                         self.assertAlmostEqual(trip['onfoot_trace'][-1]['simulation_advance_s'], .5)
                         self.assertTrue(all(s['state']['area'] == 'diner' and not s['state']['driving'] for s in trip['onfoot_trace']))
                     else: self.assertEqual(trip['onfoot_trace'], [])
+
+    async def test_stale_getout_camera_is_preserved_then_synced_by_normal_tick(self):
+        trip,browser,failure=await self.run_fake()
+        self.assertIsNone(failure)
+        sync=trip['park_camera_sync']
+        self.assertEqual(sync['before']['camera_xyz'],[100,2,4])
+        self.assertEqual(sync['before']['player_xyz'],[100,1.7,0])
+        self.assertEqual(sync['after']['camera_xyz'],[100,2,0])
+        self.assertAlmostEqual(sync['simulation_advance_s'],1/30)
+        self.assertEqual(sync['camera_assignment_calls'],0)
+        self.assertEqual(sync['player_assignment_calls'],0)
+        self.assertAlmostEqual(sync['after']['clock_seconds']-sync['before']['clock_seconds'],1/30)
+
+    async def test_camera_that_never_syncs_blocks_natural_and_ultra_images(self):
+        for identity,mode,quality,message,name in (
+                ('dinerlight_arrival','park_camera_stale','high','30 normal frames','arrival_end_parked'),
+                ('dinerlight_departure','foot_camera_stale','ultra','before diagnostic images','ultra_onfoot_after_0_5s')):
+            with self.subTest(mode=mode):
+                trip,_,failure=await self.run_fake(identity,mode,quality)
+                self.assertIsNotNone(failure);self.assertIn(message,str(failure))
+                self.assertEqual(trip['status'],'FAIL')
+                self.assertFalse(any(s['name']==name for s in trip['shots']))
+                if mode=='foot_camera_stale': self.assertEqual(len(trip['onfoot_trace']),16)
 
     async def test_early_body_wrong_preset_or_changed_geometry_fail_closed(self):
         for mode, message in (('goto', 'code hash'), ('wrong_preset', 'player default'),

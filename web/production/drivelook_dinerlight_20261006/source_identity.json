@@ -1,0 +1,119 @@
+{
+  "checked_utc": "2026-10-06T13:12:14.084526+00:00",
+  "status": "PASS",
+  "canonical_main": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+  "local_head": "263450e256e0e3257edb4bda7e65206089937d10",
+  "runtime_diff_against_main": "EMPTY: web/src, index.html, package.json, lockfile, vite.config.ts",
+  "recorded_runtime_files": [
+    {
+      "file": "src/world/World.ts",
+      "local_sha256": "1ef36630529e4cde8fec2c8c16b0a7418b42e91c1edd1156407c1fc2e99c9413",
+      "main_blob_sha256": "1ef36630529e4cde8fec2c8c16b0a7418b42e91c1edd1156407c1fc2e99c9413",
+      "matches": true
+    },
+    {
+      "file": "src/drive/Drive.ts",
+      "local_sha256": "57a9c211a9d86864196f754e73027d3f8daa7f76fbc300e011c4b7d4e11b3f49",
+      "main_blob_sha256": "57a9c211a9d86864196f754e73027d3f8daa7f76fbc300e011c4b7d4e11b3f49",
+      "matches": true
+    },
+    {
+      "file": "src/drive/OldRoad.ts",
+      "local_sha256": "02c0b273609726fb4546ecdf3470de5266b30d367386b6a0ed9a28235c4f0c50",
+      "main_blob_sha256": "02c0b273609726fb4546ecdf3470de5266b30d367386b6a0ed9a28235c4f0c50",
+      "matches": true
+    },
+    {
+      "file": "src/drive/legs.ts",
+      "local_sha256": "bcfb1d2dcde1d1f08fdf685bce123963336417178e1da6a64d5ad37916bbabec",
+      "main_blob_sha256": "bcfb1d2dcde1d1f08fdf685bce123963336417178e1da6a64d5ad37916bbabec",
+      "matches": true
+    },
+    {
+      "file": "src/story/Chapter6.ts",
+      "local_sha256": "27a3ef490e089ad57dff8a716fc56e50f0329c3c00e41a1e5a85f840e8c8dada",
+      "main_blob_sha256": "27a3ef490e089ad57dff8a716fc56e50f0329c3c00e41a1e5a85f840e8c8dada",
+      "matches": true
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "local_sha256": "953c050b6939837258a98a5505b8f6b38b9ba7df16c06874e7087e78caa75649",
+      "main_blob_sha256": "953c050b6939837258a98a5505b8f6b38b9ba7df16c06874e7087e78caa75649",
+      "matches": true
+    },
+    {
+      "file": "src/world/Diner.ts",
+      "local_sha256": "3a37fa5d631d3971676e7c84212fa6141a76d159acb5ce282a1d8d51e7f77b80",
+      "main_blob_sha256": "3a37fa5d631d3971676e7c84212fa6141a76d159acb5ce282a1d8d51e7f77b80",
+      "matches": true
+    },
+    {
+      "file": "src/drive/Truck.ts",
+      "local_sha256": "0965ea920a2e42d4c050d76a3faeeac7aa44782d079948640b378aa194920adb",
+      "main_blob_sha256": "0965ea920a2e42d4c050d76a3faeeac7aa44782d079948640b378aa194920adb",
+      "matches": true
+    },
+    {
+      "file": "src/drive/RoadArea.ts",
+      "local_sha256": "6506bdb10f0f140071a25c3c51b1e69d473508c7405821e6e98a0bafc0aa3c84",
+      "main_blob_sha256": "6506bdb10f0f140071a25c3c51b1e69d473508c7405821e6e98a0bafc0aa3c84",
+      "matches": true
+    },
+    {
+      "file": "src/drive/roadShape.ts",
+      "local_sha256": "f91941fdcd0bb04d8051cfc4a086646f7f2a284cadf62fafacf24d0ff55d2ec5",
+      "main_blob_sha256": "f91941fdcd0bb04d8051cfc4a086646f7f2a284cadf62fafacf24d0ff55d2ec5",
+      "matches": true
+    },
+    {
+      "file": "src/world/kit.ts",
+      "local_sha256": "734a9ed74c701487843b503c7714c27e4750c9bf0e9966f07aad5fb8327015e7",
+      "main_blob_sha256": "734a9ed74c701487843b503c7714c27e4750c9bf0e9966f07aad5fb8327015e7",
+      "matches": true
+    },
+    {
+      "file": "src/world/Sky.ts",
+      "local_sha256": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "main_blob_sha256": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "matches": true
+    },
+    {
+      "file": "src/world/glow.ts",
+      "local_sha256": "bf92cbf36bbb43b2171387f6c90d5a8a7e3e564e8422b613a6c2af2510b351ce",
+      "main_blob_sha256": "bf92cbf36bbb43b2171387f6c90d5a8a7e3e564e8422b613a6c2af2510b351ce",
+      "matches": true
+    },
+    {
+      "file": "src/core/quality.ts",
+      "local_sha256": "8588886294f7bb6ded021452bd5bd4f27d2a935c7ced12e55fcad0b18817fbf1",
+      "main_blob_sha256": "8588886294f7bb6ded021452bd5bd4f27d2a935c7ced12e55fcad0b18817fbf1",
+      "matches": true
+    },
+    {
+      "file": "src/core/ultra.ts",
+      "local_sha256": "cfaf5c353d5179f6e1224145539e659ed01a275a98ddbf158b3cf99154b26fe9",
+      "main_blob_sha256": "cfaf5c353d5179f6e1224145539e659ed01a275a98ddbf158b3cf99154b26fe9",
+      "matches": true
+    },
+    {
+      "file": "src/core/vhs.ts",
+      "local_sha256": "23c20a63d340cd7befb7008e80153f197d903401c3e564684da2862e5008b9ac",
+      "main_blob_sha256": "23c20a63d340cd7befb7008e80153f197d903401c3e564684da2862e5008b9ac",
+      "matches": true
+    },
+    {
+      "file": "src/main.ts",
+      "local_sha256": "fea6b2edc2b21fcf05226f62e7b46beeeb02e53d6393f488c5271e3eb09c6076",
+      "main_blob_sha256": "fea6b2edc2b21fcf05226f62e7b46beeeb02e53d6393f488c5271e3eb09c6076",
+      "matches": true
+    }
+  ],
+  "capture_helper_sha256": "0653c49fe21788196ebcc0b2c6cbc33c921dfd46b8f11eaa9810fae5299cdaca",
+  "scope": "Local runtime sources are byte-identical to canonical main. Capture tool is own modified support code with its hash recorded. Observed served code is independently matched to Pages artifact, not inferred from local HEAD.",
+  "limitations": [
+    "No new full gameplay suite",
+    "No physical GPU/fps/audio verification"
+  ],
+  "capture_tool_followup_sha256": "e1c78264cfdd971b0f49d5d1f8521f95eafe44a120759e86d6c711ca9d13ed30",
+  "capture_tool_followup_checked_utc": "2026-10-06T13:29:03.396902+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "checked_utc": "2026-10-06T13:17:52.819998+00:00",
+  "status": "INCOMPLETE_PRESERVED",
+  "capture_manifest": "web/shots/dinerlight_ultra_844x390_20261006_v2/manifest.json",
+  "manifest_sha256": "14f8b7bbc83a0516257022f22447640bcdd3187a882be473bc46860227542a42",
+  "observed_queue_exit_code": 143,
+  "original_capture_status": "CAPTURING",
+  "completed_arrival_pngs": 18,
+  "departure_pngs": 9,
+  "departure_foot_trace_count": 0,
+  "capture_process_observation": "No drivelook.py process found after queue termination",
+  "cause": "UNVERIFIED: queue/process terminated before final capture cleanup manifest. No runtime failure inferred.",
+  "recovery": "Retain raw capture directory; fresh complete Ultra844 capture _v3, other unstarted desktop captures _v2. No reuse of incomplete capture in final package."
+}

@@ -1,0 +1,68 @@
+{
+  "pid": 882397,
+  "status": "COMPLETE",
+  "started_utc": "2026-10-06T13:29:27.212656+00:00",
+  "jobs": [
+    {
+      "quality": "low",
+      "viewport": "844x390",
+      "capture_directory": "web/shots/dinerlight_low_844x390_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:29:27.212783+00:00",
+      "pid": 882398,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T13:31:49.339813+00:00"
+    },
+    {
+      "quality": "high",
+      "viewport": "844x390",
+      "capture_directory": "web/shots/dinerlight_high_844x390_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:31:49.340001+00:00",
+      "pid": 883092,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T13:34:49.435640+00:00"
+    },
+    {
+      "quality": "ultra",
+      "viewport": "844x390",
+      "capture_directory": "web/shots/dinerlight_ultra_844x390_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:34:49.435900+00:00",
+      "pid": 884084,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T13:41:24.208817+00:00"
+    },
+    {
+      "quality": "low",
+      "viewport": "1280x800",
+      "capture_directory": "web/shots/dinerlight_low_1280x800_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:41:24.209191+00:00",
+      "pid": 885046,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T13:45:22.119845+00:00"
+    },
+    {
+      "quality": "high",
+      "viewport": "1280x800",
+      "capture_directory": "web/shots/dinerlight_high_1280x800_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:45:22.120067+00:00",
+      "pid": 885783,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T13:50:25.322374+00:00"
+    },
+    {
+      "quality": "ultra",
+      "viewport": "1280x800",
+      "capture_directory": "web/shots/dinerlight_ultra_1280x800_20261006_v4",
+      "status": "FINISHED",
+      "started_utc": "2026-10-06T13:50:25.322616+00:00",
+      "pid": 886813,
+      "exit_code": 0,
+      "finished_utc": "2026-10-06T14:01:59.645129+00:00"
+    }
+  ],
+  "finished_utc": "2026-10-06T14:01:59.645390+00:00"
+}

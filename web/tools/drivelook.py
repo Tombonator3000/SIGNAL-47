@@ -641,6 +641,56 @@ def dinerlight_tick_seconds(state: dict, phase: str) -> float:
     return STEP
 
 
+def dinerlight_render_clock_errors(state: dict) -> list[str]:
+    """Compare observed HUD/Sky with the clock and current Sky overrides, never repair them."""
+    errors = []
+    clock, inputs, sky = state.get('clock_seconds'), state.get('sky_clock_inputs',{}), state.get('sky_uniforms',{})
+    if not isinstance(clock,(int,float)) or not math.isfinite(clock): return ['Missing render clock']
+    seconds = clock % 86400
+    expected_hud = f'{int(seconds//3600):02d}:{int(seconds//60)%60:02d}'
+    if state.get('hud_clock') != expected_hud: errors.append('Observed HUD clock differs from game clock')
+    lift, elevation = inputs.get('dawn_lift'), inputs.get('sun_elev_deg')
+    if not isinstance(lift,(int,float)) or not math.isfinite(lift) or (
+            elevation is not None and (not isinstance(elevation,(int,float)) or not math.isfinite(elevation))):
+        return errors+['Missing/non-finite Sky clock inputs']
+    clamp = lambda x: min(1.,max(0.,x))
+    dawn = 0. if seconds>43200 else clamp((seconds-16800)/3000)**1.6*lift
+    sun = 0. if seconds>43200 else 1. if elevation is not None else clamp((seconds-19560)/240)*lift
+    el = math.radians(elevation if elevation is not None else .33+(seconds-19800)/60*.18)
+    az = math.radians(79)
+    expected = {'uDawn':dawn,'uSun':sun,'uSunDir':[math.sin(az)*math.cos(el),math.sin(el),-math.cos(az)*math.cos(el)]}
+    for key,value in expected.items():
+        actual = sky.get(key)
+        observed, wanted = (actual,value) if isinstance(value,list) else ([actual],[value])
+        if not isinstance(observed,(list,tuple)) or len(observed)!=len(wanted) or any(
+                not isinstance(a,(int,float)) or not math.isfinite(a) or abs(a-b)>1e-6
+                for a,b in zip(observed,wanted)):
+            errors.append(f'Observed Sky {key} differs from game clock/overrides')
+    return errors
+
+
+def dinerlight_setup_errors(state: dict) -> list[str]:
+    errors=[]
+    if state.get('autopilot_mps') is not None or state.get('test_input_active') is not False or state.get('old_control_active') is not False:
+        errors.append('Setup has active autopilot or input override')
+    if state.get('driving') is not True or state.get('busy') is not False:
+        errors.append('Setup is not a ready actual chapter cab')
+    speed=state.get('speed_mps')
+    if not isinstance(speed,(int,float)) or not math.isfinite(speed) or abs(speed)>1e-8:
+        errors.append('Setup truck is not at rest')
+    return errors
+
+
+def dinerlight_camera_player_distance(state: dict) -> float:
+    """Observe camera/player XZ separation; Player.place does not update the camera."""
+    camera, player = state.get('camera_xyz'), state.get('player_xyz')
+    if any(not isinstance(p,(list,tuple)) or len(p)!=3 or
+           any(not isinstance(v,(int,float)) or not math.isfinite(v) for v in p)
+           for p in (camera,player)):
+        raise ValueError('Missing/non-finite diner camera/player pose')
+    return math.hypot(camera[0]-player[0],camera[2]-player[2])
+
+
 def dinerlight_light_findings(ledger: dict) -> list[dict]:
     """Mechanical candidates only; missing/nonfinite instrumentation is blocking."""
     if not all(k in ledger for k in ('sets','spots','player_xyz')) or len(ledger['player_xyz']) != 3:
@@ -754,6 +804,9 @@ DINERLIGHT_EXTRA = r"""(() => {
     camera_quaternion:c.quaternion.toArray(),camera_projection:c.projectionMatrix.toArray(),
     camera_world:c.matrixWorld.toArray(),truck_quaternion:D.truck.group.quaternion.toArray(),
     player_xyz:s.player.pos.toArray(),headlights_active,sky_uniforms:sky,diner_dawn:w.diner.dawn,
+    hud_clock:document.querySelector('.clockline')?.textContent,
+    sky_clock_inputs:{dawn_lift:s.game.ch6.skyLift ?? (w.area==='roswell'?1:.7),sun_elev_deg:s.game.ch6.sunElev ?? null},
+    autopilot_mps:w.autopilot,test_input_active:w.testInput!=null,old_control_active:w.oldControl!=null,
     truck_view_state:{driving:D.truck.driving,group_visible:D.truck.group.visible,
       body_visible:D.truck.body.visible,cab_visible:D.truck.cab.visible,shell_visible:D.truck.shell.visible},
     diner_origin:w.diner.group.position.toArray(),road_origin:w.road.group.position.toArray(),
@@ -874,6 +927,7 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
             distance += path_increment(previous,st['map_xyz']); previous = st['map_xyz']
         st['route_distance_m'] = distance-route_start_distance
         st['capture_phase'] = phase
+        st['camera_player_horizontal_m'] = dinerlight_camera_player_distance(st)
         st['body_light_ledger']['on_foot_diner'] = phase == 'ultra_onfoot_diagnostic' and st['area']=='diner' and not st['driving']
         st['light_findings'] = dinerlight_light_findings(st['body_light_ledger'])
         return st
@@ -889,6 +943,8 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
         if render_time is None: render_time = await page.evaluate('performance.now()/1000')
         await page.evaluate(DINERLIGHT_DRAW,render_time)
         st = await state(); filename = f'{trip_id}_{len(trip["shots"]):03d}_{name}.png'
+        clock_errors = dinerlight_render_clock_errors(st)
+        if clock_errors: raise RuntimeError('; '.join(clock_errors))
         await page.screenshot(path=str(out/filename),timeout=120000)
         st = shot_metadata(st,name=name,filename=filename,reason=reason,
             thresholds=thresholds or [],distance=distance,elapsed=elapsed,url=page.url,
@@ -939,6 +995,19 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
             await page.evaluate('S47.tick(0.25,30)')
             await page.wait_for_timeout(100)
         else: raise RuntimeError('Dinerlight setup did not reach the requested real chapter cab')
+        # Async chapter onStart can change the clock after the preceding frame.
+        # Let the ordinary game update synchronise HUD/Sky before starting motion.
+        setup_before = await state()
+        setup_errors = dinerlight_setup_errors(setup_before)
+        if setup_errors: raise RuntimeError('; '.join(setup_errors))
+        setup_after = await tick(1/FPS)
+        pose_unchanged = all(setup_before[k]==setup_after[k] for k in ('driver_xyz','heading_rad','chapter_phase','area','leg'))
+        trip['setup_sync']={'before':setup_before,'after':setup_after,'normal_frames':1,
+            'simulation_advance_s':1/FPS,'driver_pose_unchanged':pose_unchanged,
+            'clock_assignment_calls':0,'ui_assignment_calls':0,'sky_assignment_calls':0,'placement_calls':0}
+        setup_errors = dinerlight_setup_errors(setup_after)+dinerlight_render_clock_errors(setup_after)
+        if not pose_unchanged: setup_errors.append('Setup sync moved truck or changed chapter/area/leg')
+        if setup_errors: raise RuntimeError('; '.join(setup_errors))
         await page.evaluate('S47.hold=true;S47.world.autopilot=20')
         trip['renderer'] = await page.evaluate("""(() => {const g=S47.renderer.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');return {version:g.getParameter(g.VERSION),vendor:g.getParameter(e?e.UNMASKED_VENDOR_WEBGL:g.VENDOR),renderer:g.getParameter(e?e.UNMASKED_RENDERER_WEBGL:g.RENDERER),pixel_ratio:S47.renderer.getPixelRatio(),hardware_performance:'UNVERIFIED'};})()""")
         phase = 'arrival_drive' if arrival else 'departure_drive'
@@ -993,9 +1062,22 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
                 st=await tick(1/FPS)
                 if st['area']=='diner' and not st['driving'] and st['truck_at']=='diner' and st['chapter5_arrived'] and st['chapter5_stage']=='diner' and not st['cinematic']: break
             else: raise RuntimeError('Natural diner parking/getOut/Chapter5 callback did not finish')
+            # getOut runs after Player.update in this frame. Keep the raw callback
+            # state, then let ordinary frames sync its new pose into the camera.
+            trip['park_callback_state']=st
+            sync_before=st;sync_frames=0
+            while st['camera_player_horizontal_m']>.1 and sync_frames<30:
+                st=await tick(1/FPS);sync_frames+=1
+                if st['area']!='diner' or st['driving'] or st['truck_at']!='diner' or not st['chapter5_arrived'] or st['chapter5_stage']!='diner' or st['cinematic']:
+                    raise RuntimeError('Natural diner phase changed while waiting for player camera')
+            trip['park_camera_sync']={'before':sync_before,'after':st,
+                'normal_tick_frames':sync_frames,'simulation_advance_s':sync_frames/FPS,
+                'horizontal_tolerance_m':.1,'camera_assignment_calls':0,'player_assignment_calls':0}
+            if st['camera_player_horizontal_m']>.1:
+                raise RuntimeError('Natural parked player camera did not sync within 30 normal frames')
             if st['headlights_active']: raise RuntimeError('Natural parked truck headlights were not off')
             phase='natural_parked_onfoot'
-            await shot('arrival_end_parked','Natural parked truck, headlights off, player out through normal Chapter5 callback')
+            await shot('arrival_end_parked','Natural parked truck, headlights off, normal Chapter5 callback followed by observed player camera sync')
             phase='parked_cab_camera_diagnostic'
             await look('parked_facade_lights_off','window',cab=park_cab)
             await look('parked_sign_lights_off','sign',cab=park_cab)
@@ -1017,6 +1099,8 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
                 if st['area']!='diner' or st['driving']: raise RuntimeError('On-foot diagnostic did not remain at the diner')
                 trip['onfoot_trace'].append({'step_index':step_index,'simulation_advance_s':step_index/FPS,'state':st})
                 trip['light_findings'] += [{'trace_step_index':step_index,'capture_phase':phase,**f} for f in st['light_findings']]
+            if st['camera_player_horizontal_m']>.1:
+                raise RuntimeError('Ultra on-foot camera did not sync before diagnostic images')
             await shot('ultra_onfoot_after_0_5s','Explicit on-foot diagnostic after 15 normal 1/30 s frames; pool selection interval elapsed, see raw ledger trace')
             await look('ultra_onfoot_facade','window')
             await look('ultra_onfoot_sign','sign')
