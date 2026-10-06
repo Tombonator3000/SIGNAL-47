@@ -147,6 +147,8 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 
 ## Kjente fallgruver
 
+- Ultra (`core/vhs.ts`): skyggeleggingen i krokene (GTAO) blandes ut mellom 120 og 400 m. Uten det fikk fjernt terreng og mesaer harde trappetrinn langs kantene (drivelook K01), siden dybden er grov flere kilometer ute med nærplan på 3 cm.
+
 - Alt spilleren må nå, må testes med ekte gange (`Player.update`), ikke bare med `place()`. Arkivtelefonen kunne brukes i testen, men ikke nås i spillet, fordi testen teleporterte. Et dørblad, et bord og en stol kan til sammen stenge av halve rommet.
 - Spilleren må alltid stå inne i minst én sone. Der to soner møtes, må de overlappe med mer enn spillerens diameter, ellers blir spilleren stående fast i skjøten.
 - Sidene av en rampe er kanter: der rampa står mer enn rundt 0,12 m over bakken, trengs en kollider langs siden, ellers går spilleren rett opp eller ned (motellinnkjørselen, funnet av `reachcheck.py`).
