@@ -1,0 +1,32 @@
+{
+  "created_utc": "2026-10-06T04:03:38.797161+00:00",
+  "base_commit": "11f3b6638ae5d99289cb0b01196b7ac2c357f560",
+  "status": "PASS",
+  "checks": [
+    {
+      "command": "python3 web/tools/drivelook_console_check.py",
+      "result": "PASS",
+      "cases": 11,
+      "evidence": "unittest printed Ran 11 tests and OK; recorded oldroad messages replayed from immutable capture_oldroad.json"
+    },
+    {
+      "command": "python3 -m py_compile web/tools/drivelook.py web/tools/drivelook_console_check.py",
+      "result": "PASS",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "files_sha256": {
+    "web/tools/drivelook.py": "0b457623c61d0d64f379010c61854259e3d17131d1b69b204f2cc28747ef4576",
+    "web/tools/drivelook_console_check.py": "fb725eb912aff46b04f1d8ba98a969a3b581bb18010f8280abdaa3bd23da81a3"
+  },
+  "historical_capture_gate": "Original drivelook_20261006 reports remain FAIL; no retroactive reclassification. SARO error source remains UNVERIFIED.",
+  "gameplay_tests": "Not rerun: no runtime or existing gameplay test changed. Previously green PR72 baseline reused; Claude runs targeted visual-fix integration checks.",
+  "browser_capture": "Not rerun for this console classifier change."
+}
