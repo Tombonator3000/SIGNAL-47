@@ -168,8 +168,9 @@ export class Ultra {
       for (let k = 0; k < POOL; k++) if (this.held[k]) this.spots[k].shadow.needsUpdate = true;
       if (extras) for (const l of this.extra) if (l.visible && l.intensity > 0) l.shadow.needsUpdate = true;
     }
-    // what the game wants from each held lamp: it may have dimmed or switched it meanwhile
-    for (const h of this.held) if (h) { const w = h.set.pos[h.i].w; if (w !== OFF) h.want = w; }
+    // what the game wants from each held lamp: it may have dimmed, switched or flickered it
+    // meanwhile (the diner's neon, every frame); the fake one goes off again, or both would burn
+    for (const h of this.held) if (h) { const p = h.set.pos[h.i]; if (p.w !== OFF) { h.want = p.w; p.w = OFF; } }
     this.t -= dt;
     if (this.t <= 0) {
       this.t = 0.25;

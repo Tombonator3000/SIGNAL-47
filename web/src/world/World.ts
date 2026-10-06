@@ -818,15 +818,6 @@ export class World {
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if ((this.area === 'road' || this.area === 'diner') && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
     this.drivingStep(dt, input, look);
-    // each area lights its own materials from its own lamps: the truck's headlights go to the
-    // diner's, and the diner's neon to the road's and the old road's (after the step, which has
-    // just put the headlights where the truck is now)
-    if (this.diner) {
-      const hl = this.area === 'roswell' ? this.oldRoad?.headlights : this.area === 'road' || this.area === 'diner' ? this.road?.headlights : undefined;
-      this.diner.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_DINER);
-      if (this.road) this.diner.neon(this.road.headlights.set, this.neonSlots.road, NEON_REACH, NEON_ON_ROAD);
-      if (this.oldRoad) this.diner.neon(this.oldRoad.headlights.set, this.neonSlots.old, NEON_REACH, NEON_ON_ROAD);
-    }
     // the dawn's haze on the far mesas (horizon.ts), as on the land in front of them; none at night
     if (this.area !== 'roswell') {
       const sk = this.d.sky();
@@ -849,6 +840,17 @@ export class World {
       const d = L ? Math.hypot(L.drive.pos.x - STATION_ORIGIN.x, L.drive.pos.z - STATION_ORIGIN.z - 8) : 0;
       this.site.nightBlend(1 - THREE.MathUtils.smoothstep(d, 110, 290));
     }
+  }
+  /** Each area lights its own materials from its own lamps: the truck's headlights go to the
+   *  diner's, and the diner's neon to the road's and the old road's. main.ts calls it after the
+   *  step (the headlights are where the truck is now) and after the PC tier has taken the lamps
+   *  it makes real lights of (a neon lamp it holds is off here, and its real light lights all). */
+  shareLights() {
+    if (!this.diner) return;
+    const hl = this.area === 'roswell' ? this.oldRoad?.headlights : this.area === 'road' || this.area === 'diner' ? this.road?.headlights : undefined;
+    this.diner.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_DINER);
+    if (this.road) this.diner.neon(this.road.headlights.set, this.neonSlots.road, NEON_REACH, NEON_ON_ROAD);
+    if (this.oldRoad) this.diner.neon(this.oldRoad.headlights.set, this.neonSlots.old, NEON_REACH, NEON_ON_ROAD);
   }
   // the truck being driven: by the keys, by chapter six, by the autopilot or by a test
   private drivingStep(dt: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
