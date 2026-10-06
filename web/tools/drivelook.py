@@ -2,6 +2,8 @@
 """Record uninterrupted real drives for visual review, with no route placement.
 
 The Kessler trip adds explicitly placed stationary fixtures after its real drive.
+The dinerlight trip records chapter-five arrival and chapter-six departure in
+separate contexts, plus explicitly labelled Ultra on-foot lighting diagnostics.
 
 python3 tools/drivelook.py OUTDIR [WxH]
 S47_URL selects a build; S47_CHROMIUM optionally selects an installed browser.
@@ -47,10 +49,10 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('outdir', type=Path, help='New directory; existing paths are refused.')
     p.add_argument('size', nargs='?', type=viewport, default=(1280, 800), metavar='WxH')
-    p.add_argument('--trip', choices=('all','saro_diner','diner_oldroad','kessler'), default='all',
-                   help='Capture both original trips or one requested trip; kessler is a separate chapter-six review.')
+    p.add_argument('--trip', choices=('all','saro_diner','diner_oldroad','kessler','dinerlight'), default='all',
+                   help='Original trips, Kessler, or separate diner arrival/departure lighting reviews.')
     p.add_argument('--quality', choices=('low','high','ultra'), default='high',
-                   help='Graphics preset for --trip kessler; original trips retain High/off.')
+                   help='Preset for kessler/dinerlight; original trips retain High/off.')
     p.add_argument('--timeout', type=float, default=2400, help='Whole-run wall seconds, default 2400.')
     a = p.parse_args(argv)
     if not math.isfinite(a.timeout) or a.timeout <= 0:
@@ -250,7 +252,7 @@ def shot_metadata(state: dict, *, name: str, filename: str, reason: str, distanc
     return result
 
 
-def source_info(kessler: bool = False) -> dict:
+def source_info(kessler: bool = False, dinerlight: bool = False) -> dict:
     def git(*args):
         return subprocess.check_output(['git', '-C', str(WEB), *args], text=True, timeout=10).strip()
     files = ['src/world/World.ts', 'src/drive/Drive.ts', 'src/drive/OldRoad.ts',
@@ -258,6 +260,11 @@ def source_info(kessler: bool = False) -> dict:
     if kessler:
         files += ['src/drive/oldRoadLandmarks.ts', 'src/drive/oldRoadLayout.ts',
                   'src/drive/roadShape.ts', 'src/world/Sky.ts', 'src/world/glow.ts',
+                  'src/core/quality.ts', 'src/core/ultra.ts', 'src/core/vhs.ts', 'src/main.ts']
+    if dinerlight:
+        files += ['src/story/Chapter5.ts', 'src/world/Diner.ts', 'src/drive/Truck.ts',
+                  'src/drive/RoadArea.ts', 'src/drive/roadShape.ts', 'src/world/kit.ts',
+                  'src/world/Sky.ts', 'src/world/glow.ts',
                   'src/core/quality.ts', 'src/core/ultra.ts', 'src/core/vhs.ts', 'src/main.ts']
     return {'git_head': git('rev-parse', 'HEAD'), 'git_status': git('status', '--short'),
             'files_sha256': {f: hashlib.sha256((WEB / f).read_bytes()).hexdigest() for f in files},
@@ -589,7 +596,454 @@ async def run_kessler_trip(browser, args, report, url, out):
             write_report(out,report)
 
 
+def dinerlight_route_remaining(points: list, current_xyz: list) -> dict:
+    """Horizontal distance along the actual loaded autopilot polyline, without moving it."""
+    if len(points) < 2 or any(len(p) != 3 for p in points) or len(current_xyz) != 3:
+        raise ValueError('Missing diner autopilot route geometry')
+    if not all(math.isfinite(v) for p in points + [current_xyz] for v in p):
+        raise ValueError('Non-finite diner route geometry')
+    lengths = [math.hypot(b[0]-a[0], b[2]-a[2]) for a,b in zip(points,points[1:])]
+    total = sum(lengths)
+    if total <= 0: raise ValueError('Degenerate diner autopilot route')
+    best = None; acc = 0.0
+    for a,b,length in zip(points,points[1:],lengths):
+        if length:
+            dx,dz = b[0]-a[0],b[2]-a[2]
+            u = min(1.0,max(0.0,((current_xyz[0]-a[0])*dx+(current_xyz[2]-a[2])*dz)/(length*length)))
+            lateral = math.hypot(current_xyz[0]-a[0]-u*dx,current_xyz[2]-a[2]-u*dz)
+            if best is None or lateral < best[0]: best = (lateral,acc+u*length)
+        acc += length
+    return {'remaining_m':max(0.0,total-best[1]),'lateral_m':best[0],
+            'nearest_s_m':best[1],'total_m':total,'goal_xyz':points[-1]}
+
+
+def dinerlight_quality_errors(state: dict, requested: str) -> list[str]:
+    errors = []
+    if requested not in ('low','high','ultra'): return ['Unknown requested quality']
+    if state.get('quality') != requested: errors.append('Requested quality differs from observed quality')
+    if state.get('picture') != ('off' if requested == 'low' else 'vhs'):
+        errors.append('Observed picture is not the player default for this quality')
+    if state.get('ultra_enabled') is not (requested == 'ultra') or state.get('ultra_on') is not (requested == 'ultra'):
+        errors.append('Effective Ultra state differs from requested preset')
+    if requested == 'ultra' and state.get('post',{}).get('supported') is not True:
+        errors.append('Ultra postprocessing is unsupported')
+    render = state.get('render_state',{})
+    if render.get('pixel_ratio') != 1: errors.append('Observed renderer DPR is not 1')
+    if state.get('held') is not True: errors.append('Realtime loop is not held')
+    return errors
+
+
+def dinerlight_tick_seconds(state: dict, phase: str) -> float:
+    if phase == 'dinerlight_arrival':
+        remaining = state.get('route_remaining_m')
+        if remaining is not None and remaining > 450: return 4.0
+        if remaining is not None and remaining <= 20: return 1/FPS
+    return STEP
+
+
+def dinerlight_light_findings(ledger: dict) -> list[dict]:
+    """Mechanical candidates only; missing/nonfinite instrumentation is blocking."""
+    if not all(k in ledger for k in ('sets','spots','player_xyz')) or len(ledger['player_xyz']) != 3:
+        raise ValueError('Missing light ledger instrumentation')
+    def finite(values):
+        if not all(isinstance(v,(int,float)) and math.isfinite(v) for v in values):
+            raise ValueError('Non-finite light ledger instrumentation')
+    finite(ledger['player_xyz']); slots = {}; scales = {}
+    for flood in ledger['sets']:
+        if not all(k in flood for k in ('key','count','capacity','scale','skip','headlight_slots','slots')):
+            raise ValueError('Incomplete flood-set ledger')
+        finite([flood['count'],flood['capacity'],flood['scale']])
+        finite(flood['skip']+flood['headlight_slots'])
+        if not 0 <= flood['count'] <= flood['capacity'] or len(flood['slots']) != flood['count']:
+            raise ValueError('Inconsistent flood-set count')
+        for slot in flood['slots']:
+            if len(slot.get('position',[])) != 3 or len(slot.get('colour_rgb',[])) != 3:
+                raise ValueError('Missing flood position/colour')
+            finite(slot['position']+slot['colour_rgb']+[slot['strength_w'],slot['index']])
+            slots[(flood['key'],slot['index'])] = slot
+        scales[flood['key']] = flood['scale']
+    findings = []
+    for spot in ledger['spots']:
+        if not all(k in spot for k in ('uuid','position','target','colour_rgb','intensity','distance',
+                                       'visible','effective_visible','cast_shadow','matched_slots')):
+            raise ValueError('Incomplete SpotLight ledger')
+        if any(len(spot[k]) != 3 for k in ('position','target','colour_rgb')):
+            raise ValueError('Missing SpotLight position/colour')
+        finite(spot['position']+spot['target']+spot['colour_rgb']+[spot['intensity'],spot['distance']])
+        finite([spot[k] for k in ('angle','penumbra','decay') if k in spot])
+        if 'shadow' in spot: finite(spot['shadow']['map_size'])
+        if not spot['effective_visible'] or spot['intensity'] <= 0 or max(spot['colour_rgb']) <= 0:
+            continue
+        matches = []
+        for match in spot['matched_slots']:
+            key = (match['key'],match['index'])
+            if key not in slots: raise ValueError('Unknown matched flood slot')
+            slot = slots[key]
+            separation = math.dist(spot['position'],slot['position'])
+            if separation > 0.05: raise ValueError('Invalid SpotLight/flood position match')
+            # Shared neon/headlight aliases occupy the same position but may have
+            # scaled colour. Compare hue before proposing a source association.
+            a,b = max(spot['colour_rgb']),max(slot['colour_rgb'])
+            if b <= 0 or max(abs(x/a-y/b) for x,y in zip(spot['colour_rgb'],slot['colour_rgb'])) > .02:
+                continue
+            matches.append((key,slot,separation))
+        unskipped_source = any(not slot['skipped'] for _,slot,_ in matches)
+        for key,slot,separation in matches:
+            evidence = {'spot_uuid':spot['uuid'],'set_key':key[0],'slot_index':key[1],
+                        'position_separation_m':separation,'spot_intensity':spot['intensity'],
+                        'fake_strength_w':slot['strength_w'],'skipped':slot['skipped'],
+                        'fake_set_scale':scales[key[0]],
+                        'classification':'mechanical_candidate_not_visual_verdict'}
+            if slot['strength_w'] > 0 and max(slot['colour_rgb']) > 0 and scales[key[0]] > 0:
+                findings.append({'kind':'positive_fake_with_matching_spot',**evidence})
+            if slot['skipped'] and not unskipped_source:
+                findings.append({'kind':'active_spot_on_skipped_slot',**evidence})
+        distance = math.hypot(spot['position'][0]-ledger['player_xyz'][0],
+                              spot['position'][2]-ledger['player_xyz'][2])
+        if distance > 45:
+            findings.append({'kind':'active_spot_far_from_observed_player','spot_uuid':spot['uuid'],
+                             'horizontal_player_distance_m':distance,'threshold_m':45,
+                             'classification':'mechanical_candidate_not_visual_verdict'})
+        if ledger.get('on_foot_diner') and not any(key[0]=='diner' and not slot['skipped'] for key,slot,_ in matches):
+            findings.append({'kind':'active_spot_without_diner_source','spot_uuid':spot['uuid'],
+                             'matched_set_keys':sorted({key[0] for key,_,_ in matches}),
+                             'classification':'mechanical_candidate_not_visual_verdict'})
+    return findings
+
+
+DINERLIGHT_EXTRA = r"""(() => {
+  const s=S47,w=s.world,c=s.camera,L=w.leg&&w.legs[w.leg];
+  const D=L?.drive || (w.truckAt==='diner'?w.drive:null);
+  if(!D || !w.diner?.flood || !w.road?.headlights) throw Error('Missing diner lighting API');
+  const departure=s.game.phase==='ch6';
+  const routePoints=departure?w.oldRoad?.routes?.park:w.mods?.legs?.roadRoute?.('diner');
+  if(!Array.isArray(routePoints)||routePoints.length<2) throw Error('Missing actual loaded dinerlight autopilot route');
+  const sourceSets=new Map();
+  const add=(set,role,heads=[])=>{if(!set)return;let item=sourceSets.get(set);
+    if(!item){item={set,roles:[],heads:new Set()};sourceSets.set(set,item);}
+    item.roles.push(role);heads.forEach(i=>item.heads.add(i));};
+  add(w.diner.flood,'diner');
+  add(w.road.headlights.set,'road_body',w.road.headlights.slots);
+  add(w.oldRoad?.headlights?.set,'oldroad_body',w.oldRoad?.headlights?.slots||[]);
+  add(D.area.headlights?.set,'current_truck_body',D.area.headlights?.slots||[]);
+  const sets=[...sourceSets.values()].map(({set,roles,heads})=>({key:set.key,roles,
+    capacity:set.n,count:set.count,scale:set.scale.value,skip:[...set.skip],headlight_slots:[...heads],
+    slots:set.pos.slice(0,set.count).map((p,index)=>({index,position:[p.x,p.y,p.z],
+      strength_w:p.w,colour_rgb:set.col[index].toArray(),skipped:set.skip.has(index)}))}));
+  const effective=o=>{for(let p=o;p;p=p.parent)if(!p.visible)return false;return true;};
+  s.scene.updateMatrixWorld(true);
+  const spots=[];
+  s.scene.traverse(o=>{if(!o.isSpotLight)return;const position=o.getWorldPosition(c.position.clone()).toArray();
+    const matches=[];for(const set of sets)for(const p of set.slots)
+      if(Math.hypot(...position.map((v,i)=>v-p.position[i]))<=.05)
+        matches.push({key:set.key,index:p.index});
+    spots.push({uuid:o.uuid,name:o.name,position,target:o.target.getWorldPosition(c.position.clone()).toArray(),
+      colour_rgb:o.color.toArray(),intensity:o.intensity,distance:o.distance,visible:o.visible,
+      effective_visible:effective(o),cast_shadow:o.castShadow,angle:o.angle,penumbra:o.penumbra,
+      decay:o.decay,shadow:{map_size:o.shadow.mapSize.toArray(),needs_update:o.shadow.needsUpdate,
+        auto_update:o.shadow.autoUpdate,map_present:!!o.shadow.map},matched_slots:matches});});
+  const heads=D.area.headlights;
+  const headlights_active=!!heads&&heads.slots.some(i=>heads.set.pos[i].w>0&&Math.max(...heads.set.col[i].toArray())>0);
+  const sky=Object.fromEntries(['uTime','uFlash','uDawn','uSun','uSunDir'].filter(k=>s.sky.uniforms[k])
+    .map(k=>{const v=s.sky.uniforms[k].value;return [k,v?.toArray?v.toArray():v];}));
+  return {chapter_phase:s.game.phase,chapter5_stage:s.ch5.s.stage,chapter5_arrived:s.ch5.s.arrived,
+    chapter6_stage:s.ch6.stage,cinematic:s.game.cinematic,held:s.hold,busy:w.busy,
+    quality:JSON.parse(localStorage.getItem('s47.quality')),picture:s.vhs.picture,
+    ultra_enabled:s.vhs.ultra,ultra_on:s.ultra.on,
+    post:{on:s.vhs.on,supported:s.vhs.supported,glitch:s.vhs.glitch,ultra:s.vhs.ultra},
+    camera_quaternion:c.quaternion.toArray(),camera_projection:c.projectionMatrix.toArray(),
+    camera_world:c.matrixWorld.toArray(),truck_quaternion:D.truck.group.quaternion.toArray(),
+    player_xyz:s.player.pos.toArray(),headlights_active,sky_uniforms:sky,diner_dawn:w.diner.dawn,
+    truck_view_state:{driving:D.truck.driving,group_visible:D.truck.group.visible,
+      body_visible:D.truck.body.visible,cab_visible:D.truck.cab.visible,shell_visible:D.truck.shell.visible},
+    diner_origin:w.diner.group.position.toArray(),road_origin:w.road.group.position.toArray(),
+    route_points:routePoints.map(p=>p.toArray()),
+    route_source_api:departure?"world.oldRoad.routes.park":"Read-only loaded World debug mods.legs.roadRoute('diner')",
+    body_light_ledger:{sets,spots,player_xyz:s.player.pos.toArray(),
+      matching_geometry:'World positions within 0.05 m, normalised RGB hue within 0.02; raw geometric aliases retained',
+      stale_candidate_geometry:'Active effective-visible SpotLight over 45 horizontal metres from player, or no unskipped diner source within 0.05 m and normalised RGB hue 0.02 during actual diner foot diagnostic'},
+    render_state:{pixel_ratio:s.renderer.getPixelRatio(),buffer_width:s.renderer.domElement.width,
+      buffer_height:s.renderer.domElement.height,tone_mapping:s.renderer.toneMapping,
+      exposure:s.renderer.toneMappingExposure,ultra_mapped:s.ultra.mapped}};
+})()"""
+
+
+DINERLIGHT_DRAW = r"""time => {
+  const s=S47;if(!s.hold)throw Error('Diner draw requires held loop');
+  const render=s.vhs.render;
+  s.vhs.render=function(scene,camera,_wall){return render.call(this,scene,camera,time);};
+  try{s.game.d.view.draw();}finally{s.vhs.render=render;}
+  return {render_time_s:time};
+}"""
+
+
+DINERLIGHT_LOOK = r"""({proxy,cab,time}) => {
+  const s=S47,w=s.world,D=(w.leg&&w.legs[w.leg]?.drive)||(w.truckAt==='diner'?w.drive:null),c=s.camera;
+  if(!s.hold||!D||!w.diner?.proxies[proxy])throw Error('Missing held diner look API');
+  const snapshot=()=>({camera:c.position.toArray(),camera_q:c.quaternion.toArray(),
+    driver:D.pos.toArray(),truck:D.truck.group.position.toArray(),truck_q:D.truck.group.quaternion.toArray(),
+    heading:D.heading,speed:D.speed,clock:s.game.clock,player:s.player.pos.toArray(),
+    truck_driving:D.truck.driving,cab_visible:D.truck.cab.visible,shell_visible:D.truck.shell.visible,
+    headlights:D.area.headlights?.slots.map(i=>({index:i,position:D.area.headlights.set.pos[i].toArray(),
+      colour:D.area.headlights.set.col[i].toArray()}))||[]});
+  const before=snapshot();
+  try {
+    if(cab){
+      c.position.fromArray(cab.camera_xyz);c.quaternion.fromArray(cab.camera_quaternion);
+      D.truck.cab.visible=true;D.truck.shell.visible=false;
+    }
+    const target=w.diner.proxies[proxy].getWorldPosition(c.position.clone());
+    c.lookAt(target);c.updateMatrixWorld(true);
+    const render=s.vhs.render;
+    s.vhs.render=function(scene,camera,_wall){return render.call(this,scene,camera,time);};
+    try{s.game.d.view.draw();}finally{s.vhs.render=render;}
+    return {before,after:snapshot(),render_time_s:time,target_xyz:target.toArray(),proxy,cab_pose:!!cab};
+  } catch(error) {
+    c.position.fromArray(before.camera);c.quaternion.fromArray(before.camera_q);
+    D.truck.cab.visible=before.cab_visible;D.truck.shell.visible=before.shell_visible;
+    c.updateMatrixWorld(true);throw error;
+  }
+}"""
+
+
+DINERLIGHT_RESTORE = r"""saved => {
+  const s=S47,w=s.world,D=(w.leg&&w.legs[w.leg]?.drive)||(w.truckAt==='diner'?w.drive:null),c=s.camera;
+  if(!s.hold||!D)throw Error('Missing held diner restoration API');
+  const b=saved.before;
+  const unchanged=s.game.clock===b.clock&&D.heading===b.heading&&D.speed===b.speed&&
+    D.truck.driving===b.truck_driving&&
+    JSON.stringify(D.area.headlights?.slots.map(i=>({index:i,position:D.area.headlights.set.pos[i].toArray(),
+      colour:D.area.headlights.set.col[i].toArray()}))||[])===JSON.stringify(b.headlights)&&
+    JSON.stringify(s.player.pos.toArray())===JSON.stringify(b.player)&&
+    JSON.stringify(D.pos.toArray())===JSON.stringify(b.driver)&&
+    JSON.stringify(D.truck.group.position.toArray())===JSON.stringify(b.truck)&&
+    JSON.stringify(D.truck.group.quaternion.toArray())===JSON.stringify(b.truck_q);
+  c.position.fromArray(b.camera);c.quaternion.fromArray(b.camera_q);
+  D.truck.cab.visible=b.cab_visible;D.truck.shell.visible=b.shell_visible;c.updateMatrixWorld(true);
+  const render=s.vhs.render;
+  s.vhs.render=function(scene,camera,_wall){return render.call(this,scene,camera,saved.render_time_s);};
+  try{s.game.d.view.draw();}finally{s.vhs.render=render;}
+  return {unchanged,visibility_restored:D.truck.cab.visible===b.cab_visible&&D.truck.shell.visible===b.shell_visible,
+    camera_restored:JSON.stringify(c.position.toArray())===JSON.stringify(b.camera)&&
+    JSON.stringify(c.quaternion.toArray())===JSON.stringify(b.camera_q),render_time_s:saved.render_time_s,
+    after:{camera:c.position.toArray(),camera_q:c.quaternion.toArray(),player:s.player.pos.toArray(),
+      driver:D.pos.toArray(),truck:D.truck.group.position.toArray(),truck_q:D.truck.group.quaternion.toArray(),
+      clock:s.game.clock,cab_visible:D.truck.cab.visible,shell_visible:D.truck.shell.visible,truck_driving:D.truck.driving}};
+}"""
+
+
+async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
+    """Actual chapter drives first; parked-camera and Ultra foot views are labelled diagnostics."""
+    arrival = trip_id == 'dinerlight_arrival'
+    trip = {'id':trip_id,'status':'CAPTURING','visual_review':'UNVERIFIED','shots':[],
+            'errors':[],'warnings':[],'console_messages':[],'failed_http':[],
+            'loaded_code_sha256':{},'observed_code_responses':[],
+            'code_hash_policy':'observed_responses_v1','quality_requested':args.quality,
+            'route_placement_calls':0,'clock_assignment_calls':0,'setup_actions':[],
+            'side_capture_checks':[],'light_findings':[],'onfoot_trace':[]}
+    report['trips'].append(trip)
+    context = await browser.new_context(viewport={'width':args.size[0],'height':args.size[1]},
+                                        device_scale_factor=1,has_touch=False,is_mobile=False)
+    page = await context.new_page(); page.set_default_timeout(60000)
+    tasks = []; handlers = observe_page(page,trip,tasks)
+    previous = None; distance = 0.0; elapsed = 0.0; phase = 'route_setup'
+    route_start_distance = 0.0
+
+    async def state():
+        nonlocal previous,distance
+        st = await page.evaluate(STATE); st.update(await page.evaluate(DINERLIGHT_EXTRA))
+        errors = dinerlight_quality_errors(st,args.quality)
+        if errors: raise RuntimeError('; '.join(errors))
+        points = st.pop('route_points')
+        source_api = st.pop('route_source_api')
+        if 'route_geometry' not in trip:
+            trip['route_geometry'] = {'points':points,
+                'source_api':source_api,
+                'coordinate_frame':'world XYZ; distances use horizontal XZ',
+                'relationship_to_route':'Same loaded polyline used by the runtime autopilot'}
+        elif trip['route_geometry']['points'] != points:
+            raise RuntimeError('Loaded diner autopilot route changed during capture')
+        # SARO is translated onto the shared road map by STATE, before its actual
+        # controller handover. This is an observation transform, never a placement.
+        road_point = [st['map_xyz'][i]+st['road_origin'][i] for i in range(3)]
+        geometry = dinerlight_route_remaining(points,road_point)
+        st['route_remaining_m'] = geometry['remaining_m']
+        st['route_lateral_m'] = geometry['lateral_m']
+        st['route_goal_xyz'] = geometry['goal_xyz']
+        if phase in ('arrival_drive','departure_drive'):
+            distance += path_increment(previous,st['map_xyz']); previous = st['map_xyz']
+        st['route_distance_m'] = distance-route_start_distance
+        st['capture_phase'] = phase
+        st['body_light_ledger']['on_foot_diner'] = phase == 'ultra_onfoot_diagnostic' and st['area']=='diner' and not st['driving']
+        st['light_findings'] = dinerlight_light_findings(st['body_light_ledger'])
+        return st
+
+    async def tick(seconds=STEP):
+        nonlocal elapsed
+        await page.evaluate('([seconds,fps])=>{S47.hold=true;S47.tick(seconds,fps);}',[seconds,FPS])
+        elapsed += max(1,round(seconds*FPS))/FPS
+        return await state()
+
+    async def shot(name,reason,thresholds=None,*,view=None,render_time=None):
+        await wait_code_hashes(trip,tasks)
+        if render_time is None: render_time = await page.evaluate('performance.now()/1000')
+        await page.evaluate(DINERLIGHT_DRAW,render_time)
+        st = await state(); filename = f'{trip_id}_{len(trip["shots"]):03d}_{name}.png'
+        await page.screenshot(path=str(out/filename),timeout=120000)
+        st = shot_metadata(st,name=name,filename=filename,reason=reason,
+            thresholds=thresholds or [],distance=distance,elapsed=elapsed,url=page.url,
+            source_sha=report['source']['git_head'],resources=trip['loaded_code_sha256'],
+            renderer=trip['renderer'],size=args.size,quality=st['quality'],picture=st['picture'])
+        st['render_time_s'] = render_time; st['view_setup'] = view or {'kind':'actual_current_camera'}
+        st['image_sha256'] = hashlib.sha256((out/filename).read_bytes()).hexdigest()
+        trip['shots'].append(st)
+        trip['light_findings'] += [{'file':filename,'capture_phase':phase,**finding} for finding in st['light_findings']]
+        write_report(out,report)
+        print(f'{trip_id}/{args.quality}: {name}, path={st["route_distance_m"]:.2f}, remaining={st["route_remaining_m"]:.2f}, clock={st["clock_seconds"]:.2f}',flush=True)
+        return st
+
+    async def look(name,proxy,*,cab=None):
+        time_s = await page.evaluate('performance.now()/1000')
+        saved = await page.evaluate(DINERLIGHT_LOOK,{'proxy':proxy,'cab':cab,'time':time_s})
+        try:
+            return await shot(name,'Held camera looks at actual diner proxy; no simulation tick',
+                view={'kind':'diagnostic_parked_cab_from_observed_arrival' if cab else 'held_current_pose',
+                      'target_proxy':proxy,'target_xyz':saved['target_xyz'],
+                      'observed_cab_pose':cab,'before':saved['before'],'after':saved['after']},render_time=time_s)
+        finally:
+            proof = await page.evaluate(DINERLIGHT_RESTORE,saved)
+            trip['side_capture_checks'].append({'name':name,**proof})
+            if not proof['unchanged'] or not proof['camera_restored'] or not proof['visibility_restored']:
+                raise RuntimeError('Diner look changed player/truck/clock or failed camera restoration')
+
+    try:
+        await page.add_init_script(INIT+f"\nlocalStorage.setItem('s47.quality',JSON.stringify({json.dumps(args.quality)}));")
+        await page.goto(url,wait_until='load',timeout=120000)
+        await page.wait_for_function('window.S47 && S47.tick && S47.world')
+        await page.click('button[data-a=start]'); await page.wait_for_function('S47.started()')
+        chapter = 'chapter5' if arrival else 'chapter6'
+        await page.evaluate('chapter=>{S47.hold=true;S47.jump(chapter);}',chapter)
+        trip['setup_actions'].append({'api':'S47.jump','chapter':chapter,'semantics':'Chapter setup, not gameplay evidence'})
+        if arrival:
+            await page.evaluate("""() => {
+              if(S47.game.phase!=='ch5'||!S47.ch5.active||S47.ch5.s.stage!=='to-truck'||
+                 S47.ch3.truckOverride?.label()!=='Drive to Mesa Diner')throw Error('Chapter-five truck action unavailable');
+              S47.ch3.truckOverride.use();
+            }""")
+            trip['setup_actions'].append({'api':'S47.ch3.truckOverride.use','semantics':'Normal Chapter5 truck action with arrivedDiner callback; no walk-to-truck claim'})
+        ready = ("S47.game.phase==='ch5' && S47.ch5.s.stage==='to-truck' && S47.world.area==='saro' && S47.world.leg==='saro'" if arrival else
+                 "S47.game.phase==='ch6' && S47.ch6.stage==='drive' && S47.world.area==='roswell' && S47.world.leg==='roswell'")
+        for _ in range(240):
+            await page.evaluate('S47.hold=true')
+            if await page.evaluate(f'S47.world.driving && !S47.world.busy && ({ready})'): break
+            await page.evaluate('S47.tick(0.25,30)')
+            await page.wait_for_timeout(100)
+        else: raise RuntimeError('Dinerlight setup did not reach the requested real chapter cab')
+        await page.evaluate('S47.hold=true;S47.world.autopilot=20')
+        trip['renderer'] = await page.evaluate("""(() => {const g=S47.renderer.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');return {version:g.getParameter(g.VERSION),vendor:g.getParameter(e?e.UNMASKED_VENDOR_WEBGL:g.VENDOR),renderer:g.getParameter(e?e.UNMASKED_RENDERER_WEBGL:g.RENDERER),pixel_ratio:S47.renderer.getPixelRatio(),hardware_performance:'UNVERIFIED'};})()""")
+        phase = 'arrival_drive' if arrival else 'departure_drive'
+        st = await state(); trip['route_start'] = st; previous = st['map_xyz']; route_start_distance = distance
+        await shot('route_start','Actual cab start after chapter setup; uninterrupted route follows')
+        monitor = StallMonitor(); started = not arrival; next_at = 40.0; prepark = False; park_cab = None
+        for _ in range(2600):
+            if arrival:
+                if st['chapter_phase']!='ch5' or st['chapter5_stage'] not in ('to-truck','diner'):
+                    raise RuntimeError('Arrival left Chapter5 before natural parking')
+                if not st['driving']:
+                    if st['truck_at']!='diner' or not started or not prepark:
+                        raise RuntimeError('Arrival stopped before the requested approach/pre-park evidence')
+                    # At 1/30 s this is the actual park() frame, before the 0.4 s getOut.
+                    park_cab = {'camera_xyz':st['camera_xyz'],'camera_quaternion':st['camera_quaternion'],
+                                'world_xyz':st['world_xyz'],'clock_seconds':st['clock_seconds']}
+                    trip['park_cab_pose'] = park_cab; trip['route_end'] = st
+                    break
+                if st['chapter5_stage']!='to-truck' or st['leg'] not in ('saro','road') or st['area']!=st['leg']:
+                    raise RuntimeError('Arrival phase advanced prematurely while still driving')
+                if st['leg']=='road' and st['route_remaining_m']<=300 and not started:
+                    started=True;trip['approach_start']=st
+                    await shot('approach_start_300m','First actual pose with <=300 m remaining along loaded diner autopilot polyline',[300])
+                if started:
+                    approach = max(0.0,300-st['route_remaining_m'])
+                    due,next_at = capture_due(approach,next_at,40)
+                    if due: await shot(f'forward_{int(due[-1]):03d}m','40 m remaining-polyline threshold; actual pose, no interpolation',due)
+                    if not prepark and st['route_remaining_m']<=6 and abs(st['speed_mps'])<.35:
+                        if not st['headlights_active']: raise RuntimeError('Pre-park frame has no active headlights')
+                        prepark=True;trip['prepark_observed_pose']=st
+                        await shot('prepark_forward_lights_on','Actual near-stopped cab before natural park; headlights observed on')
+                        await look('prepark_facade_lights_on','window')
+                        await look('prepark_sign_lights_on','sign')
+                progress = -st['route_remaining_m']
+            else:
+                if st['chapter_phase']!='ch6' or st['chapter6_stage']!='drive' or not st['driving'] or st['leg']!='roswell' or st['area']!='roswell':
+                    raise RuntimeError('Departure left the actual Chapter6 cab before 300 m')
+                due,next_at = capture_due(st['route_distance_m'],next_at,40)
+                if due: await shot(f'forward_{int(due[-1]):03d}m','40 m actual accumulated-path threshold from diner lot; no placement',due)
+                if st['route_distance_m']>=300:
+                    await shot('departure_end_300m','First actual pose reaching 300 m accumulated horizontal path from the lot',[300])
+                    trip['route_end']=st;break
+                progress = st['route_distance_m']
+            if monitor.observe(elapsed,progress): raise RuntimeError('Dinerlight autopilot stalled before its endpoint')
+            st = await tick(dinerlight_tick_seconds(st,trip_id))
+        else: raise RuntimeError('Dinerlight route exhausted its bounded steps')
+        await page.evaluate('S47.world.autopilot=null')
+        trip['route_path_distance_m'] = distance-route_start_distance
+        if arrival:
+            phase='natural_park_transition'
+            for _ in range(30):
+                st=await tick(1/FPS)
+                if st['area']=='diner' and not st['driving'] and st['truck_at']=='diner' and st['chapter5_arrived'] and st['chapter5_stage']=='diner' and not st['cinematic']: break
+            else: raise RuntimeError('Natural diner parking/getOut/Chapter5 callback did not finish')
+            if st['headlights_active']: raise RuntimeError('Natural parked truck headlights were not off')
+            phase='natural_parked_onfoot'
+            await shot('arrival_end_parked','Natural parked truck, headlights off, player out through normal Chapter5 callback')
+            phase='parked_cab_camera_diagnostic'
+            await look('parked_facade_lights_off','window',cab=park_cab)
+            await look('parked_sign_lights_off','sign',cab=park_cab)
+        if args.quality=='ultra':
+            phase='ultra_onfoot_diagnostic'
+            if not arrival:
+                before_setup=await state()
+                await page.evaluate("S47.world.stopDriving();S47.world.enter('diner');S47.world.placeAtDiner('arrive');S47.hold=true")
+                trip['setup_actions'].append({'api':"world.stopDriving(); world.enter('diner'); world.placeAtDiner('arrive')",
+                    'semantics':'Explicit diagnostic after completed route: stopDriving resets trucks to trip homes; enter diner and place only player at arrive anchor',
+                    'before':before_setup,'after':await state()})
+            else:
+                await page.evaluate("S47.world.enter('diner');S47.hold=true")
+                trip['setup_actions'].append({'api':"world.enter('diner')",'semantics':'Explicit diagnostic using actual natural getOut player pose'})
+            immediate=await state();trip['onfoot_trace'].append({'step_index':0,'simulation_advance_s':0,'state':immediate})
+            trip['light_findings'] += [{'trace_step_index':0,'capture_phase':phase,**f} for f in immediate['light_findings']]
+            for step_index in range(1,16):
+                st=await tick(1/FPS)
+                if st['area']!='diner' or st['driving']: raise RuntimeError('On-foot diagnostic did not remain at the diner')
+                trip['onfoot_trace'].append({'step_index':step_index,'simulation_advance_s':step_index/FPS,'state':st})
+                trip['light_findings'] += [{'trace_step_index':step_index,'capture_phase':phase,**f} for f in st['light_findings']]
+            await shot('ultra_onfoot_after_0_5s','Explicit on-foot diagnostic after 15 normal 1/30 s frames; pool selection interval elapsed, see raw ledger trace')
+            await look('ultra_onfoot_facade','window')
+            await look('ultra_onfoot_sign','sign')
+        await wait_code_hashes(trip,tasks)
+        check_capture_diagnostics(trip,page.url,strict_http=True)
+        trip['status']='CAPTURED'
+    except BaseException as e:
+        trip['status']='FAIL';trip['failure']=f'{type(e).__name__}: {e}';raise
+    finally:
+        try:
+            try:
+                await asyncio.wait_for(context.close(),timeout=10);trip['code_observation_closed']=True
+            finally: stop_observing(page,trip,handlers)
+            await asyncio.wait_for(wait_code_hashes(trip,tasks),timeout=10)
+            if trip['status']=='CAPTURED': check_capture_diagnostics(trip,page.url,strict_http=True)
+        except BaseException as e:
+            already_failed=trip['status']=='FAIL';trip['status']='FAIL'
+            trip.setdefault('failure',f'{type(e).__name__}: {e}');trip['cleanup_failure']=f'{type(e).__name__}: {e}'
+            await cancel_code_hashes(trip,tasks)
+            if not already_failed: raise
+        finally:
+            trip['path_distance_m']=distance;trip['simulation_elapsed_s']=elapsed;write_report(out,report)
+
+
 async def run_trip(browser, args, report, trip_id, url, out):
+    if trip_id in ('dinerlight_arrival','dinerlight_departure'):
+        return await run_dinerlight_trip(browser,args,report,trip_id,url,out)
     if trip_id == 'kessler':
         return await run_kessler_trip(browser, args, report, url, out)
     trip = {'id': trip_id, 'status': 'CAPTURING', 'visual_review': 'UNVERIFIED',
@@ -767,7 +1221,8 @@ def main(argv=None) -> int:
         return 2
     report = {'schema_version':1,'status':'CAPTURING','visual_review':'UNVERIFIED',
               'created_utc':datetime.now(timezone.utc).isoformat(),'trips':[],'failures':[],
-              'requested_trips':['saro_diner','diner_oldroad'] if args.trip=='all' else [args.trip],
+              'requested_trips':(['saro_diner','diner_oldroad'] if args.trip=='all' else
+                  ['dinerlight_arrival','dinerlight_departure'] if args.trip=='dinerlight' else [args.trip]),
               'url':os.environ.get('S47_URL') or (WEB / 'dist-single/index.html').as_uri(),
               'interval_m':INTERVAL,'step_s':STEP,'fps':FPS,'autopilot_mps':20,
               'wall_timeout_s':args.timeout,'limitations':['Autopilot capture, not manual controls or hardware fps verification.',
@@ -787,12 +1242,27 @@ def main(argv=None) -> int:
             'Component rectangles include background and subpixel projections may be UNVERIFIED.',
             'Temporal RGB variation is not an automatic z-fighting verdict; no-tick off pairs measure only repeatability.',
             'Phone-sized viewport uses a desktop pointer context so Ultra remains testable; no physical phone/fps claim.']
+    if args.trip=='dinerlight':
+        report['interval_m']=40.0;report['quality_requested']=args.quality
+        report['dinerlight']={'arrival_remaining_m':300,'departure_accumulated_path_m':300,
+            'arrival_warmup_tick_s':4,'arrival_warmup_only_above_remaining_m':450,
+            'capture_tick_s':STEP,'arrival_final_20m_tick_s':1/FPS,
+            'onfoot_pool_trace_steps':15,'onfoot_pool_trace_step_s':1/FPS,
+            'preset':'Fresh requested quality, player-default picture: Low off, High/Ultra VHS',
+            'contexts':'Separate fresh Chapter5 arrival and Chapter6 departure contexts'}
+        report['limitations'] += ['Chapter jumps and direct chapter truck action are setup, not complete gameplay evidence.',
+            'Arrival remaining distance follows the loaded autopilot polyline; departure path is accumulated from actual sampled poses, including the lot.',
+            'Parked cab views use the camera observed on the actual park frame after natural getOut, with reversible cab/shell visibility overrides; headlights remain off.',
+            'Ultra on-foot setup after completed departure resets trucks to trip homes and places only the player at a documented diner anchor.',
+            'Position/hue-matched light candidates are mechanical evidence, not an authoritative Ultra source ledger or automatic visual PASS.',
+            '844x390 uses a desktop pointer context and DPR1; physical phone controls/fps are UNVERIFIED.',
+            'Captures must be run only after the requested diner-lighting Pages deployment is available.']
     started = time.monotonic()
     def terminated(_signum, _frame):
         raise KeyboardInterrupt('SIGTERM: capture interrupted; partial evidence retained')
     previous_sigterm = signal.signal(signal.SIGTERM, terminated)
     try:
-        report['source'] = source_info(args.trip == 'kessler')
+        report['source'] = source_info(args.trip == 'kessler',dinerlight=args.trip == 'dinerlight')
         write_report(out, report)
         asyncio.run(asyncio.wait_for(capture(args, report, out), timeout=args.timeout))
         expected = set(report['requested_trips'])
