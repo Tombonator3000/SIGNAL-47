@@ -105,8 +105,19 @@ void main() {
 const vert = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
 // Ambient occlusion that leaves out what has no surface: the sky dome, see-through things
-// and the invisible boxes the player aims at (they would leave dark halos otherwise).
+// and the invisible boxes the player aims at (they would leave dark halos otherwise). It fades
+// out with distance (AO_FADE, metres): a 0.7 m occlusion is under a pixel far off, the depth
+// there is coarse with the camera's near plane at 3 cm, and far ground and mesas had hard
+// stepped seams along their edges (drivelook K01, the old road on the PC tier).
+const AO_FADE = [120, 400] as const;
 class SolidAO extends GTAOPass {
+  constructor(...args: ConstructorParameters<typeof GTAOPass>) {
+    super(...args);
+    const m = this.gtaoMaterial, end = 'ao = pow(ao, scale);';
+    if (!m.fragmentShader.includes(end)) { console.warn('GTAO shader changed: no distance fade'); return; }
+    m.fragmentShader = m.fragmentShader.replace(end, `${end}\n\t\t\tao = mix(ao, 1., smoothstep(${AO_FADE[0].toFixed(1)}, ${AO_FADE[1].toFixed(1)}, -viewPos.z));`);
+    m.needsUpdate = true;
+  }
   overrideVisibility() {
     super.overrideVisibility();
     this.scene.traverse((o) => {
