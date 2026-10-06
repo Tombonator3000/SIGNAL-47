@@ -527,6 +527,7 @@ Langs veien, i rekkefølge:
 | --- | --- |
 | Start, 0 mi | Lastebilen står på grusplassen ved dineren der spilleren satte den, motoren går. Over riksveien går den gamle veien av mot øst. |
 | 1 til 5 mi | Milestolpene, gjerdet langs veiretten, kraftlinja på venstre side, kantstolper med refleks. Radioen i dashbordet. |
+| 3,2 mi | Innkjørselen til Kessler-ranchen på venstre side: en port i gjerdet med et navnebrett, `KESSLER`, og ferist, og et grusspor 300 m nordover til et mørkt hus med én gårdslampe, en vindmølle og en vanntank. Det er ranchen fra avisutklippet på dineren («Seen from the Kessler ranch, 3 a.m.»). Ingen folk og ingen hendelse, og lastebilen kommer ikke inn (den holdes på veiretten som ellers). Bygd av Codex som egen modul (`oldRoadLandmarks.ts`, kontrakt i `production/kessler_20261006/`). |
 | 6,0 mi | Seksmilsstolpen. Oppmålingsbolten ved seksmilsstolpen i høyre skulder, med en vitnestolpe. Det er bolten fra et av de gale svarene i P13: den ligger sør for linja. |
 | 7,0 mi | Sjumilsstolpen. Veien svinger mot nordøst. |
 | 8,0 mi | Åttemilsstolpen. |

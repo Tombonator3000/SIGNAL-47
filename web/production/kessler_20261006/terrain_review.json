@@ -1,0 +1,175 @@
+{
+  "status": "PASS",
+  "checks": {
+    "support": true,
+    "normals": true,
+    "asphalt": true,
+    "budget": true
+  },
+  "budget": {
+    "meshes": 2,
+    "triangles": 6172,
+    "finite": true,
+    "glints": 1,
+    "pass": true
+  },
+  "gravelChipTriangles": 1200,
+  "supports": [
+    {
+      "name": "earth skirts and north cap",
+      "points": 404,
+      "minGap": -1.8144200308944862,
+      "maxGap": -1.3396879767090581,
+      "pass": true
+    },
+    {
+      "name": "windmill foot -2/-2",
+      "points": 6,
+      "minGap": -1.2183887897409207,
+      "maxGap": -1.201843460616196,
+      "pass": true
+    },
+    {
+      "name": "windmill foot -2/2",
+      "points": 6,
+      "minGap": -1.2241862596642257,
+      "maxGap": -1.2078242159074843,
+      "pass": true
+    },
+    {
+      "name": "windmill foot 2/-2",
+      "points": 6,
+      "minGap": -1.2259487683075125,
+      "maxGap": -1.2097905178748007,
+      "pass": true
+    },
+    {
+      "name": "windmill foot 2/2",
+      "points": 6,
+      "minGap": -1.2318384770409363,
+      "maxGap": -1.215863511976206,
+      "pass": true
+    },
+    {
+      "name": "tank masonry bottom",
+      "points": 17,
+      "minGap": -1.6294680878642716,
+      "maxGap": -1.6172435177395066,
+      "pass": true
+    },
+    {
+      "name": "house foundation bottom",
+      "points": 4,
+      "minGap": -0.8241881829574185,
+      "maxGap": -0.7893179097051011,
+      "pass": true
+    },
+    {
+      "name": "porch foot -3",
+      "points": 6,
+      "minGap": -1.1292065540649263,
+      "maxGap": -1.1289188989157761,
+      "pass": true
+    },
+    {
+      "name": "porch foot 3",
+      "points": 6,
+      "minGap": -1.1409060100414123,
+      "maxGap": -1.1406183548922622,
+      "pass": true
+    }
+  ],
+  "normalGroups": [
+    {
+      "name": "left",
+      "vertices": 1197,
+      "minNormalY": 0.5669060349464417,
+      "pass": true
+    },
+    {
+      "name": "right",
+      "vertices": 1197,
+      "minNormalY": 0.5637277960777283,
+      "pass": true
+    },
+    {
+      "name": "north cap",
+      "vertices": 12,
+      "minNormalY": 0.564437747001648,
+      "pass": true
+    }
+  ],
+  "clearances": [
+    {
+      "kind": "circle",
+      "x": -6496.4815110445,
+      "z": 4332.060754644602,
+      "r": 0.35,
+      "asphaltClearance": 13.449999957150531
+    },
+    {
+      "kind": "circle",
+      "x": -6490.288220466645,
+      "z": 4329.263065896438,
+      "r": 0.35,
+      "asphaltClearance": 13.449999956256239
+    },
+    {
+      "kind": "circle",
+      "x": -6480.384779192865,
+      "z": 4029.6620903339526,
+      "r": 2.9,
+      "asphaltClearance": 279.5317098777453
+    },
+    {
+      "kind": "circle",
+      "x": -6485.384779192865,
+      "z": 4034.6620903339526,
+      "r": 2.85,
+      "asphaltClearance": 277.1132497459091
+    },
+    {
+      "kind": "box",
+      "minX": -6514.984779192865,
+      "maxX": -6501.784779192864,
+      "minZ": 4019.6620903339526,
+      "maxZ": 4031.3120903339527,
+      "asphaltClearance": 289.8248314976077
+    }
+  ],
+  "plain": {
+    "columns": 151,
+    "rows": 126,
+    "triangles": 37500,
+    "method": "Barycentric y interpolation using the actual OldRoad plain indexed geometry; raster APIs only are stubbed."
+  },
+  "heightMismatchBeforeSupports": [
+    {
+      "northFromGate": 280,
+      "heightAt": 8.199344799967358,
+      "visiblePlain": 7.247767521058718,
+      "uncoveredTrackGap": 1.0065772789086402
+    },
+    {
+      "northFromGate": 300,
+      "heightAt": 8.304089767239551,
+      "visiblePlain": 7.222275607060174,
+      "uncoveredTrackGap": 1.1368141601793766
+    }
+  ],
+  "sourceSHA256": {
+    "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+    "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+    "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+    "src/drive/roadShape.ts": "f91941fdcd0bb04d8051cfc4a086646f7f2a284cadf62fafacf24d0ff55d2ec5",
+    "src/drive/roadTerrain.ts": "6454b2f2ca04f0506766a3ae2b6ed770e835f477e33dc7607506634551d7f683",
+    "src/world/kit.ts": "5a98d64d4fd6ecfbb527efc401069805ab464514c5600004079890e2b37106a9",
+    "tools/landmark_terrain_check.mjs": "deb909da22518c98c1a817bc9cb625c302c91f45e9ea86ba765aba6033fb1dd9"
+  },
+  "reproduce": "node tools/landmark_terrain_check.mjs",
+  "limits": [
+    "No browser, font, texture, shadow or performance validation.",
+    "Support samples use generated geometry vertices; plain interpolation uses the real OldRoad constructor geometry.",
+    "This is geometry evidence, not a gameplay test."
+  ]
+}
