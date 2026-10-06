@@ -291,9 +291,14 @@ export class OldRoad implements DriveArea {
         p0 = q;
       }
     };
+    // (open where a gate stands in it: fenceGaps, filled by the places along the road)
+    const fenceGaps: { s0: number; s1: number; side: -1 | 1 }[] = [];
     for (const side of [-1, 1]) {
       const pts: { x: number; z: number; k: number }[] = [];
-      for (let s = S0 + 40; s <= 700; s += 5) { const b = beside(s, side * FENCE); pts.push({ x: b.x, z: b.z, k: s * side }); }
+      for (let s = S0 + 40; s <= 700; s += 5) {
+        if (fenceGaps.some((g) => g.side === side && s > g.s0 && s < g.s1)) { pts.push({ x: NaN, z: 0, k: 0 }); continue; }
+        const b = beside(s, side * FENCE); pts.push({ x: b.x, z: b.z, k: s * side });
+      }
       fence(pts);
     }
     // the highway's: open where the old road comes off it, and at the diner's lot
