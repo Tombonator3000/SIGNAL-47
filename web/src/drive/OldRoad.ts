@@ -10,8 +10,9 @@ import { smooth, hash, HWY, DINER, highwayGeometry } from './roadTerrain';
 import { highwayTex } from './roadTextures';
 import {
   path, HALF, SHOULDER, FENCE, POWER, S0, S1, START, POSTS, BOLTS, C_LINE, SUN_AZ, SARO_FROM, I0, J,
-  terrain, heightAt, nearest, profile, beside, rnd, type RoadPt,
+  terrain, heightAt, nearest, profile, beside, rnd, sAt, type RoadPt,
 } from './oldRoadLayout';
+import { buildLandmarks } from './oldRoadLandmarks';
 import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessTex, STAKE } from './oldRoadTextures';
 
 // The old Roswell road at dawn, chapter six (KAPITLER.md, Roswell Road). The drive runs from
@@ -22,8 +23,8 @@ import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessT
 // as the road area has them. Built in local metres inside `group` (placed at `origin`);
 // world terms (start, obstacles, heights) have the origin added, as in RoadArea.
 //
-// Draw calls: about 24 (ground 3, asphalt 2, merged statics ~5, instanced posts, poles,
-// stakes, bushes, rocks and yucca, wires 1, far mesas 1, far SARO 1, glows 1).
+// Draw calls: about 26 (ground 3, asphalt 2, merged statics ~5, instanced posts, poles,
+// stakes, bushes, rocks and yucca, wires 1, far mesas 1, far SARO 1, glows 1, Kessler 2).
 
 export const oldFlood = floodSet(6, 'oldroad', 0.1);
 export const OLD_HEADLIGHTS = [0, 1, 2];
@@ -32,6 +33,7 @@ const beam: RetroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir:
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = { asphalt: S('asphalt', 1, 30, 0.08), shoulder: S('gravel', 0.85, 22, 0.3), verge: S('dirt', 0.6, 12, 0.6), dirt: S('dirt', 0.55, 10, 0.8) };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Color();
+const LAMP = new THREE.Color(0xffb45a);
 /** The highway at the diner, in road-local z: drawn from here to here, and open to the truck
  *  this far either way from mile 0 (past that, the chapter says the bolt is ahead). */
 const HWY_DRAWN = [DINER.z - 4000, HWY.z1] as const, HWY_OPEN = 260;
@@ -129,6 +131,8 @@ export class OldRoad implements DriveArea {
   private origin: THREE.Vector3;
   private glow = new GlowPoints();
   private glints: { i: number; p: THREE.Vector3; k: number }[] = [];
+  /** Steady lamps by the road (the Kessler yard): glow indices, dimmed as the day comes. */
+  private lamps: number[] = [];
   private hemi: THREE.HemisphereLight;
   private sun: THREE.DirectionalLight;
   private far: THREE.Mesh;
@@ -291,8 +295,17 @@ export class OldRoad implements DriveArea {
         p0 = q;
       }
     };
-    // (open where a gate stands in it: fenceGaps, filled by the places along the road)
-    const fenceGaps: { s0: number; s1: number; side: -1 | 1 }[] = [];
+    // ---------- the places along the road (oldRoadLandmarks.ts): Kessler's gate at mile 3.2 ----------
+    // local like everything here; their obstacles get the origin, the yard lamp is a steady glow
+    // that goes out with the day (lamps, update)
+    const lm = buildLandmarks({ beside, heightAt, sAt, rnd, std });
+    this.group.add(lm.group);
+    this.obstacles.push(...lm.obstacles.map((o): Obstacle => o.kind === 'circle'
+      ? { ...o, x: o.x + origin.x, z: o.z + origin.z }
+      : { ...o, minX: o.minX + origin.x, maxX: o.maxX + origin.x, minZ: o.minZ + origin.z, maxZ: o.maxZ + origin.z }));
+    for (const p of lm.glints) this.lamps.push(this.glow.add(p.x, p.y, p.z, 1.6, LAMP));
+    // (open where a gate stands in it)
+    const fenceGaps: { s0: number; s1: number; side: -1 | 1 }[] = [...lm.fenceGaps];
     for (const side of [-1, 1]) {
       const pts: { x: number; z: number; k: number }[] = [];
       for (let s = S0 + 40; s <= 700; s += 5) {
@@ -583,6 +596,9 @@ export class OldRoad implements DriveArea {
       const k = (f0.w > 0 ? 1 : 0) * smooth(0.8, 0.97, (dx * _d.x + dz * _d.z) / d) * smooth(2, 7, d) * 1.4 * g.k / (1 + (d / 110) ** 2);
       col.setXYZ(g.i, k * hc.r, k * hc.g, k * hc.b);
     }
+    // the yard lamp: steady, and lost in the light as the day comes
+    const lamp = 1 - 0.85 * smooth(0.55, 0.95, dawn);
+    for (const i of this.lamps) col.setXYZ(i, LAMP.r * lamp, LAMP.g * lamp, LAMP.b * lamp);
     col.needsUpdate = true;
   }
 
