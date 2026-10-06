@@ -698,7 +698,19 @@ def dinerlight_light_findings(ledger: dict) -> list[dict]:
     def finite(values):
         if not all(isinstance(v,(int,float)) and math.isfinite(v) for v in values):
             raise ValueError('Non-finite light ledger instrumentation')
-    finite(ledger['player_xyz']); slots = {}; scales = {}
+    finite(ledger['player_xyz'])
+    # Old captures lack both fields and retain their original player-based
+    # classification. New observations use the same selector as runtime Ultra.
+    modern_reference = 'driving' in ledger or 'camera_xyz' in ledger
+    reference_role = 'player'
+    if modern_reference:
+        if type(ledger.get('driving')) is not bool or not isinstance(ledger.get('camera_xyz'), (list, tuple)) or len(ledger['camera_xyz']) != 3:
+            raise ValueError('Missing camera/driving light ledger instrumentation')
+        finite(ledger['camera_xyz'])
+        reference_role = 'camera' if ledger['driving'] else 'player'
+    reference_key = reference_role + '_xyz'
+    reference = ledger[reference_key]
+    slots = {}; scales = {}
     for flood in ledger['sets']:
         if not all(k in flood for k in ('key','count','capacity','scale','skip','headlight_slots','slots')):
             raise ValueError('Incomplete flood-set ledger')
@@ -748,12 +760,15 @@ def dinerlight_light_findings(ledger: dict) -> list[dict]:
                 findings.append({'kind':'positive_fake_with_matching_spot',**evidence})
             if slot['skipped'] and not unskipped_source:
                 findings.append({'kind':'active_spot_on_skipped_slot',**evidence})
-        distance = math.hypot(spot['position'][0]-ledger['player_xyz'][0],
-                              spot['position'][2]-ledger['player_xyz'][2])
+        distance = math.hypot(spot['position'][0]-reference[0],
+                              spot['position'][2]-reference[2])
         if distance > 45:
-            findings.append({'kind':'active_spot_far_from_observed_player','spot_uuid':spot['uuid'],
-                             'horizontal_player_distance_m':distance,'threshold_m':45,
-                             'classification':'mechanical_candidate_not_visual_verdict'})
+            finding = {'kind':'active_spot_far_from_observed_' + reference_role,'spot_uuid':spot['uuid'],
+                       'horizontal_' + reference_role + '_distance_m':distance,'threshold_m':45,
+                       'classification':'mechanical_candidate_not_visual_verdict'}
+            if modern_reference:
+                finding.update(distance_reference=reference_key, reference_xyz=list(reference))
+            findings.append(finding)
         if ledger.get('on_foot_diner') and not any(key[0]=='diner' and not slot['skipped'] for key,slot,_ in matches):
             findings.append({'kind':'active_spot_without_diner_source','spot_uuid':spot['uuid'],
                              'matched_set_keys':sorted({key[0] for key,_,_ in matches}),
@@ -813,8 +828,9 @@ DINERLIGHT_EXTRA = r"""(() => {
     route_points:routePoints.map(p=>p.toArray()),
     route_source_api:departure?"world.oldRoad.routes.park":"Read-only loaded World debug mods.legs.roadRoute('diner')",
     body_light_ledger:{sets,spots,player_xyz:s.player.pos.toArray(),
+      driving:w.driving,camera_xyz:c.position.toArray(),
       matching_geometry:'World positions within 0.05 m, normalised RGB hue within 0.02; raw geometric aliases retained',
-      stale_candidate_geometry:'Active effective-visible SpotLight over 45 horizontal metres from player, or no unskipped diner source within 0.05 m and normalised RGB hue 0.02 during actual diner foot diagnostic'},
+      stale_candidate_geometry:'Active effective-visible SpotLight over 45 horizontal metres from camera while driving or player otherwise, or no unskipped diner source within 0.05 m and normalised RGB hue 0.02 during actual diner foot diagnostic'},
     render_state:{pixel_ratio:s.renderer.getPixelRatio(),buffer_width:s.renderer.domElement.width,
       buffer_height:s.renderer.domElement.height,tone_mapping:s.renderer.toneMapping,
       exposure:s.renderer.toneMappingExposure,ultra_mapped:s.ultra.mapped}};
