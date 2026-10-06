@@ -811,8 +811,10 @@ export class World {
     // the dawn's haze on the far mesas (horizon.ts), as on the land in front of them; none at night
     if (this.area !== 'roswell') {
       const sk = this.d.sky();
-      horizonHaze.color.value.copy(sk.fog).multiplyScalar(0.85);
-      horizonHaze.k.value = Math.min(0.65, sk.dawn * 2.2);
+      // the same haze as the land's (main.ts darkens it a little at dawn out here)
+      const fog = this.d.scene.fog as THREE.FogExp2 | null;
+      horizonHaze.color.value.copy(fog?.color ?? sk.fog);
+      horizonHaze.k.value = Math.min(0.9, sk.dawn * 3);
       horizonHaze.density.value = (this.d.scene.fog as THREE.FogExp2 | null)?.density ?? FOG;
     }
     // the diner's own sky light near it, the road's night light up the road (both in one scene)

@@ -206,7 +206,9 @@ export class OldRoad implements DriveArea {
       rz -= d < 40 ? 2 : d < 600 ? 6 : 12;
     }
     const hcols = [6, 8, 10, 13, 16.5, 18, 21, 25, 30, 42, 58, 80, 110, 150, 200, 260];
-    const hy = (_p: RoadPt, o: number, x: number, z: number) => Math.abs(o) >= 259 ? terrain(x, z) - 1 : heightAt(x, z);
+    // (under the old road where it comes off the highway the ground sinks out of sight, or it
+    // shows through the asphalt in patches: drivelook D01)
+    const hy = (_p: RoadPt, o: number, x: number, z: number) => Math.abs(o) >= 259 ? terrain(x, z) - 1 : heightAt(x, z) - (nearest(x, z).d <= SHOULDER + 0.6 ? 0.15 : 0);
     const hwyGround = new THREE.Mesh(mergeGeometries([ribbon(hrows, hcols.map((o) => -o).reverse(), hy, true, 0), ribbon(hrows, hcols, hy, true, 0)])!, m.hwyGround);
     const hwy = new THREE.Mesh(highwayGeometry(...HWY_DRAWN).translate(J.x, 0, J.z - DINER.z), m.highway);
     this.group.add(plainMesh, ground, road, hwyGround, hwy);

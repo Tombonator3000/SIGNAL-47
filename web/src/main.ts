@@ -855,7 +855,10 @@ async function boot() {
     // the dawn follows the clock; the night areas are lit for the night, so they show less of it
     sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
     sky.setClock(mode === 'title' ? 0 : game.clock, mode === 'title' ? null : game.ch6.sunElev);
-    (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
+    // out in the night areas the haze over the far land stays darker than the dawn sky behind the
+    // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02)
+    const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
+    if (world.area !== 'roswell') fogC.multiplyScalar(1 - 0.45 * THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35));
     ext.update(dt, t);
     yard.update(t);
     annex.update(t);
