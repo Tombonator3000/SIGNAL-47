@@ -849,8 +849,11 @@ async function boot() {
     }
     sky.group.rotation.y = world.skyYaw;
     sky.update(dt, t, camera.position, renderer.getPixelRatio());
-    const [lampSets, roomLamps] = ultraLamps(player.pos);
-    ultra.update(dt, player.pos, lampSets, roomLamps);
+    // in the truck the player stays where they got in (the control room, say): the lamps that
+    // become real lights are the ones round the truck (drivelook dinerlight, Codex)
+    const lampsAt = world.driving ? camera.position : player.pos;
+    const [lampSets, roomLamps] = ultraLamps(lampsAt);
+    ultra.update(dt, lampsAt, lampSets, roomLamps);
     world.shareLights();
     sky.setCometClock(game.clock);
     // the dawn follows the clock; the night areas are lit for the night, so they show less of it
