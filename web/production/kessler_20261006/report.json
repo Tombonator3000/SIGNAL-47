@@ -1,0 +1,838 @@
+{
+  "status": "PASS",
+  "capturedAtUtc": "2026-10-06T06:02:51.537455+00:00",
+  "scope": "Structural checks and two fixed standalone preview screenshots; visual/gameplay/hardware review is separate.",
+  "url": "http://127.0.0.1:8486/",
+  "source": {
+    "head": "bebd81ddb6e572737e9d25a8f63e50aecd640634",
+    "branch": "codex/kessler-landmark-20261006",
+    "fileSha256": {
+      "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+      "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+      "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+      "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "tools/landmarkpreview.py": "3c2c56d8d42e152b9fb9bb84a6ab423f6f041bead577f6d7b1bd3ac6c6805129"
+    }
+  },
+  "sourceAfter": {
+    "head": "bebd81ddb6e572737e9d25a8f63e50aecd640634",
+    "branch": "codex/kessler-landmark-20261006",
+    "fileSha256": {
+      "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+      "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+      "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+      "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "tools/landmarkpreview.py": "3c2c56d8d42e152b9fb9bb84a6ab423f6f041bead577f6d7b1bd3ac6c6805129"
+    }
+  },
+  "sourceFilesUnchanged": true,
+  "shots": [
+    {
+      "file": "road.png",
+      "sha256": "24b618b2bc9ddfce4c915cb3e17a258fc1883e2876c91cf77d6da0ac306bb400",
+      "report": {
+        "scope": "Standalone module preview in actual OldRoad and Sky; not gameplay integration",
+        "source": {
+          "head": "bebd81ddb6e572737e9d25a8f63e50aecd640634",
+          "branch": "codex/kessler-landmark-20261006",
+          "fileSha256": {
+            "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+            "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+            "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+            "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+            "tools/landmarkpreview.py": "3c2c56d8d42e152b9fb9bb84a6ab423f6f041bead577f6d7b1bd3ac6c6805129"
+          }
+        },
+        "view": "Road",
+        "viewport": [
+          1280,
+          800
+        ],
+        "clock": "05:24:00",
+        "clockSeconds": 19440,
+        "simulationTime": 0,
+        "frames": 3,
+        "origin": [
+          19080.253064343877,
+          0,
+          -4575.531960120582
+        ],
+        "camera": {
+          "localEye": [
+            -6515.0695188263335,
+            10.877284838084563,
+            4360.847554111713
+          ],
+          "worldEye": [
+            12565.183545517542,
+            10.877284838084563,
+            -214.6844060088688
+          ],
+          "localTarget": [
+            -6493.384779192865,
+            11.853372775140787,
+            4330.662090333953
+          ],
+          "direction": [
+            0.5832386797766914,
+            0.026253127746847307,
+            -0.8118764781023341
+          ],
+          "fov": 70,
+          "note": "Fixed road-local eye at mile 3.18, facing the hanging gate sign at mile 3.2."
+        },
+        "gateReference": {
+          "x": -6493.384779192865,
+          "z": 4330.662090333953,
+          "y": 8.753372775140788,
+          "s": -7966.233,
+          "offset": -17,
+          "nearest": {
+            "d": 16.999999956673882,
+            "s": -7966.111933717354,
+            "o": -16.999999913462084,
+            "y": 8.913139497142677
+          }
+        },
+        "module": {
+          "meshes": 2,
+          "materials": 2,
+          "triangles": 6172,
+          "estimatedCalls": 2,
+          "groupLocalPosition": [
+            -6493.384779192865,
+            0,
+            4330.662090333953
+          ],
+          "boundsLocal": {
+            "min": [
+              -6514.884779192864,
+              5.4398908615112305,
+              4019.6620903339526
+            ],
+            "max": [
+              -6476.259779192864,
+              26.279369354248047,
+              4342.436182054534
+            ]
+          }
+        },
+        "sharedLamp": {
+          "calls": 1,
+          "sizeMetres": 0.35,
+          "color": 10187846
+        },
+        "sceneRender": {
+          "frame": 3,
+          "calls": 27,
+          "triangles": 428230,
+          "points": 14333,
+          "lines": 27861
+        },
+        "gpu": {
+          "geometries": 27,
+          "textures": 12
+        },
+        "firstBuildMs": 21.400000005960464,
+        "buildMs": 21.400000005960464,
+        "recreations": 0,
+        "obstacles": [
+          {
+            "kind": "circle",
+            "x": -6496.4815110445,
+            "z": 4332.060754644602,
+            "r": 0.35
+          },
+          {
+            "kind": "circle",
+            "x": -6490.288220466645,
+            "z": 4329.263065896438,
+            "r": 0.35
+          },
+          {
+            "kind": "circle",
+            "x": -6480.384779192865,
+            "z": 4029.6620903339526,
+            "r": 2.9
+          },
+          {
+            "kind": "circle",
+            "x": -6485.384779192865,
+            "z": 4034.6620903339526,
+            "r": 2.85
+          },
+          {
+            "kind": "box",
+            "minX": -6514.984779192865,
+            "maxX": -6501.784779192864,
+            "minZ": 4019.6620903339526,
+            "maxZ": 4031.3120903339527
+          }
+        ],
+        "obstacleChecks": [
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": 16.999999957150205,
+            "radius": 0.35
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": 16.999999956256026,
+            "radius": 0.35
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 2.9
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 2.85
+          },
+          {
+            "kind": "box",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 8.802875950506477
+          }
+        ],
+        "fenceGaps": [
+          {
+            "s0": -7970.0830000000005,
+            "s1": -7962.383,
+            "side": -1
+          }
+        ],
+        "glints": [
+          [
+            -6505.884779192865,
+            10.418626363510104,
+            4030.6620903339526
+          ]
+        ],
+        "disposal": {
+          "exercised": false,
+          "geometries": 0,
+          "disposedGeometries": 0,
+          "materials": 0,
+          "disposedMaterials": 0,
+          "textures": 0,
+          "disposedTextures": 0
+        },
+        "checks": [
+          {
+            "name": "Module uses local coordinates under OldRoad origin",
+            "pass": true
+          },
+          {
+            "name": "Gate group is exact beside(3.2 mi,-17); inverse projection within 0.25 m",
+            "pass": true
+          },
+          {
+            "name": "Exactly one left fence gap contains mile 3.2",
+            "pass": true
+          },
+          {
+            "name": "Finite geometry attributes and indices",
+            "pass": true
+          },
+          {
+            "name": "Fewer than 15000 module triangles",
+            "pass": true
+          },
+          {
+            "name": "At most four module meshes",
+            "pass": true
+          },
+          {
+            "name": "At most four material submission calls",
+            "pass": true
+          },
+          {
+            "name": "Module plus shared lamp needs at most four calls",
+            "pass": true
+          },
+          {
+            "name": "No new light nodes",
+            "pass": true
+          },
+          {
+            "name": "Exactly one finite yard-lamp glint",
+            "pass": true
+          },
+          {
+            "name": "Finite collision obstacles wholly outside asphalt",
+            "pass": true
+          },
+          {
+            "name": "Fixed 1280x800 drawing buffer",
+            "pass": true
+          },
+          {
+            "name": "No captured runtime errors",
+            "pass": true
+          }
+        ],
+        "errors": [],
+        "warnings": [],
+        "integration": {
+          "fenceGapApplied": false,
+          "glintsConnectedToOldRoad": false,
+          "lamp": "Rendered in a separate preview-only GlowPoints consumer",
+          "gameplay": "UNVERIFIED",
+          "hardwareFps": "UNVERIFIED",
+          "visual": "Requires actual image review"
+        }
+      }
+    },
+    {
+      "file": "driveway.png",
+      "sha256": "348919da50f6ba67d942332bed7b28fcd144f9d220d4c472642fe38a49201979",
+      "report": {
+        "scope": "Standalone module preview in actual OldRoad and Sky; not gameplay integration",
+        "source": {
+          "head": "bebd81ddb6e572737e9d25a8f63e50aecd640634",
+          "branch": "codex/kessler-landmark-20261006",
+          "fileSha256": {
+            "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+            "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+            "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+            "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+            "tools/landmarkpreview.py": "3c2c56d8d42e152b9fb9bb84a6ab423f6f041bead577f6d7b1bd3ac6c6805129"
+          }
+        },
+        "view": "Driveway",
+        "viewport": [
+          1280,
+          800
+        ],
+        "clock": "05:24:00",
+        "clockSeconds": 19440,
+        "simulationTime": 0,
+        "frames": 4,
+        "origin": [
+          19080.253064343877,
+          0,
+          -4575.531960120582
+        ],
+        "camera": {
+          "localEye": [
+            -6493.384779192865,
+            10.358935425815385,
+            4320.662090333953
+          ],
+          "worldEye": [
+            12586.868285151013,
+            10.358935425815385,
+            -254.86986978662935
+          ],
+          "localTarget": [
+            -6493.384779192865,
+            9.704089767239552,
+            4030.6620903339526
+          ],
+          "direction": [
+            -0.0,
+            -0.0022580827209142712,
+            -0.9999974505279629
+          ],
+          "fov": 70,
+          "note": "Fixed eye 10 m north of the gate, looking due north along the 300 m track."
+        },
+        "gateReference": {
+          "x": -6493.384779192865,
+          "z": 4330.662090333953,
+          "y": 8.753372775140788,
+          "s": -7966.233,
+          "offset": -17,
+          "nearest": {
+            "d": 16.999999956673882,
+            "s": -7966.111933717354,
+            "o": -16.999999913462084,
+            "y": 8.913139497142677
+          }
+        },
+        "module": {
+          "meshes": 2,
+          "materials": 2,
+          "triangles": 6172,
+          "estimatedCalls": 2,
+          "groupLocalPosition": [
+            -6493.384779192865,
+            0,
+            4330.662090333953
+          ],
+          "boundsLocal": {
+            "min": [
+              -6514.884779192864,
+              5.4398908615112305,
+              4019.6620903339526
+            ],
+            "max": [
+              -6476.259779192864,
+              26.279369354248047,
+              4342.436182054534
+            ]
+          }
+        },
+        "sharedLamp": {
+          "calls": 1,
+          "sizeMetres": 0.35,
+          "color": 10187846
+        },
+        "sceneRender": {
+          "frame": 4,
+          "calls": 23,
+          "triangles": 426138,
+          "points": 14333,
+          "lines": 27861
+        },
+        "gpu": {
+          "geometries": 27,
+          "textures": 12
+        },
+        "firstBuildMs": 21.400000005960464,
+        "buildMs": 21.400000005960464,
+        "recreations": 0,
+        "obstacles": [
+          {
+            "kind": "circle",
+            "x": -6496.4815110445,
+            "z": 4332.060754644602,
+            "r": 0.35
+          },
+          {
+            "kind": "circle",
+            "x": -6490.288220466645,
+            "z": 4329.263065896438,
+            "r": 0.35
+          },
+          {
+            "kind": "circle",
+            "x": -6480.384779192865,
+            "z": 4029.6620903339526,
+            "r": 2.9
+          },
+          {
+            "kind": "circle",
+            "x": -6485.384779192865,
+            "z": 4034.6620903339526,
+            "r": 2.85
+          },
+          {
+            "kind": "box",
+            "minX": -6514.984779192865,
+            "maxX": -6501.784779192864,
+            "minZ": 4019.6620903339526,
+            "maxZ": 4031.3120903339527
+          }
+        ],
+        "obstacleChecks": [
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": 16.999999957150205,
+            "radius": 0.35
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": 16.999999956256026,
+            "radius": 0.35
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 2.9
+          },
+          {
+            "kind": "circle",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 2.85
+          },
+          {
+            "kind": "box",
+            "finite": true,
+            "outsideAsphalt": true,
+            "distance": null,
+            "radius": 8.802875950506477
+          }
+        ],
+        "fenceGaps": [
+          {
+            "s0": -7970.0830000000005,
+            "s1": -7962.383,
+            "side": -1
+          }
+        ],
+        "glints": [
+          [
+            -6505.884779192865,
+            10.418626363510104,
+            4030.6620903339526
+          ]
+        ],
+        "disposal": {
+          "exercised": false,
+          "geometries": 0,
+          "disposedGeometries": 0,
+          "materials": 0,
+          "disposedMaterials": 0,
+          "textures": 0,
+          "disposedTextures": 0
+        },
+        "checks": [
+          {
+            "name": "Module uses local coordinates under OldRoad origin",
+            "pass": true
+          },
+          {
+            "name": "Gate group is exact beside(3.2 mi,-17); inverse projection within 0.25 m",
+            "pass": true
+          },
+          {
+            "name": "Exactly one left fence gap contains mile 3.2",
+            "pass": true
+          },
+          {
+            "name": "Finite geometry attributes and indices",
+            "pass": true
+          },
+          {
+            "name": "Fewer than 15000 module triangles",
+            "pass": true
+          },
+          {
+            "name": "At most four module meshes",
+            "pass": true
+          },
+          {
+            "name": "At most four material submission calls",
+            "pass": true
+          },
+          {
+            "name": "Module plus shared lamp needs at most four calls",
+            "pass": true
+          },
+          {
+            "name": "No new light nodes",
+            "pass": true
+          },
+          {
+            "name": "Exactly one finite yard-lamp glint",
+            "pass": true
+          },
+          {
+            "name": "Finite collision obstacles wholly outside asphalt",
+            "pass": true
+          },
+          {
+            "name": "Fixed 1280x800 drawing buffer",
+            "pass": true
+          },
+          {
+            "name": "No captured runtime errors",
+            "pass": true
+          }
+        ],
+        "errors": [],
+        "warnings": [],
+        "integration": {
+          "fenceGapApplied": false,
+          "glintsConnectedToOldRoad": false,
+          "lamp": "Rendered in a separate preview-only GlowPoints consumer",
+          "gameplay": "UNVERIFIED",
+          "hardwareFps": "UNVERIFIED",
+          "visual": "Requires actual image review"
+        }
+      }
+    }
+  ],
+  "recreation": {
+    "scope": "Standalone module preview in actual OldRoad and Sky; not gameplay integration",
+    "source": {
+      "head": "bebd81ddb6e572737e9d25a8f63e50aecd640634",
+      "branch": "codex/kessler-landmark-20261006",
+      "fileSha256": {
+        "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+        "src/drive/OldRoad.ts": "473537fa82e72954559bce9b10e1bdf7001c6093a80c600db5080c7874325085",
+        "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+        "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+        "tools/landmarkpreview.py": "3c2c56d8d42e152b9fb9bb84a6ab423f6f041bead577f6d7b1bd3ac6c6805129"
+      }
+    },
+    "view": "Driveway",
+    "viewport": [
+      1280,
+      800
+    ],
+    "clock": "05:24:00",
+    "clockSeconds": 19440,
+    "simulationTime": 0,
+    "frames": 5,
+    "origin": [
+      19080.253064343877,
+      0,
+      -4575.531960120582
+    ],
+    "camera": {
+      "localEye": [
+        -6493.384779192865,
+        10.358935425815385,
+        4320.662090333953
+      ],
+      "worldEye": [
+        12586.868285151013,
+        10.358935425815385,
+        -254.86986978662935
+      ],
+      "localTarget": [
+        -6493.384779192865,
+        9.704089767239552,
+        4030.6620903339526
+      ],
+      "direction": [
+        -0.0,
+        -0.0022580827209142712,
+        -0.9999974505279629
+      ],
+      "fov": 70,
+      "note": "Fixed eye 10 m north of the gate, looking due north along the 300 m track."
+    },
+    "gateReference": {
+      "x": -6493.384779192865,
+      "z": 4330.662090333953,
+      "y": 8.753372775140788,
+      "s": -7966.233,
+      "offset": -17,
+      "nearest": {
+        "d": 16.999999956673882,
+        "s": -7966.111933717354,
+        "o": -16.999999913462084,
+        "y": 8.913139497142677
+      }
+    },
+    "module": {
+      "meshes": 2,
+      "materials": 2,
+      "triangles": 6172,
+      "estimatedCalls": 2,
+      "groupLocalPosition": [
+        -6493.384779192865,
+        0,
+        4330.662090333953
+      ],
+      "boundsLocal": {
+        "min": [
+          -6514.884779192864,
+          5.4398908615112305,
+          4019.6620903339526
+        ],
+        "max": [
+          -6476.259779192864,
+          26.279369354248047,
+          4342.436182054534
+        ]
+      }
+    },
+    "sharedLamp": {
+      "calls": 1,
+      "sizeMetres": 0.35,
+      "color": 10187846
+    },
+    "sceneRender": {
+      "frame": 5,
+      "calls": 23,
+      "triangles": 426138,
+      "points": 14333,
+      "lines": 27861
+    },
+    "gpu": {
+      "geometries": 26,
+      "textures": 11
+    },
+    "firstBuildMs": 21.400000005960464,
+    "buildMs": 17.19999998807907,
+    "recreations": 1,
+    "obstacles": [
+      {
+        "kind": "circle",
+        "x": -6496.4815110445,
+        "z": 4332.060754644602,
+        "r": 0.35
+      },
+      {
+        "kind": "circle",
+        "x": -6490.288220466645,
+        "z": 4329.263065896438,
+        "r": 0.35
+      },
+      {
+        "kind": "circle",
+        "x": -6480.384779192865,
+        "z": 4029.6620903339526,
+        "r": 2.9
+      },
+      {
+        "kind": "circle",
+        "x": -6485.384779192865,
+        "z": 4034.6620903339526,
+        "r": 2.85
+      },
+      {
+        "kind": "box",
+        "minX": -6514.984779192865,
+        "maxX": -6501.784779192864,
+        "minZ": 4019.6620903339526,
+        "maxZ": 4031.3120903339527
+      }
+    ],
+    "obstacleChecks": [
+      {
+        "kind": "circle",
+        "finite": true,
+        "outsideAsphalt": true,
+        "distance": 16.999999957150205,
+        "radius": 0.35
+      },
+      {
+        "kind": "circle",
+        "finite": true,
+        "outsideAsphalt": true,
+        "distance": 16.999999956256026,
+        "radius": 0.35
+      },
+      {
+        "kind": "circle",
+        "finite": true,
+        "outsideAsphalt": true,
+        "distance": null,
+        "radius": 2.9
+      },
+      {
+        "kind": "circle",
+        "finite": true,
+        "outsideAsphalt": true,
+        "distance": null,
+        "radius": 2.85
+      },
+      {
+        "kind": "box",
+        "finite": true,
+        "outsideAsphalt": true,
+        "distance": null,
+        "radius": 8.802875950506477
+      }
+    ],
+    "fenceGaps": [
+      {
+        "s0": -7970.0830000000005,
+        "s1": -7962.383,
+        "side": -1
+      }
+    ],
+    "glints": [
+      [
+        -6505.884779192865,
+        10.418626363510104,
+        4030.6620903339526
+      ]
+    ],
+    "disposal": {
+      "exercised": true,
+      "geometries": 3,
+      "disposedGeometries": 3,
+      "materials": 3,
+      "disposedMaterials": 3,
+      "textures": 2,
+      "disposedTextures": 2
+    },
+    "checks": [
+      {
+        "name": "Module uses local coordinates under OldRoad origin",
+        "pass": true
+      },
+      {
+        "name": "Gate group is exact beside(3.2 mi,-17); inverse projection within 0.25 m",
+        "pass": true
+      },
+      {
+        "name": "Exactly one left fence gap contains mile 3.2",
+        "pass": true
+      },
+      {
+        "name": "Finite geometry attributes and indices",
+        "pass": true
+      },
+      {
+        "name": "Fewer than 15000 module triangles",
+        "pass": true
+      },
+      {
+        "name": "At most four module meshes",
+        "pass": true
+      },
+      {
+        "name": "At most four material submission calls",
+        "pass": true
+      },
+      {
+        "name": "Module plus shared lamp needs at most four calls",
+        "pass": true
+      },
+      {
+        "name": "No new light nodes",
+        "pass": true
+      },
+      {
+        "name": "Exactly one finite yard-lamp glint",
+        "pass": true
+      },
+      {
+        "name": "Finite collision obstacles wholly outside asphalt",
+        "pass": true
+      },
+      {
+        "name": "Fixed 1280x800 drawing buffer",
+        "pass": true
+      },
+      {
+        "name": "No captured runtime errors",
+        "pass": true
+      },
+      {
+        "name": "Retired module resources disposed once",
+        "pass": true
+      }
+    ],
+    "errors": [],
+    "warnings": [],
+    "integration": {
+      "fenceGapApplied": false,
+      "glintsConnectedToOldRoad": false,
+      "lamp": "Rendered in a separate preview-only GlowPoints consumer",
+      "gameplay": "UNVERIFIED",
+      "hardwareFps": "UNVERIFIED",
+      "visual": "Requires actual image review"
+    }
+  },
+  "console": [],
+  "pageErrors": [],
+  "httpErrors": []
+}
