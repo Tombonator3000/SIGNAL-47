@@ -6,7 +6,7 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
 - [x] Ekte kjøretur fra SARO til Mesa Diner (5. oktober kveld): dineren står i veiens eget område 2 km sør, så turen har bare byttet ved SARO (`drives.py`, `chapter5.py`).
-- [ ] Frontlysene lyser ikke opp dineren, og neonen på dineren lyser ikke opp bilen: dineren og veien har hver sine lyspunkter (`dinerFlood`, `roadFlood`). Kan løses ved å la dineren bruke veiens lyspunkter når den står i veiområdet.
+- [x] Frontlysene lyser opp dineren, og neonen gir bilen og riksveien et rødt skjær (6. oktober morgen): `World.update` kopierer lampene mellom settene (`Diner.shine`, `Diner.neon`).
 - [x] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (6. oktober natt, `chapter6.py`). Ingen kjøretur i spillet er et kutt lenger.
 - [x] Kessler-ranchens innkjørsel ved mile 3,2 på den gamle veien (Codex, PR #76), koblet inn 6. oktober morgen med gap i gjerdet og gårdslampe.
 - [ ] Flere rolige landemerker på den gamle veien etter samme kontrakt, hvis Tom vil ha dem (for eksempel en postkasse ved en sidevei eller en nedlagt bensinpumpe), så de 13 km har noe å se på før seksmilsstolpen.
