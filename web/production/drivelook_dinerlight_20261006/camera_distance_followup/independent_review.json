@@ -1,0 +1,14 @@
+{
+  "checked_utc": "2026-10-06T15:12:31.249595+00:00",
+  "status": "PASS",
+  "reviewer": "Codex subagent dinerlight_camera_contract",
+  "scope": "Read-only tool/test/result inspection, no heavy tests",
+  "concrete_blockers": [],
+  "findings": [
+    "Camera selected only for boolean driving=True; foot/parked uses player.",
+    "Partial/invalid modern observer fields block; both absent retain exact legacy result.",
+    "Packager supports dynamic candidate kinds and does not hardcode player distance.",
+    "Recorded checks and file hashes agree:11 regressions,2JS cases,32existingcontracts,expectednegativefailure.",
+    "README records Node/Python dependencies; historical production files unchanged."
+  ]
+}
