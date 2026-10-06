@@ -851,6 +851,7 @@ async function boot() {
     sky.update(dt, t, camera.position, renderer.getPixelRatio());
     const [lampSets, roomLamps] = ultraLamps(player.pos);
     ultra.update(dt, player.pos, lampSets, roomLamps);
+    world.shareLights();
     sky.setCometClock(game.clock);
     // the dawn follows the clock; the night areas are lit for the night, so they show less of it
     sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
