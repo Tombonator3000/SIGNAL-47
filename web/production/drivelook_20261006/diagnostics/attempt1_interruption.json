@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-10-06T03:19:54.156225+00:00",
+  "process_exit": 143,
+  "capture_complete": false,
+  "cause": "UNVERIFIED; no OOM event in inspected kernel log",
+  "completed_photographic_coverage": [
+    "saro_diner"
+  ],
+  "missing_coverage": "diner_oldroad beyond mile 0.7427",
+  "capture_tool_sha256": "599348eb70953a4447237f8bda2eb5c8665bee7db305c529a18c8dd185e90c56"
+}

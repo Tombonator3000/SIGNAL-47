@@ -1,0 +1,81 @@
+{
+  "visual_review": "REVIEWED_WITH_FINDINGS",
+  "automatic_capture_gate": "FAIL",
+  "findings": [
+    {
+      "id": "D01",
+      "priority": "P2",
+      "trip": "diner_oldroad",
+      "file": "diner_oldroad_003_highway_oldroad_crossroads_forward.png",
+      "defect": "Sandfargede flater med skarpe polygonkanter bryter asfalten i begge kjørefelt rett etter riksveikrysset.",
+      "mile": 0.0025606770477342167,
+      "road_local_z": 2002.04037331356,
+      "world_xyz": [
+        7999.410255265471,
+        4.318435138033771,
+        2002.04037331356
+      ],
+      "view_direction": [
+        0.9975779185570134,
+        -0.06708073135960793,
+        -0.018397605488678526
+      ],
+      "clock_seconds": 19206.033333333246,
+      "heading_rad": -1.5524530153625935,
+      "draw_calls": 52,
+      "image_sha256": "e76a9c594f494413f9c92393411ca5833e925b651de8f42511d64462ee53fd93"
+    },
+    {
+      "id": "D02",
+      "priority": "P2",
+      "trip": "saro_diner",
+      "file": "saro_diner_004_survey_junction_fence_opening_left.png",
+      "defect": "Et sammenhengende lyseblått bånd foran de mørke mesaene gir en tydelig kunstig overgang ved horisonten.",
+      "mile": null,
+      "road_local_z": 505.7664519439797,
+      "world_xyz": [
+        7998.1999999999825,
+        -2.3836508830237304,
+        505.7664519439797
+      ],
+      "view_direction": [
+        0.9999993280664492,
+        0.001159252439427938,
+        -6.570540993511287e-07
+      ],
+      "clock_seconds": 18211.39429406268,
+      "heading_rad": 3.1415926535905645,
+      "draw_calls": 37,
+      "image_sha256": "ceb609d1bed918269c360594212b103bf2af749e18ccce26315a04020911aebc"
+    },
+    {
+      "id": "D03",
+      "priority": "P3",
+      "trip": "saro_diner",
+      "file": "saro_diner_009_diner_approach_fence_opening_forward.png",
+      "defect": "Dineren framstår hovedsakelig som en bygningsbakside og en trailer i siste frontbilde før innkjøringen, og neonskiltet gir svak veivisning her.",
+      "mile": null,
+      "road_local_z": 1951.1195469539005,
+      "world_xyz": [
+        7998.186064259027,
+        4.287679610356155,
+        1951.1195469539005
+      ],
+      "view_direction": [
+        -0.0020672404140838173,
+        -0.07328013011256321,
+        0.9973092544681195
+      ],
+      "clock_seconds": 18560.00738172038,
+      "heading_rad": 3.138940296682066,
+      "draw_calls": 90,
+      "image_sha256": "e568b06adae8b2a6cf525552e4fe7da9e9ad7c9a38f2c92d466e7ba54b4a0936"
+    }
+  ],
+  "scope": "Both requested drives on the recorded public build; no runtime changes or automatic visual PASS.",
+  "console_scope": {
+    "saro_diner": "Two 404 strings; URL was not recorded by the first tool revision, origin UNVERIFIED.",
+    "diner_oldroad": "Two 404 errors, both recorded at https://tombonator3000.github.io/favicon.ico; no other console errors or failed HTTP responses were recorded."
+  },
+  "empty_stretches": "Subjektivt er strekningen etter riksveikrysset og fram til rundt mile 5,5 rolig og ensartet: asfalt, gjerder og telefonlinje dominerer frontbildene, og milestolpene er de tydeligste avbrekkene. Rundt mile 5,7 begynner mørke steiner å bli tydelige. SARO-riksveien mellom åpningen og dineren har samme preg. Dette er en vurdering av de fangede stillbildene, ikke en kontroll av radiolyden eller et behov for nye assets; Claude avgjør eventuell ranch eller andre landemerker."
+}
