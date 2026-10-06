@@ -577,7 +577,11 @@ export class Truck {
   /** The instrument lights on their own, 0..1 (null: they follow setLightLevel). */
   setDashLevel(k: number | null) { this.dashLevel = k; this.applyLights(); }
   /** Use these slots of a flood set as headlight pools on the ground (moved in update()). */
-  headlightFloods(set: FloodSet, slots: number[]) { this.flood = { set, slots: slots.slice(0, FLOODS.length) }; this.placeFloods(); }
+  headlightFloods(set: FloodSet, slots: number[]) {
+    this.flood = { set, slots: slots.slice(0, FLOODS.length) };
+    for (const i of this.flood.slots) set.skip.add(i);   // they move with the truck: never a fixed real light
+    this.placeFloods();
+  }
   /** How far each wheel hangs below its place on the body (fl, fr, rl, rr), in metres: the
    *  suspension keeps the tyres on the ground while the body moves on its springs. */
   setWheelDrops(d: number[]) { for (let i = 0; i < 4; i++) this.drops[i] = THREE.MathUtils.clamp(d[i] ?? 0, -0.09, 0.09); }
