@@ -39,13 +39,13 @@ def confined(folder,name):
     return path
 
 
-def console_helper(web):
+def capture_helper(web):
     spec=importlib.util.spec_from_file_location('kessler_capture_console',web/'tools/drivelook.py')
     module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
-    return module.record_console
+    return module
 
 
-def validate(folder,manifest,quality,size,build,record_console):
+def validate(folder,manifest,quality,size,build,capture):
     checks=[]
     def check(ok,name,detail=None):
         checks.append({'status':'PASS' if ok else 'FAIL','check':name,'detail':detail})
@@ -90,8 +90,10 @@ def validate(folder,manifest,quality,size,build,record_console):
     check(len({s['file'] for s in shots})==len(shots),'unique image filenames')
     replay={'console_messages':[],'errors':[],'warnings':[]}
     for event in trip.get('console_messages',[]):
-        record_console(replay,event['type'],event['text'],event.get('location',{}),page_url=manifest['url'])
+        capture.record_console(replay,event['type'],event['text'],event.get('location',{}),page_url=manifest['url'])
     check(not trip.get('errors') and not replay['errors'],'strict console policy and no page errors',{'errors':trip.get('errors',[]),'replayed_errors':replay['errors'],'warnings':replay['warnings']})
+    hash_errors=capture.code_hash_errors(trip,require_closed=True)
+    check(not hash_errors,'no missing code hashes or historical hash-read warnings',{'errors':hash_errors,'policy':trip.get('code_hash_policy','legacy: hash-read warnings checked; no response inventory recorded')})
     page=urlsplit(manifest['url']);bad=[]
     for event in trip.get('failed_http',[]):
         source=urlsplit(event['url'])
@@ -105,7 +107,7 @@ def validate(folder,manifest,quality,size,build,record_console):
         if relative=='': relative='index.html'
         ok=(u.scheme,u.netloc)==(base.scheme,base.netloc) and relative in expected and expected[relative]==digest
         resource_checks.append({'url':url,'artifact_file':relative,'captured_sha256':digest,'artifact_sha256':expected.get(relative),'matches':ok})
-    check(bool(resource_checks) and all(r['matches'] for r in resource_checks),'all loaded document/script hashes match immutable Pages artifact',resource_checks)
+    check(bool(resource_checks) and all(r['matches'] for r in resource_checks),'all registered document/script hashes match immutable Pages artifact',resource_checks)
     check(any(r['artifact_file'] and r['artifact_file'].startswith('assets/OldRoad-') for r in resource_checks),'integrated OldRoad chunk was loaded')
     check(all(s.get('source_git_head')==capture_build['main'] for s in shots),'image source baseline is recorded main',capture_build['main'])
     pairs=trip.get('flicker_pairs',[]);modes=['player_default'] if quality=='low' else ['player_default','picture_off_repeatability']
@@ -245,7 +247,7 @@ def overview(root,entries):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('root',type=Path);p.add_argument('--require-all',action='store_true');args=p.parse_args()
-    root=args.root.resolve();build=json.loads((root/'build.json').read_text());record_console=console_helper(root.parent.parent)
+    root=args.root.resolve();build=json.loads((root/'build.json').read_text());capture=capture_helper(root.parent.parent)
     derived_root=root/'derived';derived_root.mkdir(exist_ok=True)
     entries=[];failures=[]
     for w,h in SIZES:
@@ -256,7 +258,7 @@ def main():
             except json.JSONDecodeError: entry['status']='CAPTURING';continue
             if manifest.get('status')!='CAPTURED': entry['status']=manifest.get('status','PENDING');continue
             try:
-                checks,originals,data=validate(folder,manifest,quality,(w,h),build,record_console)
+                checks,originals,data=validate(folder,manifest,quality,(w,h),build,capture)
                 errors=[c for c in checks if c['status']=='FAIL'];entry['integrity_status']='FAIL' if errors else 'PASS'
                 entry['status']='CAPTURED: metadata/integritet '+entry['integrity_status']
                 entry['checks_passed']=sum(c['status']=='PASS' for c in checks);entry['checks_total']=len(checks)
@@ -265,6 +267,8 @@ def main():
                 unchanged=all(sha(path)==digest for path,digest in originals.items())
                 if not unchanged: raise RuntimeError('Original evidence changed during packaging')
                 result={'config':config,'integrity_status':entry['integrity_status'],'visual_status':'UNVERIFIED; manual review is owned separately',
+                        'code_response_coverage':'VERIFIED' if manifest['trips'][0].get('code_hash_policy')=='observed_responses_v1' and not errors else 'UNVERIFIED',
+                        'integrity_scope':'Registered code hashes and image/metadata integrity; legacy captures do not prove complete response coverage.',
                         'manifest_sha256':originals[folder/'manifest.json'],'checks':checks,'originals_unchanged':unchanged,'derived_assets':assets}
                 if data: result.update({'image_hashes':data['image_hashes'],'resource_hashes':data['resource_hashes']})
                 dump(derived/'packaging.json',result)

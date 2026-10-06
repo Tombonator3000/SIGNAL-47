@@ -1,0 +1,78 @@
+{
+  "checked_utc": "2026-10-06T09:31:02.323579+00:00",
+  "status": "PASS",
+  "scope": "Two tiny real-browser response/closure probes, no game build or rendering.",
+  "files_sha256": {
+    "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/production/drivelook_kessler_20261006/code_hash_browser_probe.py": "492f6e465f2285f7a88b40ff0331bc67c5e5b2b69b810e9bf7af21c7dbd7d70e",
+    "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/tools/drivelook.py": "103565490c1e317e1a6f064b0b28503a37f2b09d94e3c70f788aefcba6bcadf0"
+  },
+  "outcomes": [
+    {
+      "check": "real document/script bytes and closed-page listener cleanup",
+      "status": "PASS",
+      "blocked": false,
+      "trip": {
+        "warnings": [],
+        "errors": [],
+        "failed_http": [],
+        "loaded_code_sha256": {
+          "http://127.0.0.1:45059/": "cf5b271fe794c8a58af66239c3de1c538eee008c8181b3493bf67ec33f3d7411",
+          "http://127.0.0.1:45059/test.js": "790ce673ec814e5696bab6b28e4ae45a3f9403d8c7ac68ce5373fe6d522273e2"
+        },
+        "observed_code_responses": [
+          {
+            "url": "http://127.0.0.1:45059/",
+            "resource_type": "document",
+            "status": 200,
+            "hash_state": "hashed",
+            "sha256": "cf5b271fe794c8a58af66239c3de1c538eee008c8181b3493bf67ec33f3d7411"
+          },
+          {
+            "url": "http://127.0.0.1:45059/test.js",
+            "resource_type": "script",
+            "status": 200,
+            "hash_state": "hashed",
+            "sha256": "790ce673ec814e5696bab6b28e4ae45a3f9403d8c7ac68ce5373fe6d522273e2"
+          }
+        ],
+        "code_hash_policy": "observed_responses_v1",
+        "code_observation_closed": true,
+        "code_observation_sealed": true
+      }
+    },
+    {
+      "check": "forced script body failure blocks",
+      "status": "PASS",
+      "blocked": true,
+      "trip": {
+        "warnings": [],
+        "errors": [
+          "Could not hash loaded script: http://127.0.0.1:45059/test.js: forced real-response wrapper body failure"
+        ],
+        "failed_http": [],
+        "loaded_code_sha256": {
+          "http://127.0.0.1:45059/": "cf5b271fe794c8a58af66239c3de1c538eee008c8181b3493bf67ec33f3d7411"
+        },
+        "observed_code_responses": [
+          {
+            "url": "http://127.0.0.1:45059/",
+            "resource_type": "document",
+            "status": 200,
+            "hash_state": "hashed",
+            "sha256": "cf5b271fe794c8a58af66239c3de1c538eee008c8181b3493bf67ec33f3d7411"
+          },
+          {
+            "url": "http://127.0.0.1:45059/test.js",
+            "resource_type": "script",
+            "status": 200,
+            "hash_state": "failed",
+            "error": "RuntimeError: forced real-response wrapper body failure"
+          }
+        ],
+        "code_hash_policy": "observed_responses_v1",
+        "code_observation_closed": true,
+        "code_observation_sealed": true
+      }
+    }
+  ]
+}

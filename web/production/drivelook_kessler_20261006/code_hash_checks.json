@@ -1,0 +1,82 @@
+{
+  "checked_utc": "2026-10-06T09:30:10.500887+00:00",
+  "status": "PASS",
+  "scope": "Targeted mocked response/error paths and read-only original revalidation. No game/browser integration rerun.",
+  "regressions_run": 13,
+  "regression_failures": 0,
+  "regression_errors": 0,
+  "regression_output": "test_both_runners_fail_before_screenshot_on_body_error (__main__.HashRegressions.test_both_runners_fail_before_screenshot_on_body_error) ... ok\ntest_close_response_reverts_captured_status_before_final_write (__main__.HashRegressions.test_close_response_reverts_captured_status_before_final_write) ... ok\ntest_document_script_and_non_code (__main__.HashRegressions.test_document_script_and_non_code) ... ok\ntest_failed_body_and_duplicate_url_cannot_hide_failure (__main__.HashRegressions.test_failed_body_and_duplicate_url_cannot_hide_failure) ... ok\ntest_late_console_and_close_failure_block_and_detach (__main__.HashRegressions.test_late_console_and_close_failure_block_and_detach) ... ok\ntest_response_added_during_drain_is_awaited (__main__.HashRegressions.test_response_added_during_drain_is_awaited) ... ok\ntest_timeout_cancels_and_awaits_pending_body (__main__.HashRegressions.test_timeout_cancels_and_awaits_pending_body) ... ok\ntest_capture_cli_returns_nonzero_and_keeps_failure_report (__main__.ValidationRegressions.test_capture_cli_returns_nonzero_and_keeps_failure_report) ... ok\ntest_complete_inventory_requires_closed_observation_and_exact_registry (__main__.ValidationRegressions.test_complete_inventory_requires_closed_observation_and_exact_registry) ... ok\ntest_historical_hash_warning_blocks_packer (__main__.ValidationRegressions.test_historical_hash_warning_blocks_packer) ... ok\ntest_late_http_failure_is_blocking_for_kessler (__main__.ValidationRegressions.test_late_http_failure_is_blocking_for_kessler) ... ok\ntest_new_inventory_missing_hash_blocks_packer (__main__.ValidationRegressions.test_new_inventory_missing_hash_blocks_packer) ... ok\ntest_unknown_missing_pending_and_malformed_inventory_block (__main__.ValidationRegressions.test_unknown_missing_pending_and_malformed_inventory_block) ... ok\n\n----------------------------------------------------------------------\nRan 13 tests in 0.256s\n\nOK\n",
+  "files_sha256": {
+    "tools/drivelook.py": "103565490c1e317e1a6f064b0b28503a37f2b09d94e3c70f788aefcba6bcadf0",
+    "production/drivelook_kessler_20261006/package_evidence.py": "03c581be981cc20844fef478a3bb4917511ca14e0d3e213ab482178772880605",
+    "production/drivelook_kessler_20261006/code_hash_check.py": "eb9a00bca2c3221a9c5416ae83a1eca7d152ac09c1b8b82e4d7f9a5cc452df9d"
+  },
+  "historical_revalidation": [
+    {
+      "config": "low_844x390",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 105,
+      "checks_total": 105,
+      "failures": [],
+      "manifest_sha256": "431557643fd1ffdab39b4709a6e5f150d201446dee859d2ef92ccac67f9888e6",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    },
+    {
+      "config": "high_844x390",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 153,
+      "checks_total": 153,
+      "failures": [],
+      "manifest_sha256": "ca0d202b0481a573c6dca61431be26ef87fe3ca18f9c8fb87bc9233dc1a9f21a",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    },
+    {
+      "config": "ultra_844x390",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 154,
+      "checks_total": 154,
+      "failures": [],
+      "manifest_sha256": "cf71a4d2a02641197af92b7aea054c3c628f109700e2285b2681ca4120419b15",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    },
+    {
+      "config": "low_1280x800",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 99,
+      "checks_total": 99,
+      "failures": [],
+      "manifest_sha256": "d098f94fe8dc380d67ab55d41b702fe6bcedb8aa10309b7057c0631f6c42a115",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    },
+    {
+      "config": "high_1280x800",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 141,
+      "checks_total": 141,
+      "failures": [],
+      "manifest_sha256": "71ee4d121d3ae23402219bf393d6c10223d83e248d3e0ecef78b5091fc9e3f31",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    },
+    {
+      "config": "ultra_1280x800",
+      "registered_hash_and_image_integrity": "PASS",
+      "code_response_coverage": "UNVERIFIED: legacy capture has no observed response inventory",
+      "checks_passed": 142,
+      "checks_total": 142,
+      "failures": [],
+      "manifest_sha256": "53d46e328db6417d3d79f012a3208f42dab37dd722bba35b4924b4f72a4c7b7b",
+      "originals_unchanged": true,
+      "registered_code_files": 14
+    }
+  ]
+}
