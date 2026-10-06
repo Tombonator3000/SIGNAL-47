@@ -1,0 +1,34 @@
+{
+  "checked_utc": "2026-10-06T15:09:38.767192+00:00",
+  "status": "PASS",
+  "tests_run": 11,
+  "failures": 0,
+  "errors": 0,
+  "historical_ledger_replays": 220,
+  "actual_js_observer": {
+    "status": "PASS",
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "results": [
+      {
+        "name": "driving",
+        "status": "PASS"
+      },
+      {
+        "name": "on_foot_with_separated_camera",
+        "status": "PASS"
+      }
+    ],
+    "scope": "actual DINERLIGHT_EXTRA executed against API doubles; no game or renderer"
+  },
+  "browser_launched": false,
+  "gameplay_rendering_hardware_audio": "UNVERIFIED",
+  "output": "test_actual_js_observer_records_camera_and_driving_without_pose_changes (__main__.DistanceRegression.test_actual_js_observer_records_camera_and_driving_without_pose_changes) ... ok\ntest_all_220_historical_ledger_results_reproduce_without_changes (__main__.DistanceRegression.test_all_220_historical_ledger_results_reproduce_without_changes) ... ok\ntest_camera_threshold_uses_xz_strictly_over_45_metres (__main__.DistanceRegression.test_camera_threshold_uses_xz_strictly_over_45_metres) ... ok\ntest_driving_spot_near_camera_is_not_far_from_left_behind_player (__main__.DistanceRegression.test_driving_spot_near_camera_is_not_far_from_left_behind_player) ... ok\ntest_driving_spot_near_player_but_far_from_camera_is_flagged (__main__.DistanceRegression.test_driving_spot_near_player_but_far_from_camera_is_flagged) ... ok\ntest_foot_and_parked_camera_do_not_replace_player (__main__.DistanceRegression.test_foot_and_parked_camera_do_not_replace_player) ... ok\ntest_foot_spot_near_camera_but_far_from_player_is_flagged (__main__.DistanceRegression.test_foot_spot_near_camera_but_far_from_player_is_flagged) ... ok\ntest_inactive_hidden_and_black_spots_do_not_create_distance_candidates (__main__.DistanceRegression.test_inactive_hidden_and_black_spots_do_not_create_distance_candidates) ... ok\ntest_invalid_modern_observer_instrumentation_blocks (__main__.DistanceRegression.test_invalid_modern_observer_instrumentation_blocks) ... ok\ntest_legacy_result_shape_and_input_are_unchanged (__main__.DistanceRegression.test_legacy_result_shape_and_input_are_unchanged) ... ok\ntest_recorded_immediate_foot_camera_separation_uses_player (__main__.DistanceRegression.test_recorded_immediate_foot_camera_separation_uses_player) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.112s\n\nOK\n",
+  "capture_path": "/home/tombonator3000t/Documents/Codex/signal-47-diner-road/web/tools/drivelook.py",
+  "files_sha256": {
+    "tools/drivelook.py": "c6cb5f6fc706018a8c1e128f418616396630255bfbc822d1c74c9cf71b0015d0",
+    "production/drivelook_dinerlight_20261006/camera_distance_followup/light_distance_check.py": "e4c8704845f2120f250259a135349efa30678ba14549e54798491d2772ce543a",
+    "production/drivelook_dinerlight_20261006/camera_distance_followup/ledger_observation_check.cjs": "edcecdc57f512bc791bd35db6a792349e877d9dbda6fd9f3363a223ae8f50ab0"
+  }
+}
