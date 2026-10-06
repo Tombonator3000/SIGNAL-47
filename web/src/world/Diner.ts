@@ -283,6 +283,13 @@ export class Diner {
     // Two front-facing copies, so lettering never mirrors from the back.
     plane(s,7.2,3.6,m.sign,13.025,1.56,-10,Math.PI/2);plane(s,7.2,3.6,m.sign,12.975,1.56,-10,-Math.PI/2);
     this.proxy('sign',.17,1.3,5.9,13,2.02,-10);
+    // Beside the highway (World.ts) a second copy stands north of the rig, square to the road, so
+    // it reads to drivers coming down from SARO (drivelook D03: the rig and the back hid the first).
+    if(this.onRoad){
+      const cx=9.5,cz=-21;
+      for(const x of [cx-1.97,cx+1.97])this.col(x-.2,x+.2,cz-.2,cz+.2);
+      plane(s,7.2,3.6,m.sign,cx,1.46,cz-.025,Math.PI);plane(s,7.2,3.6,m.sign,cx,1.46,cz+.025,0);
+    }
     const z=-14.15;
     box(s,8.0,2.65,2.35,m.cream,7.9,2.2,z);box(s,8.2,.26,2.4,m.black,7.9,.76,z);
     for(let x=4.1;x<11.9;x+=.55)for(const dz of [-1.185,1.185])box(s,.035,2.5,.025,m.steel,x,2.2,z+dz);
