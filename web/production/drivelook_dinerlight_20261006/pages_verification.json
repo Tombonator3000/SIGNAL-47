@@ -1,0 +1,81 @@
+{
+  "verified_at_utc": "2026-10-06T12:52:11.984350+00:00",
+  "scope": "Artifact digest and five static live files only; no browser/gameplay, rendered lighting, hardware, FPS or audio verification.",
+  "main_sha": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+  "required_main_sha": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+  "run": {
+    "id": 37465075691,
+    "head_sha": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+    "status": "completed",
+    "conclusion": "success",
+    "updated_at": "2026-10-06T12:42:38Z",
+    "url": "https://github.com/Tombonator3000/SIGNAL-47/actions/runs/37465075691"
+  },
+  "artifact": {
+    "id": 11413923604,
+    "name": "github-pages",
+    "digest": "sha256:0b042c68c80e0f61ccba9f9bf127d27bd8cd23750abdcd244e3fccb7258eecd5",
+    "downloaded_zip_sha256": "0b042c68c80e0f61ccba9f9bf127d27bd8cd23750abdcd244e3fccb7258eecd5",
+    "digest_matches": true,
+    "zip_path": "/tmp/signal47-pages81-20261006-z3cxf8pd/artifact.zip",
+    "tar_path": "/tmp/signal47-pages81-20261006-z3cxf8pd/artifact.tar"
+  },
+  "checks": [
+    {
+      "path": "index.html",
+      "url": "https://tombonator3000.github.io/SIGNAL-47/index.html",
+      "status": 200,
+      "utc": "2026-10-06T12:52:10.396803+00:00",
+      "artifact_bytes": 556,
+      "live_bytes": 556,
+      "artifact_sha256": "6e46cd667a35743ea2360c56436644dc910615233fd5816f226140bb22367725",
+      "live_sha256": "6e46cd667a35743ea2360c56436644dc910615233fd5816f226140bb22367725",
+      "byte_identical": true
+    },
+    {
+      "path": "assets/index-DqUKOxLm.js",
+      "url": "https://tombonator3000.github.io/SIGNAL-47/assets/index-DqUKOxLm.js",
+      "status": 200,
+      "utc": "2026-10-06T12:52:10.918483+00:00",
+      "artifact_bytes": 584652,
+      "live_bytes": 584652,
+      "artifact_sha256": "b31e19f6fecb08494d0462a4fcd73f40199a30a86db5ceff3b9d14d41dd2df44",
+      "live_sha256": "b31e19f6fecb08494d0462a4fcd73f40199a30a86db5ceff3b9d14d41dd2df44",
+      "byte_identical": true
+    },
+    {
+      "path": "assets/three-BmJFo-nY.js",
+      "url": "https://tombonator3000.github.io/SIGNAL-47/assets/three-BmJFo-nY.js",
+      "status": 200,
+      "utc": "2026-10-06T12:52:11.348612+00:00",
+      "artifact_bytes": 576101,
+      "live_bytes": 576101,
+      "artifact_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+      "live_sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+      "byte_identical": true
+    },
+    {
+      "path": "assets/Diner-Cpl52F5H.js",
+      "url": "https://tombonator3000.github.io/SIGNAL-47/assets/Diner-Cpl52F5H.js",
+      "status": 200,
+      "utc": "2026-10-06T12:52:11.692280+00:00",
+      "artifact_bytes": 19223,
+      "live_bytes": 19223,
+      "artifact_sha256": "2cffbffd52635a5b2e781a2c8cf5a07539705aec714ef1056f373be2f9a484e4",
+      "live_sha256": "2cffbffd52635a5b2e781a2c8cf5a07539705aec714ef1056f373be2f9a484e4",
+      "byte_identical": true
+    },
+    {
+      "path": "assets/OldRoad-DPtuRgYs.js",
+      "url": "https://tombonator3000.github.io/SIGNAL-47/assets/OldRoad-DPtuRgYs.js",
+      "status": 200,
+      "utc": "2026-10-06T12:52:11.984182+00:00",
+      "artifact_bytes": 28155,
+      "live_bytes": 28155,
+      "artifact_sha256": "6f90f05606827f51d405d527066bde9a260f2bdb648236a764dc22750ecd895b",
+      "live_sha256": "6f90f05606827f51d405d527066bde9a260f2bdb648236a764dc22750ecd895b",
+      "byte_identical": true
+    }
+  ],
+  "result": "PASS"
+}

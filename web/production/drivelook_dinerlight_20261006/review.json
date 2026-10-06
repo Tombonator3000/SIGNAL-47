@@ -1,0 +1,3463 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-06T14:10:03.619201+00:00",
+  "status": "REVIEWED_WITH_LIMITS",
+  "scope": "Manuell gjennomgang av 20 kontaktark med alle 156 originalbilder som miniatyrer, utvalgte fullstørrelser og separat råmetadataanalyse. Ikke automatisert visuell PASS.",
+  "source_main": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+  "pages_job": "37465075691",
+  "capture_integrity": {
+    "status": "PASS",
+    "checks": 2596,
+    "failures": 0,
+    "raw_manifest_visual_status_preserved": "UNVERIFIED",
+    "evidence_manifest_sha256": "db30051854e94153fbd449f874a37e1d991369db38145c601fc8d4d3a7876c7a",
+    "capture_checks_sha256": "49b99d406af0b1f04171a3359003c9aee6cba1d091dd608650081f797c031369"
+  },
+  "coverage": [
+    {
+      "config": "low_844x390",
+      "viewed_utc": "2026-10-06T13:36:56.071221+00:00",
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "8de8aad3fddd76f22943a3fe3f998d91560c916efaf00ba4fcc93b9e13579f41",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "5729d707a5b61c98c60b25021c7238caf4403a101631761162199d1106f15b3e",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/01-dinerlight_low_844x390_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "6721d84deab02f47d80c7a6989f53c859b238b857870c6876621667b5aa3a127",
+          "reviewed": true
+        }
+      ],
+      "all_contact_thumbnails_viewed": true,
+      "notes": [
+        "Arrival near280m has visible pink/red hood tint; individual source isolation not claimed.",
+        "Warm headlight field beforepark is absent after natural headlights-off parking.",
+        "Cab sign diagnostic is partly blocked by seat/window and sign is nearly edge-on.",
+        "All departure frames show05:20 and dawn."
+      ],
+      "package_name": "01-dinerlight_low_844x390_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+      "manifest_sha256": "dfb48f336e2a76de1b8c9b0ecaf6830e1fd9230ad40135f378738f537c3eb926",
+      "image_count": 24,
+      "foot_state_count": 0,
+      "capture_status": "CAPTURED"
+    },
+    {
+      "config": "high_844x390",
+      "viewed_utc": "2026-10-06T13:36:56.073634+00:00",
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "3bf2d30215f19ac0d7633b4046fab5e19f7853b6596a5d4e1afc5b194ccb80b5",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "1252d2c269e639ff42889ff657883606ed8f97752eda5a499ac129f4139b4c94",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/02-dinerlight_high_844x390_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "787fcb8cd9a21f7bbb943496341544546ee22f5a1660f75876cf4e7c19bb99fa",
+          "reviewed": true
+        }
+      ],
+      "all_contact_thumbnails_viewed": true,
+      "notes": [
+        "Arrival near280m has visible pink/red hood tint; individual source isolation not claimed.",
+        "Warm headlight field beforepark is absent after natural headlights-off parking.",
+        "Cab sign diagnostic is partly blocked by seat/window and sign is nearly edge-on.",
+        "All departure frames show05:20 and dawn."
+      ],
+      "package_name": "02-dinerlight_high_844x390_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+      "manifest_sha256": "e78da1787dbbe5b301d9590a98989869cc1cc76a5f5d466ff63e1a81195cb57d",
+      "image_count": 24,
+      "foot_state_count": 0,
+      "capture_status": "CAPTURED"
+    },
+    {
+      "config": "ultra_844x390",
+      "viewed_utc": "2026-10-06T13:43:07.333915+00:00",
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "ffbe7f102b7814a61faea4978af44aa0ceaf9f2fbbeb9fd9b92ede67b7bf29dd",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "6dfe8adec53386ece18da9605a06971301a63bd296089672e3658f8f10ac07ff",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "eeaeeaf5bab732b207057560019e0121eab151da346aa7d1f98416568ee30c63",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_departure-merkede-diagnoser-01.png",
+          "sha256": "db5528db40eba89d6c40b9927cd6a17cb7d312da86bc229a47fcb5cc4d1e6196",
+          "reviewed": true
+        }
+      ],
+      "all_contact_thumbnails_viewed": true,
+      "additional_full_resolution_images": [
+        "dinerlight_arrival_008_forward_280m.png",
+        "dinerlight_arrival_016_ultra_onfoot_facade.png",
+        "dinerlight_arrival_017_ultra_onfoot_sign.png"
+      ],
+      "notes": [
+        "Pink/red hood tint on280m frame. Two truck headlight pools seen beforepark; warm field drops afterheadlights-off.",
+        "Cab sign mostly obscured; footsign view shows red groundpatch and signoutline.",
+        "Dawn visible throughoutactual Ch6 route; departure foot facade diagnostic is clear and warm.",
+        "No visually obvious stale light at former truck pose in these specificimages; rawledger analysis pending."
+      ],
+      "package_name": "03-dinerlight_ultra_844x390_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+      "manifest_sha256": "cee9f60d249040fbf2c0170f5830b0f5ef65fd52754e5867651f8dbe97f2c0bb",
+      "image_count": 30,
+      "foot_state_count": 32,
+      "capture_status": "CAPTURED"
+    },
+    {
+      "config": "low_1280x800",
+      "viewed_utc": "2026-10-06T13:47:49.807073+00:00",
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "e273dbe3051c273213a05df11d431c5dc48a2036b25cc7d45407b6b3c47e8002",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "c245cb9c8e1f6dab618180a8e2c01e6072c117ce24b177bfab3e1ff094f7c181",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/04-dinerlight_low_1280x800_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "13245a957ef096ef087fe45f63cab800806ef5c64fae7316aa2294f228bef5c9",
+          "reviewed": true
+        }
+      ],
+      "all_contact_thumbnails_viewed": true,
+      "additional_full_resolution_images": [
+        "dinerlight_arrival_008_forward_280m.png",
+        "dinerlight_departure_000_route_start.png"
+      ],
+      "notes": [
+        "Full280m original shows pink/red hood tint and warm frontlight roadfield.",
+        "Both facadeviews show headlights-on/offdifference; signfromcab stillobscured/edge-on.",
+        "AllactualCh6 thumbnails showdawn; fullstart showsHUD05:20."
+      ],
+      "package_name": "04-dinerlight_low_1280x800_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+      "manifest_sha256": "c82df7662207b061dfc744e063154ac6ab994dd580af332540e2498c87090d02",
+      "image_count": 24,
+      "foot_state_count": 0,
+      "capture_status": "CAPTURED"
+    },
+    {
+      "config": "high_1280x800",
+      "viewed_utc": "2026-10-06T13:52:05.851117+00:00",
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "3172b63ff6bec63f29ba514353069e1d15aa57d163282a4d9031e49583aaac3d",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "6663dc2a66ffb6e0bf24ad382093876aaeff41540291b97ca7e447e5b2770887",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/05-dinerlight_high_1280x800_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "750ba86427e354f38a0bf0d42a1bf93dceddeaa187780d0bf1edf91ed5d7e5f5",
+          "reviewed": true
+        }
+      ],
+      "all_contact_thumbnails_viewed": true,
+      "additional_full_resolution_images": [
+        "dinerlight_arrival_008_forward_280m.png"
+      ],
+      "notes": [
+        "Full280m original shows pink/red hood tint and two brighter frontlight patches.",
+        "Warm frontlight field is absent afternaturalparking; cabsign is obscured.",
+        "All Ch6 thumbnails showdawn; no unexpected visualjump beyond labelled diagnostic setup."
+      ],
+      "package_name": "05-dinerlight_high_1280x800_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+      "manifest_sha256": "b56bd7fdc033544a5feadd46b220d81a2b1ff820887c15cedef29534b0b5a42f",
+      "image_count": 24,
+      "foot_state_count": 0,
+      "capture_status": "CAPTURED"
+    },
+    {
+      "config": "ultra_1280x800",
+      "viewed_utc": "2026-10-06T14:10:03.619201+00:00",
+      "all_contact_thumbnails_viewed": true,
+      "additional_full_resolution_images": [
+        "dinerlight_arrival_008_forward_280m.png",
+        "dinerlight_arrival_016_ultra_onfoot_facade.png",
+        "dinerlight_arrival_017_ultra_onfoot_sign.png",
+        "dinerlight_arrival_000_route_start.png"
+      ],
+      "notes": [
+        "Alle fire kontaktark sett; rødt panser, frontlys før parkering, mer leselig skilt til fots, daggry ved avgang.",
+        "SARO-startbildet er svært mørkt; opphav ikke målt."
+      ],
+      "contact_sheets": [
+        {
+          "file": "evidence_20261006_v4/derived/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival-kjort-rute-01.png",
+          "sha256": "02e6ac5c214a99a03c75745422d679330e92f8598c3bd5136f29e0fd24ea717c",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival-merkede-diagnoser-01.png",
+          "sha256": "0caa93aad21122fdbe7a180d28fa164b2e66152546d8d13d8e998b5ff336b801",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_departure-kjort-rute-01.png",
+          "sha256": "ca400e85e07190f12fe4226de0d7503d890639bb2cbba78004378d448e351ca3",
+          "reviewed": true
+        },
+        {
+          "file": "evidence_20261006_v4/derived/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_departure-merkede-diagnoser-01.png",
+          "sha256": "c0bf5145d6f783d37ac7010e2b35b8362c8ad5d4f5310fedd464a7e21aa88261",
+          "reviewed": true
+        }
+      ],
+      "package_name": "06-dinerlight_ultra_1280x800_20261006_v4",
+      "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+      "manifest_sha256": "1da461bea67e62aa25b946e8245537c255e6c044a7174c3d5fe4f530a2c3d397",
+      "image_count": 30,
+      "foot_state_count": 32,
+      "capture_status": "CAPTURED"
+    }
+  ],
+  "findings": [
+    {
+      "id": "DL01",
+      "severity": "P3",
+      "type": "capture_coverage_limit",
+      "title": "Skiltet ses nesten fra kanten og er delvis skjult fra førerhuset",
+      "observation": "De holdte skiltbildene før og etter parkering får stol/vindu i forgrunnen og ser skiltplanet nesten fra kanten. De viser neonmiljøet, men støtter ikke en full vurdering av skiltets lesbarhet fra bilen. Ultra-fotbilder og faktisk Ch6-start gir supplerende utsyn.",
+      "runtime_fault_demonstrated": false,
+      "owner": "Claude vurderer om annet ordinært utsyn er nødvendig; ingen ny plassering eller runtime-endring bestilt.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.019626904534212383,
+            0.007461268824027148,
+            -0.0001464739051854207,
+            0.9997795220103959
+          ],
+          "view_direction": [
+            -0.014913497898246206,
+            0.03924734022988165,
+            -0.999118228171881
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.53339362856,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.1033999999948,
+            "uFlash": 0,
+            "uDawn": 0.30325171851641725,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799653630418743,
+              -0.05816341109729134,
+              -0.19048597021233615
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "9dd58b30273c2d43cb23f8a6292d1f59b09b1c01b65ca04cbf23ab35f0d0bba1",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.01940934381992444,
+            0.003734897494001682,
+            -7.250607421708473e-05,
+            0.9998046422457031
+          ],
+          "view_direction": [
+            -0.007465521114982425,
+            0.03881164571371659,
+            -0.9992186558263785
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.699847926942,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 138.23673333332806,
+            "uFlash": 0,
+            "uDawn": 0.303570002211447,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799688483012357,
+              -0.05810243898063565,
+              -0.19048664767812823
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "6fce2fba5e27ddc7a5e1d4e1d931605cf9d727d6cf22c447bbb3bd85fd39ce0a",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155333286863,
+            5.788891099210566,
+            2003.7016547403146
+          ],
+          "camera_quaternion": [
+            0.019624111668699703,
+            0.0074637047610627985,
+            -0.00014650087054330602,
+            0.9997795586477798
+          ],
+          "view_direction": [
+            -0.014918369004899188,
+            0.03924175828446462,
+            -0.9991183747049082
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.266726961898,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.86273333332812,
+            "uFlash": 0,
+            "uDawn": 0.3031789722973773,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799645657527567,
+              -0.0581773500879561,
+              -0.190485815235031
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "430688e9afbe5ab6596f4a73c1c255c167ac37398f739e764c9be6a83af35e77",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.053780476615,
+            5.789222279552834,
+            2003.8452553749687
+          ],
+          "camera_quaternion": [
+            0.019411667494769577,
+            0.003733603606168295,
+            -7.248963609251527e-05,
+            0.9998046019670228
+          ],
+          "view_direction": [
+            -0.007462933845310178,
+            0.03881629028138204,
+            -0.9992184947383692
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.43318126028,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.9960666666614,
+            "uFlash": 0,
+            "uDawn": 0.3034972273675726,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799680518478078,
+              -0.05811637802088058,
+              -0.19048649286326472
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "57757f43d7f4d8e12d257f471ff70063fd2b73b1fc4422e96a54582e8c393a83",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.019626904534212383,
+            0.007461268824027148,
+            -0.0001464739051854207,
+            0.9997795220103959
+          ],
+          "view_direction": [
+            -0.014913497898246206,
+            0.03924734022988165,
+            -0.999118228171881
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.000060295235,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.59516666666147,
+            "uFlash": 0,
+            "uDawn": 0.3031062326234024,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996376827259,
+              -0.058191289067278905,
+              -0.19048566022058966
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "05352c7ddb330a516ed0f05f43349096c6442b0bcef01243ea90909cb3b90612",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.01940934381992444,
+            0.003734897494001682,
+            -7.250607421708473e-05,
+            0.9998046422457031
+          ],
+          "view_direction": [
+            -0.007465521114982425,
+            0.03881164571371659,
+            -0.9992186558263785
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.166514593617,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.72849999999474,
+            "uFlash": 0,
+            "uDawn": 0.30342445906704685,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996725520333,
+              -0.05813031704979543,
+              -0.19048633801126483
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "81ece504837d7247c59d57c6e248a22eeacdfe94c5fb133d65eed826c9dc6b0a",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155333286863,
+            5.788891099210566,
+            2003.7016547403146
+          ],
+          "camera_quaternion": [
+            0.019624111668699703,
+            0.0074637047610627985,
+            -0.00014650087054330602,
+            0.9997795586477798
+          ],
+          "view_direction": [
+            -0.014918369004899188,
+            0.03924175828446462,
+            -0.9991183747049082
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.266726961898,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.93449733334006,
+            "uFlash": 0,
+            "uDawn": 0.3031789722973773,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799645657527567,
+              -0.0581773500879561,
+              -0.190485815235031
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "06e36569ced397ba81f0f0d757fe34ce0109b0c3b7519d95d36a053d5f600b6a",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.053780476615,
+            5.789222279552834,
+            2003.8452553749687
+          ],
+          "camera_quaternion": [
+            0.019411667494769577,
+            0.003733603606168295,
+            -7.248963609251527e-05,
+            0.9998046019670228
+          ],
+          "view_direction": [
+            -0.007462933845310178,
+            0.03881629028138204,
+            -0.9992184947383692
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.43318126028,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 138.06783066667333,
+            "uFlash": 0,
+            "uDawn": 0.3034972273675726,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799680518478078,
+              -0.05811637802088058,
+              -0.19048649286326472
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "b64c1b190d8be70ba863b57582e3ff3bc424300f8306aa469820fd7cba9c108c",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.019626904534212383,
+            0.007461268824027148,
+            -0.0001464739051854207,
+            0.9997795220103959
+          ],
+          "view_direction": [
+            -0.014913497898246206,
+            0.03924734022988165,
+            -0.999118228171881
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.000060295235,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.61126666663765,
+            "uFlash": 0,
+            "uDawn": 0.3031062326234024,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996376827259,
+              -0.058191289067278905,
+              -0.19048566022058966
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "22bad1730e5099d53fb7c2d340f559de14ad6902902e49338081fafadb182f62",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.01940934381992444,
+            0.003734897494001682,
+            -7.250607421708473e-05,
+            0.9998046422457031
+          ],
+          "view_direction": [
+            -0.007465521114982425,
+            0.03881164571371659,
+            -0.9992186558263785
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.166514593617,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.74459999997092,
+            "uFlash": 0,
+            "uDawn": 0.30342445906704685,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996725520333,
+              -0.05813031704979543,
+              -0.19048633801126483
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "e34a9897bf4fd8c07ccd741af6560d71d5b8d6c8d203d8cddcc404cb851c0caf",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.019626904534212383,
+            0.007461268824027148,
+            -0.0001464739051854207,
+            0.9997795220103959
+          ],
+          "view_direction": [
+            -0.014913497898246206,
+            0.03924734022988165,
+            -0.999118228171881
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18579.33339362855,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.89820000004244,
+            "uFlash": 0,
+            "uDawn": 0.30346999644000244,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799677537629307,
+              -0.05812159405727236,
+              -0.19048643492143416
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_011_prepark_sign_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "709f5febcbf3fdd0031f03acafb88c5101f39c6b3d34a71b3803d4227c28d960",
+          "configuration": "ultra_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.01940934381992444,
+            0.003734897494001682,
+            -7.250607421708473e-05,
+            0.9998046422457031
+          ],
+          "view_direction": [
+            -0.007465521114982425,
+            0.03881164571371659,
+            -0.9992186558263785
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18580.49984792693,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 139.0315333333757,
+            "uFlash": 0,
+            "uDawn": 0.3037883659992399,
+            "uSun": 0,
+            "uSunDir": [
+              0.979971236515219,
+              -0.058060621791947514,
+              -0.1904871118999006
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_014_parked_sign_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "4c717c9b04e74cfe9ef11cffb48db7649c2cdb15d73713c5460e0aa92fb10c07",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    },
+    {
+      "id": "DL02",
+      "severity": "P3",
+      "type": "capture_coverage_limit",
+      "title": "Ekstra SARO-startbilde i Ultra 1280x800 er svært mørkt",
+      "observation": "Det ekstra startbildet før kjøreturen er svært mørkt, også HUD. Det ligger utenfor den bestilte siste 300 m ved dineren. Raw post.glitch=0, cinematic=false og HUD/himmelklokke stemmer. UI-fade-opacity ble ikke registrert; årsak og eventuell runtime-feil er UNVERIFIED. Bildet er beholdt og er ikke brukt til lyskonklusjonen ved dineren.",
+      "runtime_fault_demonstrated": false,
+      "owner": "Ingen ny opptaksrunde nødvendig for avtalt dinerområde; årsak kan undersøkes dersom SARO-start er en egen oppgave.",
+      "evidence": [
+        {
+          "world_xyz": [
+            8.9,
+            0,
+            8
+          ],
+          "map_xyz": [
+            32.9,
+            0,
+            -292
+          ],
+          "driver_xyz": [
+            8.9,
+            0,
+            8
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            9.32,
+            1.4802866617272865,
+            7.8
+          ],
+          "camera_quaternion": [
+            -2.4486405055847674e-18,
+            0.9992001066609779,
+            0.03998933418663416,
+            6.118336061650302e-17
+          ],
+          "view_direction": [
+            -1.220730019008123e-16,
+            -0.0799146939691727,
+            0.9968017063026196
+          ],
+          "heading_rad": 3.141592653589793,
+          "clock_seconds": 18001.899999999972,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:00",
+          "sky_uniforms": {
+            "uTime": 1.7982000000476865,
+            "uFlash": 0,
+            "uDawn": 0.16199192591135325,
+            "uSun": 0,
+            "uSunDir": [
+              0.9777951666808543,
+              -0.08827366385087143,
+              -0.19006412677279153
+            ]
+          },
+          "route_remaining_m": 2148.4144380157254,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "e8cfffdef507f99f8499c777aa4fb9b4d43bc2ba6ee80c58118c062a749d8a30",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "observation": "Rosa/rødt skjær på panseret nær dinerplassen i alle seks oppsett. Dette isolerer ikke en enkelt lyskilde fotometrisk.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.9199884460495,
+            5.797230929456718,
+            1989.9961767796278
+          ],
+          "camera_quaternion": [
+            -0.006137976973939227,
+            0.9981092886120474,
+            0.04356914871672039,
+            0.042917391639290016
+          ],
+          "view_direction": [
+            -0.0851376416131581,
+            -0.08750039598548362,
+            0.9925196535499603
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18570.67654679532,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 132.00339999999508,
+            "uFlash": 0,
+            "uDawn": 0.3011111297946736,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799417922647888,
+              -0.05857409326107485,
+              -0.19048138851739965
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "a498635ecbcc952dd7021db6b698027ea3adcfdfd0dabb1f4d4e4eaca9425ba3",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311698253497423,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311698253497423,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.920009789771,
+            5.797252775056097,
+            1989.9963154602783
+          ],
+          "camera_quaternion": [
+            -0.0061278057251048885,
+            0.9981195835256819,
+            0.04333227841986164,
+            0.042919233758985396
+          ],
+          "view_direction": [
+            -0.08514599188195364,
+            -0.08702759283199323,
+            0.9925605060409703
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18570.409880128656,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 131.7627333333284,
+            "uFlash": 0,
+            "uDawn": 0.30103857657898875,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799409893468223,
+              -0.0585880319164296,
+              -0.1904812324459571
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "7c6f77885821aa1cbefa9c9c507bc86a7344e3312ef274ceea03168cef53fd74",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.9199884460495,
+            5.797230929456718,
+            1989.9961767796278
+          ],
+          "camera_quaternion": [
+            -0.006137976973939227,
+            0.9981092886120474,
+            0.04356914871672039,
+            0.042917391639290016
+          ],
+          "view_direction": [
+            -0.0851376416131581,
+            -0.08750039598548362,
+            0.9925196535499603
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18570.143213461994,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 131.49516666666176,
+            "uFlash": 0,
+            "uDawn": 0.30096602991997196,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799401862378111,
+              -0.05860197056036232,
+              -0.19048107633737923
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "a49a34cab5745fd4405231f669f7813b5a14c67e0d1a3a9f634773bdc54af7ae",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311698253497423,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311698253497423,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.920009789771,
+            5.797252775056097,
+            1989.9963154602783
+          ],
+          "camera_quaternion": [
+            -0.0061278057251048885,
+            0.9981195835256819,
+            0.04333227841986164,
+            0.042919233758985396
+          ],
+          "view_direction": [
+            -0.08514599188195364,
+            -0.08702759283199323,
+            0.9925605060409703
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18570.409880128656,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 131.83449733334035,
+            "uFlash": 0,
+            "uDawn": 0.30103857657898875,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799409893468223,
+              -0.0585880319164296,
+              -0.1904812324459571
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "a85515c2b97dbd1f0d088da132a7ab3d75b2074cea1b2d003de8600e21bbe9b6",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.9199884460495,
+            5.797230929456718,
+            1989.9961767796278
+          ],
+          "camera_quaternion": [
+            -0.006137976973939227,
+            0.9981092886120474,
+            0.04356914871672039,
+            0.042917391639290016
+          ],
+          "view_direction": [
+            -0.0851376416131581,
+            -0.08750039598548362,
+            0.9925196535499603
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18570.143213461994,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 131.51126666663794,
+            "uFlash": 0.17084444444444427,
+            "uDawn": 0.30096602991997196,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799401862378111,
+              -0.05860197056036232,
+              -0.19048107633737923
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "628704f242556060a0f0a6d9bdaa124225cb06111a3b59f25c682dc3941d19b8",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7997.497983375885,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "map_xyz": [
+            -2.502016624114731,
+            4.311849895637478,
+            1990.1493394220292
+          ],
+          "driver_xyz": [
+            7997.497983375885,
+            0,
+            1990.1493394220292
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7997.9199884460495,
+            5.797230929456718,
+            1989.9961767796278
+          ],
+          "camera_quaternion": [
+            -0.006137976973939227,
+            0.9981092886120474,
+            0.04356914871672039,
+            0.042917391639290016
+          ],
+          "view_direction": [
+            -0.0851376416131581,
+            -0.08750039598548362,
+            0.9925196535499603
+          ],
+          "heading_rad": 3.0553384099486345,
+          "clock_seconds": 18571.476546795308,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 132.79820000004273,
+            "uFlash": 0,
+            "uDawn": 0.30132882877778727,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799441998724195,
+              -0.05853227722650555,
+              -0.1904818565089152
+            ]
+          },
+          "route_remaining_m": 18.215467584033377,
+          "path_distance_m": 2306.7180731706244,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_008_forward_280m.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "9343ddc8ddbef20c7060c85e197a1d36de77a482f9dcb09dca17f51be6416884",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    },
+    {
+      "observation": "Varmt frontlysfelt før parkering. Fasade og vei ses fra holdt cab-diagnose.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.006449037432932096,
+            0.5302238001568812,
+            -0.0040331893512160774,
+            0.8478236049126266
+          ],
+          "view_direction": [
+            -0.8990204869407581,
+            0.015212278298318033,
+            -0.4376422633267687
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.53339362856,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.1033999999948,
+            "uFlash": 0,
+            "uDawn": 0.30325171851641725,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799653630418743,
+              -0.05816341109729134,
+              -0.19048597021233615
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "3c2f54ec13a674ec348cd9a2a961556068abf577112b5f7882cbcc7194c9b8a7",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155333286863,
+            5.788891099210566,
+            2003.7016547403146
+          ],
+          "camera_quaternion": [
+            0.00644627475752287,
+            0.530227719701174,
+            -0.004031502910175426,
+            0.8478211826715165
+          ],
+          "view_direction": [
+            -0.8990246084536521,
+            0.015205805767559095,
+            -0.4376340216044876
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.266726961898,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.86273333332812,
+            "uFlash": 0,
+            "uDawn": 0.3031789722973773,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799645657527567,
+              -0.0581773500879561,
+              -0.190485815235031
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "127b648cfaec9a21e5a474c3db0eeb4b659c674d2054ba429cdd6430a3a462e6",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.006449037432932096,
+            0.5302238001568812,
+            -0.0040331893512160774,
+            0.8478236049126266
+          ],
+          "view_direction": [
+            -0.8990204869407581,
+            0.015212278298318033,
+            -0.4376422633267687
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.000060295235,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.59516666666147,
+            "uFlash": 0,
+            "uDawn": 0.3031062326234024,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996376827259,
+              -0.058191289067278905,
+              -0.19048566022058966
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "af4bc6a3edcc33b5f9e7a88550d8bd75ac4e718642baf2295cb975291ee41005",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.309092274770269,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155333286863,
+            5.788891099210566,
+            2003.7016547403146
+          ],
+          "camera_quaternion": [
+            0.00644627475752287,
+            0.530227719701174,
+            -0.004031502910175426,
+            0.8478211826715165
+          ],
+          "view_direction": [
+            -0.8990246084536521,
+            0.015205805767559095,
+            -0.4376340216044876
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.266726961898,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.93449733334006,
+            "uFlash": 0,
+            "uDawn": 0.3031789722973773,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799645657527567,
+              -0.0581773500879561,
+              -0.190485815235031
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "016b30ae6ec64e4da6f1fb2cc40a18405f5ded025572a30ea4da523a07f3a149",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.006449037432932096,
+            0.5302238001568812,
+            -0.0040331893512160774,
+            0.8478236049126266
+          ],
+          "view_direction": [
+            -0.8990204869407581,
+            0.015212278298318033,
+            -0.4376422633267687
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18578.000060295235,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 136.61126666663765,
+            "uFlash": 0,
+            "uDawn": 0.3031062326234024,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996376827259,
+              -0.058191289067278905,
+              -0.19048566022058966
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "f48c12f2acbdb94c10e3ff66d9bdf4e73b1b915887d16caa683e6d4cb17d9560",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.694947736575,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "map_xyz": [
+            -7.305052263424841,
+            4.308961195240905,
+            2003.6378371634435
+          ],
+          "driver_xyz": [
+            7992.694947736575,
+            0,
+            2003.6378371634435
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7993.155267708117,
+            5.788810412102233,
+            2003.70175094632
+          ],
+          "camera_quaternion": [
+            0.006449037432932096,
+            0.5302238001568812,
+            -0.0040331893512160774,
+            0.8478236049126266
+          ],
+          "view_direction": [
+            -0.8990204869407581,
+            0.015212278298318033,
+            -0.4376422633267687
+          ],
+          "heading_rad": 2.5615901990120946,
+          "clock_seconds": 18579.33339362855,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "arrival_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.89820000004244,
+            "uFlash": 0,
+            "uDawn": 0.30346999644000244,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799677537629307,
+              -0.05812159405727236,
+              -0.19048643492143416
+            ]
+          },
+          "route_remaining_m": 2.934603101922221,
+          "path_distance_m": 2321.2340351301564,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_010_prepark_facade_lights_on.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "b6831f908805932238b03e4a2403d131d47cf5f44d9a2eaa2d10ca3f79b70512",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    },
+    {
+      "observation": "Frontlysfeltet er borte etter naturlig parkering/frontlys av. Faste varme vindus-/fasadelys kan fortsatt være på.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.006474718361282821,
+            0.524318567135046,
+            -0.003986919483787931,
+            0.8514882398792272
+          ],
+          "view_direction": [
+            -0.8928505593700642,
+            0.015207124904369818,
+            -0.4500962363591887
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.699847926942,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 138.23673333332806,
+            "uFlash": 0,
+            "uDawn": 0.303570002211447,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799688483012357,
+              -0.05810243898063565,
+              -0.19048664767812823
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "72bfffdd8d61cddf835a74e412089eb47148333ad14e480a5c271c190cb874e8",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.053780476615,
+            5.789222279552834,
+            2003.8452553749687
+          ],
+          "camera_quaternion": [
+            0.0064770060978543665,
+            0.5243164834163716,
+            -0.003988306448892235,
+            0.8514894990671157
+          ],
+          "view_direction": [
+            -0.8928482950632969,
+            0.015212474979573367,
+            -0.4501005472197963
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.43318126028,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.9960666666614,
+            "uFlash": 0,
+            "uDawn": 0.3034972273675726,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799680518478078,
+              -0.05811637802088058,
+              -0.19048649286326472
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "0a52fbc685f98227091435f92cb73e82a05bfe4f671b7144e56309ca1d0e163f",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.006474718361282821,
+            0.524318567135046,
+            -0.003986919483787931,
+            0.8514882398792272
+          ],
+          "view_direction": [
+            -0.8928505593700642,
+            0.015207124904369818,
+            -0.4500962363591887
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.166514593617,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.72849999999474,
+            "uFlash": 0,
+            "uDawn": 0.30342445906704685,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996725520333,
+              -0.05813031704979543,
+              -0.19048633801126483
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "5823db9a8202a96185ac5195a21a5774d7f4bb33fc66fcf165faf26e005a348c",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.308967792755489,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.053780476615,
+            5.789222279552834,
+            2003.8452553749687
+          ],
+          "camera_quaternion": [
+            0.0064770060978543665,
+            0.5243164834163716,
+            -0.003988306448892235,
+            0.8514894990671157
+          ],
+          "view_direction": [
+            -0.8928482950632969,
+            0.015212474979573367,
+            -0.4501005472197963
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.43318126028,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 138.06783066667333,
+            "uFlash": 0,
+            "uDawn": 0.3034972273675726,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799680518478078,
+              -0.05811637802088058,
+              -0.19048649286326472
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "5bde7927da39359b3ca0f03a44da7faf609a2233f7f0fc2929697dfc71b22594",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.006474718361282821,
+            0.524318567135046,
+            -0.003986919483787931,
+            0.8514882398792272
+          ],
+          "view_direction": [
+            -0.8928505593700642,
+            0.015207124904369818,
+            -0.4500962363591887
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.166514593617,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 137.74459999997092,
+            "uFlash": 0,
+            "uDawn": 0.30342445906704685,
+            "uSun": 0,
+            "uSunDir": [
+              0.97996725520333,
+              -0.05813031704979543,
+              -0.19048633801126483
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "d15af2d71f7da1ad83e568c64cce1e7f33bfeb25911850572ad094679697d94f",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7993.0538160646,
+            5.789288899718009,
+            2003.845205294502
+          ],
+          "camera_quaternion": [
+            0.006474718361282821,
+            0.524318567135046,
+            -0.003986919483787931,
+            0.8514882398792272
+          ],
+          "view_direction": [
+            -0.8928505593700642,
+            0.015207124904369818,
+            -0.4500962363591887
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18580.49984792693,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "parked_cab_camera_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 139.0315333333757,
+            "uFlash": 0,
+            "uDawn": 0.3037883659992399,
+            "uSun": 0,
+            "uSunDir": [
+              0.979971236515219,
+              -0.058060621791947514,
+              -0.1904871118999006
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_013_parked_facade_lights_off.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "d77b323068a4bb926da7eabf0ca4f7ee7877f019045d4306dcc2da7a2befc323",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    },
+    {
+      "observation": "Faktisk Ch6-start viser daggry og HUD 05:20 i alle seks oppsett etter ett vanlig setup-steg.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 0.7633333333452539,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/01-dinerlight_low_844x390_20261006_v4/manifest.json",
+          "image_sha256": "e9b64ee818adf1a472a13684c96ba399c1da057bfd0ae30ee38b97e8e9e03d96",
+          "configuration": "low_844x390"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 1.1248,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/02-dinerlight_high_844x390_20261006_v4/manifest.json",
+          "image_sha256": "ce949650166f090ead43de5eaa09b0e4ddd33a01919a452718c27bbfc09847f1",
+          "configuration": "high_844x390"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 0.8259333333452549,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "d66cbb9fd0875ef06522e7e7153bfc59b2df68e4453d5b196fb940c3f40c0394",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "low",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 1.3836666667024309,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": false,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/04-dinerlight_low_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "45cb0484bdf2cc5e1e7fc1593a3b4efe9f20235f184f4970c9e0a11f6288ebc0",
+          "configuration": "low_1280x800"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "high",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 2.962666666690509,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": false
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/05-dinerlight_high_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "9b07e36c154d70c773406438ed8e695b64920d2f601ce0eb0492c9f7d875cebc",
+          "configuration": "high_1280x800"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            7988.95,
+            0,
+            2005.95
+          ],
+          "player_xyz": [
+            1.55,
+            0,
+            3.7
+          ],
+          "camera_xyz": [
+            7988.53,
+            5.789293051571176,
+            2006.15
+          ],
+          "camera_quaternion": [
+            -0.03998933418663416,
+            0,
+            0,
+            0.9992001066609779
+          ],
+          "view_direction": [
+            -0.0,
+            -0.07991469396917268,
+            -0.9968017063026194
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19200.033333333333,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "departure_drive",
+          "camera_role": "driver_cab",
+          "headlights_active": true,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 1.0715999999642374,
+            "uFlash": 0,
+            "uDawn": 0.6997672774268711,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813041681607324,
+              -0.025651780637242442,
+              -0.19074620756521493
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 0.0,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_departure_000_route_start.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "78bfa95a86d0052bdde0b9eece43a5848b1a59a546a29bc45d7322a430734a81",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    },
+    {
+      "observation": "Ultra-fotdiagnose viser skiltkontur, rødt miljølys og supplerende utsyn; diagnostisk oppsett er merket i rådata.",
+      "evidence": [
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7995.256564755477,
+            5.945146998840272,
+            2004.9953913149473
+          ],
+          "camera_quaternion": [
+            0.012569936595970147,
+            0.07598197276861277,
+            -0.0009579341258609737,
+            0.9970294974926137
+          ],
+          "view_direction": [
+            -0.1514884539135245,
+            0.02521076658491885,
+            -0.9881374730163262
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18579.66651459361,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "ultra_onfoot_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 138.2284999999947,
+            "uFlash": 0,
+            "uDawn": 0.3035609049981387,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799687487550053,
+              -0.058104181361285416,
+              -0.19048662832830118
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_arrival_017_ultra_onfoot_sign.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "8f400740751debd6f7e2cb1131be4f269af47f600e97c95ab075ab5b760b46ed",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            0,
+            0,
+            0
+          ],
+          "player_xyz": [
+            7987.2,
+            0,
+            2004.8500000000001
+          ],
+          "camera_xyz": [
+            7987.2,
+            5.929006389843889,
+            2004.8500000000001
+          ],
+          "camera_quaternion": [
+            0.012308082935976702,
+            -0.183095480381578,
+            0.0022924913788213435,
+            0.9830154122095739
+          ],
+          "view_direction": [
+            0.35991492589397267,
+            0.02503756006218937,
+            -0.9326491123165608
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19219.35020556716,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "ultra_onfoot_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 24.325933333345624,
+            "uFlash": 0,
+            "uDawn": 0.496160301789229,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813291344994481,
+              -0.024640671445815606,
+              -0.19075106052985255
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 309.0695601614333,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/dinerlight_departure_011_ultra_onfoot_sign.png",
+          "manifest": "evidence_20261006_v4/captures/03-dinerlight_ultra_844x390_20261006_v4/manifest.json",
+          "image_sha256": "95abd276316a56617065ca3d9fc903c608b173c544f8b97b7c6af777257e564b",
+          "configuration": "ultra_844x390"
+        },
+        {
+          "world_xyz": [
+            7992.593597023685,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "map_xyz": [
+            -7.406402976314894,
+            4.30903693206448,
+            2003.7796673157125
+          ],
+          "driver_xyz": [
+            7992.593597023685,
+            0,
+            2003.7796673157125
+          ],
+          "player_xyz": [
+            7995.256564755477,
+            0,
+            2004.9953913149473
+          ],
+          "camera_xyz": [
+            7995.256564755477,
+            5.945146998840272,
+            2004.9953913149473
+          ],
+          "camera_quaternion": [
+            0.012569936595970147,
+            0.07598197276861277,
+            -0.0009579341258609737,
+            0.9970294974926137
+          ],
+          "view_direction": [
+            -0.1514884539135245,
+            0.02521076658491885,
+            -0.9881374730163262
+          ],
+          "heading_rad": 2.557163539445279,
+          "clock_seconds": 18580.999847926923,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "ultra_onfoot_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:09",
+          "sky_uniforms": {
+            "uTime": 139.53153333337568,
+            "uFlash": 0.27799999999999997,
+            "uDawn": 0.30392487326526463,
+            "uSun": 0,
+            "uSunDir": [
+              0.9799727282757986,
+              -0.05803448599728002,
+              -0.19048740186878324
+            ]
+          },
+          "route_remaining_m": 2.7634843517485024,
+          "path_distance_m": 2321.408355998953,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_arrival_017_ultra_onfoot_sign.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "620d1e6c1cd3143a4aa4dd20a7673222166174d950f88988d77993d483788679",
+          "configuration": "ultra_1280x800"
+        },
+        {
+          "world_xyz": [
+            7988.95,
+            4.309006389843889,
+            2005.95
+          ],
+          "map_xyz": [
+            -11.050000000000182,
+            4.309006389843889,
+            2005.95
+          ],
+          "driver_xyz": [
+            0,
+            0,
+            0
+          ],
+          "player_xyz": [
+            7987.2,
+            0,
+            2004.8500000000001
+          ],
+          "camera_xyz": [
+            7987.2,
+            5.929006389843889,
+            2004.8500000000001
+          ],
+          "camera_quaternion": [
+            0.012308082935976702,
+            -0.183095480381578,
+            0.0022924913788213435,
+            0.9830154122095739
+          ],
+          "view_direction": [
+            0.35991492589397267,
+            0.02503756006218937,
+            -0.9326491123165608
+          ],
+          "heading_rad": 0,
+          "clock_seconds": 19219.35020556716,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "capture_phase": "ultra_onfoot_diagnostic",
+          "camera_role": "player_after_parking",
+          "headlights_active": false,
+          "hud_clock": "05:20",
+          "sky_uniforms": {
+            "uTime": 24.57159999996462,
+            "uFlash": 0,
+            "uDawn": 0.496160301789229,
+            "uSun": 0,
+            "uSunDir": [
+              0.9813291344994481,
+              -0.024640671445815606,
+              -0.19075106052985255
+            ]
+          },
+          "route_remaining_m": 13408.267655476573,
+          "path_distance_m": 309.0695601614333,
+          "post": {
+            "on": true,
+            "supported": true,
+            "glitch": 0,
+            "ultra": true
+          },
+          "cinematic": false,
+          "held": true,
+          "file": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/dinerlight_departure_011_ultra_onfoot_sign.png",
+          "manifest": "evidence_20261006_v4/captures/06-dinerlight_ultra_1280x800_20261006_v4/manifest.json",
+          "image_sha256": "51cf87e2f9be4d14cd16fe6bbc174540f7457786d987173fb3f1d0ffd1d3118f",
+          "configuration": "ultra_1280x800"
+        }
+      ]
+    }
+  ],
+  "ultra_raw_analysis": {
+    "file": "ultra_raw_analysis.json",
+    "sha256": "05803bd1af085d967cb7cb8df1c70e263d10bde9226df26f1a951e98277ed735",
+    "counts": {
+      "configurations": 2,
+      "captured_phases": 4,
+      "png_states": 60,
+      "foot_states": 64,
+      "total_state_observations": 124,
+      "raw_slot_observations": 2806,
+      "raw_spot_observations": 372,
+      "active_spot_observations": 159,
+      "active_source_alias_pair_observations": 27,
+      "candidate_counts": {
+        "positive_fake_with_matching_spot": 0,
+        "active_spot_on_skipped_slot": 0,
+        "active_spot_far_from_observed_player": 0,
+        "active_spot_without_diner_source": 0
+      }
+    },
+    "interpretation": "Ingen råmetadata-kandidater. Driving bruker fortsatt player.pos som Ultra-poolens opphav; dette er ikke bevis for at ekte Ultra-lamper følger førerkameraet. Umiddelbar trace bevares før timer/kamera setter seg.",
+    "rendering_verdict": "UNVERIFIED"
+  },
+  "tool_corrections": [
+    {
+      "issue": "getOut-kamera var gammelt etter callback",
+      "fix": "Bevar råcallback, vent med ordinære frames på spiller/kamera-synk, blokker ved feil.",
+      "evidence": "diagnostics/camera_probe/probe_review.json"
+    },
+    {
+      "issue": "Kapittel 6-klokke var satt etter forrige HUD/himmelframe",
+      "fix": "Ett ordinært 1/30 s setup-steg med null driverbevegelse før autopilot, guard ved hver PNG.",
+      "evidence": "diagnostics/setup_clock_probe/probe_review.json"
+    }
+  ],
+  "validation": {
+    "tool_contract_tests": "32/32 PASS, setup_sync_checks.json",
+    "packer_contract_tests": "20/20 PASS, package_setup_sync_checks.json",
+    "package_integrity": "2596/2596 PASS, 156 original PNG, 20 derived contact sheets",
+    "runtime_integration": "Claudes avtalte runde: 8+15+53+42+23=141 PASS på f50b6c1. Gjenbrukt, ikke kjørt om av Codex.",
+    "runtime_source_identity": "17 kildefiler byteidentiske mot main; separat artefaktbevis for observerte Pages-bytes."
+  },
+  "limitations": [
+    "ANGLE SwiftShader, ingen fysisk GPU/fps/lyd-/telefontest eller manuell kjørefølelse.",
+    "Stillbilder verifiserer ikke tidsmessig flimring eller alle skjulte flater.",
+    "Ingen identisk-klokke A/B-påstand mellom presets; faktisk pose og klokke er bevart.",
+    "Råspor på t=0 kan vise midlertidig kamera/pooltilstand og er ikke filtrert bort.",
+    "Lyspoolvalg/private want er ikke direkte inspisert; assosiasjon er geometri/fargetone fra registrerte rådata.",
+    "Ingen runtime, assets eller eksisterende spilltester endret."
+  ]
+}

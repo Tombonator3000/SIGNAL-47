@@ -1,0 +1,68 @@
+{
+  "checked_utc": "2026-10-06T13:06:16.505932+00:00",
+  "status": "SUPERSEDED_PROBES",
+  "interpretation": "Original capture statuses and raw bytes preserved. No runtime bug asserted. Capture timing fixed in own tool; final evidence will use _v2 directories.",
+  "captures": [
+    {
+      "capture_directory": "web/shots/dinerlight_low_844x390_20261006",
+      "capture_status_original": "CAPTURED",
+      "quality": "low",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "device_scale_factor": 1
+      },
+      "file": "low_dinerlight_arrival_012_arrival_end_parked.png",
+      "image_sha256": "33fa8c7ef82ba0053ca6d706af2d2cbcbf29c2a319dd2468a3509d0c9563762c",
+      "manifest_file": "low_manifest.json",
+      "manifest_sha256": "c58e1816cdfac533ce6e46bf3787677aa29c16843eb3f5c94289ac60b432de13",
+      "player_xyz": [
+        7993.887627609755,
+        0,
+        2004.9953913149473
+      ],
+      "camera_xyz": [
+        1.55,
+        1.62,
+        3.7
+      ],
+      "clock_seconds": 18579.89984792694,
+      "review": "SUPERSEDED: callback completed but camera still at SARO before normal Player.update. These are tool timing probes, not final lighting evidence."
+    },
+    {
+      "capture_directory": "web/shots/dinerlight_high_844x390_20261006",
+      "capture_status_original": "CAPTURED",
+      "quality": "high",
+      "viewport": {
+        "width": 844,
+        "height": 390,
+        "device_scale_factor": 1
+      },
+      "file": "high_dinerlight_arrival_012_arrival_end_parked.png",
+      "image_sha256": "f72640bb1d110cc57d9c9bcbb1c207a8e0924b80c40b08dfb8192f5648ba3df4",
+      "manifest_file": "high_manifest.json",
+      "manifest_sha256": "4d16147d0478a2b89a7c7be15506d0b361381dc745eb30a954cb2cb895aafadb",
+      "player_xyz": [
+        7993.887627609755,
+        0,
+        2004.9953913149473
+      ],
+      "camera_xyz": [
+        1.55,
+        1.62,
+        3.7
+      ],
+      "clock_seconds": 18579.09984792695,
+      "review": "SUPERSEDED: callback completed but camera still at SARO before normal Player.update. These are tool timing probes, not final lighting evidence."
+    }
+  ],
+  "cancelled_ultra": {
+    "manifest": "ultra_cancelled_manifest.json",
+    "sha256": "30e9c476d7fb45ec0969526b54525ea52499effcd894a3fc572aa440a3ba095b",
+    "owned_processes_terminated": [
+      870682,
+      871491
+    ],
+    "exit_verified": "Neither PID existed at 13:01 UTC; no further queue capture started."
+  }
+}

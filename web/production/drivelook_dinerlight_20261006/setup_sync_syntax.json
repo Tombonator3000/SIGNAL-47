@@ -1,0 +1,49 @@
+{
+  "checked_utc": "2026-10-06T13:29:03.276096+00:00",
+  "status": "PASS",
+  "scope": "Python AST, four JavaScript expressions parsed by bundled Node, unchanged legacy functions against prepared PR80; no game integration rerun",
+  "baseline_commit": "7f8c411d8d54472640543ae0baac9b8f99907d45",
+  "changed_functions": [
+    "run_dinerlight_trip"
+  ],
+  "added_functions": [
+    "dinerlight_render_clock_errors",
+    "dinerlight_setup_errors",
+    "dinerlight_camera_player_distance"
+  ],
+  "unchanged_legacy_functions": [
+    "viewport",
+    "parse_args",
+    "capture_due",
+    "path_increment",
+    "code_fingerprint",
+    "code_hash_errors",
+    "observe_response",
+    "wait_code_hashes",
+    "cancel_code_hashes",
+    "check_capture_diagnostics",
+    "observe_page",
+    "stop_observing",
+    "record_console",
+    "shot_metadata",
+    "source_info",
+    "write_report",
+    "pixel_change_metrics",
+    "run_kessler_trip",
+    "dinerlight_route_remaining",
+    "dinerlight_quality_errors",
+    "dinerlight_tick_seconds",
+    "dinerlight_light_findings",
+    "run_trip",
+    "capture",
+    "main"
+  ],
+  "javascript_parse": {
+    "DINERLIGHT_EXTRA": "PASS",
+    "DINERLIGHT_DRAW": "PASS",
+    "DINERLIGHT_LOOK": "PASS",
+    "DINERLIGHT_RESTORE": "PASS"
+  },
+  "diff_check": "PASS",
+  "tool_sha256": "e1c78264cfdd971b0f49d5d1f8521f95eafe44a120759e86d6c711ca9d13ed30"
+}

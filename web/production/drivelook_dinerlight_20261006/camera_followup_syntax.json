@@ -1,0 +1,36 @@
+{
+  "checked_utc": "2026-10-06T13:05:20.063924+00:00",
+  "status": "PASS",
+  "scope": "Python AST and unchanged helper/runner comparison against prepared PR80 head; no new game test",
+  "baseline_commit": "7f8c411d8d54472640543ae0baac9b8f99907d45",
+  "changed_functions": [
+    "run_dinerlight_trip"
+  ],
+  "unchanged_legacy_functions": [
+    "viewport",
+    "parse_args",
+    "capture_due",
+    "path_increment",
+    "code_fingerprint",
+    "code_hash_errors",
+    "observe_response",
+    "wait_code_hashes",
+    "cancel_code_hashes",
+    "check_capture_diagnostics",
+    "observe_page",
+    "stop_observing",
+    "record_console",
+    "shot_metadata",
+    "source_info",
+    "write_report",
+    "pixel_change_metrics",
+    "run_kessler_trip",
+    "run_trip",
+    "capture",
+    "main"
+  ],
+  "file_sha256": "0653c49fe21788196ebcc0b2c6cbc33c921dfd46b8f11eaa9810fae5299cdaca",
+  "python_ast": "PASS",
+  "javascript_expressions_unchanged": true,
+  "diff_check": "PASS"
+}

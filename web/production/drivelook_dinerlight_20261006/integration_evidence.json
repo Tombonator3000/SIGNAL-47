@@ -1,0 +1,17 @@
+{
+  "observed_utc": "2026-10-06T12:56:21.222051+00:00",
+  "session": "https://claude.ai/code/session_01LVHLZRk2YVK6KDkobNYQQv",
+  "message": 102,
+  "capture_confirmation": "Claude explicitly confirmed six dinerlight captures may run on Pages from main a3727e9 after PR81",
+  "main_sha": "a3727e9315744c77c96739f38fc9d134c9ba4aa9",
+  "pages_run": 37465075691,
+  "runtime_owner": "Claude",
+  "evidence": "Visible raw tool output in Review targeted test results and main state",
+  "raw_output": "START 11:17:18\n== ultra 8 of 8 PASS exit 0  11:19:33\n== diner 15 of 15 PASS exit 0  11:22:54\n== ch5 53 of 53 PASS exit 0  11:41:11\n== ch6 42 of 42 PASS exit 0  12:18:17\n== drives 23 of 23 PASS exit 0  12:40:36\nALL DONE 12:40:36\nno console errors/warnings\nno console errors/warnings\nPASS no console errors or warnings\n12:40\nea6bdd0cc49ad8fab8ebb926d8495676f553b82e",
+  "reuse_scope": "The five affected runtime tests on f50b6c1 build were completed by Claude. Codex only captures the agreed lighting views; no duplicate integration test round.",
+  "limitations": [
+    "Software rendering only",
+    "Physical GPU/fps/audio/manual controls unverified",
+    "Raw output recorded in browser, not independently rerun by Codex"
+  ]
+}

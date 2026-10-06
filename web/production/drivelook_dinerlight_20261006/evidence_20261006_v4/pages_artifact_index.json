@@ -1,0 +1,489 @@
+{
+  "tar_path": "/tmp/signal47-pages81-20261006-z3cxf8pd/artifact.tar",
+  "expected_tar_sha256": "45d4f71bea6f00e139f623cd9ab898441a9fe0b33bbf7f0966d6bf0189b909e6",
+  "trust_scope": "Caller supplies tar from separately digest-validated GitHub artifact; this packer checks this tar hash and loaded code bytes.",
+  "tar_sha256": "45d4f71bea6f00e139f623cd9ab898441a9fe0b33bbf7f0966d6bf0189b909e6",
+  "status": "PASS",
+  "files": {
+    "assets/tex_floor_checker_n-Di8Ab2sJ.png": {
+      "sha256": "d4cda4aaaaf94a0c62d1478ddcb5569fd28ed52e5515f84906ecf57e13d0fb9d",
+      "bytes": 66042
+    },
+    "assets/sign_blank-CyyMIRp8.webp": {
+      "sha256": "288e7ee2e7d9cad10840c869346d7495d3e64aedb95d66cf413125711b226de1",
+      "bytes": 13710
+    },
+    "assets/Drive-BBWymgwK.js": {
+      "sha256": "c8173bba650339dbe512f3dacd5781ea103aa71e048457d50a0a86be865a7d43",
+      "bytes": 6721
+    },
+    "assets/card_field_1947-Bvek_jv1.jpg": {
+      "sha256": "a69b7cc9fa0340bc62071cb695d879b73a9387d3296639e93e5f6034c7876999",
+      "bytes": 120139
+    },
+    "assets/sign_diner_blank-CbozwhkI.webp": {
+      "sha256": "6a05bba3482e602a8f3dac3786dd30744b003f4bb075ffa8093b717e3b770478",
+      "bytes": 54940
+    },
+    "assets/three-BmJFo-nY.js": {
+      "sha256": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+      "bytes": 576101
+    },
+    "assets/specialelite-YjDd9tmf.woff2": {
+      "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8",
+      "bytes": 53296
+    },
+    "assets/tex_asphalt_wet_r-CCSFxFuI.jpg": {
+      "sha256": "0e7be2a9fdb578fd55bbb51d24f850da3723b1ee31d3122fb49483c9c8a7e77f",
+      "bytes": 28521
+    },
+    "assets/tex_wall_paint-BCbWdE2K.jpg": {
+      "sha256": "fbcc3cebd55901cbe22dbcc5ccaa8ac88656789cce8e990ea85a9e255a8d9f4a",
+      "bytes": 168716
+    },
+    "assets/fanfold_1947-CbQ10OPM.jpg": {
+      "sha256": "847c21d0175d6d589ac3c6c2d6e6349153fd605df01ed51c584e2c5e2dfacd52",
+      "bytes": 220593
+    },
+    "assets/tex_floorboards_n-CIIgUJVZ.png": {
+      "sha256": "7773de2ef323cd0d30dab5e3e72fe5024453b3e689c6d3264efafccf1340b7c9",
+      "bytes": 75869
+    },
+    "assets/tex_floor_checker_r-mAg2cp2D.jpg": {
+      "sha256": "9baca6ebe43e39e57ebd76e5cf3e696f577fcdac31767fd2234b4a9dd5d4b201",
+      "bytes": 9824
+    },
+    "assets/poster_saro-B6TgLO2l.webp": {
+      "sha256": "654e8cc7f1338fe9554167a5c5d019de9ad4e0f2cfa94010c66ff40f3a90d51f",
+      "bytes": 196678
+    },
+    "assets/door_creak0-CEX3jrk-.mp3": {
+      "sha256": "aa7654f420c0c37f878c7268e8912a23eb0121414f93e85cabe3d783267f8a9f",
+      "bytes": 7820
+    },
+    "assets/tex_floor_checker-C9bLCg-f.jpg": {
+      "sha256": "80c18e0b86968ff7c6cdcb0980918594ae0e0111e8ced1c609d2c4cea3d5c0ad",
+      "bytes": 271874
+    },
+    "assets/RoadArea-DnTKZF1T.js": {
+      "sha256": "f80b9cd5c696801df89ae2832a9701403dad3f7dbece80f73830ad7ae4e4e5c0",
+      "bytes": 4564
+    },
+    "assets/tex_floor_hextile_r-DtbVC4l7.jpg": {
+      "sha256": "84f965e84049cae493463c371303755b1a2163c1cd9a2d3ffcc45e3ce441b742",
+      "bytes": 26621
+    },
+    "assets/tex_concrete_n-BhwIuZFL.png": {
+      "sha256": "3806f0f03071528ab7bdd2ef347f7142c48340cb580a97761306d0c9453f95d9",
+      "bytes": 304125
+    },
+    "assets/tex_floor_vinyl_n-CBVwK6wt.png": {
+      "sha256": "8989fb6cec0811f0c75bb7c38be6143a0ae289e6c39af8e47e6e4b6a44e40032",
+      "bytes": 67069
+    },
+    "assets/poster_listen-DzQ_TlJ3.webp": {
+      "sha256": "f4cf60387140cbc47ca0501069642741e4379ef903bc9ff5c3bd456ca0a4da10",
+      "bytes": 174338
+    },
+    "assets/tex_floor_vinyl_r-xrMRtMnp.jpg": {
+      "sha256": "a3fe8d63e2929697a1c4c32332a6142dbe2fc6e9e78b04008aad14cb25782a2d",
+      "bytes": 6644
+    },
+    "assets/OldRoad-DPtuRgYs.js": {
+      "sha256": "6f90f05606827f51d405d527066bde9a260f2bdb648236a764dc22750ecd895b",
+      "bytes": 28155
+    },
+    "assets/engineSound-CO3P3YJA.js": {
+      "sha256": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+      "bytes": 5212
+    },
+    "assets/poster_halley_1986_blank-BulfB6Jq.jpg": {
+      "sha256": "16433c99a500ef6fde59e146265d83cc105cd66d7fa5b161447adea8998288c2",
+      "bytes": 293045
+    },
+    "assets/tex_desert_ground-B41f7Cix.jpg": {
+      "sha256": "9252b3e655cbba780b83361baa633230486534c6b61b08f286f0019e02b77f54",
+      "bytes": 372460
+    },
+    "assets/tex_wall_panel-B0fQtxCJ.jpg": {
+      "sha256": "6084d673b3dd4d20e181d0a7bc6d9808b19354a298daf2e79b0a2bec1eef89af",
+      "bytes": 180536
+    },
+    "assets/vending_front-CAwnFsox.webp": {
+      "sha256": "cd5b7ce484a9496fac9197df1b200c2b430abab9317d934f1806e80476134830",
+      "bytes": 58088
+    },
+    "assets/roadProps-BcyiFVUw.js": {
+      "sha256": "e358eabdb0e6602aff9262e21b85f322f705b2227c7f9a6465d3f52bf898048c",
+      "bytes": 19159
+    },
+    "assets/tex_wood_weathered-1SeYm1Fb.jpg": {
+      "sha256": "b6bccb651cd103ed38bbee300538efde5e649cc3172e886d349bc8a0b27084f8",
+      "bytes": 302855
+    },
+    "assets/owl-BETgVC68.mp3": {
+      "sha256": "dd6b8a219f376c579d3f39d7c998e6c9e89c151f36900e00eb22e9ee4dac41de",
+      "bytes": 6956
+    },
+    "assets/flash_hand-BCaKaFtc.jpg": {
+      "sha256": "474a18306da5130d8d9e4d4bb4bd9cf93df8d8ad8600e5088f3610addbacff6b",
+      "bytes": 153384
+    },
+    "assets/tex_gravel_track-DGTXnbs_.jpg": {
+      "sha256": "92b941026cbb8de8a34d8c7b4a413db1641d34aeac21c84ddcf0132d9a1bb96b",
+      "bytes": 419124
+    },
+    "assets/index-C5R5pgMx.css": {
+      "sha256": "1215543e1578513154404c7652a1ff37ef3c9a58574e8f52b272bcbf4e65b4d2",
+      "bytes": 47853
+    },
+    "assets/tex_asphalt_wet-CdDTEnd8.jpg": {
+      "sha256": "0c23f23e2beafa940b9e8b63ac1335cc7eec1c5a269d2d7af85e3c8bbb184ad0",
+      "bytes": 305609
+    },
+    "assets/photo_1947_master-D5rxXEH7.jpg": {
+      "sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+      "bytes": 1105625
+    },
+    "assets/window_night_dark-B52ukejP.jpg": {
+      "sha256": "167a6ea1bd49ca1257bf5efb754f0557c94f1a013c0b49e6e568bbdb6897b7d4",
+      "bytes": 29733
+    },
+    "assets/dog0-DeJyp9TS.mp3": {
+      "sha256": "5297d341456ee6807a2e765ce0aaef6ed5e1d98f01f257806bc16bc1e4e8fcfb",
+      "bytes": 7820
+    },
+    "assets/fanfold_1986-CKBUJAi7.jpg": {
+      "sha256": "82dbb704a3106cfddc664b95050d939690cada749798beffb22c9526bf2ca22d",
+      "bytes": 117845
+    },
+    "assets/tex_desk_laminate-CkaoLgea.jpg": {
+      "sha256": "83468f502779842600c72dce3e3d02a1cb58565327e48183abb86c009008e39e",
+      "bytes": 124281
+    },
+    "assets/phone_ring-DMWhUlYR.mp3": {
+      "sha256": "971ff167da34d7e9609a5de3d07cd70e3170686644f73e18af1e15adefb186f6",
+      "bytes": 48109
+    },
+    "assets/tex_concrete_old_n-Bt7NrDhz.png": {
+      "sha256": "422018a538d81bc0531f00f60297df7cfdfcd2ae959fcef7f513cc11df58724e",
+      "bytes": 368241
+    },
+    "assets/crickets-zTn1i0Rh.mp3": {
+      "sha256": "0626ede21a5651c94e0dce8cfdc4c24674145bb913677e440af99f25484eeaa1",
+      "bytes": 33644
+    },
+    "assets/tex_wall_paint_r-BLViXS8a.jpg": {
+      "sha256": "85b211fb25abc767bd3dc1cd5b6ae9e98b3dbcb932a3d8b60da2aa0ba6e76f48",
+      "bytes": 11832
+    },
+    "assets/tex_oldroad_macro-CiWulVUz.jpg": {
+      "sha256": "724fa3c6dc99487fcb634112fb18415354e4acd2d9bb0aee9b45500c43553dfe",
+      "bytes": 844774
+    },
+    "assets/tex_counter_laminate-DvSDkrC9.jpg": {
+      "sha256": "24ff745a63d8ecd11bfdea580a039cb39527b31e03ed8a01349d86378c2cf248",
+      "bytes": 42959
+    },
+    "assets/vane_b12-CYGxMpzR.png": {
+      "sha256": "9a4f28e4d6577c9aca9f4f12fdf2c683f4bcf506b4ec903ea5c42f0c7dcd9cec",
+      "bytes": 14097
+    },
+    "assets/tex_concrete_old-B76ESOkU.jpg": {
+      "sha256": "ad315dd38e7664ae78ef8d7d0af5f95514324a8b2001ed13e4547b24c66f948a",
+      "bytes": 335151
+    },
+    "assets/tex_wood_weathered_n-B18u7Kxx.png": {
+      "sha256": "1c2c9cf96dbc726ba88224c9df7b9b4ffc1657de83f178cf2f53aaee303aef9d",
+      "bytes": 113902
+    },
+    "assets/index-DqUKOxLm.js": {
+      "sha256": "b31e19f6fecb08494d0462a4fcd73f40199a30a86db5ceff3b9d14d41dd2df44",
+      "bytes": 584652
+    },
+    "assets/tex_paper_card-q13FphZv.jpg": {
+      "sha256": "838dba6abbb4f6311c2cb22b8b5e7f1c24f7d2d3d9f53e57e72e3f9e3e44e229",
+      "bytes": 20280
+    },
+    "assets/Station01-TK7OT4xP.js": {
+      "sha256": "8bd0f75c944c1ff1b9b7152bbda3b4ea0db354298f1c0da4b5488df5b67a8382",
+      "bytes": 61574
+    },
+    "assets/tex_floorboards_r-CDUh6tkK.jpg": {
+      "sha256": "1f58448f6e9e21352d2f0eaf60a734d7dbdc0912706b63782b539faf6e5a9b67",
+      "bytes": 11228
+    },
+    "assets/sky_milkyway_equirect-D58-EjC9.jpg": {
+      "sha256": "ee1eb2683e98820718b9fc44826542fefc830989287e108b626c464f273d191f",
+      "bytes": 370451
+    },
+    "assets/gust-zLVpP-yc.mp3": {
+      "sha256": "28ef7cd78845d1d390c8cb2cf46cac5752c40f585525ea5c842300e588827ca1",
+      "bytes": 10196
+    },
+    "assets/legs-Bf-lDXy4.js": {
+      "sha256": "e81acf5d3de7c8928604888c385b135b719b17786cb1cbd495ca96245abeb060",
+      "bytes": 5224
+    },
+    "assets/tex_wall_paint_n-DR981Rmg.png": {
+      "sha256": "eda63e320efd5e4a766d522c168f34401e94709ee89f7d500558c90ecc02a432",
+      "bytes": 186519
+    },
+    "assets/menu_board_blank-Dnkja3rn.webp": {
+      "sha256": "93fd04c6e2e25f98bf2294b385e5087ba1375d542c41845dbab14732768faf7a",
+      "bytes": 42780
+    },
+    "assets/tex_floorboards-C_qdI9wr.jpg": {
+      "sha256": "68b2588dc98ff3fc6fd0f30f5fc90c0d7dc46e852eb55aa28238e311277d7dae",
+      "bytes": 265958
+    },
+    "assets/tex_desert_ground_n-BlAL6URD.png": {
+      "sha256": "b8338dbbf066fd28dcf478c959cf0e512dfd00b1e4accbe83f42714762e1d42d",
+      "bytes": 407252
+    },
+    "assets/tex_booth_vinyl_n-C1z1b_TW.png": {
+      "sha256": "86f7817a680a63ed2960ef4eec013c5b4aeeb07a3039962d17f6784af55b1704",
+      "bytes": 90977
+    },
+    "assets/wind-DS2ae9tG.mp3": {
+      "sha256": "562b8dbebc5de50b1f2c674fa4275f50b0cc9be668c13cc1449a038947e31073",
+      "bytes": 116733
+    },
+    "assets/sign_service_yard-Bt58Evbl.webp": {
+      "sha256": "c94a8104e2f70c8e6131cf672629284b8dff0b75d0b3358577316ac378353270",
+      "bytes": 95910
+    },
+    "assets/tex_floor_hextile-BoUw-Xpl.jpg": {
+      "sha256": "4872230934beb5d77b9c42cb3978df5ff35722e1ad6119f323b4454f6123e4e9",
+      "bytes": 155674
+    },
+    "assets/tex_wall_panel_r-C3-rNGxj.jpg": {
+      "sha256": "9916b420c2c86fe3528bc3a0893c0963f12e1b9da3ae8f983bd2e19fbfdf69e1",
+      "bytes": 10633
+    },
+    "assets/printer-BgHr7nD5.mp3": {
+      "sha256": "8b07cd55f75874d6c1424d50b5a0398a801c0c11561e463bf4ff231d07b09829",
+      "bytes": 10075
+    },
+    "assets/tex_counter_laminate_n-D17LUPa1.png": {
+      "sha256": "756aba43c2df57d2e5aac42b7b9d91487d7f41434469a11dd51bd2463af75e7e",
+      "bytes": 72714
+    },
+    "assets/flash_eye-CnQI41Kk.jpg": {
+      "sha256": "fbe1c82cbba714a908f1d1298532a7b8817c285513548cc917d84bf9c6b755fb",
+      "bytes": 170483
+    },
+    "assets/roadPlaces-DkWJ2CNq.js": {
+      "sha256": "857f7a07d25581905257e04ffa73d0658f748c716aa6a808b37739d9dd0b5b55",
+      "bytes": 6258
+    },
+    "assets/letter_paper_1947-Be-t0ZQz.jpg": {
+      "sha256": "9975313dfe91924f02280082faf84e6c2897728be8fbb7872194c26df2b2dca9",
+      "bytes": 257517
+    },
+    "assets/Room6-DVNpHGDr.js": {
+      "sha256": "42698b57f5479fd2449372d6d4d72b4ba3087d0c4c67bc06112305a316f7e555",
+      "bytes": 14211
+    },
+    "assets/reeniebeanie-4a-HEdeI.woff2": {
+      "sha256": "f86de18375e3edba402d39ff85030e270f724d7af865f74a74c92f34a947072c",
+      "bytes": 28512
+    },
+    "assets/corridors-qVh8d-_D.js": {
+      "sha256": "3a761b5f1d89a343c254d4c0853a5faeabfcda9f450bffe9a0005b107abd3422",
+      "bytes": 1734
+    },
+    "assets/tex_stucco_wall_n-CJL1EjXG.png": {
+      "sha256": "008e1f9c519b7018276e24c1f32f487638ee90255edb248ca6a492bdc7eb3856",
+      "bytes": 247930
+    },
+    "assets/logo_saro-Bgp4ZRdW.webp": {
+      "sha256": "cedeb1d187f92b931dba9e37ee8dce5bda681e9986e629e8a4a3c505ce453932",
+      "bytes": 130862
+    },
+    "assets/oswald-B-eyT0Dw.woff2": {
+      "sha256": "541b12882301dc44b73eaaed9e230709df1d299379c3594695870fc2f9e3ff0a",
+      "bytes": 12704
+    },
+    "assets/tex_cabinet_metal_r-DscFS6HP.jpg": {
+      "sha256": "4475907caa6ca65d44db3801960615764b325fb20049e987293f08af477da0ba",
+      "bytes": 4236
+    },
+    "assets/tex_motel_wall_n-B_hsowhK.png": {
+      "sha256": "91e5c05e03f5a8f50ab845997f0c972a15173a12e95fed6b8028913a180fd7d7",
+      "bytes": 223666
+    },
+    "assets/tex_floor_hextile_n-CE66BKqA.png": {
+      "sha256": "029485267d767743bc736a4dafdee4d7044f6d3e181e36e7e833df2db1df5be5",
+      "bytes": 99933
+    },
+    "assets/survey_disk_brass-DYzUypCw.webp": {
+      "sha256": "2b785c52a092bc152beffbe3294d7d6a93d8b332e43f3b57ad2db4bffda46b42",
+      "bytes": 100682
+    },
+    "assets/map_field_yard-Cz9g6mYA.png": {
+      "sha256": "cea8febb8ac42c9e90bd2feb931af3e87d145a867d8bd8c83fad1de72dd79796",
+      "bytes": 28235
+    },
+    "assets/tex_ceiling_tile-CWNRSV5r.jpg": {
+      "sha256": "84843724b87bb824e5b2820e5c484348c206271d256a2ccedcd6bc7f73e37699",
+      "bytes": 71384
+    },
+    "assets/tex_oldroad_asphalt-CdVKSr_E.jpg": {
+      "sha256": "fa3de283b8232146eb55dcb5ce80696cc5d514bfc7b9ae83d9a9f5fa24f7d106",
+      "bytes": 465303
+    },
+    "assets/tex_wall_panel_n-CId8-MON.png": {
+      "sha256": "5fd2a5d919fc4c238fa5bf5be2cf7e4e0b48f7cd15fe94c425702c08c828e561",
+      "bytes": 53296
+    },
+    "assets/Diner-Cpl52F5H.js": {
+      "sha256": "2cffbffd52635a5b2e781a2c8cf5a07539705aec714ef1056f373be2f9a484e4",
+      "bytes": 19223
+    },
+    "assets/flash_man-CVaeroS9.jpg": {
+      "sha256": "e4e88d2732538e71f8b668cd805b66e67030b0038e2964eac986d0838ffeeb9f",
+      "bytes": 176592
+    },
+    "assets/tex_asphalt_wet_n-DxygEAbz.png": {
+      "sha256": "c4c86385d7029f37e45ac21ce3011652b21d339b4de8bea33b8a025e5368360a",
+      "bytes": 304156
+    },
+    "assets/tex_cabinet_metal-c_i-ed8n.jpg": {
+      "sha256": "e70bc442617377f4ab20ee7fa41d8223bda7b3d6600efa3c4dbad2a8a9a09d21",
+      "bytes": 143277
+    },
+    "assets/floor_paint_frame-C-gc6eSh.webp": {
+      "sha256": "ee790f3b33531702019bcfa357d8798e2a6e7519ac5fa15ae8bd7c8a16ed927c",
+      "bytes": 49274
+    },
+    "assets/sign_sierra_on-q35jqmeR.webp": {
+      "sha256": "8f7fa8eb9b05bef86c27ec1e5551f5bd6fe8a50c108c79c7a97c89ec2824f8e4",
+      "bytes": 239026
+    },
+    "assets/tex_stucco_wall-CUpJbC2E.jpg": {
+      "sha256": "624e3645197417162343118b2ddd4186154bdd9f85853da3e5a669c7ecda2154",
+      "bytes": 315151
+    },
+    "assets/title_music-DikIeeOZ.mp3": {
+      "sha256": "0e7ee0c63f757cb4ae2f798cda79f1f89df56827a13596c784f5508c97591f4d",
+      "bytes": 450657
+    },
+    "assets/label_s03_procedure-CXX065Te.webp": {
+      "sha256": "220e5995ea8f268c3ed52cf5899b301eebb644b4a3bbb27a50a64d4a242c5df1",
+      "bytes": 41612
+    },
+    "assets/tex_gravel_track_n-_GY62XKc.png": {
+      "sha256": "c55ee3cd5e382e8eb225eb0faa2e64ec51b56cb9e63963962290a15d93f691b2",
+      "bytes": 408661
+    },
+    "assets/flash_face-BXLWF5x8.jpg": {
+      "sha256": "006be279d5d83a3c95136f7fba0afd44eb9ad9ee14b39304613654547fd954d9",
+      "bytes": 152281
+    },
+    "assets/tex_concrete-qlyt9Rj6.jpg": {
+      "sha256": "f9c386f2aca9dc4259dfd2fe70ab793c7725f75f5f5a2fc9e0076bf580ed1520",
+      "bytes": 309800
+    },
+    "assets/door_room_blank-Cy3ddAvZ.jpg": {
+      "sha256": "ba26a326824c4cbee819880f99f66707023370a35eee5438d3ad89645bbde439",
+      "bytes": 66843
+    },
+    "assets/board_r07-CICTXAql.png": {
+      "sha256": "473bc6af56403b8dd53013008d35752d511be500c3e58855c903b6d2501579a5",
+      "bytes": 11566
+    },
+    "assets/milepost_blank-B2zpNxgt.webp": {
+      "sha256": "ceb4edf7ed8845ab9b1dc9dc8749f26a49a19ba9ed0ac906e00732c989fb9e4c",
+      "bytes": 47256
+    },
+    "assets/tex_desk_laminate_n-CXUGldRV.png": {
+      "sha256": "f01d9a441260ff607596a0804b7704015c6bc9a46408f52ff017ef53f85d6c08",
+      "bytes": 88298
+    },
+    "assets/tex_booth_vinyl-CcNW0ZEv.jpg": {
+      "sha256": "6681f8e835fed7184a4129cca5cfd4198547d72a1d04c335a89b8fe77b09b36f",
+      "bytes": 54802
+    },
+    "assets/tex_cabinet_metal_n-GgGDMWd8.png": {
+      "sha256": "9d4b3234871675c44f6c22b4731bc4d9b135c545b9f5a39cfd3c337a1a2dc6e5",
+      "bytes": 76119
+    },
+    "assets/vt323-wDgJuOC9.woff2": {
+      "sha256": "8ddbebcc1048154132e1d78eb9b1f7850bca1b7d857035ccf1cb4318ebc615b6",
+      "bytes": 17936
+    },
+    "assets/map_new_mexico-B4JTsLo6.webp": {
+      "sha256": "372a7d8c91a9f1aa80aa2b68a554b7b9f730ad80b921d6376963c6edb6966c15",
+      "bytes": 351500
+    },
+    "assets/tex_floor_vinyl-Bmk3Rduj.jpg": {
+      "sha256": "4ee2681ed7e5d76f569c4df5b99db288edd8c05ade458ef96b7ef4028af19d9d",
+      "bytes": 111439
+    },
+    "assets/ceramic-CYs4Yg7c.mp3": {
+      "sha256": "4f5faa7709f0caada154b06d104a30c9da0d8334547d018701e6454a962692a6",
+      "bytes": 15196
+    },
+    "assets/witness_post-CTmSOVMS.webp": {
+      "sha256": "0b2e20e4d906afefe5165cfb3ba6ad91aeab9c366532f8d0fafb182a357cf87f",
+      "bytes": 40096
+    },
+    "assets/oldRoadTextures-DRQW8C0T.js": {
+      "sha256": "f4e6dc36597c9b677be7abef3a4a24401db4b00e504c3005abeb97688ec142bb",
+      "bytes": 5265
+    },
+    "assets/tex_motel_wall-BouN_T1t.jpg": {
+      "sha256": "a0c16db63f4c492094a62595e8709e7744406fe5aa825db3200e0482c0c64ebf",
+      "bytes": 407769
+    },
+    "assets/window_night_lit-Djh81JOY.jpg": {
+      "sha256": "e0d108710a79f24c89156d6b0eb1242fb695c1ef246ab2f7786695a5722ffc66",
+      "bytes": 40338
+    },
+    "assets/tex_ceiling_tile_n-Bd5_GkWn.png": {
+      "sha256": "faa3bbaabf69c3a8831129589a0ac06f14700dcd841b3ce6f209b722ae288943",
+      "bytes": 271966
+    },
+    "assets/door_metal-6X0tY0Io.mp3": {
+      "sha256": "d4376da6d410c260dc56e80eefe4b1ccbc5d03f12473c934fb5ddd6b8a246328",
+      "bytes": 5444
+    },
+    "assets/door_creak1-CT44ZwNE.mp3": {
+      "sha256": "3f376c44eb6d6f305a1a5c8dff7300c7217f149719925696dac8653694a61f38",
+      "bytes": 6308
+    },
+    "assets/Truck-kFFETXj_.js": {
+      "sha256": "0ae426d0463fcc3fccb36ef491a711513492773af131338465d00796693c4c1c",
+      "bytes": 32242
+    },
+    "index.html": {
+      "sha256": "6e46cd667a35743ea2360c56436644dc910615233fd5816f226140bb22367725",
+      "bytes": 556
+    },
+    "music/neon.mp3": {
+      "sha256": "9346d3796ba623cdaaced54bcd438ada7ba6cb548fa4aa1c27c05d5550594c06",
+      "bytes": 2401029
+    },
+    "music/decoherence.mp3": {
+      "sha256": "e44083c6439b8279685ba03b90213e796bfbded7ef8a8518b3c8c2939f5ad1ca",
+      "bytes": 2760925
+    },
+    "music/shadows_and_dust.mp3": {
+      "sha256": "480f6b4617e34cd654402d34603e8722cf167e85c6bf2cb2ae7c803b784fa803",
+      "bytes": 2521121
+    },
+    "music/in_search_of_solitude.mp3": {
+      "sha256": "b4f738eb2a76f7af1fb46ae999dcbc56fe7d3b58570b74974b54d901c253d806",
+      "bytes": 2880970
+    },
+    "music/hymn_to_the_dawn.mp3": {
+      "sha256": "edf54bde11dab11ca5971df68a69a34d306e234df9950144758cee599c1c4dc8",
+      "bytes": 2401063
+    },
+    "music/the_old_ones.mp3": {
+      "sha256": "08d4433afebcddd5e83531ab053fcbc10e354eeb6ba525828fc1b03dea5166e0",
+      "bytes": 2280978
+    }
+  }
+}
