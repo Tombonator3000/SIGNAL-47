@@ -1,0 +1,131 @@
+{
+  "checked_utc": "2026-10-06T13:30:26.979542+00:00",
+  "status": "SUPERSEDED_PROBES",
+  "reason": "First Ch6 PNG preceded ordinary HUD/Sky update after async chapter clock callback. Finaltool takes one normal zero-motion setup frame beforeautopilot and rejects stale HUD/Sky beforeeveryPNG. No runtime code changed.",
+  "rows": [
+    {
+      "quality": "low",
+      "original_directory": "web/shots/dinerlight_low_844x390_20261006_v2",
+      "original_status": "CAPTURED",
+      "classification": "SUPERSEDED_SETUP_CLOCK_PROBE",
+      "metadata_clock_seconds": 19200,
+      "visible_HUD_manually_read": "05:00",
+      "expected_HUD": "05:20",
+      "image_file": "low_dinerlight_departure_000_route_start.png",
+      "original_png_sha256": "f8f3f4797a8c74bc2c6d02eff3914baf06930e2120bbb760e6737f8f86d2187e",
+      "sky_uniforms": {
+        "uTime": 1.6834000000000022,
+        "uFlash": 0,
+        "uDawn": 0.16192723641825876,
+        "uSun": 0,
+        "uSunDir": [
+          0.9777938054364922,
+          -0.08828931048345182,
+          -0.19006386217369162
+        ]
+      }
+    },
+    {
+      "quality": "high",
+      "original_directory": "web/shots/dinerlight_high_844x390_20261006_v2",
+      "original_status": "CAPTURED",
+      "classification": "SUPERSEDED_SETUP_CLOCK_PROBE",
+      "metadata_clock_seconds": 19200,
+      "visible_HUD_manually_read": "05:00",
+      "expected_HUD": "05:20",
+      "image_file": "high_dinerlight_departure_000_route_start.png",
+      "original_png_sha256": "326f886334463160da8cf1e0a4ededf7fc2c032f2e7cdc296fc41186fe090982",
+      "sky_uniforms": {
+        "uTime": 1.2929333333452555,
+        "uFlash": 0,
+        "uDawn": 0.16186974278121585,
+        "uSun": 0,
+        "uSunDir": [
+          0.9777925952389634,
+          -0.08830321858301328,
+          -0.19006362693512185
+        ]
+      }
+    },
+    {
+      "directory": "web/shots/dinerlight_high_844x390_20261006_v2",
+      "manifest_sha256": "5b43130a51fdb62e76c91a9c3fa0643566a63760868601f4e374fc0f35c10df3",
+      "original_status": "CAPTURED",
+      "phase_counts": [
+        {
+          "id": "dinerlight_arrival",
+          "status": "CAPTURED",
+          "shots": 15,
+          "raw_foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "status": "CAPTURED",
+          "shots": 9,
+          "raw_foot_states": 0
+        }
+      ],
+      "classification": "SUPERSEDED_PROBE_NOT_FINAL_EVIDENCE"
+    },
+    {
+      "directory": "web/shots/dinerlight_low_844x390_20261006_v2",
+      "manifest_sha256": "eb7e8fc76f22d1ef06b3c76f7b996db8b0ceb3378b899044d377c2e27b2da2a5",
+      "original_status": "CAPTURED",
+      "phase_counts": [
+        {
+          "id": "dinerlight_arrival",
+          "status": "CAPTURED",
+          "shots": 15,
+          "raw_foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "status": "CAPTURED",
+          "shots": 9,
+          "raw_foot_states": 0
+        }
+      ],
+      "classification": "SUPERSEDED_PROBE_NOT_FINAL_EVIDENCE"
+    },
+    {
+      "directory": "web/shots/dinerlight_ultra_844x390_20261006_v2",
+      "manifest_sha256": "14f8b7bbc83a0516257022f22447640bcdd3187a882be473bc46860227542a42",
+      "original_status": "CAPTURING",
+      "phase_counts": [
+        {
+          "id": "dinerlight_arrival",
+          "status": "CAPTURED",
+          "shots": 18,
+          "raw_foot_states": 16
+        },
+        {
+          "id": "dinerlight_departure",
+          "status": "CAPTURING",
+          "shots": 9,
+          "raw_foot_states": 0
+        }
+      ],
+      "classification": "SUPERSEDED_PROBE_NOT_FINAL_EVIDENCE"
+    },
+    {
+      "directory": "web/shots/dinerlight_ultra_844x390_20261006_v3",
+      "manifest_sha256": "85fe44a4f39ded9564db49876bdbf9d66e582a28e6196a0af4ca540301c0a24d",
+      "original_status": "FAIL",
+      "phase_counts": [
+        {
+          "id": "dinerlight_arrival",
+          "status": "FAIL",
+          "shots": 9,
+          "raw_foot_states": 0
+        },
+        {
+          "id": "dinerlight_departure",
+          "status": "CAPTURING",
+          "shots": 0,
+          "raw_foot_states": 0
+        }
+      ],
+      "classification": "SUPERSEDED_PROBE_NOT_FINAL_EVIDENCE"
+    }
+  ]
+}

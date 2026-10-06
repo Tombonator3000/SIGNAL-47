@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "CAPTURING",
+  "visual_review": "UNVERIFIED",
+  "created_utc": "2026-10-06T12:58:49.583614+00:00",
+  "trips": [],
+  "failures": [],
+  "requested_trips": [
+    "dinerlight_arrival",
+    "dinerlight_departure"
+  ],
+  "url": "https://tombonator3000.github.io/SIGNAL-47/",
+  "interval_m": 40.0,
+  "step_s": 0.5,
+  "fps": 30,
+  "autopilot_mps": 20,
+  "wall_timeout_s": 2400.0,
+  "limitations": [
+    "Autopilot capture, not manual controls or hardware fps verification.",
+    "Only same-origin, URL-confirmed /favicon.ico HTTP 404 console messages are non-blocking; raw diagnostics are retained.",
+    "Side shots use held camera rotation and view.draw without ticking; truck/clock preservation is checked.",
+    "No automatic visual PASS; source/build byte equivalence is UNVERIFIED.",
+    "Chapter jumps and direct chapter truck action are setup, not complete gameplay evidence.",
+    "Arrival remaining distance follows the loaded autopilot polyline; departure path is accumulated from actual sampled poses, including the lot.",
+    "Parked cab views use the camera observed on the actual park frame after natural getOut, with reversible cab/shell visibility overrides; headlights remain off.",
+    "Ultra on-foot setup after completed departure resets trucks to trip homes and places only the player at a documented diner anchor.",
+    "Position/hue-matched light candidates are mechanical evidence, not an authoritative Ultra source ledger or automatic visual PASS.",
+    "844x390 uses a desktop pointer context and DPR1; physical phone controls/fps are UNVERIFIED.",
+    "Captures must be run only after the requested diner-lighting Pages deployment is available."
+  ],
+  "quality_requested": "ultra",
+  "dinerlight": {
+    "arrival_remaining_m": 300,
+    "departure_accumulated_path_m": 300,
+    "arrival_warmup_tick_s": 4,
+    "arrival_warmup_only_above_remaining_m": 450,
+    "capture_tick_s": 0.5,
+    "arrival_final_20m_tick_s": 0.03333333333333333,
+    "onfoot_pool_trace_steps": 15,
+    "onfoot_pool_trace_step_s": 0.03333333333333333,
+    "preset": "Fresh requested quality, player-default picture: Low off, High/Ultra VHS",
+    "contexts": "Separate fresh Chapter5 arrival and Chapter6 departure contexts"
+  },
+  "source": {
+    "git_head": "263450e256e0e3257edb4bda7e65206089937d10",
+    "git_status": "?? node_modules\n?? production/drivelook_dinerlight_20261006/integration_evidence.json\n?? production/drivelook_dinerlight_20261006/package_evidence.py\n?? production/drivelook_dinerlight_20261006/pages_verification.json",
+    "files_sha256": {
+      "src/world/World.ts": "1ef36630529e4cde8fec2c8c16b0a7418b42e91c1edd1156407c1fc2e99c9413",
+      "src/drive/Drive.ts": "57a9c211a9d86864196f754e73027d3f8daa7f76fbc300e011c4b7d4e11b3f49",
+      "src/drive/OldRoad.ts": "02c0b273609726fb4546ecdf3470de5266b30d367386b6a0ed9a28235c4f0c50",
+      "src/drive/legs.ts": "bcfb1d2dcde1d1f08fdf685bce123963336417178e1da6a64d5ad37916bbabec",
+      "src/story/Chapter6.ts": "27a3ef490e089ad57dff8a716fc56e50f0329c3c00e41a1e5a85f840e8c8dada",
+      "tools/drivelook.py": "524531d87345777735bbb1069c29ac03766c332c60b62e09ff32090d1639580a",
+      "src/story/Chapter5.ts": "953c050b6939837258a98a5505b8f6b38b9ba7df16c06874e7087e78caa75649",
+      "src/world/Diner.ts": "3a37fa5d631d3971676e7c84212fa6141a76d159acb5ce282a1d8d51e7f77b80",
+      "src/drive/Truck.ts": "0965ea920a2e42d4c050d76a3faeeac7aa44782d079948640b378aa194920adb",
+      "src/drive/RoadArea.ts": "6506bdb10f0f140071a25c3c51b1e69d473508c7405821e6e98a0bafc0aa3c84",
+      "src/drive/roadShape.ts": "f91941fdcd0bb04d8051cfc4a086646f7f2a284cadf62fafacf24d0ff55d2ec5",
+      "src/world/kit.ts": "734a9ed74c701487843b503c7714c27e4750c9bf0e9966f07aad5fb8327015e7",
+      "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "src/world/glow.ts": "bf92cbf36bbb43b2171387f6c90d5a8a7e3e564e8422b613a6c2af2510b351ce",
+      "src/core/quality.ts": "8588886294f7bb6ded021452bd5bd4f27d2a935c7ced12e55fcad0b18817fbf1",
+      "src/core/ultra.ts": "cfaf5c353d5179f6e1224145539e659ed01a275a98ddbf158b3cf99154b26fe9",
+      "src/core/vhs.ts": "23c20a63d340cd7befb7008e80153f197d903401c3e564684da2862e5008b9ac",
+      "src/main.ts": "fea6b2edc2b21fcf05226f62e7b46beeeb02e53d6393f488c5271e3eb09c6076"
+    },
+    "relationship_to_served_build": "UNVERIFIED; local source is recorded separately from loaded build bytes."
+  }
+}

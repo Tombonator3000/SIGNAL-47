@@ -1,0 +1,10 @@
+{
+  "checked_utc": "2026-10-06T14:12:19.239748+00:00",
+  "status": "PASS",
+  "staged_paths": 233,
+  "scope": "Only own drivelook tool, dinerlight production directory and UTC log",
+  "runtime_diff_vs_main": "EMPTY",
+  "diff_check": "PASS",
+  "tool_sha256": "e1c78264cfdd971b0f49d5d1f8521f95eafe44a120759e86d6c711ca9d13ed30",
+  "note": "Read-only final scope check; no repeat runtime integration or capture."
+}

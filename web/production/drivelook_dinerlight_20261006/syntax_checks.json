@@ -1,0 +1,61 @@
+{
+  "checked_utc": "2026-10-06T11:44:30.663103+00:00",
+  "status": "PASS",
+  "scope": "Python AST, JavaScript expression parsing and unchanged legacy helper/runner comparison; no browser or game execution.",
+  "file_sha256": "524531d87345777735bbb1069c29ac03766c332c60b62e09ff32090d1639580a",
+  "test_file_sha256": "701f529ddc8ecbc9b2a8da254384a1a4332397daad21e261aadf9a13d5f16cb3",
+  "baseline_commit": "ea6bdd0cc49ad8fab8ebb926d8495676f553b82e",
+  "python_ast": "PASS",
+  "javascript_parse": {
+    "status": "PASS",
+    "expressions": [
+      "DINERLIGHT_EXTRA",
+      "DINERLIGHT_DRAW",
+      "DINERLIGHT_LOOK",
+      "DINERLIGHT_RESTORE"
+    ]
+  },
+  "unchanged_legacy_functions": [
+    "viewport",
+    "capture_due",
+    "path_increment",
+    "code_fingerprint",
+    "code_hash_errors",
+    "observe_response",
+    "wait_code_hashes",
+    "cancel_code_hashes",
+    "check_capture_diagnostics",
+    "observe_page",
+    "stop_observing",
+    "record_console",
+    "shot_metadata",
+    "write_report",
+    "pixel_change_metrics",
+    "run_kessler_trip",
+    "capture"
+  ],
+  "changed_legacy_functions": [
+    "parse_args",
+    "source_info",
+    "run_trip",
+    "main"
+  ],
+  "legacy_run_trip_body_after_dispatch": "IDENTICAL",
+  "unchanged_legacy_constants": [
+    "WEB",
+    "INTERVAL",
+    "STEP",
+    "FPS",
+    "INIT",
+    "STATE",
+    "LOOK",
+    "RESTORE_VIEW",
+    "KESSLER_MILE",
+    "KESSLER_EXTRA",
+    "KESSLER_ROIS",
+    "KESSLER_FROZEN_DRAW"
+  ],
+  "diff_check": "PASS",
+  "game_capture": "UNVERIFIED: waiting for requested Pages deployment and Claude confirmation",
+  "hardware_performance": "UNVERIFIED"
+}
