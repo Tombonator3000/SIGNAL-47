@@ -51,10 +51,11 @@ function makeReachEngine() {
     station01:{id:'hut_corner',box:{minX:-12.6,maxX:-12.3,minZ:8002.65,maxZ:8003.1},max_count:5,
       reason:'Known unused corner by the station hut; Claude accepted 2026-10-05 00:52 UTC.',
       rows:[[8002.65,-12.45,1],[8002.8,-12.45,1],[8002.95,-12.45,1],[8003.1,-12.6,2]]},
-    diner:{id:'north_inside_corner',box:{minX:-8000.4,maxX:-7998.6,minZ:-8.4,maxZ:-7.65},max_count:72,
-      local_box:{minX:-.4,maxX:1.4,minZ:-8.4,maxZ:-7.65},world_offset:{x:-8000,z:0},
+    // the diner stands in the road area since 5 October (World.ts, DINER_ORIGIN 7979.95, 1999.95)
+    diner:{id:'north_inside_corner',box:{minX:7979.55,maxX:7981.35,minZ:1991.55,maxZ:1992.3},max_count:72,
+      local_box:{minX:-.4,maxX:1.4,minZ:-8.4,maxZ:-7.65},world_offset:{x:7979.95,z:1999.95},
       reason:'Known unused north interior corner of the diner; Claude accepted 2026-10-05 00:52 UTC.',
-      rows:[[-8.4,-8000.25,12],[-8.25,-8000.25,12],[-8.1,-8000.25,12],[-7.95,-8000.25,12],[-7.8,-8000.25,12],[-7.65,-8000.25,12]]}
+      rows:[[1991.55,7979.7,12],[1991.7,7979.7,12],[1991.85,7979.7,12],[1992,7979.7,12],[1992.15,7979.7,12],[1992.3,7979.7,12]]}
   };
   function classifyPockets(area,components,coords,spacing) {
     const spec=expectedPockets[area],tol=1e-6;

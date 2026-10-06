@@ -5,10 +5,12 @@ Prioritert. Flytt ferdige punkter til log.md.
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
-- [ ] Ekte kjøretur fra SARO til Mesa Diner (i dag et kutt med ni minutter): veien må forlenges sør til dineren, og dineren må få sin del av veien (som `corridors.ts`). `chapter5.py` må følge med.
-- [ ] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (i dag et kutt til 5,9 mi). `chapter6.py` må følge med.
+- [x] Ekte kjøretur fra SARO til Mesa Diner (5. oktober kveld): dineren står i veiens eget område 2 km sør, så turen har bare byttet ved SARO (`drives.py`, `chapter5.py`).
+- [ ] Frontlysene lyser ikke opp dineren, og neonen på dineren lyser ikke opp bilen: dineren og veien har hver sine lyspunkter (`dinerFlood`, `roadFlood`). Kan løses ved å la dineren bruke veiens lyspunkter når den står i veiområdet.
+- [x] Ekte kjøretur fra dineren ut den gamle veien fra milestolpe 0 til linja ved 8,15 (6. oktober natt, `chapter6.py`). Ingen kjøretur i spillet er et kutt lenger.
+- [ ] Tom prøver turen til dineren og hele den gamle veien: er 13 km (rundt ni minutter ved 55 mph) for langt før slutten, eller gir det ro? Radioen i kapittel 6 kommer nå etter milene.
 - [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
-- [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kjøreturene lages slik at program kan legges inn.
+- [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kapittel 6 har linjer etter milene (`Chapter6.RADIO`); neste steg er samme mønster for alle turer (`World.startTrip` med et program etter meter kjørt) og et første utkast til innhold for kapittel 3 og 5, som Tom kan rette.
 - [ ] Tom: svar på om lastebilen skal kunne brukes når som helst også i vanlig spill (ikke bare i utviklermenyen). Da må historien tåle at man kjører ut før kapitlet ber om det.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 

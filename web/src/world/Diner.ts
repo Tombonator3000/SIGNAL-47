@@ -46,7 +46,9 @@ export class Diner {
   private readonly slots:Record<string,number>={};
   private disposed=false;
 
-  constructor(origin:THREE.Vector3){
+  /** onRoad: the diner stands in the road area (World.ts), whose highway and land go round it,
+   *  so it leaves out its own strip of highway and ground. */
+  constructor(origin:THREE.Vector3,private readonly onRoad=false){
     this.origin=origin.clone();this.group.name='Diner';this.group.position.copy(origin);
     this.interior.name='DinerInterior';this.group.add(this.shell,this.interior);this.interior.add(this.fixed);
     this.materials.add(this.hit);floodOwner=this;dinerFlood.count=0;
@@ -143,16 +145,19 @@ export class Diner {
     const slab=(x0:number,x1:number,z0:number,z1:number,mat:THREE.Material)=>metreUV(box(s,x1-x0,.14,z1-z0,mat,(x0+x1)/2,-.07,(z0+z1)/2));
     // Floor plates meet at exact edges. Zones overlap, render meshes never do.
     slab(3.6,16,-16,16,m.gravel);slab(2,3.6,-16,-9.4,m.gravel);slab(2,3.6,9.4,16,m.gravel);
-    slab(2,3.6,-9.4,9.4,m.cream);slab(1.8,2,-.6,.6,m.cream);slab(16,24,-180,180,m.asphalt);
-    for(const x of [19.9,20.1])box(s,.08,.006,360,m.yellow,x,.004,0);
-    for(const x of [16.3,23.7])box(s,.1,.006,360,m.cream,x,.004,0);
+    slab(2,3.6,-9.4,9.4,m.cream);slab(1.8,2,-.6,.6,m.cream);
+    if(!this.onRoad){slab(16,24,-180,180,m.asphalt);
+      for(const x of [19.9,20.1])box(s,.08,.006,360,m.yellow,x,.004,0);
+      for(const x of [16.3,23.7])box(s,.1,.006,360,m.cream,x,.004,0);}
     // Exponentially spaced rings keep cells short near the building.
     const geo=new THREE.RingGeometry(.4,360,64,72),p=geo.attributes.position,uv=geo.attributes.uv;
     for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),r=Math.hypot(x,y),k=.4*Math.pow(360/.4,(r-.4)/(360-.4))/r;p.setXY(i,x*k,y*k);}
     geo.rotateX(-Math.PI/2);
     for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),r=Math.hypot(x,z);p.setY(i,-.18+(r>45?Math.sin(x*.031+z*.016)*Math.min(2.4,(r-45)*.015):0));uv.setXY(i,x,z);}
-    geo.computeVertexNormals();this.shell.add(new THREE.Mesh(geo,m.gravel));
+    geo.computeVertexNormals();if(!this.onRoad)this.shell.add(new THREE.Mesh(geo,m.gravel));
     for(const [x,z,w,d,h] of [[145,55,64,30,16],[75,190,54,34,20],[180,-85,60,36,13]]){
+      // (beside the highway the road's own mesas stand on the horizon: World.ts, horizon.ts)
+      if(this.onRoad)continue;
       const g=new THREE.CylinderGeometry(w*.4,w*.55,h,7,1);g.scale(1,1,d/w);const mesa=new THREE.Mesh(g,m.mesa);mesa.position.set(x,h/2-2,z);s.add(mesa);
     }
     // Low desert scrub, batched with the shell, outside the flat usable lot.
@@ -299,9 +304,13 @@ export class Diner {
   setDawn(k:number){
     this.dawn=THREE.MathUtils.clamp(Number.isFinite(k)?k:0,0,1);
     if(floodOwner===this)setFlood(this.slots.dawn,this.dawn*8,dinerFlood);
-    this.lights.hemi.color.set(0x6d87a4).lerp(new THREE.Color(0xb0bbc2),this.dawn);this.lights.hemi.intensity=.55+this.dawn*.3;
+    this.lights.hemi.color.set(0x6d87a4).lerp(new THREE.Color(0xb0bbc2),this.dawn);this.lights.hemi.intensity=(.55+this.dawn*.3)*this.near;
     eachVariant(this.m.glass,v=>{const m=v as THREE.MeshStandardMaterial;m.color.set(0x627584).lerp(new THREE.Color(0xc6c6b6),this.dawn);m.emissive.set(0x8fabc2);m.emissiveIntensity=this.dawn*.06;});
   }
+  /** How much of the diner's own sky light is on: all of it at the diner, none far up the
+   *  road, whose night light takes over there (World.ts). */
+  setNear(w:number){this.near=THREE.MathUtils.clamp(w,0,1);this.lights.hemi.intensity=(.55+this.dawn*.3)*this.near;}
+  private near=1;
   update(_dt:number,t:number){if(this.disposed||floodOwner!==this)return;
     if(this.signLit){setFlood(this.slots.red,8*(.965+.035*Math.sin(t*7.3)),dinerFlood);setFlood(this.slots.cyan,4*(.985+.015*Math.sin(t*4.7)),dinerFlood);}
     const k=.98+.02*Math.sin(t*8.1)*Math.sin(t*.9);setFlood(3,4.5*k,dinerFlood);eachVariant(this.m.tube,v=>(v as THREE.MeshStandardMaterial).emissiveIntensity=.75*k);

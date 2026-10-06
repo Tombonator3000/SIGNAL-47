@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import type { Collider } from '../world/ControlRoom';
 import type { FloodSet } from '../world/kit';
-import { track, trackNearest, surfaceY, HWY } from './roadTerrain';
+import { track, trackNearest, surfaceY, HWY, DINER } from './roadTerrain';
 import { STATION_TRACK, STATION_PAD } from '../world/stationLayout';
 import { SARO_IN_ROAD, STATION_TURN, STATION_PATCH, roadToStation, stationToRoad, stationBend, STATION_DY, inRect } from '../world/geo';
 import { SARO_FROM } from './corridors';
@@ -32,9 +32,11 @@ export interface TripArea extends DriveArea {
   routes: Partial<Record<LegId | 'park', THREE.Vector3[]>>;
 }
 
+// The diner stands in the road area; the old road's area lies on the road's map too, its own
+// origin where C crosses (OldRoad.ts works it out from the road's), and has no ways out here.
 export const ORIGINS: Record<LegId, THREE.Vector3> = {
   saro: new THREE.Vector3(0, 0, 0), road: new THREE.Vector3(8000, 0, 0), station01: new THREE.Vector3(0, 0, 8000),
-  diner: new THREE.Vector3(-8000, 0, 0), roswell: new THREE.Vector3(0, 0, -24000),
+  diner: new THREE.Vector3(8000, 0, 0), roswell: new THREE.Vector3(8000, 0, 0),
 };
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
@@ -214,6 +216,11 @@ export function roadRoute(next: LegId): THREE.Vector3[] {
   if (next === 'station01') {
     for (let z = -140; z <= 510; z += 20) pts.push([-1.8, z]);
     pts.push([-2.6, 513], [-4.2, 518.5], ...trk);
+  } else if (next === 'diner') {
+    // south past the track, then right onto the diner's lot, south of the rig and the sign
+    for (let z = -140; z <= DINER.z - 20; z += 20) pts.push([-1.8, z]);
+    // (left facing the diner's door, clear of where the player gets out: diner x 11, z 6)
+    pts.push([-2.0, DINER.z - 10], [-2.6, DINER.z - 4], [-3.8, DINER.z], [-5.6, DINER.z + 3.6], [-7.5, DINER.z + 5.4], [-9.0, DINER.z + 6]);
   } else if (next === 'saro') {
     pts.push(...[...trk].reverse(), [-4, 519.6], [-0.6, 517.4], [1.6, 511]);
     for (let z = 495; z >= -160; z -= 20) pts.push([1.8, z]);
@@ -221,10 +228,12 @@ export function roadRoute(next: LegId): THREE.Vector3[] {
   return (roadWays[next] = pts.map(([x, z]) => v3(x, z, ORIGINS.road)));
 }
 
+/** The leg a place is in: the diner stands in the road area (World.ts), the others are their own. */
+export const legOf = (p: LegId): LegId => p === 'diner' ? 'road' : p;
 /** The legs a trip from one place to another passes through, in order. */
 export function legsBetween(from: LegId, to: LegId): LegId[] {
   const chain: LegId[] = ['saro', 'road', 'station01'];
-  const a = chain.indexOf(from), b = chain.indexOf(to);
+  const a = chain.indexOf(legOf(from)), b = chain.indexOf(legOf(to));
   if (a < 0 || b < 0) return [from, to];
   return a <= b ? chain.slice(a, b + 1) : chain.slice(b, a + 1).reverse();
 }

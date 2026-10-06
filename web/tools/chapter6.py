@@ -1,6 +1,8 @@
 # Chapter six, "Roswell Road" and THE EVENT, played through in a headless browser: the
-# warning about flashing images on the title screen, the cut onto the old road at 05:26:20,
-# the drive past the six-mile post (the bolt there), the invisible end behind the start,
+# warning about flashing images on the title screen, into the truck on the diner's lot at
+# 05:20, out across the highway onto the old road with the game's autopilot, the end of the
+# open stretch of highway (the bolt is ahead), all the way out past the six-mile post (the
+# bolt there) with the clock keeping to the drive,
 # the clock that will not show 05:29 before the line, the line itself just past the
 # eight-mile post, the 47 seconds (carrier, the engine, the dash blinking four and seven,
 # the headlights in colours, the radio with the night in pieces, FLASH, silence), the
@@ -16,6 +18,7 @@ OUT = sys.argv[1]
 W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
 T = 5 * 3600 + 29 * 60
+LEAVE = 5 * 3600 + 20 * 60
 MILE = 1609.34
 s_at = lambda mi: (mi - 8.15) * MILE
 # the right lane, at about 24 m/s; brake to hold when speed is None
@@ -63,36 +66,49 @@ async def main():
         await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter6'); S47.tick(0.5)")
 
-        # ---------- the cut onto the old road ----------
+        # ---------- into the truck on the diner's lot: the old road across the highway ----------
         for _ in range(40):
             await tick(0.25)
             if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
         st = await where()
-        check(await ev("S47.game.phase") == 'ch6' and st['stage'] == 'drive' and abs(st['mi'] - 5.9) < 0.01 and abs(st['o'] - 1.6) < 0.05, f"the old road: the right lane at {st['mi']:.2f} miles")
-        check(abs(st['clock'] - (5 * 3600 + 26 * 60 + 20)) < 3, f"the clock: {st['clock'] / 3600:.4f} h, about 05:26:20")
+        lot = await ev("(() => { const d = S47.world.oldDrive.pos, a = S47.world.diner.anchors.truckPark; return Math.hypot(d.x - a.x, d.z - a.z); })()")
+        check(await ev("S47.game.phase") == 'ch6' and st['stage'] == 'drive' and st['mi'] < 0.01 and lot < 6, f"in the truck where it was left on the diner's lot ({lot:.1f} m from its place), mile {st['mi']:.2f}")
+        check(abs(st['clock'] - LEAVE) < 3, f"the clock: {st['clock'] / 3600:.4f} h, 05:20")
         check('MILE 8' in await ev("document.querySelector('.objective').textContent") and await ev("S47.game.saveBlock()") == 'Not on the road.', 'objective: the line past mile 8; no saving on the road')
         await tick(0.1)   # the truck is put on the road after a promise; the sky follows on the next frame
-        check(await ev("S47.sky.uniforms.uDawn.value") > 0.8 and await ev("S47.camera.far") >= 10000, 'dawn in the sky, and the far plane opened for the old road')
+        dawn = await ev("S47.sky.uniforms.uDawn.value")
+        check(0.6 < dawn < 0.8 and await ev("S47.camera.far") >= 10000, f'the grey of the dawn at 05:20 ({dawn:.2f}), and the far plane opened for the old road')
         art = await ev("S47.art().loaded")
         check(all(x in art for x in ('milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt')), 'the road came with its pictures from round 11 (mile post, witness post, brass disk, asphalt)')
-        await ev("S47.camera.rotation.set(0,0,0)"); await tick(0.2)
+        check(await ev("S47.world.diner.group.visible && !S47.world['truck'].group.visible && S47.world.oldTruck.group.visible"), "the diner is there, and the truck on the lot is the old road's now")
         calls = {'start': await ev("S47.renderer.info.render.calls")}
         await shot('k01_start')
-        # past the six-mile post and its bolt
-        await ev(AUTO + "(24)")
-        for _ in range(60):
+        # out of the lot, over the highway and onto the old road: the game's own autopilot
+        await ev("S47.world.autopilot = 20")
+        for _ in range(80):
             await tick(0.5)
             st = await where()
+            if st['mi'] > 0.06: break
+        check(st['mi'] > 0.06 and abs(st['o'] - 1.6) < 1.2, f"out of the lot and across the highway, in the old road's right lane ({st['mi']:.3f} mi, {st['o']:.2f} m)")
+        await shot('k01b_on_the_old_road')
+        # all the way out, past the mile posts: the clock keeps to the drive (never ahead of 55 mph)
+        for _ in range(500):
+            await tick(2)
+            st = await where()
             if st['mi'] > 6.02: break
-        check(st['mi'] > 6.02 and abs(st['o'] - 1.6) < 0.6, f"driven past the six-mile post in the lane ({st['mi']:.3f} mi, {st['o']:.2f} m)")
+        pace = T - (8.15 - st['mi']) * MILE / 24.6
+        check(st['mi'] > 6.02 and abs(st['o'] - 1.6) < 0.8, f"driven all the way past the six-mile post in the lane ({st['mi']:.3f} mi, {st['o']:.2f} m)")
+        check(st['clock'] <= pace + 0.5 and st['clock'] >= pace - 61, f"the clock keeps to the drive: {int(st['clock'] // 3600):02d}:{int(st['clock'] % 3600 // 60):02d}:{st['clock'] % 60:04.1f} at {st['mi']:.2f} mi")
+        await ev("S47.world.autopilot = null")
         calls['mile6'] = await ev("S47.renderer.info.render.calls")
         await shot('k02_past_mile6')
-        # the invisible end behind the start
-        await place(5.78, back=True)
+        # the end of the open stretch of highway at the diner: the bolt is ahead
+        await ev("(() => { const d = S47.world.oldDrive, p = d.pos.clone().set(7998.2, 0, 1999.95 - 180); d.place(p, 0); })()")
+        await tick(0.1)
         await ev("S47.world.testInput = { steer: 0, throttle: 0.7 }")
-        for _ in range(48): await tick(0.25)
-        st = await where()
-        check(st['s'] > s_at(5.9) - 252 and 'Ward can wait' in await toasts(), f"turned back, the truck stops at the end behind the start ({st['s'] - s_at(5.9):.0f} m) and Ward can wait")
+        for _ in range(60): await tick(0.25)
+        z = await ev("S47.world.oldDrive.pos.z")
+        check(z > 1999.95 - 262 and 'Ward can wait' in await toasts(), f"north up the highway, the truck stops at the end of the open stretch ({1999.95 - z:.0f} m from the diner) and Ward can wait")
 
         # ---------- towards the line: the clock holds at 05:28 ----------
         await place(8.02)

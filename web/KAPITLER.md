@@ -452,7 +452,7 @@ Tom 5. oktober: «Bygg All Night». Spesifisert og bygd samme dag etter `HISTORI
 
 1. **05:00, ut av rom 6.** Kapittelkortet (CHAPTER FIVE / ALL NIGHT) kommer mens spilleren står utenfor døra til rom 6. Lastebilen står på SARO. Kapittel 4 slutter ikke lenger med et sluttkort; natten går rett videre.
 2. **Forbi SARO.** Når spilleren kommer nær kontrollrommet, ringer driftsterminalen én gang (`beep`). En ny fil står i katalogen: `RUN860414_0529.DAT`, 0 blokker, åpnet 05:29. Valgfri (tråd 12, bærer 05:29).
-3. **Lastebilen.** «Drive to Mesa Diner». Ingen kjøring, bare en overgang med tittelen MESA DINER og ni minutter på klokka. Servicekartet fra dørlomma blir med (E14).
+3. **Lastebilen.** «Drive to Mesa Diner». Kjøres hele veien: ut av gården, 2 km sør på riksveien, og dineren står på høyre side. Klokka går fortere for hver meter (0,19 s per meter), så turen tar rundt ni minutter på klokka i fart, og ikke mye mer om spilleren kjører sakte. Lastebilen settes på grusplassen. Servicekartet fra dørlomma blir med (E14).
 4. **Dineren, 05:11.** Grålysning i øst, lysrør, kaffe, en trøtt servitrise, en sjåfør og radioen som står lavt. Spilleren kan gjøre dette i hvilken rekkefølge hen vil:
    - **Servitrisen:** kaffe, og lysene over mesaen siden hun var elleve. Hun er lei av folk fra byen som spør etter romvesener.
    - **Sjåføren:** han tar den gamle veien fordi den sparer elleve miles. Motoren døde på ham der i oktober i fjor, rett forbi åttemilsstolpen. Han trodde det var batteriet.
@@ -519,30 +519,31 @@ Tom 5. oktober: «Fortsetter roswell road». Spesifisert samme dag etter `HISTOR
 
 Veien går slik den står på E14, ikke sørover som `HISTORIE.md` sa før: fra dineren øst-nordøst, så i en lang sving mot nordøst. Ved åttemilsstolpen går den mot nordøst (kurs rundt 35 grader). C går rett øst fra STATION 01 og krysser veien 8,15 miles fra dineren, rett forbi åttemilsstolpen. Spilleren kjører altså mot den lyse delen av himmelen, og sola står opp litt til høyre for veien (asimut rundt 79 grader, 14. april ved Roswell).
 
-Den kjørte strekningen er fra like før seksmilsstolpen til krysset med C, rundt 3,6 km på ekte avstand. Resten av veien fra dineren er et kutt, som de andre kjøreturene. Veien er en gammel smal asfaltvei med slitt midtstripe, myke skuldre, et gjerde langs veiretten, en kraftlinje på trestolper et stykke unna, og lave høyder med mesaer i horisonten. Ingen trafikk.
+Hele veien kjøres, fra dineren til krysset med C: 8,15 miles, 13,1 km på ekte avstand (Tom 5. oktober: ingen teleportering når man kjører bil). Milestolpe 0 er midt på riksveien rett over fra dineren, og veien går av mot øst og svinger inn mot øst-nordøst, med lange, rolige svinger fram mot seksmilsstolpen. Fra seks miles er den som før. Veien er en gammel smal asfaltvei med slitt midtstripe, myke skuldre, et gjerde langs veiretten, en kraftlinje på trestolper et stykke unna, og lave høyder med mesaer i horisonten. Ingen trafikk.
 
 Langs veien, i rekkefølge:
 
 | Hvor | Hva |
 | --- | --- |
-| Start, 5,9 mi | Lastebilen står i høyre fil, motoren går. Bak: veien mot dineren og en svak lysning i vest der dineren er. |
+| Start, 0 mi | Lastebilen står på grusplassen ved dineren der spilleren satte den, motoren går. Over riksveien går den gamle veien av mot øst. |
+| 1 til 5 mi | Milestolpene, gjerdet langs veiretten, kraftlinja på venstre side, kantstolper med refleks. Radioen i dashbordet. |
 | 6,0 mi | Seksmilsstolpen. Oppmålingsbolten ved seksmilsstolpen i høyre skulder, med en vitnestolpe. Det er bolten fra et av de gale svarene i P13: den ligger sør for linja. |
 | 7,0 mi | Sjumilsstolpen. Veien svinger mot nordøst. |
 | 8,0 mi | Åttemilsstolpen. |
 | 8,15 mi | C. Gamle oppmålingsstikker av tre står i en rett rekke øst-vest over terrenget, med en rusten kabel som henger mellom noen av dem. De går over veien og videre mot øst, rett mot der sola skal opp. Bolten i høyre skulder er av messing i en liten betongsokkel, med vitnestolpe og refleks. Messingskiva er stemplet `STA 01 / C / 1947` (tegnet i kode). |
 | Videre | Veien fortsetter mot nordøst til den forsvinner i disen. Spilleren kommer aldri dit. |
 
-Bak starten er veien sperret av en usynlig vegg rundt 250 m bak lastebilen. Snur spilleren og kjører dit, stopper lastebilen, og en lapp sier: `Ward can wait. The bolt is ahead.` Kjører spilleren utenfor veien, er det myk jord og gjerdet langs veiretten. Spilleren kan ikke gå ut av lastebilen i dette kapitlet.
+Riksveien ved dineren er åpen rundt 260 m hver vei. Kjører spilleren lenger, stopper lastebilen ved en usynlig vegg, og en lapp sier: `Ward can wait. The bolt is ahead.` Kjører spilleren utenfor veien, er det myk jord og gjerdet langs veiretten. Spilleren kan ikke gå ut av lastebilen i dette kapitlet.
 
 ### Klokka
 
-Kuttet fra dineren setter klokka til 05:26:20. Klokka går som vanlig, men den viser aldri 05:29 før lastebilen er på linja: de siste 20 sekundene før 05:29:00 går den saktere og saktere og står til slutt nesten stille på 05:28:59. Når fronten på lastebilen når C, settes klokka til 05:29:00 og hendelsen begynner. Med vanlig fart (45 til 55 mph) kommer spilleren fram rundt 05:29, så de fleste merker ingenting. Den som stopper før linja, ser dashbordklokka stå på 05:28.
+Lastebilen går fra dineren 05:20:00 (klokka settes når spilleren setter seg inn). Klokka går som vanlig, men den holder seg til farten på kjøreturen: den er aldri foran det 55 mph ville gitt (kjører spilleren saktere, eller står, venter den), og aldri mer enn ett minutt bak. Den viser aldri 05:29 før lastebilen er på linja: de siste 20 sekundene før 05:29:00 går den saktere og saktere og står til slutt nesten stille på 05:28:59. Når fronten på lastebilen når C, settes klokka til 05:29:00 og hendelsen begynner. Med vanlig fart (45 til 55 mph) kommer spilleren fram rundt 05:29, så de fleste merker ingenting. Den som stopper før linja, ser dashbordklokka stå på 05:28.
 
 Himmelen følger klokka: borgerlig gry begynte 05:05, og ved 05:29 er østhimmelen lys og varm mot horisonten, de fleste stjernene er borte, og landskapet ligger i blått lys. Frontlysene synes fortsatt. Samme himmel gjelder ved dineren (der var den natt til nå).
 
 ### Radioen og lyden på veien
 
-Ingen musikk. Motor, dekk, vind mot ruta, og radioen i dashbordet som står svakt på en AM-stasjon: en morgensending fra Roswell med kvegpriser, været («clear, high near 74, light winds») og at Halleys komet står lavt i sør før gryet denne uka. Ingen kallesignaler og ingen ekte navn. Radioen tekstes bare der den sier noe historien bruker.
+Ingen musikk. Motor, dekk, vind mot ruta, og radioen i dashbordet som står svakt på en AM-stasjon: en morgensending fra Roswell med kvegpriser, været («clear, high near 74, light winds»), veiarbeid på riksveien nord for byen, at Halleys komet står lavt i sør før gryet denne uka, og en advarsel om hjort i lavningene på fylkesveiene. Linjene kommer etter milene (0,15, 1,4, 2,9, 4,3 og 5,5 mi), ikke etter tiden, så de fordeler seg over hele turen. Ingen kallesignaler og ingen ekte navn. Radioen tekstes bare der den sier noe historien bruker.
 
 ### THE EVENT, 05:29:00 til 05:29:47
 
@@ -581,7 +582,7 @@ Svart. Lyden av papir. Avisbildet fra 1947, utsnitt C, hele bildet, toner fram o
 
 ### Lagring
 
-Når spilleren bruker «Drive the old road» i dineren, lagres det først (sjekkpunkt `chapter5`, trinn `road`). Så kuttet. På veien og i slutten kan det ikke lagres («Not on the road.»). Etter slutten går spillet til tittelskjermen, og Continue tar spilleren tilbake til dineren med lastebilen klar, så slutten kan ses igjen. Pause virker hele veien.
+Når spilleren bruker «Drive the old road» ved lastebilen, lagres det først (sjekkpunkt `chapter5`, trinn `road`). Så sitter spilleren i lastebilen på grusplassen, uten kutt. På veien og i slutten kan det ikke lagres («Not on the road.»). Etter slutten går spillet til tittelskjermen, og Continue tar spilleren tilbake til dineren med lastebilen klar, så slutten kan ses igjen. Pause virker hele veien.
 
 ### Tilgjengelighet
 
@@ -619,4 +620,4 @@ Milestolpen uten tall, vitnestolpen, messingskiva uten tekst, den gamle asfalten
 
 ### Test
 
-`tools/chapter6.py`: fra `S47.jump('chapter6')`: lagringen før kuttet, kuttet til veien og klokka 05:26:20, kjøring med autopilot forbi seks-, sju- og åttemilsstolpen, at klokka ikke viser 05:29 før linja, at lagring er sperret, hendelsen på linja: motoren av og lastebilen står, dashbordet blinker 4 og 7, frontlysene skifter farge, radiotekstene, FLASH (og «Slow fades» i en egen kjøring), stillheten, uttrekket (kameraet ute av førerhuset, høyere og høyere, sola), tittelen, rulleteksten, bildet etter rulleteksten og tittelskjermen. Til slutt Continue: dineren med lastebilen klar. Tegnekall på veien.
+`tools/chapter6.py`: fra `S47.jump('chapter6')`: i lastebilen på grusplassen ved dineren 05:20, spillets egen autopilot ut av plassen og over riksveien, hele veien forbi seksmilsstolpen med klokka i takt med kjøringen, enden av den åpne strekningen av riksveien, kjøring forbi sju- og åttemilsstolpen, at klokka ikke viser 05:29 før linja, at lagring er sperret, hendelsen på linja: motoren av og lastebilen står, dashbordet blinker 4 og 7, frontlysene skifter farge, radiotekstene, FLASH (og «Slow fades» i en egen kjøring), stillheten, uttrekket (kameraet ute av førerhuset, høyere og høyere, sola), tittelen, rulleteksten, bildet etter rulleteksten og tittelskjermen. Til slutt Continue: dineren med lastebilen klar. Tegnekall på veien.

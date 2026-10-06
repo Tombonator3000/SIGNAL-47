@@ -58,6 +58,7 @@ export interface Chapter5Deps {
   dinerTruck(): THREE.Object3D | null;
   terminal(): THREE.Vector3;          // the operations terminal on the west desk
   driveToDiner(onArrive: () => void): void;
+  driving(): boolean;
   save: () => void;
   milestone: () => void;
 }
@@ -153,7 +154,7 @@ export class Chapter5 {
   objective(): string {
     const s = this.s;
     switch (s.stage) {
-      case 'to-truck': return 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
+      case 'to-truck': return this.d.driving() ? 'MESA DINER // SOUTH ON THE HIGHWAY, ON THE RIGHT AFTER TWO KILOMETRES' : 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
       case 'diner':
         if (!this.inDiner()) return 'ALL NIGHT // MESA DINER';
         return 'MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13)';
@@ -193,7 +194,7 @@ export class Chapter5 {
     this.d.driveToDiner(() => this.arrivedDiner());
   }
 
-  /** Called when the drive cut ends at the diner (and when a save there is restored). */
+  /** Called when the truck is left on the diner's lot (and when a save there is restored). */
   arrivedDiner() {
     const s = this.s;
     if (!s.arrived) {

@@ -1,12 +1,13 @@
 # Chapter five, "All Night", played through in a headless browser: the chapter starts at
 # five outside room 6, the operations terminal chimes and shows the file opened at 05:29,
-# the truck takes the player to Mesa Diner, and there the waitress (coffee, the lights over
+# the truck is driven to Mesa Diner (the game's autopilot), and there the waitress (coffee, the lights over
 # the mesa, the clipping), the driver (the old road, last October), the radio, the clipping
 # itself (E15), Ward on the payphone, and the map puzzle at the booth with a real drag of
 # the tracing (wrong answers, then P13). After P13 the driver confirms the bolt. Save and
-# Continue inside the diner, out to the truck: the case is saved there, the cut takes the
-# truck onto the old road (chapter six), and Continue from the title gives the diner back
-# with the truck ready, so the end of the night can be played again. Starts from
+# Continue inside the diner, out to the truck: the case is saved there, and the player is
+# in the truck on the lot with the old road across the highway (chapter six, no cut).
+# Continue from the title gives the diner back with the truck ready, so the end of the
+# night can be played again. Starts from
 # S47.jump('chapter5'). Usage: python3 tools/chapter5.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
@@ -95,10 +96,25 @@ async def main():
         await use('truck')
         for _ in range(60):
             await tick(0.25)
-            if await ev("S47.world.area === 'diner' && !S47.game.cinematic && S47.ch5.s.arrived"): break
-        check(await ev("S47.world.area") == 'diner' and await s5('arrived') and await s5('stage') == 'diner', 'a cut with the name, and the player stands by the truck at Mesa Diner')
+            if await ev("S47.world.driving"): break
+        check(await ev("S47.world.driving && S47.world.leg === 'saro'"), 'in the truck on its pad: driven the whole way, no cut')
+        await tick(0.1)   # the trip starts after a promise; the objective follows on the next frame
+        check('SOUTH ON THE HIGHWAY' in await objective(), 'objective: south on the highway, the diner on the right')
+        # the game's own autopilot (drive/legs.ts): out of the yard, 2 km south, onto the lot
+        await ev("S47.world.autopilot = 13")
+        seen, lit = [], False
+        for _ in range(600):
+            await tick(0.5)
+            st = await ev("({ leg: S47.world.leg, driving: S47.world.driving, z: S47.camera.position.z, d: S47.world.diner && S47.world.diner.group.visible })")
+            if st['leg'] and (not seen or seen[-1] != st['leg']): seen.append(st['leg'])
+            if not lit and st['leg'] == 'road' and st['z'] > 1500:
+                lit = True; await shot('h01b_diner_ahead')
+                check(st['d'], 'the diner is there ahead on the highway, before the truck comes to it')
+            if not st['driving'] and await ev("S47.world.area === 'diner' && !S47.game.cinematic && S47.ch5.s.arrived"): break
+        check(seen == ['saro', 'road'], f'driven: SARO, the highway ({seen})')
+        check(await ev("S47.world.area") == 'diner' and await s5('arrived') and await s5('stage') == 'diner', 'the truck left on the lot, the player out of it at Mesa Diner')
         dt = await ev("S47.game.clock") - clock0
-        check(8 * 60 < dt < 12 * 60, f'about nine minutes on the clock ({dt / 60:.1f})')
+        check(6 * 60 < dt < 12 * 60, f'about nine minutes on the clock ({dt / 60:.1f})')
         await tick(0.2)
         dd, obj = await docs(), await objective()
         check('e14' in dd and 'P13' in obj, f'the service map came along (E14); objective: where does C cross ({obj})')
@@ -106,6 +122,8 @@ async def main():
 
         # ---------- in, to the counter ----------
         a = await anchor('arrive'); o = await anchor('outside'); i = await anchor('inside'); st = await anchor('stool')
+        # the diner's own origin (it stands in the road area, World.DINER_ORIGIN); the walks below are in its terms
+        DX, DZ = await ev("[S47.world.diner.group.position.x, S47.world.diner.group.position.z]")
         ok = await walk([[o['x'], o['z']], [i['x'], i['z']], [st['x'], st['z']]])
         check(ok[0], f'walked in from the truck to the stool (stopped at {ok[1]:.1f}, {ok[2]:.1f})')
         await face_proxy('waitress')
@@ -138,7 +156,7 @@ async def main():
         check(await s5('radio') and 'Nicklaus' in heard and 'Halley' in heard, 'the radio: the weather, Nicklaus at forty-six, Halley low in the south')
 
         # ---------- the clipping by the door ----------
-        ok = await walk([[i['x'], i['z']], [1.0 - 8000, 1.35]])
+        ok = await walk([[i['x'], i['z']], [DX + 1.0, DZ + 1.35]])
         await face_proxy('clipping')
         check(ok[0] and await aimed() == 'diner:clipping', 'the clipping by the door')
         await use('diner:clipping'); await tick(0.3)
@@ -149,7 +167,7 @@ async def main():
 
         # ---------- the payphone ----------
         ph = await anchor('phone')
-        ok = await walk([[i['x'], i['z']], [-8001.3, 0.3], [-8001.3, 7.9], [ph['x'], ph['z']]])
+        ok = await walk([[i['x'], i['z']], [DX - 1.3, DZ + 0.3], [DX - 1.3, DZ + 7.9], [ph['x'], ph['z']]])
         await face_proxy('payphone')
         am = await aimed()
         check(ok[0] and am == 'diner:payphone', f'the payphone in its niche ({ok}, {am})')
@@ -161,7 +179,7 @@ async def main():
         await close()
 
         # ---------- the booth: the maps (P13) ----------
-        ok = await walk([[-8001.3, 7.9], [-8001.0, 3.0]])
+        ok = await walk([[DX - 1.3, DZ + 7.9], [DX - 1.0, DZ + 3.0]])
         await face_proxy('booth')
         am = await aimed()
         check(ok[0] and am == 'diner:booth' and await label('diner:booth') == 'Spread the maps on the table', f'a booth: spread the maps on the table ({ok}, {am})')
@@ -223,8 +241,10 @@ async def main():
         for _ in range(30):
             await tick(0.25)
             if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
-        check(await ev("S47.game.phase") == 'ch6' and await ev("S47.ch6.stage") == 'drive' and await s5('stage') == 'complete', 'the cut: chapter six, on the old road')
-        check(await ev("S47.game.clock") >= 5 * 3600 + 26 * 60 and 'MILE 8' in await objective(), 'the clock is past 05:26 and the objective is the line past mile 8')
+        check(await ev("S47.game.phase") == 'ch6' and await ev("S47.ch6.stage") == 'drive' and await s5('stage') == 'complete', 'chapter six: in the truck on the lot, no cut')
+        lot = await ev("(() => { const d = S47.world.oldDrive.pos, a = S47.world.diner.anchors.truckPark; return Math.hypot(d.x - a.x, d.z - a.z); })()")
+        check(lot < 6 and await ev("S47.world.diner.group.visible"), f'the truck is where it was left by the diner ({lot:.1f} m)')
+        check(abs(await ev("S47.game.clock") - (5 * 3600 + 20 * 60)) < 3 and 'MILE 8' in await objective(), 'the clock says 05:20 and the objective is the line past mile 8')
         check(any('coffee stays on the counter' in n for n in await notes()), 'the coffee stays on the counter')
         check(await ev("S47.game.saveBlock()") == 'Not on the road.', 'no saving on the road')
         await shot('h09_old_road')

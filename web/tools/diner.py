@@ -1,5 +1,5 @@
-# The Mesa Diner (world/Diner.ts, by Codex) in the game, before its chapter is written: the
-# area loads on its own, the player walks it with the real movement code from the truck to
+# The Mesa Diner (world/Diner.ts, by Codex) in the game: the area loads (beside the highway
+# in the road area, 4 m up on the land there), the player walks it with the real movement code from the truck to
 # a stool and to the payphone, every hit box can be aimed at from somewhere a player can
 # stand, the sign and the dawn can be switched, the draw calls stay in budget, and the
 # player can go back to SARO. Screenshots from standing height, also of the payphone and
@@ -48,8 +48,10 @@ async def main():
         art = await ev("S47.art()")
         check(all(i in art['loaded'] for i in ['dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall']), 'the diner brought its seven pictures (round 6 and 8, and the 1947 master from round 10)')
         a = await ev("S47.world.diner.anchors")
-        check(await ev("Math.hypot(S47.player.pos.x - S47.world.diner.anchors.arrive.x, S47.player.pos.z - S47.world.diner.anchors.arrive.z)") < 0.2 and abs(await ev("S47.player.floorY")) < 0.01,
-              'the player stands by the truck, on the ground (y 0)')
+        # the diner stands beside the highway in the road area, its lot on the land there (World.DINER_ORIGIN)
+        fy, gy = await ev("[S47.player.floorY, S47.world.diner.group.position.y]")
+        check(await ev("Math.hypot(S47.player.pos.x - S47.world.diner.anchors.arrive.x, S47.player.pos.z - S47.world.diner.anchors.arrive.z)") < 0.2 and abs(fy - gy) < 0.01,
+              f'the player stands by the truck, on the lot ({fy:.2f}, the diner at {gy:.2f})')
         await shot('g01_arrival'); c = await calls(); print(f'draw calls on arrival: {c}', flush=True)
         check(c < 120, f'draw calls on arrival under 120 ({c})')
 

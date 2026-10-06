@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { smooth, hash, START, END, hLow, washAt } from './roadShape';
+import { smooth, hash, START, END, DINER, hLow, washAt, MILE, CROSS_MI, oldRoadBearing } from './roadShape';
 
-export { smooth, hash, START, END, hLow };
+export { smooth, hash, START, END, DINER, hLow };
 
 // Layout of the drive in metres, local to RoadArea.group (whose origin is the start).
 // North is -Z. The state highway runs north-south along x = 0, and the truck starts in the
@@ -9,13 +9,13 @@ export { smooth, hash, START, END, hLow };
 // About 520 m south the graded survey track leaves to the west (the right), crosses the
 // right-of-way fence on a cattle guard and runs about 600 m to the STATION 01 gate.
 
-export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 2200 };
+export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 3400 };
 export const TRK = { half: 2.3, soft: 0.7, flat: 11.5, margin: 13 };
 export const GUARD = { x0: -22.2, x1: -19.8, z0: 517.6, z1: 522.4 };
 export const GATE = { x: -612, z: 532, half: 5 };                  // closed double gate, station fence
 export const ENDZONE = { minX: -609, maxX: -585, minZ: 524, maxZ: 540 };
 export const PASTURE = { west: -760, north: 300, south: 720 };
-export const DRIVE_N = -120, DRIVE_S = 900;                          // invisible ends of the highway
+export const DRIVE_N = -120, DRIVE_S = 2700;                         // invisible ends of the highway (past the diner)
 
 
 // ---------- the survey track: a smooth curve through hand-placed points, every 3 m ----------
@@ -47,15 +47,48 @@ export function trackNearest(x: number, z: number) {
   return near;
 }
 
+// ---------- the old Roswell road's first stretch, off the highway across from the diner ----------
+// The old road's own area (OldRoad.ts) has all of it; here is what can be seen from the diner,
+// on the same centreline (oldRoadLayout.ts builds it backwards from C in the same 4 m steps).
+export const OLD = { half: 3.2, shoulder: 4.4, flat: 9, margin: 11, len: 640 };
+const OLD_S0 = -Math.floor(CROSS_MI * MILE / 4) * 4;   // the old road's first point (oldRoadLayout.S0)
+export const oldStub = (() => {
+  const pts: { x: number; z: number; tx: number; tz: number; s: number }[] = [];
+  let x = 0, z = DINER.z;
+  for (let s = 0; s <= OLD.len; s += 4) {
+    const a = oldRoadBearing(CROSS_MI + (OLD_S0 + s) / MILE) * Math.PI / 180;
+    pts.push({ x, z, tx: Math.sin(a), tz: -Math.cos(a), s });
+    const b = oldRoadBearing(CROSS_MI + (OLD_S0 + s + 2) / MILE) * Math.PI / 180;
+    x += Math.sin(b) * 4; z -= Math.cos(b) * 4;
+  }
+  return pts;
+})();
+const oNear = { d: Infinity, s: 0 };
+/** Distance to the old road's centreline here (Infinity off this stretch, or behind its start). */
+export function oldNearest(x: number, z: number) {
+  oNear.d = Infinity; oNear.s = 0;
+  if (x < -2 || x > OLD.len + 30 || Math.abs(z - DINER.z) > 120) return oNear;
+  const p = oldStub;
+  for (let i = 0; i < p.length - 1; i++) {
+    const ax = p[i].x, az = p[i].z, dx = p[i + 1].x - ax, dz = p[i + 1].z - az, L2 = dx * dx + dz * dz;
+    const tr = ((x - ax) * dx + (z - az) * dz) / L2;
+    if (i === 0 && tr < 0) continue;
+    const t = Math.min(1, Math.max(0, tr)), ex = ax + dx * t - x, ez = az + dz * t - z, d = ex * ex + ez * ez;
+    if (d < oNear.d) { oNear.d = d; oNear.s = p[i].s + 4 * t; }
+  }
+  oNear.d = Math.sqrt(oNear.d);
+  return oNear;
+}
+
 // ---------- heights ----------
 const detail = (x: number, z: number) => 0.16 * Math.sin(x * 0.13 + 1.7) * Math.sin(z * 0.11 + 0.3) + 0.08 * Math.sin(x * 0.31 - z * 0.23 + 0.9);
 /** Height of the desert grid at a vertex: small bumps away from the roads, sunk under the road strips. */
 function gridH(x: number, z: number) {
-  const hd = Math.abs(x), td = trackNearest(x, z).d;
+  const hd = Math.abs(x), td = trackNearest(x, z).d, od = oldNearest(x, z).d;
   // no small bumps where the land meets another area's ground: north towards SARO, and by
   // the station's gate (drive/corridors.ts)
-  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z));
-  let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin)) * meet;
+  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z)) * smooth(40, 90, Math.hypot(x - DINER.flatX, z - DINER.z));
+  let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin, od - OLD.margin)) * meet;
   if (hd < HWY.flat || td < TRK.flat) h -= 0.45; // hidden under the road strips: no z-fighting
   return h;
 }
@@ -74,7 +107,7 @@ function axis(c0: number, c1: number, step: number, lo: number, hi: number) {
   for (let s = step, v = c1; v < hi;) { s = Math.min(120, s * 1.25); v = Math.min(hi, v + s); right.push(v); }
   return [...left.reverse(), ...mid, ...right];
 }
-export const GX = axis(-800, 60, 10, -3000, 2300), GZ = axis(-480, 1040, 10, -2700, 3300);
+export const GX = axis(-800, 60, 10, -3000, 2300), GZ = axis(-480, 2760, 10, -2700, 4400);
 export const gridHeights = new Float32Array(GX.length * GZ.length);
 for (let j = 0; j < GZ.length; j++) for (let i = 0; i < GX.length; i++) gridHeights[j * GX.length + i] = gridH(GX[i], GZ[j]);
 
@@ -87,14 +120,19 @@ export function gridY(x: number, z: number) {
   return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v);
 }
 const hwyLift = (ax: number) => ax <= HWY.paved ? 0.06 + 0.06 * (1 - (ax / HWY.paved) ** 2) : 0.06 * (HWY.shoulder - ax) / (HWY.shoulder - HWY.paved);
+/** What the old road lies on: the highway's verge by the highway, the drawn desert grid out
+ *  beyond it (coarse out there: the road rides on it). */
+const oldBase = (x: number, z: number) => { const k = smooth(18, 26, x); return k <= 0 ? hLow(x, z) : k >= 1 ? gridY(x, z) : hLow(x, z) + (gridY(x, z) - hLow(x, z)) * k; };
+const oldLift = (d: number) => d <= OLD.half ? 0.1 + 0.04 * (1 - (d / OLD.half) ** 2) : 0.1 * (OLD.shoulder - d) / (OLD.shoulder - OLD.half);
 const trkLift = (d: number, w: number) => d <= w ? 0.03 + 0.02 * (1 - (d / w) ** 2) : 0.03 * (w + TRK.soft - d) / TRK.soft;
 const dropY = (d: number, flat: number, edge: number) => d <= flat ? 0 : -0.6 * (d - flat) / (edge - flat);
 /** Height of whatever is on top at (x, z): road, track, verge or desert. */
 export function surfaceY(x: number, z: number) {
   const ax = Math.abs(x);
   if (ax <= HWY.shoulder) return hLow(x, z) + hwyLift(ax);
-  const t = trackNearest(x, z), w = trackHalf(t.s);
+  const t = trackNearest(x, z), w = trackHalf(t.s), o = oldNearest(x, z);
   if (t.d <= w + TRK.soft) return hLow(x, z) + trkLift(t.d, w);
+  if (o.d <= OLD.shoulder) return oldBase(x, z) + oldLift(o.d);
   let y = gridY(x, z);
   if (ax <= HWY.margin) y = Math.max(y, hLow(x, z) + dropY(ax, HWY.flat, HWY.margin));
   if (t.d <= TRK.margin) y = Math.max(y, hLow(x, z) + dropY(t.d, TRK.flat, TRK.margin));
@@ -153,8 +191,17 @@ function ribbon(path: Path, cols: (p: Path[number]) => { o: number; y: number; u
 }
 function highwayPath(z0 = HWY.z0, z1 = HWY.z1, step = 8): Path {
   const p: Path = [];
-  for (let z = z0; z <= z1; z += step) p.push({ x: 0, z, tx: 0, tz: 1, s: z });
+  // a metre apart where the old road comes off it (its verge takes the old road's shape there)
+  for (let z = z0; z <= z1; z += Math.abs(z + step / 2 - DINER.z) < 16 ? 1 : step) p.push({ x: 0, z, tx: 0, tz: 1, s: z });
   return p;
+}
+function stubPath(s0: number, s1: number): Path { return oldStub.filter((p) => p.s >= s0 && p.s <= s1); }
+/** The old road's first stretch across from the diner: asphalt and shoulders, as in OldRoad.ts. */
+export function oldStubGeometry() {
+  return ribbon(stubPath(6, OLD.len), (p) => [-4.4, -3.2, -1.6, 0, 1.6, 3.2, 4.4].map((o) => {
+    const x = p.x - p.tz * o, z = p.z + p.tx * o;
+    return { o, y: oldBase(x, z) + oldLift(Math.abs(o)), u: (o + 4.4) / 8.8 };
+  }), false, 1 / 24);
 }
 function trackPath(s0 = 0, s1 = Infinity): Path {
   return track.pts.map((q, i) => {
@@ -178,7 +225,14 @@ export function trackGeometry(s0 = 0) {
 export function vergeGeometry(o: { hwy?: [number, number] | null; track?: [number, number] | null } = {}) {
   const side = (path: Path, inner: (p: Path[number]) => number, flat: number, edge: number) => [-1, 1].map((sg) => ribbon(path, (p) => {
     const os = [inner(p), (inner(p) + flat) / 2, flat, edge];
-    return (sg < 0 ? os.map((o) => -o).reverse() : os).map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + dropY(Math.abs(o), flat, edge), u: 0 }));
+    return (sg < 0 ? os.map((o) => -o).reverse() : os).map((o) => {
+      const x = p.x - p.tz * o, z = p.z + p.tx * o;
+      let y = hLow(x, z) + dropY(Math.abs(o), flat, edge);
+      // where the old road crosses the verge, the verge is the old road's (no ditch under it)
+      const n = oldNearest(x, z);
+      if (n.d < OLD.margin && x < 20) y = Math.max(y, hLow(x, z) + (n.d <= OLD.shoulder ? oldLift(n.d) : dropY(n.d, OLD.flat, OLD.margin)));
+      return { o, y, u: 0 };
+    });
   }, true, 0));
   const hwy = o.hwy === null ? [] : side(highwayPath(...(o.hwy ?? [HWY.z0, HWY.z1])), () => HWY.shoulder, HWY.flat, HWY.margin);
   const trk = o.track === null ? [] : side(trackPath(...(o.track ?? [0, Infinity])), (p) => trackHalf(p.s) + TRK.soft, TRK.flat, TRK.margin);

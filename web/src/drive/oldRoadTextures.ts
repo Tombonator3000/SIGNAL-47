@@ -62,10 +62,11 @@ export function oldAsphaltTex() {
 }
 
 // ---------- mile posts: one card per number in an atlas, 128 x 320 each ----------
-export const POST_NUMBERS = [5, 6, 7, 8, 9];
-export const postRect = (i: number): [number, number, number, number] => [i * 128 / 640, 0, (i + 1) * 128 / 640, 1];
+export const POST_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const ATLAS_W = POST_NUMBERS.length * 128;
+export const postRect = (i: number): [number, number, number, number] => [i * 128 / ATLAS_W, 0, (i + 1) * 128 / ATLAS_W, 1];
 export function milepostAtlas() {
-  return canvasTex(640, 320, (g) => {
+  return canvasTex(ATLAS_W, 320, (g) => {
     const own = artLoaded('milepostBlank');
     POST_NUMBERS.forEach((n, i) => {
       const x = i * 128, r = rng(40 + n);

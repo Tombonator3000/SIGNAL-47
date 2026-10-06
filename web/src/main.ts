@@ -190,6 +190,7 @@ async function boot() {
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
       driveToDiner: (onArrive) => world.driveToDiner(onArrive),
+      driving: () => world.driving,
     },
     roswell: {
       world, camera,

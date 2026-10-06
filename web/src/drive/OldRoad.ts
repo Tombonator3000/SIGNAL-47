@@ -6,20 +6,23 @@ import { artTexture, artLoaded } from '../core/art';
 import { rng } from '../core/textures';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { retro, colored, instances, place, type RetroBeam } from './roadProps';
-import { smooth } from './roadTerrain';
+import { smooth, hash, HWY, DINER, highwayGeometry } from './roadTerrain';
+import { highwayTex } from './roadTextures';
 import {
-  path, HALF, SHOULDER, FENCE, POWER, S0, S1, START, POSTS, BOLTS, C_LINE, BACK_WALL, SUN_AZ, SARO_FROM, I0,
-  terrain, heightAt, nearest, profile, roadAt, beside, rnd, type RoadPt,
+  path, HALF, SHOULDER, FENCE, POWER, S0, S1, START, POSTS, BOLTS, C_LINE, SUN_AZ, SARO_FROM, I0, J,
+  terrain, heightAt, nearest, profile, beside, rnd, type RoadPt,
 } from './oldRoadLayout';
 import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessTex, STAKE } from './oldRoadTextures';
 
 // The old Roswell road at dawn, chapter six (KAPITLER.md, Roswell Road). The drive runs from
-// just before the six-mile post to C, just past the eight-mile post, about 3.6 km, with the
-// road continuing both ways into the haze for the camera at the end. Built in local metres
-// inside `group` (placed at `origin`); world terms (start, obstacles, heights) have the
-// origin added, as in RoadArea.
+// the state highway across from Mesa Diner (mile 0) to C, just past the eight-mile post,
+// 13.1 km, with the road going on into the haze for the camera at the end. The area lies on
+// the road area's map at the diner (oldRoadLayout.ts): the diner itself is the road area's
+// and is shown with this one, and this area draws the highway there and the land round it
+// as the road area has them. Built in local metres inside `group` (placed at `origin`);
+// world terms (start, obstacles, heights) have the origin added, as in RoadArea.
 //
-// Draw calls: about 20 (ground 2, asphalt 1, merged statics ~5, instanced posts, poles,
+// Draw calls: about 24 (ground 3, asphalt 2, merged statics ~5, instanced posts, poles,
 // stakes, bushes, rocks and yucca, wires 1, far mesas 1, far SARO 1, glows 1).
 
 export const oldFlood = floodSet(6, 'oldroad', 0.1);
@@ -29,6 +32,11 @@ const beam: RetroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir:
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = { asphalt: S('asphalt', 1, 30, 0.08), shoulder: S('gravel', 0.85, 22, 0.3), verge: S('dirt', 0.6, 12, 0.6), dirt: S('dirt', 0.55, 10, 0.8) };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Color();
+/** The highway at the diner, in road-local z: drawn from here to here, and open to the truck
+ *  this far either way from mile 0 (past that, the chapter says the bolt is ahead). */
+const HWY_DRAWN = [DINER.z - 4000, HWY.z1] as const, HWY_OPEN = 260;
+/** Road-local z of a local point, and local z of a road-local one (x: local = road-local + J.x). */
+const toRoadZ = (z: number) => z - J.z + DINER.z, fromRoadZ = (rz: number) => rz + J.z - DINER.z;
 
 // The haze at the horizon, the way the sky draws it (world/Sky.ts): blue-grey away from the
 // sun, warm towards it. The far ground and the hills take this colour instead of the scene's
@@ -109,10 +117,14 @@ export class OldRoad implements DriveArea {
   /** Never reached: the chapter ends the drive on C, not in a zone. */
   endZone: Box2 = { minX: 1e9, maxX: 1e9, minZ: 1e9, maxZ: 1e9 };
   headlights = { set: oldFlood, slots: OLD_HEADLIGHTS };
-  /** World waypoints along the right lane, start to past C (the tests' autopilot, and the coast to a stop). */
+  /** World waypoints from the diner's lot across the highway and along the right lane to past C
+   *  (the game's autopilot, World.autoInput, and the coast to a stop). */
   route: THREE.Vector3[] = [];
-  /** Set when the truck has run into the invisible end behind the start (the chapter says why). */
+  routes: { park: THREE.Vector3[] } = { park: this.route };
+  /** Set when the truck has run into the end of the open stretch of highway (the chapter says why). */
   hitBack = false;
+  /** Places by the road with ground of their own (the diner's gravel lot), world boxes and heights. */
+  private lots: { box: Box2; y: number }[] = [];
 
   private origin: THREE.Vector3;
   private glow = new GlowPoints();
@@ -123,7 +135,10 @@ export class OldRoad implements DriveArea {
   private farMat: THREE.ShaderMaterial;
   private saroMat: THREE.MeshBasicMaterial;
 
-  constructor(origin: THREE.Vector3) {
+  /** roadOrigin: the road area's origin (World.ts); this area's lies so that mile 0 is on the
+   *  highway's centreline across from the diner (oldRoadLayout.ts). */
+  constructor(roadOrigin: THREE.Vector3) {
+    const origin = roadOrigin.clone().add(new THREE.Vector3(-J.x, 0, DINER.z - J.z));
     this.origin = origin.clone();
     this.group.name = 'oldroad';
     this.group.position.copy(origin);
@@ -141,6 +156,8 @@ export class OldRoad implements DriveArea {
     const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
     const m = {
       ground: hazed(std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1 }), artLoaded('oldMacro') ? artTexture('oldMacro', [1, 1]) : null),
+      hwyGround: hazed(std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }), artLoaded('oldMacro') ? artTexture('oldMacro', [1, 1]) : null),
+      highway: hazed(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01), null),
       asphalt: hazed(std({ map: oldAsphaltTex(), roughness: 0.7, ...top }, 0.01), null),
       vc: std({ vertexColors: true, roughness: 0.9 }),
       steel: std({ color: 0x6f7a70, roughness: 0.5, metalness: 0.3 }),
@@ -171,12 +188,28 @@ export class OldRoad implements DriveArea {
       for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
       return attrs(pos, uv, col, idx);
     })();
-    const ground = new THREE.Mesh(mergeGeometries([ribbon(rows, left, gy, true, 0), ribbon(rows, out, gy, true, 0)])!, m.ground);
+    // (by the highway the highway's ground below has it: the old road's starts 120 m out)
+    const own = rows.filter((p) => Math.abs(p.x - J.x) > 120);
+    const ground = new THREE.Mesh(mergeGeometries([ribbon(own, left, gy, true, 0), ribbon(own, out, gy, true, 0)])!, m.ground);
     ground.name = 'desert';
     const plainMesh = new THREE.Mesh(plain, m.ground);
-    // the road: asphalt and shoulders in one picture, 8.8 m across, 24 m per repeat
-    const road = new THREE.Mesh(ribbon(path, [-4.4, -3.2, -1.6, 0, 1.6, 3.2, 4.4], (p, o) => p.y + profile(o), false, 1 / 24, 8.8), m.asphalt);
-    this.group.add(plainMesh, ground, road);
+    // the road: asphalt and shoulders in one picture, 8.8 m across, 24 m per repeat; it begins
+    // at the highway's edge
+    const road = new THREE.Mesh(ribbon(path.filter((p) => p.s >= S0 + 6), [-4.4, -3.2, -1.6, 0, 1.6, 3.2, 4.4], (p, o) => p.y + profile(o), false, 1 / 24, 8.8), m.asphalt);
+    // the highway at the diner: the road area's own strip (roadTerrain), and the ground either
+    // side of it, finer where the old road comes off it; pulled forward in depth over the old
+    // road's ground where the two lie on each other
+    const hrows: RoadPt[] = [];
+    for (let rz = HWY_DRAWN[1]; rz >= HWY_DRAWN[0];) {
+      hrows.push({ x: J.x, z: fromRoadZ(rz), tx: 0, tz: -1, s: rz, y: 0 });
+      const d = Math.abs(rz - DINER.z);
+      rz -= d < 40 ? 2 : d < 600 ? 6 : 12;
+    }
+    const hcols = [6, 8, 10, 13, 16.5, 18, 21, 25, 30, 42, 58, 80, 110, 150, 200, 260];
+    const hy = (_p: RoadPt, o: number, x: number, z: number) => Math.abs(o) >= 259 ? terrain(x, z) - 1 : heightAt(x, z);
+    const hwyGround = new THREE.Mesh(mergeGeometries([ribbon(hrows, hcols.map((o) => -o).reverse(), hy, true, 0), ribbon(hrows, hcols, hy, true, 0)])!, m.hwyGround);
+    const hwy = new THREE.Mesh(highwayGeometry(...HWY_DRAWN).translate(J.x, 0, J.z - DINER.z), m.highway);
+    this.group.add(plainMesh, ground, road, hwyGround, hwy);
 
     // ---------- mile posts on the right, facing the traffic ----------
     const glint = (p: THREE.Vector3, k = 1) => this.glints.push({ i: this.glow.add(p.x, p.y, p.z, 0.45, 0), p: p.clone().add(origin), k });
@@ -243,17 +276,32 @@ export class OldRoad implements DriveArea {
       colored(new THREE.BoxGeometry(0.095, 0.16, 0.095).translate(0, 0.88, 0), [0.62, 0.22, 0.16])])!;
     this.group.add(instances(stakeGeo, m.vc, stakes));
 
-    // ---------- the right-of-way fences along the driven part, the power line on the left ----------
+    // ---------- the right-of-way fences, both sides all the way, and along the highway ----------
     const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
-    for (const side of [-1, 1]) {
-      let p0: THREE.Vector3 | null = null, k = 0;
-      for (let s = START.s - 420; s <= 700; s += 5, k++) {
-        const b = beside(s, side * FENCE), y = heightAt(b.x, b.z);
-        (k % 10 === 0 ? wpost : tpost).push(place(b.x, y, b.z, rnd(s, side) * 3, 1, (rnd(b.x, s) - 0.5) * 0.06));
-        const q = new THREE.Vector3(b.x, y, b.z);
+    const fence = (pts: { x: number; z: number; k: number }[]) => {
+      let p0: THREE.Vector3 | null = null, n = 0;
+      for (const { x, z, k } of pts) {
+        if (Number.isNaN(x)) { p0 = null; continue; }
+        const y = heightAt(x, z);
+        (n++ % 10 === 0 ? wpost : tpost).push(place(x, y, z, rnd(k, x) * 3, 1, (rnd(x, k) - 0.5) * 0.06));
+        const q = new THREE.Vector3(x, y, z);
         if (p0) for (const h of [0.55, 0.85, 1.15]) sag(p0.clone().setY(p0.y + h), q.clone().setY(y + h), 0.04, 1);
         p0 = q;
       }
+    };
+    for (const side of [-1, 1]) {
+      const pts: { x: number; z: number; k: number }[] = [];
+      for (let s = S0 + 40; s <= 700; s += 5) { const b = beside(s, side * FENCE); pts.push({ x: b.x, z: b.z, k: s * side }); }
+      fence(pts);
+    }
+    // the highway's: open where the old road comes off it, and at the diner's lot
+    for (const side of [-1, 1]) {
+      const pts: { x: number; z: number; k: number }[] = [];
+      for (let rz = HWY_DRAWN[0]; rz <= HWY_DRAWN[1]; rz += 4.5) {
+        const gap = side > 0 ? Math.abs(rz - DINER.z) < 20 : rz > DINER.z - 40 && rz < DINER.z + 45;
+        pts.push(gap ? { x: NaN, z: 0, k: 0 } : { x: J.x + side * HWY.fence, z: fromRoadZ(rz), k: rz * side });
+      }
+      fence(pts);
     }
     this.group.add(instances(colored(new THREE.BoxGeometry(0.05, 1.45, 0.05).translate(0, 0.6, 0), [0.16, 0.2, 0.16]), m.vc, tpost));
     this.group.add(instances(colored(new THREE.CylinderGeometry(0.07, 0.085, 1.7, 6).translate(0, 0.7, 0), [0.38, 0.33, 0.27]), m.vc, wpost));
@@ -262,8 +310,19 @@ export class OldRoad implements DriveArea {
       const parts = [colored(new THREE.CylinderGeometry(0.11, 0.15, 9.4, 6).translate(0, 4.5, 0), wood), colored(new THREE.BoxGeometry(1.8, 0.1, 0.1).translate(0, 8.4, 0), wood)];
       const list: THREE.Matrix4[] = [];
       let tops: THREE.Vector3[] | null = null;
-      for (let s = S0 + 20; s < S1 - 20; s += 70) {
+      for (let s = S0 + 40; s < S1 - 20; s += 70) {
         const b = beside(s, POWER), y = heightAt(b.x, b.z), mtx = place(b.x, y, b.z, Math.atan2(-b.p.tx, -b.p.tz) + Math.PI / 2 + (rnd(s, 2) - 0.5) * 0.08, 1, (rnd(2, s) - 0.5) * 0.03);
+        list.push(mtx);
+        const t2 = [-0.75, 0.75].map((ix) => new THREE.Vector3(ix, 8.5, 0).applyMatrix4(mtx));
+        if (tops) t2.forEach((t, i) => sag(tops![i], t, 0.5, 6));
+        tops = t2;
+      }
+      // the telephone line up the east side of the highway, where the road area has it
+      tops = null;
+      for (let z = -1900; z <= 3400; z += 45) {
+        const rz = z + (hash(z, 1) - 0.5) * 4;
+        if (rz < HWY_DRAWN[0] || rz > HWY_DRAWN[1] || Math.abs(rz - DINER.z) < 12) { if (Math.abs(rz - DINER.z) >= 12) tops = null; continue; }
+        const x = J.x + 15, zz = fromRoadZ(rz), mtx = place(x, heightAt(x, zz), zz, (hash(15, rz) - 0.5) * 0.06, 1, (hash(rz, 15) - 0.5) * 0.03);
         list.push(mtx);
         const t2 = [-0.75, 0.75].map((ix) => new THREE.Vector3(ix, 8.5, 0).applyMatrix4(mtx));
         if (tops) t2.forEach((t, i) => sag(tops![i], t, 0.5, 6));
@@ -284,11 +343,18 @@ export class OldRoad implements DriveArea {
     // a few delineators where the road bends, their reflectors catching the headlights
     {
       const list: THREE.Matrix4[] = [];
-      for (let s = START.s + 400; s < -300; s += 90) for (const side of [-1, 1]) {
+      for (let s = S0 + 60; s < -300; s += 90) for (const side of [-1, 1]) {
         if (rnd(s, side) < 0.35) continue;
         const b = beside(s + side * 20, side * 5.6), y = heightAt(b.x, b.z);
         list.push(place(b.x, y, b.z, 0, 1, (rnd(b.x, b.z) - 0.5) * 0.08));
         glint(new THREE.Vector3(b.x, y + 1.05, b.z), 0.5);
+      }
+      // and the highway's, where the road area has them (roadProps.delineators)
+      for (const side of [-1, 1]) for (let rz = -1000 + (side > 0 ? 40 : 0); rz <= 2900; rz += 80) {
+        if (rz < HWY_DRAWN[0] || Math.abs(rz - DINER.z) < 30) continue;
+        const x = J.x + side * 7.2, z = fromRoadZ(rz), y = heightAt(x, z);
+        list.push(place(x, y, z, 0, 1, (hash(x, rz) - 0.5) * 0.05));
+        glint(new THREE.Vector3(x, y + 1.05, z), 0.5);
       }
       const geo = mergeGeometries([colored(new THREE.BoxGeometry(0.07, 1.3, 0.025).translate(0, 0.55, 0), [0.6, 0.6, 0.58]),
         colored(new THREE.BoxGeometry(0.075, 0.16, 0.035).translate(0, 1.05, 0), [0.85, 0.85, 0.8])])!;
@@ -314,6 +380,28 @@ export class OldRoad implements DriveArea {
       const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.4, 0.2, 0.18)])!, m.bush, bush);
       tints.forEach((c, i) => bushes.setColorAt(i, c));
       this.group.add(bushes, instances(new THREE.DodecahedronGeometry(0.5, 0).scale(1, 0.62, 0.85).translate(0, 0.2, 0), m.rock, rock));
+      // from the diner out to there, and along the highway: beside the way, a sequence of its own
+      // (so the driven part keeps its plants)
+      const r2 = rng(48), from = START.s - 300;
+      for (let n = 0, made = 0; n < 16000 && made < 2600; n++) {
+        const hwy = r2() < 0.18, side = r2() < 0.5 ? -1 : 1, off = 7 + Math.pow(r2(), 1.8) * 120;
+        let x: number, z: number;
+        if (hwy) { x = J.x + side * (9.5 + off * 0.5); z = fromRoadZ(HWY_DRAWN[0] + r2() * (HWY_DRAWN[1] - HWY_DRAWN[0])); }
+        else { const b = beside(S0 + 25 + r2() * (from - S0 - 25), side * off); x = b.x; z = b.z; }
+        const rx = x - J.x, rz = toRoadZ(z);
+        if (Math.abs(Math.abs(rx) - HWY.fence) < 1 || (rx > -60 && rx < 0 && Math.abs(rz - DINER.z) < 60)) continue;   // the fence, the diner
+        const nn = nearest(x, z);
+        if (nn.d < 6.5 || Math.abs(Math.abs(nn.o) - FENCE) < 1 || Math.abs(nn.o + POWER) < 1.5) continue;
+        if (Math.abs(rx) < 9 && Math.abs(rz - DINER.z) < 6000) continue;   // on the highway
+        const k = r2(), y = heightAt(x, z);
+        made++;
+        if (k < 0.74) {
+          const sc = 0.45 + r2() * 1.0;
+          bush.push(place(x, y - 0.08 * sc, z, r2() * 6, sc, 0, sc * (0.7 + r2() * 0.5)));
+          tints.push(new THREE.Color().setHSL(0.13 + r2() * 0.07, 0.2 + r2() * 0.15, 0.27 + r2() * 0.12));
+        } else if (k < 0.96) rock.push(place(x, y - 0.06, z, r2() * 6, 0.15 + r2() * 0.6, (r2() - 0.5) * 0.5));
+        else yucca.push(place(x, y - 0.05, z, r2() * 6, 0.8 + r2() * 0.5));
+      }
       const leaf = [0.28, 0.36, 0.24], dry = [0.42, 0.34, 0.24];
       const parts = [colored(new THREE.CylinderGeometry(0.07, 0.09, 0.35, 5).translate(0, 0.17, 0), dry), colored(new THREE.CylinderGeometry(0.012, 0.02, 1.7, 4).translate(0, 1.15, 0), dry)];
       for (let i = 0; i < 12; i++) {
@@ -386,9 +474,6 @@ export class OldRoad implements DriveArea {
       const saro = instances(dish, this.saroMat, dishes);
       saro.frustumCulled = false;
       this.group.add(saro);
-      // the diner, far behind the start: its sign and lot lights as a warm smudge in the west
-      const back = roadAt(S0), dx = -back.tx, dz = -back.tz;
-      for (const [k, sz2, c] of [[2600, 60, 0xffb070], [2620, 26, 0xff6a50]] as const) this.glow.add(back.x + dx * k, back.y + 6, back.z + dz * k, sz2, c);
     }
 
     mergeStatic(statics);
@@ -397,13 +482,28 @@ export class OldRoad implements DriveArea {
     // ---------- world terms ----------
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + heightAt(x, z), origin.z + z);
     this.start = { pos: w(START.x, START.z), heading: START.heading };
-    for (let s = START.s; s <= 300; s += 20) { const b = beside(s, 1.6); this.route.push(w(b.x, b.z)); }
+    // out of the diner's lot (diner x 11 to 16, World.ts parks it there), over the highway, into
+    // the right lane (to the south of the centreline, the road going east)
+    for (const [rx, rz] of [[-4.5, 4], [-1.5, 3], [2.5, 2.4]]) this.route.push(w(J.x + rx, fromRoadZ(DINER.z + rz)));
+    for (let s = S0 + 10; s <= 300; s += s < S0 + 200 ? 8 : 20) { const b = beside(s, 1.6); this.route.push(w(b.x, b.z)); }
   }
 
-  /** Where a world point is: distance along the road (s), signed offset (o) and miles from the diner. */
+  /** A place by the road (the diner): its walls and posts hold the truck, its lot is gravel with
+   *  its top at world height y (the same as RoadArea.addPlace). */
+  addPlace(obstacles: Box2[], lot: Box2, y: number) {
+    this.obstacles.push(...obstacles.map((b) => ({ kind: 'box' as const, ...b })));
+    this.lots.push({ box: lot, y });
+  }
+  private lotAt(x: number, z: number) {
+    for (const l of this.lots) if (x >= l.box.minX && x <= l.box.maxX && z >= l.box.minZ && z <= l.box.maxZ) return l;
+    return null;
+  }
+
+  /** Where a world point is: distance along the road (s), signed offset (o) and miles from the
+   *  diner. Off the road (on the highway, on the diner's lot) it is mile 0. */
   where(x: number, z: number) {
-    const n = nearest(x - this.origin.x, z - this.origin.z);
-    return { s: n.s, o: n.o, d: n.d, mi: 8.15 + n.s / 1609.34 };
+    const n = nearest(x - this.origin.x, z - this.origin.z), s = n.d === Infinity ? S0 : n.s;
+    return { s, o: n.o, d: n.d, mi: 8.15 + s / 1609.34 };
   }
   /** World height of the road where C crosses it (the far mesas stand on it). */
   get crossY() { return this.origin.y + path[I0].y; }
@@ -423,19 +523,28 @@ export class OldRoad implements DriveArea {
   toWorld(x: number, y: number, z: number, out = new THREE.Vector3()) { return out.set(x + this.origin.x, y + this.origin.y, z + this.origin.z); }
 
   surface(x: number, z: number): Surface {
-    const n = nearest(x - this.origin.x, z - this.origin.z), a = Math.abs(n.o);
+    if (this.lotAt(x, z)) return SURF.shoulder;
+    const lx = x - this.origin.x, lz = z - this.origin.z, ax = Math.abs(lx - J.x);
+    if (ax <= HWY.shoulder) return ax <= HWY.paved ? SURF.asphalt : SURF.shoulder;
+    const n = nearest(lx, lz), a = Math.abs(n.o);
+    if (n.d === Infinity && ax <= HWY.margin) return SURF.verge;
     if (n.d === Infinity) return SURF.dirt;
     if (a <= HALF + 0.2) return SURF.asphalt;
     if (a <= SHOULDER + 0.6) return SURF.shoulder;
     return a <= 10 ? SURF.verge : SURF.dirt;
   }
-  height(x: number, z: number) { return this.origin.y + heightAt(x - this.origin.x, z - this.origin.z); }
-  /** The truck's centre may not leave the right of way, nor go back past the end behind the start. */
+  height(x: number, z: number) { return this.lotAt(x, z)?.y ?? this.origin.y + heightAt(x - this.origin.x, z - this.origin.z); }
+  /** The truck's centre may not leave the right of way: the old road's, or the highway's for a
+   *  little way either side of mile 0 (further, and the chapter says the bolt is ahead). */
   blocked(x: number, z: number) {
-    const n = nearest(x - this.origin.x, z - this.origin.z);
+    const lx = x - this.origin.x, lz = z - this.origin.z;
+    if (Math.abs(lx - J.x) < HWY.fence - 2.5) {
+      if (Math.abs(toRoadZ(lz) - DINER.z) < HWY_OPEN) return false;
+      this.hitBack = true; return true;
+    }
+    const n = nearest(lx, lz);
     if (n.d === Infinity || Math.abs(n.o) > FENCE - 2.5) return true;
-    if (n.s < BACK_WALL || n.s > S1 - 300) { if (n.s < BACK_WALL) this.hitBack = true; return true; }
-    return false;
+    return n.s > S1 - 300;
   }
 
   /** Every frame while the area is shown: the dawn light (0..1), glints in the headlights, and
