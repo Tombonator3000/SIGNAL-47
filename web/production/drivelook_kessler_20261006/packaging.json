@@ -1,0 +1,1079 @@
+{
+  "checked_utc": "2026-10-06T09:05:28.903499+00:00",
+  "status": "PACKAGED",
+  "completed_configs": 6,
+  "expected_configs": 6,
+  "entries": [
+    {
+      "config": "low_844x390",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 104,
+      "checks_total": 104,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 44,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.6599262116462379,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "low",
+        "picture": "off",
+        "ultra_enabled": false,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.71663333333464,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": false,
+          "supported": true,
+          "glitch": 0,
+          "ultra": false
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 844,
+          "buffer_height": 390,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 0
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "58b33544-c2ec-46e4-aeac-0bc5a18a77ba",
+            "type": "MeshLambertMaterial",
+            "map": "c50b20c4-1881-4dae-85f3-00ca5731a4b6"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "8a29a3dd-0f82-4650-87d9-1c2dfdd1c0d4",
+            "type": "MeshLambertMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "low",
+          "picture": "off"
+        },
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "da4842522ca9b720d2cff87e0317364ed2a44f9feecde3fa7755146ba1002353",
+        "capture_phase": "uninterrupted_route"
+      }
+    },
+    {
+      "config": "high_844x390",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 152,
+      "checks_total": 152,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 45,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.6599262116462379,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "high",
+        "picture": "vhs",
+        "ultra_enabled": false,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.32795533334627,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": true,
+          "supported": true,
+          "glitch": 0,
+          "ultra": false
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 844,
+          "buffer_height": 390,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 0
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "d7ffd208-4ebe-4e39-8c11-7444670850e3",
+            "type": "MeshStandardMaterial",
+            "map": "0653d6e3-da1d-4474-b351-62f5dd87f691"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "e41cf49c-2443-4106-a2f1-0ffa280bdb65",
+            "type": "MeshStandardMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "high",
+          "picture": "vhs"
+        },
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "0698b621a4820d7b7975bb7c6e80157be95228da432add703c22582b986a41e2",
+        "capture_phase": "uninterrupted_route"
+      }
+    },
+    {
+      "config": "ultra_844x390",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 153,
+      "checks_total": 153,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 98,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.6599262116462379,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "ultra",
+        "picture": "vhs",
+        "ultra_enabled": true,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.75003333333467,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": true,
+          "supported": true,
+          "glitch": 0,
+          "ultra": true
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 844,
+          "buffer_height": 390,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 44
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "2fc6850c-67d2-492e-afc5-3159dff50e67",
+            "type": "MeshStandardMaterial",
+            "map": "016f4ad5-e194-4c3b-91e7-eae6e309defc"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "8db54d00-3525-4169-8d3b-f7afded1aaeb",
+            "type": "MeshStandardMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "ultra",
+          "picture": "vhs"
+        },
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "9fdf3c1d393dc184acb78f076df6dc59ebaddd75cfaac672f746b463f86fae39",
+        "capture_phase": "uninterrupted_route"
+      }
+    },
+    {
+      "config": "low_1280x800",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 98,
+      "checks_total": 98,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 42,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.8925925042138216,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "low",
+        "picture": "off",
+        "ultra_enabled": false,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.76673333333474,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": false,
+          "supported": true,
+          "glitch": 0,
+          "ultra": false
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 1280,
+          "buffer_height": 800,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 0
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "3de7bd96-40ae-4a19-8444-7fe1f9ebbfe8",
+            "type": "MeshLambertMaterial",
+            "map": "ce45e303-a77e-4f9f-a933-64b4c86e8e78"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "31152fc4-4e22-47d6-9307-882b1ed4817c",
+            "type": "MeshLambertMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "low",
+          "picture": "off"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "1bc5714b03175a3320662b04356e00d4edab55c6be8695456fad89c4319aee43",
+        "capture_phase": "uninterrupted_route"
+      }
+    },
+    {
+      "config": "high_1280x800",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 140,
+      "checks_total": 140,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 43,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.8925925042138216,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "high",
+        "picture": "vhs",
+        "ultra_enabled": false,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.56658733333455,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": true,
+          "supported": true,
+          "glitch": 0,
+          "ultra": false
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 1280,
+          "buffer_height": 800,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 0
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "2eb84e52-44a9-45f7-a5d1-949d03de99c2",
+            "type": "MeshStandardMaterial",
+            "map": "f49b3dce-3742-4ad5-83a5-830237b4dc4b"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "45cff599-d50f-4116-8e53-1c086f26c1d6",
+            "type": "MeshStandardMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "high",
+          "picture": "vhs"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "4abcec3369b022f39052380656e2122c4f135bd11810806e6b2cad7fd0ee3b44",
+        "capture_phase": "uninterrupted_route"
+      }
+    },
+    {
+      "config": "ultra_1280x800",
+      "status": "CAPTURED: metadata/integritet PASS",
+      "integrity_status": "PASS",
+      "checks_passed": 141,
+      "checks_total": 141,
+      "left_3_20": {
+        "world_xyz": [
+          12596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "local_xyz": [
+          -6483.863935902053,
+          9.039033067439973,
+          4346.766782163643
+        ],
+        "map_xyz": [
+          4596.389128441824,
+          9.039033067439973,
+          -228.76517795693908
+        ],
+        "driver_xyz": [
+          12596.389128441824,
+          0,
+          -228.76517795693908
+        ],
+        "camera_xyz": [
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305
+        ],
+        "heading_rad": -1.1465001054105373,
+        "view_direction": [
+          -0.0547439221104801,
+          -0.0193743058656625,
+          -0.9983124457123559
+        ],
+        "cab_yaw_rad": 0,
+        "cab_pitch_rad": -0.08,
+        "camera_role": "driver_cab",
+        "clock_seconds": 19416.257509291892,
+        "draw_calls": 94,
+        "area": "roswell",
+        "leg": "roswell",
+        "driving": true,
+        "truck_at": null,
+        "mile": 3.2013469674404,
+        "oldroad_s_m": -7964.065271419467,
+        "oldroad_distance_to_center_m": 1.5962020570677025,
+        "oldroad_distance_finite": true,
+        "road_local_z": -228.76517795693908,
+        "speed_mps": 19.54016158597975,
+        "chapter6_stage": "drive",
+        "camera_quaternion": [
+          -0.010833947949956443,
+          0.026951859224174313,
+          -0.04202486342705152,
+          0.9986942143169328
+        ],
+        "camera_projection": [
+          0.8925925042138216,
+          0,
+          0,
+          0,
+          0,
+          1.4281480067421146,
+          0,
+          0,
+          0,
+          0,
+          -1.0000050000125,
+          -1,
+          0,
+          0,
+          -0.06000015000037501,
+          0
+        ],
+        "camera_world": [
+          0.9950150162765959,
+          -0.08452396600408976,
+          -0.05292274137858928,
+          0,
+          0.08335598584413273,
+          0.9962330728515106,
+          -0.02390489867766668,
+          0,
+          0.0547439221104801,
+          0.0193743058656625,
+          0.9983124457123559,
+          0,
+          12596.049994363837,
+          10.525007559774675,
+          -229.05280736744305,
+          1
+        ],
+        "truck_quaternion": [
+          0.0007651980627917049,
+          -0.5423686349701429,
+          -0.006987328050729791,
+          0.8401112161608487
+        ],
+        "quality": "ultra",
+        "picture": "vhs",
+        "ultra_enabled": true,
+        "held": true,
+        "sky_dawn": 0.803331456214725,
+        "sky_sun": 0,
+        "sky_uniforms": {
+          "uTime": 272.2973493333343,
+          "uFlash": 0,
+          "uDawn": 0.803331456214725,
+          "uSun": 0,
+          "uSunDir": [
+            0.9815263532034005,
+            -0.014332632539064577,
+            -0.19078939596249456
+          ]
+        },
+        "post": {
+          "on": true,
+          "supported": true,
+          "glitch": 0,
+          "ultra": true
+        },
+        "render_state": {
+          "pixel_ratio": 1,
+          "buffer_width": 1280,
+          "buffer_height": 800,
+          "tone_mapping": 4,
+          "exposure": 1.05,
+          "ultra_mapped": 44
+        },
+        "landmark_materials": [
+          {
+            "mesh": "oldroad/Kessler-name",
+            "material": "oldroad/Kessler-lettering",
+            "uuid": "cecd4dc0-866d-431e-8bfb-02362478a6dc",
+            "type": "MeshStandardMaterial",
+            "map": "c43030ff-9933-4307-b7db-e9a587eb3169"
+          },
+          {
+            "mesh": "oldroad/Kessler-static",
+            "material": "oldroad/Kessler-solids",
+            "uuid": "36f7cec4-4013-47de-9055-35c4685823c6",
+            "type": "MeshStandardMaterial",
+            "map": null
+          }
+        ],
+        "name": "mile3.20_left",
+        "file": "kessler_014_mile3.20_left.png",
+        "reason": "Held current driver camera yaw +1.2; no simulation tick",
+        "interval_thresholds_m": [],
+        "path_distance_m": 5164.899632081213,
+        "simulation_elapsed_s": 271.5333333333333,
+        "url": "http://127.0.0.1:8877/SIGNAL-47/",
+        "source_git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+        "build_fingerprint_sha256": "b4e2a365ebc3ae81121cb5338b3e295b27cdf532bce431a874d2f855177106d4",
+        "renderer": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "vendor": "Google Inc. (Google)",
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "pixel_ratio": 1,
+          "hardware_performance": "UNVERIFIED"
+        },
+        "preset": {
+          "quality": "ultra",
+          "picture": "vhs"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800,
+          "device_scale_factor": 1
+        },
+        "image_sha256": "b1280fd902fa06df04f88b4ddca00226be6d2971e3e1cea6c9f7c4f8e295730e",
+        "capture_phase": "uninterrupted_route"
+      }
+    }
+  ],
+  "failures": [],
+  "visual_status": "UNVERIFIED; this packer verifies evidence integrity only",
+  "build_sha256": "ea43ff4e8d7cc77ab40799b0e0156df977efcb9e72d79138c864471bfb566808"
+}

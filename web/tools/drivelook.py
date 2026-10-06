@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Record real drives for manual visual review, without moving the truck for shots.
+"""Record uninterrupted real drives for visual review, with no route placement.
+
+The Kessler trip adds explicitly placed stationary fixtures after its real drive.
 
 python3 tools/drivelook.py OUTDIR [WxH]
 S47_URL selects a build; S47_CHROMIUM optionally selects an installed browser.
@@ -45,8 +47,10 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('outdir', type=Path, help='New directory; existing paths are refused.')
     p.add_argument('size', nargs='?', type=viewport, default=(1280, 800), metavar='WxH')
-    p.add_argument('--trip', choices=('all','saro_diner','diner_oldroad'), default='all',
-                   help='Capture both trips or just the requested trip.')
+    p.add_argument('--trip', choices=('all','saro_diner','diner_oldroad','kessler'), default='all',
+                   help='Capture both original trips or one requested trip; kessler is a separate chapter-six review.')
+    p.add_argument('--quality', choices=('low','high','ultra'), default='high',
+                   help='Graphics preset for --trip kessler; original trips retain High/off.')
     p.add_argument('--timeout', type=float, default=2400, help='Whole-run wall seconds, default 2400.')
     a = p.parse_args(argv)
     if not math.isfinite(a.timeout) or a.timeout <= 0:
@@ -120,23 +124,28 @@ def record_console(trip: dict, kind: str, text: str, location: dict, *, page_url
 
 def shot_metadata(state: dict, *, name: str, filename: str, reason: str, distance: float,
                   elapsed: float, thresholds: list, url: str, source_sha: str,
-                  resources: dict, renderer: dict, size: tuple[int, int]) -> dict:
+                  resources: dict, renderer: dict, size: tuple[int, int],
+                  quality: str = 'high', picture: str = 'off') -> dict:
     """Assemble a JSON-safe record without browser/file effects or inventing missing fields."""
     result = {**state, 'name':name, 'file':filename, 'reason':reason,
               'interval_thresholds_m':thresholds, 'path_distance_m':distance,
               'simulation_elapsed_s':elapsed, 'url':url, 'source_git_head':source_sha,
               'build_fingerprint_sha256':code_fingerprint(resources), 'renderer':renderer,
-              'preset':{'quality':'high','picture':'off'},
+              'preset':{'quality':quality,'picture':picture},
               'viewport':{'width':size[0],'height':size[1],'device_scale_factor':1}}
     json.dumps(result, allow_nan=False)
     return result
 
 
-def source_info() -> dict:
+def source_info(kessler: bool = False) -> dict:
     def git(*args):
         return subprocess.check_output(['git', '-C', str(WEB), *args], text=True, timeout=10).strip()
     files = ['src/world/World.ts', 'src/drive/Drive.ts', 'src/drive/OldRoad.ts',
              'src/drive/legs.ts', 'src/story/Chapter6.ts', 'tools/drivelook.py']
+    if kessler:
+        files += ['src/drive/oldRoadLandmarks.ts', 'src/drive/oldRoadLayout.ts',
+                  'src/drive/roadShape.ts', 'src/world/Sky.ts', 'src/world/glow.ts',
+                  'src/core/quality.ts', 'src/core/ultra.ts', 'src/core/vhs.ts', 'src/main.ts']
     return {'git_head': git('rev-parse', 'HEAD'), 'git_status': git('status', '--short'),
             'files_sha256': {f: hashlib.sha256((WEB / f).read_bytes()).hexdigest() for f in files},
             'relationship_to_served_build': 'UNVERIFIED; local source is recorded separately from loaded build bytes.'}
@@ -207,7 +216,271 @@ RESTORE_VIEW = r"""saved => {
 }"""
 
 
+KESSLER_MILE = 1609.34
+KESSLER_START, KESSLER_END, KESSLER_GATE = 2.9, 3.5, 3.2
+
+KESSLER_EXTRA = r"""(() => {
+  const s=S47,D=s.world.oldDrive,g=s.world.oldRoad.group.getObjectByName('oldroad/Kessler');
+  const materials=[];
+  g?.traverse(m=>{if(m.isMesh) for(const a of (Array.isArray(m.material)?m.material:[m.material]))
+    materials.push({mesh:m.name,material:a.name,uuid:a.uuid,type:a.type,map:a.map?.uuid??null});});
+  const sky=Object.fromEntries(['uTime','uFlash','uDawn','uSun','uSunDir'].filter(k=>s.sky.uniforms[k])
+    .map(k=>{const v=s.sky.uniforms[k].value;return [k,v?.toArray?v.toArray():v];}));
+  return {camera_quaternion:s.camera.quaternion.toArray(),
+    camera_projection:s.camera.projectionMatrix.toArray(),camera_world:s.camera.matrixWorld.toArray(),
+    truck_quaternion:D.truck.group.quaternion.toArray(),
+    quality:JSON.parse(localStorage.getItem('s47.quality')),
+    picture:s.vhs.picture,ultra_enabled:s.vhs.ultra,held:s.hold,
+    sky_dawn:s.sky.uniforms.uDawn.value,sky_sun:s.sky.uniforms.uSun.value,sky_uniforms:sky,
+    post:{on:s.vhs.on,supported:s.vhs.supported,glitch:s.vhs.glitch,ultra:s.vhs.ultra},
+    render_state:{pixel_ratio:s.renderer.getPixelRatio(),buffer_width:s.renderer.domElement.width,
+      buffer_height:s.renderer.domElement.height,tone_mapping:s.renderer.toneMapping,
+      exposure:s.renderer.toneMappingExposure,ultra_mapped:s.ultra.mapped},landmark_materials:materials};
+})()"""
+
+KESSLER_ROIS = r"""([width,height]) => {
+  const c=S47.camera,g=S47.world.oldRoad.group.getObjectByName('oldroad/Kessler');
+  if(!g) throw Error('Missing integrated oldroad/Kessler group');
+  g.updateWorldMatrix(true,true);c.updateMatrixWorld(true);
+  const bins={farm:[],gravel_track:[],gate_grid:[],name:[]};
+  // The two meshes are merged. Partition their actual vertices in the gate's local
+  // frame; no assumed screen rectangle, HUD or whole-scene comparison.
+  g.traverse(m=>{
+    if(!m.isMesh) return;
+    const a=m.geometry.getAttribute('position');
+    for(let i=0;i<a.count;i++) {
+      const world=c.position.clone().fromBufferAttribute(a,i).applyMatrix4(m.matrixWorld);
+      const p=g.worldToLocal(world.clone());
+      const eye=world.clone().applyMatrix4(c.matrixWorldInverse);
+      if(eye.z>=-c.near) continue;
+      const q=world.clone().project(c);
+      if(q.z < -1 || q.z > 1 || ![q.x,q.y].every(Number.isFinite)) continue;
+      const xy=[(q.x+1)*width/2,(1-q.y)*height/2];
+      if(m.name==='oldroad/Kessler-name') bins.name.push(xy);
+      else if(p.z < -280 && Math.abs(p.x)<25) bins.farm.push(xy);
+      else if(p.z>=-280 && p.z<-5 && Math.abs(p.x)<5) bins.gravel_track.push(xy);
+      else if(Math.abs(p.z)<=1.35 && Math.abs(p.x)<3.1 &&
+        world.y<S47.world.oldRoad.height(world.x,world.z)+0.3) bins.gate_grid.push(xy);
+    }
+  });
+  return Object.fromEntries(Object.entries(bins).map(([name,points])=>{
+    if(!points.length) return [name,{rect:null,projected_vertices:0,visible:false}];
+    const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+    const raw=[Math.floor(Math.min(...xs))-2,Math.floor(Math.min(...ys))-2,
+      Math.ceil(Math.max(...xs))+2,Math.ceil(Math.max(...ys))+2];
+    const rect=[Math.max(0,raw[0]),Math.max(0,raw[1]),Math.min(width,raw[2]),Math.min(height,raw[3])];
+    const visible=rect[2]>rect[0] && rect[3]>rect[1];
+    return [name,{rect:visible?rect:null,unclipped_rect:raw,projected_vertices:points.length,visible}];
+  }));
+}"""
+
+KESSLER_FROZEN_DRAW = r"""({time,saved}) => {
+  const s=S47,c=s.camera,D=s.world.oldDrive;
+  if(!s.hold) throw Error('Fixture draw requires the held loop');
+  const before={driver:D.pos.toArray(),truck:D.truck.group.position.toArray(),
+    truck_q:D.truck.group.quaternion.toArray(),heading:D.heading,speed:D.speed,
+    camera:c.position.toArray(),camera_q:c.quaternion.toArray(),clock:s.game.clock};
+  if(saved) {
+    D.pos.fromArray(saved.driver);D.heading=saved.heading;D.speed=saved.speed;
+    D.truck.group.position.fromArray(saved.truck);D.truck.group.quaternion.fromArray(saved.truck_q);
+    D.truck.group.updateMatrixWorld(true);
+    c.position.fromArray(saved.camera);c.quaternion.fromArray(saved.camera_q);
+  }
+  c.updateMatrixWorld(true);
+  // Normal draw still sets glowScale, culling and renderer counters. Override only
+  // VHS render-time: wall-time screenshot latency is not the simulated 1/30 s.
+  const render=s.vhs.render;
+  s.vhs.render=function(scene,camera,_wallTime){return render.call(this,scene,camera,time);};
+  try {s.game.d.view.draw();} finally {s.vhs.render=render;}
+  return {before,saved:saved||before,render_time_s:time,clock:s.game.clock,
+    frozen:saved ? JSON.stringify(D.pos.toArray())===JSON.stringify(saved.driver) &&
+      JSON.stringify(D.truck.group.position.toArray())===JSON.stringify(saved.truck) &&
+      JSON.stringify(D.truck.group.quaternion.toArray())===JSON.stringify(saved.truck_q) &&
+      JSON.stringify(c.position.toArray())===JSON.stringify(saved.camera) &&
+      JSON.stringify(c.quaternion.toArray())===JSON.stringify(saved.camera_q) &&
+      D.heading===saved.heading && D.speed===saved.speed : true};
+}"""
+
+
+def pixel_change_metrics(first: Path, second: Path, regions: dict) -> dict:
+    """Temporal RGB variation in projected component rectangles, never a visual PASS."""
+    from PIL import Image, ImageChops
+    with Image.open(first) as a, Image.open(second) as b:
+        if a.size != b.size:
+            raise ValueError('Flicker pair image sizes differ')
+        diff = ImageChops.difference(a.convert('RGB'), b.convert('RGB'))
+        result = {}
+        for name, region in regions.items():
+            rect = region['rect']
+            if rect is None or rect[2]-rect[0]<8 or rect[3]-rect[1]<8:
+                result[name] = {'status':'UNVERIFIED','reason':'Component outside viewport or below 8x8 pixels',**region}
+                continue
+            values = list(diff.crop(tuple(rect)).getdata())
+            n = len(values)
+            maxima = sorted(max(rgb) for rgb in values)
+            result[name] = {**region,'pixel_count':n,
+                'changed_pixels':{str(t):sum(v>t for v in maxima) for t in (0,2,4,8)},
+                'changed_fraction':{str(t):sum(v>t for v in maxima)/n for t in (0,2,4,8)},
+                'mean_absolute_channel_delta':sum(sum(rgb) for rgb in values)/(n*3),
+                'max_channel_delta':maxima[-1],
+                'percentiles_max_channel_delta':{str(p):maxima[math.ceil(p*n)-1] for p in (.95,.99)},
+                'classification':'pixel_variation_only'}
+        return result
+
+
+async def run_kessler_trip(browser, args, report, url, out):
+    """Drive uninterrupted first; separate, explicitly placed still fixtures follow."""
+    trip = {'id':'kessler','status':'CAPTURING','visual_review':'UNVERIFIED','shots':[],
+            'errors':[],'warnings':[],'console_messages':[],'failed_http':[],
+            'loaded_code_sha256':{},'quality_requested':args.quality,'flicker_pairs':[],
+            'route_placement_calls':0,'fixture_placement_calls':0,'side_capture_checks':[]}
+    report['trips'].append(trip)
+    context = await browser.new_context(viewport={'width':args.size[0],'height':args.size[1]},
+                                        device_scale_factor=1,has_touch=False,is_mobile=False)
+    page = await context.new_page();page.set_default_timeout(60000)
+    tasks = [];previous = None;distance = 0.0;elapsed = 0.0
+    async def response_body(response):
+        if response.request.resource_type in ('document','script'):
+            try: trip['loaded_code_sha256'][response.url] = hashlib.sha256(await response.body()).hexdigest()
+            except Exception as e: trip['warnings'].append(f'Could not hash loaded code: {response.url}: {e}')
+    def response_seen(response):
+        if response.status>=400:
+            trip['failed_http'].append({'url':response.url,'status':response.status,'resource_type':response.request.resource_type})
+        tasks.append(asyncio.create_task(response_body(response)))
+    page.on('response',response_seen)
+    page.on('console',lambda m:record_console(trip,m.type,m.text,m.location,page_url=page.url))
+    page.on('pageerror',lambda e:trip['errors'].append('PAGEERROR: '+str(e)))
+    async def state():
+        nonlocal previous,distance
+        st=await page.evaluate(STATE);st.update(await page.evaluate(KESSLER_EXTRA))
+        distance+=path_increment(previous,st['map_xyz']);previous=st['map_xyz']
+        return st
+    async def tick(seconds=STEP):
+        nonlocal elapsed
+        await page.evaluate('([s,f])=>S47.tick(s,f)',[seconds,FPS]);elapsed+=max(1,round(seconds*FPS))/FPS
+        return await state()
+    async def shot(name,reason,thresholds=None,fixture=None):
+        if tasks: await asyncio.gather(*tasks)
+        st=await state();filename=f'kessler_{len(trip["shots"]):03d}_{name}.png'
+        await page.screenshot(path=str(out/filename),timeout=120000)
+        st=shot_metadata(st,name=name,filename=filename,reason=reason,thresholds=thresholds or [],
+            distance=distance,elapsed=elapsed,url=page.url,source_sha=report['source']['git_head'],
+            resources=trip['loaded_code_sha256'],renderer=trip['renderer'],size=args.size,
+            quality=st['quality'],picture=st['picture'])
+        st['image_sha256']=hashlib.sha256((out/filename).read_bytes()).hexdigest()
+        st['capture_phase']='stationary_fixture' if fixture else 'uninterrupted_route'
+        if fixture: st['fixture']=fixture
+        trip['shots'].append(st);write_report(out,report)
+        print(f'kessler/{args.quality}: {name}, mile={st["mile"]:.5f}, picture={st["picture"]}',flush=True)
+        return st
+    async def left(name,reason):
+        saved=await page.evaluate(LOOK,1.2)
+        try: return await shot(name,reason)
+        finally:
+            proof=await page.evaluate(RESTORE_VIEW,saved)
+            trip['side_capture_checks'].append({'name':name,'yaw_offset_rad':1.2,**proof})
+            if not proof['unchanged'] or not proof['camera_restored']:
+                raise RuntimeError('Kessler left capture failed pose/clock restoration')
+    try:
+        await page.add_init_script(INIT+f"\nlocalStorage.setItem('s47.quality', JSON.stringify({json.dumps(args.quality)}));")
+        await page.goto(url,wait_until='load',timeout=120000)
+        await page.wait_for_function('window.S47 && S47.tick && S47.world')
+        await page.click('button[data-a=start]');await page.wait_for_function('S47.started()')
+        await page.evaluate("S47.hold=true;S47.jump('chapter6')")
+        for _ in range(240):
+            await page.evaluate('S47.hold=true;S47.tick(0.25)')
+            if await page.evaluate("S47.world.area==='roswell' && S47.world.driving && S47.world.leg==='roswell' && !S47.world.busy && S47.ch6.stage==='drive'"): break
+            await page.wait_for_timeout(100)
+        else: raise RuntimeError('Kessler setup did not reach the real chapter-six cab')
+        await page.evaluate('S47.hold=true;S47.world.autopilot=20')
+        st=await tick(1/FPS)
+        if st['quality']!=args.quality or st['picture']!=('off' if args.quality=='low' else 'vhs'):
+            raise RuntimeError(f'Requested preset not applied: {st["quality"]}/{st["picture"]}')
+        if st['ultra_enabled']!=(args.quality=='ultra'):
+            raise RuntimeError('Effective Ultra state differs from the requested preset')
+        if args.quality=='ultra' and not st['post']['supported']:
+            raise RuntimeError('Ultra postprocessing is unsupported by this browser context')
+        trip['renderer']=await page.evaluate("""(() => {const g=S47.renderer.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');return {version:g.getParameter(g.VERSION),vendor:g.getParameter(e?e.UNMASKED_VENDOR_WEBGL:g.VENDOR),renderer:g.getParameter(e?e.UNMASKED_RENDERER_WEBGL:g.RENDERER),pixel_ratio:S47.renderer.getPixelRatio(),hardware_performance:'UNVERIFIED'};})()""")
+        trip['lot_start']=st;monitor=StallMonitor();started=False;next_at=40.0;seen=set()
+        for _ in range(2600):
+            if not st['held'] or not st['driving'] or st['chapter6_stage']!='drive':
+                raise RuntimeError('Uninterrupted Kessler route lost the held chapter-six cab')
+            mi=st['mile'];relative=(mi-KESSLER_START)*KESSLER_MILE if mi is not None else -1
+            if relative>=0 and not started:
+                started=True;trip['capture_start']=st
+                await shot('start_mile2_9','First actual autopilot pose crossing mile 2.9; no placement')
+            if started:
+                due,next_at=capture_due(relative,next_at,40.0)
+                if due: await shot(f'forward_{int(due[-1]):04d}m','40 m old-road distance threshold; actual pose, no interpolation',due)
+                for target in (3.15,3.20,3.25):
+                    if mi>=target and target not in seen:
+                        seen.add(target);await left(f'mile{target:.2f}_left','Held current driver camera yaw +1.2; no simulation tick')
+                if mi>=KESSLER_END:
+                    await shot('end_mile3_5','First actual autopilot pose crossing mile 3.5; no placement')
+                    trip['route_end']=st;break
+            progress=mi*KESSLER_MILE if mi is not None else -math.hypot(st['map_xyz'][0]+9.05,st['road_local_z']-2005.95)
+            if monitor.observe(elapsed,progress): raise RuntimeError('Kessler autopilot stalled before mile 3.5')
+            # Same 30 Hz physics, fewer renders during the warm-up drive. Stop the
+            # batching comfortably before the reviewed stretch; no route placement.
+            st=await tick(4.0 if mi is not None and mi<2.8 else STEP)
+        else: raise RuntimeError('Kessler route exhausted its bounded steps')
+        if seen!={3.15,3.20,3.25}: raise RuntimeError('Kessler route missed requested left views')
+        await page.evaluate('S47.world.autopilot=null')
+        # These explicitly placed fixtures occur only AFTER the uninterrupted route.
+        # drive.place resets speed to zero; no manual clock changes or route teleport.
+        for before_gate in (400,200,80):
+            mile=KESSLER_GATE-before_gate/KESSLER_MILE
+            await page.evaluate("""mi=>{const w=S47.world,p=w.oldRoad.poseAt(mi);w.autopilot=null;w.testInput=null;w.oldDrive.place(p.pos,p.heading);}""",mile)
+            trip['fixture_placement_calls']+=1;previous=None
+            await tick(1/FPS);await page.evaluate(LOOK,1.2)
+            default_picture=await page.evaluate('S47.vhs.picture')
+            fixture={'placement':'explicit drive.place after completed route','requested_mile':mile,
+                     'distance_before_gate_m':before_gate,'yaw_offset_rad':1.2}
+            for mode in ('player_default','picture_off_repeatability'):
+                if mode=='picture_off_repeatability' and default_picture=='off': continue
+                if mode=='picture_off_repeatability': await page.evaluate("S47.setPicture('off')")
+                t0=await page.evaluate('performance.now()/1000')
+                for _warm in range(2):
+                    await page.evaluate(KESSLER_FROZEN_DRAW,{'time':t0,'saved':None})
+                first_draw=await page.evaluate(KESSLER_FROZEN_DRAW,{'time':t0,'saved':None})
+                rois=await page.evaluate(KESSLER_ROIS,list(args.size))
+                a=await shot(f'fixture_{before_gate}m_{mode}_a','Stationary component variation baseline; fixed VHS render-time',fixture={**fixture,'mode':mode,'render_time_s':t0})
+                wall_start=time.monotonic();pre_step=await state()
+                step=1/FPS if mode=='player_default' else 0
+                if step: await tick(step)
+                post_step=await state()
+                proof=await page.evaluate(KESSLER_FROZEN_DRAW,{'time':t0+step,'saved':first_draw['saved']})
+                reason='One actual 1/30 s step, original camera/truck restored; VHS time +1/30 s' if step else 'No simulation tick; identical pose and render-time, picture off repeatability'
+                b=await shot(f'fixture_{before_gate}m_{mode}_b',reason,fixture={**fixture,'mode':mode,'render_time_s':t0+step})
+                pair={**fixture,'mode':mode,'files':[a['file'],b['file']],
+                      'simulation_step_s':step,'vhs_render_times_s':[t0,t0+step],
+                      'wall_interval_s':time.monotonic()-wall_start,'before_step':pre_step,'after_step_before_restore':post_step,
+                      'restoration':proof,'regions':pixel_change_metrics(out/a['file'],out/b['file'],rois),
+                      'interpretation':'Temporal variation includes scene/sky/light changes and VHS; the no-tick off pair measures static repeatability. Zero variation cannot rule out movement-dependent z-fighting.'}
+                trip['flicker_pairs'].append(pair);write_report(out,report)
+                if not proof['frozen']: raise RuntimeError('Fixture camera/truck was not restored exactly')
+            if default_picture!='off': await page.evaluate('p=>S47.setPicture(p)',default_picture)
+        if trip['errors']: raise RuntimeError(f'{len(trip["errors"])} console/page errors; see manifest')
+        expected=urlsplit(page.url)
+        bad_http=[]
+        for event in trip['failed_http']:
+            source=urlsplit(event['url'])
+            if not (event['status']==404 and source.path=='/favicon.ico' and
+                    source.scheme in ('http','https') and
+                    (source.scheme,source.netloc)==(expected.scheme,expected.netloc)):
+                bad_http.append(event)
+        if bad_http: raise RuntimeError(f'{len(bad_http)} non-favicon HTTP failures; see manifest')
+        trip['status']='CAPTURED'
+    except BaseException as e:
+        trip['status']='FAIL';trip['failure']=f'{type(e).__name__}: {e}';raise
+    finally:
+        trip['path_distance_m']=distance;trip['simulation_elapsed_s']=elapsed
+        write_report(out,report);await asyncio.wait_for(context.close(),timeout=10)
+
+
 async def run_trip(browser, args, report, trip_id, url, out):
+    if trip_id == 'kessler':
+        return await run_kessler_trip(browser, args, report, url, out)
     trip = {'id': trip_id, 'status': 'CAPTURING', 'visual_review': 'UNVERIFIED',
             'shots': [], 'errors': [], 'warnings': [], 'console_messages': [],
             'failed_http': [], 'loaded_code_sha256': {}}
@@ -392,12 +665,25 @@ def main(argv=None) -> int:
               'Only same-origin, URL-confirmed /favicon.ico HTTP 404 console messages are non-blocking; raw diagnostics are retained.',
               'Side shots use held camera rotation and view.draw without ticking; truck/clock preservation is checked.',
               'No automatic visual PASS; source/build byte equivalence is UNVERIFIED.']}
+    if args.trip=='kessler':
+        report['interval_m']=40.0
+        report['quality_requested']=args.quality
+        report['kessler']={'start_mile':KESSLER_START,'end_mile':KESSLER_END,'gate_mile':KESSLER_GATE,
+            'left_view_miles':[3.15,3.20,3.25],'left_yaw_offset_rad':1.2,
+            'warmup_tick_s':4.0,'warmup_until_mile':2.8,'capture_tick_s':STEP,
+            'fixture_distances_before_gate_m':[400,200,80],
+            'fixture_semantics':'Explicit drive.place at zero speed after the uninterrupted route; no clock assignment.',
+            'post_picture':'Player default: Low off, High/Ultra VHS. Off repeatability pairs are diagnostics only.'}
+        report['limitations'] += ['Stationary fixture placement is not route or manual-driving evidence.',
+            'Component rectangles include background and subpixel projections may be UNVERIFIED.',
+            'Temporal RGB variation is not an automatic z-fighting verdict; no-tick off pairs measure only repeatability.',
+            'Phone-sized viewport uses a desktop pointer context so Ultra remains testable; no physical phone/fps claim.']
     started = time.monotonic()
     def terminated(_signum, _frame):
         raise KeyboardInterrupt('SIGTERM: capture interrupted; partial evidence retained')
     previous_sigterm = signal.signal(signal.SIGTERM, terminated)
     try:
-        report['source'] = source_info()
+        report['source'] = source_info(args.trip == 'kessler')
         write_report(out, report)
         asyncio.run(asyncio.wait_for(capture(args, report, out), timeout=args.timeout))
         expected = set(report['requested_trips'])

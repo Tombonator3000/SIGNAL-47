@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "status": "FAIL",
+  "visual_review": "UNVERIFIED",
+  "created_utc": "2026-10-06T08:39:15.439092+00:00",
+  "trips": [
+    {
+      "id": "kessler",
+      "status": "FAIL",
+      "visual_review": "UNVERIFIED",
+      "shots": [],
+      "errors": [],
+      "warnings": [],
+      "console_messages": [],
+      "failed_http": [],
+      "loaded_code_sha256": {},
+      "quality_requested": "low",
+      "flicker_pairs": [],
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 0,
+      "side_capture_checks": [],
+      "failure": "Error: Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8877/SIGNAL-47/\nCall log:\n  - navigating to \"http://127.0.0.1:8877/SIGNAL-47/\", waiting until \"load\"\n",
+      "path_distance_m": 0.0,
+      "simulation_elapsed_s": 0.0
+    }
+  ],
+  "failures": [
+    "kessler: Error: Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8877/SIGNAL-47/\nCall log:\n  - navigating to \"http://127.0.0.1:8877/SIGNAL-47/\", waiting until \"load\"\n"
+  ],
+  "requested_trips": [
+    "kessler"
+  ],
+  "url": "http://127.0.0.1:8877/SIGNAL-47/",
+  "interval_m": 40.0,
+  "step_s": 0.5,
+  "fps": 30,
+  "autopilot_mps": 20,
+  "wall_timeout_s": 2400,
+  "limitations": [
+    "Autopilot capture, not manual controls or hardware fps verification.",
+    "Only same-origin, URL-confirmed /favicon.ico HTTP 404 console messages are non-blocking; raw diagnostics are retained.",
+    "Side shots use held camera rotation and view.draw without ticking; truck/clock preservation is checked.",
+    "No automatic visual PASS; source/build byte equivalence is UNVERIFIED.",
+    "Stationary fixture placement is not route or manual-driving evidence.",
+    "Component rectangles include background and subpixel projections may be UNVERIFIED.",
+    "Temporal RGB variation is not an automatic z-fighting verdict; no-tick off pairs measure only repeatability.",
+    "Phone-sized viewport uses a desktop pointer context so Ultra remains testable; no physical phone/fps claim."
+  ],
+  "quality_requested": "low",
+  "kessler": {
+    "start_mile": 2.9,
+    "end_mile": 3.5,
+    "gate_mile": 3.2,
+    "left_view_miles": [
+      3.15,
+      3.2,
+      3.25
+    ],
+    "left_yaw_offset_rad": 1.2,
+    "warmup_tick_s": 4.0,
+    "warmup_until_mile": 2.8,
+    "capture_tick_s": 0.5,
+    "fixture_distances_before_gate_m": [
+      400,
+      200,
+      80
+    ],
+    "fixture_semantics": "Explicit drive.place at zero speed after the uninterrupted route; no clock assignment.",
+    "post_picture": "Player default: Low off, High/Ultra VHS. Off repeatability pairs are diagnostics only."
+  },
+  "source": {
+    "git_head": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+    "git_status": "M tools/drivelook.py\n?? node_modules\n?? production/drivelook_kessler_20261006/",
+    "files_sha256": {
+      "src/world/World.ts": "a8f7211c19a3635fe9d21e058f9e99e521c3c7f37480207e2fcbd704313762b7",
+      "src/drive/Drive.ts": "57a9c211a9d86864196f754e73027d3f8daa7f76fbc300e011c4b7d4e11b3f49",
+      "src/drive/OldRoad.ts": "02c0b273609726fb4546ecdf3470de5266b30d367386b6a0ed9a28235c4f0c50",
+      "src/drive/legs.ts": "bcfb1d2dcde1d1f08fdf685bce123963336417178e1da6a64d5ad37916bbabec",
+      "src/story/Chapter6.ts": "27a3ef490e089ad57dff8a716fc56e50f0329c3c00e41a1e5a85f840e8c8dada",
+      "tools/drivelook.py": "b013332bda5d4eb8a48c8eb8181c1352c89c8ca2a03602e1619f64bce758e20a",
+      "src/drive/oldRoadLandmarks.ts": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781",
+      "src/drive/oldRoadLayout.ts": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7",
+      "src/drive/roadShape.ts": "f91941fdcd0bb04d8051cfc4a086646f7f2a284cadf62fafacf24d0ff55d2ec5",
+      "src/world/Sky.ts": "b11de9cd6d8d837a8214721495938b8021484cf50c28856fac4a20a9919833a2",
+      "src/world/glow.ts": "bf92cbf36bbb43b2171387f6c90d5a8a7e3e564e8422b613a6c2af2510b351ce",
+      "src/core/quality.ts": "8588886294f7bb6ded021452bd5bd4f27d2a935c7ced12e55fcad0b18817fbf1",
+      "src/core/ultra.ts": "2078d14e01cd500f452b090b81c9ee6eb78b1aed0fa9b9c5a90f0bc17f499c37",
+      "src/core/vhs.ts": "267efa8b37d85a4f64ab21ae5f72b1de7da9d3c34acc3b289dc3094ccb89249c",
+      "src/main.ts": "101e25e757cbc3c617b56d0afa59310b188cb2e715360b14d68a03210851633f"
+    },
+    "relationship_to_served_build": "UNVERIFIED; local source is recorded separately from loaded build bytes."
+  },
+  "wall_elapsed_s": 0.6851858629961498
+}
