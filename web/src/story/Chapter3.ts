@@ -305,7 +305,8 @@ export class Chapter3 {
       add('s1timing', 'timingLog', () => this.s.readE10 ? 'Field record / timing' : 'Read the timing log (E10)', () => this.useTimingLog());
       add('s1phone', 'fieldPhone', () => this.ringing ? 'Answer the field telephone' : 'Field telephone', () => this.usePhone());
       add('s1gate', 'gate', () => 'Vehicle gate', () => ui.toast('Chained and padlocked. N. Vega holds the key. The walk gate beside it is open.', 3.6));
-      add('s1truck', 'truckSpot', () => this.s.stage === 'return' ? 'Drive back to SARO' : 'Service truck', () => this.useStationTruck(), 3.2);
+      // (with the truck somewhere else, World.parkAt has put its handle out of the way: nothing to use)
+      add('s1truck', 'truckSpot', () => px.truckSpot.position.y < -100 ? null : this.s.stage === 'return' ? 'Drive back to SARO' : 'Service truck', () => this.useStationTruck(), 3.2);
     }
     if (this.active) this.applyWorld();
   }
