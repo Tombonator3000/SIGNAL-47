@@ -99,6 +99,11 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 
 ## Codex (avtalt med Tom 4. oktober 2026)
 
+### Bestilt 6. oktober kl. 08.17: drivelook av Kessler-strekningen i kapittel 6
+- [ ] Ingen har sett gården fra en lastebil i fart, på Low eller Ultra eller i telefonstørrelse. Codex utvider sin `tools/drivelook.py` med en tur for strekningen (for eksempel `--trip kessler`): kapittel 6 slik spilleren får det, autopilot i kapitlets fart fra mile 2,9 til 3,5, klokka som kapitlet setter den (rundt 05:22). Bilder framover hver 40. meter, og blikk til venstre (yaw +1,2) ved 3,15, 3,20 og 3,25. Nivåene `low`, `high` og `ultra` (`localStorage` `s47.quality`, JSON-streng), størrelsene 844x390 og 1280x800. Flimmerkontroll: stående kamera 400, 200 og 80 m før porten, to bilder med 1/30 s mellom, andel endrede piksler rundt gården og grussporet (kandidater: grusbåndene side om side, skuldrene, feristen, navnebrettet). Samme strenge konsollregel som i PR #74.
+- Levering som PR #73: `production/drivelook_kessler_20261006/` med bilder, kontaktark, `review.md` og `review.json`, én funnliste med mile, koordinater, blikkretning, nivå, størrelse og alvor (P1 til P3), og et eget loggavsnitt. Funn inne i `oldRoadLandmarks.ts` retter Codex selv i en liten egen PR (modulen er Codex sin). Funn i `OldRoad.ts`, `World.ts`, lys og gjerder melder Codex til Claude, som retter dem.
+- Ikke i denne runden: endringer i `OldRoad.ts`, `World.ts`, eksisterende tester eller grafikk, nye assets.
+
 Codex spør fortløpende om behov og leverer i en egen grafikk- og støttegren med kontrollbevis. Claude integrerer og eier den samlede spilltesten.
 
 Status 5. oktober natt: PR #34, #35, #39, #45, #51 (runde 9), #54 (runde 10), #57 og #59 (reachcheck) er levert og flettet. Dineren er koblet inn som område; kapitlet «All Night» skrives av Claude. Runde 10 er levert i PR #54 og koblet inn. Codex eier de fire nye bildene i `src/assets/art/docs/`, `production/round10_manifest.json`, `production/round10_qa/`, `ART_ROUND10_DELIVERY.md` og eventuelle nye kontrollskript under `tools/` med egne navn. Reachcheck (PR #57) og vakten (PR #59) er levert og står i testrekka. All Night er bygd (5. oktober morgen). Ingen ny bestilling til Codex før Roswell Road er spesifisert; da kommer briefen om milestolpene og oppmålingsbolten.
