@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "original_png_count": 82,
+  "all_original_png_sha256_match": true,
+  "all_original_png_dimensions": [
+    1280,
+    800
+  ],
+  "all_400m_intervals_recorded": true,
+  "endpoints_verified": true,
+  "shared_loaded_resources_match": 13,
+  "recorded_runtime_source_hashes_match": true,
+  "entry_script_sha256": "2a2db861479c10828779282b2037b0cae2740975fe440650a965f3d4bcc71cb1",
+  "side_checks": 28,
+  "all_side_checks_unchanged": true
+}

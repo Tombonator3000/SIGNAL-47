@@ -1,0 +1,32 @@
+{
+  "tool_sha256": "9b436c7693e9981ed33490cc3cbc29d530597975f0051da8a5ef999a7c6f7add",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "syntax",
+      "status": "PASS"
+    },
+    {
+      "name": "default_cli_both_trips",
+      "status": "PASS"
+    },
+    {
+      "name": "targeted_retry_cli",
+      "status": "PASS"
+    },
+    {
+      "name": "400m_schedule_with_overshoot",
+      "status": "PASS"
+    },
+    {
+      "name": "existing_output_and_user_file_preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "SIGTERM_retains_explicit_partial_failure",
+      "status": "PASS"
+    }
+  ],
+  "browser_launched": false,
+  "scope": "Targeted helper, CLI, filesystem refusal and interruption controls; no gameplay or visual PASS."
+}

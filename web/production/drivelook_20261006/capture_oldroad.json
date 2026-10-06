@@ -1,0 +1,5229 @@
+{
+  "schema_version": 1,
+  "status": "FAIL",
+  "visual_review": "UNVERIFIED",
+  "created_utc": "2026-10-06T03:20:13.006345+00:00",
+  "trips": [
+    {
+      "id": "diner_oldroad",
+      "status": "FAIL",
+      "visual_review": "UNVERIFIED",
+      "shots": [
+        {
+          "world_xyz": [
+            7988.9500473565795,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "local_xyz": [
+            -11091.303016987298,
+            4.309009666123169,
+            6581.479422090129
+          ],
+          "map_xyz": [
+            -11.04995264342051,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "driver_xyz": [
+            7988.9500473565795,
+            0,
+            2005.9474619695477
+          ],
+          "camera_xyz": [
+            7988.530042971717,
+            5.789591008617525,
+            2006.148767167293
+          ],
+          "heading_rad": -3.1517724230639635e-05,
+          "view_direction": [
+            3.142364363651339e-05,
+            -0.07902034704022123,
+            -0.9968730028274404
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19200.033333333333,
+          "draw_calls": 72,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 16.200945177532017,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2005.9474619695477,
+          "speed_mps": 0.07615416666666668,
+          "chapter6_stage": "drive",
+          "name": "start",
+          "file": "diner_oldroad_000_start.png",
+          "reason": "first driving pose",
+          "interval_thresholds_m": [],
+          "path_distance_m": 0.0025384722221555383,
+          "simulation_elapsed_s": 0.03333333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "596a397f8dbc69c2a436438b5e100bb7f655478d4772f25ee6aebcda55865b35"
+        },
+        {
+          "world_xyz": [
+            7988.9500473565795,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "local_xyz": [
+            -11091.303016987298,
+            4.309009666123169,
+            6581.479422090129
+          ],
+          "map_xyz": [
+            -11.04995264342051,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "driver_xyz": [
+            7988.9500473565795,
+            0,
+            2005.9474619695477
+          ],
+          "camera_xyz": [
+            7988.530042971717,
+            5.789591008617525,
+            2006.148767167293
+          ],
+          "heading_rad": -3.1517724230639635e-05,
+          "view_direction": [
+            -0.9999999995033135,
+            -5.6004785038699114e-08,
+            -3.151777409404755e-05
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19200.033333333333,
+          "draw_calls": 84,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 16.200945177532017,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2005.9474619695477,
+          "speed_mps": 0.07615416666666668,
+          "chapter6_stage": "drive",
+          "name": "diner_lot_left",
+          "file": "diner_oldroad_001_diner_lot_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 0.0025384722221555383,
+          "simulation_elapsed_s": 0.03333333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "7cfac376ab1cc7665acc4e61e3fab224c11a0799a85f17cf05a08ed9bda07db0"
+        },
+        {
+          "world_xyz": [
+            7988.9500473565795,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "local_xyz": [
+            -11091.303016987298,
+            4.309009666123169,
+            6581.479422090129
+          ],
+          "map_xyz": [
+            -11.04995264342051,
+            4.309009666123169,
+            2005.9474619695477
+          ],
+          "driver_xyz": [
+            7988.9500473565795,
+            0,
+            2005.9474619695477
+          ],
+          "camera_xyz": [
+            7988.530042971717,
+            5.789591008617525,
+            2006.148767167293
+          ],
+          "heading_rad": -3.1517724230639635e-05,
+          "view_direction": [
+            0.9999999995033135,
+            5.600478501788243e-08,
+            3.1517774093714486e-05
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19200.033333333333,
+          "draw_calls": 54,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 16.200945177532017,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2005.9474619695477,
+          "speed_mps": 0.07615416666666668,
+          "chapter6_stage": "drive",
+          "name": "diner_lot_right",
+          "file": "diner_oldroad_002_diner_lot_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 0.0025384722221555383,
+          "simulation_elapsed_s": 0.03333333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "5441421c92e9385e9d5d783f49ab850d8e7b3f693c520f69b595d95b46ad31c5"
+        },
+        {
+          "world_xyz": [
+            7999.410255265471,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "local_xyz": [
+            -11080.842809078405,
+            4.318435138033771,
+            6577.572333434142
+          ],
+          "map_xyz": [
+            -0.5897447345287219,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "driver_xyz": [
+            7999.410255265471,
+            0,
+            2002.04037331356
+          ],
+          "camera_xyz": [
+            7999.183468863759,
+            5.7971259448945,
+            2001.6262283112674
+          ],
+          "heading_rad": -1.5524530153625935,
+          "view_direction": [
+            0.9975779185570134,
+            -0.06708073135960793,
+            -0.018397605488678526
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19206.033333333246,
+          "draw_calls": 52,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 5.043353776821378,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2002.04037331356,
+          "speed_mps": 5.6417193397468735,
+          "chapter6_stage": "drive",
+          "name": "highway_oldroad_crossroads_forward",
+          "file": "diner_oldroad_003_highway_oldroad_crossroads_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12.334039900075956,
+          "simulation_elapsed_s": 6.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "e76a9c594f494413f9c92393411ca5833e925b651de8f42511d64462ee53fd93"
+        },
+        {
+          "world_xyz": [
+            7999.410255265471,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "local_xyz": [
+            -11080.842809078405,
+            4.318435138033771,
+            6577.572333434142
+          ],
+          "map_xyz": [
+            -0.5897447345287219,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "driver_xyz": [
+            7999.410255265471,
+            0,
+            2002.04037331356
+          ],
+          "camera_xyz": [
+            7999.183468863759,
+            5.7971259448945,
+            2001.6262283112674
+          ],
+          "heading_rad": -1.5524530153625935,
+          "view_direction": [
+            -0.01835790278424555,
+            0.0012082938357452838,
+            -0.9998307493928014
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19206.033333333246,
+          "draw_calls": 44,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 5.043353776821378,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2002.04037331356,
+          "speed_mps": 5.6417193397468735,
+          "chapter6_stage": "drive",
+          "name": "highway_oldroad_crossroads_left",
+          "file": "diner_oldroad_004_highway_oldroad_crossroads_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12.334039900075956,
+          "simulation_elapsed_s": 6.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c0012175d02943c9b6c3ead812a658c46e1295095222153cf0dfc65c46515c71"
+        },
+        {
+          "world_xyz": [
+            7999.410255265471,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "local_xyz": [
+            -11080.842809078405,
+            4.318435138033771,
+            6577.572333434142
+          ],
+          "map_xyz": [
+            -0.5897447345287219,
+            4.318435138033771,
+            2002.04037331356
+          ],
+          "driver_xyz": [
+            7999.410255265471,
+            0,
+            2002.04037331356
+          ],
+          "camera_xyz": [
+            7999.183468863759,
+            5.7971259448945,
+            2001.6262283112674
+          ],
+          "heading_rad": -1.5524530153625935,
+          "view_direction": [
+            0.018357902784245646,
+            -0.0012082938357452938,
+            0.9998307493928014
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19206.033333333246,
+          "draw_calls": 42,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.0025606770477342167,
+          "oldroad_s_m": -13112,
+          "oldroad_distance_to_center_m": 5.043353776821378,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2002.04037331356,
+          "speed_mps": 5.6417193397468735,
+          "chapter6_stage": "drive",
+          "name": "highway_oldroad_crossroads_right",
+          "file": "diner_oldroad_005_highway_oldroad_crossroads_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12.334039900075956,
+          "simulation_elapsed_s": 6.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "d069d89ea6ffdfedfb6629749218279ea77f8f15b96bf4eca271def86fb3461e"
+        },
+        {
+          "world_xyz": [
+            8045.244595420911,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "local_xyz": [
+            -11035.008468922966,
+            4.271485836096437,
+            6577.060814887759
+          ],
+          "map_xyz": [
+            45.24459542091063,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "driver_xyz": [
+            8045.244595420911,
+            0,
+            2001.528854767177
+          ],
+          "camera_xyz": [
+            8045.041565400403,
+            5.755181222633246,
+            2001.1282478618527
+          ],
+          "heading_rad": -1.5691157611672073,
+          "view_direction": [
+            0.9968887205765965,
+            -0.07877624156042791,
+            -0.0026800285017002383
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19208.66839431092,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.028187642169223537,
+          "oldroad_s_m": -13070.757499951382,
+          "oldroad_distance_to_center_m": 1.5842851111630223,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2001.528854767177,
+          "speed_mps": 16.656522610523922,
+          "chapter6_stage": "drive",
+          "name": "oldroad_fence_opening_forward",
+          "file": "diner_oldroad_006_oldroad_fence_opening_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 58.17422612720123,
+          "simulation_elapsed_s": 10.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "da760dddfbfb91d480b2479aa4a8763fbdacb8f5c887791e8f47683f53d1d0de"
+        },
+        {
+          "world_xyz": [
+            8045.244595420911,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "local_xyz": [
+            -11035.008468922966,
+            4.271485836096437,
+            6577.060814887759
+          ],
+          "map_xyz": [
+            45.24459542091063,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "driver_xyz": [
+            8045.244595420911,
+            0,
+            2001.528854767177
+          ],
+          "camera_xyz": [
+            8045.041565400403,
+            5.755181222633246,
+            2001.1282478618527
+          ],
+          "heading_rad": -1.5691157611672073,
+          "view_direction": [
+            -0.0017002868776086516,
+            0.012501464444529337,
+            -0.9999204080381978
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19208.66839431092,
+          "draw_calls": 39,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.028187642169223537,
+          "oldroad_s_m": -13070.757499951382,
+          "oldroad_distance_to_center_m": 1.5842851111630223,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2001.528854767177,
+          "speed_mps": 16.656522610523922,
+          "chapter6_stage": "drive",
+          "name": "oldroad_fence_opening_left",
+          "file": "diner_oldroad_007_oldroad_fence_opening_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 58.17422612720123,
+          "simulation_elapsed_s": 10.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "6e6e502cc1af512e5778df009a86970ae7d69d80ceed6b84866e213bc815329a"
+        },
+        {
+          "world_xyz": [
+            8045.244595420911,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "local_xyz": [
+            -11035.008468922966,
+            4.271485836096437,
+            6577.060814887759
+          ],
+          "map_xyz": [
+            45.24459542091063,
+            4.271485836096437,
+            2001.528854767177
+          ],
+          "driver_xyz": [
+            8045.244595420911,
+            0,
+            2001.528854767177
+          ],
+          "camera_xyz": [
+            8045.041565400403,
+            5.755181222633246,
+            2001.1282478618527
+          ],
+          "heading_rad": -1.5691157611672073,
+          "view_direction": [
+            0.0017002868776090957,
+            -0.012501464444529367,
+            0.9999204080381978
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19208.66839431092,
+          "draw_calls": 39,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.028187642169223537,
+          "oldroad_s_m": -13070.757499951382,
+          "oldroad_distance_to_center_m": 1.5842851111630223,
+          "oldroad_distance_finite": true,
+          "road_local_z": 2001.528854767177,
+          "speed_mps": 16.656522610523922,
+          "chapter6_stage": "drive",
+          "name": "oldroad_fence_opening_right",
+          "file": "diner_oldroad_008_oldroad_fence_opening_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 58.17422612720123,
+          "simulation_elapsed_s": 10.033333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "26a672348ee5505e5f3a00d644cfa577132bbd4355885c2b0e9c6158ef64615d"
+        },
+        {
+          "world_xyz": [
+            8385.179898500674,
+            6.735857770278257,
+            1936.5075982792214
+          ],
+          "local_xyz": [
+            -10695.073165843203,
+            6.735857770278257,
+            6512.039558399803
+          ],
+          "map_xyz": [
+            385.1798985006735,
+            6.735857770278257,
+            1936.5075982792214
+          ],
+          "driver_xyz": [
+            8385.179898500674,
+            0,
+            1936.5075982792214
+          ],
+          "camera_xyz": [
+            8384.81806288849,
+            8.21924650121536,
+            1936.233491820926
+          ],
+          "heading_rad": -1.1489483575662083,
+          "view_direction": [
+            0.9097564474304732,
+            -0.0678703628540972,
+            -0.4095568583295093
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19222.8407123991,
+          "draw_calls": 48,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.24482242721723502,
+          "oldroad_s_m": -12722.118474982215,
+          "oldroad_distance_to_center_m": 1.4699012656117998,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1936.5075982792214,
+          "speed_mps": 19.540161585806224,
+          "chapter6_stage": "drive",
+          "name": "forward_00400m",
+          "file": "diner_oldroad_009_forward_00400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            400.0
+          ],
+          "path_distance_m": 407.42106128687965,
+          "simulation_elapsed_s": 28.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "47daa5c3c924428138b1f538d91f7f027a092104d0d80ea8f1f824a5b34aca32"
+        },
+        {
+          "world_xyz": [
+            8743.845654347058,
+            6.1109568122732645,
+            1758.1773218849676
+          ],
+          "local_xyz": [
+            -10336.407409996818,
+            6.1109568122732645,
+            6333.7092820055495
+          ],
+          "map_xyz": [
+            743.8456543470584,
+            6.1109568122732645,
+            1758.1773218849676
+          ],
+          "driver_xyz": [
+            8743.845654347058,
+            0,
+            1758.1773218849676
+          ],
+          "camera_xyz": [
+            8743.4912720595,
+            7.597111090706327,
+            1757.9012283805716
+          ],
+          "heading_rad": -1.1228562994738684,
+          "view_direction": [
+            0.8980736529760182,
+            -0.07940284813521213,
+            -0.43261865602205296
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19239.12278376878,
+          "draw_calls": 48,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.49370641425181105,
+          "oldroad_s_m": -12321.57951928799,
+          "oldroad_distance_to_center_m": 1.6208338225102374,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1758.1773218849676,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_00800m",
+          "file": "diner_oldroad_010_forward_00800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            800.0
+          ],
+          "path_distance_m": 807.9942064791927,
+          "simulation_elapsed_s": 48.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "67b99be6f7b43f28c99f3ecd7349ee689d4d2fed88818283c91b50b3af29e398"
+        },
+        {
+          "world_xyz": [
+            9109.909546428793,
+            7.102254971776853,
+            1595.6542297002325
+          ],
+          "local_xyz": [
+            -9970.343517915084,
+            7.102254971776853,
+            6171.186189820814
+          ],
+          "map_xyz": [
+            1109.909546428793,
+            7.102254971776853,
+            1595.6542297002325
+          ],
+          "driver_xyz": [
+            9109.909546428793,
+            0,
+            1595.6542297002325
+          ],
+          "camera_xyz": [
+            9109.578286285738,
+            8.586999296145155,
+            1595.3575310883982
+          ],
+          "heading_rad": -1.1763306349245761,
+          "view_direction": [
+            0.919430573480565,
+            -0.08560669979950918,
+            -0.383821460445656
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19255.409781651226,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.7426657068239972,
+          "oldroad_s_m": -11920.919371379869,
+          "oldroad_distance_to_center_m": 1.6079184678003509,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1595.6542297002325,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_01200m",
+          "file": "diner_oldroad_011_forward_01200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            1200.0
+          ],
+          "path_distance_m": 1208.5674830041573,
+          "simulation_elapsed_s": 69.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "9b1ac3bf5679ae7b894c67aaa25f31bf21f300443157b502303529b30c24737d"
+        },
+        {
+          "world_xyz": [
+            9479.778057137593,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "local_xyz": [
+            -9600.475007206283,
+            7.087929886042449,
+            6017.384115083483
+          ],
+          "map_xyz": [
+            1479.7780571375934,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "driver_xyz": [
+            9479.778057137593,
+            0,
+            1441.8521549629008
+          ],
+          "camera_xyz": [
+            9479.430908168808,
+            8.572963328401444,
+            1441.5632117906864
+          ],
+          "heading_rad": -1.170523316088403,
+          "view_direction": [
+            0.9179876210225071,
+            -0.0747614317601866,
+            -0.3894989807054764
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19271.692876281366,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.9915653351818543,
+          "oldroad_s_m": -11520.355243478434,
+          "oldroad_distance_to_center_m": 1.5944547203095893,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1441.8521549629008,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_01600m",
+          "file": "diner_oldroad_012_forward_01600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            1600.0
+          ],
+          "path_distance_m": 1609.140793428059,
+          "simulation_elapsed_s": 89.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "f5263ff046e158c80a4dea63b795a7d8b49a87283726cdfd633854a36f9f1de4"
+        },
+        {
+          "world_xyz": [
+            9479.778057137593,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "local_xyz": [
+            -9600.475007206283,
+            7.087929886042449,
+            6017.384115083483
+          ],
+          "map_xyz": [
+            1479.7780571375934,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "driver_xyz": [
+            9479.778057137593,
+            0,
+            1441.8521549629008
+          ],
+          "camera_xyz": [
+            9479.430908168808,
+            8.572963328401444,
+            1441.5632117906864
+          ],
+          "heading_rad": -1.170523316088403,
+          "view_direction": [
+            0.9179876210225071,
+            -0.0747614317601866,
+            -0.3894989807054764
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19271.692876281366,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.9915653351818543,
+          "oldroad_s_m": -11520.355243478434,
+          "oldroad_distance_to_center_m": 1.5944547203095893,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1441.8521549629008,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_1_forward",
+          "file": "diner_oldroad_013_milepost_1_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 1609.140793428059,
+          "simulation_elapsed_s": 89.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "58b2aad954f426ec5e72045dd8ef7ce81af0d622920b3843c9f25b44aa2f3056"
+        },
+        {
+          "world_xyz": [
+            9479.778057137593,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "local_xyz": [
+            -9600.475007206283,
+            7.087929886042449,
+            6017.384115083483
+          ],
+          "map_xyz": [
+            1479.7780571375934,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "driver_xyz": [
+            9479.778057137593,
+            0,
+            1441.8521549629008
+          ],
+          "camera_xyz": [
+            9479.430908168808,
+            8.572963328401444,
+            1441.5632117906864
+          ],
+          "heading_rad": -1.170523316088403,
+          "view_direction": [
+            -0.3896944610095468,
+            0.01255716195650556,
+            -0.9208585910670959
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19271.692876281366,
+          "draw_calls": 37,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.9915653351818543,
+          "oldroad_s_m": -11520.355243478434,
+          "oldroad_distance_to_center_m": 1.5944547203095893,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1441.8521549629008,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_1_left",
+          "file": "diner_oldroad_014_milepost_1_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 1609.140793428059,
+          "simulation_elapsed_s": 89.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "4cf6b361a90bf38b27e4ca77692fb80f40eab8a104728500f93f536ae2688a43"
+        },
+        {
+          "world_xyz": [
+            9479.778057137593,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "local_xyz": [
+            -9600.475007206283,
+            7.087929886042449,
+            6017.384115083483
+          ],
+          "map_xyz": [
+            1479.7780571375934,
+            7.087929886042449,
+            1441.8521549629008
+          ],
+          "driver_xyz": [
+            9479.778057137593,
+            0,
+            1441.8521549629008
+          ],
+          "camera_xyz": [
+            9479.430908168808,
+            8.572963328401444,
+            1441.5632117906864
+          ],
+          "heading_rad": -1.170523316088403,
+          "view_direction": [
+            0.3896944610095469,
+            -0.012557161956505575,
+            0.9208585910670959
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19271.692876281366,
+          "draw_calls": 40,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 0.9915653351818543,
+          "oldroad_s_m": -11520.355243478434,
+          "oldroad_distance_to_center_m": 1.5944547203095893,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1441.8521549629008,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_1_right",
+          "file": "diner_oldroad_015_milepost_1_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 1609.140793428059,
+          "simulation_elapsed_s": 89.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "2e432cbd6738aa1ac16ffde501b257e797d90127546ed001d6da09cc0488e72f"
+        },
+        {
+          "world_xyz": [
+            9848.942868898872,
+            6.7429890841119375,
+            1286.3743021839302
+          ],
+          "local_xyz": [
+            -9231.310195445005,
+            6.7429890841119375,
+            5861.906262304512
+          ],
+          "map_xyz": [
+            1848.942868898872,
+            6.7429890841119375,
+            1286.3743021839302
+          ],
+          "driver_xyz": [
+            9848.942868898872,
+            0,
+            1286.3743021839302
+          ],
+          "camera_xyz": [
+            9848.611991392056,
+            8.229062457852901,
+            1286.0752406747358
+          ],
+          "heading_rad": -1.1827569981997257,
+          "view_direction": [
+            0.9219427280682239,
+            -0.08479199455702179,
+            -0.3779311098879835
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19287.977150689974,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.2404829973612683,
+          "oldroad_s_m": -11119.762093026617,
+          "oldroad_distance_to_center_m": 1.6117144560363312,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1286.3743021839302,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_02000m",
+          "file": "diner_oldroad_016_forward_02000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            2000.0
+          ],
+          "path_distance_m": 2009.7141017967106,
+          "simulation_elapsed_s": 110.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "f03b2b251eed184bbd924805c516b66622980318f105ad200bdff37b089d38b9"
+        },
+        {
+          "world_xyz": [
+            10212.733261675832,
+            6.778648099495541,
+            1143.6279853138794
+          ],
+          "local_xyz": [
+            -8867.519802668045,
+            6.778648099495541,
+            5719.159945434461
+          ],
+          "map_xyz": [
+            2212.733261675832,
+            6.778648099495541,
+            1143.6279853138794
+          ],
+          "driver_xyz": [
+            10212.733261675832,
+            0,
+            1143.6279853138794
+          ],
+          "camera_xyz": [
+            10212.39863812769,
+            8.262478723927467,
+            1143.3267460374957
+          ],
+          "heading_rad": -1.2041801874409166,
+          "view_direction": [
+            0.9304494949074004,
+            -0.07655542859620701,
+            -0.3583336486837575
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19303.864854496594,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.4833387727988994,
+          "oldroad_s_m": -10728.92457938382,
+          "oldroad_distance_to_center_m": 1.5976001408235407,
+          "oldroad_distance_finite": true,
+          "road_local_z": 1143.6279853138794,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_02400m",
+          "file": "diner_oldroad_017_forward_02400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            2400.0
+          ],
+          "path_distance_m": 2400.517324804474,
+          "simulation_elapsed_s": 130.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "abf9c808d201bf7974559c9d9d77c61efc3b3471d2ae3025c3a51183c1938411"
+        },
+        {
+          "world_xyz": [
+            10583.337149457577,
+            5.842084488143322,
+            991.7862983488175
+          ],
+          "local_xyz": [
+            -8496.9159148863,
+            5.842084488143322,
+            5567.3182584694
+          ],
+          "map_xyz": [
+            2583.3371494575767,
+            5.842084488143322,
+            991.7862983488175
+          ],
+          "driver_xyz": [
+            10583.337149457577,
+            0,
+            991.7862983488175
+          ],
+          "camera_xyz": [
+            10582.994945535082,
+            7.328533051762883,
+            991.5004447687633
+          ],
+          "heading_rad": -1.142552973844144,
+          "view_direction": [
+            0.9060099843967718,
+            -0.08478009564392971,
+            -0.41467848214727454
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19320.14432460106,
+          "draw_calls": 49,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.7321829974934273,
+          "oldroad_s_m": -10328.449614813928,
+          "oldroad_distance_to_center_m": 1.5603339296865013,
+          "oldroad_distance_finite": true,
+          "road_local_z": 991.7862983488175,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_02800m",
+          "file": "diner_oldroad_018_forward_02800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            2800.0
+          ],
+          "path_distance_m": 2801.0905863875346,
+          "simulation_elapsed_s": 150.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "313abd146de859cfef9716897b368f4bbf7e0ac3591c94fb91b616d81fe1c62b"
+        },
+        {
+          "world_xyz": [
+            10934.700304374419,
+            6.819774287421503,
+            800.1748187075459
+          ],
+          "local_xyz": [
+            -8145.552759969458,
+            6.819774287421503,
+            5375.706778828127
+          ],
+          "map_xyz": [
+            2934.700304374419,
+            6.819774287421503,
+            800.1748187075459
+          ],
+          "driver_xyz": [
+            10934.700304374419,
+            0,
+            800.1748187075459
+          ],
+          "camera_xyz": [
+            10934.307663856564,
+            8.304201840312214,
+            799.9505364605405
+          ],
+          "heading_rad": -0.99850996102683,
+          "view_direction": [
+            0.8378649521067265,
+            -0.07339358638945967,
+            -0.5409211620080008
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19336.41870893036,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.98094948220192,
+          "oldroad_s_m": -9928.099760313162,
+          "oldroad_distance_to_center_m": 1.5516160183873426,
+          "oldroad_distance_finite": true,
+          "road_local_z": 800.1748187075459,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_03200m",
+          "file": "diner_oldroad_019_forward_03200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            3200.0
+          ],
+          "path_distance_m": 3201.6636450926017,
+          "simulation_elapsed_s": 171.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "909b321e5e16c09afdcaeb74b53c10a5d349dffd125eecb4118028543cbeeb98"
+        },
+        {
+          "world_xyz": [
+            10951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "local_xyz": [
+            -8129.182756576309,
+            6.929599755158357,
+            5365.037205694558
+          ],
+          "map_xyz": [
+            2951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "driver_xyz": [
+            10951.070307767568,
+            0,
+            789.5052455739759
+          ],
+          "camera_xyz": [
+            10950.675955940109,
+            8.414728757516421,
+            789.2828513916771
+          ],
+          "heading_rad": -0.9912200462517253,
+          "view_direction": [
+            0.8338337213187103,
+            -0.07436752011554637,
+            -0.5469833609385713
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19337.212563450707,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.993084159274873,
+          "oldroad_s_m": -9908.570939112577,
+          "oldroad_distance_to_center_m": 1.55267868002585,
+          "oldroad_distance_finite": true,
+          "road_local_z": 789.5052455739759,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_2_forward",
+          "file": "diner_oldroad_020_milepost_2_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 3221.2037977688265,
+          "simulation_elapsed_s": 172.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "7fa4e4233110862efcd54932f033fb26400adbf16e522355b3f055d7961a797a"
+        },
+        {
+          "world_xyz": [
+            10951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "local_xyz": [
+            -8129.182756576309,
+            6.929599755158357,
+            5365.037205694558
+          ],
+          "map_xyz": [
+            2951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "driver_xyz": [
+            10951.070307767568,
+            0,
+            789.5052455739759
+          ],
+          "camera_xyz": [
+            10950.675955940109,
+            8.414728757516421,
+            789.2828513916771
+          ],
+          "heading_rad": -0.9912200462517253,
+          "view_direction": [
+            -0.5476842175871023,
+            0.012434574462044438,
+            -0.8365927200041559
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19337.212563450707,
+          "draw_calls": 37,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.993084159274873,
+          "oldroad_s_m": -9908.570939112577,
+          "oldroad_distance_to_center_m": 1.55267868002585,
+          "oldroad_distance_finite": true,
+          "road_local_z": 789.5052455739759,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_2_left",
+          "file": "diner_oldroad_021_milepost_2_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 3221.2037977688265,
+          "simulation_elapsed_s": 172.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "21aa1cf22155705980f321e10b1cd710861e61b48376447195ef0e0195ff7b47"
+        },
+        {
+          "world_xyz": [
+            10951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "local_xyz": [
+            -8129.182756576309,
+            6.929599755158357,
+            5365.037205694558
+          ],
+          "map_xyz": [
+            2951.070307767568,
+            6.929599755158357,
+            789.5052455739759
+          ],
+          "driver_xyz": [
+            10951.070307767568,
+            0,
+            789.5052455739759
+          ],
+          "camera_xyz": [
+            10950.675955940109,
+            8.414728757516421,
+            789.2828513916771
+          ],
+          "heading_rad": -0.9912200462517253,
+          "view_direction": [
+            0.5476842175871026,
+            -0.012434574462044464,
+            0.8365927200041554
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19337.212563450707,
+          "draw_calls": 38,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 1.993084159274873,
+          "oldroad_s_m": -9908.570939112577,
+          "oldroad_distance_to_center_m": 1.55267868002585,
+          "oldroad_distance_finite": true,
+          "road_local_z": 789.5052455739759,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_2_right",
+          "file": "diner_oldroad_022_milepost_2_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 3221.2037977688265,
+          "simulation_elapsed_s": 172.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "074bd197b136327922ce0e20cbb3c4a77438034581c8a21edb91366ec960484f"
+        },
+        {
+          "world_xyz": [
+            11257.327533010239,
+            7.479030575784204,
+            563.0510377153305
+          ],
+          "local_xyz": [
+            -7822.925531333638,
+            7.479030575784204,
+            5138.5829978359125
+          ],
+          "map_xyz": [
+            3257.3275330102388,
+            7.479030575784204,
+            563.0510377153305
+          ],
+          "driver_xyz": [
+            11257.327533010239,
+            0,
+            563.0510377153305
+          ],
+          "camera_xyz": [
+            11256.918079221352,
+            8.962379588262031,
+            562.8642566905991
+          ],
+          "heading_rad": -0.8966778537499553,
+          "view_direction": [
+            0.7782805911746626,
+            -0.07757709648703237,
+            -0.6231060226811002
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19352.695732619315,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.229756311553298,
+          "oldroad_s_m": -9527.684977564815,
+          "oldroad_distance_to_center_m": 1.5886491370871412,
+          "oldroad_distance_finite": true,
+          "road_local_z": 563.0510377153305,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_03600m",
+          "file": "diner_oldroad_023_forward_03600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            3600.0
+          ],
+          "path_distance_m": 3602.2368098277534,
+          "simulation_elapsed_s": 191.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "ab1bba9cbbb58b21ce434248adbc322b7008c8ce381f8dff5db2ac0281a6b1d1"
+        },
+        {
+          "world_xyz": [
+            11572.102726232499,
+            10.488952250110867,
+            315.362986492066
+          ],
+          "local_xyz": [
+            -7508.150338111378,
+            10.488952250110867,
+            4890.894946612648
+          ],
+          "map_xyz": [
+            3572.1027262324988,
+            10.488952250110867,
+            315.362986492066
+          ],
+          "driver_xyz": [
+            11572.102726232499,
+            0,
+            315.362986492066
+          ],
+          "camera_xyz": [
+            11571.694562563158,
+            11.973958062021355,
+            315.1648598058612
+          ],
+          "heading_rad": -0.934460010714503,
+          "view_direction": [
+            0.8016068090056702,
+            -0.07197140030757197,
+            -0.5935036994775302
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19368.981816720396,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.4787016362743497,
+          "oldroad_s_m": -9127.047308678239,
+          "oldroad_distance_to_center_m": 1.6245993551923827,
+          "oldroad_distance_finite": true,
+          "road_local_z": 315.362986492066,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_04000m",
+          "file": "diner_oldroad_024_forward_04000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            4000.0
+          ],
+          "path_distance_m": 4002.8100915583373,
+          "simulation_elapsed_s": 212.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "e372eaf77a82510813de97454b85af7898d0996a517f883afcf6fb2817812a4e"
+        },
+        {
+          "world_xyz": [
+            11908.16823974011,
+            10.768226972530345,
+            97.87386701067655
+          ],
+          "local_xyz": [
+            -7172.084824603768,
+            10.768226972530345,
+            4673.405827131259
+          ],
+          "map_xyz": [
+            3908.168239740109,
+            10.768226972530345,
+            97.87386701067655
+          ],
+          "driver_xyz": [
+            11908.16823974011,
+            0,
+            97.87386701067655
+          ],
+          "camera_xyz": [
+            11907.798192699682,
+            12.252991992177364,
+            97.62174471559176
+          ],
+          "heading_rad": -1.0591930952936086,
+          "view_direction": [
+            0.8686658487445527,
+            -0.08019864283825616,
+            -0.4888638060971665
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19385.273547371773,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.7277332728606627,
+          "oldroad_s_m": -8726.270734654421,
+          "oldroad_distance_to_center_m": 1.6271260043127487,
+          "oldroad_distance_finite": true,
+          "road_local_z": 97.87386701067655,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_04400m",
+          "file": "diner_oldroad_025_forward_04400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            4400.0
+          ],
+          "path_distance_m": 4403.383223078592,
+          "simulation_elapsed_s": 232.53333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "b7834a348abe61293401f5d7819fe33ea06961026ccf8510bec539de81b6fa0a"
+        },
+        {
+          "world_xyz": [
+            12266.671851600015,
+            11.550367182919224,
+            -80.56520868965649
+          ],
+          "local_xyz": [
+            -6813.581212743862,
+            11.550367182919224,
+            4494.966751430926
+          ],
+          "map_xyz": [
+            4266.671851600015,
+            11.550367182919224,
+            -80.56520868965649
+          ],
+          "driver_xyz": [
+            12266.671851600015,
+            0,
+            -80.56520868965649
+          ],
+          "camera_xyz": [
+            12266.32542676114,
+            13.035194456066618,
+            -80.84877501879255
+          ],
+          "heading_rad": -1.1423168085033972,
+          "view_direction": [
+            0.906202417344878,
+            -0.08096024488638973,
+            -0.41502122541652675
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19401.56242058863,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.9767212313621387,
+          "oldroad_s_m": -8325.564453519655,
+          "oldroad_distance_to_center_m": 1.6064939743641824,
+          "oldroad_distance_finite": true,
+          "road_local_z": -80.56520868965649,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_04800m",
+          "file": "diner_oldroad_026_forward_04800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            4800.0
+          ],
+          "path_distance_m": 4803.956437705769,
+          "simulation_elapsed_s": 253.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "865d59253f380a61d764f73d2b720e992d9f22fcdf2f39d4a9d9c5e7705f3214"
+        },
+        {
+          "world_xyz": [
+            12284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "local_xyz": [
+            -6795.797838634438,
+            11.50306159513237,
+            4486.869255123039
+          ],
+          "map_xyz": [
+            4284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "driver_xyz": [
+            12284.455225709438,
+            0,
+            -88.66270499754295
+          ],
+          "camera_xyz": [
+            12284.11087403884,
+            12.988337431517543,
+            -88.94661613462561
+          ],
+          "heading_rad": -1.1440074047635576,
+          "view_direction": [
+            0.9068364209853388,
+            -0.08184985020320744,
+            -0.41345895515300446
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19402.356845427068,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.9888646261858076,
+          "oldroad_s_m": -8306.021602494133,
+          "oldroad_distance_to_center_m": 1.606036129601011,
+          "oldroad_distance_finite": true,
+          "road_local_z": -88.66270499754295,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_3_forward",
+          "file": "diner_oldroad_027_milepost_3_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 4823.496598664105,
+          "simulation_elapsed_s": 254.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "9337a40953c942ef5381a67d1ae822d30f7f39148298b47f35375667a956f064"
+        },
+        {
+          "world_xyz": [
+            12284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "local_xyz": [
+            -6795.797838634438,
+            11.50306159513237,
+            4486.869255123039
+          ],
+          "map_xyz": [
+            4284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "driver_xyz": [
+            12284.455225709438,
+            0,
+            -88.66270499754295
+          ],
+          "camera_xyz": [
+            12284.11087403884,
+            12.988337431517543,
+            -88.94661613462561
+          ],
+          "heading_rad": -1.1440074047635576,
+          "view_direction": [
+            -0.41388666815391517,
+            0.012469412644201453,
+            -0.910243011328711
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19402.356845427068,
+          "draw_calls": 37,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.9888646261858076,
+          "oldroad_s_m": -8306.021602494133,
+          "oldroad_distance_to_center_m": 1.606036129601011,
+          "oldroad_distance_finite": true,
+          "road_local_z": -88.66270499754295,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_3_left",
+          "file": "diner_oldroad_028_milepost_3_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 4823.496598664105,
+          "simulation_elapsed_s": 254.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "3740950572d860b985fb6aa1c3a5a744ceffc6e276e30d0ae71f14d3bf691997"
+        },
+        {
+          "world_xyz": [
+            12284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "local_xyz": [
+            -6795.797838634438,
+            11.50306159513237,
+            4486.869255123039
+          ],
+          "map_xyz": [
+            4284.455225709438,
+            11.50306159513237,
+            -88.66270499754295
+          ],
+          "driver_xyz": [
+            12284.455225709438,
+            0,
+            -88.66270499754295
+          ],
+          "camera_xyz": [
+            12284.11087403884,
+            12.988337431517543,
+            -88.94661613462561
+          ],
+          "heading_rad": -1.1440074047635576,
+          "view_direction": [
+            0.4138866681539152,
+            -0.012469412644201469,
+            0.9102430113287108
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19402.356845427068,
+          "draw_calls": 38,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 2.9888646261858076,
+          "oldroad_s_m": -8306.021602494133,
+          "oldroad_distance_to_center_m": 1.606036129601011,
+          "oldroad_distance_finite": true,
+          "road_local_z": -88.66270499754295,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_3_right",
+          "file": "diner_oldroad_029_milepost_3_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 4823.496598664105,
+          "simulation_elapsed_s": 254.03333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "223d37499119769813e773802eca6d2d312ff4c7ebef944ec47b42ba0b6c9846"
+        },
+        {
+          "world_xyz": [
+            12631.99160810187,
+            8.82996751218606,
+            -244.88147000296846
+          ],
+          "local_xyz": [
+            -6448.261456242008,
+            8.82996751218606,
+            4330.650490117613
+          ],
+          "map_xyz": [
+            4631.991608101869,
+            8.82996751218606,
+            -244.88147000296846
+          ],
+          "driver_xyz": [
+            12631.99160810187,
+            0,
+            -244.88147000296846
+          ],
+          "camera_xyz": [
+            12631.649663123191,
+            10.317153553506088,
+            -245.1672239122708
+          ],
+          "heading_rad": -1.1451082923821074,
+          "view_direction": [
+            0.9071293228377684,
+            -0.08392038164647787,
+            -0.41240000144544287
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19417.84604635748,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.2256289785838,
+          "oldroad_s_m": -7924.987259605948,
+          "oldroad_distance_to_center_m": 1.5961045343278895,
+          "oldroad_distance_finite": true,
+          "road_local_z": -244.88147000296846,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_05200m",
+          "file": "diner_oldroad_030_forward_05200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            5200.0
+          ],
+          "path_distance_m": 5204.529747118589,
+          "simulation_elapsed_s": 273.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "f945fcc2c4763876a39ebd2a52fc0b8b04edaf3bd33775eac1a170a7aa8f4150"
+        },
+        {
+          "world_xyz": [
+            12996.424614632824,
+            8.366737490602226,
+            -411.15494443437444
+          ],
+          "local_xyz": [
+            -6083.828449711053,
+            8.366737490602226,
+            4164.377015686207
+          ],
+          "map_xyz": [
+            4996.424614632824,
+            8.366737490602226,
+            -411.15494443437444
+          ],
+          "driver_xyz": [
+            12996.424614632824,
+            0,
+            -411.15494443437444
+          ],
+          "camera_xyz": [
+            12996.083073691654,
+            9.851701732950943,
+            -411.44150281897475
+          ],
+          "heading_rad": -1.1488219427360935,
+          "view_direction": [
+            0.9087108067561847,
+            -0.08329663508571047,
+            -0.40903097714955794
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19434.129756366467,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.4745380134807125,
+          "oldroad_s_m": -7524.40799338495,
+          "oldroad_distance_to_center_m": 1.6097350494249676,
+          "oldroad_distance_finite": true,
+          "road_local_z": -411.15494443437444,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_05600m",
+          "file": "diner_oldroad_031_forward_05600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            5600.0
+          ],
+          "path_distance_m": 5605.103056675198,
+          "simulation_elapsed_s": 294.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "42e7553fd797169b97a226608fbd657508ed4d392d61c7e142591b7393f47977"
+        },
+        {
+          "world_xyz": [
+            13366.233028429415,
+            6.577812884182641,
+            -564.9198661892536
+          ],
+          "local_xyz": [
+            -5714.020035914462,
+            6.577812884182641,
+            4010.612093931328
+          ],
+          "map_xyz": [
+            5366.233028429415,
+            6.577812884182641,
+            -564.9198661892536
+          ],
+          "driver_xyz": [
+            13366.233028429415,
+            0,
+            -564.9198661892536
+          ],
+          "camera_xyz": [
+            13365.903329352082,
+            8.062872512800027,
+            -565.2263216064728
+          ],
+          "heading_rad": -1.2124753343445795,
+          "view_direction": [
+            0.9332604678432392,
+            -0.07850105486230939,
+            -0.3505174511297879
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19450.41746041306,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.723508100315218,
+          "oldroad_s_m": -7123.730473838707,
+          "oldroad_distance_to_center_m": 1.6269738614419826,
+          "oldroad_distance_finite": true,
+          "road_local_z": -564.9198661892536,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_06000m",
+          "file": "diner_oldroad_032_forward_06000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            6000.0
+          ],
+          "path_distance_m": 6005.676313320647,
+          "simulation_elapsed_s": 314.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "2eb17a258e7bf2023a64e20dc0e1846b9253d0fec34d80f1394046f1f840b599"
+        },
+        {
+          "world_xyz": [
+            13745.889411770806,
+            7.795430970897202,
+            -692.4857206880147
+          ],
+          "local_xyz": [
+            -5334.363652573071,
+            7.795430970897202,
+            3883.0462394325673
+          ],
+          "map_xyz": [
+            5745.889411770806,
+            7.795430970897202,
+            -692.4857206880147
+          ],
+          "driver_xyz": [
+            13745.889411770806,
+            0,
+            -692.4857206880147
+          ],
+          "camera_xyz": [
+            13745.58007676144,
+            9.280694511930282,
+            -692.8097321432044
+          ],
+          "heading_rad": -1.2690427641388988,
+          "view_direction": [
+            0.9514310685892997,
+            -0.08039109709127432,
+            -0.2971804051943614
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19466.704633739068,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.9724700746772426,
+          "oldroad_s_m": -6723.066010018926,
+          "oldroad_distance_to_center_m": 1.6038702404207423,
+          "oldroad_distance_finite": true,
+          "road_local_z": -692.4857206880147,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_06400m",
+          "file": "diner_oldroad_033_forward_06400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            6400.0
+          ],
+          "path_distance_m": 6406.2495869499435,
+          "simulation_elapsed_s": 335.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "dd0d785e354f65cc566a0d192f49cd181037431e82b6c707257d514c4d115a43"
+        },
+        {
+          "world_xyz": [
+            13773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "local_xyz": [
+            -5306.3746181625065,
+            7.752301579028028,
+            3874.345420897365
+          ],
+          "map_xyz": [
+            5773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "driver_xyz": [
+            13773.87844618137,
+            0,
+            -701.1865392232171
+          ],
+          "camera_xyz": [
+            13773.570688436666,
+            9.237300588885498,
+            -701.5116569629436
+          ],
+          "heading_rad": -1.269597373032767,
+          "view_direction": [
+            0.9514253518940955,
+            -0.0825095569452624,
+            -0.2966175530643683
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19467.896139135788,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.990683151316941,
+          "oldroad_s_m": -6693.754977259594,
+          "oldroad_distance_to_center_m": 1.6010605911615932,
+          "oldroad_distance_finite": true,
+          "road_local_z": -701.1865392232171,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_4_forward",
+          "file": "diner_oldroad_034_milepost_4_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 6435.559829290435,
+          "simulation_elapsed_s": 336.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "31f4229ecd7339910b31cf5e30f8e07c941e3ffd1fd626d2e5fac98a356e3798"
+        },
+        {
+          "world_xyz": [
+            13773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "local_xyz": [
+            -5306.3746181625065,
+            7.752301579028028,
+            3874.345420897365
+          ],
+          "map_xyz": [
+            5773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "driver_xyz": [
+            13773.87844618137,
+            0,
+            -701.1865392232171
+          ],
+          "camera_xyz": [
+            13773.570688436666,
+            9.237300588885498,
+            -701.5116569629436
+          ],
+          "heading_rad": -1.269597373032767,
+          "view_direction": [
+            -0.29662178524461835,
+            0.01249037169234962,
+            -0.9549133505890901
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19467.896139135788,
+          "draw_calls": 37,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.990683151316941,
+          "oldroad_s_m": -6693.754977259594,
+          "oldroad_distance_to_center_m": 1.6010605911615932,
+          "oldroad_distance_finite": true,
+          "road_local_z": -701.1865392232171,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_4_left",
+          "file": "diner_oldroad_035_milepost_4_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 6435.559829290435,
+          "simulation_elapsed_s": 336.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "36667b9070798a46ee7c9a09c32e4f12ea9b03d30c48008b17256de717be6247"
+        },
+        {
+          "world_xyz": [
+            13773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "local_xyz": [
+            -5306.3746181625065,
+            7.752301579028028,
+            3874.345420897365
+          ],
+          "map_xyz": [
+            5773.87844618137,
+            7.752301579028028,
+            -701.1865392232171
+          ],
+          "driver_xyz": [
+            13773.87844618137,
+            0,
+            -701.1865392232171
+          ],
+          "camera_xyz": [
+            13773.570688436666,
+            9.237300588885498,
+            -701.5116569629436
+          ],
+          "heading_rad": -1.269597373032767,
+          "view_direction": [
+            0.29662178524461846,
+            -0.01249037169234964,
+            0.9549133505890901
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19467.896139135788,
+          "draw_calls": 38,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 3.990683151316941,
+          "oldroad_s_m": -6693.754977259594,
+          "oldroad_distance_to_center_m": 1.6010605911615932,
+          "oldroad_distance_finite": true,
+          "road_local_z": -701.1865392232171,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_4_right",
+          "file": "diner_oldroad_036_milepost_4_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 6435.559829290435,
+          "simulation_elapsed_s": 336.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "1f5589dd513b8302237c34ab901cb4f867797e5b230c6bc684436bdf5f67a8dd"
+        },
+        {
+          "world_xyz": [
+            14126.279271840913,
+            7.01462515135707,
+            -817.8492615696846
+          ],
+          "local_xyz": [
+            -4953.973792502964,
+            7.01462515135707,
+            3757.6826985508974
+          ],
+          "map_xyz": [
+            6126.279271840913,
+            7.01462515135707,
+            -817.8492615696846
+          ],
+          "driver_xyz": [
+            14126.279271840913,
+            0,
+            -817.8492615696846
+          ],
+          "camera_xyz": [
+            14125.94885315639,
+            8.4996079088984,
+            -818.1531681783682
+          ],
+          "heading_rad": -1.2132213122840498,
+          "view_direction": [
+            0.9335867632777678,
+            -0.07720788868853014,
+            -0.3499352759537127
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19482.98450472885,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.221320427212216,
+          "oldroad_s_m": -6322.5811836702915,
+          "oldroad_distance_to_center_m": 1.5616095147159041,
+          "oldroad_distance_finite": true,
+          "road_local_z": -817.8492615696846,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_06800m",
+          "file": "diner_oldroad_037_forward_06800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            6800.0
+          ],
+          "path_distance_m": 6806.822832315995,
+          "simulation_elapsed_s": 355.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c10c5c566ed4df90b6f894ac650247c6d97783c0b692138f1e85aa196f98a74f"
+        },
+        {
+          "world_xyz": [
+            14489.677065338756,
+            7.174593791912637,
+            -985.378817852617
+          ],
+          "local_xyz": [
+            -4590.575999005121,
+            7.174593791912637,
+            3590.153142267965
+          ],
+          "map_xyz": [
+            6489.677065338756,
+            7.174593791912637,
+            -985.378817852617
+          ],
+          "driver_xyz": [
+            14489.677065338756,
+            0,
+            -985.378817852617
+          ],
+          "camera_xyz": [
+            14489.31514354888,
+            8.661454806800695,
+            -985.6348655873028
+          ],
+          "heading_rad": -1.0574744660512267,
+          "view_direction": [
+            0.8672855428745228,
+            -0.08707954823573634,
+            -0.49013563367694923
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19499.258165279585,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.470075848408561,
+          "oldroad_s_m": -5922.249134122168,
+          "oldroad_distance_to_center_m": 1.5478817016703124,
+          "oldroad_distance_finite": true,
+          "road_local_z": -985.378817852617,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_07200m",
+          "file": "diner_oldroad_038_forward_07200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            7200.0
+          ],
+          "path_distance_m": 7207.395843062017,
+          "simulation_elapsed_s": 376.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "af3d9f47f5a58294252b3212361c7abcb77216fb6317898533068bcf593d86bc"
+        },
+        {
+          "world_xyz": [
+            14824.177612620546,
+            4.437626782392446,
+            -1205.3313036870945
+          ],
+          "local_xyz": [
+            -4256.075451723331,
+            4.437626782392446,
+            3370.2006564334874
+          ],
+          "map_xyz": [
+            6824.177612620546,
+            4.437626782392446,
+            -1205.3313036870945
+          ],
+          "driver_xyz": [
+            14824.177612620546,
+            0,
+            -1205.3313036870945
+          ],
+          "camera_xyz": [
+            14823.78269786527,
+            5.92267350100237,
+            -1205.540169159022
+          ],
+          "heading_rad": -0.9438094641904983,
+          "view_direction": [
+            0.8065306506687208,
+            -0.081298736970873,
+            -0.5855756355064909
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19515.53444589854,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.718871319363215,
+          "oldroad_s_m": -5521.852630896004,
+          "oldroad_distance_to_center_m": 1.588860006942834,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1205.3313036870945,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_07600m",
+          "file": "diner_oldroad_039_forward_07600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            7600.0
+          ],
+          "path_distance_m": 7607.968989436431,
+          "simulation_elapsed_s": 396.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "f2f14c64c00918fbd0533282abb8a933cd7d7bb12462115768e6758f9afabaaf"
+        },
+        {
+          "world_xyz": [
+            15152.393493153233,
+            3.3556548208965666,
+            -1434.8564657977072
+          ],
+          "local_xyz": [
+            -3927.8595711906437,
+            3.3556548208965666,
+            3140.675494322875
+          ],
+          "map_xyz": [
+            7152.393493153233,
+            3.3556548208965666,
+            -1434.8564657977072
+          ],
+          "driver_xyz": [
+            15152.393493153233,
+            0,
+            -1434.8564657977072
+          ],
+          "camera_xyz": [
+            15152.01651072832,
+            4.8430700790773695,
+            -1435.0921169614323
+          ],
+          "heading_rad": -0.9996388992662146,
+          "view_direction": [
+            0.8375477047180092,
+            -0.08711071376596899,
+            -0.5393751624507549
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19531.82161203175,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.967833183777813,
+          "oldroad_s_m": -5121.188344019015,
+          "oldroad_distance_to_center_m": 1.6412064868239047,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1434.8564657977072,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_08000m",
+          "file": "diner_oldroad_040_forward_08000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            8000.0
+          ],
+          "path_distance_m": 8008.542251429523,
+          "simulation_elapsed_s": 417.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "df884a4be9b489a0ff0f75eba534fad7cb334702fbe4346d6e4a41182d0214ff"
+        },
+        {
+          "world_xyz": [
+            15185.375323187583,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "local_xyz": [
+            -3894.8777411562933,
+            3.0617935476410927,
+            3119.712257824312
+          ],
+          "map_xyz": [
+            7185.3753231875835,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "driver_xyz": [
+            15185.375323187583,
+            0,
+            -1455.81970229627
+          ],
+          "camera_xyz": [
+            15185.001343501732,
+            4.547663784372357,
+            -1456.0598641851816
+          ],
+          "heading_rad": -1.0096356683719085,
+          "view_direction": [
+            0.8429394687015815,
+            -0.08669039466711473,
+            -0.5309781799448593
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19533.410933660958,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.992127187579761,
+          "oldroad_s_m": -5082.091031940388,
+          "oldroad_distance_to_center_m": 1.6405478839434777,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1455.81970229627,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_5_forward",
+          "file": "diner_oldroad_041_milepost_5_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 8047.622558798525,
+          "simulation_elapsed_s": 419.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "438690240ada272310bbd962b3239f3eb19f1be7b513983881d29155ddf119b5"
+        },
+        {
+          "world_xyz": [
+            15185.375323187583,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "local_xyz": [
+            -3894.8777411562933,
+            3.0617935476410927,
+            3119.712257824312
+          ],
+          "map_xyz": [
+            7185.3753231875835,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "driver_xyz": [
+            15185.375323187583,
+            0,
+            -1455.81970229627
+          ],
+          "camera_xyz": [
+            15185.001343501732,
+            4.547663784372357,
+            -1456.0598641851816
+          ],
+          "heading_rad": -1.0096356683719085,
+          "view_direction": [
+            -0.5320528630994874,
+            0.01212033909231574,
+            -0.846624384392468
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19533.410933660958,
+          "draw_calls": 37,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.992127187579761,
+          "oldroad_s_m": -5082.091031940388,
+          "oldroad_distance_to_center_m": 1.6405478839434777,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1455.81970229627,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_5_left",
+          "file": "diner_oldroad_042_milepost_5_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 8047.622558798525,
+          "simulation_elapsed_s": 419.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "4e7e32450251cb9249989282eded08276d7072529268c89ed1a77e5080faece0"
+        },
+        {
+          "world_xyz": [
+            15185.375323187583,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "local_xyz": [
+            -3894.8777411562933,
+            3.0617935476410927,
+            3119.712257824312
+          ],
+          "map_xyz": [
+            7185.3753231875835,
+            3.0617935476410927,
+            -1455.81970229627
+          ],
+          "driver_xyz": [
+            15185.375323187583,
+            0,
+            -1455.81970229627
+          ],
+          "camera_xyz": [
+            15185.001343501732,
+            4.547663784372357,
+            -1456.0598641851816
+          ],
+          "heading_rad": -1.0096356683719085,
+          "view_direction": [
+            0.5320528630994878,
+            -0.012120339092315772,
+            0.8466243843924677
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19533.410933660958,
+          "draw_calls": 38,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 4.992127187579761,
+          "oldroad_s_m": -5082.091031940388,
+          "oldroad_distance_to_center_m": 1.6405478839434777,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1455.81970229627,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_5_right",
+          "file": "diner_oldroad_043_milepost_5_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 8047.622558798525,
+          "simulation_elapsed_s": 419.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c6665e29867725b7097b4d2d7cb334a5d57452f38c81395c8c7f3665f29780f7"
+        },
+        {
+          "world_xyz": [
+            15498.923510052247,
+            2.088943040826313,
+            -1635.5594413720046
+          ],
+          "local_xyz": [
+            -3581.3295542916294,
+            2.088943040826313,
+            2939.9725187485774
+          ],
+          "map_xyz": [
+            7498.923510052247,
+            2.088943040826313,
+            -1635.5594413720046
+          ],
+          "driver_xyz": [
+            15498.923510052247,
+            0,
+            -1635.5594413720046
+          ],
+          "camera_xyz": [
+            15498.552873818568,
+            3.572161681971875,
+            -1635.817434853107
+          ],
+          "heading_rad": -1.0815500406755552,
+          "view_direction": [
+            0.8796832378515299,
+            -0.07579468158725007,
+            -0.4694811681911599
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19548.110536370503,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.216821923716766,
+          "oldroad_s_m": -4720.480805285661,
+          "oldroad_distance_to_center_m": 1.61917115218795,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1635.5594413720046,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_08400m",
+          "file": "diner_oldroad_044_forward_08400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            8400.0
+          ],
+          "path_distance_m": 8409.11547190604,
+          "simulation_elapsed_s": 437.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "38c51c30af6541a3f8bc976ebcd6637237200187755b867b284734ebad69e672"
+        },
+        {
+          "world_xyz": [
+            15854.820936520835,
+            2.420788555135487,
+            -1819.385154148274
+          ],
+          "local_xyz": [
+            -3225.432127823042,
+            2.420788555135487,
+            2756.146805972308
+          ],
+          "map_xyz": [
+            7854.820936520835,
+            2.420788555135487,
+            -1819.385154148274
+          ],
+          "driver_xyz": [
+            15854.820936520835,
+            0,
+            -1819.385154148274
+          ],
+          "camera_xyz": [
+            15854.467247198847,
+            3.9071480426555003,
+            -1819.6548974304467
+          ],
+          "heading_rad": -1.0994040810920622,
+          "view_direction": [
+            0.8872395252137817,
+            -0.08522411161896613,
+            -0.453368366449603
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19564.39518046784,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.465745236872781,
+          "oldroad_s_m": -4319.878560491158,
+          "oldroad_distance_to_center_m": 1.600893646512794,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1819.385154148274,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_08800m",
+          "file": "diner_oldroad_045_forward_08800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            8800.0
+          ],
+          "path_distance_m": 8809.688777920028,
+          "simulation_elapsed_s": 458.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "6be4ce6183712ca22f9fec85cedcf3f010019d33bbd6121e324007139c44bd2e"
+        },
+        {
+          "world_xyz": [
+            16203.027616239357,
+            2.1121926953337598,
+            -1996.809149193584
+          ],
+          "local_xyz": [
+            -2877.22544810452,
+            2.1121926953337598,
+            2578.722810926998
+          ],
+          "map_xyz": [
+            8203.027616239357,
+            2.1121926953337598,
+            -1996.809149193584
+          ],
+          "driver_xyz": [
+            16203.027616239357,
+            0,
+            -1996.809149193584
+          ],
+          "camera_xyz": [
+            16202.66195320791,
+            3.59591259628248,
+            -1997.0739805201638
+          ],
+          "heading_rad": -1.099557428755523,
+          "view_direction": [
+            0.8880093731034708,
+            -0.07555313151277587,
+            -0.4535758785462406
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19580.281499036002,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.7085798378749395,
+          "oldroad_s_m": -3929.075123714345,
+          "oldroad_distance_to_center_m": 1.6000000000148094,
+          "oldroad_distance_finite": true,
+          "road_local_z": -1996.809149193584,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_09200m",
+          "file": "diner_oldroad_046_forward_09200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            9200.0
+          ],
+          "path_distance_m": 9200.492009638063,
+          "simulation_elapsed_s": 478.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c9fb22ef79d112065540e1ba7a163dc7b113e43a94456b7abd20113e12d5264d"
+        },
+        {
+          "world_xyz": [
+            16559.94105110491,
+            1.4248620581336213,
+            -2178.6656275240302
+          ],
+          "local_xyz": [
+            -2520.3120132389668,
+            1.4248620581336213,
+            2396.8663325965517
+          ],
+          "map_xyz": [
+            8559.94105110491,
+            1.4248620581336213,
+            -2178.6656275240302
+          ],
+          "driver_xyz": [
+            16559.94105110491,
+            0,
+            -2178.6656275240302
+          ],
+          "camera_xyz": [
+            16559.590985551284,
+            2.9120397664768736,
+            -2178.937280201446
+          ],
+          "heading_rad": -1.0995574287540228,
+          "view_direction": [
+            0.8871432513536104,
+            -0.08740790024970768,
+            -0.4531409389491111
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19596.56496702437,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.957485173300519,
+          "oldroad_s_m": -3528.501811200544,
+          "oldroad_distance_to_center_m": 1.6000000000499925,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2178.6656275240302,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_09600m",
+          "file": "diner_oldroad_047_forward_09600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            9600.0
+          ],
+          "path_distance_m": 9601.065322151868,
+          "simulation_elapsed_s": 498.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "00915f65e5551ee56a921d67a86d669d6a500221e515a65bdbe6d0248e93abb6"
+        },
+        {
+          "world_xyz": [
+            16612.17228547554,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "local_xyz": [
+            -2468.080778868338,
+            0.967947599098618,
+            2370.2531894262083
+          ],
+          "map_xyz": [
+            8612.172285475539,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "driver_xyz": [
+            16612.17228547554,
+            0,
+            -2205.2787706943736
+          ],
+          "camera_xyz": [
+            16611.821872754157,
+            2.4538571187143563,
+            -2205.5502265650125
+          ],
+          "heading_rad": -1.099557428753845,
+          "view_direction": [
+            0.8871232017291992,
+            -0.08762898799584869,
+            -0.4531374906323222
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19598.947913559256,
+          "draw_calls": 47,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.993910344338451,
+          "oldroad_s_m": -3469.881326442358,
+          "oldroad_distance_to_center_m": 1.600000000051621,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2205.2787706943736,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_6_forward",
+          "file": "diner_oldroad_048_milepost_6_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 9659.685806910054,
+          "simulation_elapsed_s": 501.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c76faf896c30e8d5cb26d79e057b082723b27d781eed8efd6b5aded35c178873"
+        },
+        {
+          "world_xyz": [
+            16612.17228547554,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "local_xyz": [
+            -2468.080778868338,
+            0.967947599098618,
+            2370.2531894262083
+          ],
+          "map_xyz": [
+            8612.172285475539,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "driver_xyz": [
+            16612.17228547554,
+            0,
+            -2205.2787706943736
+          ],
+          "camera_xyz": [
+            16611.821872754157,
+            2.4538571187143563,
+            -2205.5502265650125
+          ],
+          "heading_rad": -1.099557428753845,
+          "view_direction": [
+            -0.4538724155998763,
+            0.012498679589636054,
+            -0.8909790195992547
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19598.947913559256,
+          "draw_calls": 39,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.993910344338451,
+          "oldroad_s_m": -3469.881326442358,
+          "oldroad_distance_to_center_m": 1.600000000051621,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2205.2787706943736,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_6_left",
+          "file": "diner_oldroad_049_milepost_6_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 9659.685806910054,
+          "simulation_elapsed_s": 501.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "0f8f03ce0e8a3c760f680d0e6a3d54f21e55a2ebdeada02e8652d2b7306bc291"
+        },
+        {
+          "world_xyz": [
+            16612.17228547554,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "local_xyz": [
+            -2468.080778868338,
+            0.967947599098618,
+            2370.2531894262083
+          ],
+          "map_xyz": [
+            8612.172285475539,
+            0.967947599098618,
+            -2205.2787706943736
+          ],
+          "driver_xyz": [
+            16612.17228547554,
+            0,
+            -2205.2787706943736
+          ],
+          "camera_xyz": [
+            16611.821872754157,
+            2.4538571187143563,
+            -2205.5502265650125
+          ],
+          "heading_rad": -1.099557428753845,
+          "view_direction": [
+            0.453872415599877,
+            -0.012498679589636092,
+            0.8909790195992543
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19598.947913559256,
+          "draw_calls": 42,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 5.993910344338451,
+          "oldroad_s_m": -3469.881326442358,
+          "oldroad_distance_to_center_m": 1.600000000051621,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2205.2787706943736,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_6_right",
+          "file": "diner_oldroad_050_milepost_6_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 9659.685806910054,
+          "simulation_elapsed_s": 501.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "118eb632bd43ec363cf5b3cfd8b0270045aa8541185db895e3447695ca1fcf14"
+        },
+        {
+          "world_xyz": [
+            16916.854485970875,
+            0.09889007713652544,
+            -2360.522105854726
+          ],
+          "local_xyz": [
+            -2163.3985783730022,
+            0.09889007713652544,
+            2215.009854265856
+          ],
+          "map_xyz": [
+            8916.854485970875,
+            0.09889007713652544,
+            -2360.522105854726
+          ],
+          "driver_xyz": [
+            16916.854485970875,
+            0,
+            -2360.522105854726
+          ],
+          "camera_xyz": [
+            16916.49283981821,
+            1.583534523496062,
+            -2360.788606619756
+          ],
+          "heading_rad": -1.0995574287540788,
+          "view_direction": [
+            0.8878270473198528,
+            -0.07822648576300949,
+            -0.4534796037006317
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19612.848435012755,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.206390508726395,
+          "oldroad_s_m": -3127.928498686264,
+          "oldroad_distance_to_center_m": 1.6000000000489758,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2360.522105854726,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_10000m",
+          "file": "diner_oldroad_051_forward_10000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            10000.0
+          ],
+          "path_distance_m": 10001.63863466615,
+          "simulation_elapsed_s": 519.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "285ce5e55730f7b6c40091e905c3a793bb3fc0882580498f816757c367c20627"
+        },
+        {
+          "world_xyz": [
+            17266.98101757764,
+            -1.3145769257961624,
+            -2554.5986719708726
+          ],
+          "local_xyz": [
+            -1813.2720467662366,
+            -1.3145769257961624,
+            2020.9332881497094
+          ],
+          "map_xyz": [
+            9266.98101757764,
+            -1.3145769257961624,
+            -2554.5986719708726
+          ],
+          "driver_xyz": [
+            17266.98101757764,
+            0,
+            -2554.5986719708726
+          ],
+          "camera_xyz": [
+            17266.6001849442,
+            0.17236890102350988,
+            -2554.826976761684
+          ],
+          "heading_rad": -0.9856582136976667,
+          "view_direction": [
+            0.8299994130378779,
+            -0.08551542206332803,
+            -0.5511697442223303
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19629.12466869138,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.4551852621621135,
+          "oldroad_s_m": -2727.533150192025,
+          "oldroad_distance_to_center_m": 1.5125407079534576,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2554.5986719708726,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_10400m",
+          "file": "diner_oldroad_052_forward_10400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            10400.0
+          ],
+          "path_distance_m": 10402.21168977146,
+          "simulation_elapsed_s": 539.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "1fa7926493f924e24693bb61a4dd2609f2fcedc90839aaa66fb3e76f659a9abe"
+        },
+        {
+          "world_xyz": [
+            17574.276452244143,
+            -0.5048877563626698,
+            -2810.5220734899626
+          ],
+          "local_xyz": [
+            -1505.9766120997338,
+            -0.5048877563626698,
+            1765.0098866306193
+          ],
+          "map_xyz": [
+            9574.276452244143,
+            -0.5048877563626698,
+            -2810.5220734899626
+          ],
+          "driver_xyz": [
+            17574.276452244143,
+            0,
+            -2810.5220734899626
+          ],
+          "camera_xyz": [
+            17573.84602010377,
+            0.9784000562671035,
+            -2810.660464056964
+          ],
+          "heading_rad": -0.7936660169057262,
+          "view_direction": [
+            0.7103454354880256,
+            -0.07244445612424552,
+            -0.7001151070061191
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19645.396365124114,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.703910660303714,
+          "oldroad_s_m": -2327.2494179468204,
+          "oldroad_distance_to_center_m": 1.5676516901680506,
+          "oldroad_distance_finite": true,
+          "road_local_z": -2810.5220734899626,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_10800m",
+          "file": "diner_oldroad_053_forward_10800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            10800.0
+          ],
+          "path_distance_m": 10802.78453819134,
+          "simulation_elapsed_s": 560.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "dc2b50a71f55866b957ab115840b27331af06d666d4e5ac64c4675e804c9ab06"
+        },
+        {
+          "world_xyz": [
+            17857.680733428206,
+            0.23420967965413844,
+            -3093.613297089479
+          ],
+          "local_xyz": [
+            -1222.572330915671,
+            0.23420967965413844,
+            1481.9186630311028
+          ],
+          "map_xyz": [
+            9857.680733428206,
+            0.23420967965413844,
+            -3093.613297089479
+          ],
+          "driver_xyz": [
+            17857.680733428206,
+            0,
+            -3093.613297089479
+          ],
+          "camera_xyz": [
+            17857.254630604795,
+            1.7197170287904917,
+            -3093.75557446591
+          ],
+          "heading_rad": -0.7853981633982168,
+          "view_direction": [
+            0.7041830012504685,
+            -0.07917030290192546,
+            -0.7055907906770753
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19661.679366773187,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.952808867374479,
+          "oldroad_s_m": -1926.687577379556,
+          "oldroad_distance_to_center_m": 1.5999999999819094,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3093.613297089479,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_11200m",
+          "file": "diner_oldroad_054_forward_11200m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            11200.0
+          ],
+          "path_distance_m": 11203.35784720151,
+          "simulation_elapsed_s": 580.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "64219b80063a28c204a550ee44b9c2f4455289b1a482976f5d40ab8191606763"
+        },
+        {
+          "world_xyz": [
+            17899.131675717,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "local_xyz": [
+            -1181.121388626878,
+            0.28412757809896205,
+            1440.4677207423097
+          ],
+          "map_xyz": [
+            9899.131675716999,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "driver_xyz": [
+            17899.131675717,
+            0,
+            -3135.0642393782723
+          ],
+          "camera_xyz": [
+            17898.70406194797,
+            1.7682887159785214,
+            -3135.205094388342
+          ],
+          "heading_rad": -0.7853981633982517,
+          "view_direction": [
+            0.7042756373260295,
+            -0.07754102997929249,
+            -0.705679258118563
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19664.062313308066,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.989234038412269,
+          "oldroad_s_m": -1868.0670926216008,
+          "oldroad_distance_to_center_m": 1.5999999999819094,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3135.0642393782723,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_7_forward",
+          "file": "diner_oldroad_055_milepost_7_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 11261.978331959464,
+          "simulation_elapsed_s": 583.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "7d0c4dba8ca963ebf61645dd373e0d15c50b8fab2e0f0229bc65e5204dfd4054"
+        },
+        {
+          "world_xyz": [
+            17899.131675717,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "local_xyz": [
+            -1181.121388626878,
+            0.28412757809896205,
+            1440.4677207423097
+          ],
+          "map_xyz": [
+            9899.131675716999,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "driver_xyz": [
+            17899.131675717,
+            0,
+            -3135.0642393782723
+          ],
+          "camera_xyz": [
+            17898.70406194797,
+            1.7682887159785214,
+            -3135.205094388342
+          ],
+          "heading_rad": -0.7853981633982517,
+          "view_direction": [
+            -0.7070680325450454,
+            0.012499001802792672,
+            -0.7070350573393178
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19664.062313308066,
+          "draw_calls": 39,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.989234038412269,
+          "oldroad_s_m": -1868.0670926216008,
+          "oldroad_distance_to_center_m": 1.5999999999819094,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3135.0642393782723,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_7_left",
+          "file": "diner_oldroad_056_milepost_7_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 11261.978331959464,
+          "simulation_elapsed_s": 583.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "cdb6c5dc55cad4b032df29cf59bea376e8bbcfc419b77083335070b33c2ae985"
+        },
+        {
+          "world_xyz": [
+            17899.131675717,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "local_xyz": [
+            -1181.121388626878,
+            0.28412757809896205,
+            1440.4677207423097
+          ],
+          "map_xyz": [
+            9899.131675716999,
+            0.28412757809896205,
+            -3135.0642393782723
+          ],
+          "driver_xyz": [
+            17899.131675717,
+            0,
+            -3135.0642393782723
+          ],
+          "camera_xyz": [
+            17898.70406194797,
+            1.7682887159785214,
+            -3135.205094388342
+          ],
+          "heading_rad": -0.7853981633982517,
+          "view_direction": [
+            0.7070680325450458,
+            -0.0124990018027927,
+            0.7070350573393175
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19664.062313308066,
+          "draw_calls": 42,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 6.989234038412269,
+          "oldroad_s_m": -1868.0670926216008,
+          "oldroad_distance_to_center_m": 1.5999999999819094,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3135.0642393782723,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_7_right",
+          "file": "diner_oldroad_057_milepost_7_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 11261.978331959464,
+          "simulation_elapsed_s": 583.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "e46c98e76d57545febdacd9cda888d6ddc5ac1e2b13e42cc80565e83fb1b067a"
+        },
+        {
+          "world_xyz": [
+            18140.928839068292,
+            2.217533700465413,
+            -3376.8614027295657
+          ],
+          "local_xyz": [
+            -939.3242252755845,
+            2.217533700465413,
+            1198.6705573910162
+          ],
+          "map_xyz": [
+            10140.928839068292,
+            2.217533700465413,
+            -3376.8614027295657
+          ],
+          "driver_xyz": [
+            18140.928839068292,
+            0,
+            -3376.8614027295657
+          ],
+          "camera_xyz": [
+            18140.498009606894,
+            3.7018640425834155,
+            -3376.9982313453556
+          ],
+          "heading_rad": -0.7853981633982278,
+          "view_direction": [
+            0.7044696037544026,
+            -0.07395451192512059,
+            -0.7058706025554771
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19677.96283476151,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.201714202799371,
+          "oldroad_s_m": -1526.1142648668615,
+          "oldroad_distance_to_center_m": 1.5999999999820702,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3376.8614027295657,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_11600m",
+          "file": "diner_oldroad_058_forward_11600m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            11600.0
+          ],
+          "path_distance_m": 11603.931159714195,
+          "simulation_elapsed_s": 601.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "e46a0635ef54c12b34ff0e87bcf78391d3d15d63e778f5e56bdaaa7a1e9713bb"
+        },
+        {
+          "world_xyz": [
+            18418.91964256063,
+            1.7077305572919683,
+            -3665.169589715411
+          ],
+          "local_xyz": [
+            -661.3334217832453,
+            1.7077305572919683,
+            910.3623704051711
+          ],
+          "map_xyz": [
+            10418.919642560631,
+            1.7077305572919683,
+            -3665.169589715411
+          ],
+          "driver_xyz": [
+            18418.91964256063,
+            0,
+            -3665.169589715411
+          ],
+          "camera_xyz": [
+            18418.49127528343,
+            3.192730930387732,
+            -3665.2893078829497
+          ],
+          "heading_rad": -0.7239587645625066,
+          "view_direction": [
+            0.6592612220352099,
+            -0.08349964859851855,
+            -0.7472633068768771
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19694.242387552953,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.450559691427938,
+          "oldroad_s_m": -1125.6372661973626,
+          "oldroad_distance_to_center_m": 1.5518372255616135,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3665.169589715411,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_12000m",
+          "file": "diner_oldroad_059_forward_12000m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            12000.0
+          ],
+          "path_distance_m": 12004.504387169343,
+          "simulation_elapsed_s": 621.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "57205eb047d16c31f4b8644daecfc101e388b7a1a116951cff7f5a3c5baf992b"
+        },
+        {
+          "world_xyz": [
+            18665.453970498515,
+            2.1312218031450456,
+            -3980.623572566565
+          ],
+          "local_xyz": [
+            -414.7990938453622,
+            2.1312218031450456,
+            594.9083875540168
+          ],
+          "map_xyz": [
+            10665.453970498515,
+            2.1312218031450456,
+            -3980.623572566565
+          ],
+          "driver_xyz": [
+            18665.453970498515,
+            0,
+            -3980.623572566565
+          ],
+          "camera_xyz": [
+            18665.008527907037,
+            3.6173818106142708,
+            -3980.689570165674
+          ],
+          "heading_rad": -0.6161691457123196,
+          "view_direction": [
+            0.5753614282444336,
+            -0.07720903473789649,
+            -0.814246886296391
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19710.519042362117,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.69936088216788,
+          "oldroad_s_m": -725.2315578919456,
+          "oldroad_distance_to_center_m": 1.5805598783342762,
+          "oldroad_distance_finite": true,
+          "road_local_z": -3980.623572566565,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_12400m",
+          "file": "diner_oldroad_060_forward_12400m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            12400.0
+          ],
+          "path_distance_m": 12405.077564735288,
+          "simulation_elapsed_s": 642.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "8cdc25e8e94dea744dae6f3ad3e33e1feb01ced19e91476695faed44cb4edac3"
+        },
+        {
+          "world_xyz": [
+            18895.342748805317,
+            1.1721125064845859,
+            -4308.66314668515
+          ],
+          "local_xyz": [
+            -184.9103155385601,
+            1.1721125064845859,
+            266.86881343543155
+          ],
+          "map_xyz": [
+            10895.342748805317,
+            1.1721125064845859,
+            -4308.66314668515
+          ],
+          "driver_xyz": [
+            18895.342748805317,
+            0,
+            -4308.66314668515
+          ],
+          "camera_xyz": [
+            18894.901898280208,
+            2.6570937130226837,
+            -4308.7328391443725
+          ],
+          "heading_rad": -0.6108652381982905,
+          "view_direction": [
+            0.5708198284676612,
+            -0.08224581895823284,
+            -0.8169457440320252
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19726.57790586579,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.948261191597943,
+          "oldroad_s_m": -324.6663339137661,
+          "oldroad_distance_to_center_m": 1.5999999999932362,
+          "oldroad_distance_finite": true,
+          "road_local_z": -4308.66314668515,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "forward_12800m",
+          "file": "diner_oldroad_061_forward_12800m.png",
+          "reason": "400 m accumulated-path interval",
+          "interval_thresholds_m": [
+            12800.0
+          ],
+          "path_distance_m": 12805.650875606692,
+          "simulation_elapsed_s": 662.5333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c7169b623dada360b79309c00395a27134d21d8e7922f2cc97e098e4c0dd8364"
+        },
+        {
+          "world_xyz": [
+            18934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "local_xyz": [
+            -145.68309866975687,
+            1.0164451593621004,
+            210.84654185419458
+          ],
+          "map_xyz": [
+            10934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "driver_xyz": [
+            18934.56996567412,
+            0,
+            -4364.685418266387
+          ],
+          "camera_xyz": [
+            18934.12717870276,
+            2.501168421443844,
+            -4364.753053106363
+          ],
+          "heading_rad": -0.6108652381986129,
+          "view_direction": [
+            0.5708338372007644,
+            -0.08166680438427158,
+            -0.8169940412073473
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19728.72901817962,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.990757224475434,
+          "oldroad_s_m": -256.275768362705,
+          "oldroad_distance_to_center_m": 1.5999999999846026,
+          "oldroad_distance_finite": true,
+          "road_local_z": -4364.685418266387,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_8_forward",
+          "file": "diner_oldroad_062_milepost_8_forward.png",
+          "reason": "landmark at actual recorded pose; no placement or threshold interpolation",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12874.041441157753,
+          "simulation_elapsed_s": 666.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "6df0051aab9ef7a58f8dae0b4bbf7b8baf68f55162887d30de5508821dc1535e"
+        },
+        {
+          "world_xyz": [
+            18934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "local_xyz": [
+            -145.68309866975687,
+            1.0164451593621004,
+            210.84654185419458
+          ],
+          "map_xyz": [
+            10934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "driver_xyz": [
+            18934.56996567412,
+            0,
+            -4364.685418266387
+          ],
+          "camera_xyz": [
+            18934.12717870276,
+            2.501168421443844,
+            -4364.753053106363
+          ],
+          "heading_rad": -0.6108652381986129,
+          "view_direction": [
+            -0.8190811451374052,
+            0.012499017745222548,
+            -0.5735415000118139
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19728.72901817962,
+          "draw_calls": 42,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.990757224475434,
+          "oldroad_s_m": -256.275768362705,
+          "oldroad_distance_to_center_m": 1.5999999999846026,
+          "oldroad_distance_finite": true,
+          "road_local_z": -4364.685418266387,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_8_left",
+          "file": "diner_oldroad_063_milepost_8_left.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12874.041441157753,
+          "simulation_elapsed_s": 666.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "0760e6fa498058ab38ba189ced8875a5793bcba642d216ca740e175f6ec4b09a"
+        },
+        {
+          "world_xyz": [
+            18934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "local_xyz": [
+            -145.68309866975687,
+            1.0164451593621004,
+            210.84654185419458
+          ],
+          "map_xyz": [
+            10934.56996567412,
+            1.0164451593621004,
+            -4364.685418266387
+          ],
+          "driver_xyz": [
+            18934.56996567412,
+            0,
+            -4364.685418266387
+          ],
+          "camera_xyz": [
+            18934.12717870276,
+            2.501168421443844,
+            -4364.753053106363
+          ],
+          "heading_rad": -0.6108652381986129,
+          "view_direction": [
+            0.8190811451374052,
+            -0.01249901774522257,
+            0.5735415000118143
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19728.72901817962,
+          "draw_calls": 43,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 7.990757224475434,
+          "oldroad_s_m": -256.275768362705,
+          "oldroad_distance_to_center_m": 1.5999999999846026,
+          "oldroad_distance_finite": true,
+          "road_local_z": -4364.685418266387,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "milepost_8_right",
+          "file": "diner_oldroad_064_milepost_8_right.png",
+          "reason": "held driver camera rotated 90 degrees; existing view.draw, no tick",
+          "interval_thresholds_m": [],
+          "path_distance_m": 12874.041441157753,
+          "simulation_elapsed_s": 666.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "ac577144acfff2612317460d1385da95f990ca31e579aec72c8bd05f392ec311"
+        },
+        {
+          "world_xyz": [
+            19035.439951908185,
+            1.355293344265323,
+            -4508.742688046675
+          ],
+          "local_xyz": [
+            -44.81311243569144,
+            1.355293344265323,
+            66.78927207390734
+          ],
+          "map_xyz": [
+            11035.439951908185,
+            1.355293344265323,
+            -4508.742688046675
+          ],
+          "driver_xyz": [
+            19035.439951908185,
+            0,
+            -4508.742688046675
+          ],
+          "camera_xyz": [
+            19034.992185766343,
+            2.839697211274726,
+            -4508.8026891202635
+          ],
+          "heading_rad": -0.6108652381986196,
+          "view_direction": [
+            0.5711457327533572,
+            -0.07489159029721215,
+            -0.8174251046183897
+          ],
+          "cab_yaw_rad": 0,
+          "cab_pitch_rad": -0.08,
+          "camera_role": "driver_cab",
+          "clock_seconds": 19732.803915158012,
+          "draw_calls": 46,
+          "area": "roswell",
+          "leg": "roswell",
+          "driving": true,
+          "truck_at": null,
+          "mile": 8.100032737588965,
+          "oldroad_s_m": -80.41431408857753,
+          "oldroad_distance_to_center_m": 1.5999999999831613,
+          "oldroad_distance_finite": true,
+          "road_local_z": -4508.742688046675,
+          "speed_mps": 19.54016158597975,
+          "chapter6_stage": "drive",
+          "name": "end",
+          "file": "diner_oldroad_065_end.png",
+          "reason": "past mile 8.1, before THE EVENT",
+          "interval_thresholds_m": [],
+          "path_distance_m": 13049.90289543188,
+          "simulation_elapsed_s": 675.0333333333333,
+          "url": "https://tombonator3000.github.io/SIGNAL-47/",
+          "source_git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+          "build_fingerprint_sha256": "f79c34f4c7817f1e167870350ff982e4f686ad59079c25ae3d7c411e0d229ac8",
+          "renderer": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "Google Inc. (Google)",
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "pixel_ratio": 1,
+            "hardware_performance": "UNVERIFIED"
+          },
+          "preset": {
+            "quality": "high",
+            "picture": "off"
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "b572f613819ca6aca5645af8362f5892839f6ee3c255750d10e08e688ff3ad1d"
+        }
+      ],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "warnings": [],
+      "console_messages": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 ()",
+          "location": {
+            "url": "https://tombonator3000.github.io/favicon.ico",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 ()",
+          "location": {
+            "url": "https://tombonator3000.github.io/favicon.ico",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "failed_http": [],
+      "loaded_code_sha256": {
+        "https://tombonator3000.github.io/SIGNAL-47/": "72e160f4fbe0059dfdf3277e5aee765ee3c1779932bc3e3a8e4580628999e8b3",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/index-C0RfO_xx.js": "2a2db861479c10828779282b2037b0cae2740975fe440650a965f3d4bcc71cb1",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/Truck-BEDY71BP.js": "2e026f8919a316d3f16eb89a2c6094979366f1d0e1c9f716d828140559d5ee4a",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/corridors-CH5GAn6B.js": "f3d7c38279c7cf38e4516a95ce22ecc15b6d9a10af771c06e32f6e8eff9d0f0a",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/roadPlaces-6g_-JWVj.js": "eea8fcbd992d6b49be25402257964657a5c23a8e06ab1e7a26e8eea52c809630",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/roadProps-BpplG1bl.js": "5555021a727c5d579647fefa328d1ea86de820a2a47ebe8e40e965d31ad9e0cc",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/Diner-CkPK2sOr.js": "d15dd0f925d966b99f3a4973941783c5dfc75792e0bffe07c506c6c8c7f4741b",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/RoadArea-CARXGMJ4.js": "eaedb2787547838f9a49858672c2991863665733ed787bf942c8ad54dde66e75",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/oldRoadTextures-DEWYJEtU.js": "47f14c8e084583a42d1df08f7c728a19c108835e437217169d2efc54bf13eb21",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/Drive-Dnx72MrU.js": "d42982fbe0b860484694f8242dc61ec86ebb69535e5e901cb00f8178f489c525",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/legs-SJtibrDy.js": "400621fafd8a7f72c3ade0d81f5430112fe04397f4c8e558090a5cd13c151fd1",
+        "https://tombonator3000.github.io/SIGNAL-47/assets/OldRoad-BGdLYCGb.js": "79c21e7dc9ab1a5220e93b7f219d2e441df0475634fb80377efa6fc1e356ddf5"
+      },
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "start_clock_seconds": 19200,
+      "side_capture_checks": [
+        {
+          "name": "diner_lot_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "diner_lot_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "highway_oldroad_crossroads_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "highway_oldroad_crossroads_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "oldroad_fence_opening_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "oldroad_fence_opening_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_1_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_1_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_2_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_2_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_3_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_3_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_4_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_4_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_5_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_5_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_6_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_6_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_7_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_7_right",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_8_left",
+          "unchanged": true,
+          "camera_restored": true
+        },
+        {
+          "name": "milepost_8_right",
+          "unchanged": true,
+          "camera_restored": true
+        }
+      ],
+      "failure": "RuntimeError: 2 console/page errors; see manifest",
+      "path_distance_m": 13049.90289543188,
+      "simulation_elapsed_s": 675.0333333333333
+    }
+  ],
+  "failures": [
+    "diner_oldroad: RuntimeError: 2 console/page errors; see manifest"
+  ],
+  "requested_trips": [
+    "diner_oldroad"
+  ],
+  "url": "https://tombonator3000.github.io/SIGNAL-47/",
+  "interval_m": 400.0,
+  "step_s": 0.5,
+  "fps": 30,
+  "autopilot_mps": 20,
+  "wall_timeout_s": 2400,
+  "limitations": [
+    "Autopilot capture, not manual controls or hardware fps verification.",
+    "Side shots use held camera rotation and view.draw without ticking; truck/clock preservation is checked.",
+    "No automatic visual PASS; source/build byte equivalence is UNVERIFIED."
+  ],
+  "source": {
+    "git_head": "77d62f5e1349ff2eeeec1f44b62112858262d95f",
+    "git_status": "?? node_modules\n?? tools/drivelook.py",
+    "files_sha256": {
+      "src/world/World.ts": "fc28c54c06087a8bf0bdf0c0d8161b52c5677b43ad511e85d6d0aa536bcdcca1",
+      "src/drive/Drive.ts": "57a9c211a9d86864196f754e73027d3f8daa7f76fbc300e011c4b7d4e11b3f49",
+      "src/drive/OldRoad.ts": "62a2f2a1bd2ed1d0324b462c06a3c9f2c91918084f036011f3d91ae22e9a5418",
+      "src/drive/legs.ts": "bcfb1d2dcde1d1f08fdf685bce123963336417178e1da6a64d5ad37916bbabec",
+      "src/story/Chapter6.ts": "27a3ef490e089ad57dff8a716fc56e50f0329c3c00e41a1e5a85f840e8c8dada",
+      "tools/drivelook.py": "9b436c7693e9981ed33490cc3cbc29d530597975f0051da8a5ef999a7c6f7add"
+    },
+    "relationship_to_served_build": "UNVERIFIED; local source is recorded separately from loaded build bytes."
+  },
+  "wall_elapsed_s": 1023.7033954529907
+}
