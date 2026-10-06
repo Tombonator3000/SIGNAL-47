@@ -1,0 +1,5210 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-10-06T09:06:10.512919+00:00",
+  "capture_status": "COMPLETE_6_OF_6",
+  "visual_status": "REVIEWED_WITH_ONE_P2_AND_EXPLICIT_COVERAGE_LIMITS",
+  "totals": {
+    "original_png_count": 234,
+    "route_frames": 174,
+    "stationary_frames": 60,
+    "pair_count": 30
+  },
+  "baseline": "eb09d860329cbe321b71c6cdbb7a19ddc93dba7d",
+  "build_proof": "build.json",
+  "tool_checks": "tool_checks.json",
+  "packaging_proof": "packaging.json",
+  "findings": [
+    {
+      "id": "K01",
+      "priority": "P2",
+      "title": "Ultra gir harde, lyse sømmer langs fjernt terreng og mesaer",
+      "observed": "Lyse grå, skarpt avgrensede bånd følger terreng-/mesakanter. High har mørkere og mykere overganger ved identiske kamerastillinger og klokker. Avviket finnes i begge skjermstørrelser og med Ultra picture=off.",
+      "owner": "Claude: felles Ultra-postprosessering eller fjernterreng/materiale; ingen påvist feil i oldRoadLandmarks.ts",
+      "cause": "UNVERIFIED. core/vhs.ts:196 beholder Ultra AO/bloom når picture=off; det avgrenser feilsøking, men beviser ingen bestemt pass eller shader.",
+      "suggested_next_action": "Kontroller Ultra dybde/AO/fog ved de dokumenterte posene. Etter eventuell rettelse: målrettet K01-sammenligning og én samlet integrasjonsrunde avtalt med Claude.",
+      "status": "OPEN_OWNER_REVIEW",
+      "evidence": [
+        {
+          "config": "ultra_844x390",
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "9fdf3c1d393dc184acb78f076df6dc59ebaddd75cfaac672f746b463f86fae39"
+        },
+        {
+          "config": "ultra_844x390",
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "3780362d8173ebbe43b6ea52c5c9864595cae9e18483b4504962f7e892653e1b"
+        },
+        {
+          "config": "ultra_844x390",
+          "file": "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+          "mile": 3.0758006406756353,
+          "world_xyz": [
+            12412.03817133084,
+            10.67136693795208,
+            -146.06118074147798
+          ],
+          "map_xyz": [
+            4412.03817133084,
+            10.67136693795208,
+            -146.06118074147798
+          ],
+          "camera_xyz": [
+            12411.702856038868,
+            12.158234647522482,
+            -146.35100557821764
+          ],
+          "view_direction": [
+            -0.05104804536914245,
+            -0.020277029522610127,
+            -0.998490330017136
+          ],
+          "clock_seconds": 19399.98081390805,
+          "quality": "ultra",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "0fea543cd7a06f7ee2cae129c50eb241f2e43bdaa16a7a0f031020356536b686"
+        },
+        {
+          "config": "ultra_844x390",
+          "file": "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+          "mile": 3.150365364680228,
+          "world_xyz": [
+            12521.571394357503,
+            9.628225878682061,
+            -195.08083039708163
+          ],
+          "map_xyz": [
+            4521.571394357503,
+            9.628225878682061,
+            -195.08083039708163
+          ],
+          "camera_xyz": [
+            12521.235888099283,
+            11.114845927034185,
+            -195.37031416320187
+          ],
+          "view_direction": [
+            -0.05230535607325511,
+            -0.02032348039940978,
+            -0.9984243115381882
+          ],
+          "clock_seconds": 19400.047480574714,
+          "quality": "ultra",
+          "picture": "off",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "eb4e5c1af7f58738c2d365d232bc615cc0e0e96e2964103012b0a47839deb706"
+        },
+        {
+          "config": "ultra_1280x800",
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "b1280fd902fa06df04f88b4ddca00226be6d2971e3e1cea6c9f7c4f8e295730e"
+        },
+        {
+          "config": "ultra_1280x800",
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "quality": "ultra",
+          "picture": "vhs",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "6c31de2bb61b8520bca97e11432aa8ca89667639c5e69e0ad6ee2a50c07c9d50"
+        },
+        {
+          "config": "ultra_1280x800",
+          "file": "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+          "mile": 3.0758006406756353,
+          "world_xyz": [
+            12412.03817133084,
+            10.67136693795208,
+            -146.06118074147798
+          ],
+          "map_xyz": [
+            4412.03817133084,
+            10.67136693795208,
+            -146.06118074147798
+          ],
+          "camera_xyz": [
+            12411.702856038868,
+            12.158234647522482,
+            -146.35100557821764
+          ],
+          "view_direction": [
+            -0.05104804536914245,
+            -0.020277029522610127,
+            -0.998490330017136
+          ],
+          "clock_seconds": 19399.98081390805,
+          "quality": "ultra",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "feb7c6e49e70cee26640900f570fca5896e6b7c93478d27b7ec0caa1baa77369"
+        },
+        {
+          "config": "ultra_1280x800",
+          "file": "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+          "mile": 3.150365364680228,
+          "world_xyz": [
+            12521.571394357503,
+            9.628225878682061,
+            -195.08083039708163
+          ],
+          "map_xyz": [
+            4521.571394357503,
+            9.628225878682061,
+            -195.08083039708163
+          ],
+          "camera_xyz": [
+            12521.235888099283,
+            11.114845927034185,
+            -195.37031416320187
+          ],
+          "view_direction": [
+            -0.05230535607325511,
+            -0.02032348039940978,
+            -0.9984243115381882
+          ],
+          "clock_seconds": 19400.047480574714,
+          "quality": "ultra",
+          "picture": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "8967a0db520233dcea4f8e030753f6d0a85784cc157393865d191613d0e362c9"
+        }
+      ],
+      "comparisons": [
+        {
+          "file": "derived/K01-horizon-844x390.png",
+          "sha256": "9bd33c74efe9eb1a47b8e0bde85f94b2fc3283ce41a607cc5d3fae142c05df89",
+          "source_files": [
+            "high_844x390/kessler_017_mile3.25_left.png",
+            "ultra_844x390/kessler_017_mile3.25_left.png"
+          ],
+          "source_sha256": [
+            "c290b0f8153cacc511cb7d3fbcf80dd246fbde18db074b4706ca13f9a46db9c1",
+            "3780362d8173ebbe43b6ea52c5c9864595cae9e18483b4504962f7e892653e1b"
+          ],
+          "crop_rect": [
+            165,
+            145,
+            635,
+            235
+          ],
+          "identical_pose_fields": [
+            "mile",
+            "clock_seconds",
+            "camera_xyz",
+            "camera_quaternion",
+            "camera_projection",
+            "truck_quaternion"
+          ],
+          "nearest_enlargement": true
+        },
+        {
+          "file": "derived/K01-horizon-1280x800.png",
+          "sha256": "f035460b72b327bdc46746cc4b9202d7fedfd830b4527a0c46f13712bc7032bc",
+          "source_files": [
+            "high_1280x800/kessler_017_mile3.25_left.png",
+            "ultra_1280x800/kessler_017_mile3.25_left.png"
+          ],
+          "source_sha256": [
+            "02260a727c7897b1af545de133a9a87989e33d29649f006d00c3e706b9bbc372",
+            "6c31de2bb61b8520bca97e11432aa8ca89667639c5e69e0ad6ee2a50c07c9d50"
+          ],
+          "crop_rect": [
+            125,
+            265,
+            1180,
+            420
+          ],
+          "identical_pose_fields": [
+            "mile",
+            "clock_seconds",
+            "camera_xyz",
+            "camera_quaternion",
+            "camera_projection",
+            "truck_quaternion"
+          ],
+          "nearest_enlargement": true
+        }
+      ],
+      "pixel_rois_844x390_mile3_25": {
+        "left_mesa": [
+          183,
+          192,
+          286,
+          214
+        ],
+        "gravel_farm_edge": [
+          367,
+          184,
+          430,
+          202
+        ],
+        "right_far_land": [
+          535,
+          166,
+          625,
+          185
+        ]
+      }
+    }
+  ],
+  "coverage": [
+    {
+      "subject": "Port, KESSLER-forside, gjerdeåpning og grusspor ved veien",
+      "status": "MANUALLY_REVIEWED",
+      "result": "Sammenhengende i tilgjengelige rute-/sidebilder. Ingen separat P1-P3-feil observert. Low har forventet flatere kontrast."
+    },
+    {
+      "subject": "Alle 156 frontbilder og 18 venstreblikk",
+      "status": "CONTACT_SHEETS_REVIEWED",
+      "result": "Alle seks konfigurasjoners kontaktark gjennomgått, med originalbilder ved 3.20 og representative 3.15/3.25. Kontaktark er ikke full pikselinspeksjon av hvert originalbilde."
+    },
+    {
+      "subject": "Stillstandspar og flimring",
+      "status": "MEASURED_NOT_A_VISUAL_PASS",
+      "result": "30 A/B-par; alle par på kontaktark, representative originale A/B og differanseplater inspisert. Numeriske endringer kan skyldes scene-/lys-/sky-/posteffekter og beviser ikke z-fighting."
+    },
+    {
+      "subject": "Baksiden av KESSLER-skiltet",
+      "status": "UNVERIFIED",
+      "result": "Det foreskrevne venstreblikket viser ikke en lesbar bakside. Ved 3.25 ligger porten bak utsnittet; ingen ekstra teleport-/kamerarute lagt til."
+    },
+    {
+      "subject": "Gårdens fjerne veranda-, tank- og vindmøllefundament, skuldre og nordkappe",
+      "status": "UNVERIFIED_AT_NEAR_RANGE",
+      "result": "Mørke, små eller delvis skjulte elementer i denne kjøreavstanden. Tidligere geometrikontroll er separat bevis, ikke nærvisuell PASS her."
+    },
+    {
+      "subject": "Fysisk mobil, ekte fps, manuell kjøring, lyd og bevegelig z-fighting",
+      "status": "UNVERIFIED",
+      "result": "Chromium med SwiftShader, desktop pointer, DPR1. 844x390 er et skjermutsnitt, ikke en fysisk mobiltest; stillbilder erstatter ikke video/manuell kjøring."
+    }
+  ],
+  "configs": [
+    {
+      "config": "low_844x390",
+      "original_png_count": 35,
+      "route_frames": 29,
+      "stationary_frames": 6,
+      "pair_count": 3,
+      "integrity_checks": {
+        "passed": 104,
+        "total": 104
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "431557643fd1ffdab39b4709a6e5f150d201446dee859d2ef92ccac67f9888e6",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "8ae46b050e12806354bc4a2389c07f2d49415a4b2b15bd92761494697aa94edf"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "da4842522ca9b720d2cff87e0317364ed2a44f9feecde3fa7755146ba1002353"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "3b7fdb3e29a2f357d21d10a202bdf7953d51011ae6f7d2bdb328e575eca987b8"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    },
+    {
+      "config": "high_844x390",
+      "original_png_count": 41,
+      "route_frames": 29,
+      "stationary_frames": 12,
+      "pair_count": 6,
+      "integrity_checks": {
+        "passed": 152,
+        "total": 152
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "ca0d202b0481a573c6dca61431be26ef87fe3ca18f9c8fb87bc9233dc1a9f21a",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "d27ac73e344a9ca2674d52a3f41b352237309abe5d5fd54db8b9cf82f3f8f5ce"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "0698b621a4820d7b7975bb7c6e80157be95228da432add703c22582b986a41e2"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "c290b0f8153cacc511cb7d3fbcf80dd246fbde18db074b4706ca13f9a46db9c1"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    },
+    {
+      "config": "ultra_844x390",
+      "original_png_count": 41,
+      "route_frames": 29,
+      "stationary_frames": 12,
+      "pair_count": 6,
+      "integrity_checks": {
+        "passed": 153,
+        "total": 153
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "cf71a4d2a02641197af92b7aea054c3c628f109700e2285b2681ca4120419b15",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "5ebccb22bf626154015175339938ad4f14c7884bc9fe1f250207ab3d7fc8c722"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "9fdf3c1d393dc184acb78f076df6dc59ebaddd75cfaac672f746b463f86fae39"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 844,
+            "height": 390,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "3780362d8173ebbe43b6ea52c5c9864595cae9e18483b4504962f7e892653e1b"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    },
+    {
+      "config": "low_1280x800",
+      "original_png_count": 35,
+      "route_frames": 29,
+      "stationary_frames": 6,
+      "pair_count": 3,
+      "integrity_checks": {
+        "passed": 98,
+        "total": 98
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "d098f94fe8dc380d67ab55d41b702fe6bcedb8aa10309b7057c0631f6c42a115",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "69c3bca9c1d5624c5dc8feb11f9e4b37848531b96c99a3c4cae51618d5882e80"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "1bc5714b03175a3320662b04356e00d4edab55c6be8695456fad89c4319aee43"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "off",
+          "quality": "low",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "d97469fc6bc6ccd7e1ce631d7848b7376e6fff5dd05216305638db6e0d23c1cc"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    },
+    {
+      "config": "high_1280x800",
+      "original_png_count": 41,
+      "route_frames": 29,
+      "stationary_frames": 12,
+      "pair_count": 6,
+      "integrity_checks": {
+        "passed": 140,
+        "total": 140
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "71ee4d121d3ae23402219bf393d6c10223d83e248d3e0ecef78b5091fc9e3f31",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "809bd930c8328f46b4ac070552ce1082351d575254d6326d97d12edd0ed561c7"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "4abcec3369b022f39052380656e2122c4f135bd11810806e6b2cad7fd0ee3b44"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "vhs",
+          "quality": "high",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "02260a727c7897b1af545de133a9a87989e33d29649f006d00c3e706b9bbc372"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    },
+    {
+      "config": "ultra_1280x800",
+      "original_png_count": 41,
+      "route_frames": 29,
+      "stationary_frames": 12,
+      "pair_count": 6,
+      "integrity_checks": {
+        "passed": 141,
+        "total": 141
+      },
+      "errors": [],
+      "warnings": [],
+      "failed_http": [],
+      "manifest_sha256": "53d46e328db6417d3d79f012a3208f42dab37dd722bba35b4924b4f72a4c7b7b",
+      "start": {
+        "mile": 2.9038565154013494,
+        "clock_seconds": 19396.795587174634,
+        "world_xyz": [
+          12160.336896628505,
+          11.488446039073516,
+          -31.188289854425957
+        ],
+        "camera_xyz": [
+          12159.980588037572,
+          12.97182379356343,
+          -31.464259610703962
+        ]
+      },
+      "end": {
+        "mile": 3.504897334022412,
+        "clock_seconds": 19436.115872989252,
+        "world_xyz": [
+          13041.037502186973,
+          8.149803877077284,
+          -431.0558942447482
+        ],
+        "camera_xyz": [
+          13040.698558475939,
+          9.635883715062963,
+          -431.34503949298005
+        ]
+      },
+      "route_placement_calls": 0,
+      "fixture_placement_calls": 3,
+      "side_views": [
+        {
+          "file": "kessler_011_mile3.15_left.png",
+          "mile": 3.152782488519697,
+          "world_xyz": [
+            12525.11946875263,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "map_xyz": [
+            4525.1194687526295,
+            9.610812240456726,
+            -196.6759413781658
+          ],
+          "camera_xyz": [
+            12524.784283770565,
+            11.098528129545809,
+            -196.96574479101378
+          ],
+          "view_direction": [
+            -0.05237842517999468,
+            -0.02048150015583348,
+            -0.9984172518176108
+          ],
+          "clock_seconds": 19413.080405287572,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "0dcd82b1184b8cb21ac1982901749ba179c81765121b8f34c9967f59303e6f0b"
+        },
+        {
+          "file": "kessler_014_mile3.20_left.png",
+          "mile": 3.2013469674404,
+          "world_xyz": [
+            12596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "map_xyz": [
+            4596.389128441824,
+            9.039033067439973,
+            -228.76517795693908
+          ],
+          "camera_xyz": [
+            12596.049994363837,
+            10.525007559774675,
+            -229.05280736744305
+          ],
+          "view_direction": [
+            -0.0547439221104801,
+            -0.0193743058656625,
+            -0.9983124457123559
+          ],
+          "clock_seconds": 19416.257509291892,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "b1280fd902fa06df04f88b4ddca00226be6d2971e3e1cea6c9f7c4f8e295730e"
+        },
+        {
+          "file": "kessler_017_mile3.25_left.png",
+          "mile": 3.2559816226738354,
+          "world_xyz": [
+            12676.462918895731,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "map_xyz": [
+            4676.4629188957315,
+            8.651211969436453,
+            -265.0969075013072
+          ],
+          "camera_xyz": [
+            12676.117795041757,
+            10.136783664849322,
+            -265.38029298347726
+          ],
+          "view_direction": [
+            -0.05786120790356108,
+            -0.018343178917001345,
+            -0.9981561042277705
+          ],
+          "clock_seconds": 19419.83172620463,
+          "picture": "vhs",
+          "quality": "ultra",
+          "viewport": {
+            "width": 1280,
+            "height": 800,
+            "device_scale_factor": 1
+          },
+          "image_sha256": "6c31de2bb61b8520bca97e11432aa8ca89667639c5e69e0ad6ee2a50c07c9d50"
+        }
+      ],
+      "renderer": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "Google Inc. (Google)",
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "pixel_ratio": 1,
+        "hardware_performance": "UNVERIFIED"
+      },
+      "loaded_code_sha256": {
+        "http://127.0.0.1:8877/SIGNAL-47/": "190e5ff4a8b96d8f3d474b1ca454ae930b43871966f0249987b4b1f66a79db2d",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/three-BmJFo-nY.js": "e53c8e1982e71801b29bfe5913fe38fc7a64feeb4a05db3d5530c56e575c603c",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/index-6zErlevA.js": "322abb5d7596cf4cab11d1a7f0858d2f50d7adcba644fe416179f500cc95ffb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Truck-BjHqOuqb.js": "3e0123bc46d807b6f03d35953c5efaf1e1acaf4a16493ad9110eb30156fc8482",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/corridors-vcV_KWGQ.js": "b561ae604de330802b16db15a09ff0e3c4ccb408db381151d402e303e4449712",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadPlaces-D4d7psiq.js": "c1b77874978cb585ef1247f1c3519ad97ca90a6673022091484331886f57d81e",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/roadProps-BkmlbaRJ.js": "cf43efbadd76e6263b2b3225cc6305f0aeaa69ace43660c7aca436c71f73f048",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/RoadArea-0LJIUHZH.js": "e3eac3e4d6474f5379aed9970ecf26ed385444868d1a7512141894b708f7cef0",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/oldRoadTextures-BJadX3oc.js": "4b65ce2a1826f78e81f03763f762e14a9d9555cb2bdf1e9c05dafa7eef3fff1b",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/engineSound-CO3P3YJA.js": "b1427ff10ce37ef67efbbff8e63df2780132c5c10a533e333a24e8e541d2d6f4",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Diner-40I9Zmgv.js": "88413c671d428f2ea779ed2fc03d61fc94ad82736291164cac342ad7f9133e48",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/Drive-DT2ONwUm.js": "4157f8c47867d31ff708906a275730ed380b79069ee0bf0ba9405764aadd2cb1",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/legs-C0NAVXJZ.js": "7677cb24061c27f8a8d44c5516b0031e2e632a384d69023af129f65d79aa88f5",
+        "http://127.0.0.1:8877/SIGNAL-47/assets/OldRoad-Dc8h7dCB.js": "bd8277ad17c4729d7ca524894686aad7d8a25d44f02634c4590a156c4a7a2d5b"
+      }
+    }
+  ],
+  "stationary_pairs": [
+    {
+      "config": "low_844x390",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        128.14829999998213,
+        128.18163333331546
+      ],
+      "wall_interval_s": 0.8605122670123819,
+      "regions": {
+        "farm": {
+          "rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "unclipped_rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 684,
+          "changed_pixels": {
+            "0": 663,
+            "2": 129,
+            "4": 4,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9692982456140351,
+            "2": 0.18859649122807018,
+            "4": 0.005847953216374269,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.1403508771929824,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            662,
+            145,
+            844,
+            178
+          ],
+          "unclipped_rect": [
+            662,
+            145,
+            1056,
+            178
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 6006,
+          "changed_pixels": {
+            "0": 5476,
+            "2": 573,
+            "4": 14,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9117549117549117,
+            "2": 0.09540459540459541,
+            "4": 0.002331002331002331,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.8273948273948274,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1054,
+            143,
+            1081,
+            150
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1064,
+            136,
+            1071,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "low_844x390",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_031_fixture_200m_player_default_a.png",
+        "kessler_032_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        130.58519999998808,
+        130.6185333333214
+      ],
+      "wall_interval_s": 0.8694232589914463,
+      "regions": {
+        "farm": {
+          "rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "unclipped_rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 735,
+          "changed_pixels": {
+            "0": 642,
+            "2": 39,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.8734693877551021,
+            "2": 0.053061224489795916,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.6607709750566894,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            563,
+            150,
+            844,
+            184
+          ],
+          "unclipped_rect": [
+            563,
+            150,
+            963,
+            184
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 9554,
+          "changed_pixels": {
+            "0": 8506,
+            "2": 597,
+            "4": 13,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.8903077245132929,
+            "2": 0.062486916474774966,
+            "4": 0.00136068662340381,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7661363477775451,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            960,
+            147,
+            1001,
+            155
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            975,
+            135,
+            985,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "low_844x390",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_80m_player_default_a.png",
+        "kessler_034_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        133.06909999999405,
+        133.10243333332738
+      ],
+      "wall_interval_s": 0.8603998789913021,
+      "regions": {
+        "farm": {
+          "rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "unclipped_rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 828,
+          "changed_pixels": {
+            "0": 786,
+            "2": 92,
+            "4": 3,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9492753623188406,
+            "2": 0.1111111111111111,
+            "4": 0.0036231884057971015,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9033816425120773,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "unclipped_rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8250,
+          "changed_pixels": {
+            "0": 7893,
+            "2": 1598,
+            "4": 102,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9567272727272728,
+            "2": 0.1936969696969697,
+            "4": 0.012363636363636363,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.133010101010101,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "rect": [
+            801,
+            162,
+            844,
+            173
+          ],
+          "unclipped_rect": [
+            801,
+            162,
+            867,
+            173
+          ],
+          "projected_vertices": 608,
+          "visible": true,
+          "pixel_count": 473,
+          "changed_pixels": {
+            "0": 442,
+            "2": 88,
+            "4": 3,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9344608879492601,
+            "2": 0.18604651162790697,
+            "4": 0.006342494714587738,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.0852713178294573,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "name": {
+          "rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "unclipped_rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "projected_vertices": 12,
+          "visible": true,
+          "pixel_count": 200,
+          "changed_pixels": {
+            "0": 183,
+            "2": 24,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.915,
+            "2": 0.12,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9433333333333334,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        148.65280000001192,
+        148.68613333334525
+      ],
+      "wall_interval_s": 1.1141595380031504,
+      "regions": {
+        "farm": {
+          "rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "unclipped_rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 684,
+          "changed_pixels": {
+            "0": 649,
+            "2": 350,
+            "4": 140,
+            "8": 2
+          },
+          "changed_fraction": {
+            "0": 0.9488304093567251,
+            "2": 0.5116959064327485,
+            "4": 0.2046783625730994,
+            "8": 0.0029239766081871343
+          },
+          "mean_absolute_channel_delta": 2.578460038986355,
+          "max_channel_delta": 10,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 8
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            662,
+            145,
+            844,
+            178
+          ],
+          "unclipped_rect": [
+            662,
+            145,
+            1056,
+            178
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 6006,
+          "changed_pixels": {
+            "0": 5639,
+            "2": 3014,
+            "4": 1118,
+            "8": 6
+          },
+          "changed_fraction": {
+            "0": 0.9388944388944389,
+            "2": 0.5018315018315018,
+            "4": 0.18614718614718614,
+            "8": 0.000999000999000999
+          },
+          "mean_absolute_channel_delta": 2.4485514485514486,
+          "max_channel_delta": 16,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1054,
+            143,
+            1081,
+            150
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1064,
+            136,
+            1071,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 400,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        151.89030000001193,
+        151.89030000001193
+      ],
+      "wall_interval_s": 0.4390502219903283,
+      "regions": {
+        "farm": {
+          "rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "unclipped_rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 684,
+          "changed_pixels": {
+            "0": 640,
+            "2": 100,
+            "4": 4,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.935672514619883,
+            "2": 0.14619883040935672,
+            "4": 0.005847953216374269,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.0194931773879143,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            662,
+            145,
+            844,
+            178
+          ],
+          "unclipped_rect": [
+            662,
+            145,
+            1056,
+            178
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 6006,
+          "changed_pixels": {
+            "0": 5303,
+            "2": 311,
+            "4": 3,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.882950382950383,
+            "2": 0.051781551781551784,
+            "4": 0.0004995004995004995,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7143412143412143,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1054,
+            143,
+            1081,
+            150
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1064,
+            136,
+            1071,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        154.46380000001193,
+        154.49713333334526
+      ],
+      "wall_interval_s": 1.1619160620030016,
+      "regions": {
+        "farm": {
+          "rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "unclipped_rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 735,
+          "changed_pixels": {
+            "0": 33,
+            "2": 0,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.044897959183673466,
+            "2": 0.0,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.018594104308390022,
+          "max_channel_delta": 1,
+          "percentiles_max_channel_delta": {
+            "0.95": 0,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            563,
+            150,
+            844,
+            184
+          ],
+          "unclipped_rect": [
+            563,
+            150,
+            963,
+            184
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 9554,
+          "changed_pixels": {
+            "0": 266,
+            "2": 1,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.027841741678877957,
+            "2": 0.00010466820180029308,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.011722838601632824,
+          "max_channel_delta": 3,
+          "percentiles_max_channel_delta": {
+            "0.95": 0,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            960,
+            147,
+            1001,
+            155
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            975,
+            135,
+            985,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 200,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        158.04709999999403,
+        158.04709999999403
+      ],
+      "wall_interval_s": 0.4359358159999829,
+      "regions": {
+        "farm": {
+          "rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "unclipped_rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 735,
+          "changed_pixels": {
+            "0": 705,
+            "2": 93,
+            "4": 3,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9591836734693877,
+            "2": 0.12653061224489795,
+            "4": 0.004081632653061225,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9346938775510204,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            563,
+            150,
+            844,
+            184
+          ],
+          "unclipped_rect": [
+            563,
+            150,
+            963,
+            184
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 9554,
+          "changed_pixels": {
+            "0": 9053,
+            "2": 1607,
+            "4": 103,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9475612308980532,
+            "2": 0.16820180029307097,
+            "4": 0.010780824785430186,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.0538343451259506,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            960,
+            147,
+            1001,
+            155
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            975,
+            135,
+            985,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.98081390805,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        159.55930000001192,
+        159.59263333334525
+      ],
+      "wall_interval_s": 0.9891779719910119,
+      "regions": {
+        "farm": {
+          "rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "unclipped_rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 828,
+          "changed_pixels": {
+            "0": 775,
+            "2": 407,
+            "4": 158,
+            "8": 1
+          },
+          "changed_fraction": {
+            "0": 0.9359903381642513,
+            "2": 0.4915458937198068,
+            "4": 0.19082125603864733,
+            "8": 0.0012077294685990338
+          },
+          "mean_absolute_channel_delta": 2.4903381642512077,
+          "max_channel_delta": 9,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "unclipped_rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8250,
+          "changed_pixels": {
+            "0": 7755,
+            "2": 4132,
+            "4": 1586,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.94,
+            "2": 0.5008484848484849,
+            "4": 0.19224242424242424,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 2.50189898989899,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "rect": [
+            801,
+            162,
+            844,
+            173
+          ],
+          "unclipped_rect": [
+            801,
+            162,
+            867,
+            173
+          ],
+          "projected_vertices": 608,
+          "visible": true,
+          "pixel_count": 473,
+          "changed_pixels": {
+            "0": 435,
+            "2": 209,
+            "4": 69,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.919661733615222,
+            "2": 0.4418604651162791,
+            "4": 0.14587737843551796,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 2.138830162085976,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 6
+          },
+          "classification": "pixel_variation_only"
+        },
+        "name": {
+          "rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "unclipped_rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "projected_vertices": 12,
+          "visible": true,
+          "pixel_count": 200,
+          "changed_pixels": {
+            "0": 185,
+            "2": 94,
+            "4": 36,
+            "8": 7
+          },
+          "changed_fraction": {
+            "0": 0.925,
+            "2": 0.47,
+            "4": 0.18,
+            "8": 0.035
+          },
+          "mean_absolute_channel_delta": 2.365,
+          "max_channel_delta": 16,
+          "percentiles_max_channel_delta": {
+            "0.95": 7,
+            "0.99": 11
+          },
+          "classification": "pixel_variation_only"
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_844x390",
+      "distance_before_gate_m": 80,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        162.666,
+        162.666
+      ],
+      "wall_interval_s": 0.4312109840102494,
+      "regions": {
+        "farm": {
+          "rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "unclipped_rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 828,
+          "changed_pixels": {
+            "0": 720,
+            "2": 27,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.8695652173913043,
+            "2": 0.03260869565217391,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.6944444444444444,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 2,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "unclipped_rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8250,
+          "changed_pixels": {
+            "0": 7565,
+            "2": 632,
+            "4": 8,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.916969696969697,
+            "2": 0.07660606060606061,
+            "4": 0.0009696969696969697,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.861979797979798,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "rect": [
+            801,
+            162,
+            844,
+            173
+          ],
+          "unclipped_rect": [
+            801,
+            162,
+            867,
+            173
+          ],
+          "projected_vertices": 608,
+          "visible": true,
+          "pixel_count": 473,
+          "changed_pixels": {
+            "0": 427,
+            "2": 41,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9027484143763214,
+            "2": 0.08668076109936575,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.854122621564482,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "name": {
+          "rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "unclipped_rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "projected_vertices": 12,
+          "visible": true,
+          "pixel_count": 200,
+          "changed_pixels": {
+            "0": 176,
+            "2": 8,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.88,
+            "2": 0.04,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7066666666666667,
+          "max_channel_delta": 3,
+          "percentiles_max_channel_delta": {
+            "0.95": 2,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        }
+      },
+      "clock_before": 19400.047480574714,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        265.7565,
+        265.7898333333334
+      ],
+      "wall_interval_s": 2.0844970000034664,
+      "regions": {
+        "farm": {
+          "rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "unclipped_rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 684,
+          "changed_pixels": {
+            "0": 357,
+            "2": 0,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.5219298245614035,
+            "2": 0.0,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.4161793372319688,
+          "max_channel_delta": 2,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 2
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            662,
+            145,
+            844,
+            178
+          ],
+          "unclipped_rect": [
+            662,
+            145,
+            1056,
+            178
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 6006,
+          "changed_pixels": {
+            "0": 2269,
+            "2": 1,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.37778887778887776,
+            "2": 0.0001665001665001665,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.2306027306027306,
+          "max_channel_delta": 3,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 2
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1054,
+            143,
+            1081,
+            150
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1064,
+            136,
+            1071,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 400,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        272.04860000002384,
+        272.04860000002384
+      ],
+      "wall_interval_s": 0.7710348819964565,
+      "regions": {
+        "farm": {
+          "rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "unclipped_rect": [
+            635,
+            160,
+            671,
+            179
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 684,
+          "changed_pixels": {
+            "0": 667,
+            "2": 200,
+            "4": 19,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9751461988304093,
+            "2": 0.29239766081871343,
+            "4": 0.027777777777777776,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.3742690058479532,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            662,
+            145,
+            844,
+            178
+          ],
+          "unclipped_rect": [
+            662,
+            145,
+            1056,
+            178
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 6006,
+          "changed_pixels": {
+            "0": 5591,
+            "2": 746,
+            "4": 45,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9309024309024309,
+            "2": 0.12420912420912421,
+            "4": 0.007492507492507493,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9237984237984238,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1054,
+            143,
+            1081,
+            150
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1064,
+            136,
+            1071,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        275.04190000000597,
+        275.0752333333393
+      ],
+      "wall_interval_s": 1.9844488039962016,
+      "regions": {
+        "farm": {
+          "rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "unclipped_rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 735,
+          "changed_pixels": {
+            "0": 40,
+            "2": 0,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.05442176870748299,
+            "2": 0.0,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.02312925170068027,
+          "max_channel_delta": 2,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            563,
+            150,
+            844,
+            184
+          ],
+          "unclipped_rect": [
+            563,
+            150,
+            963,
+            184
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 9554,
+          "changed_pixels": {
+            "0": 312,
+            "2": 0,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.03265647896169144,
+            "2": 0.0,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.014060428441839369,
+          "max_channel_delta": 2,
+          "percentiles_max_channel_delta": {
+            "0.95": 0,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            960,
+            147,
+            1001,
+            155
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            975,
+            135,
+            985,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 200,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        281.31930000001194,
+        281.31930000001194
+      ],
+      "wall_interval_s": 0.8374680110136978,
+      "regions": {
+        "farm": {
+          "rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "unclipped_rect": [
+            540,
+            164,
+            575,
+            185
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 735,
+          "changed_pixels": {
+            "0": 663,
+            "2": 52,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9020408163265307,
+            "2": 0.0707482993197279,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.78140589569161,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            563,
+            150,
+            844,
+            184
+          ],
+          "unclipped_rect": [
+            563,
+            150,
+            963,
+            184
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 9554,
+          "changed_pixels": {
+            "0": 8664,
+            "2": 760,
+            "4": 14,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9068453003977391,
+            "2": 0.07954783336822273,
+            "4": 0.001465354825204103,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.8238434163701067,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            960,
+            147,
+            1001,
+            155
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            975,
+            135,
+            985,
+            143
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.98081390805,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        284.3852000000179,
+        284.41853333335126
+      ],
+      "wall_interval_s": 1.9001290969899856,
+      "regions": {
+        "farm": {
+          "rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "unclipped_rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 828,
+          "changed_pixels": {
+            "0": 774,
+            "2": 398,
+            "4": 161,
+            "8": 1
+          },
+          "changed_fraction": {
+            "0": 0.9347826086956522,
+            "2": 0.4806763285024155,
+            "4": 0.19444444444444445,
+            "8": 0.0012077294685990338
+          },
+          "mean_absolute_channel_delta": 2.5539452495974233,
+          "max_channel_delta": 10,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "unclipped_rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8250,
+          "changed_pixels": {
+            "0": 7721,
+            "2": 4117,
+            "4": 1649,
+            "8": 4
+          },
+          "changed_fraction": {
+            "0": 0.9358787878787879,
+            "2": 0.49903030303030305,
+            "4": 0.19987878787878788,
+            "8": 0.00048484848484848484
+          },
+          "mean_absolute_channel_delta": 2.533777777777778,
+          "max_channel_delta": 12,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "rect": [
+            801,
+            162,
+            844,
+            173
+          ],
+          "unclipped_rect": [
+            801,
+            162,
+            867,
+            173
+          ],
+          "projected_vertices": 608,
+          "visible": true,
+          "pixel_count": 473,
+          "changed_pixels": {
+            "0": 442,
+            "2": 222,
+            "4": 51,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9344608879492601,
+            "2": 0.4693446088794926,
+            "4": 0.10782241014799154,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 2.126849894291755,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 5,
+            "0.99": 6
+          },
+          "classification": "pixel_variation_only"
+        },
+        "name": {
+          "rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "unclipped_rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "projected_vertices": 12,
+          "visible": true,
+          "pixel_count": 200,
+          "changed_pixels": {
+            "0": 186,
+            "2": 103,
+            "4": 31,
+            "8": 7
+          },
+          "changed_fraction": {
+            "0": 0.93,
+            "2": 0.515,
+            "4": 0.155,
+            "8": 0.035
+          },
+          "mean_absolute_channel_delta": 2.3516666666666666,
+          "max_channel_delta": 16,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 15
+          },
+          "classification": "pixel_variation_only"
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_844x390",
+      "distance_before_gate_m": 80,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        290.392,
+        290.392
+      ],
+      "wall_interval_s": 0.8314564370084554,
+      "regions": {
+        "farm": {
+          "rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "unclipped_rect": [
+            468,
+            168,
+            504,
+            191
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 828,
+          "changed_pixels": {
+            "0": 745,
+            "2": 36,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.8997584541062802,
+            "2": 0.043478260869565216,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7218196457326892,
+          "max_channel_delta": 4,
+          "percentiles_max_channel_delta": {
+            "0.95": 2,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "unclipped_rect": [
+            487,
+            166,
+            817,
+            191
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8250,
+          "changed_pixels": {
+            "0": 7716,
+            "2": 931,
+            "4": 26,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9352727272727273,
+            "2": 0.11284848484848485,
+            "4": 0.0031515151515151517,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9568484848484848,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "rect": [
+            801,
+            162,
+            844,
+            173
+          ],
+          "unclipped_rect": [
+            801,
+            162,
+            867,
+            173
+          ],
+          "projected_vertices": 608,
+          "visible": true,
+          "pixel_count": 473,
+          "changed_pixels": {
+            "0": 441,
+            "2": 53,
+            "4": 1,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9323467230443975,
+            "2": 0.11205073995771671,
+            "4": 0.0021141649048625794,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9499647639182522,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "name": {
+          "rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "unclipped_rect": [
+            822,
+            139,
+            842,
+            149
+          ],
+          "projected_vertices": 12,
+          "visible": true,
+          "pixel_count": 200,
+          "changed_pixels": {
+            "0": 176,
+            "2": 12,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.88,
+            "2": 0.06,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.75,
+          "max_channel_delta": 3,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        }
+      },
+      "clock_before": 19400.047480574714,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "low_1280x800",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        171.17439999997615,
+        171.20773333330948
+      ],
+      "wall_interval_s": 1.4617699759837706,
+      "regions": {
+        "farm": {
+          "rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "unclipped_rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2244,
+          "changed_pixels": {
+            "0": 2196,
+            "2": 759,
+            "4": 65,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9786096256684492,
+            "2": 0.3382352941176471,
+            "4": 0.028966131907308377,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.4741532976827094,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            1135,
+            300,
+            1280,
+            362
+          ],
+          "unclipped_rect": [
+            1135,
+            300,
+            1938,
+            362
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8990,
+          "changed_pixels": {
+            "0": 8311,
+            "2": 1037,
+            "4": 49,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9244716351501668,
+            "2": 0.1153503893214683,
+            "4": 0.005450500556173526,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.87137560252132,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1939,
+            296,
+            1989,
+            305
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1959,
+            282,
+            1968,
+            290
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "low_1280x800",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_031_fixture_200m_player_default_a.png",
+        "kessler_032_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        175.16629999998213,
+        175.19963333331546
+      ],
+      "wall_interval_s": 1.3772513180156238,
+      "regions": {
+        "farm": {
+          "rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "unclipped_rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2613,
+          "changed_pixels": {
+            "0": 2368,
+            "2": 166,
+            "4": 4,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9062380405663988,
+            "2": 0.06352851128970533,
+            "4": 0.0015308075009567547,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7659140196453629,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            931,
+            311,
+            1280,
+            375
+          ],
+          "unclipped_rect": [
+            931,
+            311,
+            1748,
+            375
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22336,
+          "changed_pixels": {
+            "0": 20215,
+            "2": 1664,
+            "4": 36,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9050411891117478,
+            "2": 0.07449856733524356,
+            "4": 0.0016117478510028654,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7976211795606495,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1747,
+            304,
+            1825,
+            316
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1777,
+            280,
+            1791,
+            291
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "low_1280x800",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_80m_player_default_a.png",
+        "kessler_034_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        179.13789999997616,
+        179.1712333333095
+      ],
+      "wall_interval_s": 1.3648185680212919,
+      "regions": {
+        "farm": {
+          "rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "unclipped_rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2967,
+          "changed_pixels": {
+            "0": 2829,
+            "2": 489,
+            "4": 36,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9534883720930233,
+            "2": 0.16481294236602628,
+            "4": 0.012133468149646108,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.051791933490619,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            775,
+            344,
+            1280,
+            389
+          ],
+          "unclipped_rect": [
+            775,
+            344,
+            1447,
+            389
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22725,
+          "changed_pixels": {
+            "0": 22016,
+            "2": 5818,
+            "4": 521,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9688008800880088,
+            "2": 0.256017601760176,
+            "4": 0.022926292629262927,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.2611807847451413,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1421,
+            335,
+            1550,
+            351
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1462,
+            287,
+            1499,
+            304
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        207.25179999998213,
+        207.28513333331546
+      ],
+      "wall_interval_s": 1.6082554549793713,
+      "regions": {
+        "farm": {
+          "rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "unclipped_rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2244,
+          "changed_pixels": {
+            "0": 1104,
+            "2": 0,
+            "4": 0,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.4919786096256685,
+            "2": 0.0,
+            "4": 0.0,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.38146167557932265,
+          "max_channel_delta": 2,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 2
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            1135,
+            300,
+            1280,
+            362
+          ],
+          "unclipped_rect": [
+            1135,
+            300,
+            1938,
+            362
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8990,
+          "changed_pixels": {
+            "0": 8638,
+            "2": 1379,
+            "4": 8,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.960845383759733,
+            "2": 0.15339265850945494,
+            "4": 0.0008898776418242492,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.186466444197256,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 3
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1939,
+            296,
+            1989,
+            305
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1959,
+            282,
+            1968,
+            290
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 400,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        211.91459999999404,
+        211.91459999999404
+      ],
+      "wall_interval_s": 0.7752503319934476,
+      "regions": {
+        "farm": {
+          "rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "unclipped_rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2244,
+          "changed_pixels": {
+            "0": 2204,
+            "2": 844,
+            "4": 148,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.982174688057041,
+            "2": 0.3761140819964349,
+            "4": 0.0659536541889483,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.5744206773618539,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 5,
+            "0.99": 6
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            1135,
+            300,
+            1280,
+            362
+          ],
+          "unclipped_rect": [
+            1135,
+            300,
+            1938,
+            362
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8990,
+          "changed_pixels": {
+            "0": 8461,
+            "2": 1236,
+            "4": 90,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9411568409343716,
+            "2": 0.1374860956618465,
+            "4": 0.010011123470522803,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9478680014831294,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1939,
+            296,
+            1989,
+            305
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1959,
+            282,
+            1968,
+            290
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        215.915,
+        215.94833333333332
+      ],
+      "wall_interval_s": 1.51806734901038,
+      "regions": {
+        "farm": {
+          "rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "unclipped_rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2613,
+          "changed_pixels": {
+            "0": 2463,
+            "2": 1284,
+            "4": 495,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9425947187141217,
+            "2": 0.49138920780711826,
+            "4": 0.1894374282433984,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 2.522260492409746,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            931,
+            311,
+            1280,
+            375
+          ],
+          "unclipped_rect": [
+            931,
+            311,
+            1748,
+            375
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22336,
+          "changed_pixels": {
+            "0": 21084,
+            "2": 11172,
+            "4": 4382,
+            "8": 17
+          },
+          "changed_fraction": {
+            "0": 0.9439469914040115,
+            "2": 0.5001790830945558,
+            "4": 0.19618553008595987,
+            "8": 0.0007611031518624642
+          },
+          "mean_absolute_channel_delta": 2.483181112702961,
+          "max_channel_delta": 13,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1747,
+            304,
+            1825,
+            316
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1777,
+            280,
+            1791,
+            291
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 200,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        220.09009999999404,
+        220.09009999999404
+      ],
+      "wall_interval_s": 0.7307368339970708,
+      "regions": {
+        "farm": {
+          "rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "unclipped_rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2613,
+          "changed_pixels": {
+            "0": 2417,
+            "2": 257,
+            "4": 15,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9249904324531191,
+            "2": 0.09835438193647149,
+            "4": 0.0057405281285878304,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.8756218905472637,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            931,
+            311,
+            1280,
+            375
+          ],
+          "unclipped_rect": [
+            931,
+            311,
+            1748,
+            375
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22336,
+          "changed_pixels": {
+            "0": 20679,
+            "2": 2565,
+            "4": 88,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9258148280802292,
+            "2": 0.11483703438395415,
+            "4": 0.003939828080229226,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9088019340974212,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1747,
+            304,
+            1825,
+            316
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1777,
+            280,
+            1791,
+            291
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.98081390805,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        222.376,
+        222.40933333333334
+      ],
+      "wall_interval_s": 1.4902278819936328,
+      "regions": {
+        "farm": {
+          "rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "unclipped_rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2967,
+          "changed_pixels": {
+            "0": 289,
+            "2": 8,
+            "4": 2,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.09740478597910347,
+            "2": 0.002696326255476913,
+            "4": 0.0006740815638692282,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.04561285248848444,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            775,
+            344,
+            1280,
+            389
+          ],
+          "unclipped_rect": [
+            775,
+            344,
+            1447,
+            389
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22725,
+          "changed_pixels": {
+            "0": 1628,
+            "2": 58,
+            "4": 21,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.07163916391639163,
+            "2": 0.0025522552255225523,
+            "4": 0.0009240924092409241,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.03866519985331866,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 1,
+            "0.99": 1
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1421,
+            335,
+            1550,
+            351
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1462,
+            287,
+            1499,
+            304
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "high_1280x800",
+      "distance_before_gate_m": 80,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        226.8681999999881,
+        226.8681999999881
+      ],
+      "wall_interval_s": 0.7265433600114193,
+      "regions": {
+        "farm": {
+          "rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "unclipped_rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2967,
+          "changed_pixels": {
+            "0": 2738,
+            "2": 187,
+            "4": 10,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9228176609369734,
+            "2": 0.06302662622177284,
+            "4": 0.003370407819346141,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.7913717559824739,
+          "max_channel_delta": 5,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            775,
+            344,
+            1280,
+            389
+          ],
+          "unclipped_rect": [
+            775,
+            344,
+            1447,
+            389
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22725,
+          "changed_pixels": {
+            "0": 21242,
+            "2": 2578,
+            "4": 66,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9347414741474147,
+            "2": 0.11344334433443344,
+            "4": 0.0029042904290429044,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.9383645031169784,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1421,
+            335,
+            1550,
+            351
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1462,
+            287,
+            1499,
+            304
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19400.047480574714,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 400,
+      "mode": "player_default",
+      "files": [
+        "kessler_029_fixture_400m_player_default_a.png",
+        "kessler_030_fixture_400m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        403.399400000006,
+        403.43273333333934
+      ],
+      "wall_interval_s": 3.5076289259886835,
+      "regions": {
+        "farm": {
+          "rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "unclipped_rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2244,
+          "changed_pixels": {
+            "0": 2130,
+            "2": 1126,
+            "4": 453,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9491978609625669,
+            "2": 0.5017825311942959,
+            "4": 0.2018716577540107,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 2.5705585264408795,
+          "max_channel_delta": 8,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 8
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            1135,
+            300,
+            1280,
+            362
+          ],
+          "unclipped_rect": [
+            1135,
+            300,
+            1938,
+            362
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8990,
+          "changed_pixels": {
+            "0": 8376,
+            "2": 4276,
+            "4": 1499,
+            "8": 7
+          },
+          "changed_fraction": {
+            "0": 0.9317018909899889,
+            "2": 0.4756395995550612,
+            "4": 0.16674082313681868,
+            "8": 0.000778642936596218
+          },
+          "mean_absolute_channel_delta": 2.2880978865406005,
+          "max_channel_delta": 12,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1939,
+            296,
+            1989,
+            305
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1959,
+            282,
+            1968,
+            290
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 400,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_031_fixture_400m_picture_off_repeatability_a.png",
+        "kessler_032_fixture_400m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        414.103099999994,
+        414.103099999994
+      ],
+      "wall_interval_s": 1.7165929279872216,
+      "regions": {
+        "farm": {
+          "rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "unclipped_rect": [
+            1080,
+            332,
+            1148,
+            365
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2244,
+          "changed_pixels": {
+            "0": 2180,
+            "2": 652,
+            "4": 77,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9714795008912656,
+            "2": 0.2905525846702317,
+            "4": 0.03431372549019608,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.3716577540106951,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 6
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            1135,
+            300,
+            1280,
+            362
+          ],
+          "unclipped_rect": [
+            1135,
+            300,
+            1938,
+            362
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 8990,
+          "changed_pixels": {
+            "0": 8256,
+            "2": 797,
+            "4": 47,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9183537263626251,
+            "2": 0.08865406006674083,
+            "4": 0.0052280311457174634,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 0.8244345569150908,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1939,
+            296,
+            1989,
+            305
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1959,
+            282,
+            1968,
+            290
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.914147241383,
+      "clock_after": 19399.914147241383,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 200,
+      "mode": "player_default",
+      "files": [
+        "kessler_033_fixture_200m_player_default_a.png",
+        "kessler_034_fixture_200m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        420.202,
+        420.23533333333336
+      ],
+      "wall_interval_s": 3.0270757369871717,
+      "regions": {
+        "farm": {
+          "rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "unclipped_rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2613,
+          "changed_pixels": {
+            "0": 2456,
+            "2": 1294,
+            "4": 545,
+            "8": 3
+          },
+          "changed_fraction": {
+            "0": 0.9399158055874474,
+            "2": 0.49521622655951014,
+            "4": 0.20857252200535784,
+            "8": 0.001148105625717566
+          },
+          "mean_absolute_channel_delta": 2.563719862227325,
+          "max_channel_delta": 11,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            931,
+            311,
+            1280,
+            375
+          ],
+          "unclipped_rect": [
+            931,
+            311,
+            1748,
+            375
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22336,
+          "changed_pixels": {
+            "0": 20924,
+            "2": 11072,
+            "4": 4286,
+            "8": 23
+          },
+          "changed_fraction": {
+            "0": 0.9367836676217765,
+            "2": 0.49570200573065903,
+            "4": 0.1918875358166189,
+            "8": 0.001029727793696275
+          },
+          "mean_absolute_channel_delta": 2.4678993553008595,
+          "max_channel_delta": 24,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1747,
+            304,
+            1825,
+            316
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1777,
+            280,
+            1791,
+            291
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.947480574716,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 200,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_035_fixture_200m_picture_off_repeatability_a.png",
+        "kessler_036_fixture_200m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        429.883,
+        429.883
+      ],
+      "wall_interval_s": 1.708198693988379,
+      "regions": {
+        "farm": {
+          "rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "unclipped_rect": [
+            884,
+            339,
+            951,
+            378
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2613,
+          "changed_pixels": {
+            "0": 2499,
+            "2": 382,
+            "4": 17,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9563719862227325,
+            "2": 0.14619211634137008,
+            "4": 0.006505931879066207,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.0176042862610026,
+          "max_channel_delta": 6,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            931,
+            311,
+            1280,
+            375
+          ],
+          "unclipped_rect": [
+            931,
+            311,
+            1748,
+            375
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22336,
+          "changed_pixels": {
+            "0": 21072,
+            "2": 3318,
+            "4": 144,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.9434097421203438,
+            "2": 0.14854942693409742,
+            "4": 0.0064469914040114614,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.0052531041069723,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 3,
+            "0.99": 4
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1747,
+            304,
+            1825,
+            316
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1777,
+            280,
+            1791,
+            291
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19399.98081390805,
+      "clock_after": 19399.98081390805,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 80,
+      "mode": "player_default",
+      "files": [
+        "kessler_037_fixture_80m_player_default_a.png",
+        "kessler_038_fixture_80m_player_default_b.png"
+      ],
+      "simulation_step_s": 0.03333333333333333,
+      "vhs_render_times_s": [
+        435.927,
+        435.9603333333334
+      ],
+      "wall_interval_s": 3.4131757330032997,
+      "regions": {
+        "farm": {
+          "rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "unclipped_rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2967,
+          "changed_pixels": {
+            "0": 2789,
+            "2": 1510,
+            "4": 639,
+            "8": 1
+          },
+          "changed_fraction": {
+            "0": 0.9400067408156387,
+            "2": 0.5089315807212673,
+            "4": 0.21536905965621841,
+            "8": 0.0003370407819346141
+          },
+          "mean_absolute_channel_delta": 2.60408942815414,
+          "max_channel_delta": 9,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            775,
+            344,
+            1280,
+            389
+          ],
+          "unclipped_rect": [
+            775,
+            344,
+            1447,
+            389
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22725,
+          "changed_pixels": {
+            "0": 21342,
+            "2": 11401,
+            "4": 4388,
+            "8": 11
+          },
+          "changed_fraction": {
+            "0": 0.9391419141914191,
+            "2": 0.5016941694169417,
+            "4": 0.1930913091309131,
+            "8": 0.00048404840484048405
+          },
+          "mean_absolute_channel_delta": 2.495988265493216,
+          "max_channel_delta": 12,
+          "percentiles_max_channel_delta": {
+            "0.95": 6,
+            "0.99": 7
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1421,
+            335,
+            1550,
+            351
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1462,
+            287,
+            1499,
+            304
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19400.01414724138,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    },
+    {
+      "config": "ultra_1280x800",
+      "distance_before_gate_m": 80,
+      "mode": "picture_off_repeatability",
+      "files": [
+        "kessler_039_fixture_80m_picture_off_repeatability_a.png",
+        "kessler_040_fixture_80m_picture_off_repeatability_b.png"
+      ],
+      "simulation_step_s": 0,
+      "vhs_render_times_s": [
+        446.5815,
+        446.5815
+      ],
+      "wall_interval_s": 1.8145705870119855,
+      "regions": {
+        "farm": {
+          "rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "unclipped_rect": [
+            737,
+            347,
+            806,
+            390
+          ],
+          "projected_vertices": 6006,
+          "visible": true,
+          "pixel_count": 2967,
+          "changed_pixels": {
+            "0": 2871,
+            "2": 659,
+            "4": 80,
+            "8": 0
+          },
+          "changed_fraction": {
+            "0": 0.967644084934277,
+            "2": 0.2221098752949107,
+            "4": 0.026963262554769128,
+            "8": 0.0
+          },
+          "mean_absolute_channel_delta": 1.1853724300640378,
+          "max_channel_delta": 7,
+          "percentiles_max_channel_delta": {
+            "0.95": 4,
+            "0.99": 5
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gravel_track": {
+          "rect": [
+            775,
+            344,
+            1280,
+            389
+          ],
+          "unclipped_rect": [
+            775,
+            344,
+            1447,
+            389
+          ],
+          "projected_vertices": 10570,
+          "visible": true,
+          "pixel_count": 22725,
+          "changed_pixels": {
+            "0": 22215,
+            "2": 8304,
+            "4": 1349,
+            "8": 2
+          },
+          "changed_fraction": {
+            "0": 0.9775577557755776,
+            "2": 0.3654125412541254,
+            "4": 0.05936193619361936,
+            "8": 8.800880088008801e-05
+          },
+          "mean_absolute_channel_delta": 1.5114778144481116,
+          "max_channel_delta": 9,
+          "percentiles_max_channel_delta": {
+            "0.95": 5,
+            "0.99": 6
+          },
+          "classification": "pixel_variation_only"
+        },
+        "gate_grid": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1421,
+            335,
+            1550,
+            351
+          ],
+          "projected_vertices": 608,
+          "visible": false
+        },
+        "name": {
+          "status": "UNVERIFIED",
+          "reason": "Component outside viewport or below 8x8 pixels",
+          "rect": null,
+          "unclipped_rect": [
+            1462,
+            287,
+            1499,
+            304
+          ],
+          "projected_vertices": 12,
+          "visible": false
+        }
+      },
+      "clock_before": 19400.047480574714,
+      "clock_after": 19400.047480574714,
+      "restoration_frozen": true
+    }
+  ],
+  "initial_setup_failure": {
+    "status": "PRESERVED_HISTORICAL_FAIL",
+    "path": "diagnostics/connection_refused/manifest.json",
+    "cause": "Local HTTP server had stopped before the first attempt; restarted before all six successful captures."
+  },
+  "test_reuse": {
+    "test_head": "8225bdc",
+    "comparison_head": "eb09d86",
+    "runtime_tools_build_delta": "EMPTY",
+    "reuse": "Claude combined checks on 8225bdc: chapter6 42/42, drives23/23, art6/6, CSP, steercheck, typecheck, subpath art9/9/drives23/23. No gameplay code changes in this audit."
+  },
+  "scope": "tools/drivelook.py, this evidence directory and own UTC log section only; no game runtime, existing tests or assets changed."
+}

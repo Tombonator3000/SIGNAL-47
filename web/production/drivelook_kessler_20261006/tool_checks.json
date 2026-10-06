@@ -1,0 +1,38 @@
+{
+  "checked_utc": "2026-10-06T08:41:49.647984+00:00",
+  "status": "PASS",
+  "tool_sha256": "b013332bda5d4eb8a48c8eb8181c1352c89c8ca2a03602e1619f64bce758e20a",
+  "checks": [
+    {
+      "check": "Python syntax/import has no browser effects",
+      "status": "PASS"
+    },
+    {
+      "check": "New preset choices and legacy default",
+      "status": "PASS"
+    },
+    {
+      "check": "40 m threshold crossings survive overshoot",
+      "status": "PASS"
+    },
+    {
+      "check": "Pixel metrics distinguish one changed pixel, tiny/offscreen ROI",
+      "status": "PASS"
+    },
+    {
+      "check": "All seven browser snippets parse in Node",
+      "status": "PASS"
+    },
+    {
+      "check": "Strict console classifier byte-identical to approved PR74",
+      "status": "PASS"
+    },
+    {
+      "check": "Strict console regression suite 11/11",
+      "status": "PASS"
+    }
+  ],
+  "browser_snippet_output": "INIT PASS\nSTATE PASS\nLOOK PASS\nRESTORE_VIEW PASS\nKESSLER_EXTRA PASS\nKESSLER_ROIS PASS\nKESSLER_FROZEN_DRAW PASS\n",
+  "console_check_output": "test_browser_reason_phrase_and_query_are_accepted (__main__.ConsolePolicy.test_browser_reason_phrase_and_query_are_accepted) ... ok\ntest_confirmed_favicon_remains_visible_without_blocking (__main__.ConsolePolicy.test_confirmed_favicon_remains_visible_without_blocking) ... ok\ntest_favicon_diagnostic_does_not_hide_later_game_error (__main__.ConsolePolicy.test_favicon_diagnostic_does_not_hide_later_game_error) ... ok\ntest_game_resource_404_still_blocks (__main__.ConsolePolicy.test_game_resource_404_still_blocks) ... ok\ntest_non_http_or_malformed_source_still_blocks (__main__.ConsolePolicy.test_non_http_or_malformed_source_still_blocks) ... ok\ntest_other_favicon_failures_still_block (__main__.ConsolePolicy.test_other_favicon_failures_still_block) ... ok\ntest_other_origin_still_blocks (__main__.ConsolePolicy.test_other_origin_still_blocks) ... ok\ntest_recorded_oldroad_messages_can_be_replayed (__main__.ConsolePolicy.test_recorded_oldroad_messages_can_be_replayed) ... ok\ntest_similar_filename_is_not_a_favicon (__main__.ConsolePolicy.test_similar_filename_is_not_a_favicon) ... ok\ntest_unknown_source_still_blocks (__main__.ConsolePolicy.test_unknown_source_still_blocks) ... ok\ntest_warnings_and_normal_logs_keep_their_policy (__main__.ConsolePolicy.test_warnings_and_normal_logs_keep_their_policy) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.003s\n\nOK\n",
+  "scope": "Targeted tool checks only; no game runtime/build/test suite rerun."
+}
