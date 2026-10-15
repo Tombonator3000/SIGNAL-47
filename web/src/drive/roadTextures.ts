@@ -98,6 +98,8 @@ export const SIGNS = {
   mile: rect(768, 0, 128, 256),
   roswell: rect(0, 320, 640, 240),
   gate: rect(640, 320, 384, 192),
+  closed: rect(0, 560, 512, 192),
+  stripes: rect(512, 560, 512, 128),
 };
 
 // The blank enamel sign (art 'sign') stretched to any card, corners kept (as textures.ts does).
@@ -164,6 +166,17 @@ export function signAtlas() {
     text(g, 'STATION 01', 832, 380, 58, '#1f2326', 330, 600);
     text(g, 'KEEP GATE CLOSED', 832, 452, 36, '#8f2a1e', 330);
     weather(g, 640, 320, 384, 192, 12, 0);
+    // the old road, closed until chapter six: a regulatory plate and the barricades' rails
+    g.fillStyle = '#ecebe4'; g.fillRect(0, 560, 512, 192);
+    g.strokeStyle = '#141414'; g.lineWidth = 8; g.strokeRect(12, 572, 488, 168);
+    text(g, 'ROAD CLOSED', 256, 656, 96, '#141414', 450, 600);
+    weather(g, 0, 560, 512, 192, 13, 0);
+    g.save(); g.beginPath(); g.rect(512, 560, 512, 128); g.clip();
+    g.fillStyle = '#f2efe6'; g.fillRect(512, 560, 512, 128);
+    g.fillStyle = '#d8661c';
+    for (let x = 512 - 128; x < 1024 + 128; x += 96) { g.beginPath(); g.moveTo(x, 688); g.lineTo(x + 48, 688); g.lineTo(x + 176, 560); g.lineTo(x + 128, 560); g.fill(); }
+    g.restore();
+    weather(g, 512, 560, 512, 128, 14, 0);
   });
 }
 

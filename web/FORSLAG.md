@@ -4,6 +4,94 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## SARO som knutepunkt, lastebilen når som helst, lommelykt og undersøkelse (15. oktober)
+
+Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill (avgjort). På sikt: SARO og observatoriet som et knutepunkt der flere rare ting skjer, motellet lenger unna så man kjører dit (eller går et stykke), gå ut og undersøke antennene, lommelykt, og høyreklikk for zoom og undersøkelse. Og: kan noe av det som står i rulleteksten til They Are Here brukes?
+
+Dette flytter spillet litt bort fra beslutningen 4. oktober om korte, håndlagde etapper og ikke en åpen verden. Forslaget under holder det likevel lite: noen få steder på samme vei, ikke et åpent landskap.
+
+### 1. Lastebilen når som helst (avgjort)
+
+- Bilen står på SARO-plassen fra start. Man går til førerdøra og setter seg inn når man vil, og kjører på veiene som finnes: gården, riksveien sør til dineren og sporet til STATION 01. Man går ut på plassene: SARO, porten ved stasjonen, dineren, og senere motellet og antennefeltet.
+- Stedene har en tilstand før kapitlet sitt. Porten ved STATION 01 er lukket før kapittel 3. Dineren er åpen, men servitrisen sier bare noe vanlig; utklippet, telefonen til Ward og kartet kommer først i kapittel 5. Rom 6 er låst til kapittel 4. Den gamle veien er sperret ved milestolpe 0 (`ROAD CLOSED`, sperrebukker) til kapittel 6, så slutten bare kan skje der den skal.
+- Målet står i notatboka som før. Kjører man bort, sier en kort linje hvor man skal når man kommer tilbake. Klokka går som vanlig, og det lagres ikke under kjøring.
+- Teknisk er mye på plass: fri kjøring finnes i utviklermenyen (`World.freeDrive`), og turene går allerede gjennom alle områdene uten kutt. Det som mangler, er at bilen alltid har en interaksjon (ikke bare når et kapittel overstyrer den), fri kjøring mellom flere områder i vanlig spill, og tilstandene over. Tester: `drives.py`, `devmenu.py`, kapittel 3 til 6 og lagringen.
+
+### 2. SARO som knutepunkt der rare ting skjer
+
+Hovedhistorien og den ene slutten står. Rundt den kommer små hendelser man kan oppleve når man er ute, og som legger et funn i notatboka (Findings). De er aldri nødvendige for å komme videre, skjer én gang hver, og følger regel R1: fenomenet følger referansene (1947-linjene, az 026, 47 sekunder, 1420 MHz). Ingen monstre, og ingen lys over motellet (Tom 4. oktober).
+
+Ti eksempler å velge fra:
+
+1. Alle antennene snur seg samlet mot az 026 i 47 sekunder, uten at noen sitter ved pulten. Driftsloggen viser ingen kommando.
+2. De røde varsellysene på antennene blinker fire og sju ganger, én gang, og så er de som før.
+3. Rimfrost på én antenne (S-11) en varm natt. Den smelter mens man ser på.
+4. En ring av vissent gress rundt foten av S-19. Jorda er varm.
+5. Fotspor i grusen ut mot S-03 som stopper midt på stien.
+6. En bil står ved gjerdet med lysene på og motoren varm, ingen i den. Når man kommer tilbake, er den borte.
+7. Bilradioen: AM-stasjonen blir stille i nøyaktig 47 sekunder, samme minutt hver time.
+8. Telefonen på motellkontoret ringer når man står der. Ingen i den, bare suset fra hydrogenlinja.
+9. Lys over mesaen i nordvest som bare synes i feltkameraet, ikke med øynene.
+10. Lommelykta og bilen flimrer når man er nær et av stedene over, svakt, som et forvarsel om THE EVENT.
+
+### 3. Motellet lenger unna
+
+I dag ligger Sierra Motor Court rett over riksveien fra SARO, rundt 45 m unna. Forslag: flytt det rundt 700 m sør langs riksveien, på vestsiden, i veiens område slik dineren nå står der. Det blir rundt 40 sekunder i bil eller 6 minutter til fots (1,9 m/s), og neonskiltet blir et landemerke på turen sør til dineren. Rom 6 er fortsatt et eget område innenfor døra.
+
+For å kunne gå dit må veiskulderen mellom SARO og motellet bli gangbar, noe veiens område ikke har i dag. Kapittel 4 må skrives om fra «gå over veien» til «kjør eller gå», og `chapter4.py`, `reachcheck.py`, `drives.py` og gjennomspillingen må følge med.
+
+### 4. Ut til antennene
+
+Antennefeltet ligger nord for nettinggjerdet ved z -20: 27 antenner fra 42 til 420 m ut, og i dag kan man bare gå til S-03. Forslag: en port i gjerdet, grusspor mellom antennene, og ved hver antenne et apparatskap med skilt (navnet, az og el), en stige og en kabelgrøft. Ting å undersøke: skiltene, en driftslogg i skapet, boltene, kabler som er kuttet eller skjøtt. Mellom natriumlampene er det mørkt, og det er der lommelykta trengs. Detaljene ved foten bygges bare nær spilleren, så mobilen holder.
+
+### 5. Lommelykt
+
+- Den ligger allerede på passasjersetet i lastebilen (tegnet i `Truck.ts`). Man tar den derfra, eller fra en skuff i kontrollrommet.
+- F på PC, en knapp på mobilen.
+- Lyset bygges som frontlysene: tre falske lyspunkter langs strålen i stedets eget lampesett, som er billig på mobil. På Ultra kommer ett ekte spotlys med skygge.
+- En mørk metallykt fra 1980-tallet nederst i høyre hjørne. Senere kan en hånd holde den (forslaget om kroppen fra 5. oktober).
+- Batteri: jeg anbefaler uten, men at den flimrer nær hendelsene (punkt 10 over).
+
+### 6. Høyreklikk: zoom og undersøk
+
+- Hold høyre musknapp for å se nærmere: synsfeltet går mykt fra 70 til rundt 30 grader. På mobilen en lupeknapp man holder. Ikke mens feltkameraet er løftet eller et panel er åpent.
+- Undersøk: står siktet på noe som kan undersøkes, viser zoomen en kort tekst nederst (engelsk, i spillet), og funnet går i notatboka hvis det betyr noe. Først tekst og zoom. Senere, for noen få ting (skiltene, bolten, driftsloggen, lommelykta), et nærbilde man kan snu.
+- Kapittel 1 har allerede «Examine contact print» i fotolaben. Den nye undersøkelsen gjør det samme ute i verden.
+
+### 7. Lenkene i rulleteksten til They Are Here
+
+Vi tar aldri noe fra They Are Here selv, bare fra originalkildene og under deres egne lisenser. Sjekket 15. oktober:
+
+| Hva | Lisens | Kan vi bruke det? |
+| --- | --- | --- |
+| Horror Engine (Unreal Marketplace) | Bare for Unreal Engine | Nei, ikke i three.js |
+| Flashlight (Sketchfab, Hepatitis_Bee) | CC BY, kan lastes ned | Ja, med kreditering. Kan bli lommelykta i hånda hvis den er lett nok |
+| Bob Lazar Ufo (Sketchfab, Batuhan13) | CC BY, kan lastes ned | Kanskje, som en fjern silhuett i et glimt. Lazar-historien er fra 1989 og spillet fra 1986, så den må ikke kalles det |
+| Phone, Desk_Table_Chair, Book, Old monitor (Sketchfab) | CC BY | Mulig, men vi har modeller i kode alt. Bare verdt det for PC-nivået, hvis de er lette og passer stilen |
+| Computer Setup (Sketchfab, Brandon Westlake) | UNVERIFIED, siden svarte ikke | Sjekkes på nytt |
+| Walkie Talkie, Textured (Sketchfab) | CC BY | Vi har en walkie; bare som referanse |
+| Freesound-lydene (romlyder, fremmedspråk, slag, «Paranormal Activity Sound» og flere) | UNVERIFIED: freesound.org svarte 403 herfra. Rulleteksten sier selv at «Dark ambient scream» og «OhDearScare» er CC BY, og at Timbres to lyder er CC BY-NC | Hver lyd sjekkes på siden sin før bruk. CC BY-NC binder hvis spillet noen gang skal selges |
+| Flickr-bildene | Ukjent per bilde. Flere er nyhetsklipp og filmbilder (Independence Day er beskyttet) | Nei, høyst som referanse. De passer heller ikke i 1986 |
+| Video fra Pexels (Luis Quintero) | Pexels-lisensen: fri bruk | Innholdet er ukjent, og video passer dårlig i stilen |
+
+Det som brukes, føres i `THIRD_PARTY_NOTICES.md` og i rulleteksten. 3D-modeller er noe nytt i spillet (`GLTFLoader`, større enkeltfil), så det bør være noen få utvalgte. Repoet har ingen lisensfil for selve spillet.
+
+### Rekkefølge jeg foreslår
+
+1. Lastebilen når som helst, med tilstandene før hvert kapittel. Avgjort, middels stort.
+2. Lommelykt og høyreklikk med zoom og undersøk. Grunnmuren for å gå ut og se.
+3. Antennefeltet gangbart med port, spor og skap ved antennene.
+4. Motellet 700 m sør, med kapittel 4 skrevet om.
+5. Hendelsene, tre eller fire først, så flere.
+
+Codex kan ta en avgrenset del underveis, for eksempel skapet og skiltet ved antennene som egen modul med kontrakt (som Kessler-porten), eller å gjøre Flashlight-modellen klar (sjekke polygoner, lage en liten glTF, lisensnotat).
+
+**Det Tom må avgjøre:** (1) Motellet sør mot dineren (min anbefaling) eller nord gjennom antennefeltet? (2) Lommelykt med batteri eller uten? (3) Den gamle veien før kapittel 6: sperret ved milestolpe 0 (min anbefaling) eller åpen uten at noe skjer? (4) Skal hendelsene bare være stemning og funn, eller kan de også gi hint i hovedsaken?
+
+**Tom svarte 15. oktober:** (1) motellet sør, (2) lommelykt uten batteri, (3) den gamle veien sperret ved milestolpe 0 til kapittel 6, (4) hendelsene kan også gi hint i hovedsaken. Punkt 1 og 2 i rekkefølgen bygges først.
+
+**Bygget 15. oktober kveld:** lastebilen når som helst (fra kapittel 1, med kjetting i gangåpningen ved STATION 01 til kapittel 3 og ROAD CLOSED ved milestolpe 0 til kapittel 5 sender bilen ut), lommelykta fra passasjersetet (F, Light på telefon) og zoom med undersøk (høyre museknapp, Zoom på telefon). Foreløpig har lastebilen, den lenkede gangåpningen og sperringen undersøk-tekst; flere ting får det etter hvert.
+
 ## Innlevelse, lyd, grafikk og Unreal (5. oktober)
 
 Tom spurte hva spillet trenger for mer innlevelse, om prosjektbiblioteket har noe vi trenger, om vi bør dekompilere Voices of the Void, og om spillet kan flyttes til Unreal. Hele natten er nå bygd, så dette handler om å løfte det som finnes.

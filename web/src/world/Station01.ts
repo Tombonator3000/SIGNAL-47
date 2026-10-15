@@ -692,6 +692,8 @@ export class Station01 {
   colliders: Collider[] = [];
   zones: Zone[] = [];
   zone: Record<string, Zone> = {};
+  private walkChain: THREE.Group | null = null;
+  private walkOpen: boolean | null = null;
   proxies: Record<string, THREE.Object3D> = {};
   objs: Record<string, THREE.Object3D> = {};
   // Invisible boxes for FieldCamera.clearLine(): the hut, the shed, the pier.
@@ -938,6 +940,17 @@ export class Station01 {
   }
   private hidden?: THREE.MeshBasicMaterial;
   // Invisible box that interaction rays can hit.
+  /** The walk gap in the fence beside the vehicle gate: chained until chapter three, open from
+   *  then on (main.ts). The truck any time may bring the player here before that. */
+  setWalkGate(open: boolean) {
+    if (open === this.walkOpen) return;
+    this.walkOpen = open;
+    if (this.walkChain) this.walkChain.visible = !open;
+    // open, its hit box goes out of the way of the crosshair (layer 31, as hidden things do)
+    this.proxies.walkGate?.layers.set(open ? 31 : 0);
+    const z = this.zone.walkThrough;
+    if (z) z.enabled = open;
+  }
   private proxy(id: string, w: number, h: number, d: number, x: number, y: number, z: number, ry = 0) {
     this.hidden ??= this.track(new THREE.MeshBasicMaterial({ visible: false }));
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), this.hidden);
@@ -1080,6 +1093,13 @@ export class Station01 {
     // gate posts and the walk-through post
     for (const x of [GATE.w, GATE.e]) metreUV(cyl(st, 0.1, 0.12, 2.1, m.wood, x, G + 0.85, z1, 8));
     metreUV(cyl(st, 0.07, 0.08, 1.9, m.wood, GAP_W, G + 0.75, z1, 6));
+    // the walk gap: a chain and padlock across it until there is work out here (setWalkGate)
+    const wc = new THREE.Group(); wc.name = 'walkChain'; noMerge(wc); this.group.add(wc); this.walkChain = wc;
+    const ca = new THREE.Vector3(GAP_W + 0.07, G + 1.02, z1 + 0.04), cb = new THREE.Vector3(GATE.w - 0.1, G + 1.0, z1 + 0.04);
+    const cm = ca.clone().lerp(cb, 0.5).setY(G + 0.84);
+    rod(wc, ca, cm, 0.011, m.darkMetal, 4); rod(wc, cm, cb, 0.011, m.darkMetal, 4);
+    box(wc, 0.06, 0.075, 0.028, m.brass, cm.x, cm.y - 0.06, cm.z + 0.01);
+    this.proxy('walkGate', GATE.w - GAP_W, 1.6, 0.4, (GAP_W + GATE.w) / 2, G + 0.8, z1);
     // the pipe gate, closed and chained
     const gx0 = GATE.w + 0.12, gx1 = GATE.e - 0.12, gz = z1 + 0.02;
     const gv = (x: number, h: number) => new THREE.Vector3(x, G + h, gz);

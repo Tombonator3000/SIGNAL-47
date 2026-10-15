@@ -57,6 +57,9 @@ export interface Travel {
   driving(): boolean;
   driveOut(): void;
   driveBack(): void;
+  /** What the truck offers where it stands: this chapter's drive, a later one's, or the
+   *  player's own (main.ts, World.truckChoice). */
+  truckChoice(place: 'saro' | 'station01' | 'diner'): { label: string; use: () => void };
 }
 
 export interface Chapter3Host {
@@ -111,8 +114,6 @@ const TANK_TIME = 2.2, FIX_TIME = 1.5;
 const RING = 'ring3';
 
 export class Chapter3 {
-  /** A later chapter that drives the truck from its pad (All Night) takes over its label and use. */
-  truckOverride: { label: () => string | null; use: () => void } | null = null;
   active = false;
   started = false;
   ringing = false;
@@ -248,17 +249,21 @@ export class Chapter3 {
     return t;
   }
 
-  // ---------- the truck at SARO ----------
+  // ---------- the truck ----------
+  /** This chapter's drive from wherever the truck stands: out to STATION 01, and back to SARO
+   *  with the field roll (main.ts asks it first, World.truckChoice). */
+  truckTrip(_place: 'saro' | 'station01' | 'diner'): { label: string; use: () => void } | null {
+    if (!this.active) return null;
+    if (this.s.stage === 'to-truck') return { label: 'Drive to STATION 01', use: () => this.d.travel.driveOut() };
+    if (this.s.stage === 'return') return { label: 'Drive back to SARO', use: () => this.d.travel.driveBack() };
+    return null;
+  }
   bindSaroTruck(object: THREE.Object3D) {
-    const { inter, ui } = this.d;
+    const { inter } = this.d;
     inter.add({ id: 'truck', object, range: 3.2,
-      label: () => this.truckOverride?.label() ?? (this.active && this.s.stage === 'to-truck' ? 'Drive to STATION 01' : 'Service truck'),
-      use: () => {
-        if (this.truckOverride?.label()) { this.truckOverride.use(); return; }
-        if (!this.active) { ui.toast('SARO 07, the service truck. The keys are in it, like always.', 3.4); return; }
-        if (this.s.stage === 'to-truck') { this.d.travel.driveOut(); return; }
-        ui.toast(this.s.stage === 'develop' ? 'The field roll goes to the wet bench first.' : 'You have been out once tonight. The truck can stay where it is.', 3.4);
-      } });
+      label: () => this.d.travel.truckChoice('saro').label,
+      use: () => this.d.travel.truckChoice('saro').use(),
+      examine: () => 'SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.' });
   }
 
   // Called by main when the drive reaches the station gate (and when a save there is restored).
@@ -305,8 +310,12 @@ export class Chapter3 {
       add('s1timing', 'timingLog', () => this.s.readE10 ? 'Field record / timing' : 'Read the timing log (E10)', () => this.useTimingLog());
       add('s1phone', 'fieldPhone', () => this.ringing ? 'Answer the field telephone' : 'Field telephone', () => this.usePhone());
       add('s1gate', 'gate', () => 'Vehicle gate', () => ui.toast('Chained and padlocked. N. Vega holds the key. The walk gate beside it is open.', 3.6));
-      // (with the truck somewhere else, World.parkAt has put its handle out of the way: nothing to use)
-      add('s1truck', 'truckSpot', () => px.truckSpot.position.y < -100 ? null : this.s.stage === 'return' ? 'Drive back to SARO' : 'Service truck', () => this.useStationTruck(), 3.2);
+      // the truck outside the gate, any time it stands there (with the truck somewhere else,
+      // World.parkAt has put its handle out of the way: nothing to use)
+      if (px.truckSpot) inter.add({ id: 's1truck', object: px.truckSpot, range: 3.2,
+        label: () => this.d.travel.area() === 'station01' && px.truckSpot.position.y > -100 ? this.d.travel.truckChoice('station01').label : null,
+        use: () => this.d.travel.truckChoice('station01').use(),
+        examine: () => this.d.travel.area() === 'station01' && px.truckSpot.position.y > -100 ? 'SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.' : null });
     }
     if (this.active) this.applyWorld();
   }
@@ -411,12 +420,6 @@ export class Chapter3 {
       this.save();
     }
     this.openField('timing');
-  }
-
-  private useStationTruck() {
-    const s = this.s;
-    if (s.stage === 'return') { this.d.travel.driveBack(); return; }
-    this.d.ui.toast(!s.p08 ? 'Not yet. N. Vega asked you to look at the cable first.' : s.stage === 'call' ? 'The field telephone is ringing in the hut.' : 'Not yet. The field record is not finished.', 3.4);
   }
 
   // ---------- the field record (P06 to P09) ----------

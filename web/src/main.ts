@@ -15,6 +15,7 @@ import { Vhs, type Picture } from './core/vhs';
 import { FieldCamera } from './core/FieldCamera';
 import { setQuality, type Quality } from './core/quality';
 import { Ultra } from './core/ultra';
+import { Flashlight } from './core/Flashlight';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
@@ -88,6 +89,9 @@ async function boot() {
   let quality: Quality = store.get<Quality>('quality', ultraOk && !navigator.webdriver ? 'ultra' : 'high');
   if (quality === 'ultra' && !ultraOk) quality = 'high';
   const ultra = new Ultra(renderer, scene);
+  // the flashlight from the truck's passenger seat (core/Flashlight.ts, Tom 15 October)
+  const flashlight = new Flashlight(scene);
+  let zoomK = 0;   // the closer look, 0 to 1 (right mouse, Zoom on a phone)
   ultra.addShadowLight(room.lights.lamps[0]);   // the lamp on the supervisor desk
   // the picture: a 1986 tape look over the whole night (core/vhs.ts), off by default on Low
   // (until the player picks one in Settings, the picture follows the graphics level)
@@ -182,6 +186,7 @@ async function boot() {
     travel: {
       area: () => world.area, site: () => world.site, driving: () => world.driving,
       driveOut: () => world.driveOut(), driveBack: () => world.driveBack(),
+      truckChoice: (place) => world.truckChoice(place),
     },
     motel: {
       area: () => world.area, room: () => world.room6, court: () => world.court,
@@ -191,6 +196,7 @@ async function boot() {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
       driveToDiner: (onArrive) => world.driveToDiner(onArrive),
       driving: () => world.driving,
+      truckChoice: (place) => world.truckChoice(place),
     },
     roswell: {
       world, camera,
@@ -208,15 +214,38 @@ async function boot() {
   const ch2 = game.ch2;
   const ch3 = game.ch3;
   ch3.bindSaroTruck(yard.objs.truck);
-  world.onStationLoaded = (site) => ch3.bindSite(site);
+  world.onStationLoaded = (site) => {
+    ch3.bindSite(site);
+    // the walk gap before chapter three: chained (Station01.setWalkGate, World.setStoryPlaces)
+    if (site.proxies.walkGate) inter.add({ id: 's1walkGate', object: site.proxies.walkGate, range: 2.6,
+      label: () => world.area === 'station01' && !game.at('ch3') ? 'Walk gate' : null,
+      use: () => ui.toast('Chained, with a padlock. N. Vega holds the keys out here.', 3.4),
+      examine: () => world.area === 'station01' && !game.at('ch3') ? 'A chain through the walk gap, and a padlock a good deal newer than the fence.' : null });
+  };
   world.onArriveStation = () => ch3.arrivedStation();
   world.onArriveSaro = () => ch3.arrivedSaro();
+  // the flashlight on the passenger seat comes along the first time the player gets in
+  world.onGetIn = () => {
+    if (flashlight.have) return;
+    flashlight.have = true;
+    ui.toast(input.touchMode ? 'You take the flashlight off the passenger seat. Light switches it on.' : 'You take the flashlight off the passenger seat. F switches it on.', 4.5);
+  };
+  // the truck any time (Tom 15 October): the night's own drive if a chapter has one from here,
+  // otherwise one of the player's own; not while the shift's first hours are still running
+  world.truckChoice = (place) => {
+    if (!game.at('ch1')) return { label: 'Service truck', use: () => ui.toast('SARO 07, the service truck. Not now: someone has to sit the console tonight.', 3.4) };
+    return ch3.truckTrip(place) ?? game.ch5.truckTrip(place) ?? { label: 'Drive', use: () => world.roam(place) };
+  };
   const ch4 = game.ch4;
   world.onRoom6Loaded = (r) => ch4.bindRoom(r);
   world.onEnterRoom6 = () => ch4.enteredRoom();
   world.onLeaveRoom6 = () => ch4.leftRoom();
   const ch5 = game.ch5;
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
+  // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
+  world.onRoadLoaded = (road) => inter.add({ id: 'roadClosed', object: road.closedSign, label: () => null, use: () => {},
+    examineRange: 40,
+    examine: () => road.roadClosed ? 'ROAD CLOSED. Two barricades across the old road to Roswell, an amber lamp blinking on each.' : null });
   world.onDinerTruck = (px) => ch5.bindDinerTruck(px);
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
 
@@ -325,6 +354,8 @@ async function boot() {
       if (ui.modal) { ui.close(); return; }
       if (fcam.raised) { ch1.toggleCamera(); return; }
       openPause();
+    } else if (code === 'KeyF') {
+      toggleLight();
     } else if (code === 'KeyC') {
       if (!ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera();
     } else if (code === 'Space') {
@@ -345,6 +376,12 @@ async function boot() {
   ui.onUse = useCurrent;
   ui.onNotes = () => { if (mode === 'play' && !ui.modal && !game.cinematic) game.openNotebook(); };
   ui.onCamera = () => { if (mode === 'play' && !ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera(); };
+  const toggleLight = () => {
+    if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
+    if (!flashlight.toggle()) ui.toast('No flashlight. There is one on the passenger seat of the truck.', 3);
+  };
+  ui.onLight = toggleLight;
+  ui.onZoom = (held) => { input.zoomHeld = held; };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
   // ---------- flow ----------
@@ -428,6 +465,7 @@ async function boot() {
     world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : 'saro');
     world.enter('saro');
     restoring = o.state; restoringNow = true;
+    flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
@@ -502,7 +540,7 @@ async function boot() {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(),
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -663,7 +701,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score,
@@ -818,13 +856,27 @@ async function boot() {
         if (!modalOpen) world.update(dt, t, { steer: m.x, throttle: -m.z }, active ? { x: look.x, y: invertY ? -look.y : look.y } : { x: 0, y: 0 });
       } else {
         if (active) {
-          player.look(look.x, invertY ? -look.y : look.y);
+          const fine = 1 - 0.6 * zoomK;   // finer aim through the closer look
+          player.look(look.x * fine, (invertY ? -look.y : look.y) * fine);
           const m = input.move();
           player.update(dt, m.x, m.z, m.run);
         } else player.update(dt, 0, 0, false);
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
+      const c5 = game.ch5.s.stage;
+      world.setStoryPlaces({ stationOpen: game.at('ch3'), oldRoadOpen: game.at('ch6') || (game.ch5.active && (c5 === 'road' || c5 === 'complete')) });
+      // the closer look: the lens narrows while right mouse (or Zoom) is held, on foot
+      const canZoom = mode === 'play' && !modalOpen && !game.cinematic && !fcam.raised && !world.driving;
+      const z0 = zoomK;
+      zoomK += ((input.zoomHeld && canZoom ? 1 : 0) - zoomK) * Math.min(1, dt * 9);
+      if (zoomK < 0.002) zoomK = 0;
+      if (!fcam.raised && (zoomK > 0 || z0 > 0)) {
+        camera.fov = (innerWidth < innerHeight ? baseFov + 12 : baseFov) * (1 - 0.55 * zoomK);
+        camera.updateProjectionMatrix();
+      }
+      flashlight.update(dt, t, camera, mode !== 'play' || world.driving || game.cinematic, ultra.on);
+      ui.lightButton(flashlight.have, flashlight.on);
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') { audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
@@ -842,9 +894,12 @@ async function boot() {
         const it = inter.update(camera);
         ui.prompt(it ? it.label() : null, input.touchMode);
         ui.hint(!input.touchMode && !input.locked);
+        // a closer look: what the thing under the crosshair is, once the zoom is most of the way in
+        ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         ui.prompt(fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
+        ui.examine(null);
       }
     }
     sky.group.rotation.y = world.skyYaw;

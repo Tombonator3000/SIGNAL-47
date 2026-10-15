@@ -209,6 +209,37 @@ export function signs(b: Build) {
   sign(b, -12.5, 511.5, 2.6, 1.8, 1.13, 1.0, SIGNS.station, [-0.65, 0.65], b.m.wood);
 }
 
+// ---------- the old road, closed until chapter six (Tom 15 October) ----------
+// Two barricades across the old road between the highway's fence and the end of what this area
+// drives (the wall at x 30 in fences), striped orange and white, with a ROAD CLOSED plate and a
+// flashing amber lamp on each. Their own group, so RoadArea can take them away when chapter
+// five sends the truck out on the old road (OldRoad.ts never has them).
+export function roadClosed(b: Build) {
+  const g = new THREE.Group(); g.name = 'roadClosed';
+  const x = 25.5, z0 = DINER.z, y = surfaceY(x, z0), m = b.m;
+  g.position.set(x, y, z0); g.rotation.y = -Math.PI / 2;      // the faces look west, at the highway
+  const lamps: number[] = [];
+  for (const off of [-1.45, 1.45]) {
+    for (const h of [0.45, 0.85, 1.25]) {
+      const rail = new THREE.Mesh(uvInto(new THREE.BoxGeometry(2.4, 0.2, 0.03), SIGNS.stripes), m.sign);
+      rail.position.set(off, h, 0); g.add(rail);
+    }
+    for (const lx of [-1.0, 1.0]) for (const lz of [-0.32, 0.32]) {
+      rod(g, new THREE.Vector3(off + lx, 0, lz), new THREE.Vector3(off + lx, 1.35, 0), 0.03, m.wood, 5);
+    }
+    // the blinker on top of the barricade, its housing on the top rail
+    lamps.push(b.glow.add(x, y + 1.55, z0 + off, 0.45, 0xffa020, 3.4, off > 0 ? Math.PI : 0));
+    cyl(g, 0.07, 0.07, 0.14, m.dark, off, 1.42, 0, 8);
+    circle(b, x, z0 + off - 1, 0.3); circle(b, x, z0 + off + 1, 0.3);
+  }
+  const plate = new THREE.Mesh(uvInto(new THREE.PlaneGeometry(1.25, 0.47), SIGNS.closed), m.sign);
+  plate.position.set(0, 1.62, 0.03); g.add(plate);
+  box(g, 1.27, 0.49, 0.02, m.steel, 0, 1.62, 0.01);
+  for (const px of [-0.5, 0.5]) cyl(g, 0.03, 0.03, 1.9, m.steel, px, 0.95, -0.02, 6);
+  b.root.add(g);
+  return { group: g, lamps };
+}
+
 // ---------- the cattle guard in the right-of-way fence, with heavy gate posts ----------
 export function cattleGuard(b: Build) {
   const { x0, x1, z0, z1 } = GUARD, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, y = surfaceY(cx, cz);

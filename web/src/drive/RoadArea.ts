@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
-import { roadFlood, HEADLIGHT_SLOTS, retroBeam, roadMaterials, type Build, poles, fences, delineators, signs, cattleGuard, wireMesh } from './roadProps';
+import { roadFlood, HEADLIGHT_SLOTS, retroBeam, roadMaterials, type Build, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed } from './roadProps';
 import { station, ranch, plants, saroLights, trackRoute } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
 import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, smooth, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
@@ -84,6 +84,7 @@ export class RoadArea implements DriveArea {
     // the builders placed their lamps in local terms; floods live in world terms
     for (let i = HEADLIGHT_SLOTS.length; i < roadFlood.count; i++) roadFlood.pos[i].x += origin.x, roadFlood.pos[i].y += origin.y, roadFlood.pos[i].z += origin.z;
     poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
+    this.closed = roadClosed(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
     this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build());
@@ -112,6 +113,23 @@ export class RoadArea implements DriveArea {
   }
   /** The old road's asphalt again, once its own picture is in (round 11, loaded with the diner). */
   refreshOldRoad() { this.oldAsphalt.map?.dispose(); this.oldAsphalt.map = oldAsphaltTex(); this.oldAsphalt.needsUpdate = true; }
+  /** The barricades across the old road (closed until chapter five sends the truck out on it). */
+  private closed: { group: THREE.Group; lamps: number[] };
+  private closedOn = true;
+  /** The barricades, for a closer look from the diner's lot (main.ts). */
+  get closedSign(): THREE.Object3D { return this.closed.group; }
+  get roadClosed() { return this.closedOn; }
+  setRoadClosed(on: boolean) {
+    if (on === this.closedOn) return;
+    this.closedOn = on;
+    this.closed.group.visible = on;
+    // taken away, they are out of the way of the crosshair too (layer 31)
+    this.closed.group.traverse((o) => o.layers.set(on ? 0 : 31));
+    const col = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
+    const c = new THREE.Color(on ? 0xffa020 : 0x000000);   // as roadClosed gave them (GlowPoints.add)
+    for (const i of this.closed.lamps) col.setXYZ(i, c.r, c.g, c.b);
+    col.needsUpdate = true;
+  }
   /** How much of the road's own night light is on (the diner has its own, at dawn, World.ts). */
   setNight(k: number) { this.night.hemi.intensity = 0.9 * k; this.night.moon.intensity = 0.45 * k; }
 
