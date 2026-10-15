@@ -946,6 +946,8 @@ export class Station01 {
     if (open === this.walkOpen) return;
     this.walkOpen = open;
     if (this.walkChain) this.walkChain.visible = !open;
+    // open, its hit box goes out of the way of the crosshair (layer 31, as hidden things do)
+    this.proxies.walkGate?.layers.set(open ? 31 : 0);
     const z = this.zone.walkThrough;
     if (z) z.enabled = open;
   }

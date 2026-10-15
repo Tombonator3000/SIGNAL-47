@@ -107,6 +107,8 @@ export class World {
   room6: Room6 | null = null;
   diner: Diner | null = null;
   onDinerLoaded?: (diner: Diner) => void;
+  /** The highway has been built (the barricades on the old road get a closer look, main.ts). */
+  onRoadLoaded?: (road: RoadArea) => void;
   /** The diner's collider round its parked truck (it moves with the truck). */
   private dinerCol: Collider | null = null;
   /** The diner's neon as lamps in the road's set and the old road's (Diner.neon). */
@@ -285,6 +287,7 @@ export class World {
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
       this.legs.road = { area: road, drive: this.drive, truck };
       this.d.applyQuality();
+      this.onRoadLoaded?.(road);
     });
   }
 

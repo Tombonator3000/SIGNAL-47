@@ -242,6 +242,10 @@ async function boot() {
   world.onLeaveRoom6 = () => ch4.leftRoom();
   const ch5 = game.ch5;
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
+  // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
+  world.onRoadLoaded = (road) => inter.add({ id: 'roadClosed', object: road.closedSign, label: () => null, use: () => {},
+    examineRange: 40,
+    examine: () => road.roadClosed ? 'ROAD CLOSED. Two barricades across the old road to Roswell, an amber lamp blinking on each.' : null });
   world.onDinerTruck = (px) => ch5.bindDinerTruck(px);
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
 
