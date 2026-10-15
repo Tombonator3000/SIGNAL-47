@@ -14,8 +14,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
 - [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kapittel 6 har linjer etter milene (`Chapter6.RADIO`); neste steg er samme mønster for alle turer (`World.startTrip` med et program etter meter kjørt) og et første utkast til innhold for kapittel 3 og 5, som Tom kan rette.
 - [x] Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill. Forslag til hvordan i `FORSLAG.md` (15. oktober), punkt 1.
-- [ ] Lastebilen når som helst: bilen har alltid en interaksjon, fri kjøring mellom områdene i vanlig spill, og stedene har en tilstand før kapitlet sitt (porten ved STATION 01, dineren, rom 6, sperring på den gamle veien til kapittel 6). Tom har svart (sperring på den gamle veien til kapittel 6). I arbeid.
-- [ ] Lommelykt (F, knapp på mobil; ligger på passasjersetet i bilen) og høyreklikk for zoom og undersøk. Forslag i `FORSLAG.md`, punkt 5 og 6.
+- [x] Lastebilen når som helst (15. oktober kveld): fra kapittel 1 tilbyr bilen en egen tur der den står, og den blir stående på plassen den stoppes på. Kjetting i gangåpningen ved STATION 01 til kapittel 3, ROAD CLOSED ved milestolpe 0 til kapittel 5 sender bilen ut (`tools/roam.py`).
+- [ ] Tom prøver å kjøre selv mellom SARO, dineren og STATION 01 i kapittel 1 og 2: finner han plassene å stoppe på, og er det tydelig nok at stasjonen og den gamle veien er stengt ennå?
+- [x] Lommelykt (F, Light på telefon; ligger på passasjersetet i bilen) og høyreklikk for zoom og undersøk (Zoom på telefon), 15. oktober kveld. Undersøk-tekst finnes foreløpig på lastebilen og den lenkede gangåpningen; flere ting får tekst etter hvert.
+- [ ] Flere ting med undersøk-tekst (`examine`): antennene, skiltene, dokumentene på pultene, motellet. Lommelykta flimrer nær hendelsene når de kommer (`Flashlight.flicker`).
 - [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
 - [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
 - [ ] SARO som knutepunkt: små hendelser som legger funn i notatboka, tre eller fire først. `FORSLAG.md`, punkt 2.
