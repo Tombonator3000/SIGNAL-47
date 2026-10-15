@@ -14,10 +14,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
 - [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kapittel 6 har linjer etter milene (`Chapter6.RADIO`); neste steg er samme mønster for alle turer (`World.startTrip` med et program etter meter kjørt) og et første utkast til innhold for kapittel 3 og 5, som Tom kan rette.
 - [x] Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill. Forslag til hvordan i `FORSLAG.md` (15. oktober), punkt 1.
-- [ ] Lastebilen når som helst: bilen har alltid en interaksjon, fri kjøring mellom områdene i vanlig spill, og stedene har en tilstand før kapitlet sitt (porten ved STATION 01, dineren, rom 6, sperring på den gamle veien til kapittel 6). Venter på Toms svar på spørsmålene i `FORSLAG.md`.
+- [ ] Lastebilen når som helst: bilen har alltid en interaksjon, fri kjøring mellom områdene i vanlig spill, og stedene har en tilstand før kapitlet sitt (porten ved STATION 01, dineren, rom 6, sperring på den gamle veien til kapittel 6). Tom har svart (sperring på den gamle veien til kapittel 6). I arbeid.
 - [ ] Lommelykt (F, knapp på mobil; ligger på passasjersetet i bilen) og høyreklikk for zoom og undersøk. Forslag i `FORSLAG.md`, punkt 5 og 6.
 - [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
-- [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Venter på Tom: sør eller nord.
+- [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
 - [ ] SARO som knutepunkt: små hendelser som legger funn i notatboka, tre eller fire først. `FORSLAG.md`, punkt 2.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 

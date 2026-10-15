@@ -88,6 +88,8 @@ Codex kan ta en avgrenset del underveis, for eksempel skapet og skiltet ved ante
 
 **Det Tom må avgjøre:** (1) Motellet sør mot dineren (min anbefaling) eller nord gjennom antennefeltet? (2) Lommelykt med batteri eller uten? (3) Den gamle veien før kapittel 6: sperret ved milestolpe 0 (min anbefaling) eller åpen uten at noe skjer? (4) Skal hendelsene bare være stemning og funn, eller kan de også gi hint i hovedsaken?
 
+**Tom svarte 15. oktober:** (1) motellet sør, (2) lommelykt uten batteri, (3) den gamle veien sperret ved milestolpe 0 til kapittel 6, (4) hendelsene kan også gi hint i hovedsaken. Punkt 1 og 2 i rekkefølgen bygges først.
+
 ## Innlevelse, lyd, grafikk og Unreal (5. oktober)
 
 Tom spurte hva spillet trenger for mer innlevelse, om prosjektbiblioteket har noe vi trenger, om vi bør dekompilere Voices of the Void, og om spillet kan flyttes til Unreal. Hele natten er nå bygd, så dette handler om å løfte det som finnes.
