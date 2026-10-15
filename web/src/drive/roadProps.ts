@@ -227,8 +227,9 @@ export function roadClosed(b: Build) {
     for (const lx of [-1.0, 1.0]) for (const lz of [-0.32, 0.32]) {
       rod(g, new THREE.Vector3(off + lx, 0, lz), new THREE.Vector3(off + lx, 1.35, 0), 0.03, m.wood, 5);
     }
-    lamps.push(b.glow.add(x, y + 1.62, z0 + off, 0.45, 0xffa020, 3.4, off > 0 ? Math.PI : 0));
-    cyl(g, 0.07, 0.07, 0.14, m.dark, off + 0.9, 1.5, 0, 8);
+    // the blinker on top of the barricade, its housing on the top rail
+    lamps.push(b.glow.add(x, y + 1.55, z0 + off, 0.45, 0xffa020, 3.4, off > 0 ? Math.PI : 0));
+    cyl(g, 0.07, 0.07, 0.14, m.dark, off, 1.42, 0, 8);
     circle(b, x, z0 + off - 1, 0.3); circle(b, x, z0 + off + 1, 0.3);
   }
   const plate = new THREE.Mesh(uvInto(new THREE.PlaneGeometry(1.25, 0.47), SIGNS.closed), m.sign);
