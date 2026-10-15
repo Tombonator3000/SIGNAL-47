@@ -10,6 +10,8 @@ export class Input {
   onTap?: (x: number, y: number) => void;
   onLockChange?: (locked: boolean) => void;
   enabled = false;
+  /** Held to look closer: the right mouse button, or the Zoom button on a phone (UI.ts). */
+  zoomHeld = false;
 
   private stickId: number | null = null;
   private lookId: number | null = null;
@@ -42,6 +44,11 @@ export class Input {
       this.onLockChange?.(this.locked);
     });
 
+    // the right mouse button looks closer while it is held (no menu over the game)
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('mousedown', (e) => { if (e.button === 2 && this.locked && this.enabled) this.zoomHeld = true; });
+    document.addEventListener('mouseup', (e) => { if (e.button === 2) this.zoomHeld = false; });
+    window.addEventListener('blur', () => { this.zoomHeld = false; });
     canvas.addEventListener('touchstart', (e) => this.touchStart(e), { passive: false });
     canvas.addEventListener('touchmove', (e) => this.touchMove(e), { passive: false });
     canvas.addEventListener('touchend', (e) => this.touchEnd(e), { passive: false });

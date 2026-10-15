@@ -208,12 +208,19 @@ export function exitFrom(leg: LegId, x: number, z: number, heading: number): Exi
 // The autopilot's way on the road (world), towards the next area: the southbound lane and
 // the survey track out, the track and the northbound lane back.
 const roadWays: Partial<Record<LegId, THREE.Vector3[]>> = {};
-export function roadRoute(next: LegId): THREE.Vector3[] {
-  const hit = roadWays[next];
+export function roadRoute(next: LegId, lz = -Infinity): THREE.Vector3[] {
+  // from the south (the diner, the truck any time): off the lot, into the northbound lane, north
+  const south = lz > 540 && (next === 'station01' || next === 'saro');
+  const key = (south ? next + 'S' : next) as LegId;
+  const hit = roadWays[key];
   if (hit) return hit;
   const trk = track.pts.filter((p, i) => i % 2 === 0 && p.x < -6).map((p) => [p.x, p.y] as [number, number]);
   const pts: [number, number][] = [];
-  if (next === 'station01') {
+  if (south) {
+    pts.push([-9.0, DINER.z + 6], [-7.5, DINER.z + 5.4], [-5.6, DINER.z + 3.6], [-3.8, DINER.z], [-1.0, DINER.z - 8], [1.8, DINER.z - 20]);
+    for (let z = DINER.z - 40; z >= (next === 'saro' ? -160 : 530); z -= 20) pts.push([1.8, z]);
+    if (next === 'station01') pts.push([0.4, 521], [-2.6, 517], [-4.2, 518.5], ...trk);
+  } else if (next === 'station01') {
     for (let z = -140; z <= 510; z += 20) pts.push([-1.8, z]);
     pts.push([-2.6, 513], [-4.2, 518.5], ...trk);
   } else if (next === 'diner') {
@@ -225,7 +232,7 @@ export function roadRoute(next: LegId): THREE.Vector3[] {
     pts.push(...[...trk].reverse(), [-4, 519.6], [-0.6, 517.4], [1.6, 511]);
     for (let z = 495; z >= -160; z -= 20) pts.push([1.8, z]);
   }
-  return (roadWays[next] = pts.map(([x, z]) => v3(x, z, ORIGINS.road)));
+  return (roadWays[key] = pts.map(([x, z]) => v3(x, z, ORIGINS.road)));
 }
 
 /** The leg a place is in: the diner stands in the road area (World.ts), the others are their own. */

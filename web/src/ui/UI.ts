@@ -43,6 +43,11 @@ export class UI {
   onNotes?: () => void;
   onPause?: () => void;
   onCamera?: () => void;
+  /** The flashlight's button on a phone (Light), and the zoom held down (Zoom). */
+  onLight?: () => void;
+  onZoom?: (held: boolean) => void;
+  private lightBtn!: HTMLButtonElement;
+  private examineEl!: HTMLElement;
   private objEl: HTMLElement;
   private camBtn: HTMLButtonElement;
   private vf: HTMLElement;
@@ -50,7 +55,7 @@ export class UI {
   constructor() {
     document.body.insertAdjacentHTML('beforeend', '<div class="grain"></div><div class="vignette"></div>');
     this.root.insertAdjacentHTML('beforeend', `
-      <div class="hud passive" hidden><div class="crosshair"></div><div class="prompt"></div><div class="toasts"></div><div class="clockline"></div><div class="objective"></div><div class="lockhint">Click to look around</div></div>
+      <div class="hud passive" hidden><div class="crosshair"></div><div class="prompt"></div><div class="examine"></div><div class="toasts"></div><div class="clockline"></div><div class="objective"></div><div class="lockhint">Click to look around</div></div>
       <div class="viewfinder passive" hidden><div class="vf-frame"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="vf-patch"></div>
         <div class="vf-top">SARO / FIELD CAMERA</div><div class="vf-no"></div><div class="vf-status"></div><div class="vf-hint"></div></div><div class="vf-flash"></div></div>
       <div class="touch" hidden>
@@ -58,6 +63,8 @@ export class UI {
         <button class="tbtn pause" aria-label="Pause">II</button>
         <button class="tbtn notes">Notes</button>
         <button class="tbtn camera" hidden>Camera</button>
+        <button class="tbtn light" hidden>Light</button>
+        <button class="tbtn zoom">Zoom</button>
         <button class="tbtn use">Use</button>
       </div>
       <div class="fade passive"><div class="fade-text"></div></div>`);
@@ -74,6 +81,14 @@ export class UI {
     this.camBtn = this.root.querySelector('.touch .camera')!;
     this.vf = this.root.querySelector('.viewfinder')!;
     this.camBtn.addEventListener('click', () => this.onCamera?.());
+    this.lightBtn = this.root.querySelector('.touch .light')!;
+    this.lightBtn.addEventListener('click', () => this.onLight?.());
+    this.examineEl = this.root.querySelector('.hud .examine')!;
+    // Zoom is held, like the right mouse button
+    const zoom = this.root.querySelector('.touch .zoom') as HTMLButtonElement;
+    const hold = (on: boolean) => (e: Event) => { e.preventDefault(); zoom.classList.toggle('held', on); this.onZoom?.(on); };
+    zoom.addEventListener('pointerdown', hold(true));
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) zoom.addEventListener(ev, hold(false));
     this.useBtn.addEventListener('click', () => this.onUse?.());
     this.root.querySelector('.touch .notes')!.addEventListener('click', () => this.onNotes?.());
     this.root.querySelector('.touch .pause')!.addEventListener('click', () => this.onPause?.());
@@ -98,6 +113,14 @@ export class UI {
 
   clock(text: string) { if (this.clockEl.textContent !== text) this.clockEl.textContent = text; }
   objective(text: string | null) { const t = text ?? ''; if (this.objEl.textContent !== t) this.objEl.textContent = t; }
+  /** The flashlight's button on a phone: shown once there is a flashlight, lit while it is on. */
+  lightButton(have: boolean, on: boolean) { this.lightBtn.hidden = !have; this.lightBtn.classList.toggle('on', on); }
+  /** What a closer look says (the zoom), under the crosshair; null clears it. */
+  examine(text: string | null) {
+    const t = text ?? '';
+    if (this.examineEl.textContent !== t) this.examineEl.textContent = t;
+    this.examineEl.classList.toggle('show', !!text);
+  }
   cameraButton(on: boolean, raised = false) { this.camBtn.hidden = !on; this.camBtn.textContent = raised ? 'Lower' : 'Camera'; }
 
   // Field camera viewfinder. rect is the frame in CSS pixels (FieldCamera.frameRect).

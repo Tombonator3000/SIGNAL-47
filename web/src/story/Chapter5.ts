@@ -59,6 +59,7 @@ export interface Chapter5Deps {
   terminal(): THREE.Vector3;          // the operations terminal on the west desk
   driveToDiner(onArrive: () => void): void;
   driving(): boolean;
+  truckChoice(place: 'saro' | 'station01' | 'diner'): { label: string; use: () => void };
   save: () => void;
   milestone: () => void;
 }
@@ -102,11 +103,6 @@ export class Chapter5 {
     this.reset();
     this.active = true; this.started = true;
     this.s = saved ? { ...fresh(), ...saved } : fresh();
-    // the truck on its pad takes chapter five's road (it belongs to chapter three's code)
-    this.d.ch3.truckOverride = {
-      label: () => this.active && this.s.stage === 'to-truck' ? 'Drive to Mesa Diner' : null,
-      use: () => this.useSaroTruck(),
-    };
     this.applyWorld();
     if (!saved) {
       this.g.note(`${this.time()}. Out of room 6. The truck is on its pad at SARO. C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night.`);
@@ -118,7 +114,6 @@ export class Chapter5 {
   reset() {
     this.active = false; this.started = false;
     this.s = fresh(); this.lines = []; this.who = null; this.panel = null; this.leaving = false;
-    this.d.ch3.truckOverride = null;
     this.d.audio.amRadio(null);
     this.applyWorld();
   }
@@ -188,10 +183,14 @@ export class Chapter5 {
     this.save();
   }
 
-  private useSaroTruck() {
-    const { ui } = this.d;
-    if (this.s.stage !== 'to-truck') { ui.toast('SARO 07. It is parked at the diner tonight.', 3); return; }
-    this.d.driveToDiner(() => this.arrivedDiner());
+  /** This chapter's drive from wherever the truck stands: to the diner, and from its lot out on
+   *  the old road once C is found (main.ts asks it, World.truckChoice). */
+  truckTrip(place: 'saro' | 'station01' | 'diner'): { label: string; use: () => void } | null {
+    if (!this.active) return null;
+    const s = this.s;
+    if (s.stage === 'road' && place === 'diner') return { label: 'Drive the old road', use: () => this.finish() };
+    if (s.stage === 'to-truck' || (s.stage === 'road' && place !== 'diner')) return { label: 'Drive to Mesa Diner', use: () => this.d.driveToDiner(() => this.arrivedDiner()) };
+    return null;
   }
 
   /** Called when the truck is left on the diner's lot (and when a save there is restored). */
@@ -240,14 +239,11 @@ export class Chapter5 {
   }
   /** The truck on the diner's lot (world/World.ts gives it a hit area). */
   bindDinerTruck(object: THREE.Object3D) {
-    const { inter, ui } = this.d;
+    const { inter } = this.d;
     inter.add({ id: 'dinerTruck', object, range: 3.2,
-      label: () => !this.inDiner() ? null : this.active && this.s.stage === 'road' ? 'Drive the old road' : 'SARO 07',
-      use: () => {
-        if (!this.active) { ui.toast('SARO 07, the service truck.', 2.6); return; }
-        if (this.s.stage === 'road') { this.finish(); return; }
-        ui.toast(this.s.stage === 'complete' ? 'Out on the old road.' : 'Not yet. Where C crosses the road is on the maps. A booth table would do.', 3.4);
-      } });
+      label: () => !this.inDiner() ? null : this.d.truckChoice('diner').label,
+      use: () => this.d.truckChoice('diner').use(),
+      examine: () => this.inDiner() ? 'SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.' : null });
   }
 
   private useCoffee() {

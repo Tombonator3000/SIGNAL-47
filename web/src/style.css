@@ -91,6 +91,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .prompt { position: absolute; left: 50%; top: calc(50% + 26px); transform: translateX(-50%); white-space: nowrap;
   font-family: var(--term); font-size: 24px; color: #f0ead8; text-shadow: 0 1px 3px #000, 0 0 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .15s; }
 .prompt.show { opacity: 1; }
+/* a closer look (the zoom): what the thing under the crosshair is, in a line or two below it */
+.examine { position: absolute; left: 50%; top: calc(50% + 64px); transform: translateX(-50%); width: min(78vw, 640px); text-align: center;
+  font-family: var(--term); font-size: 22px; line-height: 1.25; color: #f3ead3; text-shadow: 0 1px 3px #000, 0 0 12px rgba(0,0,0,.85); opacity: 0; transition: opacity .2s;
+  background: rgba(6,8,12,.42); padding: 4px 10px; border-radius: 3px; }
+.examine.show { opacity: 1; }
+html.text-large .examine { font-size: 27px; }
 .prompt kbd { font-family: var(--term); border: 1px solid rgba(240,234,216,.6); border-radius: 3px; padding: 0 6px; margin-right: 8px; color: var(--amber); }
 .toasts { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 9vh); transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(92vw, 640px); }
@@ -343,6 +349,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .vf-flash.on { animation: shutter .28s ease-out; }
 @keyframes shutter { 0% { opacity: 1; } 35% { opacity: 1; } 100% { opacity: 0; } }
 .touch .camera { right: calc(env(safe-area-inset-right, 0px) + 22px); bottom: calc(env(safe-area-inset-bottom, 0px) + 132px); height: 52px; padding: 0 18px; font-size: 22px; }
+/* the flashlight (shown once there is one) and the zoom (held), left of Use */
+.touch .light { right: calc(env(safe-area-inset-right, 0px) + 134px); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); height: 48px; padding: 0 16px; font-size: 20px; }
+.touch .light.on { border-color: var(--amber); color: var(--amber); }
+.touch .zoom { right: calc(env(safe-area-inset-right, 0px) + 134px); bottom: calc(env(safe-area-inset-bottom, 0px) + 32px); height: 48px; padding: 0 16px; font-size: 20px; touch-action: none; }
+.touch .zoom.held { border-color: var(--amber); color: var(--amber); }
 
 /* ---------- Photo lab panels ---------- */
 .labpanel { position: relative; width: min(1040px, 100%); max-height: 100%; overflow: auto; background: rgba(12,10,9,.96); color: #e9e2cf;
@@ -539,7 +550,7 @@ html.text-large .prompt { font-size: 28px; }
 @media (prefers-reduced-motion: reduce) { .chapter-card .cc-a, .chapter-card .cc-b { animation-duration: .01s !important; } }
 
 /* driving: the cab has no crosshair, and Use and Camera have nothing to do */
-.driving .crosshair, .driving .tbtn.use, .driving .tbtn.camera { display: none !important; }
+.driving .crosshair, .driving .tbtn.use, .driving .tbtn.camera, .driving .tbtn.zoom, .driving .tbtn.light { display: none !important; }
 
 /* ---------- the evidence board (ui/Board.ts) ---------- */
 .board-overlay { padding: calc(env(safe-area-inset-top, 0px) + 8px) 8px calc(env(safe-area-inset-bottom, 0px) + 8px); }

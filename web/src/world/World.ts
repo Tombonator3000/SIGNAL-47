@@ -45,6 +45,11 @@ export const DINER_ORIGIN = new THREE.Vector3(8000 + DINER.x, DINER.y + 0.1, DIN
 // The night areas see the camera's far plane at 5 km and thick haze; the old road at dawn
 // sees farther (the camera goes up at the end).
 const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
+/** The places the truck can be left on (a lot with a park box): SARO's pad, the gravel outside
+ *  STATION 01's gate, the diner's lot. */
+const PLACES: LegId[] = ['saro', 'station01', 'diner'];
+const inBox = (b: { minX: number; maxX: number; minZ: number; maxZ: number } | null, p: THREE.Vector3) =>
+  !!b && p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
 /** The truck's headlights on the diner and the diner's neon on the road (Diner.shine, Diner.neon),
  *  to look about as strong as in their own sets: the diner's lamps fall off about ten times faster
  *  (falloff 0.14 against 0.012), and a lamp's strength sets how far it reaches. */
@@ -88,6 +93,13 @@ export class World {
   driving = false;
   onArriveStation?: () => void;
   onArriveSaro?: () => void;
+  /** The player has got into the truck (a trip has begun): the flashlight on its seat (main.ts). */
+  onGetIn?: () => void;
+  /** The truck has been left on a place (any trip, the chapters' and the player's own). */
+  onParked?: (place: LegId) => void;
+  /** What the truck where it stands offers (main.ts asks the chapters, Tom 15 October: the
+   *  truck any time): the chapter's drive, or one of the player's own. */
+  truckChoice: (place: LegId) => { label: string; use: () => void } = (place) => ({ label: 'Drive', use: () => this.roam(place) });
   onStationLoaded?: (site: FieldSite) => void;
   onRoom6Loaded?: (room: Room6) => void;
   onEnterRoom6?: () => void;
@@ -127,10 +139,18 @@ export class World {
   /** Drive by itself along the way at about this speed in m/s (tests, the developer menu), or null. */
   autopilot: number | null = null;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
-  private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string } | null = null;
+  private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string;
+    free: boolean; start: THREE.Vector3; left: boolean } | null = null;
 
   private mods: Partial<Modules> = {};
   private road: RoadArea | null = null;
+  /** The places the truck any time can reach, as the story stands (main.ts, every frame): the
+   *  walk gap at STATION 01 open from chapter three, the old road closed until chapter five
+   *  sends the truck out on it. */
+  setStoryPlaces(o: { stationOpen: boolean; oldRoadOpen: boolean }) {
+    this.site?.setWalkGate(o.stationOpen);
+    this.road?.setRoadClosed(!o.oldRoadOpen);
+  }
   private drive: DriveController | null = null;
   private truck: Truck | null = null;          // the one that drives (lit by the road's floods)
   private parked: Truck | null = null;         // the same truck standing at the station (the station's floods)
@@ -484,9 +504,19 @@ export class World {
   /** From the truck at SARO to STATION 01: out of the yard, south on the highway, the
    *  survey track to the gate, driven the whole way. Parked on the pad, the player gets out. */
   driveOut(onTheRoad = false) {
-    const go = () => this.startTrip(onTheRoad ? 'road' : 'saro', 'station01', { at: onTheRoad ? this.road!.start : undefined,
+    const go = () => this.startTrip(onTheRoad ? 'road' : this.truckAt ?? 'saro', 'station01', { at: onTheRoad ? this.road!.start : undefined,
       hint: 'Leave the truck on the gravel outside the gate: stop there.', onArrive: () => this.onArriveStation?.() });
     if (onTheRoad) void this.ensureRoad().then(go); else go();
+  }
+
+  /** Get in where the truck stands and drive anywhere (Tom 15 October: the truck any time).
+   *  Every road and the diner are built first, behind the black; the truck is left on any
+   *  place it is stopped on once it has been driven off the one it stood on. */
+  roam(from: LegId) {
+    this.startTrip(from, null, { legs: ['saro', 'road', 'station01'], places: ['diner'], onStart: () => {
+      this.d.toast(this.d.touch() ? 'Left stick: drive. Stop on a lot to get out: the pad at SARO, the gravel at STATION 01, the diner\'s lot.'
+        : 'W, S, A and D: drive. Stop on a lot to get out: the pad at SARO, the gravel at STATION 01, the diner\'s lot.', 5);
+    } });
   }
 
   /** From the truck on SARO's pad to Mesa Diner where the old road leaves the highway
@@ -498,9 +528,9 @@ export class World {
       hint: 'Mesa Diner is the lit sign on the right. Leave the truck on its lot: stop there.' });
   }
 
-  /** From the truck at the station back to SARO, the whole way, onto the pad. */
+  /** From the truck at the station (or wherever it was left) back to SARO, the whole way, onto the pad. */
   driveBack() {
-    this.startTrip('station01', 'saro', { hint: 'The truck goes back on its pad by the service yard: up the ramp, and stop there.',
+    this.startTrip(this.truckAt ?? 'station01', 'saro', { hint: 'The truck goes back on its pad by the service yard: up the ramp, and stop there.',
       onArrive: () => { this.onArriveSaro?.(); this.d.toast(`${this.d.clock()}. The truck is back on its pad.`, 3); } });
   }
 
@@ -555,7 +585,7 @@ export class World {
    *  hint: said once on coming into the area where the truck is to be left; leg: start in this
    *  leg's area, with its truck where the place's truck stands (the old road from the diner). */
   startTrip(from: LegId, to: LegId | null, o: { perMetre?: number; onArrive?: () => void; onStart?: () => void; at?: { pos: THREE.Vector3; heading: number };
-    legs?: LegId[]; free?: boolean; hint?: string; leg?: LegId } = {}) {
+    legs?: LegId[]; free?: boolean; hint?: string; leg?: LegId; places?: LegId[] } = {}) {
     if (this.busy || this.driving) return;
     this.busy = true;
     const { fade, hold, toast } = this.d;
@@ -563,7 +593,7 @@ export class World {
     fade(true, '');
     this.load('legs').then(({ legsBetween }) => {
       const need = o.legs ?? (to ? legsBetween(from, to) : [from]);
-      const places = [from, to].filter((p): p is LegId => p === 'diner').map(() => this.ensureDiner());
+      const places = [from, to, ...(o.places ?? [])].filter((p): p is LegId => p === 'diner').slice(0, 1).map(() => this.ensureDiner());
       return Promise.all([...need.map((l) => this.ensureLeg(l)), ...places, this.load('engine'), new Promise((r) => setTimeout(r, 400))]);
     }).then(() => {
       // a place can stand in another's area (the diner in the road's): the trip starts in that leg
@@ -572,7 +602,8 @@ export class World {
       // where every parked truck stands now, so a trip that is given up puts them back
       this.trucksHome = (['saro', 'station01', 'diner'] as LegId[]).map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
         .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
-      this.trip = { from, to, perMetre: o.perMetre ?? 0, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint };
+      this.trip = { from, to, perMetre: o.perMetre ?? 0, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint,
+        free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false };
       this.leg = leg0;
       if (!o.free) { this.truckAt = null; for (const id of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(id); }
       L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
@@ -580,6 +611,7 @@ export class World {
       this.enter(leg0);
       this.startEngine();
       this.driving = true;
+      this.onGetIn?.();
       Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
       if (o.onStart) o.onStart();
       else if (from === to && o.hint) toast(o.hint, 5);
@@ -608,9 +640,13 @@ export class World {
     if (trip.hint && here && P && Math.hypot(D.pos.x - (P.minX + P.maxX) / 2, D.pos.z - (P.minZ + P.maxZ) / 2) < 110) {
       this.d.toast(trip.hint, 5); trip.hint = undefined;
     }
-    if (here && P && D.pos.x >= P.minX && D.pos.x <= P.maxX && D.pos.z >= P.minZ && D.pos.z <= P.maxZ && Math.abs(D.speed) < 0.35) {
+    // the truck is left where it stops: on the trip's place, or (once it has been driven off the
+    // one it stood on) on any place in this area; a free drive (the developer menu) on none
+    if (!trip.left && (id !== legs.legOf(trip.from) || Math.hypot(D.pos.x - trip.start.x, D.pos.z - trip.start.z) > 12)) trip.left = true;
+    const stop = trip.free || Math.abs(D.speed) >= 0.35 ? undefined : PLACES.find((p) => (p === trip.to || trip.left) && legs.legOf(p) === id && inBox(this.parkBox(p), D.pos));
+    if (stop) {
       trip.still += dt;
-      if (trip.still > 0.7) this.park();
+      if (trip.still > 0.7) this.park(stop);
     } else trip.still = 0;
   }
   /** Where the truck is left at a place (world box). */
@@ -631,8 +667,8 @@ export class World {
 
   }
   // Stopped where the truck is left: the engine off, and the player gets out by the door.
-  private park() {
-    const id = this.leg!, L = this.legs[id]!, trip = this.trip, place = trip?.to ?? id;
+  private park(place: LegId) {
+    const id = this.leg!, L = this.legs[id]!, trip = this.trip;
     this.driving = false;
     this.engine?.stop();
     L.truck.setDriving(false);
@@ -647,7 +683,8 @@ export class World {
       this.getOut(L.truck);
       hold(false);
       fade(false);
-      trip?.onArrive?.();
+      if (trip?.to === place) trip.onArrive?.();
+      this.onParked?.(place);
     });
   }
   private getOut(t: Truck) {
@@ -670,7 +707,7 @@ export class World {
     const id = this.leg!, L = this.legs[id]!, D = L.drive, trip = this.trip, legs = this.mods.legs!;
     const next = !trip?.to ? null : legs.legOf(trip.to) === id ? 'park' : legs.legsBetween(id, trip.to)[1];
     const roadTo = next === 'park' ? trip!.to! : next as LegId;
-    const route = next ? (id === 'road' ? legs.roadRoute(roadTo) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[next]) : null;
+    const route = next ? (id === 'road' ? legs.roadRoute(roadTo, D.pos.z - ROAD_ORIGIN.z) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[next]) : null;
     if (!route?.length) return { steer: 0, throttle: D.speed > 0.2 ? -0.6 : 0 };
     let k = 0, best = Infinity;
     for (let i = 0; i < route.length; i++) { const d = route[i].distanceToSquared(D.pos); if (d < best) { best = d; k = i; } }
