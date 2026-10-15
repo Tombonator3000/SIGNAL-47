@@ -90,6 +90,8 @@ Codex kan ta en avgrenset del underveis, for eksempel skapet og skiltet ved ante
 
 **Tom svarte 15. oktober:** (1) motellet sør, (2) lommelykt uten batteri, (3) den gamle veien sperret ved milestolpe 0 til kapittel 6, (4) hendelsene kan også gi hint i hovedsaken. Punkt 1 og 2 i rekkefølgen bygges først.
 
+**Bygget 15. oktober kveld:** lastebilen når som helst (fra kapittel 1, med kjetting i gangåpningen ved STATION 01 til kapittel 3 og ROAD CLOSED ved milestolpe 0 til kapittel 5 sender bilen ut), lommelykta fra passasjersetet (F, Light på telefon) og zoom med undersøk (høyre museknapp, Zoom på telefon). Foreløpig har lastebilen, den lenkede gangåpningen og sperringen undersøk-tekst; flere ting får det etter hvert.
+
 ## Innlevelse, lyd, grafikk og Unreal (5. oktober)
 
 Tom spurte hva spillet trenger for mer innlevelse, om prosjektbiblioteket har noe vi trenger, om vi bør dekompilere Voices of the Void, og om spillet kan flyttes til Unreal. Hele natten er nå bygd, så dette handler om å løfte det som finnes.

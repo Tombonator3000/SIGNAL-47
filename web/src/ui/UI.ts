@@ -209,7 +209,7 @@ export class UI {
       <p class="note flash-note">Near the end of the night there is a short sequence of flashing images.
         <span class="pick"><button data-a="fl-keep" aria-pressed="${!opts.flash.calm}">Flashes</button><button data-a="fl-calm" aria-pressed="${opts.flash.calm}">Slow fades</button></span></p>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera, F for a flashlight once you have one, right mouse for a closer look. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
     const pick = (calm: boolean) => {
       el.querySelector('[data-a=fl-keep]')!.setAttribute('aria-pressed', String(!calm));
       el.querySelector('[data-a=fl-calm]')!.setAttribute('aria-pressed', String(calm));
