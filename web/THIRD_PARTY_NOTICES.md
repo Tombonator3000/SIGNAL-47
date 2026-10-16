@@ -19,6 +19,19 @@ Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de li
 
 - "The Star Spangled Banner", korversjon, The United States Air Force Band. Hentet 16. oktober 2026 fra Internet Archive, https://archive.org/details/TheStarSpangledBanner (`Star_Spangled_Banner_choral.mp3`). Siden sier at innspillingen er laget av en ansatt i det amerikanske forsvaret som del av tjenesten, og derfor er allemannseie (public domain) som et verk fra den amerikanske staten; melodien og teksten (John Stafford Smith, Francis Scott Key) er for lengst fri. Air Force Band ber om kreditering, så den står i rulleteksten. Stillheten i begynnelsen og slutten er klippet bort, og lyden er nivåjustert (loudnorm, -16 LUFS), mikset til mono og kodet som MP3 48 kbps, 22 kHz, i `public/radio/anthem.mp3`. Den strømmes når en radio i spillet spiller den (`core/radio.ts`), og er ikke med i enkeltfilbygget.
 
+## Lyder ute i mørket (16. oktober 2026)
+
+Seks korte lyder som spilles langt ute i mørket når spilleren går med lommelykta (`core/calls.ts`). De står i rulleteksten til They Are Here, men er hentet fra originalene på Freesound, aldri fra det spillet. Lisensen er lest på hver lyds egen side 16. oktober 2026. Fra Freesounds forhåndsvisning (128 kbps), klippet, tonet inn og ut, nivåjustert (loudnorm, -16 LUFS), mono, 22 kHz, MP3 56 kbps i `src/assets/audio/`.
+
+- Alien Voice Crack, resourcemoon, Freesound 456249, CC BY 3.0, hele (`alien_voice.mp3`)
+- Alien?, superhalo, Freesound 145063, CC0 1.0, hele (`alien_radio.mp3`)
+- Animals from Mars.wav, InSintesi, Freesound 372218, CC BY 4.0, 121,0 til 126,6 s (`alien_calls.mp3`)
+- Singing alien.wav, InSintesi, Freesound 346209, CC BY 4.0, 11,0 til 17,2 s (`alien_song.mp3`)
+- Space Temple SFX Soundscape Fantasy 200731_0026_01.wav, szegvari, Freesound 529414, CC0 1.0, hele (`alien_temple.mp3`)
+- War of the worlds Horn 1.wav, JarredGibb, Freesound 244796, CC0 1.0, hele (`alien_horn.mp3`)
+
+CC BY-lydene er kreditert i rulleteksten (`ui/Ending.ts`) og i tittelskjermens info (`ui/UI.ts`).
+
 ## Lydeffekter, CC0 1.0
 
 - old dot-matrix printer, viertelnachvier, Freesound 181420 (`printer.mp3`)

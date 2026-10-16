@@ -79,6 +79,7 @@ class Cricket {
 
 export class Ambience {
   private out: GainNode;
+  private quiet: GainNode;
   private lp: BiquadFilterNode;
   private windRec: { src: AudioBufferSourceNode; gain: GainNode; level: Drift; rate: number; rateNext: number } | null = null;
   private wind: { gain: GainNode; bp: BiquadFilterNode; level: Drift; colour: Drift };
@@ -91,7 +92,8 @@ export class Ambience {
   constructor(private ctx: AudioContext, dest: AudioNode, private buf: Record<string, AudioBuffer>, private noise: AudioBuffer, private brown: AudioBuffer) {
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.lp = ctx.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.frequency.value = 900;
-    this.out.connect(this.lp); this.lp.connect(dest);
+    this.quiet = ctx.createGain(); this.quiet.gain.value = 1;
+    this.out.connect(this.quiet); this.quiet.connect(this.lp); this.lp.connect(dest);
     const now = ctx.currentTime;
     // the wind as recorded
     if (buf.wind) {
@@ -110,6 +112,13 @@ export class Ambience {
       const gain = ctx.createGain(); src.connect(gain); gain.connect(this.out); src.start(now, rnd(0, buf.crickets.duration));
       this.bugRec = { src, gain, level: new Drift(gain.gain, 0.02, 0.07, [10, 30], [3, 8]) };
     }
+  }
+
+  /** The night goes quiet for a few seconds, the crickets and the wind together, and comes back
+   *  slowly (core/calls.ts: before something out in the dark). */
+  hush(secs: number) {
+    const g = this.quiet.gain, now = this.ctx.currentTime;
+    g.cancelScheduledValues(now); g.setTargetAtTime(0.08, now, 0.35); g.setTargetAtTime(1, now + secs, 2.2);
   }
 
   /** Where the listener is: outside, indoors (muffled) or in the cab (under the engine). */

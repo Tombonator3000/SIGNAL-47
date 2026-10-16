@@ -31,9 +31,17 @@ const stepSources = Object.fromEntries(Object.entries(STEP_FILES).map(([path, ur
   return [`step${m[1][0].toUpperCase()}${m[1].slice(1)}${m[2]}`, url];
 }));
 
+// Out in the dark (core/calls.ts): six short sounds, Freesound originals from the credits of
+// They Are Here, CC0 and CC BY (THIRD_PARTY_NOTICES.md); alien_voice becomes alienVoice
+const ALIEN_FILES = import.meta.glob<string>('../assets/audio/alien_*.mp3', { eager: true, import: 'default' });
+const alienSources = Object.fromEntries(Object.entries(ALIEN_FILES).map(([path, url]) => {
+  const m = /alien_([a-z]+)\.mp3$/.exec(path)!;
+  return [`alien${m[1][0].toUpperCase()}${m[1].slice(1)}`, url];
+}));
+
 const SOURCES: Record<string, string> = {
   phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
-  crickets, owl, dog0, dog1, gust, ...stepSources,
+  crickets, owl, dog0, dog1, gust, ...stepSources, ...alienSources,
   doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1,
 };
 

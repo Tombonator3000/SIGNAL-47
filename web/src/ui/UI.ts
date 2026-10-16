@@ -17,7 +17,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // A line that starts with "~ " is pencil on the paper (story/nightshift.ts).
 const pencil = (html: string) => html.replace(/^~ (.*)$/gm, '<span class="pencil">$1</span>');
 
-const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal to Noise", and excerpts of "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn". Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
+const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal to Noise", and excerpts of "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn". Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Out in the dark: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0). The national anthem on the radio: The United States Air Force Band (public domain). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
 const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
 

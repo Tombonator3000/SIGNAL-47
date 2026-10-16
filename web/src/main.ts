@@ -21,6 +21,7 @@ import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, type Cue } from './core/score';
 import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
+import { NightCalls } from './core/calls';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -130,6 +131,8 @@ async function boot() {
   const radio = new Radio(audio);
   const carRadio = radio.receiver({ vol: 0.65, ref: 1.0 });
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
+  // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
+  const calls = new NightCalls(audio);
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
@@ -744,7 +747,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score,
@@ -839,6 +842,9 @@ async function boot() {
         { label: carRadio.on ? `Truck radio: AM ${FREQ[carRadio.station]}` : 'Truck radio: off', run: () => { if (!carRadio.on) carRadio.set(true, 'caliche'); else carRadio.next(); }, on: carRadio.on },
         { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
         { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
+      ] });
+      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
+        { label: 'A sound out in the dark', run: () => calls.now() },
       ] });
     }
     if (mode === 'play' && score) {
@@ -996,6 +1002,10 @@ async function boot() {
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') { radioStep(dt); audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
+      if (mode === 'play') calls.update(dt, {
+        ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3,
+        cam: camera, flicker: (k) => flashlight.flicker(k), hush: (secs) => audio.night?.hush(secs),
+      });
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }
