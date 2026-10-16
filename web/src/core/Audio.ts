@@ -512,10 +512,10 @@ export class AudioSys {
 
   // The radio in the truck's dash on the old road (chapter six): not placed in the world,
   // a small speaker in front of the driver. 'talk' is the morning programme from Roswell,
-  // too low to follow (a speech band chopped at a talking rate, a little music under it);
+  // a mumbling horn too low to follow (the captions say what it says);
   // 'carrier' is the bare carrier when the night takes the station; null fades it out.
   // radioIn() is where the fragments of the night are played through the same speaker.
-  private cab: { out: GainNode; spk: AudioNode; talk: GainNode; car: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  private cab: { out: GainNode; spk: AudioNode; talk: GainNode; car: GainNode; hiss: GainNode; swell: GainNode; stop: () => void } | null = null;
   cabRadio(mode: 'talk' | 'carrier' | 'hiss' | null) {
     const ctx = this.ctx; if (!ctx) return;
     if (!mode) {
@@ -530,27 +530,48 @@ export class AudioSys {
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1250; bp.Q.value = 0.8;
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400;
       out.connect(bp); bp.connect(lp); lp.connect(this.sfx);
-      // talk: noise in a voice band, chopped at a syllable rate, with pauses between phrases
-      const vn = this.noiseSrc(true), vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 700; vb.Q.value = 1.6;
-      const syl = ctx.createOscillator(); syl.type = 'square'; syl.frequency.value = 4.6;
+      // talk: the morning man in Roswell as a muted horn that mumbles like the grown-ups in
+      // Peanuts (Tom, 16 October; core/radio.ts has the same voice): the mute opens and closes on
+      // every syllable ("wah"), the pitch wanders, and there are pauses between phrases
+      const horn = ctx.createOscillator(); horn.type = 'sawtooth'; horn.frequency.value = 124;
+      const p1 = ctx.createOscillator(); p1.frequency.value = 0.73;
+      const p1g = ctx.createGain(); p1g.gain.value = 16; p1.connect(p1g); p1g.connect(horn.frequency);
+      const p2 = ctx.createOscillator(); p2.frequency.value = 1.9;
+      const p2g = ctx.createGain(); p2g.gain.value = 7; p2.connect(p2g); p2g.connect(horn.frequency);
+      const mute = ctx.createBiquadFilter(); mute.type = 'lowpass'; mute.frequency.value = 800; mute.Q.value = 6.5;
+      const syl = ctx.createOscillator(); syl.type = 'triangle'; syl.frequency.value = 4.3;
+      const sw = ctx.createGain(); sw.gain.value = 520; syl.connect(sw); sw.connect(mute.frequency);
       const sg = ctx.createGain(); sg.gain.value = 0.5; syl.connect(sg);
       const phr = ctx.createOscillator(); phr.type = 'square'; phr.frequency.value = 0.31;
       const pg = ctx.createGain(); pg.gain.value = 0.5; phr.connect(pg);
       const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
       const pause = ctx.createGain(); pause.gain.value = 0.5; pg.connect(pause.gain);
       const talk = ctx.createGain(); talk.gain.value = 0;
-      vn.connect(vb); vb.connect(chop); chop.connect(pause); pause.connect(talk); talk.connect(out);
+      horn.connect(mute); mute.connect(chop); chop.connect(pause); pause.connect(talk); talk.connect(out);
       const car = ctx.createGain(); car.gain.value = 0;
       const osc = ctx.createOscillator(); osc.frequency.value = 760; osc.connect(car); car.connect(out);
       const n = this.noiseSrc(false), hiss = ctx.createGain(); hiss.gain.value = 0.25; n.connect(hiss); hiss.connect(out);
-      for (const x of [vn, syl, phr, osc, n]) x.start();
-      this.cab = { out, spk: bp, talk, car, hiss, stop: () => { for (const x of [vn, syl, phr, osc, n]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+      // now and then the static swells over the talk and the talk sinks under it (Tom, 16 October):
+      // three slow waves that only now and then add up past a threshold, so it comes irregularly
+      const fz = ctx.createGain(); fz.gain.value = 0;
+      const waves = [0.071, 0.113, 0.29].map((f, i) => { const o = ctx.createOscillator(); o.frequency.value = f; const g = ctx.createGain(); g.gain.value = [0.45, 0.35, 0.25][i]; o.connect(g); g.connect(fz); return o; });
+      const over = ctx.createWaveShaper();
+      const curve = new Float32Array(512); for (let i = 0; i < 512; i++) { const x = (i / 511) * 2.1 - 1.05; curve[i] = Math.max(0, (x - 0.55) / 0.5) ** 1.4; }
+      over.curve = curve;
+      fz.connect(over);
+      const swell = ctx.createGain(); swell.gain.value = 0; over.connect(swell); swell.connect(hiss.gain);
+      const duckAmt = ctx.createGain(); duckAmt.gain.value = -0.8; over.connect(duckAmt);
+      const duck = ctx.createGain(); duck.gain.value = 1; duckAmt.connect(duck.gain);
+      talk.disconnect(); talk.connect(duck); duck.connect(out);
+      for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) x.start();
+      this.cab = { out, spk: bp, talk, car, hiss, swell, stop: () => { for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
     }
     const r = this.cab, t = ctx.currentTime;
     r.out.gain.setTargetAtTime(0.09, t, 0.2);
-    r.talk.gain.setTargetAtTime(mode === 'talk' ? 1.6 : 0, t, mode === 'talk' ? 0.4 : 0.01);
+    r.talk.gain.setTargetAtTime(mode === 'talk' ? 0.55 : 0, t, mode === 'talk' ? 0.4 : 0.01);
     r.car.gain.setTargetAtTime(mode === 'carrier' ? 0.22 : 0, t, 0.01);
     r.hiss.gain.setTargetAtTime(mode === 'talk' ? 0.22 : mode === 'carrier' ? 0.08 : 0.35, t, 0.02);
+    r.swell.gain.setTargetAtTime(mode === 'talk' ? 0.5 : 0, t, 0.05);   // the swells only under the morning talk, not in THE EVENT
   }
   /** The cab speaker's input (null when the radio is off): sounds played here come out of it. */
   radioIn(): AudioNode | null { return this.cab?.spk ?? null; }

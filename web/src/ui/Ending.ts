@@ -11,6 +11,7 @@ export const CREDITS: [string, string][] = [
   ['Code, chapters and sound', 'Claude (Anthropic)'],
   ['Mesa Diner, Sierra Motor Court, room 6, art and textures', 'Codex and ChatGPT (OpenAI)'],
   ['Music', 'Scott Buckley, CC BY 4.0 (scottbuckley.com.au): "Signal to Noise", and from "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn"'],
+  ['National anthem on the radio', 'The United States Air Force Band, "The Star Spangled Banner" (choral), public domain'],
   ['Sound effects, CC0', 'Freesound: viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.'],
   ['Fonts', 'VT323, Reenie Beanie and Oswald (SIL Open Font License 1.1). Special Elite (Apache License 2.0).'],
   ['Built with', 'three.js (MIT)'],

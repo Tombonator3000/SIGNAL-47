@@ -45,8 +45,10 @@ export class UI {
   onCamera?: () => void;
   /** The flashlight's button on a phone (Light), and the zoom held down (Zoom). */
   onLight?: () => void;
+  onRadio?: () => void;
   onZoom?: (held: boolean) => void;
   private lightBtn!: HTMLButtonElement;
+  private radioBtn!: HTMLButtonElement;
   private examineEl!: HTMLElement;
   private objEl: HTMLElement;
   private camBtn: HTMLButtonElement;
@@ -64,6 +66,7 @@ export class UI {
         <button class="tbtn notes">Notes</button>
         <button class="tbtn camera" hidden>Camera</button>
         <button class="tbtn light" hidden>Light</button>
+        <button class="tbtn radio" hidden>Radio</button>
         <button class="tbtn zoom">Zoom</button>
         <button class="tbtn use">Use</button>
       </div>
@@ -83,6 +86,8 @@ export class UI {
     this.camBtn.addEventListener('click', () => this.onCamera?.());
     this.lightBtn = this.root.querySelector('.touch .light')!;
     this.lightBtn.addEventListener('click', () => this.onLight?.());
+    this.radioBtn = this.root.querySelector('.touch .radio')!;
+    this.radioBtn.addEventListener('click', () => this.onRadio?.());
     this.examineEl = this.root.querySelector('.hud .examine')!;
     // Zoom is held, like the right mouse button
     const zoom = this.root.querySelector('.touch .zoom') as HTMLButtonElement;
@@ -115,6 +120,8 @@ export class UI {
   objective(text: string | null) { const t = text ?? ''; if (this.objEl.textContent !== t) this.objEl.textContent = t; }
   /** The flashlight's button on a phone: shown once there is a flashlight, lit while it is on. */
   lightButton(have: boolean, on: boolean) { this.lightBtn.hidden = !have; this.lightBtn.classList.toggle('on', on); }
+  /** The truck's radio (in the cab only): on, next station, off. */
+  radioButton(show: boolean, on: boolean) { if (this.radioBtn.hidden === show) this.radioBtn.hidden = !show; this.radioBtn.classList.toggle('on', on); }
   /** What a closer look says (the zoom), under the crosshair; null clears it. */
   examine(text: string | null) {
     const t = text ?? '';

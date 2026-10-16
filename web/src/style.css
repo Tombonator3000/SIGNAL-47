@@ -352,6 +352,9 @@ html.text-large .examine { font-size: 27px; }
 /* the flashlight (shown once there is one) and the zoom (held), left of Use */
 .touch .light { right: calc(env(safe-area-inset-right, 0px) + 134px); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); height: 48px; padding: 0 16px; font-size: 20px; }
 .touch .light.on { border-color: var(--amber); color: var(--amber); }
+.touch .radio { right: calc(env(safe-area-inset-right, 0px) + 134px); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); height: 48px; padding: 0 16px; font-size: 20px; }
+.touch .radio.on { border-color: var(--amber); color: var(--amber); }
+html:not(.driving) .touch .tbtn.radio { display: none !important; }
 .touch .zoom { right: calc(env(safe-area-inset-right, 0px) + 134px); bottom: calc(env(safe-area-inset-bottom, 0px) + 32px); height: 48px; padding: 0 16px; font-size: 20px; touch-action: none; }
 .touch .zoom.held { border-color: var(--amber); color: var(--amber); }
 

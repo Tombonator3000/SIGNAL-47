@@ -93,7 +93,6 @@ export class Chapter5 {
   private dinerBound = false;
   private clippingUrl: string | null = null;
   private mapUrl: string | null = null;
-  private radioAt: THREE.Vector3 | null = null;
   private leaving = false;
 
   constructor(private g: Chapter5Host, private d: Chapter5Deps) {}
@@ -261,8 +260,8 @@ export class Chapter5 {
     this.save();
   }
 
-  // The radio is on low behind the counter (core/Audio.ts amRadio); turned up, the early
-  // news is the real news of the morning of 14 April 1986.
+  // The radio is on low behind the counter (core/radio.ts: Roswell's morning programme, main.ts
+  // plays it); turned up, the early news is the real news of the morning of 14 April 1986.
   private radioBusy = false;
   private useRadio() {
     const { ui } = this.d;
@@ -535,9 +534,7 @@ export class Chapter5 {
     const diner = this.d.diner();
     if (diner && this.inDiner()) {
       diner.setDawn(THREE.MathUtils.clamp((this.g.clock % 86400 - DAWN) / (25 * 60), 0.15, 0.85));
-      const counter = diner.proxies.counter;
-      if (counter && !this.radioAt) { this.radioAt = counter.getWorldPosition(new THREE.Vector3()); this.d.audio.amRadio(this.radioAt); }
-    } else if (this.radioAt) { this.radioAt = null; this.d.audio.amRadio(null); }
+    }
     this.d.ui.objective(this.objective());
   }
 }

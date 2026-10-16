@@ -644,6 +644,15 @@ export class Truck {
     this.clockShown = this.clockWanted; this.clockAt = now;
     this.dash.drawClock(this.clockShown);
   }
+  /** The radio's dial (core/radio.ts): the needle at x on the AM scale (canvas pixels), lit
+   *  while it plays. Redrawn only when it changes. */
+  setRadio(x: number, on: boolean) {
+    const k = `${Math.round(x)}:${on}`;
+    if (k === this.radioShown) return;
+    this.radioShown = k;
+    this.dash.drawRadio(x, on);
+  }
+  private radioShown = '214:false';
   /** -1 (full left) to 1 (full right). Turns the steering wheel. */
   setSteer(v: number) { this.wheelSpin.rotation.z = -THREE.MathUtils.clamp(v, -1, 1) * 2.4; }
   setHeadlights(on: boolean) { this.headOn = on; this.applyLights(); }

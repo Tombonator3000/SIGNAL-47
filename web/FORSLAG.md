@@ -215,6 +215,7 @@ Vi tar aldri noe fra They Are Here selv, bare fra originalkildene og under deres
 | Computer Setup (Sketchfab, Brandon Westlake) | UNVERIFIED, siden svarte ikke | Sjekkes på nytt |
 | Walkie Talkie, Textured (Sketchfab) | CC BY | Vi har en walkie; bare som referanse |
 | Freesound-lydene (romlyder, fremmedspråk, slag, «Paranormal Activity Sound» og flere) | UNVERIFIED: freesound.org svarte 403 herfra. Rulleteksten sier selv at «Dark ambient scream» og «OhDearScare» er CC BY, og at Timbres to lyder er CC BY-NC | Hver lyd sjekkes på siden sin før bruk. CC BY-NC binder hvis spillet noen gang skal selges |
+| (16. oktober) Freesound-lydene sjekket på nytt | Freesound svarte. Lisensene står i `HENDELSER.md`, punkt 11b: tre er CC0, elleve CC BY, og Jump-Scare_8 og Timbres to er CC BY-NC | Ja, de CC0 og CC BY, med kreditering. Ikke de CC BY-NC |
 | Flickr-bildene | Ukjent per bilde. Flere er nyhetsklipp og filmbilder (Independence Day er beskyttet) | Nei, høyst som referanse. De passer heller ikke i 1986 |
 | Video fra Pexels (Luis Quintero) | Pexels-lisensen: fri bruk | Innholdet er ukjent, og video passer dårlig i stilen |
 
