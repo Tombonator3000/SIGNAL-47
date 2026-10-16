@@ -777,6 +777,7 @@ async function boot() {
       groups.push({ title: 'Clock', items: [
         { label: '+5 minutes', run: () => { game.clock += 300; } },
         { label: '+30 minutes', run: () => { game.clock += 1800; } },
+        { label: 'Shooting star', run: () => sky.meteorNow() },
       ] });
     }
     if (mode === 'play' && score) {
