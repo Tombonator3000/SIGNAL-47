@@ -4,6 +4,150 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## Et sted der rare ting skjer: døgn, en søvnig småby, Roswell og Twin Peaks (16. oktober)
+
+Tom 16. oktober: gjøre SIGNAL / 47 mer til et knutepunkt der merkelige ting skjer, med døgnsyklus, en liten søvnig småby og tilfeldige skumle ting. Tenk Roswell-romvesener og Twin Peaks. Han ba om forslag. Ingenting under er bygd eller avgjort.
+
+### Det som står fast, og det som er åpent
+
+Står fast: én slutt, THE EVENT 05:29 der C krysser den gamle veien. Fenomenet følger referansene (R1): 1947-linjene A, B og C, az 026, 47 sekunder, 1420 MHz, fire og sju. Et avtrykk gjentar det som ble registrert og kan ikke svare (R5), så ingenting jager spilleren og ingenting svarer. Ingen monstre, og ansiktet som kan minne om en Grey, er omtrent tre bilder i FLASH. Høyst tre hint om andre steder (Hondo Valley, Site 03, Site 11), og de er brukt. Hendelsene kan gi hint i hovedsaken (Tom 15. oktober).
+
+Åpent: om spillet fortsatt er én natt. Det er det største valget her, fordi en ekte døgnsyklus ikke får plass i en natt som går fra 23:41 til 05:29.
+
+### Kjernen
+
+Du er nattevakten ved en søvnig ørkenby nær Roswell, der alle har hørt om 1947 og få vil snakke om det. Du kjører rundt om natta, legger merke til ting som gjentar seg, skriver dem ned, og ser at de ligger på en linje.
+
+Et eksempel. Klokka er 02:40, og du tar omveien gjennom byen. Trafikklyset blinker gult over et tomt kryss. Telefonautomaten utenfor bensinstasjonen ringer idet du går forbi. Du tar røret: skriveren i kontrollrommet, linje for linje, den samme utskriften du fikk 02:13. Notatboka får et funn med klokke og sted. På kartet ligger det nå tre merker: kyrne på beitet som sto vendt mot nord-nordøst, gatelysene som gikk ut ett og ett, og telefonen. De ligger på en rett strek, og den streken har du sett før.
+
+Det er ikke skrekk fordi noe jager deg. Det er skrekk fordi alt er vanlig, bortsett fra én ting, og den ene tingen henger sammen med resten.
+
+### Fem retninger
+
+**A. Natten blir større (én natt, byen om natta)**
+
+Natten er som i dag. Byen ligger ved krysset der dineren står, og dineren blir det nordligste huset i hovedgata. Mellom kapitlene kan spilleren kjøre dit. Klokka er mellom ett og fem: trafikklyset blinker gult, bensinstasjonen er åpen hele natta, sheriffens lille kontor har lys i vinduet, en liten AM-stasjon har en nattprater i studio, kinoen er stengt, og en suvenirbutikk har et håndmalt skilt med en flygende tallerken. Det rare følger linjene. Ingen døgnsyklus; natten går mot gry som i dag.
+
+Nærmest kanon, og bruker det som finnes: lastebilen, veiens område, dineren, klokka, gryet og feilene med bilen. Byen klokka tre om natta er det mest Twin Peaks som finnes. Koster middels: ett nytt område med sammenslåtte fasader, tre eller fire folk og en styring av hendelsene. Svakhet: ingen døgnsyklus, og det var noe av det Tom ba om.
+
+**B. Kvelden før (én kveld og natten)**
+
+Nytt spill starter søndag 13. april rundt 17:30, i lastebilen på vei fra byen til skiftet. Sola går ned 18:27, det er blåtime til 18:53, og så kommer stjernene og kometen. Spilleren kan stoppe i byen mens butikkene er åpne: fylle bensin, spise i dineren, møte Nora på motellet som den hyggelige eieren hun er for alle andre, hilse på nestlederen hos sheriffen. Klokka 23:30 tar Dale imot spilleren på SARO, og Night Shift starter som i dag. Senere i natt er den samme byen stengt, og noe er galt med den.
+
+Gir overgangen fra dag til natt, som er den fineste delen av et døgn, og Twin Peaks-kontrasten: de samme folka og stedene, varme om kvelden og tomme klokka tre. Den som har drukket kaffe med Nora før hen vet hvem hun er, kjenner rom 6 hardere. Dale blir en man har møtt, ikke bare en logg. Koster mye: kveldslys på SARO, veien og byen (alt er laget for natt), folk med replikker, og åpningen endres, så telefonen 23:41 ikke lenger er det første som skjer. Svakhet: tregere start. Kvelden må være kort, 15 til 25 minutter, og kunne hoppes over («Start at the shift»).
+
+**C. Dagene før (flere dager, som Firewatch)**
+
+Torsdag 10. til søndag 13. april som klippede dager. Hver dag har to eller tre biter: ettermiddag i byen, kveld, en kort natt, og et dagskort imellom. Uka har ekte ting å bruke: Masters på radioen torsdag til søndag (Nicklaus vinner søndag, og radioen i dineren nevner det mandag morgen), og Halleys komet nærmest jorda 11. april, så fredag kveld er kometkveld i byen. Det rare øker dag for dag, og reléet K3 som «tripped again» i Dales logg kan slå ut mens spilleren er der.
+
+Gir ekte døgn og plass til en by med vaner. Koster svært mye: dagslys viser lavpolystilen mest, folk trenger dagsplaner, lagringen må tåle dager. Det er i praksis et nytt spill foran det som finnes. Svakhet: natten mister noe av tyngden hvis fire netter før den også har vært rare.
+
+**D. Netter i byen (frispill etter slutten)**
+
+Etter rulleteksten låses et eget valg opp på tittelskjermen: en vilkårlig natt i byen, uten historie. Døgnet går (for eksempel ett døgn på 48 minutter), byen har sine vaner, og hendelsene kommer tilfeldig etter de samme reglene. Ingen ny kanon: det er utenfor historien, slik mange spill har et frispill etterpå.
+
+Gir knutepunktet og døgnsyklusen uten å røre den ene natten. Koster mye av samme grunn som C (dagslys), og det er lite å gjøre i det uten oppgaver. Gir mest mening hvis B eller C allerede har bygd byen i dagslys.
+
+**E. Natten går igjen (det dristige)**
+
+Etter rulleteksten begynner natten på nytt 23:41. Spilleren er nå en referanse, og et avtrykk gjentar det som ble registrert (R5). Samme natt med små forskjeller: folk sier de samme setningene ord for ord, stemmen til Tomás på linja har ett ord til, det står tre kopper på disken i dineren. Spilleren vet hva som kommer og kan være der det skjer.
+
+Henger bedre sammen med fortellingen enn noe av det andre. Men den svekker den ene, korte slutten, og trenger et godt svar på hvorfor man spiller igjen. Parkert.
+
+### Det rare: hvordan det virker
+
+En liten styring (en «hendelsesregissør») med en pott av hendelser. Hver hendelse har et sted, en linje (A, B eller C), et tidsvindu og et kapittel den tidligst kan skje i. Den skjer én gang, og det går minst ti minutter mellom to. Tidlig i natten er hendelsene stille og lette å bortforklare; utover natta blir de mer fysiske.
+
+Reglene, så det ikke blir billige skvetter:
+
+- Hver hendelse er en gjentakelse av noe som ble registrert (en lyd, et lys, en setning) eller en forstyrrelse i instrumentene. Ingenting reagerer på spilleren, følger etter eller svarer. Regissøren sørger for at spilleren er i nærheten når noe skjer, men i verden skjer det ikke fordi hen er der.
+- Den skjer på eller nær en linje, ofte i 47 sekunder.
+- Skrekken kommer av at noe mangler: stillhet, mørke, at ting står helt stille. Ikke av at noe hopper fram.
+
+Når spilleren ser en hendelse, får notatboka et funn med klokke og sted, og kartet får et merke. Noen ting synes bare på film, som merket ved B-12. Tre merker på samme linje får linja til å tegne seg på kartet, og det er hintet. Feilene med lastebilen (`drive/trouble.ts`) får bare skje tilfeldig nær linjene, oftere jo nærmere C. Lommelykta flimrer nær hendelsene, som foreslått 15. oktober.
+
+Hendelser i og ved byen, i tillegg til de ti fra 15. oktober:
+
+1. Trafikklyset blinker gult som vanlig, og i 47 sekunder blinker det fire og sju.
+2. Telefonautomaten ved bensinstasjonen ringer. I røret: skriveren i kontrollrommet fra 02:13. Før 02:13 er det noe som ikke har skjedd ennå.
+3. Betjenten på bensinstasjonen sier den samme setningen to ganger med to timers mellomrom, ord for ord, med den samme hostingen midt i. Han husker ikke den første gangen.
+4. Gatelysene går ut ett og ett langs en linje over byen, og tennes igjen i samme rekkefølge.
+5. Nattpraten på AM-stasjonen: en innringer, en gutt, beskriver lyset over mesaen som om det er i kveld. Etterpå sier verten at linja var død da han tok den.
+6. Alle hundene i byen gjør på en gang, og stopper på en gang.
+7. Kyrne på beitet står vendt mot az 026, helt stille, også når lastebilen kjører forbi med lysene rett på dem.
+8. Sirissene stopper i 47 sekunder. Bare vinden.
+9. Bilradioen: en nyhetssending fra juli 1947 om en «flying disc» funnet på en ranch, i 47 sekunder, før natten 1986 kommer tilbake.
+10. Frontlys som kommer imot på riksveien og aldri kommer fram. I speilet er det ingen.
+11. Tv-en i resepsjonen på motellet: testbildet, så bærebølgen i 47 sekunder.
+12. Papp-romvesenet fra suvenirbutikken står ute i veikanten i frontlysene, langt fra butikken. Neste gang står det i vinduet igjen. Det må ha vært noen unger.
+
+### Byen
+
+Arbeidsnavn: **Caliche** (navnet på det harde kalklaget i ørkenjorda). Andre muligheter: Dos Mesas, Piñon Wells. Skiltet ved innkjøringen er på engelsk i spillet: `CALICHE / POP. 412`.
+
+- **Hvor:** ved krysset der den gamle Roswell-veien går ut fra riksveien, med Mesa Diner som nordligste hus. Da ligger alt på én vei: SARO, motellet 700 m sør (avgjort 15. oktober), byen med dineren, og den gamle veien østover derfra.
+- **Hovedgata:** 300 til 400 m. Dineren (finnes), bensinstasjon med telefonautomat, sheriffens lille kontor, en AM-stasjon i en betongkloss med mast, en stengt kino, en kirke, et vaskeri som er åpent hele natta, en fôrbutikk, suvenirbutikken og noen hus med tv-skjær i vinduene. Ingen ekte merkenavn. AM-stasjonen kan ligge på 1420 kHz, et ekko av 1420 MHz som ingen i spillet peker på; kallesignalet må sjekkes så det ikke tilhører en ekte stasjon.
+- **Folka** (egne, ikke lånt fra Twin Peaks): servitrisen og sjåføren (finnes), Nora på motellet (finnes), nestlederen hos sheriffen som sitter alene på nattskift med et kart med knappenåler over meldinger om døde motorer, kyr og lys (han tror ikke på romvesener, han tror på kart), nattpraten på AM-stasjonen som spiller country og tar imot telefoner om lysene, kvinnen på benken utenfor vaskeriet med en transistorradio stilt mellom to stasjoner («It's louder tonight.»; hun hører bare etter, ikke noe mer), betjenten på bensinstasjonen, og suvenirmannen som selger «1947 debris» (aluminiumsfolie) og har levd av historien siden boka kom.
+- **Ytelse:** ett område, fasadene slått sammen, høyst tre små rom (disken på bensinstasjonen, sheriffens kontor, studioet sett gjennom glass), detaljer bare nær spilleren. Budsjettet er 300 draw calls som ellers.
+
+### Roswell i 1986
+
+Roswell-historien fikk nytt liv rundt 1978 til 1980, da boka The Roswell Incident kom ut. I 1986 er den halvt glemt og halvt vekket: noen tjener litt på den, andre er lei (servitrisen, som allerede er i spillet). Basen ved Roswell ble lagt ned i 1967. Turismen og UFO-museet kom først tidlig på 1990-tallet. Caliche står altså like før bølgen, og ett håndmalt skilt er riktig, ikke en hel gate.
+
+Romvesenene er derfor kultur og rykter i byen: plakater, unger med masker, suvenirmannens «vrakdeler», innringerne hos nattpraten. Ansiktet i FLASH er som i dag. Hvis Tom vil ha mer, er mitt forslag ett tvetydig glimt som bare synes på film: en liten skikkelse i kanten av frontlysene på ett bilde fra feltkameraet, aldri med øynene.
+
+### Twin Peaks: det vi låner og det vi lar være
+
+Låner: det vanlige og varme med noe galt under, dineren som hjertet i byen, faste folk med hver sin hemmelighet, langsom rytme og lange pauser, et trafikklys som henger i vinden, rolige synthflater (Scott Buckley, som spillet bruker fra før), og at byen er en annen klokka tre om natta.
+
+Lar være: sitater, figurene, det røde rommet og kirsebærpaien. Vi har kaffe og grønn chili, antennene der Twin Peaks har skogen, og suset fra hydrogenlinja der de har uglene (uglene finnes allerede i naturlyden, og kan få stå i fred).
+
+### Døgnsyklus: hvordan, hvis den kommer
+
+- Ikke et døgn som går fritt i 24 timer. Mye av et døgn er kjedelig å spille, og fullt dagslys viser stilen på sitt svakeste. I stedet biter av døgnet som går sammenhengende inne i biten, slik Firewatch gjør det, for eksempel 17:30 til 23:41 i B.
+- Teknisk finnes begynnelsen: `Sky.setClock` og `uDawn` flytter allerede himmelen mot gry. Det som mangler: solas plass og himmelens farger for ettermiddag og kveld, tåke og omgivelseslys som følger himmelen, natriumlamper og neon som tennes av en fotocelle når det mørkner, og på Ultra sola som lys med skygge.
+- Solnedgang 13. april 1986 ved Roswell er 18:27 MST, og den borgerlige skumringen slutter 18:53 (regnet med NOAA-formelen; den gir også soloppgang 05:29 til 05:30 den 14., som stemmer med kanon).
+- Klokka i fri bevegelse: natten har faste punkter (02:13, 05:29). Når spilleren kan ta omveier, går klokka i historiens tempo og blir stående rett før neste faste punkt, slik den allerede blir stående på 05:28:59 på den gamle veien. Da hopper aldri en omvei over historien.
+
+### Innvendinger og hva som gjøres med dem
+
+1. **En fri by tapper spenningen fra en stram natt.** Byen endrer seg med kapitlene (butikkene stenger, lys går ut, folk går hjem), notatboka har alltid ett tydelig mål, og hendelsene øker med natten. Prøves i testen under: går Tom seg bort, eller vil han tilbake til saken?
+2. **Tilfeldige skvetter blir billige og bryter R1 og R5.** Hver hendelse er en gjentakelse på en linje med klokkeslett, skrekken kommer av noe som mangler, ingenting følger etter, og det går minst ti minutter mellom to.
+3. **For mye romvesen dreper mysteriet.** Kultur og rykter, FLASH som i dag, høyst ett glimt på film.
+4. **Dagslys koster og viser stilen.** Biter av døgnet, og kvelden først: lav sol, lange skygger og silhuetter tilgir mye.
+5. **En by på mobil.** Ett område, sammenslåtte fasader, få rom, detaljer bare nær spilleren.
+6. **Det blir Twin Peaks-kopi.** Egne folk, og observatørens arbeid (observer, dokumenter, sammenlign) som det man faktisk gjør.
+
+### Min anbefaling
+
+Mål: B, kvelden før og natten, med byen som knutepunkt. Det gir mest av døgnfølelsen for prisen, holder den ene natten og slutten, og gjør Nora og Dale til folk man har møtt. C og D bare hvis kveldslyset i B holder i lavpolystilen. E parkert.
+
+Første steg er A, uten døgn: byen om natta og hendelsene. Den prøver det viktigste først, om det er gøy å legge merke til, skrive ned og koble rare ting, og alt den bygger, brukes i B.
+
+**Første versjon (avgrenset):**
+
+- Caliche som én gate ved dineren: dineren og seks til åtte fasader, blinkende trafikklys, bensinstasjonen med betjent og telefonautomat, vinduet hos sheriffen, AM-stasjonen med verten i vinduet, skiltet til suvenirbutikken.
+- Hendelsesregissøren med fem hendelser: telefonen med skriveren, sirissene som stopper, kyrne mot az 026, gatelysene langs linja, bilradioen fra 1947. Tilfeldige feil med bilen nær linjene.
+- Funn med klokke og sted, merker på kartet, og linja som tegner seg etter tre merker.
+- Åpen fra kapittel 3 (når bilen kommer seg ut fra SARO med en grunn) til kapittel 5.
+- Venter: døgnet, flere folk, flere rom, flere hendelser. Motellet 700 m sør og antennefeltet er egne punkter fra 15. oktober.
+- Tester: ny `events.py` (hver hendelse skjer, gir funn og merke, kommer ikke igjen, ikke utenfor vinduet sitt), `reachcheck.py` for byen, `drives.py`, kapittel 3 til 6, lagringen og gjennomspillingen, og draw calls i byen på Low.
+
+**Den billigste testen, før byen bygges:** regissøren med tre hendelser på steder som finnes (telefonautomaten ved dineren, sirissene på SARO, antennene mot az 026) og merkene på kartet. Tom spiller kapittel 3 til 5 og svarer på tre ting: Så du dem? Fikk du lyst til å lete etter flere? Føltes linja på kartet som noe du fant selv? Ja på det meste: bygg Caliche. Gikk de forbi uten at han så dem: tydeligere, lyden først. Føltes de som støy: færre, og knyttet tettere til historien.
+
+Den største uprøvde antakelsen er at det er spennende i seg selv å legge merke til og skrive ned rare ting uten at noe jager deg. Det er det testen sjekker.
+
+**Det Tom må avgjøre:**
+
+1. Én natt (A, og så kvelden før i B) eller flere dager (C)? Jeg anbefaler én natt med kvelden før.
+2. Romvesener: bare som kultur og rykter i byen og FLASH som i dag, eller i tillegg et tvetydig glimt som bare synes på film? Jeg anbefaler det siste.
+
+Navnet på byen kan vente til den bygges.
+
+Faktaene om Roswell-historien (boka 1980, basen 1967, museet tidlig på 1990-tallet), Masters 10. til 13. april 1986 og Halley nærmest jorda 11. april 1986 er fra hukommelsen og ikke slått opp her. De sjekkes før noe av det står i spillet. Soltidene er regnet.
+
+**Tom svarte 16. oktober:** heller mot A, én natt og byen om natta. Romvesenene skal alltid være der i bakgrunnen, som noe skummelt som kan skje når som helst, og tilfeldige bortføringer skal med. Hendelsesregissøren, hendelsene, kartet med linjene, Roswell som kultur og rykter og stemningen fra Twin Peaks skal med. B står som en mulighet senere, ikke som mål. Utdypet og forbedret i `HENDELSER.md`, med fire nye spørsmål til Tom om bortføringene.
+
 ## SARO som knutepunkt, lastebilen når som helst, lommelykt og undersøkelse (15. oktober)
 
 Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill (avgjort). På sikt: SARO og observatoriet som et knutepunkt der flere rare ting skjer, motellet lenger unna så man kjører dit (eller går et stykke), gå ut og undersøke antennene, lommelykt, og høyreklikk for zoom og undersøkelse. Og: kan noe av det som står i rulleteksten til They Are Here brukes?

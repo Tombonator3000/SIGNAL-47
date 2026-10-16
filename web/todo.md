@@ -27,6 +27,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
 - [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
 - [ ] SARO som knutepunkt: små hendelser som legger funn i notatboka, tre eller fire først. `FORSLAG.md`, punkt 2.
+- [x] Tom avgjorde retningen for knutepunktet 16. oktober: A, én natt og byen om natta, romvesenene alltid i bakgrunnen og tilfeldige bortføringer. Utdypet i `HENDELSER.md`.
+- [ ] Tom svarer på de fire spørsmålene om bortføringene (`HENDELSER.md`, punkt 12): unnslippe i varselet, minst én per natt, ansiktet spart til THE EVENT, av-bryter.
+- [ ] Steg 0 i `HENDELSER.md`, den billige testen før byen: regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet. Tom spiller kapittel 1 til 3 og svarer på spørsmålene der. Nye tester `events.py` og `abduct.py`.
+- [ ] Steg 1 til 3 i `HENDELSER.md`: Caliche som én gate med kartfanen og linjene, så folka og nattens rytme, så hendelser på C og flere glimt. Grafikk fra Codex eller ChatGPT: silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene og avisforsiden.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 
 - [ ] Tom går rundt SARO på Pages: ut østdøra, rundt lastebilen, ned rampa, langs serviceveien og gangstien til nødutgangen, opp vestsiden, langs vinduene og opp trappa til østgangen. Si fra om noe står i veien, ser feil ut eller mangler.
