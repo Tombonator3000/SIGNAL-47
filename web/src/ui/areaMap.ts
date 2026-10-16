@@ -60,7 +60,7 @@ export function areaMap(v: MapView) {
   g.globalAlpha = 0.9;
   text('the area round SARO, from memory', 96, 50, 32);
   // north
-  line([[1120, 190], [1120, 120]]); line([[1110, 140], [1120, 120], [1130, 140]]); text('N', 1112, 220, 30);
+  line([[1120, 740], [1120, 670]]); line([[1110, 690], [1120, 670], [1130, 690]]); text('N', 1135, 700, 30);
   // the highway, two lines
   line([[188, 96], [188, 780]], 1.8); line([[212, 96], [212, 780]], 1.8);
   text('highway', 120, 470, 24);
@@ -71,7 +71,7 @@ export function areaMap(v: MapView) {
   text('SARO', 348, 214, 30);
   // the motel across the road
   line([[88, 196], [150, 196], [150, 218], [88, 218], [88, 196]]);
-  text('Sierra Motor Ct', 76, 250, 24); text('(Nora, rm 6)', 84, 276, 20);
+  text('Sierra', 92, 248, 24); text('Motor Ct', 86, 272, 24); text('(Nora, rm 6)', 80, 296, 20);
   // the diner at the junction
   line([[150, 548], [184, 548], [184, 570], [150, 570], [150, 548]]);
   text('Mesa Diner', 66, 604, 28); text('open all night', 70, 630, 20);
