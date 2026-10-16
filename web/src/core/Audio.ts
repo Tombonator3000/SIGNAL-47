@@ -109,7 +109,11 @@ export class AudioSys {
   async unlock() {
     if (this.ctx) { if (this.ctx.state !== 'running') await this.ctx.resume(); return; }
     const C = window.AudioContext || (window as any).webkitAudioContext;
-    const ctx: AudioContext = new C();
+    // larger buffers than the default ('interactive', about 10 ms): with a heavy picture on the
+    // same machine the small ones run dry and the sound drops out (Tom, 16 October). Nothing
+    // here needs the lowest latency; the footsteps are a few tens of ms later at most.
+    let ctx: AudioContext;
+    try { ctx = new C({ latencyHint: 'playback' }); } catch { ctx = new C(); }
     this.ctx = ctx;
     this.master = ctx.createGain(); this.master.gain.value = this.volume; this.master.connect(ctx.destination);
     this.sfx = ctx.createGain(); this.sfx.connect(this.master);

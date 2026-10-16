@@ -93,12 +93,12 @@ async def main():
         check(got, f"the Night Line is captioned ({[x for x in h.split(' | ') if 'RADIO' in x][:2]})")
         # now and then the static swells over the station (Tom: static at random, with the wah wah)
         mx, back = 0.0, False
-        for _ in range(100):
+        for _ in range(170):
             await tick(0.5, 20)
             k = await ev("S47.carRadio.interference")
             mx = max(mx, k)
-            if mx > 0.3 and k == 0: back = True; break
-        check(mx > 0.3 and back, f"now and then the static comes up over the station, and goes again (deepest {mx:.2f})")
+            if mx > 0.2 and k == 0: back = True; break
+        check(0.2 < mx <= 0.7 and back, f"now and then the static comes up over the station, and goes again (deepest {mx:.2f}; not too often or too deep since 16 October)")
 
         # ---------- along the dial and off ----------
         await pg.keyboard.press('r'); await tick(0.6)
