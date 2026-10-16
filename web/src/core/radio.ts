@@ -416,7 +416,7 @@ export class Station {
     // the anthem, or the carrier
     if (s.kind === 'anthem') this.playAnthem(n); else this.stopAnthem(n);
     const carrier = s.kind === 'carrier' || (s.kind === 'anthem' && this.anthemFailed);
-    n.car.gain.setTargetAtTime(carrier ? 0.18 : 0, now, 0.05);
+    n.car.gain.setTargetAtTime(carrier ? 0.03 : 0, now, 0.05);   // quiet: a dead carrier mostly hushes the static
   }
   private playAnthem(n: NonNullable<Station['n']>) {
     if (n.anthem || this.anthemFailed) return;

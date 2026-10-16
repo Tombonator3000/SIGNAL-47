@@ -128,7 +128,7 @@ async function boot() {
   audio.preload(); // decodes while the title screen is up
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
-  const carRadio = radio.receiver({ vol: 0.5, ref: 1.0 });
+  const carRadio = radio.receiver({ vol: 0.65, ref: 1.0 });
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
