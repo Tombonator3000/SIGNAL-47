@@ -27,6 +27,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
 - [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
 - [ ] SARO som knutepunkt: små hendelser som legger funn i notatboka, tre eller fire først. `FORSLAG.md`, punkt 2.
+- [ ] Tom avgjør retningen for knutepunktet (`FORSLAG.md`, 16. oktober): én natt med byen om natta og kvelden før (min anbefaling), eller flere dager; og om romvesenene får ett tvetydig glimt som bare synes på film.
+- [ ] Billigste test før byen bygges: en hendelsesregissør med tre hendelser på steder som finnes (telefonautomaten ved dineren, sirissene på SARO, antennene mot az 026), funn med klokke og sted, og merker på kartet. Tom spiller kapittel 3 til 5 og sier om han så dem, ville lete etter flere og fant linja selv.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 
 - [ ] Tom går rundt SARO på Pages: ut østdøra, rundt lastebilen, ned rampa, langs serviceveien og gangstien til nødutgangen, opp vestsiden, langs vinduene og opp trappa til østgangen. Si fra om noe står i veien, ser feil ut eller mangler.

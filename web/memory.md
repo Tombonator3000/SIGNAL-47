@@ -4,6 +4,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-16 ettermiddag: Tom spurte om forslag til å gjøre spillet mer til et knutepunkt der merkelige ting skjer: døgnsyklus, en liten søvnig småby, tilfeldige skumle ting, Roswell-romvesener og Twin Peaks. Forslagene står i `FORSLAG.md` (16. oktober), og ingenting er avgjort. Min anbefaling: hold den ene natten og slutten; første steg er byen om natta ved dineren (arbeidsnavn Caliche) og en hendelsesregissør der hver hendelse er en gjentakelse på en av linjene (R1, R5), gir funn med klokke og sted og et merke på kartet; neste steg en spillbar kveld før skiftet (søndag 17:30 til 23:41) for overgangen fra dag til natt. Flere dager og frispill bare hvis kveldslyset holder i stilen. Romvesener som kultur og rykter i byen, FLASH som i dag. Tom må avgjøre: én natt eller flere dager, og om romvesenene kan få ett tvetydig glimt som bare synes på film.
 - 2026-10-16 formiddag: Tom ba om bedre lastebil ute og inne, og om at motoren innimellom kan kutte og dashlysene blinke og slukne, til hendelser i historien senere og tilfeldige mystiske hendelser under kjøring. Bygget: `drive/trouble.ts` med hosting, motorstopp (med startmotor og omstart, eventuelt holdt død av historien eller til spilleren vrir om nøkkelen), blinkende lys og mørkt dashbord. Tilfeldige feil er av til historien slår dem på (`world.trouble.random`); utviklermenyen har alle og bryteren.
 - 2026-10-16: Tom (RTX 3080): grafiske feil og en svart firkant på skjermen; stjerneskudd med jevne mellomrom; man må kunne gå ut av bilen der den står; naturlyden utenfra skal knapt høres innendørs; fotlydene var irriterende og skulle byttes. Bygget samme morgen: et pass som holder bildet endelig før bloom, lineær avtagning på lommelykta, stjerneskudd hvert 18. til 40. sekund om natta, E (Use) for å gå ut når bilen står, utendørslyd på 5 prosent inne, og Kenneys fottrinn (CC0) med et skritt hver 0,8 m.
 - 2026-10-15 kveld (bygget): Lastebilen kan brukes fra kapittel 1. Sperringen på den gamle veien tas bort når kapittel 5 sender bilen ut dit (`road` og `complete`), siden den turen er starten på kapittel 6. Lommelykta ligger på passasjersetet og blir med første gang spilleren setter seg inn.
@@ -92,6 +93,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 - Sted og tid: SARO, Southwest Astronomical Research Observatory, New Mexico, 1986. Skiftet starter 23:41.
 - Natten: 13. til 14. april 1986, normaltid (MST). Grålysning 05:05, soloppgang 05:30. THE EVENT 05:29:00 til 05:29:47 der C krysser den gamle Roswell-veien, rett forbi åttemilsstolpen.
+- Kvelden før: solnedgang søndag 13. april 1986 ved Roswell 18:27 MST, borgerlig skumring slutter 18:53 (regnet med NOAA-formelen 16. oktober; samme formel gir soloppgang 05:29 til 05:30 den 14.).
 - -39 LY er 39 år siden 1947. Ingen person i spillet sier det.
 - Kollega: Dale har lagt igjen skiftloggen ("Don't break anything. D."). Unity-versjonen signerte "R.". Webversjonen bruker Dale, og spilleren er Reyes.
 - Mottaker: RX bank 3 må slås på med spaken på racket.
