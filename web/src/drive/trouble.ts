@@ -78,6 +78,14 @@ export class TruckTrouble {
     this.touched = false;
   }
 
+  /** The truck goes on in another area (World.transfer): the copy left behind gets its own
+   *  lights and engine back; the new one takes the trouble on from the next step. */
+  handOver(truck: Truck, drive: DriveController) {
+    if (!this.touched) return;
+    drive.engine = true; drive.power = 1;
+    truck.setLightLevel(1); truck.setDashLevel(null); truck.setWarnings({}); truck.setGaugePower(1);
+  }
+
   /** Every frame of a trip, after the drive has moved. random: whether random trouble may
    *  come now (the story's say, the night, a cinematic). */
   step(dt: number, drive: DriveController, truck: Truck, sound: EngineSound | null, mayRandom: boolean) {

@@ -669,6 +669,7 @@ export class World {
     this.leg = ex.to;
     to.drive.adopt(from.drive, ex.x, ex.z, ex.heading);
     to.truck.copyCab(from.truck);
+    this.trouble.handOver(from.truck, from.drive);   // the copy left behind is itself again
     this.dashT = 0;   // the clock on its dash is set this frame
     this.lightsOn(to.truck);
     from.truck.setDriving(false);
