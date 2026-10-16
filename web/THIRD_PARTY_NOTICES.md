@@ -15,6 +15,14 @@ Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de li
 - "Neon", de første 200 s. https://www.scottbuckley.com.au/library/neon/ (`neon.mp3`)
 - "Hymn to the Dawn", de første 200 s. https://www.scottbuckley.com.au/library/hymn-to-the-dawn/ (`hymn_to_the_dawn.mp3`)
 
+### Musikk i bakgrunnen hele tiden (16. oktober 2026)
+
+Tom ba om stille musikk i bakgrunnen hele tiden, skummel og meditativ, i ånden til Mike Oldfield, Angelo Badalamenti og David Lynch. Deres egen musikk er beskyttet og brukes ikke; stykkene under har åpen lisens, lest på kildenes egne sider 16. oktober 2026. Hele stykker, tonet inn 2 s, lydnivåjustert (loudnorm, -22 LUFS), kodet som MP3 64 kbps i `public/music/` uten omslagsbilde og metadata, strømmet (`core/score.ts`). Kreditert i rulleteksten og tittelskjermens info.
+
+- Chris Zabriskie, «Cylinder One», «Cylinder Two» og «Cylinder Eight» fra albumet Cylinders (2014), CC BY 4.0 (https://chriszabriskie.com/cylinders/: «free to use in creative projects under a Creative Commons Attribution license», lenket til CC BY 4.0). Filene er hentet fra Internet Archive (`Cylinders-15736`). (`cylinder_one.mp3`, `cylinder_two.mp3`, `cylinder_eight.mp3`)
+- Kevin MacLeod, CC BY 4.0 (https://incompetech.com/music/royalty-free/licenses/, standardlisensen er Creative Commons med kreditering), hentet fra incompetech.com: «Floating Cities», «Ossuary 1 - A Beginning», «Ossuary 5 - Rest», «Long Note Four», «Lightless Dawn», «Phantom from Space» og «Night on the Docks - Sax». (`floating_cities.mp3`, `ossuary_1.mp3`, `ossuary_5.mp3`, `long_note_four.mp3`, `lightless_dawn.mp3`, `phantom_from_space.mp3`, `night_on_the_docks.mp3`)
+- Shane Ivers, «Signs To Nowhere» (2020), CC BY 4.0 (https://www.silvermansound.com/free-music/signs-to-nowhere). (`signs_to_nowhere.mp3`)
+
 ## Nasjonalsangen på radioen, allemannseie
 
 - "The Star Spangled Banner", korversjon, The United States Air Force Band. Hentet 16. oktober 2026 fra Internet Archive, https://archive.org/details/TheStarSpangledBanner (`Star_Spangled_Banner_choral.mp3`). Siden sier at innspillingen er laget av en ansatt i det amerikanske forsvaret som del av tjenesten, og derfor er allemannseie (public domain) som et verk fra den amerikanske staten; melodien og teksten (John Stafford Smith, Francis Scott Key) er for lengst fri. Air Force Band ber om kreditering, så den står i rulleteksten. Stillheten i begynnelsen og slutten er klippet bort, og lyden er nivåjustert (loudnorm, -16 LUFS), mikset til mono og kodet som MP3 48 kbps, 22 kHz, i `public/radio/anthem.mp3`. Den strømmes når en radio i spillet spiller den (`core/radio.ts`), og er ikke med i enkeltfilbygget.

@@ -1,7 +1,8 @@
 # The music under the night (core/score.ts), on the Pages build served over HTTP (the
 # single-file build has no music files beside it and plays none; that is checked too).
-# The title screen's music on the first click, and gone when the night starts. A cue chosen by place (the yard, indoors, the truck), streamed from music/, playing, held
-# back by a scene, and every cue file there with no 404.
+# The title screen's music on the first click, and gone when the night starts. A place's music
+# (the yard, indoors, the truck), streamed from music/, playing, going on to the next piece when one
+# ends, held back by a scene, and every piece there with no 404.
 # Usage: S47_URL=http://127.0.0.1:PORT/SIGNAL-47/ python3 tools/music.py
 #        python3 tools/music.py            (the single-file build: no music, no requests)
 import asyncio, sys, os
@@ -48,6 +49,15 @@ async def main():
             await asyncio.sleep(4)
             st = await ev("(() => { const el = S47.score()['el']; return el ? { t: el.currentTime, err: !!el.error, paused: el.paused } : null; })()")
             check(st is not None and st['t'] > 1 and not st['err'], f'it streams from music/ and plays ({st})')
+            # it goes on: when a piece ends, after a few seconds the next for the same place (Tom, 16 October)
+            first = await ev("S47.score().track")
+            await ev("(() => { const el = S47.score()['el']; el.currentTime = Math.max(0, el.duration - 0.6); })()")
+            await asyncio.sleep(2.0)
+            await ev("S47.tick(0.2)")
+            check(await ev("S47.score().playing") is None, f'the piece ends ({first})')
+            await ev("S47.tick(16)")
+            nxt = await ev("[S47.score().playing, S47.score().track]")
+            check(nxt[0] == 'night' and nxt[1] and nxt[1] != first, f'and after a few seconds the next for the yard, not the same ({nxt[1]})')
             # a scene holds the player: the music gets out of the way
             await ev("S47.game.cinematic = true; S47.tick(0.2)")
             await asyncio.sleep(3.2)
@@ -65,13 +75,14 @@ async def main():
             await ev("S47.hold = true; S47.score()['rest'] = 0; S47.tick(0.5)")
             cue = await ev("S47.score().playing")
             check(cue == 'drive', f'in the truck on the highway it is the drive ({cue})')
-            # every cue file is there
-            for c in ['night', 'eerie', 'tension', 'motel', 'drive', 'dawn']:
-                await ev(f"S47.score().start('{c}')"); await asyncio.sleep(1.5)
+            # every piece is there
+            tracks = await ev("S47.musicTracks()")
+            for k in tracks:
+                await ev(f"S47.score().start('night', '{k}')"); await asyncio.sleep(1.2)
             await ev("S47.score().stop()")
             bad = [m for m in music if m[1] not in (200, 206, 304)]
             names = sorted(set(m[0] for m in music))
-            check(len(names) == 6 and not bad, f'all six cue files answered ({len(names)} files, {len(bad)} bad)')
+            check(len(names) == len(tracks) == 17 and not bad, f'all {len(tracks)} pieces answered ({len(names)} files, {len(bad)} bad)')
         bad = [e for e in errs if 'GPU stall' not in e and 'Automatic fallback to software WebGL' not in e]
         print('\n'.join(bad) if bad else 'no console errors/warnings')
         await b.close()

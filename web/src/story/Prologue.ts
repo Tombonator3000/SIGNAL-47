@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { UI, DocSpec } from '../ui/UI';
+import type { UI, DocSpec, NbExtras } from '../ui/UI';
 import type { AudioSys } from '../core/Audio';
 import type { ControlRoom, Crt } from '../world/ControlRoom';
 import type { Exterior } from '../world/Exterior';
@@ -306,11 +306,14 @@ export class Prologue {
     return t;
   }
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
+  /** The notebook's map and kit, put together where the world is known (main.ts). */
+  notebookExtras: (() => NbExtras) | null = null;
   openNotebook() {
     const ui = this.d.ui;
     ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : this.phase === 'ch6' ? 'Chapter six' : 'Tonight',
       // the evidence board can be laid out from the journal once a record from the archive is in it
-      this.ch2.started && Object.values(this.ch2.s.read).some(Boolean) ? () => this.ch2.openBoard() : undefined);
+      this.ch2.started && Object.values(this.ch2.s.read).some(Boolean) ? () => this.ch2.openBoard() : undefined,
+      this.notebookExtras?.() ?? {});
   }
 
   // ---------- world helpers ----------
