@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { box, cyl, rod, plane, noMerge, floodlit, floodSet, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import {
-  DASH, DIALS, DECAL, CAB, dashAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
+  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
 } from './truckTextures';
 
 // SARO 07, the observatory's service truck: a full-size single-cab pickup of the early
@@ -216,6 +216,9 @@ export class Truck {
   private clockShown = ''; private clockWanted = ''; private clockAt = -1;
   private gauge = { speed: 0, fuel: 0.6, temp: 0.15, tSpeed: 0, tFuel: 0.6, tTemp: 0.5 };
   private eyeW = new THREE.Vector3(); private camW = new THREE.Vector3();
+  private lamps: Partial<Record<(typeof WARN)[number], THREE.Mesh>> = {};
+  /** The instruments' power (setGaugePower): below 0.5 the electric needles fall back. */
+  private gaugePower = 1;
   // The cab's own light: the instruments, and a little sky through the glass. A flood set of its own.
   private cabFlood = floodSet(2, 'cab', 0.5);
 
@@ -274,6 +277,8 @@ export class Truck {
       tint: new THREE.MeshBasicMaterial({ map: windshieldTex(), transparent: true, depthWrite: false }),
       gauge: new THREE.MeshBasicMaterial({ map: this.dash.tex, toneMapped: false }),
       needle: new THREE.MeshBasicMaterial({ color: 0xff6a30, toneMapped: false }),
+      // the warning lamps lit (setWarnings)
+      warn: new THREE.MeshBasicMaterial({ map: warnAtlas(), toneMapped: false }),
     };
   }
 
@@ -435,6 +440,13 @@ export class Truck {
     this.needles = new THREE.InstancedMesh(ng, m.needle, 3);
     this.needles.frustumCulled = false;
     noMerge(this.needles); cluster.add(this.needles);
+    // the warning lamps, lit over their dark places on the cluster when something is wrong
+    WARN.forEach((name, i) => {
+      const [px, py] = WARN_AT[name];
+      const lamp = decal(cluster, 0.04375, 0.0131, m.warn, [i / 4, 0, (i + 1) / 4, 1], (px / 512 - 0.5) * 0.56, (0.5 - py / 160) * 0.175, 0.0025);
+      lamp.visible = false; noMerge(lamp);
+      this.lamps[name] = lamp;
+    });
     // the radio in its bezel, two knobs; the heater panel, the ashtray, the glovebox, the vents
     box(C, 0.4, 0.1, 0.03, m.cabTrim, 0.14, 1.06, -0.41).rotation.x = 0.2;
     decal(C, 0.34, 0.064, m.gauge, DASH.stack, 0.14, 1.06, -0.393, 0, 0.2);
@@ -576,6 +588,15 @@ export class Truck {
   setHeadColor(c: THREE.Color | null) { this.headColor.copy(c ?? HEAD); this.applyLights(); }
   /** The instrument lights on their own, 0..1 (null: they follow setLightLevel). */
   setDashLevel(k: number | null) { this.dashLevel = k; this.applyLights(); }
+  /** The warning lamps on the cluster (drive/trouble.ts): the oil pressure and charge lamps light
+   *  when the engine stops with the key on. */
+  setWarnings(o: { oil?: boolean; volts?: boolean; brake?: boolean; belts?: boolean }) {
+    const on = { BRAKE: !!o.brake, OIL: !!o.oil, VOLTS: !!o.volts, BELTS: !!o.belts };
+    for (const n of WARN) { const l = this.lamps[n]; if (l && l.visible !== on[n]) l.visible = on[n]; }
+  }
+  /** Power to the electric gauges, 0..1: without it the fuel and temperature needles fall to
+   *  their stops (the speedometer runs off a cable and goes on). */
+  setGaugePower(k: number) { this.gaugePower = k; }
   /** Use these slots of a flood set as headlight pools on the ground (moved in update()). */
   headlightFloods(set: FloodSet, slots: number[]) {
     this.flood = { set, slots: slots.slice(0, FLOODS.length) };
@@ -637,7 +658,10 @@ export class Truck {
     this.wheels.instanceMatrix.needsUpdate = true;
     // needles have a little weight to them
     const g = this.gauge, k = 1 - Math.exp(-dt * 6);
-    g.speed += (g.tSpeed - g.speed) * k; g.fuel += (g.tFuel - g.fuel) * k * 0.3; g.temp += (g.tTemp - g.temp) * dt * 0.02;
+    const live = this.gaugePower > 0.5;
+    g.speed += (g.tSpeed - g.speed) * k;
+    g.fuel += ((live ? g.tFuel : 0) - g.fuel) * k * (live ? 0.3 : 0.5);
+    g.temp += live ? (g.tTemp - g.temp) * dt * 0.02 : (0 - g.temp) * k * 0.5;
     const W = 0.56, H = 0.175, needle = (i: number, d: typeof DIALS.speed, f: number, len: number) => {
       const a = (d.from + (d.to - d.from) * f) * Math.PI / 180;
       _q.setFromAxisAngle(_z, -a);

@@ -99,6 +99,8 @@ export class DriveController {
   surface: Surface = { kind: 'asphalt', grip: 1, top: 30 };
   /** false: the engine has died. The truck coasts, brakes and steers, and rpm falls to 0. */
   engine = true;
+  /** 0..1, how much of its pull the engine gives (a misfire, drive/trouble.ts); 1 normally. */
+  power = 1;
   onArrive?: () => void;
   onBump?: (speed: number) => void;
   /** In reverse gear (S held at a stop). */
@@ -133,7 +135,7 @@ export class DriveController {
     this.pos.set(pos.x, 0, pos.z);
     this.heading = heading;
     this.speed = 0; this.steer = 0; this.reverse = false; this.gear = 1; this.accel = 0; this.yawRate = 0;
-    this.yaw = 0; this.pitch = PITCH0; this.arrived = false; this.engine = true;
+    this.yaw = 0; this.pitch = PITCH0; this.arrived = false; this.engine = true; this.power = 1;
     const g = this.ground();
     Object.assign(this.body, { y: g.y, vy: 0, pitch: g.pitch, vp: 0, roll: g.roll, vr: 0 });
     this.surface = this.area.surface(this.pos.x, this.pos.z);
@@ -146,7 +148,7 @@ export class DriveController {
   adopt(o: DriveController, x: number, z: number, heading: number) {
     this.place(new THREE.Vector3(x, 0, z), heading);
     this.speed = o.speed; this.steer = o.steer; this.reverse = o.reverse; this.gear = o.gear; this.rpm = o.rpm; this.load = o.load;
-    this.accel = o.accel; this.yawRate = o.yawRate; this.yaw = o.yaw; this.pitch = o.pitch; this.idle = o.idle; this.t = o.t; this.engine = o.engine;
+    this.accel = o.accel; this.yawRate = o.yawRate; this.yaw = o.yaw; this.pitch = o.pitch; this.idle = o.idle; this.t = o.t; this.engine = o.engine; this.power = o.power;
     // the body sits on its springs as it did: the same give over the new ground
     const og = o.ground(), b = this.body;
     b.y += o.body.y - og.y; b.pitch += o.body.pitch - og.pitch; b.roll += o.body.roll - og.roll;
@@ -172,7 +174,7 @@ export class DriveController {
     if (pulling) {
       // the pull fades towards 1.19 x top, where it just matches drag at `top`
       const top = (this.reverse ? REVERSE : s.top) * 1.19;
-      a = dir * ACCEL * go * (0.55 + 0.45 * s.grip) * Math.max(0, 1 - (Math.abs(v) / top) ** 2);
+      a = dir * ACCEL * go * this.power * (0.55 + 0.45 * s.grip) * Math.max(0, 1 - (Math.abs(v) / top) ** 2);
     } else if (braking) {
       a = -Math.sign(v) * BRAKE * Math.abs(throttle) * (0.5 + 0.5 * s.grip);
     }
@@ -222,9 +224,10 @@ export class DriveController {
     const wheelRpm = Math.abs(this.speed) * 60 / (2 * Math.PI * 0.37);
     const coupled = wheelRpm * (this.reverse ? 2.08 : RATIOS[this.gear - 1]) * FINAL;
     const slip = (IDLE + pull * 1500) * Math.max(0, 1 - Math.abs(this.speed) / 7);
-    const target = this.engine ? Math.max(IDLE, coupled, slip) : 0;
+    // a misfire drags the revs down with the pull
+    const target = this.engine ? Math.max(IDLE * (0.55 + 0.45 * this.power), coupled, slip * this.power) : 0;
     this.rpm += (target - this.rpm) * (1 - Math.exp(-dt * (this.engine ? 6 : 1.6)));
-    this.load = this.engine ? pull : 0;
+    this.load = this.engine ? pull * this.power : 0;
     // ---------- arrival ----------
     const z = this.area.endZone, p = this.pos;
     if (!this.arrived && p.x >= z.minX && p.x <= z.maxX && p.z >= z.minZ && p.z <= z.maxZ && Math.abs(this.speed) < 6) {

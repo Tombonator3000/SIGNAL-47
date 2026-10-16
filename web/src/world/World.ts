@@ -4,6 +4,7 @@ import type { Collider } from './ControlRoom';
 import type { AreaId, FieldSite } from '../story/Chapter3';
 import type { Station01 } from './Station01';
 import type { RoadArea } from '../drive/RoadArea';
+import { TruckTrouble } from '../drive/trouble';
 import type { DriveController } from '../drive/Drive';
 import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
@@ -141,6 +142,10 @@ export class World {
   leg: LegId | null = null;
   /** Drive by itself along the way at about this speed in m/s (tests, the developer menu), or null. */
   autopilot: number | null = null;
+  /** Trouble with the truck on a trip: misfires, a dead engine, flickering lights (drive/trouble.ts). */
+  trouble = new TruckTrouble();
+  /** Whether random trouble may come now (main.ts: the night, no cinematic). */
+  troubleOk?: () => boolean;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
   private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string;
     free: boolean; start: THREE.Vector3; left: boolean } | null = null;
@@ -673,6 +678,7 @@ export class World {
   // Stopped where the truck is left: the engine off, and the player gets out by the door.
   private park(place: LegId) {
     const id = this.leg!, L = this.legs[id]!, trip = this.trip;
+    this.trouble.reset(L.truck, L.drive);
     this.driving = false;
     this.engine?.stop();
     L.truck.setDriving(false);
@@ -715,7 +721,7 @@ export class World {
    *  highway only at the diner, the road itself is not walked). E or Use gets out (main.ts). */
   canGetOut() {
     const id = this.leg, trip = this.trip;
-    if (!this.driving || this.busy || !id || !trip || trip.free) return false;
+    if (!this.driving || this.busy || !id || !trip || trip.free || this.trouble.wantsKey) return false;
     const L = this.legs[id], place = this.placeOfLeg(id);
     if (!L || !place || Math.abs(L.drive.speed) > 0.6) return false;
     if (id === 'road') {
@@ -810,6 +816,7 @@ export class World {
    *  puts the trucks back where they stood when it began. */
   stopDriving() {
     const id = this.leg, trip = this.trip;
+    this.trouble.reset(id ? this.legs[id]?.truck : null, id ? this.legs[id]?.drive : null);
     this.driving = false;
     this.oldControl = null;
     this.engine?.stop();
@@ -937,6 +944,8 @@ export class World {
       this.tripStep(dt);
     }
     const N = (this.leg && this.legs[this.leg]) || L, D = N.drive;
+    // trouble with the truck, on the story's trips and the player's own (not chapter six's road)
+    if (this.driving && this.trip && id !== 'roswell') this.trouble.step(dt, D, N.truck, this.engine, this.troubleOk?.() ?? false);
     if (this.engine) { this.engine.set(D.rpm, D.load); this.engine.tyres(D.surface.kind, Math.abs(D.speed)); }
     this.dashT -= dt;
     if (this.dashT <= 0) { this.dashT = 0.1; N.truck.setDash({ mph: D.mph, rpm: D.rpm, clock: this.d.clock(), fuel: id === 'roswell' ? 0.55 : 0.62 }); }

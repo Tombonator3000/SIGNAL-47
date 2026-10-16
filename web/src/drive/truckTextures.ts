@@ -269,6 +269,23 @@ function dial(g: CanvasRenderingContext2D, d: { x: number; y: number; r: number;
   g.font = '500 11px Oswald'; g.fillText(name, d.x, d.y + (d.r > 50 ? 26 : 16));
 }
 
+// The warning lamps lit (drive/trouble.ts): the four on the cluster in a row, 64 x 16 pixels
+// each, drawn over the dark ones in the dash canvas when they come on.
+export const WARN = ['BRAKE', 'OIL', 'VOLTS', 'BELTS'] as const;
+export function warnAtlas() {
+  const s = screenCanvas(256, 16), g = s.ctx;
+  g.font = '500 13px Oswald'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  WARN.forEach((t, i) => {
+    const red = i < 2;
+    g.fillStyle = red ? '#ff3a22' : '#ffa21e'; g.fillRect(i * 64, 0, 64, 16);
+    g.fillStyle = red ? '#2a0603' : '#2a1503'; g.fillText(t, i * 64 + 32, 8.5);
+  });
+  return s.tex;
+}
+/** Where each warning lamp sits on the dash canvas (centre x, centre y, in its pixels). */
+// up in the gaps beside the speedometer, where they show over the steering wheel
+export const WARN_AT: Record<(typeof WARN)[number], [number, number]> = { BRAKE: [157, 30], OIL: [355, 30], VOLTS: [157, 46], BELTS: [355, 46] };
+
 export function dashAtlas() {
   const s = screenCanvas(512, 256);
   const g = s.ctx;
@@ -285,9 +302,10 @@ export function dashAtlas() {
   g.fillStyle = MARK; g.font = '17px VT323'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('084217', sp.x, sp.y + 44);
   g.font = '500 11px Oswald'; g.fillText('P   R   N   D   2   1', sp.x, 152);
   g.font = '500 10px Oswald';
-  [['BRAKE', 170, '#4a1712'], ['OIL', 342, '#4a1712'], ['VOLTS', 170, '#4a3512'], ['BELTS', 342, '#4a3512']].forEach(([t, x, c], i) => {
-    g.fillStyle = c as string; g.fillRect((x as number) - 20, i < 2 ? 128 : 144, 40, 12);
-    g.fillStyle = '#0b0b0b'; g.fillText(t as string, x as number, i < 2 ? 134 : 150);
+  WARN.forEach((t, i) => {
+    const [x, y] = WARN_AT[t];
+    g.fillStyle = i < 2 ? '#4a1712' : '#4a3512'; g.fillRect(x - 20, y - 6, 40, 12);
+    g.fillStyle = '#0b0b0b'; g.fillText(t, x, y);
   });
   g.fillStyle = '#123d22';
   for (const [x, dir] of [[196, -1], [316, 1]]) { g.beginPath(); g.moveTo(x + dir * 12, 14); g.lineTo(x, 6); g.lineTo(x, 22); g.closePath(); g.fill(); }
