@@ -2,6 +2,18 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
+## Toms liste 16. oktober kveld, i den rekkefølgen jeg tar den
+
+Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).
+
+1. [ ] **Radioen og lydene i mørket** ferdig testet, flettet og ute på Pages (testrekka går).
+2. [ ] **Musikk i bakgrunnen hele tiden**, stille og nesten i loop, valgt etter sted: rolige flater og minimalistiske mønstre ute og inne på SARO, noir-jazz i dineren og byen. Lisens lest på hver kilde (16. oktober): Chris Zabriskie «Cylinders» (CC BY 4.0, chriszabriskie.com), Kevin MacLeod (CC BY 4.0, incompetech.com), Shane Ivers «Signs To Nowhere» (CC BY 4.0, silvermansound.com), og Scott Buckley som før. Badalamenti og Lynch selv er beskyttet og kan ikke brukes; dette er åpen musikk i samme ånd.
+3. [ ] **Kart over stedet** i notatboka: SARO, motellet, dineren, byen, STATION 01 og den gamle veien, med «du er her» og merkene fra hendelsene senere (`HENDELSER.md` punkt 10).
+4. [ ] **Inventar**: det spilleren bærer (lommelykta, feltkameraet, nøkler, fotografier, papirer), egen fane eller tast.
+5. [ ] **Ansiktsportretter**: bestillingen til ChatGPT står i `ART_BRIEF.md`, runde 13. Når bildene kommer: portrett i samtalepanelene og en fane med folk i notatboka.
+6. [ ] **Motellet rundt 700 m sør** langs riksveien (avgjort 15. oktober), med gangbar veiskulder og kapittel 4 skrevet om.
+7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der.
+
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
