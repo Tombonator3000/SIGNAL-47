@@ -1,6 +1,6 @@
 # The radio (core/radio.ts, Tom 16 October): the truck's radio works (R, the dial on the dash,
-# three stations, the Night Line's captions, off again), the town's station signs off at 04:00
-# with the national anthem and the carrier, Roswell signs on at 05:00 with the anthem, the radio
+# three stations, the Night Line's captions, static swelling over it now and then, off again),
+# the town's station signs off at 04:00 with the national anthem and the carrier, Roswell signs on at 05:00 with the anthem, the radio
 # drops out while the starter turns, it plays on from the truck when the player gets out, the
 # diner's radio plays the station that is on the air, and on the old road the cab radio is
 # chapter six's. With S47_URL on the Pages build the anthem file itself is checked as it plays;
@@ -12,7 +12,7 @@ from playwright.async_api import async_playwright
 OUT = sys.argv[1]
 W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
-PAGES = bool(os.environ.get('S47_URL'))
+PAGES = URL.startswith('http')   # served like Pages, with the files beside the page
 results = []
 def check(ok, msg):
     results.append(bool(ok)); print(('PASS ' if ok else 'FAIL ') + msg, flush=True)
@@ -76,6 +76,14 @@ async def main():
             if 'RADIO' in await heard(): got = True; break
         h = await heard()
         check(got, f"the Night Line is captioned ({[x for x in h.split(' | ') if 'RADIO' in x][:2]})")
+        # now and then the static swells over the station (Tom: static at random, with the wah wah)
+        mx, back = 0.0, False
+        for _ in range(100):
+            await tick(0.5, 20)
+            k = await ev("S47.carRadio.interference")
+            mx = max(mx, k)
+            if mx > 0.3 and k == 0: back = True; break
+        check(mx > 0.3 and back, f"now and then the static comes up over the station, and goes again (deepest {mx:.2f})")
 
         # ---------- along the dial and off ----------
         await pg.keyboard.press('r'); await tick(0.6)

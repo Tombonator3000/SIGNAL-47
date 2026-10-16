@@ -515,7 +515,7 @@ export class AudioSys {
   // a mumbling horn too low to follow (the captions say what it says);
   // 'carrier' is the bare carrier when the night takes the station; null fades it out.
   // radioIn() is where the fragments of the night are played through the same speaker.
-  private cab: { out: GainNode; spk: AudioNode; talk: GainNode; car: GainNode; hiss: GainNode; stop: () => void } | null = null;
+  private cab: { out: GainNode; spk: AudioNode; talk: GainNode; car: GainNode; hiss: GainNode; swell: GainNode; stop: () => void } | null = null;
   cabRadio(mode: 'talk' | 'carrier' | 'hiss' | null) {
     const ctx = this.ctx; if (!ctx) return;
     if (!mode) {
@@ -551,14 +551,27 @@ export class AudioSys {
       const car = ctx.createGain(); car.gain.value = 0;
       const osc = ctx.createOscillator(); osc.frequency.value = 760; osc.connect(car); car.connect(out);
       const n = this.noiseSrc(false), hiss = ctx.createGain(); hiss.gain.value = 0.25; n.connect(hiss); hiss.connect(out);
-      for (const x of [horn, p1, p2, syl, phr, osc, n]) x.start();
-      this.cab = { out, spk: bp, talk, car, hiss, stop: () => { for (const x of [horn, p1, p2, syl, phr, osc, n]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+      // now and then the static swells over the talk and the talk sinks under it (Tom, 16 October):
+      // three slow waves that only now and then add up past a threshold, so it comes irregularly
+      const fz = ctx.createGain(); fz.gain.value = 0;
+      const waves = [0.071, 0.113, 0.29].map((f, i) => { const o = ctx.createOscillator(); o.frequency.value = f; const g = ctx.createGain(); g.gain.value = [0.45, 0.35, 0.25][i]; o.connect(g); g.connect(fz); return o; });
+      const over = ctx.createWaveShaper();
+      const curve = new Float32Array(512); for (let i = 0; i < 512; i++) { const x = (i / 511) * 2.1 - 1.05; curve[i] = Math.max(0, (x - 0.55) / 0.5) ** 1.4; }
+      over.curve = curve;
+      fz.connect(over);
+      const swell = ctx.createGain(); swell.gain.value = 0; over.connect(swell); swell.connect(hiss.gain);
+      const duckAmt = ctx.createGain(); duckAmt.gain.value = -0.8; over.connect(duckAmt);
+      const duck = ctx.createGain(); duck.gain.value = 1; duckAmt.connect(duck.gain);
+      talk.disconnect(); talk.connect(duck); duck.connect(out);
+      for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) x.start();
+      this.cab = { out, spk: bp, talk, car, hiss, swell, stop: () => { for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
     }
     const r = this.cab, t = ctx.currentTime;
     r.out.gain.setTargetAtTime(0.09, t, 0.2);
     r.talk.gain.setTargetAtTime(mode === 'talk' ? 0.55 : 0, t, mode === 'talk' ? 0.4 : 0.01);
     r.car.gain.setTargetAtTime(mode === 'carrier' ? 0.22 : 0, t, 0.01);
     r.hiss.gain.setTargetAtTime(mode === 'talk' ? 0.22 : mode === 'carrier' ? 0.08 : 0.35, t, 0.02);
+    r.swell.gain.setTargetAtTime(mode === 'talk' ? 0.5 : 0, t, 0.05);   // the swells only under the morning talk, not in THE EVENT
   }
   /** The cab speaker's input (null when the radio is off): sounds played here come out of it. */
   radioIn(): AudioNode | null { return this.cab?.spk ?? null; }

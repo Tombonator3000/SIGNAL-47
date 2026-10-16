@@ -457,6 +457,12 @@ export class Receiver {
   power = 1;
   /** Seconds of tuning noise left after the dial is turned. */
   private sweep = 0;
+  /** Interference (Tom, 16 October: static now and then, at random, with the wah wah): every
+   *  5 to 20 seconds the static swells over the station for half a second to three, crackling,
+   *  and the station sinks under it, then comes back. */
+  private fuzz = { next: 3 + Math.random() * 8, left: 0, len: 1, depth: 0 };
+  /** How far under the static the station is now, 0..1 (the tests). */
+  interference = 0;
   private n: { sig: GainNode; stat: GainNode; out: GainNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
   private listening: StationId | null = null;
 
@@ -521,8 +527,17 @@ export class Receiver {
     const s = this.live ? st.strength(this.radio.clock, this.radio.time) : 0;
     const carrier = st.seg.kind === 'carrier' || st.seg.kind === 'anthem';
     const tuning = this.sweep > 0 ? 1 : 0;
-    n.sig.gain.setTargetAtTime(this.live ? s * (1 - tuning) * this.power : 0, now, 0.05);
-    n.stat.gain.setTargetAtTime(this.live ? (0.03 + (carrier ? 0.02 : 0.36 * (1 - s)) + tuning * 0.45) * this.power : 0, now, 0.04);
+    // now and then the static comes up over it, crackling, and goes again
+    const z = this.fuzz;
+    if (this.live && s > 0) {
+      if (z.left > 0) z.left = Math.max(0, z.left - dt);
+      else if ((z.next -= dt) <= 0) { z.len = z.left = 0.5 + Math.random() * 2.5; z.depth = 0.4 + Math.random() * 0.6; z.next = 5 + Math.random() * 15; }
+    } else z.left = 0;
+    const k = z.left > 0 ? z.depth * Math.sqrt(Math.sin(Math.PI * (1 - z.left / z.len))) : 0;
+    this.interference = k;
+    const crackle = k > 0 ? 0.5 + Math.random() * 1.1 : 1;
+    n.sig.gain.setTargetAtTime(this.live ? s * (1 - tuning) * (1 - 0.8 * k) * this.power : 0, now, 0.05);
+    n.stat.gain.setTargetAtTime(this.live ? (0.03 + (carrier ? 0.02 : 0.36 * (1 - s)) + tuning * 0.45 + 0.42 * k * crackle) * this.power : 0, now, k > 0 ? 0.015 : 0.04);
     n.out.gain.setTargetAtTime(this.live ? this.o.vol : 0, now, this.live ? 0.08 : 0.15);
     if (this.pos && Number.isFinite(this.pos.x + this.pos.y + this.pos.z)) {
       const p = n.pan as PannerNode & { positionX?: AudioParam };
