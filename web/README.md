@@ -43,7 +43,7 @@ Pages legger spillet i undermappen `/SIGNAL-47/`. Det virker fordi `base: './'` 
 
 PC: WASD for å gå, mus for å se, E eller klikk for å bruke, Tab for journalen (Tasks, Notes, Findings, Papers og Photos; bevisbordet kan legges ut fra Findings), Escape for pause. Med feltkameraet: C hever og senker kameraet, mellomrom, E eller klikk tar bildet, Escape senker det.
 Mobil: venstre tommel går, høyre tommel ser, trykk på ting for å bruke dem. Knappene Use, Notes og pause ligger i hjørnet. Camera-knappen dukker opp når kameraet er hentet. Mens kameraet er hevet, tar et trykk på skjermen eller på Use-knappen bildet.
-Kjøring: W og S gir gass og bremser (S rygger når bilen står), A og D styrer, musa ser seg rundt i førerhuset. På mobil styrer venstre tommel både gass og ratt.
+Kjøring: W og S gir gass og bremser (S rygger når bilen står), A og D styrer, musa ser seg rundt i førerhuset, R slår på bilradioen og går videre til neste stasjon (1420, 1230, 1090, så av), og E går ut når bilen står. På mobil styrer venstre tommel både gass og ratt, og Radio-knappen gjør det R gjør.
 Settings har lydnivå, musikk (eget nivå), blikkfart, invertert blikk opp og ned, synsfelt, større tekst, grafikk (Ultra, High eller Low; Ultra bare på PC) og bilde (Clean, VHS eller Worn VHS), og for slutten: blinkende bilder (Flashes eller Slow fades, også valgbart rett på tittelskjermen) og kameraet i slutten (Moving eller Still shots; Still shots er standard når nettleseren ber om redusert bevegelse). Ultra gjør de tre nærmeste lampene til ekte lys med myke skygger, legger på omgivelsesskygge (GTAO) og ekte glød før båndet, og er standard på PC. I Ultra får de 19 materialflatene også normal- og ruhetskartene fra runde 9 (Codex, PR #51), som lastes først når Ultra slås på. Telefoner har High og Low som før.
 
 ## Lagring
@@ -57,7 +57,8 @@ Alt ligger i nettleseren: lagringene og fotografiene i IndexedDB (fotografiene �
 `?dev` bak adressen slår på utviklermenyen. Den huskes på enheten, og `?dev=0` tar den bort igjen. DEV-knappen øverst på skjermen (eller F2) åpner den:
 - **Start at:** hvert kapittel og noen punkter i prologen, «3 On the highway» og «6 At the line». En kjøring startet her lagres aldri, så den kan ikke skrive over en sak.
 - **Truck:** lastebilen ut på riksveien eller den gamle veien fra der du står, uten historie, og «Back on foot» tilbake dit.
-- **Clock:** +5 og +30 minutter.
+- **Clock:** +5 og +30 minutter, og et stjerneskudd.
+- **Radio:** bilradioen av og på og videre langs skalaen, klokka til 03:59:40 (1420 avslutter med nasjonalsangen) og til 04:59:50 (Roswell starter med den).
 - **Music:** spill hvert av musikkstykkene, eller stopp musikken.
 - **Tools:** fps-visningen av og på.
 

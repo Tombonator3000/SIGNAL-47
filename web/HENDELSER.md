@@ -232,7 +232,9 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 
 **Grafikk som trengs** (Codex eller ChatGPT): silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene i byen og forsiden av Pecos Valley Sentinel.
 
-## 12. Det Tom må avgjøre
+## 12. Det Tom har avgjort
+
+**Tom svarte 16. oktober: ja på alle fire.** Spilleren kan slippe unna i de første sekundene av varselet, alle får minst én bortføring før kapittel 5 (høyst tre i løpet av natten), ansiktet spares til THE EVENT, og bortføringer kan slås av i innstillingene (på som standard). Spørsmålene står under slik de ble stilt.
 
 1. **Komme seg unna:** kan spilleren slippe unna en bortføring i de første sekundene av varselet? Jeg anbefaler ja.
 2. **Minst én:** skal alle få minst én bortføring før kapittel 5, med tilfeldig tid og sted? Jeg anbefaler ja, høyst tre i løpet av natten.
@@ -240,3 +242,5 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 4. **Av-bryter:** skal bortføringer kunne slås av i innstillingene? Jeg anbefaler ja, på som standard.
 
 Fakta som er fra hukommelsen og må sjekkes før de står i spillet: når Roswell-historien fikk nytt liv (rundt 1978 til 1980), når turismen kom (tidlig på 1990-tallet), at *missing time* var et kjent uttrykk tidlig på 1980-tallet, og at små AM-stasjoner tok farvel med nasjonalsangen.
+
+**Radioen er bygd (16. oktober, Tom: «la bilradioen virke», og nasjonalsangen på radioene).** Bilradioen har tre stasjoner (`core/radio.ts`): 1420, Caliches egen Night Line, som avslutter klokka 04:00 med nasjonalsangen; 1230 fra Roswell, som starter klokka 05:00 med den; og 1090, en stasjon langt borte som kommer og går i suset. Radioen bak disken i dineren spiller den stasjonen som er på lufta. Stemmene er pratelyder som de voksne i Peanuts (Tom: litt tegneserieaktig, men det passer det surrealistiske), og teksten viser hva de sier. Stasjonene er oppdiktet og sier aldri noe kallesignal, så de kan ikke forveksles med ekte stasjoner.
