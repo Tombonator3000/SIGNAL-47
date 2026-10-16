@@ -17,6 +17,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Lastebilen når som helst (15. oktober kveld): fra kapittel 1 tilbyr bilen en egen tur der den står, og den blir stående på plassen den stoppes på. Kjetting i gangåpningen ved STATION 01 til kapittel 3, ROAD CLOSED ved milestolpe 0 til kapittel 5 sender bilen ut (`tools/roam.py`).
 - [ ] Tom prøver å kjøre selv mellom SARO, dineren og STATION 01 i kapittel 1 og 2: finner han plassene å stoppe på, og er det tydelig nok at stasjonen og den gamle veien er stengt ennå?
 - [x] Lommelykt (F, Light på telefon; ligger på passasjersetet i bilen) og høyreklikk for zoom og undersøk (Zoom på telefon), 15. oktober kveld. Undersøk-tekst finnes foreløpig på lastebilen, den lenkede gangåpningen og ROAD CLOSED-sperringen; flere ting får tekst etter hvert.
+- [x] 16. oktober: svart firkant og grafiske feil på RTX 3080 (NaN gjennom bloom), stjerneskudd, gå ut av bilen der den står, naturlyden nesten borte innendørs, nye fotlyder (Kenney, CC0).
+- [ ] Tom prøver på RTX 3080 (Ultra): er den svarte firkanten borte? Hvis det fortsatt er grafiske feil: et skjermbilde og hvor i spillet, og om det er på Ultra eller High.
+- [ ] Tom hører på de nye fotlydene og lyden innendørs på ekte høyttalere (UNVERIFIED her).
 - [ ] Flere ting med undersøk-tekst (`examine`): antennene, skiltene, dokumentene på pultene, motellet. Lommelykta flimrer nær hendelsene når de kommer (`Flashlight.flicker`).
 - [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
 - [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
