@@ -65,14 +65,14 @@ async def main():
         # ---------- on foot: from SARO's west side down the shoulder ----------
         await ev("S47.player.place(-24, 20, Math.PI); S47.player.pitch = -0.03; S47.tick(0.2)")
         await shot('m01_from_saro_south')
-        ok = await walk([[-32.5, 40]])
+        ok = await walk([[-30.5, 40]])
         check(ok[0], f'onto the west shoulder at SARO ({ok})')
         bad, worst, n = [], 0.0, 0
         for z in range(90, 640, 50):
-            ok = await walk([[-32.5, z]])
+            ok = await walk([[-30.5, z]])
             if not ok[0]: bad.append(('stuck', z, ok)); break
             fy = await ev("S47.player.floorY")
-            gy = await ev(f"{GROUND}(-32.5, {z})")
+            gy = await ev(f"{GROUND}(-30.5, {z})")
             n += 1
             if gy is None or abs(fy - gy) > 0.12: bad.append((z, round(fy, 3), gy))
             elif abs(fy - gy) > worst: worst = abs(fy - gy)
@@ -83,7 +83,7 @@ async def main():
         await ev("S47.player.yaw = Math.PI - 0.25; S47.player.pitch = -0.04; S47.tick(0.2)")
         await shot('m03_motel_ahead')
         lot = [A['x'] - 33, A['z'] + 8]
-        ok = await walk([[-32.5, A['z'] - 4], lot])
+        ok = await walk([[-30.5, A['z'] - 4], lot])
         fy = await ev("S47.player.floorY")
         check(ok[0] and abs(fy - A['y']) < 0.02, f"onto the motel's lot ({ok}, floor {fy:.2f}, lot {A['y']:.2f})")
         place, surf = await ev("S47.placeName()"), await ev("S47.surface()")
@@ -112,19 +112,19 @@ async def main():
         await ev("document.querySelector('.notebook .close')?.click()"); await tick(0.2)
 
         # ---------- on the way (core/roadside.ts): the silence, the car, the roof ----------
-        await ev("S47.player.place(-32.5, 120, Math.PI); S47.tick(0.3)")
-        await ev("window.__steps = 0; const st = S47.audio.step.bind(S47.audio); S47.audio.step = (k) => { window.__steps++; return st(k); }")
+        await ev("S47.player.place(-30.5, 120, Math.PI); S47.tick(0.3)")
+        await ev("window.__steps = 0; const st = S47.audio.step.bind(S47.audio); S47.audio.step = (k) => { window.__steps++; return st(k); }; 0")
         started = None
         for z in range(130, 400, 10):
-            await walk([[-32.5, z]]); await tick(0.1)
+            await walk([[-30.5, z]]); await tick(0.1)
             if await ev("S47.roadside.silent"): started = z; break
         check(started is not None and started > 250, f'down the shoulder the night goes silent (at site z {started})')
         await ev("window.__steps = 0")
-        await walk([[-32.5, (started or 300) + 8]])
+        await walk([[-30.5, (started or 300) + 8]])
         check(await ev("window.__steps") == 0, 'in the silence the footsteps make no sound')
         await tick(48)
         check(not await ev("S47.roadside.silent") and await ev("S47.game.notes.some((n) => n.includes('No sound for 47 s'))"), 'after 47 s the sound comes back, and it is in the notebook')
-        await walk([[-32.5, (started or 300) + 16]])
+        await walk([[-30.5, (started or 300) + 16]])
         check(await ev("window.__steps") > 0, 'and the footsteps are heard again')
         await ev("S47.roadside.carNow(S47.player.pos)"); await tick(3)
         c0 = await ev("S47.roadside.carState")
@@ -135,7 +135,7 @@ async def main():
         check(c0 and c1 and c0['state'] == 'come' and c1['z'] < c0['z'] - 80 and c1['z'] > 1500, f'headlights far down the highway coming north ({c0}, {c1})')
         await tick(50)
         check(await ev("S47.roadside.carState") is None, 'they stop a long way off and go out; nothing arrives')
-        await walk([[-32.5, A['z'] - 100]])
+        await walk([[-30.5, A['z'] - 100]])
         await ev("S47.player.yaw = 0; S47.player.pitch = 0; S47.tick(0.1)")     # looking back north
         await ev("S47.roadside.roofNow()"); await tick(0.2)
         check(await ev("S47.roadside.roofUp"), 'someone on the motel roof while the player looks the other way')

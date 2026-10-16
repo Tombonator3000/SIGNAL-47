@@ -93,7 +93,7 @@ async def main():
         check('DOWN THE HIGHWAY TO ROOM 6' in await objective(), 'objective: down the highway to room 6')
         # 650 m down the shoulder, on the real ground (a waypoint every 100 m)
         A = await ev("S47.world.motel.at")
-        ok = await walk([[-32.5, z] for z in range(40, int(A['z']) - 40, 100)] + [[-32.5, A['z'] - 4], [A['x'] - 33.0, A['z'] + 8.0]])
+        ok = await walk([[-30.5, z] for z in range(40, int(A['z']) - 40, 100)] + [[-30.5, A['z'] - 4], [A['x'] - 33.0, A['z'] + 8.0]])
         fy = await ev("S47.player.floorY")
         check(ok[0] and abs(fy - A['y']) < 0.05, f'down the shoulder and onto the motel lot ({ok[1]:.1f}, {ok[2]:.1f}, floor {fy:.2f})')
         # the office first: Nora's note on the counter (world/MotelFront.ts)
