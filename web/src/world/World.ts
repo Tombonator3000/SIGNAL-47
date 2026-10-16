@@ -949,5 +949,8 @@ export class World {
     if (this.engine) { this.engine.set(D.rpm, D.load); this.engine.tyres(D.surface.kind, Math.abs(D.speed)); }
     this.dashT -= dt;
     if (this.dashT <= 0) { this.dashT = 0.1; N.truck.setDash({ mph: D.mph, rpm: D.rpm, clock: this.d.clock(), fuel: id === 'roswell' ? 0.55 : 0.62 }); }
+    // a camera that has left the cab sees the whole truck in this very frame
+    this.d.camera.updateMatrixWorld();
+    N.truck.viewFrom(this.d.camera);
   }
 }
