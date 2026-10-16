@@ -705,6 +705,25 @@ async function boot() {
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score,
+    // tests: the scene as the lights leave it, before the tape: how many colour values would not
+    // fit the half-float targets the picture is drawn into (over 65504, or not a number at all),
+    // and the brightest one (a 32-bit float target at a quarter of the size)
+    hdrStats: () => {
+      const s = renderer.getDrawingBufferSize(new THREE.Vector2());
+      const rt = new THREE.WebGLRenderTarget(s.x >> 1, s.y >> 1, { type: THREE.FloatType });
+      renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null);
+      const px = new Float32Array(rt.width * rt.height * 4);
+      renderer.readRenderTargetPixels(rt, 0, 0, rt.width, rt.height, px);
+      rt.dispose();
+      let over = 0, max = 0, at = -1;
+      for (let i = 0; i < px.length; i += 4) for (let k = 0; k < 3; k++) {
+        const v = px[i + k];
+        if (!(v <= 65504)) over++; else if (v > max) { max = v; at = i / 4; }
+      }
+      // where the brightest is, from the top left in screen fractions
+      return { over, max, x: (at % rt.width) / rt.width, y: 1 - Math.floor(at / rt.width) / rt.height, w: rt.width, h: rt.height };
+    },
+    three: THREE,
     // true once a started or loaded night is running (tests wait for it after Continue)
     started: () => caseId > 0 && !starting && mode === 'play',
   };
