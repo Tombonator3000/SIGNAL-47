@@ -6,15 +6,17 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).
 
-1. [ ] **Radioen og lydene i mørket** ferdig testet, flettet og ute på Pages (testrekka går).
+1. [x] **Radioen og lydene i mørket** flettet og ute på Pages (Tom flettet PR #91 og #92 selv; resten av testrekka går nå på main).
 2. [x] **Musikk i bakgrunnen hele tiden** (bygget 16. oktober kveld, testes), stille og nesten i loop, valgt etter sted: rolige flater og minimalistiske mønstre ute og inne på SARO, noir-jazz i dineren og byen. Lisens lest på hver kilde (16. oktober): Chris Zabriskie «Cylinders» (CC BY 4.0, chriszabriskie.com), Kevin MacLeod (CC BY 4.0, incompetech.com), Shane Ivers «Signs To Nowhere» (CC BY 4.0, silvermansound.com), og Scott Buckley som før. Badalamenti og Lynch selv er beskyttet og kan ikke brukes; dette er åpen musikk i samme ånd.
 3. [x] **Kart over stedet** i notatboka (bygget 16. oktober kveld, M): SARO, motellet, dineren, byen, STATION 01 og den gamle veien, med «du er her» og merkene fra hendelsene senere (`HENDELSER.md` punkt 10).
 4. [x] **Inventar** (bygget 16. oktober kveld, fanen Kit, I): det spilleren bærer (lommelykta, feltkameraet, nøkler, fotografier, papirer), egen fane eller tast.
 5. [ ] **Ansiktsportretter**: bestillingen til ChatGPT står i `ART_BRIEF.md`, runde 13. Når bildene kommer: portrett i samtalepanelene og en fane med folk i notatboka.
-6. [x] **Motellet 650 m sør** langs riksveien (bygget 16. oktober kveld, lokalt i `motel-wip`, testes etter radio- og musikkrunden): i SAROs område, gangbar veiskulder, bilen kan stå på plassen, kapittel 4 og 5 skrevet om, `tools/motel.py`.
+6. [x] **Motellet 650 m sør** langs riksveien (flettet 16. oktober kveld i PR #93 på Toms ord, før hele testrekka; den går nå på main): i SAROs område, gangbar veiskulder, bilen kan stå på plassen, kapittel 4 og 5 skrevet om, `tools/motel.py`.
 7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der.
 
 ## Forbedringene Tom sa ja til 16. oktober kveld («kjør på», `FORSLAG.md`)
+
+- [x] Lyden som falt ut (Tom 16. oktober): suset over radioen sjeldnere og mildere, større lydbuffere, `tools/soundcheck.py`. Tom hører om det er borte (UNVERIFIED på ekte høyttalere).
 
 - [x] Volum for radioene i pausemenyen (musikk hadde egen glider fra før). Testes i `radio.py`.
 - [x] Notatbokkartet tegnet slik stedene ligger (STATION 01 vest for riksveien). Se bildet fra `motel.py`.
