@@ -4,6 +4,23 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## Forbedringer, 16. oktober kveld (Tom spurte)
+
+Det jeg tror gir mest for innsatsen står øverst. Ingenting her er bygget.
+
+1. **Volum per kanal.** Det finnes bare ett volum. Musikken går nå nesten hele tiden, og radioen, lydene i mørket og motoren kjemper om plassen. Egne glidere for musikk, radio og lyder i pausemenyen, lagret i innstillingene. Liten jobb.
+2. **Gjør veien til motellet til et sted.** 650 m til fots er rundt seks minutter langs mørk asfalt. Steg 0 av hendelsesregissøren (`HENDELSER.md`) passer akkurat her: stillheten som faller, lommelykta som hakker, ett glimt ute på sletta, telefonlinja som summer, et billys langt i sør som aldri kommer fram. Det er også den billigste prøven på retning A før byen bygges.
+3. **Notatbokkartet viser feil side.** Servicekartet (E14) har STATION 01 øst for riksveien, men i spillet ligger stasjonen 600 m vest. Kartoppgaven i dineren bygger på servicekartet, så det bør stå. Notatbokkartet med krysset der spilleren er, viser nå at man kjører østover når man kjører vestover. Forslag: notatbokkartet tegnes etter verden slik den er (spilleren tegner fra hukommelsen), servicekartet beholdes.
+4. **CB-radioen i bilen.** Den er modellert, men gjør ingenting. Nora kan kalle opp på den mens spilleren kjører til motellet i kapittel 4, og senere andre, med mumling og tekst som bilradioen. Det gir kjøreturene innhold uten nye områder.
+5. **En lydside i utviklermenyen.** Mye er UNVERIFIED på ekte høyttalere (radioen, nasjonalsangen, lydene i mørket, motoren, musikken). En side som spiller hver lyd etter tur med knappene «for høyt», «for lavt» og «bra», og lagrer svarene, gjør det raskt for Tom å sjekke alt på en gang og gir meg noe konkret å justere etter.
+6. **Raskere testrunde.** Hele leveranselista tar nå tre til fire timer. En kort runde på 15 til 20 minutter (prologen, én kjøretur, motellet, radioen, lagring) for små endringer, og hele lista før hver PR, gir hyppigere leveranser.
+7. **Lastebilen lagres der den står.** Nå lagres bare stedet (SARO, motellet, stasjonen, dineren). Står den på veiskulderen, er den tilbake på SARO etter lasting.
+8. **Hint første gang.** Det er mange taster nå (E, F, R, M, I, C, Tab, høyre musknapp). En kontrollside i notatboka, og hvert hint bare første gang det gjelder, i stedet for lange meldinger hver gang.
+9. **Mobil.** SAROs område har nå motellet og 800 m vei i tillegg. Må måles på ekte telefon med `?debug`. Faller det, kan motellets detaljer skjules langt unna (bare masse og lys).
+10. **Caliche, steg 1** når steg 0 er prøvd: én gate ved dineren med noen opplyste vinduer, bensinstasjonen og telefonautomaten, før folka.
+
+Min anbefaling: 1 og 3 først (små og tydelige), så 2 og 4 sammen, fordi de begge gjør veien mellom stedene levende.
+
 ## Et sted der rare ting skjer: døgn, en søvnig småby, Roswell og Twin Peaks (16. oktober)
 
 Tom 16. oktober: gjøre SIGNAL / 47 mer til et knutepunkt der merkelige ting skjer, med døgnsyklus, en liten søvnig småby og tilfeldige skumle ting. Tenk Roswell-romvesener og Twin Peaks. Han ba om forslag. Ingenting under er bygd eller avgjort.
