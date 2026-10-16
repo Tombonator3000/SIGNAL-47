@@ -69,7 +69,7 @@ async def main():
                 info = await pg.evaluate('({calls:S47.renderer.info.render.calls,triangles:S47.renderer.info.render.triangles,textures:S47.renderer.info.memory.textures})')
                 views.append(dict(view=name, quality=q, **info))
             # Diagnostic exterior camera, separate from the walkable player route.
-            await pg.evaluate("S47.camera.position.set(-18,3,18); S47.camera.lookAt(-30.4,5.8,30.2); S47.camera.updateMatrixWorld(); S47.renderer.render(S47.scene,S47.camera)")
+            await pg.evaluate("(()=>{const a=S47.world.motel.at; S47.camera.position.set(-18+a.x,3+a.y,18+a.z); S47.camera.lookAt(-30.4+a.x,5.8+a.y,30.2+a.z); S47.camera.updateMatrixWorld(); S47.renderer.render(S47.scene,S47.camera)})()")
             await pg.screenshot(path=str(OUT / f'motel-{q}.png'))
         checks.append(('High/Low reuse identical texture maps', maps_by_quality[0] == maps_by_quality[1]))
         checks.append(('room draw calls at most 300', all(v['calls'] <= 300 for v in views if v['view'] in ('desk', 'room', 'window'))))

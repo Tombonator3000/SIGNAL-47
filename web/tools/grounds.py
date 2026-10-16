@@ -64,8 +64,11 @@ async def main():
         heights = [((0, 0), 0, 'the control room'), ((9.5, -10), 0, 'the east walk'), ((9.8, 8), 0, 'the truck pad'),
                    ((9.8, 14.5), -0.3, 'half way down the truck ramp'), ((9.8, 18), -0.6, 'the foot of the ramp'),
                    ((-4, 24.5), -0.6, 'the service road'), ((-9, -10), -0.6, 'the west side'), ((3, -12), -0.6, 'the windows side'),
-                   ((7.55, -12), -0.27, 'the middle of the steps'), ((-9.1, 5.7), -0.3, 'half way up the fire exit ramp'), ((-35, 30), 0, "the motel's lot"),
-                   ((-27.0, 6), -0.28, "the motel's driveway"), ((30, 20), -0.6, 'south of the east wing')]
+                   ((7.55, -12), -0.27, 'the middle of the steps'), ((-9.1, 5.7), -0.3, 'half way up the fire exit ramp'),
+                   ((-31, 6), -0.6, 'the open ground west of the highway'), ((30, 20), -0.6, 'south of the east wing')]
+        # Sierra Motor Court, 650 m down the highway (geo.ts, MOTEL_AT): its lot, level with its floors
+        A = await ev("S47.world.motel.at")
+        heights.append(((A['x'] - 35, A['z'] + 30), A['y'], "the motel's lot"))
         bad = []
         for (x, z), want, what in heights:
             y = await floor_at(x, z)

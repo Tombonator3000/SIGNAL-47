@@ -3,20 +3,19 @@ import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood } fro
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
-import { courtFlood } from './MotelFront';
+import { MOTEL_RECT } from './geo';
 
-// Chapter four: the way from SARO across the road to Sierra Motor Court. Part of SARO's
-// scene. The corridor's fire exit (Annex.ts) opens onto a concrete step; a ramp goes
-// down to the ground, a worn path runs west to the highway, and on the far side a short
-// driveway ramp climbs to the motel's lot (world/MotelFront.ts, by Codex), which is level
-// with SARO's floors. The ground out here is 0.6 m lower, so this file also gives the
-// player the height of the ground (floorAt).
+// Chapter four: the way from SARO down the highway to Sierra Motor Court. Part of SARO's
+// scene. The corridor's fire exit (Annex.ts) opens onto a concrete step; a ramp goes down
+// to the ground, and a worn path runs west to the highway. From there the highway goes south,
+// 650 m on its shoulder to the motel's lot (world/MotelFront.ts, by Codex, moved there: Tom,
+// 15 and 16 October, further from the stations). The ground at SARO is 0.6 m below the floors;
+// south of the site it is the road's land (Grounds.floorAt has the heights).
 //
 //   x -7.6 to -6.3      the step outside the fire exit (floor level)
 //   x -10.6 to -7.6     the ramp down (z 5.05 to 6.35)
-//   x -27.7 to -10      the open ground and the highway (x -28 to -20), 0.6 m down
-//   x -27.7 to -26.2    the driveway ramp up to the lot (z 2 to 10)
-//   x below -27.7       the motel's lot, walk and office (MotelFront's own zones)
+//   x -33.5 to -6.75    the open ground and the highway (x -28 to -20), 0.6 m down
+//   x -33.5 to -15      the highway and its shoulders south to the motel (z 30 to 725)
 
 export type Anchor = { x: number; z: number; yaw: number };
 export interface CourtSite {
@@ -28,8 +27,9 @@ export interface CourtSite {
 
 export const GROUND = -0.6;
 export const RAMP = { x0: -10.6, x1: -7.6, z0: 5.05, z1: 6.35 };
-export const DRIVE = { x0: -27.7, x1: -26.2, z0: 2, z1: 10 };   // the driveway ramp up to the lot
-const CURB_TO = -26.5;   // the driveway's side curbs end here, where it is 0.12 m above the ground
+/** The open ground west of SARO, and the way down the highway to the motel (site). */
+export const WEST = { x0: -33.5, x1: -6.75, z0: -19.55, z1: 64 };
+export const SHOULDER = { x0: -33.5, x1: -15, z0: 30, z1: MOTEL_RECT.maxZ + 4 };
 
 export class Crossing {
   group = new THREE.Group();
@@ -43,41 +43,38 @@ export class Crossing {
     this.group.add(st);
     this.step(st);
     this.path(st);
-    this.driveway(st);
     mergeStatic(st);
 
     this.addZone('stoop', -7.75, -6.0, 4.75, 6.65);
     this.addZone('ramp', -10.9, -7.0, RAMP.z0, RAMP.z1);
-    // the open ground between SARO and the lot (the lot's edge is a 0.6 m step: the
-    // driveway ramp is the way up), and the ramp itself, overlapping both. It runs up to
-    // the control room's plinth and north to the array fence; the rest of SARO's ground
-    // is in Grounds.ts. The ramp's rails and the step's open sides are walls from below.
-    this.addZone('west', -27.7, -6.75, -19.55, 64);
+    // the open ground west of SARO and the highway, and the ramp itself, overlapping both. It
+    // runs up to the control room's plinth and north to the array fence; the rest of SARO's
+    // ground is in Grounds.ts. The ramp's rails and the step's open sides are walls from below.
+    this.addZone('west', WEST.x0, WEST.x1, WEST.z0, WEST.z1);
     this.col(RAMP.x0 + 0.05, -6.6, 4.7, RAMP.z0 - 0.05);
     this.col(RAMP.x0 + 0.05, -6.6, RAMP.z1 + 0.05, 6.7);
-    this.addZone('driveway', -28.6, -25.9, DRIVE.z0 + 0.5, DRIVE.z1 - 0.5);
-    // the driveway's sides are walls where it stands more than a step above the ground
-    // (tools/reachcheck.py found the player could walk off and on them, 0.14 to 0.44 m);
-    // the low end, where it meets the ground, stays open from the sides
-    this.col(DRIVE.x0 - 0.05, CURB_TO, DRIVE.z0 - 0.1, DRIVE.z0);
-    this.col(DRIVE.x0 - 0.05, CURB_TO, DRIVE.z1, DRIVE.z1 + 0.1);
+    // south down the highway to the motel: the road, its shoulders and a little of the verge
+    // either side (no fences here; the right-of-way fence is 21 m out). It overlaps the
+    // motel's lot (MotelFront's own zones) at the south end.
+    this.addZone('shoulder', SHOULDER.x0, SHOULDER.x1, SHOULDER.z0, SHOULDER.z1);
     // the road lamps
     const post = (x: number, z: number, r = 0.25) => this.col(x - r, x + r, z - r, z + r);
     post(-18.5, 36); post(-18.5, 2);
   }
 
-  /** Height of the ground along the walk to the motel (the rails here use it). The
-   *  player's floor in SARO's scene is Grounds.floorAt, which includes these ramps. */
+  /** Height of the ground by the fire exit's step and ramp (the rails here use it). The
+   *  player's floor in SARO's scene is Grounds.floorAt, which includes the ramp. */
   floorAt = (x: number, z: number) => {
     if (x > RAMP.x1) return 0;
-    if (x <= DRIVE.x0) return 0;                                   // the motel's lot
-    if (x < DRIVE.x1 && z > DRIVE.z0 && z < DRIVE.z1) return GROUND * (x - DRIVE.x0) / (DRIVE.x1 - DRIVE.x0);
     if (x >= RAMP.x0 && z > RAMP.z0 - 0.1 && z < RAMP.z1 + 0.1) return GROUND * (RAMP.x1 - x) / (RAMP.x1 - RAMP.x0);
     return GROUND;
   };
-  /** Out on the west side (for the sound of the space and the place name of a save). */
-  outside(p: THREE.Vector3) { return p.x < -6.3 && p.x > -41.2 && p.z > -5 && p.z < 71; }
-  atMotel(p: THREE.Vector3) { return p.x < -27.7; }
+  /** Out on the west side, the highway or the motel's front (for the sound of the space and
+   *  the place name of a save). */
+  outside(p: THREE.Vector3) { return p.x < -6.3 && p.x > MOTEL_RECT.minX && p.z > -5 && p.z < SHOULDER.z1; }
+  atMotel(p: THREE.Vector3) { return p.x >= MOTEL_RECT.minX && p.x <= MOTEL_RECT.maxX + 1 && p.z >= MOTEL_RECT.minZ - 4 && p.z <= MOTEL_RECT.maxZ + 4; }
+  /** Out on the highway south of SARO, on the way to the motel. */
+  onHighway(p: THREE.Vector3) { return p.z > WEST.z1 - 20 && p.x > SHOULDER.x0 && p.x < SHOULDER.x1 && !this.atMotel(p); }
 
   private addZone(id: string, minX: number, maxX: number, minZ: number, maxZ: number) {
     const z: Zone = { id, minX, maxX, minZ, maxZ, enabled: true };
@@ -116,25 +113,5 @@ export class Crossing {
   private path(st: THREE.Group) {
     const earth = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [9.4 / 4, 1.6 / 4]), color: 0xc9b9a0, roughness: 1 }), 0.012);
     plane(st, 9.4, 1.6, earth, -15.3, GROUND - 0.008, 5.7, 0, -Math.PI / 2);
-  }
-
-  // ---------- the driveway ramp up to the motel's lot ----------
-  private driveway(st: THREE.Group) {
-    const shape = new THREE.Shape();
-    shape.moveTo(DRIVE.x1, GROUND + 0.02); shape.lineTo(DRIVE.x0, 0); shape.lineTo(DRIVE.x0, GROUND - 0.02); shape.closePath();
-    // the lot's own asphalt under the lot's own lights, so the ramp reads as part of it
-    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('asphalt', [0.2, 0.2]), color: 0xe2d6c2, roughness: 0.95 }), 0.055, courtFlood);
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: DRIVE.z1 - DRIVE.z0, bevelEnabled: false });
-    const uv = geo.attributes.uv, pos = geo.attributes.position;
-    for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getZ(i), pos.getX(i) + pos.getY(i));   // metres, as the lot
-    const wedge = new THREE.Mesh(geo, asphalt);
-    wedge.position.z = DRIVE.z0;
-    st.add(wedge);
-    // a low concrete curb along each side, as high as the colliders reach
-    const len = Math.hypot(DRIVE.x1 - DRIVE.x0, GROUND), slope = Math.atan2(-GROUND, DRIVE.x1 - DRIVE.x0);
-    for (const z of [DRIVE.z0 - 0.05, DRIVE.z1 + 0.05]) {
-      const curb = box(st, len, 0.12, 0.1, M.concrete, (DRIVE.x0 + DRIVE.x1) / 2, GROUND / 2 + 0.06, z);
-      curb.rotation.z = -slope;
-    }
   }
 }

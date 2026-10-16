@@ -11,8 +11,20 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 3. [x] **Kart over stedet** i notatboka (bygget 16. oktober kveld, M): SARO, motellet, dineren, byen, STATION 01 og den gamle veien, med «du er her» og merkene fra hendelsene senere (`HENDELSER.md` punkt 10).
 4. [x] **Inventar** (bygget 16. oktober kveld, fanen Kit, I): det spilleren bærer (lommelykta, feltkameraet, nøkler, fotografier, papirer), egen fane eller tast.
 5. [ ] **Ansiktsportretter**: bestillingen til ChatGPT står i `ART_BRIEF.md`, runde 13. Når bildene kommer: portrett i samtalepanelene og en fane med folk i notatboka.
-6. [ ] **Motellet rundt 700 m sør** langs riksveien (avgjort 15. oktober), med gangbar veiskulder og kapittel 4 skrevet om.
+6. [x] **Motellet 650 m sør** langs riksveien (bygget 16. oktober kveld, lokalt i `motel-wip`, testes etter radio- og musikkrunden): i SAROs område, gangbar veiskulder, bilen kan stå på plassen, kapittel 4 og 5 skrevet om, `tools/motel.py`.
 7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der.
+
+## Forbedringene Tom sa ja til 16. oktober kveld («kjør på», `FORSLAG.md`)
+
+- [x] Volum for radioene i pausemenyen (musikk hadde egen glider fra før). Testes i `radio.py`.
+- [x] Notatbokkartet tegnet slik stedene ligger (STATION 01 vest for riksveien). Se bildet fra `motel.py`.
+- [x] Veien til motellet: telefonlinja, billys langt borte, stillheten i 47 s, noen på taket (`core/roadside.ts`). Testes i `motel.py`.
+- [x] CB-radioen: Nora kaller opp bilen i kapittel 4 (`core/cb.ts`). Testes i `motel.py`.
+- [ ] Tom hører på stillheten, telefonlinja og CB-stemmen på ekte høyttalere, og sier om glimtet på taket er for lett eller for vanskelig å få øye på.
+- [ ] En lydside i utviklermenyen der Tom kan svare «for høyt / for lavt / bra» på hver lyd.
+- [ ] En kort testrunde (15 til 20 minutter) for små endringer.
+- [ ] Lastebilens nøyaktige plass i lagringen (nå: SARO, motellet, stasjonen eller dineren).
+- [ ] Hint bare første gang, og en kontrollside i notatboka.
 
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 

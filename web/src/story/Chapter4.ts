@@ -15,8 +15,9 @@ import { artUrl } from '../core/art';
 import { WalkieSound } from '../core/walkie';
 
 // Chapter four, "Room 6" (K4 in the design bible). N. Vega is waiting in room 6 at Sierra
-// Motor Court, across the highway from SARO. The player walks there from the fire exit at
-// the end of the south corridor (world/Crossing.ts) and shows her the evidence.
+// Motor Court, 650 m down the highway south of SARO (Tom, 15 and 16 October: further from the
+// stations). The player drives there in the truck, or walks: out of the fire exit at the end
+// of the south corridor and down the highway's shoulder (world/Crossing.ts). Then the evidence.
 //   P10  Do tonight's prints carry the same mark as 1947? The two B-12 prints and the
 //        original record on the table, and which source the player removed for the control.
 //   P11  Why did she rewrite the record? Three parts in any order, each with something
@@ -46,6 +47,8 @@ export interface Ch4State {
   told: boolean;
   read: Record<Paper, boolean>;
   seen: { photo: boolean; window: boolean };
+  /** Nora has called the truck on the CB (saves from before 16 October have none). */
+  cb?: boolean;
 }
 
 // What chapter four needs from the places (main.ts and world/World.ts).
@@ -56,6 +59,12 @@ export interface Motel {
   goIn(): void;
   goOut(): void;
   brick(): THREE.Object3D | null;
+  /** The truck to the motel's lot (World.driveToMotel). */
+  driveTo(): void;
+  /** Seconds the truck has been driven on this trip, or null when nobody is driving it. */
+  driven(): number | null;
+  /** A call on the truck's CB (core/cb.ts); false if it could not be made now. */
+  cb(lines: { text: string; who: 'woman'; by: string }[], onEnd: () => void): boolean;
 }
 
 export interface Chapter4Host {
@@ -144,8 +153,8 @@ export class Chapter4 {
     this.bindCourt();
     this.applyWorld();
     if (!saved) {
-      this.g.note(`${this.time()}. N. Vega is in room 6 at Sierra Motor Court, across the highway west of SARO. She wants the original record and the prints. The fire exit at the west end of the south corridor is the short way.`);
-      this.d.ui.toast('Room 6 is across the road. The fire exit at the end of the south corridor is the short way.', 4.4);
+      this.g.note(`${this.time()}. N. Vega is in room 6 at Sierra Motor Court, 650 metres down the highway south of SARO, on the right. She wants the original record and the prints. The truck is on its pad; on foot it is the fire exit at the west end of the south corridor, and the shoulder.`);
+      this.d.ui.toast('Room 6 is at Sierra Motor Court, down the highway south. Take the truck, or walk the shoulder from the fire exit.', 4.6);
     }
     this.d.save();
   }
@@ -200,8 +209,8 @@ export class Chapter4 {
     const room = this.inRoom();
     switch (s.stage) {
       case 'to-motel':
-        if (!this.d.doors.isOpen('exit') && this.d.motel.area() === 'saro') return 'SIERRA MOTOR COURT // ROOM 6 IS ACROSS THE ROAD. THE FIRE EXIT IS AT THE END OF THE SOUTH CORRIDOR';
-        return 'SIERRA MOTOR COURT // CROSS THE ROAD TO ROOM 6';
+        if (!this.d.doors.isOpen('exit') && this.d.motel.area() === 'saro') return 'SIERRA MOTOR COURT // ROOM 6, DOWN THE HIGHWAY SOUTH. THE TRUCK, OR THE FIRE EXIT AT THE END OF THE SOUTH CORRIDOR';
+        return 'SIERRA MOTOR COURT // DOWN THE HIGHWAY TO ROOM 6, THE LIT SIGN ON THE RIGHT';
       case 'room':
         if (!room) return 'SIERRA MOTOR COURT // N. VEGA IS STILL WAITING IN ROOM 6';
         if (!s.greeted) return 'ROOM 6 // N. VEGA IS WAITING AT THE TABLE';
@@ -237,6 +246,14 @@ export class Chapter4 {
   private setLeaf(k: number) {
     const leaf = this.d.motel.court().objs.room6DoorLeaf;
     if (leaf) leaf.rotation.y = k * Math.PI / 2;
+  }
+
+  // ---------- the truck ----------
+  /** This chapter's drive (main.ts asks it, World.truckChoice): down the highway to the motel,
+   *  until the player has been to room 6, from wherever the truck stands but the motel's lot. */
+  truckTrip(at: string | null): { label: string; use: () => void } | null {
+    if (!this.active || this.s.stage !== 'to-motel' || at === 'motel') return null;
+    return { label: 'Drive to Sierra Motor Court', use: () => this.d.motel.driveTo() };
   }
 
   // ---------- the fire exit ----------
@@ -430,7 +447,7 @@ export class Chapter4 {
     if (what === 'photo') {
       ui.toast('Two people at a transit on a concrete pier, squinting into the sun. On the back, in pencil: N. and T., STATION 01, June 1947.', 5);
       if (first) this.g.note('A framed snapshot on the dresser: N. and T. Vega at the transit at STATION 01, June 1947.');
-    } else ui.toast('Through the gap in the curtains: the Sierra sign, red and cyan, and the lights of SARO across the road.', 4);
+    } else ui.toast('Through the gap in the curtains: the Sierra sign, red and cyan, and far up the road the lights of SARO.', 4);
     if (first) this.save();
   }
 
@@ -456,7 +473,7 @@ export class Chapter4 {
       s.greeted = true;
       this.mode = 'table';
       this.lines = [
-        n('So you came across the road.'),
+        n('So you came down the road.'),
         n('Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.'),
       ];
       this.save();
@@ -815,6 +832,21 @@ export class Chapter4 {
   // ---------- per frame ----------
   update(_dt: number, _t: number) {
     if (!this.active) return;
+    // on the way down the highway in the truck, Nora calls it on the CB (Tom's improvements,
+    // 16 October: the CB did nothing). Once; it is in the notebook after.
+    const driven = this.d.motel.driven();
+    if (this.s.stage === 'to-motel' && !this.s.cb && driven !== null && driven > 9) {
+      const by = 'N. VEGA';
+      const ok = this.d.motel.cb([
+        { text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by },
+        { text: 'Pull in at the north end, by the office. Not down past the rooms.', who: 'woman', by },
+        { text: 'Room six. The door is open. Bring the prints.', who: 'woman', by },
+      ], () => {
+        this.g.note(`${this.time()}. N. Vega on the truck's CB, on the way down the highway: pull in by the office, room six, the door is open, bring the prints.`);
+        this.save();
+      });
+      if (ok) this.s.cb = true;
+    }
     // N. Vega turns her head to whoever is in the room with her
     const room = this.d.motel.room();
     const head = room?.objs.noraHead;

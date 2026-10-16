@@ -3,10 +3,10 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
-import { roadFlood, HEADLIGHT_SLOTS, retroBeam, roadMaterials, type Build, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed } from './roadProps';
-import { station, ranch, plants, saroLights, trackRoute } from './roadPlaces';
+import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed } from './roadProps';
+import { station, ranch, plants, saroLights, motelFar, trackRoute } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
-import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, smooth, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
+import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
 
 export { roadFlood, HEADLIGHT_SLOTS };
@@ -27,11 +27,11 @@ const SURF = {
   asphalt: S('asphalt', 1, 30, 0.05), shoulder: S('gravel', 0.85, 22, 0.3), gravel: S('gravel', 0.75, 20, 0.4),
   guard: S('gravel', 0.8, 20, 1), verge: S('dirt', 0.6, 12, 0.6), dirt: S('dirt', 0.55, 10, 0.8),
 };
-const _v = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class RoadArea implements DriveArea {
   group = new THREE.Group();
-  /** World pose to place the truck at: southbound lane, SARO behind. */
+  /** World pose to place the truck at: southbound lane, SARO and the motel behind (just past
+   *  where the truck comes into this area from SARO's, legs.ts), the survey track ahead. */
   start: { pos: THREE.Vector3; heading: number };
   /** World pose of the truck parked at the station gate. */
   end: { pos: THREE.Vector3; heading: number };
@@ -52,7 +52,7 @@ export class RoadArea implements DriveArea {
   private lots: { box: Box2; surface: Surface; y: number }[] = [];
   private glow = new GlowPoints();
   private oldAsphalt: THREE.MeshStandardMaterial;
-  private glints: { i: number; p: THREE.Vector3 }[];
+  private glints: Glint[];
   private last = new THREE.Vector3();
   private haveLast = false;
   private onGuard = false;
@@ -84,6 +84,7 @@ export class RoadArea implements DriveArea {
     // the builders placed their lamps in local terms; floods live in world terms
     for (let i = HEADLIGHT_SLOTS.length; i < roadFlood.count; i++) roadFlood.pos[i].x += origin.x, roadFlood.pos[i].y += origin.y, roadFlood.pos[i].z += origin.z;
     poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
+    motelFar(b);   // Sierra Motor Court from the road (its real buildings are SARO's, World.ts)
     this.closed = roadClosed(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
@@ -92,7 +93,7 @@ export class RoadArea implements DriveArea {
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }
       : { ...o, minX: o.minX + origin.x, maxX: o.maxX + origin.x, minZ: o.minZ + origin.z, maxZ: o.maxZ + origin.z });
-    this.start = { pos: w(START.x, START.z), heading: START.heading };
+    this.start = { pos: w(START.x, 495), heading: START.heading };
     this.end = { pos: w(END.x, END.z), heading: END.heading };
     this.endZone = { minX: ENDZONE.minX + origin.x, maxX: ENDZONE.maxX + origin.x, minZ: ENDZONE.minZ + origin.z, maxZ: ENDZONE.maxZ + origin.z };
     this.route = [];
@@ -155,23 +156,7 @@ export class RoadArea implements DriveArea {
   /** Every frame while the area is shown. Reads the headlight beam from flood slots 0 to 2. */
   update(dt: number, t: number, truckPos: THREE.Vector3) {
     this.glow.update(t);
-    const f0 = roadFlood.pos[HEADLIGHT_SLOTS[0]], f2 = roadFlood.pos[HEADLIGHT_SLOTS[2]];
-    const on = f0.w > 0 ? roadFlood.col[HEADLIGHT_SLOTS[0]].r : 0;
-    _d.set(f2.x - f0.x, 0, f2.z - f0.z);
-    if (_d.lengthSq() > 1) _d.normalize(); else _d.set(0, 0, -1);
-    // the lamps sit about 4 m behind the first pool, 0.9 m up
-    const src = _v.set(f0.x - _d.x * 4, f0.y, f0.z - _d.z * 4);
-    retroBeam.pos.value.set(src.x, src.y, src.z, on * 0.55);
-    retroBeam.dir.value.copy(_d);
-    const col = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
-    for (const g of this.glints) {
-      const dx = g.p.x - src.x, dy = g.p.y - src.y, dz = g.p.z - src.z, d = Math.hypot(dx, dy, dz);
-      // retroreflectors face along the road: bright inside the beam, facing the truck
-      const beam = smooth(0.8, 0.97, (dx * _d.x + dz * _d.z) / d), face = smooth(0.4, 0.85, Math.abs(dz) / d);
-      const k = on * beam * face * smooth(2, 7, d) * 1.4 / (1 + (d / 110) ** 2);
-      col.setXYZ(g.i, k, k * 0.95, k * 0.84);
-    }
-    col.needsUpdate = true;
+    headlightGlints(roadFlood, HEADLIGHT_SLOTS, this.glow, this.glints);
     // the cattle guard rattles while the front axle is on it, from either side
     const lx = truckPos.x - this.origin.x, lz = truckPos.z - this.origin.z;
     const on2 = lx > GUARD.x0 - 1.8 && lx < GUARD.x1 + 1.8 && lz > GUARD.z0 - 1.5 && lz < GUARD.z1 + 1.5;

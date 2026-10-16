@@ -1,16 +1,19 @@
 import * as THREE from 'three';
 import { artTexture } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood } from './kit';
+import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { MOTEL_AT } from './geo';
 
-// SARO coordinates, north -Z. All walkable surfaces are at y=0.
-// The retained road and Sierra sign belong to Exterior, never this module.
+// Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
+// walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
+// down the highway (geo.ts, MOTEL_AT): the group, its zones, colliders, anchors and lamps.
+// The Sierra sign belongs to Exterior, never this module.
 // Office: x[-45.6,-41.2], z[22.2,27.6]. Door: east wall, z[23.4,24.8].
 // Eight rooms run south; room 6's threshold is (-41.1,0,55).
 // Only one live court owns this shader set; old instances cannot reset a new one.
-export const courtFlood = floodSet(12, 'court', 0.1);
+export const courtFlood = floodSet(15, 'court', 0.1);
 let owner: MotelFront | null = null;
 type Anchor = { x: number; z: number; yaw: number };
 export type MotelFrontAnchors = { entry: Anchor; officeInside: Anchor; room6Outside: Anchor; fromRoom6: Anchor };
@@ -45,8 +48,11 @@ export class MotelFront {
     room6Outside: { x: -39.5, z: 55, yaw: Math.PI / 2 },
     fromRoom6: { x: -39.5, z: 55, yaw: -Math.PI / 2 },
   };
+  /** Where the court stands: added to the numbers it was built in (geo.ts). */
+  readonly at: { x: number; y: number; z: number };
   room6LightOn = true;
   officeLightOn = true;
+  private readonly head: number[] = [];
   private readonly st = new THREE.Group();
   private readonly inSt = new THREE.Group();
   private readonly materials = new Set<THREE.Material>();
@@ -58,7 +64,8 @@ export class MotelFront {
   private litWindow!: THREE.Texture;
   private disposed = false;
 
-  constructor() {
+  constructor(at = MOTEL_AT) {
+    this.at = { ...at };
     this.group.name = 'MotelFront'; this.interior.name = 'MotelOfficeInterior';
     this.group.add(this.st, this.interior); this.interior.add(this.inSt);
     this.materials.add(this.hit);
@@ -81,12 +88,49 @@ export class MotelFront {
       this.slots[name] = this.light(-40.7, 2.24, z, name==='room6'?4:5, 0xffbd72);
     this.slots.red = this.light(-30.9, 4.6, 30, 9, 0xff4839);
     this.slots.cyan = this.light(-30.0, 3.8, 30, 4, 0x51cad6);
-    // the highway's sodium lamps (Exterior's floods at x -20) reach the front of the lot too,
-    // so the asphalt does not go black at the road's edge
-    this.slots.roadN = this.light(-20, 6, 24, 40, 0xff9a45);
-    this.slots.roadS = this.light(-20, 6, 58, 40, 0xff9a45);
+    // out here there are no highway lamps: two sodium lamps on poles at the front of the lot
+    this.lotLamps();
+    // the truck's headlights on the court (shine), when it is driven at SARO
+    for (let i = 0; i < 3; i++) this.head.push(this.light(0, -999, 0, 0, 0xfff0d8));
     mergeStatic(this.st); mergeStatic(this.inSt);
+    this.moveTo(this.at);
+  }
+
+  // Everything above was made where the court first stood; here it goes where it stands now.
+  private moveTo(at: { x: number; y: number; z: number }) {
+    this.group.position.set(at.x, at.y, at.z);
+    for (const z of this.zones) { z.minX += at.x; z.maxX += at.x; z.minZ += at.z; z.maxZ += at.z; }
+    for (const c of this.colliders) { c.minX += at.x; c.maxX += at.x; c.minZ += at.z; c.maxZ += at.z; }
+    for (const a of Object.values(this.anchors)) { a.x += at.x; a.z += at.z; }
+    for (let i = 0; i < courtFlood.count; i++) if (!this.head.includes(i)) courtFlood.pos[i].add(new THREE.Vector4(at.x, at.y, at.z, 0));
     this.group.updateMatrixWorld(true);
+  }
+  /** Height of the lot, the walk and the floors (world). */
+  get floorY() { return this.at.y; }
+
+  private lotLamps() {
+    const s = this.st, m = this.m;
+    for (const z of [18, 47]) {
+      cyl(s, .1, .14, 6.6, m.metal, -28.4, 3.3, z, 7);
+      box(s, 1.3, .1, .1, m.metal, -28.95, 6.45, z);
+      box(s, .5, .16, .3, m.black, -29.55, 6.35, z);
+      box(s, .42, .03, .24, m.lamps, -29.55, 6.26, z);
+      this.col(-28.6, -28.2, z - .2, z + .2);
+    }
+    this.slots.lotN = this.light(-29.6, 6, 18, 26, 0xff9a45);
+    this.slots.lotS = this.light(-29.6, 6, 47, 26, 0xff9a45);
+    // a footing under the rooms and the office, where the land falls away behind them
+    metreUV(box(s, 9.4, .7, 48.4, m.concrete, -45.5, -.36, 46));
+  }
+
+  /** The truck's headlights (lamps in another set, World.shareLights) on the court. */
+  shine(src: FloodSet | null, slots: readonly number[], k: number) {
+    if (owner !== this) return;
+    this.head.forEach((h, j) => {
+      const i = slots[j], p = courtFlood.pos[h];
+      if (!src || i === undefined || i < 0) { p.w = 0; return; }
+      p.copy(src.pos[i]); courtFlood.col[h].copy(src.col[i]).multiplyScalar(k);
+    });
   }
 
   private mat(p: THREE.MeshStandardMaterialParameters, falloff=.055) {

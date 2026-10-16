@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { smooth, hash, START, END, DINER, hLow, washAt, MILE, CROSS_MI, oldRoadBearing } from './roadShape';
+import { smooth, hash, START, END, DINER, MOTEL, hLow, washAt, MILE, CROSS_MI, oldRoadBearing, HWY_W, hwyLift } from './roadShape';
 
-export { smooth, hash, START, END, DINER, hLow };
+export { smooth, hash, START, END, DINER, MOTEL, hLow };
 
 // Layout of the drive in metres, local to RoadArea.group (whose origin is the start).
 // North is -Z. The state highway runs north-south along x = 0, and the truck starts in the
@@ -9,12 +9,12 @@ export { smooth, hash, START, END, DINER, hLow };
 // About 520 m south the graded survey track leaves to the west (the right), crosses the
 // right-of-way fence on a cattle guard and runs about 600 m to the STATION 01 gate.
 
-export const HWY = { paved: 4.8, shoulder: 6, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 3400 };
+export const HWY = { ...HWY_W, flat: 16.5, margin: 18, fence: 21, z0: -2000, z1: 3400 };
 export const TRK = { half: 2.3, soft: 0.7, flat: 11.5, margin: 13 };
 export const GUARD = { x0: -22.2, x1: -19.8, z0: 517.6, z1: 522.4 };
 export const GATE = { x: -612, z: 532, half: 5 };                  // closed double gate, station fence
 export const ENDZONE = { minX: -609, maxX: -585, minZ: 524, maxZ: 540 };
-export const PASTURE = { west: -760, north: 300, south: 720 };
+export const PASTURE = { west: -760, north: 440, south: 720 };   // (north: south of the motel)
 export const DRIVE_N = -120, DRIVE_S = 2700;                         // invisible ends of the highway (past the diner)
 
 
@@ -86,8 +86,9 @@ const detail = (x: number, z: number) => 0.16 * Math.sin(x * 0.13 + 1.7) * Math.
 function gridH(x: number, z: number) {
   const hd = Math.abs(x), td = trackNearest(x, z).d, od = oldNearest(x, z).d;
   // no small bumps where the land meets another area's ground: north towards SARO, and by
-  // the station's gate (drive/corridors.ts)
-  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z)) * smooth(40, 90, Math.hypot(x - DINER.flatX, z - DINER.z));
+  // the station's gate (drive/corridors.ts); none round the diner's and the motel's lots
+  const meet = smooth(-200, -140, z) * smooth(40, 90, Math.hypot(x - END.x, z - END.z)) * smooth(40, 90, Math.hypot(x - DINER.flatX, z - DINER.z))
+    * smooth(40, 90, Math.hypot(x - MOTEL.flatX, z - MOTEL.z));
   let h = hLow(x, z) + detail(x, z) * smooth(0, 15, Math.min(hd - HWY.margin, td - TRK.margin, od - OLD.margin)) * meet;
   if (hd < HWY.flat || td < TRK.flat) h -= 0.45; // hidden under the road strips: no z-fighting
   return h;
@@ -119,7 +120,6 @@ export function gridY(x: number, z: number) {
   const a = H[j * n + i], b = H[j * n + i + 1], c = H[(j + 1) * n + i], d = H[(j + 1) * n + i + 1];
   return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v);
 }
-const hwyLift = (ax: number) => ax <= HWY.paved ? 0.06 + 0.06 * (1 - (ax / HWY.paved) ** 2) : 0.06 * (HWY.shoulder - ax) / (HWY.shoulder - HWY.paved);
 /** What the old road lies on: the highway's verge by the highway, the drawn desert grid out
  *  beyond it (coarse out there: the road rides on it). */
 const oldBase = (x: number, z: number) => { const k = smooth(18, 26, x); return k <= 0 ? hLow(x, z) : k >= 1 ? gridY(x, z) : hLow(x, z) + (gridY(x, z) - hLow(x, z)) * k; };
@@ -215,8 +215,8 @@ export function highwayGeometry(z0 = HWY.z0, z1 = HWY.z1) {
   return ribbon(highwayPath(z0, z1), (p) => [-6, -4.8, -2.4, 0, 2.4, 4.8, 6].map((o) => ({ o, y: hLow(-p.tz * o, p.z) + hwyLift(Math.abs(o)), u: (o + 6) / 12 })), false, 1 / 24);
 }
 /** The gravel track, its soft edges blending into the desert; 12 m per texture repeat. */
-export function trackGeometry(s0 = 0) {
-  return ribbon(trackPath(s0), (p) => {
+export function trackGeometry(s0 = 0, s1 = Infinity) {
+  return ribbon(trackPath(s0, s1), (p) => {
     const w = trackHalf(p.s), e = w + TRK.soft;
     return [-e, -w, -w / 2, 0, w / 2, w, e].map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + trkLift(Math.abs(o), w), u: 0.5 + o / (2 * e) }));
   }, false, 1 / 8); // 8 m per repeat: the gravel picture is 4 m long, laid twice

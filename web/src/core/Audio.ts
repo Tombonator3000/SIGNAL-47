@@ -70,6 +70,8 @@ function decodeDataUrl(url: string): ArrayBuffer {
 export class AudioSys {
   ctx: AudioContext | null = null;
   master!: GainNode; sfx!: GainNode; music!: GainNode; amb!: GainNode;
+  /** The radios: the truck's, the diner's, the one on the filing cabinets (its own level). */
+  radioBus!: GainNode;
   buf: Record<string, AudioBuffer> = {};
   private noise!: AudioBuffer; private brown!: AudioBuffer;
   volume = 0.8;
@@ -107,12 +109,17 @@ export class AudioSys {
   async unlock() {
     if (this.ctx) { if (this.ctx.state !== 'running') await this.ctx.resume(); return; }
     const C = window.AudioContext || (window as any).webkitAudioContext;
-    const ctx: AudioContext = new C();
+    // larger buffers than the default ('interactive', about 10 ms): with a heavy picture on the
+    // same machine the small ones run dry and the sound drops out (Tom, 16 October). Nothing
+    // here needs the lowest latency; the footsteps are a few tens of ms later at most.
+    let ctx: AudioContext;
+    try { ctx = new C({ latencyHint: 'playback' }); } catch { ctx = new C(); }
     this.ctx = ctx;
     this.master = ctx.createGain(); this.master.gain.value = this.volume; this.master.connect(ctx.destination);
     this.sfx = ctx.createGain(); this.sfx.connect(this.master);
     this.music = ctx.createGain(); this.music.gain.value = this.musicLevel; this.music.connect(this.master);
     this.amb = ctx.createGain(); this.amb.gain.value = 1; this.amb.connect(this.master);
+    this.radioBus = ctx.createGain(); this.radioBus.gain.value = this.radioLevel; this.radioBus.connect(this.master);
     this.noise = this.makeNoise(false); this.brown = this.makeNoise(true);
     // A silent blip satisfies iOS's "sound must start inside the gesture" rule.
     const b = ctx.createBufferSource(); b.buffer = ctx.createBuffer(1, 1, 22050); b.connect(ctx.destination); b.start();
@@ -125,6 +132,9 @@ export class AudioSys {
   /** The music's own level (the pause menu), 0..1. */
   musicLevel = 0.7;
   setMusic(v: number) { this.musicLevel = v; if (this.music) this.music.gain.value = v; }
+  /** The radios' own level (the pause menu), 0..1. */
+  radioLevel = 1;
+  setRadio(v: number) { this.radioLevel = v; if (this.radioBus) this.radioBus.gain.value = v; }
 
   private makeNoise(brown: boolean) {
     const ctx = this.ctx!;
@@ -153,11 +163,11 @@ export class AudioSys {
     } else { l.setPosition(p.x, p.y, p.z); l.setOrientation(f.x, f.y, f.z, u.x, u.y, u.z); }
   }
 
-  private panner(pos: THREE.Vector3, ref = 1.2) {
+  private panner(pos: THREE.Vector3, ref = 1.2, dest: AudioNode = this.sfx) {
     const p = this.ctx!.createPanner();
     p.panningModel = 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = ref; p.rolloffFactor = 1.2; p.maxDistance = 60;
     if ((p as any).positionX) { p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; } else (p as any).setPosition(pos.x, pos.y, pos.z);
-    p.connect(this.sfx);
+    p.connect(dest);
     return p;
   }
 
@@ -225,7 +235,7 @@ export class AudioSys {
   /** White noise, for synths elsewhere (core/decoder.ts). Null until unlock(). */
   noiseBuffer(): AudioBuffer | null { return this.ctx ? this.noise : null; }
   /** A point in the world that sounds can be sent to (core/walkie.ts). */
-  spatial(at: THREE.Vector3, ref = 1.0): AudioNode | null { return this.ctx ? this.panner(at, ref) : null; }
+  spatial(at: THREE.Vector3, ref = 1.0, dest?: AudioNode): AudioNode | null { return this.ctx ? this.panner(at, ref, dest) : null; }
 
   // ---------- the radio on the filing cabinets ----------
   // AM at night: a station a long way off that fades in and out of the static (skywave).
@@ -265,7 +275,7 @@ export class AudioSys {
     });
     const out = ctx.createGain(); out.gain.value = 0;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.7;
-    out.connect(bp); bp.connect(this.panner(at, 0.8));
+    out.connect(bp); bp.connect(this.panner(at, 0.8, this.radioBus));
     const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
     const music = ctx.createGain(); music.gain.value = 0.8;
     const fade = ctx.createGain(); fade.gain.value = 0.6;

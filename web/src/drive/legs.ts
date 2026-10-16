@@ -4,7 +4,7 @@ import type { Collider } from '../world/ControlRoom';
 import type { FloodSet } from '../world/kit';
 import { track, trackNearest, surfaceY, HWY, DINER } from './roadTerrain';
 import { STATION_TRACK, STATION_PAD } from '../world/stationLayout';
-import { SARO_IN_ROAD, STATION_TURN, STATION_PATCH, roadToStation, stationToRoad, stationBend, STATION_DY, inRect } from '../world/geo';
+import { SARO_IN_ROAD, STATION_TURN, STATION_PATCH, MOTEL_AT, MOTEL_RECT, roadToStation, stationToRoad, stationBend, STATION_DY, inRect } from '../world/geo';
 import { SARO_FROM } from './corridors';
 
 // The drives are driven the whole way (Tom, 5 October: no cuts when the truck goes from one
@@ -14,14 +14,15 @@ import { SARO_FROM } from './corridors';
 // driver's head as they were. This file has the drivable ground of SARO and STATION 01 (the
 // road and the old road have their own), and the hand-overs between the areas.
 //
-//   saro      the pad, the ramp, the service road and the highway past SARO
-//   road      the highway south and the survey track (RoadArea.ts)
+//   saro      the pad, the ramp, the service road, and the highway past SARO and down to
+//             Sierra Motor Court's lot (650 m south) and a little past it
+//   road      the highway south from there, and the survey track (RoadArea.ts)
 //   station01 the track's last stretch and the pad by STATION 01's gate
 //
 // Each area is built around its own origin; a way out is checked in that area's terms and
 // gives the truck's pose in the next one, in world terms.
 
-export type LegId = 'saro' | 'road' | 'station01' | 'diner' | 'roswell';
+export type LegId = 'saro' | 'road' | 'station01' | 'diner' | 'roswell' | 'motel';
 export type Exit = { to: LegId; x: number; z: number; heading: number };
 type Circle = { kind: 'circle'; x: number; z: number; r: number };
 /** An area the truck can be driven in on a trip. */
@@ -29,14 +30,15 @@ export interface TripArea extends DriveArea {
   /** Where the truck is left when it arrives here (world). */
   park: Box2 | null;
   /** Waypoints for the autopilot (tests, the developer menu), towards a place (world). */
-  routes: Partial<Record<LegId | 'park', THREE.Vector3[]>>;
+  routes: Partial<Record<LegId | 'park' | 'motelS', THREE.Vector3[]>>;
 }
 
-// The diner stands in the road area; the old road's area lies on the road's map too, its own
-// origin where C crosses (OldRoad.ts works it out from the road's), and has no ways out here.
+// The diner stands in the road area and the motel in SARO's; the old road's area lies on the
+// road's map too, its own origin where C crosses (OldRoad.ts works it out from the road's),
+// and has no ways out here.
 export const ORIGINS: Record<LegId, THREE.Vector3> = {
   saro: new THREE.Vector3(0, 0, 0), road: new THREE.Vector3(8000, 0, 0), station01: new THREE.Vector3(0, 0, 8000),
-  diner: new THREE.Vector3(8000, 0, 0), roswell: new THREE.Vector3(8000, 0, 0),
+  diner: new THREE.Vector3(8000, 0, 0), roswell: new THREE.Vector3(8000, 0, 0), motel: new THREE.Vector3(0, 0, 0),
 };
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
@@ -51,7 +53,17 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 // Site coordinates (SARO's origin is the world's). The highway runs north-south along
 // x = -24 (8 m wide, a southbound lane west of the centre, northbound east); the service
 // road comes down the ramp south of the pad, bends west and meets the highway at z 24.5.
-export const SARO_HWY = { x: -24, half: 4, z0: -200, z1: 640 };
+export const SARO_HWY = { x: -24, half: 4, z0: -200, z1: 820 };
+/** Where the truck goes from SARO's area onto the road's, going south (site z), and back from
+ *  the road's going north (road z): 60 m past Sierra Motor Court's lot, short of the survey
+ *  track's mouth (road z 513). Both areas draw the same road there (corridors.ts). */
+export const SARO_TO_ROAD = MOTEL_RECT.maxZ + 64, ROAD_TO_SARO = SARO_TO_ROAD - 10 + SARO_IN_ROAD.z;
+// Sierra Motor Court's lot (MotelFront.ts, in its own numbers before MOTEL_AT): the part north
+// of the office where the old driveway came in, and the strip in front of the rooms
+const lot = (x0: number, x1: number, z0: number, z1: number) => box(x0 + MOTEL_AT.x, x1 + MOTEL_AT.x, z0 + MOTEL_AT.z, z1 + MOTEL_AT.z);
+const MOTEL_LOT = [lot(-41, -27.0, 1.5, 21.6), lot(-38.25, -27.0, 21.6, 70.8)];
+/** Where the truck is left at the motel: the lot north of the office. */
+export const MOTEL_PARK = lot(-40.5, -28.5, 3, 19.5);
 const SARO_ROAD_FROM = SARO_FROM - SARO_IN_ROAD.z;   // site z where the road's own stretch begins (corridors.ts)
 const SARO_RAMP = { minX: 6.6, maxX: 13.0, top: 12.4, foot: 16.6 };
 export const SARO_PAD = box(6.6, 13.0, 3.4, 12.4);
@@ -61,8 +73,9 @@ const SARO_WAY: Box2[] = [
   SARO_PAD, box(6.6, 13.0, 12.4, 16.8), box(6.8, 12.8, 16.0, 21.5), box(5.3, 14.3, 15.9, 20.1),
   box(1.0, 12.8, 18.5, 27.6), box(-21.5, 6.5, 21.4, 27.6), box(-29.5, -17.0, 17.0, 34.0),
   box(SARO_HWY.x - 6.2, SARO_HWY.x + 4.2, SARO_HWY.z0, SARO_HWY.z1),
-  // south of the motel, between the road's fences (as in the road area)
+  // south of the site, between the road's fences (as in the road area), and the motel's lot
   box(SARO_HWY.x - HWY.fence + 0.6, SARO_HWY.x + HWY.fence - 0.6, 80, SARO_HWY.z1),
+  ...MOTEL_LOT,
 ];
 const onSaroRoad = (x: number, z: number) => {
   if (z > 22 && z < 27 && x > -20 && x < 5.8) return true;                    // the straight run west
@@ -75,6 +88,7 @@ export class SaroDrive implements TripArea {
   obstacles: Obstacle[];
   endZone = box(0, 0, 0, 0);    // arrivals are the trip's business (World.ts), not the controller's
   park = SARO_PAD;
+  motelPark = MOTEL_PARK;
   routes: TripArea['routes'];
   headlights?: { set: FloodSet; slots: number[] };
   /** colliders: SARO's, without the truck's own; floorAt: the site's ground (Grounds.ts);
@@ -99,9 +113,18 @@ export class SaroDrive implements TripArea {
     for (let z = SARO_HWY.z1 - 20; z >= 46; z -= 20) back.push([-22.2, z]);
     back.push([-22.2, 38], [-22.2, 31.5], ...arc(-16.2, 30.5, 180, 270), [-10, 24.5], [-3, 24.5], [1, 24.5], ...arc(5.3, 18.5, 90, 0),
       ...[...ramp].reverse().slice(1, -1), [9.2, 10.5], [9.0, 8.4]);
-    this.routes = { road: out.map(([x, z]) => v3(x, z)), park: back.map(([x, z]) => v3(x, z)) };
+    // to the motel's lot: down the southbound lane and right, in front of the office; or, coming
+    // from the south in the northbound lane, past the lot and left into it
+    const A = MOTEL_AT, motel: [number, number][] = out.filter(([, z]) => z < A.z - 20);
+    motel.push([-25.8, A.z - 14], [-26.6, A.z - 6], [-28.3, A.z - 0.5], [-30.8, A.z + 4.5], [-33.6, A.z + 8], [-37.3, A.z + 10.2]);
+    const motelS: [number, number][] = [];
+    for (let z = SARO_TO_ROAD + 10; z > A.z + 30; z -= 20) motelS.push([-22.2, z]);
+    motelS.push([-22.2, A.z + 22], [-22.2, A.z + 12], [-22.8, A.z + 6.5], [-25, A.z + 4.2], [-28.3, A.z + 5], [-31.2, A.z + 7.6], [-34.4, A.z + 9.5], [-37.3, A.z + 10.2]);
+    this.routes = { road: out.map(([x, z]) => v3(x, z)), park: back.map(([x, z]) => v3(x, z)),
+      motel: motel.map(([x, z]) => v3(x, z)), motelS: motelS.map(([x, z]) => v3(x, z)) };
   }
   surface(x: number, z: number) {
+    if (MOTEL_LOT.some((b) => inBox(b, x, z)) && x < MOTEL_RECT.maxX) return SURF.yard;
     const ax = Math.abs(x - SARO_HWY.x);
     if (z > SARO_ROAD_FROM) return ax <= HWY.paved ? SURF.asphalt : ax <= HWY.shoulder ? SURF.shoulder : SURF.dirt;
     if (ax <= SARO_HWY.half + 0.6) return SURF.asphalt;
@@ -110,6 +133,7 @@ export class SaroDrive implements TripArea {
   }
   height(x: number, z: number) {
     if (inBox(SARO_PAD, x, z) || (x >= SARO_RAMP.minX && x <= SARO_RAMP.maxX && z >= SARO_RAMP.top && z <= SARO_RAMP.foot)) return this.floorAt(x, z);
+    if (inRect(MOTEL_RECT, x, z)) return MOTEL_AT.y;
     // south of the site's own highway, the road's land (corridors.ts)
     if (z > SARO_ROAD_FROM) return surfaceY(x + SARO_IN_ROAD.x, z + SARO_IN_ROAD.z);
     if (Math.abs(x - SARO_HWY.x) <= SARO_HWY.half + 2) return -0.58;
@@ -184,11 +208,11 @@ const toStation = roadToStation, toRoad = stationToRoad;
 export function exitFrom(leg: LegId, x: number, z: number, heading: number): Exit | null {
   const o = ORIGINS[leg], lx = x - o.x, lz = z - o.z;
   if (leg === 'saro') {
-    if (lz > 200 && Math.abs(lx - SARO_HWY.x) < 14) return { to: 'road', x: lx + SARO_IN_ROAD.x + ORIGINS.road.x, z: lz + SARO_IN_ROAD.z + ORIGINS.road.z, heading };
+    if (lz > SARO_TO_ROAD && Math.abs(lx - SARO_HWY.x) < 14) return { to: 'road', x: lx + SARO_IN_ROAD.x + ORIGINS.road.x, z: lz + SARO_IN_ROAD.z + ORIGINS.road.z, heading };
     return null;
   }
   if (leg === 'road') {
-    if (lz < -110 && Math.abs(lx) < 14) return { to: 'saro', x: lx - SARO_IN_ROAD.x, z: lz - SARO_IN_ROAD.z, heading };
+    if (lz < ROAD_TO_SARO && Math.abs(lx) < 14) return { to: 'saro', x: lx - SARO_IN_ROAD.x, z: lz - SARO_IN_ROAD.z, heading };
     const t = trackNearest(lx, lz);
     if (t.d < 14 && t.s >= HANDOFF) {
       const [sx, sz] = toStation(lx, lz);
@@ -235,8 +259,9 @@ export function roadRoute(next: LegId, lz = -Infinity): THREE.Vector3[] {
   return (roadWays[key] = pts.map(([x, z]) => v3(x, z, ORIGINS.road)));
 }
 
-/** The leg a place is in: the diner stands in the road area (World.ts), the others are their own. */
-export const legOf = (p: LegId): LegId => p === 'diner' ? 'road' : p;
+/** The leg a place is in: the diner stands in the road area and the motel in SARO's (World.ts),
+ *  the others are their own. */
+export const legOf = (p: LegId): LegId => p === 'diner' ? 'road' : p === 'motel' ? 'saro' : p;
 /** The legs a trip from one place to another passes through, in order. */
 export function legsBetween(from: LegId, to: LegId): LegId[] {
   const chain: LegId[] = ['saro', 'road', 'station01'];

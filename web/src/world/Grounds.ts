@@ -4,7 +4,9 @@ import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
-import { RAMP, DRIVE, GROUND } from './Crossing';
+import { RAMP, GROUND, WEST } from './Crossing';
+import { MOTEL_AT, MOTEL_RECT, SARO_IN_ROAD } from './geo';
+import { highwayTop } from '../drive/roadShape';
 
 // SARO's grounds (Tom, 4 October late evening: «SARO must look more real, with a footpath
 // and a road out from the ramp with the truck; walk round SARO, the ramp and the truck,
@@ -23,11 +25,12 @@ import { RAMP, DRIVE, GROUND } from './Crossing';
 // Walking: the player stands inside the union of zones (player/Player.ts). The ground
 // zones here end at the edges of the raised slabs and plinths, so the only ways up and
 // down are the ramps and the steps, whose zones overlap both levels. floorAt() gives the
-// height under the player for all of SARO's scene, the walk over the road included.
+// height under the player for all of SARO's scene, the walk down the highway included.
 //
-//   floor level (y 0)    the buildings, the east walk, the landing, the truck pad, the
-//                        motel's lot
+//   floor level (y 0)    the buildings, the east walk, the landing, the truck pad
 //   ground (y -0.6)      everything else inside the site, and the open ground west of it
+//   the road's land      south of the site, down the highway (drive/roadShape.ts)
+//   the motel's floor    its lot, walk and office, 650 m south (geo.ts, MOTEL_AT)
 
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 type Slope = Rect & { axis: 'x' | 'z'; low: number; high: number };   // y GROUND at low, 0 at high
@@ -47,7 +50,6 @@ const RAISED: Rect[] = [
   r(6.6, 13.0, 3.4, 12.4),      // the truck pad
   r(12.6, 19.2, -6.0, 1.0),     // the photo lab
   r(20.2, 39.0, -5.9, 5.9),     // the east wing
-  r(-200, DRIVE.x0, -60, 120),  // Sierra Motor Court's lot and walk (MotelFront.ts)
 ];
 // The truck ramp: its top is level with the pad, its foot on the ground.
 export const TRUCK_RAMP = { minX: 6.6, maxX: 13.0, top: 12.4, foot: 16.6 };
@@ -55,7 +57,6 @@ export const TRUCK_RAMP = { minX: 6.6, maxX: 13.0, top: 12.4, foot: 16.6 };
 export const STEPS = { x0: 7.1, x1: 8.0, z0: -12.6, z1: -11.4 };
 const SLOPES: Slope[] = [
   { ...r(RAMP.x0, RAMP.x1, RAMP.z0 - 0.1, RAMP.z1 + 0.1), axis: 'x', low: RAMP.x0, high: RAMP.x1 },   // the fire exit's ramp
-  { ...r(DRIVE.x0, DRIVE.x1, DRIVE.z0, DRIVE.z1), axis: 'x', low: DRIVE.x1, high: DRIVE.x0 },         // the motel's driveway
   { ...r(TRUCK_RAMP.minX, TRUCK_RAMP.maxX, TRUCK_RAMP.top, TRUCK_RAMP.foot), axis: 'z', low: TRUCK_RAMP.foot, high: TRUCK_RAMP.top },
   { ...r(STEPS.x0 - 0.1, STEPS.x1, STEPS.z0, STEPS.z1), axis: 'x', low: STEPS.x0 - 0.1, high: STEPS.x1 },
 ];
@@ -118,11 +119,16 @@ export class Grounds {
     this.addZone('gSteps', 5.6, 9.0, STEPS.z0, STEPS.z1);
     // also ground: the open ground west of SARO (Crossing.ts walks it), and the narrow strip
     // between the control room and the walk (the condenser stands in it; the steps cross it)
-    this.ground.push(r(-27.7, -6.75, -19.55, 64), r(6.7, 8.0, -19.6, -0.6));
+    this.ground.push(r(WEST.x0, WEST.x1, WEST.z0, WEST.z1), r(6.7, 8.0, -19.6, -0.6));
   }
 
   /** Height of the ground under the player anywhere in SARO's scene (0 on the floors). */
   floorAt = (x: number, z: number) => {
+    if (z > WEST.z1) {
+      // south of the site: the motel's lot and floors, or the road's land by the highway
+      if (within(MOTEL_RECT, x, z)) return MOTEL_AT.y;
+      return highwayTop(x + SARO_IN_ROAD.x, z + SARO_IN_ROAD.z);
+    }
     for (const s of SLOPES) {
       if (!within(s, x, z)) continue;
       const v = s.axis === 'x' ? x : z;

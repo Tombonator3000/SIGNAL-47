@@ -134,7 +134,7 @@ Bildet har aldri endret seg (R4). Saksmappa hadde et tett utsnitt, dineren et br
 
 - Kapittel 2: lokkesvaret når spilleren tråder -39 LY mot 1947-arkivet, sier i dag at tallet «is not a calendar code». Det er ikke lenger sant. Ny tekst sier bare at arkivet gir et årstall og utskriften en avstand, og tråden blir en tynn bakgrunnstråd i stedet for en feil.
 - Kapittel 4: sluttkortet sier «NEXT: THE ROSWELL ROAD». Det blir «NEXT: ALL NIGHT».
-- Kapittel 4: lastebilen står på SARO når rom 6 er ferdig. Spilleren går tilbake over veien til den.
+- Kapittel 4: lastebilen står der spilleren lot den stå når rom 6 er ferdig: på motellplassen, eller på SARO 650 m opp riksveien (motellet ble flyttet dit 16. oktober).
 - `HISTORIE.md`-planen om en tredje kjøretur tilbake til SARO og to slutter er borte. Todo-punktene om K5, K6 og epilogen går ut.
 
 ## Det dette krever

@@ -55,7 +55,7 @@ async def main():
         kit = await ev("[...document.querySelectorAll('.nb-kit li b')].map((b) => b.textContent)")
         check(await ev(TAB) == 'kit' and 'Notebook' in kit and 'Truck keys' in kit and 'Flashlight' not in kit, f'I opens the kit: no flashlight yet ({kit})')
         await close()
-        # the motel across the road
+        # the motel down the highway
         await ev("(() => { const z = S47.world.motel.zones.find((z) => z.id === 'office'); S47.player.place((z.minX + z.maxX) / 2, (z.minZ + z.maxZ) / 2, 0); })()"); await tick(0.3)
         a = await where()
         check(a and a['spot'] == 'motel', f'in the motel office the cross is at the motel ({a})')
@@ -70,7 +70,7 @@ async def main():
             await tick(1)
             if await ev("S47.world.area === 'road' && S47.world.truckHere().group.position.z > 600"): break
         a = await where()
-        check(a and a['spot'] == 'highway' and 0.2 < a['t'] < 0.9, f'on the highway the cross is on the highway, part of the way ({a})')
+        check(a and a['spot'] == 'highway' and 815 < a['m'] < 2300, f'on the highway the cross is on the highway, past the track and short of the diner ({a})')
         await open_key('m')
         await save_map('map_highway')
         await close()

@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { box, cyl, rod, addFlood } from '../world/kit';
 import { rng } from '../core/textures';
 import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER } from './roadTerrain';
-import { stationToRoad } from '../world/geo';
+import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo';
+import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
 import { horizonGlowTex } from './roadTextures';
 import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall } from './roadProps';
@@ -117,6 +118,7 @@ export function plants(b: Build, keep: Keep = () => true) {
     if (x > -672 && x < -598 && z > 500 && z < 566) return false;   // station
     if (x > 395 && x < 485 && z > 150 && z < 235) return false;     // ranch yard
     if (x > DINER.x - 30 && x < -3 && z > DINER.z - 45 && z < DINER.z + 45) return false;   // the diner
+    if (x > MX - 30 && x < -3 && z > MZ - 4 && z < MZ + 76) return false;                  // the motel
     if (oldNearest(x, z).d < 7) return false;                                                 // the old road
     return !(x > -26 && x < -14 && z > 510 && z < 530);             // cattle guard
   };
@@ -189,8 +191,8 @@ export function saroLights(b: Build) {
   for (let z = 70; z > -200; z -= 34) L(-20.1, 7.1, z, 7, 0xffaf55);
   DISHES.forEach(([x, z], i) => L(x + 3, 16.4, z - 3, 5.5, 0xff3c28, 1.6, hash(i, 3) * 6));
   [[-6.4, 2.6, 2], [20.9, 2.8, 5.8], [30.4, 2.8, 5.8], [-6.4, 2.6, -3]].forEach(([x, y, z]) => L(x, y, z, 4, 0xffbe6e));
-  L(-30.4, 5.8, 30.2, 12, 0xff4a35); L(-29, 4, 32, 5, 0x50f0d8);
-  for (let z = 26; z <= 66; z += 5) L(-42.6, 2.2, z, 2.6, 0xffc070);
+  // Sierra Motor Court, 650 m down the highway now (geo.ts)
+  for (const [x, y, z, size, c] of MOTEL_GLOWS) b.glow.add(x + MX, y + MOTEL_AT.y, z + MZ, size, c);
   // far ranches and a town glow to the south east, to fill the night a little
   b.glow.add(1300, 4, 1700, 7, 0xffd0a0); b.glow.add(-1500, 4, 2100, 6, 0xffc890); b.glow.add(900, 4, -1600, 6, 0xd0e4ff);
   // a warm haze over the site, low on the northern horizon
@@ -201,5 +203,36 @@ export function saroLights(b: Build) {
   haze.renderOrder = 1;
   return haze;
 }
+// ---------- Sierra Motor Court from the road ----------
+// Its real buildings are SARO's (world/MotelFront.ts, World.ts): the truck is in SARO's area
+// whenever it is near them (drive/legs.ts hands it over 60 m south of the motel). From the road
+// area they are only seen from farther off, coming north: their bulk, the canopy, the sign,
+// and the lamps (saroLights). Built in the numbers the court was made in, moved as it is.
+/** Where the motel's own numbers start, road-local (its x and z offsets; y is MOTEL_AT.y). */
+const MX = MOTEL_AT.x + SARO_IN_ROAD.x, MZ = MOTEL_AT.z + SARO_IN_ROAD.z;
+export function motelFar(b: Build) {
+  const g = new THREE.Group(), m = b.m;
+  g.position.set(MX, MOTEL_AT.y, MZ);
+  box(g, 4.2, 2.8, 48, m.concrete, -47.9, 1.4, 46);
+  box(g, 3.5, 2.8, 42.1, m.concrete, -43.95, 1.4, 48.95);
+  box(g, 4.8, 2.8, 5.8, m.concrete, -43.4, 1.4, 24.9);
+  box(g, 9.15, 0.22, 48.2, m.concrete, -45.5, 2.9, 46);
+  box(g, 3.15, 0.18, 49, m.concrete, -39.75, 2.84, 46.1);
+  box(g, 9.4, 0.7, 48.4, m.concrete, -45.5, -0.36, 46);
+  for (const z of [22, 33, 43, 53, 63, 69]) box(g, 0.12, 2.74, 0.12, m.steel, -38.8, 1.37, z);
+  for (const x of [-31.5, -29.3]) cyl(g, 0.22, 0.22, 9, m.steel, x, 3.9, 30, 8);
+  for (const z of [18, 47]) cyl(g, 0.1, 0.14, 6.6, m.steel, -28.4, 3.3, z, 7);
+  b.statics.add(g);
+  // the sign, as at SARO (Exterior.ts): one picture both ways round
+  for (const back of [false, true]) {
+    const map = back ? artTexture('sierra').clone() : artTexture('sierra');
+    if (back) { map.wrapS = THREE.RepeatWrapping; map.repeat.x = -1; map.offset.x = 1; map.needsUpdate = true; }
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 7.8), new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.02, depthWrite: false, side: back ? THREE.BackSide : THREE.FrontSide, toneMapped: false }));
+    face.position.set(-30.4 + MX, 5.8 + MOTEL_AT.y, 30.2 + MZ); face.rotation.y = Math.PI / 2 - 0.5;
+    face.userData.noMerge = true;
+    b.root.add(face);
+  }
+}
+
 // The survey track's route as points, for path following (preview and tests) and maps.
 export const trackRoute = () => track.pts.filter((_, i) => i % 4 === 0).map((p) => new THREE.Vector2(p.x, p.y));

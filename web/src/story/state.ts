@@ -13,6 +13,7 @@ export interface GameState {
   pose: { x: number; z: number; yaw: number; pitch: number } | null;
   doors?: Record<string, boolean>;   // open doors at SARO (saves from before 4 October 2026 have none)
   flashlight?: boolean;   // taken off the truck's seat (saves from before 15 October 2026 have none)
+  truck?: string | null;  // where the truck was left ('motel': on the motel's lot; older saves have none)
 }
 
 const CHAPTERS: Record<string, string> = {

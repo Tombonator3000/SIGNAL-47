@@ -93,12 +93,12 @@ async def main():
         check(got, f"the Night Line is captioned ({[x for x in h.split(' | ') if 'RADIO' in x][:2]})")
         # now and then the static swells over the station (Tom: static at random, with the wah wah)
         mx, back = 0.0, False
-        for _ in range(100):
+        for _ in range(170):
             await tick(0.5, 20)
             k = await ev("S47.carRadio.interference")
             mx = max(mx, k)
-            if mx > 0.3 and k == 0: back = True; break
-        check(mx > 0.3 and back, f"now and then the static comes up over the station, and goes again (deepest {mx:.2f})")
+            if mx > 0.2 and k == 0: back = True; break
+        check(0.2 < mx <= 0.7 and back, f"now and then the static comes up over the station, and goes again (deepest {mx:.2f}; not too often or too deep since 16 October)")
 
         # ---------- along the dial and off ----------
         await pg.keyboard.press('r'); await tick(0.6)
@@ -198,6 +198,18 @@ async def main():
         await ev("window.__toasts = []")
         await pg.keyboard.press('r'); await tick(0.5)
         check(not (await ev(CAR))['live'] and 'stays on the Roswell station' in await heard(), 'on the old road the radio is chapter six\'s: R leaves it alone')
+
+        # the radios have their own level in the pause menu (Tom's improvements, 16 October)
+        await ev("S47.hold = false")
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(400)
+        has = await ev("!!document.querySelector('#rad')")
+        if has:
+            await ev("(() => { const r = document.querySelector('#rad'); r.value = '0.25'; r.dispatchEvent(new Event('input')); })()")
+        lvl = await ev("[S47.audio.radioLevel, S47.audio.radioBus ? S47.audio.radioBus.gain.value : null, localStorage.getItem('s47.radioVol') || Object.keys(localStorage).filter((k) => k.includes('radioVol')).map((k) => localStorage.getItem(k))[0]]")
+        check(has and abs(lvl[0] - 0.25) < 1e-6 and lvl[1] is not None and abs(lvl[1] - 0.25) < 1e-6 and lvl[2] is not None, f'the pause menu has a radio level, kept on this device ({lvl})')
+        await ev("(() => { const r = document.querySelector('#rad'); if (r) { r.value = '1'; r.dispatchEvent(new Event('input')); } })()")
+        await pg.click('[data-a=resume]'); await pg.wait_for_timeout(200)
+        await ev("S47.hold = true")
 
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
