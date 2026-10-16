@@ -523,8 +523,8 @@ export class World {
    *  place it is stopped on once it has been driven off the one it stood on. */
   roam(from: LegId) {
     this.startTrip(from, null, { legs: ['saro', 'road', 'station01'], places: ['diner'], onStart: () => {
-      this.d.toast(this.d.touch() ? 'Left stick: drive. Stop, and Get out takes you out. On the highway, stop at the diner.'
-        : 'W, S, A and D: drive. Stop and press E to get out. On the highway, stop at the diner.', 5);
+      this.d.toast(this.d.touch() ? 'Left stick: drive. Radio: the radio. Stop, and Get out takes you out. On the highway, stop at the diner.'
+        : 'W, S, A and D: drive. R: radio. Stop and press E to get out. On the highway, stop at the diner.', 5.5);
     } });
   }
 
@@ -624,7 +624,7 @@ export class World {
       Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
       if (o.onStart) o.onStart();
       else if (from === to && o.hint) toast(o.hint, 5);
-      else toast(this.d.touch() ? 'Left stick: throttle, brake and steering. Stopped, Get out takes you out.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer. Stopped, E gets out.', 4.5);
+      else toast(this.d.touch() ? 'Left stick: throttle, brake and steering. Radio: the radio. Stopped, Get out takes you out.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer. R: radio. Stopped, E gets out.', 5);
     }).catch((e: Error) => {
       console.error(e);
       toast('The way could not be loaded. Check your connection and try the truck again.', 5);
@@ -711,6 +711,18 @@ export class World {
       const v = new THREE.Vector3(side * 1.75, 0, -0.3).applyAxisAngle(UP, h).add(g.position);
       if (p.walkable(v.x, v.z) && !p.colliders.some((c) => v.x + r > c.minX && v.x - r < c.maxX && v.z + r > c.minZ && v.z - r < c.maxZ)) return v;
     }
+    return null;
+  }
+
+  /** The truck the player has, if it is in this area (its radio plays from the dash), or null.
+   *  Not on the old road: chapter six has the cab radio there (Audio.cabRadio). */
+  truckHere(): Truck | null {
+    if (this.area === 'roswell' || this.leg === 'roswell') return null;
+    if (this.driving) return this.leg ? this.legs[this.leg]?.truck ?? null : null;
+    const at = this.truckAt;
+    if (at === 'saro' && this.area === 'saro') return this.saroTruck;
+    if (at === 'station01' && this.area === 'station01') return this.parked;
+    if (at === 'diner' && (this.area === 'diner' || this.area === 'road')) return this.truck;
     return null;
   }
 

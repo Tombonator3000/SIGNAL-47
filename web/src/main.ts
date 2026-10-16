@@ -20,6 +20,7 @@ import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, type Cue } from './core/score';
+import { Radio, FREQ, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -125,6 +126,10 @@ async function boot() {
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.preload(); // decodes while the title screen is up
+  // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
+  const radio = new Radio(audio);
+  const carRadio = radio.receiver({ vol: 0.5, ref: 1.0 });
+  const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
@@ -362,6 +367,8 @@ async function boot() {
       openPause();
     } else if (code === 'KeyF') {
       toggleLight();
+    } else if (code === 'KeyR') {
+      turnRadio();
     } else if (code === 'KeyC') {
       if (!ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera();
     } else if (code === 'Space') {
@@ -387,6 +394,15 @@ async function boot() {
     if (!flashlight.toggle()) ui.toast('No flashlight. There is one on the passenger seat of the truck.', 3);
   };
   ui.onLight = toggleLight;
+  // the truck's radio: on, then the next station along the dial, and after the last, off
+  const turnRadio = () => {
+    if (mode !== 'play' || ui.modal || game.cinematic || !world.driving) return;
+    if (!world.truckHere()) { ui.toast('The radio stays on the Roswell station.', 2.5); return; }
+    const st = carRadio.next();
+    audio.play('click', { gain: 0.5, rate: 0.8 });
+    ui.toast(st ? `AM ${FREQ[st]}` : 'Radio off', 1.6);
+  };
+  ui.onRadio = turnRadio;
   ui.onZoom = (held) => { input.zoomHeld = held; };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
@@ -475,6 +491,7 @@ async function boot() {
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
+    radio.reset(game.clock);   // the radios off; each station where it is at this hour
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
     if (world.area === 'room6') world.placeAtRoom6();
@@ -498,6 +515,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
+    radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -584,6 +602,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     world.stopDriving();
+    radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -685,6 +704,7 @@ async function boot() {
     ui.showHud(false, input.touchMode);
     world.stopDriving();
     audio.cabRadio(null);
+    radio.reset(0);
     audio.silence(false);
     score?.stop();
     if (!end) { toTitle(); return; }
@@ -707,7 +727,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score,
@@ -797,6 +817,12 @@ async function boot() {
         { label: '+30 minutes', run: () => { game.clock += 1800; } },
         { label: 'Shooting star', run: () => sky.meteorNow() },
       ] });
+      // the radio (core/radio.ts): 1420 signs off at four with the anthem, Roswell signs on at five
+      groups.push({ title: 'Radio', note: 'The truck\'s radio plays while you drive (R, or Radio on a phone).', items: [
+        { label: carRadio.on ? `Truck radio: AM ${FREQ[carRadio.station]}` : 'Truck radio: off', run: () => { if (!carRadio.on) carRadio.set(true, 'caliche'); else carRadio.next(); }, on: carRadio.on },
+        { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
+        { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
+      ] });
     }
     if (mode === 'play' && score) {
       groups.push({ title: 'Music', note: 'Each cue once, from the start. The game also plays them by itself now and then.', items: [
@@ -877,7 +903,41 @@ async function boot() {
     return space === 'yard' ? 'night' : 'eerie';
   }
   const HELD = ['ringing', 'call', 'countdown', 'event', 'turning', 'end'];
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard'); }
+  // ---------- the radios (core/radio.ts) ----------
+  // The truck's radio plays from its dash wherever the truck stands in this area (left on when
+  // the player gets out); indoors it is a long way off. The diner's radio plays the town's
+  // station while it is on the air, then Roswell once that signs on, near the diner.
+  let radioHeard = false;
+  const radioAt = new THREE.Vector3(), counterAt = new THREE.Vector3();
+  let carNear = false;
+  function radioStep(dt: number) {
+    const tr = world.truckHere();
+    if (tr) { tr.group.getWorldPosition(radioAt); radioAt.y += 1.05; }
+    carRadio.pos = tr ? radioAt : null;
+    carRadio.power = (world.driving ? world.trouble.radioLevel : 1) * (!world.driving && space === 'room' ? 0.3 : 1);
+    tr?.setRadio(dialX(FREQ[carRadio.station]), carRadio.on);
+    carNear = !!tr && (world.driving || player.pos.distanceTo(radioAt) < 7);
+    const counter = world.diner?.proxies.counter;
+    let dinerOn = false;
+    if (counter && (world.area === 'diner' || world.area === 'road')) {
+      counter.getWorldPosition(counterAt);
+      const near = (world.driving ? camera.position : player.pos).distanceTo(counterAt) < 60;
+      const st: StationId | null = radio.stations.caliche.onAir ? 'caliche' : radio.stations.roswell.onAir ? 'roswell' : null;
+      if (near && st) { dinerOn = true; dinerRadio.set(true, st); }
+    }
+    if (!dinerOn && dinerRadio.on) dinerRadio.set(false);
+    dinerRadio.pos = dinerOn ? counterAt : null;
+    radio.update(dt, game.clock);
+    radioHeard = (carRadio.live && carNear) || (dinerRadio.live && !world.driving && player.pos.distanceTo(counterAt) < 12);
+    ui.radioButton(world.driving && !!tr, carRadio.on);
+  }
+  // a line said on the station the truck's radio is tuned to, captioned when it can be heard
+  radio.onLine = (id, text, by) => {
+    if (mode !== 'play' || game.cinematic || !carRadio.live || carRadio.station !== id || !carNear) return;
+    if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
+    ui.toast(by ? `RADIO, ${by}: "${text}"` : `RADIO: "${text}"`, Math.min(8, 2.2 + text.length / 22));
+  };
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard; }
   const dbg = { hold: false };
   let inCab = false;
   let canOut = false;   // stopped in the truck with ground by a door: Use gets out
@@ -918,7 +978,7 @@ async function boot() {
       ui.lightButton(flashlight.have, flashlight.on);
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
-      if (mode === 'play') { audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
+      if (mode === 'play') { radioStep(dt); audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }

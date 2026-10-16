@@ -47,11 +47,15 @@ export class TruckTrouble {
   private a: Active | null = null;
   private next = rnd(0.5, 1.5);
   private touched = false;   // the truck has been changed and must be given back
+  private power = 1;
 
   /** What is wrong now, or null. */
   get kind() { return this.a?.kind ?? null; }
   /** The engine is dead and waits for the player to turn the key (Use). */
   get wantsKey() { const a = this.a; return !!a && a.kind === 'stall' && a.key && !a.hold && (a.stage === 'dead' || a.stage === 'pause'); }
+  /** What the radio gets, 0..1 (core/radio.ts): nothing while the starter turns, a stutter with
+   *  the lights. On the battery alone it plays on. */
+  get radioLevel() { return this.power; }
   /** The engine is dead (or being started). */
   get dead() { const a = this.a; return !!a && a.kind === 'stall' && a.stage !== 'catching'; }
 
@@ -72,7 +76,7 @@ export class TruckTrouble {
   turnKey() { const a = this.a; if (!this.wantsKey || !a) return false; a.stage = 'cranking'; a.st = 0; return true; }
   /** Everything as it was: the engine runs, the lights and the instruments are the truck's own. */
   reset(truck?: Truck | null, drive?: DriveController | null) {
-    this.a = null;
+    this.a = null; this.power = 1;
     if (drive) { drive.engine = true; drive.power = 1; }
     if (truck && this.touched) { truck.setLightLevel(1); truck.setDashLevel(null); truck.setWarnings({}); truck.setGaugePower(1); }
     this.touched = false;
@@ -99,7 +103,7 @@ export class TruckTrouble {
       }
     }
     const a = this.a;
-    if (!a) { if (this.touched) this.reset(truck, drive); return; }
+    if (!a) { this.power = 1; if (this.touched) this.reset(truck, drive); return; }
     a.t += dt;
     this.touched = true;
     let light = 1, dash = 1, gauges = 1;
@@ -128,6 +132,7 @@ export class TruckTrouble {
       if (a.t > a.len) this.a = null;
     } else this.stall(dt, a, drive, sound, (l, d, w) => { light = l; dash = d; Object.assign(warn, w); });
 
+    this.power = this.a?.kind === 'stall' && this.a.stage === 'cranking' ? 0.04 : this.a?.kind === 'flicker' ? light : 1;
     truck.setLightLevel(light);
     truck.setDashLevel(dash);
     truck.setGaugePower(gauges);

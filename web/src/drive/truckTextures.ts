@@ -312,12 +312,21 @@ export function dashAtlas() {
   // radio faceplate: AM and FM dial behind glass, two knobs
   g.fillStyle = '#16181b'; g.fillRect(0, 160, 512, 96);
   g.fillStyle = '#2b2e32'; g.fillRect(0, 160, 512, 4);
-  g.fillStyle = '#0e1210'; g.fillRect(70, 176, 260, 64);
-  g.fillStyle = 'rgba(214,234,220,.75)'; g.font = '12px VT323'; g.textAlign = 'center';
-  ['88', '92', '96', '100', '104', '108'].forEach((t, i) => g.fillText(t, 92 + i * 44, 192));
-  ['54', '60', '70', '80', '100', '120', '160'].forEach((t, i) => g.fillText(t, 88 + i * 37, 226));
-  g.fillText('FM', 80, 208); g.fillText('AM', 318, 208);
-  g.fillStyle = '#c4361e'; g.fillRect(214, 180, 3, 56);
+  // the dial behind its glass: lit amber while the radio plays, the red needle at the station
+  // (core/radio.ts dialX); redrawn only when the radio is turned on, off or to another station
+  const drawRadio = (x: number, on: boolean) => {
+    g.shadowBlur = 0;
+    g.fillStyle = on ? '#2b1b07' : '#0e1210'; g.fillRect(70, 176, 260, 64);
+    if (on) { g.shadowColor = 'rgba(255,190,90,.7)'; g.shadowBlur = 4; }
+    g.fillStyle = on ? 'rgba(255,214,140,.95)' : 'rgba(214,234,220,.75)'; g.font = '12px VT323'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    ['88', '92', '96', '100', '104', '108'].forEach((t, i) => g.fillText(t, 92 + i * 44, 192));
+    ['54', '60', '70', '80', '100', '120', '160'].forEach((t, i) => g.fillText(t, 88 + i * 37, 226));
+    g.fillText('FM', 80, 208); g.fillText('AM', 318, 208);
+    g.shadowBlur = 0;
+    g.fillStyle = '#c4361e'; g.fillRect(Math.round(x) - 1, 180, 3, 56);
+    s.tex.needsUpdate = true;
+  };
+  drawRadio(214, false);
   g.fillStyle = '#3a3d42';
   for (const x of [36, 357]) { g.beginPath(); g.arc(x, 208, 20, 0, 7); g.fill(); }
   const drawClock = (text: string) => {
@@ -331,5 +340,5 @@ export function dashAtlas() {
   drawClock('');
   s.tex.anisotropy = 4;
   s.tex.minFilter = THREE.LinearMipmapLinearFilter;
-  return { tex: s.tex, drawClock };
+  return { tex: s.tex, drawClock, drawRadio };
 }

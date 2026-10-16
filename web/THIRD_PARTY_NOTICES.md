@@ -15,6 +15,10 @@ Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de li
 - "Neon", de første 200 s. https://www.scottbuckley.com.au/library/neon/ (`neon.mp3`)
 - "Hymn to the Dawn", de første 200 s. https://www.scottbuckley.com.au/library/hymn-to-the-dawn/ (`hymn_to_the_dawn.mp3`)
 
+## Nasjonalsangen på radioen, allemannseie
+
+- "The Star Spangled Banner", korversjon, The United States Air Force Band. Hentet 16. oktober 2026 fra Internet Archive, https://archive.org/details/TheStarSpangledBanner (`Star_Spangled_Banner_choral.mp3`). Siden sier at innspillingen er laget av en ansatt i det amerikanske forsvaret som del av tjenesten, og derfor er allemannseie (public domain) som et verk fra den amerikanske staten; melodien og teksten (John Stafford Smith, Francis Scott Key) er for lengst fri. Air Force Band ber om kreditering, så den står i rulleteksten. Stillheten i begynnelsen og slutten er klippet bort, og lyden er nivåjustert (loudnorm, -16 LUFS), mikset til mono og kodet som MP3 48 kbps, 22 kHz, i `public/radio/anthem.mp3`. Den strømmes når en radio i spillet spiller den (`core/radio.ts`), og er ikke med i enkeltfilbygget.
+
 ## Lydeffekter, CC0 1.0
 
 - old dot-matrix printer, viertelnachvier, Freesound 181420 (`printer.mp3`)
