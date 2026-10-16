@@ -1,7 +1,7 @@
 # The radio (core/radio.ts, Tom 16 October): the truck's radio works (R, the dial on the dash,
 # three stations, the Night Line's captions, static swelling over it now and then, off again),
-# the town's station signs off at 04:00 with the national anthem and the carrier, Roswell signs on at 05:00 with the anthem, the radio
-# drops out while the starter turns, it plays on from the truck when the player gets out, the
+# the town's station signs off at 04:00 with the national anthem and the carrier, Roswell signs
+# on at 05:00 with the anthem, the radio drops out while the starter turns, it plays on from the truck when the player gets out, the
 # diner's radio plays the station that is on the air, and on the old road the cab radio is
 # chapter six's. With S47_URL on the Pages build the anthem file itself is checked as it plays;
 # the single-file build has no file beside it, so there the carrier stands in.
