@@ -17,11 +17,15 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // A line that starts with "~ " is pencil on the paper (story/nightshift.ts).
 const pencil = (html: string) => html.replace(/^~ (.*)$/gm, '<span class="pencil">$1</span>');
 
-const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal to Noise", and excerpts of "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn". Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
+const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal to Noise", and excerpts of "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn". Chris Zabriskie, CC BY 4.0, chriszabriskie.com: "Cylinder One", "Cylinder Two", "Cylinder Eight". Kevin MacLeod, CC BY 4.0, incompetech.com: "Floating Cities", "Ossuary 1 - A Beginning", "Ossuary 5 - Rest", "Long Note Four", "Lightless Dawn", "Phantom from Space", "Night on the Docks - Sax". Shane Ivers, CC BY 4.0, silvermansound.com: "Signs To Nowhere". Sound effects: Freesound users viertelnachvier, transitking, geraldfiebig, DarkShroom (CC0) and Kenney (CC0). Out in the dark: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0). The national anthem on the radio: The United States Air Force Band (public domain). Fonts: VT323, Special Elite, Reenie Beanie, Oswald (OFL / Apache 2.0).';
 
 const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
 
-type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos';
+type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit';
+/** Something the player carries (the Kit tab). */
+export interface KitItem { name: string; note: string; state?: string }
+/** The notebook's map and kit (main.ts puts them together). */
+export interface NbExtras { map?: string; kit?: KitItem[] }
 // the picture setting: clean, the 1986 tape look, or a worn tape with tracking trouble
 const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
 
@@ -264,7 +268,9 @@ export class UI {
   // so far (with the evidence board once there is one), the papers and the photographs.
   // The last tab used is kept. After SPILLDESIGN.md ("Journal med fem faner").
   private nbTab: NbTab = 'tasks';
-  notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight', onBoard?: () => void) {
+  /** The tab the notebook opens at next (M for the map, I for the kit). */
+  notebookAt(t: NbTab) { this.nbTab = t; }
+  notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight', onBoard?: () => void, extras: NbExtras = {}) {
     const el = document.createElement('div');
     el.className = 'overlay';
     const photos = docs.filter((d) => d.kind === 'photo' && d.image);
@@ -285,6 +291,8 @@ export class UI {
           <button role="tab" data-t="findings">Findings${count(findings.length)}</button>
           <button role="tab" data-t="papers">Papers${count(papers.length)}</button>
           <button role="tab" data-t="photos">Photos${count(photos.length)}</button>
+          ${extras.map ? '<button role="tab" data-t="map">Map</button>' : ''}
+          ${extras.kit ? '<button role="tab" data-t="kit">Kit</button>' : ''}
         </div>
         <button class="close">Close  [Tab]</button>
         <section class="nb-page" data-p="tasks">
@@ -308,6 +316,11 @@ export class UI {
           <h4>Photographs</h4>
           ${photos.length ? `<div class="thumbs">${photos.map((d) => `<button data-d="${d.id}"><img alt="" src="${d.image}"><span>${esc(d.title)}</span></button>`).join('')}</div>` : '<p class="empty">No exposures yet.</p>'}
         </section>
+        ${extras.map ? `<section class="nb-page nb-map" data-p="map"><img alt="A pencil sketch of the area round SARO" src="${extras.map}"></section>` : ''}
+        ${extras.kit ? `<section class="nb-page nb-kit" data-p="kit">
+          <h4>What I have on me</h4>
+          <ul class="kit">${extras.kit.map((k) => `<li><b>${esc(k.name)}</b>${k.state ? `<i>${esc(k.state)}</i>` : ''}<span>${esc(k.note)}</span></li>`).join('')}</ul>
+        </section>` : ''}
       </div>`;
     const show = (t: NbTab) => {
       this.nbTab = t;
@@ -315,7 +328,7 @@ export class UI {
       el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
     };
     el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => show(b.dataset.t as NbTab)));
-    show(this.nbTab);
+    show(el.querySelector(`[data-p="${this.nbTab}"]`) ? this.nbTab : 'tasks');
     el.querySelector('.close')!.addEventListener('click', () => this.close());
     el.addEventListener('click', (e) => { if (e.target === el) this.close(); });
     el.querySelector('[data-a=board]')?.addEventListener('click', () => { this.close(); onBoard?.(); });

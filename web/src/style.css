@@ -276,6 +276,13 @@ html.text-large .examine { font-size: 27px; }
 .notebook .findings b { grid-row: span 2; font-family: var(--term); font-weight: normal; font-size: 24px; color: #2f6a3c; }
 .notebook .findings span { font-family: var(--type); font-size: 15px; color: var(--ink); }
 .notebook .findings em { font-style: normal; font-family: var(--type); font-size: 13px; color: #6d6656; }
+/* the map and the kit (ui/areaMap.ts, main.ts) */
+.notebook .nb-map img { display: block; width: 100%; height: auto; max-height: calc(100vh - 150px); object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.notebook .kit { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px 22px; }
+.notebook .kit li { border-bottom: 1px solid rgba(60,50,40,.25); padding: 6px 0 10px; }
+.notebook .kit b { display: block; font-family: var(--type); font-size: 19px; color: #2e2a22; }
+.notebook .kit i { display: inline-block; margin: 2px 0 4px; font-style: normal; font-family: var(--term); font-size: 17px; color: #a33a2c; }
+.notebook .kit span { display: block; font-family: var(--type); font-size: 15px; color: #4c463a; }
 .notebook .thumbs { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
 .notebook .thumbs button { width: 220px; text-align: left; padding: 0; }
 .notebook .thumbs img { display: block; width: 100%; height: auto; box-shadow: 0 6px 14px rgba(0,0,0,.35); transform: rotate(-.8deg); }

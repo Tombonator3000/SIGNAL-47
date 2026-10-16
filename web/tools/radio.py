@@ -69,6 +69,21 @@ async def main():
             if await ev("Math.abs(S47.world.legs[S47.world.leg].drive.speed) < 0.3"): break
         await ev("S47.world.testInput = { steer: 0, throttle: 0 }")
         check(await ev("S47.world.driving && S47.world.area === 'saro'"), 'stopped in the yard, still in the cab')
+        # looking at the radio in the cab: the prompt says what it does, and E (or a click) does it
+        found = None
+        for yi in range(0, 12):
+            for pi in range(0, 9):
+                y, p_ = -yi * 0.08, -0.1 - pi * 0.08
+                await ev(f"(() => {{ const D = S47.world.legs[S47.world.leg].drive; D.yaw = {y}; D.pitch = {p_}; }})()"); await tick(0.05)
+                if await ev("S47.radioAimed()"): found = (y, p_); break
+            if found: break
+        prompt = await ev("(() => { const e = document.querySelector('.hud .prompt'); return e && e.classList.contains('show') ? e.textContent : ''; })()")
+        check(found and 'AM 1420: next station' in prompt, f"looking at the radio in the cab, it says what it does ({found}, '{prompt}')")
+        await pg.screenshot(path=f'{OUT}/radio_aim.png')
+        await pg.keyboard.press('e'); await tick(0.3)
+        c = await ev(CAR)
+        check(c['station'] == 'roswell' and await ev("S47.world.driving"), f"E on the radio turns it to the next station, and does not get out ({c['station']})")
+        await ev("S47.carRadio.set(true, 'caliche'); (() => { const D = S47.world.legs[S47.world.leg].drive; D.yaw = 0; D.pitch = -0.08; })()"); await tick(0.6)
         # the Night Line: a host and callers, captioned while the radio can be heard
         got = False
         for _ in range(16):

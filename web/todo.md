@@ -2,6 +2,18 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
+## Toms liste 16. oktober kveld, i den rekkefølgen jeg tar den
+
+Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).
+
+1. [ ] **Radioen og lydene i mørket** ferdig testet, flettet og ute på Pages (testrekka går).
+2. [x] **Musikk i bakgrunnen hele tiden** (bygget 16. oktober kveld, testes), stille og nesten i loop, valgt etter sted: rolige flater og minimalistiske mønstre ute og inne på SARO, noir-jazz i dineren og byen. Lisens lest på hver kilde (16. oktober): Chris Zabriskie «Cylinders» (CC BY 4.0, chriszabriskie.com), Kevin MacLeod (CC BY 4.0, incompetech.com), Shane Ivers «Signs To Nowhere» (CC BY 4.0, silvermansound.com), og Scott Buckley som før. Badalamenti og Lynch selv er beskyttet og kan ikke brukes; dette er åpen musikk i samme ånd.
+3. [x] **Kart over stedet** i notatboka (bygget 16. oktober kveld, M): SARO, motellet, dineren, byen, STATION 01 og den gamle veien, med «du er her» og merkene fra hendelsene senere (`HENDELSER.md` punkt 10).
+4. [x] **Inventar** (bygget 16. oktober kveld, fanen Kit, I): det spilleren bærer (lommelykta, feltkameraet, nøkler, fotografier, papirer), egen fane eller tast.
+5. [ ] **Ansiktsportretter**: bestillingen til ChatGPT står i `ART_BRIEF.md`, runde 13. Når bildene kommer: portrett i samtalepanelene og en fane med folk i notatboka.
+6. [ ] **Motellet rundt 700 m sør** langs riksveien (avgjort 15. oktober), med gangbar veiskulder og kapittel 4 skrevet om.
+7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der.
+
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
 - [x] Ekte kjøretur SARO til STATION 01 og tilbake, uten kutt (5. oktober kveld, `drives.py`).
@@ -30,6 +42,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Tom avgjorde retningen for knutepunktet 16. oktober: A, én natt og byen om natta, romvesenene alltid i bakgrunnen og tilfeldige bortføringer. Utdypet i `HENDELSER.md`.
 - [x] Tom svarte ja på alle fire spørsmålene om bortføringene (16. oktober kveld, `HENDELSER.md`, punkt 12).
 - [x] Bilradioen virker, og nasjonalsangen spilles på radioene (16. oktober kveld): `core/radio.ts`, R eller Radio-knappen, tre stasjoner, 1420 avslutter 04:00 og 1230 starter 05:00 med nasjonalsangen, radioen i dineren, pratelyder som Peanuts med tekst.
+- [x] Radioen kan brukes ved å se på den og klikke, trykke E eller trykke på den på telefon (16. oktober kveld).
+- [x] Lydene ute i mørket når man går med lommelykta (16. oktober kveld, `core/calls.ts`), fra lydene i rulleteksten til They Are Here med lisens vi kan bruke.
+- [ ] Tom hører på lydene ute i mørket: for ofte, for sjelden, for høyt? Og om hornet (JarredGibb) passer, eller bør tas ut.
+- [ ] Neste del av `HENDELSER.md`: glimtene av romvesenene og bortføringene (Tom har svart ja på de fire spørsmålene).
 - [ ] Tom hører på radioen på ekte høyttalere: pratelydene, låtene, nasjonalsangen og nivået mot motoren (UNVERIFIED her; målt i nettleseren uten høyttalere).
 - [x] Morgenradioen på den gamle veien i kapittel 6 (`Audio.cabRadio('talk')`) mumler nå som Peanuts den også. Bitene av natten i THE EVENT (Tomás' stemme på radioen) er med vilje uendret.
 - [ ] Steg 0 i `HENDELSER.md`, den billige testen før byen: regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet. Tom spiller kapittel 1 til 3 og svarer på spørsmålene der. Nye tester `events.py` og `abduct.py`.

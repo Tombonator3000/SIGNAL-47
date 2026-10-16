@@ -19,8 +19,11 @@ import { Flashlight } from './core/Flashlight';
 import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
-import { Score, CUES, type Cue } from './core/score';
-import { Radio, FREQ, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
+import { Score, CUES, TRACKS, type Cue } from './core/score';
+import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
+import { NightCalls } from './core/calls';
+import { areaMap, type MapView } from './ui/areaMap';
+import type { KitItem } from './ui/UI';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -28,7 +31,7 @@ import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
 import { initArtMaterials } from './world/kit';
-import { World } from './world/World';
+import { World, STATION_ORIGIN as STATION_AT } from './world/World';
 import { Doors } from './world/Doors';
 import type { AreaId } from './story/Chapter3';
 
@@ -130,6 +133,8 @@ async function boot() {
   const radio = new Radio(audio);
   const carRadio = radio.receiver({ vol: 0.65, ref: 1.0 });
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
+  // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
+  const calls = new NightCalls(audio);
   const input = new Input(renderer.domElement, ui.touch);
   input.sensitivity = store.get('sens', 1);
   const inter = new Interaction();
@@ -345,7 +350,12 @@ async function boot() {
   function useCurrent() {
     // in the truck: Use (E) turns the key when the engine has died and waits for it, or gets
     // out where the truck stands when it is stopped (Tom, 16 October)
-    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) { if (!world.trouble.turnKey()) world.getOutHere(); return; }
+    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) {
+      if (world.trouble.turnKey()) return;
+      if (radioAimed()) { turnRadio(); return; }
+      world.getOutHere();
+      return;
+    }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
@@ -358,6 +368,10 @@ async function boot() {
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
       useCurrent();
+    } else if (code === 'KeyM' || code === 'KeyI') {
+      // the map and the kit, straight to their tabs in the notebook
+      if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
+      if (!game.cinematic) { ui.notebookAt(code === 'KeyM' ? 'map' : 'kit'); game.openNotebook(); }
     } else if (code === 'Tab' || code === 'KeyN') {
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
       if (!game.cinematic) game.openNotebook();
@@ -380,9 +394,10 @@ async function boot() {
     if (!input.locked) input.requestLock(); else useCurrent();
   });
   input.onTap = (x, y) => {
-    if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
-    if (fcam.raised) { ch1.shutter(); return; }
+    if (mode !== 'play' || ui.modal || game.cinematic) return;
     const ndc = new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
+    if (world.driving) { if (radioAimed(ndc)) turnRadio(); return; }   // a tap on the radio in the cab
+    if (fcam.raised) { ch1.shutter(); return; }
     const it = inter.pick(camera, ndc, 2.6);
     if (it) it.use();
   };
@@ -403,6 +418,17 @@ async function boot() {
     ui.toast(st ? `AM ${FREQ[st]}` : 'Radio off', 1.6);
   };
   ui.onRadio = turnRadio;
+  // in the cab the radio is used by looking at it and clicking (or E), or by tapping it, as well
+  // as with R (Tom, 16 October): a ray from the view's centre, or from the tap, to its faceplate
+  const aimRay = new THREE.Raycaster(), centre = new THREE.Vector2();
+  aimRay.far = 1.6;
+  function radioAimed(ndc = centre) {
+    const tr = world.driving ? world.truckHere() : null;
+    if (!tr?.radioHit) return false;
+    aimRay.setFromCamera(ndc, camera);
+    return aimRay.intersectObject(tr.radioHit, false).length > 0;
+  }
+  const radioLabel = () => !carRadio.on ? 'Turn the radio on' : carRadio.station === DIAL[DIAL.length - 1] ? 'Turn the radio off' : `AM ${FREQ[carRadio.station]}: next station`;
   ui.onZoom = (held) => { input.zoomHeld = held; };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
@@ -528,6 +554,43 @@ async function boot() {
     if (mode !== 'play' || !caseId) return 'There is no night running to save.';
     return game.saveBlock();
   }
+  // ---------- the notebook's map and kit (Tom, 16 October) ----------
+  // Where the player is on the pencil map (ui/areaMap.ts): the area, and on a road how far along.
+  function mapAt(): MapView['at'] {
+    const p = player.pos, tr = world.driving ? world.truckHere() : null, q = tr ? tr.group.position : p;
+    switch (world.area) {
+      case 'road': return { spot: 'highway', t: q.z / 2000 };
+      case 'diner': return { spot: 'diner' };
+      case 'room6': return { spot: 'motel' };
+      case 'roswell': { const d = world.oldDrive; return { spot: 'oldroad', mi: world.oldRoad && d ? world.oldRoad.where(d.pos.x, d.pos.z).mi : 0 }; }
+      case 'station01': {
+        if (!world.driving) return { spot: 'station01' };
+        const d = Math.hypot(q.x - STATION_AT.x, q.z - STATION_AT.z);
+        return d < 60 ? { spot: 'station01' } : { spot: 'track', t: 1 - Math.min(1, d / 450) };
+      }
+      default:
+        if (inside(motelOffice, p) || (world.crossing.outside(p) && world.crossing.atMotel(p))) return { spot: 'motel' };
+        if (world.crossing.outside(p)) return { spot: 'highway', t: 0 };
+        if (world.grounds.onGround(p) || world.grounds.onRoad(p) || inside(yard.zone.truckPad, p)) return { spot: 'yard' };
+        return { spot: 'saro' };
+    }
+  }
+  function kitItems(): KitItem[] {
+    const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
+    const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner' : world.truckAt === 'saro' ? 'On the pad by the service yard' : 'Where I left it';
+    const kit: KitItem[] = [{ name: 'Notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
+    if (game.at('ch1')) kit.push({ name: 'SARO jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
+    if (fcam.have) kit.push({ name: 'Field camera', state: `${photos} exposed`, note: 'The SARO field camera, sheet film. C raises it, Space takes the picture.' });
+    if (flashlight.have) kit.push({ name: 'Flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
+    if (game.at('ch1')) kit.push({ name: 'Truck keys', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
+    if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
+    return kit;
+  }
+  game.notebookExtras = () => ({
+    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5') }),
+    kit: kitItems(),
+  });
+
   function placeName() {
     const p = player.pos;
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
@@ -727,10 +790,10 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
-    playtime: () => playtime, caseId: () => caseId, score: () => score,
+    playtime: () => playtime, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
     // tests: the scene as the lights leave it, before the tape: how many colour values would not
     // fit the half-float targets the picture is drawn into (over 65504, or not a number at all),
     // and the brightest one (a 32-bit float target at a quarter of the size)
@@ -823,10 +886,13 @@ async function boot() {
         { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
         { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
       ] });
+      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
+        { label: 'A sound out in the dark', run: () => calls.now() },
+      ] });
     }
     if (mode === 'play' && score) {
-      groups.push({ title: 'Music', note: 'Each cue once, from the start. The game also plays them by itself now and then.', items: [
-        ...(Object.keys(CUES) as Cue[]).map((c) => ({ label: CUES[c].title, run: () => score!.start(c), on: score!.playing === c })),
+      groups.push({ title: 'Music', note: 'Each piece from the start. The game plays them by itself all the time, chosen by place.', items: [
+        ...Object.keys(TRACKS).map((k) => ({ label: TRACKS[k].title, run: () => score!.start((Object.keys(CUES) as Cue[]).find((c) => CUES[c].includes(k))!, k), on: score!.track === k && !!score!.playing })),
         ...(score.playing ? [{ label: 'Stop the music', run: () => score!.fade(1.5, 120) }] : []),
       ] });
     }
@@ -899,7 +965,8 @@ async function boot() {
     if (world.area === 'station01') return 'tension';
     if (world.area === 'room6') return 'motel';
     const hour = (((game.clock % 86400) + 86400) % 86400) / 3600;
-    if (world.area === 'diner' || (hour >= 5 && hour < 12)) return 'dawn';
+    if (hour >= 5 && hour < 12) return 'dawn';
+    if (world.area === 'diner') return 'town';   // the lot and the road by the diner at night (inside, its radio)
     return space === 'yard' ? 'night' : 'eerie';
   }
   const HELD = ['ringing', 'call', 'countdown', 'event', 'turning', 'end'];
@@ -979,6 +1046,10 @@ async function boot() {
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') { radioStep(dt); audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
+      if (mode === 'play') calls.update(dt, {
+        ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3,
+        cam: camera, flicker: (k) => flashlight.flicker(k), hush: (secs) => audio.night?.hush(secs),
+      });
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }
@@ -998,9 +1069,9 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey, out = live && !key && world.canGetOut();
-        if ((out || key) !== canOut) { canOut = out || key; document.documentElement.classList.toggle('can-out', canOut); }
-        ui.prompt(key ? 'Turn the key' : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        const key = live && world.driving && world.trouble.wantsKey, aimR = live && !key && radioAimed(), out = live && !key && !aimR && world.canGetOut();
+        if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
+        ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
         ui.examine(null);
       }
@@ -1037,7 +1108,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing : ''}`);
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}`);
   let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);

@@ -363,6 +363,55 @@ Manifest og leveransenotat (`ART_ROUND12_DELIVERY.md`) som i tidligere runder, m
 
 **Claude gjør selv, uten bilder:** det grå båndet mellom himmel og bakke i uttrekket (tåkefargen mot himmelen ved horisonten), og lys på mesaene på siden som vender mot sola.
 
+## Runde 13: ansiktsportretter av folka (Tom, 16. oktober)
+
+Folka i spillet får et ansikt. Portrettet vises i samtalepanelet når spilleren snakker med dem, og i en ny fane med folk i notatboka. Spillet er en natt i New Mexico i 1986, skummelt og stille, med litt Twin Peaks i stemningen. Alle er oppdiktet.
+
+**Viktig:** ingen ekte personer og ingen likhet med kjente skuespillere eller figurer (heller ikke fra Twin Peaks eller X-Files). Ingen tekst, logoer eller merkenavn i bildene. Navneskilt og merker er blanke.
+
+### Format og stil (gjelder alle)
+
+- 512×640 piksler (4:5), JPG kvalitet rundt 85, sRGB.
+- Hode og skuldre, tre kvart fra siden, øynene på øvre tredjedel. Samme utsnitt på alle, så de ser ut som en serie.
+- Malt, stilisert realisme, som et omslag på en pocketbok fra 1980-tallet: myke penselstrøk, ikke fotografisk og ikke tegneserie. Litt korn er fint; Claude legger på båndstøyen i spillet.
+- Natt. Ett tydelig lys fra stedet de hører til (se under) og mørk bakgrunn som glir over i svart. Paletten fra stilavsnittet øverst: natriumoransje, CRT-grønn, neonrød, papir.
+- Klær, hår og briller fra 1986, ikke fra i dag. Ingen moderne ting.
+- Ansiktene er slitne, vanlige og troverdige. Ingen ser rett i kameraet, unntatt betjenten (se under).
+
+### Prioritet A: de som finnes i spillet nå
+
+| Fil | Hvem | Lys og bakgrunn |
+| --- | --- | --- |
+| `people/portrait_nora.jpg` | Nora Vega, 57, eier Sierra Motor Court. Hispanic, fra New Mexico. Mørkt hår med grå striper satt opp, cardigan over en arbeidsbluse, lesebriller i snor. Våken og på vakt, som en som har ventet lenge på noe | Varm lampe fra siden, svakt rødt neonskjær fra motellskiltet på den andre kinnet |
+| `people/portrait_waitress.jpg` | Servitrisen på Mesa Diner, rundt 45. Uniform med forkle, håret i hestehale, en blyant bak øret. Lei, tørr humor i blikket | Kaldt lysrør ovenfra, et glimt av kaffekanna i kanten |
+| `people/portrait_driver.jpg` | Sjåføren i dineren, rundt 55. Caps, værbitt ansikt, olajakke eller dongerijakke, kaffekopp i hånda | Det samme lysrøret, grålysning i vinduet bak |
+| `people/portrait_ward.jpg` | Dr. Evelyn Ward, rundt 50, vaktansvarlig på SARO. Kort grått hår, briller, skjorte og cardigan. Bestemt | Som et ID-kort fra 1986: flatt blitzlys, lys grå bakgrunn, litt falmet |
+| `people/portrait_dale.jpg` | Dale, rundt 35, kollegaen som gikk hjem. Bart, rutete flanellskjorte, penn i lomma. Unnvikende | Samme ID-kortstil som Ward |
+| `people/portrait_tomas_1947.jpg` | Tomás Vega i 1947, rundt 22, Noras bror. Arbeidsskjorte, hatten skjøvet bakover, et smil som er i ferd med å forsvinne | Gammelt fotografi: sepia, riper, litt uskarpt, hvite kanter |
+
+### Prioritet B: folka i byen (Caliche, `HENDELSER.md` punkt 9), som kommer senere
+
+| Fil | Hvem | Lys og bakgrunn |
+| --- | --- | --- |
+| `people/portrait_deputy.jpg` | Nestlederen hos sheriffen, rundt 40. Brun uniformsskjorte, en stjerne uten tekst, trøtte øyne. Tror på kart, ikke på romvesener | Skrivebordslampe, et kart med knappenåler uskarpt bak |
+| `people/portrait_host.jpg` | Earl, verten på nattradioen, rundt 60. Hodetelefoner rundt halsen, cardigan, røyk i lyset | En rød lampe (uten tekst) og varmt lys fra miksebordet |
+| `people/portrait_attendant.jpg` | Betjenten på bensinstasjonen, rundt 30. Kjeledress med blankt navneskilt. Han ser rett i kameraet, litt for rolig, som om han har sagt dette før | Grønnhvitt lysrør fra taket over pumpene |
+| `people/portrait_radio_woman.jpg` | Kvinnen på benken utenfor vaskeriet, rundt 70. Sjal, en liten transistorradio holdt inntil øret, lytter | Lysrøret fra vaskeriet bak henne |
+| `people/portrait_souvenir_man.jpg` | Mannen i suvenirbutikken, rundt 50. Westernskjorte, bolo-slips, en gummimaske av et romvesen henger uskarpt bak ham. Litt for ivrig | Varm butikklampe, glassmontre i kanten |
+
+### Ikke i denne runden
+
+- Spilleren (Reyes) får aldri ansikt. Bare silhuetten med refleksbåndet på SARO-jakka, slik avisbildet fra 1947 viser den.
+- Romvesenene får ikke portretter. De er silhuetter og FLASH (se `HENDELSER.md`).
+
+### Manifest og kontroll
+
+Lever en `people/MANIFEST.md` med filnavn, mål og en linje om hver. Claude sjekker størrelse, format og at ingen har tekst eller logoer i bildet.
+
+### Hvordan Claude kobler dem inn
+
+Samtalepanelene (dineren, rom 6, telefonen) får portrettet til venstre for replikkene, og notatboka en fane med folk spilleren har møtt. Mangler et bilde, vises navnet uten portrett, som i dag.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
