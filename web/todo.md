@@ -18,6 +18,9 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [ ] Tom prøver å kjøre selv mellom SARO, dineren og STATION 01 i kapittel 1 og 2: finner han plassene å stoppe på, og er det tydelig nok at stasjonen og den gamle veien er stengt ennå?
 - [x] Lommelykt (F, Light på telefon; ligger på passasjersetet i bilen) og høyreklikk for zoom og undersøk (Zoom på telefon), 15. oktober kveld. Undersøk-tekst finnes foreløpig på lastebilen, den lenkede gangåpningen og ROAD CLOSED-sperringen; flere ting får tekst etter hvert.
 - [x] 16. oktober: svart firkant og grafiske feil på RTX 3080 (NaN gjennom bloom), stjerneskudd, gå ut av bilen der den står, naturlyden nesten borte innendørs, nye fotlyder (Kenney, CC0).
+- [x] Lastebilen bedre ute og inne, og feil med bilen klare til historien (16. oktober): grill i relieff, kanter på hjulbuene, glass man ser litt gjennom, dørrammer, CB-radio, kart i dørlomma; hosting, motorstopp med startmotor, blinkende lys, mørkt dashbord og varsellamper (`drive/trouble.ts`, `tools/trouble.py`).
+- [ ] Bestemme når feilene med bilen skal brukes i historien, og om tilfeldige feil skal være på om natta (`world.trouble.random`). Forslag: på i kapittel 5 og på kjøreturene etter at signalet er funnet, med flimrende lommelykt samtidig.
+- [ ] Tom prøver feilene med bilen fra utviklermenyen (Truck trouble) og hører på hosting, startmotor og omstart (UNVERIFIED på ekte høyttalere).
 - [ ] Tom prøver på RTX 3080 (Ultra): er den svarte firkanten borte? Hvis det fortsatt er grafiske feil: et skjermbilde og hvor i spillet, og om det er på Ultra eller High.
 - [ ] Tom hører på de nye fotlydene og lyden innendørs på ekte høyttalere (UNVERIFIED her).
 - [ ] Flere ting med undersøk-tekst (`examine`): antennene, skiltene, dokumentene på pultene, motellet. Lommelykta flimrer nær hendelsene når de kommer (`Flashlight.flicker`).

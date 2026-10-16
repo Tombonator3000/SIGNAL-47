@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { box, cyl, rod, plane, noMerge, floodlit, floodSet, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import {
-  DASH, DIALS, DECAL, CAB, dashAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
+  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
 } from './truckTextures';
 
 // SARO 07, the observatory's service truck: a full-size single-cab pickup of the early
@@ -216,6 +216,9 @@ export class Truck {
   private clockShown = ''; private clockWanted = ''; private clockAt = -1;
   private gauge = { speed: 0, fuel: 0.6, temp: 0.15, tSpeed: 0, tFuel: 0.6, tTemp: 0.5 };
   private eyeW = new THREE.Vector3(); private camW = new THREE.Vector3();
+  private lamps: Partial<Record<(typeof WARN)[number], THREE.Mesh>> = {};
+  /** The instruments' power (setGaugePower): below 0.5 the electric needles fall back. */
+  private gaugePower = 1;
   // The cab's own light: the instruments, and a little sky through the glass. A flood set of its own.
   private cabFlood = floodSet(2, 'cab', 0.5);
 
@@ -230,7 +233,7 @@ export class Truck {
     this.wheels.frustumCulled = false; // the instances move; the truck is small anyway
     // Whoever puts the camera outside the cab gets the whole truck back on the next frame,
     // even if nobody calls setDriving(false) (a cut to the parked truck, for example).
-    this.wheels.onBeforeRender = (_r, _s, cam) => this.autoView(cam);
+    this.wheels.onBeforeRender = (_r, _s, cam) => this.viewFrom(cam);
     this.body.add(this.wheels);
     for (const s of [-1, 1]) {
       for (const y of [0.931, 0.756]) this.gi.head.push(this.glow.add(s * 0.657, y, -2.64, 0.55, 0));
@@ -254,7 +257,8 @@ export class Truck {
       chrome: std({ color: 0xc8cbcc, roughness: 0.26, metalness: 0.62 }),
       trim: std({ color: 0x1a1b1d, roughness: 0.75 }),
       under: std({ color: 0x1b1a19, roughness: 1 }),
-      glass: std({ color: 0x0b0f14, roughness: 0.1, metalness: 0.45, side: THREE.DoubleSide }),
+      // tinted glass, dark but not black: the shapes in the cab show through a little
+      glass: std({ color: 0x0b0f14, roughness: 0.1, metalness: 0.45, side: THREE.DoubleSide, transparent: true, opacity: 0.82, depthWrite: false }),
       decal: std({ map: decalAtlas(), transparent: true, depthWrite: false, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
       wheel: std({ vertexColors: true, roughness: 0.82 }),
       head: basic(0x2c2c2a), park: basic(0x3a2a10), tail: basic(0x2a0606), beacon: basic(0x4a3010), rev: basic(0x8a8a86),
@@ -271,9 +275,13 @@ export class Truck {
       prop: cab(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }), { tinted: true }),
       wheelRim: cab(new THREE.MeshStandardMaterial({ color: 0x2c2926, roughness: 0.45 })),
       cabMirror: new THREE.MeshBasicMaterial({ map: atlas }),
+      // the door windows seen from inside: only a faint sheen
+      cabGlass: new THREE.MeshBasicMaterial({ color: 0x9fb8cc, transparent: true, opacity: 0.06, depthWrite: false, side: THREE.DoubleSide }),
       tint: new THREE.MeshBasicMaterial({ map: windshieldTex(), transparent: true, depthWrite: false }),
       gauge: new THREE.MeshBasicMaterial({ map: this.dash.tex, toneMapped: false }),
       needle: new THREE.MeshBasicMaterial({ color: 0xff6a30, toneMapped: false }),
+      // the warning lamps lit (setWarnings)
+      warn: new THREE.MeshBasicMaterial({ map: warnAtlas(), toneMapped: false }),
     };
   }
 
@@ -300,15 +308,40 @@ export class Truck {
     for (const u of [-FRONT_AXLE]) box(B, 1.4, 0.44, 0.84, m.under, 0, 0.62, -u);
     // grille and the four square headlamps, the parking lamps under them
     decal(B, 1.8, 0.4, m.decal, DECAL.grille, 0, 0.84, -2.623, Math.PI);
+    // the grille in relief over its picture: a bright surround, three bars and the centre bar
+    // standing proud of the egg-crate, and a chrome bezel round each pair of lamps (the lenses
+    // sit back in it)
+    const surround = rrect(-0.9, 0.635, 0.9, 1.045, 0.02);
+    surround.holes.push(hole([[-0.885, 0.65], [0.885, 0.65], [0.885, 1.03], [-0.885, 1.03]]));
+    mesh(B, face(surround, 0.02, -2.632, 0.006), m.chrome);
+    for (const y of [1.006, 0.843, 0.681]) box(B, 0.956, 0.016, 0.018, m.chrome, 0, y, -2.634);
+    box(B, 0.024, 0.344, 0.02, m.chrome, 0, 0.843, -2.635);
+    for (const sx of [-1, 1]) {
+      const cx = sx * 0.657, bz = rrect(cx - 0.207, 0.653, cx + 0.207, 1.027, 0.012);
+      for (const y of [0.931, 0.756]) bz.holes.push(hole([[cx - 0.172, y - 0.07], [cx + 0.172, y - 0.07], [cx + 0.172, y + 0.07], [cx - 0.172, y + 0.07]]));
+      mesh(B, face(bz, 0.028, -2.64, 0.006), m.chrome);
+    }
     for (const s of [-1, 1]) {
       for (const y of [0.931, 0.756]) box(B, 0.33, 0.135, 0.02, m.head, s * 0.657, y, -2.628);
       box(B, 0.3, 0.05, 0.02, m.park, s * 0.66, 0.6, -2.624);
       box(B, 0.03, 0.045, 0.085, m.park, s * 0.992, 0.84, -2.36);               // side markers
     }
+    // a lip of paint round each wheel arch, standing a little proud of the side
+    for (const sx of [-1, 1]) {
+      for (const [cz, a0] of [[FRONT_AXLE, 0.2795], [REAR_AXLE, 0.3929]] as const) {
+        const lip = new THREE.TorusGeometry(0.478, 0.02, 6, 26, Math.PI - 2 * a0).rotateZ(a0).rotateY(Math.PI / 2).translate(sx * 0.99, WHEEL_R, cz);
+        mesh(B, lip, m.paint);
+      }
+    }
     // the front bumper, the plate, two tow hooks
     mesh(B, side(outline([[2.6, 0.37], [2.74, 0.38], [2.775, 0.43], [2.775, 0.5], [2.74, 0.555], [2.6, 0.565]]), 2.04, 0, 0.03), m.chrome);
     decal(B, 0.3, 0.15, m.decal, DECAL.plateF, 0, 0.465, -2.777, Math.PI);
     for (const s of [-1, 1]) box(B, 0.05, 0.05, 0.1, m.chrome, s * 0.5, 0.33, -2.7);
+    // black rubber strips along both bumpers, either side of the plates
+    for (const s of [-1, 1]) {
+      box(B, 0.74, 0.03, 0.012, m.trim, s * 0.575, 0.465, -2.781);
+      box(B, 0.74, 0.03, 0.012, m.trim, s * 0.575, 0.465, 2.806);
+    }
     // the side moulding: a thin bright strip along the body, front and bed (the cab has its own)
     for (const s of [-1, 1]) {
       box(B, 0.012, 0.022, 1.66, m.chrome, s * 0.996, 0.93, -1.73);
@@ -332,6 +365,10 @@ export class Truck {
       box(B, 0.11, 0.07, 0.02, m.rev, s * 0.93, 0.815, 2.632);
     }
     box(B, 1.76, 0.045, 1.74, m.paint, 0, 0.722, 1.69);
+    // stake pockets in the rail caps, and the fuel filler door on the driver's side
+    for (const s of [-1, 1]) for (const z of [0.98, 1.72, 2.48]) box(B, 0.05, 0.004, 0.09, m.trim, s * 0.92, 1.234, z);
+    const fuel = new THREE.TorusGeometry(0.075, 0.005, 4, 22).rotateY(Math.PI / 2).translate(-0.993, 0.97, 0.98);
+    mesh(B, fuel, m.trim);
     for (let i = -3; i <= 3; i++) box(B, 0.035, 0.014, 1.72, m.paint, i * 0.24, 0.75, 1.69);
     box(B, 1.98, 0.5, 0.06, m.paint, 0, 0.95, 0.83);
     // the tailgate with the fleet number, its handle; the step bumper and the plate
@@ -377,7 +414,8 @@ export class Truck {
     box(B, 0.24, 0.2, 0.5, u, -0.68, 0.48, 1.05);                               // the tank
     rod(B, new THREE.Vector3(0.3, 0.36, -1.0), new THREE.Vector3(0.58, 0.32, 0.1), 0.03, u, 6);
     cyl(B, 0.1, 0.1, 0.62, u, 0.6, 0.33, 0.45, 10).rotation.x = Math.PI / 2;    // muffler
-    rod(B, new THREE.Vector3(0.6, 0.33, 0.76), new THREE.Vector3(0.66, 0.3, 2.36), 0.03, u, 6);
+    rod(B, new THREE.Vector3(0.6, 0.33, 0.76), new THREE.Vector3(0.66, 0.3, 2.56), 0.03, u, 6);
+    cyl(B, 0.036, 0.036, 0.1, u, 0.66, 0.3, 2.6, 8).rotation.x = Math.PI / 2;   // the tailpipe's end
     const spare = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.24, 18), u);
     spare.position.set(0, 0.4, 2.15); B.add(spare);
   }
@@ -410,6 +448,12 @@ export class Truck {
     const pane = new THREE.ShapeGeometry(outline([[0.746, 1.17], [-0.38, 1.17], [-0.38, 1.71], [-0.36, 1.73], [0.396, 1.73]])).rotateY(Math.PI / 2);
     for (const s of [-1, 1]) mesh(S, pane.clone().translate(s * 0.925, 0, 0), m.glass);
     box(S, 1.24, 0.43, 0.01, m.glass, 0, 1.465, 0.735);
+    // the vent windows: a bright divider at the front of each door window
+    for (const s of [-1, 1]) rod(S, new THREE.Vector3(s * 0.932, 1.17, -0.48), new THREE.Vector3(s * 0.932, 1.595, -0.48), 0.008, m.chrome, 4);
+    // what shows through the tinted glass: the bench back, the wheel, the top of the dash
+    box(S, 1.66, 0.62, 0.18, m.under, 0, 1.12, 0.57);
+    mesh(S, new THREE.TorusGeometry(0.195, 0.02, 6, 24).rotateX(-0.5).translate(-0.42, 1.0, -0.2), m.under);
+    box(S, 1.74, 0.12, 0.42, m.under, 0, 1.06, -0.62);
     // an amber beacon on the roof, switched off
     box(S, 0.22, 0.05, 0.22, m.trim, 0, 1.84, 0.25);
     cyl(S, 0.075, 0.09, 0.14, m.beacon, 0, 1.935, 0.25, 12);
@@ -435,6 +479,13 @@ export class Truck {
     this.needles = new THREE.InstancedMesh(ng, m.needle, 3);
     this.needles.frustumCulled = false;
     noMerge(this.needles); cluster.add(this.needles);
+    // the warning lamps, lit over their dark places on the cluster when something is wrong
+    WARN.forEach((name, i) => {
+      const [px, py] = WARN_AT[name];
+      const lamp = decal(cluster, 0.04375, 0.0131, m.warn, [i / 4, 0, (i + 1) / 4, 1], (px / 512 - 0.5) * 0.56, (0.5 - py / 160) * 0.175, 0.0025);
+      lamp.visible = false; noMerge(lamp);
+      this.lamps[name] = lamp;
+    });
     // the radio in its bezel, two knobs; the heater panel, the ashtray, the glovebox, the vents
     box(C, 0.4, 0.1, 0.03, m.cabTrim, 0.14, 1.06, -0.41).rotation.x = 0.2;
     decal(C, 0.34, 0.064, m.gauge, DASH.stack, 0.14, 1.06, -0.393, 0, 0.2);
@@ -505,6 +556,29 @@ export class Truck {
       cyl(C, 0.006, 0.007, 0.03, m.cabChrome, s * 0.87, 1.15, 0.36, 6);
       // the seat belt from the B-pillar, its buckle
       rod(C, new THREE.Vector3(s * 0.855, 1.63, 0.43), new THREE.Vector3(s * 0.8, 0.83, 0.52), 0.016, m.cabTrim, 4);
+      // the door window from inside: its front channel along the pillar, the vent window's
+      // divider, and the glass (the outside mirrors are seen through it on their arms)
+      rod(C, new THREE.Vector3(s * 0.9, 1.15, -0.766), new THREE.Vector3(s * 0.9, 1.74, -0.4), 0.014, m.cabTrim, 5);
+      rod(C, new THREE.Vector3(s * 0.9, 1.15, -0.48), new THREE.Vector3(s * 0.9, 1.6, -0.48), 0.01, m.cabTrim, 5);
+      mesh(C, new THREE.ShapeGeometry(outline([[0.746, 1.15], [-0.38, 1.15], [-0.38, 1.71], [-0.36, 1.73], [0.396, 1.73]])).rotateY(Math.PI / 2).translate(s * 0.905, 0, 0), m.cabGlass);
+      // a pocket low in each door card
+      box(C, 0.035, 0.13, 0.5, m.doorCard, s * 0.835, 0.74, -0.2);
+    }
+    // the service map folded in the driver's door pocket (chapter five's E14)
+    const map = mesh(C, new THREE.BoxGeometry(0.008, 0.13, 0.22), m.prop, 0xcfc29c);
+    map.position.set(-0.83, 0.82, -0.3); map.rotation.x = 0.12;
+    // a CB radio hung under the dash on the passenger side, its microphone on a hook
+    box(C, 0.22, 0.06, 0.17, m.cabTrim, 0.45, 0.755, -0.45);
+    box(C, 0.2, 0.008, 0.004, m.cabChrome, 0.45, 0.775, -0.364);
+    for (const x of [0.38, 0.5]) cyl(C, 0.01, 0.01, 0.014, m.cabChrome, x, 0.748, -0.362, 8).rotation.x = Math.PI / 2;
+    box(C, 0.012, 0.03, 0.012, m.cabChrome, 0.63, 0.83, -0.43);
+    const mic = mesh(C, new THREE.BoxGeometry(0.045, 0.075, 0.03), m.cabTrim);
+    mic.position.set(0.63, 0.79, -0.42); mic.rotation.z = 0.08;
+    const cord = new THREE.Vector3(0.63, 0.752, -0.42), cordEnd = new THREE.Vector3(0.53, 0.73, -0.44);
+    for (let i = 0; i < 9; i++) {
+      const ring = mesh(C, new THREE.TorusGeometry(0.011, 0.0028, 4, 10), m.cabTrim);
+      ring.position.lerpVectors(cord, cordEnd, i / 8); ring.position.y -= Math.sin(i / 8 * Math.PI) * 0.04;
+      ring.rotation.y = Math.PI / 2;
     }
     box(C, 0.03, 0.05, 0.04, m.cabChrome, -0.12, 0.85, 0.47);
     box(C, 1.76, 0.58, 0.03, m.doorCard, 0, 0.92, 0.705);
@@ -539,8 +613,12 @@ export class Truck {
     this.cab.visible = on;
     this.shell.visible = !on;
   }
-  private autoView(cam: THREE.Camera) {
+  /** The camera has left the driver's seat (a cut, chapter six's pull-out): the whole truck
+   *  again. World calls it each frame before the picture is drawn; the wheels' onBeforeRender
+   *  catches the rest, a frame late. */
+  viewFrom(cam: THREE.Camera) {
     if (!this.driving) return;
+    this.group.updateWorldMatrix(true, false);   // where the truck is this frame, not the last
     this.eyeW.copy(this.driverEye).applyMatrix4(this.group.matrixWorld);
     if (this.camW.setFromMatrixPosition(cam.matrixWorld).distanceTo(this.eyeW) > 0.9) this.setDriving(false);
   }
@@ -576,6 +654,15 @@ export class Truck {
   setHeadColor(c: THREE.Color | null) { this.headColor.copy(c ?? HEAD); this.applyLights(); }
   /** The instrument lights on their own, 0..1 (null: they follow setLightLevel). */
   setDashLevel(k: number | null) { this.dashLevel = k; this.applyLights(); }
+  /** The warning lamps on the cluster (drive/trouble.ts): the oil pressure and charge lamps light
+   *  when the engine stops with the key on. */
+  setWarnings(o: { oil?: boolean; volts?: boolean; brake?: boolean; belts?: boolean }) {
+    const on = { BRAKE: !!o.brake, OIL: !!o.oil, VOLTS: !!o.volts, BELTS: !!o.belts };
+    for (const n of WARN) { const l = this.lamps[n]; if (l && l.visible !== on[n]) l.visible = on[n]; }
+  }
+  /** Power to the electric gauges, 0..1: without it the fuel and temperature needles fall to
+   *  their stops (the speedometer runs off a cable and goes on). */
+  setGaugePower(k: number) { this.gaugePower = k; }
   /** Use these slots of a flood set as headlight pools on the ground (moved in update()). */
   headlightFloods(set: FloodSet, slots: number[]) {
     this.flood = { set, slots: slots.slice(0, FLOODS.length) };
@@ -637,7 +724,10 @@ export class Truck {
     this.wheels.instanceMatrix.needsUpdate = true;
     // needles have a little weight to them
     const g = this.gauge, k = 1 - Math.exp(-dt * 6);
-    g.speed += (g.tSpeed - g.speed) * k; g.fuel += (g.tFuel - g.fuel) * k * 0.3; g.temp += (g.tTemp - g.temp) * dt * 0.02;
+    const live = this.gaugePower > 0.5;
+    g.speed += (g.tSpeed - g.speed) * k;
+    g.fuel += ((live ? g.tFuel : 0) - g.fuel) * k * (live ? 0.3 : 0.5);
+    g.temp += live ? (g.tTemp - g.temp) * dt * 0.02 : (0 - g.temp) * k * 0.5;
     const W = 0.56, H = 0.175, needle = (i: number, d: typeof DIALS.speed, f: number, len: number) => {
       const a = (d.from + (d.to - d.from) * f) * Math.PI / 180;
       _q.setFromAxisAngle(_z, -a);

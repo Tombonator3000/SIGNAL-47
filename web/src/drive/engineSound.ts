@@ -130,6 +130,62 @@ export class EngineSound {
     e.noise.gain.setTargetAtTime(0, t + 0.2, 0.2);
   }
 
+  /** A misfire (drive/trouble.ts): the note drops out for a moment, with a dull pop in the
+   *  exhaust. k 0..1 is how hard. */
+  cough(k = 1) {
+    const e = this.eng;
+    if (!e || this.stalled) return;
+    const t = this.ctx.currentTime, g = e.bus.gain, L = this.level;
+    g.cancelScheduledValues(t); g.setValueAtTime(L, t);
+    g.linearRampToValueAtTime(L * (1 - 0.75 * k), t + 0.025);
+    g.linearRampToValueAtTime(L * 1.15, t + 0.11);
+    g.linearRampToValueAtTime(L, t + 0.2);
+    const n = this.src(this.brown, false), bp = this.filter('bandpass', 160 + Math.random() * 90, 1.4), ng = this.gain(0);
+    ng.gain.setValueAtTime(0, t + 0.02); ng.gain.linearRampToValueAtTime(0.5 * k, t + 0.03); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    n.connect(bp); bp.connect(ng); ng.connect(this.out); n.start(t + 0.02); n.stop(t + 0.2);
+  }
+
+  /** The starter turning the engine over for `secs` (it is dead): a whirring motor that
+   *  labours on each compression, about four and a half a second. */
+  crank(secs = 1.2) {
+    const c = this.ctx;
+    if (!this.eng) this.build();
+    const t = c.currentTime;
+    this.out.gain.cancelScheduledValues(t);
+    this.out.gain.setTargetAtTime(MASTER, t, 0.05);
+    const o = c.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(115, t); o.frequency.linearRampToValueAtTime(135, t + secs);
+    const lp = this.filter('lowpass', 900, 1.2), env = this.gain(0), am = this.gain(0.5);
+    // the strokes: the motor's level swings at 4.5 Hz
+    const lfo = c.createOscillator(); lfo.frequency.value = 4.5;
+    const depth = this.gain(0.35); lfo.connect(depth); depth.connect(am.gain);
+    o.connect(lp); lp.connect(am); am.connect(env); env.connect(this.out);
+    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(0.32, t + 0.05);
+    env.gain.setValueAtTime(0.32, t + secs - 0.08); env.gain.linearRampToValueAtTime(0, t + secs);
+    // the bendix gear's clatter at the start
+    const n = this.src(this.white, false), bp = this.filter('bandpass', 2400, 2), ng = this.gain(0);
+    ng.gain.setValueAtTime(0.12, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    n.connect(bp); bp.connect(ng); ng.connect(this.out);
+    for (const s of [o, lfo]) { s.start(t); s.stop(t + secs + 0.05); }
+    n.start(t); n.stop(t + 0.1);
+  }
+
+  /** It catches after a stall: the engine note comes back with a little surge. */
+  restart() {
+    const e = this.eng;
+    if (!e) { this.start(); return; }
+    this.stalled = false; this.running = true;
+    const t = this.ctx.currentTime;
+    for (const o of e.osc) o.frequency.cancelScheduledValues(t);
+    e.bus.gain.cancelScheduledValues(t);
+    e.bus.gain.setValueAtTime(0, t);
+    e.bus.gain.linearRampToValueAtTime(this.level * 1.6, t + 0.15);
+    e.bus.gain.setTargetAtTime(this.level, t + 0.3, 0.3);
+    this.out.gain.cancelScheduledValues(t);
+    this.out.gain.setTargetAtTime(MASTER, t, 0.05);
+    this.set(1400, 0.4);
+  }
+
   /** Every frame: rolling noise for the surface under the truck and the speed in m/s. */
   tyres(surface: SurfaceKind, speed: number) {
     const y = this.tyre;

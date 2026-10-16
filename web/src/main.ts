@@ -243,6 +243,9 @@ async function boot() {
   const ch5 = game.ch5;
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
+  // random trouble with the truck (when the story or the developer menu turns it on): at night
+  // on the player's own drives and the story's, never in a cinematic
+  world.troubleOk = () => mode === 'play' && !game.cinematic && sky.uniforms.uDawn.value < 0.3;
   world.onRoadLoaded = (road) => inter.add({ id: 'roadClosed', object: road.closedSign, label: () => null, use: () => {},
     examineRange: 40,
     examine: () => road.roadClosed ? 'ROAD CLOSED. Two barricades across the old road to Roswell, an amber lamp blinking on each.' : null });
@@ -335,8 +338,9 @@ async function boot() {
   }
 
   function useCurrent() {
-    // in the truck, stopped: Use (E) gets out where it stands (Tom, 16 October)
-    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) { world.getOutHere(); return; }
+    // in the truck: Use (E) turns the key when the engine has died and waits for it, or gets
+    // out where the truck stands when it is stopped (Tom, 16 October)
+    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) { if (!world.trouble.turnKey()) world.getOutHere(); return; }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
@@ -776,6 +780,18 @@ async function boot() {
           ...(world.free ? [{ label: 'Back on foot', run: () => world.endFreeDrive() }] : []),
         ],
       });
+      // trouble with the truck (drive/trouble.ts), for trying out what the story will use
+      groups.push({
+        title: 'Truck trouble', note: 'While driving on a trip. Random trouble comes now and then at night when it is on.',
+        items: [
+          { label: 'Engine misfires', run: () => world.trouble.start('sputter') },
+          { label: 'Engine dies', run: () => world.trouble.start('stall') },
+          { label: 'Engine dies, you turn the key', run: () => world.trouble.start('stall', { key: true }) },
+          { label: 'Lights flicker', run: () => world.trouble.start('flicker') },
+          { label: 'Dash goes dark', run: () => world.trouble.start('dashOut') },
+          { label: world.trouble.random ? 'Random trouble: on' : 'Random trouble: off', run: () => { world.trouble.random = !world.trouble.random; }, on: world.trouble.random },
+        ],
+      });
       groups.push({ title: 'Clock', items: [
         { label: '+5 minutes', run: () => { game.clock += 300; } },
         { label: '+30 minutes', run: () => { game.clock += 1800; } },
@@ -921,9 +937,10 @@ async function boot() {
         // a closer look: what the thing under the crosshair is, once the zoom is most of the way in
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
-        const out = mode === 'play' && !modalOpen && !game.cinematic && world.canGetOut();
-        if (out !== canOut) { canOut = out; document.documentElement.classList.toggle('can-out', out); }
-        ui.prompt(out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        const live = mode === 'play' && !modalOpen && !game.cinematic;
+        const key = live && world.driving && world.trouble.wantsKey, out = live && !key && world.canGetOut();
+        if ((out || key) !== canOut) { canOut = out || key; document.documentElement.classList.toggle('can-out', canOut); }
+        ui.prompt(key ? 'Turn the key' : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
         ui.examine(null);
       }
