@@ -232,6 +232,36 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 
 **Grafikk som trengs** (Codex eller ChatGPT): silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene i byen og forsiden av Pecos Valley Sentinel.
 
+## 11b. Romvesenlyder fra rulleteksten til They Are Here (sjekket 16. oktober)
+
+Tom 16. oktober: finnes det romvesenlyder i lenkene i rulleteksten til They Are Here som kan dukke opp innimellom når spilleren går rundt med lommelykta? Freesound svarte herfra denne gangen, så lisensen er lest på hver lyds egen side. Vi bruker bare originalene fra Freesound, aldri noe fra spillet selv.
+
+**Fri (CC0), uten krav om kreditering:**
+
+| Lyd | Hvem | Freesound | Hva den er |
+| --- | --- | --- | --- |
+| Alien? | superhalo | 145063 | romvesen-effekt, merket radio og forbindelse |
+| Space Temple SFX Soundscape | szegvari | 529414 | skummel 80-tallsflate |
+| War of the worlds Horn 1 | JarredGibb | 244796 | mørkt, elektronisk horn |
+
+**Med kreditering (CC BY), i rulleteksten som Scott Buckley:**
+
+| Lyd | Hvem | Freesound | Lisens |
+| --- | --- | --- | --- |
+| Alien Voice Crack | resourcemoon | 456249 | CC BY 3.0 (den «lille romvesen-stemmen» i rulleteksten) |
+| Alien Atmosphere | resourcemoon | 431305 | CC BY 3.0 |
+| Singing alien | InSintesi | 346209 | CC BY 4.0 |
+| Space transmission | InSintesi | 347005 | CC BY 4.0 |
+| Strange Atmosphere | InSintesi | 350460 | CC BY 4.0 |
+| Animals from Mars | InSintesi | 372218 | CC BY 4.0 |
+| Deep Space | InSintesi | 376304 | CC BY 4.0 |
+| The Paranormal Activity Sound | MeijstroAudio | 531845 | CC BY 4.0 |
+| Dark ambient scream | JomelleJager | 256643 | CC BY 3.0 |
+| Violin Scare | SirBedlam | 393824 | CC BY 3.0 («OhDearScare» fant jeg ikke) |
+| Ambience, Night Wildlife, A | InspectorJ | 352514 | CC BY 4.0 (natt og sirisser; vi har dette fra før) |
+
+**Ikke brukbare:** «Jump-Scare_8» (jdupre01, 484984) og Timbres to lyder er CC BY-NC, altså ikke til noe som kan bli solgt. Skrikene og skvettene (Dark ambient scream, Violin Scare) bryter dessuten regelen om at skrekken kommer av noe som mangler; de holdes utenfor.
+
 ## 12. Det Tom har avgjort
 
 **Tom svarte 16. oktober: ja på alle fire.** Spilleren kan slippe unna i de første sekundene av varselet, alle får minst én bortføring før kapittel 5 (høyst tre i løpet av natten), ansiktet spares til THE EVENT, og bortføringer kan slås av i innstillingene (på som standard). Spørsmålene står under slik de ble stilt.
