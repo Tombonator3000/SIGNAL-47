@@ -1,16 +1,18 @@
 import { SERVICE_MAP, mark } from '../story/drawings';
 
 // The map in the notebook (Tom, 16 October: a map of the place). The player's own sketch in
-// pencil on a notebook page, not the service map: SARO and the array, the highway, Sierra
-// Motor Court 650 m down it, Mesa Diner at the junction, the old road to Roswell going off east, and the
-// track to STATION 01 once the player knows of it. Laid out like the service map (the same
-// places in the same spots, drawings.ts), and not to scale. A cross marks where the player is.
-// It shows no survey bolts and no line C: the map at the diner is for that (ui/MapOverlay.ts).
+// pencil on a notebook page, not the service map: SARO and the array east of the highway,
+// Sierra Motor Court 650 m down it on the west side, the track west to STATION 01 once the
+// player knows of it, Mesa Diner at the junction, and the old road to Roswell going off east.
+// Drawn the way the places really lie (Tom's improvements, 16 October: the service map has
+// STATION 01 east of the highway, and its puzzle at the diner needs it so; this page does not),
+// and not to scale. A cross marks where the player is. It shows no survey bolts and no line C:
+// the map at the diner is for that (ui/MapOverlay.ts).
 
 export type MapSpot = 'saro' | 'yard' | 'motel' | 'highway' | 'diner' | 'track' | 'station01' | 'oldroad';
 export interface MapView {
   /** Where the player is: a place and, on a road, how far along it (the highway: metres south
-   *  of SARO; the track: 0..1; the old road: the mile). */
+   *  of SARO; the track: 0..1 from the highway; the old road: the mile). */
   at: { spot: MapSpot; t?: number; m?: number; mi?: number } | null;
   /** Places the player knows of. */
   station: boolean;
@@ -19,10 +21,12 @@ export interface MapView {
 
 const PAPER = '#f1ead8', PENCIL = '#3b3b3f', RED = '#a8281e';
 const W = 1200, H = 800;
-const SARO: [number, number] = [312, 200], MOTEL: [number, number] = [118, 263], DINER: [number, number] = [167, 559];
-const TRACK0: [number, number] = [200, 300];
+/** The highway's line on the page. */
+const HX = 420;
+const SARO: [number, number] = [532, 202], MOTEL: [number, number] = [371, 261], DINER: [number, number] = [387, 609];
+const MOUTH: [number, number] = [HX - 12, 360], STATION: [number, number] = [170, 372];
 /** Down the highway, metres south of SARO to the page: SARO, the motel, the track, the diner. */
-const HWY_Y: [number, number][] = [[0, 216], [690, 263], [815, TRACK0[1]], [2300, DINER[1]]];
+const HWY_Y: [number, number][] = [[0, SARO[1] + 14], [690, MOTEL[1]], [815, MOUTH[1]], [2300, DINER[1]]];
 function hwyY(m: number) {
   for (let i = 1; i < HWY_Y.length; i++) {
     const [m0, y0] = HWY_Y[i - 1], [m1, y1] = HWY_Y[i];
@@ -30,19 +34,20 @@ function hwyY(m: number) {
   }
   return HWY_Y[0][1];
 }
+/** The old road as the service map has it (east from the junction), moved onto this page. */
+const onPage = ([x, y]: readonly number[]): [number, number] => [HX + (x - 200) * 0.75, y + 50];
 
 /** Where a spot is on the page. */
 export function spotXY(at: NonNullable<MapView['at']>): [number, number] {
-  const M = SERVICE_MAP;
   switch (at.spot) {
     case 'saro': return SARO;
     case 'yard': return [SARO[0] + 22, SARO[1] - 30];
     case 'motel': return MOTEL;
-    case 'highway': return [200, hwyY(at.m ?? 0)];
+    case 'highway': return [HX, hwyY(at.m ?? 0)];
     case 'diner': return DINER;
-    case 'track': { const t = Math.min(1, Math.max(0, at.t ?? 0)); return [TRACK0[0] + (M.station[0] - 30 - TRACK0[0]) * t, TRACK0[1] + (M.station[1] - TRACK0[1]) * t]; }
-    case 'station01': return M.station;
-    case 'oldroad': { const p = M.post(Math.min(M.miles, Math.max(0, at.mi ?? 0))); return [p[0], p[1]]; }
+    case 'track': { const t = Math.min(1, Math.max(0, at.t ?? 0)); return [MOUTH[0] + (STATION[0] + 26 - MOUTH[0]) * t, MOUTH[1] + (STATION[1] - MOUTH[1]) * t]; }
+    case 'station01': return STATION;
+    case 'oldroad': return onPage(SERVICE_MAP.post(Math.min(SERVICE_MAP.miles, Math.max(0, at.mi ?? 0))));
   }
 }
 
@@ -66,44 +71,45 @@ export function areaMap(v: MapView) {
       g.stroke();
     }
   };
+  const box = (x0: number, y0: number, x1: number, y1: number) => line([[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]);
   const text = (s: string, x: number, y: number, size = 24) => { g.fillStyle = PENCIL; g.font = `${size}px "Reenie Beanie", "Special Elite", cursive`; g.fillText(s, x, y); };
   g.globalAlpha = 0.9;
   text('the area round SARO, from memory', 96, 50, 32);
   // north
   line([[1120, 740], [1120, 670]]); line([[1110, 690], [1120, 670], [1130, 690]]); text('N', 1135, 700, 30);
   // the highway, two lines
-  line([[188, 96], [188, 780]], 1.8); line([[212, 96], [212, 780]], 1.8);
-  text('highway', 120, 470, 24);
-  // SARO, its array and the yard
-  for (let i = 0; i < 9; i++) { const x = 300 + (i % 3) * 30, y = 118 + Math.floor(i / 3) * 22; g.beginPath(); g.lineWidth = 2; g.arc(x + r() * 2, y + r() * 2, 7, 0, Math.PI * 2); g.stroke(); }
-  text('27 dishes, az 026', 400, 140, 22);
-  line([[286, 186], [338, 186], [338, 218], [286, 218], [286, 186]]);
-  text('SARO', 348, 214, 30);
+  line([[HX - 12, 96], [HX - 12, 780]], 1.8); line([[HX + 12, 96], [HX + 12, 780]], 1.8);
+  text('highway', HX - 116, 490, 24);
+  // SARO east of it, its array to the north, and the service road out to the highway
+  for (let i = 0; i < 9; i++) { const x = 520 + (i % 3) * 30, y = 118 + Math.floor(i / 3) * 22; g.beginPath(); g.lineWidth = 2; g.arc(x + r() * 2, y + r() * 2, 7, 0, Math.PI * 2); g.stroke(); }
+  text('27 dishes, az 026', 620, 140, 22);
+  box(506, 186, 558, 218);
+  text('SARO', 568, 214, 30);
+  line([[HX + 12, 210], [506, 206]], 1.4);
   // the motel down the highway, on the west side
-  line([[88, 252], [150, 252], [150, 274], [88, 274], [88, 252]]);
-  text('Sierra', 92, 304, 24); text('Motor Ct', 86, 328, 24); text('(Nora, rm 6)', 80, 352, 20);
-  // the diner at the junction
-  line([[150, 548], [184, 548], [184, 570], [150, 570], [150, 548]]);
-  text('Mesa Diner', 66, 604, 28); text('open all night', 70, 630, 20);
+  box(340, 250, 402, 272);
+  text('Sierra Motor Ct', 186, 262, 24); text('(Nora, rm 6)', 214, 288, 20);
+  // the diner at the junction, on the west side too
+  box(370, 598, 404, 620);
+  text('Mesa Diner', 226, 652, 28); text('open all night', 236, 678, 20);
   // the old road east
   if (v.oldRoad) {
-    line(SERVICE_MAP.road.map(([x, y]) => [x, y] as [number, number]), 2.6);
-    text('old road to Roswell', 560, 640, 26);
+    line(SERVICE_MAP.road.map(onPage), 2.6);
+    text('old road to Roswell', 690, 690, 26);
     for (const mi of [2, 4, 6, 8, 10]) {
-      const [x, y] = SERVICE_MAP.post(mi);
+      const [x, y] = onPage(SERVICE_MAP.post(mi));
       g.fillStyle = PENCIL; g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill();
       text(String(mi), x + 8, y + 22, 20);
     }
   } else {
-    line([[212, 562], [270, 580]], 2.2);
-    text('old road (closed)', 230, 610, 20);
+    line([[HX + 12, 612], [478, 630]], 2.2);
+    text('old road (closed)', 450, 664, 20);
   }
-  // the track to STATION 01
+  // the track west to STATION 01
   if (v.station) {
-    const [sx, sy] = SERVICE_MAP.station;
-    g.setLineDash([10, 9]); line([TRACK0, [sx - 30, sy]], 2); g.setLineDash([]);
-    g.lineWidth = 2.4; g.strokeStyle = PENCIL; mark(g, sx, sy, 22);
-    text('STATION 01', sx - 54, sy - 30, 26); text('1947', sx - 18, sy + 42, 20);
+    g.setLineDash([10, 9]); line([MOUTH, [STATION[0] + 26, STATION[1]]], 2); g.setLineDash([]);
+    g.lineWidth = 2.4; g.strokeStyle = PENCIL; mark(g, STATION[0], STATION[1], 22);
+    text('STATION 01', STATION[0] - 66, STATION[1] - 30, 26); text('1947', STATION[0] - 18, STATION[1] + 42, 20);
   }
   // where the player is
   if (v.at) {

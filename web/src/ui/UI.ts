@@ -340,7 +340,7 @@ export class UI {
 
   pause(o: {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
-    music: number; onMusic: (v: number) => void;
+    music: number; onMusic: (v: number) => void; radio: number; onRadio: (v: number) => void;
     onSave?: () => void; onLoad?: () => void;
     quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
@@ -357,6 +357,7 @@ export class UI {
         ${o.onLoad ? '<button class="opt" data-a="load">Load case</button>' : ''}
         <div class="set"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="1" step="0.01" value="${o.volume}"></div>
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
+        <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
@@ -374,6 +375,7 @@ export class UI {
     el.querySelector('[data-a=load]')?.addEventListener('click', () => o.onLoad?.());
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#mus') as HTMLInputElement).addEventListener('input', (e) => o.onMusic(+(e.target as HTMLInputElement).value));
+    (el.querySelector('#rad') as HTMLInputElement).addEventListener('input', (e) => o.onRadio(+(e.target as HTMLInputElement).value));
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
     (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
     let inv = o.invertY, big = o.largeText, calm = o.calmFlash, still = o.stillShots;

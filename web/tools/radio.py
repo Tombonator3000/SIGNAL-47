@@ -199,6 +199,18 @@ async def main():
         await pg.keyboard.press('r'); await tick(0.5)
         check(not (await ev(CAR))['live'] and 'stays on the Roswell station' in await heard(), 'on the old road the radio is chapter six\'s: R leaves it alone')
 
+        # the radios have their own level in the pause menu (Tom's improvements, 16 October)
+        await ev("S47.hold = false")
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(400)
+        has = await ev("!!document.querySelector('#rad')")
+        if has:
+            await ev("(() => { const r = document.querySelector('#rad'); r.value = '0.25'; r.dispatchEvent(new Event('input')); })()")
+        lvl = await ev("[S47.audio.radioLevel, S47.audio.radioBus ? S47.audio.radioBus.gain.value : null, localStorage.getItem('s47.radioVol') || Object.keys(localStorage).filter((k) => k.includes('radioVol')).map((k) => localStorage.getItem(k))[0]]")
+        check(has and abs(lvl[0] - 0.25) < 1e-6 and lvl[1] is not None and abs(lvl[1] - 0.25) < 1e-6 and lvl[2] is not None, f'the pause menu has a radio level, kept on this device ({lvl})')
+        await ev("(() => { const r = document.querySelector('#rad'); if (r) { r.value = '1'; r.dispatchEvent(new Event('input')); } })()")
+        await pg.click('[data-a=resume]'); await pg.wait_for_timeout(200)
+        await ev("S47.hold = true")
+
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
         if PAGES: check(not [u for u in bad404 if 'favicon' not in u], f'no missing files ({bad404[:3]})')

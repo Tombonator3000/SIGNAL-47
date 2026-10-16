@@ -33,15 +33,15 @@ export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
 export const streamOn = import.meta.env.MODE !== 'single';
 
-type Voice = 'host' | 'woman' | 'man' | 'roswell';
-const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126 };
+export type Voice = 'host' | 'woman' | 'man' | 'roswell';
+export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126 };
 /** A number from text, the same every time (a line mumbles the same way each time it is said). */
 function seed(text: string) { let h = 2166136261; for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619); return h >>> 0; }
 function rng(n: number) { return () => { n = (n + 0x6d2b79f5) >>> 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 /** The syllables of a line said in `secs`: when each starts, how long it lasts, its pitch (times
  *  the voice's own). A word gets one to four; the pitch wanders, the first of a word is a
  *  little higher, a sentence falls at its end and a question rises. */
-function syllables(text: string, secs: number) {
+export function syllables(text: string, secs: number) {
   const r = rng(seed(text)), words = text.split(/\s+/).filter(Boolean);
   const per = words.map((w) => THREE.MathUtils.clamp(Math.round(w.replace(/[^a-z]/gi, '').length / 3), 1, 4));
   const pauses = words.filter((w) => /[,.;:!?]$/.test(w)).length;
@@ -136,7 +136,7 @@ const SIGN_ON_SEQ: Seg[] = [
 const FAR: Seg[] = [music('waltz', 76)];
 
 /** How long a line takes to say. */
-const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
+export const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
 const GAP = 0.7;
 const lineText = (l: Line, clock: number) => (typeof l.text === 'function' ? l.text(clock) : l.text);
 /** The length of a segment; a talk's is fixed when it starts, with the clock then. */
@@ -499,7 +499,7 @@ export class Receiver {
     sh.curve = curve;
     const out = ctx.createGain(); out.gain.value = 0;
     mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(out);
-    const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2) as PannerNode;
+    const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2, a.radioBus) as PannerNode;
     out.connect(pan);
     n.start();
     return { sig, stat, out, pan, bus: null, stop: () => { try { n.stop(); } catch { /* stopped */ } out.disconnect(); } };

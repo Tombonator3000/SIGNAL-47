@@ -159,7 +159,9 @@ export class World {
   troubleOk?: () => boolean;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
   private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string;
-    free: boolean; start: THREE.Vector3; left: boolean } | null = null;
+    free: boolean; start: THREE.Vector3; left: boolean; secs: number } | null = null;
+  /** Seconds the truck has been driven on this trip (the story's or the player's own), or null. */
+  get tripSecs() { return this.driving && this.trip && !this.trip.free ? this.trip.secs : null; }
 
   private mods: Partial<Modules> = {};
   private road: RoadArea | null = null;
@@ -637,7 +639,7 @@ export class World {
       this.trucksHome = TRUCKS.map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
         .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
       this.trip = { from, to, perMetre: o.perMetre ?? 0, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint,
-        free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false };
+        free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false, secs: 0 };
       this.leg = leg0;
       if (!o.free) { this.truckAt = null; for (const id of TRUCKS) this.parkAt(id); }
       L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
@@ -668,6 +670,7 @@ export class World {
     if (ex && this.legs[ex.to]) { this.transfer(ex); return; }
     const trip = this.trip;
     if (!trip) return;
+    trip.secs += dt;
     if (trip.perMetre) this.d.skipClock(Math.abs(D.speed) * dt * trip.perMetre);
     const here = !!trip.to && legs.legOf(trip.to) === id, P = trip.to ? this.parkBox(trip.to) : null;
     // where to leave the truck, said once it is in sight

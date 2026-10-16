@@ -116,9 +116,9 @@ export class Ambience {
 
   /** The night goes quiet for a few seconds, the crickets and the wind together, and comes back
    *  slowly (core/calls.ts: before something out in the dark). */
-  hush(secs: number) {
+  hush(secs: number, level = 0.08) {
     const g = this.quiet.gain, now = this.ctx.currentTime;
-    g.cancelScheduledValues(now); g.setTargetAtTime(0.08, now, 0.35); g.setTargetAtTime(1, now + secs, 2.2);
+    g.cancelScheduledValues(now); g.setTargetAtTime(level, now, 0.35); g.setTargetAtTime(1, now + secs, 2.2);
   }
 
   /** Where the listener is: outside, indoors (muffled) or in the cab (under the engine). */

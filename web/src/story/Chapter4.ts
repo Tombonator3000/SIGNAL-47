@@ -47,6 +47,8 @@ export interface Ch4State {
   told: boolean;
   read: Record<Paper, boolean>;
   seen: { photo: boolean; window: boolean };
+  /** Nora has called the truck on the CB (saves from before 16 October have none). */
+  cb?: boolean;
 }
 
 // What chapter four needs from the places (main.ts and world/World.ts).
@@ -59,6 +61,10 @@ export interface Motel {
   brick(): THREE.Object3D | null;
   /** The truck to the motel's lot (World.driveToMotel). */
   driveTo(): void;
+  /** Seconds the truck has been driven on this trip, or null when nobody is driving it. */
+  driven(): number | null;
+  /** A call on the truck's CB (core/cb.ts); false if it could not be made now. */
+  cb(lines: { text: string; who: 'woman'; by: string }[], onEnd: () => void): boolean;
 }
 
 export interface Chapter4Host {
@@ -826,6 +832,21 @@ export class Chapter4 {
   // ---------- per frame ----------
   update(_dt: number, _t: number) {
     if (!this.active) return;
+    // on the way down the highway in the truck, Nora calls it on the CB (Tom's improvements,
+    // 16 October: the CB did nothing). Once; it is in the notebook after.
+    const driven = this.d.motel.driven();
+    if (this.s.stage === 'to-motel' && !this.s.cb && driven !== null && driven > 9) {
+      const by = 'N. VEGA';
+      const ok = this.d.motel.cb([
+        { text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by },
+        { text: 'Pull in at the north end, by the office. Not down past the rooms.', who: 'woman', by },
+        { text: 'Room six. The door is open. Bring the prints.', who: 'woman', by },
+      ], () => {
+        this.g.note(`${this.time()}. N. Vega on the truck's CB, on the way down the highway: pull in by the office, room six, the door is open, bring the prints.`);
+        this.save();
+      });
+      if (ok) this.s.cb = true;
+    }
     // N. Vega turns her head to whoever is in the room with her
     const room = this.d.motel.room();
     const head = room?.objs.noraHead;

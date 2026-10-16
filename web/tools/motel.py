@@ -4,7 +4,10 @@
 # the same as the ground drawn (a ray down every 50 m); the place name, the map's cross, the
 # footsteps and the music at the motel; the truck offers the drive there, parks on the lot by
 # the office and is still there for chapter five; from the lot on south to the diner, out of
-# SARO's area onto the road's 60 m past the motel. Pictures of the walk and the drive.
+# SARO's area onto the road's 60 m past the motel. On the way (core/roadside.ts): the silence
+# (no crickets, no wind, no footsteps for 47 s, then a note), headlights far off that come,
+# stop and go out, someone on the motel's roof only while not looked at; in the truck, Nora on
+# the CB (core/cb.ts). The notebook map. Pictures of the walk and the drive.
 # Usage: python3 tools/motel.py OUTDIR [WxH]
 import asyncio, sys, os, math
 from playwright.async_api import async_playwright
@@ -100,6 +103,47 @@ async def main():
         check(ok[0] and aimed == 'room6Door', f'along the walk to the door of room 6 ({ok}, {aimed})')
         await ev("S47.player.yaw = -Math.PI / 2 - 0.2; S47.player.pitch = 0.04; S47.tick(0.2)")
         await shot('m05_from_room6_to_road')
+        await ev("document.querySelector('.notebook .close')?.click()")
+        await pg.keyboard.press('m'); await tick(0.3)
+        src = await ev("document.querySelector('.nb-map img')?.src || ''")
+        if src.startswith('data:image/png;base64,'):
+            import base64
+            open(f'{OUT}/m05b_map.png', 'wb').write(base64.b64decode(src.split(',', 1)[1]))
+        await ev("document.querySelector('.notebook .close')?.click()"); await tick(0.2)
+
+        # ---------- on the way (core/roadside.ts): the silence, the car, the roof ----------
+        await ev("S47.player.place(-32.5, 120, Math.PI); S47.tick(0.3)")
+        await ev("window.__steps = 0; const st = S47.audio.step.bind(S47.audio); S47.audio.step = (k) => { window.__steps++; return st(k); }")
+        started = None
+        for z in range(130, 400, 10):
+            await walk([[-32.5, z]]); await tick(0.1)
+            if await ev("S47.roadside.silent"): started = z; break
+        check(started is not None and started > 250, f'down the shoulder the night goes silent (at site z {started})')
+        await ev("window.__steps = 0")
+        await walk([[-32.5, (started or 300) + 8]])
+        check(await ev("window.__steps") == 0, 'in the silence the footsteps make no sound')
+        await tick(48)
+        check(not await ev("S47.roadside.silent") and await ev("S47.game.notes.some((n) => n.includes('No sound for 47 s'))"), 'after 47 s the sound comes back, and it is in the notebook')
+        await walk([[-32.5, (started or 300) + 16]])
+        check(await ev("window.__steps") > 0, 'and the footsteps are heard again')
+        await ev("S47.roadside.carNow(S47.player.pos)"); await tick(3)
+        c0 = await ev("S47.roadside.carState")
+        await ev("S47.player.yaw = Math.PI; S47.player.pitch = 0; S47.tick(0.1)")
+        await shot('m05c_headlights_far_off')
+        await tick(10)
+        c1 = await ev("S47.roadside.carState")
+        check(c0 and c1 and c0['state'] == 'come' and c1['z'] < c0['z'] - 80 and c1['z'] > 1500, f'headlights far down the highway coming north ({c0}, {c1})')
+        await tick(50)
+        check(await ev("S47.roadside.carState") is None, 'they stop a long way off and go out; nothing arrives')
+        await walk([[-32.5, A['z'] - 100]])
+        await ev("S47.player.yaw = 0; S47.player.pitch = 0; S47.tick(0.1)")     # looking back north
+        await ev("S47.roadside.roofNow()"); await tick(0.2)
+        check(await ev("S47.roadside.roofUp"), 'someone on the motel roof while the player looks the other way')
+        await ev("S47.player.yaw = Math.PI - 0.62; S47.tick(0.1)")              # half round: the roof at the edge of the view
+        up = await ev("S47.roadside.roofUp")
+        await shot('m05d_roof_corner_of_the_eye')
+        await ev(f"(()=>{{const p=S47.player; p.yaw=Math.atan2(-({A['x']}-46.5-p.pos.x), -({A['z']}+31-p.pos.z)); S47.tick(0.1);}})()")
+        check(not await ev("S47.roadside.roofUp"), f'looked at, it was not there (seen at the edge of the view first: {up})')
 
         # ---------- the truck: SARO's pad to the motel's lot ----------
         await ev("S47.player.place(S47.room.spawn.x, S47.room.spawn.z, 0); S47.tick(0.3)")
@@ -111,12 +155,14 @@ async def main():
             await tick(0.25)
             if await ev("S47.world.driving"): break
         await ev("S47.world.autopilot = 13")
-        seen, hint = [], False
+        seen, hint, cbline = [], False, ''
         for _ in range(200):
             await tick(0.5, 20)
             st = await ev(STATE)
             if st['leg'] and (not seen or seen[-1] != st['leg']): seen.append(st['leg'])
-            if not hint and 'lit sign on the right' in (await ev("document.querySelector('.toast')?.textContent || ''")): hint = True
+            toasts = await ev("document.querySelector('.toasts')?.textContent || ''")
+            if not hint and 'lit sign on the right' in toasts: hint = True
+            if not cbline and 'CB, N. VEGA' in toasts: cbline = toasts
             if st['driving'] and abs(st['z'] - (A['z'] - 60)) < 8 and not os.path.exists(f'{OUT}/m06_drive_in.png'):
                 await shot('m06_drive_in')
             if not st['driving']: break
@@ -125,6 +171,9 @@ async def main():
         check(seen == ['saro'] and st['at'] == 'motel' and st['area'] == 'saro', f'the truck is left on the motel\'s lot, in SARO\'s area all the way ({seen}, {st})')
         check(A['x'] - 43.5 < tp[0] < A['x'] - 30 and A['z'] + 1 < tp[2] < A['z'] + 22 and abs(tp[1] - A['y']) < 0.05, f'by the office, on the lot ({tp})')
         check(hint, 'the hint says where to leave it')
+        check('SARO seven' in cbline and await ev("S47.ch4.s.cb"), f'on the way Nora calls the truck on the CB ({cbline[:90]})')
+        await tick(12)
+        check(await ev("S47.game.notes.some((n) => n.includes(\"on the truck's CB\"))"), 'and the call is in the notebook')
         pp = await ev("[S47.player.pos.x, S47.player.pos.z, S47.player.floorY]")
         check(abs(pp[2] - A['y']) < 0.05 and math.hypot(pp[0] - tp[0], pp[1] - tp[2]) < 4, f'out by the door, on the lot ({pp})')
         await ev("S47.player.yaw = Math.atan2(-(%f - S47.player.pos.x), -(%f - S47.player.pos.z)); S47.player.pitch = -0.1; S47.tick(0.2)" % (tp[0], tp[2]))
