@@ -25,6 +25,22 @@ export type Picture = 'off' | 'vhs' | 'heavy';
 
 const LINES: Record<Exclude<Picture, 'off'>, number> = { vhs: 720, heavy: 480 };
 
+// A colour that cannot be drawn: the scene goes into half-float targets, whose largest value is
+// 65504. A very bright highlight (the flashlight close on the truck's chrome and glass) can go
+// past it and become infinite, and tone mapping or ambient occlusion turns that into NaN. The
+// bloom's blur and its coarse levels then spread one such pixel into black squares, or over the
+// whole screen (Tom, 16 October, on an RTX 3080; scratchpad probe nan.py: one bad pixel turned
+// nearly all of the PC tier's picture black). Anything over about 8 already tone maps to white,
+// so the values are held between 0 and 10, and NaN becomes 0: max and min return the other
+// value for NaN on the GPUs we know, and isnan() catches the rest. The lid also keeps the bloom
+// from a surface a hand's breadth from the flashlight to a glow instead of a white-out (a lit
+// scene's brightest values are 2 to 12, S47.hdrStats()).
+const FINITE = /* glsl */ `
+vec3 finite(vec3 c) {
+  c = min(max(c, vec3(0.0)), vec3(10.0));
+  return any(isnan(c)) ? vec3(0.0) : c;
+}`;
+
 const frag = /* glsl */ `
 uniform sampler2D tScene;
 uniform vec2 uSize;        // target size in pixels
@@ -35,11 +51,12 @@ uniform float uGlowK;      // the tape's own glow; the PC tier has real bloom be
 uniform float uMotion;     // 0 when the player asked for reduced motion
 varying vec2 vUv;
 
+${FINITE}
 // a hash without sin(), which loses precision on large inputs and draws lines in the noise
 float hash(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
 
 vec3 scene(vec2 uv) {
-  vec3 c = texture2D(tScene, uv).rgb;
+  vec3 c = finite(texture2D(tScene, uv).rgb);
   return linearToOutputTexel(vec4(toneMapping(c), 1.0)).rgb;
 }
 // RGB -> YIQ and back: tape keeps luma sharp and smears the colour
@@ -110,6 +127,15 @@ const vert = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position =
 // there is coarse with the camera's near plane at 3 cm, and far ground and mesas had hard
 // stepped seams along their edges (drivelook K01, the old road on the PC tier).
 const AO_FADE = [120, 400] as const;
+/** Holds the picture to finite values before the bloom (FINITE above). */
+const finitePass = () => new ShaderPass({
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: vert,
+  fragmentShader: /* glsl */ `uniform sampler2D tDiffuse; varying vec2 vUv;
+    ${FINITE}
+    void main() { vec4 c = texture2D(tDiffuse, vUv); gl_FragColor = vec4(finite(c.rgb), clamp(c.a, 0.0, 1.0)); }`,
+});
+
 class SolidAO extends GTAOPass {
   constructor(...args: ConstructorParameters<typeof GTAOPass>) {
     super(...args);
@@ -156,7 +182,7 @@ export class Vhs {
 
   // ---------- the PC tier (core/ultra.ts): occlusion and bloom, then the tape ----------
   ultra = false;
-  private post: { composer: EffectComposer; ao: SolidAO; bloom: UnrealBloomPass; tape: ShaderPass; out: OutputPass; w: number; h: number; scene: THREE.Scene } | null = null;
+  private post: { composer: EffectComposer; ao: SolidAO; fin: ShaderPass; bloom: UnrealBloomPass; tape: ShaderPass; out: OutputPass; w: number; h: number; scene: THREE.Scene } | null = null;
   private renderUltra(scene: THREE.Scene, camera: THREE.Camera, t: number) {
     const r = this.renderer;
     r.getDrawingBufferSize(this.size);
@@ -173,13 +199,15 @@ export class Vhs {
       ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
       ao.blendIntensity = 0.85;
       composer.addPass(ao);
+      const fin = finitePass();
+      composer.addPass(fin);
       const bloom = new UnrealBloomPass(new THREE.Vector2(w >> 1, h >> 1), 0.45, 0.5, 0.95);
       composer.addPass(bloom);
       const tape = new ShaderPass(this.mat, 'tScene');
       composer.addPass(tape);
       const out = new OutputPass();
       composer.addPass(out);
-      p = this.post = { composer, ao, bloom, tape, out, w: -1, h: -1, scene };
+      p = this.post = { composer, ao, fin, bloom, tape, out, w: -1, h: -1, scene };
     }
     if (p.w !== w || p.h !== h) { p.composer.setSize(w, h); p.w = w; p.h = h; }
     p.tape.enabled = this.on;
@@ -195,7 +223,7 @@ export class Vhs {
   }
   private disposePost() {
     const p = this.post; if (!p) return;
-    p.composer.dispose(); p.ao.dispose(); p.bloom.dispose();
+    p.composer.dispose(); p.ao.dispose(); p.fin.dispose(); p.bloom.dispose();
     this.post = null;
   }
   /** The height in pixels the scene is drawn at (the glow points need it). */

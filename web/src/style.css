@@ -550,7 +550,7 @@ html.text-large .prompt { font-size: 28px; }
 @media (prefers-reduced-motion: reduce) { .chapter-card .cc-a, .chapter-card .cc-b { animation-duration: .01s !important; } }
 
 /* driving: the cab has no crosshair, and Use and Camera have nothing to do */
-.driving .crosshair, .driving .tbtn.use, .driving .tbtn.camera, .driving .tbtn.zoom, .driving .tbtn.light { display: none !important; }
+.driving .crosshair, .driving:not(.can-out) .tbtn.use, .driving .tbtn.camera, .driving .tbtn.zoom, .driving .tbtn.light { display: none !important; }
 
 /* ---------- the evidence board (ui/Board.ts) ---------- */
 .board-overlay { padding: calc(env(safe-area-inset-top, 0px) + 8px) 8px calc(env(safe-area-inset-bottom, 0px) + 8px); }

@@ -30,6 +30,13 @@ export class Sky {
   // a little after three (HISTORIE.md, KAPITLER.md). It cannot have been in a 1947 sky.
   comet: THREE.Mesh;
   private pixelRatio = { value: 1 };
+  // Shooting stars (Tom, 16 October): one every 18 to 40 seconds while it is night, a thin
+  // streak with a bright head that runs a few degrees down the sky in under a second and is
+  // gone. Sporadic ones: the Lyrid shower only begins on the 16th of April.
+  meteor: THREE.Mesh;
+  /** How many have crossed the sky (tests). */
+  meteors = 0;
+  private met = { t: -1, dur: 0.6, len: 0.15, bright: 1, next: 10, start: new THREE.Vector3(), tan: new THREE.Vector3() };
   private flashT = 0;
   private nextFlash = 9;
   onThunder?: (delay: number, strength: number) => void;
@@ -115,6 +122,96 @@ export class Sky {
     this.group.add(this.makeStars());
     this.comet = this.makeComet();
     this.group.add(this.comet);
+    this.meteor = this.makeMeteor();
+    this.group.add(this.meteor);
+  }
+
+  // The streak: a strip of quads along a great circle at 2600 m, rebuilt each frame it shows
+  // (meteorStep). aT runs from the tail (0) to the head (1), aS across it (-1 to 1).
+  private static readonly MET_N = 8;
+  private makeMeteor() {
+    const N = Sky.MET_N, g = new THREE.BufferGeometry();
+    const aT = new Float32Array(N * 2), aS = new Float32Array(N * 2), idx: number[] = [];
+    for (let i = 0; i < N; i++) for (let j = 0; j < 2; j++) { aT[i * 2 + j] = i / (N - 1); aS[i * 2 + j] = j ? 1 : -1; }
+    for (let i = 0; i < N - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 2 * 3), 3));
+    g.setAttribute('aT', new THREE.BufferAttribute(aT, 1));
+    g.setAttribute('aS', new THREE.BufferAttribute(aS, 1));
+    g.setIndex(idx);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uI: { value: 0 } },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide,
+      vertexShader: /* glsl */`
+        attribute float aT; attribute float aS; varying float vT; varying float vS;
+        void main() {
+          vT = aT; vS = aS;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          gl_Position.z = gl_Position.w * 0.99999;   // as far as the stars: anything on the ground hides it
+        }`,
+      fragmentShader: /* glsl */`
+        uniform float uI; varying float vT; varying float vS;
+        void main() {
+          // a soft line, brightest and widest at the head, the tail fading out behind it
+          float across = 1.0 - vS * vS;
+          float a = across * (pow(vT, 1.5) + 2.5 * smoothstep(0.86, 1.0, vT));
+          gl_FragColor = vec4(vec3(0.86, 0.92, 1.0) * a * uI, 1.0);
+        }`,
+    });
+    const m = new THREE.Mesh(g, mat);
+    m.visible = false;
+    m.frustumCulled = false;
+    m.renderOrder = -7;
+    m.userData.noAO = true;
+    return m;
+  }
+  /** A shooting star now (the developer menu, tests), unless one is crossing already. */
+  meteorNow() {
+    const M = this.met;
+    if (M.t >= 0) return;
+    // somewhere between 25 and 70 degrees up, any direction
+    const az = Math.random() * Math.PI * 2, el = (25 + Math.random() * 45) * Math.PI / 180;
+    M.start.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
+    // across the sky and mostly downwards, as they seem to fall towards the horizon
+    const down = new THREE.Vector3(0, -1, 0).addScaledVector(M.start, M.start.y).normalize();
+    const side = new THREE.Vector3().crossVectors(M.start, down).normalize();
+    M.tan.copy(down).multiplyScalar(0.6 + Math.random() * 0.6).addScaledVector(side, (Math.random() * 2 - 1) * 1.2).normalize();
+    M.len = (8 + Math.random() * 10) * Math.PI / 180;
+    M.dur = 0.45 + Math.random() * 0.5;
+    // now and then a bright one
+    M.bright = Math.random() < 0.15 ? 2.6 : 1.1 + Math.random() * 0.6;
+    M.t = 0;
+    this.meteors++;
+  }
+  private _md = new THREE.Vector3();
+  private _mt = new THREE.Vector3();
+  private _mw = new THREE.Vector3();
+  private meteorStep(dt: number) {
+    const M = this.met, m = this.meteor;
+    M.next -= dt;
+    // only while it is night: none in the dawn
+    if (M.next <= 0) { M.next = 18 + Math.random() * 22; if (this.uniforms.uDawn.value < 0.3) this.meteorNow(); }
+    if (M.t < 0) { m.visible = false; return; }
+    M.t += dt;
+    const tail = 0.2;                                   // the trail lingers a moment after the head is gone
+    if (M.t > M.dur + tail) { M.t = -1; m.visible = false; return; }
+    const p = Math.min(1, M.t / M.dur);
+    const head = M.len * p, back = Math.max(0, head - M.len * 0.65) + M.len * 0.65 * Math.max(0, M.t - M.dur) / tail;
+    const fade = Math.min(1, M.t / 0.08) * (M.t > M.dur ? 0.6 * (1 - (M.t - M.dur) / tail) : 1 - 0.4 * p);
+    (m.material as THREE.ShaderMaterial).uniforms.uI.value = M.bright * fade * (1 - this.uniforms.uDawn.value);
+    const pos = m.geometry.getAttribute('position') as THREE.BufferAttribute, N = Sky.MET_N, R = 2600;
+    for (let i = 0; i < N; i++) {
+      const k = i / (N - 1), a = back + (head - back) * k;
+      // along the great circle from the start, and the way across it
+      this._md.copy(M.start).multiplyScalar(Math.cos(a)).addScaledVector(M.tan, Math.sin(a));
+      this._mt.copy(M.tan).multiplyScalar(Math.cos(a)).addScaledVector(M.start, -Math.sin(a));
+      this._mw.crossVectors(this._md, this._mt).normalize().multiplyScalar(R * 0.0011 * (0.35 + 0.65 * k));
+      for (let j = 0; j < 2; j++) {
+        const sgn = j ? 1 : -1;
+        pos.setXYZ(i * 2 + j, this._md.x * R + this._mw.x * sgn, this._md.y * R + this._mw.y * sgn, this._md.z * R + this._mw.z * sgn);
+      }
+    }
+    pos.needsUpdate = true;
+    m.visible = true;
   }
 
   private makeComet() {
@@ -310,6 +407,7 @@ export class Sky {
     this.group.position.copy(follow);
     this.pixelRatio.value = pixelRatio;
     this.uniforms.uTime.value = t;
+    this.meteorStep(dt);
     this.nextFlash -= dt;
     if (this.nextFlash <= 0) {
       this.flashT = 1;

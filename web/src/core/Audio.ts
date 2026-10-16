@@ -6,19 +6,14 @@ import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
 import wind from '../assets/audio/wind.mp3';
 import titleMusic from '../assets/audio/title_music.mp3';
-// The night outside, steps by surface, doors and paper: CC0 recordings from Freesound, by
-// way of Tom's own projects (morbidium, Loincloth-Legends). See THIRD_PARTY_NOTICES.md.
+// The night outside, doors and paper: CC0 recordings from Freesound, by way of Tom's own
+// projects (morbidium, Loincloth-Legends). The steps are Kenney's Impact Sounds (CC0), five
+// of each kind (Tom, 16 October: the old ones were tiresome). See THIRD_PARTY_NOTICES.md.
 import crickets from '../assets/audio/crickets.mp3';
 import owl from '../assets/audio/owl.mp3';
 import dog0 from '../assets/audio/dog0.mp3';
 import dog1 from '../assets/audio/dog1.mp3';
 import gust from '../assets/audio/gust.mp3';
-import stepConcrete0 from '../assets/audio/step_concrete0.mp3';
-import stepConcrete1 from '../assets/audio/step_concrete1.mp3';
-import stepConcrete2 from '../assets/audio/step_concrete2.mp3';
-import stepWood0 from '../assets/audio/step_wood0.mp3';
-import stepWood1 from '../assets/audio/step_wood1.mp3';
-import stepDirt from '../assets/audio/step_dirt.mp3';
 import doorCreak0 from '../assets/audio/door_creak0.mp3';
 import doorCreak1 from '../assets/audio/door_creak1.mp3';
 import doorMetal from '../assets/audio/door_metal.mp3';
@@ -29,21 +24,31 @@ import click from '../assets/audio/click.mp3';
 import sw from '../assets/audio/switch.mp3';
 import thudSoft from '../assets/audio/thud_soft.mp3';
 
+// the steps, by name: step_concrete0 becomes stepConcrete0
+const STEP_FILES = import.meta.glob<string>('../assets/audio/step_*.mp3', { eager: true, import: 'default' });
+const stepSources = Object.fromEntries(Object.entries(STEP_FILES).map(([path, url]) => {
+  const m = /step_([a-z]+)(\d)\.mp3$/.exec(path)!;
+  return [`step${m[1][0].toUpperCase()}${m[1].slice(1)}${m[2]}`, url];
+}));
+
 const SOURCES: Record<string, string> = {
   phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
-  crickets, owl, dog0, dog1, gust, stepConcrete0, stepConcrete1, stepConcrete2, stepWood0, stepWood1, stepDirt,
+  crickets, owl, dog0, dog1, gust, ...stepSources,
   doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1,
 };
 
 // What the player walks on, and how a step on it sounds: which recordings, how loud, the
-// pitch, a low-pass for soft floors, and grit on top for dirt and gravel.
+// pitch, and a low-pass to take the edge off. Quieter than before and never the same
+// recording twice running; the desert's dirt and gravel are Kenney's snow steps a little
+// deeper, which crunch like gravel.
 export type Surface = 'tile' | 'concrete' | 'dirt' | 'wood' | 'carpet';
-const STEPS: Record<Surface, { names: string[]; gain: number; rate: number; lp?: number; grit?: number }> = {
-  tile: { names: ['stepConcrete0', 'stepConcrete1', 'stepConcrete2'], gain: 0.34, rate: 1.12 },
-  concrete: { names: ['stepConcrete0', 'stepConcrete1', 'stepConcrete2'], gain: 0.42, rate: 0.94 },
-  dirt: { names: ['stepDirt'], gain: 0.42, rate: 0.72, grit: 0.05 },
-  wood: { names: ['stepWood0', 'stepWood1'], gain: 0.4, rate: 0.95 },
-  carpet: { names: ['stepWood0', 'stepWood1'], gain: 0.2, rate: 0.9, lp: 900 },
+const five = (kind: string) => [0, 1, 2, 3, 4].map((i) => `step${kind}${i}`);
+const STEPS: Record<Surface, { names: string[]; gain: number; rate: number; lp?: number }> = {
+  tile: { names: five('Concrete'), gain: 0.15, rate: 1.08, lp: 6000 },
+  concrete: { names: five('Concrete'), gain: 0.18, rate: 0.96, lp: 5000 },
+  dirt: { names: five('Gravel'), gain: 0.16, rate: 0.88, lp: 3800 },
+  wood: { names: five('Wood'), gain: 0.17, rate: 1.0, lp: 5000 },
+  carpet: { names: five('Carpet'), gain: 0.15, rate: 0.95, lp: 2200 },
 };
 
 function decodeDataUrl(url: string): ArrayBuffer {
@@ -400,16 +405,6 @@ export class AudioSys {
     this.motor = null;
   }
 
-  // Grit under a boot on the outside concrete: a short burst of filtered noise.
-  grit(gain = 0.05) {
-    const ctx = this.ctx; if (!ctx) return;
-    const t = ctx.currentTime;
-    const n = this.noiseSrc(false, false);
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600 + Math.random() * 1400; bp.Q.value = 0.9;
-    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-    n.connect(bp); bp.connect(g); g.connect(this.sfx); n.start(t); n.stop(t + 0.14);
-  }
-
   // An ordinary phone call on the handset: line hiss for `secs`, a click at each end.
   callLine(secs: number) {
     const ctx = this.ctx; if (!ctx) return;
@@ -617,11 +612,13 @@ export class AudioSys {
   }
 
   /** One step on a surface (Player.onStep). */
+  private lastStep = '';
   step(surface: Surface) {
     const s = STEPS[surface];
-    const name = s.names[Math.floor(Math.random() * s.names.length)];
-    this.play(name, { gain: s.gain * (0.85 + Math.random() * 0.3), rate: s.rate * (0.94 + Math.random() * 0.12), lp: s.lp });
-    if (s.grit) this.grit(s.grit);
+    let name = s.names[Math.floor(Math.random() * s.names.length)];
+    if (name === this.lastStep) name = s.names[(s.names.indexOf(name) + 1 + Math.floor(Math.random() * (s.names.length - 1))) % s.names.length];
+    this.lastStep = name;
+    this.play(name, { gain: s.gain * (0.8 + Math.random() * 0.3), rate: s.rate * (0.95 + Math.random() * 0.1), lp: s.lp });
   }
 
   /** Every frame while a night runs: the desert outside moves on (clock: the night's clock). */
