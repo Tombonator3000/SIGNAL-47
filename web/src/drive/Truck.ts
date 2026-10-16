@@ -204,6 +204,8 @@ export class Truck {
   private wheelSpin = new THREE.Group();
   private keys = new THREE.Group();
   private needles!: THREE.InstancedMesh;
+  /** What the player aims at to use the radio in the cab (main.ts): the faceplate and its knobs. */
+  radioHit!: THREE.Mesh;
   private glow = new GlowPoints();
   private gi = { head: [] as number[], park: [] as number[], tail: [] as number[] };
   private level = 1; private headOn = false; private brakeOn = false;
@@ -490,6 +492,9 @@ export class Truck {
     box(C, 0.4, 0.1, 0.03, m.cabTrim, 0.14, 1.06, -0.41).rotation.x = 0.2;
     decal(C, 0.34, 0.064, m.gauge, DASH.stack, 0.14, 1.06, -0.393, 0, 0.2);
     for (const s of [-1, 1]) rod(C, new THREE.Vector3(0.14 + s * 0.155, 1.06, -0.4), new THREE.Vector3(0.14 + s * 0.155, 1.06, -0.37), 0.012, m.cabChrome, 10);
+    this.radioHit = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.14, 0.09), new THREE.MeshBasicMaterial({ visible: false }));
+    this.radioHit.position.set(0.14, 1.06, -0.4); this.radioHit.rotation.x = 0.2;
+    noMerge(this.radioHit); C.add(this.radioHit);
     decal(C, 0.3, 0.075, m.cabDecal, CAB.heater, 0.14, 0.965, -0.428, 0, 0.3);
     box(C, 0.18, 0.04, 0.03, m.cabChrome, 0.14, 0.89, -0.47).rotation.x = 0.3;
     decal(C, 0.36, 0.13, m.cabDecal, CAB.glove, 0.53, 0.955, -0.437, 0, 0.3);

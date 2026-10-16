@@ -20,7 +20,7 @@ import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, type Cue } from './core/score';
-import { Radio, FREQ, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
+import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -345,7 +345,12 @@ async function boot() {
   function useCurrent() {
     // in the truck: Use (E) turns the key when the engine has died and waits for it, or gets
     // out where the truck stands when it is stopped (Tom, 16 October)
-    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) { if (!world.trouble.turnKey()) world.getOutHere(); return; }
+    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) {
+      if (world.trouble.turnKey()) return;
+      if (radioAimed()) { turnRadio(); return; }
+      world.getOutHere();
+      return;
+    }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
@@ -380,9 +385,10 @@ async function boot() {
     if (!input.locked) input.requestLock(); else useCurrent();
   });
   input.onTap = (x, y) => {
-    if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
-    if (fcam.raised) { ch1.shutter(); return; }
+    if (mode !== 'play' || ui.modal || game.cinematic) return;
     const ndc = new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
+    if (world.driving) { if (radioAimed(ndc)) turnRadio(); return; }   // a tap on the radio in the cab
+    if (fcam.raised) { ch1.shutter(); return; }
     const it = inter.pick(camera, ndc, 2.6);
     if (it) it.use();
   };
@@ -403,6 +409,17 @@ async function boot() {
     ui.toast(st ? `AM ${FREQ[st]}` : 'Radio off', 1.6);
   };
   ui.onRadio = turnRadio;
+  // in the cab the radio is used by looking at it and clicking (or E), or by tapping it, as well
+  // as with R (Tom, 16 October): a ray from the view's centre, or from the tap, to its faceplate
+  const aimRay = new THREE.Raycaster(), centre = new THREE.Vector2();
+  aimRay.far = 1.6;
+  function radioAimed(ndc = centre) {
+    const tr = world.driving ? world.truckHere() : null;
+    if (!tr?.radioHit) return false;
+    aimRay.setFromCamera(ndc, camera);
+    return aimRay.intersectObject(tr.radioHit, false).length > 0;
+  }
+  const radioLabel = () => !carRadio.on ? 'Turn the radio on' : carRadio.station === DIAL[DIAL.length - 1] ? 'Turn the radio off' : `AM ${FREQ[carRadio.station]}: next station`;
   ui.onZoom = (held) => { input.zoomHeld = held; };
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
@@ -727,7 +744,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), placeName: () => placeName(), surface: () => surfaceAt(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score,
@@ -998,9 +1015,9 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey, out = live && !key && world.canGetOut();
-        if ((out || key) !== canOut) { canOut = out || key; document.documentElement.classList.toggle('can-out', canOut); }
-        ui.prompt(key ? 'Turn the key' : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        const key = live && world.driving && world.trouble.wantsKey, aimR = live && !key && radioAimed(), out = live && !key && !aimR && world.canGetOut();
+        if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
+        ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
         ui.examine(null);
       }
