@@ -25,12 +25,25 @@ function raw(x: number, z: number) {
 // (x and z sit on whole 0.15 m steps from where the diner stood before, so tools/reachcheck.py
 // samples it as it always has)
 export const DINER = { x: -20.05, z: 1999.95, flatX: -11.05, y: raw(-11.05, 1999.95) };
+/** Sierra Motor Court stands beside the highway on the west side, about 650 m south of SARO
+ *  (Tom, 15 and 16 October: further from the stations; world/MotelFront.ts, placed by
+ *  World.ts): the land round its lot is flat at MOTEL.y, about here. */
+export const MOTEL = { flatX: -14.75, z: 386, y: raw(-14.75, 386) };
 /** The graded land the roads follow: long swells, a dry wash across the track, hills far out,
- *  and flat round the diner. */
+ *  and flat round the diner and the motel. */
 export function hLow(x: number, z: number) {
-  const r = raw(x, z), d = Math.hypot(x - DINER.flatX, z - DINER.z);
+  const r = raw(x, z), d = Math.hypot(x - DINER.flatX, z - DINER.z), m = Math.hypot(x - MOTEL.flatX, z - MOTEL.z);
+  if (m < 110) return r + (MOTEL.y - r) * (1 - smooth(45, 110, m));
   return d > 110 ? r : r + (DINER.y - r) * (1 - smooth(45, 110, d));
 }
+
+/** The highway's paved half-width and its gravel shoulder's (roadTerrain.HWY has the rest). */
+export const HWY_W = { paved: 4.8, shoulder: 6 };
+/** How far the highway's top stands above the graded land, by distance from its centre line. */
+export const hwyLift = (ax: number) => ax <= HWY_W.paved ? 0.06 + 0.06 * (1 - (ax / HWY_W.paved) ** 2) : ax <= HWY_W.shoulder ? 0.06 * (HWY_W.shoulder - ax) / (HWY_W.shoulder - HWY_W.paved) : 0;
+/** Height of the highway, its shoulders and the flat verge beside them (to 16 m out), at a
+ *  road-local point, as roadTerrain.surfaceY draws them; for walking beside the road at SARO. */
+export const highwayTop = (x: number, z: number) => hLow(x, z) + hwyLift(Math.abs(x));
 
 // ---------- the old Roswell road (drive/oldRoadLayout.ts) ----------
 export const MILE = 1609.34;

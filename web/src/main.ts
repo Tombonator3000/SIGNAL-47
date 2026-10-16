@@ -31,7 +31,8 @@ import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
 import { initArtMaterials } from './world/kit';
-import { World, STATION_ORIGIN as STATION_AT } from './world/World';
+import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
+import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
 import type { AreaId } from './story/Chapter3';
 
@@ -157,8 +158,8 @@ async function boot() {
     touch: () => input.touchMode,
     sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor, sunDir: sky.uniforms.uSunDir.value, sun: sky.uniforms.uSun.value }),
   });
-  // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard and
-  // on the motel's walk, dirt between them, boards in the hut, carpet at the motel
+  // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard, on the
+  // highway and at the motel, dirt between them, boards in the hut, carpet at the motel
   const surfaceAt = (): Surface => {
     const p = player.pos;
     if (world.area === 'room6') return 'carpet';
@@ -167,7 +168,8 @@ async function boot() {
     if (world.area !== 'saro') return 'dirt';
     if (inside(motelOffice, p)) return 'carpet';
     if (space !== 'yard') return 'tile';
-    if (world.grounds.onRoad(p)) return 'concrete';
+    if (world.grounds.onRoad(p) || world.crossing.atMotel(p)) return 'concrete';
+    if (p.z > 64 && Math.abs(p.x + 24) < 6) return 'concrete';   // the highway south and its shoulders
     return player.floorY < -0.3 ? 'dirt' : 'concrete';
   };
   player.onStep = () => audio.step(surfaceAt());
@@ -201,12 +203,14 @@ async function boot() {
     motel: {
       area: () => world.area, room: () => world.room6, court: () => world.court,
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
+      driveTo: () => world.driveToMotel(() => {}),
     },
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
       driveToDiner: (onArrive) => world.driveToDiner(onArrive),
       driving: () => world.driving,
       truckChoice: (place) => world.truckChoice(place),
+      truckAt: () => world.truckAt,
     },
     roswell: {
       world, camera,
@@ -244,7 +248,7 @@ async function boot() {
   // otherwise one of the player's own; not while the shift's first hours are still running
   world.truckChoice = (place) => {
     if (!game.at('ch1')) return { label: 'Service truck', use: () => ui.toast('SARO 07, the service truck. Not now: someone has to sit the console tonight.', 3.4) };
-    return ch3.truckTrip(place) ?? game.ch5.truckTrip(place) ?? { label: 'Drive', use: () => world.roam(place) };
+    return ch3.truckTrip(place) ?? game.ch4.truckTrip(world.truckAt) ?? game.ch5.truckTrip(place) ?? { label: 'Drive', use: () => world.roam(place) };
   };
   const ch4 = game.ch4;
   world.onRoom6Loaded = (r) => ch4.bindRoom(r);
@@ -509,8 +513,9 @@ async function boot() {
     audio.startNight();
     if (!score && audio.ctx) score = new Score(audio.ctx, audio.music);
     space = 'room';
-    // the truck where the story left it: outside the station's gate, on the diner's lot or on SARO's pad
-    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : 'saro');
+    // the truck where the story left it: outside the station's gate, on the diner's lot, on the
+    // motel's lot (a save made with it there) or on SARO's pad
+    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : o.state?.truck === 'motel' ? 'motel' : 'saro');
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
@@ -559,7 +564,7 @@ async function boot() {
   function mapAt(): MapView['at'] {
     const p = player.pos, tr = world.driving ? world.truckHere() : null, q = tr ? tr.group.position : p;
     switch (world.area) {
-      case 'road': return { spot: 'highway', t: q.z / 2000 };
+      case 'road': return { spot: 'highway', m: q.z - ROAD_ORIGIN.z - SARO_IN_ROAD.z };
       case 'diner': return { spot: 'diner' };
       case 'room6': return { spot: 'motel' };
       case 'roswell': { const d = world.oldDrive; return { spot: 'oldroad', mi: world.oldRoad && d ? world.oldRoad.where(d.pos.x, d.pos.z).mi : 0 }; }
@@ -569,15 +574,17 @@ async function boot() {
         return d < 60 ? { spot: 'station01' } : { spot: 'track', t: 1 - Math.min(1, d / 450) };
       }
       default:
-        if (inside(motelOffice, p) || (world.crossing.outside(p) && world.crossing.atMotel(p))) return { spot: 'motel' };
-        if (world.crossing.outside(p)) return { spot: 'highway', t: 0 };
+        if (inside(motelOffice, q) || (world.crossing.outside(q) && world.crossing.atMotel(q))) return { spot: 'motel' };
+        // on the highway at SARO, or down it (on foot or in the truck), metres south of SARO
+        if (world.crossing.outside(q) || q.z > 64) return { spot: 'highway', m: Math.max(0, q.z) };
         if (world.grounds.onGround(p) || world.grounds.onRoad(p) || inside(yard.zone.truckPad, p)) return { spot: 'yard' };
         return { spot: 'saro' };
     }
   }
   function kitItems(): KitItem[] {
     const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
-    const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner' : world.truckAt === 'saro' ? 'On the pad by the service yard' : 'Where I left it';
+    const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner'
+      : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && world.saroTruck && world.saroTruck.group.position.z < 40 ? 'On the pad by the service yard' : 'Where I left it';
     const kit: KitItem[] = [{ name: 'Notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
     if (game.at('ch1')) kit.push({ name: 'SARO jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
     if (fcam.have) kit.push({ name: 'Field camera', state: `${photos} exposed`, note: 'The SARO field camera, sheet film. C raises it, Space takes the picture.' });
@@ -600,7 +607,7 @@ async function boot() {
     if (world.area === 'roswell') return 'The old Roswell road';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
-    if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : 'West lot';
+    if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : world.crossing.onHighway(p) ? 'The highway south' : 'West lot';
     if (world.grounds.onGround(p)) return 'SARO grounds';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
@@ -627,7 +634,7 @@ async function boot() {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have,
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have, truck: world.truckAt,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -790,7 +797,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(),
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(),
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
@@ -964,6 +971,7 @@ async function boot() {
     if (world.driving) return 'drive';
     if (world.area === 'station01') return 'tension';
     if (world.area === 'room6') return 'motel';
+    if (world.area === 'saro' && world.crossing.atMotel(player.pos)) return 'motel';
     const hour = (((game.clock % 86400) + 86400) % 86400) / 3600;
     if (hour >= 5 && hour < 12) return 'dawn';
     if (world.area === 'diner') return 'town';   // the lot and the road by the diner at night (inside, its radio)

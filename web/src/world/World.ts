@@ -13,12 +13,12 @@ import type { Diner } from './Diner';
 import type { OldRoad } from '../drive/OldRoad';
 import type { DriveInput, DriveArea } from '../drive/Drive';
 import type { LegId, Exit } from '../drive/legs';
-import { Crossing, type CourtSite } from './Crossing';
+import { Crossing, SHOULDER, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, type FloodSet } from './kit';
 import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
-import { STATION_TURN } from './geo';
+import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT } from './geo';
 import { horizonHaze } from './horizon';
 import { DINER } from '../drive/roadShape';
 
@@ -36,7 +36,10 @@ import { DINER } from '../drive/roadShape';
 //   roswell     on the road's map       the old Roswell road at dawn, chapter six (drive/OldRoad.ts): mile 0
 //                                       is across the highway from the diner, and C 13 km on
 //
-// The walk from SARO's fire exit over the highway to the motel is part of SARO (Crossing.ts).
+// Sierra Motor Court is part of SARO's area, 650 m down the highway (MotelFront.ts, geo.ts
+// MOTEL_AT; Tom, 15 and 16 October: further from the stations). The walk there from the fire
+// exit, along the highway's shoulder, is SARO's too (Crossing.ts); the truck can be left on
+// its lot.
 
 export const ROAD_ORIGIN = new THREE.Vector3(8000, 0, 0);
 export const STATION_ORIGIN = new THREE.Vector3(0, 0, 8000);
@@ -46,16 +49,22 @@ export const DINER_ORIGIN = new THREE.Vector3(8000 + DINER.x, DINER.y + 0.1, DIN
 // The night areas see the camera's far plane at 5 km and thick haze; the old road at dawn
 // sees farther (the camera goes up at the end).
 const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
-/** The places the truck can be left on (a lot with a park box): SARO's pad, the gravel outside
- *  STATION 01's gate, the diner's lot. */
-const PLACES: LegId[] = ['saro', 'station01', 'diner'];
+/** The places the truck can be left on (a lot with a park box): SARO's pad, the motel's lot,
+ *  the gravel outside STATION 01's gate, the diner's lot. */
+const PLACES: LegId[] = ['saro', 'motel', 'station01', 'diner'];
+/** The places with a truck of their own (the motel's is SARO's: the same area). */
+const TRUCKS: LegId[] = ['saro', 'station01', 'diner'];
 const UP = new THREE.Vector3(0, 1, 0);
+/** The area a place is in (the motel's lot is SARO's). */
+const areaOf = (l: LegId): AreaId => l === 'motel' ? 'saro' : l;
 const inBox = (b: { minX: number; maxX: number; minZ: number; maxZ: number } | null, p: THREE.Vector3) =>
   !!b && p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
 /** The truck's headlights on the diner and the diner's neon on the road (Diner.shine, Diner.neon),
  *  to look about as strong as in their own sets: the diner's lamps fall off about ten times faster
  *  (falloff 0.14 against 0.012), and a lamp's strength sets how far it reaches. */
 const HEAD_ON_DINER = 2.5, NEON_REACH = 2, NEON_ON_ROAD = 0.3;
+// the motel's lamps fall off about four times faster than SARO's (0.055 against 0.012)
+const HEAD_ON_MOTEL = 1.6;
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -122,6 +131,8 @@ export class World {
   oldRoad: OldRoad | null = null;
   oldTruck: Truck | null = null;
   oldDrive: DriveController | null = null;
+  /** SARO's stretch of the highway, for the headlights in the delineators (initSaro). */
+  private saroGlints: { glints: (slots: readonly number[]) => void; trackArt: () => void } | null = null;
   /** Chapter six takes over: the pedals and wheel (input), or the camera (the pull-out at the
    *  end, while the truck stands). Cleared when the drive stops. */
   oldControl: { input?: (dt: number) => DriveInput; camera?: (dt: number) => void } | null = null;
@@ -207,6 +218,12 @@ export class World {
     c.group.visible = this.area === 'saro';
     this.d.saro.groups.push(c.group);
     this.saroRoad = c.obstacles;
+    this.saroGlints = c;
+    // the signs and big rocks beside the walk down the highway are in the way on foot too
+    for (const o of c.obstacles) {
+      const x = o.x - SARO_IN_ROAD.x, z = o.z - SARO_IN_ROAD.z;
+      if (x > SHOULDER.x0 - 1 && x < SHOULDER.x1 + 1 && z > SHOULDER.z0 && z < SHOULDER.z1) this.d.saro.colliders.push({ minX: x - o.r, maxX: x + o.r, minZ: z - o.r, maxZ: z + o.r });
+    }
     this.d.applyQuality();
   }
   private saroRoad: { kind: 'circle'; x: number; z: number; r: number }[] = [];
@@ -523,8 +540,8 @@ export class World {
    *  place it is stopped on once it has been driven off the one it stood on. */
   roam(from: LegId) {
     this.startTrip(from, null, { legs: ['saro', 'road', 'station01'], places: ['diner'], onStart: () => {
-      this.d.toast(this.d.touch() ? 'Left stick: drive. Radio: the radio. Stop, and Get out takes you out. On the highway, stop at the diner.'
-        : 'W, S, A and D: drive. R: radio. Stop and press E to get out. On the highway, stop at the diner.', 5.5);
+      this.d.toast(this.d.touch() ? 'Left stick: drive. Radio: the radio. Stop, and Get out takes you out. On the highway, stop at the motel or the diner.'
+        : 'W, S, A and D: drive. R: radio. Stop and press E to get out. On the highway, stop at the motel or the diner.', 5.5);
     } });
   }
 
@@ -535,6 +552,12 @@ export class World {
   driveToDiner(onArrive: () => void) {
     this.startTrip(this.truckAt ?? 'saro', 'diner', { perMetre: 0.19, onArrive,
       hint: 'Mesa Diner is the lit sign on the right. Leave the truck on its lot: stop there.' });
+  }
+
+  /** From the truck to Sierra Motor Court's lot, 650 m down the highway (chapter four). */
+  driveToMotel(onArrive: () => void) {
+    this.startTrip(this.truckAt ?? 'saro', 'motel', { onArrive,
+      hint: 'Sierra Motor Court is the lit sign on the right. Leave the truck on its lot by the office: stop there.' });
   }
 
   /** From the truck at the station (or wherever it was left) back to SARO, the whole way, onto the pad. */
@@ -552,7 +575,8 @@ export class World {
   /** SARO's own ground to drive on: the pad, the ramp, the service road, the highway. */
   private ensureSaroLeg() {
     return this.once('saroLeg', async () => {
-      const [{ DriveController }, { SaroDrive }] = await Promise.all([this.load('Drive'), this.load('legs'), this.load('engine')]);
+      const [{ DriveController }, { SaroDrive }] = await Promise.all([this.load('Drive'), this.load('legs'), this.load('engine'), loadArtFor(['gravelTrack'])]);
+      this.saroGlints?.trackArt();   // the survey track's mouth in its own gravel, as the road area has it
       const t = this.saroTruck!;
       const area = new SaroDrive(this.d.saro.colliders.filter((c) => c !== this.d.saro.truckCol), this.grounds.floorAt, this.saroRoad);
       area.headlights = this.headlightSlots(siteFlood);
@@ -565,14 +589,15 @@ export class World {
     return id === 'saro' ? this.ensureSaroLeg() : id === 'road' ? this.ensureRoad() : id === 'station01' ? this.ensureStation()
       : id === 'diner' ? this.ensureDiner() : this.ensureOldRoad();
   }
-  private truckOf(id: LegId) { return id === 'saro' ? this.saroTruck : id === 'station01' ? this.parked : id === 'diner' ? this.truck : null; }
+  private truckOf(id: LegId) { return id === 'saro' || id === 'motel' ? this.saroTruck : id === 'station01' ? this.parked : id === 'diner' ? this.truck : null; }
 
   /** The parked truck's collider and its handle for "use" go where the truck stands, or out
-   *  of the way while it is gone. */
+   *  of the way while it is gone. (At the motel it is SARO's truck, collider and handle.) */
   private parkAt(id: LegId) {
+    if (id === 'motel') id = 'saro';
     const t = this.truckOf(id);
     if (!t) return;
-    const here = this.truckAt === id;
+    const here = this.truckAt === id || (id === 'saro' && this.truckAt === 'motel');
     const col = id === 'saro' ? this.d.saro.truckCol : id === 'station01' ? this.site?.truckCollider : id === 'diner' ? this.dinerCol : null;
     const proxy = id === 'saro' ? this.d.saro.truckProxy : id === 'station01' ? this.site?.proxies.truckSpot : id === 'diner' ? this.dinerTruckProxy : null;
     const g = t.group, h = g.rotation.y, c = Math.abs(Math.cos(h)), sn = Math.abs(Math.sin(h));
@@ -609,15 +634,15 @@ export class World {
       const leg0 = o.leg ?? this.mods.legs!.legOf(from), L = this.legs[leg0]!;
       const g = (this.truckOf(from) ?? L.truck).group;
       // where every parked truck stands now, so a trip that is given up puts them back
-      this.trucksHome = (['saro', 'station01', 'diner'] as LegId[]).map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
+      this.trucksHome = TRUCKS.map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
         .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
       this.trip = { from, to, perMetre: o.perMetre ?? 0, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint,
         free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false };
       this.leg = leg0;
-      if (!o.free) { this.truckAt = null; for (const id of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(id); }
+      if (!o.free) { this.truckAt = null; for (const id of TRUCKS) this.parkAt(id); }
       L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
       this.lightsOn(L.truck);
-      this.enter(leg0);
+      this.enter(areaOf(leg0));
       this.startEngine();
       this.driving = true;
       this.onGetIn?.();
@@ -661,6 +686,7 @@ export class World {
   /** Where the truck is left at a place (world box). */
   private parkBox(place: LegId) {
     if (place === 'diner') return this.dinerPark;
+    if (place === 'motel') return (this.legs.saro?.area as { motelPark?: { minX: number; maxX: number; minZ: number; maxZ: number } } | undefined)?.motelPark ?? null;
     return (this.legs[place]?.area as { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null } | undefined)?.park ?? null;
   }
   // Into the next area: its truck goes on from here, as fast and as turned as this one.
@@ -673,7 +699,7 @@ export class World {
     this.dashT = 0;   // the clock on its dash is set this frame
     this.lightsOn(to.truck);
     from.truck.setDriving(false);
-    this.enter(ex.to);
+    this.enter(areaOf(ex.to));
 
   }
   // Stopped where the truck is left: the engine off, and the player gets out by the door.
@@ -690,7 +716,7 @@ export class World {
     hold(true);
     fade(true, '');
     this.d.after(0.4, () => {
-      this.enter(place);
+      this.enter(areaOf(place));
       this.getOut(L.truck);
       hold(false);
       fade(false);
@@ -720,7 +746,7 @@ export class World {
     if (this.area === 'roswell' || this.leg === 'roswell') return null;
     if (this.driving) return this.leg ? this.legs[this.leg]?.truck ?? null : null;
     const at = this.truckAt;
-    if (at === 'saro' && this.area === 'saro') return this.saroTruck;
+    if ((at === 'saro' || at === 'motel') && this.area === 'saro') return this.saroTruck;
     if (at === 'station01' && this.area === 'station01') return this.parked;
     if (at === 'diner' && (this.area === 'diner' || this.area === 'road')) return this.truck;
     return null;
@@ -746,7 +772,8 @@ export class World {
   /** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
   getOutHere() {
     if (!this.canGetOut()) return false;
-    this.park(this.placeOfLeg(this.leg!)!);
+    const id = this.leg!, q = this.legs[id]!.drive.pos;
+    this.park(id === 'saro' && inBox(this.parkBox('motel'), q) ? 'motel' : this.placeOfLeg(id)!);
     return true;
   }
 
@@ -760,7 +787,9 @@ export class World {
     const id = this.leg!, L = this.legs[id]!, D = L.drive, trip = this.trip, legs = this.mods.legs!;
     const next = !trip?.to ? null : legs.legOf(trip.to) === id ? 'park' : legs.legsBetween(id, trip.to)[1];
     const roadTo = next === 'park' ? trip!.to! : next as LegId;
-    const route = next ? (id === 'road' ? legs.roadRoute(roadTo, D.pos.z - ROAD_ORIGIN.z) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[next]) : null;
+    // to the motel's lot: from the north, or from the south once past it
+    const key = next === 'park' && trip!.to === 'motel' ? (D.pos.z > MOTEL_RECT.minZ + 20 ? 'motelS' : 'motel') : next;
+    const route = key ? (id === 'road' ? legs.roadRoute(roadTo, D.pos.z - ROAD_ORIGIN.z) : (L.area as { routes?: Partial<Record<string, THREE.Vector3[]>> }).routes?.[key]) : null;
     if (!route?.length) return { steer: 0, throttle: D.speed > 0.2 ? -0.6 : 0 };
     let k = 0, best = Infinity;
     for (let i = 0; i < route.length; i++) { const d = route[i].distanceToSquared(D.pos); if (d < best) { best = d; k = i; } }
@@ -839,24 +868,26 @@ export class World {
       this.truckAt = trip.home;
     }
     this.leg = null; this.trip = null; this.autopilot = null;
-    for (const p of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(p);
+    for (const p of TRUCKS) this.parkAt(p);
     this.free = null; this.freeBack = null;
   }
 
   /** The truck stands where the story has left it (a new night or a restored save): on
-   *  SARO's pad, outside STATION 01's gate or on the diner's lot. */
+   *  SARO's pad, on the motel's lot, outside STATION 01's gate or on the diner's lot. */
   placeTruck(at: LegId) {
     this.stopDriving();
     this.truckAt = at;
     const put = (t: Truck | null, x: number, z: number, h: number, y = 0) => { if (t) { t.group.position.set(x, y, z); t.group.rotation.y = h; t.setDriving(false); } };
     const p = this.d.saro.truck;
-    put(this.saroTruck, p.x, p.z, p.heading);
+    // on the motel's lot, nosed in towards the office
+    if (at === 'motel') put(this.saroTruck, -35.3 + MOTEL_AT.x, 9.5 + MOTEL_AT.z, Math.PI / 2, MOTEL_AT.y);
+    else put(this.saroTruck, p.x, p.z, p.heading);
     const a = this.site?.anchors.truck;
     if (a) put(this.parked, a.x, a.z, a.heading);
     // at the diner it is the road's truck that stands on the lot
     const b = this.diner?.anchors.truckPark;
     if (b && at === 'diner') put(this.truck, b.x, b.z, b.yaw, DINER_ORIGIN.y);
-    for (const id of ['saro', 'station01', 'diner'] as LegId[]) this.parkAt(id);
+    for (const id of TRUCKS) this.parkAt(id);
   }
 
   // ---------- free drive (the developer menu): the truck on a road, any time, no story ----------
@@ -906,6 +937,9 @@ export class World {
       this.diner.setNear(0);
     }
     if (this.area === 'saro') this.motel.update(dt, t);
+    // SARO's stretch of the highway: the reflectors and signs in the truck's headlights
+    const sl = this.legs.saro?.area.headlights;
+    if (this.area === 'saro' && this.leg === 'saro' && sl) this.saroGlints?.glints(sl.slots);
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if ((this.area === 'road' || this.area === 'diner') && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
     this.drivingStep(dt, input, look);
@@ -937,6 +971,9 @@ export class World {
    *  step (the headlights are where the truck is now) and after the PC tier has taken the lamps
    *  it makes real lights of (a neon lamp it holds is off here, and its real light lights all). */
   shareLights() {
+    // the truck's headlights on the motel when it is driven at SARO (its lamps are its own set)
+    const sh = this.area === 'saro' && this.leg === 'saro' ? this.legs.saro?.area.headlights : undefined;
+    this.motel.shine(sh?.set ?? null, sh?.slots ?? [], HEAD_ON_MOTEL);
     if (!this.diner) return;
     const hl = this.area === 'roswell' ? this.oldRoad?.headlights : this.area === 'road' || this.area === 'diner' ? this.road?.headlights : undefined;
     this.diner.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_DINER);

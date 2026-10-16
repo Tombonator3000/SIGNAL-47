@@ -123,7 +123,7 @@ export interface PrologueDeps {
   isTouch: () => boolean;
   travel: Travel;
   motel: Motel;
-  allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner' | 'driving' | 'truckChoice'>;
+  allNight: Pick<Chapter5Deps, 'area' | 'diner' | 'dinerTruck' | 'driveToDiner' | 'driving' | 'truckChoice' | 'truckAt'>;
   roswell: Omit<Chapter6Deps, 'ui' | 'audio'>;
   doors: Doors;
   milestone: () => void;
@@ -828,7 +828,7 @@ export class Prologue {
   }
 
   // ---------- chapter four ----------
-  // After the field prints: across the road to room 6 at Sierra Motor Court.
+  // After the field prints: down the highway to room 6 at Sierra Motor Court.
   beginChapter4(saved: SavedCase | null) {
     const { ui } = this.d;
     this.ch3.active = false; // its field roll is filed; the truck and the station stay as they are

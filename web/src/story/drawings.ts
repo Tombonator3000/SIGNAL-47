@@ -111,8 +111,9 @@ export function caseMap(o: { station: boolean; motel: boolean }) {
       g.setLineDash([12, 10]); g.lineWidth = 2.5;
     }
     if (o.motel) {
-      const mx = 160, my = 220;
-      g.beginPath(); g.moveTo(sx - 80, sy - 10); g.bezierCurveTo(400, 260, 300, 220, mx + 70, my); g.stroke();
+      // down the highway south of SARO
+      const mx = 400, my = 560;
+      g.beginPath(); g.moveTo(sx - 30, sy + 50); g.bezierCurveTo(490, 440, 440, 480, mx + 20, my - 22); g.stroke();
       g.setLineDash([]); g.lineWidth = 3;
       g.strokeRect(mx - 50, my - 22, 110, 40);
       g.font = '600 20px Oswald, sans-serif'; g.fillText('SIERRA MOTOR COURT', mx - 60, my - 40);
@@ -233,13 +234,13 @@ function drawServiceMap(g: CanvasRenderingContext2D) {
   g.beginPath(); g.moveTo(200, 110); g.lineTo(200, 780); g.stroke();
   g.setLineDash([]); g.strokeStyle = INK;
   g.save(); g.translate(176, 760); g.rotate(-Math.PI / 2); g.font = '18px "Special Elite", serif'; g.fillText('HIGHWAY', 0, 0); g.restore();
-  // SARO and its array, Sierra Motor Court across the road
+  // SARO and its array, Sierra Motor Court down the highway
   g.lineWidth = 2.5;
   for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(300 + (i % 3) * 30, 128 + Math.floor(i / 3) * 22, 7, 0, Math.PI * 2); g.stroke(); }
   g.strokeRect(286, 200, 52, 32);
   g.font = '600 22px Oswald, sans-serif'; g.fillText('SARO', 348, 224);
-  g.strokeRect(96, 196, 66, 24);
-  g.font = '17px "Special Elite", serif'; g.fillText('SIERRA MOTOR CT', 40, 248);
+  g.strokeRect(96, 296, 66, 24);
+  g.font = '17px "Special Elite", serif'; g.fillText('SIERRA MOTOR CT', 40, 348);
   // the diner at the junction
   g.fillRect(150, 548, 34, 22);
   g.font = '600 20px Oswald, sans-serif'; g.fillText('MESA DINER', 40, 600);

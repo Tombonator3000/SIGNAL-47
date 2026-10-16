@@ -98,7 +98,7 @@ Historien står i `HISTORIE.md`. Natt mot grålysning, 05:00 til 05:25. Dineren 
 
 ## Runde 7: Sierra Motor Court og papirene i rom 6 (prioritet 2, etter `MotelFront.ts`)
 
-Kapittel 4 begynner rundt 04:35. Spilleren går fra SARO over veien til motellet, inn på kontoret og videre til rom 6. Se `src/assets/art/concept/sierra_court.jpg`, `maps/motel-plan.png` og oppgaven i `todo.md`. Romnumre, OFFICE, VACANCY og all skrift på papirene tegnes i kode. Ingen tekst og ingen personer i bildene.
+Kapittel 4 begynner rundt 04:35. Spilleren går eller kjører fra SARO 650 m ned riksveien til motellet (flyttet dit 16. oktober; før lå det rett over veien), inn på kontoret og videre til rom 6. Se `src/assets/art/concept/sierra_court.jpg`, `maps/motel-plan.png` og oppgaven i `todo.md`. Romnumre, OFFICE, VACANCY og all skrift på papirene tegnes i kode. Ingen tekst og ingen personer i bildene.
 
 | Fil | Størrelse | Mål i spillet | Hva |
 |---|---|---|---|

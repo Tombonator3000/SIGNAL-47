@@ -303,7 +303,7 @@ async def main():
         check(await ev("S47.yard.dryPrints[2].visible && S47.yard.dryPrints[3].visible"), 'the field prints hang on the drying line')
         await shot('e14_field_prints')
         await pg.click('.labpanel .lp-close'); await tick(1.2)
-        # no end card: a chapter card, then chapter four begins (room 6, across the road)
+        # no end card: a chapter card, then chapter four begins (room 6, down the highway)
         for i in range(24):
             await tick(0.5)
             if await ev("!!document.querySelector('.chapter-card')"): break
@@ -313,7 +313,7 @@ async def main():
         await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
         await shot('e15_chapter_card')
         await tick(7)
-        check(await ev("S47.game.phase") == 'ch4' and 'ROOM 6' in await objective(), 'chapter four begins: room 6 across the road')
+        check(await ev("S47.game.phase") == 'ch4' and 'ROOM 6' in await objective(), 'chapter four begins: room 6 down the highway')
 
         # ---------- the case file ----------
         await ev("S47.hold = true; S47.tick(0.3)")

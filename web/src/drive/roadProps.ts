@@ -5,7 +5,7 @@ import type { GlowPoints } from '../world/glow';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
-import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, surfaceY, hash } from './roadTerrain';
+import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, surfaceY, hash, smooth } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
 import type { Rect } from './truckTextures';
 
@@ -18,6 +18,29 @@ export const HEADLIGHT_SLOTS = [0, 1, 2];
 // beam comes from the truck (RoadArea.update reads it from the headlight floods).
 export type RetroBeam = { pos: { value: THREE.Vector4 }; dir: { value: THREE.Vector3 } };
 export const retroBeam: RetroBeam = { pos: { value: new THREE.Vector4(0, -999, 0, 0) }, dir: { value: new THREE.Vector3(0, 0, -1) } };
+export type Glint = { i: number; p: THREE.Vector3 };
+const _src = new THREE.Vector3(), _dir = new THREE.Vector3();
+/** Every frame on a road: the beam from the truck's headlights (three flood slots in a set, the
+ *  first and last pools) into retroBeam, and the delineators' reflectors (glow points, world
+ *  positions) bright inside it, facing the truck. RoadArea and SARO's stretch (World.ts). */
+export function headlightGlints(set: FloodSet, slots: readonly number[], glow: GlowPoints, glints: readonly Glint[], beam: RetroBeam = retroBeam) {
+  const f0 = set.pos[slots[0]], f2 = set.pos[slots[2]];
+  const on = f0.w > 0 ? set.col[slots[0]].r : 0;
+  _dir.set(f2.x - f0.x, 0, f2.z - f0.z);
+  if (_dir.lengthSq() > 1) _dir.normalize(); else _dir.set(0, 0, -1);
+  // the lamps sit about 4 m behind the first pool, 0.9 m up
+  const src = _src.set(f0.x - _dir.x * 4, f0.y, f0.z - _dir.z * 4);
+  beam.pos.value.set(src.x, src.y, src.z, on * 0.55);
+  beam.dir.value.copy(_dir);
+  const col = glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
+  for (const g of glints) {
+    const dx = g.p.x - src.x, dy = g.p.y - src.y, dz = g.p.z - src.z, d = Math.hypot(dx, dy, dz);
+    // retroreflectors face along the road: bright inside the beam, facing the truck
+    const k = on * smooth(0.8, 0.97, (dx * _dir.x + dz * _dir.z) / d) * smooth(0.4, 0.85, Math.abs(dz) / d) * smooth(2, 7, d) * 1.4 / (1 + (d / 110) ** 2);
+    col.setXYZ(g.i, k, k * 0.95, k * 0.84);
+  }
+  col.needsUpdate = true;
+}
 /** A sign material that shines back at the headlights, lit by a flood set (the old road has its own). */
 export function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: number, set: FloodSet = roadFlood, beam: RetroBeam = retroBeam): T {
   floodlit(m, falloff, set);
@@ -135,9 +158,11 @@ export function poles(b: Build, keep: Keep = () => true) {
 }
 
 // ---------- barbed wire fences: steel T-posts, a wooden post every tenth, four strands ----------
-// The fence on the west side stops at the diner's ground (roadShape.ts, DINER), and the one on
-// the east is open where the old Roswell road goes off across from it (roadTerrain.oldStub).
+// The fence on the west side stops at the motel's and the diner's ground (roadShape.ts, MOTEL
+// and DINER), and the one on the east is open where the old Roswell road goes off across from
+// the diner (roadTerrain.oldStub).
 const DINER_GAP: [number, number] = [DINER.z - 40, DINER.z + 45], OLD_GAP: [number, number] = [DINER.z - 18, DINER.z + 18];
+export const MOTEL_GAP: [number, number] = [MOTEL.z - 46, MOTEL.z + 46];
 export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
   const line = (ax: number, az: number, bx: number, bz: number, ...gaps: [number, number][]) => {
@@ -154,7 +179,7 @@ export function fences(b: Build, keep: Keep = () => true) {
     }
   };
   line(HWY.fence, -1000, HWY.fence, 2900, OLD_GAP);
-  line(-HWY.fence, -1000, -HWY.fence, 2900, [GUARD.z0 - 0.6, GUARD.z1 + 0.6], DINER_GAP);
+  line(-HWY.fence, -1000, -HWY.fence, 2900, MOTEL_GAP, [GUARD.z0 - 0.6, GUARD.z1 + 0.6], DINER_GAP);
   line(-HWY.fence - 0.3, PASTURE.north, PASTURE.west, PASTURE.north);
   line(-HWY.fence - 0.3, PASTURE.south, PASTURE.west, PASTURE.south);
   line(PASTURE.west, PASTURE.north, PASTURE.west, PASTURE.south);
@@ -164,7 +189,8 @@ export function fences(b: Build, keep: Keep = () => true) {
   const t = 0.15, F = HWY.fence;
   wall(b, F - t, F + t, DRIVE_N, OLD_GAP[0]); wall(b, F - t, F + t, OLD_GAP[1], DRIVE_S);
   wall(b, 30 - t, 30 + t, OLD_GAP[0], OLD_GAP[1]);   // the old road is for chapter six (OldRoad.ts)
-  wall(b, -F - t, -F + t, DRIVE_N, GUARD.z0 - 0.6); wall(b, -F - t, -F + t, GUARD.z1 + 0.6, DINER_GAP[0]); wall(b, -F - t, -F + t, DINER_GAP[1], DRIVE_S);
+  wall(b, -F - t, -F + t, DRIVE_N, MOTEL_GAP[0]); wall(b, -F - t, -F + t, MOTEL_GAP[1], GUARD.z0 - 0.6);
+  wall(b, -F - t, -F + t, GUARD.z1 + 0.6, DINER_GAP[0]); wall(b, -F - t, -F + t, DINER_GAP[1], DRIVE_S);
   wall(b, PASTURE.west, -F, PASTURE.north - t, PASTURE.north + t);
   wall(b, PASTURE.west, -F, PASTURE.south - t, PASTURE.south + t);
   wall(b, PASTURE.west - t, PASTURE.west + t, PASTURE.north, PASTURE.south);
@@ -176,6 +202,7 @@ export function delineators(b: Build, keep: Keep = () => true) {
   const list: THREE.Matrix4[] = [], glints: { i: number; p: THREE.Vector3 }[] = [];
   for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 2900; z += 80) {
     if (side < 0 && z > 470 && z < 570) continue; // the mouth of the survey track
+    if (side < 0 && z > MOTEL.z - 42 && z < MOTEL.z + 42) continue; // the motel's lot
     if (z > DINER.z - 30 && z < DINER.z + 30) continue; // the way into the diner's lot, the old road's mouth
     const x = side * 7.2, y = surfaceY(x, z);
     if (!keep(x, z)) continue;
@@ -201,12 +228,12 @@ function sign(b: Build, x: number, z: number, ry: number, w: number, h: number, 
   b.statics.add(g);
   if (solid) for (const px of posts) circle(b, x + Math.cos(ry) * px, z - Math.sin(ry) * px, 0.15);
 }
-export function signs(b: Build) {
-  sign(b, -7.6, 60, Math.PI, 0.76, 0.95, 1.5, SIGNS.speed, [0], b.m.steel);
-  sign(b, -7.4, 210, Math.PI, 0.3, 0.6, 1.0, SIGNS.mile, [0], b.m.steel, false);
-  sign(b, -9.2, 330, Math.PI, 2.6, 0.98, 1.8, SIGNS.roswell, [-0.9, 0.9], b.m.steel);
+export function signs(b: Build, keep: Keep = () => true) {
+  if (keep(-7.6, 60)) sign(b, -7.6, 60, Math.PI, 0.76, 0.95, 1.5, SIGNS.speed, [0], b.m.steel);
+  if (keep(-7.4, 210)) sign(b, -7.4, 210, Math.PI, 0.3, 0.6, 1.0, SIGNS.mile, [0], b.m.steel, false);
+  if (keep(-9.2, 315)) sign(b, -9.2, 315, Math.PI, 2.6, 0.98, 1.8, SIGNS.roswell, [-0.9, 0.9], b.m.steel);
   // the turn-off: old enamel on two wooden posts, angled to the traffic from the north
-  sign(b, -12.5, 511.5, 2.6, 1.8, 1.13, 1.0, SIGNS.station, [-0.65, 0.65], b.m.wood);
+  if (keep(-12.5, 511.5)) sign(b, -12.5, 511.5, 2.6, 1.8, 1.13, 1.0, SIGNS.station, [-0.65, 0.65], b.m.wood);
 }
 
 // ---------- the old road, closed until chapter six (Tom 15 October) ----------

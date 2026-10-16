@@ -3,13 +3,13 @@ import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
 import { sharedHorizon } from './horizon';
-import { SARO_IN_ROAD, SARO_PATCH, inRect, outside } from './geo';
+import { SARO_IN_ROAD, SARO_PATCH, MOTEL_AT, MOTEL_GLOWS, inRect, outside } from './geo';
 import { hLow, smooth } from '../drive/roadShape';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 
 // World layout (metres): control room centred at the origin, windows face north (-Z).
-// The road runs north-south west of SARO; Sierra Motor Court sits on the far side of it.
+// The road runs north-south west of SARO; Sierra Motor Court is 650 m down it (geo.ts, MOTEL_AT).
 // S-03 is the central antenna at the end of the east service walk (chapter one).
 const DISH_LAYOUT: [string, number, number, number][] = [
   ['S-01', -48, -66, 0.85], ['S-02', -16, -52, 0.85], ['S-03', 9.5, -42, 0.9], ['S-04', 6, -88, 0.85],
@@ -99,7 +99,6 @@ export class Exterior {
       if (x > -9 && x < 40 && z > -8 && z < 13) continue; // buildings and the records annex
       if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
       if (x > -17 && x < -6 && z > 3 && z < 8.5) continue;  // the path from the fire exit
-      if (x > -50 && x < -28 && z > 0 && z < 70) continue;  // the motel's lot and front
       if (x > -21 && x < 15 && z > 11 && z < 29) continue;  // the service road, the path and the yard behind the annex (Grounds.ts)
       if (x > -11 && x < -6 && z > -20 && z < 12) continue;  // the west side of the house
       if (x > -11 && x < 8 && z > -20 && z < -5) continue;  // the windows side
@@ -179,9 +178,11 @@ export class Exterior {
   }
 
   // Sierra Motor Court itself is world/MotelFront.ts (Codex, chapter four); only its road
-  // sign stands here. The sign is double-faced: the back is the same picture, not mirrored.
+  // sign stands here, where the court stands now (MOTEL_AT: built at the old spot, then moved).
+  // The sign is double-faced: the back is the same picture, not mirrored.
   private motel() {
     const g = new THREE.Group();
+    g.position.set(MOTEL_AT.x, MOTEL_AT.y, MOTEL_AT.z);
     cyl(g, 0.22, 0.22, 9, M.pole, -31.5, 3.9, 30, 8);
     cyl(g, 0.22, 0.22, 9, M.pole, -29.3, 3.9, 30, 8);
     const face = (back: boolean) => {
@@ -193,7 +194,10 @@ export class Exterior {
       noMerge(m); g.add(m);
     };
     face(false); face(true);
-    addFlood(-29, 6, 32, 18, 0xff4a35); addFlood(-29, 4, 32, 6, 0x50f0d8);
+    const A = MOTEL_AT;
+    addFlood(-29 + A.x, 6 + A.y, 32 + A.z, 18, 0xff4a35); addFlood(-29 + A.x, 4 + A.y, 32 + A.z, 6, 0x50f0d8);
+    // its lights from far off: the sign is a landmark on the way south
+    for (const [x, y, z, size, c] of MOTEL_GLOWS) this.glow.add(x + A.x, y + A.y, z + A.z, size, c);
     mergeStatic(g);
     this.group.add(g);
   }

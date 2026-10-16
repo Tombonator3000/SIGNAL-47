@@ -9,8 +9,8 @@ import { mapOverlay } from '../ui/MapOverlay';
 import { SERVICE_MAP, serviceMap } from './drawings';
 import { clockText } from './time';
 
-// Chapter five, "All Night" (KAPITLER.md). 05:00 to 05:20. Out of room 6 and back across
-// the road to the truck; on the way past the control room the operations terminal chimes:
+// Chapter five, "All Night" (KAPITLER.md). 05:00 to 05:20. Out of room 6 to the truck, on the
+// motel's lot or back up the highway on SARO's pad; past the control room the operations terminal chimes:
 // a new file, opened at 05:29, half an hour from now. Then the diner where the old road to
 // Roswell leaves the highway: coffee, a waitress who has watched the lights over the mesa
 // since she was eleven, a driver whose engine died on the old road last October, the 1947
@@ -60,6 +60,8 @@ export interface Chapter5Deps {
   driveToDiner(onArrive: () => void): void;
   driving(): boolean;
   truckChoice(place: 'saro' | 'station01' | 'diner'): { label: string; use: () => void };
+  /** Where the truck stands now (World.truckAt): 'saro' its pad, 'motel' the motel's lot. */
+  truckAt(): string | null;
   save: () => void;
   milestone: () => void;
 }
@@ -104,8 +106,8 @@ export class Chapter5 {
     this.s = saved ? { ...fresh(), ...saved } : fresh();
     this.applyWorld();
     if (!saved) {
-      this.g.note(`${this.time()}. Out of room 6. The truck is on its pad at SARO. C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night.`);
-      this.d.ui.toast('The truck is on its pad at SARO.', 3.4);
+      this.g.note(`${this.time()}. Out of room 6. ${this.truckWhere()} C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night.`);
+      this.d.ui.toast(this.truckWhere(), 3.4);
     }
     this.d.save();
   }
@@ -122,6 +124,7 @@ export class Chapter5 {
   private save() { this.d.save(); }
   private time() { return clockText(this.g.clock, false); }
   private inDiner() { return this.d.area() === 'diner'; }
+  private truckWhere() { return this.d.truckAt() === 'motel' ? 'The truck is on the motel\'s lot.' : 'The truck is on its pad at SARO, up the highway.'; }
   private file(doc: DocSpec) {
     const i = this.g.docs.findIndex((x) => x.id === doc.id);
     if (i >= 0) { this.g.docs[i] = doc; return false; }
@@ -148,7 +151,8 @@ export class Chapter5 {
   objective(): string {
     const s = this.s;
     switch (s.stage) {
-      case 'to-truck': return this.d.driving() ? 'MESA DINER // SOUTH ON THE HIGHWAY, ON THE RIGHT AFTER TWO KILOMETRES' : 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
+      case 'to-truck': return this.d.driving() ? 'MESA DINER // SOUTH ON THE HIGHWAY, ON THE RIGHT AFTER TWO KILOMETRES'
+        : this.d.truckAt() === 'motel' ? 'ALL NIGHT // THE TRUCK IS ON THE MOTEL\'S LOT' : 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
       case 'diner':
         if (!this.inDiner()) return 'ALL NIGHT // MESA DINER';
         return 'MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13)';

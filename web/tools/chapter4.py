@@ -1,6 +1,7 @@
 # Chapter four, "Room 6", played through in a headless browser: the fire exit at the end
-# of the south corridor, the ramp and the walk across the highway (the player follows the
-# ground height), the door of room 6, the conversation with N. Vega with wrong and right
+# of the south corridor, the ramp and the walk down the highway's shoulder to Sierra Motor
+# Court 650 m south (the player follows the ground height; tools/motel.py has the truck
+# and the ground in detail), the door of room 6, the conversation with N. Vega with wrong and right
 # answers (P10, the three parts of P11 with her correction, Tomas' letter and his field
 # card, P12 on the old field line, where C goes), the papers on the table, Continue inside
 # room 6, leaving, and the chapter card that leads into All Night. Starts from
@@ -54,7 +55,7 @@ async def main():
               for (const [x,z] of pts) {{ let n=0;
                 while (Math.hypot(p.pos.x-x, p.pos.z-z) > 0.12) {{
                   p.yaw = Math.atan2(-(x-p.pos.x), -(z-p.pos.z)); p.update(1/30, 0, -1, false);
-                  if (++n > 2400) return [false, p.pos.x, p.pos.z]; }} }}
+                  if (++n > 4000) return [false, p.pos.x, p.pos.z]; }} }}
               return [true, p.pos.x, p.pos.z]; }})()''')
         async def face(x, y, z):
             await ev(f"(()=>{{const p=S47.player; p.yaw=Math.atan2(-({x}-p.pos.x), -({z}-p.pos.z)); p.pitch=Math.atan2({y}-(p.floorY+p.eye), Math.hypot({x}-p.pos.x,{z}-p.pos.z)); S47.tick(0.05);}})()")
@@ -62,7 +63,7 @@ async def main():
         # ---------- SARO: the fire exit ----------
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter4'); S47.tick(1.0)")
         check(await ev("S47.game.phase") == 'ch4' and await s4('stage') == 'to-motel', 'chapter four starts: to the motel')
-        check('FIRE EXIT' in await objective(), 'objective points to the fire exit')
+        check('FIRE EXIT' in await objective() and 'DOWN THE HIGHWAY' in await objective(), 'objective points down the highway: the truck, or the fire exit')
         check(await ev("S47.game.chapterTitle()") == 'Chapter 4: Room 6', 'chapter title')
         await place(-4.6, 5.7, math.pi / 2, -0.05)
         check(await aimed() == 'exitDoor' and await label('exitDoor') == 'Open the fire exit', 'the fire exit offers to open')
@@ -84,17 +85,20 @@ async def main():
         check(ok[0] and ok2[0] and -0.45 < mid < -0.15 and abs(low + 0.6) < 0.05, f'down the ramp to the ground (eye follows: {mid:.2f} m on the ramp, {low:.2f} m at the foot)')
         ok = await walk([[-24.0, 6.0]])
         check(ok[0], 'along the path to the highway')
-        await ev("S47.player.yaw = Math.atan2(-(-41 + 24), -(55 - 6)); S47.player.pitch = -0.04; S47.tick(0.2)")
+        await ev("S47.player.yaw = Math.PI; S47.player.pitch = -0.04; S47.tick(0.2)")
         await shot('f03_road')
         calls = await ev("S47.renderer.info.render.calls")
         print(f'draw calls on the road: {calls}', flush=True)
         check(calls < 300, 'draw calls on the road under 300')
-        check('CROSS THE ROAD' in await objective(), 'objective: cross the road to room 6')
-        ok = await walk([[-26.0, 6.0], [-29.0, 6.0]])
-        check(ok[0] and abs(await ev("S47.player.floorY")) < 0.05, 'up the driveway ramp onto the motel lot, level with SARO')
+        check('DOWN THE HIGHWAY TO ROOM 6' in await objective(), 'objective: down the highway to room 6')
+        # 650 m down the shoulder, on the real ground (a waypoint every 100 m)
+        A = await ev("S47.world.motel.at")
+        ok = await walk([[-32.5, z] for z in range(40, int(A['z']) - 40, 100)] + [[-32.5, A['z'] - 4], [A['x'] - 33.0, A['z'] + 8.0]])
+        fy = await ev("S47.player.floorY")
+        check(ok[0] and abs(fy - A['y']) < 0.05, f'down the shoulder and onto the motel lot ({ok[1]:.1f}, {ok[2]:.1f}, floor {fy:.2f})')
         # the office first: Nora's note on the counter (world/MotelFront.ts)
         office = await ev("S47.world.court.anchors.officeInside")
-        ok = await walk([[-37.5, 20.0], [-39.6, 24.1], [office['x'], office['z']]])
+        ok = await walk([[A['x'] - 37.5, A['z'] + 20.0], [A['x'] - 39.6, A['z'] + 24.1], [office['x'], office['z']]])
         check(ok[0] and await ev("S47.world.motel.interior.visible"), f'into the motel office (stopped at {ok[1]:.1f}, {ok[2]:.1f})')
         msg = await ev("(()=>{const v=S47.world.court.proxies.message.getWorldPosition(S47.camera.position.clone()); return [v.x,v.y,v.z]})()")
         await face(msg[0], msg[1], msg[2])
@@ -103,7 +107,7 @@ async def main():
         check(any('Room 6. The door is open' in n for n in await ev("S47.game.notes")), 'her note leads to room 6')
         await shot('f03b_office')
         out = await ev("S47.world.court.anchors.room6Outside")
-        ok = await walk([[-39.6, 24.1], [-37.5, 26.0], [-37.5, out['z'] - 0.6], [out['x'], out['z']]])
+        ok = await walk([[A['x'] - 39.6, A['z'] + 24.1], [A['x'] - 37.5, A['z'] + 26.0], [A['x'] - 37.5, out['z'] - 0.6], [out['x'], out['z']]])
         check(ok[0], f'along the lot to room 6 (stopped at {ok[1]:.1f}, {ok[2]:.1f})')
         await ev(f"S47.player.yaw = {out['yaw']}; S47.player.pitch = 0.05; S47.tick(0.1)")
         check(await aimed() == 'room6Door' and await label('room6Door') == 'Room 6', 'the door of room 6')
@@ -135,7 +139,7 @@ async def main():
         await face(nora[0], nora[1] + 0.25, nora[2])
         check(await aimed() == 'r6:nora', 'N. Vega can be spoken to')
         await use('r6:nora'); await tick(0.2)
-        check('So you came across the road' in await lines(), 'she speaks first')
+        check('So you came down the road' in await lines(), 'she speaks first')
 
         # P10: the evidence on the table
         await pg.click('.talk [data-chip=e07]'); await pg.click('.talk [data-a=table]'); await tick(0.1)

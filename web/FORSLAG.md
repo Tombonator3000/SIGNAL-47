@@ -180,6 +180,8 @@ Ti eksempler å velge fra:
 
 ### 3. Motellet lenger unna
 
+**Bygget 16. oktober kveld:** motellet står nå 650 m sør langs riksveien på vestsiden, i SAROs eget område (ikke veiens), så man kan gå hele veien langs veiskulderen uten bytte og kjøre dit og la bilen stå på plassen. Bilen går over i veiens område 60 m sør for motellet. Detaljer i `log.md`.
+
 I dag ligger Sierra Motor Court rett over riksveien fra SARO, rundt 45 m unna. Forslag: flytt det rundt 700 m sør langs riksveien, på vestsiden, i veiens område slik dineren nå står der. Det blir rundt 40 sekunder i bil eller 6 minutter til fots (1,9 m/s), og neonskiltet blir et landemerke på turen sør til dineren. Rom 6 er fortsatt et eget område innenfor døra.
 
 For å kunne gå dit må veiskulderen mellom SARO og motellet bli gangbar, noe veiens område ikke har i dag. Kapittel 4 må skrives om fra «gå over veien» til «kjør eller gå», og `chapter4.py`, `reachcheck.py`, `drives.py` og gjennomspillingen må følge med.
