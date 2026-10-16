@@ -30,12 +30,14 @@ const LINES: Record<Exclude<Picture, 'off'>, number> = { vhs: 720, heavy: 480 };
 // past it and become infinite, and tone mapping or ambient occlusion turns that into NaN. The
 // bloom's blur and its coarse levels then spread one such pixel into black squares, or over the
 // whole screen (Tom, 16 October, on an RTX 3080; scratchpad probe nan.py: one bad pixel turned
-// nearly all of the PC tier's picture black). Anything over 64 already tone maps to white, so
-// the values are held between 0 and 64, and NaN becomes 0: max and min return the other value
-// for NaN on the GPUs we know, and isnan() catches the rest.
+// nearly all of the PC tier's picture black). Anything over about 8 already tone maps to white,
+// so the values are held between 0 and 10, and NaN becomes 0: max and min return the other
+// value for NaN on the GPUs we know, and isnan() catches the rest. The lid also keeps the bloom
+// from a surface a hand's breadth from the flashlight to a glow instead of a white-out (a lit
+// scene's brightest values are 2 to 12, S47.hdrStats()).
 const FINITE = /* glsl */ `
 vec3 finite(vec3 c) {
-  c = min(max(c, vec3(0.0)), vec3(64.0));
+  c = min(max(c, vec3(0.0)), vec3(10.0));
   return any(isnan(c)) ? vec3(0.0) : c;
 }`;
 

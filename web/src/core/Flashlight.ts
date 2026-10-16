@@ -19,8 +19,11 @@ export class Flashlight {
   private readonly _r = new THREE.Vector3();
 
   constructor(scene: THREE.Scene) {
-    // a warm incandescent bulb behind a reflector: a bright middle and a soft edge
-    this.light = new THREE.SpotLight(0xffe6c0, 0, 30, 0.4, 0.55, 1.5);
+    // a warm incandescent bulb behind a reflector: a bright middle and a soft edge. It fades
+    // with the distance itself, not faster: with the physical fall-off a rail or a wall a hand's
+    // breadth away came out hundreds of times brighter than the yard and blinded the picture
+    // on the PC tier (Tom, 16 October); this is about as bright at 4 m and far milder up close.
+    this.light = new THREE.SpotLight(0xffe6c0, 0, 30, 0.4, 0.55, 1);
     this.light.name = 'flashlight';
     this.light.target.name = 'flashlight target';
     const sh = this.light.shadow;
@@ -51,7 +54,7 @@ export class Flashlight {
       k = this.dark > 0 ? 0.08 : 1 - this.flick * 0.25 * (0.5 + 0.5 * Math.sin(t * 37) * Math.sin(t * 11.3));
     }
     const L = this.light;
-    L.intensity = this.level < 0.01 ? 0 : 85 * this.level * k;
+    L.intensity = this.level < 0.01 ? 0 : 40 * this.level * k;
     cam.getWorldDirection(this._f);
     this._r.set(1, 0, 0).applyQuaternion(cam.quaternion);
     L.position.copy(cam.position).addScaledVector(this._r, 0.22); L.position.y -= 0.18;
