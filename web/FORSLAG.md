@@ -146,6 +146,8 @@ Navnet på byen kan vente til den bygges.
 
 Faktaene om Roswell-historien (boka 1980, basen 1967, museet tidlig på 1990-tallet), Masters 10. til 13. april 1986 og Halley nærmest jorda 11. april 1986 er fra hukommelsen og ikke slått opp her. De sjekkes før noe av det står i spillet. Soltidene er regnet.
 
+**Tom svarte 16. oktober:** heller mot A, én natt og byen om natta. Romvesenene skal alltid være der i bakgrunnen, som noe skummelt som kan skje når som helst, og tilfeldige bortføringer skal med. Hendelsesregissøren, hendelsene, kartet med linjene, Roswell som kultur og rykter og stemningen fra Twin Peaks skal med. B står som en mulighet senere, ikke som mål. Utdypet og forbedret i `HENDELSER.md`, med fire nye spørsmål til Tom om bortføringene.
+
 ## SARO som knutepunkt, lastebilen når som helst, lommelykt og undersøkelse (15. oktober)
 
 Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill (avgjort). På sikt: SARO og observatoriet som et knutepunkt der flere rare ting skjer, motellet lenger unna så man kjører dit (eller går et stykke), gå ut og undersøke antennene, lommelykt, og høyreklikk for zoom og undersøkelse. Og: kan noe av det som står i rulleteksten til They Are Here brukes?
