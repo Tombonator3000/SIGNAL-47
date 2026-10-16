@@ -116,7 +116,10 @@ export class Ambience {
   setSpace(space: Space) {
     this.space = space;
     const t = this.ctx.currentTime;
-    const [level, cut] = space === 'yard' ? [1, 9000] : space === 'room' ? [0.3, 700] : [0.1, 500];
+    // indoors the desert is barely there (Tom, 16 October): about -26 dB and only what comes
+    // through a wall, the low part of the wind; the crickets are gone. The cab and the photo
+    // lab are closed too.
+    const [level, cut] = space === 'yard' ? [1, 9000] : space === 'room' ? [0.05, 420] : [0.04, 380];
     this.out.gain.setTargetAtTime(level, t, 0.8);
     this.lp.frequency.setTargetAtTime(cut, t, 0.5);
   }

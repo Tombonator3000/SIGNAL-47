@@ -22,9 +22,9 @@ Stykkene under er hentet fra Scott Buckleys bibliotek 5. oktober 2026, der de li
 - ceramic cup shatters on tile floor, geraldfiebig, Freesound 524999 (`ceramic.mp3`)
 - desert_wind.wav, DarkShroom, Freesound 645305 (`wind.mp3`)
 - Kenney Interface Sounds, https://kenney.nl/assets/interface-sounds (`click.mp3`, `switch.mp3`)
-- Kenney Impact Sounds, https://kenney.nl/assets/impact-sounds (`thud_soft.mp3`)
+- Kenney Impact Sounds, https://kenney.nl/assets/impact-sounds (`thud_soft.mp3`; fottrinnene `step_concrete0` til `4`, `step_wood0` til `4`, `step_carpet0` til `4` og `step_gravel0` til `4`, laget av `footstep_concrete_00x`, `footstep_wood_00x`, `footstep_carpet_00x` og `footstep_snow_00x` i versjon 1.0, lastet ned 16. oktober 2026, mono, utjevnet og kodet som mp3; `License.txt` i pakken sier CC0)
 
-### Natten, fottrinn, dører og papir (4. oktober 2026), CC0 1.0
+### Natten, dører og papir (4. oktober 2026), CC0 1.0
 
 Hentet fra Toms egne prosjekter: `Tombonator3000/morbidium` (`assets/lyd/`, kildeliste i `KILDER.md` og `lyd.json`) og `Tombonator3000/Loincloth-Legends` (`public/assets/sound/`, `KILDER.md`). Filene der er laget av Freesounds forhåndsvisning (128 kbps), trimmet, tonet inn og ut, mikset til mono og normalisert. Freesound-siden for hver fil ble åpnet 4. oktober 2026 og viser fortsatt CC0 1.0. Navnene under er filnavnene i spillet.
 
@@ -33,12 +33,6 @@ Hentet fra Toms egne prosjekter: `Tombonator3000/morbidium` (`assets/lyd/`, kild
 - Dogs Barking in Distance_Rural.wav, rvandemark, Freesound 581478 (`dog0.mp3`, morbidium `hund`)
 - Distant Dog Bark, qubodup, Freesound 813116 (`dog1.mp3`, morbidium `hund_2`)
 - wind_gust_short_sqeeeek.wav, sqeeeek, Freesound 381853 (`gust.mp3`, Loincloth-Legends `vindkast`)
-- concrete footstep 2, Yoyodaman234, Freesound 166508 (`step_concrete0.mp3`, morbidium `fot_stein`)
-- Concrete Footstep 2.mp3, matth3wc04, Freesound 690006 (`step_concrete1.mp3`, morbidium `fot_stein_2`)
-- Cloth_And_Shoes_On_Concrete_22, BlondPanda, Freesound 778502 (`step_concrete2.mp3`, morbidium `fot_stein_3`)
-- Footstep_Wood_Toe_1.wav, GiocoSound, Freesound 421153 (`step_wood0.mp3`, morbidium `fot_tre`)
-- Wood step Sample 4, Notarget, Freesound 434759 (`step_wood1.mp3`, morbidium `fot_tre_2`)
-- Footstep in the snow_04 [RAW], cabled_mess, Freesound 384424 (`step_dirt.mp3`, Loincloth-Legends `fot_sno`; spilles dypere som grus og jord)
 - Squeaky door opened quickly.wav, CastIronCarousel, Freesound 216878 (`door_creak0.mp3`, morbidium `door`)
 - Door - Creak.wav, JarredGibb, Freesound 219499 (`door_creak1.mp3`, morbidium `door_2`)
 - Metal Door Slam_SoundSmith.wav, Lunardrive, Freesound 48980 (`door_metal.mp3`, morbidium `dorslag`)

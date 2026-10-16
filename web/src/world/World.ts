@@ -48,6 +48,7 @@ const FAR = 5000, FAR_OLDROAD = 12000, FOG = 0.0021, FOG_OLDROAD = 0.00055;
 /** The places the truck can be left on (a lot with a park box): SARO's pad, the gravel outside
  *  STATION 01's gate, the diner's lot. */
 const PLACES: LegId[] = ['saro', 'station01', 'diner'];
+const UP = new THREE.Vector3(0, 1, 0);
 const inBox = (b: { minX: number; maxX: number; minZ: number; maxZ: number } | null, p: THREE.Vector3) =>
   !!b && p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ;
 /** The truck's headlights on the diner and the diner's neon on the road (Diner.shine, Diner.neon),
@@ -517,8 +518,8 @@ export class World {
    *  place it is stopped on once it has been driven off the one it stood on. */
   roam(from: LegId) {
     this.startTrip(from, null, { legs: ['saro', 'road', 'station01'], places: ['diner'], onStart: () => {
-      this.d.toast(this.d.touch() ? 'Left stick: drive. Stop on a lot to get out: the pad at SARO, the gravel at STATION 01, the diner\'s lot.'
-        : 'W, S, A and D: drive. Stop on a lot to get out: the pad at SARO, the gravel at STATION 01, the diner\'s lot.', 5);
+      this.d.toast(this.d.touch() ? 'Left stick: drive. Stop, and Get out takes you out. On the highway, stop at the diner.'
+        : 'W, S, A and D: drive. Stop and press E to get out. On the highway, stop at the diner.', 5);
     } });
   }
 
@@ -618,7 +619,7 @@ export class World {
       Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
       if (o.onStart) o.onStart();
       else if (from === to && o.hint) toast(o.hint, 5);
-      else toast(this.d.touch() ? 'Left stick: throttle, brake and steering.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer.', 4.5);
+      else toast(this.d.touch() ? 'Left stick: throttle, brake and steering. Stopped, Get out takes you out.' : 'W and S: throttle and brake (S at a stop: reverse). A and D: steer. Stopped, E gets out.', 4.5);
     }).catch((e: Error) => {
       console.error(e);
       toast('The way could not be loaded. Check your connection and try the truck again.', 5);
@@ -691,13 +692,43 @@ export class World {
     });
   }
   private getOut(t: Truck) {
-    const g = t.group, h = g.rotation.y, p = this.d.player, up = new THREE.Vector3(0, 1, 0);
-    for (const side of [-1, 1, -1.4, 1.4]) {
-      const v = new THREE.Vector3(side * 1.75, 0, -0.3).applyAxisAngle(up, h).add(g.position);
-      if (p.walkable(v.x, v.z)) { p.place(v.x, v.z, h); return; }
-    }
-    const v = new THREE.Vector3(-1.75, 0, -0.3).applyAxisAngle(up, h).add(g.position);
+    const g = t.group, h = g.rotation.y, p = this.d.player;
+    const v = this.doorSpot(t) ?? new THREE.Vector3(-1.75, 0, -0.3).applyAxisAngle(UP, h).add(g.position);
     p.place(v.x, v.z, h);
+  }
+  /** Ground to stand on by one of the truck's doors in the area's walkable zones, clear of
+   *  everything in the way, or null. */
+  private doorSpot(t: Truck) {
+    const g = t.group, h = g.rotation.y, p = this.d.player, r = p.radius;
+    for (const side of [-1, 1, -1.4, 1.4]) {
+      const v = new THREE.Vector3(side * 1.75, 0, -0.3).applyAxisAngle(UP, h).add(g.position);
+      if (p.walkable(v.x, v.z) && !p.colliders.some((c) => v.x + r > c.minX && v.x - r < c.maxX && v.z + r > c.minZ && v.z - r < c.maxZ)) return v;
+    }
+    return null;
+  }
+
+  // ---------- getting out wherever the truck is stopped (Tom, 16 October) ----------
+  /** The place a stop in this leg leaves the truck at (its parked truck is this leg's). */
+  private placeOfLeg(id: LegId): LegId | null { return id === 'saro' || id === 'station01' ? id : id === 'road' ? 'diner' : null; }
+  /** Whether the player can get out now: stopped, on a trip of the story's or their own, and
+   *  with ground by a door (round SARO and STATION 01 anywhere the area can be walked; on the
+   *  highway only at the diner, the road itself is not walked). E or Use gets out (main.ts). */
+  canGetOut() {
+    const id = this.leg, trip = this.trip;
+    if (!this.driving || this.busy || !id || !trip || trip.free) return false;
+    const L = this.legs[id], place = this.placeOfLeg(id);
+    if (!L || !place || Math.abs(L.drive.speed) > 0.6) return false;
+    if (id === 'road') {
+      const b = this.dinerPark, q = L.drive.pos;
+      return !!b && q.x > b.minX - 6 && q.x < b.maxX + 6 && q.z > b.minZ - 6 && q.z < b.maxZ + 6;
+    }
+    return !!this.doorSpot(L.truck);
+  }
+  /** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
+  getOutHere() {
+    if (!this.canGetOut()) return false;
+    this.park(this.placeOfLeg(this.leg!)!);
+    return true;
   }
 
   // The autopilot (tests, the developer menu): along the way to the next area, or to where

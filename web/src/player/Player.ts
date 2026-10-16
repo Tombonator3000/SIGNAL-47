@@ -43,7 +43,8 @@ export class Player {
     if (moved > 0.0005) {
       this.bob += moved * 7.2;
       this.stepDist += moved;
-      if (this.stepDist > 0.62) { this.stepDist = 0; this.onStep?.(); }
+      // a step every 0.8 m: about two a second at a walk (0.62 was a hurried patter)
+      if (this.stepDist > 0.8) { this.stepDist = 0; this.onStep?.(); }
     } else this.bob *= 0.9;
 
     const fy = this.floor ? this.floor(this.pos.x, this.pos.z) : 0;

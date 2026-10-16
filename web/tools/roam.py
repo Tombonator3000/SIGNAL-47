@@ -78,10 +78,51 @@ async def main():
             await shot(f'{what}_parked')
             return st
 
-        phase0 = await ev("S47.game.phase")
+        # ---------- getting out (Tom, 16 October: no way out once in) ----------
+        async def get_in(i):
+            await use(i)
+            for _ in range(80):
+                await tick(0.25)
+                if await ev("S47.world.driving"): break
+            await tick(0.5)
+        async def press_out():
+            await pg.keyboard.press('e')
+            for _ in range(24):
+                await tick(0.25)
+                if not await ev("S47.world.driving"): break
+            await tick(0.5)
+        prompt = lambda: ev("(() => { const e = document.querySelector('.hud .prompt'); return e ? e.textContent : ''; })()")
         check(not await ev("S47.flashlight.have"), 'chapter one: no flashlight before the truck')
+        await get_in('truck')
+        check(await ev("S47.flashlight.have"), 'get out: the flashlight came off the passenger seat on getting in')
+        pr = await prompt()
+        check(await ev("S47.world.canGetOut()") and 'Get out' in pr, f"get out: in the truck on its pad, Get out is offered ({pr})")
+        await press_out()
+        st = await state()
+        check(not st['driving'] and st['at'] == 'saro' and st['area'] == 'saro', f"get out: E gets out on the pad ({st['area']}, {st['at']})")
+        pad = await ev("(() => { const g = S47.world.saroTruck.group.position; return [g.x, g.z]; })()")
+        # drive off the pad a little way, stop, and get out where it stands
+        await get_in('truck')
+        await ev("S47.world['trip'].to = 'diner'; S47.world.autopilot = 5")
+        await tick(5.0)
+        await ev("S47.world.autopilot = null")
+        for _ in range(60):
+            await tick(0.25)
+            if abs(await ev("(() => { const w = S47.world, L = w.legs[w.leg]; return L ? L.drive.speed : 0; })()")) < 0.3: break
+        await tick(0.5)
+        can = await ev("S47.world.canGetOut()")
+        await shot('getout_yard')
+        await press_out()
+        st = await state()
+        at = await ev("(() => { const g = S47.world.saroTruck.group.position; return [g.x, g.z]; })()")
+        moved = ((at[0] - pad[0]) ** 2 + (at[1] - pad[1]) ** 2) ** 0.5
+        check(can and not st['driving'] and st['at'] == 'saro' and moved > 6, f"get out: stopped off the pad, E gets out and the truck stays there ({moved:.1f} m from the pad)")
+        near = await ev("(() => { const p = S47.player.pos, g = S47.world.saroTruck.group.position; return Math.hypot(p.x - g.x, p.z - g.z); })()")
+        check(near < 3.6 and await label('truck') == 'Drive', f"get out: the player stands by the door ({near:.2f} m) and the truck offers a drive again ({await label('truck')})")
+        await shot('getout_out')
+
+        phase0 = await ev("S47.game.phase")
         await drive('saro_diner', 'truck', 'diner')
-        check(await ev("S47.flashlight.have"), 'saro_diner: the flashlight came off the passenger seat on getting in')
         await pg.keyboard.press('f'); await tick(0.3)
         on = await ev("S47.flashlight.on && S47.flashlight.light.intensity > 1")
         await pg.keyboard.press('f'); await tick(0.3)

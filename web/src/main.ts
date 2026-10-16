@@ -335,6 +335,8 @@ async function boot() {
   }
 
   function useCurrent() {
+    // in the truck, stopped: Use (E) gets out where it stands (Tom, 16 October)
+    if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) { world.getOutHere(); return; }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
     if (fcam.raised) { ch1.shutter(); return; } // the camera is up: Use is the shutter
     const it = inter.update(camera);
@@ -862,6 +864,7 @@ async function boot() {
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard'); }
   const dbg = { hold: false };
   let inCab = false;
+  let canOut = false;   // stopped in the truck with ground by a door: Use gets out
   function step(dt: number) {
     t += dt;
     if (mode === 'play') playtime += dt;
@@ -902,6 +905,7 @@ async function boot() {
       if (mode === 'play') { audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
+      if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
@@ -917,7 +921,9 @@ async function boot() {
         // a closer look: what the thing under the crosshair is, once the zoom is most of the way in
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
-        ui.prompt(fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        const out = mode === 'play' && !modalOpen && !game.cinematic && world.canGetOut();
+        if (out !== canOut) { canOut = out; document.documentElement.classList.toggle('can-out', out); }
+        ui.prompt(out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
         ui.examine(null);
       }
