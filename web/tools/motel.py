@@ -112,7 +112,8 @@ async def main():
         await ev("document.querySelector('.notebook .close')?.click()"); await tick(0.2)
 
         # ---------- on the way (core/roadside.ts): the silence, the car, the roof ----------
-        await ev("S47.player.place(-30.5, 120, Math.PI); S47.tick(0.3)")
+        # (the walk down above may already have had the silence: begin again from SARO)
+        await ev("S47.roadside.reset(); S47.player.place(-30.5, 120, Math.PI); S47.tick(0.3)")
         await ev("window.__steps = 0; const st = S47.audio.step.bind(S47.audio); S47.audio.step = (k) => { window.__steps++; return st(k); }; 0")
         started = None
         for z in range(130, 400, 10):
