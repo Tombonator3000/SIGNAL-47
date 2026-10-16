@@ -260,6 +260,8 @@ Tom 16. oktober: finnes det romvesenlyder i lenkene i rulleteksten til They Are 
 | Violin Scare | SirBedlam | 393824 | CC BY 3.0 («OhDearScare» fant jeg ikke) |
 | Ambience, Night Wildlife, A | InspectorJ | 352514 | CC BY 4.0 (natt og sirisser; vi har dette fra før) |
 
+**Bygget 16. oktober kveld (`core/calls.ts`):** de første lydene ute i mørket. Til fots, ute, om natta og med lommelykta på: natta blir stille, lommelykta hakker, og så kommer en av lydene langt unna, bak eller til siden. Brukt: Alien Voice Crack, Alien?, Animals from Mars (et utdrag), Singing alien (et utdrag), Space Temple SFX og sjelden hornet. Dette er første bit av regissørens tegn og glimt (punkt 4, 5 og 7).
+
 **Ikke brukbare:** «Jump-Scare_8» (jdupre01, 484984) og Timbres to lyder er CC BY-NC, altså ikke til noe som kan bli solgt. Skrikene og skvettene (Dark ambient scream, Violin Scare) bryter dessuten regelen om at skrekken kommer av noe som mangler; de holdes utenfor.
 
 ## 12. Det Tom har avgjort

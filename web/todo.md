@@ -30,6 +30,10 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Tom avgjorde retningen for knutepunktet 16. oktober: A, én natt og byen om natta, romvesenene alltid i bakgrunnen og tilfeldige bortføringer. Utdypet i `HENDELSER.md`.
 - [x] Tom svarte ja på alle fire spørsmålene om bortføringene (16. oktober kveld, `HENDELSER.md`, punkt 12).
 - [x] Bilradioen virker, og nasjonalsangen spilles på radioene (16. oktober kveld): `core/radio.ts`, R eller Radio-knappen, tre stasjoner, 1420 avslutter 04:00 og 1230 starter 05:00 med nasjonalsangen, radioen i dineren, pratelyder som Peanuts med tekst.
+- [x] Radioen kan brukes ved å se på den og klikke, trykke E eller trykke på den på telefon (16. oktober kveld).
+- [x] Lydene ute i mørket når man går med lommelykta (16. oktober kveld, `core/calls.ts`), fra lydene i rulleteksten til They Are Here med lisens vi kan bruke.
+- [ ] Tom hører på lydene ute i mørket: for ofte, for sjelden, for høyt? Og om hornet (JarredGibb) passer, eller bør tas ut.
+- [ ] Neste del av `HENDELSER.md`: glimtene av romvesenene og bortføringene (Tom har svart ja på de fire spørsmålene).
 - [ ] Tom hører på radioen på ekte høyttalere: pratelydene, låtene, nasjonalsangen og nivået mot motoren (UNVERIFIED her; målt i nettleseren uten høyttalere).
 - [x] Morgenradioen på den gamle veien i kapittel 6 (`Audio.cabRadio('talk')`) mumler nå som Peanuts den også. Bitene av natten i THE EVENT (Tomás' stemme på radioen) er med vilje uendret.
 - [ ] Steg 0 i `HENDELSER.md`, den billige testen før byen: regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet. Tom spiller kapittel 1 til 3 og svarer på spørsmålene der. Nye tester `events.py` og `abduct.py`.
