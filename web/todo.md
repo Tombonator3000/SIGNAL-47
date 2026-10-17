@@ -59,10 +59,10 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [x] Radioen kan brukes ved å se på den og klikke, trykke E eller trykke på den på telefon (16. oktober kveld).
 - [x] Lydene ute i mørket når man går med lommelykta (16. oktober kveld, `core/calls.ts`), fra lydene i rulleteksten til They Are Here med lisens vi kan bruke.
 - [ ] Tom hører på lydene ute i mørket: for ofte, for sjelden, for høyt? Og om hornet (JarredGibb) passer, eller bør tas ut.
-- [ ] Neste del av `HENDELSER.md`: glimtene av romvesenene og bortføringene (Tom har svart ja på de fire spørsmålene).
+- [x] Neste del av `HENDELSER.md`: glimtene av romvesenene og bortføringene (bygget 17. oktober kveld, se steg 0 under).
 - [ ] Tom hører på radioen på ekte høyttalere: pratelydene, låtene, nasjonalsangen og nivået mot motoren (UNVERIFIED her; målt i nettleseren uten høyttalere).
 - [x] Morgenradioen på den gamle veien i kapittel 6 (`Audio.cabRadio('talk')`) mumler nå som Peanuts den også. Bitene av natten i THE EVENT (Tomás' stemme på radioen) er med vilje uendret.
-- [ ] Steg 0 i `HENDELSER.md`, den billige testen før byen: regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet. Tom spiller kapittel 1 til 3 og svarer på spørsmålene der. Nye tester `events.py` og `abduct.py`.
+- [ ] Steg 0 i `HENDELSER.md` er bygget 17. oktober kveld: glimtene (`core/glimpses.ts`, `tools/glimpses.py`) og bortføringen (`story/abduction.ts`, `tools/abduct.py`), med innstillingen Missing time. Gjenstår: Tom spiller kapittel 1 til 3 og svarer på spørsmålene i punkt 11 (så du dem, ble du redd, ville du lete etter mer, skjønte du hva som skjedde da du var borte, for mye eller for lite), og grafikken til bortføringen fra ChatGPT (runde 14) i stedet for bildene tegnet i kode.
 - [ ] Steg 1 til 3 i `HENDELSER.md`: Caliche som én gate med kartfanen og linjene, så folka og nattens rytme, så hendelser på C og flere glimt. Grafikk fra Codex eller ChatGPT: silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene og avisforsiden.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 

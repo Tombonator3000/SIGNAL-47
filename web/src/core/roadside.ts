@@ -201,7 +201,7 @@ export class Roadside {
 
 // About 1.2 m: a large head, a thin body, long thin arms. Black, with a faint dark red edge
 // from the motel's sign behind it (a shell a little larger, its inside faces only).
-function silhouette() {
+export function silhouette() {
   const parts = [
     new THREE.SphereGeometry(0.2, 10, 8).scale(1, 1.22, 1.05).translate(0, 1.0, 0),
     new THREE.CylinderGeometry(0.035, 0.04, 0.1, 6).translate(0, 0.83, 0),

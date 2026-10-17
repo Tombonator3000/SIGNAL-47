@@ -79,8 +79,11 @@ export function bindTown(town: Town, d: CalicheDeps) {
   }, () => { map(); return 'One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it.'; });
   add('sheriffDoor', () => town.deputyIn ? 'Knock' : 'Door', () => town.deputyIn ? talk('deputy') : d.toast('Locked. A card in the frame, in ballpoint: BACK SOON.', 3.6),
     () => town.deputyIn ? 'COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.' : null);
-  add('patrolCar', () => town.deputyIn ? 'Patrol car' : null, say('The deputy\'s car. A clipboard on the passenger seat, a thermos, a county map folded small.', 3.8),
-    () => town.deputyIn ? 'The hood is still warm. Pins in a cigar box on the dash.' : null);
+  add('patrolCar', () => town.deputyIn || town.carOut ? 'Patrol car' : null, () => d.toast(town.carOut
+    ? 'The engine is running. The driver\'s door hangs open with the keys in it, his hat on the seat, the radio on the dash turned all the way down. Nobody.'
+    : 'The deputy\'s car. A clipboard on the passenger seat, a thermos, a county map folded small.', town.carOut ? 5.6 : 3.8),
+    () => town.carOut ? 'No footprints going off the shoulder that you can see. The exhaust hangs in the cold, straight up.'
+      : town.deputyIn ? 'The hood is still warm. Pins in a cigar box on the dash.' : null);
 
   // ---------- the laundromat, the Plaza, the feed store ----------
   add('laundromat', () => 'Laundromat', say('Six washers, one tube light, nobody. One machine is running.', 3.6),

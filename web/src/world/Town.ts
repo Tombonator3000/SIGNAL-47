@@ -98,6 +98,11 @@ export class Town {
   cutoutOut = false;
   readonly cutoutAt = V(-6.4, 0, 1450);
   private readonly cutout = new THREE.Group();
+  /** Event 12: the deputy's car on the highway's shoulder north of town, engine running, the
+   *  door open, nobody in it (while he is out on patrol). */
+  carOut = false;
+  readonly carShoulder = V(6.9, 0, 1690);
+  private readonly carDoor = new THREE.Group();
   /** Event 8: the street lamps out one by one down the street and back on (running time). */
   private waveT0 = -1e9;
   private readonly origin: THREE.Vector3;
@@ -637,6 +642,11 @@ export class Town {
     box(g, 1.92, .12, .12, m.metal, 0, .5, -2.68); box(g, 1.92, .12, .12, m.metal, 0, .5, 2.68);
     this.carCol = this.col(x - 1, x + 1, z - 2.7, z + 2.7);
     this.proxy('patrolCar', 2, 1.6, 5.4, x, y + .8, z);
+    // the driver's door, open (shown only out on the shoulder; outside the merge)
+    const door = this.carDoor; door.position.set(-.95, .35, -.55); door.rotation.y = -1.0; noMerge(door);
+    box(door, .06, .6, 1.1, m.paint, 0, .32, .55); box(door, .05, .38, .9, m.glass, 0, .82, .6);
+    door.visible = false; g.add(door);
+    this.carShoulder.y = this.gy(this.carShoulder.x, this.carShoulder.z);
   }
 
   // ---------- the Sentinel's bundle, dropped at the gas station at a quarter to five ----------
@@ -738,12 +748,22 @@ export class Town {
   /** The deputy at his desk: the window lit, his car out front (it holds the truck and the player). */
   setDeputy(on: boolean) {
     this.deputyIn = on;
-    this.car.visible = on;
-    const o = this.origin, x = -12.3, z = 2106.5;
-    Object.assign(this.carCol, on ? { minX: x - 1 + o.x, maxX: x + 1 + o.x, minZ: z - 2.7 + o.z, maxZ: z + 2.7 + o.z } : { minX: 1e9, maxX: 1e9, minZ: 1e9, maxZ: 1e9 });
+    if (on) this.carOut = false;
+    this.placeCar();
     this.setPanel('sheriffWin', on ? 1 : 0.07);
     if (floodOwner === this) setFlood(this.slots.sheriffWin, on ? 4.5 : 0, townFlood);
     this.glowColor(this.slots.sheriffGlow, on ? 0x2a2618 : 0);
+  }
+  /** Event 12: the car out on the shoulder (only while he is out), or not. */
+  setCarOut(on: boolean) { this.carOut = on && !this.deputyIn; this.placeCar(); }
+  /** The car where it is: at the office while he is in, on the shoulder for event 12, else gone. */
+  private placeCar() {
+    const o = this.origin, out = this.carOut, here = this.deputyIn || out;
+    const x = out ? this.carShoulder.x : -12.3, z = out ? this.carShoulder.z : 2106.5, y = this.gy(x, z);
+    this.car.visible = here; this.carDoor.visible = out;
+    this.car.position.set(x, y, z); this.car.rotation.y = out ? 0.04 : 0; this.car.updateMatrixWorld(true);
+    this.proxies.patrolCar.position.set(x, y + .8, z); this.proxies.patrolCar.updateMatrixWorld(true);
+    Object.assign(this.carCol, here ? { minX: x - 1 + o.x, maxX: x + 1 + o.x, minZ: z - 2.7 + o.z, maxZ: z + 2.7 + o.z } : { minX: 1e9, maxX: 1e9, minZ: 1e9, maxZ: 1e9 });
   }
   setPaper(on: boolean) { this.paperIn = on; this.paper.visible = on; }
   /** The night now: clock, seconds since midnight; t, seconds running (for the blinking). */

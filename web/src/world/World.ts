@@ -170,6 +170,8 @@ export class World {
   autopilot: number | null = null;
   /** Trouble with the truck on a trip: misfires, a dead engine, flickering lights (drive/trouble.ts). */
   trouble = new TruckTrouble();
+  /** The next time the truck is got into, its engine is dead and wants the key (story/abduction.ts). */
+  keyStall = false;
   /** Whether random trouble may come now (main.ts: the night, no cinematic). */
   troubleOk?: () => boolean;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
@@ -674,6 +676,8 @@ export class World {
       this.enter(areaOf(leg0));
       this.startEngine();
       this.driving = true;
+      // after a time away (story/abduction.ts) the engine has died where it stood: the key
+      if (this.keyStall) { this.keyStall = false; this.trouble.start('stall', { key: true }); }
       this.onGetIn?.();
       Object.assign(this.auto, { rev: false, stall: 0, back: 0, stuck: 0 });
       if (o.onStart) o.onStart();

@@ -358,6 +358,7 @@ export class UI {
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
     invertY: boolean; onInvertY: (v: boolean) => void; fov: number; onFov: (v: number) => void; largeText: boolean; onLargeText: (v: boolean) => void;
     calmFlash: boolean; onCalmFlash: (v: boolean) => void; stillShots: boolean; onStillShots: (v: boolean) => void;
+    abduct?: boolean; onAbduct?: (v: boolean) => void;
   }) {
     const el = document.createElement('div');
     el.className = 'overlay';
@@ -377,6 +378,7 @@ export class UI {
         <div class="set"><span class="lbl">Graphics</span><button class="opt qual" data-a="qual" aria-label="Graphics quality">${QUALITY[o.quality]}</button></div>
         <div class="set"><span class="lbl">Picture</span><button class="opt qual" data-a="pic" aria-label="Picture: clean or video tape">${PICTURE[o.picture]}</button></div>
         <div class="set"><span class="lbl">Flashing images</span><button class="opt qual" data-a="flash" aria-label="Flashing images near the end: flashes or slow fades">${o.calmFlash ? 'Slow fades' : 'Flashes'}</button></div>
+        ${o.onAbduct ? `<div class="set"><span class="lbl">Missing time</span><button class="opt qual" data-a="abduct" aria-label="Missing time out in the dark at night: on or off">${o.abduct ? 'On' : 'Off'}</button></div>` : ''}
         <div class="set"><span class="lbl">Ending camera</span><button class="opt qual" data-a="still" aria-label="Camera at the end: moving or still shots">${o.stillShots ? 'Still shots' : 'Moving'}</button></div>
         ${o.settingsOnly ? '' : '<button class="opt" data-a="title">Quit to title</button>'}
         <p class="small">${o.settingsOnly ? 'Settings are kept on this device.' : 'Nothing in the control room moves on while the game is paused.'}</p>
@@ -390,7 +392,8 @@ export class UI {
     (el.querySelector('#rad') as HTMLInputElement).addEventListener('input', (e) => o.onRadio(+(e.target as HTMLInputElement).value));
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
     (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
-    let inv = o.invertY, big = o.largeText, calm = o.calmFlash, still = o.stillShots;
+    let inv = o.invertY, big = o.largeText, calm = o.calmFlash, still = o.stillShots, ab = !!o.abduct;
+    el.querySelector('[data-a=abduct]')?.addEventListener('click', (e) => { ab = !ab; (e.target as HTMLElement).textContent = ab ? 'On' : 'Off'; o.onAbduct?.(ab); });
     el.querySelector('[data-a=flash]')!.addEventListener('click', (e) => { calm = !calm; (e.target as HTMLElement).textContent = calm ? 'Slow fades' : 'Flashes'; o.onCalmFlash(calm); });
     el.querySelector('[data-a=still]')!.addEventListener('click', (e) => { still = !still; (e.target as HTMLElement).textContent = still ? 'Still shots' : 'Moving'; o.onStillShots(still); });
     el.querySelector('[data-a=inv]')!.addEventListener('click', (e) => { inv = !inv; (e.target as HTMLElement).textContent = inv ? 'On' : 'Off'; o.onInvertY(inv); });

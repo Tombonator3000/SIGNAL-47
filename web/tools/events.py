@@ -110,6 +110,28 @@ async def main():
         await use('town:souvenir'); await tick(0.1)
         check('dew on it' in await ev("[...document.querySelectorAll('.toast')].map((e) => e.textContent).join(' ')"), 'and it is back in the shop window, with dew on it')
 
+        # ---------- 12: the deputy's car on the shoulder, while he is out (driven by hand) ----------
+        car = await ev("(() => { const v = S47.world.town.carShoulder; return [v.x, v.y, v.z]; })()")
+        hand = lambda c: ev(f"S47.townEvents.update(0.5, {{ ok: true, inTown: false, later: false, cam: S47.camera, clock: {c}, t: S47.runTime() }})")
+        await ev(f"S47.world.enter('road'); S47.player.place({X - 1.8}, {car[2] - 400}, Math.PI); S47.tick(0.1)")
+        await ev("S47.world.town.setCarOut(false)")   # the lamps' night past three set it out already
+        await hand(3 * 3600 + 5 * 60)
+        check(not await ev("S47.world.town.carOut"), 'not before 03:12')
+        await hand(3 * 3600 + 14 * 60)
+        check(await ev("S47.world.town.carOut && S47.world.town.group.getObjectByName('town:patrolCar').position.z") == car[2], 'at 03:14, out of sight down the road, the deputy\'s car is on the shoulder')
+        n5 = len(await notes())
+        await ev(f"S47.player.place({X - 1.8}, {car[2] - 18}, Math.PI); S47.tick(0.1)")
+        await hand(3 * 3600 + 15 * 60)
+        await face(X + car[0], car[1] + 1, car[2]); await pg.screenshot(path=f'{OUT}/e03_car.png')
+        nn = await notes()
+        check(len(nn) == n5 + 1 and 'nobody in it' in nn[-1], 'come up to it: engine running, door open, nobody, in the notebook')
+        await ev(f"S47.player.place({X - 1.8}, {car[2] + 180}, Math.PI); S47.tick(0.1)")
+        await hand(3 * 3600 + 16 * 60)
+        check(not await ev("S47.world.town.carOut"), 'driven on past it: gone')
+        await hand(3 * 3600 + 20 * 60); await ev(f"S47.player.place({X - 1.8}, {car[2] - 400}, Math.PI); S47.tick(0.1)"); await hand(3 * 3600 + 21 * 60)
+        check(not await ev("S47.world.town.carOut"), 'and it does not come back')
+        await ev("S47.world.enter('diner'); S47.tick(0.1)")
+
         # ---------- the second call, after room 6 (driven by hand: later) ----------
         await clock(3 * 3600 + 50 * 60); await ev(f"S47.player.place({X - 12}, 2064, Math.PI / 2); S47.tick(0.1)")
         upd = "S47.townEvents.update(1, { ok: true, inTown: true, later: {l}, cam: S47.camera, clock: S47.game.clock, t: S47.runTime() })"
@@ -127,7 +149,7 @@ async def main():
         m = await ev("S47.game.notebookExtras().map")
         open(f'{OUT}/e02_map.png', 'wb').write(base64.b64decode(m.split(',', 1)[1]))
         marks = await ev("[...S47.townSeen].filter((k) => k.startsWith('mark:')).length")
-        check(marks == 4, f'four marks for the map (the phone twice, the lamps, the cutout: {marks})')
+        check(marks == 5, f'five marks for the map (the phone twice, the lamps, the cutout, the car: {marks})')
 
         # ---------- save and Continue: none of it again ----------
         await ev("S47.saveNow('manual', 0)")

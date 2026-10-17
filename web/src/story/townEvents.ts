@@ -18,6 +18,9 @@ import { clockText } from './time';
 //                     dew on it.
 //   8  the lamps      the street lamps go out one by one down the street, the dogs barking in
 //                     the same order, and come back on in the same order.
+//  12  the car        from 03:12, while the deputy is out, his car stands on the highway's
+//                     shoulder north of town, engine running, the door open, nobody in it. Once
+//                     passed it is gone; at 04:30 he is at his desk and says he drove the loop.
 //
 // Event 5, the attendant's sentence, is in story/caliche.ts (it is said when he is spoken to).
 // At least ten minutes of the night between two, nothing in the prologue, nothing once THE EVENT
@@ -64,6 +67,7 @@ export class TownEvents {
   private dogs: number[] = [];
   private notBefore = 0;          // the clock: no ringing again before this
   private cutoutSeen = false;
+  private carSeen = false;
   private lineCheck = 0;
 
   constructor(private d: TownEventsDeps) {}
@@ -76,6 +80,8 @@ export class TownEvents {
   /** After a load the town's part of the case is new: the cutout is where that case had it. */
   reset() {
     this.stopAll();
+    this.carSeen = this.d.seen.has('ev:car');
+    this.town?.setCarOut(false);
     this.cutoutSeen = this.d.seen.has('ev:cutout');
     this.town?.setCutout(!this.cutoutSeen);
   }
@@ -122,6 +128,19 @@ export class TownEvents {
       }
       // once passed and well behind, it is gone from the road
       if (this.cutoutSeen && dist > 150) town.setCutout(false);
+    }
+
+    // ---------- 12: the deputy's car ----------
+    {
+      const p = town.carShoulder, dist = Math.hypot(local.x - p.x, local.z - p.z);
+      if (!town.carOut && !this.carSeen && !town.deputyIn && day >= 3 * 3600 + 12 * 60 && day < 4 * 3600 + 30 * 60 && dist > 200) town.setCarOut(true);
+      if (town.carOut && !this.carSeen && s.ok && dist < 25) {
+        this.carSeen = true;
+        this.d.seen.add('ev:car'); this.mark('car', s.clock);
+        this.d.note(`${clockText(s.clock, false)}. The deputy's car on the shoulder of the highway north of Caliche: engine running, the door open, nobody in it.`);
+        this.d.save();
+      }
+      if (town.carOut && this.carSeen && dist > 150) town.setCarOut(false);
     }
 
     // ---------- 1: the payphone ----------

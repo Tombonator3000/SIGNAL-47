@@ -14,6 +14,7 @@ export interface GameState {
   doors?: Record<string, boolean>;   // open doors at SARO (saves from before 4 October 2026 have none)
   flashlight?: boolean;   // taken off the truck's seat (saves from before 15 October 2026 have none)
   truck?: string | null;  // where the truck was left ('motel': on the motel's lot; older saves have none)
+  abduct?: import('./abduction').AbductSave;   // the times away (story/abduction.ts; older saves have none)
   town?: string[];        // what the notebook has from Caliche (world/Town.ts, story/caliche.ts; older saves have none)
 }
 
