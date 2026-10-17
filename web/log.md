@@ -699,3 +699,7 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - 21:16 til 22:08 UTC: Testrekka på main (`e444f43`), del A1: `steercheck` PASS, `drives.py` 23 av 23 (med byttet til veiens område 60 m sør for motellet), `chapter3.py` 66 av 66, `chapter5.py` 53 av 53. Ingen konsollfeil. Del A2 (dineren, egne kjøreturer, bilfeil, radioen, lydene i mørket, kart og inventar, motellet) startet 22:08.
 - 22:08 til 23:24 UTC: Del A2 på main (første forsøk 22:08 stoppet med en gang: jeg hadde mistet funksjonen `run` da skriptet ble delt i to; rettet og startet 22:08:48): `diner.py` 15 av 15, `roam.py` 40 av 40, `trouble.py` 21 av 21, `radio.py` 31 av 31 (med radiovolumet og det sjeldnere suset), `calls.py` 13 av 13, `mapkit.py` 11 av 11, `motel.py` 30 av 30. Ingen konsollfeil. Runde B startet 23:24.
 - 23:24 til 23:39 UTC: Runde B på main: `walkthrough.py` 57 av 57, `chapter1.py` 66 av 66, `chapter2.py` 76 av 76, `chapter4.py` 63 av 63 (gåturen 650 m ned veiskulderen til motellet). Ingen konsollfeil. Runde C startet 23:39.
+
+### Claude: testrekka på main fortsetter (17. oktober)
+
+- 23:39 til 00:14 UTC (16. til 17. oktober): Runde C på main: `chapter6.py` 42 av 42, `devmenu.py` 14 av 14, `ambience.py` 7 av 7, `saves.cjs` 8 av 8, `ultra.py` 8 av 8, `artcheck.py` PASS, `csptest.py` PASS. Ingen konsollfeil. Runde D (gangkartet og Pages-bygget fra `/SIGNAL-47/`) startet 00:14.
