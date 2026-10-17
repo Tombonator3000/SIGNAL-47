@@ -37,7 +37,8 @@ import { initArtMaterials } from './world/kit';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
-import { bindTown } from './story/caliche';
+import { bindTown, townPeople } from './story/caliche';
+import { TownEvents, townMarks } from './story/townEvents';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -270,9 +271,15 @@ async function boot() {
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
   // Caliche, down the street from the diner (world/Town.ts): its windows and signs (story/caliche.ts)
   const townSeen = new Set<string>();
-  world.onTownLoaded = (t) => bindTown(t, { inter, toast: (text, secs) => ui.toast(text, secs), here: () => world.area === 'diner',
-    secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen,
+  // what happens in the town once in a night (story/townEvents.ts), kept with the rest of it
+  const townEvents = new TownEvents({ audio, toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text), seen: townSeen,
     save: () => { if (mode === 'play') requestAutosave(false); } });
+  world.onTownLoaded = (t) => {
+    bindTown(t, { inter, ui, toast: (text, secs) => ui.toast(text, secs), here: () => world.area === 'diner',
+      secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen,
+      save: () => { if (mode === 'play') requestAutosave(false); } });
+    townEvents.bind(t);
+  };
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
   // on the player's own drives and the story's, never in a cinematic
@@ -538,6 +545,7 @@ async function boot() {
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
+    townEvents.reset();
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
@@ -610,6 +618,7 @@ async function boot() {
     if (flashlight.have) kit.push({ name: 'Flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
     if (game.at('ch1')) kit.push({ name: 'Truck keys', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
     if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
+    if (townSeen.has('nickel')) kit.push({ name: 'A nickel', state: '1947', note: 'From the coin return of the payphone in Caliche. Bright as the day it was struck.' });
     return kit;
   }
   // the people in the case, as the night meets them, with their faces once ChatGPT's portraits
@@ -622,10 +631,11 @@ async function boot() {
     if (ch5.s.arrived) p.push(
       { name: 'The waitress', role: 'Mesa Diner, all night', note: 'Has watched the lights over the mesa since she was eleven.', portrait: portrait('waitress') },
       { name: 'The driver', role: 'Mesa Diner, at the counter', note: 'His engine died on the old road last October.', portrait: portrait('driver') });
+    p.push(...townPeople(townSeen));
     return p;
   }
   game.notebookExtras = () => ({
-    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5') }),
+    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: townMarks(townSeen) }),
     kit: kitItems(),
     people: peopleItems(),
   });
@@ -829,10 +839,10 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb,
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen,
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
-    playtime: () => playtime, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
+    playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
     // tests: the scene as the lights leave it, before the tape: how many colour values would not
     // fit the half-float targets the picture is drawn into (over 65504, or not a number at all),
     // and the brightest one (a 32-bit float target at a quarter of the size)
@@ -1054,6 +1064,7 @@ async function boot() {
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent; }
   const dbg = { hold: false };
   let inCab = false;
+  const townAt = new THREE.Vector3();
   let canOut = false;   // stopped in the truck with ground by a door: Use gets out
   function step(dt: number) {
     t += dt;
@@ -1105,6 +1116,14 @@ async function boot() {
         ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent,
         cam: camera, flicker: (k) => flashlight.flicker(k), hush: (secs) => audio.night?.hush(secs),
       });
+      if (mode === 'play') {
+        const cp = camera.getWorldPosition(townAt);
+        townEvents.update(dt, {
+          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3,
+          inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
+          later: game.at('ch5'), cam: camera, clock: game.clock, t,
+        });
+      }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }

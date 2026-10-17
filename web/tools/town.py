@@ -63,7 +63,7 @@ async def main():
             if await ev("!!S47.world.town && !!S47.world.diner"): break
             await pg.wait_for_timeout(200)
         st = await ev("S47.world.town.stats")
-        check(st['lamps'] == 19 and st['quads'] >= 30 and st['glows'] >= 30, f"Caliche is built with the diner: its own lamps and the headlights' three ({st})")
+        check(st['lamps'] == 20 and st['quads'] >= 30 and st['glows'] >= 30, f"Caliche is built with the diner: its own lamps (the porch light is the 17th) and the headlights' three ({st})")
         await at(X - 1.4, 2040.3, math.pi, 0, 3 * 3600)
         check(await ev("S47.world.area === 'diner' && S47.world.town.group.visible && S47.world.diner.group.visible && S47.world.road.group.visible"), 'in the diner\'s area the town, the diner and the road are all shown')
         await ev("S47.world.enter('saro'); S47.tick(0.1)")
@@ -129,9 +129,10 @@ async def main():
         await ev("S47.game.clock = 2 * 3600 + 30 * 60; S47.tick(0.2)")
         aims = {}
         for k, stand in [('gasDoor', [X - 14.9, 2067.4]), ('gasWindow', [X - 14.6, 2073]), ('payphone', [X - 13.6, 2064.6]), ('pumps', [X - 7.4, 2055]),
-                         ('sheriffWindow', [X - 13.9, 2107.3]), ('patrolCar', [X - 9.4, 2104]), ('laundromat', [X - 13, 2129]), ('bench', [X - 13.2, 2133.4]),
+                         ('sheriffWindow', [X - 13.9, 2107.3]), ('patrolCar', [X - 9.4, 2104]), ('laundromat', [X - 13, 2129]),
                          ('cinema', [X - 13.2, 2160]), ('feed', [X - 9.8, 2201]), ('studio', [X + 17.6, 2037.2]), ('souvenir', [X + 18.9, 2062.0]),
-                         ('letters', [X + 16.6, 2087.3]), ('churchDoor', [X + 19.2, 2095.5]), ('tv1', [X + 18.9, 2132.4]), ('kitchen', [X - 17.2, 2241])]:
+                         ('letters', [X + 16.6, 2087.3]), ('churchDoor', [X + 19.2, 2095.5]), ('tv1', [X + 18.9, 2132.4]), ('kitchen', [X - 17.2, 2241]),
+                         ('woman', [X - 12.6, 2133.2]), ('smoker', [X + 19.0, 2159.2])]:
             await ev(f"S47.player.place({stand[0]}, {stand[1]}, 0); S47.tick(0.05)")
             v = await proxy(k)
             await face(v[0], v[1], v[2])
@@ -151,6 +152,91 @@ async def main():
         await ev("S47.world.enter('saro'); S47.tick(0.1)")
         check(await label('town:gasDoor') is None, 'none of it answers from SARO')
         await ev("S47.world.enter('diner'); S47.tick(0.1)")
+
+        # ---------- the people (step 2): talk panels, notes, the attendant's sentence again ----------
+        async def lines(): return await ev("(document.querySelector('.talk-lines')?.innerText) || ''")
+        async def choices(): return await ev("[...document.querySelectorAll('.talk [data-c]')].map((b) => b.dataset.c)")
+        async def choose(c): await ev(f"document.querySelector('.talk [data-c={c}]').click()"); await tick(0.05)
+        close = lambda: ev("S47.game.d.ui.close(); S47.tick(0.05)")
+        await ev("S47.game.clock = 2 * 3600 + 30 * 60; S47.tick(0.2)")
+        check(await label('town:woman') == 'Woman on the bench' and await label('town:smoker') == 'Man on the stoop' and await label('town:bench') is None,
+              'at 02:30 the woman sits on the bench and the souvenir man stands on his stoop')
+        await ev("S47.game.clock = 4 * 3600 + 20 * 60; S47.tick(0.2)")
+        check(await label('town:woman') == 'Woman on the bench' and await label('town:smoker') is None, 'at 04:20 he has gone in, she is still out')
+        await ev("S47.game.clock = 4 * 3600 + 55 * 60; S47.tick(0.2)")
+        check(await label('town:woman') is None and await label('town:bench') == 'Bench' and not await ev("S47.world.town['woman'].visible"),
+              'at 04:55 she has gone too, and the bench is a bench again')
+        await ev(f"S47.player.place({X - 13.2}, 2133.4, 0); S47.tick(0.05)")
+        v = await proxy('bench'); await face(v[0], v[1], v[2])
+        check(await aimed() == 'town:bench', 'and the bench is aimed at from the sidewalk')
+        await ev("S47.game.clock = 2 * 3600 + 30 * 60; S47.tick(0.2)")
+        p0 = len(await ev("S47.peopleItems()"))
+        n0 = len(await notes())
+        await use('town:gasWindow'); await tick(0.1)
+        l1 = await lines()
+        check('Cold one tonight' in l1 and 'warm up by Wednesday' in l1 and 'THE ATTENDANT' in l1, 'the night window: the attendant, and his sentence with the cough in it')
+        c1 = await choices()
+        check('earlier' not in c1 and 'old' in c1 and 'bye' in c1, f'his topics, and nothing yet about having been here before ({c1})')
+        await choose('old')
+        check('forty minute job' in await lines() and len(await notes()) == n0 + 1 and 'last October' in (await notes())[-1], 'asked about the old road: the two hours on a forty minute job, in the notebook')
+        check('old' not in await choices(), 'a topic once asked is not offered again')
+        await close()
+        check(len(await ev("S47.peopleItems()")) == p0 + 1 and any(c['name'] == 'The attendant' for c in await ev("S47.peopleItems()")), 'the attendant is in the People tab once met')
+        await ev("S47.game.clock = 3 * 3600 + 10 * 60; S47.tick(0.1)")
+        await use('town:gasWindow'); await tick(0.1)
+        check('Still out' in await lines() and 'Cold one' not in await lines(), 'forty minutes later he is just still there')
+        await close()
+        # the deputy, before he goes out: the map; the green pins after it
+        await ev("S47.game.clock = 2 * 3600 + 35 * 60; S47.tick(0.1)")
+        await use('town:sheriffDoor'); await tick(0.1)
+        check(await label('town:sheriffDoor') == 'Knock' and 'THE DEPUTY' in await lines() and 'green' not in await choices(), 'the deputy opens the door; the green pins come after the map')
+        n1 = len(await notes())
+        await choose('map'); c2 = await choices()
+        check('believe in maps' in await lines() and 'green' in c2 and 'east' in c2 and len(await notes()) == n1 + 1, 'the pins explained, into the notebook, and the rows to ask about')
+        await choose('east')
+        east = await lines()
+        check('old road' in east and 'eight' not in east.lower() and 'mile' not in east.lower(), 'the row east points at the old road and gives no mile post')
+        await choose('green')
+        check('October nineteenth' in await lines() and "'81" in await lines() and 'October 19, 1985' in (await notes())[-1], 'the green pins: the three dates, in the notebook')
+        await close()
+        # Earl, while the Night Line is on; nobody after four
+        check(await label('town:amDoor') == 'Buzzer', 'the studio door has a buzzer while he is on the air')
+        await use('town:amDoor'); await tick(0.1); await choose('calls'); await choose('tape')
+        check('EARL' in await lines() and 'never played' in await lines() and 'September 1981' in (await notes())[-1], 'Earl: missing time, and the tape from September 1981')
+        await close()
+        await use('town:woman'); await tick(0.1)
+        check("louder tonight" in await lines() and 'husband' not in await choices(), 'the woman: "It\'s louder tonight."')
+        await choose('radio'); await choose('husband')
+        check('Forty-seven minutes' in await lines() and 'March 1983' in (await notes())[-1], 'her husband, 47 minutes in March 1983, in the notebook')
+        await close()
+        await use('town:smoker'); await tick(0.1); await choose('crash')
+        check("boys from '47" in await lines(), 'the souvenir man and the boys from \'47')
+        await choose('seen')
+        check('Never seen a thing' in await lines(), 'and he has never seen a thing')
+        await close()
+        ppl = [c['name'] for c in await ev("S47.peopleItems()")]
+        check(all(n in ppl for n in ['The attendant', 'The deputy', 'Earl', 'The woman on the bench', 'The souvenir man']), f'all five in the People tab ({ppl})')
+        # event 5: two hours and more after the first time, the same sentence, and a note
+        await ev("S47.game.clock = 4 * 3600 + 5 * 60; S47.tick(0.1)")
+        check(await label('town:amDoor') == 'Door', 'after four the studio door is just a door')
+        await ev("S47.game.clock = 4 * 3600 + 35 * 60; S47.tick(0.1)")
+        n2 = len(await notes())
+        await use('town:gasWindow'); await tick(0.1)
+        l2 = await lines(); nn = await notes()
+        same = l1.split('Cold one tonight', 1)[1] == l2.split('Cold one tonight', 1)[1] if 'Cold one tonight' in l2 else False
+        check(same and len(nn) == n2 + 1 and 'The same sentence, the same cough' in nn[-1] and '02:30 and 04:35' in nn[-1],
+              f'two hours on, the attendant says it again word for word, and the notebook has both times ({nn[-1][:90] if nn else ""})')
+        check('earlier' in await choices(), 'now the player can tell him about the first time')
+        await choose('earlier')
+        check('since ten' in await lines(), '"Wasn\'t me, then."')
+        await close()
+        await use('town:gasWindow'); await tick(0.1); await close()
+        check(len(await notes()) == n2 + 1, 'the repeat goes into the notebook once')
+        # the deputy is back at 04:35 and does not account for his patrol
+        await use('town:sheriffDoor'); await tick(0.1)
+        check('drove the loop' in (await lines()).lower() and 'quarter to three' in (await notes())[-1], 'back at 04:35 the deputy says he drove the loop and came straight back')
+        await close()
+        town_n = len(await notes())
 
         # ---------- place, footsteps, map ----------
         await ev(f"S47.player.place({X - 12}, 2064, 0); S47.tick(0.1)")
@@ -195,6 +281,11 @@ async def main():
         await ev("S47.world.enter('diner'); S47.tick(0.1)")
         await use('town:sheriffWindow'); await use('town:gasDoor'); await tick(0.2)
         check(await ev("S47.world.area") == 'diner' and len(await notes()) == n3, f'after Continue the map and the flyer are not written down again ({n3} notes)')
+        await ev("S47.game.clock = 4 * 3600 + 40 * 60; S47.tick(0.1)")
+        await use('town:gasWindow'); await tick(0.1); await ev("S47.game.d.ui.close()")
+        await use('town:sheriffDoor'); await tick(0.1); await ev("S47.game.d.ui.close()")
+        ppl2 = [c['name'] for c in await ev("S47.peopleItems()")]
+        check(len(await notes()) == n3 and 'Earl' in ppl2 and 'The souvenir man' in ppl2, f'after Continue the people are still met and nothing from them is written twice ({len(ppl2)} in People)')
 
         # ---------- the look, and the draw calls on High and Low ----------
         views = [('t01_street_south', X - 1.3, 2012.4, math.pi, -0.02, 3 * 3600), ('t02_gas', X - 2.2, 2047.6, math.pi * 0.75, 0.02, 3 * 3600),

@@ -18,6 +18,7 @@ export function portrait(id: PersonId): string | null {
 const BY_NAME: Record<string, PersonId> = {
   'N. VEGA': 'nora', 'NORA': 'nora', 'THE WAITRESS': 'waitress', 'THE DRIVER': 'driver',
   'E. WARD': 'ward', 'WARD': 'ward', 'DALE': 'dale',
+  'THE ATTENDANT': 'attendant', 'THE DEPUTY': 'deputy', 'EARL': 'host', 'THE WOMAN': 'radio_woman', 'THE SOUVENIR MAN': 'souvenir_man',
 };
 /** The picture of whoever speaks under this name, or null. */
 export function portraitOf(who: string): string | null {

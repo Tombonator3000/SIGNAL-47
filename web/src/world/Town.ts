@@ -25,7 +25,7 @@ import { SIGN_OFF } from '../core/radio';
 // bundle at the gas station from 04:45; from 05:05 the street lamps go off one by one, each on
 // its own photocell.
 
-// sixteen lamps of its own, three for the driven truck's headlights (shine) and one spare
+// sixteen lamps of its own (the last a porch light, 17 October), three for the driven truck's headlights (shine)
 export const townFlood = floodSet(20, 'town', 0.1);
 let floodOwner: Town | null = null;
 const FALL = 0.03;
@@ -87,10 +87,25 @@ export class Town {
   deputyIn = true;
   /** The Sentinel's bundle lies by the gas station door. */
   paperIn = false;
+  /** The woman with the radio on the laundromat's bench, and the souvenir man smoking on his stoop. */
+  womanIn = true;
+  smokerIn = true;
+  private drawing = false;
+  /** Event 1 (story/townEvents.ts): the payphone ringing, and who answers it. */
+  ringing = false;
+  onAnswer: (() => void) | null = null;
+  /** Event 6: the souvenir shop's cardboard alien on the highway's shoulder north of town. */
+  cutoutOut = false;
+  readonly cutoutAt = V(-6.4, 0, 1450);
+  private readonly cutout = new THREE.Group();
+  /** Event 8: the street lamps out one by one down the street and back on (running time). */
+  private waveT0 = -1e9;
   private readonly origin: THREE.Vector3;
   private readonly st = new THREE.Group();
   private readonly car = new THREE.Group();
   private readonly paper = new THREE.Group();
+  private readonly woman = new THREE.Group();
+  private readonly smoker = new THREE.Group();
   private readonly materials = new Set<THREE.Material>();
   private readonly hit = new THREE.MeshBasicMaterial({ visible: false });
   private readonly glow = new GlowPoints();
@@ -114,8 +129,8 @@ export class Town {
     this.origin = origin.clone();
     this.group.name = 'Caliche';
     this.group.position.copy(origin);
-    this.group.add(this.st, this.car, this.paper);
-    noMerge(this.car); noMerge(this.paper);
+    this.group.add(this.st, this.car, this.paper, this.woman, this.smoker, this.cutout);
+    noMerge(this.car); noMerge(this.paper); noMerge(this.woman); noMerge(this.smoker); noMerge(this.cutout);
     floodOwner = this; townFlood.count = 0;
     for (const p of townFlood.pos) p.set(0, -999, 0, 0);
     this.materials.add(this.hit);
@@ -129,7 +144,7 @@ export class Town {
     this.townSigns(); this.crossing(); this.streetLamps(); this.ground();
     this.gasStation(); this.sheriff(); this.laundromat(); this.cinema(); this.feedStore();
     this.station1420(); this.souvenirs(); this.church(); this.houses(); this.poles();
-    this.patrolCar(); this.bundle();
+    this.patrolCar(); this.bundle(); this.people(); this.cardboard();
     for (let i = 0; i < 3; i++) { const h = addFlood(0, -999, 0, 0, 0xfff0d8, townFlood); townFlood.skip.add(h); this.head.push(h); }
 
     // the street and the sidewalks are walked, from the diner's lot to the last house; and the
@@ -140,10 +155,10 @@ export class Town {
     const a = (x: number, z: number, yaw: number): Anchor => ({ x: x + origin.x, z: z + origin.z, yaw });
     this.anchors = { street: a(-1.5, 2040, Math.PI), gas: a(-12.5, 2070, Math.PI / 2), church: a(16.5, 2095, -Math.PI / 2) };
 
-    mergeStatic(this.st); mergeStatic(this.car); mergeStatic(this.paper);
+    mergeStatic(this.st); mergeStatic(this.car); mergeStatic(this.paper); mergeStatic(this.woman); mergeStatic(this.smoker);
     this.qMesh = this.quadMesh();
     this.group.add(this.qMesh, this.glow.build());
-    this.setDeputy(true); this.setPaper(false);
+    this.setDeputy(true); this.setPaper(false); this.setCutout(false);
     this.group.updateMatrixWorld(true);
   }
 
@@ -188,6 +203,10 @@ export class Town {
       paint: this.mat({ color: 0xdedcd4, roughness: .35, metalness: .3 }),
       brown: this.mat({ color: 0x6e5236, roughness: .5, metalness: .2 }),
       wood: this.mat({ color: 0x6b4c33, roughness: .95 }),
+      skin: this.mat({ color: 0xb8977b, roughness: 1, flatShading: true }),
+      hair: this.mat({ color: 0x8a8580, roughness: 1, flatShading: true }),
+      coat: this.mat({ color: 0x4a5560, roughness: 1, flatShading: true }),
+      cloth: this.mat({ color: 0x5c4a3e, roughness: 1, flatShading: true }),
     };
   }
 
@@ -630,6 +649,91 @@ export class Town {
     this.proxy('paper', .5, .5, .6, x, y + .2, z);
   }
 
+  // ---------- the people out at night: the woman on the bench, the souvenir man on his stoop ----------
+  private people() {
+    const m = this.m;
+    const head = (g: THREE.Group, y: number, hair: THREE.Material, bun = false) => {
+      const f = new THREE.Mesh(new THREE.IcosahedronGeometry(.15, 1), m.skin); f.scale.set(.87, 1.15, .88); f.position.y = y; g.add(f);
+      const h = new THREE.Mesh(new THREE.IcosahedronGeometry(.154, 1), hair); h.scale.set(.98, .7, .9); h.position.set(0, y + .065, .04); g.add(h);
+      if (bun) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(.075, 0), hair); b.position.set(0, y + .02, .15); g.add(b); }
+    };
+    // she sits at the north end of the bench, facing the street, a transistor radio in her lap
+    // (the model faces -z: turned to face east)
+    {
+      const g = this.woman, x = -14.45 + .02, z = 2132.75, y = this.gy(x, z) + .44;
+      g.position.set(x, y, z); g.rotation.y = -Math.PI / 2;
+      box(g, .38, .5, .26, m.coat, 0, .27, .02); cyl(g, .055, .06, .09, m.skin, 0, .56, 0, 7);
+      for (const sx of [-.1, .1]) {
+        rod(g, V(sx, .03, 0), V(sx, .03, -.4), .075, m.coat, 6); rod(g, V(sx, .02, -.4), V(sx, -.38, -.42), .05, m.cloth, 6);
+        box(g, .12, .07, .2, m.dark, sx, -.41, -.46);
+      }
+      for (const sd of [-1, 1]) { rod(g, V(sd * .19, .46, 0), V(sd * .2, .2, -.12), .058, m.coat, 6); rod(g, V(sd * .2, .2, -.12), V(sd * .07, .1, -.3), .042, m.skin, 6); }
+      box(g, .2, .12, .06, m.dark, 0, .12, -.33); box(g, .14, .07, .008, m.metal, 0, .13, -.364);
+      head(g, .73, m.hair, true);
+      this.present(this.proxy('woman', .7, 1.2, 1.1, x + .1, y + .2, z), () => this.womanIn);
+    }
+    // he stands on the stoop of the cream house, east side, looking at the street, smoking
+    {
+      const g = this.smoker, x = 24.15, z = 2159.4, y = this.gy(x, z) + .3;
+      g.position.set(x, y, z); g.rotation.y = Math.PI / 2;
+      for (const sx of [-.1, .1]) { rod(g, V(sx, .88, 0), V(sx, .1, .02), .07, m.cloth, 6); box(g, .13, .08, .25, m.dark, sx, .04, -.05); }
+      box(g, .42, .58, .26, m.coat, 0, 1.17, 0); cyl(g, .058, .062, .1, m.skin, 0, 1.5, 0, 7);
+      rod(g, V(-.22, 1.42, 0), V(-.25, 1.0, .02), .06, m.coat, 6); rod(g, V(-.25, 1.0, .02), V(-.24, .82, -.02), .045, m.skin, 6);
+      rod(g, V(.22, 1.42, 0), V(.24, 1.2, -.18), .06, m.coat, 6); rod(g, V(.24, 1.2, -.18), V(.06, 1.55, -.2), .045, m.skin, 6);
+      head(g, 1.68, m.hair);
+      box(g, .34, .05, .34, m.cloth, 0, 1.84, 0); box(g, .22, .1, .22, m.cloth, 0, 1.9, 0);
+      // his porch light, on while he is out (the town's last flood slot)
+      this.light('porch', 24.5 - .5, this.gy(24.5, z) + 2.5, z, 3.2, 0xffd49a);
+      this.slots.porchGlow = this.glow.add(24.5 - .12, this.gy(24.5, z) + 2.55, z, .4, 0xffd890);
+      // the cigarette, glowing brighter when he draws on it (update)
+      this.slots.ember = this.glow.add(x - .2, y + 1.56, z - .04, .07, 0xff6a20);
+      this.present(this.proxy('smoker', .7, 1.9, .8, x, y + .95, z), () => this.smokerIn);
+    }
+  }
+  // ---------- the cardboard alien, out on the shoulder (event 6): drawn in code until ChatGPT's
+  // cutout_alien.png comes (ART_BRIEF.md, round 14) ----------
+  private cardboard() {
+    const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+    const g = c.getContext('2d')!;
+    g.fillStyle = '#8f9a8c';
+    g.beginPath(); g.ellipse(64, 58, 44, 54, 0, 0, 7); g.fill();
+    g.beginPath(); g.moveTo(52, 104); g.lineTo(76, 104); g.lineTo(84, 150); g.lineTo(80, 240); g.lineTo(70, 240); g.lineTo(64, 172);
+    g.lineTo(58, 240); g.lineTo(48, 240); g.lineTo(44, 150); g.closePath(); g.fill();
+    g.lineWidth = 7; g.strokeStyle = '#8f9a8c'; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(46, 118); g.lineTo(24, 186); g.moveTo(82, 118); g.lineTo(104, 186); g.stroke();
+    g.fillStyle = '#0b0b0b';
+    g.beginPath(); g.ellipse(44, 62, 15, 8, 0.55, 0, 7); g.ellipse(84, 62, 15, 8, -0.55, 0, 7); g.fill();
+    g.fillStyle = 'rgba(60,50,40,.35)'; g.fillRect(0, 196, 128, 4);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const mat = this.mat({ map: tex, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+    // the shape is the canvas's painted part: the rest is clear and cut away (alphaTest)
+    const p = this.cutoutAt, y = this.gy(p.x, p.z);
+    p.y = y;
+    this.cutout.position.set(p.x, y, p.z);
+    plane(this.cutout, .62, 1.24, mat, 0, .62, 0, Math.PI);
+    box(this.cutout, .05, .5, .05, this.m.wood, 0, .25, .03);
+  }
+  setCutout(on: boolean) { this.cutoutOut = on; this.cutout.visible = on; }
+  /** Event 8: the lamps go out one by one, south to north, and come back on in the same order. */
+  lampWave(t: number) { this.waveT0 = t; }
+  /** The lamps in the order the wave takes them, in world terms (the dogs bark by them). */
+  get waveOrder() { return [...this.lamps].sort((a, b) => b.z - a.z).map((L) => V(ARM_X + this.origin.x, this.origin.y, L.z + this.origin.z)); }
+  static readonly WAVE_STEP = 1.3;
+  static readonly WAVE_HOLD = 24;
+  /** A person's proxy takes the crosshair only while they are there (the bench behind her). */
+  private present(g: THREE.Object3D, here: () => boolean) {
+    const ray = g.raycast.bind(g);
+    g.raycast = (r, hits) => { if (here()) ray(r, hits); };
+  }
+  /** Who is out now (update): she goes in at ten to five, he a little after four. */
+  setPeople(woman: boolean, smoker: boolean) {
+    this.womanIn = woman; this.woman.visible = woman;
+    this.smokerIn = smoker; this.smoker.visible = smoker;
+    if (!smoker) this.glowColor(this.slots.ember, 0);
+    this.glowColor(this.slots.porchGlow, smoker ? 0xffd890 : 0);
+    if (floodOwner === this) setFlood(this.slots.porch, smoker ? 3.2 : 0, townFlood);
+  }
+
   // ---------- the night ----------
   /** The deputy at his desk: the window lit, his car out front (it holds the truck and the player). */
   setDeputy(on: boolean) {
@@ -650,8 +754,13 @@ export class Town {
     if (deputy !== this.deputyIn) this.setDeputy(deputy);
     const paper = day >= 4 * 3600 + 45 * 60 && day < 12 * 3600;
     if (paper !== this.paperIn) this.setPaper(paper);
+    const woman = day < 4 * 3600 + 50 * 60, smoker = day < 4 * 3600 + 10 * 60;
+    if (woman !== this.womanIn || smoker !== this.smokerIn) this.setPeople(woman, smoker);
+    const draw = smoker && (t % 9) < 1.4;
+    if (smoker && draw !== this.drawing) { this.drawing = draw; this.glowColor(this.slots.ember, draw ? 0xff6a20 : 0x5a2408); }
     for (const L of this.lamps) {
-      const on = day < L.off;
+      const k = LAMPS.length - 1 - LAMPS.indexOf(L.z), w = t - this.waveT0 - k * Town.WAVE_STEP;
+      const on = day < L.off && !(w >= 0 && w < Town.WAVE_HOLD);
       if (on === L.on) continue;
       L.on = on;
       setFlood(L.slot, on ? 13 : 0, townFlood);

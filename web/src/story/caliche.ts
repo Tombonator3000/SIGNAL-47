@@ -1,13 +1,22 @@
 import type { Interaction } from '../core/Interaction';
 import type { Town } from '../world/Town';
+import type { UI, PersonCard } from '../ui/UI';
+import * as P from '../ui/Panels';
+import { portrait, type PersonId } from '../core/portraits';
+import { clockText } from './time';
 
 // What Caliche's street says when it is looked at or used (world/Town.ts; HENDELSER.md, section
 // 9). Step 1 of the town: the buildings, the windows and the signs, and three things the
-// notebook keeps (the flyer on the gas station door, the sheriff's map, the morning paper). The
-// people with their lines and the night's events come in step 2.
+// notebook keeps (the flyer on the gas station door, the sheriff's map, the morning paper).
+// Step 2 (17 October): the people, one secret each (HENDELSER.md, section 9): the attendant behind
+// the night window, the deputy at his desk, Earl at 1420 AM while the Night Line is on, the woman
+// with the radio on the laundromat's bench, and the souvenir man smoking on his stoop. And event
+// 5: two hours or more after the player first spoke to him, the attendant says the same sentence
+// again, word for word, the cough in the same place.
 
 export interface CalicheDeps {
   inter: Interaction;
+  ui: UI;
   toast: (text: string, secs?: number) => void;
   /** The player is in the diner's area (the street is part of it). */
   here: () => boolean;
@@ -42,11 +51,14 @@ export function bindTown(town: Town, d: CalicheDeps) {
     d.toast('Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE.', 5.4);
     flyer();
   }, () => { flyer(); return 'SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again.'; });
-  add('gasWindow', () => 'Window', say('Oil cans in rows, a calendar still on April, the register. The attendant reads behind the counter with his feet up.', 4.2),
-    () => 'Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.');
+  add('gasWindow', () => 'Night window', () => talk('attendant'),
+    () => 'Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.');
   add('pumps', () => 'Pumps', say('Regular, 89.9. It has come down all spring. The nozzles are padlocked for the night.', 3.8),
     () => 'Two pumps on a concrete island. The counters stand at zero.');
-  add('payphone', () => 'Payphone', say('A dial tone, and under it something like wind. Nobody to call at this hour.', 3.6),
+  add('payphone', () => town.ringing ? 'Answer the payphone' : 'Payphone', () => {
+    if (town.ringing) { town.onAnswer?.(); return; }
+    d.toast(d.seen.has('nickel') ? 'A dial tone. The coin return is empty now.' : 'A dial tone, and under it something like wind. Nobody to call at this hour.', 3.6);
+  },
     () => 'A payphone on a post, a phone book on a chain with half its pages gone.');
   add('gasSign', () => 'Sign', say('GAS. DIESEL. No brand, just the words.', 2.8), null, 3);
   add('paper', () => town.paperIn ? 'Newspapers' : null, () => {
@@ -65,14 +77,15 @@ export function bindTown(town: Town, d: CalicheDeps) {
       : 'The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight.', 5.2);
     map();
   }, () => { map(); return 'One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it.'; });
-  add('sheriffDoor', () => 'Door', () => d.toast(town.deputyIn ? 'COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.' : 'Locked. A card in the frame, in ballpoint: BACK SOON.', 3.6), null);
+  add('sheriffDoor', () => town.deputyIn ? 'Knock' : 'Door', () => town.deputyIn ? talk('deputy') : d.toast('Locked. A card in the frame, in ballpoint: BACK SOON.', 3.6),
+    () => town.deputyIn ? 'COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.' : null);
   add('patrolCar', () => town.deputyIn ? 'Patrol car' : null, say('The deputy\'s car. A clipboard on the passenger seat, a thermos, a county map folded small.', 3.8),
     () => town.deputyIn ? 'The hood is still warm. Pins in a cigar box on the dash.' : null);
 
   // ---------- the laundromat, the Plaza, the feed store ----------
   add('laundromat', () => 'Laundromat', say('Six washers, one tube light, nobody. One machine is running.', 3.6),
     () => 'The one machine turns, stops, turns. There is no basket on the bench and no one waiting.');
-  add('bench', () => 'Bench', say('A bench under the window. The paint is worn through in one place, where somebody sits often.', 3.6), null);
+  add('bench', () => town.womanIn ? null : 'Bench', say('A bench under the window. The paint is worn through in one place, where somebody sits often.', 3.6), null);
   add('cinema', () => 'The Plaza', say('Closed. The doors are chained. The posters behind the glass have faded to the same blue.', 3.8),
     () => 'A box office with its blind down, and a card: CLOSED.');
   add('marquee', () => null, () => {}, () => 'CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line.', 4);
@@ -84,8 +97,11 @@ export function bindTown(town: Town, d: CalicheDeps) {
     ? 'The Night Line, through the glass: the host at the microphone with his headphones on, the red ON AIR light. He does not look up.'
     : 'The studio is empty and the red light is off. Through the wall, the carrier: a hum with nothing in it.', 4.6),
   () => onAir() ? 'Reels turning on the deck behind him. A coffee can of pencils, a phone with its line light blinking.' : 'His chair pushed back. The phone\'s line light still blinking.');
-  add('amDoor', () => 'Door', say('1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes.', 3.6), null);
-  add('souvenir', () => 'Shop window', say('A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS.', 4.6),
+  add('amDoor', () => onAir() ? 'Buzzer' : 'Door', () => onAir() ? talk('host')
+    : d.toast('1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes. Through the door, the carrier.', 4.2), null);
+  add('souvenir', () => 'Shop window', () => d.toast(d.seen.has('ev:cutout') && !town.cutoutOut
+    ? 'The cardboard alien is back in the window. There is dew on it, and grit from the road along its feet.'
+    : 'A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS.', 4.6),
     () => 'The foil has been crumpled by hand. There is a price sticker on the alien too.');
   add('souvenirSign', () => 'Sign', say('SAUCER CRASH 1947. TOURS. ASK INSIDE. Painted by hand, and painted over at least once.', 3.8), null, 3.4);
   add('souvenirDoor', () => 'Door', say('CLOSED. The hours are on a card faded white.', 3), null);
@@ -96,4 +112,238 @@ export function bindTown(town: Town, d: CalicheDeps) {
     () => tv1On() ? 'The late movie, black and white, with the sound down.' : null, 6.5);
   add('tv2', () => 'Window', say('A television on with nobody watching it. Snow, then the test pattern, then snow.', 3.8), null, 6.5);
   add('kitchen', () => 'Window', say('A kitchen light behind a curtain, and a shadow that does not move.', 3.4), null, 4);
+
+  // ---------- the people ----------
+  add('woman', () => town.womanIn ? 'Woman on the bench' : null, () => { if (town.womanIn) talk('radio_woman'); },
+    () => town.womanIn ? 'A woman in a winter coat with a transistor radio in her lap. No laundry with her.' : null);
+  add('smoker', () => town.smokerIn ? 'Man on the stoop' : null, () => { if (town.smokerIn) talk('souvenir_man'); },
+    () => town.smokerIn ? 'A man in a hat on his front step, smoking, watching the street.' : null, 5.6);
+
+  let who: Who | null = null;
+  let lines: Line[] = [];
+  const asked = (w: Who, t: string) => d.seen.has(`ask:${w}:${t}`);
+  function talk(w: Who) {
+    const p = PEOPLE[w], first = !d.seen.has('met:' + w);
+    who = w;
+    d.seen.add('met:' + w);
+    lines = p.open({ first, day: day(), town, seen: d.seen });
+    if (w === 'attendant') attendant(first);
+    if (w === 'deputy' && day() >= 4 * 3600 + 30 * 60) once('deputyBack', DEPUTY_BACK);
+    d.save();
+    P.talk(d.ui, {
+      title: p.title,
+      view: () => {
+        const v: P.TalkView = { status: p.status, lines, choices: [], reply: null };
+        for (const t of p.topics) if (!asked(w, t.id) && (!t.after || asked(w, t.after)) && (!t.need || d.seen.has(t.need))) v.choices.push({ id: t.id, label: t.label });
+        v.choices.push({ id: 'bye', label: p.bye });
+        return v;
+      },
+      onChip: () => {}, onTable: () => {}, onRead: () => {},
+      onChoice: (id) => {
+        if (id === 'bye') { d.ui.close(); return; }
+        const t = p.topics.find((x) => x.id === id);
+        if (!t || who !== w) return;
+        d.seen.add(`ask:${w}:${id}`);
+        lines = t.lines;
+        if (t.note) once(`note:${w}:${id}`, t.note);
+        d.save();
+      },
+      onClose: () => { who = null; },
+    });
+  }
+  // event 5: the attendant. The first time is kept (with the second's clock, in the save); two
+  // hours or more after it, he opens the window as if for the first time and says it again.
+  function attendant(first: boolean) {
+    const at = [...d.seen].find((k) => k.startsWith('attendant@'));
+    if (first || !at) { if (!at) d.seen.add('attendant@' + Math.round(d.secs())); return; }
+    const t0 = Number(at.slice(10));
+    if (d.secs() - t0 < 2 * 3600) return;
+    lines = [aside('He slides the window open a hand\'s width, and looks at you as if you had just pulled in.'), ...COLD];
+    d.seen.add(`mark:repeat@${Math.round(d.secs())}`);
+    once('repeat', `Station attendant, ${clockText(t0, false)} and ${clockText(d.secs(), false)}. The same sentence, the same cough.`);
+  }
 }
+
+/** The people of Caliche the player has spoken to, for the notebook's People tab (main.ts). */
+export function townPeople(seen: Set<string>): PersonCard[] {
+  return (Object.keys(PEOPLE) as Who[]).filter((w) => seen.has('met:' + w)).map((w) => ({ ...PEOPLE[w].card, portrait: portrait(w) }));
+}
+
+// ---------- the lines ----------
+type Line = P.TalkLine;
+type Who = Extract<PersonId, 'attendant' | 'deputy' | 'host' | 'radio_woman' | 'souvenir_man'>;
+interface Topic { id: string; label: string; lines: Line[]; note?: string; after?: string; need?: string }
+interface Person {
+  title: string; status: string; bye: string;
+  card: Omit<PersonCard, 'portrait'>;
+  open: (o: { first: boolean; day: number; town: Town; seen: Set<string> }) => Line[];
+  topics: Topic[];
+}
+const aside = (text: string): Line => ({ who: '', text });
+const you = (text: string): Line => ({ who: 'YOU', text });
+const A = (text: string): Line => ({ who: 'THE ATTENDANT', text });
+const DP = (text: string): Line => ({ who: 'THE DEPUTY', text });
+const EA = (text: string): Line => ({ who: 'EARL', text });
+const RW = (text: string): Line => ({ who: 'THE WOMAN', text });
+const SM = (text: string): Line => ({ who: 'THE SOUVENIR MAN', text });
+
+// said the same way every time, the cough in the same place
+const COLD: Line[] = [A('Cold one tonight. Radio says it\'ll'), aside('He coughs into his fist.'), A('warm up by Wednesday.')];
+const DEPUTY_BACK = 'The deputy, back at his desk after half past four. He says he drove the loop and came straight back. He went out at a quarter to three.';
+
+const PEOPLE: Record<Who, Person> = {
+  attendant: {
+    title: 'GAS STATION / THE ATTENDANT', status: 'The night window, a hand\'s width open.', bye: 'Let him read',
+    card: { name: 'The attendant', role: 'Caliche, the gas station', note: 'Reads behind the night window. "Cold one tonight."' },
+    open: ({ first }) => first
+      ? [aside('You knock on the night window. He takes his time, and slides it open a hand\'s width.'), A('Pumps are locked till six. You want something from in here, I can pass it through.'), ...COLD]
+      : [aside('He slides the window open again.'), A('Still out, huh.')],
+    topics: [
+      { id: 'roads', label: 'Ask about the roads', lines: [
+        you('Which way is quickest back up to the observatory?'),
+        A('Highway north. There is no other way that goes anywhere.'),
+        A('The old road\'s closed at the crossing. County says they\'ll grade it this summer. County says that every summer.'),
+        A('Your people come down for gas on Fridays. Nice folks. Don\'t say much.'),
+      ] },
+      { id: 'flyer', label: 'Ask about the flyer on the door', lines: [
+        you('SEEN LIGHTS? CALL THE NIGHT LINE.'),
+        A('Earl brings those. The radio fella, across the street.'),
+        A('I let him tape them up. He buys his gas here.'),
+        A('People call him. I couldn\'t tell you why they\'d want to.'),
+      ] },
+      { id: 'old', label: 'Ask if he has ever been out on the old road at night', lines: [
+        you('You ever go out the old road at night?'),
+        A('Towed a rig in off it once. Last October.'),
+        A('Left here a quarter to two. Got back twenty-five past four.'),
+        A('It\'s a forty minute job.'),
+        aside('He says it like a sum he has done a lot of times and cannot get to come out.'),
+        A('Anyway. Cold one tonight.'),
+      ], note: 'The attendant towed a rig in off the old road one night last October. He left at a quarter to two and was back at twenty-five past four, for a forty minute job.' },
+      { id: 'earlier', label: 'Tell him you were here before', need: 'repeat', lines: [
+        you('I was here before. You told me that.'),
+        A('Wasn\'t me, then. I\'ve been here since ten.'),
+        aside('He looks up at the clock over the register for a long time, as if it might say something else.'),
+      ] },
+    ],
+  },
+  deputy: {
+    title: 'SHERIFF SUBSTATION / THE DEPUTY', status: 'The door open on the chain, then off it.', bye: 'Let him work',
+    card: { name: 'The deputy', role: 'Caliche, sheriff\'s substation', note: '"I don\'t believe in little men. I believe in maps."' },
+    open: ({ first, day }) => day >= 4 * 3600 + 30 * 60
+      ? [aside('He opens before you have finished knocking.'), DP('Quiet night. Drove the loop out to the county line and back.'),
+        aside('He looks at his watch, and then at the clock on the wall, and does not say anything about either.')]
+      : first
+        ? [aside('You knock. A chair scrapes. He opens the door on the chain, looks at your jacket, and takes the chain off.'), DP('Help you?'),
+          you('Reyes. From the observatory up the road.'), DP('SARO. Sure. You folks lose something?')]
+        : [DP('Back again.')],
+    topics: [
+      { id: 'map', label: 'Ask about the map with the pins', lines: [
+        you('The map on your wall.'),
+        DP('Calls. Every call I get that I can\'t write up as anything.'),
+        DP('Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.'),
+        DP('I don\'t believe in little men. I believe in maps.'),
+        DP('Most of them are all over. But you put enough pins in anything, and some of them start to line up.'),
+      ], note: 'The deputy\'s pins: red for engines that died, blue for cattle, yellow for lights, green for people who lost time. "I don\'t believe in little men. I believe in maps."' },
+      { id: 'east', label: 'Ask about the row going east', after: 'map', lines: [
+        you('The row running east.'),
+        DP('The old road. Red, mostly. Engines. Out past where the county stops grading.'),
+        DP('Every one of those is a car somebody had to tow back.'),
+        DP('You want to know where, drive it with your eyes open. I\'m not putting it in writing.'),
+      ] },
+      { id: 'green', label: 'Ask about the green pins', after: 'map', lines: [
+        you('The green ones.'),
+        DP('Three of them are right here in town.'),
+        DP('The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can\'t account for.'),
+        DP('A man whose wife sits out at the laundromat nights. March of \'83.'),
+        DP('And a kid who called the radio station in September of \'81. Family moved away after.'),
+        DP('Don\'t go asking them about it. They don\'t know they\'ve got a pin.'),
+      ], note: 'Green pins in Caliche, people who lost time: the gas station attendant, October 19, 1985; the husband of the woman at the laundromat, March 1983; a boy who called the radio, September 1981.' },
+    ],
+  },
+  host: {
+    title: '1420 AM / EARL', status: 'A record on. Three minutes and forty seconds.', bye: 'Let him go back in',
+    card: { name: 'Earl', role: '1420 AM, the Night Line', note: 'Keeps every call on reel but one.' },
+    open: ({ first }) => first
+      ? [aside('You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck.'), EA('I\'ve got a record on. Three minutes and forty seconds, so talk fast.')]
+      : [EA('You again. Song and a half this time.')],
+    topics: [
+      { id: 'calls', label: 'Ask what people call in about', lines: [
+        you('What do people call in about?'),
+        EA('Lights, mostly. Cattle, some nights. Engines.'),
+        EA('And missing time. You read that book? Everybody\'s read that book now.'),
+        EA('Half of them, I think they read it first and then it happened to them.'),
+        EA('The other half never read anything in their lives.'),
+      ] },
+      { id: 'visitors', label: 'Ask what he thinks they are', lines: [
+        you('What do you think they are?'),
+        EA('On the air I call them our visitors. It keeps it friendly.'),
+        EA('Off the air I don\'t call them anything.'),
+      ] },
+      { id: 'tape', label: 'Ask if he keeps the calls', after: 'calls', lines: [
+        you('Do you keep the calls?'),
+        EA('Every one, on reel. Twelve years of them.'),
+        EA('Except one. September of \'81, a boy called in. I\'ve never played it back.'),
+        EA('I wasn\'t on the air that night. The station was off.'),
+        aside('He looks back at the studio, where the reels are turning.'),
+        EA('Record\'s ending.'),
+      ], note: 'Earl at 1420 AM keeps every call on reel. One he has never played: September 1981, a boy, on a night the station was off the air.' },
+    ],
+  },
+  radio_woman: {
+    title: 'LAUNDROMAT / THE WOMAN', status: 'Hiss from the radio in her lap.', bye: 'Leave her to it',
+    card: { name: 'The woman on the bench', role: 'Caliche, outside the laundromat', note: 'A radio tuned between two stations. "It\'s louder tonight."' },
+    open: ({ first }) => first
+      ? [aside('A transistor radio in her lap, tuned between two stations. Hiss, and under it something that is not quite a voice.'), RW('It\'s louder tonight.'), aside('She does not look at you when she says it.')]
+      : [RW('Still louder.')],
+    topics: [
+      { id: 'radio', label: 'Ask what she is listening to', lines: [
+        you('What are you listening to?'),
+        RW('Nothing. That\'s the point. In between.'),
+        RW('My husband said you could hear it in between, if you were quiet enough.'),
+        RW('Most nights it\'s just this. Tonight it\'s louder.'),
+      ] },
+      { id: 'husband', label: 'Ask about her husband', after: 'radio', lines: [
+        you('Your husband.'),
+        RW('He went out to look at the cattle one night. March, three years ago.'),
+        RW('Forty-seven minutes. I had the clock right there on the stove.'),
+        RW('He came back in and sat down and took off his boots, and he never said one word about it. Not then, not since.'),
+        RW('He sleeps fine. I don\'t.'),
+      ], note: 'The woman on the laundromat bench: her husband went out to the cattle one night in March 1983 and came back 47 minutes later. He has never said a word about it.' },
+      { id: 'why', label: 'Ask why she sits out here', lines: [
+        you('Why sit out here?'),
+        RW('Washer\'s broke at home.'),
+        aside('There is no basket on the bench beside her.'),
+      ] },
+    ],
+  },
+  souvenir_man: {
+    title: 'SAUCER CRASH 1947 / THE SOUVENIR MAN', status: 'Ash tapped off the step.', bye: 'Leave him his smoke',
+    card: { name: 'The souvenir man', role: 'Caliche, Saucer Crash 1947', note: 'Knows the whole story the way the book tells it. Has never seen a thing himself.' },
+    open: ({ first }) => first
+      ? [SM('Shop\'s closed, friend. Open at ten. Tours on Saturdays.'), aside('He taps the ash off the end of his cigarette onto the step.')]
+      : [SM('Still closed.')],
+    topics: [
+      { id: 'crash', label: 'Ask about the crash', lines: [
+        you('The crash. 1947.'),
+        SM('Summer of \'47. A rancher out north finds a pasture full of junk. Foil you can\'t crease. Little beams with writing on them.'),
+        SM('The Army says flying disc. Same day, they say weather balloon.'),
+        SM('Then nothing for thirty years, till the book.'),
+        SM('The boys from \'47. That\'s what I call them. The boys.'),
+      ] },
+      { id: 'seen', label: 'Ask if he has ever seen anything', after: 'crash', lines: [
+        you('Have you ever seen anything yourself?'),
+        SM('Me?'),
+        aside('He takes a long time over the cigarette.'),
+        SM('Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.'),
+        SM('I sit out here every night it\'s clear. Never seen a thing.'),
+        SM('You\'d think they\'d come by the shop once. Out of courtesy.'),
+      ], note: 'The souvenir man sits out every clear night and has never seen anything. "You\'d think they\'d come by the shop once."' },
+      { id: 'alien', label: 'Ask about the cardboard alien', lines: [
+        you('The cardboard alien in the window.'),
+        SM('Had it made in Albuquerque. Kids take it about once a month. It always turns up.'),
+        SM('Last time it was out on the highway north of town. Standing up, facing the traffic.'),
+        SM('Somebody\'s idea of a joke.'),
+      ] },
+    ],
+  },
+};
