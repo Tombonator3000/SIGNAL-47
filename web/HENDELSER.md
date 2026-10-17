@@ -202,6 +202,8 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 
 **Fra Twin Peaks:** det vanlige og varme med noe galt under, dineren som hjertet, faste folk med hver sin hemmelighet, langsom rytme og lange pauser, et trafikklys som henger og blinker gult i vinden, og at byen er en annen klokka tre om natta. Ingen sitater, figurer, det røde rommet eller kirsebærpai.
 
+**Bygget 17. oktober (steg 1):** gata som over, uten folka. Kinoen heter Plaza, markisen sier `CLOSED / THANK YOU CALICHE / FOR 31 YEARS` med en bokstav som har falt ut. Sheriffkontoret har skiltet `COUNTY SHERIFF / SUBSTATION` (ikke et ekte fylkesnavn). Stasjonen har ingen kallesignal, bare `1420 AM / NIGHT LINE`. Avisa er Pecos Valley Sentinel, mandag 14. april 1986, med Nicklaus' seier i Masters dagen før (samme nyhet som radioen i dineren). Bensinprisen er 89,9 cent for regular (prisene falt den våren). Ekspeditøren, verten og noen i stolen foran tv-en er tegnet inn i vindusbildene; nestlederen er bare et lyst vindu og en bil. En mesa ved STATION 01 er dreid litt så den står vest for byen og ikke over riksveien.
+
 **Ytelse:** ett område i veiens område, fasadene slått sammen, høyst tre små rom (disken på bensinstasjonen, sheriffens kontor, studioet sett gjennom glass), detaljer bare nær spilleren. Budsjettet er 300 draw calls.
 
 ## 10. Kartet og linjene
@@ -222,7 +224,7 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 
 **Steg 0, den billige testen (før byen):** regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet med varsel, tapt tid, retur, lastebilen med åpen dør og bildet ovenfra. Tom spiller kapittel 1 til 3 og svarer: Så du dem? Ble du redd? Ville du lete etter mer? Skjønte du hva som skjedde da du var borte? Var det for mye eller for lite? Svaret avgjør om byen bygges slik den står her, eller om noe må justeres først.
 
-**Steg 1:** Caliche som én gate, hendelsene 1, 5, 6, 8 og 11, kartfanen og linjene.
+**Steg 1:** Caliche som én gate, hendelsene 1, 5, 6, 8 og 11, kartfanen og linjene. (17. oktober: gata er bygget, `world/Town.ts`, med nattens rytme og tekstene; kartfanen fantes fra 16. oktober. Hendelsene og linjene gjenstår.)
 
 **Steg 2:** folka med replikker, nattens rytme, resten av hendelsene og glimtene.
 
