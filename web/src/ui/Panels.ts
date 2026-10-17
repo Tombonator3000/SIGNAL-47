@@ -1,5 +1,6 @@
 import type { UI } from './UI';
 import { PRINT, PHOTO_W, PHOTO_H } from '../core/FieldCamera';
+import { portraitOf } from '../core/portraits';
 
 // Panels for chapter one: wet bench, contact print, reference file, B-12 control,
 // two exposures and the local report. Text inside the game is English (1986).
@@ -335,9 +336,13 @@ export function talk(ui: UI, o: {
     const key = JSON.stringify(v.lines);
     const fresh = key !== shown;
     shown = key;
+    // the face of whoever spoke last (core/portraits.ts), once there is a picture of them
+    const last = [...v.lines].reverse().find((l) => l.who && l.who !== 'YOU');
+    const face = last ? portraitOf(last.who) : null;
     const line = (l: TalkLine, i: number) => `<p class="talk-line${l.who ? '' : ' aside'}${fresh ? ' fresh' : ''}" style="animation-delay:${fresh ? i * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
     const chip = (c: TalkChip) => `<button class="lp-choice talk-chip" data-chip="${c.id}" aria-pressed="${c.on}" ${c.have ? '' : 'disabled'}>${c.image ? `<img alt="" src="${c.image}">` : ''}<span>${esc(c.label)}${c.have ? '' : ' / not in the case'}</span></button>`;
     body.innerHTML = `
+      ${face ? `<img class="talk-portrait" alt="${esc(last!.who)}" src="${face}">` : ''}
       <div class="talk-lines">${v.lines.map(line).join('')}</div>
       ${v.table ? `<p class="lp-q">${esc(v.table.prompt)}</p><div class="talk-table">${v.table.chips.map(chip).join('')}</div>
         <div class="lp-row"><button class="lp-btn primary" data-a="table">${esc(v.table.submit)}</button></div>` : ''}

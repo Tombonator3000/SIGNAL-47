@@ -25,7 +25,8 @@ import { NightCalls } from './core/calls';
 import { CB } from './core/cb';
 import { Roadside } from './core/roadside';
 import { areaMap, type MapView } from './ui/areaMap';
-import type { KitItem } from './ui/UI';
+import type { KitItem, PersonCard } from './ui/UI';
+import { portrait, portraitCount } from './core/portraits';
 import { glowScale } from './world/glow';
 import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
@@ -603,9 +604,22 @@ async function boot() {
     if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
     return kit;
   }
+  // the people in the case, as the night meets them, with their faces once ChatGPT's portraits
+  // are in (ART_BRIEF.md, round 13; core/portraits.ts)
+  function peopleItems(): PersonCard[] {
+    const p: PersonCard[] = [{ name: 'Dale', role: 'SARO, the shift before', note: 'Left the shift log on the desk and went home. "Don\'t break anything. D."', portrait: portrait('dale') }];
+    if (game.at('ch2')) p.push({ name: 'Dr. Evelyn Ward', role: 'SARO, duty officer', note: 'On the line from the main site. Wants the run checked and logged by the book.', portrait: portrait('ward') });
+    if (ch2.s.called || game.at('ch3')) p.push({ name: 'N. Vega', role: 'Sierra Motor Court, room 6', note: 'Key holder for STATION 01. Signed both versions of the 1947 record.', portrait: portrait('nora') });
+    if (ch4.s.topics.tomas) p.push({ name: 'Tomás Vega', role: 'Survey crew, 1947', note: 'Her brother. Walked out to the closing point with the last reading.', portrait: portrait('tomas_1947') });
+    if (ch5.s.arrived) p.push(
+      { name: 'The waitress', role: 'Mesa Diner, all night', note: 'Has watched the lights over the mesa since she was eleven.', portrait: portrait('waitress') },
+      { name: 'The driver', role: 'Mesa Diner, at the counter', note: 'His engine died on the old road last October.', portrait: portrait('driver') });
+    return p;
+  }
   game.notebookExtras = () => ({
     map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5') }),
     kit: kitItems(),
+    people: peopleItems(),
   });
 
   function placeName() {
@@ -807,7 +821,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), roadside, cb,
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb,
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),

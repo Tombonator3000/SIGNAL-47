@@ -412,6 +412,8 @@ Lever en `people/MANIFEST.md` med filnavn, mål og en linje om hver. Claude sjek
 
 Samtalepanelene (dineren, rom 6, telefonen) får portrettet til venstre for replikkene, og notatboka en fane med folk spilleren har møtt. Mangler et bilde, vises navnet uten portrett, som i dag.
 
+**Klart 17. oktober:** Legg filene i `web/src/assets/art/people/` med nøyaktig navnet fra tabellene (for eksempel `web/src/assets/art/people/portrait_nora.jpg`). Mer trengs ikke: spillet tar med de filene som ligger der når det bygges (`core/portraits.ts`), og de vises med en gang i samtalen med Nora i rom 6, med servitrisen og sjåføren i dineren, og i fanen People i notatboka (Dale, Ward, Nora, Tomás 1947, servitrisen og sjåføren så langt). Folk uten bilde får en tom ramme med initialene. Portrettene fra prioritet B kommer i bruk når byen bygges.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
