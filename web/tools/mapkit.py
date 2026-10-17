@@ -1,5 +1,6 @@
 # The notebook's map and kit (Tom, 16 October): M opens the pencil map with a cross where the
-# player is, I opens what the player carries. Checks the tabs, that the cross moves with the
+# player is, I opens what the player carries, and People has the people in the case with their
+# faces once the portraits are in (core/portraits.ts). Checks the tabs, that the cross moves with the
 # player (SARO, the yard, the motel, the highway, the diner, STATION 01), that STATION 01 and
 # the old road come onto the map as the night goes on, and that the kit follows the flashlight
 # and the camera.
@@ -55,6 +56,14 @@ async def main():
         kit = await ev("[...document.querySelectorAll('.nb-kit li b')].map((b) => b.textContent)")
         check(await ev(TAB) == 'kit' and 'Notebook' in kit and 'Truck keys' in kit and 'Flashlight' not in kit, f'I opens the kit: no flashlight yet ({kit})')
         await close()
+        # People: the people in the case so far, with an empty frame until there is a portrait
+        await open_key('i')
+        await ev("document.querySelector('.notebook [data-t=people]')?.click()"); await tick(0.1)
+        ppl = await ev("[...document.querySelectorAll('.nb-people li b')].map((b) => b.textContent)")
+        faces = await ev("[document.querySelectorAll('.nb-people li img').length, document.querySelectorAll('.nb-people li .noface').length, S47.portraitCount()]")
+        check(await ev(TAB) == 'people' and ppl == ['Dale'] and faces[0] + faces[1] == len(ppl) and (faces[2] > 0 or faces[0] == 0),
+              f'People: Dale in chapter one, a face or an empty frame each ({ppl}, faces {faces})')
+        await close()
         # the motel down the highway
         await ev("(() => { const z = S47.world.motel.zones.find((z) => z.id === 'office'); S47.player.place((z.minX + z.maxX) / 2, (z.minZ + z.maxZ) / 2, 0); })()"); await tick(0.3)
         a = await where()
@@ -92,6 +101,12 @@ async def main():
         await open_key('m')
         await save_map('map_ch5')
         check(await ev(TAB) == 'map', 'chapter five: the map, with STATION 01 and the old road on it')
+        await close()
+        await open_key('i')
+        await ev("document.querySelector('.notebook [data-t=people]')?.click()"); await tick(0.1)
+        ppl = await ev("[...document.querySelectorAll('.nb-people li b')].map((b) => b.textContent)")
+        await pg.screenshot(path=f'{OUT}/people_ch5.png')
+        check('Dr. Evelyn Ward' in ppl and 'N. Vega' in ppl, f'People in chapter five: Ward and N. Vega too ({ppl})')
         await close()
         bad = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not bad, 'no console errors or warnings' + ('' if not bad else ': ' + '; '.join(bad[:4])))

@@ -21,11 +21,18 @@ const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal
 
 const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
 
-type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit';
+type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit' | 'people';
 /** Something the player carries (the Kit tab). */
 export interface KitItem { name: string; note: string; state?: string }
 /** The notebook's map and kit (main.ts puts them together). */
-export interface NbExtras { map?: string; kit?: KitItem[] }
+/** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
+export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
+export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[] }
+/** Initials for an empty frame: first and last name, without a title or "the". */
+const initials = (name: string) => {
+  const w = name.split(/\s+/).filter((x) => x && !/^(dr\.?|the)$/i.test(x));
+  return ((w[0]?.[0] ?? '') + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase();
+};
 // the picture setting: clean, the 1986 tape look, or a worn tape with tracking trouble
 const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
 
@@ -293,6 +300,7 @@ export class UI {
           <button role="tab" data-t="photos">Photos${count(photos.length)}</button>
           ${extras.map ? '<button role="tab" data-t="map">Map</button>' : ''}
           ${extras.kit ? '<button role="tab" data-t="kit">Kit</button>' : ''}
+          ${extras.people ? `<button role="tab" data-t="people">People${count(extras.people.length)}</button>` : ''}
         </div>
         <button class="close">Close  [Tab]</button>
         <section class="nb-page" data-p="tasks">
@@ -320,6 +328,10 @@ export class UI {
         ${extras.kit ? `<section class="nb-page nb-kit" data-p="kit">
           <h4>What I have on me</h4>
           <ul class="kit">${extras.kit.map((k) => `<li><b>${esc(k.name)}</b>${k.state ? `<i>${esc(k.state)}</i>` : ''}<span>${esc(k.note)}</span></li>`).join('')}</ul>
+        </section>` : ''}
+        ${extras.people ? `<section class="nb-page nb-people" data-p="people">
+          <h4>People in the case</h4>
+          <ul class="people">${extras.people.map((p) => `<li>${p.portrait ? `<img alt="" src="${p.portrait}">` : `<span class="noface">${esc(initials(p.name))}</span>`}<b>${esc(p.name)}</b><i>${esc(p.role)}</i><span>${esc(p.note)}</span></li>`).join('')}</ul>
         </section>` : ''}
       </div>`;
     const show = (t: NbTab) => {
