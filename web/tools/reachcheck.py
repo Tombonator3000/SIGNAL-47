@@ -930,7 +930,8 @@ def main() -> int:
     parser.add_argument("--areas",nargs="+",choices=AREAS,default=list(AREAS))
     parser.add_argument("--spacing",type=float,default=.15,help="Required full-check spacing is 0.15 m; overrides are UNVERIFIED unless a measured FAIL takes precedence")
     parser.add_argument("--timeout",type=float,default=540,help="Total browser/check budget in seconds (default 9 minutes)")
-    parser.add_argument("--max-cells",type=int,default=3000000,help="Reject, never truncate, a grid above this safety limit")
+    # 4 million since 17 October 2026: SARO's grid now reaches 650 m down the highway to the motel (3.1 million cells)
+    parser.add_argument("--max-cells",type=int,default=4000000,help="Reject, never truncate, a grid above this safety limit")
     parser.add_argument("--self-test",action="store_true",help="Adversarial checker fixtures only; no real-game execution")
     args=parser.parse_args()
     if not math.isfinite(args.spacing) or not math.isfinite(args.timeout) or args.spacing<=0 or args.timeout<=0 or args.max_cells<1:

@@ -129,6 +129,12 @@ export class Grounds {
       if (within(MOTEL_RECT, x, z)) return MOTEL_AT.y;
       return highwayTop(x + SARO_IN_ROAD.x, z + SARO_IN_ROAD.z);
     }
+    // west of the site, where its ground gives way to the road's land (drawn from z 40 on):
+    // eased over the last 24 m, or there is a step of about 14 cm (tools/reachcheck.py)
+    if (z > WEST.z1 - 24 && x < WEST.x1) {
+      const k = THREE.MathUtils.smoothstep(z, WEST.z1 - 24, WEST.z1);
+      return GROUND + (highwayTop(x + SARO_IN_ROAD.x, z + SARO_IN_ROAD.z) - GROUND) * k;
+    }
     for (const s of SLOPES) {
       if (!within(s, x, z)) continue;
       const v = s.axis === 'x' ? x : z;
