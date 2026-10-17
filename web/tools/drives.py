@@ -58,9 +58,11 @@ async def main():
         async def drive(what, to, start, budget=420):
             """Drive with the autopilot until the truck is parked in `to`; shots round each change."""
             await ev(start)
-            for _ in range(60):
+            # the trip loads what it needs first (an area the first time): real time too
+            for _ in range(240):
                 await tick(0.25)
                 if await ev("S47.world.driving"): break
+                await pg.wait_for_timeout(100)
             st = await state()
             check(st['driving'] and st['leg'] == st['area'], f"{what}: in the truck, the engine running ({st['leg']})")
             await tick(0.5); await shot(f'{what}_00_start')

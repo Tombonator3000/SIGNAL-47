@@ -735,15 +735,6 @@ export class Chapter3 {
     this.g.after(0.8, () => this.onEnd?.());
   }
 
-  endingLines() {
-    return [
-      'THE SURVEY STATION',
-      'STATION 01 // P06 TO P09 RECORDED',
-      'Fixed point A was moved off its footing. The field lamp is only a local source. The cable was cut on purpose, with clean, opposed faces.',
-      'The 1947 log and tonight\'s receiver carry the same correction in the same voice: T. Vega. The relay impact came 47 seconds after the carrier ceased.',
-      'N. Vega is waiting in room 6 at Sierra Motor Court with the rest. NEXT: ROOM 6. This part of the night is still being built.',
-    ];
-  }
 
   // ---------- documents ----------
   private docTransit(): DocSpec {

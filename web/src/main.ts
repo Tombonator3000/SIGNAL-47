@@ -20,7 +20,7 @@ import { loadFonts } from './core/fonts';
 import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, TRACKS, type Cue } from './core/score';
-import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId } from './core/radio';
+import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId, BOY } from './core/radio';
 import { NightCalls } from './core/calls';
 import { CB } from './core/cb';
 import { Roadside } from './core/roadside';
@@ -41,6 +41,7 @@ import { bindTown, townPeople } from './story/caliche';
 import { TownEvents, townMarks } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Abduction, type AbductIn } from './story/abduction';
+import { LineLights } from './story/lineLights';
 import { surfaceY } from './drive/roadTerrain';
 import type { AreaId } from './story/Chapter3';
 
@@ -289,6 +290,10 @@ async function boot() {
       save: () => { if (mode === 'play') requestAutosave(false); } });
     townEvents.bind(t);
   };
+  // HENDELSER.md, event 7: three lights keeping pace with the truck south of SARO (story/lineLights.ts)
+  const lineLights = new LineLights(scene, (text) => game.note(text), (clock) => {
+    townSeen.add('ev:lights'); townSeen.add(`mark:lights@${Math.round(clock)}`); requestAutosave(false);
+  });
   // the time away (story/abduction.ts): a frame of the scene from a camera of its own, drawn at once
   const shotCanvas = document.createElement('canvas'); shotCanvas.width = 640; shotCanvas.height = 400;
   abduction = new Abduction({
@@ -577,12 +582,12 @@ async function boot() {
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
-    townEvents.reset(); glimpses.reset(); abduction!.restore(o.state?.abduct);
+    townEvents.reset(); glimpses.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
     restoringNow = false; restoring = null;
-    roadside.reset(); cb.stop(); radio.reset(game.clock);   // the radios off; each station where it is at this hour
+    roadside.reset(); cb.stop(); radio.boyCalled = townSeen.has('ev:boy'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
     if (world.area === 'room6') world.placeAtRoom6();
@@ -668,7 +673,7 @@ async function boot() {
     return p;
   }
   game.notebookExtras = () => ({
-    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: townMarks(townSeen) }),
+    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
     kit: kitItems(),
     people: peopleItems(),
   });
@@ -695,6 +700,17 @@ async function boot() {
     }
     return { ok, enabled: abductOn, line, along: abAlong, clock: game.clock, nextFixed: FIXED[game.phase]?.() ?? -1e9,
       late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash };
+  }
+  // the marks on the notebook's map: the town's events on A (the cutout and the deputy's car on the
+  // highway north of it), the lights on B, and the times away where they happened
+  function mapMarks(): NonNullable<MapView['marks']> {
+    const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: roadZ - SARO_IN_ROAD.z });
+    const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: m.kind === 'lights' ? 'B' as const : 'A' as const,
+      at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 } : undefined }));
+    for (const sp of abduction!.data.spots) out.push({ kind: 'away', clock: sp.clock,
+      line: sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C',
+      at: sp.scene === 'saro' ? (sp.take[2] > 64 ? { spot: 'highway', m: sp.take[2] } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
+    return out.sort((a, b) => a.clock - b.clock);
   }
   function glimpseIn(ok: boolean): GlimpsesIn {
     const road = world.area === 'road' || world.area === 'diner', tr = world.driving ? world.truckHere() : null;
@@ -904,7 +920,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
@@ -1125,6 +1141,12 @@ async function boot() {
     if (mode !== 'play' || game.cinematic || !carRadio.live || carRadio.station !== id || !carNear) return;
     if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
     ui.toast(by ? `RADIO, ${by}: "${text}"` : `RADIO: "${text}"`, Math.min(8, 2.2 + text.length / 22));
+    // event 9 (HENDELSER.md): heard, the boy's call goes into the notebook and onto the map
+    if (by === BOY && !townSeen.has('ev:boy')) {
+      townSeen.add('ev:boy'); townSeen.add(`mark:boy@${Math.round(game.clock)}`);
+      game.note(`${clockText(game.clock, false)}. Night Line, 1420. A boy calling about a star with a tail, low in the south, and a light over the mesa. From his father's ranch. He said it was July.`);
+      requestAutosave(false);
+    }
   };
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent; }
   const dbg = { hold: false };
@@ -1190,6 +1212,11 @@ async function boot() {
         });
       }
       if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
+      if (mode === 'play') lineLights.update(dt, {
+        ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
+        truck: world.driving && world.area === 'saro' ? world.truckHere()?.group.position ?? null : null,
+        clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
+      });
       if (mode === 'play') {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;

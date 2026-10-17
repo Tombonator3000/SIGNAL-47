@@ -515,15 +515,6 @@ export class Chapter5 {
     });
   }
 
-  endingLines() {
-    return [
-      'ALL NIGHT',
-      'MESA DINER // P13 RECORDED',
-      'The waitress has watched the light over the mesa since she was eleven. The driver\'s rig died on the old road last October, right past the eight-mile post. The clipping by the door is the same picture as in 1947, with more of it.',
-      'C crosses the old road to Roswell just past the eight-mile post, at a survey bolt in the shoulder. The coffee stays on the counter.',
-      'NEXT: ROSWELL ROAD. This part of the night is still being built.',
-    ];
-  }
 
   // ---------- documents ----------
   private docMap(): DocSpec {

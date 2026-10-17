@@ -797,15 +797,6 @@ export class Chapter4 {
     this.g.after(1.2, () => this.onEnd?.());
   }
 
-  endingLines() {
-    return [
-      'ROOM 6',
-      'SIERRA MOTOR COURT // P10 TO P12 RECORDED',
-      'Tonight\'s control print carries the same mark as her plate from 1947: a reference that stays on the film after its source is gone.',
-      'She left C out of the record and blamed development. She cut the cable herself, with her brother Tomás standing on C. He was not there afterwards. The line still repeats his last correction, and it does not answer.',
-      'C crosses the old highway to Roswell. NEXT: ALL NIGHT. This part of the night is still being built.',
-    ];
-  }
 
   // ---------- documents ----------
   private docCard(): DocSpec {

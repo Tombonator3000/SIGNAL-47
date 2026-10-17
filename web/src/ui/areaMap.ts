@@ -1,5 +1,4 @@
 import { SERVICE_MAP, mark } from '../story/drawings';
-import { SARO_IN_ROAD } from '../world/geo';
 
 // The map in the notebook (Tom, 16 October: a map of the place). The player's own sketch in
 // pencil on a notebook page, not the service map: SARO and the array east of the highway,
@@ -20,10 +19,9 @@ export interface MapView {
   oldRoad: boolean;
   /** What happened where (story/townEvents.ts): a small circle with the time by it. Three on
    *  line A and the line is drawn in, through the town and on towards STATION 01. */
-  marks?: { kind: string; clock: number }[];
+  marks?: { kind: string; clock: number; line?: 'A' | 'B' | 'C'; at?: MapView['at'] }[];
 }
 
-const SARO_IN_ROAD_Z = SARO_IN_ROAD.z;   // the cutout stands at road z 1450 (world/Town.ts)
 const PAPER = '#f1ead8', PENCIL = '#3b3b3f', RED = '#a8281e';
 const W = 1200, H = 800;
 /** The highway's line on the page. */
@@ -119,23 +117,28 @@ export function areaMap(v: MapView) {
     g.lineWidth = 2.4; g.strokeStyle = PENCIL; mark(g, STATION[0], STATION[1], 22);
     text('STATION 01', STATION[0] - 66, STATION[1] - 30, 26); text('1947', STATION[0] - 18, STATION[1] + 42, 20);
   }
-  // what happened where, with the time; three of them and line A is drawn through them
+  // what happened where, with the time; three on one line and the line is drawn through them
   const marks = v.marks ?? [];
-  const placeOf = (kind: string, i: number): [number, number] =>
-    kind === 'cutout' ? [HX - 26, hwyY(1450 - SARO_IN_ROAD_Z)] : [HX - 4 + (i % 3) * 14, 640 + Math.floor(i / 3) * 14];
-  if (marks.length >= 3) {
-    // from beyond the town, through it, to STATION 01 and a little past
-    const [ax, ay] = DINER, [bx, by] = STATION, k0 = -0.35, k1 = 1.12;
-    g.setLineDash([3, 7]); line([[ax + (bx - ax) * k0, ay + 30 + (by - ay - 30) * k0], [ax + (bx - ax) * k1, ay + 30 + (by - ay - 30) * k1]], 1.6); g.setLineDash([]);
-    text('A', ax + (bx - ax) * k1 - 28, ay + 30 + (by - ay - 30) * k1 - 4, 28);
-  }
+  const onLine = (l: 'A' | 'B') => marks.filter((m) => (m.line ?? 'A') === l).length;
+  const across = (from: [number, number], to: [number, number], k0: number, k1: number, label: string) => {
+    const [ax, ay] = from, [bx, by] = to;
+    g.setLineDash([3, 7]); line([[ax + (bx - ax) * k0, ay + (by - ay) * k0], [ax + (bx - ax) * k1, ay + (by - ay) * k1]], 1.6); g.setLineDash([]);
+    text(label, ax + (bx - ax) * k1 - 28, ay + (by - ay) * k1 - 4, 28);
+  };
+  // A: from beyond the town, through it, to STATION 01 and a little past; B: from east of the
+  // highway between SARO and the motel, to STATION 01 and past
+  if (onLine('A') >= 3) across([DINER[0], DINER[1] + 30], STATION, -0.35, 1.12, 'A');
+  if (onLine('B') >= 3) across([HX + 120, 236], STATION, -0.15, 1.12, 'B');
   const hhmm = (c: number) => { const d = ((c % 86400) + 86400) % 86400; return `${String(Math.floor(d / 3600)).padStart(2, '0')}:${String(Math.floor(d % 3600 / 60)).padStart(2, '0')}`; };
   const inTown: string[] = [];
   let k = 0;
   for (const m of marks) {
-    const [x, y] = placeOf(m.kind, m.kind === 'cutout' ? 0 : k++);
+    const [x, y] = m.at ? spotXY(m.at) : [HX - 4 + (k % 3) * 14, 640 + Math.floor(k / 3) * 14];
+    if (!m.at) k++;
     g.lineWidth = 2; g.strokeStyle = PENCIL; g.beginPath(); g.arc(x, y, 6, 0, Math.PI * 2); g.stroke();
-    if (m.kind === 'cutout') text(hhmm(m.clock), x - 64, y + 6, 20); else inTown.push(hhmm(m.clock));
+    // a time away: a ring round it
+    if (m.kind === 'away') { g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.stroke(); }
+    if (m.at) text(hhmm(m.clock), x - 64, y + 6, 20); else inTown.push(hhmm(m.clock));
   }
   // the times in town, in a row under its name
   if (inTown.length) text(inTown.join(', '), 226, 734, 20);

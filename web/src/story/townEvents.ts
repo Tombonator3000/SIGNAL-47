@@ -106,7 +106,7 @@ export class TownEvents {
     // three marks on A: the line drawn in (the map draws it, ui/areaMap.ts)
     if ((this.lineCheck += dt) > 1 && !this.d.seen.has('lineA')) {
       this.lineCheck = 0;
-      if (townMarks(this.d.seen).length >= 3) {
+      if (townMarks(this.d.seen).filter((m) => m.kind !== 'lights').length >= 3) {
         this.d.seen.add('lineA');
         this.d.note(`${clockText(s.clock, false)}. Three on one line. Drawn in on the map: through Caliche, and on to the north-west.`);
         this.d.save();

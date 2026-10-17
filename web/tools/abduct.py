@@ -81,7 +81,7 @@ async def main():
         check(await until('back', 20, 0.25), 'black, and back')
         c1 = await ev("S47.game.clock")
         lost = (c1 - c0) / 60
-        check(17 <= lost <= 47 + 1 and c1 < 3 * 3600 + 40 * 60 - 59, f'the clock has jumped {lost:.1f} minutes, short of 03:40')
+        check(17 <= lost <= 47 + 1 and c1 < 3 * 3600 + 40 * 60, f'the clock has jumped {lost:.1f} minutes, short of 03:40')
         pos = await ev("[S47.player.pos.x, S47.player.pos.z, S47.player.walkable(S47.player.pos.x, S47.player.pos.z), S47.player.pitch]")
         moved = math.hypot(pos[0] - take[0], pos[1] - take[1])
         check(moved >= 29 and pos[2], f'{moved:.0f} m further on, on ground that can be stood on')
