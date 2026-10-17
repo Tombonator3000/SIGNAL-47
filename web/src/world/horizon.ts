@@ -125,7 +125,8 @@ export function stationMesas(ground: (x: number, z: number) => number) {
   mesa(62, 1500, 520, 260, 82, 5, 1);
   mesa(84, 900, 150, 120, 66, 7, 1);
   mesa(-38, 1450, 700, 300, 86, 9, 2);
-  mesa(-95, 1750, 900, 300, 48, 11, 1);
+  // (turned from -95 so its east end stops short of the highway at Caliche, 180 m west of the town)
+  mesa(-85, 1750, 900, 300, 48, 11, 1);
   mesa(150, 2000, 700, 300, 40, 13, 1);
   // far ridges all round
   const R = rng(17), N = 160, ridge: THREE.Vector3[] = [], feet: THREE.Vector3[] = [];

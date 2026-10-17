@@ -92,6 +92,9 @@ export function areaMap(v: MapView) {
   // the diner at the junction, on the west side too
   box(370, 598, 404, 620);
   text('Mesa Diner', 226, 652, 28); text('open all night', 236, 678, 20);
+  // Caliche down the street from it, both sides of the highway (world/Town.ts)
+  for (let i = 0; i < 3; i++) { box(392, 628 + i * 15, 408, 638 + i * 15); box(HX + 10, 632 + i * 15, HX + 24, 641 + i * 15); }
+  text('Caliche, pop. 412', 226, 708, 22);
   // the old road east
   if (v.oldRoad) {
     line(SERVICE_MAP.road.map(onPage), 2.6);
