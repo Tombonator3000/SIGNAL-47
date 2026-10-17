@@ -414,6 +414,87 @@ Samtalepanelene (dineren, rom 6, telefonen) får portrettet til venstre for repl
 
 **Klart 17. oktober:** Legg filene i `web/src/assets/art/people/` med nøyaktig navnet fra tabellene (for eksempel `web/src/assets/art/people/portrait_nora.jpg`). Mer trengs ikke: spillet tar med de filene som ligger der når det bygges (`core/portraits.ts`), og de vises med en gang i samtalen med Nora i rom 6, med servitrisen og sjåføren i dineren, og i fanen People i notatboka (Dale, Ward, Nora, Tomás 1947, servitrisen og sjåføren så langt). Folk uten bilde får en tom ramme med initialene. Portrettene fra prioritet B kommer i bruk når byen bygges.
 
+## Runde 14: Caliche, byen om natta (Tom, 17. oktober)
+
+Bestilt 17. oktober av Tom («lag en liste til ChatGPT om grafikken du trenger»). Byen Caliche er bygget (`world/Town.ts`, `HENDELSER.md` punkt 9): hovedgata sør for Mesa Diner med bensinstasjonen, sheriffens kontor, vaskeriet, kinoen Plaza, fôrbutikken, 1420 AM, suvenirbutikken, kirken og noen hus. Alt som er tegnet der nå, er tegnet i kode: skiltene, vinduene man ser inn gjennom og avisa. Denne runden gir byen ekte bilder, og romvesenene den første grafikken sin.
+
+**Viktig:** natt, april 1986, en liten by på høysletta i New Mexico. Stilisert, slitt og stille, med litt Twin Peaks i stemningen (vanlig og varmt med noe galt under), men ingen sitater, figurer eller ting fra Twin Peaks eller X-Files. Ingen ekte merkenavn, logoer, personer eller ekte radiokallesignal. Paletten fra stilavsnittet øverst.
+
+### Tekst i bildene
+
+Tekst som må være riktig, skriver Claude i kode oppå bildet. Lever derfor alle skilt i to utgaver: én med teksten akkurat som i bestillingen, og én helt uten tekst (`_blank` i navnet). Blir teksten feil i den første, lever bare den blanke. Vindusbildene, silhuettene og bortføringsbildene skal aldri ha tekst.
+
+### Prioritet A: vinduene man ser inn gjennom (`town/`)
+
+Sett utenfra gjennom glass, rett forfra, om natta. Interiøret er lyst og gata er mørk, så bildet skal være varmt eller kaldt lys innenfra med mørke kanter. Ingen vindusramme (Claude bygger den). Alle 1024×512, JPG, sRGB, høyst 350 kB.
+
+| Fil | Hva | Lys |
+| --- | --- | --- |
+| `town/win_gas.jpg` | Kontoret på bensinstasjonen: disken med kassaapparat, oljekanner på hyller, en kalender (uten tekst) på veggen. Betjenten, rundt 30, i kjeledress, sitter bak disken med beina oppå og et blad, og ser rett ut mot vinduet | Grønnhvitt lysrør i taket |
+| `town/win_sheriff.jpg` | Sheriffens lille kontor: et stort fylkeskart på veggen med knappenåler i rødt, blått og gult. De fleste er spredt, men to rader står på linje: én går østover, én vestover. Et skrivebord med lampe, en stol, en radio. Ingen person (nestlederen er ute på patrulje en del av natta) | Skrivebordslampe |
+| `town/win_studio.jpg` | Studioet til nattradioen: Earl, rundt 60, cardigan og hodetelefoner, ved mikrofonen. Spolebåndopptaker bak ham, et miksebord, en telefon med lampe, en kaffeboks med blyanter | Varmt lys fra miksebordet og en rød lampe (uten tekst) |
+| `town/win_studio_empty.jpg` | Samme studio etter klokka fire: stolen skjøvet bakover, ingen person, telefonlampa lyser fortsatt | Bare miksebordet, svakere |
+| `town/win_laundromat.jpg` | Vaskeriet: seks vaskemaskiner på rad, én går, plastkurver, et oppslag (uten tekst) på veggen. Ingen folk | Ett lysrør, kaldt og blått |
+| `town/win_tv.jpg` | En mørk stue: tv-en på med blått skjær, noen som sover i en lenestol foran den, sett bakfra | Bare tv-lyset |
+| `town/win_kitchen.jpg` | Et kjøkkenvindu med gardin, lyset på, og en skygge av en person bak gardinen som står helt stille | Varm taklampe |
+| `town/win_souvenir.jpg` | Utstillingsvinduet i suvenirbutikken: papp-romvesenet i full størrelse, en gummimaske av et romvesen, plastposer med sammenkrøllet aluminiumsfolie («vrakdeler»), noen postkort og krus. Ingen tekst på noe | Én varm lampe, butikken ellers mørk |
+
+### Prioritet A: papp-romvesenet og avisa (`town/`)
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `town/cutout_alien.png` | 512×1024, PNG med gjennomsiktighet | Et romvesen i papp i full størrelse, slik suvenirbutikker hadde: et tynt grått vesen med stort hode og store svarte øyne, malt litt klønete på papp, bøyd i ett hjørne, en tom prislapp på brystet. Sett rett forfra, uten bakgrunn. Brukes i vinduet og i veikanten i frontlysene, så det skal se ut som papp og ikke som et ekte vesen |
+| `town/paper_sentinel_blank.jpg` | 768×1024, JPG | Forsiden av en liten lokalavis fra 1986, sett rett ovenfra: tomt felt øverst for avisnavnet, tomt felt for hovedoverskriften, et svart-hvitt pressebilde av en golfbane (en green med flagget, ingen personer), og spalter med grå, uleselig «tekst». Litt gulnet newsprint. Claude skriver avisnavnet (Pecos Valley Sentinel), datoen og overskriftene |
+
+### Prioritet B: skiltene i byen (`town/`)
+
+Alle PNG med gjennomsiktighet rundt skiltet, rett forfra, i to utgaver (med og uten tekst, se over). Teksten skal stå nøyaktig slik, linje for linje.
+
+| Fil (og `_blank`) | Mål | Hva og tekst |
+| --- | --- | --- |
+| `town/sign_caliche.png` | 1024×512 | Bygrenseskilt i grønt med hvit kant, slitt og litt skjevt: `CALICHE` / `POP. 412` |
+| `town/sign_gas.png` | 1024×512 | Lysskilt på stang over bensinstasjonen, hvitt med rød kant, uten merkenavn: `GAS` / `DIESEL` |
+| `town/sign_1420.png` | 1024×512 | Takskilt for radiostasjonen, mørkt med lyse bokstaver: `1420 AM` / `NIGHT LINE` |
+| `town/sign_souvenir.png` | 1024×512 | Håndmalt treskilt, malt over minst én gang, litt for ivrig: `SAUCER CRASH 1947` / `TOURS` / `ASK INSIDE` |
+| `town/sign_sheriff.png` | 1024×256 | Enkelt metallskilt over døra: `COUNTY SHERIFF` / `SUBSTATION` |
+| `town/marquee_plaza.png` | 2048×256 | Markisen på kinoen, mørk, med løse sorte plastbokstaver på hvit bakgrunn: `CLOSED` / `THANK YOU CALICHE` / `FOR 31 YEARS`, der én bokstav har falt ut i siste linje (valgfri bokstav) |
+| `town/board_church.png` | 1024×256 | Bokstavtavla ved kirken, hvite plastbokstaver på svart riflet bakgrunn: `THE HEAVENS DECLARE THE GLORY OF GOD` / `PS 19:1` |
+
+### Prioritet B: romvesenene i bakgrunnen (`alien/`)
+
+De sees bare langt unna, i kanten av synsfeltet, og står helt stille (`HENDELSER.md` punkt 7). Ingen ansikter: ansiktet spares til slutten. Bare omriss.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `alien/silhouette_stand.png` | 512×1024, PNG med gjennomsiktighet | En tynn, høy skikkelse, helt svart omriss, stående rett opp med armene langs siden. Litt for lange armer, litt for stort hode, ingen detaljer inni. Svakt lys bakfra langs kanten |
+| `alien/silhouette_turned.png` | 512×1024, PNG med gjennomsiktighet | Samme skikkelse sett halvt fra siden, hodet litt på skrå, som om den lytter |
+| `alien/silhouette_far.png` | 256×512, PNG med gjennomsiktighet | Samme skikkelse langt borte, uskarp i kantene, som i varmedis |
+
+### Prioritet B: bortføringen (`abduct/`)
+
+Enkeltbilder som blinker forbi under en bortføring, og bildet spilleren finner i kameraet etterpå (`HENDELSER.md` punkt 8). Spilleren (Reyes) har aldri ansikt: bare silhuetten i SARO-jakka med refleksbåndet. Alle 1024×768, JPG.
+
+| Fil | Hva |
+| --- | --- |
+| `abduct/frame_above.jpg` | Fotografiet i kameraet: en person som ligger på ryggen i tørt gress om natta, sett rett ovenfra fra noen meter oppe, i hardt hvitt blitzlys. Mørk arbeidsjakke med refleksbånd. Ansiktet er skjult (vendt bort eller i skygge). Ser ut som et feltbilde fra 1986, litt korn |
+| `abduct/frame_light.jpg` | Hvitt lys ovenfra uten kilde over gress og grus, en skygge som er i ferd med å forsvinne under en person (bare beina synes) |
+| `abduct/frame_truck.jpg` | Lastebilen (en hvit pickup fra 1980-tallet med servicekasse) i ørkenen om natta, døra åpen, frontlysene på, ingen i den, sett på avstand |
+| `abduct/frame_figures.jpg` | Tre tynne silhuetter langt borte på en mesarygg mot en lysere himmel, helt stille |
+
+### Ikke i denne runden
+
+- Portrettene av folka i byen står allerede i runde 13, prioritet B.
+- Ingen 3D-modeller, ingen lyd, ingen tekst inne i spillet (Claude skriver den).
+- Ingen ansikter på romvesenene.
+
+### Manifest og kontroll
+
+Lever en `town/MANIFEST.md` (og tilsvarende i `alien/` og `abduct/`) med filnavn, mål og en linje om hver. Claude sjekker størrelse, format og tekst, og tar bilder i spillet av hvert skilt og vindu.
+
+### Hvordan Claude kobler dem inn
+
+Vindusbildene erstatter vindusbildene som er tegnet i kode i `world/Town.ts`; skiltene legges på skiltflatene, med teksten fra kode oppå den blanke utgaven hvis teksten i bildet ikke er riktig. Papp-romvesenet står i butikkvinduet og i veikanten (hendelse 6). Avisa ligger i bunken på bensinstasjonen fra 04:45. Silhuettene og bortføringsbildene tas i bruk med hendelsesregissøren (`HENDELSER.md` punkt 4, 7 og 8). Mangler et bilde, brukes det som er tegnet i kode, som i dag.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
