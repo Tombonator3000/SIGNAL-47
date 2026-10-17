@@ -108,6 +108,9 @@ export class RoadArea implements DriveArea {
     this.obstacles.push(...obstacles.map((b) => ({ kind: 'box' as const, ...b })));
     this.lots.push({ box: lot, surface: SURF.gravel, y });
   }
+  /** More things beside the road that hold the truck (Caliche's buildings and posts, world/Town.ts),
+   *  kept as they are given, so one that moves (the deputy's car) moves here too. */
+  addObstacles(list: Obstacle[]) { this.obstacles.push(...list); }
   private lotAt(x: number, z: number) {
     for (const l of this.lots) if (x >= l.box.minX && x <= l.box.maxX && z >= l.box.minZ && z <= l.box.maxZ) return l;
     return null;

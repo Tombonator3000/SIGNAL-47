@@ -17,7 +17,7 @@ Det jeg tror gir mest for innsatsen står øverst. Ingenting her er bygget.
 7. **Lastebilen lagres der den står.** Nå lagres bare stedet (SARO, motellet, stasjonen, dineren). Står den på veiskulderen, er den tilbake på SARO etter lasting.
 8. **Hint første gang.** Det er mange taster nå (E, F, R, M, I, C, Tab, høyre musknapp). En kontrollside i notatboka, og hvert hint bare første gang det gjelder, i stedet for lange meldinger hver gang.
 9. **Mobil.** SAROs område har nå motellet og 800 m vei i tillegg. Må måles på ekte telefon med `?debug`. Faller det, kan motellets detaljer skjules langt unna (bare masse og lys).
-10. **Caliche, steg 1** når steg 0 er prøvd: én gate ved dineren med noen opplyste vinduer, bensinstasjonen og telefonautomaten, før folka.
+10. **Caliche, steg 1** når steg 0 er prøvd: én gate ved dineren med noen opplyste vinduer, bensinstasjonen og telefonautomaten, før folka. (Bygget 17. oktober, `world/Town.ts`.)
 
 Min anbefaling: 1 og 3 først (små og tydelige), så 2 og 4 sammen, fordi de begge gjør veien mellom stedene levende.
 

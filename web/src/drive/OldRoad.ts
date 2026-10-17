@@ -6,7 +6,7 @@ import { artTexture, artLoaded } from '../core/art';
 import { rng } from '../core/textures';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { retro, colored, instances, place, type RetroBeam } from './roadProps';
-import { smooth, hash, HWY, DINER, highwayGeometry } from './roadTerrain';
+import { smooth, hash, HWY, DINER, TOWN, highwayGeometry } from './roadTerrain';
 import { highwayTex } from './roadTextures';
 import {
   path, HALF, SHOULDER, FENCE, POWER, S0, S1, START, POSTS, BOLTS, C_LINE, SUN_AZ, SARO_FROM, I0, J,
@@ -318,7 +318,7 @@ export class OldRoad implements DriveArea {
     for (const side of [-1, 1]) {
       const pts: { x: number; z: number; k: number }[] = [];
       for (let rz = HWY_DRAWN[0]; rz <= HWY_DRAWN[1]; rz += 4.5) {
-        const gap = side > 0 ? Math.abs(rz - DINER.z) < 20 : rz > DINER.z - 40 && rz < DINER.z + 45;
+        const gap = side > 0 ? rz > DINER.z - 20 && rz < TOWN.z1 : rz > DINER.z - 40 && rz < TOWN.z1;   // and along Caliche (Town.ts)
         pts.push(gap ? { x: NaN, z: 0, k: 0 } : { x: J.x + side * HWY.fence, z: fromRoadZ(rz), k: rz * side });
       }
       fence(pts);
@@ -371,7 +371,7 @@ export class OldRoad implements DriveArea {
       }
       // and the highway's, where the road area has them (roadProps.delineators)
       for (const side of [-1, 1]) for (let rz = -1000 + (side > 0 ? 40 : 0); rz <= 2900; rz += 80) {
-        if (rz < HWY_DRAWN[0] || Math.abs(rz - DINER.z) < 30) continue;
+        if (rz < HWY_DRAWN[0] || (rz > DINER.z - 30 && rz < TOWN.z1)) continue;
         const x = J.x + side * 7.2, z = fromRoadZ(rz), y = heightAt(x, z);
         list.push(place(x, y, z, 0, 1, (hash(x, rz) - 0.5) * 0.05));
         glint(new THREE.Vector3(x, y + 1.05, z), 0.5);
@@ -410,6 +410,7 @@ export class OldRoad implements DriveArea {
         else { const b = beside(S0 + 25 + r2() * (from - S0 - 25), side * off); x = b.x; z = b.z; }
         const rx = x - J.x, rz = toRoadZ(z);
         if (Math.abs(Math.abs(rx) - HWY.fence) < 1 || (rx > -60 && rx < 0 && Math.abs(rz - DINER.z) < 60)) continue;   // the fence, the diner
+        if (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z && rz < TOWN.z1 + 20) continue;   // Caliche
         const nn = nearest(x, z);
         if (nn.d < 6.5 || Math.abs(Math.abs(nn.o) - FENCE) < 1 || Math.abs(nn.o + POWER) < 1.5) continue;
         if (Math.abs(rx) < 9 && Math.abs(rz - DINER.z) < 6000) continue;   // on the highway

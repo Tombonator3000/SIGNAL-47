@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { smooth, hash, START, END, DINER, MOTEL, hLow, washAt, MILE, CROSS_MI, oldRoadBearing, HWY_W, hwyLift } from './roadShape';
+import { smooth, hash, START, END, DINER, MOTEL, TOWN, hLow, washAt, MILE, CROSS_MI, oldRoadBearing, HWY_W, hwyLift } from './roadShape';
 
-export { smooth, hash, START, END, DINER, MOTEL, hLow };
+export { smooth, hash, START, END, DINER, MOTEL, TOWN, hLow };
 
 // Layout of the drive in metres, local to RoadArea.group (whose origin is the start).
 // North is -Z. The state highway runs north-south along x = 0, and the truck starts in the

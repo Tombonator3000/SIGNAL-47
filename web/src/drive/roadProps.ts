@@ -5,13 +5,13 @@ import type { GlowPoints } from '../world/glow';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
-import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, surfaceY, hash, smooth } from './roadTerrain';
+import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, surfaceY, hash, smooth } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
 import type { Rect } from './truckTextures';
 
 // The fake floods of the drive. Slots 0 to 2 belong to the truck's headlights; the road
 // area fills them with dark placeholders first, so the ranch light gets 3 and the gate 4.
-export const roadFlood = floodSet(8, 'road', 0.1);
+export const roadFlood = floodSet(11, 'road', 0.1);
 export const HEADLIGHT_SLOTS = [0, 1, 2];
 
 // Retroreflective sheeting: road signs shine back at the headlights from far away. The
@@ -160,8 +160,10 @@ export function poles(b: Build, keep: Keep = () => true) {
 // ---------- barbed wire fences: steel T-posts, a wooden post every tenth, four strands ----------
 // The fence on the west side stops at the motel's and the diner's ground (roadShape.ts, MOTEL
 // and DINER), and the one on the east is open where the old Roswell road goes off across from
-// the diner (roadTerrain.oldStub).
-const DINER_GAP: [number, number] = [DINER.z - 40, DINER.z + 45], OLD_GAP: [number, number] = [DINER.z - 18, DINER.z + 18];
+// the diner (roadTerrain.oldStub). Both are open along Caliche's main street (TOWN, world/Town.ts),
+// where walls further out keep the truck in the town.
+const DINER_GAP: [number, number] = [DINER.z - 40, TOWN.z1], OLD_GAP: [number, number] = [DINER.z - 18, DINER.z + 18];
+const EAST_GAP: [number, number] = [OLD_GAP[0], TOWN.z1];
 export const MOTEL_GAP: [number, number] = [MOTEL.z - 46, MOTEL.z + 46];
 export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
@@ -178,7 +180,7 @@ export function fences(b: Build, keep: Keep = () => true) {
       prev = p;
     }
   };
-  line(HWY.fence, -1000, HWY.fence, 2900, OLD_GAP);
+  line(HWY.fence, -1000, HWY.fence, 2900, EAST_GAP);
   line(-HWY.fence, -1000, -HWY.fence, 2900, MOTEL_GAP, [GUARD.z0 - 0.6, GUARD.z1 + 0.6], DINER_GAP);
   line(-HWY.fence - 0.3, PASTURE.north, PASTURE.west, PASTURE.north);
   line(-HWY.fence - 0.3, PASTURE.south, PASTURE.west, PASTURE.south);
@@ -187,10 +189,16 @@ export function fences(b: Build, keep: Keep = () => true) {
   b.root.add(instances(colored(new THREE.CylinderGeometry(0.07, 0.085, 1.7, 6).translate(0, 0.7, 0), [0.36, 0.32, 0.27]), b.m.vc, wpost));
   // the fences hold the truck, and invisible ends close the highway north and south
   const t = 0.15, F = HWY.fence;
-  wall(b, F - t, F + t, DRIVE_N, OLD_GAP[0]); wall(b, F - t, F + t, OLD_GAP[1], DRIVE_S);
+  wall(b, F - t, F + t, DRIVE_N, OLD_GAP[0]); wall(b, F - t, F + t, TOWN.z1, DRIVE_S);
   wall(b, 30 - t, 30 + t, OLD_GAP[0], OLD_GAP[1]);   // the old road is for chapter six (OldRoad.ts)
+  // round the town's east side: from the old road's south edge out, down, and back to the fence
+  wall(b, 30 - t, TOWN.east, OLD_GAP[1] - t, OLD_GAP[1] + t); wall(b, TOWN.east - t, TOWN.east + t, OLD_GAP[1], TOWN.z1);
+  wall(b, F - t, TOWN.east, TOWN.z1 - t, TOWN.z1 + t);
   wall(b, -F - t, -F + t, DRIVE_N, MOTEL_GAP[0]); wall(b, -F - t, -F + t, MOTEL_GAP[1], GUARD.z0 - 0.6);
   wall(b, -F - t, -F + t, GUARD.z1 + 0.6, DINER_GAP[0]); wall(b, -F - t, -F + t, DINER_GAP[1], DRIVE_S);
+  // round the town's west side, behind its buildings (the diner's lot is open to the desert as before)
+  wall(b, TOWN.west - t, TOWN.west + t, DINER.z + 45, TOWN.z1); wall(b, TOWN.west, -F, TOWN.z1 - t, TOWN.z1 + t);
+  wall(b, TOWN.west, -F, DINER.z + 45 - t, DINER.z + 45 + t);
   wall(b, PASTURE.west, -F, PASTURE.north - t, PASTURE.north + t);
   wall(b, PASTURE.west, -F, PASTURE.south - t, PASTURE.south + t);
   wall(b, PASTURE.west - t, PASTURE.west + t, PASTURE.north, PASTURE.south);
@@ -203,7 +211,7 @@ export function delineators(b: Build, keep: Keep = () => true) {
   for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 2900; z += 80) {
     if (side < 0 && z > 470 && z < 570) continue; // the mouth of the survey track
     if (side < 0 && z > MOTEL.z - 42 && z < MOTEL.z + 42) continue; // the motel's lot
-    if (z > DINER.z - 30 && z < DINER.z + 30) continue; // the way into the diner's lot, the old road's mouth
+    if (z > DINER.z - 30 && z < TOWN.z1) continue; // the way into the diner's lot, the old road's mouth, Caliche
     const x = side * 7.2, y = surfaceY(x, z);
     if (!keep(x, z)) continue;
     list.push(place(x, y, z, 0, 1, (hash(x, z) - 0.5) * 0.05));

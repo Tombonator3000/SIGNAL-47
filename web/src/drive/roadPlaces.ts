@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, addFlood } from '../world/kit';
 import { rng } from '../core/textures';
-import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER } from './roadTerrain';
+import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER, TOWN } from './roadTerrain';
 import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo';
 import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
@@ -118,6 +118,7 @@ export function plants(b: Build, keep: Keep = () => true) {
     if (x > -672 && x < -598 && z > 500 && z < 566) return false;   // station
     if (x > 395 && x < 485 && z > 150 && z < 235) return false;     // ranch yard
     if (x > DINER.x - 30 && x < -3 && z > DINER.z - 45 && z < DINER.z + 45) return false;   // the diner
+    if (x > TOWN.west - 8 && x < TOWN.east + 8 && z > DINER.z && z < TOWN.z1 + 20) return false;   // Caliche (world/Town.ts)
     if (x > MX - 30 && x < -3 && z > MZ - 4 && z < MZ + 76) return false;                  // the motel
     if (oldNearest(x, z).d < 7) return false;                                                 // the old road
     return !(x > -26 && x < -14 && z > 510 && z < 530);             // cattle guard

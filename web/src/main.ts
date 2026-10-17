@@ -37,6 +37,7 @@ import { initArtMaterials } from './world/kit';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
+import { bindTown } from './story/caliche';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -165,13 +166,14 @@ async function boot() {
     skipClock: (sec) => { game.clock += sec; },
     touch: () => input.touchMode,
     sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor, sunDir: sky.uniforms.uSunDir.value, sun: sky.uniforms.uSun.value }),
+    time: () => game.clock,
   });
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard, on the
   // highway and at the motel, dirt between them, boards in the hut, carpet at the motel
   const surfaceAt = (): Surface => {
     const p = player.pos;
     if (world.area === 'room6') return 'carpet';
-    if (world.area === 'diner') return world.indoors(p) ? 'tile' : 'dirt';
+    if (world.area === 'diner') return world.indoors(p) ? 'tile' : world.town?.inTown(p.x, p.z) ? world.town.surfaceAt(p.x, p.z) : 'dirt';
     if (world.area === 'station01') return world.indoors(p) ? 'wood' : 'dirt';
     if (world.area !== 'saro') return 'dirt';
     if (inside(motelOffice, p)) return 'carpet';
@@ -266,6 +268,11 @@ async function boot() {
   world.onLeaveRoom6 = () => ch4.leftRoom();
   const ch5 = game.ch5;
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
+  // Caliche, down the street from the diner (world/Town.ts): its windows and signs (story/caliche.ts)
+  const townSeen = new Set<string>();
+  world.onTownLoaded = (t) => bindTown(t, { inter, toast: (text, secs) => ui.toast(text, secs), here: () => world.area === 'diner',
+    secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen,
+    save: () => { if (mode === 'play') requestAutosave(false); } });
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
   // on the player's own drives and the story's, never in a cinematic
@@ -530,6 +537,7 @@ async function boot() {
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
+    townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     restoringNow = false; restoring = null;
@@ -627,7 +635,7 @@ async function boot() {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
-    if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : 'Mesa Diner, the lot';
+    if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : world.town?.inTown(p.x, p.z) ? world.town.placeAt(p.x, p.z) : 'Mesa Diner, the lot';
     if (world.area === 'roswell') return 'The old Roswell road';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
@@ -658,7 +666,7 @@ async function boot() {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have, truck: world.truckAt,
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have, truck: world.truckAt, town: [...townSeen],
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {

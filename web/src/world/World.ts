@@ -10,6 +10,7 @@ import type { Truck } from '../drive/Truck';
 import type { EngineSound } from '../drive/engineSound';
 import type { Room6 } from './Room6';
 import type { Diner } from './Diner';
+import type { Town } from './Town';
 import type { OldRoad } from '../drive/OldRoad';
 import type { DriveInput, DriveArea } from '../drive/Drive';
 import type { LegId, Exit } from '../drive/legs';
@@ -32,7 +33,8 @@ import { DINER } from '../drive/roadShape';
 //   road        around (8000, 0, 0)     the drive south to the survey track
 //   STATION 01  around (0, 0, 8000)     the survey station, chapter three
 //   room 6      around (0, 0, -8000)    Nora's room at Sierra Motor Court, chapter four
-//   diner       in the road area        Mesa Diner on the highway, 2 km south (Diner.ts, by Codex), «All Night»
+//   diner       in the road area        Mesa Diner on the highway, 2 km south (Diner.ts, by Codex), «All Night»,
+//                                       and Caliche's main street south of it (Town.ts)
 //   roswell     on the road's map       the old Roswell road at dawn, chapter six (drive/OldRoad.ts): mile 0
 //                                       is across the highway from the diner, and C 13 km on
 //
@@ -65,6 +67,9 @@ const inBox = (b: { minX: number; maxX: number; minZ: number; maxZ: number } | n
 const HEAD_ON_DINER = 2.5, NEON_REACH = 2, NEON_ON_ROAD = 0.3;
 // the motel's lamps fall off about four times faster than SARO's (0.055 against 0.012)
 const HEAD_ON_MOTEL = 1.6;
+// Caliche's lamps fall off a little faster than the road's (0.03 against 0.012); its nearest street
+// lamps are lamps in the road's set too, so their pools lie on the highway (Town.lampsTo)
+const HEAD_ON_TOWN = 1.8, TOWN_ON_ROAD = 0.8;
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -84,6 +89,8 @@ export interface WorldDeps {
   touch: () => boolean;
   /** The dawn now (0..1) and the colour of the haze, from the sky. */
   sky: () => { dawn: number; fog: THREE.Color; sunDir: THREE.Vector3; sun: number };
+  /** The game's clock, seconds since midnight (Caliche keeps the night's hours, Town.update). */
+  time: () => number;
 }
 
 type Modules = {
@@ -94,6 +101,7 @@ type Modules = {
   engine: typeof import('../drive/engineSound');
   Room6: typeof import('./Room6');
   Diner: typeof import('./Diner');
+  Town: typeof import('./Town');
   OldRoad: typeof import('../drive/OldRoad');
   legs: typeof import('../drive/legs');
 };
@@ -118,6 +126,13 @@ export class World {
   room6: Room6 | null = null;
   diner: Diner | null = null;
   onDinerLoaded?: (diner: Diner) => void;
+  /** Caliche, the town south of the diner (Town.ts): built with the diner, walked in its area. */
+  town: Town | null = null;
+  onTownLoaded?: (town: Town) => void;
+  /** The diner's and the town's ground together, walked in the diner's area. */
+  private dinerWalk: { zones: Zone[]; colliders: Collider[] } | null = null;
+  /** Caliche's nearest street lamps as lamps in the road's set (Town.lampsTo). */
+  private townSlots: number[] = [];
   /** The highway has been built (the barricades on the old road get a closer look, main.ts). */
   onRoadLoaded?: (road: RoadArea) => void;
   /** The diner's collider round its parked truck (it moves with the truck). */
@@ -243,6 +258,7 @@ export class World {
             : k === 'Truck' ? await import('../drive/Truck')
               : k === 'Room6' ? await import('./Room6')
                 : k === 'Diner' ? await import('./Diner')
+                  : k === 'Town' ? await import('./Town')
                   : k === 'OldRoad' ? await import('../drive/OldRoad')
                     : k === 'legs' ? await import('../drive/legs')
                       : await import('../drive/engineSound');
@@ -387,7 +403,7 @@ export class World {
   private dinerPark: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
   private ensureDiner() {
     return this.once('diner', async () => {
-      const [{ Diner }] = await Promise.all([this.load('Diner'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt'])]);
+      const [{ Diner }, { Town }] = await Promise.all([this.load('Diner'), this.load('Town'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt'])]);
       this.road!.refreshOldRoad();   // the old road going off across from it, in its own asphalt (round 11)
       const d = new Diner(DINER_ORIGIN.clone(), true);
       d.setSurfaceArt(artTexture('dinerBooth', [2, 2]), artTexture('dinerWall', [0.5, 0.5]));
@@ -405,10 +421,20 @@ export class World {
       this.d.scene.add(px);
       this.dinerTruckProxy = px;
       this.onDinerTruck?.(px);
+      // Caliche down the highway from it: its buildings and posts hold the truck too
+      const town = new Town(ROAD_ORIGIN);
+      town.group.visible = d.group.visible;
+      this.d.scene.add(town.group);
+      this.road!.addObstacles(town.obstacles);
+      this.townSlots = [0, 1, 2].map(() => addFlood(0, -999, 0, 0, 0, this.road!.headlights.set));
+      for (const i of this.townSlots) this.road!.headlights.set.skip.add(i);
+      this.town = town;
+      this.dinerWalk = { zones: [...d.zones, ...town.zones], colliders: [...d.colliders, ...town.colliders] };
       this.diner = d;
       this.parkAt('diner');
       this.d.applyQuality();
       this.onDinerLoaded?.(d);
+      this.onTownLoaded?.(town);
       return d;
     });
   }
@@ -430,17 +456,18 @@ export class World {
     if (this.parked) this.parked.group.visible = here('station01');
     if (this.room6) this.room6.group.visible = area === 'room6';
     if (this.diner) this.diner.group.visible = onRoad || area === 'roswell';
+    if (this.town) this.town.group.visible = onRoad || area === 'roswell';
     if (this.oldRoad) this.oldRoad.group.visible = area === 'roswell';
     if (this.oldTruck) this.oldTruck.group.visible = area === 'roswell';
     const cam = this.d.camera, far = area === 'roswell' ? FAR_OLDROAD : FAR;
     if (cam.far !== far) { cam.far = far; cam.updateProjectionMatrix(); }
     const fog = this.d.scene.fog as THREE.FogExp2 | null;
     if (fog) fog.density = area === 'roswell' ? FOG_OLDROAD : FOG;
-    player.floor = area === 'saro' ? this.grounds.floorAt : area === 'diner' ? () => DINER_ORIGIN.y : null;
+    player.floor = area === 'saro' ? this.grounds.floorAt : area === 'diner' ? this.town?.floorAt ?? (() => DINER_ORIGIN.y) : null;
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
-    if (area === 'diner' && this.diner) { player.zones = this.diner.zones; player.colliders = this.diner.colliders; }
+    if (area === 'diner' && this.diner) { player.zones = this.dinerWalk?.zones ?? this.diner.zones; player.colliders = this.dinerWalk?.colliders ?? this.diner.colliders; }
   }
   /** How the sky is turned in the current area: the areas lie on one map (geo.ts), and the
    *  station's terms are the road's turned a quarter round, so its sky is turned with them,
@@ -760,7 +787,8 @@ export class World {
   private placeOfLeg(id: LegId): LegId | null { return id === 'saro' || id === 'station01' ? id : id === 'road' ? 'diner' : null; }
   /** Whether the player can get out now: stopped, on a trip of the story's or their own, and
    *  with ground by a door (round SARO and STATION 01 anywhere the area can be walked; on the
-   *  highway only at the diner, the road itself is not walked). E or Use gets out (main.ts). */
+   *  highway only at the diner and in Caliche, the road itself is not walked). E or Use gets out
+   *  (main.ts). */
   canGetOut() {
     const id = this.leg, trip = this.trip;
     if (!this.driving || this.busy || !id || !trip || trip.free || this.trouble.wantsKey) return false;
@@ -768,6 +796,7 @@ export class World {
     if (!L || !place || Math.abs(L.drive.speed) > 0.6) return false;
     if (id === 'road') {
       const b = this.dinerPark, q = L.drive.pos;
+      if (this.town?.inTown(q.x, q.z)) return true;
       return !!b && q.x > b.minX - 6 && q.x < b.maxX + 6 && q.z > b.minZ - 6 && q.z < b.maxZ + 6;
     }
     return !!this.doorSpot(L.truck);
@@ -931,12 +960,13 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
-    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') this.diner?.update(dt, t);
-    // on the old road the diner is there behind the truck until it is far off in the haze, lit
-    // by the road's dawn
+    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') { this.diner?.update(dt, t); this.town?.update(t, this.d.time()); }
+    // on the old road the diner and the town are there behind the truck until they are far off in
+    // the haze, lit by the road's dawn
     if (this.area === 'roswell' && this.diner) {
-      const c = this.d.camera.position;
-      this.diner.group.visible = Math.hypot(c.x - DINER_ORIGIN.x, c.z - DINER_ORIGIN.z) < 2600;
+      const c = this.d.camera.position, near = Math.hypot(c.x - DINER_ORIGIN.x, c.z - DINER_ORIGIN.z) < 2600;
+      this.diner.group.visible = near;
+      if (this.town) this.town.group.visible = near;
       this.diner.setNear(0);
     }
     if (this.area === 'saro') this.motel.update(dt, t);
@@ -980,6 +1010,8 @@ export class World {
     if (!this.diner) return;
     const hl = this.area === 'roswell' ? this.oldRoad?.headlights : this.area === 'road' || this.area === 'diner' ? this.road?.headlights : undefined;
     this.diner.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_DINER);
+    this.town?.shine(hl?.set ?? null, hl?.slots ?? [], HEAD_ON_TOWN);
+    if (this.road && this.town) this.town.lampsTo(this.road.headlights.set, this.townSlots, this.d.camera.position, TOWN_ON_ROAD);
     if (this.road) this.diner.neon(this.road.headlights.set, this.neonSlots.road, NEON_REACH, NEON_ON_ROAD);
     if (this.oldRoad) this.diner.neon(this.oldRoad.headlights.set, this.neonSlots.old, NEON_REACH, NEON_ON_ROAD);
   }

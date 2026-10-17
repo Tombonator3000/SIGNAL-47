@@ -25,6 +25,10 @@ function raw(x: number, z: number) {
 // (x and z sit on whole 0.15 m steps from where the diner stood before, so tools/reachcheck.py
 // samples it as it always has)
 export const DINER = { x: -20.05, z: 1999.95, flatX: -11.05, y: raw(-11.05, 1999.95) };
+/** Caliche (world/Town.ts): its main street is the highway, from the diner south. z0 to z1 is
+ *  the stretch the town's buildings stand along, west and east how far out its ground goes
+ *  (the fences are open there, and the land is kept clear of brush). */
+export const TOWN = { z0: DINER.z + 18, z1: 2300, west: -42, east: 48 };
 /** Sierra Motor Court stands beside the highway on the west side, about 650 m south of SARO
  *  (Tom, 15 and 16 October: further from the stations; world/MotelFront.ts, placed by
  *  World.ts): the land round its lot is flat at MOTEL.y, about here. */

@@ -163,7 +163,7 @@ export class Diner {
       const g=new THREE.CylinderGeometry(w*.4,w*.55,h,7,1);g.scale(1,1,d/w);const mesa=new THREE.Mesh(g,m.mesa);mesa.position.set(x,h/2-2,z);s.add(mesa);
     }
     // Low desert scrub, batched with the shell, outside the flat usable lot.
-    for(let i=0;i<30;i++){const a=i*2.4,r=24+(i%7)*3,x=Math.cos(a)*r,z=Math.sin(a)*r;if(x>14&&x<26)continue;
+    for(let i=0;i<30;i++){const a=i*2.4,r=24+(i%7)*3,x=Math.cos(a)*r,z=Math.sin(a)*r;if(x>14&&x<26)continue;if(this.onRoad&&z>16)continue;   // (beside the highway Caliche's street is south of the lot: Town.ts)
       const b=new THREE.Mesh(new THREE.IcosahedronGeometry(.4+(i%3)*.16,0),m.wood);b.scale.y=.52;b.position.set(x,.02,z);s.add(b);}
   }
   private building(){

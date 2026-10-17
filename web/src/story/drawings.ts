@@ -244,6 +244,9 @@ function drawServiceMap(g: CanvasRenderingContext2D) {
   // the diner at the junction
   g.fillRect(150, 548, 34, 22);
   g.font = '600 20px Oswald, sans-serif'; g.fillText('MESA DINER', 40, 600);
+  // Caliche: its main street is the highway, south from the diner
+  for (let i = 0; i < 4; i++) { g.fillRect(162, 580 + i * 16, 22, 10); if (i) g.fillRect(216, 584 + i * 16, 18, 9); }
+  g.font = '17px "Special Elite", serif'; g.fillText('CALICHE', 40, 628);
   // the old Roswell road
   g.lineWidth = 6; g.strokeStyle = '#4a5550';
   g.beginPath(); M.road.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke();
