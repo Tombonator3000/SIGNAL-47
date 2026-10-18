@@ -47,6 +47,8 @@ import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
 import { surfaceY } from './drive/roadTerrain';
+import { bindLooks } from './story/looks';
+import { firstTime } from './core/hints';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -273,7 +275,8 @@ async function boot() {
   world.onGetIn = () => {
     if (flashlight.have) return;
     flashlight.have = true;
-    ui.toast(input.touchMode ? 'You take the flashlight off the passenger seat. Light switches it on.' : 'You take the flashlight off the passenger seat. F switches it on.', 4.5);
+    // which button switches it, the first time on this device
+    ui.toast('You take the flashlight off the passenger seat.' + (!firstTime('flashlight') ? '' : input.touchMode ? ' Light switches it on.' : ' F switches it on.'), 4.5);
   };
   // the truck any time (Tom 15 October): the night's own drive if a chapter has one from here,
   // otherwise one of the player's own; not while the shift's first hours are still running
@@ -340,6 +343,11 @@ async function boot() {
     examine: () => road.roadClosed ? 'ROAD CLOSED. Two barricades across the old road to Roswell, an amber lamp blinking on each.' : null });
   world.onDinerTruck = (px) => ch5.bindDinerTruck(px);
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
+  // a closer look at what had nothing to say: the antennas, the signs, the papers, the motel (story/looks.ts)
+  bindLooks({ inter, dishes: ext.dishes, saro: ext.group, motel: world.motel,
+    motelSign: ['Sierra Motor Court', 'Sierra Motor Court (back)'].map((n) => ext.group.getObjectByName(n)).filter((o): o is THREE.Object3D => !!o) });
+  // the haze on the ground only out in the open (world/airlight.ts): the title's view, the cab, outdoors
+  world.airOut = () => mode !== 'play' || world.driving || space === 'yard';
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -449,10 +457,10 @@ async function boot() {
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
       useCurrent();
-    } else if (code === 'KeyM' || code === 'KeyI') {
-      // the map and the kit, straight to their tabs in the notebook
+    } else if (code === 'KeyM' || code === 'KeyI' || code === 'KeyH') {
+      // the map, the kit and the controls, straight to their tabs in the notebook
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
-      if (!game.cinematic) { ui.notebookAt(code === 'KeyM' ? 'map' : 'kit'); game.openNotebook(); }
+      if (!game.cinematic) { ui.notebookAt(code === 'KeyM' ? 'map' : code === 'KeyI' ? 'kit' : 'controls'); game.openNotebook(); }
     } else if (code === 'Tab' || code === 'KeyN') {
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
       if (!game.cinematic) game.openNotebook();
@@ -611,7 +619,7 @@ async function boot() {
     space = 'room';
     // the truck where the story left it: outside the station's gate, on the diner's lot, on the
     // motel's lot (a save made with it there) or on SARO's pad
-    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : o.state?.truck === 'motel' ? 'motel' : 'saro');
+    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : o.state?.truck === 'motel' ? 'motel' : 'saro', o.state?.truckPose);
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
@@ -712,6 +720,7 @@ async function boot() {
     map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
     kit: kitItems(),
     people: peopleItems(),
+    touch: input.touchMode,
   });
 
   // where the lines run, for the time away (story/abduction.ts; HENDELSER.md, section 3)
@@ -768,7 +777,7 @@ async function boot() {
     setRadio: (st) => carRadio.set(true, st),
     bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
     openDoor: () => doors.set('east', true),
-    silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k) }); },
+    silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
     place: () => placeName(), silent: () => roadside.silent,
   });
   function nightIn(ok: boolean): NightIn {
@@ -828,8 +837,12 @@ async function boot() {
   function writeSave(kind: SaveKind, slot: number | 'rotate'): Promise<SaveMeta> {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
+    // the truck exactly where it was left; a save made on a drive finds it, and the player, where
+    // the drive began (World.truckSave)
+    const tk = world.truckSave();
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have, truck: world.truckAt, town: [...townSeen], abduct: abduction!.data,
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
+      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -1113,7 +1126,7 @@ async function boot() {
       ] });
       groups.push({ title: 'The highway', note: 'On foot on the shoulder between SARO and the motel at night: the line hums, a car far off, the silence once, someone on the roof. The CB in the truck.', items: [
         { label: 'Headlights far down the highway', run: () => roadside.carNow(player.pos) },
-        { label: 'The silence (47 s)', run: () => roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k) }) },
+        { label: 'The silence (47 s)', run: () => roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }) },
         ...(['steps', 'knocks', 'radio', 'bulletin', 'phone', 'door'] as const).map((id) => ({ label: `Night event: ${id}`, run: () => { if (!nightEvents.now(id, nightIn(true))) ui.toast(`Not here: ${id}`, 2); } })),
         { label: 'Someone on the motel roof', run: () => roadside.roofNow() },
         { label: 'A call on the CB', run: () => cb.call([{ text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by: 'N. VEGA' }], world.driving ? null : world.truckHere()?.group.position ?? null,
@@ -1270,7 +1283,7 @@ async function boot() {
     t += dt;
     if (mode === 'play') playtime += dt;
     const modalOpen = !!ui.modal;
-    if (mode === 'title') { titleCam(t); annex.interior.visible = false; }
+    if (mode === 'title') { titleCam(t); annex.interior.visible = false; world.airStep(dt, t); }
     else {
       const active = mode === 'play' && !modalOpen && !game.cinematic && !abduction!.holds;
       const look = input.consumeLook();
@@ -1309,7 +1322,7 @@ async function boot() {
           && sky.uniforms.uDawn.value < 0.3,
         pos: player.pos, cam: camera,
         silenceDone: game.notes.some((n) => n.includes('No sound for 47 s')),
-        hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k),
+        hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence'),
         silenceOver: () => { game.note(`${clockText(game.clock, false)}. ${silencePlace ?? 'The highway shoulder between SARO and the motel'}. No sound for 47 s. Not my footsteps either.`); silencePlace = null; requestAutosave(false); },
       });
       if (mode === 'play') calls.update(dt, {
@@ -1327,6 +1340,14 @@ async function boot() {
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
       if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none'));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
+      if (mode === 'play') {
+        // the flashlight flickers near the strange events (todo.md): through the silence on the
+        // shoulder, while a figure stands at the edge of the view, while the town's lamps go out or
+        // its payphone rings (the sounds in the dark and the time away flicker it themselves)
+        flashlight.flicker(roadside.silent ? 0.4 : 0, 'silence');
+        flashlight.flicker(glimpses.up ? 0.3 : 0, 'glimpse');
+        flashlight.flicker(townEvents.now !== 'none' && world.area === 'diner' ? 0.35 : 0, 'town');
+      }
       if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
       if (mode === 'play') lineLights.update(dt, {
         ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
@@ -1417,6 +1438,8 @@ async function boot() {
   Object.defineProperty((window as any).S47, 'hold', {
     get: () => dbg.hold, set: (v: boolean) => { dbg.hold = v; }, enumerable: true,
   });
+  // tests: the truck as a save finds it, and the light in the air (world/airlight.ts)
+  Object.assign((window as any).S47, { truckSave: () => world.truckSave(), air: () => (world as any).air });
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },

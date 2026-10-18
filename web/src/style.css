@@ -278,6 +278,11 @@ html.text-large .examine { font-size: 27px; }
 .notebook .nb-cols { columns: 2 320px; column-gap: 40px; }
 .notebook .nb-cols li { break-inside: avoid; }
 .notebook .nb-tabs { flex-wrap: wrap; right: 150px; }
+/* a phone: nine tabs in one row (smaller, and it scrolls sideways if it must), never over the page */
+@media (max-width: 900px) {
+  .notebook .nb-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 0; scrollbar-width: none; }
+  .notebook .nb-tabs button { flex: none; font-size: 17px; padding: 0 6px; }
+}
 .notebook .nb-board { font-family: var(--term); font-size: 20px; color: #a33a2c; border: 1px solid rgba(163,58,44,.5); padding: 4px 12px; min-height: 40px; margin: 0 0 14px; background: rgba(163,58,44,.06); }
 /* the case board, first in the row of tabs: a red pin on a scrap of cork */
 .notebook .nb-tabs .nb-boardtab { position: relative; color: #f3e6cf; background: #8a5f3a; border: 1px solid #5a3c22; border-bottom: 1px solid #5a3c22; padding: 0 12px 0 26px; box-shadow: 1px 2px 3px rgba(0,0,0,.25); }
@@ -301,6 +306,13 @@ html.text-large .examine { font-size: 27px; }
 .notebook .people b { display: block; margin-top: 8px; font-family: var(--type); font-size: 18px; color: #2e2a22; }
 .notebook .people i { display: block; font-style: normal; font-family: var(--term); font-size: 16px; color: #a33a2c; }
 .notebook .people span:not(.noface) { display: block; font-family: var(--type); font-size: 14px; color: #4c463a; }
+/* every control, keyboard and phone (ui/UI.ts, CONTROLS): the hints are said once on a device */
+.notebook .nb-controls { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 40px; }
+.notebook .nb-controls.on { display: grid; }
+.notebook .nb-ctl h5 { font-family: var(--term); font-weight: normal; font-size: 19px; color: #a33a2c; margin: 12px 0 4px; }
+.notebook .nb-ctl dl { display: grid; grid-template-columns: 158px 1fr; gap: 3px 14px; margin: 0; }
+.notebook .nb-ctl dt { font-family: var(--term); font-size: 18px; line-height: 22px; color: #2e2a22; }
+.notebook .nb-ctl dd { margin: 0; font-family: var(--type); font-size: 15px; line-height: 22px; color: #4c463a; }
 /* the face of whoever speaks in a conversation (ui/Panels.ts) */
 .talk .talk-portrait { float: left; width: 132px; aspect-ratio: 4 / 5; object-fit: cover; margin: 2px 16px 10px 0; box-shadow: 0 4px 12px rgba(0,0,0,.45); }
 @media (max-width: 600px) { .talk .talk-portrait { width: 84px; margin-right: 10px; } }
