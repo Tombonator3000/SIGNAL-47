@@ -4,25 +4,15 @@ import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
 import { sharedHorizon } from './horizon';
 import { SARO_IN_ROAD, SARO_PATCH, MOTEL_AT, MOTEL_GLOWS, inRect, outside } from './geo';
+import { DISH_LAYOUT, DISH_LAYOUT_FAR, ARRAY_FLAT, GATE, FENCE_Z, LAMPS, onField } from './arrayLayout';
 import { hLow, smooth } from '../drive/roadShape';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 
 // World layout (metres): control room centred at the origin, windows face north (-Z).
 // The road runs north-south west of SARO; Sierra Motor Court is 650 m down it (geo.ts, MOTEL_AT).
-// S-03 is the central antenna at the end of the east service walk (chapter one).
-const DISH_LAYOUT: [string, number, number, number][] = [
-  ['S-01', -48, -66, 0.85], ['S-02', -16, -52, 0.85], ['S-03', 9.5, -42, 0.9], ['S-04', 6, -88, 0.85],
-  ['S-05', 44, -96, 0.85], ['S-06', -30, -116, 0.85], ['S-07', -80, -104, 0.85], ['S-08', 20, -146, 0.85],
-  ['S-09', 66, -156, 0.85], ['S-10', -58, -168, 0.85], ['S-11', -10, -200, 0.85], ['S-12', 100, -120, 0.85],
-  ['S-13', -120, -150, 0.85], ['S-14', 40, -230, 0.85], ['S-15', -96, -230, 0.85],
-];
-// SARO has 27 antennas (story bible, chapter X and the LISTEN ending). The far twelve use the light model.
-const DISH_LAYOUT_FAR: [string, number, number, number][] = [
-  ['S-16', 130, -210, 0.85], ['S-17', -150, -270, 0.85], ['S-18', 80, -290, 0.85], ['S-19', -40, -300, 0.85],
-  ['S-20', 170, -260, 0.85], ['S-21', -200, -210, 0.85], ['S-22', 10, -360, 0.85], ['S-23', 120, -350, 0.85],
-  ['S-24', -120, -340, 0.85], ['S-25', -230, -300, 0.85], ['S-26', 210, -330, 0.85], ['S-27', -60, -420, 0.85],
-];
+// The 27 antennas stand north of the array fence (arrayLayout.ts); its gravel tracks, the gate and
+// the drive cabinets are Field.ts.
 
 export class Exterior {
   group = new THREE.Group();
@@ -48,7 +38,8 @@ export class Exterior {
   private ground() {
     // Rings that grow outwards (each about 7 per cent wider than the last), so every cell is
     // roughly square: near SARO they are a few metres across, at the horizon a hundred. The
-    // ground within 300 m is flat at -0.62. (A plain circle has only a centre and a rim, and
+    // ground within 300 m is flat at -0.62, and so is the array out past its last antennas
+    // (arrayLayout.ARRAY_FLAT, walked: Field.ts). (A plain circle has only a centre and a rim, and
     // its triangles sloped out to the rolling rim and rose over the highway; evenly spaced
     // rings left long slivers at the centre that leaked through the control room floor as a
     // dotted line on some screens.)
@@ -72,6 +63,9 @@ export class Exterior {
       col.set([n, n, n], i * 3);
       const far = Math.hypot(x, z);
       let y = far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
+      // the array is graded flat; the land's roll comes back over 40 m past it
+      const e = outside(ARRAY_FLAT, x, z);
+      if (e < 40) y = -0.62 + (y + 0.62) * smooth(0, 40, e);
       // south along the highway the ground is the road's land (drive/roadShape.ts), and under
       // the road's own piece of ground (geo.ts, SARO_PATCH) it keeps out of the way
       const rx = x + SARO_IN_ROAD.x, rz = z + SARO_IN_ROAD.z;
@@ -102,6 +96,7 @@ export class Exterior {
       if (x > -21 && x < 15 && z > 11 && z < 29) continue;  // the service road, the path and the yard behind the annex (Grounds.ts)
       if (x > -11 && x < -6 && z > -20 && z < 12) continue;  // the west side of the house
       if (x > -11 && x < 8 && z > -20 && z < -5) continue;  // the windows side
+      if (onField(x, z, 0.8)) continue;                       // the array's gravel tracks (Field.ts)
       const k = 0.4 + r() * 1.1;
       p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);
       scrub.setMatrixAt(n++, m.compose(p, q, s));
@@ -121,17 +116,18 @@ export class Exterior {
       cyl(this.statics, 0.12, 0.16, h, M.pole, x, h / 2 - 0.6, z, 6);
       this.glow.add(x, h - 0.5, z, 2.6, 0xffb45a);
     };
-    lamp(30, -30); lamp(-10, -42); lamp(-40, -56); lamp(12, -78); lamp(48, -86);
-    [[-70, -94], [-24, -106], [60, -146], [-52, -158], [-4, -190], [94, -110]].forEach(([x, z]) => lamp(x, z, 6));
+    // the first five carry the floods; one of the others stood in the middle of the highway (-24, -106)
+    LAMPS.forEach(([x, z], i) => lamp(x, z, i < 5 ? 7 : 6));
   }
 
   private road() {
     // the site's own highway ends at z 36; south of it the road's own stretch takes over
-    // (drive/corridors.ts), the same road the truck goes on in the road area
+    // (drive/corridors.ts), the same road the truck goes on in the road area. North it goes on
+    // through the array and out past its last antennas, on the array's flat ground (z -480).
     const tex = T.roadTex();
-    tex.repeat.set(1, 32);
+    tex.repeat.set(1, 64.5);
     const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 }), 0.02);
-    const r = plane(this.group, 8, 256, asphalt, -24, -0.58, -92, 0, -Math.PI / 2);
+    const r = plane(this.group, 8, 516, asphalt, -24, -0.58, -222, 0, -Math.PI / 2);
     noMerge(r);
     for (let z = 70; z > -200; z -= 34) {
       cyl(this.statics, 0.12, 0.16, 8, M.pole, -18.5, 3.4, z, 6);
@@ -205,16 +201,18 @@ export class Exterior {
   private fence() {
     const tex = T.chainlink();
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x6d6a62 });
-    // two runs with the highway between them (it goes on north through the array)
-    for (const [x0, x1] of [[-80, -28.6], [-19.4, 60]]) {
-      const f = plane(this.group, x1 - x0, 2.4, mat.clone(), (x0 + x1) / 2, 0.6, -20);
+    // three runs: the highway between the first two (it goes on north through the array), and
+    // the walk gate into the array between the last two (its posts and leaf are Field.ts)
+    for (const [x0, x1] of [[-80, -28.6], [-19.4, GATE.x0], [GATE.x1, 60]]) {
+      const f = plane(this.group, x1 - x0, 2.4, mat.clone(), (x0 + x1) / 2, 0.6, FENCE_Z);
       (f.material as THREE.MeshBasicMaterial).map = tex.clone();
       (f.material as THREE.MeshBasicMaterial).map!.repeat.x = tex.repeat.x * (x1 - x0) / 140;
       (f.material as THREE.MeshBasicMaterial).map!.needsUpdate = true;
       noMerge(f);
     }
-    for (let x = -80; x <= 60; x += 7) if (x < -28.6 || x > -19.4) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, -20, 5);
-    for (const x of [-28.6, -19.4]) cyl(this.statics, 0.06, 0.06, 2.7, M.pole, x, 0.6, -20, 5);
+    const gap = (x: number) => (x > -28.6 && x < -19.4) || (x > GATE.x0 - 0.8 && x < GATE.x1 + 0.8);
+    for (let x = -80; x <= 60; x += 7) if (!gap(x)) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, FENCE_Z, 5);
+    for (const x of [-28.6, -19.4]) cyl(this.statics, 0.06, 0.06, 2.7, M.pole, x, 0.6, FENCE_Z, 5);
   }
 
   update(dt: number, t: number) {
