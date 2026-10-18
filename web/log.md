@@ -751,3 +751,11 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - `main.ts`: ved `vite:preloadError` lagres natta og siden lastes på nytt, ikke to ganger innen ett minutt. Tittelskjermen viser «Tap to begin» første gang, og trykket starter musikken før menyen kommer inn; trykket treffer ikke en knapp.
 - Ny prøve (`tools/stale.py`, mot Pages-bygget): porten, at trykket ikke starter en natt, at lyden går, ingen port i testnettleseren, at en side som mangler kjøre-bitene (404) viser meldingen, lagrer og laster på nytt med Continue i kapittel 3, og at det ikke skjer to ganger: 8 av 8 PASS (første kjøring stoppet i selve prøveskriptet fordi siden lastet på nytt midt i et kall).
 - Pages-bygget etterpå: `music` 12/12, `roam` 40/40, `walkthrough` 57/57, ingen konsollfeil. Om porten og musikken føles riktig på telefonen er UNVERIFIED.
+
+### Claude: radioen i bilen (18. oktober)
+
+- Rundt 11:30 UTC (Tom): «Radio: lyd må bare vagt høres hvis utenfor bilen, volum inni i bilen er for høyt, musikk som spilles er for irriterende så må byttes ut».
+- `core/radio.ts`: de få taktene som ble laget i koden og gikk i ring, er byttet ut med fire låter av Kevin MacLeod (CC BY 4.0): «Drankin Song», «Bama Country» og «Cattails» på 1420 og Roswell, «Anamalie» på den fjerne stasjonen. De strømmes fra `public/radio/` (mono, smalnet til AM, 40 kbps), en del av låta om gangen og en annen del neste gang, tonet inn og ut. Musikkinnslagene er lengre (64 til 96 s). Enkeltfilbygget har ingen filer ved siden av seg og beholder taktene fra koden. Kreditert i `THIRD_PARTY_NOTICES.md`, rulleteksten og tittelskjermens info.
+- Bilradioen: volumet i førerhuset er senket fra 0,65 til 0,38. Utenfor bilen er radioen fortsatt på, men dempet gjennom det lukkede førerhuset (lavpass ned til 420 Hz) og på under en femtedel av styrken.
+- Ny `tools/radiomix.py` (Pages-bygget, servert med byte-områder via ny `tools/rangeserve.py`): 7 av 7 PASS. Med `http.server` startet låtene alltid fra begynnelsen, fordi den ikke gir byte-områder; GitHub Pages gjør det (206 på `anthem.mp3`).
+- Etterpå: Pages-bygget `radio` 34/34, `music` 12/12, `stale` 8/8; enkeltfilbygget `radio` 32/32 og `diner` 15/15. Hvordan låtene og nivåene høres ut på ekte utstyr er UNVERIFIED.

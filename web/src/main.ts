@@ -142,7 +142,7 @@ async function boot() {
   audio.preload(); // decodes while the title screen is up
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
-  const carRadio = radio.receiver({ vol: 0.65, ref: 1.0 });
+  const carRadio = radio.receiver({ vol: 0.38, ref: 1.0 });   // Tom, 18 October: 0.65 was too loud in the cab
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
   const calls = new NightCalls(audio);
@@ -1148,6 +1148,7 @@ async function boot() {
     if (tr) { tr.group.getWorldPosition(radioAt); radioAt.y += 1.05; }
     carRadio.pos = tr ? radioAt : null;
     carRadio.power = (world.driving ? world.trouble.radioLevel : 1) * (!world.driving && space === 'room' ? 0.3 : 1);
+    carRadio.muffle = world.driving ? 0 : 1;   // out of the truck it is only just heard, through the closed cab
     tr?.setRadio(dialX(FREQ[carRadio.station]), carRadio.on);
     carNear = !!tr && (world.driving || player.pos.distanceTo(radioAt) < 7);
     const counter = world.diner?.proxies.counter;
