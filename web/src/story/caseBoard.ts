@@ -63,6 +63,7 @@ function docCard(d: DocSpec, region: string): BoardCard {
 export class CaseBoard {
   view: ReturnType<typeof board> | null = null;
   private seen: Record<string, RegionId> = {};   // where a paper nobody claims first turned up
+  private cardPins = new Map<string, string>();  // older whole-card references now landing on a line pin
 
   constructor(private h: CaseBoardHost) {}
 
@@ -71,12 +72,15 @@ export class CaseBoard {
     const out: BoardCard[] = [];
     for (const b of this.books()) for (const c of b.cards()) out.push({ ...c, region: c.region ?? b.key });
     const claimed = new Set(out.flatMap((c) => [c.id, c.doc ?? '']));
+    for (const b of this.books()) for (const q of b.o.questions) if (q.doc) claimed.add(q.doc);
     for (const d of this.h.docs()) {
       // a finding is its question's card; a paper a chapter lays out itself is on its card
       if (/^p\d\d$/.test(d.id) || claimed.has(d.id)) continue;
       const region = GROUP[d.id] ?? (this.seen[d.id] ??= this.h.region());
       out.push(docCard(d, region));
     }
+    this.cardPins.clear();
+    for (const c of out) if (c.have && c.lines?.length) this.cardPins.set(c.id, c.lines[0].id);
     return out;
   }
   private cardOf(node: string, cards: BoardCard[]) {
@@ -105,7 +109,11 @@ export class CaseBoard {
       cards: () => this.cards(),
       questions: () => this.books().flatMap((b) => b.questions().map((q) => ({ ...q, region: b.key }))),
       notes: () => this.books().flatMap((b) => b.notes().map((n) => ({ ...n, region: b.key }))),
-      threads: () => this.books().flatMap((b) => b.threads()),
+      // P10, for example, still points at the control print as a whole. A chapter can
+      // give that print line pins without losing the older chapter's automatic thread.
+      threads: () => this.books().flatMap((b) => b.threads()).map((t) => ({
+        ...t, a: this.cardPins.get(t.a) ?? t.a, b: this.cardPins.get(t.b) ?? t.b,
+      })),
       connect: (a, b) => {
         if (a === b) return { ok: false, text: 'Pull the thread to another piece of evidence.' };
         const cards = this.cards();

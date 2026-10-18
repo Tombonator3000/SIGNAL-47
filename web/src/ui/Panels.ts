@@ -154,17 +154,18 @@ export function b12Control(ui: UI, o: { method: 'passive' | 'active' | null; onC
 }
 
 // ---------- two exposures ----------
-export function twoExposures(ui: UI, o: { url1: string; url2: string; mark2?: [number, number]; concluded: boolean; onMark: (u: number, v: number) => Result; onConclude: (c: 'lamp' | 'commands' | 'second') => Result; hints: string[] }) {
+export function twoExposures(ui: UI, o: { url1: string; url2: string; mark2?: [number, number]; concluded: boolean; onMark: (u: number, v: number) => Result; onConclude?: (c: 'lamp' | 'commands' | 'second') => Result; onBoard?: () => void; hints: string[] }) {
   const el = shell(ui, 'TWO EXPOSURES', `
     <div class="lp-pair">
       <figure><img alt="Frame 01" src="${o.url1}" draggable="false"><figcaption>FRAME 01 / S-03 APRON</figcaption></figure>
       <figure class="clickable"><div class="pair-img"><img alt="Frame 02" src="${o.url2}" draggable="false"><div class="mark" hidden></div></div><figcaption>FRAME 02 / B-12 CONTROL. Mark the same reference.</figcaption></figure>
     </div>
-    <p class="lp-text" data-say>${o.concluded ? 'Finding recorded. File both prints at the records desk.' : 'Mark the reference detail in FRAME 02 before recording a conclusion.'}</p>
+    <p class="lp-text" data-say>${o.concluded ? 'Finding recorded. File both prints at the records desk.' : o.onBoard ? 'Mark the same reference in FRAME 02, then compare the prints on the case board.' : 'Mark the reference detail in FRAME 02 before recording a conclusion.'}</p>
     <div class="lp-row" data-concl>
-      <button class="lp-btn" data-c="lamp">THE LAMP CREATED THE MARK</button>
+      ${o.onConclude ? `<button class="lp-btn" data-c="lamp">THE LAMP CREATED THE MARK</button>
       <button class="lp-btn" data-c="commands">TWO ANTENNA COMMANDS</button>
-      <button class="lp-btn" data-c="second">FILM RETAINS A SECOND REFERENCE</button>
+      <button class="lp-btn" data-c="second">FILM RETAINS A SECOND REFERENCE</button>` : ''}
+      ${o.onBoard ? '<button class="lp-btn primary" data-a="board">CASE BOARD</button>' : ''}
       <button class="lp-btn" data-a="hint">Hint</button>
     </div>`);
   const markEl = el.querySelector('.pair-img .mark') as HTMLElement;
@@ -183,7 +184,8 @@ export function twoExposures(ui: UI, o: { url1: string; url2: string; mark2?: [n
     say(el, '[data-say]', res);
     if (res.ok) showMark(u, v);
   });
-  el.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => say(el, '[data-say]', o.onConclude(b.dataset.c as 'lamp' | 'commands' | 'second'))));
+  el.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => say(el, '[data-say]', o.onConclude!(b.dataset.c as 'lamp' | 'commands' | 'second'))));
+  el.querySelector('[data-a=board]')?.addEventListener('click', () => o.onBoard?.());
   let hint = 0;
   el.querySelector('[data-a=hint]')!.addEventListener('click', () => { say(el, '[data-say]', o.hints[Math.min(hint, o.hints.length - 1)]); hint++; });
 }

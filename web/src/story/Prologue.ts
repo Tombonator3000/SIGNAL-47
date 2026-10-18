@@ -207,7 +207,7 @@ export class Prologue {
     this.board = new CaseBoard({
       ui: d.ui,
       docs: () => this.docs,
-      books: () => [this.ch2, this.ch3, this.ch4, this.ch5].filter((c) => c?.started).map((c) => c.book),
+      books: () => [this.ch1, this.ch2, this.ch3, this.ch4, this.ch5].filter((c) => c?.started).map((c) => c.book),
       region: () => this.boardRegion(),
       layout: () => this.boardSave,
       save: () => { if (this.at('ch1')) d.saveCase(this.composeCase(this.ch1.s)); },
@@ -219,7 +219,7 @@ export class Prologue {
     this.ch1 = new Chapter1(this, {
       ui: d.ui, audio: d.audio, room: d.room, ext: d.ext, player: d.player, inter: d.inter,
       yard: d.yard, fcam: d.fcam, colliders: d.colliders, view: d.view, isTouch: d.isTouch,
-      save: (c) => d.saveCase(c ? this.composeCase(c) : null), doors: d.doors,
+      save: (c) => d.saveCase(c ? this.composeCase(c) : null), doors: d.doors, board,
     });
     this.ch2 = new Chapter2(this, {
       ui: d.ui, audio: d.audio, room: d.room, annex: d.annex, player: d.player, inter: d.inter, colliders: d.colliders, doors: d.doors,
