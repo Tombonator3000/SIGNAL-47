@@ -1,0 +1,19 @@
+PASS the diner's pictures wait until the diner is built
+PASS the diner is its own area; SARO is hidden
+PASS the diner brought its seven pictures (round 6 and 8, and the 1947 master from round 10)
+PASS the player stands by the truck, on the lot (4.31, the diner at 4.31)
+draw calls on arrival: 87
+PASS draw calls on arrival under 120 (87)
+PASS from the truck to the door (7983.11, 2000.02)
+PASS through the door and along the counter to the stool next to the driver
+PASS inside counts as indoors (room tone, steps on the tiles)
+PASS from the door down the aisle between the counter and the booths to the payphone (7980.25, 2007.98)
+PASS and back out to the truck
+PASS all 13 hit boxes can be aimed at from a place the player can stand, within the usual 2.4 m (all)
+PASS the clipping can be read from inside, a step away
+worst draw calls in the views: 82
+PASS draw calls under 120 in every view (82)
+PASS back to SARO, the diner hidden
+no console errors/warnings
+PASS no console errors or warnings
+15 of 15 PASS

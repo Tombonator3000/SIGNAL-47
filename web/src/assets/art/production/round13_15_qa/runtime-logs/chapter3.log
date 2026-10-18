@@ -1,0 +1,73 @@
+PASS chapter three starts: to the truck
+PASS objective names the truck
+PASS the service truck stands on its pad
+PASS walk out the east door, through the gap in the railing and down to the truck
+PASS the truck offers the drive
+PASS the drive begins in the truck on its pad (no cut)
+PASS no saving while driving
+highway at 29 mph, 70 draw calls
+PASS SARO is hidden while away
+survey track, 70 draw calls
+towards the gate, 94 draw calls
+PASS driven the whole way: SARO, the road, the station (['saro', 'road', 'station01'], 132 s of game time)
+PASS highway, survey track and the way to the gate were all passed
+PASS arrived at STATION 01 and out of the truck
+PASS chapter three notes the arrival
+PASS the road and the station brought their five images
+draw calls at the arrival point: 77
+PASS autosave at the station
+PASS the transit can be reached
+PASS the transit can be aimed at
+PASS E09A read and filed
+PASS the field record opens at the transit
+PASS P06 refused before FRAME 03
+PASS FRAME 03 exposed: the empty footing and the moved post (FOOTING AND MARKED POST IN FRAME // READY)
+PASS FRAME 03 records where the footing and post are on the film
+PASS P06: B is answered with the Unity reply
+PASS P06 recorded: A moved
+PASS P08 refused before the null test
+PASS the field lamp can be reached
+PASS the field lamp can be aimed at
+PASS the null test needs the lamp covered
+PASS lamp covered
+PASS P07 recorded
+PASS lamp uncovered again, P07 stays recorded
+PASS the cable break can be reached
+PASS the cable break can be aimed at
+PASS cut faces inspected
+PASS FRAME 04 exposed: the cut, close up (CUT FACES IN FRAME // READY)
+PASS P08: motive is answered
+PASS P08: weathering is answered with the Unity reply
+PASS P08 recorded: a deliberate cut
+PASS the ledger in the hut can be reached
+PASS the ledger can be aimed at
+PASS E10 read and filed
+PASS P09 waits for the receiver
+PASS the receiver can be aimed at
+PASS the receiver gives the fragment, captioned
+PASS P09: carrier time is answered with the Unity reply
+PASS P09 recorded: 02:17:47
+PASS the field telephone rings
+PASS the field telephone can be answered
+PASS Nora's lines are captioned
+PASS the field record is done: drive back
+PASS P06 to P09 filed
+PASS title screen offers to continue at STATION 01
+PASS Continue brings back the station, the findings and the lamp as it was left
+PASS Continue brings back both field photographs
+PASS the truck at the station can be reached
+PASS the truck offers the way back
+PASS the way back starts in the truck at the station (no cut)
+PASS back at SARO with the field roll
+PASS objective: the wet bench
+PASS the wet bench takes the field roll
+PASS both field prints developed and filed
+PASS the field prints hang on the drying line
+PASS chapter card closes chapter three and names chapter four
+PASS no end card between the chapters
+PASS chapter four begins: room 6 down the highway
+PASS case file shows both field photographs (['frame03', 'frame04'])
+mean brightness of the field photographs: 51 and 66 of 255
+PASS the flash lights both field photographs
+no console errors/warnings
+66 of 66 PASS

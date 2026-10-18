@@ -1,0 +1,164 @@
+{
+  "status": "PASS",
+  "checks": [
+    [
+      "pages includes all 11 portraits",
+      true
+    ],
+    [
+      "pages all 11 actual People cards decode, no empty face",
+      true
+    ],
+    [
+      "pages Nora dialogue resolves N. VEGA to the portrait",
+      true
+    ],
+    [
+      "pages no browser errors",
+      true
+    ],
+    [
+      "single includes all 11 portraits",
+      true
+    ],
+    [
+      "single all 11 actual People cards decode, no empty face",
+      true
+    ],
+    [
+      "single Nora dialogue resolves N. VEGA to the portrait",
+      true
+    ],
+    [
+      "single no browser errors",
+      true
+    ]
+  ],
+  "contexts": [
+    {
+      "build": "pages",
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "cards": [
+        {
+          "name": "Dale",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Dr. Evelyn Ward",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "N. Vega",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Tomás Vega",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The waitress",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The driver",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The attendant",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The deputy",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Earl",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The woman on the bench",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The souvenir man",
+          "face": true,
+          "empty": false
+        }
+      ],
+      "errors": []
+    },
+    {
+      "build": "single",
+      "url": "file:///home/tom/Documents/Codex/2026-10-18-sjekk-repo-signal-47-og-sjekk/repo/web/dist-single/index.html",
+      "cards": [
+        {
+          "name": "Dale",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Dr. Evelyn Ward",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "N. Vega",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Tomás Vega",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The waitress",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The driver",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The attendant",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The deputy",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "Earl",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The woman on the bench",
+          "face": true,
+          "empty": false
+        },
+        {
+          "name": "The souvenir man",
+          "face": true,
+          "empty": false
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "method": "Existing game hooks and actual DOM image decoding; Chromium SwiftShader; no real input or hardware FPS"
+}
