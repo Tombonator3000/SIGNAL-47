@@ -8,6 +8,7 @@ import { station, ranch, plants, saroLights, motelFar, trackRoute } from './road
 import { sharedHorizon } from '../world/horizon';
 import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
+import { Herd } from './herd';
 
 export { roadFlood, HEADLIGHT_SLOTS };
 
@@ -45,6 +46,8 @@ export class RoadArea implements DriveArea {
   headlights = { set: roadFlood, slots: HEADLIGHT_SLOTS };
   /** Once per crossing of the cattle guard, with the truck's speed in m/s (play a rattle). */
   onCattleGuard?: (speed: number) => void;
+  /** The cattle in the pasture south of the motel (drive/herd.ts; story/pasture.ts sets them). */
+  readonly herd: Herd;
 
   private origin: THREE.Vector3;
   private night: { hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
@@ -85,6 +88,7 @@ export class RoadArea implements DriveArea {
     for (let i = HEADLIGHT_SLOTS.length; i < roadFlood.count; i++) roadFlood.pos[i].x += origin.x, roadFlood.pos[i].y += origin.y, roadFlood.pos[i].z += origin.z;
     poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
     motelFar(b);   // Sierra Motor Court from the road (its real buildings are SARO's, World.ts)
+    this.herd = new Herd(b, roadFlood, 'road');   // the pasture south of it (HENDELSER.md, event 2)
     this.closed = roadClosed(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);

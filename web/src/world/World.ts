@@ -12,6 +12,7 @@ import type { Room6 } from './Room6';
 import type { Diner } from './Diner';
 import type { Town } from './Town';
 import type { OldRoad } from '../drive/OldRoad';
+import type { Herd } from '../drive/herd';
 import type { DriveInput, DriveArea } from '../drive/Drive';
 import type { LegId, Exit } from '../drive/legs';
 import { Crossing, SHOULDER, type CourtSite } from './Crossing';
@@ -146,6 +147,9 @@ export class World {
   oldRoad: OldRoad | null = null;
   oldTruck: Truck | null = null;
   oldDrive: DriveController | null = null;
+  /** The cattle in the pasture south of the motel, one herd for SARO's stretch of the highway and
+   *  one for the road's (drive/herd.ts), as they are built; story/pasture.ts sets both alike. */
+  herds: Herd[] = [];
   /** SARO's stretch of the highway, for the headlights in the delineators (initSaro). */
   private saroGlints: { glints: (slots: readonly number[]) => void; trackArt: () => void } | null = null;
   /** Chapter six takes over: the pedals and wheel (input), or the camera (the pull-out at the
@@ -238,6 +242,7 @@ export class World {
     this.d.saro.groups.push(c.group);
     this.saroRoad = c.obstacles;
     this.saroGlints = c;
+    this.herds.push(c.herd);
     // the signs and big rocks beside the walk down the highway are in the way on foot too
     for (const o of c.obstacles) {
       const x = o.x - SARO_IN_ROAD.x, z = o.z - SARO_IN_ROAD.z;
@@ -325,6 +330,7 @@ export class World {
       road.group.visible = false;
       this.d.scene.add(road.group);
       this.road = road;
+      this.herds.push(road.herd);
       this.drive = new DriveController(this.d.camera, truck, road);
       this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
@@ -980,6 +986,11 @@ export class World {
     if (this.area === 'roswell') this.oldRoad?.update(dt, t, this.d.camera.position, this.d.sky());
     if ((this.area === 'road' || this.area === 'diner') && this.road && this.drive) this.road.update(dt, t, this.drive.pos);
     this.drivingStep(dt, input, look);
+    // the herd south of the motel in the area shown, in the headlights of the truck driven there
+    // (after the step, so the beam is where the truck is in this frame)
+    const herdArea = this.area === 'saro' ? 'saro' : this.area === 'road' || this.area === 'diner' ? 'road' : null;
+    const lamps = this.driving && this.leg === herdArea ? (herdArea === 'saro' ? this.legs.saro?.area.headlights : this.road?.headlights) : undefined;
+    for (const h of this.herds) if (h.area === herdArea) h.update(t, lamps ?? null);
     // the dawn's haze on the far mesas (horizon.ts), as on the land in front of them; none at night
     if (this.area !== 'roswell') {
       const sk = this.d.sky();
