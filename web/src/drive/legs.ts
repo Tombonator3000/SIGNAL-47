@@ -269,3 +269,22 @@ export function legsBetween(from: LegId, to: LegId): LegId[] {
   if (a < 0 || b < 0) return [from, to];
   return a <= b ? chain.slice(a, b + 1) : chain.slice(b, a + 1).reverse();
 }
+
+/** On a drive of the player's own, where the truck is bound by the way it is going (the radio's
+ *  programme on the way, story/tripRadio.ts): in along the survey track, STATION 01; down the
+ *  highway past the track's mouth, the diner (and Caliche beyond it); up the highway north of
+ *  the mouth, SARO (or the motel on the way). Null while it could still go either way: leaving
+ *  a lot, south of SARO before the mouth, north of the diner before it, out along the track. */
+export function boundOn(leg: LegId, x: number, z: number, heading: number, reversing: boolean): LegId | null {
+  const o = ORIGINS[leg], lx = x - o.x, lz = z - o.z, k = reversing ? -1 : 1;
+  const fx = -Math.sin(heading) * k, fz = -Math.cos(heading) * k;
+  // the station's terms are the road's turned a quarter round: its -z is the track's way in
+  if (leg === 'station01') return fz < -0.3 ? 'station01' : null;
+  if (leg === 'saro') return lz > 40 && fz < -0.5 ? 'saro' : null;
+  if (leg !== 'road') return null;
+  const t = trackNearest(lx, lz);
+  if (t.d < 10 && t.s > 12) return fx < -0.3 ? 'station01' : null;   // the track runs west to the gate
+  if (fz < -0.5) return lz < 500 ? 'saro' : null;
+  if (fz > 0.5) return lz > 540 ? 'diner' : null;
+  return null;
+}
