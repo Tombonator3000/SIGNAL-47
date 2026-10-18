@@ -58,9 +58,11 @@ async def main():
         async def drive(what, use_id, place, budget=600):
             """Get in with use_id, steer with the autopilot to `place`, and wait until parked."""
             await use(use_id)
-            for _ in range(80):
+            # the trip loads what it needs first (the station's area the first time): real time too
+            for _ in range(240):
                 await tick(0.25)
                 if await ev("S47.world.driving"): break
+                await pg.wait_for_timeout(100)
             st = await state()
             check(st['driving'] and st['at'] is None, f"{what}: in the truck, the engine running ({st['leg']})")
             # standing still where it was: not parked again at once
@@ -81,9 +83,10 @@ async def main():
         # ---------- getting out (Tom, 16 October: no way out once in) ----------
         async def get_in(i):
             await use(i)
-            for _ in range(80):
+            for _ in range(240):
                 await tick(0.25)
                 if await ev("S47.world.driving"): break
+                await pg.wait_for_timeout(100)
             await tick(0.5)
         async def press_out():
             await pg.keyboard.press('e')

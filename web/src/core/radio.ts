@@ -33,8 +33,8 @@ export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
 export const streamOn = import.meta.env.MODE !== 'single';
 
-export type Voice = 'host' | 'woman' | 'man' | 'roswell';
-export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126 };
+export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy';
+export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126, boy: 262 };
 /** A number from text, the same every time (a line mumbles the same way each time it is said). */
 function seed(text: string) { let h = 2166136261; for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619); return h >>> 0; }
 function rng(n: number) { return () => { n = (n + 0x6d2b79f5) >>> 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -110,6 +110,21 @@ const NIGHT_LINE: Seg[] = [
   talk({ text: 'My dog won\'t come out from under the trailer. He\'s been under there since one.', who: 'man', by: 'a caller' }, H('Smart dog.')),
   music('twostep', 42),
 ];
+// HENDELSER.md, event 9: once in a night, from 02:26 on, a boy calls the Night Line about a star
+// with a tail low in the south and a light over the mesa, from his father's ranch, in July. The
+// comet in the 1947 photograph. Afterwards the host says the line was dead when he picked it up.
+export const BOY = 'a boy';
+const BOY_CALL: Seg[] = [
+  talk({ text: 'Hello? Is this the radio? There\'s a star with a tail on it, real low in the south. A little tail.', who: 'boy', by: BOY },
+    H('That\'s Halley\'s comet, son. It\'s there all week. You\'re up late.'),
+    { text: 'I\'m calling from my dad\'s place, out on the ranch. There\'s a light over the mesa too. It isn\'t moving.', who: 'boy', by: BOY },
+    H('Is your dad up?'),
+    { text: 'He\'s out with the men. It\'s hot out. It\'s July.', who: 'boy', by: BOY }),
+  music('waltz', 24),
+  talk(H('Folks, I want to say something. That line was dead when I picked it up. No dial tone, nothing at all.'),
+    H('I don\'t know who I was talking to.')),
+];
+const BOY_AT = 2 * 3600 + 26 * 60;
 const SIGN_OFF_SEQ: Seg[] = [
   talk(H('That\'s the Night Line. Thank you for staying up with us.'), H('This is fourteen-twenty, Caliche, New Mexico, signing off until six. Good night.')),
   { kind: 'anthem' },
@@ -284,9 +299,11 @@ export class Station {
     this.forward(skip, clock, true);
     this.sync();
   }
-  private refill() {
+  private refill(clock = this.sc) {
     const L = this.cfg.loop;
     if (this.after === 'dead') return [{ kind: 'dead' } as Seg];
+    const day = ((clock % 86400) + 86400) % 86400;
+    if (this.id === 'caliche' && !this.radio.boyCalled && day >= BOY_AT && day < SIGN_OFF - 300) { this.radio.boyCalled = true; return BOY_CALL.slice(); }
     const s = L[this.loopAt % L.length]; this.loopAt++;
     return [s];
   }
@@ -303,14 +320,14 @@ export class Station {
     if (!f || clock < f.at) {
       this.after = 'loop';
       if (f && this.cfg.offBefore) this.start([{ kind: 'dead' }], clock);
-      else this.start(this.refill(), clock, Math.random() * 20);
+      else this.start(this.refill(clock), clock, Math.random() * 20);
     } else this.cross(clock - f.at, clock);
   }
   private cross(since: number, clock: number) {
     const f = this.cfg.fixed!;
     this.after = f.then;
     const total = f.seq.reduce((a, s) => a + segLen(s, clock), 0);
-    if (since > total + 30) this.start(this.refill(), clock, f.then === 'loop' ? Math.random() * 20 : 0);
+    if (since > total + 30) this.start(this.refill(clock), clock, f.then === 'loop' ? Math.random() * 20 : 0);
     else this.start(f.seq, clock, since);
   }
   /** On by `dt` seconds of programme. quiet: no lines said (skipping ahead). */
@@ -320,7 +337,7 @@ export class Station {
     while (this.t >= this.len) {
       this.t -= this.len;
       this.queue.shift();
-      if (!this.queue.length) this.queue.push(...this.refill());
+      if (!this.queue.length) this.queue.push(...this.refill(clock));
       this.len = segLen(this.seg, clock);
       this.said = -1; this.sc = clock;
       changed = true;
@@ -565,6 +582,8 @@ export class Radio {
   time = 0;
   /** A line said on a station: (station, text, who said it). */
   onLine?: (station: StationId, text: string, by: string | undefined) => void;
+  /** The boy has called the Night Line tonight (event 9; main.ts keeps it with the case). */
+  boyCalled = false;
 
   constructor(readonly audio: AudioSys) {
     this.stations = { caliche: new Station('caliche', this), roswell: new Station('roswell', this), far: new Station('far', this) };

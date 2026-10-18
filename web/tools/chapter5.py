@@ -138,6 +138,14 @@ async def main():
         check(await s5('aunt') and 'trimmed it to fit the frame' in await lines(), 'her aunt cut the clipping out; the paper ran it bigger')
         await shot('h03_waitress')
         await close()
+        # event 11 (HENDELSER.md): told about the lights, she pours for the regular nobody sees
+        await use('diner:waitress'); await tick(0.2)
+        check('a regular' in await lines() and await s5('regular') and await ev("S47.world.diner.objs.regularCup.visible")
+              and any('empty stool' in n for n in await notes()), 'back to her: a cup poured at the empty end stool, "He\'s a regular."')
+        await close()
+        await use('diner:waitress'); await tick(0.2)
+        check('a regular' not in await lines() and sum(1 for n in await notes() if 'empty stool' in n) == 1, 'only the once')
+        await close()
 
         await face_proxy('driver')
         check(await aimed() == 'diner:driver' and await label('diner:driver') == 'Talk to the driver', 'the driver on the next stool')

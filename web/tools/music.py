@@ -72,7 +72,8 @@ async def main():
             await ev("S47.score().stop(); S47.score()['rest'] = 0")
             await ev("S47.world.freeDrive('road'); S47.hold = false")
             await pg.wait_for_function("S47.world.driving")
-            await ev("S47.hold = true; S47.score()['rest'] = 0; S47.tick(0.5)")
+            # what started while the trip was loading (real frames, not yet in the truck) is let go
+            await ev("S47.hold = true; S47.score().stop(); S47.score()['rest'] = 0; S47.tick(0.5)")
             cue = await ev("S47.score().playing")
             check(cue == 'drive', f'in the truck on the highway it is the drive ({cue})')
             # every piece is there

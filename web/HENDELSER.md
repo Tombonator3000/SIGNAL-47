@@ -222,11 +222,11 @@ Datoene (1983, 1981, 1985) er de samme nettene SARO fikk negative avstander. Spi
 
 ## 11. Byggerekkefølge og tester
 
-**Steg 0, den billige testen (før byen):** regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet med varsel, tapt tid, retur, lastebilen med åpen dør og bildet ovenfra. Tom spiller kapittel 1 til 3 og svarer: Så du dem? Ble du redd? Ville du lete etter mer? Skjønte du hva som skjedde da du var borte? Var det for mye eller for lite? Svaret avgjør om byen bygges slik den står her, eller om noe må justeres først.
+**Steg 0, den billige testen (før byen):** regissøren med trykket, tre hendelser på steder som finnes (telefonautomaten ved dineren, stillheten på SARO, antennene mot az 026), glimt bak antennene og på mesaryggen, og én bortføring på B ved antennefeltet med varsel, tapt tid, retur, lastebilen med åpen dør og bildet ovenfra. Tom spiller kapittel 1 til 3 og svarer: Så du dem? Ble du redd? Ville du lete etter mer? Skjønte du hva som skjedde da du var borte? Var det for mye eller for lite? Svaret avgjør om byen bygges slik den står her, eller om noe må justeres først. (17. oktober kveld: glimtene er bygget i `core/glimpses.ts` og bortføringen i `story/abduction.ts`, med testene `tools/glimpses.py` og `tools/abduct.py`. Tom har ikke prøvd dem ennå, så spørsmålene står åpne.)
 
-**Steg 1:** Caliche som én gate, hendelsene 1, 5, 6, 8 og 11, kartfanen og linjene. (17. oktober: gata er bygget, `world/Town.ts`, med nattens rytme og tekstene; kartfanen fantes fra 16. oktober. Hendelsene og linjene gjenstår.)
+**Steg 1:** Caliche som én gate, hendelsene 1, 5, 6, 8 og 11, kartfanen og linjene. (17. oktober: gata er bygget, `world/Town.ts`, med nattens rytme og tekstene; kartfanen fantes fra 16. oktober. 17. oktober kveld: hendelsene 1, 5, 6, 8 og 11 og merkene med linje A er bygget, `story/townEvents.ts`, `story/caliche.ts`, `Chapter5.ts` og `ui/areaMap.ts`; testen er `tools/events.py`.)
 
-**Steg 2:** folka med replikker, nattens rytme, resten av hendelsene og glimtene.
+**Steg 2:** folka med replikker, nattens rytme, resten av hendelsene og glimtene. (17. oktober kveld: folka er bygget med replikkene i `story/caliche.ts`, kvinnen og suvenirmannen som figurer i gata, og testene i `tools/town.py`. Resten av hendelsene og glimtene gjenstår.)
 
 **Steg 3:** hendelser på C etter kapittel 5, flere glimt, lyd og finpuss.
 

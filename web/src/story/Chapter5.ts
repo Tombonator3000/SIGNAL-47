@@ -28,6 +28,9 @@ export interface Ch5State {
   coffee: boolean; lights: boolean; clipped: boolean; aunt: boolean; radio: boolean;
   road: boolean; october: boolean; confirmed: boolean;
   ward: boolean;
+  /** HENDELSER.md, event 11: the cup poured for the regular nobody sees (added 17 October; older
+   *  saves do not have it, and that is no). */
+  regular?: boolean;
   tracing: [number, number] | null;   // where the tracing lies on the map
   p13: boolean; wrong13: number;
 }
@@ -69,7 +72,7 @@ export interface Chapter5Deps {
 const fresh = (): Ch5State => ({
   v: 1, stage: 'to-truck', bell: false, file: false, arrived: false,
   coffee: false, lights: false, clipped: false, aunt: false, radio: false,
-  road: false, october: false, confirmed: false, ward: false,
+  road: false, october: false, confirmed: false, ward: false, regular: false,
   tracing: null, p13: false, wrong13: 0,
 });
 
@@ -139,6 +142,8 @@ export class Chapter5 {
       const cup = diner.objs.cup;
       // the cup is on the counter once she has poured, and stays there when you go
       if (cup) cup.visible = !this.active || this.s.coffee;
+      const his = this.regularCup();
+      if (his) his.visible = this.active && !!this.s.regular;
       diner.setSignLit(true);
     }
     if (!this.active) return;
@@ -257,6 +262,16 @@ export class Chapter5 {
     ui.toast('She pours without asking how you take it. "Thirty-five cents. Pay when you go."', 4);
     audio.play('thudSoft', { gain: 0.12, rate: 2.2 });
   }
+  /** The regular's cup, at the last stool along the counter (a copy of the player's). */
+  private regularCup() {
+    const diner = this.d.diner(), cup = diner?.objs.cup;
+    if (!diner || !cup?.parent) return null;
+    if (!diner.objs.regularCup) {
+      const c = cup.clone(); c.name = 'diner:regularCup'; c.position.z = -4.8; c.visible = false;
+      cup.parent.add(c); diner.objs.regularCup = c;
+    }
+    return diner.objs.regularCup;
+  }
   private pour() {
     this.s.coffee = true;
     const cup = this.d.diner()?.objs.cup; if (cup) cup.visible = true;
@@ -309,6 +324,18 @@ export class Chapter5 {
     const s = this.s;
     this.who = who;
     if (who === 'waitress') this.lines = [W(s.coffee ? 'More? No? Suit yourself.' : 'Morning. Or whatever this is.'), ...(s.coffee ? [] : [W('Coffee?')])];
+    // event 11: once she has told you about the lights, she pours for the regular
+    if (who === 'waitress' && s.lights && s.coffee && !s.regular) {
+      s.regular = true;
+      this.lines = [
+        aside('She fills a second cup and sets it down at the last stool along the counter. The stool is empty.'),
+        W('He\'s a regular. Comes in when the lights are up.'),
+        aside('The cup steams. Nobody comes to drink it.'),
+      ];
+      const his = this.regularCup(); if (his) his.visible = true;
+      this.g.note(`${this.time()}. Coffee poured for an empty stool at the end of the counter. "He's a regular. Comes in when the lights are up."`);
+      this.save();
+    }
     if (who === 'driver') this.lines = [D('Morning.'), aside('He does not look up from his eggs.')];
     if (who === 'ward') {
       this.lines = [
@@ -488,15 +515,6 @@ export class Chapter5 {
     });
   }
 
-  endingLines() {
-    return [
-      'ALL NIGHT',
-      'MESA DINER // P13 RECORDED',
-      'The waitress has watched the light over the mesa since she was eleven. The driver\'s rig died on the old road last October, right past the eight-mile post. The clipping by the door is the same picture as in 1947, with more of it.',
-      'C crosses the old road to Roswell just past the eight-mile post, at a survey bolt in the shoulder. The coffee stays on the counter.',
-      'NEXT: ROSWELL ROAD. This part of the night is still being built.',
-    ];
-  }
 
   // ---------- documents ----------
   private docMap(): DocSpec {

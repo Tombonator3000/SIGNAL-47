@@ -211,6 +211,14 @@ async def main():
         await pg.click('[data-a=resume]'); await pg.wait_for_timeout(200)
         await ev("S47.hold = true")
 
+        # event 9 (HENDELSER.md): once a night from 02:26 the boy calls the Night Line
+        boy = await ev('''(() => { const R = S47.radio, st = R.stations.caliche; R.boyCalled = false; const was = st['after']; st['after'] = 'loop';
+          const early = st['refill'](2 * 3600 + 10 * 60).some((s) => s.kind === 'talk' && s.lines.some((l) => l.by === 'a boy'));
+          const now = st['refill'](2 * 3600 + 30 * 60), first = now[0].kind === 'talk' && now[0].lines[0].by === 'a boy';
+          const dead = now.some((s) => s.kind === 'talk' && s.lines.some((l) => /line was dead/.test(typeof l.text === 'string' ? l.text : '')));
+          const again = st['refill'](2 * 3600 + 40 * 60).some((s) => s.kind === 'talk' && s.lines.some((l) => l.by === 'a boy'));
+          st['after'] = was; return [early, first, dead, again, R.boyCalled]; })()''')
+        check(boy == [False, True, True, False, True], f'the boy calls the Night Line once, after 02:26; then the host says the line was dead ({boy})')
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
         if PAGES: check(not [u for u in bad404 if 'favicon' not in u], f'no missing files ({bad404[:3]})')
