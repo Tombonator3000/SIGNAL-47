@@ -138,6 +138,7 @@ async def main():
         check(await label('workTable') == 'Lay out the records', 'table offers the records once one is collected')
         await use('workTable'); await tick(0.1)
         check(await has('.board-wrap') and 'SARO ARCHIVE' in await ev("document.querySelector('.board-wrap h3').textContent"), 'archive board opens')
+        earlier_threads = await ev("document.querySelectorAll('[data-threads] path.thread').length")
         check('Not on the table yet' in await ev("document.querySelector('.bcard[data-card=e07]').textContent") and not await has('[data-node="e07.abc"]'), 'an uncollected record says where it is')
         check('0 / 2' in await ev("document.querySelector('.bq[data-q=P04] .bq-count').textContent") and not await has('[data-record]'), 'P04 waits with two empty slots and no RECORD')
         r = await thread('b12.id', 'rx.dist')
@@ -221,14 +222,14 @@ async def main():
         await ev("S47.ch2.s.links = ['P04|n.c', 'P05|n.id']")   # the first board's pins, or none at all
         await use('workTable'); await tick(0.1)
         check(await ev("S47.ch2.s.links.length") == 5 and await ev("!S47.ch2.s.links.some(k => k.includes('P0'))")
-              and await has('.bq.done[data-q=P05]') and await ev("document.querySelectorAll('[data-threads] path.thread').length") == 5, 'an older save gets its threads back on the board')
+              and await has('.bq.done[data-q=P05]') and await ev("document.querySelectorAll('[data-threads] path.thread').length") == earlier_threads + 5, 'an older save gets its five chapter-two threads back alongside the earlier chapter')
         await close_board()
         # a phone held sideways: the same board, opened at a size that can be read (it is moved
         # and zoomed with the fingers; tools/board.py tries that with touch)
         await pg.set_viewport_size({'width': 844, 'height': 390})
         await use('workTable'); await tick(0.1)
         check(await ev("S47.game.board.view.view().s") >= 0.79 and await ev("document.querySelector('.bline').getBoundingClientRect().height") >= 34
-              and await ev("document.querySelectorAll('[data-threads] path.thread').length") == 5, 'on a phone the board opens at a readable size, with lines a finger can hit and every thread drawn')
+              and await ev("document.querySelectorAll('[data-threads] path.thread').length") == earlier_threads + 5, 'on a phone the board opens at a readable size, with lines a finger can hit and every thread drawn')
         await shot('d05b_phone_column')
         await close_board()
         await pg.set_viewport_size({'width': W, 'height': H})

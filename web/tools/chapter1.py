@@ -1,6 +1,6 @@
 # Chapter one, "The Second Exposure", played through end to end in a headless browser.
-# Panels are used with real clicks: marking a detail on a print, choosing the reference,
-# the hypothesis, the B-12 method and the conclusion. The loop is held and advanced with
+# Real clicks mark the prints, tie threads and RECORD the three findings on the case
+# board, and choose the B-12 method at its control. The loop is held and advanced with
 # S47.tick() so the run works with a software renderer.
 # Usage: python3 tools/chapter1.py OUTDIR [passive|active] [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
@@ -68,6 +68,19 @@ async def main():
             box = await pg.locator(sel).first.bounding_box()
             px = box['x'] + (28 + u * 960) / 1016 * box['width']; py = box['y'] + (28 + v * 600) / 720 * box['height']
             await pg.mouse.click(px, py)
+        async def show(node): await ev(f"S47.game.board.view.show({json.dumps(node)})")
+        async def thread(a, b):
+            await show(a); await pg.click(f'[data-node="{a}"]')
+            await show(b); await pg.click(f'[data-node="{b}"]')
+        async def record(q):
+            # Open questions have no evidence pin for show(); pan to the actual button.
+            box = await pg.locator(f'[data-record={q}]').bounding_box()
+            view = await pg.locator('[data-view]').bounding_box()
+            vx, vy = view['x'] + view['width'] / 2, view['y'] + view['height'] / 2
+            await pg.mouse.move(vx, vy)
+            await pg.mouse.wheel(box['x'] + box['width'] / 2 - vx, box['y'] + box['height'] / 2 - vy)
+            await pg.wait_for_timeout(100)
+            await pg.click(f'[data-record={q}]'); await tick(0.1)
 
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.2)")
         check(await ev("S47.game.phase") == 'ch1' and await stage() == 'collect-camera', 'chapter one starts at the camera shelf')
@@ -139,16 +152,21 @@ async def main():
         await place(17.4, -3.0, -1.5708, -0.4)
         check(await aimed() == 'archive', 'archive bench can be aimed at')
         await use('archive'); await tick(0.1); await shot('c07_reference')
-        await pg.click('[data-r="R-07"]')
-        check('THREE HORIZONTAL BARS' in await say(), 'R-07 rejected')
-        await pg.click('[data-r="B-12"]')
+        check(await pg.locator('.board-overlay').count() == 1 and await pg.locator('[data-r], [data-h]').count() == 0, 'the reference file opens the board, without the old answer buttons')
+        await thread('frame01.detail', 'refsheet.r07')
+        check('THREE HORIZONTAL BARS' in await say() and await ev("S47.ch1.s.wrongRef") == 1 and await pg.locator('.board-threads path.slack').count() == 1, 'R-07 rejected with a slack thread')
+        await thread('frame01.detail', 'refsheet.b12')
+        check(not await ev("S47.ch1.s.ref") and await pg.locator('[data-record=P01]').count() == 1, 'a matching thread fills P01; RECORD is still needed')
+        await record('P01')
         check('B-12 selected' in await say(), 'B-12 matched')
-        await pg.click('[data-h=command]')
-        check('ZERO commands' in await say(), 'motor command hypothesis rejected')
+        await thread('hyp.command', 's03log.zero')
+        check('ZERO commands' in await say() and await ev("S47.ch1.s.wrongHyp") == 1, 'motor command hypothesis rejected')
         hyp = 'light' if METHOD == 'passive' else 'drift'
-        await pg.click(f'[data-h={hyp}]')
+        await thread(f'hyp.{hyp}', 'refsheet.lamp' if hyp == 'light' else 'refsheet.drive')
+        check(await ev("S47.ch1.s.hyp") is None and await stage() == 'interpret-first', 'a hypothesis thread does not start the field test before RECORD')
+        await record('P02')
         check(await stage() == 'choose-control', f'{hyp} hypothesis accepted')
-        await pg.click('[data-a=close]'); await tick(0.2)
+        await pg.click('.board-wrap .lp-close'); await tick(0.2)
 
         # B-12 control
         await place(9.3, -16.9, 1.5708, -0.3)
@@ -181,15 +199,26 @@ async def main():
             await pg.click('[data-a=act]'); await tick(2.6)
         check(await stage() == 'compare-exposures' and await ev("S47.yard.dryPrints[1].visible"), 'frame 02 developed')
         await shot('c10_compare')
-        await pg.click('[data-c=second]')
-        check('Mark the reference detail' in await say(), 'no conclusion before marking frame 02')
+        check(await pg.locator('[data-c]').count() == 0 and await pg.locator('[data-a=board]').count() == 1, 'two exposures keeps the marking tool and offers the board, without conclusion buttons')
+        await pg.click('[data-a=board]'); await tick(0.1)
+        check(await pg.locator('[data-record=P03]').count() == 0 and not await ev("S47.ch1.s.concluded"), 'no conclusion before marking frame 02')
+        await pg.click('.board-wrap .lp-close'); await use('archive'); await tick(0.1)
         await click_uv('.pair-img img', t2['echo'][0], t2['echo'][1])
         check(await ev("!!S47.ch1.s.mark2"), 'reference marked on frame 02')
-        await pg.click('[data-c=lamp]')
-        check(await ev("S47.ch1.s.wrongConcl") == 1, 'lamp conclusion rejected')
-        await pg.click('[data-c=second]')
+        await pg.click('[data-a=board]'); await tick(0.1)
+        await thread('frame02.extra', 'observation.lamp')
+        reply = 'lamp was shielded' if METHOD == 'passive' else 'vane moved to a known angle'
+        check(await ev("S47.ch1.s.wrongConcl") == 1 and reply in await say(), 'lamp conclusion rejected with the chosen control reply')
+        await thread('frame01.extra', 'frame02.extra')
+        check(await pg.locator('[data-record=P03]').count() == 0, 'one comparison thread cannot record the two-exposure finding')
+        await thread('observation.stripe', 'frame02.detail')
+        check(await stage() == 'compare-exposures' and not await ev("S47.ch1.s.concluded"), 'both comparison threads are ready; the finding still needs RECORD')
+        await record('P03')
         check('FINDING RECORDED' in await say() and await stage() == 'file-report', 'second reference concluded')
-        await pg.click('[data-a=close]'); await tick(0.2)
+        check(await pg.locator('.bq.done[data-q=P03]').count() == 1 and await pg.locator('.bcard[data-card=finding]').count() == 0, 'the local finding appears once, as the recorded question')
+        await ev("S47.game.board.view.look('ch1')"); await tick(0.05)
+        await shot('c10b_board_finding')
+        await pg.click('.board-wrap .lp-close'); await tick(0.2)
 
         # file the report
         await use('records'); await tick(0.1); await shot('c11_report')
@@ -243,6 +272,10 @@ async def main():
         check(await stage() == 'complete' and await ev("S47.yard.dryPrints[0].visible && S47.yard.dryPrints[1].visible"), 'Continue restores the case and both prints')
         check(await ev("S47.game.docs.length") >= 8, 'Continue restores the filed papers')
         check(await ev("S47.ch1.s.f1.url.startsWith('data:image/jpeg') && S47.ch1.s.f1.url.length > 50000 && S47.ch1.s.f2.url.length > 50000"), 'Continue brings back both photographs, not placeholders')
+        await pg.keyboard.press('KeyB'); await tick(0.1)
+        check(await pg.locator('.bq.done[data-q=P01], .bq.done[data-q=P02], .bq.done[data-q=P03]').count() == 3 and await ev("S47.ch1.s.links.length") == 4, 'Continue restores all three recorded findings and four chapter-one threads')
+        check(await ev(f"S47.ch1.s.links.includes('hyp.{hyp}|refsheet.{'lamp' if hyp == 'light' else 'drive'}')"), 'the restored board keeps the chosen hypothesis')
+        await pg.click('.board-wrap .lp-close'); await tick(0.1)
 
         if not NO_IDB:
             # A photograph that cannot be read must not be lost (Codex's P1). The next two reads

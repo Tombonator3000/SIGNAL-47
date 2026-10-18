@@ -12,9 +12,16 @@ import type { BoardCard, BoardQuestion, BoardNote, BoardThread } from '../ui/Boa
 
 export type Result = { ok: boolean; text: string };
 export interface BookNote { text: string; q?: string }
-export interface BookRule { a: string; b: string; note?: string; text: string; wrong?: string }
+export interface BookRule {
+  a: string; b: string; note?: string; text: string; wrong?: string;
+  /** Alternative working hypotheses: only the last thread in this group stays. */
+  group?: string;
+  /** Whether this rule restores a recorded finding from a save without threads. */
+  restore?: () => boolean;
+}
 export interface BookQuestion {
   id: string; stamp: string; text: string;
+  doc?: string;                         // the journal finding this question stands for
   /** how many notes it needs; 0 for a finding made somewhere else (at the lamp, in a talk) */
   slots: number;
   hints: string[];
@@ -32,7 +39,7 @@ export interface BookSpec {
   rules: BookRule[];
   questions: BookQuestion[];
   links: () => string[];                // where the chapter keeps its threads ('a|b', sorted)
-  wrong: (q: string) => void;           // a contradicting thread counts against question q
+  wrong: (q: string, rule: BookRule) => Result | void;  // the chapter can supply its original reply
   save: () => void;
   cards: () => BoardCard[];             // the chapter's records, with their lines
   /** threads the story itself draws: what a finding made elsewhere rests on */
@@ -82,13 +89,21 @@ export class RuleBook {
     if (links.includes(k)) return { ok: true, text: 'Those two are already connected.' };
     if (!r) return this.miss(a, b, { ok: false, text: this.o.empty ?? EMPTY });
     if (r.wrong) {
-      this.o.wrong(r.wrong);
+      const reply = this.o.wrong(r.wrong, r);
       this.o.save();
-      return this.miss(a, b, { ok: false, text: r.text });
+      if (reply?.ok) return reply;
+      return this.miss(a, b, reply ?? { ok: false, text: r.text });
+    }
+    const q = r.note ? this.o.notes[r.note]?.q : undefined;
+    if (r.group) {
+      const done = q ? this.question(q)?.done() : null;
+      if (done) return { ok: true, text: done };
+      for (let i = links.length - 1; i >= 0; i--) {
+        if (this.ruleOf(links[i])?.group === r.group) links.splice(i, 1);
+      }
     }
     links.push(k);
     this.o.save();
-    const q = r.note ? this.o.notes[r.note]?.q : undefined;
     if (!q) return { ok: true, text: r.text };
     const filled = this.filled(q).length, total = this.question(q)?.slots ?? filled;
     return { ok: true, text: filled >= total ? `${r.text} ${q} has what it needs: RECORD it.` : `${r.text} (${q}: ${filled} of ${total})` };
@@ -161,7 +176,7 @@ export class RuleBook {
       const have = new Set(links.map((k) => this.ruleOf(k)?.note).filter(Boolean));
       for (const [id, n] of Object.entries(this.o.notes)) {
         if (n.q !== q.id || have.has(id)) continue;
-        const r = this.o.rules.find((x) => x.note === id && !x.wrong);
+        const r = this.o.rules.find((x) => x.note === id && !x.wrong && (x.restore?.() ?? true));
         if (r) { links.push(pair(r.a, r.b)); have.add(id); }
       }
     }

@@ -13,6 +13,8 @@ import { eachVariant } from '../core/quality';
 import * as P from '../ui/Panels';
 import { clockText } from './time';
 import { firstTime } from '../core/hints';
+import type { BoardCard } from '../ui/Board';
+import { RuleBook, type BoardHook, type BookNote, type BookRule, type Result } from './boardRules';
 
 // Chapter one, "The Second Exposure". Ported from the Unity chapter (Chapter09 and
 // Visual10 passes): S-03 motor log, field camera, photo lab, B-12 control test with a
@@ -37,6 +39,8 @@ export interface CaseState {
   method: Method | null; observed: boolean;
   mark2?: [number, number]; concluded: boolean; filed: boolean;
   wrongRef: number; wrongHyp: number; wrongConcl: number; rejected: number;
+  sheet?: boolean;                  // the installation sheet has been read at the archive
+  links?: string[];                 // chapter one's threads, as sorted pin pairs
 }
 
 export interface ChapterHost {
@@ -56,6 +60,7 @@ export interface Chapter1Deps {
   save: (s: CaseState | null) => void;
   isTouch: () => boolean;
   doors: Doors;
+  board?: BoardHook;                // without a board, the original choice panels still work
 }
 
 const fresh = (eventClock: number): CaseState => ({
@@ -98,9 +103,65 @@ export class Chapter1 {
   private settled = false;
   private status: ShotCheck = { text: '', ok: false };
   private busT = 0;
+  readonly book: RuleBook;
+  get started() { return this.active; }  // the yard stays active throughout the later chapters
 
   constructor(private g: ChapterHost, private d: Chapter1Deps) {
     this.interactables();
+    const notes: Record<string, BookNote> = {
+      'n.ch1.ref': { text: 'The marked foreground detail matches B-12 and the S-03 sight line, not R-07.', q: 'P01' },
+      'n.ch1.light': { text: 'Test reflected work light by shielding the lamp while leaving the motor isolated.', q: 'P02' },
+      'n.ch1.drift': { text: 'Test reference/encoder drift with a commanded move to a known heading.', q: 'P02' },
+      'n.ch1.retain': { text: 'Both exposures keep a second pale mark at the earlier alignment.', q: 'P03' },
+      'n.ch1.control': { text: 'The eye saw one physical stripe. The control changed the vane; the film kept two.', q: 'P03' },
+    };
+    const lampReply = () => this.lampReply();
+    const rules: BookRule[] = [
+      { a: 'frame01.detail', b: 'refsheet.b12', note: 'n.ch1.ref', text: notes['n.ch1.ref'].text },
+      { a: 'frame01.detail', b: 'refsheet.r07', wrong: 'P01', text: 'R-07 has THREE HORIZONTAL BARS. Compare that silhouette with the vertical feature you marked. The sheet does not place R-07 on this sightline.' },
+      { a: 'hyp.light', b: 'refsheet.lamp', note: 'n.ch1.light', text: notes['n.ch1.light'].text, group: 'ch1.hyp', restore: () => this.s.hyp === 'light' },
+      { a: 'hyp.drift', b: 'refsheet.drive', note: 'n.ch1.drift', text: notes['n.ch1.drift'].text, group: 'ch1.hyp', restore: () => this.s.hyp === 'drift' },
+      { a: 'hyp.command', b: 's03log.zero', wrong: 'P02', text: 'The S-03 log records ZERO commands during the first movement. A second command does not explain this record. Test light or the local reference instead.' },
+      { a: 'frame01.extra', b: 'frame02.extra', note: 'n.ch1.retain', text: notes['n.ch1.retain'].text },
+      { a: 'observation.stripe', b: 'frame02.detail', note: 'n.ch1.control', text: notes['n.ch1.control'].text },
+      { a: 'frame02.extra', b: 'observation.lamp', wrong: 'P03', get text() { return lampReply(); } },
+      { a: 'frame02.extra', b: 's03log.zero', wrong: 'P03', text: 'The first S-03 movement had no command. The control used a different local reference. These records do not support two antenna commands.' },
+    ];
+    this.book = new RuleBook({
+      key: 'ch1',
+      owns: (n) => /^(frame0[12]|refsheet|s03log|hyp|observation)\./.test(n) || /^(P01|P02|P03)$/.test(n),
+      notes, rules,
+      questions: [
+        { id: 'P01', stamp: 'P01 / REFERENCE', text: 'Which installation is the marked foreground detail?', slots: 1, x: 590, y: 230, w: 272,
+          open: () => this.s.dev1 >= 3 || this.s.ref, done: () => this.s.ref ? 'B-12 selected. Its installation sheet specifies ONE ivory stripe on a movable vane.' : null,
+          record: () => this.matchReference('B-12'), hints: [
+            'Compare a manufactured feature on CONTACT PRINT 01 with the installation sheet.',
+            'Count the stripes and check the sight line from the S-03 apron.',
+            'B-12 has a movable vane and one stripe. R-07 has three bars on the west fence.',
+            'Mark CONTACT PRINT 01 at the archive bench, then thread its marked detail to B-12 on the installation sheet.' ] },
+        { id: 'P02', stamp: 'P02 / HYPOTHESIS', text: 'What could put an extra stripe on the film, and how can you test it?', slots: 1, x: 888, y: 300, w: 272,
+          open: () => this.s.ref, done: () => this.s.hyp ? `Working hypothesis: ${this.s.hyp === 'light' ? 'reflected work light' : 'reference/encoder drift'}. The field test is at B-12.` : null,
+          record: () => this.chooseHypothesis(this.s.links?.includes('hyp.drift|refsheet.drive') ? 'drift' : 'light'), hints: [
+            'Choose a cause that a local control can test.',
+            'The lamp and the reference drive have independent controls.',
+            'Stray light can be tested by shielding the lamp; drift by moving the reference to a known heading.',
+            'Thread stray light to the independent lamp, or encoder drift to the local reference drive. The last of these threads is the working hypothesis.' ] },
+        { id: 'P03', doc: 'finding', stamp: 'P03 / TWO EXPOSURES', text: 'What do the two exposures and the direct control observation support?', slots: 2, x: 590, y: 410, w: 272,
+          open: () => this.s.dev2 >= 3 || this.s.concluded, done: () => this.s.concluded ? 'The physical reference changed. The film retains a second reference. File both prints at the records desk.' : null,
+          record: () => this.conclude('second'), hints: [
+            'Mark the same assembly in FRAME 02 at the archive bench, then compare the prints.',
+            'What changed under the control, and what kept its earlier alignment?',
+            'The direct observation saw one physical stripe. Both prints keep a second mark.',
+            'Thread the extra marks in FRAME 01 and FRAME 02 together, and the one physical stripe in the observation to the changed vane in FRAME 02.' ] },
+      ],
+      links: () => (this.s.links ??= []),
+      wrong: (q, r) => {
+        if (q === 'P01') return this.matchReference('R-07');
+        if (q === 'P02') return this.chooseHypothesis('command');
+        return this.conclude(r.b === 'observation.lamp' ? 'lamp' : 'commands');
+      },
+      save: () => this.save(), cards: () => this.boardCards(),
+    });
   }
 
   // ---------- lifecycle ----------
@@ -108,6 +169,7 @@ export class Chapter1 {
     this.reset();
     this.active = true;
     this.s = saved ? { ...fresh(eventClock), ...saved } : fresh(eventClock);
+    this.s.sheet = saved?.sheet ?? this.s.ref;
     this.applyWorld();
     // the motor bus cabinet hums; so does the safelight ballast in the lab
     this.d.audio.hum('s03', new THREE.Vector3(12.3, 1.0, -11.0), 0.07, 60);
@@ -153,7 +215,7 @@ export class Chapter1 {
     // documents filed so far
     if (s.log) this.file(this.docS03());
     if (s.f1 && s.dev1 >= 3) this.file(this.docPhoto(s.f1));
-    if (s.ref) this.file(this.docSheet());
+    if (s.sheet || s.ref) this.file(this.docSheet());
     if (s.observed) this.file(this.docObservation());
     if (s.f2 && s.dev2 >= 3) this.file(this.docPhoto(s.f2));
     if (s.concluded) this.file(this.docFinding());
@@ -166,7 +228,7 @@ export class Chapter1 {
     cam.visible = on;
     cam.traverse((o) => o.layers.set(on ? 0 : 31));
   }
-  private save() { this.d.save(this.s); }
+  private save() { this.d.save(this.s); this.d.board?.refresh(); }
   private get touch() { return this.d.isTouch(); }
 
 
@@ -198,12 +260,12 @@ export class Chapter1 {
       }
       case 'interpret-first':
         if (!s.mark1) return 'FRAME 01 // INSPECT THE PRINT AND MARK A COMPARABLE DETAIL';
-        if (!s.ref) return `${lab} ARCHIVE // MATCH THE MARKED DETAIL TO THE FACILITY REFERENCE SHEET`;
-        return 'REFERENCE SHEET // CHOOSE A TESTABLE EXPLANATION';
+        if (!s.ref) return `${lab} ARCHIVE // READ THE REFERENCE SHEET AND MATCH THE DETAIL ON THE CASE BOARD`;
+        return 'CASE BOARD // RECORD A TESTABLE EXPLANATION';
       case 'choose-control': return 'B-12 // FOLLOW THE EAST WALK NORTH TO THE LOCAL REFERENCE CONTROL';
       case 'observe-control': return this.settled ? 'B-12 // NOTE THE DIRECT OBSERVATION AFTER THE VANE SETTLES' : 'B-12 // WAIT FOR THE REFERENCE VANE TO SETTLE';
       case 'second-exposure': return this.touch ? 'B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER' : 'B-12 // C: CAMERA / SPACE: RECORD THE CONTROLLED REFERENCE';
-      case 'compare-exposures': return 'TWO PRINTS // COMPARE THE SAME REFERENCE AND RECORD WHAT THE TEST SUPPORTS';
+      case 'compare-exposures': return s.mark2 ? 'CASE BOARD // COMPARE THE PRINTS WITH THE CONTROL OBSERVATION AND RECORD THE FINDING' : 'TWO PRINTS // MARK THE SAME REFERENCE IN FRAME 02 AT THE ARCHIVE BENCH';
       case 'file-report': return `${lab} // FILE THE TWO-EXPOSURE REPORT AT THE RECORDS DESK`;
       case 'complete': return 'LOCAL CASE FILED // THE SECOND EXPOSURE';
     }
@@ -431,6 +493,50 @@ export class Chapter1 {
     p.visible = true;
   }
 
+  // ---------- the case board ----------
+  private boardCards(): BoardCard[] {
+    if (!this.active) return [];
+    const s = this.s;
+    const full = (d: DocSpec) => [d.page, d.transcript].filter(Boolean).join('\n\n');
+    return [
+      { id: 'frame01', doc: 'frame01', stamp: 'FRAME 01', title: 'S-03 APRON', kind: s.dev1 >= 3 ? 'photo' : 'sealed', have: !!s.f1,
+        where: 'Expose the central antenna from the S-03 apron and process the film in the photo lab.', x: 14, y: 14, w: 272,
+        image: s.dev1 >= 3 ? s.f1?.url : undefined,
+        full: s.f1 && s.dev1 >= 3 ? full(this.docPhoto(s.f1)) : undefined,
+        text: s.dev1 < 3 ? 'Sealed film. Process it at the wet bench.' : !s.mark1 ? 'Inspect this print at the archive bench and mark a comparable detail.' : undefined,
+        lines: s.mark1 ? [
+          { id: 'frame01.detail', text: 'Marked foreground detail: a vertical reference vane below the central antenna.' },
+          { id: 'frame01.extra', text: 'A second pale mark beside the reference stripe.' } ] : [] },
+      { id: 'refsheet', doc: 'refsheet', stamp: '11-86', title: 'INSTALLATION SHEET', have: !!s.sheet || s.ref,
+        where: 'Read the reference file at the photo lab archive bench.', full: full(this.docSheet()), x: 302, y: 14, w: 272, lines: [
+          { id: 'refsheet.b12', text: 'B-12: ONE ivory stripe on a movable vane, on the S-03 sight line.' },
+          { id: 'refsheet.r07', text: 'R-07: THREE horizontal bars on the west fence, off the sight line.' },
+          { id: 'refsheet.lamp', text: 'A local work lamp with an independent shield control.' },
+          { id: 'refsheet.drive', text: 'An isolated reference drive: move the vane to a known heading.' } ] },
+      { id: 's03log', doc: 's03log', stamp: 'S-03', title: 'MOTOR BUS', have: s.log,
+        where: 'Read the motor cabinet in the east service yard.', full: full(this.docS03()), x: 590, y: 14, w: 272, lines: [
+          { id: 's03log.zero', text: 'COMMANDS RECEIVED: 0. LOCAL OVERRIDE: NONE.' },
+          { id: 's03log.heading', text: 'Encoder: 026 degrees. Scheduled: 042 degrees.' } ] },
+      { id: 'hypotheses', stamp: 'WORKING NOTES', title: 'A CAUSE TO TEST', kind: 'thing', have: s.ref,
+        where: 'Identify the marked reference before choosing a cause to test.', x: 888, y: 14, w: 272, lines: [
+          { id: 'hyp.light', text: 'Stray light: a reflected work lamp could add a stripe.' },
+          { id: 'hyp.drift', text: 'Encoder drift: the local reference could disagree with its heading.' },
+          { id: 'hyp.command', text: 'A second motor command could explain the extra reference.' } ] },
+      { id: 'frame02', doc: 'frame02', stamp: 'FRAME 02', title: 'B-12 CONTROL', kind: s.dev2 >= 3 ? 'photo' : 'sealed', have: !!s.f2,
+        where: 'Run a B-12 control, note the observation, expose FRAME 02 and develop it.', x: 14, y: 392, w: 272,
+        image: s.dev2 >= 3 ? s.f2?.url : undefined,
+        full: s.f2 && s.dev2 >= 3 ? full(this.docPhoto(s.f2)) : undefined,
+        text: s.dev2 < 3 ? 'Sealed control film. Process it at the wet bench.' : !s.mark2 ? 'Mark the same reference in FRAME 02 at the archive bench.' : undefined,
+        lines: s.mark2 ? [
+          { id: 'frame02.detail', text: s.method === 'passive' ? 'The physical reference vane is folded into its shield stop.' : 'The physical reference vane has turned to the commanded 042 degrees.' },
+          { id: 'frame02.extra', text: 'The second pale mark keeps the earlier alignment.' } ] : [] },
+      { id: 'observation', doc: 'observation', stamp: s.method === 'active' ? 'ACTIVE' : 'PASSIVE', title: 'DIRECT OBSERVATION', have: s.observed,
+        where: 'Note what you see at B-12 after the vane settles.', full: full(this.docObservation()), x: 302, y: 392, w: 272, lines: [
+          { id: 'observation.stripe', text: 'The eye sees ONE physical ivory stripe and one fixed bracket.' },
+          { id: 'observation.lamp', text: s.method === 'passive' ? 'Work lamp: shielded. Motor: isolated.' : 'Work lamp: lit. Reference command and encoder: 042 degrees.' } ] },
+    ];
+  }
+
   // ---------- prints and the archive bench ----------
   private openPrint1() {
     const s = this.s;
@@ -466,6 +572,8 @@ export class Chapter1 {
   private openReference() {
     const s = this.s, { ui } = this.d;
     if (this.file(this.docSheet())) this.g.note('Filed: B-12 / Reference installation sheet.');
+    if (!s.sheet) { s.sheet = true; this.save(); }
+    if (this.d.board) { this.d.board.open('PHOTO LAB', 'ch1'); return; }
     P.referenceFile(ui, {
       sheet: [
         'INSTALLATION SHEET 11-86 / LOCAL SURVEY REFERENCES',
@@ -475,43 +583,15 @@ export class Chapter1 {
         'A contact print can preserve an optical error as well as a physical object. Make a direct observation and change one known condition before trusting a cause.',
       ],
       refDone: s.ref, hyp: s.hyp,
-      onRef: (c) => {
-        if (!s.mark1) return { ok: false, text: 'Mark the detail on CONTACT PRINT 01 first.' };
-        if (c === 'R-07') {
-          s.wrongRef++;
-          this.g.note('Rejected R-07 as the photographed reference: its three-bar pattern does not match the marked foreground detail.');
-          this.save();
-          return { ok: false, text: 'R-07 has THREE HORIZONTAL BARS. Compare that silhouette with the vertical feature you marked. The sheet does not place R-07 on this sightline.' };
-        }
-        if (!s.ref) {
-          s.ref = true;
-          this.g.note('Matched the marked foreground reference to B-12 using the installation sheet and the S-03 sightline.');
-          this.save();
-        }
-        return { ok: true, text: 'B-12 selected. Its installation sheet specifies ONE ivory stripe on a movable vane. Choose a cause you can test.' };
-      },
-      onHyp: (c) => {
-        if (s.hyp) return { ok: true, text: 'A working hypothesis is on file. The field test is at B-12, north of the S-03 apron.' };
-        if (c === 'command') {
-          s.wrongHyp++;
-          this.g.note('Hypothesis rejected: a second motor command contradicts the S-03 zero-command record.');
-          this.save();
-          return { ok: false, text: 'The S-03 log records ZERO commands during the first movement. A second command does not explain this record. Test light or the local reference instead.' };
-        }
-        s.hyp = c;
-        this.g.note(c === 'light' ? 'Working hypothesis: an extra stripe caused by reflected work light.' : 'Working hypothesis: a mismatch caused by the local reference or encoder.');
-        this.stageTo('choose-control');
-        ui.toast('Field test available. B-12, north of the S-03 apron.', 4);
-        return { ok: true, text: c === 'light'
-          ? 'Working hypothesis: reflected work light. At B-12, shielding the lamp changes the light while leaving the motor isolated.'
-          : 'Working hypothesis: reference/encoder drift. At B-12, a commanded move provides a known reference state.' };
-      },
+      onRef: (c) => this.matchReference(c),
+      onHyp: (c) => this.chooseHypothesis(c),
     });
   }
 
   private openCompare() {
     const s = this.s;
     if (!s.f1 || !s.f2) return;
+    if (s.mark2 && this.d.board) { this.d.board.open('PHOTO LAB', 'ch1'); return; }
     P.twoExposures(this.d.ui, {
       url1: s.f1.url, url2: s.f2.url, mark2: s.mark2, concluded: s.concluded,
       hints: [
@@ -523,28 +603,74 @@ export class Chapter1 {
         if (!s.mark2) { s.mark2 = [u, v]; this.save(); }
         return { ok: true, text: 'Reference marked in FRAME 02. Now record what the two prints support.' };
       },
-      onConclude: (c) => {
-        if (s.concluded) return { ok: true, text: 'Finding recorded. File both prints at the records desk.' };
-        if (!s.mark2) return { ok: false, text: 'Mark the reference detail in FRAME 02 before recording a conclusion.' };
-        if (c === 'lamp') {
-          s.wrongConcl++; this.save();
-          return { ok: false, text: s.method === 'passive'
-            ? 'The lamp was shielded for frame 02. Its extra mark cannot be explained by that lamp remaining on.'
-            : 'The vane moved to a known angle while the second mark kept its old alignment. A lamp reflection alone does not account for the fixed second reference.' };
-        }
-        if (c === 'commands') {
-          s.wrongConcl++; this.save();
-          return { ok: false, text: 'The first S-03 movement had no command. The control used a different local reference. These records do not support two antenna commands.' };
-        }
-        s.concluded = true;
-        this.file(this.docFinding());
-        this.g.note('Filed: Two exposures / Local finding.');
-        this.g.note(`The second exposure reproduces the extra reference stripe under a controlled condition. The local test rules out ${s.method === 'passive' ? 'the work lamp' : 'simple reference/encoder drift'} as its source.`);
-        this.d.audio.signature(0.45);
-        this.stageTo('file-report');
-        return { ok: true, text: 'FINDING RECORDED // The physical reference changed. The film retains a second reference. File both prints at the records desk.' };
-      },
+      onBoard: this.d.board ? () => this.d.board!.open('PHOTO LAB', 'ch1') : undefined,
+      onConclude: this.d.board ? undefined : (c) => this.conclude(c),
     });
+  }
+
+  private matchReference(c: 'B-12' | 'R-07'): Result {
+    const s = this.s;
+    if (!s.sheet && !s.ref) return { ok: false, text: 'Read the installation sheet at the photo lab archive bench first.' };
+    if (!s.mark1) return { ok: false, text: 'Mark the detail on CONTACT PRINT 01 first.' };
+    if (c === 'R-07') {
+      s.wrongRef++;
+      this.g.note('Rejected R-07 as the photographed reference: its three-bar pattern does not match the marked foreground detail.');
+      this.save();
+      return { ok: false, text: 'R-07 has THREE HORIZONTAL BARS. Compare that silhouette with the vertical feature you marked. The sheet does not place R-07 on this sightline.' };
+    }
+    if (!s.ref) {
+      s.ref = true;
+      this.g.note('Matched the marked foreground reference to B-12 using the installation sheet and the S-03 sightline.');
+      this.save();
+    }
+    return { ok: true, text: 'B-12 selected. Its installation sheet specifies ONE ivory stripe on a movable vane. Choose a cause you can test.' };
+  }
+
+  private chooseHypothesis(c: 'light' | 'drift' | 'command'): Result {
+    const s = this.s, { ui } = this.d;
+    if (!s.ref) return { ok: false, text: 'Match the marked detail to B-12 before choosing a cause to test.' };
+    if (s.hyp) return { ok: true, text: 'A working hypothesis is on file. The field test is at B-12, north of the S-03 apron.' };
+    if (c === 'command') {
+      s.wrongHyp++;
+      this.g.note('Hypothesis rejected: a second motor command contradicts the S-03 zero-command record.');
+      this.save();
+      return { ok: false, text: 'The S-03 log records ZERO commands during the first movement. A second command does not explain this record. Test light or the local reference instead.' };
+    }
+    s.hyp = c;
+    this.g.note(c === 'light' ? 'Working hypothesis: an extra stripe caused by reflected work light.' : 'Working hypothesis: a mismatch caused by the local reference or encoder.');
+    this.stageTo('choose-control');
+    ui.toast('Field test available. B-12, north of the S-03 apron.', 4);
+    return { ok: true, text: c === 'light'
+      ? 'Working hypothesis: reflected work light. At B-12, shielding the lamp changes the light while leaving the motor isolated.'
+      : 'Working hypothesis: reference/encoder drift. At B-12, a commanded move provides a known reference state.' };
+  }
+
+  private conclude(c: 'lamp' | 'commands' | 'second'): Result {
+    const s = this.s;
+    if (s.concluded) return { ok: true, text: 'Finding recorded. File both prints at the records desk.' };
+    if (s.dev1 < 3 || s.dev2 < 3 || !s.observed) return { ok: false, text: 'Develop both prints and note the B-12 control observation first.' };
+    if (!s.mark2) return { ok: false, text: 'Mark the reference detail in FRAME 02 before recording a conclusion.' };
+    if (c === 'lamp') {
+      s.wrongConcl++; this.save();
+      return { ok: false, text: this.lampReply() };
+    }
+    if (c === 'commands') {
+      s.wrongConcl++; this.save();
+      return { ok: false, text: 'The first S-03 movement had no command. The control used a different local reference. These records do not support two antenna commands.' };
+    }
+    s.concluded = true;
+    this.file(this.docFinding());
+    this.g.note('Filed: Two exposures / Local finding.');
+    this.g.note(`The second exposure reproduces the extra reference stripe under a controlled condition. The local test rules out ${s.method === 'passive' ? 'the work lamp' : 'simple reference/encoder drift'} as its source.`);
+    this.d.audio.signature(0.45);
+    this.stageTo('file-report');
+    return { ok: true, text: 'FINDING RECORDED // The physical reference changed. The film retains a second reference. File both prints at the records desk.' };
+  }
+
+  private lampReply() {
+    return this.s.method === 'passive'
+      ? 'The lamp was shielded for frame 02. Its extra mark cannot be explained by that lamp remaining on.'
+      : 'The vane moved to a known angle while the second mark kept its old alignment. A lamp reflection alone does not account for the fixed second reference.';
   }
 
   // ---------- B-12 ----------

@@ -20,7 +20,7 @@ Base: `integration`. Filer: `src/core/saves.ts`, `tools/saves.cjs`.
 
 Uten IndexedDB (privat vindu i noen nettlesere) lagres sakene i `localStorage`, og hvert fotografi ligger da inne i hver eneste lagring. Et saksbilde er rundt 210 kB, og autolagringen i kapittel 2 alene er 442 kB. Fra kapittel 3 sprenger seks lagringsplasser grensen på 5 MB i Firefox og Safari, og den grensen deles med Toms andre sider på `tombonator3000.github.io`. Med IndexedDB lagres hvert bilde bare én gang etter innhold (`{id, url}`); gjør det samme i reserveløsningen: bildene i egne `s47.`-nøkler etter innholdshash, lagringene peker på dem, og et bilde som ingen lagring bruker lenger, slettes. Gamle lagringer med bildene inne skal fortsatt lastes. Utvid `tools/saves.cjs` med en sak med seks lagringer og fullt album (36 frie bilder, `core/album.ts`) uten IndexedDB, og mål størrelsen før og etter. Kjør også `tools/album.py` og `tools/chapter1.py` med `S47_NO_IDB=1` slik testene gjør det i dag.
 
-### 2. [ ] Bevisbordet også i kapittel 1
+### 2. [x] Bevisbordet også i kapittel 1 (`codex/board-chapter1`)
 
 Base: `integration`. Filer: `src/story/boardRules.ts`, `src/story/caseBoard.ts`, `src/story/Chapter1.ts`, `src/ui/Panels.ts`, `tools/chapter1.py`, `tools/board.py`.
 
