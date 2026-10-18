@@ -40,6 +40,7 @@ import { Doors } from './world/Doors';
 import { bindTown, townPeople } from './story/caliche';
 import { TownEvents, townMarks } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
+import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
 import { surfaceY } from './drive/roadTerrain';
@@ -152,6 +153,10 @@ async function boot() {
   const roadside = new Roadside(audio, scene);
   // them, in the background, at the edge of the view (core/glimpses.ts)
   const glimpses = new Glimpses(scene);
+  // the souvenir shop's cardboard alien, turning up anywhere (core/cutouts.ts; Tom, 18 October)
+  const cutouts = new Cutouts(scene, (first) => {
+    if (first) game.note(`${clockText(game.clock, false)}. A cardboard alien, standing where nobody would put one. Nobody was there.`);
+  });
   // the time away (story/abduction.ts), on by default; the setting turns it off
   let abductOn = store.get('abductions', true);
   // eslint-disable-next-line prefer-const
@@ -597,7 +602,7 @@ async function boot() {
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
-    townEvents.reset(); glimpses.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
+    townEvents.reset(); glimpses.reset(); cutouts.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
@@ -734,6 +739,16 @@ async function boot() {
       ground: road ? (x, z) => surfaceY(x - ROAD_ORIGIN.x, z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y : (x, z) => world.grounds.floorAt(x, z),
       truck: tr && road ? { pos: tr.group.position, dir: camera.getWorldDirection(new THREE.Vector3()) } : null,
       flashlight: flashlight.on, zoom: zoomK,
+    };
+  }
+  function cutoutIn(ok: boolean): CutoutsIn {
+    const g = glimpseIn(ok), tr = world.driving ? world.truckHere() : null;
+    const ground = world.area === 'saro' || world.area === 'road' || world.area === 'diner';
+    const r = 0.45, blocked = (x: number, z: number) => player.colliders.some((c) => x > c.minX - r && x < c.maxX + r && z > c.minZ - r && z < c.maxZ + r);
+    return {
+      ok, cam: camera, clock: game.clock,
+      foot: world.driving ? null : { pos: player.pos, walkable: (x, z) => player.walkable(x, z), floor: (x, z) => (player.floor ? player.floor(x, z) : 0), blocked },
+      drive: tr && ground ? { pos: tr.group.position, dir: camera.getWorldDirection(new THREE.Vector3()), ground: g.ground } : null,
     };
   }
   function placeName() {
@@ -948,7 +963,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
@@ -1240,6 +1255,7 @@ async function boot() {
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
         });
       }
+      if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
       if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
       if (mode === 'play') lineLights.update(dt, {
         ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,

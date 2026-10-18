@@ -678,7 +678,10 @@ export class Chapter3 {
     if (s.stage !== 'develop' || !s.f3 || !s.f4) {
       P.wetBench(ui, { frame: '', step: 0, onAct: () => {}, empty: s.dev >= 3
         ? 'The tank is rinsed and empty.\nFrames 03 and 04 hang on the drying line and are filed in the case.'
-        : 'The tank is empty.\nThe field roll for STATION 01 is still in the camera.' });
+        // Tom, 18 October: "how do you fill the tank?" Say where the film comes from.
+        : !s.f3 || !s.f4
+          ? 'The tank is empty. Nothing to develop yet.\nFRAMES 03 and 04 are taken at STATION 01: drive out in the truck on the pad, photograph the site, and bring the roll back here.'
+          : 'The tank is empty.\nThe field roll for STATION 01 is still in the camera. Bring it back to SARO in the truck.' });
       return true;
     }
     if (this.busy === 'tank') { ui.toast('The tank is sealed. Give it a moment.'); return true; }
