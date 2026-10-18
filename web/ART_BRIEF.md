@@ -495,6 +495,81 @@ Lever en `town/MANIFEST.md` (og tilsvarende i `alien/` og `abduct/`) med filnavn
 
 Vindusbildene erstatter vindusbildene som er tegnet i kode i `world/Town.ts`; skiltene legges på skiltflatene, med teksten fra kode oppå den blanke utgaven hvis teksten i bildet ikke er riktig. Papp-romvesenet står i butikkvinduet og i veikanten (hendelse 6). Avisa ligger i bunken på bensinstasjonen fra 04:45. Silhuettene og bortføringsbildene tas i bruk med hendelsesregissøren (`HENDELSER.md` punkt 4, 7 og 8). Mangler et bilde, brukes det som er tegnet i kode, som i dag.
 
+## Runde 15: bevisbordet, fotoalbumet, utstyret, motell-tv-en og delingsbildet (Tom, 18. oktober)
+
+Bestilt 18. oktober av Tom («lag en bestillingsliste til ChatGPT som kan lage grafikk for oss til spillet»). Runde 13 (portrettene) og runde 14 (byen, romvesenene og bortføringen) er ikke levert ennå og kommer foran denne. Runde 15 er til det som kommer etterpå: bevisbordet med rød tråd som skal erstatte fanene i notatboka, fotoalbumet for det frie kameraet, tegninger av utstyret i notatboka, tv-en på motellkontoret (`HENDELSER.md`, hendelse 10) og bildet som vises når noen deler lenken til spillet.
+
+**Viktig:** natt, april 1986. Stilisert, slitt og ekte, ikke glanset. Ingen ekte merkenavn, logoer eller personer, og ingen tekst i bildene med mindre bestillingen sier det. Paletten fra stilavsnittet øverst. Ingen kjente produkter: et instant-bilde er et «instant-bilde», ikke et bestemt merke.
+
+### Prioritet A: bevisbordet (`board/`)
+
+Bordet er sett rett forfra, som om spilleren står foran det. Kortene og bildene er HTML som Claude legger oppå, så her trengs bare underlaget og tingene som holder dem fast.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `board/tex_cork.jpg` | 1024×1024, JPG, sømløs | Korkplate sett rett forfra, varm brun, med små hull etter gamle stifter og noen lysere flekker der lapper har hengt lenge. Jevnt lys, ingen skygge fra kanten |
+| `board/frame_wood.png` | 2048×1280, PNG med gjennomsiktig midtfelt | Smal treramme rundt korkplata, slitt lakk, en flis borte i ett hjørne. Midtfeltet helt gjennomsiktig (Claude legger korken der) |
+| `board/pin_red.png`, `board/pin_yellow.png`, `board/pin_blue.png` | 128×128, PNG med gjennomsiktighet | Tegnestift med rundt plasthode, sett litt ovenfra, med en liten skygge til høyre. Én farge per fil |
+| `board/thread_red.png` | 512×32, PNG med gjennomsiktighet, sømløs på langs | Rødt ullgarn, litt loddent, vridd. Gjentas langs tråden mellom to bevis |
+| `board/card_index_blank.png` | 768×512, PNG med gjennomsiktighet rundt | Et linjert arkivkort (5×3 tommer), offwhite, blå linjer og én rød linje øverst, litt gulnet og med et brett i ett hjørne. Ingen tekst |
+| `board/tape_strip.png` | 256×96, PNG med gjennomsiktighet | En bit maskeringstape revet av i begge ender, litt gjennomskinnelig |
+| `board/stain_coffee.png` | 512×512, PNG med gjennomsiktighet | En kaffering fra en kopp, svak og ujevn, som har tørket inn |
+
+### Prioritet A: fotoalbumet (`album/`)
+
+Bildene spilleren tar med feltkameraet havner i et album. Claude setter selve fotografiet inn i det gjennomsiktige vinduet og skriver bildeteksten.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `album/tex_album_page.jpg` | 1024×1024, JPG, sømløs | Svart albumpapir med fin struktur, litt falmet, som et fotoalbum fra 1970-tallet |
+| `album/photo_corner.png` | 128×128, PNG med gjennomsiktighet | Én fotohjørnelomme i svart papir, sett rett ovenfra (Claude snur den til de fire hjørnene) |
+| `album/frame_instant_blank.png` | 768×900, PNG | Rammen til et instant-bilde, hvit og litt gulnet, smal kant på tre sider og bred kant nederst for bildeteksten. Vinduet er nøyaktig 672×672 piksler, 48 piksler fra toppen og fra hver side, og helt gjennomsiktig. Ingen merke eller tekst |
+| `album/frame_sheetfilm_blank.png` | 1024×820, PNG | En kontaktkopi fra planfilm: svart filmkant med de små hakkene i ett hjørne, på hvitt fotopapir. Vinduet er nøyaktig 896×700 piksler, midt på, og helt gjennomsiktig. Ingen tall eller tekst |
+
+### Prioritet B: utstyret i notatboka (`kit/`)
+
+Fanen Kit i notatboka viser det spilleren bærer. Hver ting tegnes som en liten skisse i blekk og akvarell, som tegnet i margen av notatboka. Alle 256×256, PNG med gjennomsiktighet, tingen midt i, samme strek og samme lys på alle.
+
+| Fil | Hva |
+| --- | --- |
+| `kit/kit_notebook.png` | En brun notatbok med strikk rundt og en blyant i ryggen |
+| `kit/kit_jacket.png` | En mørk arbeidsjakke sett bakfra med et bredt refleksbånd over ryggen. Ingen tekst eller logo |
+| `kit/kit_camera.png` | Et sammenleggbart feltkamera for planfilm fra 1950-tallet, med belg og søker. Ikke et kjent merke |
+| `kit/kit_flashlight.png` | En lang lommelykt i metall fra 1980-tallet, mørk med riflet grep |
+| `kit/kit_keys.png` | To bilnøkler på en ring med en blank lærlapp. Ingen tekst på lappen (Claude skriver SARO 07) |
+| `kit/kit_papers.png` | Noen brettede ark og en utskrift på fanfoldpapir, holdt sammen med en binders |
+| `kit/kit_nickel_1947.png` | En amerikansk femcent fra 1947 (Jefferson-mynten), sett rett forfra, blank som ny. Årstallet 1947 skal synes. Blir årstallet feil, lever den uten årstall |
+
+### Prioritet B: tv-en på motellkontoret (`motel/`)
+
+Hendelse 10 i `HENDELSER.md`: testbildet, så bærebølgen i 47 sekunder, så ett bilde av motellets parkeringsplass ovenfra. Begge bildene vises på en tv-skjerm fra 1980-tallet; Claude legger på krumningen, linjene og støyen.
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `motel/tv_testcard_blank.jpg` | 640×480, JPG | Et generisk testbilde fra 1980-tallet: fargestriper, en sirkel med rutenett, gråtonetrapp. Ingen stasjonsnavn, logo eller tekst (Claude skriver det som trengs) |
+| `motel/tv_lot_above.jpg` | 640×480, JPG | Ett bilde av en liten motellparkering om natta, sett rett ovenfra fra stor høyde: natriumlys, oppmerkede plasser, en hvit pickup fra 1980-tallet med servicekasse på lasteplanet, ingen folk. Litt uskarpt, som tatt med et overvåkingskamera som ikke finnes |
+
+### Prioritet B: delingsbilde og ikon (`brand/`)
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `brand/og_cover.jpg` | 1200×630, JPG | Bildet som vises når noen deler lenken til spillet: radioteleskopene i arrayet om natta under Melkeveien, én parabol svakt opplyst, frontlysene fra en pickup langt ute på riksveien. Venstre tredjedel mørk og rolig, der Claude legger tittelen. Ingen tekst |
+| `brand/icon_512.png` | 512×512, PNG | Ikonet til spillet: silhuetten av én radioparabol mot en mørkeblå sirkel, med en tynn natriumoransje signallinje. Enkelt nok til å kjennes igjen i 32×32. Ingen tekst |
+
+### Ikke i denne runden
+
+- Det som står i runde 13 og 14, bestilles ikke på nytt.
+- Ingen 3D-modeller, ingen lyd, ingen menyer og ingen tekst inne i spillet (Claude skriver den).
+- Ingen ansikter på romvesenene, og spilleren (Reyes) får fortsatt aldri ansikt.
+
+### Manifest og kontroll
+
+Lever en `MANIFEST.md` i hver mappe (`board/`, `album/`, `kit/`, `motel/` og `brand/`) med filnavn, mål og en linje om hver. Claude sjekker størrelse, format, sømløshet (2×2-rutenett for `tex_cork.jpg`, `tex_album_page.jpg` og `thread_red.png`), at vinduene i rammene er gjennomsiktige og har riktig mål, og at det ikke er tekst eller logoer der det ikke skal være det.
+
+### Hvordan Claude kobler dem inn
+
+Bevisbordet i `ui/Board.ts` får korken, rammen, stiftene og garnet i stedet for fargene fra CSS, og kortene får arkivkortet som underlag. Fotoalbumet bygges når det frie kameraet kommer (`todo.md`), med rammene rundt hvert bilde. Kit-fanen får tegningene ved siden av hver ting. Testbildet og bildet ovenfra brukes i hendelse 10. Delingsbildet og ikonet legges i `index.html` (`og:image` og `icon`). Mangler et bilde, brukes det som er tegnet i kode eller CSS, som i dag.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.
