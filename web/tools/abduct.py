@@ -78,6 +78,7 @@ async def main():
         await pg.screenshot(path=f'{OUT}/a02_frame.png')
         nfr = await ev(f"{A}['frames'].length")
         check(nfr >= 3, f'a few single frames ({nfr})')
+        check(nfr == 5, f"round 14's painted frames among them: the light, the hand, the truck, the three on the ridge, yourself from above ({nfr})")
         check(await until('back', 20, 0.25), 'black, and back')
         c1 = await ev("S47.game.clock")
         lost = (c1 - c0) / 60

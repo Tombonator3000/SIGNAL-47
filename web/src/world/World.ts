@@ -20,7 +20,7 @@ import { Crossing, SHOULDER, WEST, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, type FloodSet } from './kit';
-import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
+import { loadArtFor, loadArtSome, artTexture, DINER_ART, OLDROAD_ART, TOWN_ART } from '../core/art';
 import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS } from './geo';
 import { horizonHaze } from './horizon';
 import { DINER } from '../drive/roadShape';
@@ -452,7 +452,8 @@ export class World {
   private dinerPark: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
   private ensureDiner() {
     return this.once('diner', async () => {
-      const [{ Diner }, { Town }] = await Promise.all([this.load('Diner'), this.load('Town'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt'])]);
+      // Caliche's pictures (round 14) come with it; one that does not is drawn in code
+      const [{ Diner }, { Town }] = await Promise.all([this.load('Diner'), this.load('Town'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt']), loadArtSome(TOWN_ART)]);
       this.road!.refreshOldRoad();   // the old road going off across from it, in its own asphalt (round 11)
       const d = new Diner(DINER_ORIGIN.clone(), true);
       d.setSurfaceArt(artTexture('dinerBooth', [2, 2]), artTexture('dinerWall', [0.5, 0.5]));

@@ -52,6 +52,7 @@ async def main():
         await ev("S47.tick(0.3)"); await ev("S47.tick(0.3)")
         await pg.screenshot(path=f'{OUT}/c01_seen.png')
         check(await ev(f"{C}.seen") == 1, f'turned to it: seen ({await ev(f"{C}.seen")})')
+        check(await ev(f"{C}['mat'].map.name") == 'art/cutout', "the painted cardboard of round 14 (town/cutout_alien.png), with a little light of its own")
         nn = (await ev("S47.game.notes.slice()"))[n0:]
         check(any('cardboard alien' in n for n in nn), f'the notebook: a cardboard alien ({nn[-1:] if nn else nn})')
         first = await ev(f"[{C}.position.x, {C}.position.z]")

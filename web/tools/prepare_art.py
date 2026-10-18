@@ -13,7 +13,13 @@ FILES = ['room/poster_listen.png', 'room/poster_saro.png', 'room/map_new_mexico.
          'ext/sign_sierra_on.png', 'lab/sign_blank.png', 'yard/floor_paint_frame.png',
          'annex/vending_front.png',
          'diner/sign_diner_blank.png', 'diner/menu_board_blank.png',
-         'road/milepost_blank.png', 'road/witness_post.png', 'road/survey_disk_brass.png']
+         'road/milepost_blank.png', 'road/witness_post.png', 'road/survey_disk_brass.png',
+         # round 14 (Caliche and them) and round 15 (the notebook's Kit tab)
+         'town/sign_caliche.png', 'town/sign_gas.png', 'town/sign_1420.png', 'town/sign_souvenir.png',
+         'town/sign_sheriff.png', 'town/marquee_plaza.png', 'town/board_church.png', 'town/cutout_alien.png',
+         'alien/silhouette_stand.png', 'alien/silhouette_turned.png', 'alien/silhouette_far.png',
+         'kit/kit_notebook.png', 'kit/kit_jacket.png', 'kit/kit_camera.png', 'kit/kit_flashlight.png',
+         'kit/kit_keys.png', 'kit/kit_papers.png', 'kit/kit_nickel_1947.png']
 OUT = ROOT / 'runtime'
 OUT.mkdir(exist_ok=True)
 sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()

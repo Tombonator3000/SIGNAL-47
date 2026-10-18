@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { cutoutTexture } from '../core/cutouts';
+import { artImage, artLoaded, artTexture, type ArtId } from '../core/art';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
@@ -26,23 +27,45 @@ import { SIGN_OFF } from '../core/radio';
 // bundle at the gas station from 04:45; from 05:05 the street lamps go off one by one, each on
 // its own photocell.
 
+// The pictures are ChatGPT's (ART_BRIEF.md, round 14, town/; World loads them with the town): the
+// eight windows, the seven signs with their words in them, the cardboard alien and the Sentinel's
+// front page, whose name, date and headline are written here. One that did not come is drawn in
+// code, as before.
+
 // sixteen lamps of its own (the last a porch light, 17 October), three for the driven truck's headlights (shine)
 export const townFlood = floodSet(20, 'town', 0.1);
 let floodOwner: Town | null = null;
 const FALL = 0.03;
 const SODIUM = 0xffa552;
-const AW = 2048, AH = 1024;
+const AW = 2048, AH = 2048;
 type Rect = readonly [number, number, number, number];
-// the sign atlas, drawn once (drawAtlas): one picture for every sign and every window
+// the sign atlas, drawn once (drawAtlas): one picture for every sign and every window. The four
+// big windows (the gas station, the sheriff, the studio with Earl and without) have the lower half
+// at the pictures' own size; the rest share the upper half.
 const R = {
   caliche: [0, 0, 512, 256], gas: [512, 0, 512, 256], am: [1024, 0, 512, 256], sheriff: [1536, 0, 512, 128],
   souvenir: [0, 256, 512, 256], marquee: [512, 256, 1024, 128], board: [512, 384, 512, 128], feed: [1024, 384, 512, 128],
   laundro: [1536, 256, 512, 128], open24: [1536, 384, 512, 128],
-  inGas: [0, 512, 512, 256], inSheriff: [512, 512, 512, 256], inStudio: [1024, 512, 512, 256], inLaundro: [1536, 512, 512, 256],
-  inTv: [0, 768, 256, 256], inWarm: [256, 768, 256, 256], poster: [512, 768, 256, 256], display: [768, 768, 256, 256],
-  paper: [1024, 768, 256, 256], pump: [1280, 768, 128, 128], phone: [1280, 896, 256, 64], closed: [1280, 960, 128, 64],
+  inLaundro2: [0, 512, 512, 256], display: [512, 512, 512, 256], inLaundro: [1536, 512, 512, 256],
+  inTv: [0, 768, 256, 256], inWarm: [256, 768, 256, 256], poster: [512, 768, 256, 256],
+  paper: [1024, 768, 192, 256], pump: [1280, 768, 128, 128], phone: [1280, 896, 256, 64], closed: [1280, 960, 128, 64],
   white: [1416, 776, 48, 48], lens: [1472, 768, 64, 64], blade: [1536, 768, 96, 256], onAir: [1648, 776, 112, 48],
+  inGas: [0, 1024, 1024, 389], inSheriff: [1024, 1024, 1024, 455], inStudio: [0, 1413, 1024, 457], inStudioEmpty: [1024, 1479, 1024, 457],
 } as const satisfies Record<string, Rect>;
+/** Which picture fills a part of the atlas, and the part of it shown: a window's picture is cut to
+ *  the window's shape (x, y, width, height in the picture), a sign's to its plate. */
+const ART: Partial<Record<keyof typeof R, [ArtId, Rect]>> = {
+  inGas: ['winGas', [0, 40, 1024, 389]], inSheriff: ['winSheriff', [0, 0, 1024, 455]],
+  inStudio: ['winStudio', [0, 20, 1024, 457]], inStudioEmpty: ['winStudioEmpty', [0, 20, 1024, 457]],
+  inLaundro: ['winLaundromat', [0, 110, 500, 275]], inLaundro2: ['winLaundromat', [524, 110, 500, 275]],
+  inTv: ['winTv', [50, 0, 666, 512]], inWarm: ['winKitchen', [180, 0, 666, 512]], display: ['winSouvenir', [140, 0, 661, 512]],
+  caliche: ['signCaliche', [16, 16, 992, 480]], gas: ['signGas', [22, 22, 980, 468]], am: ['sign1420', [14, 14, 996, 484]],
+  souvenir: ['signSouvenir', [9, 9, 1006, 494]], sheriff: ['signSheriff', [10, 10, 1004, 236]],
+  marquee: ['marqueePlaza', [12, 12, 2024, 232]], board: ['boardChurch', [10, 10, 1004, 236]], paper: ['paperSentinel', [0, 0, 768, 1024]],
+};
+const hasArt = (k: keyof typeof ART) => { const a = ART[k]; return !!a && artLoaded(a[0]); };
+/** A window's light: the code's drawing is tinted (colour, brightness), a picture shows as painted. */
+const lit = (k: keyof typeof ART, color: number, bright: number, artBright = 1): [number, number] => hasArt(k) ? [0xffffff, artBright] : [color, bright];
 type PanelId = 'lamps' | 'blink' | 'canopy' | 'gasSign' | 'gasWin' | 'sheriffWin' | 'laundro' | 'laundroWin' | 'studio' | 'onAir' | 'amSign'
   | 'display' | 'tv1' | 'tv2' | 'warm' | 'pumps' | string;
 /** Where the street lamps stand (road-local z, west side) and which goes off when at dawn. */
@@ -130,6 +153,9 @@ export class Town {
   private readonly panels = new Map<PanelId, Panel>();
   private qMesh!: THREE.Mesh;
   private dirty = false;
+  private studioQuad = 0;
+  /** The studio's window shows it after the Night Line has signed off (the picture without Earl). */
+  studioEmpty = false;
 
   constructor(origin: THREE.Vector3) {
     this.origin = origin.clone();
@@ -258,8 +284,15 @@ export class Town {
     return at;
   }
   /** A lit quad on a building's front (facing out of it, s: +1 east, -1 west). */
-  private frontQuad(b: Built, id: PanelId, r: Rect, z: number, y: number, w: number, h: number, color: THREE.ColorRepresentation = 0xffffff, k = 1) {
-    return this.quad(id, r, V(b.fx + b.s * 0.035, b.floor + y, z), V(0, 0, -b.s * w / 2), V(0, h / 2, 0), color, k);
+  private frontQuad(b: Built, id: PanelId, r: Rect, z: number, y: number, w: number, h: number, color: THREE.ColorRepresentation = 0xffffff, k = 1, flip = false) {
+    return this.quad(id, r, V(b.fx + b.s * 0.035, b.floor + y, z), V(0, 0, (flip ? b.s : -b.s) * w / 2), V(0, h / 2, 0), color, k);
+  }
+  /** Show another part of the atlas on a lit quad (the studio after four). */
+  private setQuadRect(at: number, r: Rect) {
+    const u0 = r[0] / AW, u1 = (r[0] + r[2]) / AW, v0 = 1 - (r[1] + r[3]) / AH, v1 = 1 - r[1] / AH;
+    const uv = this.qMesh.geometry.getAttribute('uv') as THREE.BufferAttribute;
+    [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].forEach(([u, v], i) => uv.setXY(at + i, u, v));
+    uv.needsUpdate = true;
   }
   private quadMesh() {
     const g = new THREE.BufferGeometry(), n = this.qPos.length / 3, idx: number[] = [];
@@ -344,7 +377,7 @@ export class Town {
       const y = this.gy(x, z);
       for (const dx of [-1.4, 1.4]) { box(this.st, .1, 3.2, .1, this.m.metal, x + dx, y + 1.6, z); this.post(x + dx, z, .15); }
       box(this.st, 3.7, 1.9, .06, this.m.dark, x, y + 2.15, z);
-      this.board(this.st, R.caliche, 3.6, 1.8, x, y + 2.15, z + n * .035, n > 0 ? 0 : Math.PI);
+      this.board(this.st, R.caliche, 3.6, hasArt('caliche') ? 1.74 : 1.8, x, y + 2.15, z + n * .035, n > 0 ? 0 : Math.PI);
     }
   }
 
@@ -402,7 +435,7 @@ export class Town {
     // office front: the door with the poster in it, the window with the counter behind
     this.pane(office, 2067.2, 1.12, 1.1, 2.2, m.glass); this.frame(office, 2067.2, 1.12, 1.1, 2.2); this.stoop(office, 2067.2, 1.6);
     this.board(this.st, R.poster, .46, .46, office.fx + .045, office.floor + 1.35, 2067.2, Math.PI / 2);
-    this.frontQuad(office, 'gasWin', R.inGas, 2073, 1.55, 4.6, 1.75, 0xffe2b8, .85); this.frame(office, 2073, 1.55, 4.6, 1.75);
+    this.frontQuad(office, 'gasWin', R.inGas, 2073, 1.55, 4.6, 1.75, ...lit('inGas', 0xffe2b8, .85)); this.frame(office, 2073, 1.55, 4.6, 1.75);
     box(this.st, .5, .08, 9.4, m.red, office.fx + .25, office.floor + 3.45, 2072);   // the red band along the top
     // the service bay: a roll-up door, closed
     plane(this.st, 3.6, 3.1, m.tin, bay.fx + .03, bay.floor + 1.55, 2083, Math.PI / 2); this.frame(bay, 2083, 1.55, 3.6, 3.1, m.trim, .12);
@@ -430,7 +463,7 @@ export class Town {
     const py = this.gy(-15.2, 2042);
     cyl(this.st, .14, .16, 7.2, m.metal, -15.2, py + 3.6, 2042, 8); this.post(-15.2, 2042, .25);
     box(this.st, 3.2, 1.7, .3, m.dark, -15.2, py + 6.5, 2042);
-    for (const n of [-1, 1]) this.quad('gasSign', R.gas, V(-15.2, py + 6.5, 2042 + n * .16), V(n * 1.5, 0, 0), V(0, .78, 0), 0xffffff, .95);
+    for (const n of [-1, 1]) this.quad('gasSign', R.gas, V(-15.2, py + 6.5, 2042 + n * .16), V(n * 1.5, 0, 0), V(0, hasArt('gas') ? .72 : .78, 0), 0xffffff, .95);
     this.glow.add(-15.2, py + 6.5, 2042, 6, 0x2a1810);
     // the payphone on a post at the corner of the office
     const ty = this.gy(-15.6, 2064.6);
@@ -449,9 +482,9 @@ export class Town {
   private sheriff() {
     const m = this.m, b = this.building(-26, -16, 2100, 2112, 3.5, m.tan, 1);
     this.pane(b, 2101.6, 1.1, 1.0, 2.15, m.trim); this.frame(b, 2101.6, 1.1, 1.0, 2.15, m.dark); this.stoop(b, 2101.6, 1.5);
-    this.frontQuad(b, 'sheriffWin', R.inSheriff, 2107.3, 1.6, 3.6, 1.6, 0xfff0d8, .85); this.frame(b, 2107.3, 1.6, 3.6, 1.6, m.trim);
+    this.frontQuad(b, 'sheriffWin', R.inSheriff, 2107.3, 1.6, 3.6, 1.6, ...lit('inSheriff', 0xfff0d8, .85)); this.frame(b, 2107.3, 1.6, 3.6, 1.6, m.trim);
     for (let i = 0; i < 6; i++) box(this.st, .03, 1.6, .03, m.dark, b.fx + .07, b.floor + 1.6, 2105.8 + i * .6);   // the bars
-    this.board(this.st, R.sheriff, 3.4, .85, b.fx + .04, b.floor + 2.95, 2105.4, Math.PI / 2);
+    this.board(this.st, R.sheriff, 3.4, hasArt('sheriff') ? .8 : .85, b.fx + .04, b.floor + 2.95, 2105.4, Math.PI / 2);
     this.light('sheriffWin', -15.4, b.floor + 1.7, 2107.3, 4.5, 0xfff0d0);
     this.slots.sheriffGlow = this.glow.add(b.fx + .4, b.floor + 1.6, 2107.3, 4, 0x2a2618);
     // the flagpole, the flag taken in for the night
@@ -464,7 +497,12 @@ export class Town {
   // ---------- the laundromat: one tube on all night, and a bench outside ----------
   private laundromat() {
     const m = this.m, b = this.building(-25, -15, 2126, 2140, 3.4, m.block, 1);
-    for (const z of [2128.9, 2132.3]) { this.frontQuad(b, 'laundroWin', R.inLaundro, z, 1.45, 3.1, 1.7, 0xe8f2ff, .8); this.frame(b, z, 1.45, 3.1, 1.7); }
+    // two windows on one room: with the picture, its left half in the south one (on the left seen
+    // from the street) and its right half in the north one
+    for (const z of [2128.9, 2132.3]) {
+      this.frontQuad(b, 'laundroWin', z < 2130 && hasArt('inLaundro2') ? R.inLaundro2 : R.inLaundro, z, 1.45, 3.1, 1.7, ...lit('inLaundro', 0xe8f2ff, .8));
+      this.frame(b, z, 1.45, 3.1, 1.7);
+    }
     this.frontQuad({ ...b, fx: b.fx + .012 }, 'laundroWin', R.open24, 2131.9, .85, .9, .22, 0xffffff, 1);
     this.pane(b, 2137.4, 1.1, 1.1, 2.2, m.glass); this.frame(b, 2137.4, 1.1, 1.1, 2.2); this.stoop(b, 2137.4, 1.6);
     this.frontQuad({ ...b, fx: b.fx + .28 }, 'laundro', R.laundro, 2131, 2.85, 4.2, 1.05, 0xffffff, .95);
@@ -489,7 +527,7 @@ export class Town {
     const fy = b.floor, mx = b.fx + 1.25;
     box(this.st, 2.5, 1.15, 9.8, m.dark, mx, fy + 3.55, 2162);
     box(this.st, 2.56, .14, 9.86, m.metal, mx, fy + 4.18, 2162); box(this.st, 2.56, .1, 9.86, m.metal, mx, fy + 2.96, 2162);
-    this.board(this.st, R.marquee, 9.6, 1.0, mx + 1.27, fy + 3.55, 2162, Math.PI / 2);
+    this.board(this.st, R.marquee, 9.6, hasArt('marquee') ? 1.1 : 1.0, mx + 1.27, fy + 3.55, 2162, Math.PI / 2);
     for (const n of [-1, 1]) this.board(this.st, R.white, 2.4, 1.0, mx, fy + 3.55, 2162 + n * 4.92, n > 0 ? 0 : Math.PI);
     for (let i = 0; i < 12; i++) box(this.st, .1, .06, .1, m.white, mx + 1.2, fy + 2.9, 2157.4 + i * .84);   // the bulbs, out
     box(this.st, .9, 3.4, .22, m.dark, b.fx + .45, fy + 6.1, 2162);
@@ -522,7 +560,7 @@ export class Town {
   private station1420() {
     const m = this.m, b = this.building(20, 30, 2030, 2042, 3.3, m.block, -1);
     this.pane(b, 2031.4, 1.1, 1.0, 2.15, m.trim); this.frame(b, 2031.4, 1.1, 1.0, 2.15, m.dark); this.stoop(b, 2031.4, 1.4);
-    this.frontQuad(b, 'studio', R.inStudio, 2037.2, 1.55, 3.7, 1.65, 0xffe6c4, .8); this.frame(b, 2037.2, 1.55, 3.7, 1.65);
+    this.studioQuad = this.frontQuad(b, 'studio', R.inStudio, 2037.2, 1.55, 3.7, 1.65, ...lit('inStudio', 0xffe6c4, .8)); this.frame(b, 2037.2, 1.55, 3.7, 1.65);
     this.frontQuad({ ...b, fx: b.fx - .012 }, 'onAir', R.onAir, 2038.4, 2.1, .5, .22, 0xffffff, 1.1);
     // the sign on the roof's edge, lit
     for (const z of [2033.6, 2038.6]) box(this.st, .08, 1.3, .08, m.metal, b.fx + .3, b.top + .65, z);
@@ -557,7 +595,7 @@ export class Town {
     for (const z of [2058.4, 2064, 2069.6]) { const y = this.gy(18.6, z); cyl(this.st, .1, .12, py - y, m.wood, 18.6, (y + py) / 2, z, 7); this.post(18.6, z, .15); }
     for (const z of [2063, 2065.2]) box(this.st, .1, 1.2, .1, m.wood, 18.8, py + .6, z);
     this.board(this.st, R.souvenir, 2.6, 1.3, 18.7, py + .85, 2064.1, -Math.PI / 2);
-    this.frontQuad(b, 'display', R.display, 2062.3, 1.45, 2.2, 1.7, 0xffe0b0, .35); this.frame(b, 2062.3, 1.45, 2.2, 1.7, m.trim);
+    this.frontQuad(b, 'display', R.display, 2062.3, 1.45, 2.2, 1.7, ...lit('display', 0xffe0b0, .35, .8)); this.frame(b, 2062.3, 1.45, 2.2, 1.7, m.trim);
     this.pane(b, 2066.8, 1.1, 1.0, 2.15, m.trim); this.frame(b, 2066.8, 1.1, 1.0, 2.15, m.wood); this.stoop(b, 2066.8, 1.4);
     this.board(this.st, R.closed, .42, .2, b.fx - .045, b.floor + 1.5, 2066.8, -Math.PI / 2);
     this.glow.add(b.fx - .3, b.floor + 1.4, 2062.3, 2.4, 0x1a120a);
@@ -582,7 +620,8 @@ export class Town {
     const x = 18.9, y = this.gy(x, 2087.3);
     for (const z of [2086, 2088.6]) { box(this.st, .12, 1.95, .12, m.wood, x, y + .97, z); this.post(x, z, .12); }
     box(this.st, .14, .95, 2.75, m.wood, x, y + 1.4, 2087.3);
-    this.board(this.st, R.board, 2.5, .78, x - .075, y + 1.4, 2087.3, -Math.PI / 2);
+    if (hasArt('board')) this.board(this.st, R.board, 2.62, .62, x - .075, y + 1.4, 2087.3, -Math.PI / 2);
+    else this.board(this.st, R.board, 2.5, .78, x - .075, y + 1.4, 2087.3, -Math.PI / 2);
     box(this.st, .3, .05, .05, m.metal, x - .15, y + 1.95, 2087.3); box(this.st, .1, .1, .1, m.dark, x - .3, y + 1.92, 2087.3);
     this.light('board', x - .6, y + 2.2, 2087.3, 3, 0xffdca0);
     this.glow.add(x - .3, y + 1.88, 2087.3, .35, 0xffe0a0); this.glow.add(x - .4, y + 1.6, 2087.3, 3, 0x1e160a);
@@ -593,11 +632,12 @@ export class Town {
   // ---------- houses, set back on the east side; a television on in two of them ----------
   private houses() {
     const m = this.m;
-    const house = (x0: number, x1: number, z0: number, z1: number, mat: THREE.Material, s: 1 | -1, win: PanelId | null, wz: number) => {
+    // the second television's room is the first one's the other way round
+    const house = (x0: number, x1: number, z0: number, z1: number, mat: THREE.Material, s: 1 | -1, win: PanelId | null, wz: number, flip = false) => {
       const b = this.building(x0, x1, z0, z1, 3.0, mat, s, .3);
       const dz = wz > (z0 + z1) / 2 ? z0 + 1.6 : z1 - 1.6;
       this.pane(b, dz, 1.05, .95, 2.1, m.trim); this.frame(b, dz, 1.05, .95, 2.1, m.wood, .08); this.stoop(b, dz, 1.3);
-      if (win) this.frontQuad(b, win, win === 'warm' ? R.inWarm : R.inTv, wz, 1.5, 1.5, 1.15, win === 'warm' ? 0xffd8a8 : 0xc8d8ff, .7);
+      if (win) this.frontQuad(b, win, win === 'warm' ? R.inWarm : R.inTv, wz, 1.5, 1.5, 1.15, ...(win === 'warm' ? lit('inWarm', 0xffd8a8, .7, .9) : lit('inTv', 0xc8d8ff, .7)), flip);
       else this.pane(b, wz, 1.5, 1.5, 1.15);
       this.frame(b, wz, 1.5, 1.5, 1.15, m.wood, .08);
       // the mailbox at the street
@@ -608,7 +648,7 @@ export class Town {
     };
     const h1 = house(24, 33, 2128, 2138, m.tan, -1, 'tv1', 2131.2);
     house(24.5, 32, 2152, 2161, m.cream, -1, null, 2155.2);
-    const h3 = house(25, 34, 2180, 2190, m.tan, -1, 'tv2', 2186.6);
+    const h3 = house(25, 34, 2180, 2190, m.tan, -1, 'tv2', 2186.6, true);
     const hw = house(-28, -19, 2236, 2246, m.cream, 1, 'warm', 2239.2);
     this.light('tv1', h1.fx - .5, h1.floor + 1.5, 2131.2, 3, 0x9db6ff);
     this.light('tv2', h3.fx - .5, h3.floor + 1.5, 2186.6, 3, 0x9db6ff);
@@ -701,11 +741,12 @@ export class Town {
       this.present(this.proxy('smoker', .7, 1.9, .8, x, y + .95, z), () => this.smokerIn);
     }
   }
-  // ---------- the cardboard alien, out on the shoulder (event 6): drawn in code until ChatGPT's
-  // cutout_alien.png comes (ART_BRIEF.md, round 14) ----------
+  // ---------- the cardboard alien, out on the shoulder (event 6): ChatGPT's cutout_alien.png
+  // (ART_BRIEF.md, round 14), or the one drawn in code if it did not come ----------
   private cardboard() {
-    const tex = cutoutTexture();
-    const mat = this.mat({ map: tex, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+    const tex = artLoaded('cutout') ? artTexture('cutout') : cutoutTexture();
+    // a little of its own paint shows in the dark, as the one that wanders (core/cutouts.ts): cardboard, not them
+    const mat = this.mat({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.1, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
     // the shape is the canvas's painted part: the rest is clear and cut away (alphaTest)
     const p = this.cutoutAt, y = this.gy(p.x, p.z);
     p.y = y;
@@ -779,7 +820,9 @@ export class Town {
     }
     // the Night Line until four, then the carrier and an empty studio
     const air = day < SIGN_OFF;
-    this.setPanel('onAir', air ? 1 : 0); this.setPanel('studio', air ? 1 : 0.3);
+    this.setPanel('onAir', air ? 1 : 0);
+    if (!hasArt('inStudioEmpty')) this.setPanel('studio', air ? 1 : 0.3);
+    else if (air === this.studioEmpty) { this.studioEmpty = !air; this.setQuadRect(this.studioQuad, air ? R.inStudio : R.inStudioEmpty); this.setPanel('studio', air ? 1 : 1.8); }
     setFlood(this.slots.studio, air ? 4 : 1.2, townFlood);
     // the blinker: on a little over half a second, off a little under
     const blink = (t % 1.1) < 0.6;
@@ -861,45 +904,66 @@ export class Town {
     return d >= 1.2 ? g : y + (g - y) * THREE.MathUtils.smoothstep(d, 0, 1.2);
   };
   /** The atlas and its quads, for the developer's eye (tools/town.py). */
-  get stats() { return { quads: this.qPos.length / 12, lamps: townFlood.count, colliders: this.colliders.length, glows: this.glow.points.geometry.getAttribute('position')?.count ?? 0 }; }
+  get stats() {
+    return { quads: this.qPos.length / 12, lamps: townFlood.count, colliders: this.colliders.length, glows: this.glow.points.geometry.getAttribute('position')?.count ?? 0,
+      pictures: (Object.keys(ART) as (keyof typeof ART)[]).filter(hasArt).length, studioEmpty: this.studioEmpty };
+  }
 }
 
 // ---------- the atlas: every sign and window picture of the town, drawn once ----------
 function drawAtlas(g: CanvasRenderingContext2D) {
   g.fillStyle = '#000'; g.fillRect(0, 0, AW, AH);
-  const at = (r: Rect, fn: (w: number, h: number) => void) => { g.save(); g.translate(r[0], r[1]); g.beginPath(); g.rect(0, 0, r[2], r[3]); g.clip(); fn(r[2], r[3]); g.restore(); };
+  // d: the size the drawing was made for, when the part of the atlas has grown since (a window
+  // given room for its picture): it is stretched to fit, so it looks on the wall as it did
+  const at = (r: Rect, fn: (w: number, h: number) => void, d?: readonly [number, number]) => {
+    g.save(); g.translate(r[0], r[1]); g.beginPath(); g.rect(0, 0, r[2], r[3]); g.clip();
+    if (d) g.scale(r[2] / d[0], r[3] / d[1]);
+    fn(d ? d[0] : r[2], d ? d[1] : r[3]); g.restore();
+  };
+  // a picture of round 14 in its place, on the sign's dark backing; false: it did not come.
+  // light: brighter than painted (the souvenir sign's brown boards have no lamp of their own)
+  const pic = (k: keyof typeof ART, light = 1) => {
+    const a = ART[k], r = R[k];
+    if (!a || !artLoaded(a[0])) return false;
+    const s = a[1];
+    g.fillStyle = '#1e2225'; g.fillRect(r[0], r[1], r[2], r[3]);
+    if (light !== 1) g.filter = `brightness(${light})`;
+    g.drawImage(artImage(a[0]), s[0], s[1], s[2], s[3], r[0], r[1], r[2], r[3]);
+    g.filter = 'none';
+    return true;
+  };
   const text = (s: string, x: number, y: number, font: string, color: string, max?: number, align: CanvasTextAlign = 'center') => {
     g.font = font; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y, max);
   };
   const SANS = 'Arial, Helvetica, sans-serif', SERIF = 'Georgia, "Times New Roman", serif';
   const rnd = (() => { let s = 1986; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
 
-  at(R.caliche, (w, h) => {
+  if (!pic('caliche')) at(R.caliche, (w, h) => {
     g.fillStyle = '#1e5a3a'; g.fillRect(0, 0, w, h);
     g.strokeStyle = '#eef2ea'; g.lineWidth = 9; g.strokeRect(14, 14, w - 28, h - 28);
     text('CALICHE', w / 2, 100, `bold 112px ${SANS}`, '#eef2ea', w - 70);
     text('POP. 412', w / 2, 186, `bold 58px ${SANS}`, '#eef2ea', w - 120);
   });
-  at(R.gas, (w, h) => {
+  if (!pic('gas')) at(R.gas, (w, h) => {
     g.fillStyle = '#f0ebdf'; g.fillRect(0, 0, w, h);
     text('GAS', w / 2, 92, `bold 150px ${SANS}`, '#b2261e', w - 60);
     g.fillStyle = '#1d3557'; g.fillRect(0, 176, w, 80);
     text('DIESEL', w / 2, 217, `bold 56px ${SANS}`, '#f0ebdf', w - 80);
   });
-  at(R.am, (w, h) => {
+  if (!pic('am')) at(R.am, (w, h) => {
     g.fillStyle = '#18202c'; g.fillRect(0, 0, w, h);
     text('1420', 210, 95, `bold 140px ${SANS}`, '#f4ead2', 330);
     text('AM', 430, 112, `bold 70px ${SANS}`, '#f4ead2', 120);
     g.fillStyle = '#c9862a'; g.fillRect(30, 172, w - 60, 4);
     text('N I G H T   L I N E', w / 2, 214, `bold 44px ${SANS}`, '#e8a640', w - 60);
   });
-  at(R.sheriff, (w, h) => {
+  if (!pic('sheriff')) at(R.sheriff, (w, h) => {
     g.fillStyle = '#4a3a28'; g.fillRect(0, 0, w, h);
     g.strokeStyle = '#c8a860'; g.lineWidth = 4; g.strokeRect(8, 8, w - 16, h - 16);
     text('COUNTY SHERIFF', w / 2, 48, `bold 54px ${SERIF}`, '#d8b868', w - 40);
     text('SUBSTATION', w / 2, 98, `bold 34px ${SERIF}`, '#d8b868', w - 80);
   });
-  at(R.souvenir, (w, h) => {
+  if (!pic('souvenir', 1.6)) at(R.souvenir, (w, h) => {
     // plywood, painted by hand
     g.fillStyle = '#cbb48a'; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(110,80,40,${0.05 + rnd() * 0.08})`; g.fillRect(0, rnd() * h, w, 1 + rnd() * 3); }
@@ -910,7 +974,7 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     g.save(); g.translate(330, 140); g.rotate(0.03); text('TOURS', 0, 0, `bold 76px ${SERIF}`, '#2f5a2a', 300); g.restore();
     text('ASK INSIDE', w / 2 + 40, 212, `bold 44px ${SERIF}`, '#3a2a1a', 360);
   });
-  at(R.marquee, (w, h) => {
+  if (!pic('marquee')) at(R.marquee, (w, h) => {
     g.fillStyle = '#ebe5d0'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#b9b19a'; for (const y of [42, 86]) g.fillRect(0, y, w, 2);
     text('C L O S E D', w / 2, 30, `bold 38px ${SANS}`, '#151515', w - 80);
@@ -918,7 +982,7 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     text('FOR 31 YEARS', w / 2, 106, `bold 30px ${SANS}`, '#151515', w - 200);
     g.fillStyle = '#ebe5d0'; g.fillRect(w / 2 + 120, 92, 26, 28);   // a letter has fallen
   });
-  at(R.board, (w, h) => {
+  if (!pic('board')) at(R.board, (w, h) => {
     g.fillStyle = '#16181a'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#23272a'; for (let y = 6; y < h; y += 8) g.fillRect(0, y, w, 2);
     text('THE HEAVENS DECLARE', w / 2, 26, `bold 34px ${SANS}`, '#efefea', w - 30);
@@ -940,7 +1004,7 @@ function drawAtlas(g: CanvasRenderingContext2D) {
   });
   // ---------- windows, seen from the street at night ----------
   const wall = (w: number, h: number, top: string, bottom: string) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, top); gr.addColorStop(1, bottom); g.fillStyle = gr; g.fillRect(0, 0, w, h); };
-  at(R.inGas, (w, h) => {
+  if (!pic('inGas')) at(R.inGas, (w, h) => {
     wall(w, h, '#e8d4a8', '#9a8460');
     for (const y of [40, 92, 144]) { g.fillStyle = '#6a5038'; g.fillRect(250, y, 240, 6); for (let x = 256; x < 486; x += 18) { g.fillStyle = ['#b33', '#d9b130', '#2b5aa8', '#e8e0d0', '#2a7a3a'][Math.floor(rnd() * 5)]; g.fillRect(x, y - 26, 13, 26); } }
     g.fillStyle = '#efe8d8'; g.fillRect(60, 30, 110, 120); text('APRIL', 115, 46, `bold 18px ${SANS}`, '#a22'); text('1986', 115, 68, `14px ${SANS}`, '#333');
@@ -950,8 +1014,8 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     // the attendant, reading behind the counter
     g.fillStyle = '#2a2420'; g.beginPath(); g.arc(200, 128, 20, 0, 7); g.fill(); g.fillRect(172, 146, 56, 40);
     g.fillStyle = '#d8d0b8'; g.fillRect(178, 160, 46, 24);
-  });
-  at(R.inSheriff, (w, h) => {
+  }, [512, 256]);
+  if (!pic('inSheriff')) at(R.inSheriff, (w, h) => {
     wall(w, h, '#c4ccb4', '#8a9480');
     // the county map on the wall, and its pins
     g.fillStyle = '#e4d8b4'; g.fillRect(40, 18, 300, 170); g.strokeStyle = '#6a6250'; g.lineWidth = 3; g.strokeRect(40, 18, 300, 170);
@@ -966,8 +1030,9 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     g.fillStyle = '#2a2a2a'; g.fillRect(380, 170, 70, 30); g.fillStyle = '#7a8a3a'; g.fillRect(392, 178, 24, 10);
     g.fillStyle = '#c8b030'; g.beginPath(); g.moveTo(450, 120); g.lineTo(490, 120); g.lineTo(470, 98); g.fill();
     g.fillStyle = '#e8e4d8'; g.fillRect(360, 186, 14, 16);
-  });
-  at(R.inStudio, (w, h) => {
+  }, [512, 256]);
+  pic('inStudioEmpty');
+  if (!pic('inStudio')) at(R.inStudio, (w, h) => {
     wall(w, h, '#5a4030', '#2e2018');
     g.fillStyle = '#6a5040'; for (let x = 0; x < w; x += 40) for (let y = 0; y < 150; y += 40) g.fillRect(x + 3, y + 3, 34, 34);
     g.fillStyle = '#ff2a1a'; g.fillRect(36, 20, 96, 34); text('ON AIR', 84, 38, `bold 22px ${SANS}`, '#fff');
@@ -978,8 +1043,9 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     g.fillStyle = '#1e1814'; g.beginPath(); g.arc(250, 112, 24, 0, 7); g.fill(); g.fillRect(214, 134, 72, 40);
     g.strokeStyle = '#111'; g.lineWidth = 6; g.beginPath(); g.arc(250, 110, 28, Math.PI, 0); g.stroke();
     g.strokeStyle = '#555'; g.lineWidth = 4; g.beginPath(); g.moveTo(330, 40); g.lineTo(290, 104); g.stroke(); g.fillStyle = '#333'; g.fillRect(280, 100, 16, 22);
-  });
-  at(R.inLaundro, (w, h) => {
+  }, [512, 256]);
+  pic('inLaundro2');
+  if (!pic('inLaundro')) at(R.inLaundro, (w, h) => {
     wall(w, h, '#eef4f6', '#b8c4c8');
     g.strokeStyle = '#c8d2d6'; g.lineWidth = 1; for (let x = 0; x < w; x += 22) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 150); g.stroke(); }
     g.fillStyle = '#ffffff'; g.fillRect(0, 6, w, 8);
@@ -987,14 +1053,14 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     g.fillStyle = '#fff'; g.fillRect(380, 40, 110, 46); text('NO DYEING', 435, 63, `bold 18px ${SANS}`, '#a22');
     g.fillStyle = '#c8c0b0'; g.fillRect(0, 230, w, 26);
   });
-  at(R.inTv, (w, h) => {
+  if (!pic('inTv')) at(R.inTv, (w, h) => {
     wall(w, h, '#151b2a', '#0a0d16');
     const gr = g.createRadialGradient(170, 120, 10, 170, 120, 130); gr.addColorStop(0, 'rgba(160,190,255,.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     g.fillStyle = '#3a2c20'; g.fillRect(130, 140, 90, 70); g.fillStyle = '#dce8ff'; g.fillRect(140, 96, 70, 52);
     g.fillStyle = '#0c0c10'; g.beginPath(); g.arc(70, 150, 22, 0, 7); g.fill(); g.fillRect(30, 166, 80, 90);   // someone in the chair
     g.fillStyle = '#3a1418'; g.fillRect(0, 0, 26, h); g.fillRect(w - 26, 0, 26, h);
   });
-  at(R.inWarm, (w, h) => {
+  if (!pic('inWarm')) at(R.inWarm, (w, h) => {
     wall(w, h, '#e8b070', '#b87838');
     for (let x = 0; x < w; x += 18) { g.fillStyle = `rgba(120,60,20,${0.1 + 0.1 * Math.sin(x)})`; g.fillRect(x, 0, 8, h); }
   });
@@ -1007,7 +1073,7 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     text('MIDNIGHT TO FOUR', w / 2, 220, `bold 18px ${SANS}`, '#141414', w - 40);
     g.fillStyle = 'rgba(230,220,160,.7)'; g.fillRect(0, 0, 40, 14); g.fillRect(w - 40, 0, 40, 14);
   });
-  at(R.display, (w, h) => {
+  if (!pic('display')) at(R.display, (w, h) => {
     wall(w, h, '#2a221a', '#140e0a');
     // the cardboard alien, the rubber mask, the bags of foil
     g.fillStyle = '#9aa69a'; g.beginPath(); g.ellipse(90, 74, 40, 50, 0, 0, 7); g.fill(); g.fillRect(74, 116, 32, 120);
@@ -1015,8 +1081,18 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     g.fillStyle = '#4c7a3a'; g.beginPath(); g.ellipse(196, 132, 26, 32, 0, 0, 7); g.fill(); g.fillStyle = '#111'; g.fillRect(182, 124, 8, 6); g.fillRect(202, 124, 8, 6);
     for (let i = 0; i < 3; i++) { g.fillStyle = '#c8ccd0'; g.fillRect(150 + i * 32, 200, 26, 30); g.fillStyle = '#e8ecf0'; g.fillRect(154 + i * 32, 206, 10, 8); }
     g.fillStyle = '#efe6cc'; g.fillRect(138, 176, 104, 18); text('GENUINE DEBRIS $1', 190, 185, `bold 11px ${SANS}`, '#222', 100);
+  }, [256, 256]);
+  // the Sentinel: its front page (round 14) has room for the name and the headline above the
+  // picture of the green; they are written here, so they are always right
+  if (pic('paper')) at(R.paper, (w) => {
+    g.globalAlpha = 0.9;
+    text('PECOS VALLEY SENTINEL', w / 2, 19, `bold 20px ${SERIF}`, '#161514', w - 14);
+    g.fillStyle = '#161514'; g.fillRect(8, 31, w - 16, 1); g.fillRect(8, 41, w - 16, 1);
+    text('MONDAY, APRIL 14, 1986', w / 2, 36.5, `7px ${SERIF}`, '#161514', w - 30);
+    text('NICKLAUS, 46, WINS MASTERS', w / 2, 58, `bold 15px ${SERIF}`, '#111', w - 12);
+    g.globalAlpha = 1;
   });
-  at(R.paper, (w, h) => {
+  else at(R.paper, (w, h) => {
     g.fillStyle = '#ddd5c2'; g.fillRect(0, 0, w, h);
     text('PECOS VALLEY SENTINEL', w / 2, 24, `bold 21px ${SERIF}`, '#1a1a1a', w - 16);
     g.fillStyle = '#1a1a1a'; g.fillRect(8, 40, w - 16, 2);
@@ -1024,7 +1100,7 @@ function drawAtlas(g: CanvasRenderingContext2D) {
     text('NICKLAUS, 46,', w / 2, 86, `bold 30px ${SERIF}`, '#111', w - 16);
     text('WINS MASTERS', w / 2, 118, `bold 30px ${SERIF}`, '#111', w - 16);
     g.fillStyle = '#7a746a'; for (let c = 0; c < 3; c++) for (let i = 0; i < 12; i++) g.fillRect(10 + c * 82, 142 + i * 9, 70 - (i % 3) * 8, 3);
-  });
+  }, [256, 256]);
   at(R.pump, (w, h) => {
     g.fillStyle = '#e8e2d4'; g.fillRect(0, 0, w, h);
     text('REGULAR', w / 2, 18, `bold 16px ${SANS}`, '#b2261e', w - 10);

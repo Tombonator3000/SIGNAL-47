@@ -163,5 +163,203 @@
     "source_sha256": "f2cd813854e1e18a75243e48e7755623da72c28ca688650206ceb76926da46c6",
     "runtime_sha256": "2b785c52a092bc152beffbe3294d7d6a93d8b332e43f3b57ad2db4bffda46b42",
     "bytes": 100682
+  },
+  {
+    "source": "town/sign_caliche.png",
+    "runtime": "runtime/sign_caliche.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "dafedb30b2099f50c455719b4ea1021b0ea43e413c93ce2a9cd1a3e9ef85d65e",
+    "runtime_sha256": "5f27c66ea9c39efc612f224d27c2d9bb879fa75d0b6531d0fd2d9bd0034c50a6",
+    "bytes": 12660
+  },
+  {
+    "source": "town/sign_gas.png",
+    "runtime": "runtime/sign_gas.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "5b147c37bc8f6cdb25e4f65079f34835233e96329e72348cf03702b8c0cb43e4",
+    "runtime_sha256": "4fd830045228d873f084fd2cb44af44e8e7c4fb90a5a03d5297158097877f084",
+    "bytes": 11304
+  },
+  {
+    "source": "town/sign_1420.png",
+    "runtime": "runtime/sign_1420.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "761681a1a84e1bae957e5b53e474374c7c6259d627cd7237a7c1a10d243227cd",
+    "runtime_sha256": "1c889ee656a912765579545197db0c15ac789a975d156f1a61ee790465461716",
+    "bytes": 14124
+  },
+  {
+    "source": "town/sign_souvenir.png",
+    "runtime": "runtime/sign_souvenir.webp",
+    "dimensions": [
+      1024,
+      512
+    ],
+    "source_sha256": "06ba86933f3be49cc39e86bdeed877cf4da44e177a9a84d8c6b12f1123ece427",
+    "runtime_sha256": "b781edcfdda10fb902fb4eae87f20273891e4b087ffe69cf6de8e6f04b066347",
+    "bytes": 18364
+  },
+  {
+    "source": "town/sign_sheriff.png",
+    "runtime": "runtime/sign_sheriff.webp",
+    "dimensions": [
+      1024,
+      256
+    ],
+    "source_sha256": "252175fe4ddd44dbde9614b18c8583fa8c0dec45b75f7c736985546bedffdd77",
+    "runtime_sha256": "1df30be63cf0f96a2868c5c6f9bd8d13057becfcd00553c0c4c165adcf3f9313",
+    "bytes": 12382
+  },
+  {
+    "source": "town/marquee_plaza.png",
+    "runtime": "runtime/marquee_plaza.webp",
+    "dimensions": [
+      2048,
+      256
+    ],
+    "source_sha256": "5d901c739343885873a87f6cdcc52899005850f32a58c1f2aebdf2aab3420bc4",
+    "runtime_sha256": "91e7909aa944d91bd02ac5b4d47bd1a317a4484df0b0325fc3e6cd8b7678db87",
+    "bytes": 16676
+  },
+  {
+    "source": "town/board_church.png",
+    "runtime": "runtime/board_church.webp",
+    "dimensions": [
+      1024,
+      256
+    ],
+    "source_sha256": "ca18fbf4ebd29166da226ba85fe31d767ffd68eb794ebf2cd3622edbbd2fbc58",
+    "runtime_sha256": "6c5e7c3c5351cf99551252cebb6c602c94abf88592ca1f1ccc50d5fce5e3f83c",
+    "bytes": 15478
+  },
+  {
+    "source": "town/cutout_alien.png",
+    "runtime": "runtime/cutout_alien.webp",
+    "dimensions": [
+      512,
+      1024
+    ],
+    "source_sha256": "4bf2625267ebbcf39cbd6aec1cec98433daf844011ca159297f940e356643a06",
+    "runtime_sha256": "ef63bccaf5529546971cac5d221c0f6eb50a41a1fe7af522972e58dcc543455b",
+    "bytes": 120886
+  },
+  {
+    "source": "alien/silhouette_stand.png",
+    "runtime": "runtime/silhouette_stand.webp",
+    "dimensions": [
+      512,
+      1024
+    ],
+    "source_sha256": "6640bc37adbb11f0aa19e0eb113ad898905c5c49b64b2560ab544b199aad6e4b",
+    "runtime_sha256": "f89d2343d83fdd374d63ce9e362003ee90508ee767b0156be426077c9a2b9abe",
+    "bytes": 7784
+  },
+  {
+    "source": "alien/silhouette_turned.png",
+    "runtime": "runtime/silhouette_turned.webp",
+    "dimensions": [
+      512,
+      1024
+    ],
+    "source_sha256": "69a3b008bfc3203f16c5cae02f35d595dfbe98fb1d6d0142ed20cc73a1b0b375",
+    "runtime_sha256": "5e778695e09c72e81bdf1a3714b033f21705a9ac1f4063e62aa2c9ec86618208",
+    "bytes": 6528
+  },
+  {
+    "source": "alien/silhouette_far.png",
+    "runtime": "runtime/silhouette_far.webp",
+    "dimensions": [
+      256,
+      512
+    ],
+    "source_sha256": "bfd49685554a44c50615673ec89bdf688ced78fe4b86e5f78dd981a0d76fb478",
+    "runtime_sha256": "c8f53ebc6e594028f888a41717e6fc6a6c61f0daff28eead00a0e38cf09b4dc8",
+    "bytes": 5624
+  },
+  {
+    "source": "kit/kit_notebook.png",
+    "runtime": "runtime/kit_notebook.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "e041611bc1e7ffa611cd907cf68b0cf94fb855d85a237a2ee2605fb2ea297f7b",
+    "runtime_sha256": "5b19f1e45b39f44fc6f43bc04ecb91d51572c3c8d238db21b6caa36d86e7e4be",
+    "bytes": 14542
+  },
+  {
+    "source": "kit/kit_jacket.png",
+    "runtime": "runtime/kit_jacket.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "aa78ca56519bba47335f43dc86c1d6cae7124b1763436b0406155b7d0234ba57",
+    "runtime_sha256": "ca24887b9a0dae9169bc4c197676e6e90da238ed597611593f6707995b0e1828",
+    "bytes": 17312
+  },
+  {
+    "source": "kit/kit_camera.png",
+    "runtime": "runtime/kit_camera.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "600e9532179464ca5b04032b01040544f890f9567e78e3be5fff7be70ce9d067",
+    "runtime_sha256": "ad784da9cbb031701060f367316468bad7c89b2d70632db55f27410043ecebcd",
+    "bytes": 21506
+  },
+  {
+    "source": "kit/kit_flashlight.png",
+    "runtime": "runtime/kit_flashlight.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "a58ee94c757c409c52a6e0fb85c3a3d3ea7c668b0ec6bae718c518f798203c36",
+    "runtime_sha256": "ce275d5ee9d4699e46ecc19ce72ee94331fdad1fe71c903dec394053b330fee5",
+    "bytes": 13070
+  },
+  {
+    "source": "kit/kit_keys.png",
+    "runtime": "runtime/kit_keys.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "f59cf202cc7e71fdc85e311059c9c058784095e5a051bf4bda4c50c1bfa1e9d5",
+    "runtime_sha256": "d12ad48d70a131884c4541759bb78d2d5d92dfb1d871097d0b057df219f278fd",
+    "bytes": 19790
+  },
+  {
+    "source": "kit/kit_papers.png",
+    "runtime": "runtime/kit_papers.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "5534f25567d5e69e9cdab5cf398e1857ce602e77e6645b1752a4ff576ac09a13",
+    "runtime_sha256": "411c9873780e7831d7e343724747a26d4b821487ef31104a9e58329a8fe2e9e1",
+    "bytes": 15996
+  },
+  {
+    "source": "kit/kit_nickel_1947.png",
+    "runtime": "runtime/kit_nickel_1947.webp",
+    "dimensions": [
+      256,
+      256
+    ],
+    "source_sha256": "33fc884139b7e4ac15c6acd3d27d7a1983623b54784ee38e5b4e5fe98795c1d1",
+    "runtime_sha256": "407c6c505901c98c05dbeb1dcf664bbfa00c22ab73f09e7eede2b40cbf5895f6",
+    "bytes": 23992
   }
 ]

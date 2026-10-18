@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PHOTO_W, PHOTO_H, PHOTO_FOV, type FieldCamera } from './FieldCamera';
-import { silhouette } from './roadside';
+import { Silhouette } from './roadside';
 import { clockText } from '../story/time';
 
 // The free camera and the album (todo.md, after They Are Here; SPILLDESIGN.md, point 6). Once the
@@ -86,15 +86,15 @@ export class Album {
   forceGhost = false;
   /** Tests: what the last caption was made from, how bright the frame was, how long it took. */
   last: { names: string[]; odd: string[]; mean: number; ms: number; lookMs: number; ghost: boolean } | null = null;
+  private sil: Silhouette;
   private ghost: THREE.Group;
   private halos: THREE.Mesh[] = [];
   private rc = new THREE.Raycaster();
 
   constructor(private d: AlbumDeps) {
     // the same figure as the glimpses (core/glimpses.ts), with a little more of a rim: the film sees more than the eye
-    this.ghost = silhouette();
-    this.ghost.name = 'album:ghost';
-    ((this.ghost.children[1] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(0x221a14);
+    this.sil = new Silhouette('album:ghost', 0x221a14);
+    this.ghost = this.sil.group;
     this.ghost.visible = false;
     d.scene.add(this.ghost);
     // and round a figure the film keeps a faint pale smear, the way a long exposure keeps a light:
@@ -126,6 +126,7 @@ export class Album {
   /** Take a free frame now (Chapter1.shutter, when the case has no frame to take here). */
   expose() {
     const d = this.d, fcam = d.fcam, t0 = performance.now();
+    this.sil.wake();
     fcam.sync();
     const clock = d.clock(), place = d.place(), n = this.data.shots.length;
     // someone at the edge of the frame, on the film only
