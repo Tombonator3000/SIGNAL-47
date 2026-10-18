@@ -62,6 +62,8 @@ export interface NightDeps {
   openDoor: () => void;
   silence: () => void;
   place: () => string;
+  /** The 47 s of silence are on (core/roadside.ts). */
+  silent: () => boolean;
 }
 
 export class NightEvents {
@@ -76,6 +78,8 @@ export class NightEvents {
   private radioNear = 1e9;
 
   constructor(private d: NightDeps) {}
+  /** Something of this director's is going on (the town's director waits for it). */
+  get busy() { return !!this.pending || this.stepsLeft.length > 0 || this.d.silent(); }
 
   private count(id: string) { let n = 0; for (const k of this.d.seen) if (k.startsWith(`ne:${id}`)) n++; return n; }
   private done(id: NightEventId, clock: number) {

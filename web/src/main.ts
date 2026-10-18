@@ -753,7 +753,7 @@ async function boot() {
     bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
     openDoor: () => doors.set('east', true),
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k) }); },
-    place: () => placeName(),
+    place: () => placeName(), silent: () => roadside.silent,
   });
   function nightIn(ok: boolean): NightIn {
     const tr = world.truckHere(), out = world.area === 'saro' ? space === 'yard' : !world.indoors(player.pos);
@@ -1277,12 +1277,13 @@ async function boot() {
       if (mode === 'play') {
         const cp = camera.getWorldPosition(townAt);
         townEvents.update(dt, {
-          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
+          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !nightEvents.busy,
           inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
         });
       }
-      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
+      // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
+      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none'));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
       if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
       if (mode === 'play') lineLights.update(dt, {
