@@ -5,7 +5,7 @@ Denne fila gjelder alt under `web/`. For denne mappen erstatter den Unity-reglen
 ## Roller
 
 - Claude: lead og koder. Arkitektur, gameplay, geometri, lyd, tester og innbygging av grafikk.
-- ChatGPT: grafikk og støtte. Lager 2D-assets etter `ART_BRIEF.md`, konseptkunst og tekstutkast. Leverer filer med nøyaktig navn og størrelse fra briefen. Endrer ikke kode uten avtale med Tom.
+- ChatGPT og Codex: grafikk og støtte. Lager 2D-assets etter `ART_BRIEF.md`, konseptkunst og tekstutkast. Leverer filer med nøyaktig navn og størrelse fra briefen. Fra 18. oktober 2026 (avtalt med Tom) også kode, men bare oppgavene Claude har skrevet i `CODEX_TASKS.md`, hver på sin egen gren.
 - Tom: bestemmer retning, tester på mobil og PC, committer og fletter.
 
 ## Før du gjør noe
