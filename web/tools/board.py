@@ -296,13 +296,14 @@ async def main():
             t1 = await B.view()
             check(abs(t1['tx'] - t0['tx']) + abs(t1['ty'] - t0['ty']) > 20, f'{name}: a finger on the cork moves the view')
             # a card dragged with a finger
-            await ev("S47.game.board.view.show('e07.head')")
-            sel = '.bcard[data-card=e07] .bcard-head span'
+            await ev("S47.game.board.view.show('s03log')")
+            sel = '.bcard[data-card=s03log] .bcard-sum'
             x, y = await B.centre(sel)
-            l0 = await ev("parseFloat(document.querySelector('.bcard[data-card=e07]').style.top)")
+            under = await ev(f"(() => {{ const e = document.elementFromPoint({x}, {y}); return e ? e.className + ' in ' + ((e.closest('[data-id]') || {{dataset: {{}}}}).dataset.id) : null; }})()")
+            l0 = await ev("parseFloat(document.querySelector('.bcard[data-card=s03log]').style.top)")
             await touch([(x, y + 40 * i / 8) for i in range(9)])
-            l1 = await ev("parseFloat(document.querySelector('.bcard[data-card=e07]').style.top)")
-            check(l1 - l0 > 30, f'{name}: a card follows a finger ({l1 - l0:.0f} board px)')
+            l1 = await ev("parseFloat(document.querySelector('.bcard[data-card=s03log]').style.top)")
+            check(l1 - l0 > 30, f'{name}: a card follows a finger ({l1 - l0:.0f} board px; under the finger: {under})')
             # two fingers pinch the board smaller
             s0 = (await B.view())['s']
             vr = await ev("(() => { const r = document.querySelector('[data-view]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
