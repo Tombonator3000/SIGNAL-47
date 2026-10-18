@@ -15,7 +15,9 @@ import type { AudioSys } from './Audio';
 //
 // The programme runs in real time while the game runs, so a tune or a caller goes on at the
 // speed it is heard; only the fixed points (the sign-off, the sign-on) follow the night's
-// clock, which runs faster on a drive. A station makes sound only while a radio listens.
+// clock, which runs faster on a drive. A station makes sound only while a radio listens. On a
+// drive, the trip's own lines (story/tripRadio.ts) are said in between, in the station's voices
+// (Station.slot).
 //
 // The voices are not words but a muted horn that talks, "wah wah", like the grown-ups in
 // Peanuts (Tom, 16 October: a little cartoonish, but it works in the surreal night); what they
@@ -35,8 +37,8 @@ export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
 export const streamOn = import.meta.env.MODE !== 'single';
 
-export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy' | 'news';
-export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126, boy: 262, news: 150 };
+export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy' | 'news' | 'old';
+export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126, boy: 262, news: 150, old: 104 };
 /** A number from text, the same every time (a line mumbles the same way each time it is said). */
 function seed(text: string) { let h = 2166136261; for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619); return h >>> 0; }
 function rng(n: number) { return () => { n = (n + 0x6d2b79f5) >>> 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -63,7 +65,9 @@ export function syllables(text: string, secs: number) {
   });
   return out;
 }
-interface Line { text: string | ((clock: number) => string); who?: Voice; by?: string }
+/** A line said on a station: the words (or the words at this clock, for the time checks), the
+ *  voice, and who said it for the caption (none: the station's own host). */
+export interface Line { text: string | ((clock: number) => string); who?: Voice; by?: string }
 type TuneId = 'waltz' | 'ballad' | 'twostep' | 'far';
 /** The recordings (public/radio/), mono and narrow like AM, and how long each is (s). */
 const TRACK: Record<TuneId, { file: string; dur: number }> = {
@@ -73,7 +77,7 @@ const TRACK: Record<TuneId, { file: string; dur: number }> = {
   far: { file: 'anamalie', dur: 208.2 },
 };
 type Seg =
-  | { kind: 'talk'; lines: Line[] }
+  | { kind: 'talk'; lines: Line[]; slotted?: boolean }
   | { kind: 'music'; tune: TuneId; len: number }
   | { kind: 'anthem' }
   | { kind: 'carrier'; len: number }
@@ -162,6 +166,15 @@ const FAR: Seg[] = [music('far', 96)];
 /** How long a line takes to say. */
 export const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
 const GAP = 0.7;
+/** Seconds of its own programme a station has after anything else (a trip's lines, the boy, the
+ *  bulletin), before it takes the next. */
+const CALM = 10;
+/** A record plays at least this long before the host comes in over it, and fades in this long. */
+const RECORD_MIN = 5, RECORD_FADE = 1.6;
+/** No trip's lines in the last minutes before a fixed point (the sign-off at four). */
+const BEFORE_FIXED = 180;
+/** Lines a trip's programme has put on a station (Station.slot). */
+export interface Slotted { readonly kind: 'talk'; readonly lines: Line[]; readonly slotted?: boolean }
 const lineText = (l: Line, clock: number) => (typeof l.text === 'function' ? l.text(clock) : l.text);
 /** The length of a segment; a talk's is fixed when it starts, with the clock then. */
 function segLen(s: Seg, clock: number) {
@@ -290,6 +303,10 @@ export class Station {
   anthemFailed = !streamOn;
   /** Each line as it starts: (text, who said it). */
   onLine?: (text: string, by: string | undefined) => void;
+  /** Seconds the station has been in its own programme (since the last of anything else). */
+  private calm = CALM;
+  /** The record on now is being faded down for the host (slot). */
+  private fading = false;
 
   constructor(readonly id: StationId, private radio: Radio) {}
   private get cfg() { return CFG[this.id]; }
@@ -306,7 +323,48 @@ export class Station {
   }
 
   /** Back to the start of a night at this clock (a new night, a save opened). */
-  reset(clock: number) { this.prev = null; this.fixed(clock); }
+  reset(clock: number) { this.prev = null; this.calm = CALM; this.fixed(clock); }
+  /** In its own programme now, with nothing else waiting behind it (not the boy's call, the
+   *  bulletin, the sign-off or the sign-on, or a trip's lines), and has been for a little while. */
+  get free() { return this.onAir && this.queue.length === 1 && this.cfg.loop.includes(this.seg) && this.calm >= CALM; }
+  /** Lines of the station's own, said next (a trip's programme, story/tripRadio.ts): after the
+   *  talk that is on, or over the end of the record, faded down, and then the next record (the
+   *  talk that was next waits for the next time round). Only while the station is free,
+   *  and not in the last minutes before its fixed point, so nothing else is talked over. After
+   *  them, the programme goes on where it was. Returns them as they wait on the air (where,
+   *  unslot), or null if they were not taken. */
+  slot(lines: Line[], clock: number): Slotted | null {
+    if (!this.free) return null;
+    const f = this.cfg.fixed, day = ((clock % 86400) + 86400) % 86400;
+    if (f && this.after === 'loop' && day < f.at && day > f.at - BEFORE_FIXED) return null;
+    const s = this.seg;
+    if (s.kind === 'music') {
+      if (this.t < RECORD_MIN) return null;
+      if (this.t + RECORD_FADE < this.len) {
+        this.len = this.t + RECORD_FADE; this.fading = true;
+        const n = this.n, ctx = this.radio.audio.ctx;
+        if (n && ctx) { const g = n.mus.gain, now = ctx.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(0, now + RECORD_FADE); }
+      }
+      const L = this.cfg.loop;
+      if (L[this.loopAt % L.length].kind === 'talk') this.loopAt++;
+    } else if (s.kind !== 'talk') return null;
+    const seg: Seg & Slotted = { kind: 'talk', lines, slotted: true };
+    this.queue.splice(1, 0, seg);
+    return seg;
+  }
+  /** Lines taken by slot(): being said now, still waiting, or gone (the sign-off came first). */
+  where(x: Slotted): 'on' | 'waiting' | null {
+    const i = this.queue.indexOf(x as Seg);
+    return i === 0 ? 'on' : i > 0 ? 'waiting' : null;
+  }
+  /** Lines taken by slot() and not begun yet, taken out again (the trip is over before them).
+   *  Returns whether they were. */
+  unslot(x: Slotted) {
+    const i = this.queue.indexOf(x as Seg);
+    if (i < 1) return false;
+    this.queue.splice(i, 1);
+    return true;
+  }
   /** Something else on the frequency, now: these lines, and then the programme again as if
    *  nothing had been (HENDELSER.md, event 4). Returns how long it takes, or 0 if off the air. */
   cutIn(lines: { text: string; who: Voice; by: string }[], clock: number) {
@@ -318,7 +376,7 @@ export class Station {
 
   private start(segs: Seg[], clock: number, skip = 0) {
     this.queue = segs.slice();
-    this.t = 0; this.said = -1; this.sc = clock; this.segNo++;
+    this.t = 0; this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
     this.len = segLen(this.seg, clock);
     this.forward(skip, clock, true);
     this.sync();
@@ -363,7 +421,7 @@ export class Station {
       this.queue.shift();
       if (!this.queue.length) this.queue.push(...this.refill(clock));
       this.len = segLen(this.seg, clock);
-      this.said = -1; this.sc = clock; this.segNo++;
+      this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
       changed = true;
     }
     // the lines of a talk, each once as it starts
@@ -382,6 +440,7 @@ export class Station {
   update(dt: number, clock: number) {
     this.fixed(clock);
     if (this.forward(dt, clock)) this.sync();
+    this.calm = this.cfg.loop.includes(this.seg) ? this.calm + dt : 0;
   }
 
   // ---------- the sound ----------
@@ -429,6 +488,10 @@ export class Station {
     const n = this.n, ctx = this.radio.audio.ctx;
     if (!n || !ctx) return;
     const now = ctx.currentTime, s = this.seg, t = this.t;
+    // the music's level: up, or going down for the host (slot)
+    const mg = n.mus.gain;
+    mg.cancelScheduledValues(now); mg.setValueAtTime(1, now);
+    if (this.fading) mg.linearRampToValueAtTime(0, now + Math.max(0.05, this.len - t));
     // the tune
     if (n.music) { try { n.music.stop(); } catch { /* stopped */ } n.music.disconnect(); n.music = null; }
     const bars = this.trackFailed || this.trackSkip === this.segNo;
@@ -679,7 +742,7 @@ export class Radio {
   state() {
     return Object.fromEntries(DIAL.map((id) => {
       const s = this.stations[id];
-      return [id, { seg: s.seg.kind, t: s.t, awake: s.awake, listeners: s.listeners, strength: s.strength(this.clock, this.time),
+      return [id, { seg: s.seg.kind, t: s.t, free: s.free, slotted: s.seg.kind === 'talk' && !!s.seg.slotted, awake: s.awake, listeners: s.listeners, strength: s.strength(this.clock, this.time),
         anthem: s.anthemEl ? { time: s.anthemEl.currentTime, paused: s.anthemEl.paused, failed: s.anthemFailed } : null, anthemFailed: s.anthemFailed }];
     }));
   }

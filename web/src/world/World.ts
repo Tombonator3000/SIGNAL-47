@@ -176,9 +176,22 @@ export class World {
   troubleOk?: () => boolean;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
   private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string;
-    free: boolean; start: THREE.Vector3; left: boolean; secs: number } | null = null;
+    free: boolean; start: THREE.Vector3; left: boolean; secs: number; metres: number; n: number } | null = null;
+  private tripNo = 0;
   /** Seconds the truck has been driven on this trip (the story's or the player's own), or null. */
   get tripSecs() { return this.driving && this.trip && !this.trip.free ? this.trip.secs : null; }
+  /** The trip being driven, for the radio's programme on the way (story/tripRadio.ts): which
+   *  trip (n), from and to (to null on a drive of the player's own), the metres driven, and where
+   *  it is bound: its place, or on the player's own drive the way the truck is going by now (null
+   *  while it could still go either way, drive/legs.ts boundOn). Null when not on a trip, on a
+   *  free drive (the developer menu) and on chapter six's road. */
+  get tripNow(): { n: number; from: LegId; to: LegId | null; bound: LegId | null; metres: number } | null {
+    const trip = this.trip, id = this.leg, L = id ? this.legs[id] : null, legs = this.mods.legs;
+    if (!this.driving || !trip || trip.free || !id || id === 'roswell' || !L || !legs) return null;
+    const D = L.drive;
+    return { n: trip.n, from: trip.from, to: trip.to, metres: trip.metres,
+      bound: trip.to ?? legs.boundOn(id, D.pos.x, D.pos.z, D.heading, D.reversing) };
+  }
 
   private mods: Partial<Modules> = {};
   private road: RoadArea | null = null;
@@ -668,7 +681,7 @@ export class World {
       this.trucksHome = TRUCKS.map((id) => this.truckOf(id)).filter((t): t is Truck => !!t)
         .map((t) => ({ t, x: t.group.position.x, y: t.group.position.y, z: t.group.position.z, h: t.group.rotation.y }));
       this.trip = { from, to, perMetre: o.perMetre ?? 0, onArrive: o.onArrive, still: 0, home: this.truckAt, hint: o.hint,
-        free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false, secs: 0 };
+        free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false, secs: 0, metres: 0, n: ++this.tripNo };
       this.leg = leg0;
       if (!o.free) { this.truckAt = null; for (const id of TRUCKS) this.parkAt(id); }
       L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
@@ -702,6 +715,7 @@ export class World {
     const trip = this.trip;
     if (!trip) return;
     trip.secs += dt;
+    trip.metres += Math.abs(D.speed) * dt;
     if (trip.perMetre) this.d.skipClock(Math.abs(D.speed) * dt * trip.perMetre);
     const here = !!trip.to && legs.legOf(trip.to) === id, P = trip.to ? this.parkBox(trip.to) : null;
     // where to leave the truck, said once it is in sight

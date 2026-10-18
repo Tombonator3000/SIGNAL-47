@@ -21,6 +21,7 @@ import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, TRACKS, type Cue } from './core/score';
 import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId, BOY } from './core/radio';
+import { TripRadio } from './story/tripRadio';
 import { NightCalls } from './core/calls';
 import { CB } from './core/cb';
 import { Roadside } from './core/roadside';
@@ -762,7 +763,7 @@ async function boot() {
     return {
       ok, clock: game.clock, cam: camera, foot, driving: world.driving,
       truck: !world.driving && tr ? { pos: tr.group.position, radioOn: carRadio.on } : null,
-      radio1420: world.driving && carRadio.live && carRadio.station === 'caliche' && radio.stations.caliche.onAir && radio.stations.caliche.seg.kind !== 'anthem',
+      radio1420: world.driving && carRadio.live && carRadio.station === 'caliche' && radio.stations.caliche.free,
       saro: world.area === 'saro' && out && !world.driving ? { phone: objAt(room.objs.phone), door: objAt(room.objs.doorEast), doorOpen: doors.isOpen('east') } : null,
       silenceFree: !roadside.silent && !game.notes.some((n) => n.includes('No sound for 47 s')),
     };
@@ -1185,6 +1186,10 @@ async function boot() {
   let radioHeard = false;
   const radioAt = new THREE.Vector3(), counterAt = new THREE.Vector3();
   let carNear = false;
+  // the programme on the way: each trip's lines at marks along it, on the station the truck's
+  // radio is tuned to (story/tripRadio.ts)
+  const tripRadio = new TripRadio(radio, townSeen);
+  (window as any).S47.tripRadio = () => tripRadio;   // the tests
   function radioStep(dt: number) {
     const tr = world.truckHere();
     if (tr) { tr.group.getWorldPosition(radioAt); radioAt.y += 1.05; }
@@ -1204,6 +1209,8 @@ async function boot() {
     if (!dinerOn && dinerRadio.on) dinerRadio.set(false);
     dinerRadio.pos = dinerOn ? counterAt : null;
     radio.update(dt, game.clock);
+    // (after the stations: one that has just come to its sign-off is not free any more)
+    tripRadio.update({ trip: world.tripNow, phase: game.phase, clock: game.clock, tuned: world.driving && carRadio.live && !game.cinematic ? carRadio.station : null });
     radioHeard = (carRadio.live && carNear) || (dinerRadio.live && !world.driving && player.pos.distanceTo(counterAt) < 12);
     ui.radioButton(world.driving && !!tr, carRadio.on);
   }
