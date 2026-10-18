@@ -176,7 +176,8 @@ async def main():
         check(await ev("S47.motelTv.mode") == 'card' and not await ev("S47.abductIn().line"), 'in the office: the test card; the office is not out on the line')
         await tick(8)
         check(await ev("S47.motelTv.mode") == 'card', 'with the truck at SARO, nothing happens on it')
-        p1, p2, p3 = await ev(f"{PIX}(20, 50)"), await ev(f"{PIX}(56, 50)"), await ev(f"{PIX}(128, 50)")
+        # near the top: the round 15 card (motel/tv_testcard_blank.jpg) has its circle over the middle of the bars
+        p1, p2, p3 = await ev(f"{PIX}(20, 8)"), await ev(f"{PIX}(56, 8)"), await ev(f"{PIX}(128, 8)")
         check(abs(p1[0] - p1[2]) < 25 and p1[0] > 60 and p2[0] > 70 and p2[2] < p2[0] * 0.5 and p3[1] > p3[0] + 30, f'on the screen the colour bars: grey, yellow, green ({p1}, {p2}, {p3})')
         check(await ev("S47.world.motel.flood.pos[S47.world.motel['slots'].tv].w") > 0.5, 'the set lights the office')
         await shot('t01_testcard')
