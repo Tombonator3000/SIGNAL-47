@@ -1,0 +1,358 @@
+[
+  {
+    "file": "town/sign_caliche_blank.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Bygrenseskilt, grønn refleksplate, uten tekst",
+    "source": "town__sign_caliche_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/sign_caliche.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Bygrenseskilt, grønn refleksplate",
+    "source": "town__sign_caliche.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "CALICHE",
+      "POP. 412"
+    ]
+  },
+  {
+    "file": "town/sign_gas_blank.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Slitt hvitt lysskilt med rød kant, uten tekst",
+    "source": "town__sign_gas_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/sign_gas.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Slitt hvitt lysskilt med rød kant",
+    "source": "town__sign_gas.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "GAS",
+      "DIESEL"
+    ]
+  },
+  {
+    "file": "town/sign_1420_blank.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Mørkt takskilt for nattradioen, uten tekst",
+    "source": "town__sign_1420_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/sign_1420.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Mørkt takskilt for nattradioen",
+    "source": "town__sign_1420.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "1420 AM",
+      "NIGHT LINE"
+    ]
+  },
+  {
+    "file": "town/sign_souvenir_blank.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Håndmalt treskilt med eldre overmaling, uten tekst",
+    "source": "town__sign_souvenir_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/sign_souvenir.png",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Håndmalt treskilt med eldre overmaling",
+    "source": "town__sign_souvenir.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "SAUCER CRASH 1947",
+      "TOURS",
+      "ASK INSIDE"
+    ]
+  },
+  {
+    "file": "town/sign_sheriff_blank.png",
+    "size": [
+      1024,
+      256
+    ],
+    "description": "Metallskilt over sheriffens dør, uten tekst",
+    "source": "town__sign_sheriff_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/sign_sheriff.png",
+    "size": [
+      1024,
+      256
+    ],
+    "description": "Metallskilt over sheriffens dør",
+    "source": "town__sign_sheriff.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "COUNTY SHERIFF",
+      "SUBSTATION"
+    ]
+  },
+  {
+    "file": "town/marquee_plaza_blank.png",
+    "size": [
+      2048,
+      256
+    ],
+    "description": "Kinomarkise, bokstaven R har falt ut av YEARS, uten tekst",
+    "source": "town__marquee_plaza_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/marquee_plaza.png",
+    "size": [
+      2048,
+      256
+    ],
+    "description": "Kinomarkise, bokstaven R har falt ut av YEARS",
+    "source": "town__marquee_plaza.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "CLOSED",
+      "THANK YOU CALICHE",
+      "FOR 31 YEA S"
+    ]
+  },
+  {
+    "file": "town/board_church_blank.png",
+    "size": [
+      1024,
+      256
+    ],
+    "description": "Riflet bokstavtavle ved kirken, uten tekst",
+    "source": "town__board_church_blank.svg",
+    "method": "original-svg",
+    "sign_text": []
+  },
+  {
+    "file": "town/board_church.png",
+    "size": [
+      1024,
+      256
+    ],
+    "description": "Riflet bokstavtavle ved kirken",
+    "source": "town__board_church.svg",
+    "method": "original-svg",
+    "sign_text": [
+      "THE HEAVENS DECLARE THE GLORY OF GOD",
+      "PS 19:1"
+    ]
+  },
+  {
+    "file": "board/frame_wood.png",
+    "size": [
+      2048,
+      1280
+    ],
+    "description": "Smal slitt treramme, 1920×1152 åpent midtfelt ved 64,64",
+    "source": "board__frame_wood.svg",
+    "method": "original-svg",
+    "window": [
+      64,
+      64,
+      1920,
+      1152
+    ]
+  },
+  {
+    "file": "board/pin_red.png",
+    "size": [
+      128,
+      128
+    ],
+    "description": "Tegnestift med red rundt plasthode",
+    "source": "board__pin_red.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "board/pin_yellow.png",
+    "size": [
+      128,
+      128
+    ],
+    "description": "Tegnestift med yellow rundt plasthode",
+    "source": "board__pin_yellow.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "board/pin_blue.png",
+    "size": [
+      128,
+      128
+    ],
+    "description": "Tegnestift med blue rundt plasthode",
+    "source": "board__pin_blue.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "board/thread_red.png",
+    "size": [
+      512,
+      32
+    ],
+    "description": "Rødt ullgarn, periode 8 px og sømløst på langs",
+    "source": "board__thread_red.svg",
+    "method": "original-svg",
+    "tile_axes": "x"
+  },
+  {
+    "file": "board/card_index_blank.png",
+    "size": [
+      768,
+      512
+    ],
+    "description": "Linjert arkivkort, blå linjer og rød toppmarg, uten tekst",
+    "source": "board__card_index_blank.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "board/tape_strip.png",
+    "size": [
+      256,
+      96
+    ],
+    "description": "Revet maskeringstape med delvis gjennomsiktig papir",
+    "source": "board__tape_strip.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "board/stain_coffee.png",
+    "size": [
+      512,
+      512
+    ],
+    "description": "Svak ujevn tørket kaffering",
+    "source": "board__stain_coffee.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "album/photo_corner.png",
+    "size": [
+      128,
+      128
+    ],
+    "description": "Én svart fotohjørnelomme sett ovenfra",
+    "source": "album__photo_corner.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "album/frame_instant_blank.png",
+    "size": [
+      768,
+      900
+    ],
+    "description": "Instant-ramme, eksakt åpent vindu 672×672 ved 48,48",
+    "source": "album__frame_instant_blank.svg",
+    "method": "original-svg",
+    "window": [
+      48,
+      48,
+      672,
+      672
+    ]
+  },
+  {
+    "file": "album/frame_sheetfilm_blank.png",
+    "size": [
+      1024,
+      820
+    ],
+    "description": "Planfilmramme, eksakt åpent vindu 896×700 ved 64,60",
+    "source": "album__frame_sheetfilm_blank.svg",
+    "method": "original-svg",
+    "window": [
+      64,
+      60,
+      896,
+      700
+    ]
+  },
+  {
+    "file": "alien/silhouette_stand.png",
+    "size": [
+      512,
+      1024
+    ],
+    "description": "Høy svart skikkelse med lange armer, uten ansiktsdetaljer",
+    "source": "alien__silhouette_stand.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "alien/silhouette_turned.png",
+    "size": [
+      512,
+      1024
+    ],
+    "description": "Samme skikkelse halvt fra siden, hodet lyttende på skrå",
+    "source": "alien__silhouette_turned.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "alien/silhouette_far.png",
+    "size": [
+      256,
+      512
+    ],
+    "description": "Samme skikkelse på avstand med myk kant",
+    "source": "alien__silhouette_far.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "brand/icon_512.png",
+    "size": [
+      512,
+      512
+    ],
+    "description": "Radioparabol i mørkeblå sirkel med tynn oransje signallinje",
+    "source": "brand__icon_512.svg",
+    "method": "original-svg"
+  },
+  {
+    "file": "motel/tv_testcard_blank.jpg",
+    "size": [
+      640,
+      480
+    ],
+    "description": "Generisk testbilde med fargestriper, sirkel, rutenett og gråtrapp",
+    "source": "motel__tv_testcard_blank.svg",
+    "method": "original-svg"
+  }
+]

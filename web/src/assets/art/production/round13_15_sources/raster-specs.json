@@ -1,0 +1,736 @@
+[
+  {
+    "file": "people/portrait_nora.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: finished individual dialogue portrait for SIGNAL / 47, an original quiet cosmic mystery game set in rural New Mexico in April 1986. Create ONLY one vertical head-and-shoulders portrait, 4:5 aspect ratio, aiming 1024x1280 or higher. Subject: Nora Vega, a fictional 57-year-old Hispanic New Mexican woman who owns a roadside motor court. Dark hair threaded with gray pinned up in a practical loose bun, fine lines, watchful dark eyes, tired ordinary believable face, alert as though she has waited a long time. Work blouse under a muted brown cardigan, reading glasses hanging on a plain cord. Three quarter head angle, gaze just off-camera, both eyes around the upper third. Lighting: warm tungsten desk lamp from the left, faint muted motel neon red on the opposite cheek, dark background fading almost to black. Style: painted stylized realism like a carefully illustrated 1980s paperback cover, soft visible brushwork and restrained fine grain, NOT a photograph, NOT cartoon, no glossy science fiction. Palette near-black navy #05070d, worn paper #ebe3cf, subdued sodium amber #a8641f, muted neon red. Face and shoulders readable at 512x640. No other people, no props obscuring face. Absolutely no writing, lettering, badges, logos, watermark, border, or real person's likeness. Consistent restrained portrait series composition.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-d4b60d90-7216-49a5-82c3-cef1dba4fce8.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "76f3e40255aab24baf77d67a42194cc2e45f38f4b67c5d86778248a8da840489",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_nora.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Nora Vega, 57, varm lampe og dempet motellneon"
+  },
+  {
+    "file": "people/portrait_waitress.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders, 1024x1280 preferred. Three-quarter angle, gaze just OFF-camera, eyes around upper third, shoulders complete at lower corners. Painted stylized realism of an illustrated 1980s paperback cover, soft visible brushwork, modest grain, ordinary tired believable people. Not photographic, not cartoon, no glossy sci-fi. Dark navy background fading near black, paper and subdued sodium amber palette, face readable at 512x640. Clothes and objects strictly plausible in 1986. No writing, lettering, logos, name text, watermark, frames, real people or likenesses of actors. Subject: fictional 45-year-old Mesa Diner waitress. Practical brown ponytail, tired hazel eyes with dry humor, pale blue 1980s diner uniform with off-white apron, pencil behind ear. Cool overhead fluorescent light and a subtle warm coffee tint. A glint of an unbranded glass coffee pot at the very bottom edge, below the face.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-3d74190f-6006-4163-b396-0cb8f0fa7c24.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "bb974423d79d7ce109e94421b4ebfc3cedd388bb9b521f35f7976e51bfca7270",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_waitress.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Servitrisen på Mesa Diner, cirka 45"
+  },
+  {
+    "file": "people/portrait_driver.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders, 1024x1280 preferred. Three-quarter angle, gaze just OFF-camera, eyes around upper third, shoulders complete at lower corners. Painted stylized realism of an illustrated 1980s paperback cover, soft visible brushwork, modest grain, ordinary tired believable people. Not photographic, not cartoon, no glossy sci-fi. Dark navy background fading near black, paper and subdued sodium amber palette, face readable at 512x640. Clothes and objects strictly plausible in 1986. No writing, lettering, logos, name text, watermark, frames, real people or likenesses of actors. Subject: fictional 55-year-old truck driver in a small desert diner. Faded unbranded navy cap, weathered lined face, salt-and-pepper stubble, blue denim jacket. He is holding a plain off-white diner coffee mug at the bottom edge. Same cool overhead fluorescent lighting, dim blue predawn window glow behind.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-281997da-ffd8-47a8-be80-2f15aff73794.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "dd69150a0a658c1872cd88e30c67366bda8c958b4587176a922d6ebe878a8897",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_driver.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Sjåføren i dineren, cirka 55"
+  },
+  {
+    "file": "people/portrait_ward.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders, 1024x1280 preferred. Three-quarter angle, gaze just OFF-camera, eyes around upper third, shoulders complete at lower corners. Painted stylized realism of an illustrated 1980s paperback cover, soft visible brushwork, modest grain, ordinary tired believable people. Not photographic, not cartoon, no glossy sci-fi. Dark navy background fading near black, paper and subdued sodium amber palette, face readable at 512x640. Clothes and objects strictly plausible in 1986. No writing, lettering, logos, name text, watermark, frames, real people or likenesses of actors. Subject: fictional Dr. Evelyn Ward, 50, SARO observatory night supervisor. Short gray hair, 1986 large plain glasses, collared shirt and muted cardigan, resolute serious expression. Exception to background and lighting: an ID-card portrait made in 1986, flat direct flash, pale gray background, subtly faded colors. Face turned slightly three-quarter and gaze just off camera. No actual ID card frame, only the portrait, no letters or numbers.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-9d779306-38eb-4a97-82ff-1d04482ee47c.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "4255940cc4e91107d3a3207c8465d2869e022da2a3e21819bfacf4b74d60e50f",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_ward.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Dr. Evelyn Ward, cirka 50, falmet ID-portrett"
+  },
+  {
+    "file": "people/portrait_dale.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders, 1024x1280 preferred. Three-quarter angle, gaze just OFF-camera, eyes around upper third, shoulders complete at lower corners. Painted stylized realism of an illustrated 1980s paperback cover, soft visible brushwork, modest grain, ordinary tired believable people. Not photographic, not cartoon, no glossy sci-fi. Dark navy background fading near black, paper and subdued sodium amber palette, face readable at 512x640. Clothes and objects strictly plausible in 1986. No writing, lettering, logos, name text, watermark, frames, real people or likenesses of actors. Subject: fictional Dale, 35, observatory colleague who has just left work. Brown mustache, slightly receding brown hair, red-brown checked flannel shirt, plain pen in breast pocket. Evasive expression and gaze off to the side. Exception to background and lighting: ID-card photograph aesthetic made in 1986, flat direct flash, pale gray background, subtle aged colors, rendered in the same painterly series. No actual ID frame or text.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-e335b34d-9fdc-42b0-9fb7-dbd0002914a3.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "dad77d098e468173ecfcd77262f4d055e11db91bb68409cd77b9ced6f30f990a",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_dale.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Dale, cirka 35, flanellskjorte og falmet ID-portrett"
+  },
+  {
+    "file": "people/portrait_tomas_1947.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders, 1024x1280 preferred. Three-quarter angle, gaze just OFF-camera, eyes around upper third, shoulders complete at lower corners. Painted stylized realism of an illustrated 1980s paperback cover, soft visible brushwork, modest grain, ordinary tired believable people. Not photographic, not cartoon, no glossy sci-fi. Dark navy background fading near black, paper and subdued sodium amber palette, face readable at 512x640. Clothes and objects strictly plausible in 1986. No writing, lettering, logos, name text, watermark, frames, real people or likenesses of actors. Subject: fictional Tomas Vega in 1947, 22, a young Hispanic New Mexican field worker. Work shirt, wide brim felt hat pushed back on head. Smile just beginning to fade; looking slightly away. Exception: aged sepia archival photograph from 1947, fine scratches, slight softness, a thin worn white photograph border on all four sides. Still soft painterly realism, not a photo of any real person. No writing anywhere.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-19b20627-1ff5-4a58-a331-a822901649fc.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "610d3d8a8da7c5e2004dabeef0d18c1b79c8fa89737b1a9f463c2c6ab445ba45",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_tomas_1947.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Tomás Vega, cirka 22 i 1947, sepia og hvit fotokant"
+  },
+  {
+    "file": "people/portrait_deputy.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, an original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders. Three-quarter head angle, eyes around upper third, face and shoulders readable at 512x640. Soft painted stylized realism of an illustrated 1980s paperback cover, visible but subtle brushwork, modest grain; ordinary tired believable characters. Not photographic, not cartoon, not glossy sci-fi. Dark near-black navy background with warm paper and subdued sodium amber highlights. Gaze OFF-camera unless subject explicitly says otherwise. Every item and haircut belongs in 1986. No writing, logos, name text, watermark, border, or likeness of any real person or actor. Fictional deputy sheriff, 40, tired eyes, short dark hair, brown uniform shirt with one completely blank plain five-point metal star and blank badge. Pragmatic and skeptical, gazing just off-camera. Light from a tungsten desk lamp, blurred county map with a few colored pins in the dark behind him.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-5934c04b-67e0-42df-acfa-7d4a4fb13699.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "8fc334c5abcfeef4154f4bcd3f845cbdc0440f5a89162d474dd62db5ce1e609c",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_deputy.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Nestlederen, cirka 40, blank sheriffstjerne"
+  },
+  {
+    "file": "people/portrait_host.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, an original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders. Three-quarter head angle, eyes around upper third, face and shoulders readable at 512x640. Soft painted stylized realism of an illustrated 1980s paperback cover, visible but subtle brushwork, modest grain; ordinary tired believable characters. Not photographic, not cartoon, not glossy sci-fi. Dark near-black navy background with warm paper and subdued sodium amber highlights. Gaze OFF-camera unless subject explicitly says otherwise. Every item and haircut belongs in 1986. No writing, logos, name text, watermark, border, or likeness of any real person or actor. Fictional Earl, 60, overnight AM radio host. Lean lined face, slightly untidy gray hair, worn cardigan, plain 1980s headphones around his neck. Thinking while he listens, a curl of smoke catches a red lamp and the warm light of an analog mixing desk below the frame. One red tally lamp with NO writing behind him.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-a3a34e3d-6c0c-4006-b7a9-bd3f8c1780a3.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "e6fa4bc23c2055e368a26ec6f97d94c9e14ee4c67f042b34b7a849c869dbbfb1",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_host.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Earl, cirka 60, nattradioen"
+  },
+  {
+    "file": "people/portrait_radio_woman.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, an original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders. Three-quarter head angle, eyes around upper third, face and shoulders readable at 512x640. Soft painted stylized realism of an illustrated 1980s paperback cover, visible but subtle brushwork, modest grain; ordinary tired believable characters. Not photographic, not cartoon, not glossy sci-fi. Dark near-black navy background with warm paper and subdued sodium amber highlights. Gaze OFF-camera unless subject explicitly says otherwise. Every item and haircut belongs in 1986. No writing, logos, name text, watermark, border, or likeness of any real person or actor. Fictional 70-year-old New Mexican woman, lined face, silver hair pinned back, a muted woven shawl over a plain dress. She holds a small unbranded 1960s transistor radio beside her ear and listens, looking just off-camera. Cool blue-white spill from a laundromat fluorescent light behind her and soft warm reflected light on the cheek. No symbols on the radio.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-81c712ce-c619-4783-98ca-52a046772a14.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "40f919c0d31054fac96882631d46795b1b1b0dc7e61b59074fdb5a93247e649a",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_radio_woman.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Kvinnen med transistorradioen, cirka 70"
+  },
+  {
+    "file": "people/portrait_souvenir_man.jpg",
+    "prompt": "Use case: stylized-concept. Finished individual dialogue portrait for SIGNAL / 47, an original quiet cosmic mystery in rural New Mexico, April 1986. Vertical 4:5 head and shoulders. Three-quarter head angle, eyes around upper third, face and shoulders readable at 512x640. Soft painted stylized realism of an illustrated 1980s paperback cover, visible but subtle brushwork, modest grain; ordinary tired believable characters. Not photographic, not cartoon, not glossy sci-fi. Dark near-black navy background with warm paper and subdued sodium amber highlights. Gaze OFF-camera unless subject explicitly says otherwise. Every item and haircut belongs in 1986. No writing, logos, name text, watermark, border, or likeness of any real person or actor. Fictional 50-year-old souvenir shop owner, wiry face, dark graying hair, western shirt and simple dark bolo tie. A little too eager expression. Warm shop lamp from one side, dim glass display cabinet at the lower edge and an indistinct novelty rubber alien mask hanging blurred far behind. Main face human, no costume, no writing.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-9ffefb0d-fe2d-4c2b-bb8f-a83e97a1d7ad.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "7550eea21ed2cd05fbf5c18b4a382e3b522a142e2c1fc04a159419cc4b147476",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_souvenir_man.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Suvenirmannen, cirka 50, westernskjorte og bolo"
+  },
+  {
+    "file": "town/win_gas.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: a 2:1 horizontal game window-interior texture, final use 1024x512. We are looking straight through an INVISIBLE storefront pane from a dark street into a small room in fictional Caliche, rural New Mexico, night in April 1986. No window frame, mullions, outer facade, border or exterior objects at all; the game supplies the physical frame. Front facing room composition with objects well defined even at 1024x512, no dramatic lens tilt. Painterly stylized realism, subtle brushwork like 1980s cover illustration, worn humble real materials, NOT photographic or cartoon, no glossy science fiction. Dark navy at edges. Absolutely no text, legible symbols, numerals, brand names, labels, logos or watermark on anything: all paper, screens, notices and device panels must be blank or nonverbal. The small gas station office: counter with a mechanical cash register, plain unlabelled oil cans on shelves and a blank calendar sheet pinned on wall. Behind counter sits a 30-year-old man with brown hair and olive mechanic overalls, blank name patch, feet up on counter, holding a plain magazine with no print. He looks straight out at us with unnerving calm. Green-white fluorescent ceiling light.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-6a90ad2e-8d90-4b59-890f-a2347be38803.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "187e5125d03603dff23c385c5647e067469dba673d8aa4c063f41d030becc768",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_gas.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Bensinstasjonens kontor og betjenten"
+  },
+  {
+    "file": "town/win_sheriff.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: a 2:1 horizontal game window-interior texture, final use 1024x512. We are looking straight through an INVISIBLE storefront pane from a dark street into a small room in fictional Caliche, rural New Mexico, night in April 1986. No window frame, mullions, outer facade, border or exterior objects at all; the game supplies the physical frame. Front facing room composition with objects well defined even at 1024x512, no dramatic lens tilt. Painterly stylized realism, subtle brushwork like 1980s cover illustration, worn humble real materials, NOT photographic or cartoon, no glossy science fiction. Dark navy at edges. Absolutely no text, legible symbols, numerals, brand names, labels, logos or watermark on anything: all paper, screens, notices and device panels must be blank or nonverbal. The little deputy sheriff's office, EMPTY of people. A large anonymous county road map on back wall with red, blue and yellow pushpins. Most pins scattered irregularly, but two short rows align horizontally in opposite directions, east and west. Desk with warm shaded desk lamp, empty chair, unbranded analog radio. Warm lamp lights desk and lower map, dark corners. No text or numeric map labels.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-953aeced-8e49-4586-a336-31e12b03c50c.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "b9c17d4dfe5de3b8290d8f5f1105fddc07dc62c4a97a520f524bf6758c695423",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_sheriff.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Tomt sheriffkontor med kart og to rader knappenåler"
+  },
+  {
+    "file": "town/win_studio.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: a 2:1 horizontal game window-interior texture, final use 1024x512. We are looking straight through an INVISIBLE storefront pane from a dark street into a small room in fictional Caliche, rural New Mexico, night in April 1986. No window frame, mullions, outer facade, border or exterior objects at all; the game supplies the physical frame. Front facing room composition with objects well defined even at 1024x512, no dramatic lens tilt. Painterly stylized realism, subtle brushwork like 1980s cover illustration, worn humble real materials, NOT photographic or cartoon, no glossy science fiction. Dark navy at edges. Absolutely no text, legible symbols, numerals, brand names, labels, logos or watermark on anything: all paper, screens, notices and device panels must be blank or nonverbal. An overnight AM radio studio. Fictional Earl, about 60 with untidy gray hair and a worn brown cardigan and plain headphones, sits at the microphone at an analog mixing desk. Behind him is a reel-to-reel tape recorder. A rotary phone with small glowing amber telephone indicator lamp at the right of the desk and an unlabelled coffee tin of pencils. Warm light from desk and one dim red tally lamp with no writing. Wide front view that shows the whole chair and desk, so an empty version can later use the identical room.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-9491d6c4-0378-48d1-8017-75e8c5141f0c.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "26fa2657b9d2c5d84c499f8001a7030c65af33606b5c165aa7104acc1107b9e7",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_studio.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Radiostudioet med Earl"
+  },
+  {
+    "file": "town/win_laundromat.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: a 2:1 horizontal game window-interior texture, final use 1024x512. We are looking straight through an INVISIBLE storefront pane from a dark street into a small room in fictional Caliche, rural New Mexico, night in April 1986. No window frame, mullions, outer facade, border or exterior objects at all; the game supplies the physical frame. Front facing room composition with objects well defined even at 1024x512, no dramatic lens tilt. Painterly stylized realism, subtle brushwork like 1980s cover illustration, worn humble real materials, NOT photographic or cartoon, no glossy science fiction. Dark navy at edges. Absolutely no text, legible symbols, numerals, brand names, labels, logos or watermark on anything: all paper, screens, notices and device panels must be blank or nonverbal. A deserted small laundromat. Exactly six front-loading washing machines in ONE row along the back wall. One drum has a small soft blur of moving laundry, other five still. A pair of plain plastic laundry baskets and one blank notice sheet on wall. No people. One cold blue-white ceiling fluorescent tube, dark quiet edges. No markings or labels on washers.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-509a0092-e2a6-499c-9efe-cdb7cc5a01a5.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "260021ba3c9162ec1e5b3f9f10a2a68bd192017386a2f8f69139b3b8e693ff65",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_laundromat.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Seks vaskemaskiner, én i gang, ingen folk"
+  },
+  {
+    "file": "town/win_tv.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: horizontal 2:1 texture for looking through a storefront window in SIGNAL / 47, final use 1024x512. Rural New Mexico in April 1986, middle of the night. Straight frontal view through an INVISIBLE glass pane into the room, NO exterior frame, mullions, border, facade, lettering or reflections of people outside. Dim corners and a readable pool of interior light. Painted stylized realism of a 1980s paperback illustration, restrained brushwork, worn real materials, quiet unsettling atmosphere. Not photographic, not cartoon. No logos, writing, numbers, labels, or watermark. A small dark living room. A bulky unbranded 1970s CRT television is switched on with featureless blue light on screen. A person is asleep in an old armchair, seen only from behind with the top of the head and shoulders visible, no face. Only the cold TV glow lights the room; no other light. Intimate and ordinary. No faces or programmes on the TV.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-c5b502ef-3771-429c-b5b4-ec561a85a17a.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "ba67d8a8bd6e47d3f06336082b58d60665a1c92587c9177fd55ecb9ce4d32667",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_tv.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Sovende person bakfra i tv-lyset"
+  },
+  {
+    "file": "town/win_kitchen.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: horizontal 2:1 texture for looking through a storefront window in SIGNAL / 47, final use 1024x512. Rural New Mexico in April 1986, middle of the night. Straight frontal view through an INVISIBLE glass pane into the room, NO exterior frame, mullions, border, facade, lettering or reflections of people outside. Dim corners and a readable pool of interior light. Painted stylized realism of a 1980s paperback illustration, restrained brushwork, worn real materials, quiet unsettling atmosphere. Not photographic, not cartoon. No logos, writing, numbers, labels, or watermark. A humble small kitchen seen through a broad sheer cream curtain that fills the view, warm ceiling lamp on behind it. A single still shadow of a standing ordinary human appears softly through the curtain. Some quiet kitchen shapes hinted behind the gauze, no other people. No facial features, no horror monster. Curtain fabric and warm interior light form the whole image without an outer window frame.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-8189d10d-c221-4990-bd80-56a6925b3327.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "a20b71eba64ce6bf57016bf5f718824672fcd9ac0bdbc1735fc0bfa253e91662",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_kitchen.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Stillestående skygge bak kjøkkengardinen"
+  },
+  {
+    "file": "town/win_souvenir.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: horizontal 2:1 texture for looking through a storefront window in SIGNAL / 47, final use 1024x512. Rural New Mexico in April 1986, middle of the night. Straight frontal view through an INVISIBLE glass pane into the room, NO exterior frame, mullions, border, facade, lettering or reflections of people outside. Dim corners and a readable pool of interior light. Painted stylized realism of a 1980s paperback illustration, restrained brushwork, worn real materials, quiet unsettling atmosphere. Not photographic, not cartoon. No logos, writing, numbers, labels, or watermark. The display area of a small roadside saucer-themed souvenir shop. A life-size painted CARDBOARD novelty alien, thin gray body, big head with crude black eyes, deliberately cheap and flat, slightly bent corner, blank little price tag on chest. Nearby a rubber alien mask, clear plastic bags of crumpled aluminium foil sold as wreckage, blank postcards and plain mugs. One warm shaded lamp, the rest of shop very dark. No living people or real aliens. Everything unmistakably humble 1986 tourist merchandise.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-0094eb04-7bbd-4b3c-aa74-8f288c0d0606.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "91f7a92c723885ac9fd0ec6b35ba179a82ae2221269e6dc91d22fd99738a40f2",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_souvenir.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Suvenirutstilling med pappfigur og falske vrakdeler"
+  },
+  {
+    "file": "town/cutout_alien.png",
+    "prompt": "Use case: background-extraction. Supporting reference and edit target: the cardboard novelty alien standing at the left of the supplied souvenir-shop image. Extract and recreate ONLY that same full-height flat cardboard cutout as a clean straight-on standalone game sprite, tall 1:2 aspect ratio, entire head, arms, torso, legs and feet visible with clear transparent margins on all four sides. It must visibly be crudely hand-painted on thin corrugated cardboard: gray skinny body, oversized head, large BLACK painted almond eyes, bent top corner, chipped brown cardboard edges, thin painted limbs and a small completely BLANK price tag on its chest. Retain the cheap tourist-prop look. No scenery, no stand behind, no ground, no drop shadow beyond a tiny edge shading, no other objects, no writing or watermark. True transparent background, not a black background or checkerboard painted into image. Intended final size 512x1024.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-46e7bd98-075b-4c27-a26c-05c4a3800d43.png",
+    "references": [
+      "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-0094eb04-7bbd-4b3c-aa74-8f288c0d0606.png"
+    ],
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "015670aa41864da94695226f85d45882d6c6e2136986fadb6fd5c571e387362e",
+    "generator_size": [
+      887,
+      1774
+    ],
+    "source": "raster/town__cutout_alien.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      1024
+    ],
+    "description": "Flat håndmalt pappfigur med blank prislapp"
+  },
+  {
+    "file": "town/paper_sentinel_blank.jpg",
+    "prompt": "Use case: stylized-concept. A single fictional local newspaper FRONT PAGE as a portrait 3:4 flat texture for a game set in New Mexico, April 1986. Aged pale cream newsprint, seen exactly straight overhead, fills entire image, no surrounding surface or perspective. Top 18 percent is a completely BLANK light masthead area; next 10 percent is a completely BLANK headline area. Below that, centered black-and-white halftone press photograph of a golf-course green with a single flagstick, trees in distance, NO people. Under and alongside photograph, neat narrow columns made of tiny gray short horizontal PRINT-LIKE STROKES, entirely abstract and unreadable, NOT any actual letters, words or numerals. Small natural folds and slightly worn paper grain, understated painterly prop realism, no dramatic shadows. Absolutely no legible writing, names, logos, headline, watermark or numbers. The game overlays its own name and headlines. Final target 768x1024.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-2208ef6b-c7b0-4fd3-a14b-7663ede62d10.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "992beef8c99a5525ac6bb21199620ce17b701a94058232207ed2c230572cf204",
+    "generator_size": [
+      1086,
+      1448
+    ],
+    "source": "raster/town__paper_sentinel_blank.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      768,
+      1024
+    ],
+    "description": "Avisunderlag, blankt navnefelt og overskrift, golfbilde"
+  },
+  {
+    "file": "abduct/frame_light.jpg",
+    "prompt": "Use case: stylized-concept. One 4:3 landscape flash frame for a quiet cosmic horror game in rural New Mexico, April 1986. Harsh white light shines STRAIGHT DOWN from an invisible source above the frame onto dry desert grass and pale gravel at night. Only a person's lower legs and work boots appear at bottom center; upper body and face are completely outside the frame. Beneath the boots the normally dark shadow is dissolving into white glare, almost disappearing. Extreme overhead light, rest falls into near-black navy. Soft painted analog field-photo realism, restrained grain, uncanny stillness. No visible lamp, beam device, spacecraft, alien, glowing symbols, text, logo, watermark or border. Final target 1024x768.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-6e1620f6-1068-4448-bfac-8450ca85603c.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "f9c1ecfc19fdcf1676b6aa04e56e225acdfdf5cba65692d8aceba81128f839c0",
+    "generator_size": [
+      1448,
+      1086
+    ],
+    "source": "raster/abduct__frame_light.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      768
+    ],
+    "description": "Hvitt lys ovenfra, gress og bein uten synlig kilde"
+  },
+  {
+    "file": "abduct/frame_above.jpg",
+    "prompt": "Use case: precise-object-edit. Edit target: supplied overhead image of the person in dry grass. Correct ONLY the person's pose: they must be LYING ON THEIR BACK, SUPINE, chest and jacket front facing straight upward toward overhead camera, toes UP and boot soles against ground. One arm relaxed at side and one lightly bent, ordinary adult proportions. Their head is turned strongly to the side and covered by a deep shadow and jacket collar so the face has NO visible features. Dark zipped work-jacket FRONT with one broad reflective pale band across chest. Keep exact overhead camera, grass, harsh flash lighting, palette, grain, 4:3 framing and no writing. Do NOT show the jacket back or a person lying face-down. No blood or injury.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-738bbf86-8e62-413b-8313-a954d3bb61d6.png",
+    "references": [
+      "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-32be5b1d-7281-4074-a258-fb7102d3ca5d.png"
+    ],
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "3a22e630f27424ea9484eaf812b9838ab679bd374ec99906cf3c91ea7fd32aa0",
+    "generator_size": [
+      1448,
+      1086
+    ],
+    "source": "raster/abduct__frame_above.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      768
+    ],
+    "description": "Reyes på ryggen, hard blitz, ansikt skjult"
+  },
+  {
+    "file": "people/portrait_attendant.jpg",
+    "prompt": "Use case: precise-object-edit. Preserve this fictional gas-station attendant's identity, age 30, painting style, lighting, head-and-shoulders framing, plain mechanic clothes with blank name patch, and background. Change ONLY the eye direction and a very slight head turn so he looks DIRECTLY AT THE VIEWER, with both pupils centered toward the camera, an unnaturally calm attentive expression. His gaze must meet the viewer. No writing, logos, symbols or watermark. Same vertical 4:5 frame.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-88d71b7d-cd78-49fd-b33c-300c9d688391.png",
+    "references": [
+      "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-ecd7af70-0f98-40db-932e-9630dd909f19.png"
+    ],
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "c68046fe93cc4c9da3a2accf73cddc2ad61d592899379ba7596f150848ba6f1f",
+    "generator_size": [
+      1122,
+      1402
+    ],
+    "source": "raster/people__portrait_attendant.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      512,
+      640
+    ],
+    "description": "Betjenten, cirka 30, direkte blikk og blankt navneskilt"
+  },
+  {
+    "file": "abduct/frame_truck.jpg",
+    "prompt": "Use case: stylized-concept. One 4:3 landscape found field photograph from rural New Mexico at night, April 1986. A WHITE unbranded 1980s American work pickup with a proper squared utility SERVICE BODY, closed toolbox compartments along both sides of its rear bed. Parked alone in dry desert beside a gravel track, DRIVER DOOR OPEN, nobody inside or anywhere nearby, headlights switched on across gravel. Seen from a distance of thirty meters at an oblique front-side angle. No modern SUV, no modern lights or logos. Near-black navy sky, dry muted ochre grass, stark headlight pool. Soft painted stylized realism with fine analog camera grain, quiet uncanny mood. No writing, badges, number plates, moon, spacecraft or watermark. Final 1024x768.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-6ebffdae-3666-4ad3-bdf9-0c6839a65fc0.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "e5c220c8cef069cda06dc2aa316ca0a09e48269d672176eb5856fdafcef090a6",
+    "generator_size": [
+      1448,
+      1086
+    ],
+    "source": "raster/abduct__frame_truck.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      768
+    ],
+    "description": "Hvit servicepickup, åpen dør og tente frontlys"
+  },
+  {
+    "file": "abduct/frame_figures.jpg",
+    "prompt": "Use case: stylized-concept. A single 4:3 landscape distant view of a low flat mesa ridge in rural New Mexico at night, April 1986. Exactly THREE very thin tall completely BLACK silhouettes stand very far away on the ridgeline, small within the frame. A slightly oversized smooth head and too-long arms held at the sides, all absolutely still. No eyes, face, mouth, fingers, skin, clothes or interior details visible at all. Far sky subtly lighter navy blue than dark foreground mesa; faint analog grain. Wide unassuming scene, deeply unsettling on second look, painted stylized realism. No craft, light beams, overt monsters, symbols, text, border, logos or watermark. Final target 1024x768.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-46ba8545-51a3-4c98-8be9-7f04ebe0fee4.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "cdeaf4bcb137780458d3d401c97eb07da236beff811e39c7e4c1aa9aca03129c",
+    "generator_size": [
+      1448,
+      1086
+    ],
+    "source": "raster/abduct__frame_figures.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      768
+    ],
+    "description": "Tre små ansiktsløse silhuetter på mesaryggen"
+  },
+  {
+    "file": "kit/kit_notebook.png",
+    "prompt": "Use case: stylized-concept. Asset type: one standalone inventory illustration for an original notebook interface in SIGNAL / 47, rural New Mexico, 1986. Square canvas, ONE centered small object fully visible with generous transparent margin, true TRANSPARENT background. Sketch in fine irregular dark sepia INK and muted watercolor washes as if carefully drawn in the notebook margin. Coherent restrained 1980s field journal series, hand drawn rather than photorealistic, softly lit from upper left, no cast ground plane. Simple silhouette legible at final 256x256. No writing, lettering, brands, logos or watermark. A closed small brown leather field notebook, three-quarter overhead view, dark elastic band wrapped around it and one short natural-wood pencil tucked into spine. Slightly worn corners, no other objects.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-08b181c6-0581-4d4f-a77c-a252cf33803c.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "ce3cedee8cef591fb63f88c208931cec5414af325c8d32a94def6428139b135a",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_notebook.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Brun notatbok med strikk og blyant"
+  },
+  {
+    "file": "kit/kit_jacket.png",
+    "prompt": "Use case: stylized-concept. Asset type: one standalone inventory illustration for an original notebook interface in SIGNAL / 47, rural New Mexico, 1986. Square canvas, ONE centered small object fully visible with generous transparent margin, true TRANSPARENT background. Sketch in fine irregular dark sepia INK and muted watercolor washes as if carefully drawn in the notebook margin. Coherent restrained 1980s field journal series, hand drawn rather than photorealistic, softly lit from upper left, no cast ground plane. Simple silhouette legible at final 256x256. No writing, lettering, brands, logos or watermark. One dark navy work jacket seen completely FROM THE BACK, laid out loosely with sleeves spread down to either side. A single broad light silver reflective band crosses the back at mid height. Worn fabric, no human body, no hanger, no text on jacket.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-2c6c4327-f88e-48d7-bf78-deb95f519800.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "ff3553c5a032d388c608be5d5ad1a4dbc9d06c84752e7eeafe8a848f81f0ae54",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_jacket.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Arbeidsjakka bakfra med bredt refleksbånd"
+  },
+  {
+    "file": "board/tex_cork.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: SEAMLESS SQUARE TILEABLE 1024x1024 cork-board surface texture for a 1986 investigation board. Straight frontal orthographic macro surface filling the entire image. Natural warm medium brown compressed cork with irregular tiny varied cells, scattered very small old pin holes and subtle lighter faded patches where small notes once hung, extremely restrained broad variation. Even flat diffuse light, no vignette, no border, no wood frame, no objects, no writing or symbols, no directional shadows. Texture must repeat seamlessly in X AND Y, edge patterns continue naturally across opposite edges; no dark edges, no centered hero pattern, no large repeating landmark. Slight stylized painterly material realism, modest fine detail.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-9b00b073-c4c5-4184-bd5f-108501a3eb57.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "77430251c0da065cd22829db1ae0c758832d8dbea2842dec0d9aecc28e56b665",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/board__tex_cork.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      1024
+    ],
+    "description": "Varm kork med små stifthull",
+    "tile_axes": "xy"
+  },
+  {
+    "file": "album/tex_album_page.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: seamless square 1024x1024 tileable BLACK PHOTO ALBUM PAPER surface from a 1970s album used in 1986. Perfect straight-down orthographic macro, fills the whole canvas. Very dark charcoal black matte paper with fine felted fiber grain, lightly faded, subtle sparse fibers and almost invisible handling wear, quiet and low contrast. Flat even lighting, zero vignette and zero directional shadows. Both horizontal and vertical opposite edges must tile seamlessly. NO photos, frames, text, ruled lines, dots pattern, objects, page edge, border, binding, creases or white spots. Slight painterly tactile realism, not a flat pure black fill.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-9fca2367-e878-434b-a83c-02b9148c9fa2.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "d740da8d0f6b743aa9593a7ab95c9edf873aa3c50f3343b13e4cb9a6c4d53a83",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/album__tex_album_page.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      1024
+    ],
+    "description": "Mørkt falmet albumpapir med fin struktur",
+    "tile_axes": "xy"
+  },
+  {
+    "file": "kit/kit_camera.png",
+    "prompt": "Use case: stylized-concept. One individual small inventory drawing for SIGNAL / 47's field notebook. Square canvas with ONE centered object fully visible and generous transparent margin; TRUE transparent background. Fine dark sepia INK outlines and muted WATERCOLOR washes, visibly a hand-drawn notebook-margin sketch, soft upper-left light, restrained fine hatching, same series as a worn brown field notebook and dark work jacket. Unbranded equipment plausible in New Mexico in 1986. Clear readable silhouette at 256x256. No ground, no cast shadow outside object, no text, logos, labels, letters, watermark or painted checkerboard. A compact folding large-format FIELD CAMERA for sheet film, an unbranded 1950s design, three-quarter view. Black accordion bellows extended on small metal folding base, round glass lens on square front board, small simple viewfinder, worn dark leather and brass knobs. NOT a modern SLR, no tripod, no carrying case.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-679f26da-2192-49d0-955a-ecbcc3bd982f.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "c9d11da1f319ae69e1561aa6c811701dbe2ad680cafa572bb4677ecf9b27f01a",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_camera.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Sammenleggbart feltkamera for planfilm"
+  },
+  {
+    "file": "kit/kit_flashlight.png",
+    "prompt": "Use case: stylized-concept. One individual small inventory drawing for SIGNAL / 47's field notebook. Square canvas with ONE centered object fully visible and generous transparent margin; TRUE transparent background. Fine dark sepia INK outlines and muted WATERCOLOR washes, visibly a hand-drawn notebook-margin sketch, soft upper-left light, restrained fine hatching, same series as a worn brown field notebook and dark work jacket. Unbranded equipment plausible in New Mexico in 1986. Clear readable silhouette at 256x256. No ground, no cast shadow outside object, no text, logos, labels, letters, watermark or painted checkerboard. One long dark metal flashlight from the 1980s, diagonal from lower-left to upper-right, with ribbed grip, a round wide head and clear lens. Switched off. Fine ink edges and soft cool-gray watercolor, a few worn highlights. No beam, batteries or other objects.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-a851d915-c73f-4f19-a7a9-e6e5afddc775.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "4c737e3515de13f29e2d92c5c5403685db2a2b78163de1bc04fd1f73d6af4994",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_flashlight.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Lang lommelykt med riflet grep"
+  },
+  {
+    "file": "kit/kit_keys.png",
+    "prompt": "Use case: stylized-concept. One individual small inventory drawing for SIGNAL / 47's field notebook. Square canvas with ONE centered object fully visible and generous transparent margin; TRUE transparent background. Fine dark sepia INK outlines and muted WATERCOLOR washes, visibly a hand-drawn notebook-margin sketch, soft upper-left light, restrained fine hatching, same series as a worn brown field notebook and dark work jacket. Unbranded equipment plausible in New Mexico in 1986. Clear readable silhouette at 256x256. No ground, no cast shadow outside object, no text, logos, labels, letters, watermark or painted checkerboard. Exactly TWO simple cut-metal car keys on one circular split ring, together with one plain tan leather key fob. Fob is completely BLANK with empty central space, no embossed symbols or writing. Three-quarter overhead view, slight rust and dark-metal watercolor.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-6c299cc2-33cb-4101-9a5d-0d319340d73b.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "4837815d102551765962b259013060dc2f80dff6233c4f509d3c4ef7d1837109",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_keys.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "To bilnøkler og blank lærlapp"
+  },
+  {
+    "file": "kit/kit_papers.png",
+    "prompt": "Use case: stylized-concept. One individual small inventory drawing for SIGNAL / 47's field notebook. Square canvas with ONE centered object fully visible and generous transparent margin; TRUE transparent background. Fine dark sepia INK outlines and muted WATERCOLOR washes, visibly a hand-drawn notebook-margin sketch, soft upper-left light, restrained fine hatching, same series as a worn brown field notebook and dark work jacket. Unbranded equipment plausible in New Mexico in 1986. Clear readable silhouette at 256x256. No ground, no cast shadow outside object, no text, logos, labels, letters, watermark or painted checkerboard. A few folded cream paper sheets and one accordion-fold continuous-feed fanfold printout with perforated tractor holes at each side, held together by ONE plain paperclip. All paper is BLANK, no printing, pseudo text or lines of writing. Muted off-white watercolor, ink showing folds.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-709a7998-eaec-4b0d-8de8-63b4d650dd8d.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "9fba50a8e00833d9736648334e48459db54ec6f2548487e0d7eb7fd6e8eae163",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_papers.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Brettede ark og fanfoldpapir med binders"
+  },
+  {
+    "file": "kit/kit_nickel_1947.png",
+    "prompt": "Use case: stylized-concept. One individual inventory illustration for a 1986 field notebook, square transparent canvas, intended final 256x256. A single freshly minted silver-colored United States JEFFERSON five-cent coin, OBVERSE side, seen exactly straight-on. Recognizable left-facing small Jefferson bust in shallow relief and a clean raised rim. Fine dark sepia ink outlines and subdued cool metallic watercolor washes, matching a hand-drawn notebook inventory series. The ONLY visible text must be the clear correct date '1947' at the lower-right rim. Omit all other legends and tiny lettering, leave them blank, no incorrect pseudo text. If correct date cannot be rendered, omit the date entirely. Coin fully visible and centered with 15 percent transparent margin, no scenery, hand, frame, watermark or other objects. True alpha background.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-2ca7dbf9-dc33-46e2-b5bb-8fea6d18d768.png",
+    "transparent_background": true,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "e2ed2efd1c386fd9aeb040a761f2a2bd1c37acabf82f57c9f65aa5098d7d1db7",
+    "generator_size": [
+      1254,
+      1254
+    ],
+    "source": "raster/kit__kit_nickel_1947.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      256,
+      256
+    ],
+    "description": "Jefferson-femcent med korrekt 1947"
+  },
+  {
+    "file": "motel/tv_lot_above.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: one 4:3 image for a 1980s motel television in SIGNAL / 47. Fictional rural New Mexico roadside motor court, middle of the night in April 1986. A STRICTLY VERTICAL STRAIGHT-DOWN aerial view from great height, roofs viewed as flat rectangles, NO horizon or visible sky, no oblique view. A small motel parking court, sodium-orange pools from two lamps, faded white parking-bay lines, one white 1980s American work pickup with square utility service-box rear body parked alone. A low strip of motel-room roofs along one edge, dusty gravel and dry desert around pavement. NO people, no face, no other cars. Slightly blurred and grainy, like a surveillance image from a camera that should not exist, soft painterly realism. Unbranded, no signage or text, no labels, numerals, timestamp, CCTV interface, scanlines, screen bezel or border; the game adds TV effects. Final 640x480.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-05c9a6ad-a538-4e39-aa23-b37bf9fe7da7.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "d7978740ed3538eefcd79d13195e4e7069aa78fc567e567a3236840a5ef23094",
+    "generator_size": [
+      1448,
+      1086
+    ],
+    "source": "raster/motel__tv_lot_above.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      640,
+      480
+    ],
+    "description": "Motellparkering ovenfra med hvit servicepickup"
+  },
+  {
+    "file": "brand/og_cover.jpg",
+    "prompt": "Use case: stylized-concept. Asset type: finished text-free 1200x630 wide share-cover for original quiet cosmic mystery game SIGNAL / 47. Wide 40:21 framing. New Mexico high desert observatory in April 1986 at night. Low horizon, a sparse array of large steerable radio telescope dishes under a subtle diagonal Milky Way, one large paraboloid dish at RIGHT faintly illuminated by warm sodium light revealing metal lattice and a central feed supported by struts. Far down a thin highway near the horizon two tiny headlights of an 1980s pickup. LEFT THIRD deliberately very dark, quiet, low detail and empty of dishes, reserved for game title added later in code. Deep near-black navy sky #05070d and #0c1220, muted ochre ground and small amber #ffb052 accents, gentle distant starlight. Atmospheric PAINTED stylized realism, like a sophisticated 1980s paperback cover, restrained brushwork, no glossy science fiction, not photorealistic. No moon, UFO, characters, city, modern vehicles. ABSOLUTELY NO TITLE, letters, text, logos, watermark, border or interface.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-0986be59-7650-4530-8b31-561b451b27d6.png",
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "8c7d5ce838255c48ac9c5545c96ddd79f4b08f4592b3bf2cb3e07767576317ab",
+    "generator_size": [
+      1730,
+      909
+    ],
+    "source": "raster/brand__og_cover.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1200,
+      630
+    ],
+    "description": "Nattlig array under Melkeveien, rolig venstre tredjedel"
+  },
+  {
+    "file": "town/win_studio_empty.jpg",
+    "prompt": "Use case: lighting-weather. Edit target: this EXACT empty 1986 radio studio. It has closed for the night. Change ONLY the lighting. Switch OFF every desk lamp and the floor lamp: no glowing bulbs, no cones of lamplight, no bright lamp shades on either side or on the right. The red tally lamp remains off. The ONLY remaining light is a faint warm glow of the analog mixing-console meters and the small AMBER TELEPHONE INDICATOR on the right side of the desk. Make the entire room perceptibly dimmer and darker navy, while the chair, tape recorder, telephone and mixing desk remain barely readable. Keep every object, wall, chair and exact 2:1 camera framing unchanged. No people, text, logos, new objects or watermark.",
+    "source_path": "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-c1fcacb2-f22a-4b3a-8ddd-5553aa131c40.png",
+    "references": [
+      "/home/tom/.codex/generated_images/01a14f4e-3894-7430-9c10-8615a6bc2f10/exec-5c93917b-fe29-49c8-8b61-7d4b110e7145.png"
+    ],
+    "transparent_background": false,
+    "rejected": false,
+    "tool": "image_gen.imagegen",
+    "generator_sha256": "5d26d739a344b1f236303ce5fc92fdd2424566b5ccef3bfba6f38aa8ad8cee92",
+    "generator_size": [
+      1774,
+      887
+    ],
+    "source": "raster/town__win_studio_empty.png",
+    "method": "image_gen.imagegen",
+    "size": [
+      1024,
+      512
+    ],
+    "description": "Samme radiostudio etter klokka fire, Earl borte"
+  }
+]

@@ -1,0 +1,276 @@
+{
+  "source_commit": "3611d8e",
+  "base_commit": "497a0d5",
+  "recorded_utc": "2026-10-18T15:34:28.350937+00:00",
+  "status": "PASS",
+  "runs": [
+    {
+      "name": "walkthrough",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 78.77,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/walkthrough.py",
+        "<workspace>/runtime-checks/walkthrough",
+        "844x390",
+        "high"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 57,
+      "fail_lines": 0,
+      "log": "runtime-logs/walkthrough.log"
+    },
+    {
+      "name": "chapter1-passive",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 132.51,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter1.py",
+        "<workspace>/runtime-checks/ch1",
+        "passive"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 66,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter1-passive.log"
+    },
+    {
+      "name": "chapter2",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 126.2,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter2.py",
+        "<workspace>/runtime-checks/ch2"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 76,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter2.log"
+    },
+    {
+      "name": "chapter3",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 525.58,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter3.py",
+        "<workspace>/runtime-checks/ch3"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 66,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter3.log"
+    },
+    {
+      "name": "chapter4",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 107.35,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter4.py",
+        "<workspace>/runtime-checks/ch4"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 63,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter4.log"
+    },
+    {
+      "name": "chapter5",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 373.87,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter5.py",
+        "<workspace>/runtime-checks/ch5"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 55,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter5.log"
+    },
+    {
+      "name": "chapter6",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 701.97,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/chapter6.py",
+        "<workspace>/runtime-checks/ch6"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 42,
+      "fail_lines": 0,
+      "log": "runtime-logs/chapter6.log"
+    },
+    {
+      "name": "devmenu",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 100.38,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/devmenu.py",
+        "<workspace>/runtime-checks/dev"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 14,
+      "fail_lines": 0,
+      "log": "runtime-logs/devmenu.log"
+    },
+    {
+      "name": "drives",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 898.2,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/drives.py",
+        "<workspace>/runtime-checks/drives"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 23,
+      "fail_lines": 0,
+      "log": "runtime-logs/drives.log"
+    },
+    {
+      "name": "ambience",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 26.8,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/ambience.py"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 7,
+      "fail_lines": 0,
+      "log": "runtime-logs/ambience.log"
+    },
+    {
+      "name": "diner",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 89.09,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/diner.py",
+        "<workspace>/runtime-checks/diner"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 15,
+      "fail_lines": 0,
+      "log": "runtime-logs/diner.log"
+    },
+    {
+      "name": "saves",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 0.32,
+      "command": [
+        "node",
+        "tools/saves.cjs"
+      ],
+      "url": null,
+      "pass_lines": 8,
+      "fail_lines": 0,
+      "log": "runtime-logs/saves.log"
+    },
+    {
+      "name": "steercheck",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 0.27,
+      "command": [
+        "npm",
+        "run",
+        "steercheck"
+      ],
+      "url": null,
+      "pass_lines": 5,
+      "fail_lines": 0,
+      "log": "runtime-logs/steercheck.log"
+    },
+    {
+      "name": "artcheck",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 79.14,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/artcheck.py",
+        "<workspace>/runtime-checks/art"
+      ],
+      "url": "http://127.0.0.1:8873/SIGNAL-47/",
+      "pass_lines": 9,
+      "fail_lines": 0,
+      "log": "runtime-logs/artcheck.log"
+    },
+    {
+      "name": "csptest",
+      "exit_code": 0,
+      "status": "PASS",
+      "seconds": 20.45,
+      "command": [
+        "<workspace>/.venv/bin/python",
+        "tools/csptest.py"
+      ],
+      "url": "single-file build with injected strict CSP, local file",
+      "pass_lines": 1,
+      "fail_lines": 0,
+      "log": "runtime-logs/csptest.log"
+    }
+  ],
+  "portrait_check": {
+    "status": "PASS",
+    "checks": [
+      [
+        "pages includes all 11 portraits",
+        true
+      ],
+      [
+        "pages all 11 actual People cards decode, no empty face",
+        true
+      ],
+      [
+        "pages Nora dialogue resolves N. VEGA to the portrait",
+        true
+      ],
+      [
+        "pages no browser errors",
+        true
+      ],
+      [
+        "single includes all 11 portraits",
+        true
+      ],
+      [
+        "single all 11 actual People cards decode, no empty face",
+        true
+      ],
+      [
+        "single Nora dialogue resolves N. VEGA to the portrait",
+        true
+      ],
+      [
+        "single no browser errors",
+        true
+      ]
+    ],
+    "report": "runtime/portraits.json"
+  },
+  "renderer": "Chromium SwiftShader, software rendering",
+  "limits": [
+    "API-driven scripted walks and UI checks. No real touch input or hardware FPS claim.",
+    "Rounds 14 and 15 are delivered as sources and await game integration."
+  ]
+}
