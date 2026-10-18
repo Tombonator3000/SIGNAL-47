@@ -1,0 +1,78 @@
+PASS chapter two starts with the supervisor line
+PASS phone rings and the objective says so
+PASS the ringing phone can be aimed at
+PASS Ward's first line is captioned
+PASS Ward's second line is captioned
+PASS call over, the records are next
+PASS notebook records that the morning series is held
+PASS corridor door is unlocked
+PASS corridor door swings open
+PASS walk through the corridor door and along the corridor
+PASS the records room door is shut and can be opened
+PASS walk through the records doorway into the room
+PASS the open door lies flat against the wall beside the doorway and can be shut
+PASS shut, the doorway is closed
+PASS and open again
+PASS walk around the table to the wall phone
+PASS and back to the west side of the room
+PASS records room entered
+PASS work table can be aimed at
+PASS empty table says where the records are
+PASS card index can be aimed at
+PASS lineage card opens and names STATION 01
+PASS lineage card filed
+PASS table offers the records once one is collected
+PASS archive board opens
+PASS an uncollected record says where it is
+PASS P04 waits with two empty slots and no RECORD
+PASS a thread between lines that say nothing about each other falls slack
+PASS STATION 01 box can be aimed at
+PASS original record opens with its arrangement drawing
+PASS original record and archive sleeve filed
+PASS the sleeve is pointed out
+PASS service copies binder can be aimed at
+PASS amended copy opens
+PASS amended copy filed
+PASS E07 and E06 lie on the board with their drawings and lines
+PASS TEXT shows the whole original
+PASS a thread pulled with the mouse from signature to signature leaves a note on the board, not on P04
+PASS P04: the signature is not a motive (Unity reply)
+PASS P04: the development explanation is not the comparison (Unity reply)
+PASS an empty thread falls slack and counts for nothing
+PASS P04 hints: three levels, the fourth held back
+PASS the fourth hint after two more misses
+PASS the three references and the omitted sight line: C goes into P04 by itself
+PASS the retained mark and the development fault fill P04; RECORD lights up
+PASS P04 recorded: C was omitted
+PASS P04 finding filed
+PASS the mark icons are drawn also when E07 was read before the table
+PASS P05: -39 against the 1947 sleeve holds as a thin thread, with nothing added (the player does the sum)
+PASS P05: a triangle without the bar is refused
+PASS STATION 01 on the card and on the sleeve
+PASS the two triangles with the bar
+PASS the two place names fill P05
+PASS P05 recorded: OLD SURVEY STATION
+PASS P05 finding, field access sheet and case map filed
+PASS an older save gets its threads back on the board
+PASS on a phone the board is one column with 44 px lines and tags
+PASS chapter two progress autosaved (1:auto:0, Records room, 02:55)
+PASS Continue restores chapter two halfway
+PASS Continue keeps the corridor door open
+PASS Continue restores the archive papers
+PASS after Continue: walk from the door round the table to the phone
+PASS wall phone offers the call
+PASS N. Vega's lines are captioned
+PASS call made, chapter two complete
+PASS notebook records the call
+PASS chapter card after chapter two
+PASS chapter card closes chapter two and names chapter three
+PASS no end card between the chapters
+PASS chapter three begins: take the truck to STATION 01
+PASS title screen offers to continue chapter three
+PASS Continue restores chapter three with chapter two finished
+PASS objective: the service truck
+PASS the journal holds both chapters' papers (11; the findings have their own tab)
+PASS Findings lists the local finding, P04 and P05, and offers the board (['finding', 'p04', 'p05'])
+PASS the evidence board opens from the journal
+no console errors/warnings
+76 of 76 PASS

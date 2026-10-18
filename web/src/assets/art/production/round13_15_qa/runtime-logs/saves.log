@@ -1,0 +1,9 @@
+PASS  autosaves take turns: an update within 90 s, a new generation after that, the oldest is replaced
+PASS  manual saves keep their own slots, and cases are separate
+PASS  a photograph is stored once, saves point at it, and loading brings it back
+PASS  a photograph no save points at is deleted, one still in use is kept
+PASS  a photograph that cannot be read shows the stand-in, and the next save keeps the original
+PASS  a new photograph under the same id replaces the one that could not be read
+PASS  the first web version's case becomes the newest autosave of case 1
+PASS  without IndexedDB the saves go to localStorage with the photograph inline
+8 of 8 PASS

@@ -30,7 +30,7 @@ PASS: visuell kontroll av alle kontaktark og 2×2-gjentakelse for kork, albumpap
 
 PASS: `npm run typecheck`, `npm run build:single` og `npm run build`. Vite viser den eksisterende meldingen om at `Town.ts` er både statisk og dynamisk importert.
 
-Resultatet av de sekvensielle spilltestene legges i `production/round13_15_qa/runtime-summary.json` før levering. Bildene av selve portrettene i spillet ligger i `production/round13_15_qa/runtime/`.
+PASS: alle 15 løp fra leveringslista, kjørt sekvensielt: prolog, kapittel 1 til 6, utviklermeny, kjøring, ambience, diner, saves, steercheck, artcheck og CSP. De tolv vanlige nettlesertestene brukte bygget under `/SIGNAL-47/`, CSP-testen brukte enkeltfilbygget, og saves/steercheck kjørte uten nettleser. Egen portrettkontroll: 8/8 PASS i vanlig bygg og enkeltfilbygg. Alle elleve People-kort dekoder bildene i 512×640, uten tomme rammer; Noras samtalepanel bruker riktig portrett. De grafiske testene bruker Chromium SwiftShader og eksisterende spillkroker. [Resultater og logger](src/assets/art/production/round13_15_qa/runtime-summary.json), [portrettkontroll](src/assets/art/production/round13_15_qa/runtime/portraits.json), [Nora fra den gående kapittel-4-testen](src/assets/art/production/round13_15_qa/runtime/chapter4-walked-nora.png) og [servitrisen fra kapittel 5](src/assets/art/production/round13_15_qa/runtime/chapter5-walked-waitress.png).
 
 UNVERIFIED: subjektiv vurdering på ekte mobil/PC og maskinvareytelse. Runde 14 og 15 er ikke importert eller innbygget av denne leveransen. Visuelle spilltester kan derfor bare bekrefte portrettene og at eksisterende spill fortsatt virker.
 

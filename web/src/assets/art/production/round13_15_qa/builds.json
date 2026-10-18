@@ -1,0 +1,33 @@
+{
+  "source_commit": "3611d8e1456a6e4795f9a1d7854bc1a6a0eb0d9f",
+  "base_commit": "497a0d5",
+  "recorded_utc": "2026-10-18T14:59:44.905195+00:00",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run build:single",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run build",
+      "status": "PASS"
+    }
+  ],
+  "builds": [
+    {
+      "build": "dist",
+      "index_sha256": "dac72bd2320dd6e4f46462b1565888c72f6b541d3f0723f9cd121314fed62abf",
+      "index_bytes": 556,
+      "portrait_files": 11
+    },
+    {
+      "build": "dist-single",
+      "index_sha256": "83f3ef442ec5cef9aad3f5c7e04080ae0ea59da9a6bca3534a08332d42463386",
+      "index_bytes": 24175693,
+      "portrait_files": "embedded in index.html"
+    }
+  ]
+}

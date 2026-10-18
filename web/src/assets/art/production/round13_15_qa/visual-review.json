@@ -28,5 +28,17 @@
   "limits": [
     "Dette er filkontroll. Innbygging av runde 14 og 15 er ikke utført.",
     "Ekte mobil/PC-input, opplevd stil og maskinvareytelse krever Toms vurdering."
-  ]
+  ],
+  "runtime_review": {
+    "status": "PASS",
+    "views": [
+      "runtime/pages-nora-844.png",
+      "runtime/pages-people-1280.png",
+      "runtime/single-people-844.png",
+      "runtime/single-nora-1280.png",
+      "runtime/chapter4-walked-nora.png",
+      "runtime/chapter5-walked-waitress.png"
+    ],
+    "notes": "Portrettene er visuelt sett i People-fanen og samtalepanelet i de to byggformene. Testen setter met-fixturen via eksisterende spillkroker; de to kapittelbildene kommer fra skriptede gåturer. Mobilformatet har den eksisterende rullingen i panelet."
+  }
 }
