@@ -180,7 +180,11 @@ async def main():
         await ev("S47.motelTv.now()"); await tick(1)
         check(await ev("S47.motelTv.mode") == 'carrier', 'the carrier, with nobody there (the developer menu)')
         await tick(47)
-        check(await ev("S47.motelTv.mode") in ('frame', 'card') and not await seen('ev:tv') and len(await notes()) == n3, 'nobody saw it: nothing written, and it is not spent')
+        # only the TV's own note counts: the night's other directors (core/cutouts.ts, story/nightEvents.ts)
+        # may write theirs in these 47 s
+        new = (await notes())[n3:]
+        check(await ev("S47.motelTv.mode") in ('frame', 'card') and not await seen('ev:tv') and not any('TV' in n or 'television' in n.lower() for n in new),
+              f'nobody saw it: nothing written, and it is not spent ({new})')
         await tick(3)
         await ev("S47.game.clock = 4 * 3600 + 17 * 60")
         await ev(into); await tick(2)
