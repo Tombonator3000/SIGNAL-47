@@ -456,6 +456,10 @@ async function boot() {
     } else if (code === 'Tab' || code === 'KeyN') {
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
       if (!game.cinematic) game.openNotebook();
+    } else if (code === 'KeyB') {
+      // the case board (story/caseBoard.ts), straight from the game or from the notebook
+      if (ui.modal) { if (ui.modal.classList.contains('board-overlay')) ui.close(); else if (ui.modal.querySelector('.notebook')) game.openBoard(); return; }
+      if (!game.cinematic) game.openBoard();
     } else if (code === 'Escape' || code === 'KeyP') {
       if (ui.modal) { ui.close(); return; }
       if (fcam.raised) { ch1.toggleCamera(); return; }

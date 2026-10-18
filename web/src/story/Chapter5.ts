@@ -8,6 +8,7 @@ import * as P from '../ui/Panels';
 import { mapOverlay } from '../ui/MapOverlay';
 import { SERVICE_MAP, serviceMap } from './drawings';
 import { clockText } from './time';
+import { RuleBook } from './boardRules';
 
 // Chapter five, "All Night" (KAPITLER.md). 05:00 to 05:20. Out of room 6 to the truck, on the
 // motel's lot or back up the highway on SARO's pad; past the control room the operations terminal chimes:
@@ -98,6 +99,22 @@ export class Chapter5 {
   private dinerBound = false;
   private clippingUrl: string | null = null;
   private mapUrl: string | null = null;
+  /** P13 on the case board. It is found with the maps on a table in the diner, not with
+   *  threads; the board shows it, tied to the map and to C on the transit record. */
+  readonly book = new RuleBook({
+    key: 'ch5',
+    owns: (n) => n === 'P13',
+    notes: {}, rules: [],
+    questions: [{ id: 'P13', stamp: 'P13', text: 'Where does C cross the old Roswell road?', slots: 0, x: 14, y: 14, w: 300,
+      hints: ['C is a direction from the transit, not a place on a map.', 'Lay a tracing of E09A on the service map, transit on STATION 01, north to north.', 'Spread E14 on a table in the diner, lay the tracing on STATION 01 and follow C east to the road.'],
+      elsewhere: 'Worked out on a table in the diner, with the service map and a tracing of E09A.',
+      open: () => this.started && this.s.arrived, done: () => this.s.p13 ? SUPPORTED : null }],
+    links: () => [],
+    wrong: () => {},
+    save: () => this.save(),
+    cards: () => [],
+    auto: () => this.s.p13 ? [{ a: 'P13', b: 'e14' }, { a: 'P13', b: 'e09a.c' }] : [],
+  });
   private leaving = false;
 
   constructor(private g: Chapter5Host, private d: Chapter5Deps) {}

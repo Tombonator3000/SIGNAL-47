@@ -223,11 +223,12 @@ async def main():
         check(await ev("S47.ch2.s.links.length") == 5 and await ev("!S47.ch2.s.links.some(k => k.includes('P0'))")
               and await has('.bq.done[data-q=P05]') and await ev("document.querySelectorAll('[data-threads] path.thread').length") == 5, 'an older save gets its threads back on the board')
         await close_board()
-        # a phone held sideways: one column, questions on top, links shown as tags
+        # a phone held sideways: the same board, opened at a size that can be read (it is moved
+        # and zoomed with the fingers; tools/board.py tries that with touch)
         await pg.set_viewport_size({'width': 844, 'height': 390})
         await use('workTable'); await tick(0.1)
-        check(await has('.board-col') and await ev("document.querySelectorAll('.btag').length") == 10
-              and await ev("document.querySelector('.bline').getBoundingClientRect().height") >= 44, 'on a phone the board is one column with 44 px lines and tags')
+        check(await ev("S47.game.board.view.view().s") >= 0.79 and await ev("document.querySelector('.bline').getBoundingClientRect().height") >= 34
+              and await ev("document.querySelectorAll('[data-threads] path.thread').length") == 5, 'on a phone the board opens at a readable size, with lines a finger can hit and every thread drawn')
         await shot('d05b_phone_column')
         await close_board()
         await pg.set_viewport_size({'width': W, 'height': H})

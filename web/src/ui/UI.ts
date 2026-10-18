@@ -228,7 +228,7 @@ export class UI {
       <p class="note flash-note">Near the end of the night there is a short sequence of flashing images.
         <span class="pick"><button data-a="fl-keep" aria-pressed="${!opts.flash.calm}">Flashes</button><button data-a="fl-calm" aria-pressed="${opts.flash.calm}">Slow fades</button></span></p>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera, F for a flashlight once you have one, right mouse for a closer look. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, B for the case board, C for the camera, F for a flashlight once you have one, right mouse for a closer look. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
     const pick = (calm: boolean) => {
       el.querySelector('[data-a=fl-keep]')!.setAttribute('aria-pressed', String(!calm));
       el.querySelector('[data-a=fl-calm]')!.setAttribute('aria-pressed', String(calm));
@@ -279,8 +279,9 @@ export class UI {
   }
 
   // The journal, in five tabs: tonight's tasks, the observations, the findings recorded
-  // so far (with the evidence board once there is one), the papers and the photographs.
-  // The last tab used is kept. After SPILLDESIGN.md ("Journal med fem faner").
+  // so far, the papers and the photographs. The last tab used is kept. After SPILLDESIGN.md
+  // ("Journal med fem faner"). First in the row is Board: the case board with everything in
+  // the journal on it (story/caseBoard.ts), where the findings are made.
   private nbTab: NbTab = 'tasks';
   /** The tab the notebook opens at next (M for the map, I for the kit). */
   notebookAt(t: NbTab) { this.nbTab = t; }
@@ -300,6 +301,7 @@ export class UI {
     el.innerHTML = `
       <div class="notebook">
         <div class="nb-tabs" role="tablist">
+          ${onBoard ? '<button class="nb-boardtab" data-a="board" aria-label="Open the case board">Board</button>' : ''}
           <button role="tab" data-t="tasks">Tasks</button>
           <button role="tab" data-t="notes">Notes${count(notes.length)}</button>
           <button role="tab" data-t="findings">Findings${count(findings.length)}</button>
@@ -320,7 +322,7 @@ export class UI {
         </section>
         <section class="nb-page" data-p="findings">
           <h4>Findings</h4>
-          ${onBoard ? '<button class="nb-board" data-a="board">Lay out the evidence board</button>' : ''}
+          ${onBoard ? '<button class="nb-board" data-a="board">Lay it all out on the case board</button>' : ''}
           ${findings.length ? `<div class="findings">${findings.map((d) => `<button data-d="${d.id}"><b>${esc(label(d))}</b><span>${esc(d.title.split(' / ').slice(1).join(' / ') || d.title)}</span><em>${esc(excerpt(d))}</em></button>`).join('')}</div>` : '<p class="empty">Nothing recorded yet. A finding goes here once the records support it.</p>'}
         </section>
         <section class="nb-page nb-case" data-p="papers">
@@ -350,7 +352,7 @@ export class UI {
     show(el.querySelector(`[data-p="${this.nbTab}"]`) ? this.nbTab : 'tasks');
     el.querySelector('.close')!.addEventListener('click', () => this.close());
     el.addEventListener('click', (e) => { if (e.target === el) this.close(); });
-    el.querySelector('[data-a=board]')?.addEventListener('click', () => { this.close(); onBoard?.(); });
+    el.querySelectorAll('[data-a=board]').forEach((b) => b.addEventListener('click', () => { this.close(); onBoard?.(); }));
     el.querySelectorAll<HTMLButtonElement>('[data-d]').forEach((b) => b.addEventListener('click', () => {
       const d = docs.find((x) => x.id === b.dataset.d); if (d) onDoc(d);
     }));

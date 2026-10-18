@@ -1,6 +1,7 @@
 # Chapter three, "The Survey Station", played through in a headless browser: the truck at
 # SARO, the drive south the whole way (the game's own autopilot, drive/legs.ts), STATION 01 with P06 to P09 in the Unity order rules (wrong answers
-# and the Unity replies included), both field photographs from the real camera, Nora on
+# and the Unity replies included; P07 at the lamp, P06, P08 and P09 on the case board since
+# 18 October), both field photographs from the real camera, Nora on
 # the field telephone, Continue at the station, the way back, developing the field roll at
 # the SARO wet bench, and the chapter card into chapter four. Starts from S47.jump('chapter3').
 # Usage: python3 tools/chapter3.py OUTDIR [WxH]
@@ -77,6 +78,15 @@ async def main():
               return true; }})()''')
         async def close_panel():
             await pg.click('.labpanel .lp-close'); await tick(0.1)
+        # the case board (ui/Board.ts): tap one pin and then the other; RECORD; close
+        async def bsay(): return await ev("(document.querySelector('.board-wrap [data-say]')||{}).textContent || ''")
+        async def thread(a, b):
+            await pg.click(f'[data-node="{a}"]'); await pg.click(f'[data-node="{b}"]')
+            return await bsay()
+        async def zoom_all(): await pg.click('.board-zoom [data-z=all]'); await tick(0.05)
+        async def look(r): await ev(f"S47.game.board.view.look('{r}')"); await tick(0.05)
+        async def close_board(): await pg.click('.board-wrap .lp-close'); await tick(0.1)
+        has = lambda sel: ev(f"!!document.querySelector('{sel}')")
         async def shutter():
             await ev("S47.ch1.toggleCamera()"); await tick(0.3)
             status = await ev("(document.querySelector('.viewfinder .vf-status')||{}).textContent || ''")
@@ -144,11 +154,14 @@ async def main():
         check(await aimed() == 's1transit', 'the transit can be aimed at')
         await use('s1transit'); await tick(0.1)
         check(await s3('readE09a') and 'e09a' in await docs(), 'E09A read and filed')
-        check('STATION 01 / FIELD RECORD' in await ev("document.querySelector('.labpanel h3').textContent"), 'the field record opens at the transit')
+        check('FIELD TRANSIT / STATION 01 / E09A' in await ev("document.querySelector('.docview').textContent"), 'the transit record opens at the transit')
+        await pg.click('.docview [data-a=back]'); await tick(0.2)
+        check(await label('s1transit') == 'Lay out the field record', 'read, the transit is where the field record is laid out')
+        await use('s1transit'); await tick(0.1)
+        check('CASE BOARD / STATION 01' in await ev("document.querySelector('.board-wrap h3').textContent") and await has('[data-node="e09a.a"]'), 'the case board opens at the transit, with E09A on it')
         await shot('e06_field_record')
-        await pg.click('.labpanel [data-c=a]')
-        check('FRAME 03 FIRST' in await say() and not await s3('p06'), 'P06 refused before FRAME 03')
-        await close_panel()
+        check(await has('.bcard[data-card=frame03].away') and not await has('[data-record=P06]') and not await s3('p06'), 'P06 cannot be made before FRAME 03')
+        await close_board()
 
         # ---------- FRAME 03 ----------
         spot = await ev("""(() => { const s = S47.world.site; const t = s.anchors.markerTarget; const p = S47.player;
@@ -170,18 +183,18 @@ async def main():
         await shot('e07_after_frame03')
         check(await ev("Object.keys(S47.ch3.s.f3.targets).length") >= 1, 'FRAME 03 records where the footing and post are on the film')
 
-        # ---------- P06 ----------
+        # ---------- P06, on the board ----------
         await stand('transit', 1.6); await use('s1transit'); await tick(0.1)
-        await pg.click('.labpanel [data-c=b]')
-        check('do not identify the moved fixed point' in await say() and await s3('wrong06') == 1, 'P06: B is answered with the Unity reply')
-        await pg.click('.labpanel [data-c=a]')
-        check(await s3('p06') and 'P06 SUPPORTED' in await ev("document.querySelector('.lp-page').textContent"), 'P06 recorded: A moved')
+        r = await thread('e09a.b', 'frame03')
+        check('B is still in its footing' in r and await s3('wrong06') == 1, 'P06: B against FRAME 03 is answered and counts')
+        r = await thread('e09a.a', 'frame03')
+        check('RECORD it' in r, 'P06: A on E09A tied to FRAME 03')
+        await pg.click('[data-record=P06]'); await tick(0.1)
+        check(await s3('p06') and 'P06 SUPPORTED' in await ev("document.querySelector('.bq.done[data-q=P06]').textContent"), 'P06 recorded: A moved')
 
         # ---------- P08 before P07 ----------
-        await pg.click('.labpanel [data-p=cable]')
-        await pg.click('.labpanel [data-c=deliberate-cut]')
-        check('REQUIRES BOTH' in await say(), 'P08 refused before the null test')
-        await close_panel()
+        check(not await has('[data-node="P07"]') and '0 / 1' in await ev("document.querySelector('.bq[data-q=P08] .bq-count').textContent"), 'P08 waits: the null test is not on the board yet')
+        await close_board()
 
         # ---------- P07 ----------
         check(await stand('lamp', 1.4) is not None, 'the field lamp can be reached')
@@ -205,32 +218,38 @@ async def main():
         check(await stand('cable', 1.3, -0.3) is not None, 'the cable break can be reached')
         check(await aimed() == 's1cable', 'the cable break can be aimed at')
         await use('s1cable'); await tick(0.1)
-        check(await s3('cableInspected'), 'cut faces inspected')
-        await close_panel()
+        check(await s3('cableInspected') and 'Two clean faces' in await toasts(), 'cut faces inspected')
         await ev("""(() => { const s = S47.world.site, t = s.anchors.cableTarget, p = S47.player;
           p.pitch = Math.atan2(t.y - p.eye, Math.hypot(t.x - p.pos.x, t.z - p.pos.z));
           p.yaw = Math.atan2(-(t.x - p.pos.x), -(t.z - p.pos.z)); S47.tick(0.05); })()""")
         status = await shutter()
         check('READY' in status and await ev("!!S47.ch3.s.f4"), f'FRAME 04 exposed: the cut, close up ({status.strip()})')
         await shot('e09_cable')
-        await use('s1cable'); await tick(0.1)
-        await pg.click('.labpanel [data-c=author-guilt]')
-        check('do not show who cut it' in await say(), 'P08: motive is answered')
-        await pg.click('.labpanel [data-c=weathering]')
-        check('opposed and clean' in await say() and await s3('wrong08') == 2, 'P08: weathering is answered with the Unity reply')
-        await pg.click('.labpanel [data-c=deliberate-cut]')
-        check(await s3('p08') and 'P08 SUPPORTED' in await ev("document.querySelector('.lp-page').textContent"), 'P08 recorded: a deliberate cut')
-        await close_panel()
+        # P08 on the board, opened with B where the player stands
+        await pg.keyboard.press('KeyB'); await tick(0.1)
+        check(await has('.board-overlay') and await has('.bcard[data-card=frame04].k-sealed'), 'B opens the board; FRAME 04 lies on it, sealed')
+        await zoom_all()
+        r = await thread('frame04', 'e07.sig')
+        check('do not show who cut it' in r and await s3('wrong08') == 1, 'P08: a motive from the signature is answered')
+        r = await thread('frame04', 'e07.head')
+        check('opposed and clean' in r and await s3('wrong08') == 2, 'P08: age and weather are answered with the Unity words')
+        await look('ch3')
+        r = await thread('frame04', 'P07')
+        check('RECORD it' in r, 'P08: FRAME 04 tied to the null test')
+        await pg.click('[data-record=P08]'); await tick(0.1)
+        check(await s3('p08') and 'P08 SUPPORTED' in await ev("document.querySelector('.bq.done[data-q=P08]').textContent"), 'P08 recorded: a deliberate cut')
+        await close_board()
 
         # ---------- the hut: ledger and receiver ----------
         check(await stand('timingLog', 1.2) is not None, 'the ledger in the hut can be reached')
         await shot('e10_hut')
         check(await aimed() == 's1timing', 'the ledger can be aimed at')
         await use('s1timing'); await tick(0.1)
-        check(await s3('readE10') and 'e10' in await docs(), 'E10 read and filed')
-        await pg.click('.labpanel [data-c="02:17:47"]')
-        check('LISTEN TO THE HUT RECEIVER' in await say(), 'P09 waits for the receiver')
-        await close_panel()
+        check(await s3('readE10') and 'e10' in await docs() and '02:17:47' in await ev("document.querySelector('.docview').textContent"), 'E10 read and filed')
+        await pg.click('.docview [data-a=back]'); await tick(0.2)
+        await use('s1timing'); await tick(0.1)
+        check(await has('.bcard[data-card="hut.rx"].away') and await has('[data-node="e10.carrier"]'), 'P09 waits for the receiver: E10 is on the board, the receiver not yet')
+        await close_board()
         await stand('receiver', 1.2)
         check(await aimed() == 's1receiver', 'the receiver can be aimed at')
         await use('s1receiver')
@@ -240,12 +259,14 @@ async def main():
             if await s3('heard'): break
         check('Reference west. No. East. Hold the last reading.' in seen and await s3('heard'), 'the receiver gives the fragment, captioned')
         await stand('timingLog', 1.2); await use('s1timing'); await tick(0.1)
-        await pg.click('.labpanel [data-c="02:17:00"]')
-        check('47-second relay impact' in await say() and await s3('wrong09') == 1, 'P09: carrier time is answered with the Unity reply')
-        await pg.click('.labpanel [data-c="02:17:47"]')
+        r = await thread('hut.rx', 'e10.relay')
+        check('47-second relay impact' in r and await s3('wrong09') == 1, 'P09: the relay line is answered with the Unity reply')
+        r = await thread('hut.rx', 'e10.carrier')
+        check('RECORD it' in r, 'P09: the receiver tied to the same words in E10')
+        await pg.click('[data-record=P09]'); await tick(0.1)
         check(await s3('p09') and await s3('stage') == 'call', 'P09 recorded: 02:17:47')
         await shot('e11_p09')
-        await close_panel()
+        await close_board()
 
         # ---------- Nora ----------
         for _ in range(12):
