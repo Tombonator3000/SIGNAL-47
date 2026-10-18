@@ -759,3 +759,7 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - Bilradioen: volumet i førerhuset er senket fra 0,65 til 0,38. Utenfor bilen er radioen fortsatt på, men dempet gjennom det lukkede førerhuset (lavpass ned til 420 Hz) og på under en femtedel av styrken.
 - Ny `tools/radiomix.py` (Pages-bygget, servert med byte-områder via ny `tools/rangeserve.py`): 7 av 7 PASS. Med `http.server` startet låtene alltid fra begynnelsen, fordi den ikke gir byte-områder; GitHub Pages gjør det (206 på `anthem.mp3`).
 - Etterpå: Pages-bygget `radio` 34/34, `music` 12/12, `stale` 8/8; enkeltfilbygget `radio` 32/32 og `diner` 15/15. Hvordan låtene og nivåene høres ut på ekte utstyr er UNVERIFIED.
+
+### Claude: grafikkbestilling, runde 15 (18. oktober)
+
+- Rundt 12:10 UTC (Tom): «lag en bestillingsliste til chatgpt som kan lage grafikk for oss til spillet, legg bestilling inn i git repo». Runde 13 og 14 er ikke levert ennå (ingen `people/` eller `town/` under `src/assets/art/`), så runde 15 tar det som kommer etter dem: bevisbordet med rød tråd, fotoalbumet for det frie kameraet, tegninger av utstyret i Kit, testbildet og bildet ovenfra til motell-tv-en (hendelse 10), og delingsbildet og ikonet. Skrevet i `ART_BRIEF.md`; `todo.md` punkt 5b peker dit. Ingenting er koblet inn ennå.
