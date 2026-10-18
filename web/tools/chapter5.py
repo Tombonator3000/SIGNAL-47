@@ -238,10 +238,16 @@ async def main():
         await shot('h08_continue')
 
         # ---------- out to the truck: saved in the diner, then the old road ----------
-        ok = await walk([[i['x'], i['z']], [o['x'], o['z']], [a['x'], a['z']]])
+        # (a save keeps the truck where it was left on the lot, World.truckSave, not on the lot's
+        # anchor: out to whichever of its doors there is ground by, as getting out does)
+        door = await ev("""(()=>{const g=S47.world['truck'].group, T=S47.three, p=S47.player;
+          for (const s of [-1, 1]) { const v=new T.Vector3(s*1.75,0,-0.3).applyAxisAngle(new T.Vector3(0,1,0), g.rotation.y).add(g.position);
+            if (p.walkable(v.x, v.z)) return {x:v.x, z:v.z}; } return null })()""") or a
+        ok = await walk([[i['x'], i['z']], [o['x'], o['z']], [door['x'], door['z']]])
         tk = await ev("(()=>{const v=S47.world.dinerTruckProxy.getWorldPosition(S47.camera.position.clone()); return [v.x,v.y,v.z]})()")
         await face(tk[0], tk[1], tk[2])
-        check(ok[0] and await aimed() == 'dinerTruck' and await label('dinerTruck') == 'Drive the old road', 'out by the truck: drive the old road')
+        am, lb = await aimed(), await label('dinerTruck')
+        check(ok[0] and am == 'dinerTruck' and lb == 'Drive the old road', f'out by the truck: drive the old road ({ok}, {door}, {am}, {lb})')
         await use('dinerTruck')
         await tick(0.2); await pg.wait_for_timeout(800)
         cont = await ev("(() => { const m = S47.saves.continueSave(); return m ? { chapter: m.chapter, place: m.place } : null; })()")

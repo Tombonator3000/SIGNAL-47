@@ -21,13 +21,57 @@ const CREDITS = 'Music by Scott Buckley, CC BY 4.0, scottbuckley.com.au: "Signal
 
 const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
 
-type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit' | 'people';
+type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit' | 'people' | 'controls';
 /** Something the player carries (the Kit tab). */
 export interface KitItem { name: string; note: string; state?: string }
 /** The notebook's map and kit (main.ts puts them together). */
 /** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
 export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
-export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[] }
+export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[]; /** a phone: its controls first */ touch?: boolean }
+// Every control, for the notebook's Controls tab: the hints about them are said only once on a
+// device (core/hints.ts), so they are all kept here. Keyboard and mouse, and a phone or tablet.
+const CONTROLS: Record<'desk' | 'phone', { title: string; groups: { head: string; rows: [string, string][] }[] }> = {
+  desk: { title: 'Keyboard and mouse', groups: [
+    { head: 'On foot', rows: [
+      ['W A S D, arrows', 'Walk. Shift: run.'],
+      ['Mouse', 'Look. Click the picture first to take the mouse.'],
+      ['E, Enter, click', 'Use what the crosshair is on. Put a paper back.'],
+      ['Right mouse, held', 'A closer look at what the crosshair is on.'],
+      ['F', 'The flashlight, once you have it.'],
+      ['C', 'Raise or lower the field camera.'],
+      ['Space', 'The shutter, with the camera raised.'],
+      ['Tab, N', 'The notebook. M: its map. I: the kit. H: these controls.'],
+      ['Esc, P', 'Pause: settings, save and load.'],
+    ] },
+    { head: 'In the truck', rows: [
+      ['W, S', 'Throttle and brake. S at a stop: reverse.'],
+      ['A, D', 'Steer.'],
+      ['Mouse', 'Look round the cab.'],
+      ['R, or click the radio', 'The radio: on, the next station, off.'],
+      ['E, stopped', 'Get out. When the engine has died: turn the key.'],
+    ] },
+  ] },
+  phone: { title: 'Phone and tablet', groups: [
+    { head: 'On foot', rows: [
+      ['Left thumb', 'Walk.'],
+      ['Right thumb', 'Look.'],
+      ['Tap, or Use', 'Use a thing. Tap a paper to put it back.'],
+      ['Zoom, held', 'A closer look.'],
+      ['Light', 'The flashlight, once you have it.'],
+      ['Camera', 'Raise or lower the field camera. Shutter: take the picture.'],
+      ['Notes', 'The notebook.'],
+      ['II', 'Pause: settings, save and load.'],
+    ] },
+    { head: 'In the truck', rows: [
+      ['Left stick', 'Throttle, brake and steering.'],
+      ['Radio, or tap it', 'The radio: on, the next station, off.'],
+      ['Get out', 'Stopped: out of the truck. Turn the key: when the engine has died.'],
+    ] },
+  ] },
+};
+const controlsPage = (touch: boolean) => (touch ? ['phone', 'desk'] as const : ['desk', 'phone'] as const).map((k) => `
+  <div class="nb-ctl"><h4>${CONTROLS[k].title}</h4>${CONTROLS[k].groups.map((g) => `<h5>${g.head}</h5>
+    <dl>${g.rows.map(([key, what]) => `<dt>${esc(key)}</dt><dd>${esc(what)}</dd>`).join('')}</dl>`).join('')}</div>`).join('');
 /** Initials for an empty frame: first and last name, without a title or "the". */
 const initials = (name: string) => {
   const w = name.split(/\s+/).filter((x) => x && !/^(dr\.?|the)$/i.test(x));
@@ -228,7 +272,7 @@ export class UI {
       <p class="note flash-note">Near the end of the night there is a short sequence of flashing images.
         <span class="pick"><button data-a="fl-keep" aria-pressed="${!opts.flash.calm}">Flashes</button><button data-a="fl-calm" aria-pressed="${opts.flash.calm}">Slow fades</button></span></p>
       <p class="note rotate-hint">Turn your phone sideways for the wide view.</p>
-      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera, F for a flashlight once you have one, right mouse for a closer look. Phone: left thumb walks, right thumb looks, tap things to use them.</p>`;
+      <p class="note">The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, C for the camera, F for a flashlight once you have one, right mouse for a closer look, H for all of them. Phone: left thumb walks, right thumb looks, tap things to use them. The notebook has every control on its Controls page.</p>`;
     const pick = (calm: boolean) => {
       el.querySelector('[data-a=fl-keep]')!.setAttribute('aria-pressed', String(!calm));
       el.querySelector('[data-a=fl-calm]')!.setAttribute('aria-pressed', String(calm));
@@ -282,7 +326,7 @@ export class UI {
   // so far (with the evidence board once there is one), the papers and the photographs.
   // The last tab used is kept. After SPILLDESIGN.md ("Journal med fem faner").
   private nbTab: NbTab = 'tasks';
-  /** The tab the notebook opens at next (M for the map, I for the kit). */
+  /** The tab the notebook opens at next (M for the map, I for the kit, H for the controls). */
   notebookAt(t: NbTab) { this.nbTab = t; }
   notebook(tasks: { text: string; done: boolean }[], notes: string[], docs: DocSpec[], onDoc: (d: DocSpec) => void, heading = 'Tonight', onBoard?: () => void, extras: NbExtras = {}) {
     const el = document.createElement('div');
@@ -308,6 +352,7 @@ export class UI {
           ${extras.map ? '<button role="tab" data-t="map">Map</button>' : ''}
           ${extras.kit ? '<button role="tab" data-t="kit">Kit</button>' : ''}
           ${extras.people ? `<button role="tab" data-t="people">People${count(extras.people.length)}</button>` : ''}
+          <button role="tab" data-t="controls">Controls</button>
         </div>
         <button class="close">Close  [Tab]</button>
         <section class="nb-page" data-p="tasks">
@@ -340,6 +385,7 @@ export class UI {
           <h4>People in the case</h4>
           <ul class="people">${extras.people.map((p) => `<li>${p.portrait ? `<img alt="" src="${p.portrait}">` : `<span class="noface">${esc(initials(p.name))}</span>`}<b>${esc(p.name)}</b><i>${esc(p.role)}</i><span>${esc(p.note)}</span></li>`).join('')}</ul>
         </section>` : ''}
+        <section class="nb-page nb-case nb-controls" data-p="controls">${controlsPage(!!extras.touch)}</section>
       </div>`;
     const show = (t: NbTab) => {
       this.nbTab = t;

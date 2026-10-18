@@ -12,6 +12,7 @@ import { ServiceYard, YARD } from '../world/ServiceYard';
 import { eachVariant } from '../core/quality';
 import * as P from '../ui/Panels';
 import { clockText } from './time';
+import { firstTime } from '../core/hints';
 
 // Chapter one, "The Second Exposure". Ported from the Unity chapter (Chapter09 and
 // Visual10 passes): S-03 motor log, field camera, photo lab, B-12 control test with a
@@ -234,7 +235,7 @@ export class Chapter1 {
         ui.cameraButton(this.touch);
         audio.play('click', { gain: 0.6 });
         this.g.note('Collected the field camera. Expose the antenna profile from S-03, then process the film in the photo lab.');
-        toast(this.touch ? 'Field camera. The Camera button raises it.' : 'Field camera. C to raise, Space to expose.', 3.6);
+        toast(!firstTime('camera') ? 'Field camera.' : this.touch ? 'Field camera. The Camera button raises it.' : 'Field camera. C to raise, Space to expose.', 3.6);
         if (this.s.stage === 'collect-camera') this.stageTo(this.s.log ? 'first-exposure' : 'motor-log'); else this.save();
       } });
 
