@@ -173,7 +173,10 @@ async def main():
         check(A['x'] - 43.5 < tp[0] < A['x'] - 30 and A['z'] + 1 < tp[2] < A['z'] + 22 and abs(tp[1] - A['y']) < 0.05, f'by the office, on the lot ({tp})')
         check(hint, 'the hint says where to leave it')
         check('SARO seven' in cbline and await ev("S47.ch4.s.cb"), f'on the way Nora calls the truck on the CB ({cbline[:90]})')
-        await tick(12)
+        # the call is said in real time (the CB's voice): on a graphics card the drive is over sooner
+        for _ in range(80):
+            if await ev("S47.game.notes.some((n) => n.includes(\"on the truck's CB\"))"): break
+            await tick(0.5); await pg.wait_for_timeout(250)
         check(await ev("S47.game.notes.some((n) => n.includes(\"on the truck's CB\"))"), 'and the call is in the notebook')
         pp = await ev("[S47.player.pos.x, S47.player.pos.z, S47.player.floorY]")
         check(abs(pp[2] - A['y']) < 0.05 and math.hypot(pp[0] - tp[0], pp[1] - tp[2]) < 4, f'out by the door, on the lot ({pp})')

@@ -301,9 +301,11 @@ async def main():
         check(await stand('truckSpot', 2.0) is not None, 'the truck at the station can be reached')
         check(await aimed() == 's1truck' and await label('s1truck') == 'Drive back to SARO', 'the truck offers the way back')
         await use('s1truck')
-        for _ in range(40):
+        # the trip loads what it needs in real time (fast on a graphics card: frames alone are not enough)
+        for _ in range(240):
             await tick(0.25)
             if await ev("S47.world.driving"): break
+            await pg.wait_for_timeout(100)
         check(await ev("S47.world.leg === 'station01'"), 'the way back starts in the truck at the station (no cut)')
         await ev("S47.world.autopilot = 13")
         for _ in range(500):
