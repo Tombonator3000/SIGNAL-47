@@ -211,12 +211,13 @@ export class UI {
   }
 
   title(opts: { onStart: () => void; cont: string | null; onContinue: () => void; canLoad: boolean; onLoad: () => void; onSettings: () => void;
-    flash: { calm: boolean; onPick: (calm: boolean) => void } }) {
+    flash: { calm: boolean; onPick: (calm: boolean) => void }; gate?: boolean; touch?: boolean }) {
     const el = document.createElement('div');
-    el.className = 'title-screen';
+    el.className = 'title-screen' + (opts.gate ? ' gated' : '');
     el.innerHTML = `
       <h1>SIGNAL<span class="slash">/</span>47</h1>
       <div class="sub">New Mexico, 1986. Night shift at SARO.</div>
+      <div class="gate">${opts.touch ? 'Tap to begin' : 'Click or press any key'}</div>
       <div class="menu">
         <button data-a="cont" ${opts.cont ? '' : 'disabled'}>Continue</button>
         ${opts.cont ? `<div class="cont-info">${esc(opts.cont)}</div>` : ''}
@@ -240,8 +241,14 @@ export class UI {
     el.querySelector('[data-a=load]')!.addEventListener('click', opts.onLoad);
     el.querySelector('[data-a=set]')!.addEventListener('click', opts.onSettings);
     this.root.appendChild(el);
-    (el.querySelector(opts.cont ? '[data-a=cont]' : '[data-a=start]') as HTMLButtonElement).focus({ preventScroll: true });
+    if (!opts.gate) (el.querySelector(opts.cont ? '[data-a=cont]' : '[data-a=start]') as HTMLButtonElement).focus({ preventScroll: true });
     return el;
+  }
+  /** The first tap or key on the title screen: the menu comes in (with the music, main.ts). */
+  ungate(el: HTMLElement) {
+    if (!el.classList.contains('gated')) return;
+    el.classList.remove('gated');
+    (el.querySelector<HTMLButtonElement>('[data-a=cont]:not([disabled])') ?? el.querySelector<HTMLButtonElement>('[data-a=start]'))?.focus({ preventScroll: true });
   }
 
   /** Called when a paper is opened (the sound of the page; set by main). */

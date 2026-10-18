@@ -193,6 +193,8 @@ Tom la ved disse bildene da web/ ble lagt inn 3. oktober. De ligger ikke i repoe
 - Flomlysene var for sterke og gjorde natten til dag i High. Nå har de vindusavtagning og skala 0.07.
 - Bygget er reproduserbart. `npm ci` og `npm run build:single` ga 3. oktober en fil som var byte-identisk med den publiserte artefakten (sha256 `8a7dce16c5a6c806...`). Sammenlign sha256 når du vil vite om artefakten og repoet er samme versjon.
 - Sluttkortet toner inn med CSS-animasjoner (tittel etter 1 s, knapper etter 6,5 s). I programvare-renderingen går de mye tregere enn vegguret. Tester må vente på synlighet, ikke på fast tid.
+- Etter en ny publisering finner en side som sto åpen fra før, ikke de gamle bitene som lastes underveis (veien, stasjonen, førerhuset). Da kom «The way could not be loaded» og lastebilen uten interiør (Tom, 18. oktober). `main.ts` lytter på `vite:preloadError`, lagrer natta og laster siden på nytt; ikke to ganger innen ett minutt (`s47.reloaded` i `sessionStorage`), for da er det nettet.
+- Nettleseren slipper ikke lyd ut før første trykk eller tast. Første gang står tittelskjermen derfor med «Tap to begin», og menyen kommer inn med musikken etter trykket. Testnettleseren (`navigator.webdriver`) får ingen port.
 - Pages legger spillet i undermappen `/SIGNAL-47/`. `base: './'` i `vite.config.ts` gjør alle stier relative, og det må den fortsette med.
 - Alle Toms Pages-sider deler opprinnelsen `tombonator3000.github.io`, også `localStorage`. Nøklene våre har prefikset `s47.`, og det må nye nøkler også ha.
 - Bildene fra `art.ts` finnes først etter `loadArt()`. Kode som kjører når en modul lastes (for eksempel materialene i `M`), kan ikke bruke dem. Slike materialer får bildet i `initArtMaterials()`.
