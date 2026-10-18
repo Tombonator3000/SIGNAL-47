@@ -18,6 +18,7 @@ import type { DriveInput, DriveArea } from '../drive/Drive';
 import type { LegId, Exit } from '../drive/legs';
 import { Crossing, SHOULDER, WEST, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
+import { Field } from './Field';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, type FloodSet } from './kit';
 import { loadArtFor, artTexture, DINER_ART, OLDROAD_ART } from '../core/art';
@@ -168,6 +169,8 @@ export class World {
   /** The way over the road and the motel's front (the old backdrop until MotelFront.ts). */
   crossing: Crossing;
   grounds: Grounds;
+  /** The antenna field north of the array fence, walked through its gate (Field.ts). */
+  field: Field;
   motel: MotelFront;
   court: CourtSite;
   saroTruck: Truck | null = null;
@@ -233,7 +236,9 @@ export class World {
     const m = new MotelFront();
     this.motel = m;
     this.court = m;
-    for (const part of [c, g, m]) {
+    const f = new Field();
+    this.field = f;
+    for (const part of [c, g, m, f]) {
       d.scene.add(part.group);
       d.saro.groups.push(part.group);
       d.saro.zones.push(...part.zones);
@@ -1052,7 +1057,7 @@ export class World {
       if (this.town) this.town.group.visible = near;
       this.diner.setNear(0);
     }
-    if (this.area === 'saro') this.motel.update(dt, t);
+    if (this.area === 'saro') { this.motel.update(dt, t); this.field.update(dt, t, this.d.camera.position); }
     // SARO's stretch of the highway: the reflectors and signs in the truck's headlights
     const sl = this.legs.saro?.area.headlights;
     if (this.area === 'saro' && this.leg === 'saro' && sl) this.saroGlints?.glints(sl.slots);

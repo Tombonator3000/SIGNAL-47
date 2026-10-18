@@ -39,6 +39,7 @@ import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World'
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
 import { bindTown, townPeople } from './story/caliche';
+import { bindField } from './story/field';
 import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
@@ -222,6 +223,8 @@ async function boot() {
   doors.add({ id: 'records', inter: 'recordsDoor', name: 'records room door', proxy: annex.objs.recordsDoor, set: (k) => annex.setRecordsDoor(k),
     zones: [annex.zone.recordsDoor], leaf: annex.recordsLeafCol, sound: 'light' });
   room.setDoorLock(true);
+  // the antenna field through the gate in the array fence: its cabinets and pedestals (story/field.ts)
+  bindField(world.field, { inter, doors, audio, toast: (text, secs) => ui.toast(text, secs), dishes: ext.dishes, here: () => world.area === 'saro' && !world.driving });
   const motelOffice = world.motel.zones.find((z) => z.id === 'office')!;
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
@@ -847,6 +850,7 @@ async function boot() {
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
     if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : world.crossing.onHighway(p) ? 'The highway south' : 'West lot';
+    if (world.field.inField(p)) return world.field.placeAt(p);
     if (world.grounds.onGround(p)) return 'SARO grounds';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';

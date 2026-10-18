@@ -172,7 +172,7 @@ function makeReachEngine() {
       s.tick(.1);
       if(cfg.area==='saro') {
         if(!s.doors?.set)throw Error('Missing DoorRegistry.set');
-        for(const id of ['east','south','lab','exit','records'])s.doors.set(id,true,true);
+        for(const id of ['east','south','lab','exit','records','gate'])s.doors.set(id,true,true);
       }
       await s.world.prepare(cfg.area);s.world.enter(cfg.area);
       const model=cfg.area==='station01'?s.world.site:cfg.area==='room6'?s.world.room6:cfg.area==='diner'?s.world.diner:null;
@@ -197,19 +197,31 @@ function makeReachEngine() {
         oz=Math.floor(Math.min(...zones.map(b=>b.minZ))/spacing)*spacing;
       const w=Math.ceil((Math.max(...zones.map(b=>b.maxX))-ox)/spacing)+1,
         h=Math.ceil((Math.max(...zones.map(b=>b.maxZ))-oz)/spacing)+1;
-      if(w*h>cfg.max_cells)throw Error(`Grid ${w*h} exceeds explicit max-cells ${cfg.max_cells}; no subset tested`);
-      const valid=new Uint8Array(w*h),heights=new Float64Array(w*h);
+      // Only grid points inside an enabled zone can be walkable, so only those are sampled: the
+      // antenna field (Field.ts) and the walk to the motel make SARO's bounding box tens of millions
+      // of points with about a million and a half inside zones. Same grid, same points, same order.
+      const span=(lo,hi,o)=>[Math.max(0,Math.ceil((lo-o)/spacing-1e-9)),Math.floor((hi-o)/spacing+1e-9)];
+      let candidates=0;
+      for(const b of zones){const [x0,x1]=span(b.minX,b.maxX,ox),[z0,z1]=span(b.minZ,b.maxZ,oz);candidates+=Math.max(0,x1-x0+1)*Math.max(0,z1-z0+1);}
+      if(candidates>cfg.max_cells)throw Error(`Grid points inside zones ${candidates} exceed explicit max-cells ${cfg.max_cells}; no subset tested`);
+      if(w*h>256e6)throw Error(`Grid ${w*h} too large to index; no subset tested`);
+      const valid=new Uint8Array(w*h),seen=new Uint8Array(w*h),heights=new Float32Array(w*h);
       const coords=id=>({x:ox+(id%w)*spacing,z:oz+Math.floor(id/w)*spacing});
       const validIds=[];
-      for(let id=0;id<valid.length;id++) {
-        if((id&8191)===0)guard();
-        const t=coords(id);
-        if(p.walkable(t.x,t.z) && aabbClear(t.x,t.z,p.radius,cs)) {
-          valid[id]=1;validIds.push(id);heights[id]=floor(t.x,t.z);
-          if(!Number.isFinite(heights[id]))throw Error('Non-finite floor sample');
+      for(const b of zones) {
+        guard();
+        const [x0,x1]=span(b.minX,b.maxX,ox),[z0,z1]=span(b.minZ,b.maxZ,oz);
+        for(let iz=z0;iz<=Math.min(z1,h-1);iz++)for(let ix=x0;ix<=Math.min(x1,w-1);ix++) {
+          const id=iz*w+ix;if(seen[id])continue;seen[id]=1;
+          const t=coords(id);
+          if(p.walkable(t.x,t.z) && aabbClear(t.x,t.z,p.radius,cs)) {
+            valid[id]=1;validIds.push(id);heights[id]=floor(t.x,t.z);
+            if(!Number.isFinite(heights[id]))throw Error('Non-finite floor sample');
+          }
         }
       }
-      report.grid={origin:{x:ox,z:oz},spacing_m:spacing,width:w,height:h,total_cells:w*h,
+      validIds.sort((a,b)=>a-b);
+      report.grid={origin:{x:ox,z:oz},spacing_m:spacing,width:w,height:h,total_cells:w*h,zone_cells:candidates,
         valid_indices:validIds,reached_indices:[],parents:[],valid_count:validIds.length,
         aabb_clear_count:validIds.length};
       if(!validIds.length)throw Error('No valid grid points');
@@ -931,7 +943,7 @@ def main() -> int:
     parser.add_argument("--spacing",type=float,default=.15,help="Required full-check spacing is 0.15 m; overrides are UNVERIFIED unless a measured FAIL takes precedence")
     parser.add_argument("--timeout",type=float,default=540,help="Total browser/check budget in seconds (default 9 minutes)")
     # 4 million since 17 October 2026: SARO's grid now reaches 650 m down the highway to the motel (3.1 million cells)
-    parser.add_argument("--max-cells",type=int,default=4000000,help="Reject, never truncate, a grid above this safety limit")
+    parser.add_argument("--max-cells",type=int,default=4000000,help="Reject, never truncate, a grid with more points inside walk zones than this safety limit")
     parser.add_argument("--self-test",action="store_true",help="Adversarial checker fixtures only; no real-game execution")
     args=parser.parse_args()
     if not math.isfinite(args.spacing) or not math.isfinite(args.timeout) or args.spacing<=0 or args.timeout<=0 or args.max_cells<1:
