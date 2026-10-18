@@ -79,6 +79,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); out
 .title-screen .menu button:disabled { color: #6e6a62; cursor: default; }
 .title-screen .note { font-family: var(--type); font-size: 14px; color: #a39e92; margin-top: 26px; max-width: 46ch; line-height: 1.5; }
 .title-screen .rotate-hint { display: none; }
+/* before the first tap: only the name and "Tap to begin"; the menu comes in with the music */
+.title-screen .gate { display: none; font-family: var(--term); font-size: clamp(24px, 3vw, 32px); color: var(--phosphor); animation: gate-blink 1.4s ease-in-out infinite alternate; }
+.title-screen.gated { cursor: pointer; }
+.title-screen.gated .gate { display: block; }
+.title-screen.gated .menu, .title-screen.gated .note { display: none; }
+.title-screen:not(.gated) .menu { animation: gate-in .5s ease-out; }
+@keyframes gate-blink { to { opacity: .35; } }
+@keyframes gate-in { from { opacity: 0; } }
 @media (orientation: portrait) and (pointer: coarse) { .title-screen .rotate-hint { display: block; color: var(--amber); } }
 
 /* ---------- HUD ---------- */

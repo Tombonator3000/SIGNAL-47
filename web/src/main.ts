@@ -506,11 +506,26 @@ async function boot() {
     if (mode !== 'title') return;
     audio.unlock().then(() => { if (mode === 'title') audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }); }).catch(() => {});
   }
-  const firstTouch = () => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true); menuMusic(); };
+  // The first time, the menu waits behind "Tap to begin", so that first tap brings in the
+  // music before anything is chosen (Tom, 18 October: music when the main menu comes up).
+  // Not for the browser tests, which click their way straight in.
+  const firstTouch = (e: Event) => {
+    removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
+    const el = titleEl;
+    if (el?.classList.contains('gated')) {
+      e.preventDefault(); e.stopPropagation();
+      // the menu comes in after the tap is over, so the tap itself does not land on a button
+      if (e.type === 'pointerdown') addEventListener('pointerup', () => setTimeout(() => ui.ungate(el), 0), { once: true, capture: true });
+      else ui.ungate(el);
+    }
+    menuMusic();
+  };
   function showTitle() {
+    const gate = !audio.ctx && !navigator.webdriver;
     if (audio.ctx) menuMusic(); else { addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true); }
     const cont = saves.continueSave();
     titleEl = ui.title({
+      gate, touch: matchMedia('(pointer: coarse)').matches,
       cont: cont ? `${cont.chapter} · ${cont.place} · ${cont.clock} · ${played(cont.playtime)} played` : null,
       onContinue: () => { const m = saves.continueSave(); if (m) openSave(m); },
       onStart: () => {
@@ -783,6 +798,19 @@ async function boot() {
     pendingAuto = true;
     flushAutosave();
   }
+  // A page opened before a new version went out asks for pieces of the old one (the road, the
+  // truck's cab) that are no longer on the server (Tom, 18 October: "The way could not be
+  // loaded"). Save what can be saved and load the new version; Continue takes up the night.
+  // Not twice in a minute: then it is the connection, and the usual message says so.
+  addEventListener('vite:preloadError', () => {
+    let last = 0;
+    try { last = Number(sessionStorage.getItem('s47.reloaded')) || 0; } catch { /* no storage */ }
+    if (Date.now() - last < 60000) return;
+    try { sessionStorage.setItem('s47.reloaded', String(Date.now())); } catch { /* no storage */ }
+    setTimeout(() => ui.toast('SIGNAL 47 has been updated. Saving the night and loading the new version.', 5), 50);
+    const saved = saveBlock() ? Promise.resolve() : (draw(), writeSave('auto', 'rotate').then(() => {}, () => {}));
+    Promise.all([saved, new Promise((r) => setTimeout(r, 2000))]).then(() => location.reload());
+  });
 
   function toTitle() {
     mode = 'title';
