@@ -13,7 +13,7 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 5b. [x] **Grafikkfilene, runde 15** (18. oktober): alle 24 filer er laget av Codex sammen med runde 13 og 14. Se `ART_ROUND13_15_DELIVERY.md` og mappenes `MANIFEST.md`. Bevisbordet, albumet, Kit, motell-tv-en, delingsbildet og ikonet gjenstår å bygge inn hos Claude.
 5. [x] **Ansiktsportretter** (18. oktober): alle elleve filene fra runde 13 er levert av Codex i `src/assets/art/people/`. Navn, 512×640, JPEG/sRGB og tekstfrie motiver er kontrollert. Eksisterende innlasting viser alle elleve People-kort og Noras portrett i begge byggvariantene (8/8 PASS); Nora og servitrisen er også sett i de gående kapitteltestene. Se `ART_ROUND13_15_DELIVERY.md`. Toms vurdering på ekte mobil/PC gjenstår.
 6. [x] **Motellet 650 m sør** langs riksveien (flettet 16. oktober kveld i PR #93 på Toms ord, før hele testrekka; den går nå på main): i SAROs område, gangbar veiskulder, bilen kan stå på plassen, kapittel 4 og 5 skrevet om, `tools/motel.py`.
-7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der. Steg 1 bygget 17. oktober (`world/Town.ts`). Steg 2 bygget 17. oktober kveld: folka med replikker (betjenten, nestlederen, Earl, kvinnen på benken, suvenirmannen), hendelsene 1, 5, 6, 8 og 11, og merkene og linje A på kartet. Gjenstår: grafikken fra ChatGPT (`ART_BRIEF.md`, runde 14; nå tegnet i kode), at Tom prøver folka og hendelsene, og hendelse 12 (sheriffens tomme bil i veikanten 03:12).
+7. [ ] **Landsbyen Caliche** ved krysset der dineren står, med folka og nattens rytme (`HENDELSER.md` punkt 9), og hendelsene der. Steg 1 bygget 17. oktober (`world/Town.ts`). Steg 2 bygget 17. oktober kveld: folka med replikker (betjenten, nestlederen, Earl, kvinnen på benken, suvenirmannen), hendelsene 1, 5, 6, 8 og 11, og merkene og linje A på kartet. Gjenstår: grafikken fra ChatGPT (`ART_BRIEF.md`, runde 14; nå tegnet i kode), at Tom prøver folka og hendelsene, og hendelse 12 (sheriffens tomme bil i veikanten 03:12). Grafikken fra runde 14 er bygget inn 19. oktober (grenen `art-wiring`): vinduene, skiltene, avisa, pappfiguren, silhuettene og bortføringsbildene.
 
 ## Forbedringene Tom sa ja til 16. oktober kveld («kjør på», `FORSLAG.md`)
 
@@ -26,8 +26,8 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [ ] Tom hører på stillheten, telefonlinja og CB-stemmen på ekte høyttalere, og sier om glimtet på taket er for lett eller for vanskelig å få øye på.
 - [ ] En lydside i utviklermenyen der Tom kan svare «for høyt / for lavt / bra» på hver lyd.
 - [ ] En kort testrunde (15 til 20 minutter) for små endringer.
-- [ ] Lastebilens nøyaktige plass i lagringen (nå: SARO, motellet, stasjonen eller dineren).
-- [ ] Hint bare første gang, og en kontrollside i notatboka.
+- [x] Lastebilens nøyaktige plass i lagringen (nå: SARO, motellet, stasjonen eller dineren). Bygget 18. oktober: `truckPose` i lagringen, `tools/truckpose.py`.
+- [x] Hint bare første gang, og en kontrollside i notatboka. Bygget 18. oktober: `core/hints.ts` (`s47.hints`) og fanen Controls (H).
 
 ## Nå (hele natten, fra prologen til slutten, er ute på Pages fra 5. oktober kl. 12.08 UTC)
 
@@ -39,7 +39,7 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [ ] Flere rolige landemerker på den gamle veien etter samme kontrakt, hvis Tom vil ha dem (for eksempel en postkasse ved en sidevei eller en nedlagt bensinpumpe), så de 13 km har noe å se på før seksmilsstolpen.
 - [ ] Tom prøver turen til dineren og hele den gamle veien: er 13 km (rundt ni minutter ved 55 mph) for langt før slutten, eller gir det ro? Radioen i kapittel 6 kommer nå etter milene.
 - [ ] Tom prøver kjøringen fra SARO til stasjonen og tilbake: finner han veien ut av gården og opp på plassen igjen, og ser han noe hoppe der bilen bytter område (200 m sør for SARO og 330 m før porten)?
-- [ ] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kapittel 6 har linjer etter milene (`Chapter6.RADIO`); neste steg er samme mønster for alle turer (`World.startTrip` med et program etter meter kjørt) og et første utkast til innhold for kapittel 3 og 5, som Tom kan rette.
+- [x] Radioprogram i bilen mens man kjører (Toms plan): stemning, nyheter, info og hint. Kapittel 6 har linjer etter milene (`Chapter6.RADIO`); neste steg er samme mønster for alle turer (`World.startTrip` med et program etter meter kjørt) og et første utkast til innhold for kapittel 3 og 5, som Tom kan rette. Bygget 18. oktober: `story/tripRadio.ts`, 51 linjer i et første utkast, `tools/tripradio.py`. Gjenstår: Tom leser og retter teksten, og om 1090 skal ha prat mellom 04:00 og 05:00.
 - [x] Tom 15. oktober: lastebilen skal kunne brukes når som helst i vanlig spill. Forslag til hvordan i `FORSLAG.md` (15. oktober), punkt 1.
 - [x] Lastebilen når som helst (15. oktober kveld): fra kapittel 1 tilbyr bilen en egen tur der den står, og den blir stående på plassen den stoppes på. Kjetting i gangåpningen ved STATION 01 til kapittel 3, ROAD CLOSED ved milestolpe 0 til kapittel 5 sender bilen ut (`tools/roam.py`).
 - [ ] Tom prøver å kjøre selv mellom SARO, dineren og STATION 01 i kapittel 1 og 2: finner han plassene å stoppe på, og er det tydelig nok at stasjonen og den gamle veien er stengt ennå?
@@ -50,8 +50,8 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [ ] Tom prøver feilene med bilen fra utviklermenyen (Truck trouble) og hører på hosting, startmotor og omstart (UNVERIFIED på ekte høyttalere).
 - [ ] Tom prøver på RTX 3080 (Ultra): er den svarte firkanten borte? Hvis det fortsatt er grafiske feil: et skjermbilde og hvor i spillet, og om det er på Ultra eller High.
 - [ ] Tom hører på de nye fotlydene og lyden innendørs på ekte høyttalere (UNVERIFIED her).
-- [ ] Flere ting med undersøk-tekst (`examine`): antennene, skiltene, dokumentene på pultene, motellet. Lommelykta flimrer nær hendelsene når de kommer (`Flashlight.flicker`).
-- [ ] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4.
+- [x] Flere ting med undersøk-tekst (`examine`): antennene, skiltene, dokumentene på pultene, motellet. Lommelykta flimrer nær hendelsene når de kommer (`Flashlight.flicker`). Bygget 18. oktober: `story/looks.ts`, rundt 100 tekster, og flimringen i `Flashlight.flicker` med navngitte kilder; `tools/examine.py`.
+- [x] Antennefeltet gangbart: port i gjerdet ved z -20, grusspor, apparatskap med skilt ved hver antenne. `FORSLAG.md`, punkt 4. Bygget 18. oktober: `world/arrayLayout.ts`, `world/Field.ts`, `story/field.ts`, `tools/field.py`. Ikke bygget: stigen på antennene og driftsloggen i skapene.
 - [ ] Motellet rundt 700 m sør langs riksveien, gangbar veiskulder, kapittel 4 skrevet om. `FORSLAG.md`, punkt 3. Tom: sør.
 - [ ] SARO som knutepunkt: små hendelser som legger funn i notatboka, tre eller fire først. `FORSLAG.md`, punkt 2.
 - [x] Tom avgjorde retningen for knutepunktet 16. oktober: A, én natt og byen om natta, romvesenene alltid i bakgrunnen og tilfeldige bortføringer. Utdypet i `HENDELSER.md`.
@@ -63,7 +63,8 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [x] Neste del av `HENDELSER.md`: glimtene av romvesenene og bortføringene (bygget 17. oktober kveld, se steg 0 under).
 - [ ] Tom hører på radioen på ekte høyttalere: pratelydene, låtene, nasjonalsangen og nivået mot motoren (UNVERIFIED her; målt i nettleseren uten høyttalere).
 - [x] Morgenradioen på den gamle veien i kapittel 6 (`Audio.cabRadio('talk')`) mumler nå som Peanuts den også. Bitene av natten i THE EVENT (Tomás' stemme på radioen) er med vilje uendret.
-- [ ] Steg 0 i `HENDELSER.md` er bygget 17. oktober kveld: glimtene (`core/glimpses.ts`, `tools/glimpses.py`) og bortføringen (`story/abduction.ts`, `tools/abduct.py`), med innstillingen Missing time. Gjenstår: Tom spiller kapittel 1 til 3 og svarer på spørsmålene i punkt 11 (så du dem, ble du redd, ville du lete etter mer, skjønte du hva som skjedde da du var borte, for mye eller for lite), og grafikken til bortføringen fra ChatGPT (runde 14) i stedet for bildene tegnet i kode.
+- [ ] Steg 0 i `HENDELSER.md` er bygget 17. oktober kveld: glimtene (`core/glimpses.ts`, `tools/glimpses.py`) og bortføringen (`story/abduction.ts`, `tools/abduct.py`), med innstillingen Missing time. Gjenstår: Tom spiller kapittel 1 til 3 og svarer på spørsmålene i punkt 11 (så du dem, ble du redd, ville du lete etter mer, skjønte du hva som skjedde da du var borte, for mye eller for lite), og grafikken til bortføringen fra ChatGPT (runde 14) i stedet for bildene tegnet i kode. Grafikken fra runde 14 er bygget inn 19. oktober (grenen `art-wiring`): vinduene, skiltene, avisa, pappfiguren, silhuettene og bortføringsbildene.
+- [x] Flere hendelser (Tom, 18. oktober: «mer levende, mer skumle ting»): 3 overalt, 4 og 13 til 17 er bygget (`story/nightEvents.ts`). Gjenstår av listen: 2 (kyrne mot az 026), 10 (tv-en på motellkontoret, venter på bildene i runde 15), og at Tom sier hvilke som virker og hvilke som er for mye. Hendelse 2 (kyrne) og 10 (motell-tv-en) bygget 18. oktober: `drive/herd.ts`, `story/pasture.ts`, `story/motelTv.ts`, `tools/cowstv.py`.
 - [ ] Steg 1 til 3 i `HENDELSER.md`: Caliche som én gate med kartfanen og linjene, så folka og nattens rytme, så hendelser på C og flere glimt. Grafikk fra Codex eller ChatGPT: silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene og avisforsiden.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
 
@@ -91,7 +92,7 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [x] P05-siden på arkivbordet var tom hvis E07 ble lest i hylla før bordet ble åpnet (merkeikonene ble aldri tegnet). Rettet, med egen sjekk i `chapter2.py`.
 - [x] **Rom 6:** TV-en står på med sus som lyser opp rommet i blått og flimrer (`Room6.setTv`, `AudioSys.tvHiss`).
 - [x] **Walkie-talkien:** avgjort av Tom 4. oktober kveld: ingen blackout, men en guffen lyd som peker fram mot THE EVENT (se `KAPITLER.md`, Room 6). Bygges sammen med Night Shift.
-- [ ] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet.
+- [x] **Fritt kamera og fotoalbum (etter «They Are Here»):** ta bilder når som helst etter at kameraet er hentet. Alle bilder havner i et album med polaroidramme og en bildetekst ut fra hva som er i bildet. Bygget 18. oktober: `core/album.ts`, `story/albumSubjects.ts`, `ui/album.ts`, 36 frie bilder per natt som instant-bilder, `tools/album.py`.
 - [x] **Tre lysende punkter over motellet:** droppet av Tom 4. oktober kveld.
 - [x] **Journal med faner:** Tasks, Notes, Findings (med knapp som legger ut bevisbordet), Papers og Photos, etter `SPILLDESIGN.md`. Gjenstår: personer, steder og signaler (venter til kapittel 5), og notatene kortet ned til én linje i spillerens egne ord uten tolkning.
 - [x] **Hånd-ikon** i stedet for siktet på dører, håndtak og ting man kan bruke.
@@ -99,8 +100,8 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 
 ## Fra Tom 4. oktober kveld (neste runder)
 
-- [x] **Bevisbord i kapittel 2** (`ui/Board.ts`), nå v2 etter `SPILLDESIGN.md`: det trådene viser, går selv inn i spørsmålet, RECORD registrerer, én kolonne på telefon. Gjenstår: samme bord for funnene i kapittel 1 og 3 (P06, P08, P09), bevis i stedet for setninger i kapittel 4, og bordet i journalen.
-- [ ] **Bevisbord i stedet for faner (Tom: «knotete og vanskelig å forstå»), resten.** Et korkbord / arbeidsbord der bevisene ligger som kort og bilder. Spilleren drar dem fritt rundt og trekker en rød tråd mellom to bevis. En tråd mellom to ting som faktisk henger sammen gir en ny lapp på bordet (for eksempel E07 + E06 gir «C er fjernet»); feil kobling får et kort svar og tråden slakker av. Funnene (P04 og videre) registreres ved å koble sammen, ikke ved å velge blant tre setninger. Samme bord brukes i alle kapitler og samler alt fra journalen. Må gå med mus og berøring.
+- [x] **Bevisbord i kapittel 2** (`ui/Board.ts`), nå v2 etter `SPILLDESIGN.md`: det trådene viser, går selv inn i spørsmålet, RECORD registrerer. Kapittel 1 er også flyttet til samme bord i `codex/board-chapter1` (CODEX_TASKS oppgave 2), med match av referansen, hypotese og sammenligning av eksponeringene. Kapittel 3 og 4 samt bordet i journalen følger den felles bordløsningen.
+- [x] **Bevisbord i stedet for faner (Tom: «knotete og vanskelig å forstå»), resten.** Et korkbord / arbeidsbord der bevisene ligger som kort og bilder. Spilleren drar dem fritt rundt og trekker en rød tråd mellom to bevis. En tråd mellom to ting som faktisk henger sammen gir en ny lapp på bordet (for eksempel E07 + E06 gir «C er fjernet»); feil kobling får et kort svar og tråden slakker av. Funnene (P04 og videre) registreres ved å koble sammen, ikke ved å velge blant tre setninger. Samme bord brukes i alle kapitler og samler alt fra journalen. Må gå med mus og berøring. Bygget 18. oktober (`story/caseBoard.ts`, `story/boardRules.ts`, `ui/Board.ts`, `tools/board.py`), kapittel 1 lagt til av Codex 19. oktober (`codex/board-chapter1`). P07, P10 og P13 er fortsatt ved lampa, i samtalen og i kartoppgaven.
 - [x] **VHS / X-Files-etterbehandling** (`core/vhs.ts`, Settings: Picture). Camcorder-modus med REC og dato er ikke laget: designrådet er at feltkameraet er et filmkamera; venter på Tom.
 - [x] **Lyd:** sirisser, ugle, hund, vindkast, fottrinn etter underlag, dører, papir og fjern rullende torden er inne. Gjenstår: prærieulv (ingen CC0-fil funnet i Toms repoer), teppe og metallrist har egne opptak, TV-sus og walkie-talkie.
 - [x] **Bilen stopper (abduksjonsscenen):** avgjort av Tom 4. oktober kveld: ingen tapt tid og ingen oppvåkning, men THE EVENT som slutt (se `HISTORIE.md`). Bygges under «Neste».
@@ -137,7 +138,7 @@ Spillet kjører allerede på WebGL (WebGL2 gjennom three.js). Det som mangler p�
 - [x] Ekte skygger fra de tre nærmeste lampene der spilleren er (gården, arkivet, motellet, stasjonen, dineren, veien) og fra lampa på vaktpulten. Ikke månelys: månen var en tynn sigd fem dager etter nymåne og gikk ned rundt midnatt 13. april 1986. De store flomlysene over arrayet blir falske. Skyggekartene tegnes 12 ganger i sekundet.
 - [x] Omgivelsesskygge (GTAO) overalt i Ultra.
 - [x] Ekte glød (bloom) før VHS-passet; båndets egen glød er dempet i Ultra.
-- [ ] Lys i lufta: svake lyskjegler under natriumlampene og bakkedis ute.
+- [x] Lys i lufta: svake lyskjegler under natriumlampene og bakkedis ute. Bygget 18. oktober: `world/airlight.ts`, bare High og Ultra, `tools/airlight.py`.
 - [x] Normal- og ruhetskart fra Codex (runde 9, PR #51 med rettet ruhet `b32263c`): koblet inn og flettet gjennom PR #52. Hele testrekka og Pages fra undermappe PASS.
 - [ ] Tom ser Ultra med kartene på PC og sier om relieffet og glansen er for sterke eller for svake.
 - [ ] Skapfrontene med stensiltekst og bakken på STATION 01 er sammensatte canvas uten kart i Ultra. Gi dem tvillingkart som veiene hvis det synes.

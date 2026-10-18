@@ -10,13 +10,24 @@ export interface Interactable {
   examine?: () => string | null;
   /** How far off it can be looked at closely (8 m by default). */
   examineRange?: number;
+  /** Only there for a closer look (an antenna, a sign): never offered for use, and never in the
+   *  way of something behind it that is (pick() looks past it). */
+  look?: boolean;
 }
+
+/** Drawn: the object and everything above it visible (a hit area itself has an invisible material). */
+const shown = (o: THREE.Object3D | null) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
 
 export class Interaction {
   items: Interactable[] = [];
   private ray = new THREE.Raycaster();
   private meshes: THREE.Object3D[] = [];
   current: Interactable | null = null;
+  /** What a closer look says about things that carry no examine() of their own, by id (story/looks.ts):
+   *  the papers on the desks, the motel, the diner and the rest of the night's things. Without a
+   *  range of its own it reaches a metre past where the thing can be used, so the papers inside
+   *  are not read through the control room's wall. */
+  looks: Record<string, { say: () => string | null; range?: number }> = {};
 
   add(it: Interactable) {
     it.object.traverse((o) => { o.userData.interactId = it.id; });
@@ -33,7 +44,7 @@ export class Interaction {
     for (const h of hits) {
       const id = h.object.userData.interactId;
       const it = this.items.find((i) => i.id === id);
-      if (!it) continue;
+      if (!it || it.look) continue;
       if (h.distance > (it.range ?? maxDist)) return null;
       return it.label() ? it : null;
     }
@@ -47,8 +58,10 @@ export class Interaction {
     this.ray.far = 60;
     for (const h of this.ray.intersectObjects(this.meshes, true)) {
       const it = this.items.find((i) => i.id === h.object.userData.interactId);
-      if (!it?.examine || h.distance > (it.examineRange ?? 8)) continue;
-      const text = it.examine();
+      if (!it || !shown(h.object)) continue;   // nothing to look at in a hidden group (another area, a room not drawn)
+      const look = it.examine ? null : this.looks[it.id], say = it.examine ?? look?.say;
+      if (!say || h.distance > (look ? look.range ?? (it.range ?? 2.4) + 1 : it.examineRange ?? 8)) continue;
+      const text = say();
       if (text) return { it, text };
     }
     return null;

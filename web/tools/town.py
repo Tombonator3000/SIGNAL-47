@@ -64,6 +64,7 @@ async def main():
             await pg.wait_for_timeout(200)
         st = await ev("S47.world.town.stats")
         check(st['lamps'] == 20 and st['quads'] >= 30 and st['glows'] >= 30, f"Caliche is built with the diner: its own lamps (the porch light is the 17th) and the headlights' three ({st})")
+        check(st['pictures'] == 17, f"the windows, the signs, the cardboard alien and the Sentinel are round 14's pictures ({st['pictures']} of 17)")
         await at(X - 1.4, 2040.3, math.pi, 0, 3 * 3600)
         check(await ev("S47.world.area === 'diner' && S47.world.town.group.visible && S47.world.diner.group.visible && S47.world.road.group.visible"), 'in the diner\'s area the town, the diner and the road are all shown')
         await ev("S47.world.enter('saro'); S47.tick(0.1)")
@@ -100,15 +101,15 @@ async def main():
         async def hours(c):
             await ev(f"S47.game.clock = {c}; S47.tick(0.2)")
             return await ev('''(() => { const t = S47.world.town, f = t.flood, w = (k) => f.pos[t['slots'][k]].w;
-              return { deputy: t.deputyIn, car: t['car'].visible, carCol: t['carCol'].minX < 1e8, sheriff: w('sheriffWin'), studio: w('studio'), paper: t.paperIn,
+              return { deputy: t.deputyIn, car: t['car'].visible, carCol: t['carCol'].minX < 1e8, sheriff: w('sheriffWin'), studio: w('studio'), paper: t.paperIn, empty: t.studioEmpty,
                 lamps: t['lamps'].map((l) => f.pos[l.slot].w > 0), glows: t['lamps'].map((l) => t['glow'].points.geometry.getAttribute('aCol').getX(l.glow[0]) > 0) }; })()''')
         h = await hours(2 * 3600 + 30 * 60)
         check(h['deputy'] and h['car'] and h['carCol'] and h['sheriff'] > 0, f"02:30: the deputy at his desk, his car out front and in the way, the window lit ({h['sheriff']})")
         h = await hours(3 * 3600)
         check(not h['deputy'] and not h['car'] and not h['carCol'] and h['sheriff'] == 0, '03:00: out on patrol; the office dark, the car gone, nothing left in the way')
-        check(all(h['lamps']) and all(h['glows']) and not h['paper'] and h['studio'] == 4, '03:00: every street lamp on, no paper yet, the Night Line on the air')
+        check(all(h['lamps']) and all(h['glows']) and not h['paper'] and h['studio'] == 4 and not h['empty'], '03:00: every street lamp on, no paper yet, the Night Line on the air, Earl in the window')
         h = await hours(4 * 3600 + 5 * 60)
-        check(h['studio'] < 2 and not h['deputy'], f"04:05: the Night Line has signed off, the studio dim ({h['studio']}); the deputy still out")
+        check(h['studio'] < 2 and not h['deputy'] and h['empty'], f"04:05: the Night Line has signed off, the studio dim ({h['studio']}) and empty in the window; the deputy still out")
         h = await hours(4 * 3600 + 35 * 60)
         check(h['deputy'] and h['car'] and not h['paper'], '04:35: the deputy is back at his desk, no paper yet')
         h = await hours(4 * 3600 + 50 * 60)

@@ -101,19 +101,43 @@ export class FieldCamera {
     o.restore();
     return makePrint(raw, o.caption, o.time, o.seed);
   }
+
+  // A free frame for the album (core/album.ts): the same render and the same film as a case
+  // print, `w` pixels wide (640, or 320 where the saves have no IndexedDB), without the paper.
+  // Returns the picture and how bright it came out on average (0 to 255).
+  snap(o: { before: () => void; after: () => void; restore: () => void; seed: number; w: number }) {
+    const r = this.renderer, w = o.w, h = Math.round(w * PHOTO_H / PHOTO_W);
+    const exp = r.toneMappingExposure, glow = glowScale.value;
+    o.before();
+    r.setPixelRatio(1);
+    r.setSize(w, h, false);
+    r.toneMappingExposure = exp * 1.9;
+    glowScale.value = h / (2 * Math.tan(PHOTO_FOV * Math.PI / 360));
+    r.render(this.scene, this.photoCam);
+    const raw = document.createElement('canvas');
+    raw.width = w; raw.height = h;
+    raw.getContext('2d')!.drawImage(r.domElement, 0, 0, w, h);
+    r.toneMappingExposure = exp;
+    glowScale.value = glow;
+    o.after();
+    o.restore();
+    const mean = filmLook(raw, o.seed);
+    return { canvas: raw, mean };
+  }
 }
 
-// Film look: lifted blacks, warm cast, grain, vignette. Then the paper print around it.
-function makePrint(raw: HTMLCanvasElement, caption: string, time: string, seed: number) {
+// Film look: lifted blacks, warm cast, grain, vignette (in place). Returns the mean brightness.
+function filmLook(raw: HTMLCanvasElement, seed: number) {
+  const W = raw.width, H = raw.height;
   const g = raw.getContext('2d')!;
-  const img = g.getImageData(0, 0, PHOTO_W, PHOTO_H);
+  const img = g.getImageData(0, 0, W, H);
   const d = img.data;
-  let s = seed >>> 0;
+  let s = seed >>> 0, sum = 0;
   const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-  for (let y = 0; y < PHOTO_H; y++) {
-    for (let x = 0; x < PHOTO_W; x++) {
-      const i = (y * PHOTO_W + x) * 4;
-      const dx = (x / PHOTO_W - 0.5) * 1.6, dy = y / PHOTO_H - 0.5;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      const dx = (x / W - 0.5) * 1.6, dy = y / H - 0.5;
       const vig = 1 - Math.min(0.55, (dx * dx + dy * dy) * 0.9);
       const n = (rnd() - 0.5) * 22;
       // a little less colour than the screen: night film under sodium light
@@ -122,9 +146,16 @@ function makePrint(raw: HTMLCanvasElement, caption: string, time: string, seed: 
       d[i] = Math.min(255, (10 + r * 1.04) * vig + n);
       d[i + 1] = Math.min(255, (9 + gg * 0.99) * vig + n);
       d[i + 2] = Math.min(255, (12 + b * 0.9) * vig + n);
+      sum += d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
     }
   }
   g.putImageData(img, 0, 0);
+  return sum / (W * H);
+}
+
+// The case print: the film look, then the paper around it.
+function makePrint(raw: HTMLCanvasElement, caption: string, time: string, seed: number) {
+  filmLook(raw, seed);
   const p = document.createElement('canvas');
   p.width = PRINT.w; p.height = PRINT.h;
   const q = p.getContext('2d')!;

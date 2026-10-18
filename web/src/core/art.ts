@@ -68,6 +68,35 @@ import flashEye from '../assets/art/flash/flash_eye.jpg';
 import flashHand from '../assets/art/flash/flash_hand.jpg';
 import flashFace from '../assets/art/flash/flash_face.jpg';
 import flashMan from '../assets/art/flash/flash_man.jpg';
+// Round 14 (Codex, PR #104): Caliche at night, loaded with the town (World.ensureDiner). The
+// eight windows, the seven signs (their words are in the pictures, exactly as ordered), the
+// cardboard alien (the town's and the one that wanders, core/cutouts.ts) and the Sentinel's
+// front page without its words (Town.ts writes them). Then them, far off (core/glimpses.ts,
+// core/roadside.ts), and the single frames of the time away (story/abduction.ts).
+import winGas from '../assets/art/town/win_gas.jpg';
+import winSheriff from '../assets/art/town/win_sheriff.jpg';
+import winStudio from '../assets/art/town/win_studio.jpg';
+import winStudioEmpty from '../assets/art/town/win_studio_empty.jpg';
+import winLaundromat from '../assets/art/town/win_laundromat.jpg';
+import winTv from '../assets/art/town/win_tv.jpg';
+import winKitchen from '../assets/art/town/win_kitchen.jpg';
+import winSouvenir from '../assets/art/town/win_souvenir.jpg';
+import signCaliche from '../assets/art/runtime/sign_caliche.webp';
+import signGas from '../assets/art/runtime/sign_gas.webp';
+import sign1420 from '../assets/art/runtime/sign_1420.webp';
+import signSouvenir from '../assets/art/runtime/sign_souvenir.webp';
+import signSheriff from '../assets/art/runtime/sign_sheriff.webp';
+import marqueePlaza from '../assets/art/runtime/marquee_plaza.webp';
+import boardChurch from '../assets/art/runtime/board_church.webp';
+import cutout from '../assets/art/runtime/cutout_alien.webp';
+import paperSentinel from '../assets/art/town/paper_sentinel_blank.jpg';
+import silhouetteStand from '../assets/art/runtime/silhouette_stand.webp';
+import silhouetteTurned from '../assets/art/runtime/silhouette_turned.webp';
+import silhouetteFar from '../assets/art/runtime/silhouette_far.webp';
+import abductAbove from '../assets/art/abduct/frame_above.jpg';
+import abductLight from '../assets/art/abduct/frame_light.jpg';
+import abductTruck from '../assets/art/abduct/frame_truck.jpg';
+import abductFigures from '../assets/art/abduct/frame_figures.jpg';
 // Round 9 (Codex, PR #51): normal and roughness maps for the Ultra tier only (core/ultra.ts).
 // Data, not colour: they load when Ultra is switched on, never on High or Low.
 import floorN from '../assets/art/room/tex_floor_hextile_n.png';
@@ -120,6 +149,9 @@ const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,
   dinerSign, dinerMenu, dinerCounter, dinerFloor, photo1947, dinerBooth, dinerWall, halleyPoster, fanfold1986, fanfold1947,
   milepostBlank, witnessPost, surveyDisk, oldAsphalt, oldMacro, flashEye, flashHand, flashFace, flashMan,
+  winGas, winSheriff, winStudio, winStudioEmpty, winLaundromat, winTv, winKitchen, winSouvenir,
+  signCaliche, signGas, sign1420, signSouvenir, signSheriff, marqueePlaza, boardChurch, cutout, paperSentinel,
+  silhouetteStand, silhouetteTurned, silhouetteFar, abductAbove, abductLight, abductTruck, abductFigures,
   floorN, floorR, ceilingN, ceilingR, wallN, wallR, deskN, deskR, concreteN, concreteR, desertN, desertR, asphaltN, asphaltR, cabinetN, cabinetR, vinylN, vinylR, stuccoN, stuccoR, oldConcreteN, oldConcreteR, weatheredWoodN, weatheredWoodR, floorboardsN, floorboardsR, gravelTrackN, gravelTrackR, motelWallN, motelWallR, dinerCounterN, dinerCounterR, dinerFloorN, dinerFloorR, dinerBoothN, dinerBoothR, dinerWallN, dinerWallR };
 export type ArtId = keyof typeof urls;
 /** Albedo id: its normal map and roughness map (round 9), for the Ultra tier. */
@@ -131,6 +163,15 @@ export const ULTRA_ART: ArtId[] = MAPPED.flatMap((id) => ULTRA_MAPS[id]);
 const LATER = new Set<ArtId>([...MAPPED.flatMap((id) => [id + 'N', id + 'R'] as ArtId[]), 'stucco', 'oldConcrete', 'weatheredWood', 'floorboards', 'gravelTrack', 'cardField', 'letterPaper',
   'dinerSign', 'dinerMenu', 'dinerCounter', 'dinerFloor', 'photo1947', 'dinerBooth', 'dinerWall', 'halleyPoster', 'fanfold1986', 'fanfold1947',
   'milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'oldMacro', 'flashEye', 'flashHand', 'flashFace', 'flashMan']);
+/** Caliche's pictures (round 14): World loads them with the town; one that does not come leaves
+ *  the picture drawn in code in its place. */
+export const TOWN_ART: ArtId[] = ['winGas', 'winSheriff', 'winStudio', 'winStudioEmpty', 'winLaundromat', 'winTv', 'winKitchen', 'winSouvenir',
+  'signCaliche', 'signGas', 'sign1420', 'signSouvenir', 'signSheriff', 'marqueePlaza', 'boardChurch', 'cutout', 'paperSentinel'];
+/** Them, far off (core/glimpses.ts asks for them once the night may show them). */
+export const ALIEN_ART: ArtId[] = ['silhouetteStand', 'silhouetteTurned', 'silhouetteFar'];
+/** The single frames of the time away (story/abduction.ts asks for them when the warning starts). */
+export const ABDUCT_ART: ArtId[] = ['abductLight', 'abductTruck', 'abductFigures', 'abductAbove'];
+for (const id of [...TOWN_ART, ...ALIEN_ART, ...ABDUCT_ART]) LATER.add(id);
 /** The old Roswell road's images (World loads them before it builds the road). */
 export const OLDROAD_ART: ArtId[] = ['milepostBlank', 'witnessPost', 'surveyDisk', 'oldAsphalt', 'oldMacro'];
 /** The drawn frames of FLASH (chapter six loads them when it starts). */
@@ -165,6 +206,12 @@ export async function loadArtFor(ids: ArtId[]) {
     img.onerror = () => { clearTimeout(timeout); reject(new Error(`Artwork could not load: ${id}`)); };
     img.src = urls[id];
   })));
+}
+
+/** As loadArtFor, but it never fails: a picture that does not come is left out (artLoaded says
+ *  so), and whoever asked draws its own in its place. */
+export async function loadArtSome(ids: ArtId[]) {
+  await Promise.allSettled(ids.map((id) => loadArtFor([id])));
 }
 
 /** The picture's address, for HTML (a paper under a document): no loading needed first. */

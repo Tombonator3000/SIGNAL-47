@@ -10,6 +10,8 @@ import type { Chapter1 } from './Chapter1';
 import type { Chapter2 } from './Chapter2';
 import type { Chapter3, AreaId } from './Chapter3';
 import * as P from '../ui/Panels';
+import type { BoardCard } from '../ui/Board';
+import { RuleBook, type BoardHook, type BookNote, type BookRule } from './boardRules';
 import { clockText } from './time';
 import { artUrl } from '../core/art';
 import { WalkieSound } from '../core/walkie';
@@ -25,6 +27,9 @@ import { WalkieSound } from '../core/walkie';
 //        (his letter, E13) and the cable (his last field card, E11). Then the motive.
 //   P12  Is the return line a live conversation? The phone in the room is on the old
 //        field line. She asks it a new question and gets the 1947 fragment back.
+// P10 is answered in the talk, with the evidence on her table. P11 and P12 are worked out on
+// the case board from what she puts on the table (SPILLDESIGN.md: answers are given with
+// evidence; the three sentences with one right one are gone).
 // The texts follow the bible's story material (A5 to A7, V3 to V5). New in the web
 // version: at the end she says where C crossed the highway, which leads to the road south.
 
@@ -49,6 +54,7 @@ export interface Ch4State {
   seen: { photo: boolean; window: boolean };
   /** Nora has called the truck on the CB (saves from before 16 October have none). */
   cb?: boolean;
+  links?: string[];          // this chapter's threads on the case board, 'a|b' sorted
 }
 
 // What chapter four needs from the places (main.ts and world/World.ts).
@@ -84,6 +90,7 @@ export interface Chapter4Deps {
   motel: Motel;
   save: () => void;
   milestone: () => void;
+  board: BoardHook;
 }
 
 const fresh = (): Ch4State => ({
@@ -121,7 +128,34 @@ const CHIPS: { id: string; label: string }[] = [
   { id: 'frame04', label: 'PHOTO 04 / Cable break' },
 ];
 
-type Mode = 'menu' | 'table' | 'control' | 'tone' | 'p11' | 'p12';
+type Mode = 'menu' | 'table' | 'control' | 'tone';
+
+// ---------- the case board ----------
+// What her papers and the return line show together with what was found before tonight
+// (story/boardRules.ts). Her papers are on the board once she has put them on the table.
+const NOTES: Record<string, BookNote> = {
+  'n.why': { text: 'She left C out on purpose. She believed the complete record would let someone connect the arrangement again.', q: 'P11' },
+  'n.cut4': { text: 'The omission and the cut had the same purpose. She broke the connection herself, with Tomás inside the reference.', q: 'P11' },
+  'n.line': { text: 'The line gives back the 1947 correction, word for word, to a new question. It repeats; it does not answer.', q: 'P12' },
+  'n.key': { text: 'Her question had an answer: his letter says the key was in the mug. The line did not give it.' },
+};
+const NOT_HIM = 'His letter says he checked the reference twice. His readings were not the problem.';
+const RULES: BookRule[] = [
+  { a: 'e12.why', b: 'P04', note: 'n.why', text: NOTES['n.why'].text },
+  { a: 'e12.cut', b: 'P08', note: 'n.cut4', text: NOTES['n.cut4'].text },
+  { a: 'e12.dev', b: 'e06.fault', text: 'Her own correction says the mark was not a development fault. She wrote that it was one.', wrong: 'P11' },
+  { a: 'e13.twice', b: 'e12.why', text: NOT_HIM, wrong: 'P11' },
+  { a: 'e13.twice', b: 'P04', text: NOT_HIM, wrong: 'P11' },
+  { a: 'r6.line', b: 'e10.carrier', note: 'n.line', text: NOTES['n.line'].text },
+  { a: 'r6.line', b: 'hut.rx', note: 'n.line', text: NOTES['n.line'].text },
+  { a: 'r6.line', b: 'e13.key', note: 'n.key', text: NOTES['n.key'].text },
+  { a: 'r6.line', b: 'e13.twice', text: 'He did not answer the question. It is the same fragment as in the 1947 timing log.', wrong: 'P12' },
+  // threads that hold without answering anything
+  { a: 'e11.mask', b: 'e06.omit', text: 'Tomás wrote it first: masking the closing sight line prevents an organised return. Then she left C out of the copy.' },
+  { a: 'e12.cut', b: 'frame04', text: 'The cut in FRAME 04 is hers.' },
+];
+const HINTS_11 = ['Why would anyone leave one line out of a record?', 'Her correction says why she removed C. What else did she do that night, for the same reason?', 'Tie her reason in E12 to what changed in the record, P04, and the deliberate interruption in E12 to the cut cable, P08.'];
+const HINTS_12 = ['What did the line say, and where have you heard it before?', 'Compare it with the 1947 timing log, or with the receiver in the hut.', 'Tie the return line to the recorded voice in E10.'];
 
 export class Chapter4 {
   active = false;
@@ -135,8 +169,55 @@ export class Chapter4 {
   private roomBound = false;
   private courtBound = false;
   private headYaw = 0;
+  /** P10 to P12 on the case board: her papers, the return line, the questions and the rules. */
+  readonly book: RuleBook;
 
-  constructor(private g: Chapter4Host, private d: Chapter4Deps) {}
+  constructor(private g: Chapter4Host, private d: Chapter4Deps) {
+    const s = () => this.s;
+    this.book = new RuleBook({
+      key: 'ch4',
+      owns: (n) => /^(e11|e12|e13)\./.test(n) || ['r6.line', 'P10', 'P11', 'P12'].includes(n),
+      notes: NOTES, rules: RULES,
+      questions: [
+        { id: 'P10', stamp: 'P10', text: 'Do tonight\'s prints carry the same mark as 1947?', slots: 0, x: 900, y: 14, w: 266,
+          hints: ['She asked for three things on her table.', 'The two prints from B-12 and the original 1947 record, the one with her name on it.', 'Put PHOTO 01, PHOTO 02 and E07 on her table, then tell her which source you took away.'],
+          elsewhere: 'Answered at her table in room 6: put the prints and the 1947 original in front of her.',
+          open: () => this.started && s().arrived, done: () => s().p10 ? SUPPORTED.p10 : null },
+        { id: 'P11', stamp: 'P11', text: 'Why did N. Vega rewrite the 1947 finding?', slots: 2, hints: HINTS_11, x: 610, y: 300, w: 270,
+          open: () => this.started && s().p10, done: () => s().p11 ? SUPPORTED.p11 : null, record: () => this.recordP11() },
+        { id: 'P12', stamp: 'P12', text: 'What does the return line show?', slots: 1, hints: HINTS_12, x: 900, y: 300, w: 266,
+          open: () => this.started && (s().line || s().p12), done: () => s().p12 ? SUPPORTED.p12 : null, record: () => this.recordP12() },
+      ],
+      links: () => (this.s.links ??= []),
+      wrong: (q) => { if (q === 'P11') this.s.wrong11++; else if (q === 'P12') this.s.wrong12++; },
+      save: () => this.save(),
+      cards: () => this.boardCards(),
+      // P10 is made in the talk: the board draws what it rests on
+      auto: () => s().p10 ? [{ a: 'P10', b: 'frame02' }, { a: 'P10', b: 'e07.mark' }] : [],
+    });
+  }
+
+  // Her papers on the board, once she has put them on the table, and the return line once
+  // it has been heard. Nothing of hers lies there before she gives it.
+  private boardCards(): BoardCard[] {
+    if (!this.started) return [];
+    const s = this.s;
+    const cards: BoardCard[] = [
+      { id: 'e12', doc: 'e12', stamp: 'E12', title: 'HER CORRECTION', have: s.topics.record, full: CORRECTION, x: 14, y: 14, w: 300, lines: [
+        { id: 'e12.why', text: 'I removed the closing reference from the service copy because I believed the complete arrangement would be repeated if the original finding remained on the record.' },
+        { id: 'e12.dev', text: 'I attributed the additional mark to development.' },
+        { id: 'e12.cut', text: 'The interruption was deliberate. Tomás Vega was present in the active reference when I broke the connection.' }] },
+      { id: 'e13', doc: 'e13', stamp: 'E13', title: 'A LETTER FROM T. VEGA', have: s.topics.tomas, full: LETTER, x: 330, y: 14, w: 266, lines: [
+        { id: 'e13.key', text: 'I left the spare key in the mug because you said I would lose it in the sand.' },
+        { id: 'e13.twice', text: 'You were right about the reference moving. I checked it twice before I wrote it down.' }] },
+      { id: 'e11', doc: 'e11', stamp: 'E11', title: 'HIS LAST FIELD CARD', have: s.topics.cable, full: CARD, x: 330, y: 330, w: 266, lines: [
+        { id: 'e11.mask', text: 'Masking the closing sight line prevents an organised return.' },
+        { id: 'e11.fresh', text: 'Do not connect a fresh observer to a run merely to finish an old one.' }] },
+      { id: 'r6.line', stamp: 'THE LINE', title: 'ROOM 6, TONIGHT', kind: 'thing', have: s.line, x: 610, y: 14, w: 270,
+        text: 'She asked it: "Tomás. Where did you leave the spare key?" The line said: "Reference west. No. East. Hold the last reading."' },
+    ];
+    return cards.filter((c) => c.have);
+  }
 
   // ---------- lifecycle ----------
   begin(saved: Ch4State | null) {
@@ -218,8 +299,8 @@ export class Chapter4 {
         if (!s.p11 || !s.p12) {
           const left = (['record', 'tomas', 'cable'] as Topic[]).filter((t) => !s.topics[t]).length;
           if (left) return `ROOM 6 // ASK HER ABOUT THE RECORD, T. VEGA AND THE CABLE (${3 - left} OF 3)${s.p12 ? '' : '. AND THE PHONE'}`;
-          if (!s.p11) return 'ROOM 6 // RECORD WHY SHE REWROTE THE FINDING (P11)';
-          return 'ROOM 6 // ASK ABOUT THE PHONE ON THE NIGHTSTAND (P12)';
+          if (!s.p11) return 'ROOM 6 // ON THE CASE BOARD: WHY SHE REWROTE THE FINDING (P11)';
+          return s.line ? 'ROOM 6 // ON THE CASE BOARD: WHAT THE RETURN LINE SHOWS (P12)' : 'ROOM 6 // ASK ABOUT THE PHONE ON THE NIGHTSTAND (P12)';
         }
         return 'ROOM 6 // ASK HER WHERE C WENT';
       case 'leave': return room ? 'ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6' : 'SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT';
@@ -235,7 +316,7 @@ export class Chapter4 {
       { text: 'Ask about the amended record', done: s.topics.record },
       { text: 'Ask who T. Vega was', done: s.topics.tomas },
       { text: 'Show her the cable break', done: s.topics.cable },
-      { text: 'Record why she rewrote the finding (P11)', done: s.p11 },
+      { text: 'Work out why she rewrote the finding, on the case board (P11)', done: s.p11 },
       { text: 'Ask about the phone on the nightstand (P12)', done: s.p12 },
     );
     if (s.p10 && s.p11 && s.p12) t.push({ text: 'Ask where C went', done: s.told });
@@ -537,28 +618,16 @@ export class Chapter4 {
           { id: 'critical', label: '"You falsified the record."' },
         ];
         break;
-      case 'p11':
-        v.question = 'P11 / Why did N. Vega rewrite the 1947 finding?';
-        v.choices = [
-          { id: 'repeat', label: 'She believed the complete record would let someone connect the arrangement again.' },
-          { id: 'fault', label: 'Her plate had a development fault, and she covered it.' },
-          { id: 'protect', label: 'T. Vega\'s readings were wrong, and she protected him.' },
-        ];
-        break;
-      case 'p12':
-        v.question = 'P12 / What does the return line show?';
-        v.choices = [
-          { id: 'retained', label: 'The 1947 correction, repeating unchanged. It does not answer a new question.' },
-          { id: 'alive', label: 'T. Vega, answering her now.' },
-          { id: 'crosstalk', label: 'Crosstalk on an old field line.' },
-        ];
-        break;
       case 'menu':
         if (!s.topics.record) v.choices.push({ id: 'record', label: 'Ask about the amended record' });
         if (!s.topics.tomas) v.choices.push({ id: 'tomas', label: 'Ask who T. Vega was' });
         if (!s.topics.cable) v.choices.push({ id: 'cable', label: 'Show her PHOTO 04, the cable break', disabled: !this.have('frame04') });
-        if (!s.p12) v.choices.push({ id: 'line', label: 'Ask about the phone on the nightstand' });
-        if (s.topics.record && s.topics.tomas && s.topics.cable && !s.p11) v.choices.push({ id: 'why', label: 'Record why she rewrote the finding (P11)' });
+        if (!s.line) v.choices.push({ id: 'line', label: 'Ask about the phone on the nightstand' });
+        {
+          // P11 once all three parts are on the table, P12 once the line has been heard
+          const open = [...(s.topics.record && s.topics.tomas && s.topics.cable && !s.p11 ? ['P11'] : []), ...(s.line && !s.p12 ? ['P12'] : [])];
+          if (open.length) v.choices.push({ id: 'board', label: `Lay it out on the case board (${open.join(', ')})` });
+        }
         if (s.p10 && s.p11 && s.p12 && !s.told) v.choices.push({ id: 'end', label: 'Ask where C went' });
         v.choices.push({ id: 'bye', label: s.told ? 'Leave her be' : 'Step back from the table' });
         break;
@@ -601,15 +670,13 @@ export class Chapter4 {
     switch (this.mode) {
       case 'control': return this.answerControl(id);
       case 'tone': return this.answerTone(id as 'mild' | 'critical');
-      case 'p11': return this.answerP11(id);
-      case 'p12': return this.answerP12(id);
     }
     switch (id) {
       case 'record': this.mode = 'tone'; this.lines = [you('About the amended copy.'), aside('She does not look away from it.')]; return;
       case 'tomas': return this.topicTomas();
       case 'cable': return this.topicCable();
       case 'line': return this.topicLine();
-      case 'why': this.mode = 'p11'; this.lines = [aside('The correction, the letter and the field card lie on the table between you.')]; return;
+      case 'board': this.d.board.open('ROOM 6', 'ch4'); return;
       case 'end': return this.ending();
       case 'bye': this.d.ui.close(); return;
     }
@@ -698,16 +765,12 @@ export class Chapter4 {
     this.d.milestone();
   }
 
-  private answerP11(id: string) {
+  // P11, recorded on the case board once both notes are on it. Her answer is waiting in the
+  // talk when the player turns back to her.
+  private recordP11(): { ok: boolean; text: string } {
     const s = this.s;
-    if (id !== 'repeat') {
-      s.wrong11++;
-      this.reply = { ok: false, text: id === 'fault'
-        ? 'Her own correction says the mark was not a development fault. She wrote that it was one.'
-        : 'His letter says he checked the reference twice. His readings were not the problem.' };
-      this.save();
-      return;
-    }
+    if (!(s.topics.record && s.topics.tomas && s.topics.cable)) return { ok: false, text: 'Hear her out first: the amended record, T. Vega and the cable.' };
+    if (s.p11) return { ok: true, text: SUPPORTED.p11 };
     s.p11 = true;
     this.mode = 'menu';
     this.lines = [
@@ -719,13 +782,14 @@ export class Chapter4 {
     this.g.note('P11: she rewrote the finding because she believed the complete record would let someone repeat the arrangement. She cut the cable herself, with Tomás inside the reference. Nobody knows what became of him.');
     this.d.audio.play('click', { gain: 0.5 });
     this.d.milestone();
+    return { ok: true, text: SUPPORTED.p11 };
   }
 
   // P12: the phone on the nightstand is on the old field line.
   private topicLine() {
     const { audio, ui } = this.d;
     const s = this.s;
-    if (s.line) { this.mode = 'p12'; this.lines = [aside('The handset is back on the cradle.')]; return; }
+    if (s.line) { this.mode = 'menu'; this.lines = [aside('The handset is back on the cradle.')]; return; }
     const room = this.d.motel.room();
     const at = room?.proxies.phone ? this.pos(room.proxies.phone) : undefined;
     this.lines = [
@@ -739,7 +803,7 @@ export class Chapter4 {
       aside('She puts the handset down.'),
     ];
     s.line = true;
-    this.mode = 'p12';
+    this.mode = 'menu';
     if (at) {
       audio.play('click', { gain: 0.5, at });
       audio.radio(at, 0.08);
@@ -751,16 +815,11 @@ export class Chapter4 {
     this.save();
   }
 
-  private answerP12(id: string) {
+  // P12, recorded on the case board.
+  private recordP12(): { ok: boolean; text: string } {
     const s = this.s;
-    if (id !== 'retained') {
-      s.wrong12++;
-      this.reply = { ok: false, text: id === 'alive'
-        ? (s.topics.tomas ? 'He did not answer the question. His letter says where the key was: in the mug. The line said nothing about it.' : 'He did not answer her question. It is the same fragment as in the 1947 timing log.')
-        : 'Crosstalk does not repeat the same correction in the same place, every time.' };
-      this.save();
-      return;
-    }
+    if (!s.line) return { ok: false, text: 'Ask her about the phone on the nightstand first.' };
+    if (s.p12) return { ok: true, text: SUPPORTED.p12 };
     s.p12 = true;
     this.mode = 'menu';
     this.lines = [
@@ -771,6 +830,7 @@ export class Chapter4 {
     this.g.note('P12: the return line repeats the 1947 correction unchanged. A new question gets the same fragment. It is a retained reference, not a conversation.');
     this.d.audio.play('click', { gain: 0.5 });
     this.d.milestone();
+    return { ok: true, text: SUPPORTED.p12 };
   }
 
   private ending() {

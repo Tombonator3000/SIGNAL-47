@@ -48,6 +48,9 @@ export interface TownEventsDeps {
   save: () => void;
 }
 
+/** The kinds of mark that are on line B, not A (the map, and the line drawn in): the lights along
+ *  the highway (lineLights.ts), the herd facing 026 (pasture.ts), the motel's television (motelTv.ts). */
+export const ON_B = new Set(['lights', 'cows', 'tv']);
 const GAP = 10 * 60;              // seconds of the night between two events
 const RING = 30;                  // how long the payphone rings if nobody answers
 const LINE = 47;                  // seconds of the printer on the line
@@ -106,7 +109,7 @@ export class TownEvents {
     // three marks on A: the line drawn in (the map draws it, ui/areaMap.ts)
     if ((this.lineCheck += dt) > 1 && !this.d.seen.has('lineA')) {
       this.lineCheck = 0;
-      if (townMarks(this.d.seen).filter((m) => m.kind !== 'lights').length >= 3) {
+      if (townMarks(this.d.seen).filter((m) => !ON_B.has(m.kind)).length >= 3) {
         this.d.seen.add('lineA');
         this.d.note(`${clockText(s.clock, false)}. Three on one line. Drawn in on the map: through Caliche, and on to the north-west.`);
         this.d.save();

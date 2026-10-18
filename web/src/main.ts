@@ -21,6 +21,7 @@ import { DebugHud, debugOn } from './core/debug';
 import { DevMenu, devOn, type DevGroup } from './ui/DevMenu';
 import { Score, CUES, TRACKS, type Cue } from './core/score';
 import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId, BOY } from './core/radio';
+import { TripRadio } from './story/tripRadio';
 import { NightCalls } from './core/calls';
 import { CB } from './core/cb';
 import { Roadside } from './core/roadside';
@@ -38,12 +39,21 @@ import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World'
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
 import { bindTown, townPeople } from './story/caliche';
-import { TownEvents, townMarks } from './story/townEvents';
+import { bindField } from './story/field';
+import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
+import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
 import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
+import { Pasture, PASTURE_M } from './story/pasture';
+import { MotelTv } from './story/motelTv';
+import { Album, rollText } from './core/album';
+import { albumSubjects } from './story/albumSubjects';
+import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
+import { bindLooks } from './story/looks';
+import { firstTime } from './core/hints';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -213,6 +223,8 @@ async function boot() {
   doors.add({ id: 'records', inter: 'recordsDoor', name: 'records room door', proxy: annex.objs.recordsDoor, set: (k) => annex.setRecordsDoor(k),
     zones: [annex.zone.recordsDoor], leaf: annex.recordsLeafCol, sound: 'light' });
   room.setDoorLock(true);
+  // the antenna field through the gate in the array fence: its cabinets and pedestals (story/field.ts)
+  bindField(world.field, { inter, doors, audio, toast: (text, secs) => ui.toast(text, secs), dishes: ext.dishes, here: () => world.area === 'saro' && !world.driving });
   const motelOffice = world.motel.zones.find((z) => z.id === 'office')!;
   const game = new Prologue({
     ui, audio, room, ext, player, inter, yard, fcam, colliders, annex,
@@ -270,7 +282,8 @@ async function boot() {
   world.onGetIn = () => {
     if (flashlight.have) return;
     flashlight.have = true;
-    ui.toast(input.touchMode ? 'You take the flashlight off the passenger seat. Light switches it on.' : 'You take the flashlight off the passenger seat. F switches it on.', 4.5);
+    // which button switches it, the first time on this device
+    ui.toast('You take the flashlight off the passenger seat.' + (!firstTime('flashlight') ? '' : input.touchMode ? ' Light switches it on.' : ' F switches it on.'), 4.5);
   };
   // the truck any time (Tom 15 October): the night's own drive if a chapter has one from here,
   // otherwise one of the player's own; not while the shift's first hours are still running
@@ -321,6 +334,41 @@ async function boot() {
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
     keyStall: () => { world.keyStall = true; }, save: () => { if (mode === 'play') requestAutosave(false); },
   });
+  // HENDELSER.md, events 2 and 10, on B: the herd in the pasture south of the motel, facing 026
+  // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
+  // with the town's part of the case
+  const pasture = new Pasture({ herds: () => world.herds, seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
+    save: () => { if (mode === 'play') requestAutosave(false); } });
+  const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
+    toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
+  // ---------- the free camera and the album (core/album.ts; todo.md, after They Are Here) ----------
+  // Once the camera is had, the shutter takes a free frame anywhere a case frame is not to be had
+  // (Chapter1.shutter); 36 in a night, kept with the case, in the notebook's album.
+  const subjectsHere = () => albumSubjects({ world, ext, room, yard, annex, sky, scene, camera, cutouts,
+    outdoors: () => space === 'yard', night: () => sky.uniforms.uDawn.value < 0.3, clock: () => game.clock });
+  const album = new Album({
+    fcam, scene,
+    view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
+    subjects: subjectsHere,
+    place: () => placeName(), clock: () => game.clock,
+    extra: () => abduction!.data.spots.filter((s) => s.doc).length,
+    before: () => ext.dishArray.cull(fcam.photoCam),
+    // someone on the film only: out in the night where the glimpses are (SARO, the highway, Caliche)
+    ghostGround: () => {
+      const g = glimpseIn(true);
+      if (!g.scene || space !== 'yard' || world.driving || !game.at('ch1') || game.phase === 'ch6' || sky.uniforms.uDawn.value >= 0.3) return null;
+      return world.area === 'diner' && world.town ? world.town.floorAt : g.ground;   // Caliche's own ground by the diner's lot
+    },
+    small: () => saves.fallback,
+    skip: () => [sky.group],
+    done: (_shot, first, left) => {
+      audio.shutter(); ui.shutterFlash();
+      if (first) ui.toast(`A free frame, out of the instant back. The print goes in the album in the notebook. ${left} left.`, 4.4);
+      else if (left === 5 || left === 0) ui.toast(left ? '5 free frames left on the roll.' : 'That was the last free frame on the roll.', 3);
+      requestAutosave(false);
+    },
+  });
+  ch1.free = { left: () => album.left, expose: () => { album.expose(); } };
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
   // on the player's own drives and the story's, never in a cinematic
@@ -330,6 +378,11 @@ async function boot() {
     examine: () => road.roadClosed ? 'ROAD CLOSED. Two barricades across the old road to Roswell, an amber lamp blinking on each.' : null });
   world.onDinerTruck = (px) => ch5.bindDinerTruck(px);
   world.initSaro().catch((e) => console.warn('the service truck could not be built', e));
+  // a closer look at what had nothing to say: the antennas, the signs, the papers, the motel (story/looks.ts)
+  bindLooks({ inter, dishes: ext.dishes, saro: ext.group, motel: world.motel,
+    motelSign: ['Sierra Motor Court', 'Sierra Motor Court (back)'].map((n) => ext.group.getObjectByName(n)).filter((o): o is THREE.Object3D => !!o) });
+  // the haze on the ground only out in the open (world/airlight.ts): the title's view, the cab, outdoors
+  world.airOut = () => mode !== 'play' || world.driving || space === 'yard';
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -439,13 +492,17 @@ async function boot() {
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
       useCurrent();
-    } else if (code === 'KeyM' || code === 'KeyI') {
-      // the map and the kit, straight to their tabs in the notebook
+    } else if (code === 'KeyM' || code === 'KeyI' || code === 'KeyH') {
+      // the map, the kit and the controls, straight to their tabs in the notebook
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
-      if (!game.cinematic) { ui.notebookAt(code === 'KeyM' ? 'map' : 'kit'); game.openNotebook(); }
+      if (!game.cinematic) { ui.notebookAt(code === 'KeyM' ? 'map' : code === 'KeyI' ? 'kit' : 'controls'); game.openNotebook(); }
     } else if (code === 'Tab' || code === 'KeyN') {
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
       if (!game.cinematic) game.openNotebook();
+    } else if (code === 'KeyB') {
+      // the case board (story/caseBoard.ts), straight from the game or from the notebook
+      if (ui.modal) { if (ui.modal.classList.contains('board-overlay')) ui.close(); else if (ui.modal.querySelector('.notebook')) game.openBoard(); return; }
+      if (!game.cinematic) game.openBoard();
     } else if (code === 'Escape' || code === 'KeyP') {
       if (ui.modal) { ui.close(); return; }
       if (fcam.raised) { ch1.toggleCamera(); return; }
@@ -597,12 +654,14 @@ async function boot() {
     space = 'room';
     // the truck where the story left it: outside the station's gate, on the diner's lot, on the
     // motel's lot (a save made with it there) or on SARO's pad
-    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : o.state?.truck === 'motel' ? 'motel' : 'saro');
+    world.placeTruck(area === 'station01' ? 'station01' : area === 'diner' ? 'diner' : o.state?.truck === 'motel' ? 'motel' : 'saro', o.state?.truckPose);
     world.enter('saro');
     restoring = o.state; restoringNow = true;
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
-    townEvents.reset(); glimpses.reset(); cutouts.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
+    townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
+    pasture.reset(); motelTv.reset();
+    album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
@@ -630,6 +689,7 @@ async function boot() {
     endEl?.remove(); endEl = null;
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
+    motelTv.silence();
     world.stopDriving();
     roadside.reset(); cb.stop(); radio.reset(0);
     game.reset();
@@ -670,13 +730,14 @@ async function boot() {
     const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
     const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner'
       : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && world.saroTruck && world.saroTruck.group.position.z < 40 ? 'On the pad by the service yard' : 'Where I left it';
-    const kit: KitItem[] = [{ name: 'Notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
-    if (game.at('ch1')) kit.push({ name: 'SARO jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
-    if (fcam.have) kit.push({ name: 'Field camera', state: `${photos} exposed`, note: 'The SARO field camera, sheet film. C raises it, Space takes the picture.' });
-    if (flashlight.have) kit.push({ name: 'Flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
-    if (game.at('ch1')) kit.push({ name: 'Truck keys', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
-    if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
-    if (townSeen.has('nickel')) kit.push({ name: 'A nickel', state: '1947', note: 'From the coin return of the payphone in Caliche. Bright as the day it was struck.' });
+    const kit: KitItem[] = [{ name: 'Notebook', art: 'notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
+    if (game.at('ch1')) kit.push({ name: 'SARO jacket', art: 'jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
+    const frames = game.docs.filter((d) => /^(frame|away)/.test(d.id)).length;
+    if (fcam.have) kit.push({ name: 'Field camera', art: 'camera', state: `${frames} case frames, ${rollText(album.left)}`, note: 'The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album.' });
+    if (flashlight.have) kit.push({ name: 'Flashlight', art: 'flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
+    if (game.at('ch1')) kit.push({ name: 'Truck keys', art: 'keys', tag: 'SARO 07', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
+    if (papers) kit.push({ name: 'Papers', art: 'papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
+    if (townSeen.has('nickel')) kit.push({ name: 'A nickel', art: 'nickel', state: '1947', note: 'From the coin return of the payphone in Caliche. Bright as the day it was struck.' });
     return kit;
   }
   // the people in the case, as the night meets them, with their faces once ChatGPT's portraits
@@ -696,6 +757,8 @@ async function boot() {
     map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
     kit: kitItems(),
     people: peopleItems(),
+    touch: input.touchMode,
+    album: album.view(game.clock),
   });
 
   // where the lines run, for the time away (story/abduction.ts; HENDELSER.md, section 3)
@@ -712,7 +775,7 @@ async function boot() {
     const p = player.pos;
     let line: AbductIn['line'] = null;
     if (!world.driving) {
-      if (world.area === 'saro' && (world.grounds.onGround(p) || world.grounds.onRoad(p) || world.crossing.outside(p))) {
+      if (world.area === 'saro' && (world.grounds.onGround(p) || world.grounds.onRoad(p) || world.crossing.outside(p)) && !inside(motelOffice, p)) {
         line = 'B';
         if (world.crossing.onHighway(p)) abAlong.set(0, 0, 1); else abAlong.set(-0.92, 0, -0.38);
       } else if (world.area === 'diner' && world.town?.inTown(p.x, p.z) && !world.indoors(p) && townAlone(p.x, p.z)) { line = 'A'; abAlong.set(0, 0, 1); }
@@ -725,8 +788,9 @@ async function boot() {
   // highway north of it), the lights on B, and the times away where they happened
   function mapMarks(): NonNullable<MapView['marks']> {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: roadZ - SARO_IN_ROAD.z });
-    const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: m.kind === 'lights' ? 'B' as const : 'A' as const,
-      at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 } : undefined }));
+    const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: ON_B.has(m.kind) ? 'B' as const : 'A' as const,
+      at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 }
+        : m.kind === 'cows' ? { spot: 'highway', m: PASTURE_M } : m.kind === 'tv' ? { spot: 'office' } : undefined }));
     for (const sp of abduction!.data.spots) out.push({ kind: 'away', clock: sp.clock,
       line: sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C',
       at: sp.scene === 'saro' ? (sp.take[2] > 64 ? { spot: 'highway', m: sp.take[2] } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
@@ -739,6 +803,31 @@ async function boot() {
       ground: road ? (x, z) => surfaceY(x - ROAD_ORIGIN.x, z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y : (x, z) => world.grounds.floorAt(x, z),
       truck: tr && road ? { pos: tr.group.position, dir: camera.getWorldDirection(new THREE.Vector3()) } : null,
       flashlight: flashlight.on, zoom: zoomK,
+    };
+  }
+  // ---------- more that can happen in the night, anywhere (story/nightEvents.ts) ----------
+  let silencePlace: string | null = null;
+  const lastFoot = new THREE.Vector3();
+  const objAt = (o: THREE.Object3D) => o.getWorldPosition(new THREE.Vector3());
+  const nightEvents = new NightEvents({
+    audio, note: (text) => { game.note(text); requestAutosave(false); }, seen: townSeen,
+    step: () => audio.stepPick(surfaceAt()),
+    setRadio: (st) => carRadio.set(true, st),
+    bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
+    openDoor: () => doors.set('east', true),
+    silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
+    place: () => placeName(), silent: () => roadside.silent,
+  });
+  function nightIn(ok: boolean): NightIn {
+    const tr = world.truckHere(), out = world.area === 'saro' ? space === 'yard' : !world.indoors(player.pos);
+    const moving = player.pos.distanceTo(lastFoot) > 0.004; lastFoot.copy(player.pos);
+    const foot = world.driving ? null : { pos: player.pos, outside: out, moving };
+    return {
+      ok, clock: game.clock, cam: camera, foot, driving: world.driving,
+      truck: !world.driving && tr ? { pos: tr.group.position, radioOn: carRadio.on } : null,
+      radio1420: world.driving && carRadio.live && carRadio.station === 'caliche' && radio.stations.caliche.free,
+      saro: world.area === 'saro' && out && !world.driving ? { phone: objAt(room.objs.phone), door: objAt(room.objs.doorEast), doorOpen: doors.isOpen('east') } : null,
+      silenceFree: !roadside.silent && !game.notes.some((n) => n.includes('No sound for 47 s')),
     };
   }
   function cutoutIn(ok: boolean): CutoutsIn {
@@ -761,6 +850,7 @@ async function boot() {
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
     if (world.crossing.outside(p) && p.z > -5) return world.crossing.atMotel(p) ? 'Sierra Motor Court' : world.crossing.onHighway(p) ? 'The highway south' : 'West lot';
+    if (world.field.inField(p)) return world.field.placeAt(p);
     if (world.grounds.onGround(p)) return 'SARO grounds';
     if (game.checkpointName() === 'residual') return 'Control room';
     if (inside(annex.zone.records, p) || inside(annex.zone.recordsDoor, p)) return 'Records room';
@@ -786,8 +876,13 @@ async function boot() {
   function writeSave(kind: SaveKind, slot: number | 'rotate'): Promise<SaveMeta> {
     const checkpoint = game.checkpointName();
     const prologue = checkpoint === 'residual';
+    // the truck exactly where it was left; a save made on a drive finds it, and the player, where
+    // the drive began (World.truckSave)
+    const tk = world.truckSave();
     const state: GameState = {
-      v: 2, checkpoint, case: game.snapshotCase(), area: world.area, doors: doors.states(), flashlight: flashlight.have, truck: world.truckAt, town: [...townSeen], abduct: abduction!.data,
+      v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
+      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
+      album: album.data,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -837,6 +932,7 @@ async function boot() {
     endEl?.remove(); endEl = null;
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
+    motelTv.silence();
     world.stopDriving();
     roadside.reset(); cb.stop(); radio.reset(0);
     game.reset();
@@ -963,7 +1059,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
@@ -989,6 +1085,14 @@ async function boot() {
     // true once a started or loaded night is running (tests wait for it after Continue)
     started: () => caseId > 0 && !starting && mode === 'play',
   };
+  // the free camera and the album (tools/album.py): the album itself, what could be named in a
+  // frame from here, and which of the round 15 album pictures the build has
+  Object.assign((window as any).S47, {
+    album, albumArt,
+    albumSubjects: () => subjectsHere().map((s) => ({ name: s.name, n: s.at.length, odd: !!s.odd })),
+  });
+
+  Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
 
   // ---------- the developer menu (?dev in the address) ----------
   let devPaused = false;
@@ -1062,9 +1166,14 @@ async function boot() {
       groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
       ] });
+      groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
+        { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
+        { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
       groups.push({ title: 'The highway', note: 'On foot on the shoulder between SARO and the motel at night: the line hums, a car far off, the silence once, someone on the roof. The CB in the truck.', items: [
         { label: 'Headlights far down the highway', run: () => roadside.carNow(player.pos) },
-        { label: 'The silence (47 s)', run: () => roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k) }) },
+        { label: 'The silence (47 s)', run: () => roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }) },
+        ...(['steps', 'knocks', 'radio', 'bulletin', 'phone', 'door'] as const).map((id) => ({ label: `Night event: ${id}`, run: () => { if (!nightEvents.now(id, nightIn(true))) ui.toast(`Not here: ${id}`, 2); } })),
         { label: 'Someone on the motel roof', run: () => roadside.roofNow() },
         { label: 'A call on the CB', run: () => cb.call([{ text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by: 'N. VEGA' }], world.driving ? null : world.truckHere()?.group.position ?? null,
           (l) => ui.toast(`CB, ${l.by}: "${l.text}"`, 4)) },
@@ -1158,6 +1267,10 @@ async function boot() {
   let radioHeard = false;
   const radioAt = new THREE.Vector3(), counterAt = new THREE.Vector3();
   let carNear = false;
+  // the programme on the way: each trip's lines at marks along it, on the station the truck's
+  // radio is tuned to (story/tripRadio.ts)
+  const tripRadio = new TripRadio(radio, townSeen);
+  (window as any).S47.tripRadio = () => tripRadio;   // the tests
   function radioStep(dt: number) {
     const tr = world.truckHere();
     if (tr) { tr.group.getWorldPosition(radioAt); radioAt.y += 1.05; }
@@ -1177,6 +1290,8 @@ async function boot() {
     if (!dinerOn && dinerRadio.on) dinerRadio.set(false);
     dinerRadio.pos = dinerOn ? counterAt : null;
     radio.update(dt, game.clock);
+    // (after the stations: one that has just come to its sign-off is not free any more)
+    tripRadio.update({ trip: world.tripNow, phase: game.phase, clock: game.clock, tuned: world.driving && carRadio.live && !game.cinematic ? carRadio.station : null });
     radioHeard = (carRadio.live && carNear) || (dinerRadio.live && !world.driving && player.pos.distanceTo(counterAt) < 12);
     ui.radioButton(world.driving && !!tr, carRadio.on);
   }
@@ -1192,7 +1307,26 @@ async function boot() {
       requestAutosave(false);
     }
   };
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent; }
+  // HENDELSER.md, events 2 and 10 (story/pasture.ts, story/motelTv.ts), and with three marks on B
+  // the line drawn in on the map, as A is in town (story/townEvents.ts)
+  const officeDoor = new THREE.Vector3(-41.1 + world.motel.at.x, 0, 24.1 + world.motel.at.z);
+  let lineBCheck = 0;
+  function eventsOnB(dt: number, ok: boolean) {
+    const p = player.pos;
+    pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' ? 'road' : null, cam: camera, clock: game.clock,
+      driving: world.driving });
+    motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
+      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock });
+    if ((lineBCheck += dt) > 1 && !townSeen.has('lineB')) {
+      lineBCheck = 0;
+      if (mapMarks().filter((m) => m.line === 'B').length >= 3) {
+        townSeen.add('lineB');
+        game.note(`${clockText(game.clock, false)}. Three on one line. Drawn in on the map: across the highway just south of the motel, and on to the west-south-west, through STATION 01.`);
+        requestAutosave(false);
+      }
+    }
+  }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1201,7 +1335,7 @@ async function boot() {
     t += dt;
     if (mode === 'play') playtime += dt;
     const modalOpen = !!ui.modal;
-    if (mode === 'title') { titleCam(t); annex.interior.visible = false; }
+    if (mode === 'title') { titleCam(t); annex.interior.visible = false; world.airStep(dt, t); }
     else {
       const active = mode === 'play' && !modalOpen && !game.cinematic && !abduction!.holds;
       const look = input.consumeLook();
@@ -1240,8 +1374,8 @@ async function boot() {
           && sky.uniforms.uDawn.value < 0.3,
         pos: player.pos, cam: camera,
         silenceDone: game.notes.some((n) => n.includes('No sound for 47 s')),
-        hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k),
-        silenceOver: () => { game.note(`${clockText(game.clock, false)}. The highway shoulder between SARO and the motel. No sound for 47 s. Not my footsteps either.`); requestAutosave(false); },
+        hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence'),
+        silenceOver: () => { game.note(`${clockText(game.clock, false)}. ${silencePlace ?? 'The highway shoulder between SARO and the motel'}. No sound for 47 s. Not my footsteps either.`); silencePlace = null; requestAutosave(false); },
       });
       if (mode === 'play') calls.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent,
@@ -1250,23 +1384,34 @@ async function boot() {
       if (mode === 'play') {
         const cp = camera.getWorldPosition(townAt);
         townEvents.update(dt, {
-          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
+          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !nightEvents.busy,
           inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
         });
       }
+      // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
+      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none'));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
+      if (mode === 'play') {
+        // the flashlight flickers near the strange events (todo.md): through the silence on the
+        // shoulder, while a figure stands at the edge of the view, while the town's lamps go out or
+        // its payphone rings (the sounds in the dark and the time away flicker it themselves)
+        flashlight.flicker(roadside.silent ? 0.4 : 0, 'silence');
+        flashlight.flicker(glimpses.up ? 0.3 : 0, 'glimpse');
+        flashlight.flicker(townEvents.now !== 'none' && world.area === 'diner' ? 0.35 : 0, 'town');
+      }
       if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
       if (mode === 'play') lineLights.update(dt, {
         ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
         truck: world.driving && world.area === 'saro' ? world.truckHere()?.group.position ?? null : null,
         clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
       });
+      if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy);
       if (mode === 'play') {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none'));
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy));
       }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
@@ -1345,6 +1490,8 @@ async function boot() {
   Object.defineProperty((window as any).S47, 'hold', {
     get: () => dbg.hold, set: (v: boolean) => { dbg.hold = v; }, enumerable: true,
   });
+  // tests: the truck as a save finds it, and the light in the air (world/airlight.ts)
+  Object.assign((window as any).S47, { truckSave: () => world.truckSave(), air: () => (world as any).air });
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },

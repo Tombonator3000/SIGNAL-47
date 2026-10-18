@@ -82,6 +82,8 @@ Tolv å begynne med. De seks første er de Tom pekte ut, forbedret. Funnteksten 
 
 **2. Kyrne (B, beitet ved riksveien).** Hele flokken står vendt mot az 026, helt stille, også når lastebilen kjører forbi med lysene rett på dem. Forbedring: én ku mangler når man teller. Neste gang står det en ring av flatt, rimete gress der den sto. Ingenting blodig. Blant kyrne kan det stå én skikkelse som ikke er en ku (glimt, punkt 7). Funn: *PASTURE BY THE HIGHWAY. Herd facing 026. One missing. A ring of frost in the grass.*
 
+**Bygget 18. oktober:** ni herefordkyr på beitet sør for motellet, mellom nordgjerdet og sporet (`drive/herd.ts`, den samme flokken i SAROs og veiens område), og hendelsen i `story/pasture.ts`. Til den kommer, beiter de, hver sin vei og med hodet opp og ned. Når spilleren har vært forbi én gang og er langt unna (eller fra 03:45), står hele flokken vendt mot 026 med hodet opp, og ingenting rører seg, heller ikke i frontlysene; øynene lyser grønt i lyset. Sett fra bilen, i frontlysene: ni, et notat og et merke på B. Til fots kommer man ikke nær nok (SAROs grunn slutter ved motellet og skulderen forbi det, over 110 m fra nærmeste ku). Neste gang: åtte, og en ring av flatt, rimete gress der den niende sto, med funnet som over. Etterpå beiter de åtte igjen, og ringen blir liggende. Ingenting endrer seg mens spilleren er i nærheten. Skikkelsen blant kyrne er ikke bygget.
+
 **3. Stillheten (alle linjer).** Sirissene stopper i 47 sekunder. Forbedring: dine egne skritt har heller ingen lyd mens det står på. Bare pusten din. Den lettest å bygge og den som skremmer mest. Funn: *No sound for 47 s. Not my footsteps either.*
 
 **4. Bilradioen fra 1947 (alle linjer, i bilen).** På frekvensen til byens AM-stasjon kommer en nyhetssending fra juli 1947 om en «flying disc» funnet på en ranch, i 47 sekunder, og så er natten 1986 tilbake midt i en setning. Forbedring: stasjonen og opplesningen er oppdiktet, ikke den ekte sendingen fra Roswell, og en skjønner av programleseren at han leser en melding han ikke tror på. Funn: *Car radio, 03:47. A 1947 news bulletin on the town station's frequency.*
@@ -98,9 +100,23 @@ Tolv å begynne med. De seks første er de Tom pekte ut, forbedret. Funnteksten 
 
 **10. Tv-en på motellet (B).** Testbildet i resepsjonen, så bærebølgen i 47 sekunder, så ett bilde av motellets parkeringsplass ovenfra, med lastebilen der den står. Ingen kamera kan stå der. Funn: *Motel office TV. One frame of the lot from above. My truck in it.*
 
+**Bygget 18. oktober:** en bærbar tv på hylla i resepsjonen (`world/MotelFront.ts`) med fargestriper og en tynn tone hele natta, og hendelsen i `story/motelTv.ts`. Én gang i natta, når spilleren er i eller ved resepsjonen og lastebilen står på plassen: bærebølgen i 47 sekunder (en grå flate og brumming), så ett bilde av plassen rett ovenfra med lastebilen der den står, tegnet fra et kamera over plassen med et lys ovenfra som bildene i bortføringen, så testbildet igjen. Funnet som over, og et merke ved motellet på B. Er spilleren gått før bildet kommer, kan det komme igjen senere i natta. Bildene fra runde 15 (`assets/art/motel/tv_testcard_blank.jpg`, `tv_lot_above.jpg`) tas med når de ligger der. Med tre merker på B tegnes linja inn på kartet, som A.
+
 **11. Stamgjesten (A, dineren).** Servitrisen skjenker kaffe til den ytterste krakken, som er tom. «He's a regular. Comes in when the lights are up.» Koppen blir stående og damper. Funn: *Coffee poured for an empty stool at the end of the counter.*
 
 **12. Sheriffens bil (A, utenfor byen).** Sheriffens bil står i veikanten med motoren i gang og blålysene av, døra åpen, ingen i den. Når spilleren kommer tilbake, er den borte. Klokka 04:30 sitter nestlederen ved pulten sin igjen og husker ingenting av patruljen. Funn: *Deputy's car on the shoulder, engine running, nobody in it. 03:12.*
+
+**13. Skrittene bak deg (alle steder, til fots ute).** Spilleren stopper, og to eller tre skritt fortsetter bak, på samme underlag, litt tyngre, og stopper. Går spilleren igjen, stopper de også. Inntil tre ganger i natta. Funn: *I stopped, and the footsteps behind me went on two or three more and stopped. Nobody there.*
+
+**14. Bankingen i taket (alle veier, i bilen).** Tre langsomme slag i taket på førerhuset, ovenfra. Ingenting på veien bak. Én gang. Funn: *Three knocks on the roof of the cab, slow, from above.*
+
+**15. Bilradioen som står på (der lastebilen står).** Spilleren går tilbake til lastebilen, og radioen står på, på 1090, svakt gjennom det lukkede førerhuset. Den var slått av. Én gang. Funn: *The truck's radio was on when I came back to it, on 1090. I had left it off.*
+
+**16. Telefonen i kontrollrommet (SARO, ute).** Telefonen inne i bygningen ringer én gang, og slutter. Ingen andre er der. Inntil to ganger. Funn: *The phone in the control room rang once, and stopped.*
+
+**17. Døra (SARO, ute).** Servicedøra, som var lukket, står åpen når spilleren kommer tilbake til den. Den åpnes bare når spilleren er langt unna og ser en annen vei. Én gang. Funn: *The service door stood open. I had shut it.*
+
+**Bygget 18. oktober (Tom: «vi trenger mer events og ting som kan skje i spillet, må bli mer levende, mer skumle ting»):** hendelse 4 (nyhetsmeldingen fra 8. juli 1947 på 1420 mens man kjører, så Night Line igjen som om ingenting), hendelse 3 overalt ute og ikke bare på gangen til motellet, og 13 til 17, i `story/nightEvents.ts`. Én om gangen, to til fire minutter imellom, bare om natta fra kapittel 1, ikke i prologen, en filmsekvens eller bortføringen. Telles i saken (`ne:` i `townSeen`), så de ikke kommer igjen etter lasting. Utviklermenyen har dem under Night event. Test: `tools/night.py`.
 
 Det som allerede står i `FORSLAG.md` (15. oktober, punkt 2), kommer i tillegg: antennene som snur seg, de røde lysene i fire og sju, rimfrosten på S-11, den visne ringen ved S-19, sporene som stopper, bilen ved gjerdet, radioen som tier, telefonen på motellkontoret, lyset over mesaen og lommelykta som flimrer.
 

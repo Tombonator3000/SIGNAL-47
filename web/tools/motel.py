@@ -177,6 +177,7 @@ async def main():
         check(await ev("S47.game.notes.some((n) => n.includes(\"on the truck's CB\"))"), 'and the call is in the notebook')
         pp = await ev("[S47.player.pos.x, S47.player.pos.z, S47.player.floorY]")
         check(abs(pp[2] - A['y']) < 0.05 and math.hypot(pp[0] - tp[0], pp[1] - tp[2]) < 4, f'out by the door, on the lot ({pp})')
+        check(await ev("S47.world.saroTruck.group.visible"), 'and the truck is seen standing there')
         await ev("S47.player.yaw = Math.atan2(-(%f - S47.player.pos.x), -(%f - S47.player.pos.z)); S47.player.pitch = -0.1; S47.tick(0.2)" % (tp[0], tp[2]))
         await shot('m07_truck_on_the_lot')
         kit = await ev("S47.kitItems().map((k) => k.name + ': ' + (k.state || ''))")

@@ -4,8 +4,10 @@ import type { AudioSys } from '../core/Audio';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { FieldCamera, Photo } from '../core/FieldCamera';
-import type { Chapter1 } from './Chapter1';
+import type { Chapter1, ShotCheck } from './Chapter1';
 import * as P from '../ui/Panels';
+import type { BoardCard } from '../ui/Board';
+import { RuleBook, type BoardHook, type BookNote, type BookRule } from './boardRules';
 import * as D from './drawings';
 import { clockText } from './time';
 
@@ -13,7 +15,10 @@ import { clockText } from './time';
 // field pass (Station26): P06, which fixed point moved, with FRAME 03; P07, the local
 // lamp null test; P08, the deliberate cable cut, with FRAME 04; P09, the 1947 timing log
 // against tonight's receiver. P06 and P07 go in either order, P08 needs both and its own
-// photograph, P09 needs P08. Field texts and replies are the Unity ones.
+// photograph, P09 needs P08. Field texts and replies are the Unity ones. P07 is made at the
+// lamp; P06, P08 and P09 are made on the case board, by tying the records and the frames
+// together (SPILLDESIGN.md: "Kapittel 3 på bordet"), where a tabbed panel used to offer three
+// sentences each.
 // New in the web version: the drive out in the SARO service truck, Nora's call on the
 // hut's field telephone after P09, and the drive back to develop both frames at the
 // SARO wet bench (Unity did the same with a travel folio).
@@ -33,6 +38,7 @@ export interface Ch3State {
   wrong06: number; wrong08: number; wrong09: number; rejected: number;
   called: boolean;
   dev: number;            // the field roll: 0 sealed, 1 developed, 2 print in fixer, 3 collected
+  links?: string[];       // this chapter's threads on the case board, 'a|b' sorted
 }
 
 // What chapter three needs from STATION 01 (world/Station01.ts).
@@ -80,6 +86,7 @@ export interface Chapter3Deps {
   travel: Travel;
   save: () => void;
   milestone: () => void;   // a new area or a recorded finding starts a new autosave generation
+  board: BoardHook;
 }
 
 const fresh = (): Ch3State => ({
@@ -103,12 +110,41 @@ const SUPPORTED = {
 };
 
 // Three levels, as in chapters one and two: a question, a pointer, the answer.
-const HINTS: Record<P.FieldPage, string[]> = {
-  marker: ['Which fixed point is no longer where E09A puts it?', 'E09A puts A in the concrete footing on the transit sight line. Is the footing still occupied?', 'The footing is empty, and the post with the triangle and bar stands off the line. Record A.'],
+type Page = 'marker' | 'lamp' | 'cable' | 'timing';
+const HINTS: Record<Page, string[]> = {
+  marker: ['Which fixed point is no longer where E09A puts it?', 'E09A puts A in the concrete footing on the transit sight line. Is the footing still occupied?', 'The footing is empty, and the post with the triangle and bar stands off the line. Tie A on E09A to FRAME 03.'],
   lamp: ['A null test changes one local condition and looks again.', 'The field lamp has a tin hood. Cover it, then observe.', 'Stand by the lamp, cover it, and choose OBSERVE NULL TEST.'],
-  cable: ['Look at the ends of the cable, not at the reference.', 'Old cable frays and corrodes. These faces are clean and opposite each other.', 'Inspect the cut faces, expose FRAME 04 up close, and record the deliberate cut.'],
-  timing: ['Read the 1947 log in the hut and listen to the receiver.', 'The carrier ceased at 02:17:00. What was observed 47 seconds later?', 'The correction leads up to the relay impact at 02:17:47.'],
+  cable: ['Look at the ends of the cable, not at the reference.', 'Old cable frays and corrodes. These faces are clean and opposite each other. And the lamp, covered, changed nothing.', 'Tie FRAME 04, the cut, to the null test at the lamp, P07.'],
+  timing: ['Read the 1947 log in the hut and listen to the receiver.', 'The carrier ceased at 02:17:00. What was observed 47 seconds later?', 'Tie the receiver to the line in E10 with the same words.'],
 };
+
+// ---------- the case board ----------
+// What the station's records and frames show together (story/boardRules.ts). The replies to
+// threads that contradict are the Unity ones where Unity had that wrong answer.
+const NOTES: Record<string, BookNote> = {
+  'n.a': { text: 'A is gone from its footing on the transit sight line. The post with its mark, the triangle and bar, stands off the line.', q: 'P06' },
+  'n.cut': { text: 'Two clean faces, opposite each other, and a lamp that changed nothing when it was covered. The cable was cut on purpose.', q: 'P08' },
+  'n.same': { text: 'Tonight\'s fragment is T. Vega\'s correction from the 1947 log, word for word. The relay struck 47 seconds after it, at 02:17:47.', q: 'P09' },
+};
+const NOT_THE_LAMP = 'The lamp and the cable do not identify the moved fixed point. Match the outlined triangle and short bar, then record A.';
+const NOT_WHO = 'The faces show that the cable was cut on purpose. They do not show who cut it, or why.';
+const RULES: BookRule[] = [
+  { a: 'e09a.a', b: 'frame03', note: 'n.a', text: NOTES['n.a'].text },
+  { a: 'e09a.b', b: 'frame03', text: 'B is still in its footing west of the transit. The post in FRAME 03 carries the triangle with the bar.', wrong: 'P06' },
+  { a: 'e09a.c', b: 'frame03', text: 'C is a sight line, not a marker; the stakes still run east. Which reference had the triangle with the bar?', wrong: 'P06' },
+  { a: 'P07', b: 'frame03', text: NOT_THE_LAMP, wrong: 'P06' },
+  { a: 'e09a.a', b: 'frame04', text: NOT_THE_LAMP, wrong: 'P06' },
+  { a: 'frame04', b: 'P07', note: 'n.cut', text: NOTES['n.cut'].text },
+  { a: 'frame04', b: 'e07.sig', text: NOT_WHO, wrong: 'P08' },
+  { a: 'frame04', b: 'e06.sig', text: NOT_WHO, wrong: 'P08' },
+  { a: 'frame04', b: 'e07.head', text: 'The cut faces are opposed and clean. A cable from 1947 can wear through, but age and weather do not leave a break like that.', wrong: 'P08' },
+  { a: 'hut.rx', b: 'e10.carrier', note: 'n.same', text: NOTES['n.same'].text },
+  { a: 'hut.rx', b: 'e10.relay', text: 'The voice is not on that line. The matched reading arrives at the 47-second relay impact: 02:17:47. Do not infer a new event from the clock alone.', wrong: 'P09' },
+  { a: 'hut.rx', b: 'e10.final', text: 'The fragment is the correction, not a final observation. It adds nothing after it, and the log leaves that line empty.', wrong: 'P09' },
+  // threads that hold without answering anything
+  { a: 'e09a.c', b: 'e07.abc', text: 'The same C: the closing sight line, on the transit plan and in the 1947 record.' },
+  { a: 's1diagram', b: 'e06.omit', text: 'The framed copy in the hut still has C. Only the service copy left it out.' },
+];
 
 const TANK_TIME = 2.2, FIX_TIME = 1.5;
 const RING = 'ring3';
@@ -125,8 +161,61 @@ export class Chapter3 {
   private images: { transit?: string } = {};
   private callT = -1;
   private radioOn = false;
+  /** P06 to P09 on the case board: the station's records and frames, the questions, the rules. */
+  readonly book: RuleBook;
 
-  constructor(private g: Chapter3Host, private d: Chapter3Deps) {}
+  constructor(private g: Chapter3Host, private d: Chapter3Deps) {
+    const s = () => this.s;
+    this.book = new RuleBook({
+      key: 'ch3',
+      owns: (n) => /^(e09a|e10)\./.test(n) || ['frame03', 'frame04', 'hut.rx', 'P06', 'P07', 'P08', 'P09'].includes(n),
+      notes: NOTES, rules: RULES,
+      questions: [
+        { id: 'P06', stamp: 'P06', text: 'Which fixed point is no longer where E09A puts it?', slots: 1, hints: HINTS.marker, x: 14, y: 470, w: 290,
+          open: () => this.started, done: () => s().p06 ? SUPPORTED.marker : null, record: () => this.submitMarker('a') },
+        { id: 'P07', stamp: 'P07', text: 'Does the local lamp make the mark?', slots: 0, hints: HINTS.lamp, x: 600, y: 14, w: 270,
+          elsewhere: 'Made at the field lamp, not here: cover it, then observe a null test.',
+          open: () => this.started, done: () => s().p07 ? SUPPORTED.lamp : null },
+        { id: 'P08', stamp: 'P08', text: 'What does the cable break show?', slots: 1, hints: HINTS.cable, x: 600, y: 222, w: 270,
+          open: () => this.started, done: () => s().p08 ? SUPPORTED.cable : null, record: () => this.submitCable('deliberate-cut') },
+        { id: 'P09', stamp: 'P09', text: 'Match the receiver fragment to the 1947 log. What does T. Vega\'s correction lead up to?', slots: 1, hints: HINTS.timing, x: 600, y: 444, w: 270,
+          open: () => this.started, done: () => s().p09 ? SUPPORTED.timing : null, record: () => this.submitTiming('02:17:47') },
+      ],
+      links: () => (this.s.links ??= []),
+      wrong: (q) => { const x = this.s; if (q === 'P06') x.wrong06++; else if (q === 'P08') x.wrong08++; else if (q === 'P09') x.wrong09++; },
+      save: () => this.save(),
+      cards: () => this.boardCards(),
+    });
+  }
+
+  // The station's records and the two field frames, as they lie on the board. A frame is
+  // on the roll, sealed, until it is developed at SARO; what is in it is known all the same.
+  private boardCards(): BoardCard[] {
+    if (!this.started) return [];
+    const s = this.s, dev = s.dev >= 3;
+    const frame = (f: Photo | undefined, id: 'frame03' | 'frame04', title: string, what: string, where: string, x: number, y: number): BoardCard => ({
+      id, doc: id, stamp: id === 'frame03' ? 'FRAME 03' : 'FRAME 04', title: dev ? title : 'ON THE FIELD ROLL', kind: dev ? 'photo' : 'sealed',
+      have: !!f, where, image: dev ? f?.url : undefined, text: dev ? what : `${what} Sealed; it is developed at SARO.`, x, y, w: 250,
+    });
+    return [
+      { id: 'e09a', doc: 'e09a', stamp: 'E09A', title: 'TRANSIT RECORD', have: s.readE09a, where: 'Behind glass in a steel frame on the west face of the transit pier.',
+        image: this.transitImage(), full: TRANSIT, x: 14, y: 14, w: 290, lines: [
+          { id: 'e09a.a', text: 'A: triangle with bar, mounted in the concrete footing on the transit sight line.' },
+          { id: 'e09a.b', text: 'B: fixed comparison marker to the west.' },
+          { id: 'e09a.c', text: 'C: closing sight line, shown in the original arrangement.' }] },
+      frame(s.f3, 'frame03', 'FIXED POINT A', 'The empty footing on the transit sight line, and the post with the triangle and bar standing off it.',
+        'Expose it from near the transit: the empty footing and the marked post in one frame.', 320, 14),
+      frame(s.f4, 'frame04', 'CABLE BREAK', 'The cable south of the transit pier, cut: two clean faces, opposite each other.',
+        'Inspect the cable break, then expose a near frame of the cut.', 320, 300),
+      { id: 'e10', doc: 'e10', stamp: 'E10', title: 'TIMING RECORD, 1947', have: s.readE10, where: 'The 1947 ledger is on the workbench in the hut.',
+        full: s.heard ? `${TIMING_1947}\n\n${TIMING_1986}` : TIMING_1947, x: 890, y: 14, w: 276, lines: [
+          { id: 'e10.carrier', text: '02:17:00 / Carrier ceased. Recorded voice: \u2018Reference west. No. East. Hold the last reading.\u2019' },
+          { id: 'e10.relay', text: '02:17:47 / Local relay impact and reference motion observed.' },
+          { id: 'e10.final', text: 'Final observation / Not entered.' }] },
+      { id: 'hut.rx', stamp: 'RECEIVER', title: 'IN THE HUT, TONIGHT', kind: 'thing', have: s.heard, where: 'The receiver on the hut workbench. Switch it on and listen.',
+        text: 'A carrier, very weak, and under it a man\'s voice, far away: "Reference west. No. East. Hold the last reading." Then only the carrier.', x: 890, y: 330, w: 276 },
+    ];
+  }
 
   // ---------- lifecycle ----------
   begin(saved: Ch3State | null) {
@@ -211,10 +300,10 @@ export class Chapter3 {
         return 'STATION 01 // SOUTH ON THE HIGHWAY, RIGHT ONTO THE SURVEY TRACK TO THE GATE';
       case 'station':
         if (!s.p06 && !s.p07) return 'STATION 01 // DOCUMENT THE MOVED MARKER OR RUN A LOCAL LAMP NULL TEST';
-        if (!s.p06) return 'STATION 01 // EXPOSE FRAME 03 AND RECORD WHICH FIXED MARKER MOVED';
+        if (!s.p06) return s.f3 ? 'STATION 01 // ON THE CASE BOARD: WHICH FIXED MARKER MOVED (P06)' : 'STATION 01 // EXPOSE FRAME 03 AND RECORD WHICH FIXED MARKER MOVED';
         if (!s.p07) return 'STATION 01 // COVER THE LOCAL LAMP AND OBSERVE A NORMAL NULL TEST';
-        if (!s.p08) return 'STATION 01 // INSPECT THE CABLE BREAK AND EXPOSE FRAME 04';
-        return 'STATION 01 // MATCH THE 1947 AND 1986 TIMING RECORDS';
+        if (!s.p08) return s.f4 ? 'STATION 01 // ON THE CASE BOARD: WHAT THE CABLE BREAK SHOWS (P08)' : 'STATION 01 // INSPECT THE CABLE BREAK AND EXPOSE FRAME 04';
+        return 'STATION 01 // MATCH THE 1947 AND 1986 TIMING RECORDS ON THE CASE BOARD';
       case 'call': return this.ringing ? 'STATION 01 // THE FIELD TELEPHONE IS RINGING' : 'STATION 01 // FIELD RECORD COMPLETE';
       case 'return':
         if (!this.d.travel.driving()) return 'STATION 01 // DRIVE BACK TO SARO WITH THE FIELD ROLL';
@@ -297,17 +386,17 @@ export class Chapter3 {
       const add = (id: string, key: string, label: () => string | null, use: () => void, range = 2.6) => {
         if (px[key]) inter.add({ id, object: px[key], range, label: () => on() ? label() : null, use });
       };
-      add('s1transit', 'transit', () => this.s.readE09a ? 'Field record / transit' : 'Read the transit record (E09A)', () => this.useTransit(), 2.8);
+      add('s1transit', 'transit', () => this.s.readE09a ? 'Lay out the field record' : 'Read the transit record (E09A)', () => this.useTransit(), 2.8);
       add('s1footing', 'footing', () => 'Concrete footing', () => this.look('footing'));
       add('s1markerA', 'markerA', () => 'Marker post', () => this.look('markerA'), 3.2);
       add('s1markerB', 'markerB', () => 'Comparison marker', () => this.look('markerB'), 3.2);
       add('s1stakes', 'stakesC', () => 'Survey stakes', () => this.look('stakes'), 3.5);
       add('s1diagram', 'diagram', () => 'Framed diagram', () => this.look('diagram'));
-      add('s1lamp', 'lamp', () => this.s.lampCovered ? 'Field lamp (covered)' : 'Field lamp', () => this.openField('lamp'));
+      add('s1lamp', 'lamp', () => this.s.lampCovered ? 'Field lamp (covered)' : 'Field lamp', () => this.openLamp());
       add('s1cable', 'cable', () => this.s.cableInspected ? 'Cable break' : 'Inspect the cable', () => this.useCable(), 2.4);
       add('s1hutDoor', 'hutDoor', () => 'Field hut', () => this.look('hut'));
       add('s1receiver', 'receiver', () => this.s.heard ? 'Receiver' : 'Switch on the receiver', () => this.useReceiver());
-      add('s1timing', 'timingLog', () => this.s.readE10 ? 'Field record / timing' : 'Read the timing log (E10)', () => this.useTimingLog());
+      add('s1timing', 'timingLog', () => this.s.readE10 ? 'Lay out the field record' : 'Read the timing log (E10)', () => this.useTimingLog());
       add('s1phone', 'fieldPhone', () => this.ringing ? 'Answer the field telephone' : 'Field telephone', () => this.usePhone());
       add('s1gate', 'gate', () => 'Vehicle gate', () => ui.toast('Chained and padlocked. N. Vega holds the key. The walk gate beside it is open.', 3.6));
       // the truck outside the gate, any time it stands there (with the truck somewhere else,
@@ -370,21 +459,21 @@ export class Chapter3 {
     return this.images.transit;
   }
 
+  // Read once, the transit record is on the board with the rest; after that the transit is
+  // where the field record is laid out.
   private useTransit() {
     const s = this.s;
-    if (!s.readE09a) {
-      s.readE09a = true;
-      this.file(this.docTransit());
-      this.g.note('E09A, the transit record: A sat in the concrete footing on the transit sight line. B is the fixed comparison marker to the west. C is the closing sight line.');
-      this.d.ui.toast('E09A filed in the case.', 2.4);
-      this.save();
-    }
-    this.openField('marker');
+    if (s.readE09a) { this.d.board.open('STATION 01', 'ch3'); return; }
+    s.readE09a = true;
+    this.file(this.docTransit());
+    this.g.note('E09A, the transit record: A sat in the concrete footing on the transit sight line. B is the fixed comparison marker to the west. C is the closing sight line.');
+    this.save();
+    this.d.ui.document(this.docTransit(), () => this.d.ui.toast('E09A is filed, and pinned on the case board with the station\'s other records.', 3.6));
   }
 
   private useCable() {
-    if (!this.s.cableInspected) this.inspect();
-    this.openField('cable');
+    if (!this.s.cableInspected) { const r = this.inspect(); this.d.ui.toast(r.ok ? 'Two clean faces, opposite each other, copper bright where the sheath ends. Take a near frame of them.' : r.text, 4); return; }
+    this.d.ui.toast(this.s.f4 ? 'The cut cable. FRAME 04 has it, close up.' : 'Two clean faces, opposite each other. Take a near frame of the cut.', 3.4);
   }
 
   private useReceiver() {
@@ -405,40 +494,31 @@ export class Chapter3 {
       this.s.heard = true;
       this.g.note('The receiver in the hut, on the carrier: a man\'s voice, far away. "Reference west. No. East. Hold the last reading." Then only the carrier.');
       ui.toast('Then only the carrier.', 2.6);
-      this.panel?.refresh();
+      if (this.s.readE10) this.file(this.docTiming());   // the 1986 line goes under the 1947 one
+      this.d.board.refresh();
       this.save();
     });
   }
 
   private useTimingLog() {
     const s = this.s;
-    if (!s.readE10) {
-      s.readE10 = true;
-      this.file(this.docTiming());
-      this.g.note('E10, the 1947 timing log: 02:17:00 carrier ceased, a recorded voice. 02:17:47 relay impact and reference motion. Final observation not entered.');
-      this.d.ui.toast('E10 filed in the case.', 2.4);
-      this.save();
-    }
-    this.openField('timing');
+    if (s.readE10) { this.d.board.open('STATION 01', 'ch3'); return; }
+    s.readE10 = true;
+    this.file(this.docTiming());
+    this.g.note('E10, the 1947 timing log: 02:17:00 carrier ceased, a recorded voice. 02:17:47 relay impact and reference motion. Final observation not entered.');
+    this.save();
+    this.d.ui.document(this.docTiming(), () => this.d.ui.toast('E10 is filed, and pinned on the case board.', 3));
   }
 
-  // ---------- the field record (P06 to P09) ----------
-  private openField(page: P.FieldPage) {
-    const s = this.s;
-    this.panel = P.fieldRecord(this.d.ui, {
-      page,
+  // ---------- P07 at the field lamp ----------
+  private openLamp() {
+    this.panel = P.nullTest(this.d.ui, {
       status: () => this.s.p09 ? 'P06 TO P09 RECORDED / Field timing linked / Return to SARO' : this.objective(),
-      transit: { have: s.readE09a, text: TRANSIT, image: this.transitImage(), where: 'The transit record is behind glass in a steel frame on the west face of the transit pier.' },
-      timing: () => ({ have: this.s.readE10, text: this.s.heard ? `${TIMING_1947}\n\n${TIMING_1986}` : TIMING_1947, where: 'The 1947 ledger is on the workbench in the hut.' }),
-      state: () => ({ covered: this.s.lampCovered, observed: this.s.lampObserved, inspected: this.s.cableInspected, frame04: !!this.s.f4, p06: this.s.p06, p07: this.s.p07, p08: this.s.p08, p09: this.s.p09 }),
-      supported: SUPPORTED,
-      onMarker: (c) => this.submitMarker(c),
+      state: () => ({ covered: this.s.lampCovered, observed: this.s.lampObserved, p07: this.s.p07 }),
+      supported: SUPPORTED.lamp,
       onLamp: (cover) => this.setLamp(cover),
       onObserve: () => this.observeLamp(),
-      onInspect: () => this.inspect(),
-      onCable: (c) => this.submitCable(c),
-      onTiming: (c) => this.submitTiming(c),
-      hints: HINTS,
+      hints: HINTS.lamp,
     });
   }
 
@@ -482,6 +562,7 @@ export class Chapter3 {
       this.file(this.docFinding('p07'));
       this.g.note('P07: with the field lamp covered, the local null test is normal. The lamp is a local source, nothing more.');
       this.d.ui.toast('Null test recorded. Uncover the lamp again when you need its light.', 4);
+      this.d.board.refresh();
       this.d.milestone();
     }
     return { ok: true, text: SUPPORTED.lamp };
@@ -586,32 +667,34 @@ export class Chapter3 {
     return a ? (which === 'marker' ? a.markerTarget : a.cableTarget) : new THREE.Vector3(0, -999, 0);
   }
 
-  private check03(): { text: string; ok: boolean } {
+  // `near` (chapter one's ShotCheck): within the transit sight line or at the cable break, a
+  // miss is a refused case frame and never a free one (core/album.ts)
+  private check03(): ShotCheck {
     const { fcam } = this.d;
     const site = this.d.travel.site()!;
-    if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false };
     const t = this.target('marker');
-    const d = this.dist(t);
+    const d = this.dist(t), near = d <= 16;
+    if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false, near };
     if (d > 16) return { text: 'MOVE CLOSER TO THE TRANSIT SIGHT LINE', ok: false };
-    if (d < 2.2) return { text: 'STEP BACK // THE FOOTING AND THE POST IN ONE FRAME', ok: false };
+    if (d < 2.2) return { text: 'STEP BACK // THE FOOTING AND THE POST IN ONE FRAME', ok: false, near };
     const f = site.proxies.footing ? this.pos(site.proxies.footing) : t;
     const m = site.proxies.markerA ? this.pos(site.proxies.markerA) : t;
     if (!fcam.inFrame(t, 0.18, 0.82, 0.15, 0.85) || !fcam.inFrame(f, 0.04, 0.96, 0.06, 0.94) || !fcam.inFrame(m, 0.04, 0.96, 0.06, 0.94))
-      return { text: 'FRAME THE EMPTY FOOTING AND THE MARKED POST TOGETHER', ok: false };
-    if (site.occluders && !fcam.clearLine(t, site.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false };
+      return { text: 'FRAME THE EMPTY FOOTING AND THE MARKED POST TOGETHER', ok: false, near };
+    if (site.occluders && !fcam.clearLine(t, site.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false, near };
     return { text: 'FOOTING AND MARKED POST IN FRAME // READY', ok: true };
   }
-  private check04(): { text: string; ok: boolean } {
+  private check04(): ShotCheck {
     const { fcam } = this.d;
-    if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false };
-    const t = this.target('cable');
-    if (this.dist(t) > 3.2) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
-    if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false };
+    const t = this.target('cable'), near = this.dist(t) <= 3.2;
+    if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false, near };
+    if (!near) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
+    if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false, near };
     return { text: 'CUT FACES IN FRAME // READY', ok: true };
   }
 
   // Why the shutter would (not) fire right now. Chapter one asks this while it runs.
-  check(): { text: string; ok: boolean } {
+  check(): ShotCheck {
     const s = this.s;
     if (this.d.travel.area() !== 'station01' || !this.d.travel.site()) {
       return { text: s.f3 && s.f4 ? 'FIELD ROLL EXPOSED // DEVELOP IT AT THE WET BENCH' : 'THE FIELD ROLL IS FOR STATION 01', ok: false };
@@ -621,8 +704,9 @@ export class Chapter3 {
     if (c4?.ok) return c4;
     const c3 = s.f3 ? null : this.check03();
     if (c3?.ok) return c3;
-    if (c4 && (!c3 || this.dist(this.target('cable')) < 6)) return c4;
-    return c3!;
+    const near = !!(c4?.near || c3?.near);
+    if (c4 && (!c3 || this.dist(this.target('cable')) < 6)) return { ...c4, near };
+    return { ...c3!, near };
   }
 
   private expose() {
@@ -667,6 +751,7 @@ export class Chapter3 {
       ui.toast('Frame 03 exposed. The roll is developed at SARO.', 3.5);
     }
     this.panel?.refresh();
+    this.d.board.refresh();
     this.save();
   }
 

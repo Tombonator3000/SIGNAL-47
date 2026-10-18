@@ -4,12 +4,12 @@
 // A save is the game state as JSON plus a little card for the menus (chapter, place,
 // clock, play time, a small picture). Photographs are kept once in IndexedDB under a key
 // made from their content, and saves point at them with 'idb:<key>', so an autosave never
-// copies a 200 kB print. Without IndexedDB (some private windows) everything goes to
-// localStorage instead, with the photographs inline; the menus say so when a save does
-// not fit.
+// copies a 200 kB print. Without IndexedDB (some private windows) localStorage keeps
+// photographs once too, in 's47.photo.<key>'; saves point at them with 'ls:<key>'. Older
+// saves with inline photographs still load. The menus say so when a save does not fit.
 //
 // A photograph that cannot be read shows a stand-in print. The original may still be in
-// IndexedDB, so a later save writes the old reference back and never the stand-in (Codex
+// the photo store, so a later save writes the old reference back and never the stand-in (Codex
 // found this in the first version; see evidence/claude-handoff-2026-10-04).
 
 export const CASES = 3, AUTO = 3, MANUAL = 3;
@@ -33,7 +33,7 @@ interface SaveRecord<S> extends SaveMeta { state: S }
 export type SaveCard = Pick<SaveMeta, 'chapter' | 'place' | 'clock' | 'playtime' | 'thumb'>;
 
 const DB_NAME = 's47', DB_VERSION = 2, PHOTOS = 'photos', SAVES = 'saves';
-const REF = 'idb:';
+const REF = 'idb:', LS_REF = 'ls:', LS_PHOTOS = 's47.photo.';
 const LS = 's47.save.', LS_INDEX = 's47.saves', LS_ACTIVE = 's47.activeCase', LS_MIGRATED = 's47.migrated';
 const OLD_CASE = 's47.case', OLD_CHECKPOINT = 's47.checkpoint';
 
@@ -44,7 +44,7 @@ const isPhoto = (v: unknown): v is Photoish =>
 // Every photograph in a state, wherever it sits (chapter one's prints, later chapters).
 function photos(v: unknown, out: Photoish[] = [], depth = 0): Photoish[] {
   if (!v || typeof v !== 'object' || depth > 6) return out;
-  if (isPhoto(v) && (v.url.startsWith('data:') || v.url.startsWith(REF))) { out.push(v); return out; }
+  if (isPhoto(v) && (v.url.startsWith('data:') || v.url.startsWith(REF) || v.url.startsWith(LS_REF))) { out.push(v); return out; }
   for (const x of Object.values(v as Record<string, unknown>)) photos(x, out, depth + 1);
   return out;
 }
@@ -120,7 +120,17 @@ const within = <V>(p: Promise<V>, ms: number, fallback: V) =>
   Promise.race([p, new Promise<V>((r) => setTimeout(() => r(fallback), ms))]);
 const lsGet = <V>(k: string, d: V): V => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v) as V; } catch { return d; } };
 const lsSet = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
-const lsDel = (k: string) => { try { localStorage.removeItem(k); } catch { /* blocked */ } };
+const lsDel = (k: string) => { try { localStorage.removeItem(k); return true; } catch { return false; } };
+function lsPhotoKeys(): string[] {
+  const keys: string[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(LS_PHOTOS)) keys.push(k.slice(LS_PHOTOS.length));
+    }
+  } catch { /* blocked */ }
+  return keys;
+}
 
 export const saveId = (caseId: number, kind: SaveKind, slot: number) => `${caseId}:${kind}:${slot}`;
 
@@ -130,7 +140,7 @@ export class SaveStore<S extends object> {
   fallback = false;
   private db: IDBDatabase | null = null;
   private metas = new Map<string, SaveMeta>();
-  private stored = new Set<string>();                                  // photograph keys known to be in IndexedDB
+  private stored = new Set<string>();                                  // photograph keys known to be in this backend
   private unread = new Map<string, { shown: string; ref: string }>();  // photo id -> stand-in shown, reference kept
   private queue: Promise<unknown> = Promise.resolve();                 // writes run one at a time
 
@@ -152,6 +162,7 @@ export class SaveStore<S extends object> {
         const r = lsGet<SaveRecord<S> | null>(LS + id, null);
         if (r) { const { state: _state, ...meta } = r; this.metas.set(id, meta); }
       }
+      for (const k of lsPhotoKeys()) this.stored.add(k);
     }
     await this.migrate();
   }
@@ -191,11 +202,13 @@ export class SaveStore<S extends object> {
     if (!r) return null;
     const state = r.state;
     for (const p of photos(state)) {
-      if (!p.url.startsWith(REF)) continue;
-      const key = p.url.slice(REF.length);
-      const read = () => this.db ? idb<string>(this.db, PHOTOS, 'readonly', (s) => s.get(key)) : Promise.resolve(undefined);
+      const local = p.url.startsWith(LS_REF);
+      if (!local && !p.url.startsWith(REF)) continue;
+      const key = p.url.slice(local ? LS_REF.length : REF.length);
+      const read = () => local ? Promise.resolve(lsGet<string | undefined>(LS_PHOTOS + key, undefined))
+        : this.db ? idb<string>(this.db, PHOTOS, 'readonly', (s) => s.get(key)) : Promise.resolve(undefined);
       const url = (await read()) ?? (await read()); // one more try: a failed transaction is often a one-off
-      if (url) { this.stored.add(key); p.url = url; this.unread.delete(p.id); }
+      if (url) { if (local === this.fallback) this.stored.add(key); p.url = url; this.unread.delete(p.id); }
       else { const shown = missingPrint(); this.unread.set(p.id, { shown, ref: p.url }); p.url = shown; }
     }
     this.setActive(r.caseId);
@@ -232,15 +245,15 @@ export class SaveStore<S extends object> {
   private async write(caseId: number, kind: SaveKind, slot: number, state: S, card: SaveCard): Promise<SaveMeta> {
     const slim = JSON.parse(JSON.stringify(state)) as S;
     const keys: string[] = [];
-    const toStore: { key: string; url: string }[] = [];
+    const toStore = new Map<string, string>();
     for (const p of photos(slim)) {
       const lost = this.unread.get(p.id);
       if (lost && lost.shown === p.url) p.url = lost.ref;              // still the stand-in: keep pointing at the original
       if (p.url.startsWith(REF)) { keys.push(p.url.slice(REF.length)); continue; }
-      if (!this.db) continue;                                          // no IndexedDB: the photograph stays inline
+      if (p.url.startsWith(LS_REF)) { keys.push(p.url.slice(LS_REF.length)); continue; }
       const key = photoKey(p.url);
-      if (!this.stored.has(key)) toStore.push({ key, url: p.url });
-      p.url = REF + key; keys.push(key);
+      if (!this.stored.has(key)) toStore.set(key, p.url);
+      p.url = (this.db ? REF : LS_REF) + key; keys.push(key);
     }
     const meta: SaveMeta = {
       id: saveId(caseId, kind, slot), caseId, kind, slot, savedAt: Date.now(),
@@ -250,25 +263,42 @@ export class SaveStore<S extends object> {
     const record: SaveRecord<S> = { ...meta, state: slim };
     if (this.db) {
       // photographs first, so a save never points at a print that is not there
-      if (toStore.length && !(await idbWrite(this.db, PHOTOS, (s) => { for (const p of toStore) s.put(p.url, p.key); })))
+      if (toStore.size && !(await idbWrite(this.db, PHOTOS, (s) => { for (const [k, url] of toStore) s.put(url, k); })))
         throw new Error('The photographs could not be stored.');
-      for (const p of toStore) this.stored.add(p.key);
+      for (const k of toStore.keys()) this.stored.add(k);
       if (!(await idbWrite(this.db, SAVES, (s) => { s.put(record, record.id); }))) throw new Error('The save could not be written.');
     } else {
-      if (!lsSet(LS + meta.id, record)) throw new Error('Not enough room in this browser to save. Delete an older save.');
-      lsSet(LS_INDEX, [...new Set([...this.metas.keys(), meta.id])]);
+      const added: string[] = [], ids = [...this.metas.keys()];
+      const newSlot = !this.metas.has(meta.id);
+      const full = () => new Error('Not enough room in this browser to save. Delete an older save.');
+      try {
+        // Keep the old save until both the photographs and the index are safely written.
+        for (const [k, url] of toStore) {
+          if (!lsSet(LS_PHOTOS + k, url)) throw full();
+          this.stored.add(k); added.push(k);
+        }
+        if (newSlot && !lsSet(LS_INDEX, [...ids, meta.id])) throw full();
+        if (!lsSet(LS + meta.id, record)) {
+          if (newSlot) lsSet(LS_INDEX, ids);
+          throw full();
+        }
+      } catch (e) {
+        for (const k of added) if (lsDel(LS_PHOTOS + k)) this.stored.delete(k);
+        throw e;
+      }
     }
     this.metas.set(meta.id, meta);
     // a new photograph under the same id has replaced the one that could not be read
     for (const p of photos(state)) if (p.url.startsWith('data:') && this.unread.get(p.id)?.shown !== p.url) this.unread.delete(p.id);
-    void this.sweep();
+    await this.sweep();
     return meta;
   }
 
   async remove(id: string) {
     const run = async () => {
-      if (this.db) await idbWrite(this.db, SAVES, (s) => { s.delete(id); });
-      else { lsDel(LS + id); }
+      await this.ready;
+      const removed = this.db ? await idbWrite(this.db, SAVES, (s) => { s.delete(id); }) : lsDel(LS + id);
+      if (!removed) throw new Error('The save could not be deleted.');
       this.metas.delete(id);
       if (!this.db) lsSet(LS_INDEX, [...this.metas.keys()]);
       await this.sweep();
@@ -281,11 +311,14 @@ export class SaveStore<S extends object> {
 
   // Photographs no save points at any more are deleted.
   private async sweep() {
-    if (!this.db) return;
     const used = new Set<string>();
     for (const m of this.metas.values()) for (const k of m.photos) used.add(k);
     const stale = [...this.stored].filter((k) => !used.has(k));
     if (!stale.length) return;
-    if (await idbWrite(this.db, PHOTOS, (s) => { for (const k of stale) s.delete(k); })) for (const k of stale) this.stored.delete(k);
+    if (this.db) {
+      if (await idbWrite(this.db, PHOTOS, (s) => { for (const k of stale) s.delete(k); })) for (const k of stale) this.stored.delete(k);
+    } else {
+      for (const k of stale) if (lsDel(LS_PHOTOS + k)) this.stored.delete(k);
+    }
   }
 }

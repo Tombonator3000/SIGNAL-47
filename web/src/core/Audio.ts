@@ -650,6 +650,8 @@ export class AudioSys {
     this.night.setSpace(this.space);
   }
 
+  /** A step's recording and level for a surface, without playing it (story/nightEvents.ts). */
+  stepPick(surface: Surface) { const s = STEPS[surface]; return { name: s.names[Math.floor(Math.random() * s.names.length)], gain: s.gain }; }
   /** One step on a surface (Player.onStep). */
   private lastStep = '';
   step(surface: Surface) {

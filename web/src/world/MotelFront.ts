@@ -13,7 +13,8 @@ import { MOTEL_AT } from './geo';
 // Office: x[-45.6,-41.2], z[22.2,27.6]. Door: east wall, z[23.4,24.8].
 // Eight rooms run south; room 6's threshold is (-41.1,0,55).
 // Only one live court owns this shader set; old instances cannot reset a new one.
-export const courtFlood = floodSet(15, 'court', 0.1);
+// (16 lamps: the office 2 and its television 1, the rooms 6, the sign 2, the lot 2, headlights 3)
+export const courtFlood = floodSet(16, 'court', 0.1);
 let owner: MotelFront | null = null;
 type Anchor = { x: number; z: number; yaw: number };
 export type MotelFrontAnchors = { entry: Anchor; officeInside: Anchor; room6Outside: Anchor; fromRoom6: Anchor };
@@ -52,6 +53,9 @@ export class MotelFront {
   readonly at: { x: number; y: number; z: number };
   room6LightOn = true;
   officeLightOn = true;
+  /** The portable television on the office's shelves (HENDELSER.md, event 10): its screen is a
+   *  canvas that story/motelTv.ts paints, and where it stands (built terms, in the group). */
+  readonly tv: { canvas: HTMLCanvasElement; tex: THREE.CanvasTexture; group: THREE.Group };
   private readonly head: number[] = [];
   private readonly st = new THREE.Group();
   private readonly inSt = new THREE.Group();
@@ -73,7 +77,7 @@ export class MotelFront {
     for (const p of courtFlood.pos) p.set(0, -999, 0, 0);
     this.m = this.makeMaterials();
     for (const [key, material] of Object.entries(this.m)) material.name = 'court/' + key;
-    this.forecourt(); this.building(); this.office(); this.car(); this.pool();
+    this.forecourt(); this.building(); this.tv = this.office(); this.car(); this.pool();
     // Proxy groups are separate from merged visuals and remain usable when interior
     // visibility changes. Their labels/enabled state belong to Chapter4.
     this.zone('lot', -41, -27.7, 1.5, 70.8);
@@ -92,6 +96,9 @@ export class MotelFront {
     this.lotLamps();
     // the truck's headlights on the court (shine), when it is driven at SARO
     for (let i = 0; i < 3; i++) this.head.push(this.light(0, -999, 0, 0, 0xfff0d8));
+    // the television's light on the office, low and in front of its screen (dark until it is
+    // on); last, so the lamps before it keep their places in the set
+    this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }
@@ -340,6 +347,28 @@ export class MotelFront {
     for(const x of [-42.66,-42.24])for(const z of [26.91,27.29])box(s,.035,.46,.035,m.wood,x,.23,z);
     this.col(-42.73,-42.17,26.8,27.39);
     box(s,1.1,.045,.26,m.officeLamp,-43.3,2.7,24.65);
+    // A portable set on top of the shelves, turned to the counter and the door: black plastic,
+    // the knobs to the right of the screen, rabbit ears. Left on all night (story/motelTv.ts).
+    // Nothing on it moves or hides, so it is merged with the office (the screen is one call of
+    // its own, for its picture); the group stays where it stands.
+    const tv=new THREE.Group();tv.name='motel:officeTv';tv.position.set(-45.27,1.5,26.85);tv.rotation.y=2.4;s.add(tv);
+    box(tv,.44,.34,.36,m.black,0,.17,0);box(tv,.4,.02,.3,m.black,0,.005,-.02);
+    box(tv,.085,.27,.01,m.metal,.155,.17,.183);
+    for(const y of [.24,.13])cyl(tv,.022,.022,.02,m.trim,.155,y,.19,8).rotation.x=Math.PI/2;
+    rod(tv,V(-.04,.34,-.04),V(-.2,.66,-.1),.004,m.metal,4);rod(tv,V(.04,.34,-.04),V(.19,.67,-.06),.004,m.metal,4);
+    cyl(tv,.035,.045,.03,m.black,0,.355,-.04,8);
+    const canvas=document.createElement('canvas');canvas.width=256;canvas.height=192;
+    const g=canvas.getContext('2d')!;g.fillStyle='#000';g.fillRect(0,0,256,192);
+    const screenTex=new THREE.CanvasTexture(canvas);screenTex.colorSpace=THREE.SRGBColorSpace;this.textures.add(screenTex);
+    const screen=this.mat({color:0x0b0d0e,roughness:.25,metalness:.1,emissive:0xffffff,emissiveMap:screenTex,emissiveIntensity:1});
+    plane(tv,.3,.225,screen,-.045,.18,.1815);
+    this.proxy('officeTv',.5,.5,.5,-45.27,1.73,26.85);
+    return {canvas,tex:screenTex,group:tv};
+  }
+  /** How much the television lights the office, and in what colour (story/motelTv.ts). */
+  setTvLight(w:number,color:THREE.Color){
+    if(owner!==this)return;
+    setFlood(this.slots.tv,w,courtFlood);courtFlood.col[this.slots.tv].copy(color);
   }
 
   private car(){

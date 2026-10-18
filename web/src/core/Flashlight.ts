@@ -38,8 +38,16 @@ export class Flashlight {
     return true;
   }
 
-  /** How much it flickers, 0 to 1 (the events round SARO, later). */
-  flicker(k: number) { this.flick = THREE.MathUtils.clamp(k, 0, 1); }
+  /** How much it flickers, 0 to 1, near the strange events. Each event says so for itself
+   *  (from: the sounds out in the dark and the silence, a figure at the edge of the view, the
+   *  town's events, the time away), and the strongest of them counts. */
+  flicker(k: number, from = 'event') {
+    this.flicks.set(from, THREE.MathUtils.clamp(k, 0, 1));
+    let m = 0;
+    for (const v of this.flicks.values()) m = Math.max(m, v);
+    this.flick = m;
+  }
+  private readonly flicks = new Map<string, number>();
 
   /** Every frame: held a little right of and below the eyes, pointing where they look. off: in
    *  the truck, in a cinematic, on the title screen (it goes out, and comes back on after). */

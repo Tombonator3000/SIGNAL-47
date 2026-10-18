@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { artLoaded, artTexture, loadArtSome } from './art';
+import { eachVariant } from './quality';
 
 // The souvenir shop's cardboard alien, anywhere (Tom, 18 October: it should keep turning up in
 // different places, quite at random, all through the game). One cutout, about 1.5 m, on a
@@ -10,8 +12,8 @@ import * as THREE from 'three';
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
-/** The cutout's picture, drawn in code until ChatGPT's cutout_alien.png comes (ART_BRIEF.md,
- *  round 14). Town.ts uses it for event 6 as well. */
+/** The cutout's picture drawn in code, for when ChatGPT's cutout_alien.png (ART_BRIEF.md,
+ *  round 14) has not come. Town.ts uses it for event 6 as well. */
 export function cutoutTexture() {
   const c = document.createElement('canvas'); c.width = 128; c.height = 256;
   const g = c.getContext('2d')!;
@@ -50,11 +52,13 @@ export class Cutouts {
   private wasSeen = false;
   private away = 0;
   private age = 0;
+  private mat: THREE.MeshStandardMaterial;
+  private asked = false;
 
   constructor(scene: THREE.Scene, private note: (first: boolean) => void) {
     // a little of its own paint shows even in the dark, so it reads as cardboard and not as them
-    const tex = cutoutTexture();
-    const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+    const tex = artLoaded('cutout') ? artTexture('cutout') : cutoutTexture();
+    const mat = this.mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
     const card = new THREE.Mesh(new THREE.PlaneGeometry(0.76, 1.52), mat);
     card.position.y = 0.76; card.rotation.y = Math.PI;
     const stick = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.05), new THREE.MeshStandardMaterial({ color: 0x6b5a44, roughness: 1 }));
@@ -88,6 +92,8 @@ export class Cutouts {
       return;
     }
     if (!s.ok) return;
+    // the painted cutout (round 14) is fetched once the night may show it, and put on the card
+    if (!this.asked) { this.asked = true; void loadArtSome(['cutout']).then(() => this.paint()); }
     this.wait -= dt;
     if (this.wait > 0) return;
     if (!this.place(s)) this.wait = rnd(4, 10);   // nowhere out of sight just now: soon
@@ -120,6 +126,13 @@ export class Cutouts {
     this.fig.visible = true; this.up = kind;
     this.looked = 0; this.away = 0; this.age = 0; this.wasSeen = false;
     return true;
+  }
+  private paint() {
+    if (!artLoaded('cutout') || this.mat.map?.name === 'art/cutout') return;
+    const old = this.mat.map, tex = artTexture('cutout');
+    // on Low the card wears a cheaper copy of the material (core/quality.ts): both get it
+    eachVariant(this.mat, (v) => { const m = v as THREE.MeshStandardMaterial; m.map = tex; m.emissiveMap = tex; m.needsUpdate = true; });
+    old?.dispose();
   }
   get position() { return this.fig.position; }
   private hide(wait: number) { this.fig.visible = false; this.up = null; this.wait = wait; }

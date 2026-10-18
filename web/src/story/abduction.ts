@@ -3,6 +3,7 @@ import type { AudioSys } from '../core/Audio';
 import type { Player } from '../player/Player';
 import type { DocSpec } from '../ui/UI';
 import { clockText } from './time';
+import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../core/art';
 
 // The time away (HENDELSER.md, section 8; Tom, 16 October: yes to all four questions). On foot,
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
@@ -28,6 +29,12 @@ import { clockText } from './time';
 // At least 40 minutes of the night between two, at most three in a night; the director sees to
 // one before chapter five. The setting turns them off (on by default). main.ts decides when it
 // may run (chapters one to four, at night, no panel, no cinematic) and where the lines are.
+//
+// The single frames are ChatGPT's where they have come (ART_BRIEF.md, round 14, abduct/; asked for
+// when the warning starts): the light with your legs in it, the truck standing open, three of them
+// on the ridge. The hand is drawn here, and you from above are the scene itself, drawn from a
+// camera over the place you lay (it shows the real place); the painted one from above is there
+// for when that cannot be drawn, in the frames and on the roll.
 
 export type Line = 'A' | 'B' | 'C';
 export interface AbductIn {
@@ -143,6 +150,7 @@ export class Abduction {
     this.stage = 'warning'; this.st = 0; this.warnLen = rnd(20, 47); this.silent = false;
     this.hadLight = this.d.flashlight.on;
     this.take.copy(this.d.player.pos);
+    void loadArtSome(ABDUCT_ART);
     this.d.hush(this.warnLen + 12, 0);
     void s;
   }
@@ -221,7 +229,7 @@ export class Abduction {
     d.note(`${b}. A line in the notebook in my own hand. I do not remember writing it: ${Math.random() < 0.5 ? '026' : clockText(s.nextFixed, false)}.`);
     d.note(`${b}. A nosebleed. It had stopped by itself.`);
     if (d.camera()) {
-      const pic = this.fromAbove(back, true);
+      const pic = this.fromAbove(back, true) ?? painted('abductAbove', 0.5, 21, 0.9);
       if (pic) {
         spot.doc = { id: `away${this.data.count}`, kind: 'photo', image: pic.toDataURL('image/jpeg', 0.8), page: '', title: `PHOTO / Not exposed by me (${a})`,
           transcript: `One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: someone lying on their back in the grass in a SARO jacket, the reflective band across the chest. Me.` };
@@ -281,11 +289,14 @@ export class Abduction {
     return c ? grain(c, 7, me ? 0.9 : 1.3) : null;
   }
   private makeFrames() {
-    const out: HTMLCanvasElement[] = [frameLight(3)];
-    const grass = this.fromAbove(this.d.player.pos, false);
-    if (grass) out.push(grass);
-    out.push(frameHand(11));
-    const me = this.fromAbove(this.d.player.pos, true);
+    // the light: painted, with your legs in it and the shadow going from under them; else the light
+    // drawn here and the grass from above with nobody in it
+    const light = painted('abductLight', 0.25, 3);
+    const out: HTMLCanvasElement[] = [light ?? frameLight(3)];
+    if (!light) { const grass = this.fromAbove(this.d.player.pos, false); if (grass) out.push(grass); }
+    out.push(frameHand(11, artLoaded('abductLight') ? artImage('abductLight') : null));
+    for (const [id, y, seed] of [['abductTruck', 0.5, 13], ['abductFigures', 0.45, 17]] as const) { const f = painted(id, y, seed); if (f) out.push(f); }
+    const me = this.fromAbove(this.d.player.pos, true) ?? painted('abductAbove', 0.5, 19, 0.9);
     if (me) out.push(me);
     return out;
   }
@@ -338,10 +349,10 @@ function jacketFigure(lying: boolean) {
   g.traverse((x) => { x.frustumCulled = false; });
   return g;
 }
-function grain(src: HTMLCanvasElement, seed: number, dark = 1) {
+function grain(src: HTMLCanvasElement, seed: number, dark = 1, grey = 0.7, contrast = 1.3) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 400;
   const g = c.getContext('2d')!;
-  g.filter = `grayscale(0.7) contrast(1.3) brightness(${dark})`; g.drawImage(src, 0, 0, 640, 400); g.filter = 'none';
+  g.filter = `grayscale(${grey}) contrast(${contrast}) brightness(${dark})`; g.drawImage(src, 0, 0, 640, 400); g.filter = 'none';
   let s = seed;
   const r = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(255,255,255,${r() * 0.08})`; g.fillRect(r() * 640, r() * 400, 1, 1); }
@@ -350,6 +361,15 @@ function grain(src: HTMLCanvasElement, seed: number, dark = 1) {
   for (let y = 0; y < 400; y += 3) { g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, y, 640, 1); }
   return c;
 }
+/** One of the painted frames (4:3), cut to the frames' 16:10 (y: where the cut sits, 0 the top)
+ *  and given the same grain and lines as the drawn ones, a little less grey; null if it did not come. */
+function painted(id: ArtId, y: number, seed: number, dark = 1) {
+  if (!artLoaded(id)) return null;
+  const im = artImage(id), c = document.createElement('canvas'); c.width = 640; c.height = 400;
+  const sh = im.width / 1.6;
+  c.getContext('2d')!.drawImage(im, 0, (im.height - sh) * y, im.width, sh, 0, 0, 640, 400);
+  return grain(c, seed, dark, 0.45, 1.15);
+}
 function frameLight(seed: number) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 400;
   const g = c.getContext('2d')!;
@@ -357,16 +377,39 @@ function frameLight(seed: number) {
   g.fillStyle = l; g.fillRect(0, 0, 640, 400);
   return grain(c, seed, 1);
 }
-function frameHand(seed: number) {
+/** A hand with fingers too long at the right-hand edge, against the light: over the grass of the
+ *  painted light frame, close (round 14), or over the light drawn here. */
+function frameHand(seed: number, under: HTMLImageElement | null) {
   const c = document.createElement('canvas'); c.width = 640; c.height = 400;
   const g = c.getContext('2d')!;
-  const l = g.createRadialGradient(260, 120, 20, 300, 200, 420); l.addColorStop(0, '#e8eef0'); l.addColorStop(1, '#202426');
-  g.fillStyle = l; g.fillRect(0, 0, 640, 400);
-  // at the right-hand edge, against the light: a hand with fingers too long
-  g.fillStyle = '#060607'; g.strokeStyle = '#060607'; g.lineCap = 'round';
-  g.beginPath(); g.ellipse(640, 250, 70, 56, -0.3, 0, 7); g.fill();
-  for (const [a, len] of [[-2.2, 190], [-2.5, 230], [-2.8, 240], [-3.05, 210]] as const) {
-    g.lineWidth = 9; g.beginPath(); g.moveTo(600, 240); g.lineTo(600 + Math.cos(a) * len, 240 + Math.sin(a) * len * 0.8); g.stroke();
+  if (under) {
+    // the lit grass beside the boots, nearer: the lower left of the picture
+    g.drawImage(under, 0, under.height * 0.56, under.width * 0.44, under.width * 0.44 / 1.6, 0, 0, 640, 400);
+    g.fillStyle = 'rgba(235,242,246,.18)'; g.fillRect(0, 0, 640, 400);
+  } else {
+    const l = g.createRadialGradient(260, 120, 20, 300, 200, 420); l.addColorStop(0, '#e8eef0'); l.addColorStop(1, '#202426');
+    g.fillStyle = l; g.fillRect(0, 0, 640, 400);
   }
-  return grain(c, seed, 1);
+  // out of focus, too near the lens: the palm in from the edge, four long jointed fingers and a thumb
+  g.fillStyle = '#060607'; g.filter = 'blur(2.5px)';
+  g.beginPath(); g.ellipse(668, 252, 88, 64, -0.35, 0, 7); g.fill();
+  const finger = (x: number, y: number, a: number, len: number, w: number, bend: number) => {
+    // three joints, each a little narrower and bent a little more
+    let px = x, py = y, ang = a, wd = w;
+    g.beginPath();
+    const left: [number, number][] = [], right: [number, number][] = [];
+    for (const k of [0.42, 0.33, 0.25]) {
+      const nx = px + Math.cos(ang) * len * k, ny = py + Math.sin(ang) * len * k, o = ang + Math.PI / 2;
+      left.push([px + Math.cos(o) * wd, py + Math.sin(o) * wd]); right.push([px - Math.cos(o) * wd, py - Math.sin(o) * wd]);
+      px = nx; py = ny; ang += bend; wd *= 0.78;
+    }
+    g.moveTo(...left[0]); for (const q of left.slice(1)) g.lineTo(...q);
+    g.lineTo(px + Math.cos(ang) * wd * 1.2, py + Math.sin(ang) * wd * 1.2);
+    for (const q of right.reverse()) g.lineTo(...q);
+    g.closePath(); g.fill();
+  };
+  for (const [a, len, b] of [[-2.25, 250, -0.1], [-2.55, 300, -0.08], [-2.85, 310, -0.05], [-3.1, 270, 0.02]] as const) finger(612, 238, a, len, 10, b);
+  finger(640, 300, -2.6, 150, 11, 0.18);
+  g.filter = 'none';
+  return grain(c, seed, 1, under ? 0.45 : 0.7, under ? 1.15 : 1.3);
 }

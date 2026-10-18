@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { silhouette } from './roadside';
+import { Silhouette } from './roadside';
 
 // Them, in the background (HENDELSER.md, section 7; Tom, 16 October: always there, something
 // that could happen at any time). One figure, about 1.2 m, black with a faint rim, stands still
@@ -50,15 +50,14 @@ export class Glimpses {
   /** Where it stands now, for the developer menu and the tests. */
   up: string | null = null;
   count = 0;
+  private sil: Silhouette;
   private fig: THREE.Group;
-  private rim: THREE.MeshBasicMaterial;
   private wait = rnd(120, 300);
   private t = 0;
 
   constructor(scene: THREE.Scene) {
-    this.fig = silhouette();
-    this.fig.name = 'glimpse';
-    this.rim = (this.fig.children[1] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+    this.sil = new Silhouette('glimpse', 0x14100c);
+    this.fig = this.sil.group;
     this.fig.visible = false;
     scene.add(this.fig);
   }
@@ -80,6 +79,7 @@ export class Glimpses {
       return;
     }
     if (!s.ok || !s.scene || this.count >= MAX) return;
+    this.sil.wake();
     // rarely at first, more often towards morning: about every four minutes at three, two at five
     const day = ((s.clock % 86400) + 86400) % 86400, k = THREE.MathUtils.clamp((day - 2.5 * 3600) / (2.5 * 3600), 0, 1);
     this.wait -= dt * (0.6 + 1.4 * k);
@@ -90,7 +90,7 @@ export class Glimpses {
     this.fig.position.copy(at.p);
     const c = s.cam.getWorldPosition(new THREE.Vector3());
     this.fig.rotation.y = Math.atan2(c.x - at.p.x, c.z - at.p.z);   // facing the player
-    this.rim.color.setHex(at.rim);
+    this.stand(at, c);
     this.fig.visible = true; this.up = at.id; this.t = 0; this.count++;
     this.wait = rnd(150, 330);
   }
@@ -112,14 +112,24 @@ export class Glimpses {
 
   /** Put it at a named place now if it can stand there (the developer menu, the tests). */
   now(s: GlimpsesIn, id: string) {
+    this.sil.wake();
     const at = this.pick(s, id);
     if (!at) return false;
-    this.fig.position.copy(at.p); this.rim.color.setHex(at.rim);
+    this.fig.position.copy(at.p);
     const c = s.cam.getWorldPosition(new THREE.Vector3());
     this.fig.rotation.y = Math.atan2(c.x - at.p.x, c.z - at.p.z);
+    this.stand(at, c);
     this.fig.visible = true; this.up = at.id; this.t = 0; this.count++;
     return true;
   }
+  /** How it stands there: far off it is soft at the edges, as in heat haze; nearer, upright or
+   *  turned half aside, listening. The edge of light is the light of the place behind it. */
+  private stand(at: { p: THREE.Vector3; rim: number }, cam: THREE.Vector3) {
+    this.sil.pose(at.p.distanceTo(cam) > 150 ? 'far' : Math.random() < 0.65 ? 'stand' : 'turned');
+    this.sil.rim(at.rim);
+  }
+  /** Whether it is one of round 14's outlines now (the tests). */
+  get look() { return { painted: this.sil.painted }; }
   private hide() { this.fig.visible = false; this.up = null; }
   /** A new night, the title, a save opened. */
   reset() { this.hide(); this.count = 0; this.wait = rnd(120, 300); }

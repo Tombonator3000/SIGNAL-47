@@ -7,7 +7,8 @@ import type { Interaction } from '../core/Interaction';
 import type { RecordsAnnex } from '../world/Annex';
 import type { Doors } from '../world/Doors';
 import * as P from '../ui/Panels';
-import { board } from '../ui/Board';
+import type { BoardCard } from '../ui/Board';
+import { RuleBook, type BoardHook, type BookNote, type BookRule } from './boardRules';
 import * as D from './drawings';
 import { clockText } from './time';
 
@@ -33,7 +34,7 @@ export interface Ch2State {
   finding: string; destination: string; surveyId: string; marker: string;
   wrong04: number; wrong05: number;
   called: boolean;
-  links?: string[];         // threads on the evidence board, 'a|b' sorted, in the order made
+  links?: string[];         // this chapter's threads on the case board, 'a|b' sorted, in the order made
 }
 
 export interface Chapter2Host {
@@ -51,6 +52,7 @@ export interface Chapter2Deps {
   colliders: Collider[];
   doors: Doors;
   save: () => void;
+  board: BoardHook;
 }
 
 const fresh = (): Ch2State => ({
@@ -84,40 +86,37 @@ const HINTS_05 = ['Where does today\'s B-12 reference come from?', 'Find both th
 // about each other holds; what they show together goes into its question by itself (P04:
 // the omitted C and the explained-away mark; P05: the survey, the mark and the place).
 // Some threads hold without answering anything: a note on the board, or a thin thread.
-// Threads that contradict get the Unity replies and count as wrong, as before.
-const NOTES: Record<string, string> = {
-  'n.c': 'C, the closing sight line, is in the original. The service copy leaves it out.',
-  'n.mark': 'The original kept the mark with the lamp isolated. The copy calls it a development fault.',
-  'n.sig': 'The same name signs both versions. It says who changed the record, not why.',
-  'n.id': 'Same survey: STATION 01 on the B-12 card and on the 1947 sleeve.',
-  'n.mark2': 'Same fixed-point mark: the outlined triangle with the bar.',
-  'n.dest': 'Both name the same place: OLD SURVEY STATION.',
+// Threads that contradict get the Unity replies and count as wrong, as before. The rules
+// are worked by story/boardRules.ts; the board is the night's case board (story/caseBoard.ts).
+const NOTES: Record<string, BookNote> = {
+  'n.c': { text: 'C, the closing sight line, is in the original. The service copy leaves it out.', q: 'P04' },
+  'n.mark': { text: 'The original kept the mark with the lamp isolated. The copy calls it a development fault.', q: 'P04' },
+  'n.sig': { text: 'The same name signs both versions. It says who changed the record, not why.' },
+  'n.id': { text: 'Same survey: STATION 01 on the B-12 card and on the 1947 sleeve.', q: 'P05' },
+  'n.mark2': { text: 'Same fixed-point mark: the outlined triangle with the bar.', q: 'P05' },
+  'n.dest': { text: 'Both name the same place: OLD SURVEY STATION.', q: 'P05' },
 };
-const NOTE_Q: Record<string, string> = { 'n.c': 'P04', 'n.mark': 'P04', 'n.id': 'P05', 'n.mark2': 'P05', 'n.dest': 'P05' };
-type Rule = { a: string; b: string; note?: keyof typeof NOTES; text: string; wrong?: 4 | 5 };
 const ELEVATION = 'A triangle without the bar is only an elevation symbol. The matching fixed-point mark has a short bar beneath the outlined triangle.';
 // -39 against a year from the archive holds, as a thin thread with nothing added: the
 // player can do the sum or not (HISTORIE.md: -39 LY is 39 years, and nobody says so).
 const LY = '-39 on tonight\'s printout. 1947 on the record.';
 const DEVELOPMENT = 'Compare the arrangement, not just the amended explanation. Which reference appears in the original and is omitted from the service copy?';
-const RULES: Rule[] = [
-  { a: 'e07.abc', b: 'e06.omit', note: 'n.c', text: NOTES['n.c'] },
-  { a: 'e07.mark', b: 'e06.fault', note: 'n.mark', text: NOTES['n.mark'] },
-  { a: 'e07.sig', b: 'e06.sig', note: 'n.sig', text: NOTES['n.sig'] },
-  { a: 'b12.id', b: 'e08.id', note: 'n.id', text: NOTES['n.id'] },
-  { a: 'b12.mark', b: 'e08.mark', note: 'n.mark2', text: NOTES['n.mark2'] },
-  { a: 'b12.site', b: 'e08.dest', note: 'n.dest', text: NOTES['n.dest'] },
+const RULES: BookRule[] = [
+  { a: 'e07.abc', b: 'e06.omit', note: 'n.c', text: NOTES['n.c'].text },
+  { a: 'e07.mark', b: 'e06.fault', note: 'n.mark', text: NOTES['n.mark'].text },
+  { a: 'e07.sig', b: 'e06.sig', note: 'n.sig', text: NOTES['n.sig'].text },
+  { a: 'b12.id', b: 'e08.id', note: 'n.id', text: NOTES['n.id'].text },
+  { a: 'b12.mark', b: 'e08.mark', note: 'n.mark2', text: NOTES['n.mark2'].text },
+  { a: 'b12.site', b: 'e08.dest', note: 'n.dest', text: NOTES['n.dest'].text },
   { a: 'e07.head', b: 'e08.id', text: 'The sleeve belongs with the 1947 record: same survey, same year.' },
   { a: 'e07.head', b: 'b12.id', text: 'Today\'s B-12 vane keeps the survey from the 1947 record.' },
-  { a: 'e06.fault', b: 'e07.abc', text: DEVELOPMENT, wrong: 4 },
-  { a: 'e06.fault', b: 'e07.head', text: DEVELOPMENT, wrong: 4 },
-  { a: 'e06.fault', b: 'e07.sig', text: 'The shared signature identifies the report. It does not establish the author\'s motive or responsibility. Which reference changes between the two versions?', wrong: 4 },
-  { a: 'b12.mark', b: 'e08.elev', text: ELEVATION, wrong: 5 },
+  { a: 'e06.fault', b: 'e07.abc', text: DEVELOPMENT, wrong: 'P04' },
+  { a: 'e06.fault', b: 'e07.head', text: DEVELOPMENT, wrong: 'P04' },
+  { a: 'e06.fault', b: 'e07.sig', text: 'The shared signature identifies the report. It does not establish the author\'s motive or responsibility. Which reference changes between the two versions?', wrong: 'P04' },
+  { a: 'b12.mark', b: 'e08.elev', text: ELEVATION, wrong: 'P05' },
   { a: 'rx.dist', b: 'e08.id', text: LY },
   { a: 'rx.dist', b: 'e07.head', text: LY },
 ];
-const pair = (a: string, b: string) => [a, b].sort().join('|');
-const ruleOf = (k: string) => RULES.find((r) => pair(r.a, r.b) === k);
 const questionOf = (a: string, b: string) => [a, b].some((x) => /^(b12|e08|rx)\./.test(x)) ? 'P05' : 'P04';
 
 const WHERE: Record<P.SourceKey, string> = {
@@ -135,9 +134,30 @@ export class Chapter2 {
   s: Ch2State = fresh();
   onEnd?: () => void;
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
+  /** P04 and P05 on the case board: the records' lines, the questions and the rules. */
+  readonly book: RuleBook;
 
   constructor(private g: Chapter2Host, private d: Chapter2Deps) {
     this.interactables();
+    this.book = new RuleBook({
+      key: 'ch2',
+      owns: (n) => /^(e07|e06|b12|e08|rx)\./.test(n) || n === 'P04' || n === 'P05',
+      notes: NOTES, rules: RULES,
+      questions: [
+        { id: 'P04', stamp: 'P04', text: 'What changed in the 1947 record after the run?', slots: 2, hints: HINTS_04, x: 14, y: 452, w: 272,
+          open: () => this.started, done: () => this.s.p04 ? SUPPORTED_04 : null, record: () => this.compare('omitted-c') },
+        { id: 'P05', stamp: 'P05', text: 'Where does the B-12 reference lead in the field?', slots: 3, hints: HINTS_05, x: 898, y: 14, w: 266,
+          open: () => this.started, done: () => this.s.p05 ? SUPPORTED_05 : null, record: () => this.route('old-survey-station', 'STATION 01', 'triangle-bar') },
+      ],
+      links: () => (this.s.links ??= []),
+      wrong: (q) => { if (q === 'P04') this.s.wrong04++; else this.s.wrong05++; },
+      save: () => this.save(),
+      cards: () => this.boardCards(),
+      questionOf,
+      empty: 'Those two lines do not say anything about each other.',
+      // the first board kept threads to the question cards and its notes
+      legacy: (k) => /(^|\|)(P0|n\.)/.test(k),
+    });
   }
 
   // ---------- lifecycle ----------
@@ -301,115 +321,48 @@ export class Chapter2 {
     });
   }
 
-  /** The evidence board from the journal (the same board as on the archive table). */
-  openBoard() { this.openTable(); }
+  /** The case board, laid out on the archive table once a record is on it. */
+  openBoard() { this.d.board.open(); }
 
   private openTable() {
     const { ui } = this.d;
     if (!this.anyRead()) { ui.toast('Nothing on the table yet. The records are on the shelves, the bookcase and in the card index.', 4); return; }
-    const s = this.s;
-    // Each picture on its own: reading E07, E06 or E08 on the shelf already drew that one,
-    // and the mark icons were then never drawn, which left P05 an empty page.
-    const im = this.images;
+    this.d.board.open('SARO ARCHIVE', 'ch2');
+  }
+
+  // The five records on the board, with the lines that matter on each. Each picture on its
+  // own: reading E07, E06 or E08 on the shelf already drew that one, and the mark icons were
+  // then never drawn, which left P05 an empty page.
+  private boardCards(): BoardCard[] {
+    const s = this.s, im = this.images;
+    if (!this.started) return [];
     im.original ??= D.arrangement(true);
     im.amended ??= D.arrangement(false);
     im.index ??= D.sleeveMark();
     im.icons ??= { 'triangle-bar': D.markIcon('triangle-bar'), triangle: D.markIcon('triangle'), 'three-bars': D.markIcon('three-bars') };
-    this.backfillLinks();
-    const tb = (x: number, y: number) => ({ x, y });
-    board(ui, {
-      key: 'ch2',
-      title: 'SARO ARCHIVE / THE AMENDED RECORD',
-      status: () => this.s.p05 ? 'P04 RECORDED  /  P05 RECORDED'
-        : this.s.p04 ? 'P04 RECORDED  /  P05: Trace the reference from B-12 to a field destination'
-          : 'P04: Establish what changed  /  P05: Identify a supported field destination',
-      cards: [
-        { id: 'e07', stamp: 'E07', title: 'ORIGINAL FIELD RECORD', have: s.read.original, where: WHERE.original, image: im.original, full: ORIGINAL, x: 14, y: 14, w: 272, lines: [
-          { id: 'e07.head', text: 'FIELD SURVEY RECORD / STATION 01 / 1947' },
-          { id: 'e07.mark', text: 'The retained mark did not follow the new position of the physical vane.' },
-          { id: 'e07.abc', text: 'Three references: A, the fixed survey point; B, the optical comparison vane; C, the closing sight line.' },
-          { id: 'e07.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
-        { id: 'e06', stamp: 'E06', title: 'AMENDED SERVICE COPY', have: s.read.amended, where: WHERE.amended, image: im.amended, full: AMENDED, x: 298, y: 14, w: 272, lines: [
-          { id: 'e06.fault', text: 'The additional mark is attributed to a fault in plate development.' },
-          { id: 'e06.omit', text: 'The incomplete closing sight line has been omitted from the service copy.' },
-          { id: 'e06.repeat', text: 'No repeat observation is required.' },
-          { id: 'e06.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
-        { id: 'rx', stamp: 'RX', title: 'PRINTOUT, 02:14', have: true, where: '', x: 898, y: 640, w: 266, lines: [
-          { id: 'rx.dist', text: 'SOURCE DISTANCE:  -39 LY' }] },
-        { id: 'b12', stamp: 'B-12', title: 'LINEAGE CARD', have: s.read.lineage, where: WHERE.lineage, full: LINEAGE, x: 600, y: 14, w: 278, lines: [
-          { id: 'b12.id', text: 'The B-12 vane retains the fixed-point survey identified as STATION 01.' },
-          { id: 'b12.mark', text: 'Register mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
-          { id: 'b12.site', text: 'SITE REGISTER: STATION 01 / OLD SURVEY STATION.' }] },
-        { id: 'e08', stamp: 'E08', title: 'ARCHIVE SLEEVE', have: s.read.index, where: WHERE.index, image: im.index, full: INDEX, x: 600, y: 274, w: 278, lines: [
-          { id: 'e08.id', text: 'PLATE / 1947 / STATION 01' },
-          { id: 'e08.mark', text: 'Fixed-point mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
-          { id: 'e08.dest', text: 'Field destination: OLD SURVEY STATION.' },
-          { id: 'e08.elev', text: 'A similar triangle without the bar is a general elevation symbol.', icon: im.icons.triangle }] },
-      ],
-      questions: [
-        { id: 'P04', stamp: 'P04', text: 'What changed in the 1947 record after the run?', slots: 2, x: 14, y: 452, w: 272 },
-        { id: 'P05', stamp: 'P05', text: 'Where does the B-12 reference lead in the field?', slots: 3, x: 898, y: 14, w: 266 },
-      ],
-      noteAt: (id) => (id === 'n.sig' ? tb(304, 440) : undefined),
-      state: () => {
-        const links = this.s.links ?? [];
-        const made = links.map((k) => ({ k, r: ruleOf(k) })).filter((x) => x.r);
-        return {
-          notes: made.filter((x) => x.r!.note && !NOTE_Q[x.r!.note]).map((x) => ({ id: x.r!.note!, text: NOTES[x.r!.note!], from: [x.r!.a, x.r!.b] as [string, string] })),
-          threads: made.map((x) => ({ a: x.r!.a, b: x.r!.b, thin: !x.r!.note })),
-          slots: (q) => made.filter((x) => x.r!.note && NOTE_Q[x.r!.note] === q).map((x) => NOTES[x.r!.note!]),
-          done: (q) => q === 'P04' ? (this.s.p04 ? SUPPORTED_04 : null) : (this.s.p05 ? SUPPORTED_05 : null),
-        };
-      },
-      connect: (a, b) => this.connect(a, b),
-      record: (q) => q === 'P04' ? this.compare('omitted-c') : this.route('old-survey-station', 'STATION 01', 'triangle-bar'),
-      hint: (q) => this.hint(q),
-    });
-  }
-
-  // Three hint levels per question; the fourth names the threads, and only comes after the
-  // third has been read and two more threads have missed.
-  private hintSeen: Record<string, number> = { P04: 0, P05: 0 };
-  private missSince: Record<string, number> = { P04: 0, P05: 0 };
-  private hint(q: string) {
-    const list = q === 'P04' ? HINTS_04 : HINTS_05;
-    const n = this.hintSeen[q];
-    if (n >= 3 && this.missSince[q] < 2) return list[2];
-    this.hintSeen[q] = Math.min(n + 1, list.length);
-    if (this.hintSeen[q] === 3) this.missSince[q] = 0;
-    return list[Math.min(n, list.length - 1)];
-  }
-
-  // Saves from before the board recorded P04 and P05 without threads, and the first board
-  // also kept threads to the question cards: lay the line-to-line threads out again.
-  private backfillLinks() {
-    const s = this.s;
-    const links = (s.links = (s.links ?? []).filter((k) => !/(^|\|)(P0|n\.)/.test(k)));
-    const add = (a: string, b: string) => { if (!links.includes(pair(a, b))) links.push(pair(a, b)); };
-    if (s.p04) { add('e07.abc', 'e06.omit'); add('e07.mark', 'e06.fault'); }
-    if (s.p05) { add('b12.id', 'e08.id'); add('b12.mark', 'e08.mark'); add('b12.site', 'e08.dest'); }
-  }
-
-  // A thread on the board, from line a to line b.
-  private connect(a: string, b: string): { ok: boolean; text: string } {
-    const s = this.s, links = (s.links ??= []);
-    const miss = (r: { ok: boolean; text: string }) => { this.missSince[questionOf(a, b)]++; return r; };
-    if (a === b) return { ok: false, text: 'Pull the thread to a line on another record.' };
-    if (a.split('.')[0] === b.split('.')[0]) return miss({ ok: false, text: 'Both lines are on the same record. Compare it with another one.' });
-    if (links.includes(pair(a, b))) return { ok: true, text: 'Those two are already connected.' };
-    const r = ruleOf(pair(a, b));
-    if (!r) return miss({ ok: false, text: 'Those two lines do not say anything about each other.' });
-    if (r.wrong) {
-      if (r.wrong === 4) s.wrong04++; else s.wrong05++;
-      this.save();
-      return miss({ ok: false, text: r.text });
-    }
-    links.push(pair(a, b)); this.save();
-    const q = r.note ? NOTE_Q[r.note] : undefined;
-    if (!q) return { ok: true, text: r.text };
-    const filled = links.filter((k) => { const x = ruleOf(k); return x?.note && NOTE_Q[x.note] === q; }).length;
-    const total = q === 'P04' ? 2 : 3;
-    return { ok: true, text: filled >= total ? `${r.text} ${q} has what it needs: RECORD it.` : `${r.text} (${q}: ${filled} of ${total})` };
+    return [
+      { id: 'e07', doc: 'e07', stamp: 'E07', title: 'ORIGINAL FIELD RECORD', have: s.read.original, where: WHERE.original, image: im.original, full: ORIGINAL, x: 14, y: 14, w: 272, lines: [
+        { id: 'e07.head', text: 'FIELD SURVEY RECORD / STATION 01 / 1947' },
+        { id: 'e07.mark', text: 'The retained mark did not follow the new position of the physical vane.' },
+        { id: 'e07.abc', text: 'Three references: A, the fixed survey point; B, the optical comparison vane; C, the closing sight line.' },
+        { id: 'e07.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
+      { id: 'e06', doc: 'e06', stamp: 'E06', title: 'AMENDED SERVICE COPY', have: s.read.amended, where: WHERE.amended, image: im.amended, full: AMENDED, x: 298, y: 14, w: 272, lines: [
+        { id: 'e06.fault', text: 'The additional mark is attributed to a fault in plate development.' },
+        { id: 'e06.omit', text: 'The incomplete closing sight line has been omitted from the service copy.' },
+        { id: 'e06.repeat', text: 'No repeat observation is required.' },
+        { id: 'e06.sig', text: 'N. VEGA / FIELD TECHNICIAN' }] },
+      { id: 'rx', doc: 'printout', stamp: 'RX', title: 'PRINTOUT, 02:14', have: true, x: 898, y: 640, w: 266, lines: [
+        { id: 'rx.dist', text: 'SOURCE DISTANCE:  -39 LY' }] },
+      { id: 'b12', doc: 'b12lineage', stamp: 'B-12', title: 'LINEAGE CARD', have: s.read.lineage, where: WHERE.lineage, full: LINEAGE, x: 600, y: 14, w: 278, lines: [
+        { id: 'b12.id', text: 'The B-12 vane retains the fixed-point survey identified as STATION 01.' },
+        { id: 'b12.mark', text: 'Register mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
+        { id: 'b12.site', text: 'SITE REGISTER: STATION 01 / OLD SURVEY STATION.' }] },
+      { id: 'e08', doc: 'e08', stamp: 'E08', title: 'ARCHIVE SLEEVE', have: s.read.index, where: WHERE.index, image: im.index, full: INDEX, x: 600, y: 274, w: 278, lines: [
+        { id: 'e08.id', text: 'PLATE / 1947 / STATION 01' },
+        { id: 'e08.mark', text: 'Fixed-point mark: outlined triangle with a short bar beneath it.', icon: im.icons['triangle-bar'] },
+        { id: 'e08.dest', text: 'Field destination: OLD SURVEY STATION.' },
+        { id: 'e08.elev', text: 'A similar triangle without the bar is a general elevation symbol.', icon: im.icons.triangle }] },
+    ];
   }
 
   // P04: the Unity rules and replies.

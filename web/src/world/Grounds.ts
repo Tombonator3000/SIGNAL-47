@@ -7,6 +7,7 @@ import type { Zone } from '../player/Player';
 import { RAMP, GROUND, WEST } from './Crossing';
 import { MOTEL_AT, MOTEL_RECT, SARO_IN_ROAD } from './geo';
 import { highwayTop } from '../drive/roadShape';
+import { ARRAY_GROUND, inRect } from './arrayLayout';
 
 // SARO's grounds (Tom, 4 October late evening: «SARO must look more real, with a footpath
 // and a road out from the ramp with the truck; walk round SARO, the ramp and the truck,
@@ -31,6 +32,7 @@ import { highwayTop } from '../drive/roadShape';
 //   ground (y -0.6)      everything else inside the site, and the open ground west of it
 //   the road's land      south of the site, down the highway (drive/roadShape.ts)
 //   the motel's floor    its lot, walk and office, 650 m south (geo.ts, MOTEL_AT)
+//   the array            north of the fence, through the gate (Field.ts): ground level
 
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 type Slope = Rect & { axis: 'x' | 'z'; low: number; high: number };   // y GROUND at low, 0 at high
@@ -57,7 +59,8 @@ export const TRUCK_RAMP = { minX: 6.6, maxX: 13.0, top: 12.4, foot: 16.6 };
 export const STEPS = { x0: 7.1, x1: 8.0, z0: -12.6, z1: -11.4 };
 const SLOPES: Slope[] = [
   { ...r(RAMP.x0, RAMP.x1, RAMP.z0 - 0.1, RAMP.z1 + 0.1), axis: 'x', low: RAMP.x0, high: RAMP.x1 },   // the fire exit's ramp
-  { ...r(TRUCK_RAMP.minX, TRUCK_RAMP.maxX, TRUCK_RAMP.top, TRUCK_RAMP.foot), axis: 'z', low: TRUCK_RAMP.foot, high: TRUCK_RAMP.top },
+  // a little past the foot, where the ground's zones begin (z 16.65): no gap at floor level between
+  { ...r(TRUCK_RAMP.minX, TRUCK_RAMP.maxX, TRUCK_RAMP.top, TRUCK_RAMP.foot + 0.1), axis: 'z', low: TRUCK_RAMP.foot, high: TRUCK_RAMP.top },
   { ...r(STEPS.x0 - 0.1, STEPS.x1, STEPS.z0, STEPS.z1), axis: 'x', low: STEPS.x0 - 0.1, high: STEPS.x1 },
 ];
 
@@ -143,6 +146,9 @@ export class Grounds {
     }
     for (const b of RAISED) if (within(b, x, z)) return 0;
     for (const b of this.ground) if (within(b, x, z)) return GROUND;
+    // the antenna field north of the array fence (Field.ts), its gate included: the array is
+    // graded flat at the ground's level (Exterior.ts)
+    if (inRect(ARRAY_GROUND, x, z)) return GROUND;
     return 0;
   };
 

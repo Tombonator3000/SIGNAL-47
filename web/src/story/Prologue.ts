@@ -24,6 +24,8 @@ import type { Collider } from '../world/ControlRoom';
 import { openTerminal } from '../ui/Terminal';
 import { halleyPosterTex } from '../core/textures';
 import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
+import { CaseBoard, type BoardSave, type RegionId } from './caseBoard';
+import type { BoardHook } from './boardRules';
 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
@@ -113,7 +115,9 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
 // What Night Shift leaves behind besides the notes: which of the room's papers were read,
 // whether relay K3 is still open, and tonight's lines in the console log (story/nightshift.ts).
 export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean }
-export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ch5?: Ch5State; ns?: NightShiftState; notes: string[]; clock: number }
+export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ch5?: Ch5State; ns?: NightShiftState; notes: string[]; clock: number;
+  /** where the cards lie on the case board (saves from before 18 October have none) */
+  board?: BoardSave }
 export interface PrologueDeps {
   ui: UI; audio: AudioSys; room: ControlRoom; ext: Exterior; player: Player; inter: Interaction;
   yard: ServiceYard; fcam: FieldCamera; colliders: Collider[]; annex: RecordsAnnex;
@@ -153,6 +157,9 @@ export class Prologue {
   decoder: DecoderDesk;
   eventClock = 2 * 3600 + 15 * 60 + 12; // when the dishes turned; the S-03 log is stamped with it
   ns: NightShiftState = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
+  /** The night's case board (story/caseBoard.ts), and where its cards lie. */
+  board: CaseBoard;
+  boardSave: BoardSave = { pos: {} };
   radioOn = false;
   private radioHeard = false;
   private lineDeadClock = 0;
@@ -197,28 +204,37 @@ export class Prologue {
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
     g.fillStyle = v; g.fillRect(0, 0, 512, 384);
     this.interactables();
+    this.board = new CaseBoard({
+      ui: d.ui,
+      docs: () => this.docs,
+      books: () => [this.ch1, this.ch2, this.ch3, this.ch4, this.ch5].filter((c) => c?.started).map((c) => c.book),
+      region: () => this.boardRegion(),
+      layout: () => this.boardSave,
+      save: () => { if (this.at('ch1')) d.saveCase(this.composeCase(this.ch1.s)); },
+    });
+    const board: BoardHook = { open: (place, region) => this.openBoard(place, region as RegionId), refresh: () => this.board.refresh() };
     // the signal processor holds the tape once the anomaly is locked (02:14 and after)
     this.decoder = new DecoderDesk({ ui: d.ui, audio: d.audio, room: d.room, inter: d.inter,
       locked: () => this.rx.stage >= 3, recorded: () => '02:14', busy: () => this.cinematic, power: () => this.powered && !this.ns.k3Open });
     this.ch1 = new Chapter1(this, {
       ui: d.ui, audio: d.audio, room: d.room, ext: d.ext, player: d.player, inter: d.inter,
       yard: d.yard, fcam: d.fcam, colliders: d.colliders, view: d.view, isTouch: d.isTouch,
-      save: (c) => d.saveCase(c ? this.composeCase(c) : null), doors: d.doors,
+      save: (c) => d.saveCase(c ? this.composeCase(c) : null), doors: d.doors, board,
     });
     this.ch2 = new Chapter2(this, {
       ui: d.ui, audio: d.audio, room: d.room, annex: d.annex, player: d.player, inter: d.inter, colliders: d.colliders, doors: d.doors,
-      save: () => d.saveCase(this.composeCase(this.ch1.s)),
+      save: () => d.saveCase(this.composeCase(this.ch1.s)), board,
     });
     this.ch3 = new Chapter3(this, {
       ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, fcam: d.fcam, ch1: this.ch1, view: d.view, travel: d.travel,
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
-      milestone: () => { this.onCheckpoint?.('chapter3'); },
+      milestone: () => { this.onCheckpoint?.('chapter3'); }, board,
     });
     this.ch4 = new Chapter4(this, {
       ui: d.ui, audio: d.audio, player: d.player, inter: d.inter, doors: d.doors,
       ch1: this.ch1, ch2: this.ch2, ch3: this.ch3, motel: d.motel,
       save: () => d.saveCase(this.composeCase(this.ch1.s)),
-      milestone: () => { this.onCheckpoint?.('chapter4'); },
+      milestone: () => { this.onCheckpoint?.('chapter4'); }, board,
     });
     this.ch6 = new Chapter6(this, { ui: d.ui, audio: d.audio, ...d.roswell });
     this.ch5 = new Chapter5(this, {
@@ -275,7 +291,8 @@ export class Prologue {
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
     return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, ch5: this.ch5?.started ? this.ch5.s : undefined,
-      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket }, notes: [...this.notes], clock: this.clock };
+      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket }, notes: [...this.notes], clock: this.clock,
+      board: { pos: { ...this.boardSave?.pos } } };
   }
   private setPhase(p: Phase) { this.phase = p; }
 
@@ -311,9 +328,21 @@ export class Prologue {
   openNotebook() {
     const ui = this.d.ui;
     ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : this.phase === 'ch6' ? 'Chapter six' : 'Tonight',
-      // the evidence board can be laid out from the journal once a record from the archive is in it
-      this.ch2.started && Object.values(this.ch2.s.read).some(Boolean) ? () => this.ch2.openBoard() : undefined,
+      // the case board can be laid out from the journal at any time
+      () => this.openBoard(),
       this.notebookExtras?.() ?? {});
+  }
+  /** The case board, at the part of the night the player is in (or `region`). */
+  openBoard(place?: string, region?: RegionId) { this.board.open(place, region); }
+  private boardRegion(): RegionId {
+    switch (this.phase) {
+      case 'ch1': return 'ch1';
+      case 'ch2': return 'ch2';
+      case 'ch3': return 'ch3';
+      case 'ch4': return 'ch4';
+      case 'ch5': case 'ch6': return 'ch5';
+      default: return 'ns';
+    }
   }
 
   // ---------- world helpers ----------
@@ -1125,6 +1154,7 @@ export class Prologue {
     this.notes = []; this.docs = [];
     this.bootT = this.solveT = this.printT = this.lineDeadT = -1;
     this.ns = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
+    this.boardSave = { pos: {} };
     room.objs.jacket.visible = true;
     this.opsLines = []; this.opsDirty = true;
     if (this.radioOn && audio.ctx) audio.amRadio(null);
@@ -1321,6 +1351,7 @@ export class Prologue {
     this.rx.solved = true;
     this.rxc.residualVisible = true;
     this.clock = saved?.clock ?? this.eventClock + 70;
+    this.boardSave = { pos: { ...(saved?.board?.pos ?? {}) } };
     this.docs = [LOG, printout(this.eventClock - 60)];
     this.notes = [];
     for (const n of [PROFILES[0].note, PROFILES[1].note,

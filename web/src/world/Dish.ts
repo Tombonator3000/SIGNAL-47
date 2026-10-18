@@ -44,7 +44,8 @@ const _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4();
 
 // The model, built once per level of detail and merged into one geometry per material.
 function rootPart(g: THREE.Group, far: boolean) {
-  box(g, 7, 0.8, 7, far ? M.dishMetal : M.concrete, 0, 0.4, 0);
+  // the base block goes on down into the ground (-0.62 round the array), so it stands on it
+  box(g, 7, 1.6, 7, far ? M.dishMetal : M.concrete, 0, 0, 0);
   cyl(g, 1.45, 2.05, 7, M.dishMetal, 0, 4.3, 0, 10);
   if (!far) box(g, 1.2, 2.2, 0.15, M.dishMetal, 0, 2.0, 2.02).rotation.x = -0.08;
 }
