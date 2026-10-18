@@ -302,7 +302,7 @@ html.text-large .examine { font-size: 27px; }
 .notebook .nb-controls { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 40px; }
 .notebook .nb-controls.on { display: grid; }
 .notebook .nb-ctl h5 { font-family: var(--term); font-weight: normal; font-size: 19px; color: #a33a2c; margin: 12px 0 4px; }
-.notebook .nb-ctl dl { display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: 3px 14px; margin: 0; }
+.notebook .nb-ctl dl { display: grid; grid-template-columns: 158px 1fr; gap: 3px 14px; margin: 0; }
 .notebook .nb-ctl dt { font-family: var(--term); font-size: 18px; line-height: 22px; color: #2e2a22; }
 .notebook .nb-ctl dd { margin: 0; font-family: var(--type); font-size: 15px; line-height: 22px; color: #4c463a; }
 /* the face of whoever speaks in a conversation (ui/Panels.ts) */

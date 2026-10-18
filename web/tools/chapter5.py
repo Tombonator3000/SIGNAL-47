@@ -239,11 +239,12 @@ async def main():
 
         # ---------- out to the truck: saved in the diner, then the old road ----------
         # (a save keeps the truck where it was left on the lot, World.truckSave, not on the lot's
-        # anchor: out to whichever of its doors there is ground by, as getting out does)
-        door = await ev("""(()=>{const g=S47.world['truck'].group, T=S47.three, p=S47.player;
-          for (const s of [-1, 1]) { const v=new T.Vector3(s*1.75,0,-0.3).applyAxisAngle(new T.Vector3(0,1,0), g.rotation.y).add(g.position);
-            if (p.walkable(v.x, v.z)) return {x:v.x, z:v.z}; } return null })()""") or a
-        ok = await walk([[i['x'], i['z']], [o['x'], o['z']], [door['x'], door['z']]])
+        # anchor: out of the door and straight at it, until its collider stops the walk)
+        door = await ev("(()=>{const g=S47.world['truck'].group.position; return {x:g.x, z:g.z}})()")
+        ok = await walk([[i['x'], i['z']], [o['x'], o['z']]])
+        if ok[0]:
+            w = await walk([[door['x'], door['z']]])
+            ok = [w[0] or ((w[1] - door['x']) ** 2 + (w[2] - door['z']) ** 2) ** 0.5 < 3.2, w[1], w[2]]
         tk = await ev("(()=>{const v=S47.world.dinerTruckProxy.getWorldPosition(S47.camera.position.clone()); return [v.x,v.y,v.z]})()")
         await face(tk[0], tk[1], tk[2])
         am, lb = await aimed(), await label('dinerTruck')
