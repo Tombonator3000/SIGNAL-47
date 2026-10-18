@@ -103,8 +103,9 @@ async def main():
         check(await ev("S47.fcam.raised"), 'viewfinder raised with C')
         check('APRON' in await ev("document.querySelector('.vf-status').textContent"), 'viewfinder refuses the wrong place')
         await pg.keyboard.press('Space'); await tick(0.1)
-        check(await ev("!S47.ch1.s.f1"), 'refused frame uses no film')
-        dish = await ev("(()=>{const d=S47.ext.dishes.find(d=>d.id==='S-03'); const c=S47.ext.dishArray.feedPosition(d).lerp(new S47.camera.position.constructor(d.x, 12.4*d.scale, d.z), 0.5); return [c.x,c.y,c.z]})()")
+        # away from the apron the shutter takes a free frame for the album instead (core/album.ts)
+        check(await ev("!S47.ch1.s.f1") and await ev("S47.album.shots.length") == 1, 'refused case frame uses no case film (a free frame instead)')
+        dish =await ev("(()=>{const d=S47.ext.dishes.find(d=>d.id==='S-03'); const c=S47.ext.dishArray.feedPosition(d).lerp(new S47.camera.position.constructor(d.x, 12.4*d.scale, d.z), 0.5); return [c.x,c.y,c.z]})()")
         await aim_at(10.4, -11.6, dish[0], dish[1], dish[2], -0.06); await tick(0.1)
         check(await ev("document.querySelector('.vf-status').textContent") == 'REFERENCE IN FRAME // READY', 'S-03 framed from the apron')
         await shot('c04_viewfinder')
@@ -216,7 +217,8 @@ async def main():
         # apart from the saves, and the save points at them.
         await pg.wait_for_function("S47.saves.list(S47.caseId()).some(m => m.chapter.startsWith('Chapter 2'))", polling=300, timeout=30000)
         meta = await ev("S47.saves.list(S47.caseId())[0]")
-        check(meta['chapter'] == 'Chapter 2: The Amended Record' and len(meta['photos']) == (0 if NO_IDB else 2) and (meta['thumb'] or '').startswith('data:image/jpeg'), f"autosave {meta['id']}: chapter two, {len(meta['photos'])} photographs, a picture")
+        free = await ev("S47.album.shots.length")   # the free frame from before the apron rides along
+        check(meta['chapter'] == 'Chapter 2: The Amended Record' and len(meta['photos']) == (0 if NO_IDB else 2 + free) and (meta['thumb'] or '').startswith('data:image/jpeg'), f"autosave {meta['id']}: chapter two, {len(meta['photos'])} photographs, a picture")
         if NO_IDB:
             raw = await ev(f"localStorage.getItem('s47.save.{meta['id']}') || ''")
             check('data:image/jpeg' in raw, 'without IndexedDB the save keeps its photographs inline in localStorage')

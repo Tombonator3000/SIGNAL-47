@@ -69,11 +69,20 @@ const VANE_TIME = 1.8, TANK_TIME = 2.2, FIX_TIME = 1.5;
 
 // Later chapters take over the camera and the wet bench while they run (chapter three's
 // field frames): the viewfinder, the shutter rules and the bench go to them.
+// `near`: the player is at a case frame's subject, so a miss there is a refused case frame and
+// never a free one.
+export type ShotCheck = { text: string; ok: boolean; near?: boolean };
 export interface FieldShots {
   frameNo(): string;
-  check(): { text: string; ok: boolean };
+  check(): ShotCheck;
   expose(): void;
   rejected(): void;
+}
+// The free frames (core/album.ts; todo.md, after They Are Here): anything, anywhere, once the
+// camera is had. Away from a case frame's subject the shutter takes one while the roll lasts.
+export interface FreeShots {
+  left(): number;
+  expose(): void;
 }
 
 export class Chapter1 {
@@ -81,12 +90,13 @@ export class Chapter1 {
   s: CaseState = fresh(0);
   onEnd?: (method: Method) => void;
   field: FieldShots | null = null;          // set by a later chapter while it runs
+  free: FreeShots | null = null;            // the album's free frames (main.ts)
   lab: (() => boolean) | null = null;       // a later chapter's use of the wet bench; true when handled
   private images: Record<string, THREE.Texture> = {};
   private anim: { vane?: { from: number; to: number; t0: number }; fix?: number } = {};
   private busy: string | null = null;     // a timed step at the wet bench
   private settled = false;
-  private status = { text: '', ok: false };
+  private status: ShotCheck = { text: '', ok: false };
   private busT = 0;
 
   constructor(private g: ChapterHost, private d: Chapter1Deps) {
@@ -586,30 +596,39 @@ export class Chapter1 {
 
   private frameNo() { return this.field ? this.field.frameNo() : this.s.f2 ? 'FRAME 03' : this.s.f1 ? 'FRAME 02' : 'FRAME 01'; }
 
-  // Why the shutter would (not) fire right now. Mirrors the Unity rules.
-  private check(): { text: string; ok: boolean } {
+  // Why the shutter would (not) fire right now. Mirrors the Unity rules. `near` marks where the
+  // case frame keeps the shutter: the S-03 apron until frame 01, and the B-12 sight line mark.
+  private check(): ShotCheck {
     if (this.field) return this.field.check();
     const s = this.s, { fcam, yard, ext } = this.d;
     const p = this.d.player.pos;
-    if (!s.log) return { text: 'READ THE S-03 MOTOR LOG FIRST', ok: false };
+    const a = YARD.apron, onApron = !s.f1 && p.x >= a.minX && p.x <= a.maxX && p.z >= a.minZ && p.z <= a.maxZ;
+    if (!s.log) return { text: 'READ THE S-03 MOTOR LOG FIRST', ok: false, near: onApron };
     if (!s.f1) {
-      const a = YARD.apron;
-      if (p.x < a.minX || p.x > a.maxX || p.z < a.minZ || p.z > a.maxZ) return { text: 'MOVE TO THE S-03 SERVICE APRON', ok: false };
+      if (!onApron) return { text: 'MOVE TO THE S-03 SERVICE APRON', ok: false };
       const dish = ext.dishes.find((d) => d.id === 'S-03')!;
       const c = ext.dishArray.feedPosition(dish).lerp(new THREE.Vector3(dish.x, 12.4 * dish.scale, dish.z), 0.5);
-      if (!fcam.inFrame(c, 0.36, 0.64, 0.30, 0.65)) return { text: 'ALIGN THE CENTRAL ANTENNA IN THE FRAME', ok: false };
-      if (!fcam.clearLine(c, yard.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false };
+      if (!fcam.inFrame(c, 0.36, 0.64, 0.30, 0.65)) return { text: 'ALIGN THE CENTRAL ANTENNA IN THE FRAME', ok: false, near: true };
+      if (!fcam.clearLine(c, yard.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false, near: true };
       return { text: 'REFERENCE IN FRAME // READY', ok: true };
     }
     if (s.f2) return { text: 'CONTROL FRAME EXPOSED // RETURN TO THE PHOTO LAB', ok: false };
     if (s.dev1 < 3) return { text: 'UNPROCESSED FILM // PHOTO LAB', ok: false };
     if (!s.hyp) return { text: 'REVIEW FRAME 01 AND THE B-12 REFERENCE SHEET', ok: false };
-    if (!s.method || !this.settled || !s.observed) return { text: s.method && !this.settled ? 'WAIT FOR THE REFERENCE VANE TO SETTLE' : 'NOTE THE B-12 OBSERVATION FIRST', ok: false };
-    if (Math.hypot(p.x - YARD.sightMark.x, p.z - YARD.sightMark.z) > 3.5) return { text: 'MOVE TO THE B-12 SIGHT LINE MARK', ok: false };
+    const atMark = Math.hypot(p.x - YARD.sightMark.x, p.z - YARD.sightMark.z) <= 3.5;
+    if (!s.method || !this.settled || !s.observed) return { text: s.method && !this.settled ? 'WAIT FOR THE REFERENCE VANE TO SETTLE' : 'NOTE THE B-12 OBSERVATION FIRST', ok: false, near: atMark && !!s.method };
+    if (!atMark) return { text: 'MOVE TO THE B-12 SIGHT LINE MARK', ok: false };
     const v = yard.vane.getWorldPosition(new THREE.Vector3());
-    if (!fcam.inFrame(v, 0.22, 0.78, 0.23, 0.78)) return { text: 'FRAME THE B-12 REFERENCE VANE AND ITS FIXED BRACKET', ok: false };
-    if (!fcam.clearLine(v, yard.occluders)) return { text: 'REFERENCE OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false };
+    if (!fcam.inFrame(v, 0.22, 0.78, 0.23, 0.78)) return { text: 'FRAME THE B-12 REFERENCE VANE AND ITS FIXED BRACKET', ok: false, near: true };
+    if (!fcam.clearLine(v, yard.occluders)) return { text: 'REFERENCE OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false, near: true };
     return { text: 'REFERENCE IN FRAME // READY', ok: true };
+  }
+
+  // The free frames' line in the viewfinder: ready (here the shutter takes one), or how many are left.
+  private freeLine() {
+    if (!this.free) return undefined;
+    const left = this.free.left(), here = !this.status.ok && !this.status.near;
+    return { text: here ? (left ? `FREE FRAME // ${left} LEFT` : 'NO FREE FRAMES LEFT') : `${left} FREE FRAMES LEFT`, ok: here && left > 0 };
   }
 
   shutter() {
@@ -617,9 +636,12 @@ export class Chapter1 {
     if (!fcam.raised) return;
     const c = this.check();
     if (!c.ok) {
+      // away from the case's subjects the shutter takes a free frame (the album) while the roll lasts
+      const free = !c.near ? this.free : null;
+      if (free && free.left() > 0) { free.expose(); return; }
       if (this.field) this.field.rejected(); else this.s.rejected++;
       audio.play('click', { gain: 0.3, rate: 0.7 });
-      ui.toast(`${c.text}. No film used.`, 2.6);
+      ui.toast(free ? 'No free frames left on the roll.' : `${c.text}. No film used.`, 2.6);
       return;
     }
     if (this.field) {
@@ -756,7 +778,7 @@ export class Chapter1 {
       fcam.sync();
       if (!ui.modal) {
         this.status = this.check();
-        ui.viewfinder(true, { rect: fcam.frameRect(), frame: this.frameNo(), status: this.status.text, ok: this.status.ok, touch: this.touch });
+        ui.viewfinder(true, { rect: fcam.frameRect(), frame: this.frameNo(), status: this.status.text, ok: this.status.ok, touch: this.touch, free: this.freeLine() });
       }
     }
     if (lead) ui.objective(this.objective());

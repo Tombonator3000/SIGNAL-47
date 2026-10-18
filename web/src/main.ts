@@ -47,6 +47,9 @@ import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
+import { Album, rollText } from './core/album';
+import { albumSubjects } from './story/albumSubjects';
+import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
 import { bindLooks } from './story/looks';
 import { firstTime } from './core/hints';
@@ -335,6 +338,34 @@ async function boot() {
     save: () => { if (mode === 'play') requestAutosave(false); } });
   const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
     toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
+  // ---------- the free camera and the album (core/album.ts; todo.md, after They Are Here) ----------
+  // Once the camera is had, the shutter takes a free frame anywhere a case frame is not to be had
+  // (Chapter1.shutter); 36 in a night, kept with the case, in the notebook's album.
+  const subjectsHere = () => albumSubjects({ world, ext, room, yard, annex, sky, scene, camera, cutouts,
+    outdoors: () => space === 'yard', night: () => sky.uniforms.uDawn.value < 0.3, clock: () => game.clock });
+  const album = new Album({
+    fcam, scene,
+    view: { restore: () => { renderer.setPixelRatio(pr); resize(); }, draw: () => draw() },
+    subjects: subjectsHere,
+    place: () => placeName(), clock: () => game.clock,
+    extra: () => abduction!.data.spots.filter((s) => s.doc).length,
+    before: () => ext.dishArray.cull(fcam.photoCam),
+    // someone on the film only: out in the night where the glimpses are (SARO, the highway, Caliche)
+    ghostGround: () => {
+      const g = glimpseIn(true);
+      if (!g.scene || space !== 'yard' || world.driving || !game.at('ch1') || game.phase === 'ch6' || sky.uniforms.uDawn.value >= 0.3) return null;
+      return world.area === 'diner' && world.town ? world.town.floorAt : g.ground;   // Caliche's own ground by the diner's lot
+    },
+    small: () => saves.fallback,
+    skip: () => [sky.group],
+    done: (_shot, first, left) => {
+      audio.shutter(); ui.shutterFlash();
+      if (first) ui.toast(`A free frame, out of the instant back. The print goes in the album in the notebook. ${left} left.`, 4.4);
+      else if (left === 5 || left === 0) ui.toast(left ? '5 free frames left on the roll.' : 'That was the last free frame on the roll.', 3);
+      requestAutosave(false);
+    },
+  });
+  ch1.free = { left: () => album.left, expose: () => { album.expose(); } };
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
   // on the player's own drives and the story's, never in a cinematic
@@ -627,6 +658,7 @@ async function boot() {
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     pasture.reset(); motelTv.reset();
+    album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
@@ -697,7 +729,8 @@ async function boot() {
       : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && world.saroTruck && world.saroTruck.group.position.z < 40 ? 'On the pad by the service yard' : 'Where I left it';
     const kit: KitItem[] = [{ name: 'Notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
     if (game.at('ch1')) kit.push({ name: 'SARO jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
-    if (fcam.have) kit.push({ name: 'Field camera', state: `${photos} exposed`, note: 'The SARO field camera, sheet film. C raises it, Space takes the picture.' });
+    const frames = game.docs.filter((d) => /^(frame|away)/.test(d.id)).length;
+    if (fcam.have) kit.push({ name: 'Field camera', state: `${frames} case frames, ${rollText(album.left)}`, note: 'The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album.' });
     if (flashlight.have) kit.push({ name: 'Flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
     if (game.at('ch1')) kit.push({ name: 'Truck keys', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
     if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
@@ -722,6 +755,7 @@ async function boot() {
     kit: kitItems(),
     people: peopleItems(),
     touch: input.touchMode,
+    album: album.view(game.clock),
   });
 
   // where the lines run, for the time away (story/abduction.ts; HENDELSER.md, section 3)
@@ -844,6 +878,7 @@ async function boot() {
     const state: GameState = {
       v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
       truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
+      album: album.data,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -1046,6 +1081,12 @@ async function boot() {
     // true once a started or loaded night is running (tests wait for it after Continue)
     started: () => caseId > 0 && !starting && mode === 'play',
   };
+  // the free camera and the album (tools/album.py): the album itself, what could be named in a
+  // frame from here, and which of the round 15 album pictures the build has
+  Object.assign((window as any).S47, {
+    album, albumArt,
+    albumSubjects: () => subjectsHere().map((s) => ({ name: s.name, n: s.at.length, odd: !!s.odd })),
+  });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
 

@@ -1,3 +1,6 @@
+import { albumPage, bindAlbum } from './album';
+import type { AlbumView } from '../core/album';
+
 export interface DocSpec {
   id: string;
   title: string;
@@ -27,7 +30,7 @@ export interface KitItem { name: string; note: string; state?: string }
 /** The notebook's map and kit (main.ts puts them together). */
 /** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
 export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
-export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[]; /** a phone: its controls first */ touch?: boolean }
+export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[]; album?: AlbumView; /** a phone: its controls first */ touch?: boolean }
 // Every control, for the notebook's Controls tab: the hints about them are said only once on a
 // device (core/hints.ts), so they are all kept here. Keyboard and mouse, and a phone or tablet.
 const CONTROLS: Record<'desk' | 'phone', { title: string; groups: { head: string; rows: [string, string][] }[] }> = {
@@ -114,7 +117,7 @@ export class UI {
     this.root.insertAdjacentHTML('beforeend', `
       <div class="hud passive" hidden><div class="crosshair"></div><div class="prompt"></div><div class="examine"></div><div class="toasts"></div><div class="clockline"></div><div class="objective"></div><div class="lockhint">Click to look around</div></div>
       <div class="viewfinder passive" hidden><div class="vf-frame"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="vf-patch"></div>
-        <div class="vf-top">SARO / FIELD CAMERA</div><div class="vf-no"></div><div class="vf-status"></div><div class="vf-hint"></div></div><div class="vf-flash"></div></div>
+        <div class="vf-top">SARO / FIELD CAMERA</div><div class="vf-no"></div><div class="vf-free"></div><div class="vf-status"></div><div class="vf-hint"></div></div><div class="vf-flash"></div></div>
       <div class="touch" hidden>
         <div class="stick-base"><div class="stick-knob"></div></div>
         <button class="tbtn pause" aria-label="Pause">II</button>
@@ -185,8 +188,9 @@ export class UI {
   }
   cameraButton(on: boolean, raised = false) { this.camBtn.hidden = !on; this.camBtn.textContent = raised ? 'Lower' : 'Camera'; }
 
-  // Field camera viewfinder. rect is the frame in CSS pixels (FieldCamera.frameRect).
-  viewfinder(on: boolean, o?: { rect: { x: number; y: number; w: number; h: number }; frame: string; status: string; ok: boolean; touch: boolean }) {
+  // Field camera viewfinder. rect is the frame in CSS pixels (FieldCamera.frameRect). `free`:
+  // the album's free frames (core/album.ts); while one is ready the case frame's line dims.
+  viewfinder(on: boolean, o?: { rect: { x: number; y: number; w: number; h: number }; frame: string; status: string; ok: boolean; touch: boolean; free?: { text: string; ok: boolean } }) {
     this.vf.hidden = !on;
     if (!on || !o) return;
     const f = this.vf.querySelector('.vf-frame') as HTMLElement;
@@ -195,6 +199,10 @@ export class UI {
     const st = f.querySelector('.vf-status') as HTMLElement;
     if (st.textContent !== o.status) st.textContent = o.status;
     st.classList.toggle('ok', o.ok);
+    st.classList.toggle('far', !!o.free?.ok);
+    const fr = f.querySelector('.vf-free') as HTMLElement, ft = o.free?.text ?? '';
+    if (fr.textContent !== ft) fr.textContent = ft;
+    fr.classList.toggle('ok', !!o.free?.ok);
     (f.querySelector('.vf-hint') as HTMLElement).textContent = o.touch ? 'CAMERA: LOWER   SHUTTER: EXPOSE' : 'C  LOWER     SPACE  SHUTTER';
   }
   shutterFlash() {
@@ -350,7 +358,7 @@ export class UI {
           <button role="tab" data-t="notes">Notes${count(notes.length)}</button>
           <button role="tab" data-t="findings">Findings${count(findings.length)}</button>
           <button role="tab" data-t="papers">Papers${count(papers.length)}</button>
-          <button role="tab" data-t="photos">Photos${count(photos.length)}</button>
+          <button role="tab" data-t="photos">Album${count(photos.length + (extras.album?.shots.length ?? 0))}</button>
           ${extras.map ? '<button role="tab" data-t="map">Map</button>' : ''}
           ${extras.kit ? '<button role="tab" data-t="kit">Kit</button>' : ''}
           ${extras.people ? `<button role="tab" data-t="people">People${count(extras.people.length)}</button>` : ''}
@@ -374,10 +382,7 @@ export class UI {
           <h4>Papers</h4>
           ${papers.length ? `<div class="cards">${papers.map((d) => `<button data-d="${d.id}" class="k-${d.kind}"><b>${esc(d.title)}</b><span>${kind(d)}${d.stamp ? ' / ' + esc(d.stamp) : ''}</span></button>`).join('')}</div>` : '<p class="empty">None collected.</p>'}
         </section>
-        <section class="nb-page nb-case" data-p="photos">
-          <h4>Photographs</h4>
-          ${photos.length ? `<div class="thumbs">${photos.map((d) => `<button data-d="${d.id}"><img alt="" src="${d.image}"><span>${esc(d.title)}</span></button>`).join('')}</div>` : '<p class="empty">No exposures yet.</p>'}
-        </section>
+        <section class="nb-page nb-case nb-album" data-p="photos">${albumPage(photos, extras.album)}</section>
         ${extras.map ? `<section class="nb-page nb-map" data-p="map"><img alt="A pencil sketch of the area round SARO" src="${extras.map}"></section>` : ''}
         ${extras.kit ? `<section class="nb-page nb-kit" data-p="kit">
           <h4>What I have on me</h4>
@@ -402,6 +407,7 @@ export class UI {
     el.querySelectorAll<HTMLButtonElement>('[data-d]').forEach((b) => b.addEventListener('click', () => {
       const d = docs.find((x) => x.id === b.dataset.d); if (d) onDoc(d);
     }));
+    bindAlbum(el, extras.album);
     this.open(el);
   }
 

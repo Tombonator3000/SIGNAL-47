@@ -17,6 +17,7 @@ export interface GameState {
   truckPose?: TruckPose | null;   // exactly how it stands there (World.truckSave; saves before 18 October 2026 have none)
   abduct?: import('./abduction').AbductSave;   // the times away (story/abduction.ts; older saves have none)
   town?: string[];        // what the notebook has from Caliche (world/Town.ts, story/caliche.ts; older saves have none)
+  album?: import('../core/album').AlbumSave;   // the free frames (core/album.ts; older saves have none)
 }
 
 /** Where the truck was left and how it stands: the place (World.truckAt), its position and its
