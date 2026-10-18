@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cutoutTexture } from '../core/cutouts';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
@@ -703,18 +704,7 @@ export class Town {
   // ---------- the cardboard alien, out on the shoulder (event 6): drawn in code until ChatGPT's
   // cutout_alien.png comes (ART_BRIEF.md, round 14) ----------
   private cardboard() {
-    const c = document.createElement('canvas'); c.width = 128; c.height = 256;
-    const g = c.getContext('2d')!;
-    g.fillStyle = '#8f9a8c';
-    g.beginPath(); g.ellipse(64, 58, 44, 54, 0, 0, 7); g.fill();
-    g.beginPath(); g.moveTo(52, 104); g.lineTo(76, 104); g.lineTo(84, 150); g.lineTo(80, 240); g.lineTo(70, 240); g.lineTo(64, 172);
-    g.lineTo(58, 240); g.lineTo(48, 240); g.lineTo(44, 150); g.closePath(); g.fill();
-    g.lineWidth = 7; g.strokeStyle = '#8f9a8c'; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(46, 118); g.lineTo(24, 186); g.moveTo(82, 118); g.lineTo(104, 186); g.stroke();
-    g.fillStyle = '#0b0b0b';
-    g.beginPath(); g.ellipse(44, 62, 15, 8, 0.55, 0, 7); g.ellipse(84, 62, 15, 8, -0.55, 0, 7); g.fill();
-    g.fillStyle = 'rgba(60,50,40,.35)'; g.fillRect(0, 196, 128, 4);
-    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = cutoutTexture();
     const mat = this.mat({ map: tex, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
     // the shape is the canvas's painted part: the rest is clear and cut away (alphaTest)
     const p = this.cutoutAt, y = this.gy(p.x, p.z);

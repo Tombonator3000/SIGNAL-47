@@ -54,6 +54,27 @@ async def main():
         await ev("S47.tick(1.0)"); await pg.wait_for_timeout(1500); await ev("S47.tick(0.1)")
         gout = await ev("(() => { const n = S47.carRadio['n']; return [n.out.gain.value, n.cab.frequency.value, S47.carRadio.live]; })()")
         check(gout[2] and gout[0] < 0.1 and gout[1] < 600, f'outside: still on, faint ({gout[0]:.3f}) and muffled ({gout[1]:.0f} Hz)')
+        # a slow phone: the song still loading when the next segment comes (Tom, 18 October: the
+        # cut-short play() put the old bars back for the rest of the night)
+        async def slow(route):
+            await asyncio.sleep(3)
+            try: await route.continue_()
+            except Exception: pass   # the page let go of it meanwhile
+        await pg.route('**/radio/*.mp3', slow)
+        await ev("S47.radio.stations.caliche.trackFailed = false")
+        flips = 0
+        for _ in range(200):
+            k = await ev("(() => { const s = S47.radio.stations.caliche; if (s.seg.kind === 'music') { s.t = s['len'] - 0.3; } return s.seg.kind; })()")
+            await ev("S47.tick(0.5)"); await pg.wait_for_timeout(250)
+            if k == 'music': flips += 1
+            if flips >= 3: break
+        await pg.unroute('**/radio/*.mp3')
+        check(flips >= 3 and not await ev("S47.radio.stations.caliche.trackFailed"), f'songs cut short while still loading ({flips}): the station keeps the songs')
+        ok2 = False
+        for _ in range(300):
+            await ev("S47.tick(0.5)"); await pg.wait_for_timeout(60)
+            if await ev("(() => { const e = S47.radio.stations.caliche.trackEl; return !!e && e.currentTime > 0.5; })()"): ok2 = True; break
+        check(ok2, 'and the next song plays')
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors' + ('' if not noise else ': ' + '; '.join(noise[:3])))
         await b.close()

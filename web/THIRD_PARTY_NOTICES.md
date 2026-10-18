@@ -27,6 +27,13 @@ Tom ba om stille musikk i bakgrunnen hele tiden, skummel og meditativ, i ånden 
 
 Tom syntes de få taktene som ble laget i koden og gikk i ring, var for irriterende. De er byttet ut med fire stykker av Kevin MacLeod, CC BY 4.0 (https://incompetech.com/music/royalty-free/licenses/), hentet fra incompetech.com 18. oktober 2026: «Drankin Song», «Bama Country», «Cattails» og «Anamalie». Lydnivåjustert (loudnorm, -20 LUFS), smalnet til AM (90 til 5500 Hz), mikset til mono og kodet som MP3 40 kbps, 22 kHz, uten metadata, i `public/radio/` (`drankin_song.mp3`, `bama_country.mp3`, `cattails.mp3`, `anamalie.mp3`). De strømmes når en radio spiller dem (`core/radio.ts`), en del av en låt om gangen, og er ikke med i enkeltfilbygget, der taktene fra koden står igjen. Kreditert i rulleteksten og tittelskjermens info.
 
+## Motoren i lastebilen (18. oktober 2026)
+
+Tom ba om ny og bedre motorlyd. Motoren var laget bare av oscillatorer; nå er den to opptak fra Freesound, delt i fire filer, begge CC0 1.0 (lest på hver lyds egen side 18. oktober 2026). Fra Freesounds forhåndsvisning (128 kbps), klippet og mikset til mono. Løkkene er kryssfadet i skjøten, nivåjustert til samme styrke, og lagret som WAV 11 kHz så skjøten ikke får stillheten MP3 legger til; start og stopp er MP3 64 kbps. Alle i `src/assets/audio/` og med i begge byggene (`drive/engineSound.ts`).
+
+- 1978 Cadillac Eldorado Biarritz - Engine Start, Exhaust Idle, Revving and Shutdown, inspire153, Freesound 873856: tomgangen 20,5 til 30,0 s (`engine_idle.wav`), starten 5,6 til 10,0 s (`engine_start.mp3`) og stoppen 46,45 til 48,8 s (`engine_off.mp3`)
+- G13-19-Car Steady 30 MPH.wav, craigsmith, Freesound 438001: jevn kjøring sett innenfra, 5,0 til 15,0 s (`engine_drive.wav`)
+
 ## Nasjonalsangen på radioen, allemannseie
 
 - "The Star Spangled Banner", korversjon, The United States Air Force Band. Hentet 16. oktober 2026 fra Internet Archive, https://archive.org/details/TheStarSpangledBanner (`Star_Spangled_Banner_choral.mp3`). Siden sier at innspillingen er laget av en ansatt i det amerikanske forsvaret som del av tjenesten, og derfor er allemannseie (public domain) som et verk fra den amerikanske staten; melodien og teksten (John Stafford Smith, Francis Scott Key) er for lengst fri. Air Force Band ber om kreditering, så den står i rulleteksten. Stillheten i begynnelsen og slutten er klippet bort, og lyden er nivåjustert (loudnorm, -16 LUFS), mikset til mono og kodet som MP3 48 kbps, 22 kHz, i `public/radio/anthem.mp3`. Den strømmes når en radio i spillet spiller den (`core/radio.ts`), og er ikke med i enkeltfilbygget.

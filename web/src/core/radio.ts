@@ -282,6 +282,8 @@ export class Station {
   trackFailed = !streamOn;
   /** Counts the segments, so each song is heard from a different place each time. */
   private segNo = 0;
+  /** The segment the song could not start in (the bars made here stand in for it). */
+  private trackSkip = -1;
   /** How many radios are listening (the sound only runs while some are). */
   listeners = 0;
   /** Whether the anthem file could not be played (the carrier stands in). */
@@ -421,9 +423,10 @@ export class Station {
     const now = ctx.currentTime, s = this.seg, t = this.t;
     // the tune
     if (n.music) { try { n.music.stop(); } catch { /* stopped */ } n.music.disconnect(); n.music = null; }
-    if (s.kind === 'music' && !this.trackFailed) this.playTrack(n, s.tune, s.len);
+    const bars = this.trackFailed || this.trackSkip === this.segNo;
+    if (s.kind === 'music' && !bars) this.playTrack(n, s.tune, s.len);
     else this.stopTrack(n);
-    if (s.kind === 'music' && this.trackFailed) {
+    if (s.kind === 'music' && bars) {
       const b = tuneBuffer(ctx, s.tune);
       const src = ctx.createBufferSource(); src.buffer = b; src.loop = true;
       src.connect(n.mus); src.start(now, t % b.duration);
@@ -467,7 +470,7 @@ export class Station {
     el.addEventListener('error', fail);
     // tuned in partway: start where the station is by the time the file is there
     el.addEventListener('loadedmetadata', () => { const at = this.seg.kind === 'anthem' ? this.t : 0; if (at > 0.5 && at < el.duration) el.currentTime = at; });
-    el.play().catch(fail);
+    el.play().catch((e: DOMException) => { if (e?.name !== 'AbortError') fail(); });
   }
   /** A part of a song for the length of the segment, faded in and out like a station joining it. */
   private playTrack(n: NonNullable<Station['n']>, tune: TuneId, len: number) {
@@ -481,7 +484,7 @@ export class Station {
       const g = ctx.createGain(); g.gain.value = 0;
       src.connect(g); g.connect(n.mus);
       a = n.track = { el, src, g };
-      el.addEventListener('error', () => { if (n.track?.el !== el || !el.getAttribute('src')) return; this.trackFailed = true; this.stopTrack(n); this.sync(); });
+      el.addEventListener('error', () => { if (n.track?.el !== el || !el.getAttribute('src') || !el.error || el.error.code === MediaError.MEDIA_ERR_ABORTED) return; this.trackFailed = true; this.stopTrack(n); this.sync(); });
     }
     const el = a.el, room = Math.max(1, tr.dur - len - 2);
     const from = (this.segNo * 61.7) % room, seg = this.segNo;
@@ -489,7 +492,13 @@ export class Station {
     // where the song is by now (the file may take a moment to come)
     const seek = () => { if (this.segNo === seg) try { el.currentTime = from + this.t; } catch { /* not yet */ } };
     if (el.readyState >= 1) seek(); else el.addEventListener('loadedmetadata', seek, { once: true });
-    el.play().catch(() => { this.trackFailed = true; this.stopTrack(n); this.sync(); });
+    // A play() cut short by the next segment's pause (a slow phone: the song was still loading
+    // when the talk came) is not a failure. Tom, 18 October: that put the old bars back for the
+    // rest of the night. Not allowed to play just now: the bars made here for this segment only.
+    el.play().catch((e: DOMException) => {
+      if (e?.name === 'AbortError' || this.segNo !== seg || n.track?.el !== el) return;
+      this.trackSkip = seg; this.stopTrack(n); this.sync();
+    });
     const now = ctx.currentTime, left = len - this.t, g = a.g.gain;
     g.cancelScheduledValues(now);
     g.setValueAtTime(0, now);

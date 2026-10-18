@@ -1,4 +1,4 @@
-# Usage: python3 tools/rangeserve.py SITE_DIR (serves SITE_DIR on 127.0.0.1:8047)
+# Usage: python3 tools/rangeserve.py SITE_DIR [PORT]   (serves SITE_DIR on 127.0.0.1:8047 or PORT)
 # a static server with byte ranges (GitHub Pages has them; http.server does not)
 import http.server, os, re, sys
 class H(http.server.SimpleHTTPRequestHandler):
@@ -20,4 +20,4 @@ class H(http.server.SimpleHTTPRequestHandler):
             c = src.read(min(65536, n))
             if not c: break
             dst.write(c); n -= len(c)
-os.chdir(sys.argv[1]); http.server.ThreadingHTTPServer(('127.0.0.1', 8047), H).serve_forever()
+os.chdir(sys.argv[1]); http.server.ThreadingHTTPServer(('127.0.0.1', int(sys.argv[2]) if len(sys.argv) > 2 else 8047), H).serve_forever()

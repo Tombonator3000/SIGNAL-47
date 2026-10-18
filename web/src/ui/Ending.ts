@@ -16,7 +16,7 @@ export const CREDITS: [string, string][] = [
   ['', 'Shane Ivers, CC BY 4.0 (silvermansound.com): "Signs To Nowhere"'],
   ['National anthem on the radio', 'The United States Air Force Band, "The Star Spangled Banner" (choral), public domain'],
   ['Out in the dark', 'Freesound: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0)'],
-  ['Sound effects, CC0', 'Freesound: viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.'],
+  ['Sound effects, CC0', 'Freesound: inspire153 and craigsmith (the truck engine), viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.'],
   ['Fonts', 'VT323, Reenie Beanie and Oswald (SIL Open Font License 1.1). Special Elite (Apache License 2.0).'],
   ['Built with', 'three.js (MIT)'],
   ['', 'Everything in this story is invented. The comet was real.'],
