@@ -314,6 +314,66 @@ html.text-large .examine { font-size: 27px; }
 .notebook .cards .k-hand b { font-family: var(--hand); font-size: 22px; color: var(--ink-blue); }
 @media (max-width: 700px) { .notebook .thumbs button { width: calc(50% - 8px); } }
 
+/* ---------- the album: the Photos tab (ui/album.ts, core/album.ts) ---------- */
+/* Black album paper, the case prints under photo corners, the free frames as instant prints with
+   the caption in ink on the wide bottom edge. The round 15 pictures replace the drawn ones. */
+.notebook .nb-album .al-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 12px; }
+.notebook .nb-album .al-head h4 { margin: 0; }
+.notebook .al-roll { font-family: var(--term); font-size: 18px; color: #a33a2c; }
+.al-page { --tw: 220px; --w: 236px; position: relative; padding: 16px 20px 28px; border-radius: 3px; color: #e9e3d3;
+  background-color: #1b1916;
+  background-image: radial-gradient(rgba(255,250,235,.04) 1px, transparent 1.5px), radial-gradient(rgba(0,0,0,.35) 1px, transparent 1.5px), linear-gradient(165deg, #25231f, #141310 70%);
+  background-size: 5px 5px, 7px 7px, auto; background-position: 0 0, 2px 3px, 0 0;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.6), 0 8px 18px rgba(0,0,0,.35); }
+.al-page.art-paper { background-image: var(--al-paper); background-size: 512px 512px; }
+.al-page h5 { font-family: var(--hand); font-weight: normal; font-size: 28px; line-height: 1; color: #ece6d6; margin: 8px 0 12px; opacity: .88; }
+.al-page .empty { color: #b9b29f; }
+.notebook .al-page .thumbs { gap: 26px 24px; margin-bottom: 26px; }
+.notebook .al-page .thumbs button { position: relative; width: var(--tw); transform: rotate(var(--rot, 0deg)); }
+.notebook .al-page .thumbs button img { transform: none; box-shadow: 0 6px 14px rgba(0,0,0,.6); }
+.notebook .al-page .thumbs .al-m { display: block; position: relative; margin: 0; }
+.notebook .al-page .thumbs .al-t { margin-top: 10px; font-family: var(--hand); font-size: 21px; line-height: 1.05; color: #e7e1d1; }
+/* the photo corners, folded black paper */
+.al-c { position: absolute; z-index: 1; width: 20px; height: 20px; pointer-events: none;
+  background: linear-gradient(135deg, #0d0c0b 0 50%, transparent 50%); filter: drop-shadow(0 1px 1px rgba(0,0,0,.7)); }
+.al-c.tl { left: -5px; top: -5px; }
+.al-c.tr { right: -5px; top: -5px; transform: rotate(90deg); }
+.al-c.br { right: -5px; bottom: -5px; transform: rotate(180deg); }
+.al-c.bl { left: -5px; bottom: -5px; transform: rotate(270deg); }
+.art-corner .al-c { width: 26px; height: 26px; background: var(--al-corner) center / contain no-repeat; filter: none; }
+/* an exposure that was not the player's: a contact print from sheet film */
+.notebook .al-page .thumbs .al-sheet .al-m { background: #f2efe6; padding: calc(var(--tw) * .035); }
+.notebook .al-page .thumbs .al-sheet img { box-sizing: border-box; border: calc(var(--tw) * .05) solid #0b0b0a; box-shadow: none; }
+.notebook .al-page.art-sheet .thumbs .al-sheet .al-m { background: none; padding: 0; }
+.notebook .al-page.art-sheet .thumbs .al-sheet img { border-color: transparent; border-width: calc(var(--tw) * .0586) calc(var(--tw) * .0625); border-image: var(--al-sheet) 60 64 stretch; }
+/* the free frames: instant prints, the window 16:10 and the caption below it */
+.al-prints { display: flex; flex-wrap: wrap; gap: 26px 22px; align-items: flex-start; }
+.al-print { position: relative; display: block; box-sizing: content-box; width: calc(var(--w) * .875); padding: 0; margin: 0; text-align: left;
+  border: solid #ebe5d4; border-width: calc(var(--w) * .0625) calc(var(--w) * .0625) calc(var(--w) * .234);
+  background: #ebe5d4; box-shadow: 0 7px 16px rgba(0,0,0,.6); transform: rotate(var(--rot, 0deg)); transition: transform .15s ease; }
+.art-instant .al-print { border-color: transparent; background: none; box-shadow: none; border-image: var(--al-instant) 48 48 180 48 stretch; filter: drop-shadow(0 7px 9px rgba(0,0,0,.55)); }
+.al-print img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: #0c0c0d; }
+.al-print .al-cap { position: absolute; left: 0; right: 0; top: 100%; height: calc(var(--w) * .234); padding-top: calc(var(--w) * .024); overflow: hidden; }
+.al-print .al-cap b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-family: var(--hand); font-weight: normal; font-size: calc(var(--w) * .074); line-height: .98; color: #22305a; }
+.al-print .al-cap small { display: block; margin-top: 2px; font-family: var(--hand); font-size: calc(var(--w) * .058); line-height: 1; color: #4b4a58; }
+button.al-print:hover, button.al-print:focus-visible { transform: rotate(0deg) scale(1.03); }
+button.al-print:focus-visible { outline: 2px solid var(--amber); outline-offset: 5px; }
+@media (max-width: 700px) { .al-page { --tw: calc(50vw - 56px); --w: calc(50vw - 50px); padding: 12px 12px 22px; } .al-prints, .notebook .al-page .thumbs { gap: 20px 14px; } }
+/* one print, big: inside the notebook's overlay, so putting it back leaves the album open */
+.al-view { position: fixed; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; background: rgba(3,5,9,.93);
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 64px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.al-view .al-big { --w: min(calc(100vw - 150px), calc((100vh - 48px) / .844), 920px); transform: rotate(-.5deg); }
+.al-view .al-big .al-cap b { -webkit-line-clamp: 3; font-size: calc(var(--w) * .056); }
+.al-view .al-big .al-cap small { font-size: calc(var(--w) * .04); }
+.al-view .al-nav { position: absolute; top: 50%; width: 50px; height: 96px; margin-top: -48px; font-family: var(--term); font-size: 58px; line-height: 1; color: #e8e2d2; background: rgba(255,255,255,.06); border-radius: 4px; }
+.al-view .al-nav.prev { left: 6px; }
+.al-view .al-nav.next { right: 6px; }
+.al-view .al-nav[disabled] { opacity: .18; }
+.al-view .al-back { position: absolute; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 8px); min-height: 44px; font-family: var(--term); font-size: 22px; color: #cfc8b5; }
+.al-view .al-back kbd { font-family: var(--term); border: 1px solid #8a8473; border-radius: 3px; padding: 0 6px; margin-right: 6px; color: var(--amber); }
+@media (pointer: coarse) { .al-view .al-back kbd { display: none; } }
+
 /* ---------- Pause / settings ---------- */
 .panel { width: min(460px, 100%); background: rgba(8,11,19,.94); border: 1px solid rgba(255,255,255,.12); padding: 28px 30px; font-family: var(--term); }
 .panel h3 { font-family: var(--display); font-weight: 500; font-size: 34px; margin: 0 0 18px; color: #f0ead8; letter-spacing: .03em; }
@@ -369,6 +429,10 @@ html.text-large .examine { font-size: 27px; }
 .vf-no { right: 46px; top: 14px; font-size: 18px; color: var(--amber); }
 .vf-status { left: 50%; bottom: 40px; transform: translateX(-50%); font-size: 19px; color: #ffb3a0; }
 .vf-status.ok { color: var(--phosphor); }
+/* the album's free frames (core/album.ts): ready here, or how many are left */
+.vf-free { position: absolute; right: 46px; top: 40px; font-family: var(--term); font-size: 16px; color: rgba(255,244,214,.6); text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.vf-free.ok { color: var(--phosphor); }
+.vf-status.far { opacity: .5; }
 .vf-hint { left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 15px; opacity: .75; }
 .vf-flash { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }
 .vf-flash.on { animation: shutter .28s ease-out; }

@@ -4,7 +4,7 @@ import type { AudioSys } from '../core/Audio';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { FieldCamera, Photo } from '../core/FieldCamera';
-import type { Chapter1 } from './Chapter1';
+import type { Chapter1, ShotCheck } from './Chapter1';
 import * as P from '../ui/Panels';
 import * as D from './drawings';
 import { clockText } from './time';
@@ -586,32 +586,34 @@ export class Chapter3 {
     return a ? (which === 'marker' ? a.markerTarget : a.cableTarget) : new THREE.Vector3(0, -999, 0);
   }
 
-  private check03(): { text: string; ok: boolean } {
+  // `near` (chapter one's ShotCheck): within the transit sight line or at the cable break, a
+  // miss is a refused case frame and never a free one (core/album.ts)
+  private check03(): ShotCheck {
     const { fcam } = this.d;
     const site = this.d.travel.site()!;
-    if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false };
     const t = this.target('marker');
-    const d = this.dist(t);
+    const d = this.dist(t), near = d <= 16;
+    if (!this.s.readE09a) return { text: 'READ THE TRANSIT RECORD E09A FIRST', ok: false, near };
     if (d > 16) return { text: 'MOVE CLOSER TO THE TRANSIT SIGHT LINE', ok: false };
-    if (d < 2.2) return { text: 'STEP BACK // THE FOOTING AND THE POST IN ONE FRAME', ok: false };
+    if (d < 2.2) return { text: 'STEP BACK // THE FOOTING AND THE POST IN ONE FRAME', ok: false, near };
     const f = site.proxies.footing ? this.pos(site.proxies.footing) : t;
     const m = site.proxies.markerA ? this.pos(site.proxies.markerA) : t;
     if (!fcam.inFrame(t, 0.18, 0.82, 0.15, 0.85) || !fcam.inFrame(f, 0.04, 0.96, 0.06, 0.94) || !fcam.inFrame(m, 0.04, 0.96, 0.06, 0.94))
-      return { text: 'FRAME THE EMPTY FOOTING AND THE MARKED POST TOGETHER', ok: false };
-    if (site.occluders && !fcam.clearLine(t, site.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false };
+      return { text: 'FRAME THE EMPTY FOOTING AND THE MARKED POST TOGETHER', ok: false, near };
+    if (site.occluders && !fcam.clearLine(t, site.occluders)) return { text: 'VIEW OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false, near };
     return { text: 'FOOTING AND MARKED POST IN FRAME // READY', ok: true };
   }
-  private check04(): { text: string; ok: boolean } {
+  private check04(): ShotCheck {
     const { fcam } = this.d;
-    if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false };
-    const t = this.target('cable');
-    if (this.dist(t) > 3.2) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
-    if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false };
+    const t = this.target('cable'), near = this.dist(t) <= 3.2;
+    if (!this.s.cableInspected) return { text: 'INSPECT THE CABLE CUT FIRST', ok: false, near };
+    if (!near) return { text: 'MOVE CLOSER TO THE CABLE BREAK', ok: false };
+    if (!fcam.inFrame(t, 0.22, 0.78, 0.18, 0.82)) return { text: 'FRAME THE CUT CABLE ENDS', ok: false, near };
     return { text: 'CUT FACES IN FRAME // READY', ok: true };
   }
 
   // Why the shutter would (not) fire right now. Chapter one asks this while it runs.
-  check(): { text: string; ok: boolean } {
+  check(): ShotCheck {
     const s = this.s;
     if (this.d.travel.area() !== 'station01' || !this.d.travel.site()) {
       return { text: s.f3 && s.f4 ? 'FIELD ROLL EXPOSED // DEVELOP IT AT THE WET BENCH' : 'THE FIELD ROLL IS FOR STATION 01', ok: false };
@@ -621,8 +623,9 @@ export class Chapter3 {
     if (c4?.ok) return c4;
     const c3 = s.f3 ? null : this.check03();
     if (c3?.ok) return c3;
-    if (c4 && (!c3 || this.dist(this.target('cable')) < 6)) return c4;
-    return c3!;
+    const near = !!(c4?.near || c3?.near);
+    if (c4 && (!c3 || this.dist(this.target('cable')) < 6)) return { ...c4, near };
+    return { ...c3!, near };
   }
 
   private expose() {
