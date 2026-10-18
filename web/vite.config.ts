@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
-// The link preview and the icon (index.html; ART_BRIEF.md, round 15, brand/). Vite gives them
+// The link preview and the icon (index.html; ART_BRIEF.md, round 15, brand/; the preview is the
+// cover with the title written on it by tools/brand_card.py, runtime/og_card.jpg). Vite gives them
 // hashed files with addresses relative to the page. On Pages the sites that show a shared link
 // want the preview picture's whole address, so it is given here. The single file keeps its icon
 // inside itself, and has no link preview to give (nobody shares it by its address).
@@ -22,7 +23,7 @@ function brand(single: boolean): Plugin {
     },
     // the built page has the files' final addresses only here
     generateBundle(_o, bundle) {
-      if (single) { for (const k of Object.keys(bundle)) if (/^(icon_512|og_cover)-.*\.(png|jpg)$/.test(k)) delete bundle[k]; return; }
+      if (single) { for (const k of Object.keys(bundle)) if (/^(icon_512|og_card)-.*\.(png|jpg)$/.test(k)) delete bundle[k]; return; }
       const page = bundle['index.html'];
       if (page?.type === 'asset' && typeof page.source === 'string')
         page.source = page.source.replace(/(<meta (?:property="og:image"|name="twitter:image") content=")\.\//g, `$1${SITE}`);
