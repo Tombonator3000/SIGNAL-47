@@ -1,5 +1,6 @@
 import { albumPage, bindAlbum } from './album';
 import type { AlbumView } from '../core/album';
+import { KIT_ART, type KitArt } from './kitArt';
 
 export interface DocSpec {
   id: string;
@@ -26,7 +27,8 @@ const QUALITY = { ultra: 'Ultra', high: 'High', low: 'Low' } as const;
 
 type NbTab = 'tasks' | 'notes' | 'findings' | 'papers' | 'photos' | 'map' | 'kit' | 'people' | 'controls';
 /** Something the player carries (the Kit tab). */
-export interface KitItem { name: string; note: string; state?: string }
+/** A thing the player has on them: its drawing (ui/kitArt.ts), and words written on the drawing. */
+export interface KitItem { name: string; note: string; state?: string; art?: KitArt; tag?: string }
 /** The notebook's map and kit (main.ts puts them together). */
 /** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
 export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
@@ -386,7 +388,7 @@ export class UI {
         ${extras.map ? `<section class="nb-page nb-map" data-p="map"><img alt="A pencil sketch of the area round SARO" src="${extras.map}"></section>` : ''}
         ${extras.kit ? `<section class="nb-page nb-kit" data-p="kit">
           <h4>What I have on me</h4>
-          <ul class="kit">${extras.kit.map((k) => `<li><b>${esc(k.name)}</b>${k.state ? `<i>${esc(k.state)}</i>` : ''}<span>${esc(k.note)}</span></li>`).join('')}</ul>
+          <ul class="kit">${extras.kit.map((k) => `<li${k.art ? ` class="has-art"` : ''}>${k.art ? `<span class="kit-art kit-${k.art}"><img alt="" src="${KIT_ART[k.art]}">${k.tag ? `<em>${esc(k.tag)}</em>` : ''}</span>` : ''}<b>${esc(k.name)}</b>${k.state ? `<i>${esc(k.state)}</i>` : ''}<span>${esc(k.note)}</span></li>`).join('')}</ul>
         </section>` : ''}
         ${extras.people ? `<section class="nb-page nb-people" data-p="people">
           <h4>People in the case</h4>

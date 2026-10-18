@@ -730,14 +730,14 @@ async function boot() {
     const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
     const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner'
       : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && world.saroTruck && world.saroTruck.group.position.z < 40 ? 'On the pad by the service yard' : 'Where I left it';
-    const kit: KitItem[] = [{ name: 'Notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
-    if (game.at('ch1')) kit.push({ name: 'SARO jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
+    const kit: KitItem[] = [{ name: 'Notebook', art: 'notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
+    if (game.at('ch1')) kit.push({ name: 'SARO jacket', art: 'jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
     const frames = game.docs.filter((d) => /^(frame|away)/.test(d.id)).length;
-    if (fcam.have) kit.push({ name: 'Field camera', state: `${frames} case frames, ${rollText(album.left)}`, note: 'The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album.' });
-    if (flashlight.have) kit.push({ name: 'Flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
-    if (game.at('ch1')) kit.push({ name: 'Truck keys', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
-    if (papers) kit.push({ name: 'Papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
-    if (townSeen.has('nickel')) kit.push({ name: 'A nickel', state: '1947', note: 'From the coin return of the payphone in Caliche. Bright as the day it was struck.' });
+    if (fcam.have) kit.push({ name: 'Field camera', art: 'camera', state: `${frames} case frames, ${rollText(album.left)}`, note: 'The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album.' });
+    if (flashlight.have) kit.push({ name: 'Flashlight', art: 'flashlight', state: flashlight.on ? 'On' : 'Off', note: 'From the passenger seat of the truck. F switches it.' });
+    if (game.at('ch1')) kit.push({ name: 'Truck keys', art: 'keys', tag: 'SARO 07', state: truckAt, note: 'SARO 07, the service truck. The keys stay in it.' });
+    if (papers) kit.push({ name: 'Papers', art: 'papers', state: String(papers), note: 'Folded into the notebook. Papers and Findings have them.' });
+    if (townSeen.has('nickel')) kit.push({ name: 'A nickel', art: 'nickel', state: '1947', note: 'From the coin return of the payphone in Caliche. Bright as the day it was struck.' });
     return kit;
   }
   // the people in the case, as the night meets them, with their faces once ChatGPT's portraits

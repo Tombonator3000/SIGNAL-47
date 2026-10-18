@@ -69,6 +69,7 @@ async def main():
         g = await ev("(() => { const f = S47.scene.getObjectByName('glimpse').position; return [f.y, S47.world.town.floorAt(f.x, f.z)]; })()")
         check(abs(g[0] - g[1]) < 0.5, f'standing on the ground ({g[0]:.2f} against {g[1]:.2f})')
         await pg.screenshot(path=f'{OUT}/g02_diner_edge.png')
+        check(await ev("S47.glimpses.look.painted"), "it is one of round 14's outlines (alien/), not the figure drawn in code")
         await ev("S47.input.zoomHeld = true"); await ev("S47.tick(0.4)")
         check(await up() is None, 'zoomed at: gone')
         await ev("S47.input.zoomHeld = false; S47.tick(0.4)")

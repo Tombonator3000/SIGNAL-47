@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { AudioSys } from './Audio';
 import { hash } from '../drive/roadShape';
 import { SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT } from '../world/geo';
+import { artLoaded, artTexture, loadArtSome, ALIEN_ART, type ArtId } from './art';
 
 // The walk down the highway to Sierra Motor Court, 650 m on the shoulder at night (Tom's
 // improvements, 16 October: make the way between the places a place). The first, small step
@@ -53,12 +54,15 @@ export class Roadside {
   private car: { pts: THREE.Points; mat: THREE.PointsMaterial; z: number; state: 'come' | 'stop' | 'out'; t: number } | null = null;
   private carNext = rnd(25, 60);
   private carAgain = 0;               // seconds until the car may come again
+  private sil: Silhouette;
   private figure: THREE.Group;
   private roof: 'none' | 'up' | 'gone' = 'none';
   private roofT = 0;
 
   constructor(private audio: AudioSys, scene: THREE.Scene) {
-    this.figure = silhouette();
+    // listening, its head a little to one side, against the sky (the dark red of the motel's sign on its edge)
+    this.sil = new Silhouette('roadside:figure', 0x2c0e0b, 'turned');
+    this.figure = this.sil.group;
     this.figure.position.copy(ROOF);
     this.figure.rotation.y = Math.PI / 2;   // facing the highway
     this.figure.visible = false;
@@ -73,6 +77,7 @@ export class Roadside {
       if (this.roof === 'up') this.hideRoof();
       if (this.roof === 'gone' && p.z < MOTEL_RECT.minZ - 200) this.roof = 'none';
     } else {
+      this.sil.wake();
       this.onFoot += dt;
       if (p.z > this.lastZ) this.walked += p.z - this.lastZ;
     }
@@ -199,24 +204,89 @@ export class Roadside {
   }
 }
 
-// About 1.2 m: a large head, a thin body, long thin arms. Black, with a faint dark red edge
-// from the motel's sign behind it (a shell a little larger, its inside faces only).
-export function silhouette() {
-  const parts = [
-    new THREE.SphereGeometry(0.2, 10, 8).scale(1, 1.22, 1.05).translate(0, 1.0, 0),
-    new THREE.CylinderGeometry(0.035, 0.04, 0.1, 6).translate(0, 0.83, 0),
-    new THREE.CylinderGeometry(0.1, 0.13, 0.42, 8).translate(0, 0.6, 0),
-    new THREE.CylinderGeometry(0.032, 0.03, 0.42, 5).translate(-0.06, 0.2, 0),
-    new THREE.CylinderGeometry(0.032, 0.03, 0.42, 5).translate(0.06, 0.2, 0),
-    new THREE.CylinderGeometry(0.024, 0.02, 0.52, 5).rotateZ(0.08).translate(-0.17, 0.52, 0),
-    new THREE.CylinderGeometry(0.024, 0.02, 0.52, 5).rotateZ(-0.08).translate(0.17, 0.52, 0),
-  ].map((g) => g.index ? g.toNonIndexed() : g);
-  for (const g of parts) { g.deleteAttribute('uv'); }
-  const body = mergeGeometries(parts)!;
-  const g = new THREE.Group(); g.name = 'roadside:figure';
-  g.add(new THREE.Mesh(body, new THREE.MeshBasicMaterial({ color: 0x050506 })));
-  const rim = new THREE.Mesh(body.clone().scale(1.07, 1.03, 1.07), new THREE.MeshBasicMaterial({ color: 0x2c0e0b, side: THREE.BackSide }));
-  g.add(rim);
-  g.traverse((x) => { x.frustumCulled = false; });
-  return g;
+// About 1.2 m: a large head, a thin body, long thin arms. Black, with a faint edge of the light
+// behind it. Once round 14's outlines (alien/) are there, it is one of them: a flat picture that
+// turns round its own upright to whoever looks (an outline has no sides), dark, the light only along
+// its edge, never a face. Until then (or if they do not come), a low figure in code: a shell a
+// little larger round it, its inside faces only, gives the edge.
+export type Pose = 'stand' | 'turned' | 'far';
+const POSE_ART: Record<Pose, ArtId> = { stand: 'silhouetteStand', turned: 'silhouetteTurned', far: 'silhouetteFar' };
+let asked: Promise<void> | null = null;
+/** The outlines are fetched once, the first time the night may show one of them. */
+const askArt = () => (asked ??= loadArtSome(ALIEN_ART));
+// The pictures are twice as high as wide, the figure in them 88 per cent of the height with its feet
+// 7 per cent above the bottom: a card 1.36 m high stands a figure of 1.2 m on the ground.
+const CARD_H = 1.36, CARD_W = 0.68, FEET = 0.074 * CARD_H;
+// The light along the pictures' edge is a cold grey; the colour given is what it should be.
+const EDGE = new THREE.Color(0x141923);
+const _p = new THREE.Vector3(), _c = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
+
+export class Silhouette {
+  readonly group = new THREE.Group();
+  private body: THREE.Mesh;
+  private shell: THREE.Mesh;
+  private card: THREE.MeshBasicMaterial | null = null;
+  private edge: number;
+  private asking = false;
+
+  constructor(name: string, edge: number, private want: Pose = 'stand') {
+    const parts = [
+      new THREE.SphereGeometry(0.2, 10, 8).scale(1, 1.22, 1.05).translate(0, 1.0, 0),
+      new THREE.CylinderGeometry(0.035, 0.04, 0.1, 6).translate(0, 0.83, 0),
+      new THREE.CylinderGeometry(0.1, 0.13, 0.42, 8).translate(0, 0.6, 0),
+      new THREE.CylinderGeometry(0.032, 0.03, 0.42, 5).translate(-0.06, 0.2, 0),
+      new THREE.CylinderGeometry(0.032, 0.03, 0.42, 5).translate(0.06, 0.2, 0),
+      new THREE.CylinderGeometry(0.024, 0.02, 0.52, 5).rotateZ(0.08).translate(-0.17, 0.52, 0),
+      new THREE.CylinderGeometry(0.024, 0.02, 0.52, 5).rotateZ(-0.08).translate(0.17, 0.52, 0),
+    ].map((g) => g.index ? g.toNonIndexed() : g);
+    for (const g of parts) { g.deleteAttribute('uv'); }
+    const body = mergeGeometries(parts)!;
+    this.group.name = name;
+    this.body = new THREE.Mesh(body, new THREE.MeshBasicMaterial({ color: 0x050506 }));
+    this.shell = new THREE.Mesh(body.clone().scale(1.07, 1.03, 1.07), new THREE.MeshBasicMaterial({ color: edge, side: THREE.BackSide }));
+    this.group.add(this.body, this.shell);
+    this.group.traverse((x) => { x.frustumCulled = false; });
+    this.edge = edge;
+    if (artLoaded(POSE_ART.stand)) this.useArt();
+  }
+  /** The night may show it now: the pictures are asked for (once), and taken when they come. */
+  wake() {
+    if (this.card || this.asking) return;
+    this.asking = true;
+    void askArt().then(() => this.useArt());
+  }
+  private useArt() {
+    if (this.card || !artLoaded(POSE_ART.stand)) return;   // without them, the figure in code stays
+    const mat = new THREE.MeshBasicMaterial({ map: artTexture(POSE_ART.stand), transparent: true, alphaTest: 0.02, depthWrite: false });
+    mat.name = 'silhouette';
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(CARD_W, CARD_H).translate(0, CARD_H / 2 - FEET, 0), mat);
+    card.name = this.group.name + ':card';
+    card.frustumCulled = false;
+    card.raycast = () => { /* nothing to take hold of */ };
+    card.onBeforeRender = (_r, _scene, cam) => {
+      card.matrixWorld.decompose(_p, _q, _s);
+      _c.setFromMatrixPosition(cam.matrixWorld);
+      card.matrixWorld.makeRotationY(Math.atan2(_c.x - _p.x, _c.z - _p.z)).scale(_s).setPosition(_p);
+    };
+    this.group.add(card);
+    this.body.visible = this.shell.visible = false;
+    this.card = mat;
+    this.pose(this.want); this.rim(this.edge);
+  }
+  /** Standing, turned half aside as if listening, or far off and soft in the haze. */
+  pose(p: Pose) {
+    this.want = p;
+    if (this.card) this.card.map = artTexture(artLoaded(POSE_ART[p]) ? POSE_ART[p] : POSE_ART.stand);
+  }
+  /** The colour of the light along its edge (what is behind it where it stands). */
+  rim(hex: number) {
+    this.edge = hex;
+    (this.shell.material as THREE.MeshBasicMaterial).color.setHex(hex);
+    if (this.card) {
+      const c = this.card.color.setHex(hex);
+      c.setRGB(Math.min(4, c.r / EDGE.r), Math.min(4, c.g / EDGE.g), Math.min(4, c.b / EDGE.b));
+    }
+  }
+  /** Whether it is one of the pictures now (the tests). */
+  get painted() { return !!this.card; }
 }
