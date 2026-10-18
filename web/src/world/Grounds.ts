@@ -59,7 +59,8 @@ export const TRUCK_RAMP = { minX: 6.6, maxX: 13.0, top: 12.4, foot: 16.6 };
 export const STEPS = { x0: 7.1, x1: 8.0, z0: -12.6, z1: -11.4 };
 const SLOPES: Slope[] = [
   { ...r(RAMP.x0, RAMP.x1, RAMP.z0 - 0.1, RAMP.z1 + 0.1), axis: 'x', low: RAMP.x0, high: RAMP.x1 },   // the fire exit's ramp
-  { ...r(TRUCK_RAMP.minX, TRUCK_RAMP.maxX, TRUCK_RAMP.top, TRUCK_RAMP.foot), axis: 'z', low: TRUCK_RAMP.foot, high: TRUCK_RAMP.top },
+  // a little past the foot, where the ground's zones begin (z 16.65): no gap at floor level between
+  { ...r(TRUCK_RAMP.minX, TRUCK_RAMP.maxX, TRUCK_RAMP.top, TRUCK_RAMP.foot + 0.1), axis: 'z', low: TRUCK_RAMP.foot, high: TRUCK_RAMP.top },
   { ...r(STEPS.x0 - 0.1, STEPS.x1, STEPS.z0, STEPS.z1), axis: 'x', low: STEPS.x0 - 0.1, high: STEPS.x1 },
 ];
 
