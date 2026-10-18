@@ -97,6 +97,7 @@ export class RoadArea implements DriveArea {
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }
       : { ...o, minX: o.minX + origin.x, maxX: o.maxX + origin.x, minZ: o.minZ + origin.z, maxZ: o.maxZ + origin.z });
+    this.obstacles.push(this.herd.obstacle(origin));   // the cow that goes, while it is there
     this.start = { pos: w(START.x, 495), heading: START.heading };
     this.end = { pos: w(END.x, END.z), heading: END.heading };
     this.endZone = { minX: ENDZONE.minX + origin.x, maxX: ENDZONE.maxX + origin.x, minZ: ENDZONE.minZ + origin.z, maxZ: ENDZONE.maxZ + origin.z };

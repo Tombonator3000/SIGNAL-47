@@ -790,7 +790,7 @@ async function boot() {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: roadZ - SARO_IN_ROAD.z });
     const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: ON_B.has(m.kind) ? 'B' as const : 'A' as const,
       at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 }
-        : m.kind === 'cows' ? { spot: 'highway', m: PASTURE_M } : m.kind === 'tv' ? { spot: 'motel' } : undefined }));
+        : m.kind === 'cows' ? { spot: 'highway', m: PASTURE_M } : m.kind === 'tv' ? { spot: 'office' } : undefined }));
     for (const sp of abduction!.data.spots) out.push({ kind: 'away', clock: sp.clock,
       line: sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C',
       at: sp.scene === 'saro' ? (sp.take[2] > 64 ? { spot: 'highway', m: sp.take[2] } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
@@ -1314,14 +1314,14 @@ async function boot() {
   function eventsOnB(dt: number, ok: boolean) {
     const p = player.pos;
     pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' ? 'road' : null, cam: camera, clock: game.clock,
-      driving: world.driving, flashlight: flashlight.on && !world.driving });
+      driving: world.driving });
     motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
       truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock });
     if ((lineBCheck += dt) > 1 && !townSeen.has('lineB')) {
       lineBCheck = 0;
       if (mapMarks().filter((m) => m.line === 'B').length >= 3) {
         townSeen.add('lineB');
-        game.note(`${clockText(game.clock, false)}. Three on one line. Drawn in on the map: across the highway between SARO and the motel, and on to the west-north-west.`);
+        game.note(`${clockText(game.clock, false)}. Three on one line. Drawn in on the map: across the highway just south of the motel, and on to the west-south-west, through STATION 01.`);
         requestAutosave(false);
       }
     }

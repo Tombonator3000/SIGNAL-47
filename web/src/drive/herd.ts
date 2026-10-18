@@ -30,6 +30,8 @@ const COWS: [number, number, number][] = [
 ];
 /** The one that is not there the second time (near the fence, so its ring is in the headlights). */
 const MISSING = HERD.missing;
+/** How near the truck can come to a cow (metres, from where it stands). */
+const COW_R = 1.15;
 /** Facing az 026: the direction on the ground (x east, z south) and the heading for rotation.y. */
 const AZ = 26 * Math.PI / 180;
 const FACING = new THREE.Vector3(Math.sin(AZ), 0, -Math.cos(AZ));
@@ -111,6 +113,8 @@ export class Herd {
   /** The eyes of the still pose, road-local (two to a cow). */
   private eyeAt: THREE.Vector3[] = [];
   private eyesLit = false;
+  /** The missing one's place in the areas' lists of what stops the truck (obstacle()). */
+  private gone: { kind: 'circle'; x: number; z: number; r: number }[] = [];
   private ys: number[];
   private dirty = true;
   private lastT = 0;
@@ -145,10 +149,11 @@ export class Herd {
     this.group.add(this.bodies, this.heads, this.ring);
     b.root.add(this.group);
     // off the survey track the truck can be driven into the pasture: the cows stop it, as the
-    // posts and the rocks do (all but the one that will not be there)
-    COWS.forEach(([x, z], i) => { if (i !== MISSING) circle(b, x, z, 1.15); });
-    // a galvanised stock tank among them, the float box on its rim
+    // posts and the rocks do; the one that will not be there only while it is (obstacle())
+    COWS.forEach(([x, z], i) => { if (i !== MISSING) circle(b, x, z, COW_R); });
+    // a galvanised stock tank among them, the float box on its rim; it stops the truck too
     const tx = -45.0, tz = 537.5, ty = surfaceY(tx, tz);
+    circle(b, tx, tz, 1.3);
     cyl(b.statics, 1.25, 1.25, 0.62, b.m.steel, tx, ty + 0.29, tz, 14);
     cyl(b.statics, 1.18, 1.18, 0.02, b.m.dark, tx, ty + 0.55, tz, 14);
     cyl(b.statics, 0.16, 0.16, 0.3, b.m.steel, tx + 1.05, ty + 0.66, tz - 0.4, 6);
@@ -182,6 +187,15 @@ export class Herd {
   set(still: boolean, missing: number, ring: boolean) {
     if (still !== this.still || missing !== this.missing) { this.still = still; this.missing = missing; this.place(this.lastT); }
     this.ring.visible = ring;
+    for (const o of this.gone) o.r = missing === MISSING ? 0 : COW_R;
+  }
+  /** The one that goes, in an area's own terms (origin: where the road's frame is in it), for
+   *  its list of what stops the truck: in the way while it stands there, not after (set()). Only
+   *  the road's area needs it; SARO's stretch keeps the truck between the highway's fences. */
+  obstacle(origin: { x: number; z: number }) {
+    const [x, z] = COWS[MISSING], o = { kind: 'circle' as const, x: x + origin.x, z: z + origin.z, r: this.missing === MISSING ? 0 : COW_R };
+    this.gone.push(o);
+    return o;
   }
 
   /** Every frame while its area is shown. headlights: the truck's lamps in this area's floods
