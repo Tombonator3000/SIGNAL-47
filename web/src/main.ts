@@ -38,12 +38,14 @@ import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World'
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
 import { bindTown, townPeople } from './story/caliche';
-import { TownEvents, townMarks } from './story/townEvents';
+import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
 import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
+import { Pasture, PASTURE_M } from './story/pasture';
+import { MotelTv } from './story/motelTv';
 import { surfaceY } from './drive/roadTerrain';
 import type { AreaId } from './story/Chapter3';
 
@@ -322,6 +324,13 @@ async function boot() {
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
     keyStall: () => { world.keyStall = true; }, save: () => { if (mode === 'play') requestAutosave(false); },
   });
+  // HENDELSER.md, events 2 and 10, on B: the herd in the pasture south of the motel, facing 026
+  // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
+  // with the town's part of the case
+  const pasture = new Pasture({ herds: () => world.herds, seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
+    save: () => { if (mode === 'play') requestAutosave(false); } });
+  const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
+    toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
   // on the player's own drives and the story's, never in a cinematic
@@ -604,6 +613,7 @@ async function boot() {
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
+    pasture.reset(); motelTv.reset();
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
@@ -631,6 +641,7 @@ async function boot() {
     endEl?.remove(); endEl = null;
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
+    motelTv.silence();
     world.stopDriving();
     roadside.reset(); cb.stop(); radio.reset(0);
     game.reset();
@@ -713,7 +724,7 @@ async function boot() {
     const p = player.pos;
     let line: AbductIn['line'] = null;
     if (!world.driving) {
-      if (world.area === 'saro' && (world.grounds.onGround(p) || world.grounds.onRoad(p) || world.crossing.outside(p))) {
+      if (world.area === 'saro' && (world.grounds.onGround(p) || world.grounds.onRoad(p) || world.crossing.outside(p)) && !inside(motelOffice, p)) {
         line = 'B';
         if (world.crossing.onHighway(p)) abAlong.set(0, 0, 1); else abAlong.set(-0.92, 0, -0.38);
       } else if (world.area === 'diner' && world.town?.inTown(p.x, p.z) && !world.indoors(p) && townAlone(p.x, p.z)) { line = 'A'; abAlong.set(0, 0, 1); }
@@ -726,8 +737,9 @@ async function boot() {
   // highway north of it), the lights on B, and the times away where they happened
   function mapMarks(): NonNullable<MapView['marks']> {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: roadZ - SARO_IN_ROAD.z });
-    const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: m.kind === 'lights' ? 'B' as const : 'A' as const,
-      at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 } : undefined }));
+    const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: ON_B.has(m.kind) ? 'B' as const : 'A' as const,
+      at: m.kind === 'cutout' ? hwy(1450) : m.kind === 'car' ? hwy(1690) : m.kind === 'lights' ? { spot: 'highway', m: 330 }
+        : m.kind === 'cows' ? { spot: 'highway', m: PASTURE_M } : m.kind === 'tv' ? { spot: 'motel' } : undefined }));
     for (const sp of abduction!.data.spots) out.push({ kind: 'away', clock: sp.clock,
       line: sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C',
       at: sp.scene === 'saro' ? (sp.take[2] > 64 ? { spot: 'highway', m: sp.take[2] } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
@@ -863,6 +875,7 @@ async function boot() {
     endEl?.remove(); endEl = null;
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
+    motelTv.silence();
     world.stopDriving();
     roadside.reset(); cb.stop(); radio.reset(0);
     game.reset();
@@ -1016,6 +1029,8 @@ async function boot() {
     started: () => caseId > 0 && !starting && mode === 'play',
   };
 
+  Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+
   // ---------- the developer menu (?dev in the address) ----------
   let devPaused = false;
   dev = devOn ? new DevMenu(ui, devGroups, {
@@ -1087,6 +1102,10 @@ async function boot() {
       ] });
       groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
+      ] });
+      groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
+        { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
+        { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
       ] });
       groups.push({ title: 'The highway', note: 'On foot on the shoulder between SARO and the motel at night: the line hums, a car far off, the silence once, someone on the roof. The CB in the truck.', items: [
         { label: 'Headlights far down the highway', run: () => roadside.carNow(player.pos) },
@@ -1219,7 +1238,26 @@ async function boot() {
       requestAutosave(false);
     }
   };
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent; }
+  // HENDELSER.md, events 2 and 10 (story/pasture.ts, story/motelTv.ts), and with three marks on B
+  // the line drawn in on the map, as A is in town (story/townEvents.ts)
+  const officeDoor = new THREE.Vector3(-41.1 + world.motel.at.x, 0, 24.1 + world.motel.at.z);
+  let lineBCheck = 0;
+  function eventsOnB(dt: number, ok: boolean) {
+    const p = player.pos;
+    pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' ? 'road' : null, cam: camera, clock: game.clock,
+      driving: world.driving, flashlight: flashlight.on && !world.driving });
+    motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
+      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock });
+    if ((lineBCheck += dt) > 1 && !townSeen.has('lineB')) {
+      lineBCheck = 0;
+      if (mapMarks().filter((m) => m.line === 'B').length >= 3) {
+        townSeen.add('lineB');
+        game.note(`${clockText(game.clock, false)}. Three on one line. Drawn in on the map: across the highway between SARO and the motel, and on to the west-north-west.`);
+        requestAutosave(false);
+      }
+    }
+  }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1291,11 +1329,12 @@ async function boot() {
         truck: world.driving && world.area === 'saro' ? world.truckHere()?.group.position ?? null : null,
         clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
       });
+      if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy);
       if (mode === 'play') {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none'));
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy));
       }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }

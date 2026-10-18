@@ -33,6 +33,9 @@ export const TOWN = { z0: DINER.z + 18, z1: 2300, west: -42, east: 48 };
  *  (Tom, 15 and 16 October: further from the stations; world/MotelFront.ts, placed by
  *  World.ts): the land round its lot is flat at MOTEL.y, about here. */
 export const MOTEL = { flatX: -14.75, z: 386, y: raw(-14.75, 386) };
+/** The cattle in the pasture south of the motel (drive/herd.ts, story/pasture.ts): the middle of
+ *  the herd, and which cow is not there the second time (HENDELSER.md, event 2). */
+export const HERD = { x: -37, z: 556, missing: 4 };
 /** The graded land the roads follow: long swells, a dry wash across the track, hills far out,
  *  and flat round the diner and the motel. */
 export function hLow(x: number, z: number) {

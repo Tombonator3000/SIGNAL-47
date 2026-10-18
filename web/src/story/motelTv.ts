@@ -1,0 +1,270 @@
+import * as THREE from 'three';
+import type { AudioSys } from '../core/Audio';
+import type { Interaction } from '../core/Interaction';
+import type { MotelFront } from '../world/MotelFront';
+import { clockText } from './time';
+
+// HENDELSER.md, event 10: the television in the office of Sierra Motor Court, on B. The station
+// signed off hours ago, so all night the portable set on the shelves shows the test card, with
+// its thin tone. Once in a night, while the player is in the office or at its door and the truck
+// stands on the lot: the test card goes and the bare carrier is on for 47 seconds, a grey field
+// and the hum; then one frame of the motel's lot seen from straight above, with the truck where
+// it stands, and the test card again. Nothing could have stood up there with a camera. The frame
+// is the scene itself, drawn from a camera over the lot the way the time away draws its frames
+// (story/abduction.ts), and shown through the set's picture tube.
+//
+// It goes on in the world whoever is there; seen (the player still in or at the office when the
+// frame comes), it is written down and kept with the town's part of the case (main.ts, `town`:
+// 'ev:tv' and a mark on the map at the motel, on B), and it never comes again. Unseen, the night
+// may bring it back later. At least ten minutes of the night after the last event, as in town
+// (story/townEvents.ts).
+//
+// Round 15's pictures are taken when they are in the repository (assets/art/motel/): the blank
+// test card as the card, and the lot from above only when the scene cannot be drawn.
+
+const ART = import.meta.glob<string>('../assets/art/motel/tv_*.jpg', { eager: true, import: 'default' });
+const art = (name: string) => ART[`../assets/art/motel/${name}.jpg`] ?? null;
+
+export interface MotelTvIn {
+  /** In play, no panel, not in a cinematic, at night, and the story allows it. */
+  ok: boolean;
+  /** In SARO's area (the motel is part of it). */
+  saro: boolean;
+  /** In the motel's office, or on the walk at its door. */
+  here: boolean;
+  /** The truck stands on the motel's lot (so it is in the frame). */
+  truckOnLot: boolean;
+  cam: THREE.Camera;
+  /** The game's clock, seconds since midnight. */
+  clock: number;
+}
+export interface MotelTvDeps {
+  motel: MotelFront;
+  audio: AudioSys;
+  inter: Interaction;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  /** The town's part of the case: the events and the marks for the notebook's map. */
+  seen: Set<string>;
+  note: (text: string) => void;
+  toast: (text: string, secs?: number) => void;
+  save: () => void;
+}
+
+const GAP = 10 * 60;            // seconds of the night after the last event
+const CARRIER = 47;             // the bare carrier, seconds
+const FRAME = 2.6;              // how long the one frame stays on the screen
+const DWELL = 6;                // seconds in or at the office before it may start
+const W = 320, H = 240;         // the pictures (4:3); the screen's canvas is smaller
+/** The camera over the lot, in the terms the court was built in (MotelFront.ts): over the middle
+ *  of the lot and the walk, 30 m up, looking straight down, west at the top of the picture. */
+const OVER = new THREE.Vector3(-36, 30, 15), FOV = 40;
+
+type Mode = 'card' | 'carrier' | 'frame';
+
+export class MotelTv {
+  /** What the set shows (the developer menu, the tests). */
+  mode: Mode = 'card';
+  /** The picture of the lot from the last time (the tests). */
+  frame: HTMLCanvasElement | null = null;
+  private t = 0;
+  private dwell = 0;
+  private notBefore = 0;
+  private paintT = 0;
+  private card: HTMLCanvasElement;
+  private shot: HTMLCanvasElement;
+  private tvAt = new THREE.Vector3();
+  private snd: { tone: GainNode; hum: GainNode; hiss: GainNode; whine: GainNode; stop: () => void } | null = null;
+  private light = new THREE.Color();
+
+  constructor(private d: MotelTvDeps) {
+    this.card = testCard();
+    // round 15's blank card, if it is in: drawn over the one made here once it has loaded
+    const url = art('tv_testcard_blank');
+    if (url) { const img = new Image(); img.onload = () => this.card.getContext('2d')!.drawImage(img, 0, 0, W, H); img.src = url; }
+    this.shot = document.createElement('canvas'); this.shot.width = W; this.shot.height = H;
+    const px = d.motel.proxies.officeTv;
+    if (px) d.inter.add({ id: 'court:officeTv', object: px, range: 3.6,
+      label: () => px.parent?.visible ? 'Television' : null,
+      use: () => d.toast(this.mode === 'card' ? 'A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.'
+        : this.mode === 'carrier' ? 'Nothing on the screen but grey, and the hum.' : 'The lot, from straight above.', 4),
+      examine: () => this.mode === 'card' ? 'Colour bars, and a thin tone. Nobody has turned it off.' : this.mode === 'carrier' ? 'A grey field. The hum of a carrier with nothing on it.' : null });
+    this.paint(0);
+  }
+
+  /** Something on the set other than the test card. */
+  get busy() { return this.mode !== 'card'; }
+  /** And the player is near enough to hear it (the music keeps out of its way). */
+  get heard() { return this.busy && this.dist < 30; }
+  private dist = Infinity;
+
+  private last() {
+    let t = -1e9;
+    for (const k of this.d.seen) if (k.startsWith('mark:')) t = Math.max(t, Number(k.slice(k.indexOf('@') + 1)));
+    return t;
+  }
+
+  update(dt: number, s: MotelTvIn) {
+    const day = ((s.clock % 86400) + 86400) % 86400;
+    this.d.motel.tv.group.getWorldPosition(this.tvAt);
+    const cam = s.cam.getWorldPosition(new THREE.Vector3()), dist = s.saro ? cam.distanceTo(this.tvAt) : Infinity;
+    this.dist = dist;
+    this.dwell = s.ok && s.here ? this.dwell + dt : 0;
+    switch (this.mode) {
+      case 'card':
+        if (!this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
+          && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60) {
+          this.mode = 'carrier'; this.t = 0;
+          this.click();
+          this.d.toast('On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it.', 5.5);
+        }
+        break;
+      case 'carrier':
+        if ((this.t += dt) >= CARRIER) this.showFrame(s, dist);
+        break;
+      case 'frame':
+        if ((this.t += dt) >= FRAME) { this.mode = 'card'; this.t = 0; this.click(); }
+        break;
+    }
+    // the picture, while someone could see it
+    if (dist < 40 && (this.paintT += dt) >= 1 / 15) { this.paintT = 0; this.paint(performance.now() / 1000); }
+    this.sound(dist);
+    // its light on the office: the bars a cool white, the carrier a dim grey
+    const k = this.mode === 'card' ? 1.3 : this.mode === 'carrier' ? 0.75 : 1.6;
+    this.light.setRGB(this.mode === 'carrier' ? 0.62 : 0.66, this.mode === 'carrier' ? 0.66 : 0.72, this.mode === 'carrier' ? 0.7 : 0.92);
+    this.d.motel.setTvLight(s.saro ? k * (0.94 + 0.06 * Math.random()) : 0, this.light);
+  }
+
+  private showFrame(s: MotelTvIn, dist: number) {
+    this.mode = 'frame'; this.t = 0;
+    this.click();
+    // the lot from straight above, as it is now; the scene can only be drawn in SARO's area
+    this.frame = s.saro ? this.shoot() : null;
+    if (!this.frame) {
+      const url = art('tv_lot_above');
+      if (url) { const c = blank(); const img = new Image(); img.onload = () => c.getContext('2d')!.drawImage(img, 0, 0, W, H); img.src = url; this.frame = c; }
+    }
+    const seen = s.ok && s.saro && (s.here || dist < 9);
+    if (!seen) { this.notBefore = s.clock + GAP; return; }
+    const t = clockText(s.clock, false);
+    this.d.seen.add('ev:tv'); this.d.seen.add(`mark:tv@${Math.round(s.clock)}`);
+    this.d.toast('For a moment the screen shows the motel\'s lot from straight above: the office roof, the sign, the truck where you left it. Nothing up there could hold a camera. Then the test card again.', 7);
+    this.d.note(`${t}. Motel office TV. One frame of the lot from above. My truck in it.`);
+    this.d.save();
+  }
+
+  /** The lot from a camera over it, drawn at once into a picture the size of the set's (main.ts
+   *  draws the next frame over the canvas as usual). */
+  private shoot(): HTMLCanvasElement | null {
+    try {
+      const r = this.d.renderer, src = r.domElement, motel = this.d.motel;
+      const cam = new THREE.PerspectiveCamera(FOV, src.width / src.height, 1, 120);
+      // the picture is the middle 4:3 of the canvas, and that must take in the same ground on any screen
+      const ch = Math.min(src.height, src.width * 3 / 4);
+      cam.fov = 2 * Math.atan(Math.tan(FOV * Math.PI / 360) * src.height / ch) * 180 / Math.PI;
+      const at = motel.group.localToWorld(OVER.clone()), below = at.clone().setY(motel.floorY);
+      cam.position.copy(at); cam.up.set(-1, 0, 0); cam.lookAt(below);
+      cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+      // a light from straight above for this one picture, as the frames of the time away have
+      // theirs (the lot by its two lamps alone is a black square seen from up there)
+      const L = new THREE.PointLight(0xe4ebf2, 700, 70, 1.6); L.position.copy(at).setY(motel.floorY + 22);
+      this.d.scene.add(L); L.updateMatrixWorld(true);
+      try { r.setRenderTarget(null); r.render(this.d.scene, cam); }
+      finally { L.removeFromParent(); L.dispose(); }
+      const g = this.shot.getContext('2d')!, cw = ch * 4 / 3;
+      // a picture off the air: less colour, harder, and a little brighter than the night is
+      g.filter = 'saturate(0.6) contrast(1.3) brightness(1.15)';
+      g.drawImage(src, (src.width - cw) / 2, (src.height - ch) / 2, cw, ch, 0, 0, W, H);
+      g.filter = 'none';
+      return this.shot;
+    } catch { return null; }
+  }
+
+  // ---------- the picture tube ----------
+  private paint(t: number) {
+    const c = this.d.motel.tv.canvas, g = c.getContext('2d')!, w = c.width, h = c.height;
+    if (this.mode === 'carrier') {
+      // a flat grey raster, the hum bar rolling slowly up it
+      g.fillStyle = '#3a3d40'; g.fillRect(0, 0, w, h);
+      const y = h - ((t * 11) % (h + 60));
+      const bar = g.createLinearGradient(0, y - 30, 0, y + 30); bar.addColorStop(0, 'rgba(0,0,0,0)'); bar.addColorStop(0.5, 'rgba(0,0,0,.28)'); bar.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = bar; g.fillRect(0, y - 30, w, 60);
+    } else {
+      // a little overscan, and the picture jitters by a line now and then
+      const src = this.mode === 'frame' && this.frame ? this.frame : this.card, j = Math.random() < 0.08 ? 1 : 0;
+      g.drawImage(src, 6, 5, W - 12, H - 10, 0, j, w, h);
+    }
+    // the tube: scan lines, a little snow, the dark corners, the brightness breathing
+    g.fillStyle = 'rgba(0,0,0,.24)';
+    for (let y = 0; y < h; y += 2) g.fillRect(0, y, w, 1);
+    for (let i = 0; i < (this.mode === 'carrier' ? 260 : 90); i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.12})`; g.fillRect(Math.random() * w, Math.random() * h, 1, 1); }
+    const v = g.createRadialGradient(w / 2, h / 2, h * 0.32, w / 2, h / 2, w * 0.66); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');
+    g.fillStyle = v; g.fillRect(0, 0, w, h);
+    g.fillStyle = `rgba(0,0,0,${0.04 + 0.04 * Math.random()})`; g.fillRect(0, 0, w, h);
+    this.d.motel.tv.tex.needsUpdate = true;
+  }
+
+  // ---------- the set's little speaker ----------
+  private sound(dist: number) {
+    const a = this.d.audio, ctx = a.ctx;
+    if (!ctx) return;
+    if (dist > 30) { if (this.snd) this.silence(); return; }
+    if (!this.snd) {
+      const spk = a.spatial(this.tvAt, 0.9), noise = a.noiseBuffer();
+      if (!spk || !noise) return;
+      const gain = (v = 0) => { const g = ctx.createGain(); g.gain.value = v; g.connect(spk); return g; };
+      // the tone with the test card, through the small speaker
+      const tone = gain(), tOsc = ctx.createOscillator(); tOsc.frequency.value = 1000;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.5;
+      tOsc.connect(bp); bp.connect(tone);
+      // the carrier's hum: the mains buzz in a set with nothing coming in
+      const hum = gain(), hOsc = ctx.createOscillator(); hOsc.type = 'sawtooth'; hOsc.frequency.value = 60;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; hOsc.connect(lp); lp.connect(hum);
+      const hiss = gain(), n = ctx.createBufferSource(); n.buffer = noise; n.loop = true;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; n.connect(hp); hp.connect(hiss);
+      // and the line whistle of the tube, as long as it is on
+      const whine = gain(), wOsc = ctx.createOscillator(); wOsc.frequency.value = 15734; wOsc.connect(whine);
+      for (const o of [tOsc, hOsc, n, wOsc]) o.start();
+      this.snd = { tone, hum, hiss, whine, stop: () => { for (const o of [tOsc, hOsc, n, wOsc]) { try { o.stop(); } catch { /* stopped */ } } spk.disconnect(); } };
+    }
+    const m = this.mode, now = ctx.currentTime, set = (g: GainNode, v: number) => g.gain.setTargetAtTime(v, now, 0.04);
+    set(this.snd.tone, m === 'card' ? 0.03 : 0);
+    set(this.snd.hum, m === 'carrier' ? 0.11 : 0);
+    set(this.snd.hiss, m === 'carrier' ? 0.014 : m === 'card' ? 0.006 : 0);
+    set(this.snd.whine, m === 'frame' ? 0 : 0.0016);
+  }
+  private click() { this.d.audio.play('click', { at: this.tvAt, gain: 0.22, rate: 1.3, lp: 2400 }); }
+  /** The set's sound off (leaving the night). */
+  silence() {
+    const s = this.snd; if (!s) return;
+    this.snd = null;
+    const ctx = this.d.audio.ctx;
+    if (ctx) for (const g of [s.tone, s.hum, s.hiss, s.whine]) g.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+    setTimeout(() => s.stop(), 300);
+  }
+
+  /** A new night or a case opened: the test card, and whether it has been seen in it. */
+  reset() {
+    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null;
+    this.silence();
+    this.paint(0);
+  }
+  /** The carrier now (the developer menu): the frame comes 47 s later as it would. */
+  now() { if (this.mode === 'card') { this.mode = 'carrier'; this.t = 0; this.click(); } }
+}
+
+function blank() { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; }
+/** The test card: colour bars, as stations put them up at sign-off; no station name. */
+function testCard() {
+  const c = blank(), g = c.getContext('2d')!, bw = W / 7;
+  const top = ['#c0c0c0', '#c0c000', '#00c0c0', '#00c000', '#c000c0', '#c00000', '#0000c0'];
+  const mid = ['#0000c0', '#131313', '#c000c0', '#131313', '#00c0c0', '#131313', '#c0c0c0'];
+  top.forEach((col, i) => { g.fillStyle = col; g.fillRect(Math.floor(i * bw), 0, Math.ceil(bw), H * 0.67); });
+  mid.forEach((col, i) => { g.fillStyle = col; g.fillRect(Math.floor(i * bw), H * 0.67, Math.ceil(bw), H * 0.08); });
+  // the bottom row: -I, white, +Q, black, the three narrow bars to set the black by, black
+  const b = H * 0.75, q = bw * 5 / 4;
+  [['#00214c', 0], ['#ffffff', 1], ['#32006a', 2], ['#131313', 3]].forEach(([col, i]) => { g.fillStyle = col as string; g.fillRect(Math.floor((i as number) * q), b, Math.ceil(q), H - b); });
+  ['#090909', '#131313', '#1d1d1d'].forEach((col, i) => { g.fillStyle = col; g.fillRect(Math.floor(5 * bw + i * bw / 3), b, Math.ceil(bw / 3), H - b); });
+  g.fillStyle = '#131313'; g.fillRect(Math.floor(6 * bw), b, Math.ceil(bw), H - b);
+  return c;
+}

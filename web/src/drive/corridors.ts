@@ -7,6 +7,7 @@ import { plants, ranchLights, saroLights } from './roadPlaces';
 import { gravelTex } from './roadTextures';
 import { groundGeometry, highwayGeometry, trackGeometry, vergeGeometry } from './roadTerrain';
 import { SARO_PATCH, STATION_PATCH, inRect, fromRoad, stationBend } from '../world/geo';
+import { Herd } from './herd';
 
 // The stretches of road two areas both draw (world/geo.ts). Where the truck goes from one
 // area into the next (legs.ts), everything near the road must be the same on both sides of
@@ -18,7 +19,8 @@ import { SARO_PATCH, STATION_PATCH, inRect, fromRoad, stationBend } from '../wor
 //               Motor Court (SARO's own, MotelFront.ts) to past the change 60 m south of
 //               it (site z 785), with its verges, the ground beside it, the telephone line,
 //               the fences, the posts and signs, the mouth of the survey track with its
-//               cattle guard, the plants and the ranch's lights
+//               cattle guard, the plants, the ranch's lights and the herd in the pasture
+//               between the motel and the track (herd.ts)
 //   STATION 01  the survey track's last 400 m to the gate, its verges, the ground round it,
 //               the plants, the telephone line along the highway behind, the ranch's
 //               lights and SARO's; the land is brought down to the station's flat ground
@@ -38,9 +40,9 @@ const circles = (b: Build) => b.obstacles.filter((o): o is Extract<typeof o, { k
 const SARO_TRACK = 100;
 /** South of SARO. Returns the group in SARO's terms, the posts, poles, signs and big rocks the
  *  truck can hit (road-local circles), glints(), which lights the delineators' reflectors and
- *  the signs in the beam of headlights in these flood slots (every frame of a drive here), and
+ *  the signs in the beam of headlights in these flood slots (every frame of a drive here),
  *  trackArt(), which lays the track's own gravel picture on it once that is loaded (with the
- *  first drive, World.ts). */
+ *  first drive, World.ts), and the herd (the same as the road's, in SARO's floods). */
 export function saroCorridor(set: FloodSet) {
   const b = build(set, false), R = SARO_PATCH;
   const keep = (x: number, z: number) => z > -220 && z < 600 && inRect(R, x, z);
@@ -55,6 +57,7 @@ export function saroCorridor(set: FloodSet) {
   const glints = delineators(b, (_x, z) => z > -225 && z < 600);
   plants(b, keep);
   ranchLights(b);
+  const herd = new Herd(b, set, 'saro');
   mergeStatic(b.statics);
   b.root.add(b.statics, wireMesh(b), b.glow.build());
   b.root.name = 'saroCorridor';
@@ -65,7 +68,7 @@ export function saroCorridor(set: FloodSet) {
     gravel.map = gravelTex(); gravel.color.set(0xf2ece0); gravel.needsUpdate = true;
   };
   const at = glints.map((g): Glint => ({ i: g.i, p: g.p.clone().add(o) }));
-  return { group: b.root, obstacles: circles(b), glints: (slots: readonly number[]) => headlightGlints(set, slots, b.glow, at), trackArt };
+  return { group: b.root, obstacles: circles(b), glints: (slots: readonly number[]) => headlightGlints(set, slots, b.glow, at), trackArt, herd };
 }
 
 /** The last of the survey track at STATION 01, in the station's local terms (a child of its
