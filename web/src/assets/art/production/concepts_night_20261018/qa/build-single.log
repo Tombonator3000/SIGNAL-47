@@ -1,0 +1,9 @@
+✓ 269 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-DwCiClRy.js
+[plugin vite:singlefile] Inlining: style-ikuWEwi5.css
+computing gzip size...
+dist-single/index.html  24,175.69 kB │ gzip: 17,286.78 kB
+✓ built in 5.60s

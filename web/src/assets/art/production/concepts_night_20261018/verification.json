@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "checks": [
+    {
+      "check": "sources/01_caliche_main_street_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/02_caliche_payphone_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/03_night_line_window_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/04_laundromat_radio_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/05_motel_office_tv_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/06_saro_peripheral_glimpse_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/07_station01_cut_cable_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/08_roswell_road_empty_truck_r0.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/05_motel_office_tv_r1.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/08_roswell_road_empty_truck_r1.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "sources/07_station01_cut_cable_r1.png kildehash og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "caliche_main_street.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "caliche_payphone.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "night_line_window.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "laundromat_radio.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "motel_office_tv.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "saro_peripheral_glimpse.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "station01_cut_cable.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "roswell_road_empty_truck.jpg mål, JPEG, RGB, sRGB og dekoding",
+      "result": "PASS"
+    },
+    {
+      "check": "Spillkode og eksisterende runtimegrafikk uendret mot grunnlaget",
+      "result": "PASS"
+    },
+    {
+      "check": "Konseptmappen er ikke lagt til i grafikkinnlastingene",
+      "result": "PASS"
+    }
+  ],
+  "selected_count": 8,
+  "attempt_count": 11,
+  "source_dimensions": {
+    "1672x941": 8
+  },
+  "runtime_changes": [],
+  "total_jpeg_bytes": 3580925
+}

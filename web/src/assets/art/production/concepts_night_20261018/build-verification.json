@@ -1,0 +1,37 @@
+{
+  "result": "PASS",
+  "utc": "2026-10-18T20:33:04.394221+00:00",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run build",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run build:single",
+      "status": "PASS"
+    }
+  ],
+  "builds": [
+    {
+      "build": "dist",
+      "index_sha256": "dac72bd2320dd6e4f46462b1565888c72f6b541d3f0723f9cd121314fed62abf",
+      "index_bytes": 556,
+      "baseline_sha256": "dac72bd2320dd6e4f46462b1565888c72f6b541d3f0723f9cd121314fed62abf",
+      "same_index_as_tested_baseline": true
+    },
+    {
+      "build": "dist-single",
+      "index_sha256": "83f3ef442ec5cef9aad3f5c7e04080ae0ea59da9a6bca3534a08332d42463386",
+      "index_bytes": 24175693,
+      "baseline_sha256": "83f3ef442ec5cef9aad3f5c7e04080ae0ea59da9a6bca3534a08332d42463386",
+      "same_index_as_tested_baseline": true
+    }
+  ],
+  "concept_files_in_dist": [],
+  "runtime_test_baseline": "web/src/assets/art/production/round13_15_qa/runtime-summary.json",
+  "notes": "De to HTML-filene er byteidentiske med forrige testede spillbygg. Konseptene er ikke bundlet."
+}
