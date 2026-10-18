@@ -218,10 +218,14 @@ async def main():
         await pg.wait_for_function("S47.saves.list(S47.caseId()).some(m => m.chapter.startsWith('Chapter 2'))", polling=300, timeout=30000)
         meta = await ev("S47.saves.list(S47.caseId())[0]")
         free = await ev("S47.album.shots.length")   # the free frame from before the apron rides along
-        check(meta['chapter'] == 'Chapter 2: The Amended Record' and len(meta['photos']) == (0 if NO_IDB else 2 + free) and (meta['thumb'] or '').startswith('data:image/jpeg'), f"autosave {meta['id']}: chapter two, {len(meta['photos'])} photographs, a picture")
+        check(meta['chapter'] == 'Chapter 2: The Amended Record' and len(meta['photos']) == 2 + free and (meta['thumb'] or '').startswith('data:image/jpeg'), f"autosave {meta['id']}: chapter two, {len(meta['photos'])} photographs, a picture")
         if NO_IDB:
             raw = await ev(f"localStorage.getItem('s47.save.{meta['id']}') || ''")
-            check('data:image/jpeg' in raw, 'without IndexedDB the save keeps its photographs inline in localStorage')
+            state = json.loads(raw)['state']
+            refs = [state['case']['s'][k]['url'] for k in ('f1', 'f2')] + [s['url'] for s in state.get('album', {}).get('shots', [])]
+            check(all(r.startswith('ls:p') for r in refs) and len(json.dumps(state)) < 40000, 'without IndexedDB the save points at its photographs in localStorage and stays small')
+            stored = await ev(f"JSON.parse(localStorage.getItem('s47.photo.{refs[0][3:]}'))")
+            check((stored or '').startswith('data:image/jpeg') and len(stored) > 50000, 'frame 01 is stored once in localStorage, under its content key')
             print(f'save in localStorage: {len(raw) / 1024:.0f} kB', flush=True)
         else:
             rec = await ev(IDB_GET + f"('saves', '{meta['id']}')")

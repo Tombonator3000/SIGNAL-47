@@ -14,7 +14,7 @@ Tom avtalte 18. oktober 2026 at ChatGPT og Codex kan hjelpe med koding. Claude e
 
 ## Oppgaver
 
-### 1. [ ] Lagring uten IndexedDB: hvert fotografi lagres én gang
+### 1. [x] Lagring uten IndexedDB: hvert fotografi lagres én gang (`codex/saves-photo-store`)
 
 Base: `integration`. Filer: `src/core/saves.ts`, `tools/saves.cjs`.
 

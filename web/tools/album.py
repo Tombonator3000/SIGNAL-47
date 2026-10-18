@@ -259,7 +259,13 @@ async def main():
         if NO_IDB:
             raw = await ev(f"localStorage.getItem('s47.save.{m['id']}') || ''")
             total = await ev("(() => { let n = 0; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); n += k.length + (localStorage.getItem(k) || '').length; } return n; })()")
-            check(raw.count('data:image/jpeg') >= 36, 'without IndexedDB the save carries the prints inline')
+            rec = json.loads(raw)
+            refs = [s['url'] for s in rec['state']['album']['shots']]
+            check(len(refs) == 36 and all(r.startswith('ls:p') for r in refs), 'without IndexedDB the save points at the 36 prints in localStorage')
+            check(len(json.dumps(rec['state'])) < 60000, 'the state stays small without IndexedDB too')
+            keys = await ev("Object.keys(localStorage).filter(k => k.startsWith('s47.photo.'))")
+            stored = await ev(f"JSON.parse(localStorage.getItem('s47.photo.{refs[5][3:]}'))")
+            check(stored == urls[5], 'a print is stored once in localStorage, under its content key')
             print(f'save in localStorage: {len(raw) / 1024:.0f} kB; localStorage in all: {total / 1024:.0f} kB', flush=True)
             # how many saves of this night fit: the three manual ones and three autosaves
             ok_saves, fail = 1, None
@@ -269,6 +275,9 @@ async def main():
             total = await ev("(() => { let n = 0; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); n += k.length + (localStorage.getItem(k) || '').length; } return n; })()")
             print(f'{ok_saves} of 6 saves written, localStorage {total / 1024:.0f} kB in all{"; then: " + fail if fail else ""}', flush=True)
             check(ok_saves == 6, f'all six saves of a case fit with a full roll ({ok_saves})')
+            # Replacing the old autosaves can also free prints from the earlier chapter-one run.
+            after_keys = await ev("Object.keys(localStorage).filter(k => k.startsWith('s47.photo.'))")
+            check(set(after_keys) <= set(keys), 'six saves store no print twice (unused older prints may be removed)')
         else:
             rec = await ev(IDB_GET + f"('saves', '{m['id']}')")
             state = rec['state']
