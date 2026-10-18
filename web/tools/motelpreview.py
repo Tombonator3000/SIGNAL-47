@@ -100,7 +100,7 @@ function contracts(){
  const onMaterials=[...switchMaterials.values()].every(m=>m.emissiveIntensity>0)&&switchMaterials.get('court/room6Window')?.map!==darkMap;
  motel.setRoom6Light(old6);motel.setOfficeLight(oldOffice);
  contract=[
-  ['11 exact proxy IDs',required.every(k=>motel.proxies[k])&&Object.keys(motel.proxies).length===11],
+  ['12 exact proxy IDs (with the office TV)',[...required,'officeTv'].every(k=>motel.proxies[k])&&Object.keys(motel.proxies).length===12],
   ['5 required independent objects',objects.every(k=>motel.objs[k]?.parent&&motel.objs[k].userData.noMerge===true)],
   ['4 required zones',motel.zones.map(z=>z.id).sort().join(',')==='lot,office,officeDoor,walk'],
   ['Zone overlaps > 0.6 m',overlap()],

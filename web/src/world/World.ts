@@ -455,7 +455,8 @@ export class World {
     for (const g of saro.groups) g.visible = area === 'saro';
     // a truck shows where it stands, or where it is being driven
     const here = (id: LegId) => area === id && (this.truckAt === id || this.leg === id);
-    if (this.saroTruck) this.saroTruck.group.visible = here('saro');
+    // (on the motel's lot it is SARO's truck too, in SARO's area, as parkAt has it)
+    if (this.saroTruck) this.saroTruck.group.visible = here('saro') || (area === 'saro' && this.truckAt === 'motel');
     if (this.site) this.site.group.visible = area === 'station01';
     // the diner stands in the road area: each is seen from the other
     const onRoad = area === 'road' || area === 'diner';

@@ -9,7 +9,7 @@ import { SERVICE_MAP, mark } from '../story/drawings';
 // and not to scale. A cross marks where the player is. It shows no survey bolts and no line C:
 // the map at the diner is for that (ui/MapOverlay.ts).
 
-export type MapSpot = 'saro' | 'yard' | 'motel' | 'highway' | 'diner' | 'track' | 'station01' | 'oldroad';
+export type MapSpot = 'saro' | 'yard' | 'motel' | 'office' | 'highway' | 'diner' | 'track' | 'station01' | 'oldroad';
 export interface MapView {
   /** Where the player is: a place and, on a road, how far along it (the highway: metres south
    *  of SARO; the track: 0..1 from the highway; the old road: the mile). */
@@ -46,6 +46,9 @@ export function spotXY(at: NonNullable<MapView['at']>): [number, number] {
     case 'saro': return SARO;
     case 'yard': return [SARO[0] + 22, SARO[1] - 30];
     case 'motel': return MOTEL;
+    // the motel's office, at its north end: just off the corner of its box, so a mark there and
+    // its time keep clear of the box, its name, the highway's marks and the cross for the player
+    case 'office': return [MOTEL[0] - 23, MOTEL[1] - 25];
     case 'highway': return [HX, hwyY(at.m ?? 0)];
     case 'diner': return DINER;
     case 'track': { const t = Math.min(1, Math.max(0, at.t ?? 0)); return [MOUTH[0] + (STATION[0] + 26 - MOUTH[0]) * t, MOUTH[1] + (STATION[1] - MOUTH[1]) * t]; }

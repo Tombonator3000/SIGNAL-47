@@ -76,6 +76,12 @@ export class MotelTv {
   private tvAt = new THREE.Vector3();
   private snd: { tone: GainNode; hum: GainNode; hiss: GainNode; whine: GainNode; stop: () => void } | null = null;
   private light = new THREE.Color();
+  /** The camera over the lot, and the light from straight above that the picture has (shoot()). */
+  private cam = new THREE.PerspectiveCamera(FOV, 4 / 3, 1, 120);
+  private top = new THREE.PointLight(0xe4ebf2, 700, 70, 1.6);
+  /** What is in the frame and still to be made ready to draw (warm()); null: not looked for yet. */
+  private toWarm: THREE.Object3D[] | null = null;
+  private part = new THREE.Object3D();
 
   constructor(private d: MotelTvDeps) {
     this.card = testCard();
@@ -114,12 +120,12 @@ export class MotelTv {
       case 'card':
         if (!this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
           && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60) {
-          this.mode = 'carrier'; this.t = 0;
-          this.click();
+          this.carrier();
           this.d.toast('On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it.', 5.5);
         }
         break;
       case 'carrier':
+        if (s.saro) this.warm(); else this.toWarm = null;
         if ((this.t += dt) >= CARRIER) this.showFrame(s, dist);
         break;
       case 'frame':
@@ -134,6 +140,8 @@ export class MotelTv {
     this.light.setRGB(this.mode === 'carrier' ? 0.62 : 0.66, this.mode === 'carrier' ? 0.66 : 0.72, this.mode === 'carrier' ? 0.7 : 0.92);
     this.d.motel.setTvLight(s.saro ? k * (0.94 + 0.06 * Math.random()) : 0, this.light);
   }
+
+  private carrier() { this.mode = 'carrier'; this.t = 0; this.toWarm = null; this.click(); }
 
   private showFrame(s: MotelTvIn, dist: number) {
     this.mode = 'frame'; this.t = 0;
@@ -153,24 +161,65 @@ export class MotelTv {
     this.d.save();
   }
 
+  /** The camera over the lot as the canvas is now, and the light over it put in the scene (taken
+   *  out again by the caller). Returns the height of the picture on the canvas. */
+  private aim() {
+    const src = this.d.renderer.domElement, motel = this.d.motel, cam = this.cam;
+    // the picture is the middle 4:3 of the canvas, and that must take in the same ground on any screen
+    const ch = Math.min(src.height, src.width * 3 / 4);
+    cam.aspect = src.width / src.height;
+    cam.fov = 2 * Math.atan(Math.tan(FOV * Math.PI / 360) * src.height / ch) * 180 / Math.PI;
+    const at = motel.group.localToWorld(OVER.clone()), below = at.clone().setY(motel.floorY);
+    cam.position.copy(at); cam.up.set(-1, 0, 0); cam.lookAt(below);
+    cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+    // a light from straight above for this one picture, as the frames of the time away have
+    // theirs (the lot by its two lamps alone is a black square seen from up there)
+    this.top.position.copy(at).setY(motel.floorY + 22);
+    this.d.scene.add(this.top); this.top.updateMatrixWorld(true);
+    return ch;
+  }
+
+  /** The frame is drawn with one light more than the night has, and straight onto the canvas,
+   *  and three.js puts both in every shader program: everything in it wants programs of its own.
+   *  Made when the frame comes, they would hold the game still for a second or more on a phone
+   *  (core/Flashlight.ts has the same about lights). So they are made while the carrier is on, a
+   *  few things a frame: what the camera over the lot sees, as three.js would draw it (shown, in
+   *  its layers, in view). The frame then finds them made. */
+  private warm() {
+    const r = this.d.renderer, scene = this.d.scene;
+    if (this.toWarm && !this.toWarm.length) return;
+    try {
+      this.aim();
+      const cam = this.cam;
+      if (!this.toWarm) {
+        const fr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+        const list: THREE.Object3D[] = [];
+        scene.traverseVisible((o) => {
+          const m = o as THREE.Mesh, sprite = (o as THREE.Sprite).isSprite;
+          if (!(m.isMesh || (o as THREE.Points).isPoints || (o as THREE.Line).isLine || sprite) || !m.material || !o.layers.test(cam.layers)) return;
+          if (!o.frustumCulled || (sprite ? fr.intersectsSprite(o as THREE.Sprite) : fr.intersectsObject(o))) list.push(o);
+        });
+        this.toWarm = list;
+        return;
+      }
+      // three.js makes ready what `traverse` gives it, lit by the lights of the scene it is to be
+      // drawn in (with the one over the lot)
+      const batch = this.toWarm.splice(0, 16);
+      this.part.traverse = (f) => { for (const o of batch) f(o); };
+      this.part.traverseVisible = () => {};
+      r.setRenderTarget(null); r.compile(this.part, cam, scene);
+    } catch { this.toWarm = []; /* then they are made with the frame, as before */ }
+    finally { this.top.removeFromParent(); }
+  }
+
   /** The lot from a camera over it, drawn at once into a picture the size of the set's (main.ts
    *  draws the next frame over the canvas as usual). */
   private shoot(): HTMLCanvasElement | null {
     try {
-      const r = this.d.renderer, src = r.domElement, motel = this.d.motel;
-      const cam = new THREE.PerspectiveCamera(FOV, src.width / src.height, 1, 120);
-      // the picture is the middle 4:3 of the canvas, and that must take in the same ground on any screen
-      const ch = Math.min(src.height, src.width * 3 / 4);
-      cam.fov = 2 * Math.atan(Math.tan(FOV * Math.PI / 360) * src.height / ch) * 180 / Math.PI;
-      const at = motel.group.localToWorld(OVER.clone()), below = at.clone().setY(motel.floorY);
-      cam.position.copy(at); cam.up.set(-1, 0, 0); cam.lookAt(below);
-      cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
-      // a light from straight above for this one picture, as the frames of the time away have
-      // theirs (the lot by its two lamps alone is a black square seen from up there)
-      const L = new THREE.PointLight(0xe4ebf2, 700, 70, 1.6); L.position.copy(at).setY(motel.floorY + 22);
-      this.d.scene.add(L); L.updateMatrixWorld(true);
-      try { r.setRenderTarget(null); r.render(this.d.scene, cam); }
-      finally { L.removeFromParent(); L.dispose(); }
+      const r = this.d.renderer, src = r.domElement;
+      const ch = this.aim();
+      try { r.setRenderTarget(null); r.render(this.d.scene, this.cam); }
+      finally { this.top.removeFromParent(); }
       const g = this.shot.getContext('2d')!, cw = ch * 4 / 3;
       // a picture off the air: less colour, harder, and a little brighter than the night is
       g.filter = 'saturate(0.6) contrast(1.3) brightness(1.15)';
@@ -245,12 +294,12 @@ export class MotelTv {
 
   /** A new night or a case opened: the test card, and whether it has been seen in it. */
   reset() {
-    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null;
+    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null; this.toWarm = null;
     this.silence();
     this.paint(0);
   }
   /** The carrier now (the developer menu): the frame comes 47 s later as it would. */
-  now() { if (this.mode === 'card') { this.mode = 'carrier'; this.t = 0; this.click(); } }
+  now() { if (this.mode === 'card') this.carrier(); }
 }
 
 function blank() { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; }

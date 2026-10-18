@@ -88,8 +88,6 @@ export class MotelFront {
     for (const x of [-31.5, -29.3]) this.col(x-.24, x+.24, 29.76, 30.24);
     this.slots.office = this.light(-43.2, 2.35, 24.6, 6, 0xffcb8b);
     this.slots.officeSpill = this.light(-40.65, 2.25, 24.1, 4, 0xffc277);
-    // the television's light on the office, low and in front of its screen (dark until it is on)
-    this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
     for (const [name,z] of [['r1',30],['r2',35],['r34',42.5],['r5',50],['room6',55],['r78',62.5]] as const)
       this.slots[name] = this.light(-40.7, 2.24, z, name==='room6'?4:5, 0xffbd72);
     this.slots.red = this.light(-30.9, 4.6, 30, 9, 0xff4839);
@@ -98,6 +96,9 @@ export class MotelFront {
     this.lotLamps();
     // the truck's headlights on the court (shine), when it is driven at SARO
     for (let i = 0; i < 3; i++) this.head.push(this.light(0, -999, 0, 0, 0xfff0d8));
+    // the television's light on the office, low and in front of its screen (dark until it is
+    // on); last, so the lamps before it keep their places in the set
+    this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }
@@ -348,7 +349,9 @@ export class MotelFront {
     box(s,1.1,.045,.26,m.officeLamp,-43.3,2.7,24.65);
     // A portable set on top of the shelves, turned to the counter and the door: black plastic,
     // the knobs to the right of the screen, rabbit ears. Left on all night (story/motelTv.ts).
-    const tv=this.model('officeTv',this.interior,-45.27,1.5,26.85);tv.rotation.y=2.4;
+    // Nothing on it moves or hides, so it is merged with the office (the screen is one call of
+    // its own, for its picture); the group stays where it stands.
+    const tv=new THREE.Group();tv.name='motel:officeTv';tv.position.set(-45.27,1.5,26.85);tv.rotation.y=2.4;s.add(tv);
     box(tv,.44,.34,.36,m.black,0,.17,0);box(tv,.4,.02,.3,m.black,0,.005,-.02);
     box(tv,.085,.27,.01,m.metal,.155,.17,.183);
     for(const y of [.24,.13])cyl(tv,.022,.022,.02,m.trim,.155,y,.19,8).rotation.x=Math.PI/2;
@@ -359,7 +362,7 @@ export class MotelFront {
     const screenTex=new THREE.CanvasTexture(canvas);screenTex.colorSpace=THREE.SRGBColorSpace;this.textures.add(screenTex);
     const screen=this.mat({color:0x0b0d0e,roughness:.25,metalness:.1,emissive:0xffffff,emissiveMap:screenTex,emissiveIntensity:1});
     plane(tv,.3,.225,screen,-.045,.18,.1815);
-    mergeStatic(tv);this.proxy('officeTv',.5,.5,.5,-45.27,1.73,26.85);
+    this.proxy('officeTv',.5,.5,.5,-45.27,1.73,26.85);
     return {canvas,tex:screenTex,group:tv};
   }
   /** How much the television lights the office, and in what colour (story/motelTv.ts). */

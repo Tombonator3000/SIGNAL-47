@@ -15,8 +15,11 @@ import { clockText } from './time';
 // only while the player is far off (out of the areas it stands in, or more than FAR away).
 // It turns the first time once the player has been by it once, or from 03:45 in any case, and
 // at least ten minutes of the night after the last event (as in town, story/townEvents.ts).
-// Kept with the town's part of the case (main.ts, `town`): 'cows:on', 'ev:cows1', 'cows:short',
-// 'ev:cows', and a mark on the map at the pasture, on B; none of it comes again after a load.
+// It is seen from the truck, in its headlights: on foot nobody comes near it (SARO's ground
+// ends at the motel's lot and the shoulder past it, more than 110 m short of the nearest cow).
+// Kept with the town's part of the case (main.ts, `town`): 'cows:by' (been by them once),
+// 'cows:on', 'ev:cows1', 'cows:short', 'ev:cows', and a mark on the map at the pasture, on B;
+// none of it comes again after a load.
 
 export interface PastureIn {
   /** In play, no panel, not in a cinematic, at night, and the story allows it. */
@@ -26,9 +29,8 @@ export interface PastureIn {
   cam: THREE.Camera;
   /** The game's clock, seconds since midnight. */
   clock: number;
-  /** Driving the truck (its headlights light the herd), or on foot with the flashlight on. */
+  /** Driving the truck (its headlights light the herd). */
   driving: boolean;
-  flashlight: boolean;
 }
 export interface PastureDeps {
   /** The herds as the areas are built (World.herds). */
@@ -48,7 +50,7 @@ export const PASTURE_M = HERD.z + 300;
 
 export class Pasture {
   stage: Stage = 'graze';
-  /** Times the player has come by while the herd grazed. */
+  /** Times the player has come by while the herd grazed (after a load: once, if they had). */
   passes = 0;
   private near = false;
   private force = false;
@@ -65,7 +67,7 @@ export class Pasture {
   reset() {
     const s = this.d.seen;
     this.stage = s.has('ev:cows') ? 'after' : s.has('cows:short') ? 'short' : s.has('cows:on') ? 'still' : 'graze';
-    this.passes = 0; this.near = false; this.force = false;
+    this.passes = s.has('cows:by') ? 1 : 0; this.near = false; this.force = false;
     this.apply();
   }
   private apply() {
@@ -85,7 +87,7 @@ export class Pasture {
 
     // ---------- the changes, out of sight ----------
     if (dist < NEAR) this.near = true;
-    else if (far && this.near) { this.near = false; if (this.stage === 'graze') this.passes++; }
+    else if (far && this.near) { this.near = false; if (this.stage === 'graze') { this.passes++; seen.add('cows:by'); } }
     if (far) {
       if (this.stage === 'graze' && (this.force || (s.ok && (this.passes > 0 || day >= 3 * 3600 + 45 * 60) && day >= 2 * 3600 + 40 * 60 && day < 5 * 3600
         && s.clock - this.last() >= GAP))) {
@@ -97,29 +99,28 @@ export class Pasture {
     }
 
     // ---------- what the player sees of it ----------
-    if (!h || !s.ok || dist > 120 || (this.stage !== 'still' && this.stage !== 'short')) return;
+    if (!h || !s.ok || !s.driving || dist > 120 || (this.stage !== 'still' && this.stage !== 'short')) return;
     const lit = this.litCows(h, s, cam);
     const t = clockText(s.clock, false);
-    if (this.stage === 'still' && !seen.has('ev:cows1') && lit >= (s.driving ? 3 : 2)) {
+    if (this.stage === 'still' && !seen.has('ev:cows1') && lit >= 3) {
       seen.add('ev:cows1'); seen.add(`mark:cows@${Math.round(s.clock)}`);
-      this.d.note(`${t}. The pasture south of the motel: the whole herd standing facing the same way, north-north-east, on 026. Nine head. Not one of them moved, with the ${s.driving ? 'headlights' : 'flashlight'} right on them.`);
+      this.d.note(`${t}. The pasture south of the motel: the whole herd standing facing the same way, north-north-east, on 026. Nine head. Not one of them moved, with the headlights right on them.`);
       this.d.save();
-    } else if (this.stage === 'short' && !seen.has('ev:cows') && lit >= (s.driving ? 3 : 2)) {
+    } else if (this.stage === 'short' && !seen.has('ev:cows') && lit >= 3) {
       seen.add('ev:cows');
       this.d.toast('The herd in the pasture, still facing the same way. Eight of them. There were nine. Where the ninth stood, the grass is flattened in a ring, white with frost.', 6.5);
       this.d.note(`${t}. Pasture by the highway: the herd facing 026. One missing. A ring of frost in the grass.`);
       this.d.save();
     }
   }
-  /** How many cows are in front of the player and lit: by the headlights, or by the flashlight
-   *  close enough. */
+  /** How many cows are in front of the player and in the truck's headlights. */
   private litCows(h: Herd, s: PastureIn, cam: THREE.Vector3) {
     const fwd = s.cam.getWorldDirection(new THREE.Vector3()), p = new THREE.Vector3();
     let n = 0;
     for (let i = 0; i < h.count; i++) {
       if (!h.cowAt(i, p)) continue;
       const d = p.distanceTo(cam), toward = p.sub(cam).normalize().dot(fwd);
-      if (s.driving ? d < 85 && toward > 0.8 && h.litAt(i) > 0.2 : s.flashlight && d < 34 && toward > 0.9) n++;
+      if (d < 85 && toward > 0.8 && h.litAt(i) > 0.2) n++;
     }
     return n;
   }
