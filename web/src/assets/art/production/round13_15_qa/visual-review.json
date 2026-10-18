@@ -1,0 +1,32 @@
+{
+  "reviewer": "Codex, visuell inspeksjon av eksporterte filer",
+  "time_utc": "2026-10-18T14:40:27.524028+00:00",
+  "status": "PASS",
+  "reviewed": [
+    "people-contact.jpg",
+    "town-windows-contact.jpg",
+    "town-signs-contact.jpg",
+    "alien-contact.jpg",
+    "abduct-contact.jpg",
+    "board-contact.jpg",
+    "album-contact.jpg",
+    "kit-contact.jpg",
+    "motel-contact.jpg",
+    "brand-contact.jpg",
+    "tex_cork-2x2.png",
+    "tex_album_page-2x2.png",
+    "thread_red-2x2.png"
+  ],
+  "findings": [
+    "Alle 66 motiver kontrollert på kontaktark. Eksakte skiltnavn og 1947 er lesbare; blanke varianter uten tekst.",
+    "Ingen synlige merkenavn eller tilsiktede virkelige personlikheter. Oppdiktede ansikter og separate belysninger for stedene.",
+    "Korrigert direkte blikk hos betjenten, ryggliggende person uten synlig ansikt og mørkere tomt radiostudio.",
+    "Silhuettene har ingen ansiktsdetaljer. Pappfiguren ser flat og malt ut.",
+    "Kork, albumpapir og garn visuelt kontrollert som 2×2. Ingen vesentlig rett kontrastkant ved normal bruk; naturlig korn og flekker gjentas. Materialenes motsatte randpiksler er ikke identiske.",
+    "Albumrammer og treramme har åpne felt; dette er også målt pikselvis i asset-report.json."
+  ],
+  "limits": [
+    "Dette er filkontroll. Innbygging av runde 14 og 15 er ikke utført.",
+    "Ekte mobil/PC-input, opplevd stil og maskinvareytelse krever Toms vurdering."
+  ]
+}

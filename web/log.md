@@ -773,3 +773,10 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - Grafikkbestilling runde 15 (`ART_BRIEF.md`) er flettet for seg ([PR #102](https://github.com/Tombonator3000/SIGNAL-47/pull/102)).
 - Pages-bygget: `radiomix` 9/9, `cutouts` 13/13, `radio` 34/34, `town` 58/58, `events` 31/31, `glimpses` 10/10, `walkthrough` 57/57, `engine` 7/7, `roam` 40/40. Enkeltfilbygget: `engine` 5/5, `cutouts` 13/13, `drives` 23/23, `trouble` 21/21, `chapter3` 66/66.
 - Rundt 13:15 UTC (Tom, skjermbilde av fremkallingsbenken): «hvordan får man fylt opp tank i fotolab?». I kapittel 3 tas FRAMES 03 og 04 på STATION 01; Tom kom seg trolig ikke dit fordi kjøringen feilet på den gamle siden. Teksten ved den tomme tanken sier nå hvor filmen kommer fra og at den hentes med lastebilen.
+
+### Codex: grafikkbestillingen, runde 13 til 15 (18. oktober)
+
+- 14:49 UTC: Tom ba om å sjekke SIGNAL-47-repoet, finne bestillingen og lage grafikken. Arbeidet er gjort i en egen worktree fra main `497a0d5`, grenen `codex/art-rounds13-15-20261018`. Biblioteket er søkt; figurark-kortet gjelder ScummVM og ingen kode derfra er brukt.
+- Alle 66 filene fra runde 13, 14 og 15 er laget: 11 portretter, 31 bilder til Caliche og bortføringen, og 24 til bevisbord, album, utstyr, motell-tv og deling. 36 motiver med innebygd imagegen, 30 originale SVG-tegninger. Tre genererte varianter er avvist og korrigert. Kildene, fulle promter, eksportoppskrift og hash følger i `production/round13_15_sources/` og `round13_15_manifest.json`.
+- Alle mapper har `MANIFEST.md`. `ART_ROUND13_15_DELIVERY.md` samler kontaktark, målkontrakt, opphav og innbygging. Ingen spillkode er endret. De elleve portrettene bruker den ferdige innlastingen; de andre 55 bildene venter på Claudes innbygging.
+- PASS: 117/117 filkontroller, alle kontaktark og 2×2-flater visuelt gjennomgått, typecheck og begge bygg. De sekvensielle spilltestene er startet mot det vanlige bygget under `/SIGNAL-47/`; sluttresultatet føres nedenfor før levering.

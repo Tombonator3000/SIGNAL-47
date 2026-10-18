@@ -1,0 +1,477 @@
+{
+  "asset_count": 66,
+  "total_deliverable_bytes": 5145055,
+  "checks": [
+    [
+      "people/portrait_nora.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_waitress.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_driver.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_ward.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_dale.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_tomas_1947.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_deputy.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_host.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_attendant.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_radio_woman.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "people/portrait_souvenir_man.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_gas.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_gas.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_sheriff.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_sheriff.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_studio.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_studio.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_studio_empty.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_studio_empty.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_laundromat.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_laundromat.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_tv.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_tv.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_kitchen.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_kitchen.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/win_souvenir.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/win_souvenir.jpg under 350000 bytes",
+      true
+    ],
+    [
+      "town/cutout_alien.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/cutout_alien.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/paper_sentinel_blank.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_caliche.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_caliche.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_caliche_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_caliche_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_gas.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_gas.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_gas_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_gas_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_1420.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_1420.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_1420_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_1420_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_souvenir.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_souvenir.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_souvenir_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_souvenir_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_sheriff.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_sheriff.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/sign_sheriff_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/sign_sheriff_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/marquee_plaza.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/marquee_plaza.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/marquee_plaza_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/marquee_plaza_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/board_church.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/board_church.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "town/board_church_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "town/board_church_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "alien/silhouette_stand.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "alien/silhouette_stand.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "alien/silhouette_turned.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "alien/silhouette_turned.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "alien/silhouette_far.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "alien/silhouette_far.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "abduct/frame_above.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "abduct/frame_light.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "abduct/frame_truck.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "abduct/frame_figures.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/tex_cork.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/frame_wood.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/frame_wood.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/frame_wood.png fully transparent exact photo window",
+      true
+    ],
+    [
+      "board/frame_wood.png opaque boundary around window",
+      true
+    ],
+    [
+      "board/thread_red.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/thread_red.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/card_index_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/card_index_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/tape_strip.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/tape_strip.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/stain_coffee.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/stain_coffee.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/pin_red.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/pin_red.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/pin_blue.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/pin_blue.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "board/pin_yellow.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "board/pin_yellow.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "album/tex_album_page.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "album/photo_corner.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "album/photo_corner.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "album/frame_instant_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "album/frame_instant_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "album/frame_instant_blank.png fully transparent exact photo window",
+      true
+    ],
+    [
+      "album/frame_instant_blank.png opaque boundary around window",
+      true
+    ],
+    [
+      "album/frame_sheetfilm_blank.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "album/frame_sheetfilm_blank.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "album/frame_sheetfilm_blank.png fully transparent exact photo window",
+      true
+    ],
+    [
+      "album/frame_sheetfilm_blank.png opaque boundary around window",
+      true
+    ],
+    [
+      "kit/kit_notebook.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_notebook.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_jacket.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_jacket.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_camera.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_camera.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_flashlight.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_flashlight.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_keys.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_keys.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_papers.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_papers.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "kit/kit_nickel_1947.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "kit/kit_nickel_1947.png actual alpha and visible artwork",
+      true
+    ],
+    [
+      "motel/tv_testcard_blank.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "motel/tv_lot_above.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "brand/og_cover.jpg dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "brand/icon_512.png dimensions, format, channels and sRGB",
+      true
+    ],
+    [
+      "brand/icon_512.png actual alpha and visible artwork",
+      true
+    ]
+  ],
+  "status": "PASS",
+  "visual_review": "PASS",
+  "runtime": "recorded separately"
+}

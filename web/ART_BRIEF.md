@@ -20,6 +20,8 @@ Du lager 2D-grafikk. Claude bygger all 3D-geometri i kode og legger bildene dine
 - Teksturer som skal gjentas må være sømløse. Test ved å legge fire kopier i et 2×2-rutenett, og sjekk at ingen kanter synes.
 - Ett bilde per fil, med nøyaktig filnavn. Tom legger filene i `web/src/assets/art/<kategori>/`.
 
+**Grafikkleveranse 18. oktober 2026:** Alle 66 filer i runde 13, 14 og 15 er laget i en egen grafikkgren. Se [leveransen og kontaktarkene](ART_ROUND13_15_DELIVERY.md). De elleve portrettene tas med av den eksisterende innlastingen når grenen bygges. De øvrige 55 filene er kildegrafikk til Claudes innbygging.
+
 ## Runde 1: prologen (kontrollrommet og utsikten)
 
 | Fil | Størrelse | Hva |
@@ -497,7 +499,7 @@ Vindusbildene erstatter vindusbildene som er tegnet i kode i `world/Town.ts`; sk
 
 ## Runde 15: bevisbordet, fotoalbumet, utstyret, motell-tv-en og delingsbildet (Tom, 18. oktober)
 
-Bestilt 18. oktober av Tom («lag en bestillingsliste til ChatGPT som kan lage grafikk for oss til spillet»). Runde 13 (portrettene) og runde 14 (byen, romvesenene og bortføringen) er ikke levert ennå og kommer foran denne. Runde 15 er til det som kommer etterpå: bevisbordet med rød tråd som skal erstatte fanene i notatboka, fotoalbumet for det frie kameraet, tegninger av utstyret i notatboka, tv-en på motellkontoret (`HENDELSER.md`, hendelse 10) og bildet som vises når noen deler lenken til spillet.
+Bestilt 18. oktober av Tom («lag en bestillingsliste til ChatGPT som kan lage grafikk for oss til spillet»). Ved bestillingen var runde 13 (portrettene) og runde 14 (byen, romvesenene og bortføringen) ikke levert, og de ble prioritert først. Runde 15 er til det som kommer etterpå: bevisbordet med rød tråd som skal erstatte fanene i notatboka, fotoalbumet for det frie kameraet, tegninger av utstyret i notatboka, tv-en på motellkontoret (`HENDELSER.md`, hendelse 10) og bildet som vises når noen deler lenken til spillet. Alle tre runder er nå levert som kildegrafikk; status og kontroller står i `ART_ROUND13_15_DELIVERY.md`.
 
 **Viktig:** natt, april 1986. Stilisert, slitt og ekte, ikke glanset. Ingen ekte merkenavn, logoer eller personer, og ingen tekst i bildene med mindre bestillingen sier det. Paletten fra stilavsnittet øverst. Ingen kjente produkter: et instant-bilde er et «instant-bilde», ikke et bestemt merke.
 
