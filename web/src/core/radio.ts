@@ -19,8 +19,10 @@ import type { AudioSys } from './Audio';
 //
 // The voices are not words but a muted horn that talks, "wah wah", like the grown-ups in
 // Peanuts (Tom, 16 October: a little cartoonish, but it works in the surreal night); what they
-// say is in the caption. The tunes are made here, plucked strings and a steel guitar in a few
-// bars, so they need no licence. The anthem is the United States Air Force Band's choral
+// say is in the caption. The tunes are Kevin MacLeod's (incompetech.com, CC BY 4.0,
+// THIRD_PARTY_NOTICES.md), streamed from public/radio/: a part of a song each time, a different
+// part the next (Tom, 18 October: the few bars made here, round and round, were too irritating).
+// The single-file build has no files beside it; there the bars made here stand in. The anthem is the United States Air Force Band's choral
 // recording (public domain, THIRD_PARTY_NOTICES.md), streamed from public/radio/ when a
 // station plays it; the single-file build has no files beside it, so there it is the carrier.
 
@@ -62,7 +64,14 @@ export function syllables(text: string, secs: number) {
   return out;
 }
 interface Line { text: string | ((clock: number) => string); who?: Voice; by?: string }
-type TuneId = 'waltz' | 'ballad' | 'twostep';
+type TuneId = 'waltz' | 'ballad' | 'twostep' | 'far';
+/** The recordings (public/radio/), mono and narrow like AM, and how long each is (s). */
+const TRACK: Record<TuneId, { file: string; dur: number }> = {
+  ballad: { file: 'drankin_song', dur: 246.4 },
+  twostep: { file: 'bama_country', dur: 211.8 },
+  waltz: { file: 'cattails', dur: 159.0 },
+  far: { file: 'anamalie', dur: 208.2 },
+};
 type Seg =
   | { kind: 'talk'; lines: Line[] }
   | { kind: 'music'; tune: TuneId; len: number }
@@ -91,24 +100,24 @@ const H = (text: Line['text']): Line => ({ text, who: 'host' });
 
 const NIGHT_LINE: Seg[] = [
   talk(H('This is the Night Line on fourteen-twenty, Caliche. We are on till four.'), H((c) => `It's ${sayTime(c)} in Caliche.`)),
-  music('ballad', 46),
+  music('ballad', 78),
   talk(H('Cold one out there. Thirty-eight on the bank sign, and the wind has laid down.'), H('Phones are open. If you are up anyway, you might as well talk to somebody.')),
-  music('twostep', 42),
+  music('twostep', 70),
   talk({ text: 'Earl, it\'s Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.', who: 'woman', by: 'a caller' },
     H('Dolores, I believe you. Now turn the porch light off and go to bed.')),
-  music('waltz', 38),
+  music('waltz', 64),
   talk(H('This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.')),
-  music('ballad', 46),
+  music('ballad', 78),
   talk({ text: 'Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.', who: 'man', by: 'a caller' },
     H('We lost the transmitter about then. Needle went to nothing for most of a minute. Ray, if you are listening, that one is yours.')),
-  music('twostep', 42),
+  music('twostep', 70),
   talk(H('Jack Nicklaus, forty-six years old, took the Masters this afternoon. Thirty on the back nine. My uncle says he called it. My uncle calls everything.'),
     H((c) => `${cap(sayTime(c))}. Night Line, fourteen-twenty.`)),
-  music('waltz', 38),
+  music('waltz', 64),
   talk(H('Halley\'s comet is low in the south this week. Get out past the last streetlight and give your eyes ten minutes.')),
-  music('ballad', 46),
+  music('ballad', 78),
   talk({ text: 'My dog won\'t come out from under the trailer. He\'s been under there since one.', who: 'man', by: 'a caller' }, H('Smart dog.')),
-  music('twostep', 42),
+  music('twostep', 70),
 ];
 // HENDELSER.md, event 9: once in a night, from 02:26 on, a boy calls the Night Line about a star
 // with a tail low in the south and a light over the mesa, from his father's ranch, in July. The
@@ -133,22 +142,22 @@ const SIGN_OFF_SEQ: Seg[] = [
 const R = (text: Line['text']): Line => ({ text, who: 'roswell' });
 const MORNING: Seg[] = [
   talk(R('Cattle at the sale barn steady, a dollar higher on calves.'), R((c) => `${cap(sayTime(c))} in Roswell.`)),
-  music('twostep', 40),
+  music('twostep', 70),
   talk(R('Clear today, high near seventy-four in Roswell, light winds out of the southwest.')),
-  music('ballad', 44),
+  music('ballad', 78),
   talk(R('Jack Nicklaus won the Masters yesterday. Forty-six years old, thirty on the back nine. Nobody saw it coming.')),
-  music('waltz', 36),
+  music('waltz', 64),
   talk(R('Road crews on the highway north of town all week, so give yourself a few extra minutes.'), R('If you are out on the county roads this early, watch the low spots. There\'s deer.')),
-  music('twostep', 40),
+  music('twostep', 70),
   talk(R('And if you are up at this hour, Halley\'s comet is low in the south around midnight this week.'), R((c) => `${cap(sayTime(c))}.`)),
-  music('ballad', 44),
+  music('ballad', 78),
 ];
 const SIGN_ON_SEQ: Seg[] = [
   { kind: 'carrier', len: 6 },
   talk(R('Good morning. This is twelve-thirty, Roswell, beginning our broadcast day.')),
   { kind: 'anthem' },
 ];
-const FAR: Seg[] = [music('waltz', 76)];
+const FAR: Seg[] = [music('far', 96)];
 
 /** How long a line takes to say. */
 export const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
@@ -196,7 +205,7 @@ type Bar = { root: number; chord: number[]; mel: (number | 0)[] };
 const G = [55, 59, 62], C = [60, 64, 67], D = [62, 66, 69], G7 = [55, 59, 65], Em = [52, 55, 59];
 function makeTune(id: TuneId): Float32Array {
   // a few bars in G, the chords on the off-beats, a bass under them, a tune over them
-  const plan: { bpm: number; beats: number; bars: Bar[] } = id === 'waltz' ? {
+  const plan: { bpm: number; beats: number; bars: Bar[] } = id === 'waltz' || id === 'far' ? {
     bpm: 100, beats: 3, bars: [
       { root: 43, chord: G, mel: [71, 74, 71] }, { root: 48, chord: C, mel: [72, 71, 69] }, { root: 50, chord: D, mel: [69, 66, 62] }, { root: 43, chord: G, mel: [67, 0, 0] },
       { root: 43, chord: G, mel: [74, 76, 74] }, { root: 48, chord: C, mel: [72, 0, 76] }, { root: 50, chord: D, mel: [74, 72, 69] }, { root: 43, chord: G, mel: [67, 0, 0] },
@@ -267,7 +276,12 @@ export class Station {
   private sc = 0;
   /** The bus every radio tuned here listens to (made once the sound is up). */
   bus: GainNode | null = null;
-  private n: { voice: GainNode; horn: OscillatorNode; mute: BiquadFilterNode; car: GainNode; mus: GainNode; music: AudioBufferSourceNode | null; anthem: { el: HTMLAudioElement; src: MediaElementAudioSourceNode; g: GainNode } | null; stop: () => void } | null = null;
+  private n: { voice: GainNode; horn: OscillatorNode; mute: BiquadFilterNode; car: GainNode; mus: GainNode; music: AudioBufferSourceNode | null; anthem: { el: HTMLAudioElement; src: MediaElementAudioSourceNode; g: GainNode } | null;
+    track: { el: HTMLAudioElement; src: MediaElementAudioSourceNode; g: GainNode } | null; stop: () => void } | null = null;
+  /** Whether the recordings could not be played (the bars made here stand in). */
+  trackFailed = !streamOn;
+  /** Counts the segments, so each song is heard from a different place each time. */
+  private segNo = 0;
   /** How many radios are listening (the sound only runs while some are). */
   listeners = 0;
   /** Whether the anthem file could not be played (the carrier stands in). */
@@ -294,7 +308,7 @@ export class Station {
 
   private start(segs: Seg[], clock: number, skip = 0) {
     this.queue = segs.slice();
-    this.t = 0; this.said = -1; this.sc = clock;
+    this.t = 0; this.said = -1; this.sc = clock; this.segNo++;
     this.len = segLen(this.seg, clock);
     this.forward(skip, clock, true);
     this.sync();
@@ -339,7 +353,7 @@ export class Station {
       this.queue.shift();
       if (!this.queue.length) this.queue.push(...this.refill(clock));
       this.len = segLen(this.seg, clock);
-      this.said = -1; this.sc = clock;
+      this.said = -1; this.sc = clock; this.segNo++;
       changed = true;
     }
     // the lines of a talk, each once as it starts
@@ -389,7 +403,7 @@ export class Station {
     const car = ctx.createGain(); car.gain.value = 0; osc.connect(car); car.connect(bus);
     const mus = ctx.createGain(); mus.gain.value = 1; mus.connect(bus);
     for (const x of [horn, vib, osc]) x.start();
-    this.n = { voice, horn, mute, car, mus, music: null, anthem: null, stop: () => { for (const x of [horn, vib, osc]) { try { x.stop(); } catch { /* stopped */ } } voice.disconnect(); car.disconnect(); mus.disconnect(); } };
+    this.n = { voice, horn, mute, car, mus, music: null, anthem: null, track: null, stop: () => { for (const x of [horn, vib, osc]) { try { x.stop(); } catch { /* stopped */ } } voice.disconnect(); car.disconnect(); mus.disconnect(); } };
     this.sync();
   }
   private sleep() {
@@ -397,6 +411,7 @@ export class Station {
     this.n = null;
     try { n.music?.stop(); } catch { /* stopped */ }
     this.stopAnthem(n);
+    this.stopTrack(n);
     n.stop();
   }
   /** Set the sound to what is on now (a new segment, or a radio just tuned in). */
@@ -406,7 +421,9 @@ export class Station {
     const now = ctx.currentTime, s = this.seg, t = this.t;
     // the tune
     if (n.music) { try { n.music.stop(); } catch { /* stopped */ } n.music.disconnect(); n.music = null; }
-    if (s.kind === 'music') {
+    if (s.kind === 'music' && !this.trackFailed) this.playTrack(n, s.tune, s.len);
+    else this.stopTrack(n);
+    if (s.kind === 'music' && this.trackFailed) {
       const b = tuneBuffer(ctx, s.tune);
       const src = ctx.createBufferSource(); src.buffer = b; src.loop = true;
       src.connect(n.mus); src.start(now, t % b.duration);
@@ -452,6 +469,40 @@ export class Station {
     el.addEventListener('loadedmetadata', () => { const at = this.seg.kind === 'anthem' ? this.t : 0; if (at > 0.5 && at < el.duration) el.currentTime = at; });
     el.play().catch(fail);
   }
+  /** A part of a song for the length of the segment, faded in and out like a station joining it. */
+  private playTrack(n: NonNullable<Station['n']>, tune: TuneId, len: number) {
+    const ctx = this.radio.audio.ctx!, tr = TRACK[tune];
+    let a = n.track;
+    const url = new URL(`radio/${tr.file}.mp3`, document.baseURI).href;
+    if (!a) {
+      const el = new Audio(); el.preload = 'auto';
+      let src: MediaElementAudioSourceNode;
+      try { src = ctx.createMediaElementSource(el); } catch { this.trackFailed = true; return; }   // sync() goes on with the bars made here
+      const g = ctx.createGain(); g.gain.value = 0;
+      src.connect(g); g.connect(n.mus);
+      a = n.track = { el, src, g };
+      el.addEventListener('error', () => { if (n.track?.el !== el || !el.getAttribute('src')) return; this.trackFailed = true; this.stopTrack(n); this.sync(); });
+    }
+    const el = a.el, room = Math.max(1, tr.dur - len - 2);
+    const from = (this.segNo * 61.7) % room, seg = this.segNo;
+    if (el.src !== url) el.src = url;
+    // where the song is by now (the file may take a moment to come)
+    const seek = () => { if (this.segNo === seg) try { el.currentTime = from + this.t; } catch { /* not yet */ } };
+    if (el.readyState >= 1) seek(); else el.addEventListener('loadedmetadata', seek, { once: true });
+    el.play().catch(() => { this.trackFailed = true; this.stopTrack(n); this.sync(); });
+    const now = ctx.currentTime, left = len - this.t, g = a.g.gain;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(0, now);
+    g.linearRampToValueAtTime(0.85, now + Math.max(0.3, 1.5 - this.t));
+    if (left > 2) { g.setValueAtTime(0.85, now + left - 2); g.linearRampToValueAtTime(0, now + left); }
+  }
+  private stopTrack(n: NonNullable<Station['n']>) {
+    const a = n.track; if (!a) return;
+    a.el.pause(); a.g.gain.cancelScheduledValues(0); a.g.gain.value = 0;
+    if (!this.n) { n.track = null; a.src.disconnect(); a.g.disconnect(); a.el.removeAttribute('src'); a.el.load(); }
+  }
+  /** For the tests: the song's element, while it plays. */
+  get trackEl() { return this.n?.track && !this.n.track.el.paused ? this.n.track.el : null; }
   private stopAnthem(n: NonNullable<Station['n']>) {
     const a = n.anthem; if (!a) return;
     n.anthem = null;
@@ -472,6 +523,8 @@ export class Receiver {
   pos: THREE.Vector3 | null = null;
   /** The power it gets, 0..1 (the truck's trouble: it drops out while the starter turns). */
   power = 1;
+  /** Heard from outside a closed cab, 0..1: muffled and faint (Tom, 18 October). */
+  muffle = 0;
   /** Seconds of tuning noise left after the dial is turned. */
   private sweep = 0;
   /** Interference (Tom, 16 October: static now and then, at random, with the wah wah): every
@@ -480,7 +533,7 @@ export class Receiver {
   private fuzz = { next: 12 + Math.random() * 20, left: 0, len: 1, depth: 0 };
   /** How far under the static the station is now, 0..1 (the tests). */
   interference = 0;
-  private n: { sig: GainNode; stat: GainNode; out: GainNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
+  private n: { sig: GainNode; stat: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
   private listening: StationId | null = null;
 
   constructor(private radio: Radio, private o: ReceiverOpts) {}
@@ -515,11 +568,13 @@ export class Receiver {
     const curve = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 127.5 - 1; curve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6); }
     sh.curve = curve;
     const out = ctx.createGain(); out.gain.value = 0;
-    mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(out);
+    // the cab's doors and glass between the speaker and whoever stands outside
+    const cab = ctx.createBiquadFilter(); cab.type = 'lowpass'; cab.frequency.value = 20000; cab.Q.value = 0.5;
+    mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(cab); cab.connect(out);
     const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2, a.radioBus) as PannerNode;
     out.connect(pan);
     n.start();
-    return { sig, stat, out, pan, bus: null, stop: () => { try { n.stop(); } catch { /* stopped */ } out.disconnect(); } };
+    return { sig, stat, out, cab, pan, bus: null, stop: () => { try { n.stop(); } catch { /* stopped */ } out.disconnect(); } };
   }
 
   update(dt: number) {
@@ -557,7 +612,9 @@ export class Receiver {
     const crackle = k > 0 ? 0.5 + Math.random() * 1.1 : 1;
     n.sig.gain.setTargetAtTime(this.live ? s * (1 - tuning) * (1 - 0.5 * k) * this.power : 0, now, 0.05);
     n.stat.gain.setTargetAtTime(this.live ? (0.03 + (carrier ? 0.02 : 0.36 * (1 - s)) + tuning * 0.45 + 0.42 * k * crackle) * this.power : 0, now, k > 0 ? 0.015 : 0.04);
-    n.out.gain.setTargetAtTime(this.live ? this.o.vol : 0, now, this.live ? 0.08 : 0.15);
+    const m = THREE.MathUtils.clamp(this.muffle, 0, 1);
+    n.out.gain.setTargetAtTime(this.live ? this.o.vol * (1 - 0.82 * m) : 0, now, this.live ? 0.08 : 0.15);
+    n.cab.frequency.setTargetAtTime(20000 * Math.pow(420 / 20000, m), now, 0.1);
     if (this.pos && Number.isFinite(this.pos.x + this.pos.y + this.pos.z)) {
       const p = n.pan as PannerNode & { positionX?: AudioParam };
       if (p.positionX) { p.positionX.value = this.pos.x; p.positionY.value = this.pos.y; p.positionZ.value = this.pos.z; }

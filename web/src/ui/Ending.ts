@@ -12,7 +12,7 @@ export const CREDITS: [string, string][] = [
   ['Mesa Diner, Sierra Motor Court, room 6, art and textures', 'Codex and ChatGPT (OpenAI)'],
   ['Music', 'Scott Buckley, CC BY 4.0 (scottbuckley.com.au): "Signal to Noise", and from "Shadows and Dust", "Decoherence", "The Old Ones", "In Search of Solitude", "Neon" and "Hymn to the Dawn"'],
   ['', 'Chris Zabriskie, CC BY 4.0 (chriszabriskie.com): "Cylinder One", "Cylinder Two" and "Cylinder Eight" from Cylinders'],
-  ['', 'Kevin MacLeod, CC BY 4.0 (incompetech.com): "Floating Cities", "Ossuary 1 - A Beginning", "Ossuary 5 - Rest", "Long Note Four", "Lightless Dawn", "Phantom from Space" and "Night on the Docks - Sax"'],
+  ['', 'Kevin MacLeod, CC BY 4.0 (incompetech.com): "Floating Cities", "Ossuary 1 - A Beginning", "Ossuary 5 - Rest", "Long Note Four", "Lightless Dawn", "Phantom from Space" and "Night on the Docks - Sax"; on the radio "Drankin Song", "Bama Country", "Cattails" and "Anamalie"'],
   ['', 'Shane Ivers, CC BY 4.0 (silvermansound.com): "Signs To Nowhere"'],
   ['National anthem on the radio', 'The United States Air Force Band, "The Star Spangled Banner" (choral), public domain'],
   ['Out in the dark', 'Freesound: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0)'],
