@@ -773,3 +773,9 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - Grafikkbestilling runde 15 (`ART_BRIEF.md`) er flettet for seg ([PR #102](https://github.com/Tombonator3000/SIGNAL-47/pull/102)).
 - Pages-bygget: `radiomix` 9/9, `cutouts` 13/13, `radio` 34/34, `town` 58/58, `events` 31/31, `glimpses` 10/10, `walkthrough` 57/57, `engine` 7/7, `roam` 40/40. Enkeltfilbygget: `engine` 5/5, `cutouts` 13/13, `drives` 23/23, `trouble` 21/21, `chapter3` 66/66.
 - Rundt 13:15 UTC (Tom, skjermbilde av fremkallingsbenken): «hvordan får man fylt opp tank i fotolab?». I kapittel 3 tas FRAMES 03 og 04 på STATION 01; Tom kom seg trolig ikke dit fordi kjøringen feilet på den gamle siden. Teksten ved den tomme tanken sier nå hvor filmen kommer fra og at den hentes med lastebilen.
+
+### Claude: flere hendelser i natta (18. oktober)
+
+- Rundt 13:40 UTC (Tom): «Hva mangler fra todo å ta inn? 2: vi trenger mer events og ting som kan skje i spillet. Må bli mer levende. Mer skumle ting».
+- Ny regissør `story/nightEvents.ts` for alt utenfor byen: skrittene bak deg når du stopper (inntil tre), bankingen i taket i bilen, bilradioen som står på når du kommer tilbake, telefonen i kontrollrommet som ringer én gang, servicedøra som står åpen, stillheten på 47 s hvor som helst ute (gjenbruker `core/roadside.ts`; lappen sier nå hvor), og hendelse 4, nyhetsmeldingen fra juli 1947 på 1420 (`Station.cutIn`, ny stemme `news`). Én om gangen, to til fire minutter imellom, bare om natta. Lagres med saken. Utviklermenyen: Night event.
+- `tools/night.py`: 28 av 28 PASS (enkeltfilbygget). Døra feilet først fordi testen snudde spilleren mot døra; rettet i testen.

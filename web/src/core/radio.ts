@@ -35,8 +35,8 @@ export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
 export const streamOn = import.meta.env.MODE !== 'single';
 
-export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy';
-export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126, boy: 262 };
+export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy' | 'news';
+export const PITCH: Record<Voice, number> = { host: 116, woman: 212, man: 138, roswell: 126, boy: 262, news: 150 };
 /** A number from text, the same every time (a line mumbles the same way each time it is said). */
 function seed(text: string) { let h = 2166136261; for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619); return h >>> 0; }
 function rng(n: number) { return () => { n = (n + 0x6d2b79f5) >>> 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -307,6 +307,14 @@ export class Station {
 
   /** Back to the start of a night at this clock (a new night, a save opened). */
   reset(clock: number) { this.prev = null; this.fixed(clock); }
+  /** Something else on the frequency, now: these lines, and then the programme again as if
+   *  nothing had been (HENDELSER.md, event 4). Returns how long it takes, or 0 if off the air. */
+  cutIn(lines: { text: string; who: Voice; by: string }[], clock: number) {
+    if (!this.onAir || this.seg.kind === 'anthem') return 0;
+    const seg: Seg = { kind: 'talk', lines };
+    this.start([seg], clock);
+    return segLen(seg, clock);
+  }
 
   private start(segs: Seg[], clock: number, skip = 0) {
     this.queue = segs.slice();
