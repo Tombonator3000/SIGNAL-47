@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { Clutter, v3 } from './clutter';
+import { Clutter, v3, type Thing } from './clutter';
+import { rng } from '../core/textures';
 
 // What has gathered in the rooms over the years (world/clutter.ts makes it): papers and mugs
 // on the desks, an ashtray, cables along the walls and under the desks, notices and posters, a
@@ -17,9 +18,11 @@ export type Dress = {
 };
 const C = {
   paper: 0xe8e0c8, manila: 0xc9ad78, card: 0xb89a6a, cable: 0x1a1b1c, grey: 0x8a8c88, steel: 0x8a8f92, dark: 0x2a2c2e,
-  navy: 0x2f4a6e, maroon: 0x6e2f2a, olive: 0x3f5b3a, blind: 0xd8d4c8, white: 0xece6da,
+  navy: 0x2f4a6e, maroon: 0x6e2f2a, olive: 0x3f5b3a, blind: 0x8f8a7e, rail: 0x77736a, white: 0xece6da,
   // the dirt's colours
   grime: 0x2e241a, heel: 0x141210, coffee: 0x3a2412, water: 0x6a5232, dust: 0x6a5a48, sand: 0xc8b088, web: 0xd8d4c8,
+  // and the light's and the shade's: the dark where things meet, smoke high up, lamplight, a tube's shine
+  shade: 0x0a0806, smoke: 0x6a5226, smokeDark: 0x4a3a1c, lamp: 0xffd49a, tube: 0xeef2ff,
 };
 const PI = Math.PI;
 function done(c: Clutter, d: Dress) { for (const m of c.build()) d.add(m); }
@@ -37,9 +40,87 @@ function web(c: Clutter, x: number, y: number, z: number, sx: number, sz: number
 }
 // dirt along the foot of a wall: (x, z) on the wall's face, ry faces the room
 function skirt(c: Clutter, x: number, z: number, ry: number, w: number, color = C.dust) {
-  c.dirt(w, 0.07, x, 0.035, z, 'dust', color, { ry });
+  c.dirt(w, 0.07, x, 0.035, z, 'dust', color, { ry, a: 0.8 });
 }
 const rings = (c: Clutter, x: number, y: number, z: number, ry = 0) => c.floorDirt(0.15, 0.075, x, z, 'rings', C.coffee, ry, y + 0.0015);
+
+// ---------- light and shade (in the dirt mesh: no new draw calls) ----------
+// What the lamps alone do not give a room: a thing sits in a soft shadow where it meets the
+// floor, the dark gathers along the foot of the walls and deeper in the corners, the ceiling's
+// edges go dark away from the lamps, and smoke yellows the walls high up where people smoke. The
+// light falls in pools under the lamps and shines along a polished counter; every light mark lies
+// right under a lamp that is really there, so it reads as light and not as dirt.
+// The shadows on the floor are drawn on Low too (low: the first part of the dirt mesh).
+// a soft dark blot under a round thing or a leg standing on the floor
+function under(c: Clutter, x: number, z: number, w: number, d = w, a = 0.8, y = 0.004) {
+  c.floorDirt(w, d, x, z, 'shadow', C.shade, 0, y, { a, low: true });
+}
+// the shadow round the foot of a cabinet, a bed or a counter (its footprint): soft bands out
+// from its four sides, dark against it, fading out past its corners
+function base(c: Clutter, x0: number, x1: number, z0: number, z1: number, a = 0.75, m = 0.3, y = 0.004) {
+  const o = { a, low: true }, w = x1 - x0 + m * 1.6, d = z1 - z0 + m * 1.6, x = (x0 + x1) / 2, z = (z0 + z1) / 2;
+  c.floorDirt(w, m, x, z0 - m / 2, 'band', C.shade, 0, y, o);
+  c.floorDirt(w, m, x, z1 + m / 2, 'band', C.shade, PI, y, o);
+  c.floorDirt(d, m, x0 - m / 2, z, 'band', C.shade, PI / 2, y, o);
+  c.floorDirt(d, m, x1 + m / 2, z, 'band', C.shade, -PI / 2, y, o);
+}
+// a pool of lamplight on a top or on the floor (y: its height), right under the lamp; glow, how
+// much of it the lamp gives of itself (more for a lamp that lights nothing else)
+function pool(c: Clutter, x: number, y: number, z: number, w: number, d = w, a = 0.3, color: number = C.lamp, glow = 0.35) {
+  c.floorDirt(w, d, x, z, 'shadow', color, 0, y, { a, glow });
+}
+// a tube light's shine along a polished top: len along ry (0: along x)
+function sheen(c: Clutter, x: number, y: number, z: number, len: number, w: number, ry: number, a = 0.35, color: number = C.tube, glow = 0.3) {
+  c.floorDirt(len, w, x, z, 'streak', color, ry, y, { a, glow });
+}
+type Side = 'n' | 's' | 'e' | 'w';
+// A room's walls by their faces (x0 west, x1 east, z0 north, z1 south) and its ceiling's height.
+type Room = {
+  x0: number; x1: number; z0: number; z1: number; h: number;
+  open?: [Side, number, number][];   // doorways: no shade across them at the foot of the wall
+  foot?: [number, number];           // where the shade on the walls starts: how high, how far out (a skirting, a dado)
+  a?: number; ceil?: number; smoke?: number;   // how dark along the floor, the ceiling's edges, the smoke high up
+  floor?: number;                    // the floor's height (the hut's boards lie 4 mm up)
+};
+const INTO: Record<Side, [number, number]> = { n: [0, 1], s: [0, -1], w: [1, 0], e: [-1, 0] };
+function room(c: Clutter, r: Room) {
+  const a = r.a ?? 0.7, [fy, fo] = r.foot ?? [0, 0], fl = r.floor ?? 0;
+  for (const s of ['n', 's', 'w', 'e'] as Side[]) {
+    const [nx, nz] = INTO[s], ns = s === 'n' || s === 's', ry = Math.atan2(nx, nz);   // ry: the wall's face, turned to the room
+    const face = s === 'n' ? r.z0 : s === 's' ? r.z1 : s === 'w' ? r.x0 : r.x1;
+    const [lo, hi] = ns ? [r.x0, r.x1] : [r.z0, r.z1];
+    // a point u along the wall, v out from its face
+    const at = (u: number, v: number): [number, number] => ns ? [u, face + nz * v] : [face + nx * v, u];
+    // the floor along the wall, where no doorway breaks it, and the foot of the wall above it
+    let u = lo;
+    const runs: [number, number][] = [];
+    for (const [, p, q] of (r.open ?? []).filter(([g]) => g === s).sort((p, q) => p[1] - q[1])) { if (p > u) runs.push([u, p]); u = Math.max(u, q); }
+    if (hi > u) runs.push([u, hi]);
+    for (const [p, q] of runs) {
+      c.floorDirt(q - p, 0.5, ...at((p + q) / 2, 0.25), 'edge', C.shade, ry + PI, fl + 0.0045, { a, low: true });
+      c.dirt(q - p, 0.5, ...xyz(at((p + q) / 2, fo + 0.003), fy + 0.25), 'edge', C.shade, { ry, a: a * 0.72 });
+    }
+    // the ceiling's edge and the top of the wall below it, dark away from the lamps (darker and
+    // yellower in a smoker's room, the smoke reaching further down the wall)
+    if (r.ceil) {
+      c.dirt(hi - lo, 0.8, ...xyz(at((lo + hi) / 2, 0.4), r.h - 0.003), 'edge', r.smoke ? C.smokeDark : C.shade, { rx: PI / 2, ry, a: r.ceil });
+      c.dirt(hi - lo, r.smoke ? 0.9 : 0.6, ...xyz(at((lo + hi) / 2, 0.0035), r.h - (r.smoke ? 0.45 : 0.3)), 'edge', r.smoke ? C.smoke : C.shade, { ry, rz: PI, a: r.smoke ?? r.ceil * 0.75 });
+    }
+  }
+  // the corners (none where a doorway comes up to one): deeper on the floor, up the corner on
+  // both walls, and on the ceiling
+  const byDoor = (s: Side, u: number) => (r.open ?? []).some(([g, p, q]) => g === s && Math.min(Math.abs(p - u), Math.abs(q - u)) < 0.1);
+  for (const [x, z, sx, sz] of [[r.x0, r.z0, 1, 1], [r.x1, r.z0, -1, 1], [r.x0, r.z1, 1, -1], [r.x1, r.z1, -1, -1]]) {
+    if (byDoor(sz > 0 ? 'n' : 's', x) || byDoor(sx > 0 ? 'w' : 'e', z)) continue;
+    c.floorDirt(1.6, 1.6, x, z, 'shadow', C.shade, 0, fl + 0.0042, { a: a * 0.95, low: true });
+    // a strip up each wall, the band turned on its side so its dark edge is in the corner
+    const k = sx * sz;
+    c.dirt(r.h, 0.6, x + sx * 0.3, r.h / 2, z + sz * 0.003, 'edge', C.shade, { ry: sz > 0 ? 0 : PI, rz: k < 0 ? PI / 2 : -PI / 2, a: a * 0.6 });
+    c.dirt(r.h, 0.6, x + sx * 0.003, r.h / 2, z + sz * 0.3, 'edge', C.shade, { ry: sx > 0 ? PI / 2 : -PI / 2, rz: k > 0 ? PI / 2 : -PI / 2, a: a * 0.6 });
+    if (r.ceil) c.dirt(2.2, 2.2, x, r.h - 0.004, z, 'shadow', r.smoke ? C.smokeDark : C.shade, { rx: PI / 2, a: Math.min(1, r.ceil * 1.4) });
+  }
+}
+const xyz = ([x, z]: [number, number], y: number): [number, number, number] => [x, y, z];
 
 // ---------- the control room ----------
 export function dressControlRoom(d: Dress) {
@@ -51,10 +132,9 @@ export function dressControlRoom(d: Dress) {
   c.calculator(1.55, T, -3.66, 0.25);
   c.pencil(-0.55, T, -3.62, 0.4); c.pencil(0.82, T, -3.7, -1.1); c.pencil(1.3, T, -3.84, 0.2, 0xa82a22);
   c.reel(3.18, T, -3.66, 0.12);
-  // somebody's cardigan left over the back of the middle chair
-  c.slab(0.5, 0.52, 0.2, 0.12, 0.1, 0.07, 0.98, -2.68, 0x5a4a3a, { ry: 0.08, rx: -0.12 });
-  c.slab(0.11, 0.1, 0.42, 0.08, 0.07, 0.31, 0.74, -2.74, 0x4e4032, { ry: 0.08, rz: 0.08 });
-  c.slab(0.44, 0.46, 0.3, 0.05, 0.05, 0.08, 0.74, -2.62, 0x54463a, { ry: 0.08, rx: -0.14 });
+  // somebody's oatmeal cardigan left over the back of the middle chair (ControlRoom.chair), one
+  // sleeve hanging down past the seat
+  cardigan(c, 0.05, -2.95, 0.08, 0x9a8668);
   c.binder(-3.1, T, -4.12, C.navy, { flat: true, ry: 0.05 }); c.binder(-3.12, T + 0.06, -4.1, C.maroon, { flat: true, ry: -0.1 });
   // a printout run off the front of the desk and onto the floor
   c.sheet(0.25, 0.32, -0.62, T + 0.002, -3.62, 'greenbar', 0);
@@ -70,14 +150,10 @@ export function dressControlRoom(d: Dress) {
   // a cable taped across the floor from the west desk to the console
   c.cable([v3(-5.16, 0.32, 1.98), v3(-5.1, 0.008, 1.88), v3(-4.55, 0.008, 0.9), v3(-4.35, 0.008, -1.6), v3(-3.75, 0.008, -3.25), v3(-3.47, 0.06, -3.55), v3(-3.46, 0.5, -3.7)], 0.008, 0x55585a, { fine: false });
   for (const [x, z, ry] of [[-4.68, 1.06, 0.5], [-4.43, -0.4, 0.08], [-4.0, -2.45, 0.3]]) c.box(0.08, 0.002, 0.05, x, 0.01, z, 0x7a7c78, { ry, fine: true });
-  // the blinds drawn up in their heads, and one let half down in the east bay, a little crooked
-  for (let k = 0; k < 6; k++) {
-    c.box(1.68, 0.07, 0.05, -4.5 + k * 1.8, 2.66, -4.42, C.blind);
-    c.box(1.68, 0.015, 0.045, -4.5 + k * 1.8, 2.618, -4.42, 0xb8b4a8, { fine: true });
-  }
-  for (let i = 0; i < 15; i++) c.box(1.66, 0.004, 0.045, 4.5, 2.58 - i * 0.05, -4.42, C.blind, { rx: 0.35, rz: i * 0.0016, fine: true });
-  c.box(1.68, 0.02, 0.05, 4.5, 1.84, -4.42, 0xb8b4a8, { rz: 0.024 });
-  for (const dx of [-0.6, 0.6]) c.rod(v3(4.5 + dx, 2.63, -4.396), v3(4.5 + dx, 1.85 + dx * 0.02, -4.396), 0.0016, 0xc8c4b8, { fine: true });
+  // the aluminium blinds drawn up in their heads under the window head (2.70), each with its pull
+  // cord and its tilt wand; the one in the east bay let half down, a little crooked, and the
+  // second from the west a third of the way
+  for (let k = 0; k < 6; k++) blind(c, -4.5 + k * 1.8, -4.42, 1.68, 2.70, [0, 8, 0, 0, 0, 15][k], [0, 0.03, 0, 0, 0, 0.024][k], k % 2 ? 1 : -1);
   // on the sills: a cactus in the west bay, binoculars in the east one
   c.cyl(0.05, 0.04, 0.08, -4.6, 1.02, -4.32, 0x9a5a36, { seg: 10 });
   c.cyl(0.026, 0.03, 0.14, -4.6, 1.13, -4.32, 0x4a6a3a, { seg: 8 });
@@ -153,26 +229,73 @@ export function dressControlRoom(d: Dress) {
   // the floor where the night shifts walk: the doors, the chairs, the rack, the coffee
   c.floorDirt(1.3, 1.0, -2.4, 3.95, 'wear', 0x140e08, 0);
   c.floorDirt(1.2, 1.4, 5.4, 1.6, 'wear', 0x140e08, PI / 2);
-  for (const x of [-2.15, 0, 2.15]) c.floorDirt(1.0, 0.8, x, -3.0, 'wear', 0xc8b8a0, x * 0.4);   // the casters wear the polish off
+  // the casters have worn rings round the console chairs and the supervisor's (dark: dirt ground in)
+  for (const [x, z] of [[-2.23, -2.95], [0.05, -2.95], [2.07, -2.95], [2.45, 3.3]]) c.floorDirt(0.72, 0.72, x, z, 'casters', 0x6a5a48, x * 1.3, 0.005, { a: 0.75 });
   c.floorDirt(1.6, 0.7, 4.85, -1.3, 'wear', C.grime, PI / 2);
   c.floorDirt(0.9, 0.7, 3.7, 3.4, 'wear', C.grime, 0.4);
-  c.floorDirt(0.9, 0.7, 2.45, 3.4, 'wear', 0xc8b8a0, 0.2);
   for (const [x, z, ry] of [[1.2, 3.75, 0.3], [-1.6, 3.6, -0.5], [3.9, 0.9, 1.2], [-0.8, -2.4, 0.1]]) c.floorDirt(0.6, 0.15, x, z, 'scuff', C.heel, ry);
   skirt(c, -0.6, 4.478, PI, 2.6); skirt(c, 5.978, 3.3, -PI / 2, 2.2); skirt(c, -5.978, 0.95, PI / 2, 1.2);
   c.dirt(0.7, 0.18, -1.6, 0.42, 4.477, 'scuff', 0x1a1612, { ry: PI });
   c.dirt(0.6, 0.16, 5.977, 0.36, 2.75, 'scuff', 0x1a1612, { ry: -PI / 2 });
+  // light and shade: the dark along the walls (the dado stands 2 cm out) and in the corners, the
+  // ceiling's edges away from the two lit fixtures; shadows under what stands on the floor (the
+  // desks, the chairs, the rack and the cabinets have theirs in ControlRoom.ts)
+  room(c, { x0: -6.0, x1: 6.0, z0: -4.5, z1: 4.5, h: 3.0, open: [['s', -2.9, -1.9], ['e', 1.1, 2.1]], foot: [0, 0.02], a: 0.7, ceil: 0.55 });
+  under(c, 1.98, 2.36, 0.66); under(c, -3.75, -3.7, 0.75); under(c, -5.55, 3.95, 0.9, 0.9, 0.65); under(c, -3.2, 4.39, 0.4, 0.36, 0.35);
+  base(c, 4.07, 4.69, 3.59, 4.11); base(c, 5.47, 5.97, -1.86, -1.24, 0.55); base(c, 5.4, 5.8, -0.65, -0.15, 0.5, 0.18);
+  base(c, 5.43, 5.81, -0.15, 0.15, 0.6, 0.2); base(c, -5.8, -5.44, 2.69, 3.01, 0.6, 0.2);
   done(c, d);
+}
+
+// The blinds over a window: the head rail (its top at y), the stack of slats drawn up under it,
+// n slats let down below that with the bottom rail (crooked by tilt), the pull cord at one end and
+// the tilt wand at the other (side: which end has the cord). Faces +z at z.
+function blind(c: Clutter, x: number, z: number, w: number, y: number, n = 0, tilt = 0, side = 1) {
+  c.box(w + 0.02, 0.026, 0.06, x, y - 0.013, z, C.rail);
+  c.box(w, 0.088, 0.05, x, y - 0.07, z, C.blind, { faces: [null, null, null, null, 'slats', null] });
+  for (let i = 0; i < n; i++) c.box(w - 0.02, 0.004, 0.045, x, y - 0.12 - i * 0.05, z, C.blind, { rx: 0.35, rz: (i - n / 2) * tilt / n, fine: true });
+  const by = y - 0.125 - n * 0.05;
+  c.box(w, 0.018, 0.052, x, by, z, C.rail, { rz: tilt });
+  if (n) for (const dx of [-0.36, 0.36]) c.rod(v3(x + dx * w, y - 0.07, z + 0.024), v3(x + dx * w, by + dx * w * tilt, z + 0.024), 0.0016, 0xc8c4b8, { fine: true });
+  c.rod(v3(x + side * (w / 2 - 0.05), y - 0.03, z + 0.03), v3(x + side * (w / 2 - 0.05), by - 0.5, z + 0.03), 0.0016, 0xc8c4b8, { fine: true });
+  c.cyl(0.008, 0.012, 0.04, x + side * (w / 2 - 0.05), by - 0.52, z + 0.03, 0xc8c4b8, { fine: true, seg: 6 });
+  c.rod(v3(x - side * (w / 2 - 0.04), y - 0.04, z + 0.035), v3(x - side * (w / 2 - 0.04), y - 0.66, z + 0.04), 0.005, 0xa8b0b0, { fine: true, seg: 6 });
+}
+// A cardigan left over a chair's back (a chair as ControlRoom.chair at (x, z), turned yaw): rolled
+// over the top, hanging down the back, a fold on the front, one sleeve down past the seat.
+function cardigan(c: Clutter, x: number, z: number, yaw: number, col: number) {
+  const s = Math.sin(yaw), k = Math.cos(yaw), ry = yaw;
+  const at = (u: number, y: number, v: number): [number, number, number] => [x + k * u + s * v, y, z - s * u + k * v];
+  const dark = new THREE.Color(col).multiplyScalar(0.78), knit: (Thing | null)[] = [null, null, null, null, 'knit', 'knit'];
+  c.cyl(0.034, 0.038, 0.42, ...at(0.01, 1.075, 0.22), col, { rz: PI / 2 + 0.04, ry, seg: 8, side: 'knit' });
+  // down the back: the two fronts, the left hanging lower and askew, the hem ribbed and darker
+  c.slab(0.2, 0.2, 0.38, 0.028, 0.034, ...at(0.1, 0.885, 0.3), col, { ry: ry + 0.04, rx: -0.13, rz: 0.03, faces: knit });
+  c.slab(0.2, 0.22, 0.46, 0.028, 0.034, ...at(-0.1, 0.845, 0.305), col, { ry: ry - 0.05, rx: -0.15, rz: -0.06, faces: knit });
+  c.box(0.2, 0.04, 0.038, ...at(0.105, 0.7, 0.325), dark, { ry: ry + 0.04, rx: -0.13, rz: 0.03 });
+  c.box(0.22, 0.04, 0.038, ...at(-0.115, 0.62, 0.34), dark, { ry: ry - 0.05, rx: -0.15, rz: -0.06 });
+  c.slab(0.42, 0.43, 0.13, 0.024, 0.028, ...at(0.0, 1.005, 0.165), col, { ry, rx: 0.1, faces: knit });
+  // the right sleeve down the side past the seat, its cuff; the left one folded over the top
+  c.slab(0.12, 0.11, 0.1, 0.08, 0.08, ...at(0.235, 1.02, 0.25), col, { ry });
+  c.slab(0.1, 0.085, 0.56, 0.075, 0.065, ...at(0.268, 0.74, 0.29), col, { ry, rz: 0.04, faces: knit });
+  c.box(0.092, 0.05, 0.07, ...at(0.278, 0.445, 0.29), dark, { ry, rz: 0.04 });
+  c.slab(0.1, 0.1, 0.22, 0.07, 0.07, ...at(-0.235, 0.96, 0.27), col, { ry, rz: -0.25, faces: knit });
 }
 
 // ---------- the south corridor and the records room ----------
 export function dressAnnex(d: Dress) {
-  const c = new Clutter('annex', d.mat), g = 0x3a3024;
-  // the corridor: worn down the middle, more at the doors
-  c.floorDirt(7.4, 0.8, -2.1, 5.72, 'wear', g, 0);
-  c.floorDirt(1.0, 0.7, -2.4, 5.2, 'wear', g, 0); c.floorDirt(0.9, 0.6, -3.9, 6.3, 'wear', g, 0);
-  c.floorDirt(0.8, 0.8, -5.6, 5.7, 'wear', g, PI / 2); c.floorDirt(0.8, 0.5, 0.45, 6.32, 'wear', g, 0);
-  for (const [x, z, ry] of [[-1.0, 5.55, 0.2], [0.7, 5.95, -0.3], [-4.6, 5.45, 0.5], [-3.2, 6.1, 2.8], [1.3, 5.6, 1.4]]) c.floorDirt(0.6, 0.15, x, z, 'scuff', C.heel, ry);
+  const c = new Clutter('annex', d.mat), g = 0x3a3024, r = rng(29);
+  // the corridor: worn down the middle in overlapping patches, each turned one way or the other,
+  // a dull grey-yellow on the vinyl; a duller patch at each door; heel marks
+  for (let i = 0; i < 5; i++) c.floorDirt(1.65, 0.78, -4.95 + i * 1.6 + (r() - 0.5) * 0.2, 5.72 + (r() - 0.5) * 0.14, 'lane', 0x8a8066, (r() < 0.5 ? 0 : PI) + (r() - 0.5) * 0.08, 0.005, { a: 0.5 });
+  for (const [x, z, w, dd, ry] of [[-2.4, 5.15, 1.0, 0.6, 0], [-3.9, 6.3, 0.9, 0.55, PI], [-5.55, 5.7, 0.8, 0.7, PI / 2], [0.45, 6.3, 0.8, 0.5, 0], [1.6, 5.7, 0.7, 0.7, -PI / 2]])
+    c.floorDirt(w, dd, x, z, 'lane', 0x6e6650, ry, 0.0052, { a: 0.42 });
+  for (const [x, z, ry] of [[-1.0, 5.55, 0.2], [0.7, 5.95, -0.3], [-4.6, 5.45, 0.5], [-3.2, 6.1, 2.8], [1.3, 5.6, 1.4]]) c.floorDirt(0.6, 0.15, x, z, 'scuff', C.heel, ry, 0.0055, { a: 0.6 });
   skirt(c, -2.0, 4.828, 0, 7.6); skirt(c, -2.0, 6.573, PI, 7.6);
+  // the dark along the walls (over the 10 cm skirting) and the far ends, darker floor between the
+  // two fixtures and at the west end where neither reaches; the vending machine's and the bucket's shadows
+  room(c, { x0: -6.0, x1: 1.96, z0: 4.807, z1: 6.598, h: 2.798, open: [['n', -2.9, -1.9], ['s', -4.4, -3.4], ['w', 5.22, 6.18]], foot: [0.1, 0], a: 0.66, ceil: 0.5 });
+  for (const [x, w, a] of [[-1.75, 2.2, 0.2], [-5.6, 1.8, 0.28], [1.85, 1.1, 0.16]]) c.floorDirt(w, 1.8, x, 5.7, 'shadow', C.shade, 0, 0.0048, { a });
+  base(c, 0.95, 1.75, 5.84, 6.56); under(c, 1.76, 5.02, 0.8, 0.8, 0.65);
   // a coat and a hard hat on hooks along the north wall
   c.coat(0.8, 1.75, 4.805, 0, 0x5a4a36);
   c.box(0.05, 0.06, 0.01, 1.3, 1.77, 4.81, 0x6c7074);
@@ -187,6 +310,7 @@ export function dressAnnex(d: Dress) {
   c.box(0.1, 0.14, 0.05, -5.62, 1.35, 4.83, 0xb8261e); c.box(0.06, 0.03, 0.01, -5.62, 1.37, 4.858, 0xf0e8d8);
   c.plate(-3.08, 1.25, 4.805, 0); c.dirt(0.16, 0.2, -3.08, 1.25, 4.808, 'smudge', C.grime, {});
   c.clock(-1.15, 2.3, 6.598, PI, 0.14);
+  c.frame(-3.75, 1.6, 4.805, 0, 0.5, 0.333, 'aerial', 0x2a2c2e);   // the survey flight's picture of the array
   // the mop bucket in the corner by the restrooms
   const bx = 1.76, bz = 5.02;
   c.cyl(0.165, 0.145, 0.3, bx, 0.15, bz, 0xc8a030, { seg: 12 });
@@ -201,13 +325,51 @@ export function dressAnnex(d: Dress) {
   for (let x = -5.0; x < 2; x += 1.6) c.box(0.04, 0.05, 0.05, x, 2.66, 4.83, C.grey, { fine: true });
   c.box(0.12, 0.12, 0.06, -0.6, 2.66, 4.84, C.grey);
   c.dirt(0.45, 0.38, 1.15, 2.795, 6.0, 'stain', C.water, { rx: PI / 2 });
-  // a ceiling tile pushed up for the wiring and left hanging off its edge, the cables showing
-  c.box(0.7, 0.004, 0.6, -5.0, 2.797, 5.7, 0x0a0b0c);
-  c.box(0.7, 0.014, 0.6, -5.0, 2.79 - 0.3 * Math.sin(0.6), 5.4 + 0.3 * Math.cos(0.6), 0xb9b3a4, { rx: 0.6 });
-  c.cable([v3(-5.12, 2.83, 5.82), v3(-5.16, 2.62, 5.86), v3(-5.06, 2.47, 5.92)], 0.008, C.cable);
-  c.cable([v3(-4.86, 2.83, 5.78), v3(-4.84, 2.66, 5.74), v3(-4.9, 2.56, 5.8)], 0.006, 0x8a7a3a);
+  // a ceiling tile pushed up for the wiring and left hanging off its west edge, the cables showing:
+  // the cell x -2.0 to -1.14, z 5.55 to 6.3 of the grid (0.86 by 0.75), well clear of both fixtures
+  const hx = -2.0, hz = 5.925, ht = 0.5;
+  c.box(0.84, 0.004, 0.73, hx + 0.43, 2.797, hz, 0x1a1814);
+  c.box(0.84, 0.014, 0.73, hx + 0.01 + 0.42 * Math.cos(ht), 2.79 - 0.42 * Math.sin(ht), hz, 0x9a9488, { rz: -ht });
+  c.cable([v3(hx + 0.3, 2.83, hz - 0.1), v3(hx + 0.34, 2.6, hz - 0.12), v3(hx + 0.46, 2.46, hz - 0.06)], 0.008, C.cable);
+  c.cable([v3(hx + 0.55, 2.83, hz + 0.12), v3(hx + 0.57, 2.66, hz + 0.16), v3(hx + 0.5, 2.55, hz + 0.1)], 0.006, 0x8a7a3a);
 
-  // the records room: a drawer of the middle cabinet left open, folders in it
+  // the records room: the archive boxes on the west shelving (world/Annex.ts has the shelves),
+  // no two alike: tan or grey board, taller or shallower, pushed back or forward, a lid ajar, the
+  // labels typed or written on (or gone), one pulled half out, a gap; binders standing on one
+  // shelf and lying on another. The STATION 01 box at 1.135, z 8.6 is the room's own.
+  {
+    const br = rng(5), tones = [0xa3865d, 0x9a7e58, 0xb0946a, 0x8e7a5e, 0xc2b8a4, 0xb8ae98, 0xa08a6a];
+    const labels: Thing[] = ['boxlabel', 'boxlabelB', 'boxlabel', 'boxlabelC', 'boxlabelD', 'boxlabel'];
+    const levels = [0.135, 0.635, 1.135, 1.635];
+    levels.forEach((y, li) => {
+      for (let i = 0; i < 7; i++) {
+        const z = 7.4 + i * 0.4;
+        if (li === 2 && i === 3) continue;                    // the STATION 01 box
+        if (li === 2 && i === 6) continue;                    // a gap where a box went
+        if (li === 1 && i === 5) {                            // binders standing, the last one leaning
+          for (let k = 0; k < 5; k++) c.box(0.27, 0.3, 0.055, -5.82, y + 0.15, z - 0.13 + k * 0.062, [C.navy, C.maroon, C.olive, 0x2b2b30, C.navy][k], { rx: k === 4 ? 0.25 : 0 });
+          continue;
+        }
+        if (li === 3 && i === 1) {                            // binders lying in a stack
+          for (let k = 0; k < 3; k++) c.binder(-5.8, y + k * 0.06, z, [C.maroon, 0x2b2b30, C.olive][k], { flat: true, ry: PI / 2 + (br() - 0.5) * 0.2 });
+          continue;
+        }
+        const bw = 0.3 + br() * 0.06, bh = 0.22 + br() * 0.08, bd = 0.32 + br() * 0.07, col = tones[Math.floor(br() * tones.length)];
+        const fx = -5.95 + bd + br() * 0.035 + (li === 0 && i === 2 ? 0.17 : 0), cx = fx - bd / 2, yy = y + (bh - 0.02) / 2, ry = (br() - 0.5) * 0.06;
+        c.box(bd, bh - 0.02, bw, cx, yy, z, col, { ry });
+        // the lid, a little proud; now and then set ajar
+        const ajar = br() < 0.14;
+        c.box(bd + 0.012, 0.035, bw + 0.012, cx + (ajar ? 0.03 : 0), y + bh - 0.02 + (ajar ? 0.02 : 0.012), z + (ajar ? 0.02 : 0), new THREE.Color(col).multiplyScalar(0.94), { ry: ry + (ajar ? 0.12 : 0), rz: ajar ? -0.08 : 0 });
+        const grey = col === 0xc2b8a4 || col === 0xb8ae98;
+        if (grey) c.box(0.004, 0.03, 0.09, fx + 0.0015, y + bh - 0.075, z, 0x2a2018, { ry });   // the hand hole of a records box
+        if (br() > 0.1) c.plane(0.15, 0.09, fx + 0.003, y + bh * (grey ? 0.42 : 0.55) + (br() - 0.5) * 0.03, z + (br() - 0.5) * 0.06, labels[Math.floor(br() * labels.length)], { ry: PI / 2 + ry, rz: (br() - 0.5) * 0.08 });
+      }
+    });
+    // on the top shelf: a few more boxes, one on another
+    for (const [z, h, w, col] of [[7.55, 0.26, 0.34, 0xb0946a], [8.0, 0.24, 0.32, 0xc2b8a4], [9.5, 0.28, 0.36, 0x9a7e58]] as const) c.box(0.36, h, w, -5.79, 2.145 + h / 2, z, col, { ry: (br() - 0.5) * 0.1 });
+    c.box(0.34, 0.2, 0.3, -5.8, 2.145 + 0.24 + 0.1, 8.02, 0xa3865d, { ry: 0.2 });
+  }
+  // a drawer of the middle cabinet left open, folders in it
   const fx = -4.46, fy = 0.52;
   c.box(0.44, 0.27, 0.02, fx, fy, 9.52, 0x55705e);
   c.box(0.12, 0.025, 0.03, fx, fy + 0.08, 9.5, C.steel);
@@ -242,15 +404,22 @@ export function dressAnnex(d: Dress) {
   c.plate(-1.002, 0.3, 8.7, -PI / 2, 'outlet');
   c.cable([v3(-3.07, W + 0.01, 8.32), v3(-2.8, W + 0.005, 8.22), v3(-2.77, 0.4, 8.2), v3(-2.7, 0.012, 8.3), v3(-1.9, 0.012, 8.65), v3(-1.06, 0.012, 8.7), v3(-1.01, 0.27, 8.7)], 0.006, 0x1e1f20);
   // the floor, a dropped index card, the dust and a web in the corner, the leak
-  c.floorDirt(1.0, 0.9, -3.9, 7.2, 'wear', g, 0);
-  c.floorDirt(1.4, 0.8, -3.0, 7.8, 'wear', g, 0.6);
-  c.floorDirt(0.8, 0.7, -1.7, 9.2, 'wear', g, 0);
-  c.floorDirt(0.9, 0.6, -5.15, 8.6, 'wear', g, PI / 2);
+  for (const [x, z, w, dd, ry] of [[-3.9, 7.2, 1.0, 0.9, 0], [-3.0, 7.8, 1.4, 0.8, 0.6], [-1.7, 9.2, 0.8, 0.7, 0], [-5.15, 8.6, 0.9, 0.6, PI / 2]]) c.floorDirt(w, dd, x, z, 'lane', g, ry, 0.005, { a: 0.55 });
   c.sheet(0.125, 0.075, -2.15, 0.003, 7.95, 'white', 0.7, { color: 0xe8e0c8 });
   skirt(c, -2.4, 10.478, PI, 2.0); skirt(c, -1.002, 9.6, -PI / 2, 1.6);
   web(c, -5.8, 2.795, 10.3, -1, 1);
   c.dirt(0.55, 0.45, -5.2, 2.796, 9.95, 'stain', C.water, { rx: PI / 2, ry: 0.4 });
   c.dirt(0.2, 0.5, -5.62, 2.35, 10.496, 'drip', C.water, { ry: PI });
+  // light and shade: the dark along the walls and in the corners, the ceiling's edges; the shadows
+  // of the shelving, the cabinets, the bookcase, the card index, the table and the chair, the bin;
+  // the green lamp's pool on the table and the two tubes' on the floor
+  room(c, { x0: -6.0, x1: -1.0, z0: 6.8, z1: 10.5, h: 2.798, open: [['n', -4.4, -3.4]], a: 0.72, ceil: 0.6 });
+  base(c, -6.0, -5.555, 7.13, 10.17); under(c, -5.78, 8.65, 0.9, 3.6, 0.55);
+  base(c, -5.25, -3.67, 9.86, 10.48); base(c, -3.3, -1.4, 10.12, 10.48); base(c, -1.5, -1.0, 7.5, 8.4);
+  for (const [x, z] of [[-4.45, 8.22], [-2.85, 8.22], [-4.45, 8.98], [-2.85, 8.98], [-3.85, 9.17], [-3.45, 9.17], [-3.85, 9.53], [-3.45, 9.53]]) under(c, x, z, 0.2, 0.2, 0.7);
+  under(c, -3.65, 8.6, 2.4, 1.5, 0.42); under(c, -3.65, 9.35, 0.9, 0.85, 0.4); under(c, -4.25, 8.88, 0.66, 0.66, 0.7); under(c, -4.75, 6.95, 0.36, 0.36, 0.35);
+  pool(c, -3.22, 0.782, 8.46, 0.88, 0.56, 0.32);
+  pool(c, -4.6, 0.0052, 8.0, 2.2, 1.5, 0.14, C.tube, 0.15); pool(c, -2.4, 0.0052, 9.5, 2.0, 1.4, 0.14, C.tube, 0.15);
   done(c, d);
 }
 
@@ -273,9 +442,12 @@ export function dressLab(d: Dress) {
   for (const [y, z, col, h] of [[0.515, -3.6, 0x5a3a22, 0.22], [0.515, -3.35, 0xd8d4c8, 0.26], [1.115, -3.55, 0x5a3a22, 0.2], [1.115, -3.3, 0x2a4a3a, 0.22], [1.715, -3.5, 0xd8d4c8, 0.24]] as const)
     c.bottle(13.0, y, z, 0.045, h, col);
   for (const z of [-3.85, -3.75]) c.box(0.1, 0.07, 0.07, 13.0, 1.75, z, 0xc8782a, { ry: 0.1 });
-  // the wet bench: a towel over its edge, tongs and a thermometer in the trays, a box of paper
-  c.box(0.3, 0.012, 0.16, 16.62, 0.946, -5.2, 0x7a8a8a);
-  c.plane(0.3, 0.42, 16.62, 0.73, -5.094, 'white', { color: 0x7a8a8a });
+  // the wet bench: a striped towel folded over its front edge (the top at 0.94, the edge at z
+  // -5.1) and hanging down the cupboard, tongs and a thermometer in the trays, a box of paper
+  const towel: Thing[] = ['towel', 'towel', 'towel', 'towel', 'towel', 'towel'];
+  c.box(0.3, 0.008, 0.15, 16.62, 0.944, -5.18, 0xffffff, { faces: towel });
+  c.cyl(0.012, 0.012, 0.3, 16.62, 0.934, -5.093, 0x5c544a, { rz: PI / 2, seg: 6 });
+  c.box(0.3, 0.52, 0.012, 16.62, 0.675, -5.085, 0xffffff, { rx: -0.025, faces: towel });
   c.rod(v3(14.05, 0.99, -5.5), v3(14.2, 1.06, -5.25), 0.006, 0xc89a5a, { fine: true });
   c.rod(v3(15.38, 0.99, -5.52), v3(15.52, 1.06, -5.27), 0.006, 0xc89a5a, { fine: true });
   c.rod(v3(14.75, 0.98, -5.45), v3(14.85, 1.2, -5.55), 0.004, 0xe8e0c8, { fine: true });
@@ -309,6 +481,16 @@ export function dressLab(d: Dress) {
   c.floorDirt(1.0, 0.8, 13.3, -1.2, 'wear', g, PI / 2);
   c.floorDirt(1.4, 0.8, 15.4, -1.8, 'wear', g, 0.8);
   web(c, 13.0, 2.75, -5.6, -1, -1);
+  // light and shade: the walls' foot and the corners, the ceiling's edges; the shadows of the
+  // wet bench's cupboard, the shelves, the archive bench and the records desk, the stool, the jugs;
+  // the task lamp's pool on the archive bench and the safelight's red on the wet bench
+  room(c, { x0: 12.8, x1: 19.0, z0: -5.8, z1: 0.8, h: 2.753, open: [['w', -1.7, -0.7]], a: 0.72, ceil: 0.55 });
+  base(c, 13.1, 17.3, -5.76, -5.14); base(c, 12.82, 13.18, -5.5, -3.1, 0.55); under(c, 18.6, -3.0, 1.0, 3.6, 0.5);
+  base(c, 15.7, 15.76, 0.09, 0.75, 0.55, 0.2); base(c, 18.24, 18.3, 0.09, 0.75, 0.55, 0.2); under(c, 17.0, 0.42, 3.0, 1.1, 0.4);
+  under(c, 16.42, 0.44, 0.8, 0.8, 0.55);
+  for (const [x, z] of [[17.62, -5.6], [17.95, -5.62], [18.55, -5.58]]) under(c, x, z, 0.5, 0.42, 0.7);
+  pool(c, 18.55, 0.893, -3.6, 0.66, 1.2, 0.3);
+  pool(c, 15.0, 0.942, -5.32, 1.8, 0.5, 0.25, 0xff4a30);
   done(c, d);
 }
 
@@ -334,14 +516,17 @@ export function dressMotelOffice(d: Dress) {
   c.box(0.08, 0.03, 0.22, -43.75, K + 0.015, 23.72, 0x3a2a1c);
   c.box(0.012, 0.15, 0.09, -43.74, K + 0.09, 23.67, 0xffffff, { rz: 0.12, faces: ['brochureA'] });
   c.box(0.012, 0.15, 0.09, -43.73, K + 0.09, 23.77, 0xffffff, { rz: 0.1, faces: ['brochureB'] });
-  // a fan on the shelves by the television, the clerk's cardigan by the key board
+  // a fan on the shelves by the television, the clerk's mustard cardigan by the key board
   c.fan(-45.33, 1.5, 27.28, PI / 2 + 0.3);
-  c.coat(-45.0, 1.75, 22.2, 0, 0x3e4a5a);
-  // the blind drawn up in the window, the mat inside the door
-  c.box(0.06, 0.1, 2.0, -41.27, 2.04, 26.2, C.blind);
-  c.box(0.05, 0.02, 2.0, -41.27, 1.98, 26.2, 0xb8b2a0, { fine: true });
-  c.rod(v3(-41.3, 1.98, 25.4), v3(-41.3, 1.4, 25.4), 0.0015, 0xc8c4b8, { fine: true });
-  c.cyl(0.008, 0.012, 0.04, -41.3, 1.38, 25.4, 0xc8c4b8, { fine: true, seg: 6 });
+  c.coat(-45.0, 1.75, 22.2, 0, 0xa0803a, { knit: true });
+  // the blind drawn up in the window (its head at 2.1), with its cord and wand; the mat inside the door
+  { const x = -41.27, y = 2.1, z = 26.2;
+    c.box(0.06, 0.026, 2.04, x, y - 0.013, z, C.rail);
+    c.box(0.05, 0.088, 2.0, x, y - 0.07, z, C.blind, { faces: [null, 'slats', null, null, null, null] });
+    c.box(0.052, 0.018, 2.0, x, y - 0.125, z, C.rail);
+    c.rod(v3(x - 0.03, y - 0.03, z - 0.8), v3(x - 0.03, 1.4, z - 0.8), 0.0015, 0xc8c4b8, { fine: true });
+    c.cyl(0.008, 0.012, 0.04, x - 0.03, 1.38, z - 0.8, 0xc8c4b8, { fine: true, seg: 6 });
+    c.rod(v3(x - 0.035, y - 0.04, z + 0.94), v3(x - 0.04, y - 0.66, z + 0.94), 0.005, 0xa8b0b0, { fine: true, seg: 6 }); }
   c.box(0.62, 0.012, 0.95, -41.9, 0.006, 24.1, 0x4a3a2a);
   // the lamp's cord down behind the counter to the wall
   c.plate(-45.58, 0.3, 25.9, PI / 2, 'outlet');
@@ -353,14 +538,26 @@ export function dressMotelOffice(d: Dress) {
   c.dirt(0.45, 0.4, -41.202, 0.42, 26.6, 'stain', C.water, { ry: -PI / 2 });
   c.dirt(0.6, 0.5, -44.6, 2.785, 23.2, 'stain', C.water, { rx: PI / 2 });
   web(c, -45.4, 2.785, 22.4, -1, -1);
+  // light and shade: the dark along the walls (over the wainscot, 2 cm out) and in the corners, a
+  // smoker's yellow high on the walls and the ceiling; the shadows round the counter, the shelves,
+  // the chair, the plant and the mat; the desk lamp's pool on the counter, the ceiling light's on
+  // the floor, and its shine along the counter's top (the long fixture over the public side)
+  room(c, { x0: -45.6, x1: -41.2, z0: 22.2, z1: 27.6, h: 2.79, open: [['e', 23.4, 24.8]], foot: [0, 0.018], a: 0.72, ceil: 0.6, smoke: 0.4 });
+  base(c, -44.7, -43.7, 23.65, 26.85, 0.7, 0.3); base(c, -45.555, -45.105, 26.35, 27.35);
+  under(c, -42.45, 27.1, 0.95, 0.8, 0.55); under(c, -41.75, 26.95, 0.75, 0.75, 0.6); base(c, -42.21, -41.59, 23.63, 24.57, 0.35, 0.1);
+  c.dirt(1.9, 1.5, -44.3, 2.786, 25.6, 'shadow', C.smoke, { rx: PI / 2, ry: PI / 2, a: 0.28 });
+  pool(c, -44.3, K + 0.012, 26.32, 0.86, 0.9, 0.4, C.lamp, 0.7);
+  pool(c, -42.9, 0.0052, 24.65, 2.2, 1.7, 0.2, C.lamp, 0.2);
+  sheen(c, -43.88, K + 0.013, 24.7, 1.8, 0.3, PI / 2, 0.26, 0xfff0d8, 0.2);
   done(c, d);
 }
 
 // ---------- room 6 (local metres, world/Room6.ts) ----------
 export function dressRoom6(d: Dress) {
   const c = new Clutter('room6', d.mat), g = 0x2a2016, T6 = 0.81;   // the table's top
-  c.frame(1.12, 1.78, -3.0, 0, 0.85, 0.53, 'painting', 0x4a3020);
-  c.frame(-2.25, 1.78, -1.15, PI / 2, 0.3, 0.41, 'paintingTall', 0x4a3020);
+  // a butte in the day over the bed, desert flowers over the dresser
+  c.frame(1.12, 1.78, -3.0, 0, 0.85, 0.53, 'paintingBed', 0x4a3020);
+  c.frame(-2.25, 1.78, -1.15, PI / 2, 0.3, 0.41, 'flowers', 0x4a3020);
   // her suitcase stood on end against the wall past the foot of the bed (turned along the wall,
   // so the way between the bed and the table stays open: reachcheck)
   const sx = 2.06, sz = -0.07;
@@ -381,7 +578,7 @@ export function dressRoom6(d: Dress) {
   // the nightstand: pills and a glass; a paperback on the bed, shoes under its edge
   c.bottle(-0.47, 0.585, -2.7, 0.018, 0.075, 0xc87a2a, 0xf0ece0);
   c.cyl(0.03, 0.026, 0.09, -0.07, 0.63, -2.7, 0xb8c8cc, { seg: 10 });
-  c.box(0.13, 0.02, 0.19, 1.55, 0.635, -1.05, 0xd8c08a, { ry: 0.5, faces: [null, null, 'paintingTall'] });
+  c.box(0.13, 0.02, 0.19, 1.55, 0.635, -1.05, 0xf2e6cc, { ry: 0.5, faces: [null, null, 'paperback'] });
   c.box(0.125, 0.012, 0.18, 1.55, 0.629, -1.05, 0xe8e0c8, { ry: 0.5, fine: true });
   c.box(0.09, 0.07, 0.25, 0.2, 0.035, -1.0, 0x2a1e18, { ry: 0.15 });
   c.box(0.09, 0.07, 0.25, 0.22, 0.035, -1.27, 0x2a1e18, { ry: -0.1 });
@@ -399,6 +596,22 @@ export function dressRoom6(d: Dress) {
   c.dirt(0.6, 0.15, -0.55, 0.32, 2.996, 'scuff', 0x1a1612, { ry: PI });
   c.dirt(0.55, 0.45, 1.8, 2.596, -2.5, 'stain', C.water, { rx: PI / 2 });
   web(c, 2.05, 2.595, -2.8, 1, -1, 0.36);
+  // light and shade: the dark along the walls (over the 12 cm skirting) and in the corners, years of
+  // cigarettes yellowing the walls and the ceiling high up, and over the table most; the shadows
+  // round the bed, the nightstand, the dresser, the suitcase, under the table and the chairs; the
+  // two lamps' pools on their tops, on the floor and on the wall behind them
+  room(c, { x0: -2.25, x1: 2.25, z0: -3.0, z1: 3.0, h: 2.6, open: [['s', -1.98, -0.82]], foot: [0.12, 0], a: 0.72, ceil: 0.6, smoke: 0.42 });
+  base(c, 0.18, 2.06, -2.9, -0.43, 0.72, 0.3); base(c, -0.535, 0.015, -2.8, -2.2); base(c, -2.2, -1.56, -1.525, -0.075);
+  base(c, 1.96, 2.16, -0.37, 0.23, 0.65, 0.2); under(c, 0.75, 2.85, 1.3, 0.45, 0.45);
+  for (const [x, z] of [[0.15, 1.1], [1.25, 1.1], [0.15, 1.8], [1.25, 1.8]]) under(c, x, z, 0.2, 0.2, 0.7);
+  under(c, 0.7, 1.45, 1.9, 1.45, 0.42);
+  for (const z of [2.3, 0.56]) under(c, 0.75, z, 0.9, 0.9, 0.45);
+  under(c, 0.2, -1.0, 0.32, 0.5, 0.6); under(c, 0.22, -1.27, 0.32, 0.5, 0.6);
+  c.dirt(1.8, 1.5, 0.75, 2.597, 1.45, 'shadow', C.smoke, { rx: PI / 2, a: 0.32 });
+  pool(c, 1.06, 0.836, 1.34, 0.62, 0.62, 0.36); pool(c, 1.55, 0.0052, 1.2, 1.4, 1.5, 0.22);
+  pool(c, -0.26, 0.591, -2.5, 0.5, 0.56, 0.32); pool(c, -0.26, 0.0052, -1.95, 1.3, 0.9, 0.2);
+  c.dirt(1.2, 1.0, -0.26, 1.3, -2.997, 'shadow', C.lamp, { a: 0.26, glow: 0.4 });
+  c.dirt(1.4, 1.1, 2.247, 1.3, 1.15, 'shadow', C.lamp, { ry: -PI / 2, a: 0.16, glow: 0.3 });
   done(c, d);
 }
 
@@ -456,9 +669,9 @@ export function dressDiner(d: Dress) {
   c.ashtray(0.25, B, 5.92, 3);
   // the walls: old photographs, a painting, the pie board, help wanted, the calendar, a clock,
   // and a number written by the payphone
-  c.frame(-1.1, 2.35, -8.8, 0, 0.48, 0.32, 'printB', 0x2a2420);
-  c.frame(-3.6, 1.9, -8.8, 0, 0.8, 0.5, 'painting', 0x5a3a24);
-  c.frame(0.9, 1.9, -8.8, 0, 0.4, 0.27, 'printA', 0x2a2420);
+  c.frame(-1.1, 2.35, -8.8, 0, 0.48, 0.36, 'sepiaTruck', 0x2a2420);
+  c.frame(-3.6, 1.9, -8.8, 0, 0.8, 0.5, 'ranch', 0x5a3a24);
+  c.frame(0.9, 1.9, -8.8, 0, 0.4, 0.3, 'sepiaGroup', 0x2a2420);
   c.clock(-2.4, 2.65, -8.8, 0, 0.2);
   c.frame(-5.7, 1.7, -4.6, PI / 2, 0.3, 0.38, 'pie', 0x5a4430);
   c.notice(-5.7, 1.62, -0.75, PI / 2, 0.16, 0.11, 'help', { tilt: 0.05 });
@@ -472,14 +685,33 @@ export function dressDiner(d: Dress) {
     for (let i = 0; i < 4; i++) { const a = i * PI / 2 + 0.4; c.box(0.56, 0.012, 0.13, x + Math.cos(a) * 0.36, 2.89, z - Math.sin(a) * 0.36, 0x5d422e, { ry: a, rx: 0.12 }); }
     c.cyl(0.07, 0.07, 0.05, x, 2.86, z, 0xd8c890, { seg: 10, fine: true });
   }
-  // the floor in front of the stools and at the door, kicks on the counter's front, dust, a web
-  c.floorDirt(10.2, 1.0, -3.15, 0, 'wear', g, PI / 2);
-  c.floorDirt(1.4, 1.1, 1.0, 0, 'wear', g, 0);
-  c.floorDirt(14, 0.9, -1.2, 0, 'wear', 0x3a3028, PI / 2);
-  for (let i = 0; i < 7; i++) c.floorDirt(0.5, 0.14, -3.05, -4.8 + i * 1.6, 'scuff', C.heel, 1.3 + i * 0.4);
-  for (const z of [-3.9, -0.4, 2.2, 4.4]) c.dirt(0.8, 0.2, -4.207, 0.28, z, 'scuff', C.heel, { ry: PI / 2 });
+  // the floor in front of the stools and down the aisle, worn in overlapping patches; at the door;
+  // heel marks; shoe marks low on the counter's front, grey and soft, under the stools and between
+  const r = rng(23);
+  for (let i = 0; i < 7; i++) c.floorDirt(1.65, 1.0, -3.15 + (r() - 0.5) * 0.12, -4.8 + i * 1.6, 'lane', g, PI / 2 + (r() < 0.5 ? 0 : PI) + (r() - 0.5) * 0.1, 0.005, { a: 0.6 });
+  for (let i = 0; i < 9; i++) c.floorDirt(1.85, 0.9, -1.2 + (r() - 0.5) * 0.14, -7.4 + i * 1.85, 'lane', 0x3a3028, PI / 2 + (r() < 0.5 ? 0 : PI) + (r() - 0.5) * 0.1, 0.0052, { a: 0.5 });
+  c.floorDirt(1.4, 1.1, 1.0, 0, 'lane', g, 0, 0.0054, { a: 0.6 });
+  for (let i = 0; i < 7; i++) c.floorDirt(0.5, 0.14, -3.05, -4.8 + i * 1.6, 'scuff', C.heel, 1.3 + i * 0.4, 0.0056, { a: 0.6 });
+  for (let i = 0; i < 12; i++) {
+    const z = -5.25 + i * 0.92 + (r() - 0.5) * 0.4, w = 0.26 + r() * 0.4;
+    c.dirt(w, 0.07 + r() * 0.07, -4.207, 0.12 + r() * 0.12, z, 'kick', 0x56534e, { ry: PI / 2, rz: (r() - 0.5) * 0.16 + (r() < 0.5 ? PI : 0), a: 0.55 + r() * 0.4 });
+  }
   skirt(c, -2.0, -8.798, 0, 7.2); skirt(c, -2.0, 8.798, PI, 3.0);
   web(c, -5.5, 3.195, -8.6, -1, -1);
+  // light and shade: the dark along the walls and in the corners, the smoke of the counter's
+  // years high on the panelling and over the counter; the shadows of the stools, the counter, the
+  // back bar, the booths' benches and tables and the jukebox; under each tube a pale pool on the
+  // floor and its shine along the counter's top, and the room's ends darker, past the tubes' reach
+  room(c, { x0: -5.7, x1: 1.8, z0: -8.8, z1: 8.8, h: 3.2, open: [['e', -0.6, 0.6]], a: 0.72, ceil: 0.58, smoke: 0.36 });
+  for (let i = 0; i < 7; i++) under(c, -3.4, -4.8 + i * 1.6, 1.0, 1.0, 0.72);
+  base(c, -4.79, -4.21, -5.4, 5.4, 0.7, 0.3); base(c, -5.69, -5.27, 0.8, 3.4); base(c, -1.58, -0.62, -8.58, -7.9);
+  for (const z of [-6.1, -3.05, 3.05, 6.1]) {
+    for (const dd of [-0.93, 0.93]) base(c, -0.2, 1.6, z + dd - 0.24, z + dd + 0.24, 0.6);
+    under(c, 0.7, z, 0.6, 0.6, 0.65);
+  }
+  c.dirt(10.6, 2.4, -4.0, 3.197, 0, 'shadow', C.smoke, { rx: PI / 2, ry: PI / 2, a: 0.26 });
+  for (const z of [-5, 0, 5]) { pool(c, -2.0, 0.0052, z, 3.0, 3.4, 0.14, C.tube, 0.15); sheen(c, -4.36, 1.006, z, 2.4, 0.2, PI / 2, 0.36); }
+  for (const z of [-8.0, 8.0]) c.floorDirt(5.5, 2.4, -2.0, z, 'shadow', C.shade, 0, 0.0048, { a: 0.24 });
   done(c, d);
 }
 
@@ -504,9 +736,10 @@ export function dressHut(d: Dress) {
   c.notice(-10.25, 1.55, 1.502, 0, 0.19, 0.24, 'genlog', { tape: false });
   c.cyl(0.004, 0.004, 0.02, -10.25, 1.665, 1.512, C.steel, { rx: PI / 2, fine: true, seg: 4 });
   c.notice(-12.5, 2.05, 1.502, 0, 0.26, 0.2, 'sketch', { pins: true, tilt: -0.04 });
-  // the bench: a thermos, an enamel mug, a coffee can for the butts, field books, a pencil
-  c.cyl(0.045, 0.045, 0.28, -10.72, B + 0.14, 1.68, 0x3e5a44, { seg: 10 });
-  c.cyl(0.048, 0.048, 0.06, -10.72, B + 0.31, 1.68, 0x9a9e9c, { seg: 10 });
+  // the bench: a thermos (west of the lamp, out of its glow), an enamel mug, a coffee can for the
+  // butts, field books, a pencil
+  c.cyl(0.045, 0.045, 0.28, -10.98, B + 0.14, 1.66, 0x3e5a44, { seg: 10 });
+  c.cyl(0.048, 0.048, 0.06, -10.98, B + 0.31, 1.66, 0x9a9e9c, { seg: 10 });
   c.mug(-10.58, B, 1.98, 0xe8ece8, { ry: 2, full: true });
   c.cyl(0.06, 0.06, 0.13, -12.7, B + 0.065, 2.0, 0xffffff, { side: 'can', top: 'ashtray', seg: 12 });
   c.box(0.14, 0.05, 0.2, -12.74, B + 0.025, 1.66, 0x5a4a32, { ry: 0.1 });
@@ -534,5 +767,18 @@ export function dressHut(d: Dress) {
   c.dirt(0.18, 0.22, -10.62, 1.0, 4.496, 'smudge', C.grime, { ry: PI });
   web(c, -9.2, 2.594, 1.7, 1, -1);
   web(c, -12.8, 2.594, 4.3, -1, 1);
+  // light and shade: the dark along the walls and in the corners, the ceiling's edges past the
+  // bulb's tin shade; the shadows of the crate, the jerrycan, the cabinet, the battery and the
+  // toolbox, under the bench and its legs, the chair; the desk lamp's pool on the bench and the
+  // bulb's on the boards
+  const F = 0.0075;   // over the boards (4 mm up) and the sand
+  room(c, { x0: -13, x1: -9, z0: 1.5, z1: 4.5, h: 2.597, open: [['s', -10.5, -9.4]], a: 0.72, ceil: 0.6, floor: 0.004 });
+  base(c, -9.57, -9.07, 1.57, 1.99, 0.7, 0.24, F); base(c, -9.255, -9.085, 2.135, 2.405, 0.65, 0.2, F); base(c, -12.99, -12.53, 3.45, 4.35, 0.65, 0.26, F);
+  under(c, -10.5, 1.82, 0.5, 0.36, 0.6, F); under(c, -11.62, 1.84, 0.7, 0.36, 0.6, F);
+  under(c, -11.45, 1.86, 3.4, 1.1, 0.45, F);
+  for (const x of [-12.9, -10.0]) for (const z of [1.56, 2.16]) under(c, x, z, 0.22, 0.22, 0.7, F);
+  under(c, -12.0, 3.05, 0.85, 0.85, 0.5, F);
+  pool(c, -10.78, B + 0.033, 1.92, 0.9, 0.56, 0.32);
+  pool(c, -11.0, 0.0078, 3.05, 2.4, 2.2, 0.24, C.lamp, 0.25);
   done(c, d);
 }

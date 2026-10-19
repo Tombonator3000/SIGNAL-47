@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { artImage } from '../core/art';
 import { getQuality } from '../core/quality';
 import { rng } from '../core/textures';
+import { DISH_LAYOUT, DISH_LAYOUT_FAR, ROWS, SPINE_X, FENCE_Z, HWY } from './arrayLayout';
 
 // The things that make a room lived in: papers, mugs with rings under them, an ashtray, binders,
 // cables along the walls, notices and posters, a coat on a hook, the worn floor by the doors.
@@ -9,9 +10,11 @@ import { rng } from '../core/textures';
 // for (three with a wall clock):
 //  - the things: one material on one picture of small printed things drawn here in code (THINGS),
 //    each part coloured per corner, so a hundred of them cost one draw call;
-//  - the dirt: worn floor, scuffs, stains, cobwebs, see-through, on a second picture (DIRT).
+//  - the dirt: worn floor, scuffs, stains, cobwebs, see-through, on a second picture (DIRT), and
+//    with it the light and shade the lamps alone do not give: soft shadows where things meet the
+//    floor, the dark along the walls and in the corners, pools of lamplight, the shine on a counter.
 // Low draws only the things that make the room (the first part of the merged geometry, the parts
-// not marked fine) and none of the dirt (world/dressing.ts says which is which).
+// not marked fine) and of the dirt only the shade (world/dressing.ts says which is which).
 // Both pictures are made once, the first time a room is dressed (after loadArt and the fonts), and
 // shared by every room; a room that is disposed never disposes them.
 
@@ -44,23 +47,97 @@ function speckle(g: CanvasRenderingContext2D, w: number, h: number, n: number, c
   const r = rng(seed); g.fillStyle = col;
   for (let i = 0; i < n; i++) g.fillRect(r() * w, r() * h, 1 + r() * 1.5, 1 + r() * 1.5);
 }
+// a yucca: a rosette of blades and a dry stalk
+function yucca(g: CanvasRenderingContext2D, x: number, y: number, s: number, col = '#3f4a32') {
+  g.strokeStyle = col; g.lineWidth = Math.max(1, s * 0.09); g.lineCap = 'round';
+  for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * 0.33; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * s, y + Math.sin(a) * s); g.stroke(); }
+  g.beginPath(); g.moveTo(x, y); g.lineTo(x + s * 0.15, y - s * 2.1); g.stroke();
+}
+// A photograph: the scene drawn on a canvas of its own, greyed and toned (sepia by default), then
+// put into the picture at (x, y). (Its own canvas, read once: never a readback of the atlas.)
+function photo(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, draw: Draw, k: [number, number, number] = [200, 175, 130], base: [number, number, number] = [40, 28, 18]) {
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const p = cv.getContext('2d', { willReadFrequently: true })!;
+  draw(p, w, h);
+  const d = p.getImageData(0, 0, w, h);
+  for (let i = 0; i < d.data.length; i += 4) {
+    const v = (d.data[i] * 0.3 + d.data[i + 1] * 0.59 + d.data[i + 2] * 0.11) / 255;
+    d.data[i] = base[0] + v * k[0]; d.data[i + 1] = base[1] + v * k[1]; d.data[i + 2] = base[2] + v * k[2];
+  }
+  p.putImageData(d, 0, 0);
+  g.drawImage(cv, x, y);
+}
+// A painting of the mesas, different for every seed: how many buttes, where and how high, the
+// horizon, the range behind them, a dusk or a day sky.
 function mesa(g: CanvasRenderingContext2D, w: number, h: number, seed: number, dusk = true) {
-  const sky = g.createLinearGradient(0, 0, 0, h * 0.7);
-  if (dusk) { sky.addColorStop(0, '#3d4a78'); sky.addColorStop(0.55, '#c9785a'); sky.addColorStop(1, '#f0b26a'); }
-  else { sky.addColorStop(0, '#6f97c4'); sky.addColorStop(1, '#d9d2b8'); }
+  const r = rng(seed), hor = h * (0.56 + r() * 0.14);
+  const skies = dusk ? [['#3d4a78', '#c9785a', '#f0b26a'], ['#2c3460', '#a8506a', '#f2a05a'], ['#4a5a80', '#d89a6a', '#f4d08a']] : [['#6f97c4', '#a8c0d4', '#d9d2b8'], ['#5a86b8', '#9ab8cc', '#e8d8b0']];
+  const s = skies[Math.floor(r() * skies.length)], sky = g.createLinearGradient(0, 0, 0, hor);
+  sky.addColorStop(0, s[0]); sky.addColorStop(0.6, s[1]); sky.addColorStop(1, s[2]);
   g.fillStyle = sky; g.fillRect(0, 0, w, h);
-  const r = rng(seed);
-  g.fillStyle = dusk ? '#5a3a35' : '#8a5a3c';
-  g.beginPath(); g.moveTo(0, h * 0.62); g.lineTo(w * 0.12, h * 0.6); g.lineTo(w * 0.2, h * 0.38); g.lineTo(w * 0.46, h * 0.36); g.lineTo(w * 0.52, h * 0.58);
-  g.lineTo(w * 0.7, h * 0.56); g.lineTo(w * 0.76, h * 0.44); g.lineTo(w * 0.84, h * 0.45); g.lineTo(w * 0.88, h * 0.6); g.lineTo(w, h * 0.62); g.lineTo(w, h); g.lineTo(0, h); g.fill();
-  g.fillStyle = dusk ? '#a8653f' : '#c08a58'; g.fillRect(0, h * 0.66, w, h * 0.34);
-  // brush strokes and sage
+  // the far range, low and hazy
+  g.fillStyle = dusk ? 'rgba(110,70,84,.6)' : 'rgba(120,130,156,.5)';
+  g.beginPath(); g.moveTo(0, hor);
+  for (let x = 0; x <= w + 1; x += w / 10) g.lineTo(x, hor - h * (0.02 + r() * 0.06));
+  g.lineTo(w, hor); g.fill();
+  g.fillStyle = dusk ? '#a8653f' : '#c08a58'; g.fillRect(0, hor, w, h - hor);
+  // the buttes: flat tops, steep sides, a skirt of fallen rock, the face to the light
+  const n = 1 + Math.floor(r() * 3);
+  for (let i = 0; i < n; i++) {
+    const cx = w * (0.14 + (i + r()) / n * 0.72), tw = w * (0.05 + r() * 0.14), bh = h * (0.1 + r() * 0.24), sk = tw * (0.5 + r() * 0.7), top = hor - bh;
+    g.fillStyle = dusk ? ['#5a3a35', '#6a4034', '#4e3236'][i] : ['#8a5a3c', '#9a6a44', '#7a5038'][i];
+    g.beginPath(); g.moveTo(cx - tw - sk, hor + 1); g.lineTo(cx - tw, top + bh * 0.35); g.lineTo(cx - tw * 0.85, top); g.lineTo(cx + tw * 0.9, top + r() * 3);
+    g.lineTo(cx + tw, top + bh * 0.3); g.lineTo(cx + tw + sk, hor + 1); g.fill();
+    g.fillStyle = dusk ? 'rgba(240,150,90,.3)' : 'rgba(255,220,170,.22)';
+    g.beginPath(); g.moveTo(cx - tw * 0.85, top); g.lineTo(cx - tw * 0.25, top); g.lineTo(cx - tw * 0.4, hor); g.lineTo(cx - tw - sk * 0.6, hor); g.lineTo(cx - tw, top + bh * 0.35); g.fill();
+  }
+  // brush strokes and sage, a yucca or two in front
   for (let i = 0; i < 90; i++) {
     g.fillStyle = r() < 0.5 ? 'rgba(80,90,60,.7)' : 'rgba(150,100,60,.5)';
-    g.fillRect(r() * w, h * 0.66 + r() * h * 0.34, 3 + r() * 6, 1 + r() * 2);
+    g.fillRect(r() * w, hor + 2 + r() * (h - hor), 3 + r() * 6, 1 + r() * 2);
   }
-  g.fillStyle = '#3f4a32';
-  for (let i = 0; i < 3; i++) { const x = w * (0.15 + r() * 0.7), y = h * (0.78 + r() * 0.12); g.fillRect(x, y - h * 0.12, w * 0.012, h * 0.12); g.fillRect(x - w * 0.02, y - h * 0.08, w * 0.02, w * 0.01); g.fillRect(x + w * 0.01, y - h * 0.1, w * 0.02, w * 0.01); }
+  for (let i = 0, k = 1 + Math.floor(r() * 2); i < k; i++) yucca(g, w * (0.1 + r() * 0.8), h * (0.84 + r() * 0.1), h * (0.06 + r() * 0.04));
+}
+// A windmill over a corral and a tank at evening, a ranch painted by somebody's aunt.
+function ranch(g: CanvasRenderingContext2D, w: number, h: number, seed: number) {
+  const r = rng(seed), hor = h * 0.64;
+  const sky = g.createLinearGradient(0, 0, 0, hor); sky.addColorStop(0, '#56658c'); sky.addColorStop(0.6, '#d89a72'); sky.addColorStop(1, '#f2d396');
+  g.fillStyle = sky; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(96,74,90,.65)'; g.beginPath(); g.moveTo(0, hor); g.lineTo(w * 0.1, hor - h * 0.06); g.lineTo(w * 0.3, hor - h * 0.07); g.lineTo(w * 0.36, hor - h * 0.02); g.lineTo(w, hor - h * 0.03); g.lineTo(w, hor); g.fill();
+  g.fillStyle = '#b88a58'; g.fillRect(0, hor, w, h - hor);
+  for (let i = 0; i < 70; i++) { g.fillStyle = r() < 0.5 ? 'rgba(90,96,60,.6)' : 'rgba(150,104,62,.5)'; g.fillRect(r() * w, hor + r() * (h - hor), 3 + r() * 5, 1 + r() * 2); }
+  // the windmill: a lattice tower, the wheel of blades, the vane
+  const wx = w * 0.68, top = h * 0.2, foot = h * 0.82, s = h * 0.1;
+  g.strokeStyle = '#3a3230'; g.lineWidth = Math.max(1, w / 160);
+  g.beginPath(); g.moveTo(wx - s * 0.6, foot); g.lineTo(wx - s * 0.12, top + s); g.moveTo(wx + s * 0.6, foot); g.lineTo(wx + s * 0.12, top + s); g.stroke();
+  for (let k = 1; k < 5; k++) { const y = top + s + (foot - top - s) * k / 5, hw = s * (0.12 + 0.48 * k / 5); g.beginPath(); g.moveTo(wx - hw, y); g.lineTo(wx + hw, y); g.stroke(); }
+  for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2; g.beginPath(); g.moveTo(wx, top + s * 0.6); g.lineTo(wx + Math.cos(a) * s * 0.75, top + s * 0.6 + Math.sin(a) * s * 0.75); g.stroke(); }
+  g.beginPath(); g.moveTo(wx, top + s * 0.6); g.lineTo(wx + s * 1.1, top + s * 0.7); g.lineTo(wx + s * 1.1, top + s * 0.35); g.closePath(); g.stroke();
+  // the tank at its foot, the corral off to the left, two cows
+  g.fillStyle = '#6a7478'; g.fillRect(wx + s * 0.5, foot - s * 0.35, s * 1.2, s * 0.35); g.fillStyle = '#9ab0b8'; g.fillRect(wx + s * 0.5, foot - s * 0.35, s * 1.2, s * 0.06);
+  g.strokeStyle = '#4a3a2c'; g.lineWidth = Math.max(1, w / 220);
+  for (let k = 0; k < 9; k++) { const x = w * (0.06 + k * 0.05), y = h * (0.86 - k * 0.012); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - h * 0.07); g.stroke(); }
+  for (const dy of [0.03, 0.055]) { g.beginPath(); g.moveTo(w * 0.06, h * (0.86 - dy)); g.lineTo(w * 0.46, h * (0.764 - dy)); g.stroke(); }
+  g.fillStyle = '#3a2a22';
+  for (const [cx, cy] of [[0.24, 0.84], [0.33, 0.88]]) { g.fillRect(w * cx, h * cy, w * 0.045, h * 0.03); g.fillRect(w * cx - w * 0.012, h * cy - h * 0.005, w * 0.015, h * 0.02); for (const lx of [0.004, 0.036]) g.fillRect(w * (cx + lx), h * (cy + 0.03), w * 0.005, h * 0.02); }
+}
+// The array from the air, black and white, as the survey flight saw it: the highway, the spine
+// track and its rows, the antennas with their shadows, the building at the foot of it.
+function aerial(g: CanvasRenderingContext2D, w: number, h: number, zoom = 1) {
+  g.fillStyle = '#8a8a86'; g.fillRect(0, 0, w, h);
+  speckle(g, w, h, Math.floor(w * h * 0.25), 'rgba(40,40,40,.18)', 81); speckle(g, w, h, Math.floor(w * h * 0.12), 'rgba(230,230,230,.15)', 83);
+  const X = (x: number) => w / 2 + x / 480 * w * zoom, Z = (z: number) => h * 0.92 + z / 470 * h * zoom;
+  g.fillStyle = '#4e4e4c'; g.fillRect(X(HWY.x0), 0, Math.max(2, X(HWY.x1) - X(HWY.x0)), h);
+  g.fillStyle = '#b8b8b2';
+  g.fillRect(X(SPINE_X) - 1, Z(-440), 2, Z(FENCE_Z) - Z(-440));
+  for (const z of ROWS) g.fillRect(X(-240), Z(z) - 0.75, X(240) - X(-240), 1.5);
+  for (const [, x, z, k] of [...DISH_LAYOUT, ...DISH_LAYOUT_FAR]) {
+    const rr = Math.max(1.6, 4.5 * zoom * k * w / 256);
+    g.fillStyle = 'rgba(20,20,20,.7)'; g.beginPath(); g.ellipse(X(x) + rr * 0.9, Z(z) + rr * 0.5, rr, rr * 0.7, 0.3, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ecece6'; g.beginPath(); g.arc(X(x), Z(z), rr, 0, Math.PI * 2); g.fill();
+  }
+  g.fillStyle = '#d8d8d2'; g.fillRect(X(-8), Z(4), X(8) - X(-8), Math.max(3, Z(10) - Z(4)));
+  g.strokeStyle = 'rgba(30,30,30,.5)'; g.lineWidth = 1; g.beginPath(); g.moveTo(0, Z(FENCE_Z)); g.lineTo(w, Z(FENCE_Z)); g.stroke();
 }
 function calendarGrid(g: CanvasRenderingContext2D, x0: number, y0: number, w: number, first: number, days: number, mark: number, col = '#2b2a27') {
   const cw = w / 7;
@@ -149,7 +226,7 @@ const THINGS = {
   } },
   calendar: { w: 128, h: 192, draw: (g, w, h) => {
     g.fillStyle = '#f2ecdc'; g.fillRect(0, 0, w, h);
-    g.save(); g.beginPath(); g.rect(6, 6, w - 12, 62); g.clip(); g.translate(6, 6); mesa(g, w - 12, 62, 7, false); g.restore();
+    g.save(); g.beginPath(); g.rect(6, 6, w - 12, 62); g.clip(); g.translate(6, 6); ranch(g, w - 12, 62, 7); g.restore();
     text(g, 'CALICHE FEED & SUPPLY', w / 2, 80, OSW(9, 600), '#7a2e22', w - 10, 'center');
     text(g, 'APRIL 1986', w / 2, 96, OSW(13, 700), '#2b2a27', w - 10, 'center');
     calendarGrid(g, 6, 110, w - 12, 2, 30, 13);
@@ -162,8 +239,104 @@ const THINGS = {
     calendarGrid(g, 6, 110, w - 12, 1, 31, 0, '#6a5a44');
     g.fillStyle = 'rgba(170,130,70,.25)'; g.fillRect(0, 0, w, h);   // a sun-faded page nobody turned
   } },
+  // the pictures on the walls: the motel office's mesas at dusk, room 6's butte in the day, the
+  // diner's ranch, a still life of desert flowers (seeded, so no two rooms hang the same one)
   painting: { w: 256, h: 160, draw: (g, w, h) => { mesa(g, w, h, 3); } },
-  paintingTall: { w: 128, h: 176, draw: (g, w, h) => { mesa(g, w, h, 9, false); } },
+  paintingBed: { w: 256, h: 160, draw: (g, w, h) => { mesa(g, w, h, 14, false); } },
+  ranch: { w: 256, h: 160, draw: (g, w, h) => { ranch(g, w, h, 5); } },
+  flowers: { w: 128, h: 176, draw: (g, w, h) => {
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#3a2e2a'); bg.addColorStop(1, '#5a4434'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#7a5a3a'; g.fillRect(0, h * 0.8, w, h * 0.2); g.fillStyle = 'rgba(255,230,180,.15)'; g.fillRect(0, h * 0.8, w, 2);
+    const r = rng(91), cx = w * 0.5, base = h * 0.8;
+    // stems out of a clay jar, red paintbrush and yellow marigolds on them
+    g.strokeStyle = '#5a6a3a'; g.lineWidth = 1.5;
+    const tips: [number, number][] = [];
+    for (let i = 0; i < 9; i++) { const tx = cx + (r() - 0.5) * w * 0.7, ty = h * (0.12 + r() * 0.3); g.beginPath(); g.moveTo(cx + (r() - 0.5) * 10, base - h * 0.2); g.quadraticCurveTo(cx + (tx - cx) * 0.3, ty + h * 0.2, tx, ty); g.stroke(); tips.push([tx, ty]); }
+    tips.forEach(([x, y], i) => {
+      if (i % 3 === 2) { g.fillStyle = '#e8c040'; for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; g.beginPath(); g.ellipse(x + Math.cos(a) * 4, y + Math.sin(a) * 4, 3, 1.6, a, 0, Math.PI * 2); g.fill(); } g.fillStyle = '#8a5a20'; g.beginPath(); g.arc(x, y, 2, 0, Math.PI * 2); g.fill(); }
+      else { for (let k = 0; k < 6; k++) { g.fillStyle = k % 2 ? '#d84a2a' : '#f0703a'; g.beginPath(); g.ellipse(x + (r() - 0.5) * 4, y + k * 3, 3, 2.2, 0, 0, Math.PI * 2); g.fill(); } }
+    });
+    g.fillStyle = '#a8603a'; g.beginPath(); g.moveTo(cx - 18, base - h * 0.22); g.quadraticCurveTo(cx - 30, base - h * 0.08, cx - 16, base); g.lineTo(cx + 16, base); g.quadraticCurveTo(cx + 30, base - h * 0.08, cx + 18, base - h * 0.22); g.fill();
+    g.fillStyle = 'rgba(255,220,170,.25)'; g.fillRect(cx - 12, base - h * 0.18, 5, h * 0.14);
+    g.strokeStyle = '#6a3a22'; g.lineWidth = 2; g.beginPath(); g.moveTo(cx - 20, base - h * 0.13); g.lineTo(cx + 20, base - h * 0.13); g.stroke();
+  } },
+  // old photographs in the diner: the crew that built the place, a man by his truck
+  sepiaGroup: { w: 128, h: 96, draw: (g, w, h) => {
+    g.fillStyle = '#f0ead8'; g.fillRect(0, 0, w, h);
+    const b = 7, iw = w - b * 2, ih = h - b * 2, r = rng(93);
+    photo(g, b, b, iw, ih, (g) => {
+    g.fillStyle = '#c8c4b8'; g.fillRect(0, 0, iw, ih); g.fillStyle = '#6a625a'; g.fillRect(0, ih * 0.22, iw, ih * 0.5);
+    for (let x = 0; x < iw; x += 6) { g.fillStyle = 'rgba(30,26,22,.35)'; g.fillRect(x, ih * 0.22, 1, ih * 0.5); }
+    g.fillStyle = '#9a948a'; g.fillRect(0, ih * 0.72, iw, ih * 0.28);
+    for (let i = 0; i < 7; i++) {
+      const x = iw * (0.1 + i * 0.13) + (r() - 0.5) * 3, hh = ih * (0.42 + r() * 0.1), y = ih * 0.84;
+      g.fillStyle = i % 3 ? '#2a2622' : '#4a4440'; g.fillRect(x - 5, y - hh, 10, hh);
+      g.fillStyle = '#b8b0a4'; g.beginPath(); g.arc(x, y - hh - 4, 4, 0, Math.PI * 2); g.fill();
+      if (i % 2 === 0) { g.fillStyle = '#1e1c1a'; g.fillRect(x - 7, y - hh - 8, 14, 2); g.fillRect(x - 4, y - hh - 12, 8, 4); }
+    }
+    });
+    const v = g.createRadialGradient(w / 2, h / 2, ih * 0.3, w / 2, h / 2, w * 0.6); v.addColorStop(0, 'rgba(60,40,20,0)'); v.addColorStop(1, 'rgba(60,40,20,.45)');
+    g.fillStyle = v; g.fillRect(b, b, iw, ih);
+  } },
+  sepiaTruck: { w: 128, h: 96, draw: (g, w, h) => {
+    g.fillStyle = '#f0ead8'; g.fillRect(0, 0, w, h);
+    const b = 7, iw = w - b * 2, ih = h - b * 2;
+    photo(g, b, b, iw, ih, (g) => {
+    const sky = g.createLinearGradient(0, 0, 0, ih * 0.6); sky.addColorStop(0, '#d8d4cc'); sky.addColorStop(1, '#f0ece4'); g.fillStyle = sky; g.fillRect(0, 0, iw, ih);
+    g.fillStyle = '#8a847a'; g.beginPath(); g.moveTo(0, ih * 0.58); g.lineTo(iw * 0.3, ih * 0.52); g.lineTo(iw * 0.36, ih * 0.56); g.lineTo(iw, ih * 0.55); g.lineTo(iw, ih); g.lineTo(0, ih); g.fill();
+    g.fillStyle = '#a8a298'; g.fillRect(0, ih * 0.62, iw, ih * 0.38);
+    // a pickup of the forties side on: the cab, the hood, the fenders, the bed
+    const tx = iw * 0.18, ty = ih * 0.8;
+    g.fillStyle = '#2a2622'; g.fillRect(tx, ty - 22, 62, 12); g.fillRect(tx + 30, ty - 34, 20, 14); g.fillRect(tx + 50, ty - 24, 26, 12);
+    g.beginPath(); g.ellipse(tx + 14, ty - 8, 12, 9, 0, Math.PI, 0); g.ellipse(tx + 62, ty - 8, 12, 9, 0, Math.PI, 0); g.fill();
+    g.fillStyle = '#0e0c0a'; for (const x of [tx + 14, tx + 62]) { g.beginPath(); g.arc(x, ty - 4, 7, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#c8c2b8'; g.fillRect(tx + 33, ty - 31, 12, 8);
+    // and the man beside it, hat and shirtsleeves
+    const mx = iw * 0.8; g.fillStyle = '#3a3430'; g.fillRect(mx - 4, ty - 36, 8, 22); g.fillStyle = '#2a2622'; g.fillRect(mx - 3, ty - 14, 3, 14); g.fillRect(mx + 1, ty - 14, 3, 14);
+    g.fillStyle = '#b0a898'; g.beginPath(); g.arc(mx, ty - 40, 4, 0, Math.PI * 2); g.fill(); g.fillStyle = '#1e1c1a'; g.fillRect(mx - 7, ty - 44, 14, 2); g.fillRect(mx - 4, ty - 48, 8, 4);
+    });
+    const v = g.createRadialGradient(w / 2, h / 2, ih * 0.3, w / 2, h / 2, w * 0.6); v.addColorStop(0, 'rgba(60,40,20,0)'); v.addColorStop(1, 'rgba(60,40,20,.5)');
+    g.fillStyle = v; g.fillRect(b, b, iw, ih);
+  } },
+  // the survey flight's picture of the array, framed in the corridor
+  aerial: { w: 192, h: 128, draw: (g, w, h) => {
+    g.fillStyle = '#f2f0ea'; g.fillRect(0, 0, w, h);
+    photo(g, 8, 8, w - 16, h - 30, (g, w, h) => aerial(g, w, h), [215, 215, 210], [18, 18, 18]);
+    text(g, 'SARO ARRAY  FROM 9,000 FT', w / 2, h - 13, TYPE(10), '#2a2b2e', w - 16, 'center');
+  } },
+  // a paperback somebody left in the room: a cowboy story with a red sky
+  paperback: { w: 64, h: 96, draw: (g, w, h) => {
+    const s = g.createLinearGradient(0, 0, 0, h); s.addColorStop(0, '#2a1a2a'); s.addColorStop(0.45, '#c8402a'); s.addColorStop(0.75, '#f0a040'); s.addColorStop(1, '#3a2018');
+    g.fillStyle = s; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#f4e8c0'; g.beginPath(); g.arc(w * 0.7, h * 0.36, 7, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#1a1010'; g.beginPath(); g.moveTo(0, h * 0.82); g.lineTo(w * 0.3, h * 0.66); g.lineTo(w * 0.5, h * 0.68); g.lineTo(w * 0.62, h * 0.6); g.lineTo(w, h * 0.7); g.lineTo(w, h); g.lineTo(0, h); g.fill();
+    g.fillRect(w * 0.4, h * 0.5, 4, 14); g.fillRect(w * 0.4 - 4, h * 0.5 - 2, 12, 2); g.fillRect(w * 0.4 - 1, h * 0.5 - 6, 6, 4);
+    g.fillStyle = '#1a1010'; g.fillRect(0, 0, w, 22);
+    text(g, 'HIGH DESERT', w / 2, 13, OSW(11, 700), '#f2c040', w - 6, 'center'); text(g, 'J. T. CALDER', w / 2, 20, OSW(6, 500), '#e8e0c8', w - 8, 'center');
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(2, 0, 2, h);
+  } },
+  // a blind's slats, drawn up: the front of the stack (the corners colour it)
+  slats: { w: 64, h: 32, draw: (g, w, h) => {
+    for (let i = 0; i < 5; i++) {
+      const y = i * h / 5, s = g.createLinearGradient(0, y, 0, y + h / 5); s.addColorStop(0, '#ffffff'); s.addColorStop(0.7, '#d8d6d0'); s.addColorStop(1, '#8a8882');
+      g.fillStyle = s; g.fillRect(0, y, w, h / 5); g.fillStyle = '#5a5852'; g.fillRect(0, y + h / 5 - 1, w, 1);
+    }
+    g.fillStyle = 'rgba(60,58,52,.5)'; g.fillRect(w * 0.2, 0, 1, h); g.fillRect(w * 0.8, 0, 1, h);   // the ladder strings
+  } },
+  // ribbed knit, for a cardigan (the corners colour it)
+  knit: { w: 64, h: 64, draw: (g, w, h) => {
+    g.fillStyle = '#f2f0ea'; g.fillRect(0, 0, w, h);
+    for (let x = 0; x < w; x += 2) { g.fillStyle = 'rgba(90,78,60,.14)'; g.fillRect(x, 0, 1, h); }
+    speckle(g, w, h, 160, 'rgba(90,78,60,.1)', 101);
+    g.fillStyle = 'rgba(90,78,60,.12)'; g.fillRect(0, h - 9, w, 9);   // the ribbed band at the hem
+  } },
+  // a striped hand towel, worn thin
+  towel: { w: 64, h: 128, draw: (g, w, h) => {
+    g.fillStyle = '#5c544a'; g.fillRect(0, 0, w, h); speckle(g, w, h, 500, 'rgba(255,255,255,.08)', 97); speckle(g, w, h, 400, 'rgba(0,0,0,.12)', 99);
+    for (const y of [h - 30, h - 20]) { g.fillStyle = '#d8ccb0'; g.fillRect(0, y, w, 5); }
+    g.fillStyle = '#8a3a2a'; g.fillRect(0, h - 25, w, 2);
+    g.fillStyle = '#4a443c'; for (let x = 1; x < w; x += 3) g.fillRect(x, h - 6, 1, 6);   // the fringe
+  } },
   clock: { w: 128, h: 128, draw: (g, w, h) => {
     g.fillStyle = '#2b3033'; g.fillRect(0, 0, w, h);
     g.fillStyle = '#efe9d8'; g.beginPath(); g.arc(64, 64, 62, 0, Math.PI * 2); g.fill();
@@ -270,12 +443,10 @@ const THINGS = {
     g.fillStyle = '#d8d8d8'; g.beginPath(); g.ellipse(w * 0.5, h * 0.42, 22, 8, -0.3, Math.PI, 0, true); g.fill(); g.fillRect(w * 0.5 - 2, h * 0.42, 4, 18);
     g.fillStyle = '#444'; g.fillRect(4, h * 0.75, w - 8, h * 0.25 - 4);
   } },
+  // a test print of part of the array from the air
   printB: { w: 96, h: 64, draw: (g, w, h) => {
     g.fillStyle = '#f4f2ec'; g.fillRect(0, 0, w, h);
-    g.save(); g.beginPath(); g.rect(4, 4, w - 8, h - 8); g.clip(); g.translate(4, 4); mesa(g, w - 8, h - 8, 31, false); g.restore();
-    const d = g.getImageData(4, 4, w - 8, h - 8);
-    for (let i = 0; i < d.data.length; i += 4) { const v = d.data[i] * 0.3 + d.data[i + 1] * 0.59 + d.data[i + 2] * 0.11; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; }
-    g.putImageData(d, 4, 4);
+    photo(g, 4, 4, w - 8, h - 8, (g, w, h) => { g.translate(-w * 0.35, -h * 0.9); aerial(g, w * 1.7, h * 1.9); }, [235, 235, 235], [8, 8, 8]);
   } },
   genlog: { w: 128, h: 160, draw: (g, w, h) => {
     paperBg(g, w, h, 0.12);
@@ -327,7 +498,11 @@ const THINGS = {
     g.strokeStyle = '#2a8a3a'; g.lineWidth = 2; g.beginPath(); g.moveTo(27, 41); g.lineTo(27, 66); g.lineTo(80, 66); g.lineTo(74, 61); g.moveTo(80, 66); g.lineTo(74, 71); g.stroke();
     bars(g, 10, 86, 76, 5, 8, 71);
   } },
+  // the labels on the archive boxes: typed, or written on in a hurry
   boxlabel: { w: 96, h: 48, draw: (g, w, h) => { paperBg(g, w, h); typed(g, ['RX LOGS', '1979 - 1980'], 8, 20, 11, 16, w - 16); } },
+  boxlabelB: { w: 96, h: 48, draw: (g, w, h) => { paperBg(g, w, h, 0.1); text(g, 'RFI reports', 8, 22, HAND(22), '#1f2a44', w - 14); text(g, '81 - 82', 30, 40, HAND(20), '#1f2a44', w - 34); } },
+  boxlabelC: { w: 96, h: 48, draw: (g, w, h) => { paperBg(g, w, h, 0.05); typed(g, ['MAINTENANCE', '1977 - 78'], 8, 20, 11, 16, w - 16); g.fillStyle = 'rgba(160,40,30,.7)'; g.fillRect(6, 27, w - 12, 2); } },
+  boxlabelD: { w: 96, h: 48, draw: (g, w, h) => { paperBg(g, w, h, 0.18); text(g, 'DUPLICATES', w / 2, 22, HAND(22), '#2a2420', w - 12, 'center'); text(g, 'do not toss', w / 2, 40, HAND(18), '#8a2a20', w - 16, 'center'); } },
   plate: { w: 64, h: 64, draw: (g) => {
     g.fillStyle = '#ece8de'; g.fillRect(0, 0, 64, 64); g.strokeStyle = '#c8c2b4'; g.lineWidth = 2; g.beginPath(); g.arc(32, 32, 22, 0, Math.PI * 2); g.stroke();
     g.strokeStyle = '#4e7a5a'; g.lineWidth = 1.5; g.beginPath(); g.arc(32, 32, 29, 0, Math.PI * 2); g.stroke();
@@ -369,12 +544,67 @@ const blot = (g: CanvasRenderingContext2D, x: number, y: number, rx: number, ry:
   g.save(); g.translate(x, y); g.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry)); g.translate(-x, -y);
   g.fillStyle = gr; g.beginPath(); g.arc(x, y, Math.max(rx, ry), 0, Math.PI * 2); g.fill(); g.restore();
 };
+// a smooth round falloff, for shadows and pools of light
+const soft = (g: CanvasRenderingContext2D, x: number, y: number, rad: number) => {
+  const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+  for (const [k, a] of [[0, 1], [0.25, 0.84], [0.5, 0.46], [0.75, 0.14], [1, 0]]) gr.addColorStop(k, `rgba(255,255,255,${a})`);
+  g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+};
 const DIRT = {
-  // the floor where everybody walks: a soft patch, darker in the middle, with streaks along it
+  // the floor where everybody walks: a soft patch, darker in the middle, a few short streaks
+  // (a patch is never stretched much past 2 m: a corridor gets several 'lane' patches instead)
   wear: { w: 256, h: 128, draw: (g, w, h) => {
     blot(g, w / 2, h / 2, w * 0.48, h * 0.42, 0.5); blot(g, w * 0.45, h * 0.5, w * 0.3, h * 0.25, 0.35);
-    const r = rng(3); g.strokeStyle = 'rgba(255,255,255,.18)';
-    for (let i = 0; i < 60; i++) { g.lineWidth = 1 + r() * 2; const y = h * (0.2 + r() * 0.6), x = w * (0.1 + r() * 0.6); g.beginPath(); g.moveTo(x, y); g.lineTo(x + 20 + r() * 50, y + (r() - 0.5) * 6); g.stroke(); }
+    const r = rng(3); g.strokeStyle = 'rgba(255,255,255,.09)'; g.lineCap = 'round';
+    for (let i = 0; i < 40; i++) { g.lineWidth = 1 + r() * 2; const y = h * (0.25 + r() * 0.5), x = w * (0.18 + r() * 0.55); g.beginPath(); g.moveTo(x, y); g.lineTo(x + 8 + r() * 22, y + (r() - 0.5) * 5); g.stroke(); }
+  } },
+  // the same wear without strokes: a soft mottled patch, for overlapping down a corridor or an aisle
+  lane: { w: 128, h: 128, draw: (g, w, h) => {
+    const r = rng(61);
+    blot(g, w / 2, h / 2, w * 0.46, h * 0.4, 0.32);
+    for (let i = 0; i < 46; i++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()) * 0.7; blot(g, w / 2 + Math.cos(a) * d * w * 0.38, h / 2 + Math.sin(a) * d * h * 0.32, 5 + r() * 14, 4 + r() * 9, 0.05 + r() * 0.1); }
+    g.fillStyle = 'rgba(255,255,255,.14)';
+    for (let i = 0; i < 260; i++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()) * 0.85; g.fillRect(w / 2 + Math.cos(a) * d * w * 0.42, h / 2 + Math.sin(a) * d * h * 0.36, 1, 1); }
+  } },
+  // the ring the casters wear round a chair that is turned all night: uneven, with short arcs
+  casters: { w: 128, h: 128, draw: (g) => {
+    const r = rng(67); g.lineCap = 'round';
+    for (let i = 0; i < 90; i++) { const a = r() * Math.PI * 2, d = 36 + (r() - 0.5) * 20; blot(g, 64 + Math.cos(a) * d, 64 + Math.sin(a) * d, 4 + r() * 8, 4 + r() * 8, 0.06 + r() * 0.09); }
+    for (let i = 0; i < 16; i++) { const a0 = r() * Math.PI * 2, d = 26 + r() * 24; g.strokeStyle = `rgba(255,255,255,${0.08 + r() * 0.14})`; g.lineWidth = 1 + r() * 1.5; g.beginPath(); g.arc(64, 64, d, a0, a0 + 0.3 + r() * 0.8); g.stroke(); }
+  } },
+  // a soft round shadow where a thing meets the floor; coloured light, a pool of lamplight
+  shadow: { w: 64, h: 64, draw: (g) => soft(g, 32, 32, 31) },
+  // a soft band, strongest at its bottom edge: at the foot of a wall, round a cabinet's base,
+  // up a corner, along the ceiling (turned so that edge is against the wall)
+  edge: { w: 32, h: 64, draw: (g, w, h) => {
+    const gr = g.createLinearGradient(0, h, 0, 0);
+    for (const [k, a] of [[0, 1], [0.2, 0.8], [0.45, 0.46], [0.72, 0.17], [1, 0]]) gr.addColorStop(k, `rgba(255,255,255,${a})`);
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  } },
+  // the same band fading out at both ends, round the foot of a cabinet or a bed
+  band: { w: 64, h: 64, draw: (g, w, h) => {
+    for (let x = 0; x < w; x++) {
+      const t = Math.min(1, Math.min(x + 0.5, w - x - 0.5) / (w * 0.22)), e = t * t * (3 - 2 * t), gr = g.createLinearGradient(0, h, 0, 0);
+      for (const [k, a] of [[0, 1], [0.2, 0.8], [0.45, 0.46], [0.72, 0.17], [1, 0]]) gr.addColorStop(k, `rgba(255,255,255,${a * e})`);
+      g.fillStyle = gr; g.fillRect(x, 0, 1, h);
+    }
+  } },
+  // the shine of a tube light along a polished top: a long soft band, fading at its ends
+  streak: { w: 64, h: 32, draw: (g, w, h) => {
+    for (let x = 0; x < w; x++) {
+      const e = Math.pow(Math.sin(Math.PI * (x + 0.5) / w), 1.5), gr = g.createLinearGradient(0, 0, 0, h);
+      gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, `rgba(255,255,255,${e})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(x, 0, 1, h);
+    }
+  } },
+  // shoe marks low on a counter's front: soft smudges, a few short grey strokes
+  kick: { w: 128, h: 32, draw: (g, w, h) => {
+    const r = rng(71); g.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const x = 14 + r() * (w - 28), y = 10 + r() * (h - 20);
+      blot(g, x, y, 6 + r() * 10, 3 + r() * 3, 0.14 + r() * 0.18);
+      if (r() < 0.6) { g.strokeStyle = `rgba(255,255,255,${0.18 + r() * 0.22})`; g.lineWidth = 1 + r(); g.beginPath(); g.moveTo(x - 6, y + (r() - 0.5) * 3); g.quadraticCurveTo(x, y - 1 - r() * 3, x + 4 + r() * 7, y + (r() - 0.5) * 3); g.stroke(); }
+    }
   } },
   scuff: { w: 256, h: 64, draw: (g, w, h) => {
     const r = rng(7); g.lineCap = 'round';
@@ -428,27 +658,27 @@ const DIRT = {
 export type Dirt = keyof typeof DIRT;
 
 // ---------- the two pictures: packed in shelves, drawn once ----------
-type Sheet = { size: number; rects: Record<string, Rect>; tex: THREE.CanvasTexture | null };
-function pack(cells: Record<string, { w: number; h: number }>, size: number): Record<string, Rect> {
+type Sheet = { w: number; h: number; rects: Record<string, Rect>; tex: THREE.CanvasTexture | null };
+function pack(cells: Record<string, { w: number; h: number }>, w: number, h: number): Record<string, Rect> {
   const pad = 4, out: Record<string, Rect> = {};
   const order = Object.keys(cells).sort((a, b) => cells[b].h - cells[a].h);
   let x = 0, y = 0, row = 0;
   for (const k of order) {
     const c = cells[k];
-    if (x + c.w > size) { x = 0; y += row + pad; row = 0; }
+    if (x + c.w > w) { x = 0; y += row + pad; row = 0; }
     out[k] = { x, y, w: c.w, h: c.h };
     x += c.w + pad; row = Math.max(row, c.h);
   }
-  if (y + row > size) console.warn('clutter atlas too small', size);
+  if (y + row > h) console.warn('clutter atlas too small', w, h);
   return out;
 }
-const things: Sheet = { size: 1024, rects: pack(THINGS, 1024), tex: null };
-const dirt: Sheet = { size: 512, rects: pack(DIRT, 512), tex: null };
+const things: Sheet = { w: 1024, h: 1280, rects: pack(THINGS, 1024, 1280), tex: null };
+const dirt: Sheet = { w: 512, h: 640, rects: pack(DIRT, 512, 640), tex: null };
 function sheet(s: Sheet, cells: Record<string, { draw: Draw }>, clear: boolean) {
   if (s.tex) return s.tex;
-  const c = document.createElement('canvas'); c.width = c.height = s.size;
+  const c = document.createElement('canvas'); c.width = s.w; c.height = s.h;
   const g = c.getContext('2d')!;
-  if (!clear) { g.fillStyle = '#fff'; g.fillRect(0, 0, s.size, s.size); }
+  if (!clear) { g.fillStyle = '#fff'; g.fillRect(0, 0, s.w, s.h); }
   for (const [k, r] of Object.entries(s.rects)) {
     g.save(); g.beginPath(); g.rect(r.x, r.y, r.w, r.h); g.clip(); g.translate(r.x, r.y);
     cells[k].draw(g, r.w, r.h); g.restore();
@@ -465,10 +695,26 @@ export function dirtAtlas() { return sheet(dirt, DIRT, true); }
 
 // a picture's corner in the atlas, as uv: [u0, v0, u1, v1] (v up)
 function uvRect(s: Sheet, k: string, inset = 0): [number, number, number, number] {
-  const r = s.rects[k], S = s.size;
-  return [(r.x + inset) / S, 1 - (r.y + r.h - inset) / S, (r.x + r.w - inset) / S, 1 - (r.y + inset) / S];
+  const r = s.rects[k];
+  return [(r.x + inset) / s.w, 1 - (r.y + r.h - inset) / s.h, (r.x + r.w - inset) / s.w, 1 - (r.y + inset) / s.h];
 }
 const WHITE = () => uvRect(things, 'white', 40);
+
+// The dirt's material lets a mark shine of itself by its corners' glow (a pool of lamplight under a
+// lamp that lights nothing else, the shine along a counter), on top of what the room's lamps do
+// (kit.floodlit or the real lights): its own colour, times the glow, as emissive light.
+function shines(m: THREE.MeshStandardMaterial) {
+  const before = m.onBeforeCompile, key = m.customProgramCacheKey.bind(m);
+  m.onBeforeCompile = (sh, r) => {
+    before.call(m, sh, r);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float glow;\nvarying float vGlow;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = glow;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * vGlow;');
+  };
+  m.customProgramCacheKey = () => key() + '+glow';
+  return m;
+}
 
 // ---------- the wall clocks ----------
 // The control room's clock is driven by the night's clock every frame (ControlRoom.setClock);
@@ -478,7 +724,10 @@ export function setWallClock(seconds: number) { wallSecs = seconds; }
 
 // ---------- building a room's things ----------
 export type At = { rx?: number; ry?: number; rz?: number; fine?: boolean };
-type Part = { pos: number[]; nor: number[]; uv: number[]; col: number[] };
+/** A mark of dirt or light: a, how strong (0 to 1); low, drawn on Low too (the shadows); glow, how
+ *  much it shines of itself (a pool of lamplight, a shine: lit by its lamp, not by the room). */
+export type Mark = At & { a?: number; low?: boolean; glow?: number };
+type Part = { pos: number[]; nor: number[]; uv: number[]; col: number[]; rgba?: boolean; glow?: number[] };
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1), _c = new THREE.Color();
 const _up = new THREE.Vector3(0, 1, 0);
 export const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -486,7 +735,10 @@ export const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z
 export class Clutter {
   private base: Part = { pos: [], nor: [], uv: [], col: [] };
   private fine: Part = { pos: [], nor: [], uv: [], col: [] };
-  private grime: Part = { pos: [], nor: [], uv: [], col: [] };
+  // the dirt mesh: first the shade (contact shadows, the dark along the walls and in the
+  // corners; Low draws only this), then the rest (wear, stains, light). Colour and strength per corner.
+  private ground: Part = { pos: [], nor: [], uv: [], col: [], rgba: true, glow: [] };
+  private grime: Part = { pos: [], nor: [], uv: [], col: [], rgba: true, glow: [] };
   private clocks: { x: number; y: number; z: number; ry: number; r: number }[] = [];
   private shade = rng(5);
 
@@ -495,7 +747,7 @@ export class Clutter {
 
   // Puts a geometry into a part: uvs into the atlas (groups[i] -> rects[i], the rest white),
   // turned (Euler YXZ, as kit.plane) and moved, coloured per corner with a little variation.
-  private put(geo: THREE.BufferGeometry, color: THREE.ColorRepresentation, x: number, y: number, z: number, o: At, rects: ([number, number, number, number] | null)[] = [], to?: Part, vary = 0.06) {
+  private put(geo: THREE.BufferGeometry, color: THREE.ColorRepresentation, x: number, y: number, z: number, o: At, rects: ([number, number, number, number] | null)[] = [], to?: Part, vary = 0.06, alpha = 1, glow = 0) {
     const uv = geo.attributes.uv as THREE.BufferAttribute;
     const map = (i: number, r: [number, number, number, number]) => uv.setXY(i, r[0] + uv.getX(i) * (r[2] - r[0]), r[1] + uv.getY(i) * (r[3] - r[1]));
     const done = new Uint8Array(uv.count);
@@ -517,6 +769,8 @@ export class Clutter {
     for (let i = 0; i < P.count; i++) {
       part.pos.push(P.getX(i), P.getY(i), P.getZ(i)); part.nor.push(N.getX(i), N.getY(i), N.getZ(i));
       part.uv.push(U.getX(i), U.getY(i)); part.col.push(_c.r, _c.g, _c.b);
+      if (part.rgba) part.col.push(alpha);
+      part.glow?.push(glow);
     }
     geo.dispose(); if (g !== geo) g.dispose();
   }
@@ -555,12 +809,12 @@ export class Clutter {
     const len = curve.getLength();
     this.put(new THREE.TubeGeometry(curve, Math.max(4, Math.ceil(len / 0.08)), r, 4, false), color, 0, 0, 0, { fine: o.fine ?? true });
   }
-  /** A box narrower or thinner at the top than at the bottom (a coat's body, a sleeve). */
-  slab(wTop: number, wBot: number, h: number, dTop: number, dBot: number, x: number, y: number, z: number, color: THREE.ColorRepresentation, o: At = {}) {
+  /** A box narrower or thinner at the top than at the bottom (a coat's body, a sleeve); faces as box. */
+  slab(wTop: number, wBot: number, h: number, dTop: number, dBot: number, x: number, y: number, z: number, color: THREE.ColorRepresentation, o: At & { faces?: (Thing | null)[] } = {}) {
     const g = new THREE.BoxGeometry(1, 1, 1), p = g.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < p.count; i++) { const top = p.getY(i) > 0; p.setXYZ(i, p.getX(i) * (top ? wTop : wBot), p.getY(i) * h, p.getZ(i) * (top ? dTop : dBot)); }
     g.computeVertexNormals();
-    this.put(g, color, x, y, z, o);
+    this.put(g, color, x, y, z, o, (o.faces ?? []).map((t) => t ? uvRect(things, t, 1) : null));
   }
   /** Half a sphere, its round side up before turning (a hard hat). */
   dome(r: number, x: number, y: number, z: number, color: THREE.ColorRepresentation, o: At = {}) {
@@ -572,13 +826,13 @@ export class Clutter {
   ball(r: number, x: number, y: number, z: number, color: THREE.ColorRepresentation, o: At = {}) {
     this.put(new THREE.IcosahedronGeometry(r, 0), color, x, y, z, o);
   }
-  /** Dirt: a see-through picture facing +z, turned by o (never drawn on Low). */
-  dirt(w: number, h: number, x: number, y: number, z: number, d: Dirt, color: THREE.ColorRepresentation, o: At = {}) {
-    this.put(new THREE.PlaneGeometry(w, h), color, x, y, z, o, [uvRect(dirt, d, 1)], this.grime, 0.1);
+  /** Dirt: a see-through picture facing +z, turned by o (on Low only if o.low). */
+  dirt(w: number, h: number, x: number, y: number, z: number, d: Dirt, color: THREE.ColorRepresentation, o: Mark = {}) {
+    this.put(new THREE.PlaneGeometry(w, h), color, x, y, z, o, [uvRect(dirt, d, 1)], o.low ? this.ground : this.grime, 0.1, o.a ?? 1, o.glow ?? 0);
   }
   /** Dirt on the floor (5 mm up), turned ry about the vertical. */
-  floorDirt(w: number, d: number, x: number, z: number, t: Dirt, color: THREE.ColorRepresentation, ry = 0, y = 0.005) {
-    this.dirt(w, d, x, y, z, t, color, { rx: -Math.PI / 2, ry });
+  floorDirt(w: number, d: number, x: number, z: number, t: Dirt, color: THREE.ColorRepresentation, ry = 0, y = 0.005, o: Mark = {}) {
+    this.dirt(w, d, x, y, z, t, color, { ...o, rx: -Math.PI / 2, ry });
   }
 
   // ---------- things ----------
@@ -655,23 +909,29 @@ export class Clutter {
     this.clocks.push({ x: x + s * 0.038, y, z: z + c * 0.038, ry, r });
   }
   /** A coat hanging by its loop from a hook: (x, y, z) at the wall's face, the hook at height y,
-   *  ry faces the room. The shoulders fall away from the hook, the sleeves hang at the sides. */
-  coat(x: number, y: number, z: number, ry: number, color: THREE.ColorRepresentation, o: { long?: boolean } = {}) {
-    const s = Math.sin(ry), c = Math.cos(ry), L = o.long ? 0.92 : 0.64;
+   *  ry faces the room. The shoulders fall away from the hook, the hem stands off the wall, one
+   *  sleeve hangs straight and the other a little forward. knit: a cardigan (ribbed, no collar). */
+  coat(x: number, y: number, z: number, ry: number, color: THREE.ColorRepresentation, o: { long?: boolean; knit?: boolean } = {}) {
+    const s = Math.sin(ry), c = Math.cos(ry), L = o.long ? 0.92 : 0.64, out = 0.055;   // out: how far the hem stands off
     const at = (u: number, v: number, n: number): [number, number, number] => [x + c * u + s * n, y + v, z - s * u + c * n];
     const dark = new THREE.Color(color).multiplyScalar(0.72), side = new THREE.Color(color).multiplyScalar(0.88);
+    const f = o.knit ? { faces: [null, null, null, null, 'knit', null] as (Thing | null)[] } : {};
+    const tilt = -Math.atan2(out, L);   // the body leans out from the shoulders to the hem
     this.box(0.05, 0.06, 0.01, ...at(0, 0.02, 0.005), 0x6c7074, { ry });                    // the hook's plate
     this.rod(v3(...at(0, 0.0, 0.01)), v3(...at(0, -0.02, 0.07)), 0.006, 0x6c7074);
-    this.slab(0.12, 0.4, 0.16, 0.06, 0.11, ...at(0, -0.09, 0.07), color, { ry });             // the shoulders
-    this.slab(0.37, 0.47, L, 0.11, 0.1, ...at(0, -0.17 - L / 2, 0.072), color, { ry, rx: 0.03 });
+    this.slab(0.12, 0.4, 0.16, 0.06, 0.11, ...at(0, -0.09, 0.07), color, { ry, ...f });             // the shoulders
+    this.slab(0.37, 0.48, L, 0.11, 0.1, ...at(0, -0.17 - L / 2, 0.075 + out / 2), color, { ry, rx: tilt, ...f });
+    this.slab(0.48, 0.5, 0.05, 0.1, 0.1, ...at(0, -0.17 - L + 0.025, 0.077 + out), o.knit ? dark : side, { ry, rx: tilt });   // the hem, turned up or ribbed
     for (const k of [-1, 1]) {
-      this.slab(0.12, 0.1, 0.56, 0.1, 0.085, ...at(k * 0.215, -0.45, 0.1), side, { ry, rz: -k * 0.04 });
-      this.box(0.1, 0.05, 0.088, ...at(k * 0.225, -0.74, 0.1), dark, { ry, rz: -k * 0.04, fine: true });   // the cuffs
-      this.box(0.12, 0.022, 0.014, ...at(k * 0.12, -0.17 - L * 0.62, 0.132), dark, { ry, fine: true });   // the pocket flaps
+      // the left sleeve hangs straight down the side, the right one forward and in a little
+      const fw = k > 0 ? 0.035 : 0, rz = k > 0 ? 0.08 : 0.03;
+      this.slab(0.12, 0.1, 0.56, 0.1, 0.085, ...at(k * (0.215 - fw * 0.4), -0.45, 0.1 + fw), side, { ry, rz: -k * rz, rx: -fw, ...f });
+      this.box(0.1, 0.05, 0.088, ...at(k * (0.235 - fw * 0.9 - rz * 0.25), -0.74, 0.1 + fw * 1.8), dark, { ry, rz: -k * rz, rx: -fw, fine: true });   // the cuffs
+      if (!o.knit) this.box(0.12, 0.022, 0.014, ...at(k * 0.12, -0.17 - L * 0.62, 0.137 + out * 0.62), dark, { ry, rx: tilt, fine: true });   // the pocket flaps
     }
-    for (const k of [-1, 1]) this.box(0.1, 0.08, 0.03, ...at(k * 0.045, -0.05, 0.12), dark, { ry, rz: k * 0.55 });   // the collar, turned down
-    this.box(0.012, L * 0.92, 0.006, ...at(0.012, -0.2 - L * 0.46, 0.128), dark, { ry, fine: true });   // where it buttons
-    for (let i = 0; i < 4; i++) this.box(0.016, 0.016, 0.008, ...at(0.03, -0.24 - i * L * 0.2, 0.131), 0x2a2420, { ry, fine: true });
+    if (!o.knit) for (const k of [-1, 1]) this.box(0.1, 0.08, 0.03, ...at(k * 0.045, -0.05, 0.12), dark, { ry, rz: k * 0.55 });   // the collar, turned down
+    this.box(0.012, L * 0.92, 0.006, ...at(0.012, -0.2 - L * 0.46, 0.13 + out * 0.5), dark, { ry, rx: tilt, fine: true });   // where it buttons
+    for (let i = 0; i < 4; i++) this.box(0.016, 0.016, 0.008, ...at(0.03, -0.24 - i * L * 0.2, 0.133 + out * (0.1 + i * 0.2)), 0x2a2420, { ry, fine: true });
   }
   /** A desk fan facing ry. */
   fan(x: number, y: number, z: number, ry: number, color: THREE.ColorRepresentation = 0x4e5a58) {
@@ -707,11 +967,12 @@ export class Clutter {
   build(): THREE.Mesh[] {
     const out: THREE.Mesh[] = [];
     const geo = (parts: Part[]) => {
-      const g = new THREE.BufferGeometry(), cat = (k: keyof Part) => parts.flatMap((p) => p[k]);
+      const g = new THREE.BufferGeometry(), cat = (k: 'pos' | 'nor' | 'uv' | 'col') => parts.flatMap((p) => p[k]);
       g.setAttribute('position', new THREE.Float32BufferAttribute(cat('pos'), 3));
       g.setAttribute('normal', new THREE.Float32BufferAttribute(cat('nor'), 3));
       g.setAttribute('uv', new THREE.Float32BufferAttribute(cat('uv'), 2));
-      g.setAttribute('color', new THREE.Float32BufferAttribute(cat('col'), 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(cat('col'), parts[0].rgba ? 4 : 3));
+      if (parts[0].glow) g.setAttribute('glow', new THREE.Float32BufferAttribute(parts.flatMap((p) => p.glow!), 1));
       g.computeBoundingSphere();
       return g;
     };
@@ -721,18 +982,19 @@ export class Clutter {
     solid.name = 'clutter:' + this.name; solid.userData.noMerge = true;
     out.push(solid);
     let grime: THREE.Mesh | null = null;
-    if (this.grime.pos.length) {
-      const m = this.mat({ map: dirtAtlas(), vertexColors: true, roughness: 0.95, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
-      grime = new THREE.Mesh(geo([this.grime]), m);
+    const shade = this.ground.pos.length / 3;
+    if (this.ground.pos.length || this.grime.pos.length) {
+      const m = shines(this.mat({ map: dirtAtlas(), vertexColors: true, roughness: 0.95, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }));
+      grime = new THREE.Mesh(geo([this.ground, this.grime]), m);
       grime.name = 'clutter:' + this.name + ':dirt'; grime.userData.noMerge = true; grime.userData.noShadow = true;
       out.push(grime);
     }
-    // Low draws the first part only, and no dirt (the dirt changes on the next frame: its own
-    // onBeforeRender would never run again once it is hidden)
+    // Low draws the first part of the things only, and of the dirt only the shade (set here: the
+    // dirt's own onBeforeRender would never run again once it is hidden)
     solid.onBeforeRender = () => {
       const low = getQuality() === 'low';
       solidGeo.drawRange.count = low ? first : Infinity;
-      if (grime) grime.visible = !low;
+      if (grime) { grime.geometry.drawRange.count = low ? shade : Infinity; grime.visible = !low || shade > 0; }
     };
     for (const k of this.clocks) out.push(this.hands(k, solidMat));
     return out;
