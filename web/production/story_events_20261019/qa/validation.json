@@ -1,6 +1,6 @@
 {
   "completedUtc": "2026-10-19T19:15:35.074131+00:00",
-  "scope": "Lokal implementert historieutvidelse; ikke flettet til main eller publisert",
+  "scope": "Implementert historieutvidelse, flettet til main og publisert på GitHub Pages; se publication.json",
   "sourceCommit": "fb04a483a8d9f8cc7c143202e72fc2041fb3c306",
   "sourceSha256": "01bec93dd8875eef6da58b27d32891f13fbb0f13a4076d36e605cf7330cd58dc",
   "runtimeFingerprint": "PASS: unchanged since tested build",
@@ -283,12 +283,11 @@
     },
     "delivery": {
       "status": "PASS",
-      "evidence": "Local branch, hashed offline artifact and localhost preview. No remote mutation."
+      "evidence": "Main integration2fbed14, Pages run39310466192 SUCCESS,1893 identical CI files and live story56/56. See publication.json."
     }
   },
   "remaining": [
     "New witness text has no dedicated Kinski recordings.",
-    "Human listening and subjective event pacing unverified.",
-    "Merge and deployment not performed."
+    "Human listening and subjective event pacing unverified."
   ]
 }

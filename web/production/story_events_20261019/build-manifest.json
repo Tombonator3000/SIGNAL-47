@@ -28,6 +28,6 @@
   "browserMode": "headless Chromium, S47_GPU=1, ANGLE/OpenGL",
   "performance": "UNVERIFIED: FPS not measured",
   "preview": "http://127.0.0.1:18447/SIGNAL-47/",
-  "delivery": "local branch and offline artifact; no push, PR, main update or deployment",
+  "delivery": "Merged to main and published on GitHub Pages; verified in qa/publication.json",
   "licensedAssets": "Copied from existing local optional asset checkout into ignored directory; preservation hashes in qa/licensed-preservation.json. No licensed source files staged."
 }

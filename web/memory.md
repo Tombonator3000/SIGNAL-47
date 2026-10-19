@@ -4,6 +4,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-19: historie- og hendelsesutvidelsen er flettet til main som `2fbed14` etter Toms eksplisitte bestilling. Pages-kjøring `39310466192` er SUCCESS; alle 1893 publiseringsfiler er identiske med testet bygg. Live historieprøve 56/56. Se `production/story_events_20261019/qa/publication.json`. De dokumenterte begrensningene for FPS, fysisk mobil og egne stemmeopptak står fortsatt.
+
 - 2026-10-19: Tom ba eksplisitt «Flett det inn da!» om historie- og hendelsesutvidelsen. Dette autoriserer innfletting av `codex/story-events-20261019` til main og det vanlige Pages-publiseringsløpet. Den tidligere begrensningen til lokal leveranse er opphevet for denne utvidelsen. Testet runtime beholdes byte for byte; FPS, fysisk mobil og nye stemmeopptak er fortsatt ikke verifisert.
 
 - 2026-10-19, direkte bestilling fra Tom: Earl på Night Line/1420 får en lokal syntetisk Art Bell-parodistemme. 115 klipp dekker 38 faste vertsreplikker og seks tidsmaler med en liten tidsbank, også gutten, avmelding og kjøreinnslag. Eget lagret valg `artBellRadioHost`, på som standard; radioen starter fortsatt av. Innringere, Roswell og Kinski beholdes. Sendingen deles av bil og diner, dekodes ved behov med cache på opptil 24 buffere/24 MiB, og faktiske bufferlengder styrer avspilling og teksting. Radiotekst følger den pausable lydklokken. Se `ART_BELL_RADIO.md`.

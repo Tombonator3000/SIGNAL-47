@@ -16,7 +16,7 @@ Tom avtalte 18. oktober 2026 at ChatGPT og Codex kan hjelpe med koding. Claude e
 
 ### 7. [x] Historie og hendelser, direkte bestilt av Tom (`codex/story-events-20261019`)
 
-Base: main `d1bfbc0`, med nyere main `c06bf33` tatt inn på arbeidsgrenen. Bestilt direkte 19. oktober med gauntlet-loop og gjennomgang av repo/prosjektbibliotek. Fire vitneoppfølginger med gjenlesbare notatkopier, styrket 1947-bulletin, faktisk lagret motell-TV-bilde og tilgjengelig returanrop etter rom 6. Art Bell-valget og nyere lyd-/grafikkendringer er bevart. Se `HENDELSER.md` og `production/story_events_20261019/qa/README.md` for tester og begrensninger. Opprinnelig lokal leveranse. Tom har senere i samtalen eksplisitt bestilt innfletting til main og vanlig Pages-publisering for denne oppgaven.
+Base: main `d1bfbc0`, med nyere main `c06bf33` tatt inn på arbeidsgrenen. Bestilt direkte 19. oktober med gauntlet-loop og gjennomgang av repo/prosjektbibliotek. Fire vitneoppfølginger med gjenlesbare notatkopier, styrket 1947-bulletin, faktisk lagret motell-TV-bilde og tilgjengelig returanrop etter rom 6. Art Bell-valget og nyere lyd-/grafikkendringer er bevart. Se `HENDELSER.md` og `production/story_events_20261019/qa/README.md` for tester og begrensninger. Opprinnelig lokal leveranse. Tom har senere i samtalen eksplisitt bestilt innfletting til main og vanlig Pages-publisering for denne oppgaven. Flettet som `2fbed14`, Pages `39310466192` SUCCESS, alle publiseringsfiler identiske med testet bygg og live historieprøve 56/56.
 
 ### 1. [x] Lagring uten IndexedDB: hvert fotografi lagres én gang (`codex/saves-photo-store`)
 

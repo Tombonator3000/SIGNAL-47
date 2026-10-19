@@ -4,6 +4,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Historie og hendelser, direkte bestilt 19. oktober
 
+- [x] Flettet til main etter Toms beskjed og publisert på Pages. CI-artefakten er identisk med testet bygg; live historieprøve 56/56.
+
 - [x] Fire valgfrie vitneoppfølginger med lagrede notatkopier i Papers. Krever både opplevd hendelse og tidligere samtaleemne.
 - [x] 1947-bulletinen varer 47 sekunder og gir programmet tilbake uten å hoppe over den avbrutte setningen eller platen.
 - [x] Motell-TV-ens faktiske bilde kan undersøkes igjen etter Continue. Fri sikt og bilens virkelige transform kontrolleres.

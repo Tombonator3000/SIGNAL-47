@@ -1,6 +1,6 @@
 # Historie og hendelser, 19. oktober 2026
 
-Lokal spillbar utvidelse på `codex/story-events-20261019`, startet fra main `d1bfbc0f937915186fb3fe908db78b52b410b7b3`. Nyere main `c06bf331803611b94b438b75bcbe0aa58fa44583`, med Art Bell-radio, kjøpte lyder og nytt bakteppe, er tatt inn på arbeidsgrenen. Tom bestilte arbeidet direkte. Leveransen ble først lagret lokalt. Tom har deretter eksplisitt bestilt innfletting til main og vanlig Pages-publisering. Den tidligere begrensningen til lokal leveranse er opphevet for denne oppgaven. Testet runtime beholdes uendret; faktisk innfletting og publisering føres i `log.md` og Pages-kjøringen på GitHub.
+Lokal spillbar utvidelse på `codex/story-events-20261019`, startet fra main `d1bfbc0f937915186fb3fe908db78b52b410b7b3`. Nyere main `c06bf331803611b94b438b75bcbe0aa58fa44583`, med Art Bell-radio, kjøpte lyder og nytt bakteppe, er tatt inn på arbeidsgrenen. Tom bestilte arbeidet direkte. Leveransen ble først lagret lokalt. Tom har deretter eksplisitt bestilt innfletting til main og vanlig Pages-publisering. Den tidligere begrensningen til lokal leveranse er opphevet for denne oppgaven. Utvidelsen er flettet til main og publisert i Pages-kjøring [39310466192](https://github.com/Tombonator3000/SIGNAL-47/actions/runs/39310466192). Testet runtime er uendret. [publication.json](publication.json) viser at alle 1893 CI-filer er identiske og at den faktiske nettsiden består 56/56 historieprøver.
 
 Fire nye vitnesamtaler og fire gjenlesbare notatkopier binder telefonmynten, patruljebilen, gutten på Night Line og den manglende kua til eksisterende personer. Vitnene svarer som mennesker; de faste opptakene svarer ikke. Returanropet kan oppleves etter rom 6, også ved en sen ankomst i grålysningen. 1947-sendingen varer 47 sekunder og gir det avbrutte programmet tilbake. Motell-TV-ens bilde er den faktiske scenen og kan beholdes etter Continue. Akseptkriteriene står øverst i [HENDELSER.md](../../../HENDELSER.md).
 
@@ -16,6 +16,8 @@ Fire nye vitnesamtaler og fire gjenlesbare notatkopier binder telefonmynten, pat
 Eksisterende avhengigheter ble lenket inn fra `/home/tom/SIGNAL-47/web/node_modules`, som avtalt i oppgavefila. Ingen installasjon eller versjonsendring. Ingen nye rasterassets eller Kinski-klipp. Den etablerte visuelle retningen er beholdt; bildene under er runtime-bevis. Nyere mains valgfrie lydbank er kopiert fra den eksisterende lokale private klonen til den ignorerte mappen, uten Git-data. Kildene er bevart og sammenlignet i `licensed-preservation.json`; ingen private kildefiler er lagt til i Git. Testen uten banken kjøres på et eget bygg før banken tas med.
 
 ## Åpne og prøv
+
+Publisert nettspill: [SIGNAL / 47](https://tombonator3000.github.io/SIGNAL-47/).
 
 Lokal forhåndsvisning: `http://127.0.0.1:18447/SIGNAL-47/` mens testserveren er åpen. Enkeltfilen er også bevart i samtalens `outputs/signal47/SIGNAL-47-historie.html`. Nøyaktig størrelse og hash står i `../build-manifest.json`. Den bruker radioens eksisterende reserveløsning for strømmet musikk; den lokale nettforhåndsvisningen bruker musikkfilene som Pages. Begge har de nye Art Bell-klippene og den lokale valgfrie lydbanken.
 
