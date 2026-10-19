@@ -9,14 +9,16 @@ import { wind, windAt } from './wind';
 // dirt. Every outdoor area has one patch of it (world/groundCover.ts says where for each), built
 // in the patch's own terms.
 //
-// Cost: one instanced mesh per kind, seven draw calls with all of them in view, whatever the
-// size of the area. The land is cut into 8 m cells; a cell's plants are drawn from its own
-// random numbers the first time the camera comes near it, so two areas that draw the same land
-// (the stretches of road in drive/corridors.ts) draw the very same plants. Only the cells near
-// the camera are in the meshes: they are copied in again each time the camera has moved 8 m
-// (before the picture is drawn, followFlora), and each kind fades out with distance in its
-// shader, the small ones first (they shrink into the ground; nothing is transparent but the
-// stains). Low draws fewer and nearer, and no stains.
+// Cost: five instanced meshes, five draw calls with all of them in view, whatever the size of the
+// area: one per kind, but the grass and the sage share one, and the creosote and the dead stalks
+// another (PAIRS: cards on the one picture, the second kind's copies after the first's in the
+// mesh, their corners in attributes of their own). The land is cut into 8 m cells; a cell's
+// plants are drawn from its own random numbers the first time the camera comes near it, so two
+// areas that draw the same land (the stretches of road in drive/corridors.ts) draw the very same
+// plants. Only the cells near the camera are in the meshes: they are copied in again each time
+// the camera has moved 8 m (before the picture is drawn, followFlora), and each kind fades out
+// with distance in its shader, the small ones first (they shrink into the ground; nothing is
+// transparent but the stains). Low draws fewer and nearer, and no stains.
 //
 // Light: the area's fake floods (kit.floodlit) and the scene's lights, so the sodium lamps, the
 // headlights and the flashlight light it like the ground under it; the sky and the moon reach
@@ -539,31 +541,42 @@ let msaa: boolean | null = null;
 
 /** A flora material: floodlit by the patch's set, swaying in the wind, faded with distance.
  *  reach is this kind's (Low draws it nearer). shade: a plant (the sky and the moon in it less,
- *  darker to the root); back: thin blades, a lamp behind them shows through their edges. */
-function floraMaterial(o: THREE.MeshStandardMaterialParameters, set: FloodSet, falloff: number, reach: { value: number }, parts = false, shade = false, back = false) {
+ *  darker to the root); back: thin blades, a lamp behind them shows through their edges. pair:
+ *  the mesh holds a second kind's copies from `split` on (pairShape: its corners in aPosB, aUvB,
+ *  aColB and aSwayB), faded by its own reach. */
+function floraMaterial(o: THREE.MeshStandardMaterialParameters, set: FloodSet, falloff: number, reach: { value: number }, parts = false, shade = false, back = false,
+  pair: { reach: { value: number }; split: { value: number } } | null = null) {
   const m = floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, ...o }), falloff, set);
   const flood = m.onBeforeCompile;
   const twoSided = o.side === THREE.DoubleSide && !o.flatShading;
   m.onBeforeCompile = (sh, r) => {
     flood.call(m, sh, r);
     sh.uniforms.uWindTime = wind.time; sh.uniforms.uWindAmp = wind.strength; sh.uniforms.uWindDir = wind.dir; sh.uniforms.uReach = reach;
+    if (pair) { sh.uniforms.uReachB = pair.reach; sh.uniforms.uSplit = pair.split; }
+    // a pair: the second kind's copies (from uSplit on) take its corners, its colours and its reach
+    const B = pair ? '\nattribute vec3 aPosB; attribute vec2 aUvB; attribute vec3 aColB; attribute float aSwayB;\nuniform float uReachB; uniform int uSplit;' : '';
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', `#include <common>\nattribute float aSway;${parts ? '\nattribute float aPart;' : ''}\nuniform float uWindTime; uniform float uWindAmp; uniform float uReach; uniform vec2 uWindDir;\nvarying float vFSway;`)
+      .replace('#include <common>', `#include <common>\nattribute float aSway;${parts ? '\nattribute float aPart;' : ''}${B}\nuniform float uWindTime; uniform float uWindAmp; uniform float uReach; uniform vec2 uWindDir;\nvarying float vFSway;`)
+      .replace('void main() {', pair ? 'void main() {\n  bool fB = gl_InstanceID >= uSplit;' : 'void main() {')
+      .replace('#include <uv_vertex>', pair ? THREE.ShaderChunk.uv_vertex.replace(/\bMAP_UV\b/g, '(fB ? aUvB : MAP_UV)') : '#include <uv_vertex>')
+      .replace('#include <color_vertex>', pair ? THREE.ShaderChunk.color_vertex.replace('vColor *= color;', 'vColor *= fB ? aColB : color;') : '#include <color_vertex>')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
-        vFSway = aSway;
+        ${pair ? 'if (fB) transformed = aPosB;' : ''}
+        float fSw = ${pair ? 'fB ? aSwayB : aSway' : 'aSway'};
+        vFSway = fSw;
         #ifdef USE_INSTANCING
         {
           // shrink into the ground with distance (the small ones much nearer: far off a tiny tuft
           // in a light is a speck), and sway at the top
           float is2 = dot(instanceMatrix[0].xyz, instanceMatrix[0].xyz), isc = sqrt(is2);
           vec3 iw = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
-          float reach = uReach * clamp(0.05 + 0.75 * isc, 0.3, 1.0);
+          float reach = ${pair ? '(fB ? uReachB : uReach)' : 'uReach'} * clamp(0.05 + 0.75 * isc, 0.3, 1.0);
           float fade = 1.0 - smoothstep(reach * 0.72, reach, distance(iw.xz, cameraPosition.xz));
           ${parts ? '// one of the two plants: the other folds away\n          fade *= step(abs(aPart - step(determinant(mat3(instanceMatrix)), 0.0)), 0.5);' : ''}
           float ph = uWindTime * 1.9 + dot(iw.xz, vec2(0.21, 0.17));
           float gust = sin(ph) * 0.55 + sin(ph * 2.7 + iw.x * 0.5) * 0.25 + 0.35;
           vec3 wl = (vec3(uWindDir.x, 0.0, uWindDir.y) * mat3(instanceMatrix)) / max(is2, 1e-4);
-          transformed = transformed * fade + wl * (aSway * uWindAmp * gust * isc * fade);
+          transformed = transformed * fade + wl * (fSw * uWindAmp * gust * isc * fade);
         }
         #endif`);
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vFSway;');
@@ -579,7 +592,7 @@ function floraMaterial(o: THREE.MeshStandardMaterialParameters, set: FloodSet, f
       .replace('vec3 fN = normalize(vFNormal);', 'vec3 fN = normalize(vFNormal);\n        vec3 fV = normalize(vFWorld - cameraPosition); float fBk = 0.6 * (0.3 + 0.7 * vFSway);')
       .replace('float ndl = abs(dot(fN, L)) * 0.75 + 0.25;', 'float fb = max(dot(fV, L), 0.0);\n          float ndl = abs(dot(fN, L)) * 0.75 + 0.25 + fBk * fb * fb * fb;');
   };
-  m.customProgramCacheKey = () => 'flora' + set.key + falloff + (twoSided ? '2' : '') + (parts ? 'p' : '') + (shade ? 's' : '') + (back ? 'b' : '');
+  m.customProgramCacheKey = () => 'flora' + set.key + falloff + (twoSided ? '2' : '') + (parts ? 'p' : '') + (shade ? 's' : '') + (back ? 'b' : '') + (pair ? 'B' : '');
   if (o.alphaTest) { if (msaa === null) cardMats.push(m); else m.alphaToCoverage = msaa; }
   return m;
 }
@@ -642,6 +655,35 @@ let shapes: Record<FloraKind, THREE.BufferGeometry> | null = null;
 function getShapes() {
   return shapes ??= { grass: grassShape(), sage: sageShape(), creosote: creosoteShape(), stalks: stalksShape(), succulent: succulentShape(), stones: stonesShape(), stain: stainShape() };
 }
+/** The kinds that share a mesh (one draw call for the two): cards on the one picture, the second
+ *  with no more cards than the first (its triangles are the first's, the ones it has not are folded
+ *  to a point). The rest have one each. */
+const PAIRS: [FloraKind, FloraKind][] = [['grass', 'sage'], ['creosote', 'stalks']];
+const pairShapes: Partial<Record<FloraKind, THREE.BufferGeometry>> = {};
+/** a's mesh with b's corners in it too (aPosB, aUvB, aColB, aSwayB; the copies past the split
+ *  take them, floraMaterial). */
+function pairShape(a: FloraKind, b: FloraKind) {
+  if (pairShapes[a]) return pairShapes[a]!;
+  const sh = getShapes(), A = sh[a], Bg = sh[b], n = A.attributes.position.count, nb = Bg.attributes.position.count;
+  const ia = A.index!.array, ib = Bg.index!.array;
+  if (nb > n || ib.length > ia.length || Array.from(ib).some((v, i) => v !== ia[i]) || A.attributes.color.itemSize !== 3 || Bg.attributes.color.itemSize !== 3) throw new Error(`flora: ${b} does not fit in ${a}'s mesh`);
+  const g = new THREE.BufferGeometry();
+  for (const k of ['position', 'normal', 'uv', 'color', 'aSway']) g.setAttribute(k, A.attributes[k]);
+  g.setIndex(A.index);
+  // b's corners; the cards it has not are one point under the ground (no triangle to draw)
+  const pad = (k: string, size: number, fill: number[]) => {
+    const src = Bg.attributes[k].array as Float32Array, out = new Float32Array(n * size);
+    out.set(src.subarray(0, nb * size));
+    for (let i = nb; i < n; i++) out.set(fill, i * size);
+    return new THREE.Float32BufferAttribute(out, size);
+  };
+  g.setAttribute('aPosB', pad('position', 3, [0, -1, 0]));
+  g.setAttribute('aUvB', pad('uv', 2, [0, 0]));
+  g.setAttribute('aColB', pad('color', 3, [0, 0, 0]));
+  g.setAttribute('aSwayB', pad('aSway', 1, [0]));
+  g.boundingSphere = (A.boundingSphere!.radius >= Bg.boundingSphere!.radius ? A : Bg).boundingSphere!.clone();
+  return pairShapes[a] = g;
+}
 
 // ---------- the colours of the copies ----------
 // Tints over the shape's own colours (sRGB, as the shapes): straw, rust and bleached grass, warm
@@ -666,8 +708,12 @@ const CALICHE = lin([1.55, 1.48, 1.32]);
 
 // ---------- the patch ----------
 type KindCell = { m: Float32Array; c: Float32Array; rank: Float32Array; seam: Uint8Array | null; n: number };
-/** seam: which copies in the mesh now grow in a way's seam (the tests). */
-type Layer = { k: Kind; mesh: THREE.InstancedMesh; reach: { value: number }; seam: Uint8Array };
+/** A kind in its mesh: its copies are at..at+n in it now (a pair's second kind after the first's).
+ *  seam: which of them grow in a way's seam (the tests). */
+type Layer = { k: Kind; mesh: THREE.InstancedMesh; reach: { value: number }; seam: Uint8Array; at: number; n: number };
+/** A mesh and the kinds in it, in order; split: where the second kind's copies start (a pair),
+ *  reachB its reach (the material's second). */
+type Draw = { mesh: THREE.InstancedMesh; layers: Layer[]; split: { value: number }; reachB: { value: number } };
 const live: Flora[] = [];
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _n = new THREE.Vector3(), _mx = new THREE.Matrix4();
 const _up = new THREE.Vector3(0, 1, 0);
@@ -676,6 +722,7 @@ const inside = (b: Rect, x: number, z: number, m = 0) => x >= b.minX - m && x <=
 export class Flora {
   readonly group = new THREE.Group();
   readonly layers: Layer[] = [];
+  private readonly draws: Draw[] = [];
   private cells = new Map<number, (KindCell | undefined)[]>();
   private at = new THREE.Vector2(Infinity, Infinity);
   private q = '';
@@ -687,27 +734,40 @@ export class Flora {
     this.group.name = 'flora:' + spec.name;
     const sh = getShapes(), fall = spec.falloff ?? 0.012;
     for (const k of KINDS) {
+      // (the second of a pair goes into the first's mesh, faded by the material's second reach)
+      const pairOf = PAIRS.find((p) => p[1] === k.id);
+      if (pairOf) {
+        const D = this.draws.find((d) => d.layers[0].k.id === pairOf[0])!;
+        const L: Layer = { k, mesh: D.mesh, reach: D.reachB, seam: new Uint8Array(k.cap), at: 0, n: 0 };
+        D.layers.push(L); this.layers.push(L);
+        continue;
+      }
       const reach = { value: k.reach };
+      const pair = PAIRS.find((p) => p[0] === k.id), second = pair ? KINDS.find((q) => q.id === pair[1])! : null;
+      const split = { value: 0 }, reachB = { value: second ? second.reach : 0 };
       const card = k.id === 'grass' || k.id === 'sage' || k.id === 'creosote' || k.id === 'stalks';
       const o: THREE.MeshStandardMaterialParameters = card ? { side: THREE.DoubleSide, map: floraAtlas(), alphaTest: 0.42 }
         : k.id === 'succulent' ? { side: THREE.DoubleSide }
           : k.id === 'stain' ? { transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }
             : { flatShading: true };
       const plant = card || k.id === 'succulent';
-      const mesh = new THREE.InstancedMesh(sh[k.id], floraMaterial(o, spec.set, fall, reach, k.id === 'succulent', plant, card), k.cap);
+      const mat = floraMaterial(o, spec.set, fall, reach, k.id === 'succulent', plant, card, pair ? { reach: reachB, split } : null);
+      const mesh = new THREE.InstancedMesh(pair ? pairShape(pair[0], pair[1]) : sh[k.id], mat, k.cap + (second ? second.cap : 0));
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.setColorAt(0, new THREE.Color(1, 1, 1));
       mesh.instanceColor!.setUsage(THREE.DynamicDrawUsage);
       mesh.count = 0; mesh.visible = false;
       mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1);
-      mesh.name = 'flora-' + k.id;
+      mesh.name = 'flora-' + (pair ? pair.join('+') : k.id);
       mesh.userData.noShadow = true;   // core/ultra.ts: too many and too thin to cast, and the cards
       mesh.userData.noAO = true;       // would be solid quads in the occlusion pass (core/vhs.ts)
       mesh.userData.noMerge = true;
       mesh.raycast = () => {};
       if (k.id === 'stain') mesh.renderOrder = -1;
       this.group.add(mesh);
-      this.layers.push({ k, mesh, reach, seam: new Uint8Array(k.cap) });
+      const L: Layer = { k, mesh, reach, seam: new Uint8Array(k.cap), at: 0, n: 0 };
+      this.layers.push(L);
+      this.draws.push({ mesh, layers: [L], split, reachB });
     }
     this.add({ blocks: spec.blocks, walks: spec.walks });
     live.push(this);
@@ -934,11 +994,16 @@ export class Flora {
       }
       return seen[o] === 1;
     };
+    // (the kinds in KINDS' order: the second of a pair goes on after the first in their mesh)
+    let at = 0, R0 = 0;
     this.layers.forEach((L, ki) => {
       const k = L.k, keep = low ? k.low : 1, mesh = L.mesh, far = low ? null : k.far;
+      const D = this.draws.find((d) => d.mesh === mesh)!, first = D.layers[0] === L;
+      if (first) { at = 0; R0 = 0; }
       // Low: none of the far ring, and nearer
       L.reach.value = low ? (k.far ? k.far[0] : k.reach) * LOW_REACH : k.reach;
       let n = 0;
+      L.at = at;
       if (keep > 0) {
         const R = L.reach.value + STEP, M = mesh.instanceMatrix.array as Float32Array, Cc = mesh.instanceColor!.array as Float32Array;
         // after a jump, everything out to the near reach at once (the far ring a picture or two later)
@@ -960,19 +1025,24 @@ export class Flora {
           if (keep * share < 1) { m = 0; while (m < cell.n && cell.rank[m] < keep * share) m++; }
           m = Math.min(m, k.cap - n);
           if (m <= 0) continue;
-          M.set(cell.m.subarray(0, m * 16), n * 16);
-          Cc.set(cell.c.subarray(0, m * 3), n * 3);
+          M.set(cell.m.subarray(0, m * 16), (at + n) * 16);
+          Cc.set(cell.c.subarray(0, m * 3), (at + n) * 3);
           if (cell.seam) L.seam.set(cell.seam.subarray(0, m), n);
           n += m;
           if (n >= k.cap) break;
         }
-        mesh.instanceMatrix.clearUpdateRanges(); mesh.instanceMatrix.addUpdateRange(0, n * 16); mesh.instanceMatrix.needsUpdate = true;
-        mesh.instanceColor!.clearUpdateRanges(); mesh.instanceColor!.addUpdateRange(0, n * 3); mesh.instanceColor!.needsUpdate = true;
-        mesh.boundingSphere!.center.set(px, this.spec.ground(px, pz), pz);
-        mesh.boundingSphere!.radius = R + 10;
+        R0 = Math.max(R0, R);
       }
-      mesh.count = n;
-      mesh.visible = n > 0;
+      L.n = n; at += n;
+      if (first) D.split.value = n;
+      if (L !== D.layers[D.layers.length - 1]) return;
+      // the mesh, once its kinds are in
+      mesh.instanceMatrix.clearUpdateRanges(); mesh.instanceMatrix.addUpdateRange(0, at * 16); mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor!.clearUpdateRanges(); mesh.instanceColor!.addUpdateRange(0, at * 3); mesh.instanceColor!.needsUpdate = true;
+      mesh.boundingSphere!.center.set(px, this.spec.ground(px, pz), pz);
+      mesh.boundingSphere!.radius = R0 + 10;
+      mesh.count = at;
+      mesh.visible = at > 0;
     });
     // forget the cells far behind
     if (this.cells.size > 2500) for (const key of [...this.cells.keys()]) {
@@ -983,7 +1053,7 @@ export class Flora {
 
   // ---------- tests ----------
   /** The copies in the meshes now, by kind. */
-  drawn() { const o: Partial<Record<FloraKind, number>> = {}; for (const L of this.layers) if (L.mesh.visible) o[L.k.id] = L.mesh.count; return o; }
+  drawn() { const o: Partial<Record<FloraKind, number>> = {}; for (const L of this.layers) if (L.mesh.visible) o[L.k.id] = L.n; return o; }
   /** Every copy in the meshes now that stands on a way the story uses (spec.ways), as [kind, x, z,
    *  way]; one in a seam only when it is further in than the seam's 0.6 m (no point 0.65 m round
    *  it off the way), or bigger than the seam's kinds grow there. */
@@ -992,10 +1062,10 @@ export class Flora {
     if (!ways) return out;
     for (const L of this.layers) {
       const a = L.mesh.instanceMatrix.array as Float32Array;
-      for (let i = 0; i < L.mesh.count; i++) {
+      for (let i = L.at; i < L.at + L.n; i++) {
         const x = a[i * 16 + 12], z = a[i * 16 + 14], w = ways(x, z);
         if (!w) continue;
-        if (L.seam[i] && Math.hypot(a[i * 16], a[i * 16 + 1], a[i * 16 + 2]) <= 0.5) {
+        if (L.seam[i - L.at] && Math.hypot(a[i * 16], a[i * 16 + 1], a[i * 16 + 2]) <= 0.5) {
           let edge = false;
           for (let t = 0; t < 8 && !edge; t++) edge = !ways(x + Math.cos(t * Math.PI / 4) * 0.65, z + Math.sin(t * Math.PI / 4) * 0.65);
           if (edge) continue;
@@ -1010,7 +1080,7 @@ export class Flora {
     let n = 0, on = 0;
     for (const L of this.layers) {
       const a = L.mesh.instanceMatrix.array as Float32Array;
-      for (let i = 0; i < L.mesh.count; i++) if (L.seam[i]) { n++; if (this.spec.ways?.(a[i * 16 + 12], a[i * 16 + 14])) on++; }
+      for (let i = L.at; i < L.at + L.n; i++) if (L.seam[i - L.at]) { n++; if (this.spec.ways?.(a[i * 16 + 12], a[i * 16 + 14])) on++; }
     }
     return { n, on };
   }

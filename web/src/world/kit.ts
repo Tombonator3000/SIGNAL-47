@@ -207,3 +207,37 @@ export function mergeStatic(root: THREE.Object3D) {
     root.add(m);
   }
 }
+
+// ---------- Detail drawn only near ----------
+// What only adds to a place seen from close by (the props and the stains of a lot, the wear on
+// its asphalt, the clutter of a room seen through its window) costs its draw calls from across
+// the land too: from SARO the motel's are a few pixels 650 m off, and from the control room's
+// desk the lab's are behind two walls. A group made here is drawn only while the camera
+// is within `near` metres of what is in it (its box, taken the first time it is in the scene).
+// The group's own `visible` is this one's: quality (core/quality.ts) and the areas switch what
+// is inside it, never the group. followNear runs it before every picture.
+const nearOnes: { g: THREE.Group; near: number; box: THREE.Box3 | null }[] = [];
+export function nearOnly(o: THREE.Object3D, near: number) {
+  const g = noMerge(new THREE.Group()) as THREE.Group;
+  g.name = (o.name || 'detail') + ':near';
+  g.add(o);
+  nearOnes.push({ g, near, box: null });
+  return g;
+}
+const _eye = new THREE.Vector3();
+const inScene = (o: THREE.Object3D) => { let p: THREE.Object3D | null = o; while (p && !(p as THREE.Scene).isScene) p = p.parent; return !!p; };
+/** Before every picture of the scene, the near-only groups shown or not for the camera drawing
+ *  it (the world matrices are up to date then). Once, for the one scene. */
+export function followNear(scene: THREE.Scene) {
+  if (scene.userData.near) return;
+  scene.userData.near = true;
+  const prev = scene.onBeforeRender;
+  scene.onBeforeRender = function (this: THREE.Scene, ...args: Parameters<THREE.Object3D['onBeforeRender']>) {
+    prev.apply(this, args);
+    const eye = args[2].getWorldPosition(_eye);
+    for (const e of nearOnes) {
+      if (!e.box) { if (!inScene(e.g)) continue; e.box = new THREE.Box3().setFromObject(e.g); }
+      e.g.visible = e.box.distanceToPoint(eye) < e.near;
+    }
+  };
+}

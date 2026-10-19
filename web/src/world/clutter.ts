@@ -7,9 +7,10 @@ import { DISH_LAYOUT, DISH_LAYOUT_FAR, ROWS, SPINE_X, FENCE_Z, HWY } from './arr
 // The things that make a room lived in: papers, mugs with rings under them, an ashtray, binders,
 // cables along the walls, notices and posters, a coat on a hook, the worn floor by the doors.
 // A room asks for them through a Clutter and gets back two meshes, however many things it asks
-// for (three with a wall clock):
+// for:
 //  - the things: one material on one picture of small printed things drawn here in code (THINGS),
-//    each part coloured per corner, so a hundred of them cost one draw call;
+//    each part coloured per corner, so a hundred of them cost one draw call (a wall clock's hands
+//    too: their corners are moved in it when the second changes);
 //  - the dirt: worn floor, scuffs, stains, cobwebs, see-through, on a second picture (DIRT), and
 //    with it the light and shade the lamps alone do not give: soft shadows where things meet the
 //    floor, the dark along the walls and in the corners, pools of lamplight, the shine on a counter.
@@ -963,7 +964,7 @@ export class Clutter {
   }
 
   // ---------- the meshes ----------
-  /** The room's meshes: its things (one call), its dirt (one more) and a mesh per clock's hands. */
+  /** The room's meshes: its things with the clocks' hands (one call) and its dirt (one more). */
   build(): THREE.Mesh[] {
     const out: THREE.Mesh[] = [];
     const geo = (parts: Part[]) => {
@@ -977,7 +978,9 @@ export class Clutter {
       return g;
     };
     const solidMat = this.mat({ map: thingsAtlas(), vertexColors: true, roughness: 0.78 });
-    const solidGeo = geo([this.base, this.fine]), first = this.base.pos.length / 3;
+    // the hands after the things Low keeps and before the fine ones: Low draws them too
+    const hands = this.clocks.map((k) => this.hands(k)), at = this.base.pos.length / 3;
+    const solidGeo = geo([this.base, ...hands.map((h) => h.part), this.fine]), first = at + hands.length * HAND_N;
     const solid = new THREE.Mesh(solidGeo, solidMat);
     solid.name = 'clutter:' + this.name; solid.userData.noMerge = true;
     out.push(solid);
@@ -991,43 +994,47 @@ export class Clutter {
     }
     // Low draws the first part of the things only, and of the dirt only the shade (set here: the
     // dirt's own onBeforeRender would never run again once it is hidden)
+    let shown = -1;
     solid.onBeforeRender = () => {
       const low = getQuality() === 'low';
       solidGeo.drawRange.count = low ? first : Infinity;
       if (grime) { grime.geometry.drawRange.count = low ? shade : Infinity; grime.visible = !low || shade > 0; }
+      // the clocks' hands, when the second has changed (only their corners are sent again)
+      const sec = Math.floor(wallSecs);
+      if (!hands.length || sec === shown) return;
+      shown = sec;
+      const p = solidGeo.attributes.position as THREE.BufferAttribute;
+      hands.forEach((h, i) => h.set(p.array as Float32Array, (at + i * HAND_N) * 3, sec));
+      p.clearUpdateRanges(); p.addUpdateRange(at * 3, hands.length * HAND_N * 3); p.needsUpdate = true;
     };
-    for (const k of this.clocks) out.push(this.hands(k, solidMat));
     return out;
   }
 
-  // Three hands as quads in one small mesh, moved when the second changes.
-  private hands(k: { x: number; y: number; z: number; ry: number; r: number }, mat: THREE.Material) {
+  // A clock's three hands as quads (HAND_N corners) in the things' mesh, in the room's terms: the
+  // part to put in it, and how to write their corners for a time.
+  private hands(k: { x: number; y: number; z: number; ry: number; r: number }) {
     const shapes = [[0.022, k.r * 0.55, 0.002, 0x1c1d1f], [0.014, k.r * 0.82, 0.004, 0x1c1d1f], [0.004, k.r * 0.9, 0.006, 0xb3261e]];
-    const n = shapes.length * 6, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), uv = new Float32Array(n * 2), nor = new Float32Array(n * 3);
-    const w = WHITE();
-    for (let i = 0; i < n; i++) { nor[i * 3 + 2] = 1; uv[i * 2] = (w[0] + w[2]) / 2; uv[i * 2 + 1] = (w[1] + w[3]) / 2; _c.set(shapes[Math.floor(i / 6)][3]); col.set([_c.r, _c.g, _c.b], i * 3); }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), k.r);
-    const mesh = new THREE.Mesh(g, mat);
-    mesh.name = 'clutter:' + this.name + ':clock'; mesh.userData.noMerge = true;
-    mesh.position.set(k.x, k.y, k.z); mesh.rotation.y = k.ry;
-    let shown = -1;
-    mesh.onBeforeRender = () => {
-      const s = Math.floor(wallSecs);
-      if (s === shown) return;
-      shown = s;
+    const cy = Math.cos(k.ry), sy = Math.sin(k.ry), w = WHITE();
+    const part: Part = { pos: [], nor: [], uv: [], col: [] };
+    const set = (out: Float32Array | number[], o: number, s: number) => {
       const ang = [-(s / 43200) * Math.PI * 2, -(s / 3600) * Math.PI * 2, -((s % 60) / 60) * Math.PI * 2];
       shapes.forEach(([wd, len, dz], j) => {
         const c = Math.cos(ang[j]), sn = Math.sin(ang[j]), tail = -len * 0.18;
         const q = [[-wd / 2, tail], [wd / 2, tail], [wd / 2, len], [-wd / 2, tail], [wd / 2, len], [-wd / 2, len]];
-        q.forEach(([u, v], i) => pos.set([u * c - v * sn, u * sn + v * c, dz as number], (j * 6 + i) * 3));
+        q.forEach(([u, v], i) => {
+          // on the clock's face (x, y, dz), turned by ry about y and moved to it
+          const x = u * c - v * sn, y = u * sn + v * c, z = dz as number, at = o + (j * 6 + i) * 3;
+          out[at] = k.x + x * cy + z * sy; out[at + 1] = k.y + y; out[at + 2] = k.z - x * sy + z * cy;
+        });
       });
-      (g.attributes.position as THREE.BufferAttribute).needsUpdate = true;
     };
-    return mesh;
+    for (let i = 0; i < HAND_N; i++) {
+      part.pos.push(0, 0, 0); part.nor.push(sy, 0, cy); part.uv.push((w[0] + w[2]) / 2, (w[1] + w[3]) / 2);
+      _c.set(shapes[Math.floor(i / 6)][3]); part.col.push(_c.r, _c.g, _c.b);
+    }
+    set(part.pos, 0, Math.floor(wallSecs));
+    return { part, set };
   }
 }
+/** The corners of a clock's hands: three quads of two triangles. */
+const HAND_N = 18;

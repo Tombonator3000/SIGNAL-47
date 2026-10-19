@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { artTexture } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
 import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 import { dressMotel } from './dressMotel';
-import type { Dressing } from './weathering';
+import { NEAR, type Dressing } from './weathering';
 import { dressMotelOffice } from './dressing';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
@@ -239,7 +239,7 @@ export class MotelFront {
       // the lot's block cracks, sealed, as decals (the picture would show them every 8 m)
       {x:-31.8,z:27,w:3.4,l:3,ry:1.2,k:'seal'},{x:-30.2,z:36,w:3,l:3.2,ry:.3,k:'seal'},{x:-32.4,z:55,w:3.4,l:3,ry:1.7,k:'seal'},
       {x:-30.8,z:61.5,w:1.9,l:1.5,ry:-.12,k:'fade'},{x:-33.2,z:21.5,w:3,l:3.2,ry:2.6,k:'seal'});
-    this.group.add(wearMesh(wear,()=>0,courtFlood,.008,.055));
+    this.group.add(nearOnly(wearMesh(wear,()=>0,courtFlood,.008,.055),NEAR));
     // A low, continuous fascia and slim posts carry the covered walk.
     metreUV(box(s,3.15,.18,49,m.concrete,-39.75,2.84,46.1));
     box(s,.12,.24,49,m.trim,-38.18,2.75,46.1);

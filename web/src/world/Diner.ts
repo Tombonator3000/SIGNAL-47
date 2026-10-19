@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import { wearMesh } from '../drive/roadSurface';
 import type { Zone } from '../player/Player';
 import { surfaceY } from '../drive/roadTerrain';
 import { DINER } from '../drive/roadShape';
 import { dressDiner } from './dressDiner';
-import type { Dressing } from './weathering';
+import { NEAR, type Dressing } from './weathering';
 import { dressDiner as dressDinerInside } from './dressing';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
@@ -69,7 +69,9 @@ export class Diner {
     for(const m of this.dressing.materials)this.materials.add(m);
     // the counter's, the booths' and the walls' clutter (world/dressing.ts)
     dressDinerInside({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});
-    mergeStatic(this.shell);mergeStatic(this.fixed);
+    // the counter, the booths and the walls inside are of the shell's paints: merged with it, one
+    // mesh per paint for the whole diner (seven draw calls fewer wherever it is seen)
+    this.shell.add(this.fixed);mergeStatic(this.shell);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
     this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);
     for(const z of [-5,0,5])this.light(-2.0,2.8,z,4.5,0xddeaff);
@@ -169,7 +171,7 @@ export class Diner {
       {x:13.6,z:-14.1,w:2.4,l:2,ry:.1,k:'oil'},{x:8,z:-14.2,w:5.4,l:1.2,ry:1.57,k:'drips'},{x:5.2,z:-12.6,w:1.6,l:1.4,ry:.7,k:'oil'},
       {x:13.4,z:-3,w:4.6,l:6.5,ry:2.9,k:'tread'},{x:12.6,z:7.5,w:4.6,l:6,ry:.4,k:'tread'},{x:9.5,z:-7,w:4.4,l:5.5,ry:1.9,k:'tread'},
     ],()=>0,dinerFlood,.006,.02,.1);
-    this.materials.add(wear.material as THREE.Material);this.group.add(wear);
+    this.materials.add(wear.material as THREE.Material);this.group.add(nearOnly(wear,NEAR));
     if(!this.onRoad){slab(16,24,-180,180,m.asphalt);
       for(const x of [19.9,20.1])box(s,.08,.006,360,m.yellow,x,.004,0);
       for(const x of [16.3,23.7])box(s,.1,.006,360,m.cream,x,.004,0);}

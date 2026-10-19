@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { cutoutTexture } from '../core/cutouts';
 import { artImage, artLoaded, artTexture, type ArtId } from '../core/art';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
@@ -10,7 +10,7 @@ import { surfaceY, hash, DINER, TOWN } from '../drive/roadTerrain';
 import { SIGN_OFF } from '../core/radio';
 import { wet, wearMesh, type Wear } from '../drive/roadSurface';
 import { dressTown } from './dressTown';
-import type { Dressing } from './weathering';
+import { NEAR, type Dressing } from './weathering';
 
 // Caliche, New Mexico, pop. 412 (HENDELSER.md, section 9; Tom, 16 October). The highway is its
 // main street, from Mesa Diner, the northernmost house, about 300 m south: the gas station, the
@@ -457,7 +457,7 @@ export class Town {
     const lift = (x: number, z: number) => z > 2040 && z < 2090 && x > -17.6 && x < -4.72 ? apronLift(x) : (x < -14.2 || x > 16.6) ? 0.05 : 0;
     const mesh = wearMesh(W, (x, z) => this.gy(x, z) + lift(x, z), townFlood, 0.008, FALL);
     this.materials.add(mesh.material as THREE.Material);
-    this.group.add(mesh);
+    this.group.add(nearOnly(mesh, NEAR));
   }
 
   // ---------- sidewalks and lots: concrete laid on the land ----------

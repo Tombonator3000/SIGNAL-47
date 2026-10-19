@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { noMerge, floodlit, type FloodSet } from './kit';
+import { noMerge, nearOnly, floodlit, type FloodSet } from './kit';
 import { rng } from '../core/textures';
 
 // The wear of the night's buildings and what stands about them (Tom, 19 October: «more realistic
@@ -13,13 +13,15 @@ import { rng } from '../core/textures';
 // its own shade on the ground; porch lights and the pools they throw.
 //
 // One Dressing per area (a material belongs to one set of fake floodlights, kit.ts), and it costs
-// that area four draw calls on High: the props (merged, one palette picture), the small props, the
-// stains (quads over the walls, one atlas) and the light pools (additive quads). On Low only the
-// big props stay: the small ones, the stains and the pools are left out (core/quality.ts,
-// userData.highOnly). The props are painted from a palette of swatches, so every colour of every
-// car and drum on a lot is the same material, and they carry the shade they stand in as vertex
-// colours (an art director's review, 19 October: on High the cars were flat bright boxes pasted
-// on the lot; on Ultra the real lamps' shadows had them right).
+// that area three draw calls on High: the props (merged, one palette picture, the big ones first
+// and the small ones after them), the stains (quads over the walls, one atlas) and the light
+// pools (additive quads). On Low only the big props stay: the mesh is drawn as far as the small
+// ones (userData.lowRange), the stains and the pools are left out (core/quality.ts,
+// userData.highOnly). From more than NEAR metres off none of it is drawn (kit.nearOnly). The
+// props are painted from a palette of swatches, so every colour of every car and drum on a lot
+// is the same material, and they carry the shade they stand in as vertex colours (an art
+// director's review, 19 October: on High the cars were flat bright boxes pasted on the lot; on
+// Ultra the real lamps' shadows had them right).
 //
 // Nothing here is a collider: the areas add their own round what the player could walk into
 // (the builders give back the footprint).
@@ -424,13 +426,21 @@ export type Wear = {
 };
 type Buf = { pos: number[]; uv: number[]; col: number[]; nrm?: number[] };
 
-/** One area's dressing: build into it, then build() once and add `group` to the area. */
+/** How near the camera must be for an area's dressing to be drawn (the props, the stains and the
+ *  pools of a lot; its wear too, drive/roadSurface.ts): a car is a few pixels from farther off,
+ *  where only the lamps read. SARO and the motel are 650 m apart; Caliche's street and the diner
+ *  stay in each other's. */
+export const NEAR = 250;
+
+/** One area's dressing: build into it, then add what build() gives (the group, drawn near only) to the area. */
 export class Dressing {
   readonly group = new THREE.Group();
-  /** The big props: kept on Low. */
+  /** The big props are built into this: kept on Low. */
   readonly core = new THREE.Group();
-  /** The small props: High only. */
+  /** The small props into this: High only. */
   readonly fine = new THREE.Group();
+  /** All of them in one mesh after build(), the big ones first (Low draws userData.lowRange of it). */
+  props: THREE.Mesh | null = null;
   readonly mat: THREE.MeshStandardMaterial;
   private readonly stainMat: THREE.MeshStandardMaterial;
   private readonly poolMat: THREE.MeshBasicMaterial;
@@ -456,7 +466,7 @@ export class Dressing {
     this.poolMat = new THREE.MeshBasicMaterial({ map: poolAtlas(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 });
     this.poolMat.name = `dress/${set.key}/pools`;
-    this.group.add(this.core, highOnly(this.fine));
+    this.group.name = `dress/${set.key}`;
     noMerge(this.group);
   }
   private rand(a: number, b: number) { return a + (b - a) * this.r(); }
@@ -1014,17 +1024,26 @@ export class Dressing {
     return this.foot(x, z, 2.05, 5.9, yaw);
   }
 
-  /** Merge the props (with their shade baked in) and make the stain and pool meshes; add `group`
-   *  to the area after. */
+  /** Merge the props (with their shade baked in) into one mesh, the big ones first, and make the
+   *  stain and pool meshes; add what it gives (`group` in a near-only group) to the area after. */
   build() {
-    this.bake(this.core); this.bake(this.fine);
+    const core = this.bake(this.core), fine = this.bake(this.fine);
+    if (core.length + fine.length) {
+      const m = new THREE.Mesh(mergeGeometries([...core, ...fine], false), this.mat);
+      m.name = this.mat.name; m.matrixAutoUpdate = false;
+      // Low: the big ones only (the mesh is not indexed: the range counts corners); none, none of it
+      if (!core.length) highOnly(m);
+      else if (fine.length) m.userData.lowRange = core.reduce((n, g) => n + g.attributes.position.count, 0);
+      this.group.add(noMerge(m));
+      this.props = m;
+    }
     if (this.d.pos.length) this.group.add(this.mesh(this.d, this.stainMat, true));
     if (this.p.pos.length) this.group.add(this.mesh(this.p, this.poolMat, false));
-    return this.group;
+    return nearOnly(this.group, NEAR);
   }
-  /** One mesh for everything under `root` (all of it the props' material), each vertex coloured
-   *  by the shade it stands in: about half at the prop's foot, full from 1.2 m up (a car's
-   *  rockers and wheel wells, a drum's foot, the base of a cooler on its roof). */
+  /** Everything under `root` (all of it the props' material) as geometries in the dressing's
+   *  terms, each vertex coloured by the shade it stands in: about half at the prop's foot, full
+   *  from 1.2 m up (a car's rockers and wheel wells, a drum's foot, the base of a cooler on its roof). */
   private bake(root: THREE.Group) {
     root.updateMatrixWorld(true);
     const inv = root.matrixWorld.clone().invert(), geos: THREE.BufferGeometry[] = [], parts: THREE.Mesh[] = [];
@@ -1047,10 +1066,7 @@ export class Dressing {
       geos.push(g); m.geometry.dispose();
     }
     root.clear();
-    if (!geos.length) return;
-    const merged = new THREE.Mesh(mergeGeometries(geos, false), this.mat);
-    merged.matrixAutoUpdate = false;
-    root.add(merged);
+    return geos;
   }
 }
 const xz = (p: THREE.Vector3): [number, number] => [p.x, p.z];

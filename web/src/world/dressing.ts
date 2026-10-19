@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Clutter, v3, type Thing } from './clutter';
 import { rng } from '../core/textures';
+import { nearOnly } from './kit';
 
 // What has gathered in the rooms over the years (world/clutter.ts makes it): papers and mugs
 // on the desks, an ashtray, cables along the walls and under the desks, notices and posters, a
@@ -25,7 +26,18 @@ const C = {
   shade: 0x0a0806, smoke: 0x6a5226, smokeDark: 0x4a3a1c, lamp: 0xffd49a, tube: 0xeef2ff,
 };
 const PI = Math.PI;
-function done(c: Clutter, d: Dress) { for (const m of c.build()) d.add(m); }
+/** How near the camera must be to a room for its clutter to be drawn (kit.nearOnly): from the
+ *  control room's north windows' side, the motel office's and the diner's fronts and the hut's door
+ *  you see in; the lab has no window, only its door on the east walk. Farther off the papers and
+ *  the mugs are a pixel, and the wing's and the annex's walls hide most of them. (The annex is drawn
+ *  only from in it or through its door, main.ts, and room 6 is its own area: theirs are not.) */
+const NEAR_ROOM = { control: 20, lab: 10, office: 25, diner: 40, hut: 15 };
+function done(c: Clutter, d: Dress, near = 0) {
+  const ms = c.build();
+  if (!near) { for (const m of ms) d.add(m); return; }
+  const g = new THREE.Group(); g.name = 'clutter:' + c.name; g.add(...ms);
+  d.add(nearOnly(g, near));
+}
 // pencils standing in a cup
 function pencilCup(c: Clutter, x: number, y: number, z: number, color = 0x2a3a4a) {
   c.cyl(0.036, 0.032, 0.1, x, y + 0.05, z, color, { seg: 10 });
@@ -244,7 +256,7 @@ export function dressControlRoom(d: Dress) {
   under(c, 1.98, 2.36, 0.66); under(c, -3.75, -3.7, 0.75); under(c, -5.55, 3.95, 0.9, 0.9, 0.65); under(c, -3.2, 4.39, 0.4, 0.36, 0.35);
   base(c, 4.07, 4.69, 3.59, 4.11); base(c, 5.47, 5.97, -1.86, -1.24, 0.55); base(c, 5.4, 5.8, -0.65, -0.15, 0.5, 0.18);
   base(c, 5.43, 5.81, -0.15, 0.15, 0.6, 0.2); base(c, -5.8, -5.44, 2.69, 3.01, 0.6, 0.2);
-  done(c, d);
+  done(c, d, NEAR_ROOM.control);
 }
 
 // The blinds over a window: the head rail (its top at y), the stack of slats drawn up under it,
@@ -491,7 +503,7 @@ export function dressLab(d: Dress) {
   for (const [x, z] of [[17.62, -5.6], [17.95, -5.62], [18.55, -5.58]]) under(c, x, z, 0.5, 0.42, 0.7);
   pool(c, 18.55, 0.893, -3.6, 0.66, 1.2, 0.3);
   pool(c, 15.0, 0.942, -5.32, 1.8, 0.5, 0.25, 0xff4a30);
-  done(c, d);
+  done(c, d, NEAR_ROOM.lab);
 }
 
 // ---------- the motel office (in the terms it was built in, world/MotelFront.ts) ----------
@@ -549,7 +561,7 @@ export function dressMotelOffice(d: Dress) {
   pool(c, -44.3, K + 0.012, 26.32, 0.86, 0.9, 0.4, C.lamp, 0.7);
   pool(c, -42.9, 0.0052, 24.65, 2.2, 1.7, 0.2, C.lamp, 0.2);
   sheen(c, -43.88, K + 0.013, 24.7, 1.8, 0.3, PI / 2, 0.26, 0xfff0d8, 0.2);
-  done(c, d);
+  done(c, d, NEAR_ROOM.office);
 }
 
 // ---------- room 6 (local metres, world/Room6.ts) ----------
@@ -712,7 +724,7 @@ export function dressDiner(d: Dress) {
   c.dirt(10.6, 2.4, -4.0, 3.197, 0, 'shadow', C.smoke, { rx: PI / 2, ry: PI / 2, a: 0.26 });
   for (const z of [-5, 0, 5]) { pool(c, -2.0, 0.0052, z, 3.0, 3.4, 0.14, C.tube, 0.15); sheen(c, -4.36, 1.006, z, 2.4, 0.2, PI / 2, 0.36); }
   for (const z of [-8.0, 8.0]) c.floorDirt(5.5, 2.4, -2.0, z, 'shadow', C.shade, 0, 0.0048, { a: 0.24 });
-  done(c, d);
+  done(c, d, NEAR_ROOM.diner);
 }
 
 // ---------- the hut at STATION 01 (local metres, world/Station01.ts) ----------
@@ -780,5 +792,5 @@ export function dressHut(d: Dress) {
   under(c, -12.0, 3.05, 0.85, 0.85, 0.5, F);
   pool(c, -10.78, B + 0.033, 1.92, 0.9, 0.56, 0.32);
   pool(c, -11.0, 0.0078, 3.05, 2.4, 2.2, 0.24, C.lamp, 0.25);
-  done(c, d);
+  done(c, d, NEAR_ROOM.hut);
 }

@@ -20,7 +20,7 @@ import { Crossing, SHOULDER, WEST, type CourtSite } from './Crossing';
 import { Grounds } from './Grounds';
 import { Field } from './Field';
 import { MotelFront } from './MotelFront';
-import { flood as siteFlood, addFlood, type FloodSet } from './kit';
+import { flood as siteFlood, addFlood, followNear, type FloodSet } from './kit';
 import { loadArtFor, loadArtSome, artTexture, DINER_ART, OLDROAD_ART, TOWN_ART } from '../core/art';
 import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS, inRect } from './geo';
 import { FENCE_Z } from './arrayLayout';
@@ -32,9 +32,7 @@ import { surfaceY } from '../drive/roadTerrain';
 import { LightCones, GroundHaze, sodiumGlows } from './airlight';
 import { followFlora, floraTest, type Flora } from './flora';
 import { saroFlora, stationFlora, postsOf } from './groundCover';
-
 import { NightLife, lifeLamps } from './nightlife';
-
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
 // browser fetches then) and kept afterwards. Each area lies far from the others in the
@@ -268,6 +266,7 @@ export class World {
     d.scene.add(this.saroFlora.group);
     d.saro.groups.push(this.saroFlora.group);
     followFlora(d.scene);
+    followNear(d.scene);   // and the detail drawn only near (kit.nearOnly: the dressing, the wear, the rooms' clutter)
     // the light in the air: cones under SARO's sodium lamps (the array, the highway north of the
     // site and the motel's lot, read from the outdoor glows), and the haze on the ground
     const ext = d.saro.groups[0], ground = (_x: number, z: number) => z > 600 ? MOTEL_AT.y : -0.62;
