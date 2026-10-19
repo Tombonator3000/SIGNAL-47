@@ -18,6 +18,8 @@ function lambertOf(m: THREE.MeshStandardMaterial): THREE.MeshLambertMaterial {
     emissive: m.emissive,
     emissiveMap: m.emissiveMap,
     emissiveIntensity: m.emissiveIntensity,
+    aoMap: m.aoMap,
+    aoMapIntensity: m.aoMapIntensity,
     transparent: m.transparent,
     opacity: m.opacity,
     side: m.side,

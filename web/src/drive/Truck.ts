@@ -22,6 +22,13 @@ import {
 // the wheel arches are round and the corners soft. Tiled textures are projected on after
 // the parts are placed (`merge`); the road dust low on the sides is in the vertex colours.
 // Static parts are merged per material: about 17 draw calls outside, 27 while driving.
+//
+// The Blender pilot (world/blenderModels.ts, tools/blender/truck.py): with ?blender, setModel()
+// puts the body, the shell and the wheel modelled and baked in Blender in place of the merged
+// paint, chrome, trim, underside and glass, each truck with its own flood set, and its baked
+// shade on the ground under it. The lamps' lenses, the decals, the mirror glass, the beacon, the
+// glow, the cab and everything that moves stay the code's; the wheel's instances only get the
+// modelled wheel's geometry.
 
 export const WHEELBASE = 3.3;
 const FRONT_AXLE = -1.8, REAR_AXLE = FRONT_AXLE + WHEELBASE, WHEEL_R = 0.37, TRACK = 0.84;
@@ -37,6 +44,17 @@ const HEAD = new THREE.Color(1.0, 0.9, 0.72), TAIL = new THREE.Color(1, 0.05, 0.
 const _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4(), _p = new THREE.Vector3();
 const _s = new THREE.Vector3(), _z = new THREE.Vector3(0, 0, 1), _c = new THREE.Color();
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3();
+
+/** What the Blender pilot loads for the truck (world/blenderModels.ts): shared by every copy of
+ *  the truck, each of which makes its own materials from the game's (its flood set). */
+export interface TruckModel {
+  parts: { group: 'body' | 'shell'; kind: 'paint' | 'chrome' | 'dark' | 'glass'; geometry: THREE.BufferGeometry; aoMap: THREE.Texture | null }[];
+  wheel: { geometry: THREE.BufferGeometry; aoMap: THREE.Texture | null };
+  /** the truck's shade on the ground under it (baked), laid on the ground with the truck */
+  shadow: { geometry: THREE.BufferGeometry; material: THREE.Material } | null;
+  /** the baked mask's dust and wear on a material made for it */
+  dress: (m: THREE.MeshStandardMaterial, kind: 'paint' | 'chrome' | 'dark' | 'glass' | 'wheel') => void;
+}
 // an unlit lens: its glass colour when off, plus the lamp colour times k
 const lens = (m: THREE.MeshBasicMaterial, off: number, c: THREE.Color, k: number) => m.color.setHex(off).add(_c.copy(c).multiplyScalar(k));
 
@@ -223,15 +241,28 @@ export class Truck {
   private gaugePower = 1;
   // The cab's own light: the instruments, and a little sky through the glass. A flood set of its own.
   private cabFlood = floodSet(2, 'cab', 0.5);
+  private floods?: FloodSet;
+  /** The merged meshes a model stands in for (setModel), and the model's own meshes. */
+  private replaced: THREE.Mesh[] = [];
+  private modelMeshes: THREE.Mesh[] | null = null;
+  private codeWheel!: THREE.BufferGeometry;
+  private modelWheel: { geometry: THREE.BufferGeometry; material: THREE.MeshStandardMaterial } | null = null;
+  private modelMats: THREE.MeshStandardMaterial[] = [];
+  /** The Blender model is in the picture (setModel). */
+  modelled = false;
 
   /** flood: light the exterior with a set of fake floods (leave out the headlight slots). */
   constructor(o: { flood?: FloodSet } = {}) {
     this.m = this.materials(o.flood);
+    this.floods = o.flood;
     this.group.name = 'SARO 07';
     this.group.add(this.body, this.shell, this.cab);
     this.buildBody(); this.buildUnder(); this.buildShell(); this.buildCab();
     merge(this.body); merge(this.shell); merge(this.cab);
-    this.wheels = new THREE.InstancedMesh(wheelGeometry(), this.m.wheel, 4);
+    const stands = new Set<THREE.Material>([this.m.paint, this.m.chrome, this.m.trim, this.m.under, this.m.glass]);
+    for (const g of [this.body, this.shell]) for (const c of g.children) if (stands.has((c as THREE.Mesh).material as THREE.Material)) this.replaced.push(c as THREE.Mesh);
+    this.codeWheel = wheelGeometry();
+    this.wheels = new THREE.InstancedMesh(this.codeWheel, this.m.wheel, 4);
     this.wheels.frustumCulled = false; // the instances move; the truck is small anyway
     // Whoever puts the camera outside the cab gets the whole truck back on the next frame,
     // even if nobody calls setDriving(false) (a cut to the parked truck, for example).
@@ -612,6 +643,57 @@ export class Truck {
     this.cabFlood.pos[0].set(0, -999, 0, 0); this.cabFlood.pos[1].set(0, -999, 0, 0); this.cabFlood.count = 2;
   }
 
+  /** The Blender pilot: the modelled body, shell and wheel in place of the code-built ones
+   *  (null: the code's again). Its meshes take no rays: what the rays hit stays the code's. */
+  setModel(model: TruckModel | null) {
+    if (model && !this.modelMeshes) {
+      const src = { paint: this.m.paint, chrome: this.m.chrome, dark: this.m.trim, glass: this.m.glass, wheel: this.m.wheel };
+      const made = new Map<string, THREE.MeshStandardMaterial>();
+      const mat = (kind: keyof typeof src, aoMap: THREE.Texture | null) => {
+        const key = kind + (aoMap?.uuid ?? '');
+        if (made.has(key)) return made.get(key)!;
+        // the game's own material (its colour, picture, roughness), without the dust in the
+        // vertex colours: the mask has it
+        const m = src[kind].clone();
+        // (the dark trim carries the cab seen through the glass in its vertex colours: truck.py)
+        m.vertexColors = kind === 'wheel' || (kind === 'dark' && !!model.parts.find((q) => q.kind === 'dark' && q.geometry.attributes.color));
+        if (kind === 'dark') m.roughness = 0.85;
+        m.aoMap = aoMap;
+        if (this.floods) floodlit(m, 0.02, this.floods);
+        model.dress(m, kind);
+        made.set(key, m); this.modelMats.push(m);
+        return m;
+      };
+      this.modelMeshes = model.parts.map((p) => {
+        const mesh = new THREE.Mesh(p.geometry, mat(p.kind, p.aoMap));
+        mesh.name = `blender:${p.group}_${p.kind}`;
+        mesh.raycast = () => {};
+        mesh.userData.shared = true;
+        mesh.matrixAutoUpdate = false;
+        (p.group === 'body' ? this.body : this.shell).add(mesh);
+        return mesh;
+      });
+      this.modelWheel = { geometry: model.wheel.geometry, material: mat('wheel', model.wheel.aoMap) };
+      // the shade on the ground: in the truck's own frame (the ground under the wheels), so it
+      // goes with the truck, not with the body on its springs
+      if (model.shadow) {
+        const sh = new THREE.Mesh(model.shadow.geometry, model.shadow.material);
+        sh.name = 'blender:shadow';
+        sh.raycast = () => {};
+        sh.userData.shared = true; sh.userData.noShadow = true;
+        sh.matrixAutoUpdate = false; sh.renderOrder = 1;
+        this.group.add(sh);
+        this.modelMeshes.push(sh);
+      }
+    }
+    const on = !!model && !!this.modelMeshes;
+    this.modelled = on;
+    for (const c of this.replaced) c.visible = !on;
+    for (const c of this.modelMeshes ?? []) c.visible = on;
+    this.wheels.geometry = on ? this.modelWheel!.geometry : this.codeWheel;
+    this.wheels.material = on ? this.modelWheel!.material : this.m.wheel;
+  }
+
   /** Interior on, view-blocking shell off. DriveController calls this while it drives. */
   setDriving(on: boolean) {
     this.driving = on;
@@ -765,7 +847,10 @@ export class Truck {
 
   /** Frees what the truck created (geometry, materials, canvas textures). */
   dispose() {
-    this.group.traverse((o) => { const mesh = o as THREE.Mesh; if (mesh.geometry) mesh.geometry.dispose(); });
+    // (the Blender model's geometry is every truck's: not this one's to free; its materials are)
+    this.setModel(null);
+    this.group.traverse((o) => { const mesh = o as THREE.Mesh; if (mesh.geometry && !o.userData.shared) mesh.geometry.dispose(); });
+    for (const m of this.modelMats) m.dispose();
     const maps = new Set<THREE.Texture>();
     for (const mat of Object.values(this.m)) { const t = (mat as THREE.MeshBasicMaterial).map; if (t) maps.add(t); mat.dispose(); }
     maps.forEach((t) => t.dispose());

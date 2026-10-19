@@ -37,8 +37,12 @@ export function addFlood(x: number, y: number, z: number, intensity: number, col
 }
 export function setFlood(i: number, intensity: number, set = flood) { if (i >= 0) set.pos[i].w = intensity; }
 
-export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012, set = flood): T {
+/** weights: some lamps of the set at a part of their strength on this material (world/blenderModels.ts:
+ *  the lamps whose light the Blender house has baked in keep only a little of their fake pool there). */
+export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012, set = flood, weights?: Record<number, number>): T {
   const FLOOD_N = set.n;
+  const ws = weights ? Object.entries(weights).filter(([i]) => +i >= 0) : [];
+  const weigh = ws.length ? `float fWt = 1.0;\n${ws.map(([i, w]) => `          if (i == ${+i}) fWt = ${(+w).toFixed(3)};`).join('\n')}\n` : '';
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uFloodPos = { value: set.pos };
     sh.uniforms.uFloodCol = { value: set.col };
@@ -74,11 +78,15 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
           float ndl = abs(dot(fN, L)) * 0.75 + 0.25;
           // windowed falloff: each lamp lights a pool, not the whole desert
           float win = clamp(1.0 - sqrt(d2) / (uFloodPos[i].w * 1.6 + 8.0), 0.0, 1.0);
-          fAcc += uFloodCol[i] * (uFloodPos[i].w * ndl * win * win / (1.0 + d2 * uFloodFall));
+          ${weigh}fAcc += uFloodCol[i] * (uFloodPos[i].w * ndl * win * win / (1.0 + d2 * uFloodFall))${ws.length ? ' * fWt' : ''};
         }
+        #ifdef USE_AOMAP
+          // a baked occlusion (world/blenderModels.ts) darkens the lamps' pools in the corners too
+          fAcc *= mix( 1.0, texture2D( aoMap, vAoMapUv ).r, 0.6 );
+        #endif
         totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;`);
   };
-  m.customProgramCacheKey = () => 'flood' + set.key + falloff;
+  m.customProgramCacheKey = () => 'flood' + set.key + falloff + (ws.length ? JSON.stringify(ws) : '');
   return m;
 }
 

@@ -1,0 +1,7 @@
+# Made again by `python3 tools/blender/build.py` from the game: the exports of the game's
+# geometry and what stands round it (several MB), the pictures' JPEGs (they are inside the .glb),
+# and a model that did not pass the check.
+*_game.glb
+*.jpg
+*.new.glb
+*.blend1

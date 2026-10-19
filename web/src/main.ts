@@ -35,7 +35,7 @@ import { saveMenu, played } from './ui/SaveMenu';
 import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
-import { initArtMaterials } from './world/kit';
+import { initArtMaterials, floodSets } from './world/kit';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
@@ -55,6 +55,7 @@ import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
 import { bindLooks } from './story/looks';
 import { firstTime } from './core/hints';
+import { BlenderHouse, BlenderTruck, blenderWanted } from './world/blenderModels';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -200,6 +201,15 @@ async function boot() {
     sky: () => ({ dawn: sky.uniforms.uDawn.value, fog: sky.fogColor, sunDir: sky.uniforms.uSunDir.value, sun: sky.uniforms.uSun.value }),
     time: () => game.clock,
   });
+  // the Blender pilot: SARO's house modelled and baked in Blender in place of the boxes, with
+  // ?blender in the address (world/blenderModels.ts, tools/blender/build.py)
+  const blenderHouse = new BlenderHouse(ext.group, [room.outside, annex.outside, ...ext.house], (root) => { setQuality(root, quality); ultra.mark(root); },
+    [ext.glow, annex.glow], () => world.grounds.dressing?.props ?? null);
+  if (blenderWanted) void blenderHouse.set(true);
+  // and the truck, every copy the world builds (step two: drive/Truck.ts setModel)
+  const blenderTruck = new BlenderTruck((root) => { setQuality(root, quality); ultra.mark(root); });
+  world.onTruck = (t) => blenderTruck.add(t);
+  if (blenderWanted) void blenderTruck.set(true);
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard, on the
   // highway and at the motel, dirt between them, boards in the hut, carpet at the motel
   const surfaceAt = (): Surface => {
@@ -1505,6 +1515,12 @@ async function boot() {
   Object.defineProperty((window as any).S47, 'hold', {
     get: () => dbg.hold, set: (v: boolean) => { dbg.hold = v; }, enumerable: true,
   });
+  // tests: the Blender models on and off (S47.blender = true, then wait for blenderHouse.shown
+  // and blenderTruck.shown)
+  Object.defineProperty((window as any).S47, 'blender', {
+    get: () => blenderHouse.on, set: (v: boolean) => { void blenderHouse.set(!!v); void blenderTruck.set(!!v); }, enumerable: true,
+  });
+  Object.assign((window as any).S47, { blenderHouse, blenderTruck, floodSets });
   // tests: the truck as a save finds it, and the light in the air (world/airlight.ts)
   Object.assign((window as any).S47, { truckSave: () => world.truckSave(), air: () => (world as any).air });
   Object.assign((window as any).S47, {

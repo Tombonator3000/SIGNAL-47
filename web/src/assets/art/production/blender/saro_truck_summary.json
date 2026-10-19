@@ -1,0 +1,29 @@
+{
+ "meshes": [
+  "shadow",
+  "wheel",
+  "body_chrome",
+  "body_dark",
+  "body_paint",
+  "shell_chrome",
+  "shell_dark",
+  "shell_glass",
+  "shell_paint"
+ ],
+ "triangles": 20900,
+ "vertices": 24016,
+ "bytes": 1326372,
+ "image_bytes": 615753,
+ "materials": [
+  "shadow",
+  "wheel",
+  "body_chrome",
+  "body_dark",
+  "body_paint",
+  "shell_chrome",
+  "shell_dark",
+  "shell_glass",
+  "shell_paint"
+ ],
+ "file_bytes": 1337260
+}
