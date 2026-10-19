@@ -4,7 +4,7 @@
 
 vite v6.4.3 building for production...
 transforming...
-✓ 2029 modules transformed.
+✓ 2044 modules transformed.
 rendering chunks...
 [plugin vite:reporter]
 (!) /home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/src/world/Town.ts is dynamically imported by /home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/src/world/World.ts but also statically imported by /home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/src/story/townEvents.ts, dynamic import will not move module into another chunk.
@@ -18,14 +18,17 @@ dist/assets/pin_red-5EF7pfF4.png                       4.32 kB
 dist/assets/pin_yellow-B9NxJgDE.png                    4.37 kB
 dist/assets/card_index_blank-qcNrTC4g.png              4.52 kB
 dist/assets/frame_instant_blank-B5FyEMbG.png           4.55 kB
+dist/assets/rack_switch-DH5Dh4iN.mp3                   4.85 kB
 dist/assets/frame_sheetfilm_blank-CkdG51WQ.png         5.06 kB
+dist/assets/door_heavy-DTBWFIPE.mp3                    5.23 kB
 dist/assets/step_gravel0-C9eKUmbo.mp3                  5.37 kB
 dist/assets/step_gravel1-CSfERATN.mp3                  5.37 kB
-dist/assets/step_gravel2-BPO3dlBL.mp3                  5.37 kB
 dist/assets/step_gravel3-vPjfYV6o.mp3                  5.37 kB
+dist/assets/step_gravel2-BPO3dlBL.mp3                  5.37 kB
 dist/assets/step_gravel4-Hu4lAYs_.mp3                  5.37 kB
 dist/assets/door_metal-6X0tY0Io.mp3                    5.44 kB
 dist/assets/silhouette_far-DvZFNR-q.webp               5.62 kB
+dist/assets/door_light-DH_yppjx.mp3                    5.80 kB
 dist/assets/door_creak1-CT44ZwNE.mp3                   6.31 kB
 dist/assets/218caca208411c55-DbwjjiHi.mp3              6.38 kB
 dist/assets/383ef36928344f56-DQiIMTCB.mp3              6.38 kB
@@ -133,8 +136,8 @@ dist/assets/a9f51566bd6705f7-trmty-Re.mp3              8.30 kB
 dist/assets/de5a6f78116eca62-C65nxfsz.mp3              8.30 kB
 dist/assets/f9699ed21a30a550-CG25Nl3z.mp3              8.30 kB
 dist/assets/0c248f4d6cdbb967-CyWY5bRx.mp3              8.30 kB
-dist/assets/102ad29298b7b442-Dsoh44rn.mp3              8.30 kB
 dist/assets/0f09c0097e477bcb-BftOG8Gm.mp3              8.30 kB
+dist/assets/102ad29298b7b442-Dsoh44rn.mp3              8.30 kB
 dist/assets/49fa6fb4bad94112-COEWCY_s.mp3              8.30 kB
 dist/assets/6382cd3f5ae1290b-D37iOEzJ.mp3              8.30 kB
 dist/assets/3acfdcce8f33502e-pIjwcfEW.mp3              8.49 kB
@@ -196,6 +199,7 @@ dist/assets/76bcec87152dfcad-G4X2Fh2W.mp3              9.26 kB
 dist/assets/7a78c7548928535f-BWhqsm8o.mp3              9.26 kB
 dist/assets/7da3c4346e002f6e-DnLzcFA-.mp3              9.26 kB
 dist/assets/dcf2928126cc8165-VcBj6bBs.mp3              9.26 kB
+dist/assets/keys-B5ylihvx.mp3                          9.45 kB
 dist/assets/0dec07abf92dbe72-DV0gW7rC.mp3              9.45 kB
 dist/assets/80fce01bba97767c-DEFn327w.mp3              9.45 kB
 dist/assets/926d56f96672a81b-CmONIrNL.mp3              9.45 kB
@@ -252,6 +256,7 @@ dist/assets/edcd8e701a2df0cd-CxtSwSL6.mp3             10.22 kB
 dist/assets/1bcbce780ddd2273-CQv8pK-E.mp3             10.22 kB
 dist/assets/328e51fcaeaf1d92-DT2rjQqS.mp3             10.22 kB
 dist/assets/a0d9676cc598d86e-Du8UDkoc.mp3             10.22 kB
+dist/assets/radio_crackle_long-X_5DxLfT.mp3           10.28 kB
 dist/assets/bb5ce3b8e2e78c79-CnFtzWrE.mp3             10.41 kB
 dist/assets/251fecd592e56e6c-Co3tSN1J.mp3             10.60 kB
 dist/assets/2d6ac75129b91a3e-DObbIed5.mp3             10.60 kB
@@ -291,8 +296,8 @@ dist/assets/1a41bbca551ee80c-D0qR4UjW.mp3             11.56 kB
 dist/assets/4602373bd720135c-DkvGI1sJ.mp3             11.56 kB
 dist/assets/55e04efecd88edfa-Dli5ciBu.mp3             11.56 kB
 dist/assets/bca25bd99b996923-Be43uFl_.mp3             11.56 kB
-dist/assets/d84e0f13870e0577-DNYBoQgb.mp3             11.56 kB
 dist/assets/d78a29d3119117ba-CsTf7wF5.mp3             11.56 kB
+dist/assets/d84e0f13870e0577-DNYBoQgb.mp3             11.56 kB
 dist/assets/f96cb27e6747a5b7-fiMAuM9E.mp3             11.56 kB
 dist/assets/fd86717aca41c558-BEsV7Sjr.mp3             11.56 kB
 dist/assets/board_r07-CICTXAql.png                    11.57 kB
@@ -473,15 +478,15 @@ dist/assets/0244f3f45f0900c1-Bti-l5Zo.mp3             15.98 kB
 dist/assets/06666bf9e7d35aa2-CG-MJQ6P.mp3             15.98 kB
 dist/assets/4057030562166225-CUus1uA7.mp3             15.98 kB
 dist/assets/6b30f226d3c4b863-Bnf5x76u.mp3             15.98 kB
-dist/assets/797761bf33c7c300-DzbE_PRS.mp3             15.98 kB
 dist/assets/79c5ae25dae09b8c-Dc-75izY.mp3             15.98 kB
+dist/assets/797761bf33c7c300-DzbE_PRS.mp3             15.98 kB
 dist/assets/883b5f59ce307f32-ybvRgbkG.mp3             15.98 kB
 dist/assets/92d629a155ce6b0d-BbS1AZdj.mp3             15.98 kB
 dist/assets/b29cc251e6359eb9-DEBqVLQn.mp3             15.98 kB
 dist/assets/b7e7a97aaca9c3ad-BQutlDix.mp3             15.98 kB
 dist/assets/c45c3f8d1fb2ba14-COthZm15.mp3             15.98 kB
-dist/assets/cba4e4a0f7305ff3-Bskgxi78.mp3             15.98 kB
 dist/assets/cb783bdaace866f7-B8fuoS__.mp3             15.98 kB
+dist/assets/cba4e4a0f7305ff3-Bskgxi78.mp3             15.98 kB
 dist/assets/ce0dfef1a3430964-Bd79SRoL.mp3             15.98 kB
 dist/assets/d05740e32bd80d1e-CMop-DFy.mp3             15.98 kB
 dist/assets/db15907be9bcc39e-CUDlhD0K.mp3             15.98 kB
@@ -519,6 +524,7 @@ dist/assets/dc867b19daac0800-D-VeP7ol.mp3             16.36 kB
 dist/assets/df9a634cb32e8315-D-HYnMzT.mp3             16.36 kB
 dist/assets/e71064bd9517c3fb-B-uH6YQ8.mp3             16.36 kB
 dist/assets/f4ff2e83d0e45b5b-DZf5m7hD.mp3             16.36 kB
+dist/assets/pour-DLehbHFi.mp3                         16.55 kB
 dist/assets/0c81a7ba50594acf-D6FxS83c.mp3             16.56 kB
 dist/assets/18d3d4c33990c369-BYi1K6pW.mp3             16.56 kB
 dist/assets/1fec8488563c85cd-DZQ1zvsW.mp3             16.56 kB
@@ -583,8 +589,8 @@ dist/assets/c6f7ac125d741b15-Bp7rqcyc.mp3             17.32 kB
 dist/assets/c7b35e964c814cb1-pMFRu43u.mp3             17.32 kB
 dist/assets/d575342a69034ba1-BNU70ooE.mp3             17.32 kB
 dist/assets/e24c5e83883312ea-Cdioij8O.mp3             17.32 kB
-dist/assets/eb9727352d5f1a2d-BgIpXbr9.mp3             17.32 kB
 dist/assets/eb7013d91fc32c92-DqtR9mRV.mp3             17.32 kB
+dist/assets/eb9727352d5f1a2d-BgIpXbr9.mp3             17.32 kB
 dist/assets/ff33059cc133b893-B1mIjOfB.mp3             17.32 kB
 dist/assets/66c4bf8044a8645b-B18WOVSG.mp3             17.52 kB
 dist/assets/7ce29bc6070f831c-CAi7HTTk.mp3             17.52 kB
@@ -610,8 +616,8 @@ dist/assets/8d6a07d4e033258f-CQCcVooO.mp3             17.71 kB
 dist/assets/8f8a9e4793b9be36-Dvbtb0Wn.mp3             17.71 kB
 dist/assets/93a35c756feaa9e0-B_D9onqK.mp3             17.71 kB
 dist/assets/a75c7f370b3629f3-CUqB8s6J.mp3             17.71 kB
-dist/assets/bcc8cd8894f95336-D35C0MdS.mp3             17.71 kB
 dist/assets/bca4e0dd5c294972-kNpog-vf.mp3             17.71 kB
+dist/assets/bcc8cd8894f95336-D35C0MdS.mp3             17.71 kB
 dist/assets/c52d0972442069b3-Ck_1NUmT.mp3             17.71 kB
 dist/assets/c68ed55fe4d2c883-fEsTF6hu.mp3             17.71 kB
 dist/assets/e6379a3ad938c51b-iYLI45MN.mp3             17.71 kB
@@ -627,8 +633,8 @@ dist/assets/357153cc24cbf51d-o-P2dNi5.mp3             17.90 kB
 dist/assets/38ce6a6f560fd34c-D6eaHYiM.mp3             17.90 kB
 dist/assets/3e021803b18dd217-DteT79q1.mp3             17.90 kB
 dist/assets/40d43c423bf69db1-oi648ILg.mp3             17.90 kB
-dist/assets/42b855a1bdc948d3-DFfZMiFM.mp3             17.90 kB
 dist/assets/43867c0fd9818b5b-BCt91h4B.mp3             17.90 kB
+dist/assets/42b855a1bdc948d3-DFfZMiFM.mp3             17.90 kB
 dist/assets/52f07d71cb4f279a-B58OG0oW.mp3             17.90 kB
 dist/assets/5370dc6e212af6ad-BP4Ka6cJ.mp3             17.90 kB
 dist/assets/5bb51d0bdbad8d45-D-8taIPf.mp3             17.90 kB
@@ -663,8 +669,8 @@ dist/assets/79bbd0ce6f9acd0c-DQvkH337.mp3             18.28 kB
 dist/assets/7db37c1cd6ea6cdf-Bt79_BnE.mp3             18.28 kB
 dist/assets/8165bb678ff14e0d-BwUEKoeU.mp3             18.28 kB
 dist/assets/9b0617f13405b9bb-D7Cz7ZaH.mp3             18.28 kB
-dist/assets/9f637ac068ab0f35-Vmha_rN1.mp3             18.28 kB
 dist/assets/a19057453c1bf872-B3LBX-f2.mp3             18.28 kB
+dist/assets/9f637ac068ab0f35-Vmha_rN1.mp3             18.28 kB
 dist/assets/bf00a8b8620b95ef-BvctFGRv.mp3             18.28 kB
 dist/assets/c0eaec4c0f381f94-C7pZuuEM.mp3             18.28 kB
 dist/assets/ce5c7e83e7bbcf97-BC1KZGfw.mp3             18.28 kB
@@ -856,8 +862,8 @@ dist/assets/4d6199adabf12146-BeJZsMg-.mp3             22.70 kB
 dist/assets/60aeae819686128c-DcisBbLT.mp3             22.70 kB
 dist/assets/69adde017528275e-BUHMWJBE.mp3             22.70 kB
 dist/assets/6fe45ae35e85bb8e-UHJnwF2G.mp3             22.70 kB
-dist/assets/82532b141795f73f-CbwciMIy.mp3             22.70 kB
 dist/assets/80618738a47a2ab8-BpiaK_yQ.mp3             22.70 kB
+dist/assets/82532b141795f73f-CbwciMIy.mp3             22.70 kB
 dist/assets/84e53ae8ec6ba125-Dr43sp6X.mp3             22.70 kB
 dist/assets/936007c51f8ade0a-D_noEjtw.mp3             22.70 kB
 dist/assets/ab0dc54799313b3c-CKmXRRA8.mp3             22.70 kB
@@ -1030,6 +1036,7 @@ dist/assets/tex_floor_hextile_r-DtbVC4l7.jpg          26.62 kB
 dist/assets/0eef31935470902c-BjMkgnz1.mp3             26.73 kB
 dist/assets/84b351f948f4d13a-BiYiQOWW.mp3             26.73 kB
 dist/assets/bb2b4415cb0a6bff-ftp8tkUS.mp3             26.73 kB
+dist/assets/call_tone-DdNlIUla.mp3                    26.79 kB
 dist/assets/01c92976eb889978-p1QHZ4wP.mp3             26.92 kB
 dist/assets/06b2326d743dde80-B6PuJLjz.mp3             26.92 kB
 dist/assets/0b3966c341f397ce-Bnz6kiPZ.mp3             26.92 kB
@@ -1221,8 +1228,8 @@ dist/assets/1be423fe107e0da8-DpSOFLc7.mp3             32.11 kB
 dist/assets/4bea6cc7590b4057-D_3VQHzk.mp3             32.11 kB
 dist/assets/4d89b65a270d6c14-t7mkeMzo.mp3             32.11 kB
 dist/assets/7474b57173a04b33-DKtnvTLX.mp3             32.11 kB
-dist/assets/9b161ff81c14e584-CwBeMXGs.mp3             32.11 kB
 dist/assets/9b6c0fbfa9b69980-S8iwfymj.mp3             32.11 kB
+dist/assets/9b161ff81c14e584-CwBeMXGs.mp3             32.11 kB
 dist/assets/ad3e7812f9f9962b-CsuxEAqQ.mp3             32.11 kB
 dist/assets/bf290b07ff242a04-DHpNcz9U.mp3             32.11 kB
 dist/assets/78cbdf5c6e8f7067-DBpyxHKt.mp3             32.11 kB
@@ -1387,8 +1394,8 @@ dist/assets/12fc033ec1c9e9e6-Dr3MgkJv.mp3             38.83 kB
 dist/assets/6364528087436d27-Eye4ck6W.mp3             38.83 kB
 dist/assets/b43ed08716bd468e-DsR4agI2.mp3             38.83 kB
 dist/assets/4d0cdc72c340aa1c-D4tNDF3u.mp3             39.02 kB
-dist/assets/7ad8c28b5675d1fb-BZEYNafK.mp3             39.02 kB
 dist/assets/7a9fc01500588e03-D7HTXWMK.mp3             39.02 kB
+dist/assets/7ad8c28b5675d1fb-BZEYNafK.mp3             39.02 kB
 dist/assets/28e7149b07b3554e-BUlgdBaC.mp3             39.21 kB
 dist/assets/7edf543d86d90a3d-ByneLSR2.mp3             39.21 kB
 dist/assets/101e15f902770cee-CaEdlAsP.mp3             39.40 kB
@@ -1434,8 +1441,8 @@ dist/assets/alien_temple-_U_SlL-Z.mp3                 41.19 kB
 dist/assets/55f6cc3796886be2-DFL3f5TR.mp3             41.32 kB
 dist/assets/60c9630b46263390-BQk7k1sx.mp3             41.32 kB
 dist/assets/7f69b3847d102724-CVq9I1Jh.mp3             41.32 kB
-dist/assets/840f5ee2d451dadf-LIGcy4Qs.mp3             41.32 kB
 dist/assets/841f6cf81c8d2ca7-BGmBifVJ.mp3             41.32 kB
+dist/assets/840f5ee2d451dadf-LIGcy4Qs.mp3             41.32 kB
 dist/assets/984b4ee9e7b58892-aO6DHBWP.mp3             41.32 kB
 dist/assets/d6602ea41d0ebc64-DNw7gE4E.mp3             41.32 kB
 dist/assets/daa51f5abd7a5972-BPOmOWye.mp3             41.32 kB
@@ -1542,8 +1549,8 @@ dist/assets/1f2e2fd19d8d50ad-CT6DNXaU.mp3             48.24 kB
 dist/assets/4e84a97d99055bc2-DCI99209.mp3             48.43 kB
 dist/assets/59d557db030ab9ba-D3l9BxuL.mp3             48.43 kB
 dist/assets/685bad94480fc1d7-DdGWCJJo.mp3             48.43 kB
-dist/assets/967f18c6af44bca1-BTApOqhP.mp3             48.43 kB
 dist/assets/96cd1408b5dfba60-DeGTiwD7.mp3             48.43 kB
+dist/assets/967f18c6af44bca1-BTApOqhP.mp3             48.43 kB
 dist/assets/d6a2691e755f5f3c-DTePN9z_.mp3             48.43 kB
 dist/assets/719b9162e44d00db-DLnO9C5l.mp3             48.62 kB
 dist/assets/e96834b792aeb96e-D7CKTzSF.mp3             48.62 kB
@@ -1783,6 +1790,7 @@ dist/assets/survey_disk_brass-DYzUypCw.webp          100.68 kB
 dist/assets/alien_horn-bslZOIE2.mp3                  100.80 kB
 dist/assets/6de6ba3ad6b856de-D64jBgRc.mp3            101.42 kB
 dist/assets/4cba3502f2b25fbb-CC-CJ6vq.mp3            102.38 kB
+dist/assets/tv_hum-DsyelKG8.wav                      105.38 kB
 dist/assets/46f95b942a74a27a-CQMculsa.mp3            105.64 kB
 dist/assets/b647ad19fd4434cc-DFsU6lqv.mp3            111.40 kB
 dist/assets/tex_floor_vinyl-Bmk3Rduj.jpg             111.44 kB
@@ -1845,29 +1853,32 @@ dist/assets/tex_desert_ground-B41f7Cix.jpg           372.46 kB
 dist/assets/tex_desert_ground_n-BlAL6URD.png         407.25 kB
 dist/assets/tex_motel_wall-BouN_T1t.jpg              407.77 kB
 dist/assets/tex_gravel_track_n-_GY62XKc.png          408.66 kB
+dist/assets/line_hush-CJAHhWgy.wav                   417.89 kB
 dist/assets/tex_gravel_track-DGTXnbs_.jpg            419.12 kB
 dist/assets/title_music-DikIeeOZ.mp3                 450.66 kB
 dist/assets/tex_oldroad_asphalt-CdVKSr_E.jpg         465.30 kB
 dist/assets/tex_cork-Euu9RIWX.jpg                    487.53 kB
+dist/assets/radio_static-3Thx0AEz.wav                595.39 kB
 dist/assets/saro_house-pcm_OO0X.glb                  788.74 kB
 dist/assets/tex_oldroad_macro-CiWulVUz.jpg           844.77 kB
+dist/assets/pressure-DL2TN5Y8.wav                    976.04 kB
 dist/assets/photo_1947_master-D5rxXEH7.jpg         1,105.63 kB
 dist/assets/saro_truck-MnZNfFFJ.glb                1,337.26 kB
 dist/assets/index-BrWxadcZ.css                        62.87 kB │ gzip:  14.38 kB
-dist/assets/corridors-DxFvHhAz.js                      2.12 kB │ gzip:   1.06 kB
-dist/assets/RoadArea-B2LPjv1j.js                       4.95 kB │ gzip:   2.34 kB
-dist/assets/oldRoadTextures-DGu1Wx7f.js                6.56 kB │ gzip:   2.61 kB
-dist/assets/legs-CESbrRvC.js                           6.57 kB │ gzip:   3.04 kB
-dist/assets/Drive-Bf8GmOte.js                          6.82 kB │ gzip:   2.84 kB
-dist/assets/engineSound-DCQ30kAS.js                   10.00 kB │ gzip:   3.24 kB
-dist/assets/roadProps-E4ey9YsJ.js                     12.12 kB │ gzip:   5.56 kB
-dist/assets/Room6-_0RfIJRd.js                         14.31 kB │ gzip:   5.69 kB
-dist/assets/herd-zy86-KxO.js                          14.45 kB │ gzip:   6.90 kB
-dist/assets/Diner-CE05LyWS.js                         21.47 kB │ gzip:   8.73 kB
-dist/assets/OldRoad-DsYD5--1.js                       26.33 kB │ gzip:  11.81 kB
-dist/assets/Truck-ClZXxBq1.js                         37.61 kB │ gzip:  13.76 kB
+dist/assets/corridors-Hv8UXrQ3.js                      2.12 kB │ gzip:   1.07 kB
+dist/assets/RoadArea-DtCA2bZO.js                       4.95 kB │ gzip:   2.34 kB
+dist/assets/oldRoadTextures-CLdFp58p.js                6.56 kB │ gzip:   2.61 kB
+dist/assets/legs-DouzcR9n.js                           6.57 kB │ gzip:   3.04 kB
+dist/assets/Drive-DNOMomjT.js                          6.82 kB │ gzip:   2.84 kB
+dist/assets/engineSound-DeyFW_Lm.js                    9.98 kB │ gzip:   3.27 kB
+dist/assets/roadProps-DdnWkEHL.js                     12.12 kB │ gzip:   5.56 kB
+dist/assets/Room6-Cy-t3NaV.js                         14.31 kB │ gzip:   5.69 kB
+dist/assets/herd-DcVGvTB_.js                          14.45 kB │ gzip:   6.90 kB
+dist/assets/Diner-Cl_pk5HB.js                         21.47 kB │ gzip:   8.73 kB
+dist/assets/OldRoad-CLkU6Tjb.js                       26.33 kB │ gzip:  11.81 kB
+dist/assets/Truck-CWXslmwK.js                         37.61 kB │ gzip:  13.76 kB
 dist/assets/GLTFLoader-DCUHnvee.js                    45.08 kB │ gzip:  13.35 kB
-dist/assets/Station01-C8XwdBY2.js                     64.50 kB │ gzip:  24.34 kB
+dist/assets/Station01-D2-6HjoW.js                     64.50 kB │ gzip:  24.34 kB
 dist/assets/three-CXWA3EBG.js                        740.78 kB │ gzip: 189.98 kB
-dist/assets/index-CbJm-9aA.js                      1,813.97 kB │ gzip: 601.38 kB
-✓ built in 2.63s
+dist/assets/index-DONTmtSb.js                      1,835.71 kB │ gzip: 613.02 kB
+✓ built in 2.68s

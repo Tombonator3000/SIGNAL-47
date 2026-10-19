@@ -14,6 +14,8 @@ PASS Resume retains the same live radio caption for the remaining speech
 PASS Radio volume zero silences master when unrelated buses are muted
 PASS resume continues the same source and station position without double playback
 PASS two receivers share one recorded station source and one caption
+PASS real R retuning rejoins the cached host at its current offset without duplicate sources
+PASS warm retuning restores one exact live caption for the recorded line
 PASS the natural-end fixture uses a complete authored short host line
 PASS a complete real host buffer reaches its natural end without truncation
 PASS 02:03 selects every exact time fragment and schedules real decoded MP3s in order
@@ -45,6 +47,6 @@ PASS 844x390 touch settings show Art Bell On and fit the screen
 PASS a real touch turns only Art Bell Off and stores its separate s47 preference
 PASS turning Kinski On by touch does not change the Art Bell preference
 PASS reloading retains the independent Art Bell Off and Kinski On choices
-PASS recorded host MP3 requests have no HTTP failures (20 requests)
+PASS recorded host MP3 requests have no HTTP failures (19 requests)
 PASS no browser errors or warnings
-49 of 49 PASS
+51 of 51 PASS

@@ -211,7 +211,10 @@ async def main():
 
             page = await new_page(context)
             await page.goto(URL)
-            await wait_for_js(page, "!!window.S47 && Object.keys(S47.audio.buf).length >= 69")
+            await wait_for_js(page, "!!window.S47")
+            # Await the complete optional licensed/ordinary/telephone preload;
+            # a total of 69 can now be reached while phone clips still load.
+            await page.evaluate("() => S47.audio.preload()")
             await page.evaluate("localStorage.clear()")
             await page.reload()
             await start_night(page)

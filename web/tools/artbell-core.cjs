@@ -58,7 +58,23 @@ class Clock {
 }
 function setup(lines = [H(hostText), { text: 'A caller remains the muted horn.', who: 'woman', by: 'a caller' }, H(secondText)]) {
   const ctx = new Clock(), master = ctx.createGain(), radioBus = ctx.createGain(); radioBus.connect(master);
-  const audio = { ctx, radioBus, noiseBuffer: () => ({ duration: 3 }), spatial(_pos, _ref, bus) { const n = ctx.node('panner'); n.connect(bus); return n; } };
+  const audio = {
+    ctx, radioBus, buf: {}, noiseBuffer: () => ({ duration: 3 }),
+    staticSrc() {
+      const src = ctx.createBufferSource(); src.buffer = this.noiseBuffer(); src.loop = true; src.start();
+      return { src, out: src };
+    },
+    or(name, old = '') { return this.buf[`lic:${name}`] ? `lic:${name}` : old; },
+    play(name, options = {}) {
+      const buffer = this.buf[name]; if (!buffer) return null;
+      const src = ctx.createBufferSource(), gain = ctx.createGain();
+      src.buffer = buffer; src.playbackRate.value = options.rate ?? 1; src.loop = !!options.loop;
+      gain.gain.value = options.gain ?? 1; src.connect(gain); gain.connect(options.dest ?? radioBus);
+      src.start(ctx.currentTime + (options.when ?? 0), options.from ?? 0);
+      return { src, gain };
+    },
+    spatial(_pos, _ref, bus) { const n = ctx.node('panner'); n.connect(bus); return n; },
+  };
   const radio = new Radio(audio), station = radio.stations.caliche;
   radio.setHostVoice(true); station.start([{ kind: 'talk', lines }], 7200); station.prev = 7200;
   const receiver = radio.receiver({ vol: 0.7 }); receiver.pos = new THREE.Vector3(); receiver.set(true);

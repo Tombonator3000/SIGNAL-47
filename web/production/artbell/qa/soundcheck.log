@@ -1,10 +1,10 @@
 latency: base 0.021333333333333333, output 0.07200000000000001
-control room: level median 0.0208, p10 0.0172, max 0.1308; drop-outs 0 []; per second {'nodes': 0.6, 'params': 741.5, 'starts': 0.1, 'frames': 60.0}; params/frame 12.36
-yard at night: level median 0.0153, p10 0.0115, max 0.1182; drop-outs 0 []; per second {'nodes': 0.8, 'params': 747.6, 'starts': 0.1, 'frames': 60.0}; params/frame 12.46
-truck, radio on, standing: level median 0.0269, p10 0.0187, max 0.1316; drop-outs 0 []; per second {'nodes': 0.6, 'params': 1747.2, 'starts': 0.0, 'frames': 59.7}; params/frame 29.29
-driving, radio on: level median 0.0258, p10 0.0183, max 0.4320; drop-outs 0 []; per second {'nodes': 0.6, 'params': 1757.3, 'starts': 0.0, 'frames': 60.0}; params/frame 29.28
+control room: level median 0.0200, p10 0.0172, max 0.1043; drop-outs 0 []; per second {'nodes': 0.6, 'params': 747.0, 'starts': 0.1, 'frames': 60.0}; params/frame 12.45
+yard at night: level median 0.0115, p10 0.0080, max 0.1403; drop-outs 0 []; per second {'nodes': 0.7, 'params': 745.7, 'starts': 0.1, 'frames': 60.0}; params/frame 12.43
+truck, radio on, standing: level median 0.0267, p10 0.0159, max 0.1548; drop-outs 0 []; per second {'nodes': 0.4, 'params': 1796.1, 'starts': 0.0, 'frames': 60.0}; params/frame 29.93
+driving, radio on: level median 0.0250, p10 0.0169, max 0.1648; drop-outs 0 []; per second {'nodes': 0.4, 'params': 1770.3, 'starts': 0.0, 'frames': 60.0}; params/frame 29.52
 PASS no more than one drop-out in 1 half-minutes anywhere ({})
-PASS sound nodes made per second stay modest ({'control room': 0.6, 'yard at night': 0.8, 'truck, radio on, standing': 0.6, 'driving, radio on': 0.6})
-PASS changes to sound parameters stay below 36 per rendered frame ({'control room': 12.36, 'yard at night': 12.46, 'truck, radio on, standing': 29.29, 'driving, radio on': 29.28})
+PASS sound nodes made per second stay modest ({'control room': 0.6, 'yard at night': 0.7, 'truck, radio on, standing': 0.4, 'driving, radio on': 0.4})
+PASS changes to sound parameters stay below 36 per rendered frame ({'control room': 12.45, 'yard at night': 12.43, 'truck, radio on, standing': 29.93, 'driving, radio on': 29.52})
 PASS no console errors or warnings
 4 of 4 PASS

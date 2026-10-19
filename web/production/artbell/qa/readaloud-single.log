@@ -8,7 +8,7 @@ PASS desktop document and reading controls fit the viewport
 PASS description reading is explicitly labelled separately from the paper's actual text
 PASS Read decodes a real MP3 and starts its buffer through master (4.23s)
 PASS the live Read button becomes Stop reading
-PASS real narration samples reach master and obey master volume (0.13036, muted 0.00000)
+PASS real narration samples reach master and obey master volume (0.12957, muted 0.00000)
 PASS Stop reading immediately cancels the current clip and queue
 PASS stopping restores the specific Read description label
 PASS document close still runs the game's original filing callback
@@ -20,28 +20,20 @@ PASS the second real recording starts after the first ends, with no overlap
 PASS repeating one recording reuses its decoded buffer
 PASS a missing recording has a disabled Read button and visible explanation
 PASS the real dialogue has one Read control matching its recording coverage
-node:events:505
-    throw er; // Unhandled 'error' event
-    ^
-
-Error: write EPIPE
-    at afterWriteDispatched (node:internal/stream_base_commons:159:15)
-    at writeGeneric (node:internal/stream_base_commons:150:3)
-    at Socket._writeGeneric (node:net:1262:11)
-    at Socket._write (node:net:1274:8)
-    at writeOrBuffer (node:internal/streams/writable:574:12)
-    at _write (node:internal/streams/writable:503:10)
-    at Writable.write (node:internal/streams/writable:512:10)
-    at PipeTransport.send (/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/driver/package/lib/coreBundle.js:36134:25)
-    at dispatcherConnection.onmessage (/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/driver/package/lib/coreBundle.js:72062:59)
-    at DispatcherConnection.sendEvent (/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/driver/package/lib/coreBundle.js:20047:14)
-Emitted 'error' event on Socket instance at:
-    at emitErrorNT (node:internal/streams/destroy:170:8)
-    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  errno: -32,
-  code: 'EPIPE',
-  syscall: 'write'
-}
-
-Node.js v24.21.0
+PASS a dialogue redraw with unchanged lines does not restart or overlap narration
+PASS closing a dialogue cancels narration
+PASS the test night can be saved before exercising Load case
+PASS pausing cancels narration and suspends the shared AudioContext
+PASS loading a real save keeps the device preference but starts no stale narration
+PASS the pending real recording is visibly loading
+PASS closing during pending fetch/decode prevents any delayed audio start
+PASS the original close callback still runs exactly once during loading
+PASS mobile Settings can turn Kinski reading on
+PASS the mobile settings panel scrolls without horizontal overflow at 844x390
+PASS the mobile document exposes its reading control without horizontal overflow
+PASS a real touch on Read starts decoded audio on mobile Chromium
+PASS mobile Stop and close leave no narration playing
+PASS all requested prerecorded files load without HTTP errors (0 requests)
+PASS the strict-CSP single-file build asks for no external narration files
+PASS no browser errors or warnings
+38 of 38 PASS

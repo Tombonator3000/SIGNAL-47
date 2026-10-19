@@ -1,0 +1,16 @@
+[
+  {
+    "name": "csptest",
+    "exit_code": 0,
+    "seconds": 5.32,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/csptest.py"
+    ],
+    "log": "csptest.log"
+  }
+]

@@ -298,4 +298,4 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 
 ## Art Bell som radiovert, direkte bestilt av Tom 19. oktober
 
-- [ ] Ny lokal Art Bell-parodiprofil og medfølgende opptak for alle Earls Night Line-replikker, også tidsmeldinger og kjøreinnslag. Eget lagret valg, riktig radiobuss/teksting og begge bygg. Arbeid på `codex/art-bell-radio`; se `ART_BELL_RADIO.md`.
+- [x] Ny lokal Art Bell-parodiprofil og medfølgende opptak for alle Earls Night Line-replikker, også tidsmeldinger og kjøreinnslag. Eget lagret valg, riktig radiobuss/teksting og begge bygg. 115 klipp, alle relevante kontroller PASS på `codex/art-bell-radio`; se `ART_BELL_RADIO.md`.

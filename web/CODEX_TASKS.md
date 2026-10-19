@@ -41,6 +41,8 @@ Videreføring av oppgave 3 fra `c3dd6b1`. 24 unike telefonreplikker, ni nye oppt
 Base: main `95719a4`. Nærblikk etter 650 ms, gjenta med V eller mobilknapp, og leseknapper for synlig tekst i paneler, mottaker, notatbok, kart, bevisbord og frie bilder. 1555 ferdige klipp, med alle 337 tidligere MP3 bevart uendret. Dynamiske klokker og målinger settes sammen uten å miste tall eller ord. Beskrivelser 115/115 Pages og 116/116 offline, motor 55/55 og tekstkorpus 26/26; begge bygg, telefoner og full spillregresjon PASS. Se `production/kinski/descriptions-qa/README.md`. Tom har i samtalen autorisert innfletting og vanlig publisering til nettspillet.
 
 
-### 6. [ ] Art Bell som radiovert, direkte bestilt av Tom (`codex/art-bell-radio`)
+### 6. [x] Art Bell som radiovert, direkte bestilt av Tom (`codex/art-bell-radio`)
 
 Base: main `aa38e2b`. Ny lokal syntetisk parodiprofil, alle Earls eksisterende radioreplikker ferdig innspilt, inkludert dynamiske klokker, gutten, avmeldingen og kjøreinnslag. Eget lagret valg og separat bank. Kinski, innringerne og Roswell beholdes. Levering og kontroller føres i `ART_BELL_RADIO.md`.
+
+Sluttkandidaten inkluderer main `d6dc68b` og består 51/51 Pages, 52/52 streng-CSP enkeltfil, motor 48/48, alle 12 kompatibilitetskjøringer og 13 spillregresjoner. Privatbanken er bevart og prøvd med/uten. Se `production/artbell/qa/validation.json`. Innfletting og vanlig Pages-publisering følger Toms tidligere autorisasjon og kontrolleres mot riktig head.

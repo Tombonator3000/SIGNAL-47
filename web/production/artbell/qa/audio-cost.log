@@ -1,16 +1,16 @@
 PASS measurement fits inside both the real clip and the procedural line
 PASS native AudioParam and both oscillator/buffer-source counters are installed and active
-On-1: 59.88fps, 1750.00params/s, 29.2250params/frame; categories {'listener': 9.0, 'station': 0.0, 'other': 3.225, 'receiver': 4.0, 'tyres': 5.0, 'engine': 8.0}; nodes/s 0.00, sync 0, new sources 0, active 31→30, host 2→2, dropouts 0
+On-1: 59.89fps, 1758.58params/s, 29.3639params/frame; categories {'engine': 8.0, 'receiver': 4.0, 'tyres': 5.0, 'station': 0.0, 'listener': 9.0, 'other': 3.363888888888889}; nodes/s 0.67, sync 0, new sources 1, active 31→31, host 2→2, dropouts 0
 PASS On-1: the same real cab remains standing throughout normal rAF
 PASS On-1: no per-frame station resync, re-decode or host source multiplication
 PASS On-1: no measured master dropouts or runaway node/source growth
 PASS On-1: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
-Off: 59.89fps, 1762.02params/s, 29.4194params/frame; categories {'listener': 9.0, 'station': 0.0, 'other': 3.4194444444444443, 'receiver': 4.0, 'tyres': 5.0, 'engine': 8.0}; nodes/s 2.50, sync 0, new sources 5, active 30→33, host 0→0, dropouts 0
+Off: 60.06fps, 1765.49params/s, 29.3961params/frame; categories {'engine': 8.0, 'receiver': 4.0, 'tyres': 5.0, 'station': 0.0, 'listener': 9.0, 'other': 3.3961218836565097}; nodes/s 0.67, sync 0, new sources 1, active 31→30, host 0→0, dropouts 0
 PASS Off: the same real cab remains standing throughout normal rAF
 PASS Off: no per-frame station resync, re-decode or host source multiplication
 PASS Off: no measured master dropouts or runaway node/source growth
 PASS Off: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
-On-2: 60.08fps, 1767.82params/s, 29.4266params/frame; categories {'listener': 9.0, 'station': 0.0, 'other': 3.4265927977839334, 'receiver': 4.0, 'tyres': 5.0, 'engine': 8.0}; nodes/s 0.67, sync 0, new sources 1, active 35→32, host 2→2, dropouts 0
+On-2: 59.91fps, 1772.36params/s, 29.5861params/frame; categories {'engine': 8.0, 'receiver': 4.0, 'tyres': 5.0, 'station': 0.0, 'listener': 9.0, 'other': 3.5861111111111112}; nodes/s 1.83, sync 0, new sources 4, active 32→33, host 2→2, dropouts 0
 PASS On-2: the same real cab remains standing throughout normal rAF
 PASS On-2: no per-frame station resync, re-decode or host source multiplication
 PASS On-2: no measured master dropouts or runaway node/source growth

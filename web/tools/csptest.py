@@ -4,6 +4,7 @@
 #   python3 tools/csptest.py
 import asyncio, os, tempfile
 from playwright.async_api import async_playwright
+from readaloud import wait_for_js
 
 CSP = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
        "img-src data: blob:; media-src data: blob:; font-src https://fonts.gstatic.com")
@@ -24,15 +25,18 @@ async def main():
         await pg.goto('file://' + path)
         await pg.wait_for_selector('button[data-a=start]')
         fonts = await pg.evaluate("[...document.fonts].filter(f => f.status === 'loaded').map(f => f.family)")
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(1500)
+        await pg.click('button[data-a=start]')
+        await wait_for_js(pg, 'S47.started() && S47.audio.ready')
+        await pg.wait_for_timeout(1500)
         await pg.evaluate("S47.hold = true; S47.tick(1)")
         sound_keys = await pg.evaluate("Object.keys(S47.game.d.audio.buf || {})")
         sounds = len(sound_keys)
-        ordinary = len([key for key in sound_keys if not key.startswith('phone:')])
+        ordinary = len([key for key in sound_keys if not key.startswith(('phone:', 'lic:'))])
         telephone = len([key for key in sound_keys if key.startswith('phone:')])
+        licensed = len([key for key in sound_keys if key.startswith('lic:')])
         art = await pg.evaluate("S47.art()")
         print('fonts loaded:', len(fonts), fonts)
-        print('sounds decoded:', sounds)
+        print('sounds decoded:', sounds, {'ordinary': ordinary, 'telephone': telephone, 'licensed': licensed})
         print('art images loaded:', len(art['loaded']), '/', art['expected'])
         print('\n'.join(errs[:15]) or 'no console errors or warnings')
         # the 28 start images, plus later images already asked for: the Halley poster loads
@@ -40,7 +44,7 @@ async def main():
         start = [i for i in art['loaded'] if i not in art['later']]
         early = sorted(i for i in art['loaded'] if i in art['later'])
         print('later images already loaded:', early)
-        passed = len(fonts) == 4 and ordinary == 45 and telephone == 24 and len(start) == art['expected'] == 30 and 'halleyPoster' in early and not errs
+        passed = len(fonts) == 4 and ordinary == 47 and telephone == 24 and licensed in (0, 15) and len(start) == art['expected'] == 30 and 'halleyPoster' in early and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:
