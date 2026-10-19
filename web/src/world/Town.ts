@@ -11,6 +11,7 @@ import { SIGN_OFF } from '../core/radio';
 import { wet, wearMesh, type Wear } from '../drive/roadSurface';
 import { dressTown } from './dressTown';
 import { NEAR, type Dressing } from './weathering';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 import { WindowLights } from './windowLight';
 import type { WindowStyle } from '../core/cookies';
 
@@ -177,6 +178,10 @@ export class Town {
   readonly windowLights: WindowLights;
   private readonly roomLamps: number[] = [];
   readonly dressing: Dressing;
+  /** The bought models in the street (world/licensedModels.ts): the laundromat's bench, the
+   *  houses' front doors, a chair outside the gas station's office and one under the souvenir
+   *  shop's portal, in the town's floods. */
+  readonly models = new ModelSwap('town', (m) => floodlit(m, FALL, townFlood));
 
   constructor(origin: THREE.Vector3) {
     this.origin = origin.clone();
@@ -220,6 +225,23 @@ export class Town {
     this.group.add(this.qMesh, this.glow.build(), this.windowLights.build());
     this.setDeputy(true); this.setPaper(false); this.setCutout(false);
     this.group.updateMatrixWorld(true);
+    this.models.place((L, add) => this.placeModels(L, add));
+  }
+
+  /** The bought models (world/licensedModels.ts), in the town's terms, on its drapes and land. */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const PI = Math.PI;
+    const near = (o: THREE.Object3D, r = 60) => { const g = new THREE.Group(); add(o, g); this.group.add(nearOnly(g, r)); };
+    // the bench under the laundromat's window, its back 6 cm off the wall (the woman with the
+    // radio sits on its north end)
+    if (hasModel('garden_bench')) { const x = -15 + 0.06 + 0.391; near(L.mesh('garden_bench', 'garden_bench', { x, y: this.gy(x, 2132.1), z: 2132.1, ry: PI / 2 })); }
+    // the houses' front doors, each painted its own (one mesh down the street)
+    const doors = this.models.spots.door_six_panel;
+    if (doors?.length && hasModel('door_six_panel')) add(L.merged('door_six_panel', doors.map((d) => ({ name: 'door_six_panel', at: d.at, tint: d.tone, paint: '_paint' }))), this.group);
+    // the attendant's chair at the gas station's office, between its door and its lit window
+    if (hasModel('folding_chair')) near(L.mesh('folding_chair', 'folding_chair', { x: -16.62, y: this.drapedY(-16.62, 2070.3), z: 2070.3, ry: PI / 2 }));
+    // a chair under the souvenir shop's portal, by its door, facing the street
+    if (hasModel('weathered_chair')) near(L.mesh('weathered_chair', 'weathered_chair', { x: 19.9, y: this.drapedY(19.9, 2059.6), z: 2059.6, ry: -PI / 2 + 0.25 }));
   }
 
   // ---------- materials ----------
@@ -419,14 +441,14 @@ export class Town {
     return b;
   }
   /** A window or door frame on a front: four bars round w x h at (z, y). */
-  private frame(b: Built, z: number, y: number, w: number, h: number, mat = this.m.metal, t = 0.07) {
+  private frame(b: Built, z: number, y: number, w: number, h: number, mat = this.m.metal, t = 0.07, st: THREE.Object3D = this.st) {
     const x = b.fx + b.s * 0.04, fy = b.floor + y;
-    box(this.st, 0.08, t, w + t * 2, mat, x, fy + h / 2 + t / 2, z); box(this.st, 0.08, t, w + t * 2, mat, x, fy - h / 2 - t / 2, z);
-    box(this.st, 0.08, h, t, mat, x, fy, z - w / 2 - t / 2); box(this.st, 0.08, h, t, mat, x, fy, z + w / 2 + t / 2);
+    box(st, 0.08, t, w + t * 2, mat, x, fy + h / 2 + t / 2, z); box(st, 0.08, t, w + t * 2, mat, x, fy - h / 2 - t / 2, z);
+    box(st, 0.08, h, t, mat, x, fy, z - w / 2 - t / 2); box(st, 0.08, h, t, mat, x, fy, z + w / 2 + t / 2);
   }
   /** A dark pane, or a door, flat on a front. */
-  private pane(b: Built, z: number, y: number, w: number, h: number, mat = this.m.glass) {
-    return plane(this.st, w, h, mat, b.fx + b.s * 0.025, b.floor + y, z, b.s * Math.PI / 2);
+  private pane(b: Built, z: number, y: number, w: number, h: number, mat = this.m.glass, st: THREE.Object3D = this.st) {
+    return plane(st, w, h, mat, b.fx + b.s * 0.025, b.floor + y, z, b.s * Math.PI / 2);
   }
   /** A step up to a door from the ground in front. */
   private stoop(b: Built, z: number, w: number) {
@@ -521,6 +543,8 @@ export class Town {
     // office front: the door with the poster in it, the window with the counter behind
     this.pane(office, 2067.2, 1.12, 1.1, 2.2, m.glass); this.frame(office, 2067.2, 1.12, 1.1, 2.2); this.stoop(office, 2067.2, 1.6);
     this.board(this.st, R.poster, .46, .46, office.fx + .045, office.floor + 1.35, 2067.2, Math.PI / 2);
+    // the attendant's folding chair against the office front, the bought one (only with it)
+    if (hasModel('folding_chair')) { this.models.want('folding_chair'); this.col(-16.98, -16.3, 2070.05, 2070.55, false); }
     this.frontQuad(office, 'gasWin', R.inGas, 2073, 1.55, 4.6, 1.75, ...lit('inGas', 0xffe2b8, .85)); this.frame(office, 2073, 1.55, 4.6, 1.75);
     box(this.st, .5, .08, 9.4, m.red, office.fx + .25, office.floor + 3.45, 2072);   // the red band along the top
     // the service bay: a roll-up door, closed
@@ -598,12 +622,13 @@ export class Town {
     this.light('laundro', -14.6, b.floor + 2.2, 2131, 6, 0xdcecff);
     for (const z of [2128.9, 2132.3]) this.winLight(b, 'laundroWin', 'panes', z, 1.45, 3.1, 1.7, 0xe2eeff, 0.055, this.slots.laundro, { depth: 3.0, y: 3.15, side: z - 2130.6 }, [0.15, 0.5]);   // (tubes running into the room)
     this.glow.add(b.fx + .3, b.floor + 1.5, 2130.6, 5, 0x18202a);
-    // the bench under the window
-    const x = b.fx + .55, y = this.gy(x, 2132);
-    for (const z of [2131, 2133.2]) box(this.st, .45, .42, .06, m.metal, x, y + .21, z);
-    for (let i = 0; i < 3; i++) box(this.st, .12, .04, 2.6, m.wood, x - .14 + i * .14, y + .44, 2132.1);
-    box(this.st, .04, .32, 2.6, m.wood, x - .24, y + .66, 2132.1);
-    this.col(x - .3, x + .28, 2130.75, 2133.45, false);
+    // the bench under the window (or the bought one, 0.78 deep: world/licensedModels.ts)
+    const x = b.fx + .55, y = this.gy(x, 2132), bench = this.models.holder(this.st, 'garden_bench');
+    for (const z of [2131, 2133.2]) box(bench, .45, .42, .06, m.metal, x, y + .21, z);
+    for (let i = 0; i < 3; i++) box(bench, .12, .04, 2.6, m.wood, x - .14 + i * .14, y + .44, 2132.1);
+    box(bench, .04, .32, 2.6, m.wood, x - .24, y + .66, 2132.1);
+    if (hasModel('garden_bench')) this.col(b.fx + .03, b.fx + .85, 2130.9, 2133.3, false);
+    else this.col(x - .3, x + .28, 2130.75, 2133.45, false);
     this.proxy('bench', .6, .8, 2.7, x, y + .45, 2132.1);
     this.proxy('laundromat', .3, 1.9, 6.8, b.fx + .1, b.floor + 1.45, 2130.6);
   }
@@ -693,6 +718,8 @@ export class Town {
     this.proxy('souvenir', .3, 1.8, 2.4, b.fx - .1, b.floor + 1.45, 2062.3);
     this.proxy('souvenirSign', .3, 1.4, 2.8, 18.7, py + .85, 2064.1);
     this.proxy('souvenirDoor', .3, 2.2, 1.2, b.fx - .1, b.floor + 1.1, 2066.8);
+    // a chair under the portal by the window, the bought one (only with it: world/licensedModels.ts)
+    if (hasModel('weathered_chair')) { this.models.want('weathered_chair'); this.col(19.67, 20.13, 2059.35, 2059.85, false); }
   }
 
   // ---------- the church: white, a bell gable over the door, the letter board by the street ----------
@@ -724,10 +751,15 @@ export class Town {
   private houses() {
     const m = this.m;
     // the second television's room is the first one's the other way round
+    // (the bought six-panel door in each, its casing and leaf 2 cm proud of the front (the jamb
+    // behind them in the wall, the knob out 9 cm), each painted its own: off-white, faded green,
+    // brown, a faded blue)
+    const tints = [0xe8e0d0, 0x8aa48e, 0x7a5a3e, 0x8e9fae];
     const house = (x0: number, x1: number, z0: number, z1: number, mat: THREE.Material, s: 1 | -1, win: PanelId | null, wz: number, flip = false) => {
       const b = this.building(x0, x1, z0, z1, 3.0, mat, s, .3);
-      const dz = wz > (z0 + z1) / 2 ? z0 + 1.6 : z1 - 1.6;
-      this.pane(b, dz, 1.05, .95, 2.1, m.trim); this.frame(b, dz, 1.05, .95, 2.1, m.wood, .08); this.stoop(b, dz, 1.3);
+      const dz = wz > (z0 + z1) / 2 ? z0 + 1.6 : z1 - 1.6, door = this.models.holder(this.st, 'door_six_panel');
+      this.pane(b, dz, 1.05, .95, 2.1, m.trim, door); this.frame(b, dz, 1.05, .95, 2.1, m.wood, .08, door); this.stoop(b, dz, 1.3);
+      if (door !== this.st) this.models.spot('door_six_panel', { at: { x: b.fx + s * 0.012, y: b.floor, z: dz, ry: s * Math.PI / 2 }, tone: tints[this.models.spots.door_six_panel?.length ?? 0] });
       if (win) this.frontQuad(b, win, win === 'warm' ? R.inWarm : R.inTv, wz, 1.5, 1.5, 1.15, ...(win === 'warm' ? lit('inWarm', 0xffd8a8, .7, .9) : lit('inTv', 0xc8d8ff, .7)), flip);
       else this.pane(b, wz, 1.5, 1.5, 1.15);
       this.frame(b, wz, 1.5, 1.5, 1.15, m.wood, .08);

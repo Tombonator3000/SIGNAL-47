@@ -15,6 +15,7 @@ import type { Zone } from '../player/Player';
 import { dressStation } from './dressStation';
 import type { Dressing } from './weathering';
 import { dressHut } from './dressing';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 
 // Chapter three location: STATION 01, the survey station from 1947, about 04:00.
 // Built in its own coordinates (metres): x east, z south, north is -Z as at SARO. The
@@ -712,6 +713,13 @@ export class Station01 {
   lampCovered = false;
   receiverOn = true;
   hutLightOn = true;
+  /** The bought models (world/licensedModels.ts): in the hut the chair and the receiver (a VU
+   *  unit, its meters lit with the receiver), in the hut's floods; the field lamp's battery in the
+   *  station's. */
+  readonly models = new ModelSwap('hut', (m) => floodlit(m, 0.25, hutFlood));
+  readonly yardModels = new ModelSwap('station', (m) => floodlit(m, 0.03, fieldFlood));
+  /** The bought receiver's meter faces, lit with it (setReceiver). */
+  private dials: THREE.MeshStandardMaterial[] = [];
 
   private o: THREE.Vector3;
   private terrain = new Terrain();
@@ -764,6 +772,8 @@ export class Station01 {
     this.texs.push((this.glow.points.material as THREE.ShaderMaterial).uniforms.uMap.value);
     this.walkable();
     this.lights = this.nightLights();
+    this.models.place((L, add) => this.placeModels(L, add));
+    this.yardModels.place((L, add) => this.placeYardModels(L, add));
 
     const ox = this.o.x, oz = this.o.z;
     const w = (x: number, y: number, z: number) => new THREE.Vector3(x + ox, y + this.o.y, z + oz);
@@ -789,6 +799,28 @@ export class Station01 {
         generator: w(-16.2, 1.0, -0.4), gateInside: w(-22.3, 0, 23.5), stakesC: w(STAKES[0], 0.3, T.z),
       },
     };
+  }
+
+  // ---------- the bought models (world/licensedModels.ts) ----------
+  /** In the hut: the chair pulled out from the bench, and the receiver (the VU unit at 1.2, its
+   *  meters lit when it is on), where the code's stood. */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const inside = this.interior, { z0 } = HUT;
+    if (hasModel('weathered_chair')) add(L.mesh('weathered_chair', 'weathered_chair', { x: -12.0, y: 0.004, z: 3.05, ry: 0.6 }), inside);
+    if (hasModel('vu_meter')) {
+      // its back where the code's was (z0 + 0.13), on the bench top at 0.8
+      const rx = add(L.mesh('vu_meter', 'vu_meter', { x: -11.85, y: 0.8, z: z0 + 0.13 + 0.117 * 1.2, s: 1.2 }, { own: true }), inside);
+      rx.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+        if (m && m.emissiveMap) { m.emissive.set(0xffb048); this.dials.push(m); }
+      });
+      this.setReceiver(this.receiverOn);
+    }
+  }
+  /** In the yard: the battery at the foot of the field lamp. */
+  private placeYardModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const L0 = LAMP;
+    if (hasModel('car_battery')) add(L.mesh('car_battery', 'car_battery', { x: L0.x - 0.32, y: G, z: L0.z + 0.36, ry: 0.35, s: 0.9 }), this.group);
   }
 
   // ---------- materials ----------
@@ -1357,19 +1389,19 @@ export class Station01 {
     cyl(s, 0.06, 0.06, 0.17, m.chrome, x0 + 0.85, 1.58, z0 + 0.13, 10);
 
     // the tube receiver with its speaker, headphones and lead to the field line
-    const rx = new THREE.Vector3(-11.85, top, z0 + 0.3);
-    box(s, 0.52, 0.28, 0.34, m.crinkle, rx.x, rx.y + 0.14, rx.z);
-    box(s, 0.54, 0.3, 0.02, m.blackIn, rx.x, rx.y + 0.15, rx.z + 0.175);
-    const dial = plane(s, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
+    const rx = new THREE.Vector3(-11.85, top, z0 + 0.3), rs = this.models.holder(s, 'vu_meter');
+    box(rs, 0.52, 0.28, 0.34, m.crinkle, rx.x, rx.y + 0.14, rx.z);
+    box(rs, 0.54, 0.3, 0.02, m.blackIn, rx.x, rx.y + 0.15, rx.z + 0.175);
+    const dial = plane(rs, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
     { const uv = dial.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setY(i, 0.5 + uv.getY(i) * 0.5); }
-    const meter = plane(s, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
+    const meter = plane(rs, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
     { const uv = meter.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 0.25, uv.getY(i) * 0.5); }
     for (let i = 0; i < 5; i++) {
-      const k = cyl(s, 0.022, 0.024, 0.03, m.blackIn, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.2, 10);
+      const k = cyl(rs, 0.022, 0.024, 0.03, m.blackIn, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.2, 10);
       k.rotation.x = Math.PI / 2;
-      cyl(s, 0.006, 0.006, 0.012, m.chrome, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.217, 6).rotation.x = Math.PI / 2;
+      cyl(rs, 0.006, 0.006, 0.012, m.chrome, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.217, 6).rotation.x = Math.PI / 2;
     }
-    for (const dx of [-0.24, 0.24]) box(s, 0.02, 0.02, 0.05, m.chrome, rx.x + dx, rx.y + 0.27, rx.z + 0.18);
+    for (const dx of [-0.24, 0.24]) box(rs, 0.02, 0.02, 0.05, m.chrome, rx.x + dx, rx.y + 0.27, rx.z + 0.18);
     box(s, 0.24, 0.24, 0.18, m.crinkle, rx.x - 0.44, rx.y + 0.12, rx.z - 0.02);
     cyl(s, 0.085, 0.085, 0.01, m.blackIn, rx.x - 0.44, rx.y + 0.12, rx.z + 0.072, 14).rotation.x = Math.PI / 2;
     for (let i = 0; i < 4; i++) box(s, 0.15, 0.006, 0.004, m.chrome, rx.x - 0.44, rx.y + 0.07 + i * 0.033, rx.z + 0.078);
@@ -1460,7 +1492,7 @@ export class Station01 {
     box(ch, 0.42, 0.06, 0.03, m.woodIn, 0, 0.62, -0.19);
     for (const [x, z] of [[-0.18, -0.17], [0.18, -0.17]]) box(ch, 0.035, 0.86, 0.035, m.woodIn, x, 0.43, z);
     for (const [x, z] of [[-0.18, 0.17], [0.18, 0.17]]) box(ch, 0.035, 0.45, 0.035, m.woodIn, x, 0.225, z);
-    s.add(ch);
+    this.models.holder(s, 'weathered_chair').add(ch);
     this.col(-12.15, -11.85, 2.9, 3.2);
     // a bare bulb under a tin shade in the middle of the ceiling
     rod(s, v(-11.0, HUT.h, 3.0), v(-11.0, 2.2, 3.0), 0.004, m.blackIn, 4);
@@ -1631,9 +1663,11 @@ export class Station01 {
     cyl(st, 0.03, 0.03, 0.06, m.darkMetal, L.x, 1.0, L.z, 8);
     rod(st, collar, new THREE.Vector3(L.x, 1.8, L.z), 0.016, m.galv, 6);
     // battery box at the foot, and its lead up the pole
-    box(st, 0.32, 0.22, 0.2, m.paint, L.x - 0.32, G + 0.11, L.z + 0.36);
-    box(st, 0.06, 0.04, 0.04, m.darkMetal, L.x - 0.38, G + 0.24, L.z + 0.36);
-    rod(st, new THREE.Vector3(L.x - 0.3, G + 0.22, L.z + 0.33), new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), 0.006, m.rubber, 4);
+    // (or the bought car battery in its place, its lead from the post on its top: world/licensedModels.ts)
+    const bat = this.yardModels.holder(st, 'car_battery');
+    box(bat, 0.32, 0.22, 0.2, m.paint, L.x - 0.32, G + 0.11, L.z + 0.36);
+    box(bat, 0.06, 0.04, 0.04, m.darkMetal, L.x - 0.38, G + 0.24, L.z + 0.36);
+    rod(st, new THREE.Vector3(L.x - 0.3, G + (bat !== st ? 0.255 : 0.22), L.z + 0.33), new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), 0.006, m.rubber, 4);
     rod(st, new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), new THREE.Vector3(L.x - 0.02, 1.7, L.z + 0.02), 0.006, m.rubber, 4);
     // the head, aimed at the transit
     const head = new THREE.Group();
@@ -1870,6 +1904,7 @@ export class Station01 {
   setReceiver(on: boolean) {
     this.receiverOn = on;
     this.m.dial.color.set(on ? 0xffffff : 0x141210);
+    for (const d of this.dials) eachVariant(d, (v) => { const m = v as THREE.MeshStandardMaterial; m.emissiveIntensity = on ? 1.1 : 0; m.color.setScalar(on ? 1 : 0.35); });
     setFlood(this.slot.dial, on ? BASE.dial : 0, hutFlood);
     this.setGlow(this.gx.dial, 0xffb050, on ? 1 : 0);
   }

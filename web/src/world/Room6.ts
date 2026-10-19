@@ -4,6 +4,7 @@ import { eachVariant } from '../core/quality';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { dressRoom6 } from './dressing';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 
 // Chapter-four integration contract: todo.md at 1a08434. Local metres, north -Z.
 // Interior x [-2.25, 2.25], z [-3, 3], floor y=0. South door x [-1.98, -.82].
@@ -26,6 +27,11 @@ export class Room6 {
   readonly lights: { group: THREE.Group; hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
   readonly flood = motelFlood;
   lampOn = true;
+  /** The bought furniture (world/licensedModels.ts): the dresser, the nightstand, the two lamps,
+   *  the table and its chairs, the bathroom door, in the room's floods. */
+  readonly models = new ModelSwap('room6', (m) => floodlit(m, 0.55, motelFlood));
+  /** The bought table lamp's shade, switched with the lamp (setLamp). */
+  private lampShades: THREE.MeshStandardMaterial[] = [];
 
   private readonly o: THREE.Vector3;
   private readonly shell = new THREE.Group();
@@ -65,6 +71,7 @@ export class Room6 {
     dressRoom6({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.shell);
     mergeStatic(this.fixed);
+    this.models.place((L, add) => this.placeModels(L, add));
 
     const lg = new THREE.Group();
     const hemi = new THREE.HemisphereLight(0xa8bcd9, 0x5f4130, 0.55);
@@ -205,14 +212,16 @@ export class Room6 {
     box(this.fixed,1.05,.42,.12,m.cream,.75,.33,2.85);
     for(let i=0;i<9;i++)box(this.fixed,.88,.018,.018,m.black,.75,.2+i*.032,2.781);
     // Bathroom remains closed and has no walkable zone behind it.
-    box(this.fixed,.92,2.14,.05,m.teal,-.97,1.07,-2.96);
-    for(const x of [-1.45,-.49])box(this.fixed,.05,2.2,.1,m.darkWood,x,1.1,-2.92);
-    box(this.fixed,.98,.05,.1,m.darkWood,-.97,2.18,-2.92);
-    box(this.fixed,.04,.12,.07,m.metal,-.6,1.02,-2.88);
+    const bd=this.models.holder(this.fixed,'door_six_panel');
+    box(bd,.92,2.14,.05,m.teal,-.97,1.07,-2.96);
+    for(const x of [-1.45,-.49])box(bd,.05,2.2,.1,m.darkWood,x,1.1,-2.92);
+    box(bd,.98,.05,.1,m.darkWood,-.97,2.18,-2.92);
+    box(bd,.04,.12,.07,m.metal,-.6,1.02,-2.88);
     this.proxy('bathroom',.92,2.1,.12,-.97,1.05,-2.94);
   }
 
   private lamp(parent: THREE.Object3D, x: number, y: number, z: number, m: ReturnType<Room6['makeMaterials']>, controlled=false) {
+    parent=this.models.holder(parent,'lamp_orange');
     cyl(parent,.12,.15,.045,m.darkWood,x,y+.023,z,8);
     cyl(parent,.08,.12,.18,m.metal,x,y+.14,z,6);
     cyl(parent,.035,.035,.19,m.darkWood,x,y+.29,z,6);
@@ -230,17 +239,17 @@ export class Room6 {
     box(bed,2.0,1.02,.12,m.wood,0,.69,-1.34);
     for(const x of [-.44,.44]) {const pillow=box(bed,.75,.14,.43,m.cream,x,.61,-.78);pillow.rotation.x=-.13;}
     mergeStatic(bed);this.col(.15,2.12,-2.98,-.38);this.proxy('bed',1.92,.85,2.36,1.12,.43,-1.56);
-    const night=this.model('nightstand',-.26,0,-2.5);
-    box(night,.55,.52,.6,m.wood,0,.28,0);box(night,.6,.05,.66,m.darkWood,0,.56,0);
-    box(night,.12,.025,.04,m.metal,0,.32,.31);this.lamp(night,0,.585,0,m);mergeStatic(night);
+    const night=this.model('nightstand',-.26,0,-2.5),ns=this.models.holder(night,'nightstand');
+    box(ns,.55,.52,.6,m.wood,0,.28,0);box(ns,.6,.05,.66,m.darkWood,0,.56,0);
+    box(ns,.12,.025,.04,m.metal,0,.32,.31);this.lamp(night,0,.585,0,m);mergeStatic(night);
     this.col(-.57,.04,-2.85,-2.14);
     const phone=this.model('phone',-.27,.6,-2.22);
     box(phone,.24,.07,.18,m.cream);box(phone,.045,.06,.21,m.black,-.085,.055,0);
     for(let r=0;r<4;r++)for(let c=0;c<3;c++)box(phone,.023,.005,.019,m.black,.005+c*.031,.039,-.056+r*.029);
     mergeStatic(phone);this.proxy('phone',.32,.22,.28,-.27,.66,-2.22);
-    const dresser=this.model('dresser',-1.88,0,-.8);
-    box(dresser,.64,.79,1.45,m.wood,0,.435,0);box(dresser,.72,.055,1.51,m.darkWood,0,.85,0);
-    for(let i=0;i<3;i++){box(dresser,.035,.19,1.33,m.wood,.339,.22+i*.215,0);box(dresser,.055,.03,.2,m.metal,.37,.23+i*.215,0);}
+    const dresser=this.model('dresser',-1.88,0,-.8),dr=this.models.holder(dresser,'dresser');
+    box(dr,.64,.79,1.45,m.wood,0,.435,0);box(dr,.72,.055,1.51,m.darkWood,0,.85,0);
+    for(let i=0;i<3;i++){box(dr,.035,.19,1.33,m.wood,.339,.22+i*.215,0);box(dr,.055,.03,.2,m.metal,.37,.23+i*.215,0);}
     mergeStatic(dresser);this.col(-2.25,-1.48,-1.58,-.02);
     const tv=this.model('tv',-1.88,.88,-.55);tv.rotation.y=Math.PI/2;
     box(tv,.75,.54,.47,m.wood,0,.28,0);box(tv,.67,.45,.035,m.black,0,.28,.25);
@@ -265,13 +274,13 @@ export class Room6 {
     for(const xx of [-.195,.195])for(const zz of [-.195,.195])box(c,.052,.45,.052,m.darkWood,xx,.225,zz);
     for(const xx of [-.195,.195])box(c,.05,.55,.05,m.wood,xx,.75,.205);
     box(c,.46,.24,.045,m.wood,0,.91,.205);
-    this.fixed.add(c);
+    this.models.holder(this.fixed,'dining_chair').add(c);
     this.col(x-.29,x+.29,z-.29,z+.29);
   }
   private buildTable(m: ReturnType<Room6['makeMaterials']>) {
-    const table=this.model('table',.7,0,1.45);
-    box(table,1.35,.07,.95,m.wood,0,.775,0);
-    for(const x of [-.55,.55])for(const z of [-.35,.35])box(table,.065,.73,.065,m.darkWood,x,.365,z);
+    const table=this.model('table',.7,0,1.45),tb=this.models.holder(table,'dining_table');
+    box(tb,1.35,.07,.95,m.wood,0,.775,0);
+    for(const x of [-.55,.55])for(const z of [-.35,.35])box(tb,.065,.73,.065,m.darkWood,x,.365,z);
     mergeStatic(table);this.col(.025,1.375,.975,1.925);this.proxy('table',1.35,.04,.95,.7,.775,1.45);
     this.chair(.75,2.3,0,m);this.chair(.75,.56,Math.PI,m);
     const lamp=this.model('lamp',1.18,.81,1.15);this.lamp(lamp,0,0,0,m,true);mergeStatic(lamp);
@@ -335,6 +344,33 @@ export class Room6 {
       m.emissiveIntensity=on ? .8 : 0;
       m.color.set(on?0xc7a870:0x897652);
     });
+    for(const shade of this.lampShades)eachVariant(shade,v=>{const m=v as THREE.MeshStandardMaterial;m.emissiveIntensity=on?.6:0;m.color.setScalar(on?1:.69);});
+  }
+
+  /** The bought furniture where the code's stood (world/licensedModels.ts), in the room's terms. */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const o=this.objs,PI=Math.PI;
+    // the dresser against the west wall, its drawers to the room (its top at .875: the TV, the
+    // photo and the checkout card stand on it as before)
+    if(hasModel('dresser'))add(L.mesh('dresser','dresser',{x:0,y:0,z:0,ry:PI/2}),o.dresser);
+    if(hasModel('nightstand'))add(L.mesh('nightstand','nightstand',{x:0,y:0,z:0}),o.nightstand);
+    if(hasModel('dining_table'))add(L.mesh('dining_table','dining_table',{x:0,y:0,z:0}),o.table);
+    // the chairs at the table (Nora on the south one), their backs where the code's were
+    if(hasModel('dining_chair'))for(const [z,ry] of [[2.3,0],[.56,PI]])add(L.mesh('dining_chair','dining_chair',{x:.75,y:0,z,ry:ry+PI,s:1.09}),this.interior);
+    // the lamps: on the nightstand (its shade glowing a little, as the code's), and the one on the
+    // table that the story switches (its own shade, setLamp)
+    if(hasModel('lamp_orange')){
+      const glow=(lamp:THREE.Object3D,k:number,own:boolean)=>lamp.traverse((x)=>{
+        const m=(x as THREE.Mesh).material as THREE.MeshStandardMaterial|undefined;
+        if(m&&m.emissiveMap){m.emissive.set(0xffc27a);m.emissiveIntensity=k;if(own)this.lampShades.push(m);}
+      });
+      glow(add(L.mesh('lamp_orange','lamp_orange',{x:0,y:.585,z:0,ry:2.4}),o.nightstand),.4,false);
+      glow(add(L.mesh('lamp_orange','lamp_orange',{x:0,y:0,z:0,ry:-.6},{own:true}),o.lamp),.6,true);
+      this.setLamp(this.lampOn);
+    }
+    // the bathroom door in the north wall, the casing in the wall's thickness, painted the room's
+    // teal (the knob not), mirrored so the knob is on the right as the code's
+    if(hasModel('door_six_panel'))add(L.merged('door_six_panel',[{name:'door_six_panel',at:{x:-.97,y:0,z:-3.0,s:[-1.08,.98,1]},tint:0x43665e,paint:'_paint'}]),this.interior);
   }
   /** Switch the television on (snow, a flickering blue light on the room) or off. */
   setTv(on: boolean) {

@@ -796,11 +796,13 @@ export class Dressing {
     return this.foot(x, z, 0.46, 0.42, yaw);
   }
   /** A bench: slats on two iron ends. */
-  bench(x: number, y: number, z: number, yaw: number, len = 1.8, k: Paint = 'bench') {
-    const g = this.piece(x, y, z, yaw, false);
-    for (const dx of [-len / 2 + 0.15, len / 2 - 0.15]) { this.box(g, 0.05, 0.44, 0.42, 'black', dx, 0.22, 0); this.box(g, 0.05, 0.42, 0.06, 'black', dx, 0.65, -0.2, -0.12); }
-    for (let i = 0; i < 3; i++) this.box(g, len, 0.035, 0.11, k, 0, 0.45, -0.14 + i * 0.13);
-    for (let i = 0; i < 2; i++) this.box(g, len, 0.1, 0.03, k, 0, 0.62 + i * 0.16, -0.22, -0.12);
+  /** into: another dressing for the bench itself (its shade on the ground stays in this one):
+   *  world/licensedModels.ts shows it only until the bought bench is in. */
+  bench(x: number, y: number, z: number, yaw: number, len = 1.8, k: Paint = 'bench', into: Dressing = this) {
+    const g = into.piece(x, y, z, yaw, false);
+    for (const dx of [-len / 2 + 0.15, len / 2 - 0.15]) { into.box(g, 0.05, 0.44, 0.42, 'black', dx, 0.22, 0); into.box(g, 0.05, 0.42, 0.06, 'black', dx, 0.65, -0.2, -0.12); }
+    for (let i = 0; i < 3; i++) into.box(g, len, 0.035, 0.11, k, 0, 0.45, -0.14 + i * 0.13);
+    for (let i = 0; i < 2; i++) into.box(g, len, 0.1, 0.03, k, 0, 0.62 + i * 0.16, -0.22, -0.12);
     this.contact(x, y, z, len + 0.3, 0.75, 0.5, yaw);
     return this.foot(x, z, len, 0.5, yaw);
   }

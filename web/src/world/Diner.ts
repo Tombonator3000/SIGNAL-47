@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
 import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, headSlots, type FloodSet } from './kit';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 import type { Collider } from './ControlRoom';
 import { wearMesh } from '../drive/roadSurface';
 import type { Zone } from '../player/Player';
 import { surfaceY } from '../drive/roadTerrain';
 import { DINER } from '../drive/roadShape';
 import { dressDiner } from './dressDiner';
-import { NEAR, type Dressing } from './weathering';
+import { NEAR, Dressing } from './weathering';
 import { dressDiner as dressDinerInside } from './dressing';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
@@ -53,6 +54,9 @@ export class Diner {
   private m!:ReturnType<Diner['makeMaterials']>;
   private readonly slots:Record<string,number>={};
   private disposed=false;
+  /** The bought café tables in the booths and the bench on the walk (world/licensedModels.ts),
+   *  in the diner's floods. */
+  readonly models=new ModelSwap('diner',(m)=>floodlit(m,.14,dinerFlood));
 
   /** onRoad: the diner stands in the road area (World.ts), whose highway and land go round it,
    *  so it leaves out its own strip of highway and ground. */
@@ -65,7 +69,9 @@ export class Diner {
     this.landscape();this.building();this.counter();this.booths();this.papersAndPhone();this.people();this.signAndRig();
     // its wear, its roof and what stands about it (dressDiner.ts); by the highway the land round it is the road's
     const gy=(x:number,z:number)=>onRoad?surfaceY(x+DINER.x,z+DINER.z)-origin.y:-.18;
-    this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy);this.shell.add(this.dressing.build());
+    const bench=hasModel('garden_bench')?new Dressing(dinerFlood,.14,1947):undefined;
+    this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy,bench);this.shell.add(this.dressing.build());
+    if(bench){const g=bench.build();this.shell.add(g);this.models.adopt(g,'garden_bench');}
     for(const m of this.dressing.materials)this.materials.add(m);
     // the counter's, the booths' and the walls' clutter (world/dressing.ts)
     dressDinerInside({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});
@@ -88,6 +94,16 @@ export class Diner {
     this.anchors={truckPark:a(9,6,0),arrive:a(7.25,4.9,yawTo(7.25,4.9,2,0)),outside:a(3.1,0,Math.PI/2),
       inside:a(.75,0,Math.PI/2),stool:a(-2.8,0,Math.PI/2),phone:a(.4,8.05,Math.PI)};
     this.setDawn(.25);this.group.updateMatrixWorld(true);
+    this.models.place((L,add)=>this.placeModels(L,add));
+  }
+  /** The bought models where the code's stood, in the diner's terms (drawn only near, as the
+   *  clutter inside). */
+  private placeModels(L:Lib,add:(o:THREE.Object3D,parent:THREE.Object3D)=>THREE.Object3D){
+    const near=(o:THREE.Object3D,r:number)=>{const g=new THREE.Group();add(o,g);this.group.add(nearOnly(g,r));};
+    // the four booth tables, one mesh (the napkins, the sugar and the clutter on their tops at .803)
+    if(hasModel('cafe_table'))near(L.merged('cafe_table',[-6.1,-3.05,3.05,6.1].map((z)=>({name:'cafe_table',at:{x:.7,y:0,z}}))),40);
+    // the bench on the walk, its back to the long window
+    if(hasModel('garden_bench'))near(L.mesh('garden_bench','garden_bench',{x:2.43,y:0,z:5.0,ry:Math.PI/2}),60);
   }
 
   private mat(p:THREE.MeshStandardMaterialParameters,falloff=.14){const m=floodlit(new THREE.MeshStandardMaterial(p),falloff,dinerFlood);this.materials.add(m);return m;}
@@ -245,8 +261,9 @@ export class Diner {
   }
   private booths(){
     const s=this.fixed,m=this.m;
+    const tb=this.models.holder(s,'cafe_table');
     for(const z of [-6.1,-3.05,3.05,6.1]){
-      metreUV(box(s,1.65,.075,.76,m.counter,.7,.765,z));cyl(s,.055,.09,.71,m.steel,.7,.355,z,8);
+      metreUV(box(tb,1.65,.075,.76,m.counter,.7,.765,z));cyl(tb,.055,.09,.71,m.steel,.7,.355,z,8);
       for(const d of [-.93,.93]){metreUV(box(s,1.85,.14,.49,m.vinyl,.7,.48,z+d));metreUV(box(s,1.85,.72,.13,m.vinyl,.7,.87,z+d+Math.sign(d)*.21));box(s,1.8,.35,.48,m.wood,.7,.175,z+d);}
       this.col(-.27,1.67,z-1.24,z+1.24);
       box(s,.13,.2,.13,m.steel,.96,.89,z);cyl(s,.035,.04,.12,m.cream,.63,.87,z,8);

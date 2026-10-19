@@ -59,6 +59,7 @@ import { surfaceY } from './drive/roadTerrain';
 import { bindLooks } from './story/looks';
 import { firstTime } from './core/hints';
 import { BlenderHouse, BlenderTruck, blenderWanted } from './world/blenderModels';
+import { startModels, licensedModels } from './world/licensedModels';
 import type { AreaId } from './story/Chapter3';
 
 // Settings and the one checkpoint live in localStorage. Every access is guarded,
@@ -224,6 +225,9 @@ async function boot() {
   const blenderTruck = new BlenderTruck((root) => { setQuality(root, quality); ultra.mark(root); });
   world.onTruck = (t) => blenderTruck.add(t);
   if (blenderWanted) void blenderTruck.set(true);
+  // the bought models (world/licensedModels.ts, only with the private assets): the areas built so
+  // far have their holders; their .glbs load now, a later area's as it is built
+  startModels((root) => { setQuality(root, quality); ultra.mark(root); });
   // footsteps by what is underfoot: vinyl and tiles inside SARO, concrete in the yard, on the
   // highway and at the motel, dirt between them, boards in the hut, carpet at the motel
   const surfaceAt = (): Surface => {
@@ -1145,6 +1149,8 @@ async function boot() {
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+  // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
+  Object.assign((window as any).S47, { models: licensedModels });
 
   // ---------- the developer menu (?dev in the address) ----------
   let devPaused = false;

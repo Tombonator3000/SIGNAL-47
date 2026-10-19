@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Clutter, v3, type Thing } from './clutter';
 import { rng } from '../core/textures';
 import { nearOnly } from './kit';
+import { hasModel, type ModelSwap } from './licensedModels';
 
 // What has gathered in the rooms over the years (world/clutter.ts makes it): papers and mugs
 // on the desks, an ashtray, cables along the walls and under the desks, notices and posters, a
@@ -16,7 +17,31 @@ export type Dress = {
   add: (o: THREE.Object3D) => void;
   mat: (p: THREE.MeshStandardMaterialParameters) => THREE.MeshStandardMaterial;
   col: (minX: number, maxX: number, minZ: number, maxZ: number) => void;
+  /** The room's bought models (world/licensedModels.ts): what they stand in for is built apart
+   *  (alongside()), and where they go is told to them (swap.spot). */
+  swap?: ModelSwap;
 };
+/** The clutter for what a bought model stands in for: its own Clutter (shown until the model is
+ *  in, then hidden), or the room's own when the model is not in the build. */
+function alongside(c: Clutter, d: Dress, model: string) {
+  return d.swap && hasModel(model) ? new Clutter(c.name + ':' + model, d.mat) : c;
+}
+function apart(c: Clutter, alt: Clutter, d: Dress, model: string, on?: Clutter) {
+  if (alt === c || !d.swap) return;
+  const g = new THREE.Group(); g.name = 'clutter:' + alt.name; g.add(...alt.build());
+  d.add(g); d.swap.adopt(g, model);
+  // and what goes on the model's own faces (a label where its front is), shown with it
+  if (!on || on === c) return;
+  const w = new THREE.Group(); w.name = 'clutter:' + on.name; w.add(...on.build());
+  d.add(w); d.swap.withModel(w, model);
+}
+/** An archive box for the bought model (archive_box.glb: 0.327 wide, 0.248 high with its lid,
+ *  0.413 long, the end with the hand hole to +z): bottom middle at (x, y, z), the end with the
+ *  hand hole turned to ry (+x is PI / 2), w wide, h high, l long; a lid set ajar as the code's. */
+function archiveBox(d: Dress, x: number, y: number, z: number, ry: number, w: number, h: number, l: number, tone: number, ajar = false) {
+  const s: [number, number, number] = [w / 0.327, h / 0.248, l / 0.413];
+  d.swap!.spot('archive_box', { at: { x, y, z, ry, s }, tone, lid: ajar ? { x: x + 0.03, y: y + 0.01, z: z + 0.02, ry: ry + 0.12, rz: -0.08, s } : null });
+}
 const C = {
   paper: 0xe8e0c8, manila: 0xc9ad78, card: 0xb89a6a, cable: 0x1a1b1c, grey: 0x8a8c88, steel: 0x8a8f92, dark: 0x2a2c2e,
   navy: 0x2f4a6e, maroon: 0x6e2f2a, olive: 0x3f5b3a, blind: 0x8f8a7e, rail: 0x77736a, white: 0xece6da,
@@ -143,7 +168,7 @@ export function dressControlRoom(d: Dress) {
   c.ashtray(-3.15, T, -3.72, 4);
   c.calculator(1.55, T, -3.66, 0.25);
   c.pencil(-0.55, T, -3.62, 0.4); c.pencil(0.82, T, -3.7, -1.1); c.pencil(1.3, T, -3.84, 0.2, 0xa82a22);
-  c.reel(3.18, T, -3.66, 0.12);
+  c.reel(hasModel('console_kit') ? 3.32 : 3.18, T, -3.66, 0.12);   // (moved along for the bought headphones)
   // somebody's oatmeal cardigan left over the back of the middle chair (ControlRoom.chair), one
   // sleeve hanging down past the seat
   cardigan(c, 0.05, -2.95, 0.08, 0x9a8668);
@@ -197,17 +222,21 @@ export function dressControlRoom(d: Dress) {
   c.bin(1.98, 2.36);
   c.plate(3.62, 0.3, 4.48, PI, 'outlet');
   c.cable([v3(3.36, T + 0.01, 2.95), v3(3.42, 0.5, 3.0), v3(3.46, 0.012, 3.18), v3(3.58, 0.012, 4.2), v3(3.62, 0.012, 4.43), v3(3.62, 0.27, 4.475)], 0.006, 0x1e1f20);
-  // the filing cabinets: the top drawer nearest the desk left open, a box of logs on top
-  const dy = 1.13;
+  // the filing cabinets: the top drawer nearest the desk left open, a box of logs on top (the
+  // bought cabinet has its own dark slot, and its drawers 2.4 cm higher)
+  const cabs = hasModel('filing_cabinet'), boxes = alongside(c, d, 'archive_box'), lic = boxes !== c, onBox = lic ? new Clutter(c.name + ':labels', d.mat) : c;
+  const dy = cabs ? 1.154 : 1.13;
   c.box(0.33, 0.012, 0.46, -5.27, dy - 0.12, 0, 0x4e5654);
   for (const s of [-1, 1]) c.box(0.33, 0.2, 0.012, -5.27, dy - 0.03, s * 0.225, 0x4e5654);
   c.box(0.02, 0.29, 0.48, -5.095, dy, 0, 0x6e7a76);
   c.box(0.03, 0.025, 0.1, -5.075, dy + 0.06, 0, C.steel);
   c.box(0.3, 0.17, 0.42, -5.27, dy - 0.03, 0, C.manila, { faces: [null, null, 'folders'] });
-  c.box(0.03, 0.26, 0.44, -5.41, dy, 0, 0x0c0d0c);   // the dark slot it came out of (over the old handle)
+  if (!cabs) c.box(0.03, 0.26, 0.44, -5.41, dy, 0, 0x0c0d0c);   // the dark slot it came out of (over the old handle)
   d.col(-5.43, -5.08, -0.26, 0.26);
-  c.box(0.34, 0.24, 0.3, -5.72, 1.44, -0.62, C.card);
-  c.plane(0.15, 0.075, -5.546, 1.45, -0.62, 'boxlabel', { ry: PI / 2 });
+  boxes.box(0.34, 0.24, 0.3, -5.72, 1.44, -0.62, C.card);
+  if (lic) archiveBox(d, -5.7, 1.32, -0.62, PI / 2, 0.31, 0.24, 0.413, C.card);
+  boxes.plane(0.15, 0.075, -5.546, 1.45, -0.62, 'boxlabel', { ry: PI / 2 });
+  if (lic) onBox.plane(0.15, 0.075, -5.7 + 0.2065 + 0.003, 1.45, -0.62, 'boxlabel', { ry: PI / 2 });   // (on the bought box's longer end)
   c.papers(-5.72, 1.56, -0.6, 0.21, 0.28, 'memoCoffee', { ry: 0.3, n: 2 });
   // the fan on the cabinets gets its grille and motor
   { const a = PI / 2 + 0.4, nx = Math.sin(a), nz = Math.cos(a);
@@ -215,8 +244,10 @@ export function dressControlRoom(d: Dress) {
     c.cyl(0.045, 0.045, 0.09, -5.65 - nx * 0.05, 1.62, -nz * 0.05, 0x3a3c3e, { rx: PI / 2, ry: a, seg: 10 }); }
   // the west desk: an ashtray of somebody's evening, a green mug
   c.ashtray(-5.34, T, 2.88, 5);
-  c.mug(-5.3, T, 1.78, 0x3e6a4a, { ry: 1.0, full: true });
-  rings(c, -5.36, T, 1.97, 1.2);
+  // (the bought scope stands where the mug was: the mug in front of it)
+  const scope = hasModel('oscilloscope');
+  c.mug(scope ? -5.26 : -5.3, T, scope ? 1.74 : 1.78, 0x3e6a4a, { ry: 1.0, full: true });
+  rings(c, scope ? -5.28 : -5.36, T, scope ? 1.95 : 1.97, 1.2);
   // the bulletin board: the roster and a postcard over the old papers
   c.notice(1.66, 1.75, 4.465, PI, 0.2, 0.25, 'roster', { pins: true, tilt: -0.04 });
   c.notice(0.74, 1.4, 4.461, PI, 0.15, 0.1, 'postcard', { pins: true, tilt: 0.1 });
@@ -230,8 +261,9 @@ export function dressControlRoom(d: Dress) {
   c.rod(v3(-3.17, 0.78, 4.42), v3(-3.12, 0.4, 4.36), 0.008, 0x1e1f20, { fine: true });
   c.box(0.06, 0.08, 0.1, -3.2, 0.6, 4.47, C.steel);
   c.notice(-3.2, 1.12, 4.498, PI, 0.14, 0.07, 'fireExt', { tape: false });
-  c.box(0.38, 0.26, 0.3, 5.62, 0.13, 0.0, C.card, { ry: 0.1 });
-  c.box(0.36, 0.28, 0.32, -5.62, 0.14, 2.85, C.card, { ry: -0.08 });
+  boxes.box(0.38, 0.26, 0.3, 5.62, 0.13, 0.0, C.card, { ry: 0.1 });
+  boxes.box(0.36, 0.28, 0.32, -5.62, 0.14, 2.85, C.card, { ry: -0.08 });
+  if (lic) { archiveBox(d, 5.62, 0, 0.0, -PI / 2 + 0.1, 0.3, 0.26, 0.38, C.card); archiveBox(d, -5.62, 0, 2.85, PI / 2 - 0.08, 0.32, 0.27, 0.36, C.card); }
   // telex paper on the floor in front of the teleprinter
   c.sheet(0.24, 0.34, -4.2, 0.003, 3.74, 'white', 0.2, { color: 0xece4c8, fine: true });
   c.cyl(0.03, 0.03, 0.22, -4.15, 0.03, 3.62, 0xece4c8, { rz: PI / 2, ry: 0.4, seg: 8, fine: true });
@@ -257,6 +289,7 @@ export function dressControlRoom(d: Dress) {
   base(c, 4.07, 4.69, 3.59, 4.11); base(c, 5.47, 5.97, -1.86, -1.24, 0.55); base(c, 5.4, 5.8, -0.65, -0.15, 0.5, 0.18);
   base(c, 5.43, 5.81, -0.15, 0.15, 0.6, 0.2); base(c, -5.8, -5.44, 2.69, 3.01, 0.6, 0.2);
   done(c, d, NEAR_ROOM.control);
+  apart(c, boxes, d, 'archive_box', onBox);
 }
 
 // The blinds over a window: the head rail (its top at y), the stack of slats drawn up under it,
@@ -349,6 +382,9 @@ export function dressAnnex(d: Dress) {
   // no two alike: tan or grey board, taller or shallower, pushed back or forward, a lid ajar, the
   // labels typed or written on (or gone), one pulled half out, a gap; binders standing on one
   // shelf and lying on another. The STATION 01 box at 1.135, z 8.6 is the room's own.
+  // (with the bought archive box: its copies take the boxes' places, sizes and tones, the code's
+  // boxes built apart; the labels lower, under the model's hand hole)
+  const boxes = alongside(c, d, 'archive_box'), lic = boxes !== c, onBox = lic ? new Clutter(c.name + ':labels', d.mat) : c;
   {
     const br = rng(5), tones = [0xa3865d, 0x9a7e58, 0xb0946a, 0x8e7a5e, 0xc2b8a4, 0xb8ae98, 0xa08a6a];
     const labels: Thing[] = ['boxlabel', 'boxlabelB', 'boxlabel', 'boxlabelC', 'boxlabelD', 'boxlabel'];
@@ -368,33 +404,43 @@ export function dressAnnex(d: Dress) {
         }
         const bw = 0.3 + br() * 0.06, bh = 0.22 + br() * 0.08, bd = 0.32 + br() * 0.07, col = tones[Math.floor(br() * tones.length)];
         const fx = -5.95 + bd + br() * 0.035 + (li === 0 && i === 2 ? 0.17 : 0), cx = fx - bd / 2, yy = y + (bh - 0.02) / 2, ry = (br() - 0.5) * 0.06;
-        c.box(bd, bh - 0.02, bw, cx, yy, z, col, { ry });
+        boxes.box(bd, bh - 0.02, bw, cx, yy, z, col, { ry });
         // the lid, a little proud; now and then set ajar
         const ajar = br() < 0.14;
-        c.box(bd + 0.012, 0.035, bw + 0.012, cx + (ajar ? 0.03 : 0), y + bh - 0.02 + (ajar ? 0.02 : 0.012), z + (ajar ? 0.02 : 0), new THREE.Color(col).multiplyScalar(0.94), { ry: ry + (ajar ? 0.12 : 0), rz: ajar ? -0.08 : 0 });
+        boxes.box(bd + 0.012, 0.035, bw + 0.012, cx + (ajar ? 0.03 : 0), y + bh - 0.02 + (ajar ? 0.02 : 0.012), z + (ajar ? 0.02 : 0), new THREE.Color(col).multiplyScalar(0.94), { ry: ry + (ajar ? 0.12 : 0), rz: ajar ? -0.08 : 0 });
         const grey = col === 0xc2b8a4 || col === 0xb8ae98;
-        if (grey) c.box(0.004, 0.03, 0.09, fx + 0.0015, y + bh - 0.075, z, 0x2a2018, { ry });   // the hand hole of a records box
-        if (br() > 0.1) c.plane(0.15, 0.09, fx + 0.003, y + bh * (grey ? 0.42 : 0.55) + (br() - 0.5) * 0.03, z + (br() - 0.5) * 0.06, labels[Math.floor(br() * labels.length)], { ry: PI / 2 + ry, rz: (br() - 0.5) * 0.08 });
+        if (grey) boxes.box(0.004, 0.03, 0.09, fx + 0.0015, y + bh - 0.075, z, 0x2a2018, { ry });   // the hand hole of a records box
+        if (lic) archiveBox(d, cx, y, z, PI / 2 + ry, bw, bh, bd, col, ajar);
+        if (br() > 0.1) c.plane(0.15, 0.09, fx + 0.003, y + bh * (lic ? 0.36 : grey ? 0.42 : 0.55) + (br() - 0.5) * 0.03, z + (br() - 0.5) * 0.06, labels[Math.floor(br() * labels.length)], { ry: PI / 2 + ry, rz: (br() - 0.5) * 0.08 });
       }
     });
     // on the top shelf: a few more boxes, one on another
-    for (const [z, h, w, col] of [[7.55, 0.26, 0.34, 0xb0946a], [8.0, 0.24, 0.32, 0xc2b8a4], [9.5, 0.28, 0.36, 0x9a7e58]] as const) c.box(0.36, h, w, -5.79, 2.145 + h / 2, z, col, { ry: (br() - 0.5) * 0.1 });
-    c.box(0.34, 0.2, 0.3, -5.8, 2.145 + 0.24 + 0.1, 8.02, 0xa3865d, { ry: 0.2 });
+    for (const [z, h, w, col] of [[7.55, 0.26, 0.34, 0xb0946a], [8.0, 0.24, 0.32, 0xc2b8a4], [9.5, 0.28, 0.36, 0x9a7e58]] as const) {
+      const ry = (br() - 0.5) * 0.1;
+      boxes.box(0.36, h, w, -5.79, 2.145 + h / 2, z, col, { ry });
+      if (lic) archiveBox(d, -5.79, 2.145, z, PI / 2 + ry, w, h, 0.36, col);
+    }
+    boxes.box(0.34, 0.2, 0.3, -5.8, 2.145 + 0.24 + 0.1, 8.02, 0xa3865d, { ry: 0.2 });
+    if (lic) archiveBox(d, -5.8, 2.145 + 0.24, 8.02, PI / 2 + 0.2, 0.3, 0.2, 0.34, 0xa3865d);
   }
-  // a drawer of the middle cabinet left open, folders in it
-  const fx = -4.46, fy = 0.52;
+  // a drawer of the middle cabinet left open, folders in it (the bought cabinet's drawers 1 cm
+  // higher, its own dark slot)
+  const cabs = hasModel('filing_cabinet');
+  const fx = -4.46, fy = cabs ? 0.53 : 0.52;
   c.box(0.44, 0.27, 0.02, fx, fy, 9.52, 0x55705e);
   c.box(0.12, 0.025, 0.03, fx, fy + 0.08, 9.5, C.steel);
   for (const s of [-1, 1]) c.box(0.012, 0.2, 0.34, fx + s * 0.205, fy - 0.03, 9.69, 0x3d5446);
   c.box(0.42, 0.012, 0.34, fx, fy - 0.12, 9.69, 0x3d5446);
   c.box(0.38, 0.17, 0.3, fx, fy - 0.03, 9.7, C.manila, { faces: [null, null, 'folders'] });
   c.box(0.22, 0.3, 0.004, fx + 0.08, fy + 0.16, 9.72, C.manila, { rx: 0.25 });
-  c.box(0.42, 0.25, 0.04, fx, fy, 9.84, 0x0c0d0c);   // the dark slot it came out of
+  if (!cabs) c.box(0.42, 0.25, 0.04, fx, fy, 9.84, 0x0c0d0c);   // the dark slot it came out of
   d.col(-4.7, -4.22, 9.48, 9.86);
   // boxes, a binder and a fan on the cabinets
-  c.box(0.36, 0.25, 0.32, -5.0, 1.445, 10.2, C.card);
-  c.plane(0.16, 0.08, -5.0, 1.45, 10.038, 'boxlabel', { ry: PI });
-  c.box(0.36, 0.25, 0.32, -4.48, 1.445, 10.22, 0xa88a5a, { ry: -0.06 });
+  boxes.box(0.36, 0.25, 0.32, -5.0, 1.445, 10.2, C.card);
+  boxes.plane(0.16, 0.08, -5.0, 1.45, 10.038, 'boxlabel', { ry: PI });
+  if (lic) onBox.plane(0.16, 0.08, -5.0, 1.45, 10.2 - 0.2065 - 0.003, 'boxlabel', { ry: PI });
+  boxes.box(0.36, 0.25, 0.32, -4.48, 1.445, 10.22, 0xa88a5a, { ry: -0.06 });
+  if (lic) { archiveBox(d, -5.0, 1.32, 10.2, PI, 0.36, 0.25, 0.413, C.card); archiveBox(d, -4.48, 1.32, 10.22, PI - 0.06, 0.36, 0.25, 0.413, 0xa88a5a); }
   c.binder(-3.95, 1.32, 10.15, C.olive, { flat: true, ry: 0.1 });
   c.fan(-3.95, 1.38, 10.15, PI + 0.2);
   // a corkboard by the door, with notices pinned on it
@@ -433,6 +479,7 @@ export function dressAnnex(d: Dress) {
   pool(c, -3.22, 0.782, 8.46, 0.88, 0.56, 0.32);
   pool(c, -4.6, 0.0052, 8.0, 2.2, 1.5, 0.14, C.tube, 0.15); pool(c, -2.4, 0.0052, 9.5, 2.0, 1.4, 0.14, C.tube, 0.15);
   done(c, d);
+  apart(c, boxes, d, 'archive_box', onBox);
 }
 
 // ---------- the photo lab ----------

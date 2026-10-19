@@ -5,6 +5,7 @@ import * as T from '../core/textures';
 import { fieldCameraModel } from './props';
 import { setWallClock } from './clutter';
 import { dressControlRoom } from './dressing';
+import { ModelSwap, hasModel, matrixAt, type At, type Lib } from './licensedModels';
 
 export type Collider = { minX: number; maxX: number; minZ: number; maxZ: number };
 
@@ -64,6 +65,9 @@ export class ControlRoom {
   outside!: THREE.Mesh;
   /** The windows' light on the ground outside (lightOutside). */
   windowLights: WindowLights | null = null;
+  /** The bought models in the room (world/licensedModels.ts): the CRTs, the receiver stack, the
+   *  scope, the filing cabinets and the archive boxes. The room's lamps are real lights. */
+  readonly models = new ModelSwap('control');
   spawn = { x: 1.55, z: 3.7, yaw: -0.22 };
   bounds = { minX: -5.75, maxX: 5.75, minZ: -4.22, maxZ: 4.22 };
 
@@ -81,9 +85,10 @@ export class ControlRoom {
     this.outside = st.children.find((c) => (c as THREE.Mesh).material === M.concrete) as THREE.Mesh;
     this.outside.name = 'house:room';
     // what the night shifts have left about the room (world/dressing.ts)
-    dressControlRoom({ add: (o) => this.group.add(o), mat: (p) => new THREE.MeshStandardMaterial(p), col: (a, b, c, d) => this.col(a, b, c, d) });
+    dressControlRoom({ add: (o) => this.group.add(o), mat: (p) => new THREE.MeshStandardMaterial(p), col: (a, b, c, d) => this.col(a, b, c, d), swap: this.models });
     this.group.add(this.blobs);
     mergeStatic(this.blobs);
+    this.models.place((L, add) => this.placeModels(L, add));
 
     const hemi = new THREE.HemisphereLight(0x22304f, 0x2a1b10, 0.9);
     const moon = new THREE.DirectionalLight(0x8ea4d8, 0.45);
@@ -183,6 +188,7 @@ export class ControlRoom {
       mergeStatic(g);
       this.group.add(g);
       this.objs[id] = g;
+      this.crtModel(crt, screen, 0.37, 0.28, 0, 0.18);
       blob(this.blobs, x, -2.95, 0.9, 0.9);
       this.chair(x + (x === 0 ? 0.05 : -0.08), -2.95, x === 0 ? 0.08 : -0.15);
     }
@@ -191,10 +197,11 @@ export class ControlRoom {
     box(st, 0.22, 0.02, 0.3, M.paper, 1.15, 0.79, -3.8).rotation.y = -0.15;
     cyl(st, 0.04, 0.035, 0.1, M.beigeDark, -2.75, 0.83, -3.65, 10);
     for (let i = 0; i < 4; i++) rod(st, new THREE.Vector3(-2.75 + (i - 1.5) * 0.01, 0.82, -3.65), new THREE.Vector3(-2.75 + (i - 1.5) * 0.025, 0.95, -3.64 + i * 0.008), 0.004, M.darkPlastic, 4);
-    // receiver/radio units at the right end
-    box(st, 0.42, 0.18, 0.3, M.darkPlastic, 2.95, 0.87, -4.1);
-    box(st, 0.36, 0.08, 0.005, M.ledAmber, 2.95, 0.9, -3.948);
-    box(st, 0.4, 0.15, 0.28, M.beigeDark, 2.95, 1.035, -4.12);
+    // receiver/radio units at the right end (or the bought signal analyzer and VU unit)
+    const rx = this.models.holder(st, 'console_kit');
+    box(rx, 0.42, 0.18, 0.3, M.darkPlastic, 2.95, 0.87, -4.1);
+    box(rx, 0.36, 0.08, 0.005, M.ledAmber, 2.95, 0.9, -3.948);
+    box(rx, 0.4, 0.15, 0.28, M.beigeDark, 2.95, 1.035, -4.12);
     // trash bin
     cyl(st, 0.17, 0.14, 0.36, M.darkPlastic, -3.75, 0.18, -3.7, 12);
     for (let i = 0; i < 3; i++) { const p = new THREE.Mesh(new THREE.IcosahedronGeometry(0.05, 0), M.paper); p.position.set(-3.75 + (i - 1) * 0.06, 0.34, -3.7 + (i % 2) * 0.05); st.add(p); }
@@ -494,9 +501,10 @@ export class ControlRoom {
     noMerge(map);
     this.objs.map = map;
     box(st, 0.03, 0.97, 1.42, M.frame, -5.99, 1.75, -3.0);
+    const cab = this.models.holder(st, 'filing_cabinet');
     for (const z of [-1.2, -0.6, 0.0]) {
-      box(st, 0.55, 1.32, 0.56, M.cabinet, -5.7, 0.66, z);
-      for (let i = 0; i < 4; i++) { box(st, 0.005, 0.01, 0.48, M.frame, -5.42, 0.33 + i * 0.32, z); box(st, 0.02, 0.025, 0.1, M.steel, -5.41, 0.43 + i * 0.32, z); }
+      box(cab, 0.55, 1.32, 0.56, M.cabinet, -5.7, 0.66, z);
+      for (let i = 0; i < 4; i++) { box(cab, 0.005, 0.01, 0.48, M.frame, -5.42, 0.33 + i * 0.32, z); box(cab, 0.02, 0.025, 0.1, M.steel, -5.41, 0.43 + i * 0.32, z); }
     }
     this.col(-6, -5.4, -1.5, 0.3);
     blob(this.blobs, -5.6, -0.6, 1.0, 2.0);
@@ -523,7 +531,7 @@ export class ControlRoom {
     this.col(-6, -5.15, 1.62, 3.18);
     blob(this.blobs, -5.4, 2.4, 1.4, 1.9);
     this.chair(-4.85, 2.55, Math.PI / 2 + 0.3);
-    box(st, 0.35, 0.22, 0.3, M.beigeDark, -5.7, 0.89, 1.95);
+    box(this.models.holder(st, 'oscilloscope'), 0.35, 0.22, 0.3, M.beigeDark, -5.7, 0.89, 1.95);
     box(st, 0.3, 0.02, 0.24, M.paper, -5.45, 0.79, 3.1).rotation.y = 0.3;
     const lamp = new THREE.Group();
     lamp.position.set(-5.72, 0.78, 3.0);
@@ -634,6 +642,7 @@ export class ControlRoom {
     this.group.add(ops);
     this.objs.opsTerminal = ops;
     this.crtOps.setPowered(true);
+    this.crtModel(this.crtOps, scr, 0.3, 0.22, -0.05, 0.02, ops);
 
     // the Halley's comet poster on the south wall, behind the supervisor desk
     const hp = new THREE.Group();
@@ -681,6 +690,75 @@ export class ControlRoom {
     mergeStatic(rd);
     this.group.add(rd);
     this.objs.radio = rd;
+  }
+
+  // ---------- the bought models (world/licensedModels.ts) ----------
+  /** A terminal the model stands in for: its code-built parts hidden while the model is in, the
+   *  canvas screen laid over the model's glass (the glass's size, from the model's extras), and
+   *  invisible boxes over the model's case and keyboard so a closer look still finds it. (ox, oz):
+   *  where the model stands in the terminal's group; w, h: the screen plane's own size. */
+  private crtModel(crt: Crt, screen: THREE.Mesh, w: number, h: number, ox: number, oz: number, g = crt.group) {
+    if (!hasModel('crt_terminal')) return;
+    for (const c of g.children) if (c !== screen) this.models.adopt(c, 'crt_terminal');
+    const hit = (bw: number, bh: number, bd: number, x: number, y: number, z: number) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), new THREE.MeshBasicMaterial({ visible: false }));
+      m.position.set(ox + x, y, oz + z); noMerge(m); g.add(m);
+    };
+    hit(0.63, 0.59, 0.42, 0.01, 0.295, -0.14);   // the monitor on its case
+    hit(0.6, 0.06, 0.3, -0.01, 0.03, 0.2);       // the keyboard
+    const home = { p: screen.position.clone(), s: screen.scale.clone() };
+    this.crtScreens.push((L) => {
+      const sc = L.extras('crt_terminal', 'crt_terminal').screen[0], v = sc.visible;
+      // in front of the glass's bulge, the size of the glass inside its bezel
+      const p = new THREE.Vector3(ox + v.centre[0], v.centre[1], oz + v.centre[2] + sc.size[2] / 2 + 0.002);
+      this.models.fit((on) => {
+        screen.position.copy(on ? p : home.p);
+        screen.scale.copy(on ? new THREE.Vector3(v.size[0] / w, v.size[1] / h, 1) : home.s);
+        screen.updateMatrix(); screen.updateMatrixWorld();
+      });
+    });
+  }
+  private crtScreens: ((L: Lib) => void)[] = [];
+
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const g = this.group, PI = Math.PI, T = 0.78;
+    // the four terminals: one instanced mesh of the monitor, its case and its keyboard (the
+    // keyboard in front, the unit 0.70 m deep: 18 cm forward on the 0.9 m console desk, clear of
+    // the window sill behind; the operations terminal on the west desk turned to the room, its
+    // middle at z 2.5)
+    if (hasModel('crt_terminal')) {
+      const unit = L.merged('crt_terminal', [{ name: 'crt_terminal', at: { x: 0, y: 0, z: 0 } }, { name: 'crt_keyboard', at: { x: 0, y: 0, z: 0 } }]);
+      const at: At[] = [...[-2.15, 0, 2.15].map((x) => ({ x, y: T, z: -4.0 + 0.18 })), { x: -5.6 + 0.02, y: T, z: 2.45 + 0.05, ry: PI / 2 }];
+      const im = new THREE.InstancedMesh(unit.geometry, unit.material, at.length);
+      at.forEach((a, i) => im.setMatrixAt(i, matrixAt(a)));
+      im.computeBoundingSphere(); im.name = 'lic:crt_terminal'; im.userData.model = 'crt_terminal';
+      add(im, g);
+      for (const f of this.crtScreens) f(L);
+    }
+    // the receiver stack at the right end: the signal analyzer, the VU unit on it, the headphones
+    // in front and the desk microphone turned to the right console chair (2.07, -2.95): one mesh
+    if (hasModel('console_kit')) {
+      add(L.merged('console_kit', [
+        { name: 'signal_analyzer', at: { x: 2.95, y: T, z: -3.95 } },
+        { name: 'vu_meter', at: { x: 2.95, y: T + 0.147, z: -3.955 } },
+        { name: 'headphones', at: { x: 2.93, y: T, z: -3.61, ry: 0.25 } },
+        { name: 'desk_mic', at: { x: 2.6, y: T, z: -3.66, ry: Math.atan2(2.07 - 2.6, -2.95 + 3.66) } },
+      ]), g);
+    }
+    // the scope on the west desk, its handle swung forward, against the wall at the desk's south end
+    if (hasModel('oscilloscope')) add(L.mesh('oscilloscope', 'oscilloscope', { x: -5.675, y: T, z: 1.83, ry: PI / 2, s: 0.85 }), g);
+    // the three cabinets, fronts to the room (the one nearest the desk with its top drawer out:
+    // dressing.ts pulls it)
+    if (hasModel('filing_cabinet')) {
+      add(L.merged('filing_cabinet', [-1.2, -0.6, 0.0].map((z) => ({ name: z === 0 ? 'filing_cabinet_ctrl_open' : 'filing_cabinet_ctrl', at: { x: -5.7, y: 0, z, ry: PI / 2 } }))), g);
+    }
+    // the archive boxes the dressing put on the cabinets and under the tables
+    const boxes = this.models.spots.archive_box;
+    if (boxes?.length && hasModel('archive_box')) {
+      const tone = L.tones('archive_box', 'archive_box');
+      add(L.instanced('archive_box', 'archive_box', boxes.map((b) => b.at), boxes.map((b) => tone(b.tone))), g);
+      add(L.instanced('archive_box', 'archive_box_lid', boxes.map((b) => b.lid ?? b.at), boxes.map((b) => tone(b.tone, 0.94))), g);
+    }
   }
 
   // ---------- runtime ----------

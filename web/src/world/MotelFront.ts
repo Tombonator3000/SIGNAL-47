@@ -10,6 +10,7 @@ import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 import { dressMotel } from './dressMotel';
 import { NEAR, type Dressing } from './weathering';
 import { dressMotelOffice } from './dressing';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -74,6 +75,11 @@ export class MotelFront {
   private disposed = false;
   /** The office's window and room 6's on the walk in front of them (windowLight.ts). */
   readonly windowLights: WindowLights;
+  /** The bought models in the office (world/licensedModels.ts): the shelves, the desk lamp and
+   *  the vacant chair, in the court's floods. */
+  readonly models = new ModelSwap('office', (m) => floodlit(m, .055, courtFlood));
+  /** The bought desk lamp's shade, lit with the office (setOfficeLight). */
+  private lampShades: THREE.MeshStandardMaterial[] = [];
 
   constructor(at = MOTEL_AT) {
     this.at = { ...at };
@@ -114,6 +120,7 @@ export class MotelFront {
     // the office's clutter (world/dressing.ts), in the terms it was built in, moved with it
     dressMotelOffice({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.st); mergeStatic(this.inSt);
+    this.models.place((L, add) => this.placeModels(L, add));
     this.moveTo(this.at);
     // the office's lamp and room 6's light lay their windows' curtains on the walk (the walk and
     // the lot are at the floor's height); the rooms' porch lamps are the light already there
@@ -376,13 +383,18 @@ export class MotelFront {
     rod(s,V(-43.2,2.58,22.25),V(-45.75,2.58,22.25),.006,m.black,4);
     this.col(-43.5,-42.85,22.2,22.57);this.proxy('officePhone',.68,.72,.43,-43.17,1.43,22.39);
     // Desk light, filing shelves, tired plant and a vacant chair keep the room lived-in.
-    cyl(s,.14,.2,.29,m.trim,-44.37,1.4,26.45,10);cyl(s,.13,.13,.02,m.officeLamp,-44.37,1.27,26.45,10);
-    rod(s,V(-44.37,1.03,26.45),V(-44.37,1.27,26.45),.015,m.brass,6);cyl(s,.095,.095,.02,m.brass,-44.37,1.035,26.45,10);
-    box(s,.45,1.5,1,m.wood,-45.33,.75,26.85);this.col(-45.57,-45.1,26.33,27.4);
-    for(const y of [.2,.6,1])for(let j=0;j<4;j++)box(s,.28,.25,.14,j%2?m.trim:m.paper,-45.05,y+.13,26.55+j*.19);
+    // (each of them, or the bought model in its place: world/licensedModels.ts)
+    const dl=this.models.holder(s,'lamp_marble'),sh=this.models.holder(s,'bookcase'),vc=this.models.holder(s,'dining_chair');
+    cyl(dl,.14,.2,.29,m.trim,-44.37,1.4,26.45,10);cyl(dl,.13,.13,.02,m.officeLamp,-44.37,1.27,26.45,10);
+    rod(dl,V(-44.37,1.03,26.45),V(-44.37,1.27,26.45),.015,m.brass,6);cyl(dl,.095,.095,.02,m.brass,-44.37,1.035,26.45,10);
+    box(sh,.45,1.5,1,m.wood,-45.33,.75,26.85);this.col(-45.57,-45.1,26.33,27.4);
+    for(const y of [.2,.6,1])for(let j=0;j<4;j++)box(sh,.28,.25,.14,j%2?m.trim:m.paper,-45.05,y+.13,26.55+j*.19);
+    // the file boxes on the bought bookcase's shelves (MANIFEST.md: their tops at .092, .477 and
+    // .784), inside the code's solid shelves when those are shown
+    if(hasModel('bookcase'))for(const y of [.092,.477,.784])for(let j=0;j<4;j++)box(s,.28,.25,.14,j%2?m.trim:m.paper,-45.3,y+.127,26.55+j*.19);
     this.plant(-41.75,26.95,true);
-    box(s,.52,.065,.5,m.trim,-42.45,.47,27.1);box(s,.52,.55,.065,m.trim,-42.45,.73,27.3);
-    for(const x of [-42.66,-42.24])for(const z of [26.91,27.29])box(s,.035,.46,.035,m.wood,x,.23,z);
+    box(vc,.52,.065,.5,m.trim,-42.45,.47,27.1);box(vc,.52,.55,.065,m.trim,-42.45,.73,27.3);
+    for(const x of [-42.66,-42.24])for(const z of [26.91,27.29])box(vc,.035,.46,.035,m.wood,x,.23,z);
     this.col(-42.73,-42.17,26.8,27.39);
     box(s,1.1,.045,.26,m.officeLamp,-43.3,2.7,24.65);
     // A portable set on top of the shelves, turned to the counter and the door: black plastic,
@@ -403,6 +415,24 @@ export class MotelFront {
     this.proxy('officeTv',.5,.5,.5,-45.27,1.73,26.85);
     return {canvas,tex:screenTex,group:tv};
   }
+  /** The bought models in the office, where the code's stood (built terms, in the interior). */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const inside = this.interior, PI = Math.PI;
+    // the shelves behind the counter, turned to it; the television and the fan on the top (1.5)
+    if (hasModel('bookcase')) add(L.mesh('bookcase', 'bookcase', { x: -45.33, y: 0, z: 26.85, ry: PI / 2 }), inside);
+    // the chair against the south wall, facing into the office
+    if (hasModel('dining_chair')) add(L.mesh('dining_chair', 'dining_chair', { x: -42.45, y: 0, z: 27.1, ry: PI, s: 1.09 }), inside);
+    // the lamp on the counter (its top at 1.02): its linen shade glows with the office's light
+    if (hasModel('lamp_marble')) {
+      const lamp = add(L.mesh('lamp_marble', 'lamp_marble', { x: -44.37, y: 1.02, z: 26.45, ry: 0.4, s: 0.85 }, { own: true }), inside);
+      lamp.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+        if (m && m.emissiveMap) { m.emissive.set(0xffd2a0); this.lampShades.push(m); }
+      });
+      this.setOfficeLight(this.officeLightOn);
+    }
+  }
+
   /** How much the television lights the office, and in what colour (story/motelTv.ts). */
   setTvLight(w:number,color:THREE.Color){
     if(owner!==this)return;
@@ -447,6 +477,7 @@ export class MotelFront {
     this.officeLightOn=on;
     if(owner===this){setFlood(this.slots.office,on?6:0,courtFlood);setFlood(this.slots.officeSpill,on?4:0,courtFlood);}
     eachVariant(this.m.officeLamp,v=>(v as THREE.MeshStandardMaterial).emissiveIntensity=on?.8:0);
+    for(const shade of this.lampShades)eachVariant(shade,v=>{const m=v as THREE.MeshStandardMaterial;m.emissiveIntensity=on?.55:0;m.color.setScalar(on?1:.7);});
     eachVariant(this.m.officeWindow,v=>{const m=v as THREE.MeshStandardMaterial;m.map=on?this.litWindow:this.darkWindow;m.emissiveIntensity=on?.3:0;});
   }
   update(_dt:number,t:number){

@@ -309,7 +309,7 @@ function truckBaked(m: THREE.MeshStandardMaterial, kind: string) {
 }
 
 /** A .glb parsed with three's GLTFLoader (fetched only now, with the flag). */
-async function parse(url: string) {
+export async function parse(url: string) {
   const [{ GLTFLoader }, data] = await Promise.all([import('three/examples/jsm/loaders/GLTFLoader.js'), bytes(url)]);
   const loader = new GLTFLoader();
   // the masks through an <img> from a blob, not fetch (the same content policy)
