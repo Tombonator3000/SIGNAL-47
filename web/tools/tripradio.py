@@ -136,7 +136,10 @@ async def main():
             if 1150 < metres < 1250 and 'roam' not in bul:
                 # a drive of the player's own (no place given) south past the track's mouth: bound for the diner
                 bul['roam'] = await ev("(() => { const tr = S47.world['trip'], to = tr.to; tr.to = null; const b = S47.world.tripNow.bound; tr.to = to; return b; })()")
-        s1, said1 = await drive('d1_saro_diner', 'truck', 'diner', 'caliche', at=at1)
+        # At 18 m/s the full 47 s archive can end at the diner's entrance. This route tests
+        # recovery and another optional mark, so leave travel time for the normal 10 s calm
+        # period and a record fade as well; the same distance and strict cue checks remain.
+        s1, said1 = await drive('d1_saro_diner', 'truck', 'diner', 'caliche', speed=12, at=at1)
         ids1 = [x[0] for x in said1]
         check(s1[-1]['area'] == 'diner' and len(said1) >= 4 and set(ids1) <= {'out1', 'roof', 'oldroad', 'coffee', 'door'},
               f"1: SARO to the diner on 1420, the Night Line's lines for the way ({ids1})")
@@ -239,7 +242,7 @@ async def main():
 
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
-        json.dump({'results': results, 'heard': heard_all}, open(f'{OUT}/tripradio.json', 'w'), indent=1)
+        json.dump({'results': results, 'heard': heard_all, 'd1_samples': s1, 'bulletin': bul}, open(f'{OUT}/tripradio.json', 'w'), indent=1)
         print(f'{sum(results)} of {len(results)} PASS')
         await b.close()
         sys.exit(0 if all(results) else 1)

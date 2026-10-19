@@ -1,0 +1,12 @@
+{
+  "original": "../cowstv.log",
+  "original_interval": {
+    "before": 307,
+    "after": 309
+  },
+  "status": "Global interval increase not reproduced in instrumented reruns. No proven capture hitch.",
+  "procedure": "Probes instrument renderBufferDirect and compile, recording new draw-time programs and warmed object IDs; full runs serialized with slot.sh --alone.",
+  "finding": "Both instrumented full journeys passed 44/44; no new draw-time shader during final carrier-to-frame interval. Total interval includes prewarm and ordinary main-view drawing.",
+  "harness_change": "Retain global interval as diagnostic; assert at least one actual successful shoot and zero new shader IDs during each successful shoot.",
+  "production_changed": false
+}

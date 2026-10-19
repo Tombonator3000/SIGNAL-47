@@ -1,0 +1,9 @@
+PASS all 30 runtime images loaded
+PASS 88 later images wait for their areas (the poster may already be on its way)
+PASS sky runtime limited to 2K, painted stars taken out
+PASS High/Low reuse identical texture maps
+PASS room draw calls at most 300
+PASS no browser or shader errors
+PASS failed image shows retry instead of a black screen
+PASS retry recovers complete artwork
+PASS retry has no unexpected errors

@@ -1,0 +1,82 @@
+PASS attendant: an unobserved payphone call supplies no follow-up
+PASS attendant: even with the nickel, his old-road account must be heard first
+PASS attendant: the old-road account unlocks the observed nickel topic
+PASS attendant: the completed call alone is insufficient without its nickel
+PASS attendant: showing the nickel receives his specific response
+PASS attendant: the follow-up cannot be filed twice
+PASS Attendant: talk fits the 844x390 viewport without horizontal overflow
+PASS Earl: hearing tonight's boy does not skip his original conversation
+PASS Earl: his unplayed 1981 reel is required before the new question
+PASS Earl: the boy question stays hidden when tonight's broadcast was not observed
+PASS Earl: the programme sheet links the observed call without inventing playback of the 1981 reel
+PASS Earl: the programme sheet is filed once
+PASS Earl: talk fits the 844x390 viewport without horizontal overflow
+PASS woman: an observed herd does not skip her original story
+PASS woman: her husband's missing time must be heard first
+PASS woman: without the observed missing cow there is no new question
+PASS woman: both herd counts are recorded while her husband's experience remains unknown
+PASS woman: the account is filed once
+PASS Woman: talk fits the 844x390 viewport without horizontal overflow
+PASS deputy: seeing the empty car does not skip his original pin account
+PASS deputy: the green-pin account is also required
+PASS deputy: the car follow-up is unavailable before his 04:30 return
+PASS 04:29: the deputy is still absent
+PASS 04:30: returning does not create an unobserved patrol-car topic
+PASS 04:30: the observed car now produces the deputy's separate statement
+PASS deputy: the statement is filed once
+PASS Deputy: talk fits the 844x390 viewport without horizontal overflow
+PASS exactly four distinct witness documents exist
+PASS each witness account is a readable notebook copy
+PASS Papers offers witness-boy exactly once
+PASS Papers offers witness-car exactly once
+PASS Papers offers witness-cows exactly once
+PASS Papers offers witness-phone exactly once
+PASS a real Papers click opens the full deputy transcription
+PASS Continue restores all four witness documents with exactly the same content
+PASS Continue keeps an already asked follow-up unavailable
+PASS revisiting after Continue does not duplicate witness papers
+PASS chapter-one call: the first payphone recording is available near the phone
+PASS 46.8 seconds of the first call does not award the complete recording or nickel
+PASS after 47 seconds the first recording and its 1947 nickel are awarded
+PASS the return-call scenario uses the actual chapter-five clock at 05:03
+PASS at actual 05:03 the second payphone call rings after Room 6
+Traceback (most recent call last):
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/storyexpansion.py", line 217, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 196, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/storyexpansion.py", line 180, in main
+    await ev("""window.phoneAudio=[]; window.phonePlay=S47.audio.play;
+      S47.audio.play=function(name,opts){const h=phonePlay.call(this,name,opts);if(h){const stop=h.src.stop.bind(h.src);h.src.stop=(...args)=>{h.stoppedByGame=true;return stop(...args);};phoneAudio.push({name,h});}return h;};""")
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/async_api/_generated.py", line 16684, in evaluate
+    await self._impl_obj.evaluate(
+        expression=expression, arg=mapping.to_impl(arg)
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_page.py", line 476, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_frame.py", line 346, in evaluate
+    await self._channel.send(
+    ...<6 lines>...
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 78, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 636, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: TypeError: Cannot read properties of undefined (reading 'null')
+    at play (http://127.0.0.1:18447/SIGNAL-47/assets/index-gI7iXcCv.js:9349:280735)
+    at S47.audio.play (eval at evaluate (:370:30), <anonymous>:2:64)
+    at UtilityScript.evaluate (<anonymous>:377:18)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

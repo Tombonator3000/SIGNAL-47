@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-10-19T19:07:09.841Z",
+  "method": "Node state-code simulation, ideal constant speed, 20 Hz; no WebGL or vehicle physics",
+  "assumptions": {
+    "distanceMetres": 2323,
+    "chapter": "ch1",
+    "tuned": "caliche",
+    "recordedHost": false,
+    "boyAlreadyCalled": true,
+    "random": 0,
+    "motelOffsetMetres": 650
+  },
+  "sourceSha256": {
+    "src/core/radio.ts": "fa6b21a0010c3da91885ce91258c8cf7d6dda1e80625fc346733a01e8e847935",
+    "src/story/tripRadio.ts": "001fca2cfcaa1327be3139566b2aa321fe7dc66e0cf11f6c1b6b470791c449e7",
+    "src/story/nightEvents.ts": "f8a948d93083fce5f052a27209544601ff10e5a797c73fe51ad69128e6605043",
+    "src/story/time.ts": "bc8cb8315938fe909d40d36c5dd1eb8c53c70e6b1273770ac2dfbd95fd8c6689",
+    "src/world/geo.ts": "8f667ff1cf5a9b14d48ef274ec2108bfcc6826b014c31b30ace8a40b8249bab0"
+  },
+  "reproduction": "Run from web/: Function(\"require\", evidence.probe)(require)",
+  "probe": "\nconst fs=require('node:fs'), vm=require('node:vm'), ts=require('typescript'), THREE=require('three');\nconst fixedMath=Object.create(Math); fixedMath.random=()=>0;\nconst compile=s=>ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;\nconst load=(s,req)=>{const out={};vm.runInNewContext(compile(s),{exports:out,require:req,Math:fixedMath,console,AbortController});return out};\nconst source=fs.readFileSync('src/core/radio.ts','utf8').replace(\"import.meta.env.MODE !== 'single'\",'false');\nconst R=load(source,n=>n==='three'?THREE:{RadioVoice:class{resolve(){return null}}});\nconst T=load(fs.readFileSync('src/story/tripRadio.ts','utf8'),n=>n==='../core/radio'?R:{MOTEL_AT:{z:650}});\nconst time=load(fs.readFileSync('src/story/time.ts','utf8'),()=>undefined);\nconst N=load(fs.readFileSync('src/story/nightEvents.ts','utf8'),n=>n==='three'?THREE:time);\nconst results=[];\nfor(const speed of [18,12]){\n const radio=new R.Radio({ctx:null}); radio.boyCalled=true; radio.reset(8160);\n const seen=new Set(), tr=new T.TripRadio(radio,seen), pieces=[];\n let last='',start=null,end=null,clock=8160,archiveSegment=null;\n for(let step=0;step<Math.ceil(2323/speed);step++){\n  for(let frame=0;frame<20;frame++){\n   const t=step+frame/20,metres=t*speed; clock+=.05;\n   radio.update(.05,clock);\n   tr.update({trip:{n:1,from:'saro',to:'diner',bound:'diner',metres},phase:'ch1',clock,tuned:'caliche'});\n   if(start===null&&metres>1250&&radio.stations.caliche.free){\n    if(radio.stations.caliche.cutIn(N.BULLETIN,clock)){start={seconds:t,metres};archiveSegment=radio.stations.caliche.seg;}\n   }\n   if(start&&end===null&&radio.stations.caliche.seg!==archiveSegment)end={seconds:t,metres};\n   if(tr.last&&tr.last.id!==last){last=tr.last.id;pieces.push({id:last,seconds:t,metres:Math.round(metres),acceptedAt:Math.round(tr.last.metres)});}\n  }\n }\n const after=end?pieces.find(p=>p.seconds>=end.seconds):null;\n results.push({speed,archiveStart:start,archiveEnd:end,idealArrivalSeconds:2323/speed,\n   afterArchiveGap:after?after.seconds-end.seconds:null,pieces,kept:[...seen]});\n}\nreturn results;\n",
+  "results": [
+    {
+      "speed": 18,
+      "archiveStart": {
+        "seconds": 81.7,
+        "metres": 1470.6000000000001
+      },
+      "archiveEnd": {
+        "seconds": 128.75,
+        "metres": 2317.5
+      },
+      "idealArrivalSeconds": 129.05555555555554,
+      "afterArchiveGap": null,
+      "pieces": [
+        {
+          "id": "out1",
+          "seconds": 9.75,
+          "metres": 176,
+          "acceptedAt": 150
+        },
+        {
+          "id": "roof",
+          "seconds": 34.25,
+          "metres": 617,
+          "acceptedAt": 588
+        },
+        {
+          "id": "oldroad",
+          "seconds": 59.4,
+          "metres": 1069,
+          "acceptedAt": 1040
+        }
+      ],
+      "kept": [
+        "tr:out1",
+        "tr:roof",
+        "tr:oldroad"
+      ]
+    },
+    {
+      "speed": 12,
+      "archiveStart": {
+        "seconds": 107.25,
+        "metres": 1287
+      },
+      "archiveEnd": {
+        "seconds": 154.3,
+        "metres": 1851.6000000000001
+      },
+      "idealArrivalSeconds": 193.58333333333334,
+      "afterArchiveGap": 11.599999999999994,
+      "pieces": [
+        {
+          "id": "out1",
+          "seconds": 16.4,
+          "metres": 197,
+          "acceptedAt": 177
+        },
+        {
+          "id": "roof",
+          "seconds": 40.9,
+          "metres": 491,
+          "acceptedAt": 472
+        },
+        {
+          "id": "oldroad",
+          "seconds": 84.95,
+          "metres": 1019,
+          "acceptedAt": 1000
+        },
+        {
+          "id": "coffee",
+          "seconds": 165.9,
+          "metres": 1991,
+          "acceptedAt": 1972
+        },
+        {
+          "id": "door",
+          "seconds": 191.4,
+          "metres": 2297,
+          "acceptedAt": 2278
+        }
+      ],
+      "kept": [
+        "tr:out1",
+        "tr:roof",
+        "tr:oldroad",
+        "tr:coffee",
+        "tr:door"
+      ]
+    }
+  ]
+}

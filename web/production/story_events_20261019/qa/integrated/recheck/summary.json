@@ -1,0 +1,17 @@
+[
+  {
+    "name": "story",
+    "exit": 0,
+    "seconds": 37.35
+  },
+  {
+    "name": "story-mobile",
+    "exit": 0,
+    "seconds": 51.98
+  },
+  {
+    "name": "tripradio",
+    "exit": 0,
+    "seconds": 77.44
+  }
+]

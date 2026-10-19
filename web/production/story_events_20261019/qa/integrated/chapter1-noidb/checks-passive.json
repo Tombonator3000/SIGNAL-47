@@ -1,0 +1,286 @@
+[
+ [
+  "PASS",
+  "chapter one starts at the camera shelf"
+ ],
+ [
+  "PASS",
+  "objective line shown"
+ ],
+ [
+  "PASS",
+  "camera on the shelf can be aimed at"
+ ],
+ [
+  "PASS",
+  "field camera collected"
+ ],
+ [
+  "PASS",
+  "east door is unlocked"
+ ],
+ [
+  "PASS",
+  "player can stand in the yard"
+ ],
+ [
+  "PASS",
+  "walk from the room through the east door and up the walk to B-12"
+ ],
+ [
+  "PASS",
+  "motor bus cabinet can be aimed at"
+ ],
+ [
+  "PASS",
+  "S-03 log read and filed"
+ ],
+ [
+  "PASS",
+  "viewfinder raised with C"
+ ],
+ [
+  "PASS",
+  "viewfinder refuses the wrong place"
+ ],
+ [
+  "PASS",
+  "refused case frame uses no case film (a free frame instead)"
+ ],
+ [
+  "PASS",
+  "S-03 framed from the apron"
+ ],
+ [
+  "PASS",
+  "frame 01 exposed"
+ ],
+ [
+  "PASS",
+  "frame 01 holds the vane and the film-only echo"
+ ],
+ [
+  "PASS",
+  "echo is hidden again after the exposure"
+ ],
+ [
+  "PASS",
+  "lab door can be aimed at"
+ ],
+ [
+  "PASS",
+  "walk from the apron into the photo lab"
+ ],
+ [
+  "PASS",
+  "wet bench can be aimed at"
+ ],
+ [
+  "PASS",
+  "frame 01 developed and collected"
+ ],
+ [
+  "PASS",
+  "print hangs on the drying line"
+ ],
+ [
+  "PASS",
+  "a click on the sky is not a reference"
+ ],
+ [
+  "PASS",
+  "B-12 stripe marked on print 01"
+ ],
+ [
+  "PASS",
+  "archive bench can be aimed at"
+ ],
+ [
+  "PASS",
+  "the reference file opens the board, without the old answer buttons"
+ ],
+ [
+  "PASS",
+  "R-07 rejected with a slack thread"
+ ],
+ [
+  "PASS",
+  "a matching thread fills P01; RECORD is still needed"
+ ],
+ [
+  "PASS",
+  "B-12 matched"
+ ],
+ [
+  "PASS",
+  "motor command hypothesis rejected"
+ ],
+ [
+  "PASS",
+  "a hypothesis thread does not start the field test before RECORD"
+ ],
+ [
+  "PASS",
+  "light hypothesis accepted"
+ ],
+ [
+  "PASS",
+  "B-12 control can be aimed at"
+ ],
+ [
+  "PASS",
+  "vane still moving"
+ ],
+ [
+  "PASS",
+  "vane settled"
+ ],
+ [
+  "PASS",
+  "vane at -60 degrees"
+ ],
+ [
+  "PASS",
+  "direct observation noted"
+ ],
+ [
+  "PASS",
+  "B-12 framed from the sight line"
+ ],
+ [
+  "PASS",
+  "frame 02 exposed"
+ ],
+ [
+  "PASS",
+  "frame 02 developed"
+ ],
+ [
+  "PASS",
+  "two exposures keeps the marking tool and offers the board, without conclusion buttons"
+ ],
+ [
+  "PASS",
+  "no conclusion before marking frame 02"
+ ],
+ [
+  "PASS",
+  "reference marked on frame 02"
+ ],
+ [
+  "PASS",
+  "lamp conclusion rejected with the chosen control reply"
+ ],
+ [
+  "PASS",
+  "one comparison thread cannot record the two-exposure finding"
+ ],
+ [
+  "PASS",
+  "both comparison threads are ready; the finding still needs RECORD"
+ ],
+ [
+  "PASS",
+  "second reference concluded"
+ ],
+ [
+  "PASS",
+  "the local finding appears once, as the recorded question"
+ ],
+ [
+  "PASS",
+  "local case filed"
+ ],
+ [
+  "PASS",
+  "chapter card after chapter one"
+ ],
+ [
+  "PASS",
+  "chapter card names the test and chapter two"
+ ],
+ [
+  "PASS",
+  "no end card between the chapters"
+ ],
+ [
+  "PASS",
+  "chapter two begins behind the card: the supervisor line rings"
+ ],
+ [
+  "PASS",
+  "paper filed: frame01"
+ ],
+ [
+  "PASS",
+  "paper filed: frame02"
+ ],
+ [
+  "PASS",
+  "paper filed: s03log"
+ ],
+ [
+  "PASS",
+  "paper filed: refsheet"
+ ],
+ [
+  "PASS",
+  "paper filed: observation"
+ ],
+ [
+  "PASS",
+  "paper filed: finding"
+ ],
+ [
+  "PASS",
+  "notebook closes the case"
+ ],
+ [
+  "PASS",
+  "autosave 1:auto:1: chapter two, 3 photographs, a picture"
+ ],
+ [
+  "PASS",
+  "without IndexedDB the save points at its photographs in localStorage and stays small"
+ ],
+ [
+  "PASS",
+  "frame 01 is stored once in localStorage, under its content key"
+ ],
+ [
+  "PASS",
+  "Continue restores the case and both prints"
+ ],
+ [
+  "PASS",
+  "Continue restores the filed papers"
+ ],
+ [
+  "PASS",
+  "Continue brings back both photographs, not placeholders"
+ ],
+ [
+  "PASS",
+  "Continue restores all three recorded findings and four chapter-one threads"
+ ],
+ [
+  "PASS",
+  "the restored board keeps the chosen hypothesis"
+ ],
+ [
+  "PASS",
+  "the journal lists the local finding under Findings"
+ ],
+ [
+  "PASS",
+  "the journal lists the papers (the local finding is under Findings)"
+ ],
+ [
+  "PASS",
+  "the journal shows both photographs"
+ ],
+ [
+  "PASS",
+  "a photograph opens from the case file"
+ ]
+]

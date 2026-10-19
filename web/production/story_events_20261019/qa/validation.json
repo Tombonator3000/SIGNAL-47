@@ -1,0 +1,294 @@
+{
+  "completedUtc": "2026-10-19T19:15:35.074131+00:00",
+  "scope": "Lokal implementert historieutvidelse; ikke flettet til main eller publisert",
+  "sourceCommit": "fb04a483a8d9f8cc7c143202e72fc2041fb3c306",
+  "sourceSha256": "01bec93dd8875eef6da58b27d32891f13fbb0f13a4076d36e605cf7330cd58dc",
+  "runtimeFingerprint": "PASS: unchanged since tested build",
+  "effectiveRuns": [
+    {
+      "name": "story",
+      "exit": 0,
+      "seconds": 37.35,
+      "log": "integrated/recheck/story.log",
+      "counts": "56/56 PASS"
+    },
+    {
+      "name": "story-mobile",
+      "exit": 0,
+      "seconds": 51.98,
+      "log": "integrated/recheck/story-mobile.log",
+      "counts": "56/56 PASS"
+    },
+    {
+      "name": "moteltv",
+      "exit": 0,
+      "seconds": 6.73,
+      "log": "integrated/moteltv.log",
+      "counts": "20/20 PASS"
+    },
+    {
+      "name": "moteltv-noidb",
+      "exit": 0,
+      "seconds": 6.38,
+      "log": "integrated/moteltv-noidb.log",
+      "counts": "21/21 PASS"
+    },
+    {
+      "name": "night",
+      "exit": 0,
+      "seconds": 7.53,
+      "log": "integrated/night.log",
+      "counts": "28 of 28 PASS"
+    },
+    {
+      "name": "events",
+      "exit": 0,
+      "seconds": 10.94,
+      "log": "integrated/events.log",
+      "counts": "31 of 31 PASS"
+    },
+    {
+      "name": "town",
+      "exit": 0,
+      "seconds": 15.06,
+      "log": "integrated/town.log",
+      "counts": "59 of 59 PASS"
+    },
+    {
+      "name": "cowstv",
+      "exit": 0,
+      "log": "integrated/cowstv-refined.log",
+      "counts": "44/44 PASS"
+    },
+    {
+      "name": "radio",
+      "exit": 0,
+      "seconds": 17.01,
+      "log": "integrated/radio.log",
+      "counts": "36 of 36 PASS"
+    },
+    {
+      "name": "tripradio",
+      "exit": 0,
+      "seconds": 77.44,
+      "log": "integrated/recheck/tripradio.log",
+      "counts": "35 of 35 PASS"
+    },
+    {
+      "name": "artbell",
+      "exit": 0,
+      "seconds": 26.39,
+      "log": "integrated/artbell.log",
+      "counts": "51 of 51 PASS"
+    },
+    {
+      "name": "licensed-with",
+      "exit": 0,
+      "seconds": 64.66,
+      "log": "integrated/licensed-with.log",
+      "counts": "38 of 38 PASS (with)"
+    },
+    {
+      "name": "walkthrough",
+      "exit": 0,
+      "seconds": 20.27,
+      "log": "integrated/walkthrough.log",
+      "counts": "57 of 57 PASS"
+    },
+    {
+      "name": "chapter1",
+      "exit": 0,
+      "seconds": 20.02,
+      "log": "integrated/chapter1.log",
+      "counts": "75 of 75 PASS"
+    },
+    {
+      "name": "chapter2",
+      "exit": 0,
+      "seconds": 52.84,
+      "log": "integrated/chapter2.log",
+      "counts": "76 of 76 PASS"
+    },
+    {
+      "name": "chapter3",
+      "exit": 0,
+      "seconds": 26.93,
+      "log": "integrated/chapter3.log",
+      "counts": "72 of 72 PASS"
+    },
+    {
+      "name": "chapter4",
+      "exit": 0,
+      "seconds": 52.34,
+      "log": "integrated/chapter4.log",
+      "counts": "69 of 69 PASS"
+    },
+    {
+      "name": "chapter5",
+      "exit": 0,
+      "seconds": 17.01,
+      "log": "integrated/chapter5.log",
+      "counts": "55 of 55 PASS"
+    },
+    {
+      "name": "chapter6",
+      "exit": 0,
+      "seconds": 52.95,
+      "log": "integrated/chapter6.log",
+      "counts": "44 of 44 PASS"
+    },
+    {
+      "name": "devmenu",
+      "exit": 0,
+      "seconds": 52.44,
+      "log": "integrated/devmenu.log",
+      "counts": "14 of 14 PASS"
+    },
+    {
+      "name": "drives",
+      "exit": 0,
+      "seconds": 65.28,
+      "log": "integrated/drives.log",
+      "counts": "23 of 23 PASS"
+    },
+    {
+      "name": "ambience",
+      "exit": 0,
+      "seconds": 32.84,
+      "log": "integrated/ambience.log",
+      "counts": "7 of 7 PASS"
+    },
+    {
+      "name": "diner",
+      "exit": 0,
+      "seconds": 12.15,
+      "log": "integrated/diner.log",
+      "counts": "15 of 15 PASS"
+    },
+    {
+      "name": "saves",
+      "exit": 0,
+      "seconds": 1.07,
+      "log": "integrated/saves.log",
+      "counts": "19 of 19 PASS"
+    },
+    {
+      "name": "steercheck",
+      "exit": 0,
+      "seconds": 0.16,
+      "log": "integrated/steercheck.log"
+    },
+    {
+      "name": "chapter1-noidb",
+      "exit": 0,
+      "seconds": 16.9,
+      "log": "integrated/chapter1-noidb.log",
+      "counts": "71 of 71 PASS"
+    },
+    {
+      "name": "artcheck",
+      "exit": 0,
+      "seconds": 15.4,
+      "log": "integrated/artcheck.log"
+    },
+    {
+      "name": "csptest",
+      "exit": 0,
+      "seconds": 38.52,
+      "log": "integrated/csptest.log"
+    },
+    {
+      "name": "radio-single",
+      "exit": 0,
+      "seconds": 13.2,
+      "log": "integrated/radio-single.log",
+      "counts": "34 of 34 PASS"
+    },
+    {
+      "name": "artbell-single",
+      "exit": 0,
+      "seconds": 33.8,
+      "log": "integrated/artbell-single.log",
+      "counts": "52 of 52 PASS"
+    },
+    {
+      "name": "moteltv-single",
+      "exit": 0,
+      "seconds": 11.14,
+      "log": "integrated/moteltv-single.log",
+      "counts": "20/20 PASS"
+    },
+    {
+      "name": "story-single",
+      "exit": 0,
+      "seconds": 12.45,
+      "log": "integrated/story-single.log",
+      "counts": "56/56 PASS"
+    },
+    {
+      "name": "music",
+      "exit": 0,
+      "log": "integrated/music.log",
+      "counts": "12 of 12 PASS"
+    },
+    {
+      "name": "licensed-without",
+      "exit": 0,
+      "log": "licensed-without.log",
+      "counts": "22 of 22 PASS"
+    }
+  ],
+  "effectiveRunCount": 34,
+  "effectiveStatus": "PASS",
+  "nodeEngines": {
+    "radioarchive": "51/51 PASS",
+    "artbell-core": "48/48 PASS"
+  },
+  "builds": {
+    "typecheck": "PASS",
+    "singlefile": "PASS",
+    "pages": "PASS",
+    "offlineCopySha256": "33e5d75d6f5214d35d22ab98d06c576dda8e9ec891f210255db4133b31951412"
+  },
+  "supersededFailures": [
+    {
+      "name": "story and story-mobile",
+      "reason": "Test audio probe returned a function to Playwright; explicit non-function evaluation result fixes the probe. Both final runs56/56."
+    },
+    {
+      "name": "tripradio",
+      "reason": "18 m/s arrival ended the journey before recovery could be exercised.12 m/s fixture retains strict>=4pieces and>=7s recovery,35/35. No scheduler change."
+    },
+    {
+      "name": "cowstv",
+      "reason": "Whole17.2s renderer program count increased307->309, unreproduced in two instrumented reruns. Final harness measures exact capture and passes44/44 with304->304. No product change."
+    }
+  ],
+  "gates": {
+    "journey": {
+      "status": "PASS",
+      "evidence": "Real talk/Papers clicks, movement, phone clock05:03 and05:15, partial recording abort, native scheduled source cancellation, all six chapters, Save/Continue."
+    },
+    "visual": {
+      "status": "PASS",
+      "evidence": "Inspected actual TV image and mobile witness dialogue/document. Truck pixel-difference and wall occlusion checked. Existing visual direction preserved."
+    },
+    "performance": {
+      "status": "UNVERIFIED",
+      "reason": "No FPS measurement, physical mobile session or human first-time playthrough. GPU renderer does not establish performance."
+    },
+    "checks": {
+      "status": "PASS",
+      "evidence": "34 effective scenario/regression runs plus51+48 Node radio checks, TypeScript and both builds."
+    },
+    "delivery": {
+      "status": "PASS",
+      "evidence": "Local branch, hashed offline artifact and localhost preview. No remote mutation."
+    }
+  },
+  "remaining": [
+    "New witness text has no dedicated Kinski recordings.",
+    "Human listening and subjective event pacing unverified.",
+    "Merge and deployment not performed."
+  ]
+}

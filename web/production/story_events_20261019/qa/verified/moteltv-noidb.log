@@ -1,0 +1,54 @@
+PASS the ordinary player movement reaches the TV viewing place through the office door
+PASS the screen can be targeted by the ordinary interaction ray
+PASS a nearby camera aimed at the TV through the north wall cannot witness it
+PASS carrier freezes during a panel or cinematic
+PASS leaving the area cancels without spending the event
+PASS standing with your back to the set does not record a finding
+PASS a wholly missed frame remains available later
+PASS turning toward the still visible frame records the actual image
+PASS the held frame also freezes while a panel or cinematic is open
+PASS using the TV reopens its recorded frame
+PASS a truck parked near the southern rooms produces a witnessed runtime frame
+PASS the whole transformed truck is inside the aerial frame ([10.979680800056428, 123.79098493063734], [45.940651164119146, 151.16549045744452])
+PASS the actual truck changes only its own part of the image (76.7 vs 0.20)
+PASS capture preserves the truck pose and renderer target, viewport and scissor
+PASS a failed render never substitutes artwork or claims the truck was seen
+Traceback (most recent call last):
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/moteltv.py", line 118, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 196, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/moteltv.py", line 98, in main
+    await ev("S47.game.docs.push(keptTvDoc); S47.townSeen.add('ev:tv'); S47.townSeen.add('mark:tv@14400'); S47.motelTv.reset(); S47.saveNow('manual',0)")
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/async_api/_generated.py", line 16684, in evaluate
+    await self._impl_obj.evaluate(
+        expression=expression, arg=mapping.to_impl(arg)
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_page.py", line 476, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_frame.py", line 346, in evaluate
+    await self._channel.send(
+    ...<6 lines>...
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 78, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 636, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: disabled for this test
+    at get (<anonymous>:2:66)
+    at vY.init (http://127.0.0.1:18447/SIGNAL-47/assets/index-CDnTx-V-.js:10279:50656)
+    at new vY (http://127.0.0.1:18447/SIGNAL-47/assets/index-CDnTx-V-.js:10279:50636)
+    at wK (http://127.0.0.1:18447/SIGNAL-47/assets/index-CDnTx-V-.js:10671:5494)

@@ -1,0 +1,230 @@
+[
+ [
+  "PASS",
+  "game starts in intro phase"
+ ],
+ [
+  "PASS",
+  "picture defaults to the VHS look on high"
+ ],
+ [
+  "PASS",
+  "draw calls counted over both passes (243)"
+ ],
+ [
+  "PASS",
+  "all 47 ordinary sounds, 24 telephone recordings and 15 optional licensed sounds decoded"
+ ],
+ [
+  "PASS",
+  "steps on every surface, far thunder and a far owl play"
+ ],
+ [
+  "PASS",
+  "every interactable has its own id ([])"
+ ],
+ [
+  "PASS",
+  "shift log read and filed"
+ ],
+ [
+  "PASS",
+  "coffee poured"
+ ],
+ [
+  "PASS",
+  "RX bank 3 powered"
+ ],
+ [
+  "PASS",
+  "binder, service record, telex, card and poster are read and filed (['log', 'binder', 'service', 'telex', 'rfiCard', 'halley'])"
+ ],
+ [
+  "PASS",
+  "no paper left open"
+ ],
+ [
+  "PASS",
+  "the pencil in the binder is drawn by hand"
+ ],
+ [
+  "PASS",
+  "the binder's three sheets on fanfold paper, the 1947 sheet on the old paper (3, [1024, 1024, 1024])"
+ ],
+ [
+  "PASS",
+  "the Halley poster on the wall is Codex's picture with the words drawn on it"
+ ],
+ [
+  "PASS",
+  "the terminal lists tonight's survey files"
+ ],
+ [
+  "PASS",
+  "the tape catalogue skips reel 047"
+ ],
+ [
+  "PASS",
+  "reels 046 and 048 are there, 047 is not"
+ ],
+ [
+  "PASS",
+  "three earlier negative ranges in the exceptions"
+ ],
+ [
+  "PASS",
+  "typed SHOW LOG: the evening trip and the bank switched back on"
+ ],
+ [
+  "PASS",
+  "typing in the terminal does not close it (the game keys stay out)"
+ ],
+ [
+  "PASS",
+  "the radio plays"
+ ],
+ [
+  "PASS",
+  "wrong calibration is rejected"
+ ],
+ [
+  "PASS",
+  "calibration 1419.900 accepted"
+ ],
+ [
+  "PASS",
+  "interference 1420.110 notched"
+ ],
+ [
+  "PASS",
+  "time skip lands at 02:13 residual"
+ ],
+ [
+  "PASS",
+  "residual appears on the spectrum"
+ ],
+ [
+  "PASS",
+  "the signal gets clearer as the receiver closes on 1420.405 (0.02 off the peak, 1.00 on it)"
+ ],
+ [
+  "PASS",
+  "pattern 4/7 locked at 1420.405"
+ ],
+ [
+  "PASS",
+  "the signal processor opens with the tape"
+ ],
+ [
+  "PASS",
+  "the tape plays harmonized from the rack"
+ ],
+ [
+  "PASS",
+  "and stops"
+ ],
+ [
+  "PASS",
+  "a hand instead of the dot on something that can be used"
+ ],
+ [
+  "PASS",
+  "the service door opens in the prologue"
+ ],
+ [
+  "PASS",
+  "and shuts again"
+ ],
+ [
+  "PASS",
+  "direction solve starts printer"
+ ],
+ [
+  "PASS",
+  "printout ready"
+ ],
+ [
+  "PASS",
+  "phone rings after printout"
+ ],
+ [
+  "PASS",
+  "call ends, 47 s countdown runs"
+ ],
+ [
+  "PASS",
+  "bank 3 still on at 39.6 s"
+ ],
+ [
+  "PASS",
+  "relay K3 trips at 40 s, seven seconds before the impact"
+ ],
+ [
+  "PASS",
+  "the lever drops and the spectrum screen goes dark"
+ ],
+ [
+  "PASS",
+  "nothing happens before 47 s (t=46.6)"
+ ],
+ [
+  "PASS",
+  "impact at 47 s (t=47.2)"
+ ],
+ [
+  "PASS",
+  "mug shattered"
+ ],
+ [
+  "PASS",
+  "the console log has the clock lost, K3 open and 47 s of holdover"
+ ],
+ [
+  "PASS",
+  "dishes start turning"
+ ],
+ [
+  "PASS",
+  "all dishes arrived"
+ ],
+ [
+  "PASS",
+  "all 27 dishes at az 026"
+ ],
+ [
+  "PASS",
+  "chapter card after the prologue"
+ ],
+ [
+  "PASS",
+  "chapter card closes the prologue and names chapter one"
+ ],
+ [
+  "PASS",
+  "no end card between the prologue and chapter one"
+ ],
+ [
+  "PASS",
+  "chapter one begins behind the card"
+ ],
+ [
+  "PASS",
+  "bank 3 is still out in chapter one"
+ ],
+ [
+  "PASS",
+  "and comes back with the lever"
+ ],
+ [
+  "PASS",
+  "Halley's comet is up in the south at 02:16"
+ ],
+ [
+  "PASS",
+  "the jacket comes along the first time out"
+ ],
+ [
+  "PASS",
+  "autosave at chapter one: 1:auto:1, Control room, 02:15"
+ ]
+]

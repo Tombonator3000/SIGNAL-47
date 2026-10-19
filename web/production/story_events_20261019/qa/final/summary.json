@@ -1,0 +1,137 @@
+[
+  {
+    "name": "moteltv",
+    "exit": 0,
+    "seconds": 5.78
+  },
+  {
+    "name": "story",
+    "exit": 0,
+    "seconds": 7.38
+  },
+  {
+    "name": "story-mobile",
+    "exit": 0,
+    "seconds": 7.13
+  },
+  {
+    "name": "night",
+    "exit": 0,
+    "seconds": 6.88
+  },
+  {
+    "name": "events",
+    "exit": 0,
+    "seconds": 9.74
+  },
+  {
+    "name": "town",
+    "exit": 1,
+    "seconds": 6.23
+  },
+  {
+    "name": "cowstv",
+    "exit": 0,
+    "seconds": 24.32
+  },
+  {
+    "name": "walkthrough",
+    "exit": 0,
+    "seconds": 15.3
+  },
+  {
+    "name": "chapter1",
+    "exit": 0,
+    "seconds": 18.66
+  },
+  {
+    "name": "chapter2",
+    "exit": 0,
+    "seconds": 16.65
+  },
+  {
+    "name": "chapter3",
+    "exit": 0,
+    "seconds": 24.97
+  },
+  {
+    "name": "chapter4",
+    "exit": 0,
+    "seconds": 33.78
+  },
+  {
+    "name": "chapter5",
+    "exit": 0,
+    "seconds": 22.81
+  },
+  {
+    "name": "chapter6",
+    "exit": 0,
+    "seconds": 56.73
+  },
+  {
+    "name": "devmenu",
+    "exit": 0,
+    "seconds": 8.83
+  },
+  {
+    "name": "drives",
+    "exit": 0,
+    "seconds": 53.33
+  },
+  {
+    "name": "ambience",
+    "exit": 0,
+    "seconds": 11.69
+  },
+  {
+    "name": "diner",
+    "exit": 0,
+    "seconds": 11.54
+  },
+  {
+    "name": "radio",
+    "exit": 1,
+    "seconds": 2.97
+  },
+  {
+    "name": "tripradio",
+    "exit": 1,
+    "seconds": 2.47
+  },
+  {
+    "name": "saves",
+    "exit": 0,
+    "seconds": 1.07
+  },
+  {
+    "name": "steercheck",
+    "exit": 0,
+    "seconds": 0.16
+  },
+  {
+    "name": "chapter1-noidb",
+    "exit": 0,
+    "seconds": 15.75
+  },
+  {
+    "name": "artcheck",
+    "exit": 0,
+    "seconds": 14.65
+  },
+  {
+    "name": "csptest",
+    "exit": 0,
+    "seconds": 5.13
+  },
+  {
+    "name": "moteltv-single",
+    "exit": 0,
+    "seconds": 8.48
+  },
+  {
+    "name": "story-single",
+    "exit": 1,
+    "seconds": 10.64
+  }
+]

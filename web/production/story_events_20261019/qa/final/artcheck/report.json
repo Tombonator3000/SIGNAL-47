@@ -1,0 +1,692 @@
+{
+  "url": "http://127.0.0.1:18447/SIGNAL-47/",
+  "renderer": "Chromium SwiftShader, not hardware FPS",
+  "checks": [
+    [
+      "all 28 runtime images loaded",
+      true
+    ],
+    [
+      "88 later images wait for their areas (the poster may already be on its way)",
+      true
+    ],
+    [
+      "sky runtime limited to 2K, painted stars taken out",
+      true
+    ],
+    [
+      "High/Low reuse identical texture maps",
+      true
+    ],
+    [
+      "room draw calls at most 300",
+      true
+    ],
+    [
+      "no browser or shader errors",
+      true
+    ],
+    [
+      "failed image shows retry instead of a black screen",
+      true
+    ],
+    [
+      "retry recovers complete artwork",
+      true
+    ],
+    [
+      "retry has no unexpected errors",
+      true
+    ]
+  ],
+  "art": {
+    "expected": 28,
+    "later": [
+      "floorN",
+      "floorR",
+      "ceilingN",
+      "ceilingR",
+      "wallN",
+      "wallR",
+      "deskN",
+      "deskR",
+      "concreteN",
+      "concreteR",
+      "desertN",
+      "desertR",
+      "asphaltN",
+      "asphaltR",
+      "cabinetN",
+      "cabinetR",
+      "vinylN",
+      "vinylR",
+      "stuccoN",
+      "stuccoR",
+      "oldConcreteN",
+      "oldConcreteR",
+      "weatheredWoodN",
+      "weatheredWoodR",
+      "floorboardsN",
+      "floorboardsR",
+      "gravelTrackN",
+      "gravelTrackR",
+      "motelWallN",
+      "motelWallR",
+      "dinerCounterN",
+      "dinerCounterR",
+      "dinerFloorN",
+      "dinerFloorR",
+      "dinerBoothN",
+      "dinerBoothR",
+      "dinerWallN",
+      "dinerWallR",
+      "stucco",
+      "oldConcrete",
+      "weatheredWood",
+      "floorboards",
+      "gravelTrack",
+      "cardField",
+      "letterPaper",
+      "dinerSign",
+      "dinerMenu",
+      "dinerCounter",
+      "dinerFloor",
+      "photo1947",
+      "dinerBooth",
+      "dinerWall",
+      "halleyPoster",
+      "fanfold1986",
+      "fanfold1947",
+      "milepostBlank",
+      "witnessPost",
+      "surveyDisk",
+      "oldAsphalt",
+      "oldMacro",
+      "flashEye",
+      "flashHand",
+      "flashFace",
+      "flashMan",
+      "winGas",
+      "winSheriff",
+      "winStudio",
+      "winStudioEmpty",
+      "winLaundromat",
+      "winTv",
+      "winKitchen",
+      "winSouvenir",
+      "signCaliche",
+      "signGas",
+      "sign1420",
+      "signSouvenir",
+      "signSheriff",
+      "marqueePlaza",
+      "boardChurch",
+      "cutout",
+      "paperSentinel",
+      "silhouetteStand",
+      "silhouetteTurned",
+      "silhouetteFar",
+      "abductLight",
+      "abductTruck",
+      "abductFigures",
+      "abductAbove"
+    ],
+    "loaded": [
+      "asphalt",
+      "bars",
+      "cabinet",
+      "ceiling",
+      "concrete",
+      "desert",
+      "desk",
+      "fieldMap",
+      "floor",
+      "frame",
+      "halleyPoster",
+      "listen",
+      "logo",
+      "map",
+      "motelDoor",
+      "motelWall",
+      "motelWindowDark",
+      "motelWindowLit",
+      "paper",
+      "procedure",
+      "saro",
+      "sierra",
+      "sign",
+      "sky",
+      "vane",
+      "vending",
+      "vinyl",
+      "wall",
+      "yard"
+    ],
+    "textures": [
+      {
+        "name": "art/desk",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          2,
+          1
+        ]
+      },
+      {
+        "name": "art/cabinet",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/desert",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          3,
+          1
+        ]
+      },
+      {
+        "name": "art/sierra",
+        "width": 1024,
+        "height": 1536,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/wall",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          4,
+          2
+        ]
+      },
+      {
+        "name": "art/floor",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          7,
+          5.2
+        ]
+      },
+      {
+        "name": "art/ceiling",
+        "width": 512,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          10,
+          8
+        ]
+      },
+      {
+        "name": "art/saro",
+        "width": 768,
+        "height": 1152,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/map",
+        "width": 1536,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/listen",
+        "width": 768,
+        "height": 1152,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          2,
+          6
+        ]
+      },
+      {
+        "name": "art/procedure",
+        "width": 512,
+        "height": 768,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/vane",
+        "width": 256,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          3,
+          3
+        ]
+      },
+      {
+        "name": "art/yard",
+        "width": 1024,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          4,
+          1
+        ]
+      },
+      {
+        "name": "art/vinyl",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          6.666666666666667,
+          1.5
+        ]
+      },
+      {
+        "name": "art/vinyl",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          4.166666666666667,
+          3.0833333333333335
+        ]
+      },
+      {
+        "name": "art/desert",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          2.35,
+          0.4
+        ]
+      },
+      {
+        "name": "art/desert",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          0.25,
+          0.25
+        ]
+      },
+      {
+        "name": "art/motelWall",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          0.5,
+          0.5
+        ]
+      },
+      {
+        "name": "art/motelDoor",
+        "width": 512,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/motelWindowLit",
+        "width": 512,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/motelWindowDark",
+        "width": 512,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      },
+      {
+        "name": "art/concrete",
+        "width": 1024,
+        "height": 1024,
+        "colorSpace": "srgb",
+        "repeat": [
+          0.5,
+          0.5
+        ]
+      },
+      {
+        "name": "art/paper",
+        "width": 512,
+        "height": 512,
+        "colorSpace": "srgb",
+        "repeat": [
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  "views": [
+    {
+      "view": "desk",
+      "quality": "high",
+      "calls": 204,
+      "triangles": 190422,
+      "textures": 121
+    },
+    {
+      "view": "room",
+      "quality": "high",
+      "calls": 257,
+      "triangles": 174570,
+      "textures": 121
+    },
+    {
+      "view": "window",
+      "quality": "high",
+      "calls": 109,
+      "triangles": 166292,
+      "textures": 121
+    },
+    {
+      "view": "map",
+      "quality": "high",
+      "calls": 89,
+      "triangles": 184540,
+      "textures": 121
+    },
+    {
+      "view": "listen",
+      "quality": "high",
+      "calls": 95,
+      "triangles": 184890,
+      "textures": 121
+    },
+    {
+      "view": "saro",
+      "quality": "high",
+      "calls": 154,
+      "triangles": 197042,
+      "textures": 121
+    },
+    {
+      "view": "yard",
+      "quality": "high",
+      "calls": 87,
+      "triangles": 153658,
+      "textures": 121
+    },
+    {
+      "view": "cabinet",
+      "quality": "high",
+      "calls": 95,
+      "triangles": 167916,
+      "textures": 121
+    },
+    {
+      "view": "lab",
+      "quality": "high",
+      "calls": 125,
+      "triangles": 179098,
+      "textures": 121
+    },
+    {
+      "view": "b12",
+      "quality": "high",
+      "calls": 62,
+      "triangles": 158612,
+      "textures": 121
+    },
+    {
+      "view": "r07",
+      "quality": "high",
+      "calls": 63,
+      "triangles": 148008,
+      "textures": 121
+    },
+    {
+      "view": "fieldmap",
+      "quality": "high",
+      "calls": 156,
+      "triangles": 161544,
+      "textures": 131
+    },
+    {
+      "view": "apron",
+      "quality": "high",
+      "calls": 84,
+      "triangles": 167824,
+      "textures": 131
+    },
+    {
+      "view": "labsigns",
+      "quality": "high",
+      "calls": 105,
+      "triangles": 158228,
+      "textures": 131
+    },
+    {
+      "view": "corridor",
+      "quality": "high",
+      "calls": 167,
+      "triangles": 166450,
+      "textures": 131
+    },
+    {
+      "view": "archive",
+      "quality": "high",
+      "calls": 111,
+      "triangles": 148406,
+      "textures": 131
+    },
+    {
+      "view": "vending",
+      "quality": "high",
+      "calls": 150,
+      "triangles": 173894,
+      "textures": 131
+    },
+    {
+      "view": "desk",
+      "quality": "low",
+      "calls": 198,
+      "triangles": 128798,
+      "textures": 131
+    },
+    {
+      "view": "room",
+      "quality": "low",
+      "calls": 249,
+      "triangles": 120512,
+      "textures": 131
+    },
+    {
+      "view": "window",
+      "quality": "low",
+      "calls": 104,
+      "triangles": 115884,
+      "textures": 131
+    },
+    {
+      "view": "map",
+      "quality": "low",
+      "calls": 83,
+      "triangles": 136630,
+      "textures": 131
+    },
+    {
+      "view": "listen",
+      "quality": "low",
+      "calls": 89,
+      "triangles": 136980,
+      "textures": 131
+    },
+    {
+      "view": "saro",
+      "quality": "low",
+      "calls": 145,
+      "triangles": 141414,
+      "textures": 131
+    },
+    {
+      "view": "yard",
+      "quality": "low",
+      "calls": 82,
+      "triangles": 113150,
+      "textures": 131
+    },
+    {
+      "view": "cabinet",
+      "quality": "low",
+      "calls": 89,
+      "triangles": 125368,
+      "textures": 131
+    },
+    {
+      "view": "lab",
+      "quality": "low",
+      "calls": 121,
+      "triangles": 125000,
+      "textures": 131
+    },
+    {
+      "view": "b12",
+      "quality": "low",
+      "calls": 57,
+      "triangles": 120176,
+      "textures": 131
+    },
+    {
+      "view": "r07",
+      "quality": "low",
+      "calls": 58,
+      "triangles": 111802,
+      "textures": 131
+    },
+    {
+      "view": "fieldmap",
+      "quality": "low",
+      "calls": 150,
+      "triangles": 118900,
+      "textures": 131
+    },
+    {
+      "view": "apron",
+      "quality": "low",
+      "calls": 79,
+      "triangles": 120784,
+      "textures": 131
+    },
+    {
+      "view": "labsigns",
+      "quality": "low",
+      "calls": 101,
+      "triangles": 115748,
+      "textures": 131
+    },
+    {
+      "view": "corridor",
+      "quality": "low",
+      "calls": 161,
+      "triangles": 110342,
+      "textures": 131
+    },
+    {
+      "view": "archive",
+      "quality": "low",
+      "calls": 105,
+      "triangles": 97002,
+      "textures": 131
+    },
+    {
+      "view": "vending",
+      "quality": "low",
+      "calls": 144,
+      "triangles": 115478,
+      "textures": 131
+    }
+  ],
+  "errors": [],
+  "expected_failure_errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ]
+}

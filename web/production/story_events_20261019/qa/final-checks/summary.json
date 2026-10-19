@@ -1,0 +1,62 @@
+[
+  {
+    "name": "moteltv",
+    "exit": 0,
+    "seconds": 6.83
+  },
+  {
+    "name": "story",
+    "exit": 0,
+    "seconds": 9.03
+  },
+  {
+    "name": "story-mobile",
+    "exit": 0,
+    "seconds": 8.39
+  },
+  {
+    "name": "night",
+    "exit": 0,
+    "seconds": 8.08
+  },
+  {
+    "name": "events",
+    "exit": 0,
+    "seconds": 11.79
+  },
+  {
+    "name": "town",
+    "exit": 0,
+    "seconds": 16.1
+  },
+  {
+    "name": "cowstv",
+    "exit": 0,
+    "seconds": 34.29
+  },
+  {
+    "name": "walkthrough",
+    "exit": 0,
+    "seconds": 15.85
+  },
+  {
+    "name": "chapter1",
+    "exit": 0,
+    "seconds": 21.31
+  },
+  {
+    "name": "chapter2",
+    "exit": 0,
+    "seconds": 18.06
+  },
+  {
+    "name": "chapter3",
+    "exit": 0,
+    "seconds": 27.57
+  },
+  {
+    "name": "chapter4",
+    "exit": 1,
+    "seconds": 280.68
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "town",
+    "exit": 0
+  },
+  {
+    "name": "story",
+    "exit": 0
+  },
+  {
+    "name": "story-mobile",
+    "exit": 0
+  }
+]

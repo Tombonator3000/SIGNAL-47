@@ -1,0 +1,42 @@
+PASS chapter five starts: to the truck
+PASS chapter title
+PASS the clock is past five
+PASS objective names the truck
+PASS room 6 is behind: chapter four complete, P12 filed
+PASS coming past the control room, the operations terminal chimes
+PASS a file opened at 05:29 stands in SURVEY.RAW
+PASS TYPE: 0 records, operator Reyes, file incomplete; the chapter notes it
+PASS the journal has the time it was read and the time it was opened
+PASS the truck on its pad offers the diner
+PASS in the truck on its pad: driven the whole way, no cut
+PASS objective: south on the highway, the diner on the right
+PASS the diner is there ahead on the highway, before the truck comes to it
+PASS driven: SARO, the highway (['saro', 'road'])
+PASS the truck left on the lot, the player out of it at Mesa Diner
+PASS about nine minutes on the clock (10.7)
+PASS the service map came along (E14); objective: where does C cross (MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13))
+PASS walked in from the truck to the stool (stopped at 7977.3, 2000.0)
+PASS the waitress behind the counter
+PASS she offers coffee
+PASS coffee: a cup on the counter
+PASS the lights over the mesa since she was eleven; not little green men
+PASS her aunt cut the clipping out; the paper ran it bigger
+PASS back to her: a cup poured at the empty end stool, "He's a regular."
+PASS only the once
+PASS the driver on the next stool
+PASS no question about the bolt yet
+PASS his rig died last October right past the eight-mile post; he figured battery
+PASS the radio behind the counter
+PASS the radio: the weather, Nicklaus at forty-six, Halley low in the south
+PASS the clipping by the door
+PASS E15: the clipping as it hangs, the 1947 photograph in it ([1024, 1536])
+PASS the payphone in its niche ([True, 7980.283559053296, 2007.9912062892406], diner:payphone)
+PASS Ward: "Hondo called. So did Site 11."
+PASS she wants you back before the morning series
+(node:2023147) TimeoutNegativeWarning: -13768.697 is a negative number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS a booth: spread the maps on the table ([True, 7978.946309594758, 2003.0502302585994], diner:booth)
+PASS the service map with the tracing on top
+PASS an answer before the tracing is on the station: lay it on STATION 01 first
+PASS dragged close, the tracing settles on STATION 01, north to north
