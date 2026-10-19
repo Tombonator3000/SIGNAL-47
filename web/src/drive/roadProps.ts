@@ -80,7 +80,6 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
     sign: retro(new THREE.MeshStandardMaterial({ map: signAtlas(), roughness: 0.55 }), 0.004, set),
     fence: std({ map: link, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x9a9a92, roughness: 0.6 }),
     vc: std({ vertexColors: true, roughness: 0.9 }),
-    bush: std({ color: 0x4b4a2f, roughness: 1, flatShading: true }),
     rock: std({ color: 0x847a6c, roughness: 0.95, flatShading: true }),
     wire: std({ color: 0x55585a, roughness: 0.6, metalness: 0.3 }),
   };

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, addFlood } from '../world/kit';
 import { rng } from '../core/textures';
 import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER, TOWN } from './roadTerrain';
@@ -7,7 +6,7 @@ import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo
 import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
 import { horizonGlowTex } from './roadTextures';
-import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall } from './roadProps';
+import { type Build, type Keep, roadFlood, instances, place, circle, wall } from './roadProps';
 
 // Places off the road: the station gate at the end of the track, a ranch far to the east,
 // the desert plants and rocks, the mesas on the horizon and SARO's lights behind the start.
@@ -106,11 +105,13 @@ export function ranchLights(b: Build) {
   b.glow.add(X - 22 + 6.05, y(X - 16, Z - 4) + 1.4, Z - 3, 0.9, 0xffb866); // a lit window
 }
 
-// ---------- creosote, rocks and yucca, thick where the headlights pass ----------
+// ---------- rocks, thick where the headlights pass ----------
+// The brush, the grass and the small stones are world/flora.ts (groundCover.roadFlora); these are
+// the big rocks the truck can hit. (The draws of the brush that stood here are kept, so the rocks
+// are where they were.)
 export function plants(b: Build, keep: Keep = () => true) {
   const r = rng(77);
-  const bush: THREE.Matrix4[] = [], rock: THREE.Matrix4[] = [], yucca: THREE.Matrix4[] = [];
-  const tints: THREE.Color[] = [];
+  const rock: THREE.Matrix4[] = [];
   const free = (x: number, z: number) => {
     if (Math.abs(x) < 9.5) return false;
     const t = trackNearest(x, z);
@@ -129,16 +130,13 @@ export function plants(b: Build, keep: Keep = () => true) {
     // drawn in another area has the very same plants
     const k = rr(), y = surfaceY(x, z), here = keep(x, z);
     if (k < 0.72) {
-      const sc = 0.45 + rr() * 1.0;
-      const m = place(x, y - 0.08 * sc, z, rr() * 6, sc, 0, sc * (0.7 + rr() * 0.5));
-      const c = new THREE.Color().setHSL(0.15 + rr() * 0.06, 0.22 + rr() * 0.15, 0.27 + rr() * 0.13);
+      for (let i = 0; i < 6; i++) rr();
       made++;
-      if (here) { bush.push(m); tints.push(c); }
     } else if (k < 0.96) {
       const sc = rr() < 0.85 ? 0.15 + rr() * 0.45 : 0.6 + rr() * 0.8;
       const m = place(x, y - 0.12 * sc, z, rr() * 6, sc, (rr() - 0.5) * 0.5);
       if (here) { rock.push(m); if (sc > 0.7 && d < 40) circle(b, x, z, 0.4 * sc); }
-    } else { const m = place(x, y - 0.05, z, rr() * 6, 0.8 + rr() * 0.5); if (here) yucca.push(m); }
+    } else { rr(); rr(); }
   };
   // half of the candidates fall beside the way (where the headlights pass), half anywhere
   const P = track.pts;
@@ -165,19 +163,7 @@ export function plants(b: Build, keep: Keep = () => true) {
     add(r2, x, z, Math.abs(x));
     more += made - was;
   }
-  const lobe = (rad: number, x: number, y: number, z: number) => new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.6, 1).translate(x, y, z);
-  const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.4, 0.2, 0.18)])!, b.m.bush, bush);
-  tints.forEach((c, i) => bushes.setColorAt(i, c));
-  b.root.add(bushes);
   b.root.add(instances(new THREE.DodecahedronGeometry(0.5, 0).scale(1, 0.62, 0.85).translate(0, 0.2, 0), b.m.rock, rock));
-  const leaf = [0.28, 0.36, 0.24], dry = [0.42, 0.34, 0.24];
-  const parts = [colored(new THREE.CylinderGeometry(0.07, 0.09, 0.35, 5).translate(0, 0.17, 0), dry),
-    colored(new THREE.CylinderGeometry(0.012, 0.02, 1.7, 4).translate(0, 1.15, 0), dry)];
-  for (let i = 0; i < 12; i++) {
-    const a = i / 12 * Math.PI * 2, tilt = 0.35 + (i % 3) * 0.3;
-    parts.push(colored(new THREE.ConeGeometry(0.035, 0.75, 3).translate(0, 0.37, 0).rotateZ(tilt).rotateY(a).translate(0, 0.32, 0), leaf));
-  }
-  b.root.add(instances(mergeGeometries(parts)!, b.m.vc, yucca));
 }
 
 // ---------- SARO behind the start: its lamps and beacons as they sit on the site ----------

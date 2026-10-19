@@ -842,27 +842,35 @@ export class Station01 {
 
   // ---------- layout of things that are not buildings ----------
   // Rocks and plants are placed first, so the ground map can shade under them.
+  /** Whether nothing of the station's is at a local point, rad metres round (the hut, the shed, the
+   *  pad, the pier, the stakes, the paths, the cable, the fence, the track; the road's own piece of
+   *  ground by the track has the road's plants). The rocks and plants (plan) and the ground cover
+   *  round them (world/groundCover.ts) keep off these. */
+  clear(x: number, z: number, rad: number) {
+    const keepRect = (x0: number, x1: number, z0: number, z1: number, m: number) => x > x0 - m && x < x1 + m && z > z0 - m && z < z1 + m;
+    if (keepRect(-13.6, -8.4, 0.9, 5.6, rad + 0.6)) return false;                      // hut and step
+    if (keepRect(SHED.x0, SHED.x1, SHED.z0, SHED.z1 + 1.7, rad + 0.7)) return false;  // shed and drum
+    if (keepRect(-28.5, -11.8, 25.6, 41, rad + 0.5)) return false;                     // pad and truck
+    if (keepRect(-22.0, -5.5, 4.8, 26.5, rad) && polyDist(x, z, [[-19.25, 26], [-18, 20], [-15, 13.5], [-12.5, 9.5], [-8, 7.5]]) < 4.2 + rad) return false;
+    if (Math.hypot(x - T.x, z - T.z) < 3.4 + rad) return false;
+    if (Math.hypot(x - LAMP.x, z - LAMP.z) < 1.4 + rad) return false;
+    for (const p of [FOOT_A, POST_A, POST_B]) if (Math.hypot(x - p.x, z - p.z) < 1.6 + rad) return false;
+    if (Math.hypot(x - POLE.x, z - POLE.z) < 1.2 + rad) return false;
+    if (Math.hypot(x - 7.45, z + 7.33) < 1.4 + rad) return false;                              // photo spot for A
+    if (x > 6 && x < 60 && Math.abs(z - T.z) < 1.1 + rad) return false;                       // the C stakes
+    if (polyDist(x, z, STATION_TRACK) < 3.4 + rad) return false;
+    if (inRect(STATION_PATCH, ...stationToRoad(x, z), -(rad + 1))) return false;              // the road's own plants are there
+    for (const p of PATHS) if (polyDist(x, z, p) < 1.0 + rad) return false;
+    if (polyDist(x, z, this.cablePath2D()) < 0.9 + rad) return false;
+    const onFence = (Math.abs(z - FENCE.z1) < 0.8 + rad || Math.abs(z - FENCE.z0) < 0.8 + rad) && x > FENCE.x0 - 1 && x < FENCE.x1 + 1
+      || (Math.abs(x - FENCE.x0) < 0.8 + rad || Math.abs(x - FENCE.x1) < 0.8 + rad) && z > FENCE.z0 - 1 && z < FENCE.z1 + 1;
+    return !onFence;
+  }
+
   private plan() {
     const r = rng(2024);
-    const keepRect = (x0: number, x1: number, z0: number, z1: number, x: number, z: number, m: number) => x > x0 - m && x < x1 + m && z > z0 - m && z < z1 + m;
     const free = (x: number, z: number, rad: number) => {
-      if (keepRect(-13.6, -8.4, 0.9, 5.6, x, z, rad + 0.6)) return false;                      // hut and step
-      if (keepRect(SHED.x0, SHED.x1, SHED.z0, SHED.z1 + 1.7, x, z, rad + 0.7)) return false;  // shed and drum
-      if (keepRect(-28.5, -11.8, 25.6, 41, x, z, rad + 0.5)) return false;                     // pad and truck
-      if (keepRect(-22.0, -5.5, 4.8, 26.5, x, z, rad) && polyDist(x, z, [[-19.25, 26], [-18, 20], [-15, 13.5], [-12.5, 9.5], [-8, 7.5]]) < 4.2 + rad) return false;
-      if (Math.hypot(x - T.x, z - T.z) < 3.4 + rad) return false;
-      if (Math.hypot(x - LAMP.x, z - LAMP.z) < 1.4 + rad) return false;
-      for (const p of [FOOT_A, POST_A, POST_B]) if (Math.hypot(x - p.x, z - p.z) < 1.6 + rad) return false;
-      if (Math.hypot(x - POLE.x, z - POLE.z) < 1.2 + rad) return false;
-      if (Math.hypot(x - 7.45, z + 7.33) < 1.4 + rad) return false;                              // photo spot for A
-      if (x > 6 && x < 60 && Math.abs(z - T.z) < 1.1 + rad) return false;                       // the C stakes
-      if (polyDist(x, z, STATION_TRACK) < 3.4 + rad) return false;
-      if (inRect(STATION_PATCH, ...stationToRoad(x, z), -(rad + 1))) return false;              // the road's own plants are there
-      for (const p of PATHS) if (polyDist(x, z, p) < 1.0 + rad) return false;
-      if (polyDist(x, z, this.cablePath2D()) < 0.9 + rad) return false;
-      const onFence = (Math.abs(z - FENCE.z1) < 0.8 + rad || Math.abs(z - FENCE.z0) < 0.8 + rad) && x > FENCE.x0 - 1 && x < FENCE.x1 + 1
-        || (Math.abs(x - FENCE.x0) < 0.8 + rad || Math.abs(x - FENCE.x1) < 0.8 + rad) && z > FENCE.z0 - 1 && z < FENCE.z1 + 1;
-      if (onFence) return false;
+      if (!this.clear(x, z, rad)) return false;
       for (const k of this.keep) if (Math.hypot(x - k.x, z - k.z) < (k.r + rad) * 0.85) return false;
       return true;
     };
