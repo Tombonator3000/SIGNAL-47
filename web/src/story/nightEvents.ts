@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { AudioSys } from '../core/Audio';
-import type { Voice } from '../core/radio';
+import type { Voice, ArchiveProgress } from '../core/radio';
 import { clockText } from './time';
 
 // More that can happen in the night, anywhere (Tom, 18 October: "we need more events and things
@@ -63,6 +63,8 @@ export interface NightDeps {
   bulletin: () => number;
   /** Still in the cab, tuned to this recording, and able to hear it. */
   bulletinHeard?: () => boolean;
+  /** Actual station episode progress. Optional for legacy dt-only director fixtures. */
+  bulletinProgress?: () => ArchiveProgress | null;
   openDoor: () => void;
   silence: () => void;
   place: () => string;
@@ -78,7 +80,7 @@ export class NightEvents {
   private still = 0;
   private stepsLeft: number[] = [];
   private stepAt = new THREE.Vector3();
-  private pending: { id: NightEventId; t: number; check?: () => boolean; heard?: boolean } | null = null;
+  private pending: { id: NightEventId; t: number; check?: () => boolean; heard?: boolean; archiveId?: number } | null = null;
   private radioNear = 1e9;
 
   constructor(private d: NightDeps) {}
@@ -116,6 +118,22 @@ export class NightEvents {
     // something started that ends with a note: when it has been seen or heard through
     if (this.pending) {
       const p = this.pending;
+      if (p.id === 'bulletin' && this.d.bulletinProgress) {
+        const progress = this.d.bulletinProgress();
+        if (!progress || progress.id !== p.archiveId || progress.state === 'cancelled') {
+          this.pending = null; this.wait = rnd(130, 260); return;
+        }
+        // A menu pause suspends both clocks; it does not make an otherwise heard recording
+        // incomplete. Story/receiver interruptions still invalidate the whole finding.
+        if ((!s.ok && this.d.audio.ctx?.state !== 'suspended') || this.d.bulletinHeard?.() === false) p.heard = false;
+        p.t = Math.max(0, progress.duration - progress.elapsed);
+        if (progress.state === 'complete' && p.t <= 0) {
+          this.pending = null;
+          if (p.heard !== false) this.finish(p.id, s);
+          else this.wait = rnd(130, 260);
+        }
+        return;
+      }
       if (p.id === 'bulletin' && (!s.ok || this.d.bulletinHeard?.() === false)) p.heard = false;
       p.t -= dt;
       if (p.t <= 0 && (!p.check || p.check())) {
@@ -166,7 +184,7 @@ export class NightEvents {
       case 'bulletin': {
         const len = this.d.bulletin();
         if (len <= 0) return false;
-        this.pending = { id, t: len, heard: true };
+        this.pending = { id, t: len, heard: true, archiveId: this.d.bulletinProgress?.()?.id };
         break;
       }
       case 'phone':

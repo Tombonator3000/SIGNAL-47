@@ -18,7 +18,9 @@ const load = (source: string, requireModule: (name: string) => unknown) => {
     DOMException, atob, Uint8Array, fetch: () => { throw new Error('test bank must stay offline'); } });
   return result;
 };
-const bank = load(fs.readFileSync('src/core/radioVoice.ts', 'utf8').replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(files)};`),
+const bank = load(fs.readFileSync('src/core/radioVoice.ts', 'utf8')
+  .replace(/const CALLER_FILES = import\.meta\.glob[^\n]+;/, 'const CALLER_FILES = {};')
+  .replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(files)};`),
   () => ({ default: JSON.stringify(catalog) }));
 const { Radio, ARCHIVE_SECS, SIGN_OFF, secsOf } = load(fs.readFileSync('src/core/radio.ts', 'utf8').replace("import.meta.env.MODE !== 'single'", 'false'),
   (name) => name === 'three' ? THREE : bank) as typeof import('../src/core/radio');
@@ -99,7 +101,8 @@ async function recordedArchive() {
     check(st.cutIn(BULLETIN, v.radio.clock) === 47 && sources.every((source: any) => source.stopped && source.disconnected),
       'starting the archive stops all held host sources without changing the host preference');
     check(v.radio.hostVoice && st.spoken.every((line: any) => !line.clips && !line.buffers), 'the historical newsreader remains procedural while the Art Bell option stays enabled');
-    for (let i = 0; i < 188; i++) v.tick(.25);
+    for (let i = 0; i < 187; i++) v.tick(.25);
+    v.tick(.5); // The restart frame arrives 250 ms beyond the archive boundary.
     check(st.spoken === before.spoken && st.spoken[0].buffers === before.buffers && near(st.len, before.len) && near(st.t, before.t),
       'resume retains the held decoded plan, its natural duration and exact station position');
     check(v.ctx.decodes === decodes && st.hostSources.length === sources.length && near(st.hostSources[0].offset, before.t - .2),
@@ -146,12 +149,12 @@ try {
   r.update(.1, CLOCK + 47.1);
   check(heard.length === count, 'resuming inside a sentence does not repeat its caption');
 
-  // A long frame may carry a small remainder back into the held programme.
+  // A late restart frame must not consume audio that has not played yet.
   const over = night(), os = over.stations.caliche;
   over.update(1, CLOCK);
   const ot = os.t, original = os.seg;
   os.cutIn(BULLETIN, CLOCK); over.update(47.25, CLOCK + 47.25);
-  check(os.seg === original && near(os.t, ot + .25), 'only time beyond the 47 seconds advances the held programme');
+  check(os.seg === original && near(os.t, ot), 'a late archive boundary frame preserves the exact held programme position');
 
   // The same snapshot preserves the position within a streamed record.
   Math.random = () => .1;
@@ -159,7 +162,7 @@ try {
   music.update(5, CLOCK);
   const mb = snapshot(music);
   check(ms.seg.kind === 'music', 'record-resume test starts within a record');
-  ms.cutIn(BULLETIN, CLOCK); music.update(47, CLOCK + 47);
+  ms.cutIn(BULLETIN, CLOCK); music.update(47.25, CLOCK + 47.25);
   const ma = snapshot(music);
   check(ms.seg === mb.seg && near(ms.t, mb.t) && ma.segNo === mb.segNo, 'a record resumes from the same source offset');
   Math.random = () => 0;
@@ -185,7 +188,7 @@ try {
     resumedSlot = br.slot(tripLines, CLOCK + 57 + (i + 1) * .25);
   }
   check(!!resumedSlot, 'trip lines can follow once both the calm period and any new record\'s minimum have elapsed');
-  check(!os.free, 'a frame crossing the archive boundary counts only its quarter-second remainder toward the calm window');
+  check(!os.free && near((os as any).calm, 0), 'a late archive boundary frame cannot credit unheard ordinary airtime to the calm window');
 
   const boy = night(CLOCK, false), bs = boy.stations.caliche, bq = bs.queue.slice();
   check(bs.cutIn(BULLETIN, CLOCK) === 0 && bq.every((seg, i) => bs.queue[i] === seg), 'the boy and the host\'s response cannot be interrupted');

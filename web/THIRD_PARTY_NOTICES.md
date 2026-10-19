@@ -8,6 +8,14 @@ Lydfilene i `src/assets/audio/kinski/` er genererte engelske opplesninger av spi
 - Modell: k2-fsa/OmniVoice ved revisjon `c5fdb5ccb189668d56333f77ba2629f4cd7535f4`, https://huggingface.co/k2-fsa/OmniVoice. Det nedlastede modellkortet oppgir Apache-2.0 for kode og CC-BY-NC for modellvektene. Modellvekter distribueres ikke med spillet; genererte lydfiler merkes ikke automatisk som CC0 eller Apache.
 - Kilde, referansehash, modellkortets hash, forespørsler og etterbehandling er dokumentert i `production/kinski/provenance.json` og `generation.json`. Tom godkjente innfletting i main og publisering 19. oktober 2026.
 
+## Syntetiske innringere og nyhetsleser, 19. oktober 2026
+
+De 28 lydfilene i `src/assets/audio/radiocast/` er nye fremføringer av spillets 22 innringerreplikker og seks oppdiktede nyhetslinjer fra 1947. Tre voksenroller bruker referanser fra Kyutais uttrykkelig CC0-lisensierte `voice-donations`: `Selfie.wav`, `Butter.wav` og `oldNerd.wav`, ved revisjon `323332d33f997de8394f24a193e1a76df720e01a`. Se [Kyutais kilde og donasjonsvilkår](https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations). Filnavnene bekrefter ikke donorenes alder, kjønn eller aksent.
+
+Gutten og nyhetsleseren er fiktive stemmer laget med OmniVoice sitt stemmedesign. Ingen ekte barneopptak eller arkivopptak fra ABC følger spillpakken. Originalreferanser og modellvekter holdes utenfor repoet og spillpakken.
+
+Samme lokale VoiceStudio 0.5.6 og festede OmniVoice-revisjon som over er brukt. CC0-status for donerte referanser endrer ikke modellens vilkår; de genererte spillfilene påstås ikke å være CC0. Kildehash, referanseintervaller, design, profil-ID-er, generering og faktisk ordkontroll er dokumentert i `production/radiocast/`.
+
 ## Syntetisk Art Bell-radiovert, 19. oktober 2026
 
 Lydfilene i `src/assets/audio/artbell/` er nye opplesninger av spillets eksisterende Night Line-manus. Stemmen er merket som en syntetisk Art Bell-parodi for den fiktive verten Earl. Dette er ingen original fremføring av spillmanuset eller påstand om støtte fra Art Bell.

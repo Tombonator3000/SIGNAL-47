@@ -1,0 +1,33 @@
+{
+  "scope": "Controlled audio clock and loader fixtures after exact-sample archive return fix; no GPU or browser audio evidence",
+  "results": [
+    {
+      "name": "artbell-core",
+      "command": "node tools/artbell-core.cjs",
+      "log": "artbell-core-engine.log",
+      "exit_code": 0,
+      "seconds": 0.4339305800094735
+    },
+    {
+      "name": "radiocast-core",
+      "command": "node tools/radiocast-core.cjs",
+      "log": "radiocast-core.log",
+      "exit_code": 0,
+      "seconds": 1.955034782004077
+    },
+    {
+      "name": "radioarchive",
+      "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/radioarchive-engine.cjs --log-level=warning && node node_modules/.cache/radioarchive-engine.cjs",
+      "log": "radioarchive-engine.log",
+      "exit_code": 0,
+      "seconds": 0.3577827989938669
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "log": "typecheck-engine.log",
+      "exit_code": 0,
+      "seconds": 2.81333582001389
+    }
+  ]
+}

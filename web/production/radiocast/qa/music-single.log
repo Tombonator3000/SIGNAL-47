@@ -1,0 +1,7 @@
+PASS the title screen is quiet before anything is clicked
+PASS the first click brings in the title music
+PASS and it stops when the night starts
+PASS the music starts with the night
+PASS the single-file build plays no cues and asks for no files
+no console errors/warnings
+5 of 5 PASS

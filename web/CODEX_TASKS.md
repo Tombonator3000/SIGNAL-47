@@ -50,3 +50,9 @@ Base: main `95719a4`. Nærblikk etter 650 ms, gjenta med V eller mobilknapp, og 
 Base: main `aa38e2b`. Ny lokal syntetisk parodiprofil, alle Earls eksisterende radioreplikker ferdig innspilt, inkludert dynamiske klokker, gutten, avmeldingen og kjøreinnslag. Eget lagret valg og separat bank. Kinski, innringerne og Roswell beholdes. Levering og kontroller føres i `ART_BELL_RADIO.md`.
 
 Sluttkandidaten inkluderer main `d6dc68b` og består 51/51 Pages, 52/52 streng-CSP enkeltfil, motor 48/48, alle 12 kompatibilitetskjøringer og 13 spillregresjoner. Privatbanken er bevart og prøvd med/uten. Se `production/artbell/qa/validation.json`. Innfletting og vanlig Pages-publisering følger Toms tidligere autorisasjon og kontrolleres mot riktig head.
+
+### 7. [x] Innringere og 1947-radio, direkte bestilt av Tom (`codex/radio-cast`)
+
+Base: main `b6483fe`, med den nyeste historieutvidelsen. Tom ba om å gjennomføre etter kildesøket. 28 ferdige opptak fra gjeldende manus, fire innringertyper og en nyhetsleser. Nyhetssendingens seks linjer beholdes i hele 47 sekunder med retur til den avbrutte sendingen. Eget lagret valg, samme radiobuss og pausefølsomme teksting. Art Bell, Kinski, private lydeffekter og alle nye historieforløp bevares. Se `RADIO_CAST.md`.
+
+Sluttkontroll: radiostemmer 70/70 Pages og 71/71 streng-CSP enkeltfil, motor 77/77, Art Bell 48/48 og arkiv 51/51. Begge bygg, med/uten privatbank, alle 16 kompatibilitetskjøringer, 13 spillregresjoner og lydkostnad består. Stemmemanus og tidligere banker er bevart. Kilde-/bygghasher og grenser for faktisk verifisering står i `production/radiocast/qa/validation.json`. Vanlig innfletting og Pages-publisering følger den eksisterende autorisasjonen og kontrolleres etter push.

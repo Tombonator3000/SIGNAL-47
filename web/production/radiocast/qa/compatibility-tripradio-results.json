@@ -1,0 +1,17 @@
+[
+  {
+    "name": "tripradio",
+    "exit_code": 0,
+    "seconds": 203.01,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/tripradio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/tripradio"
+    ],
+    "log": "tripradio.log"
+  }
+]

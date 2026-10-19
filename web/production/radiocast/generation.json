@@ -1,0 +1,1378 @@
+{
+  "clips": {
+    "6b58395eba556d9c": {
+      "id": "6b58395eba556d9c",
+      "voice": "woman",
+      "text": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall."
+      },
+      "response": {
+        "type": "done",
+        "id": "45e954ba",
+        "audio_path": "45e954ba.wav",
+        "duration": 3.9,
+        "gen_time": 1.17,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.9,
+        "peak_dbfs": -4.77286550840845,
+        "rms_dbfs": -21.131257404878923,
+        "nonsilent_rms_dbfs": -20.432012846115633,
+        "nonsilent_seconds": 3.32,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.377259128355181,
+        "bytes": 31916,
+        "sha256": "80712926ac47307255f31b89d14a8aed34b2c0903b86e0bfb1edda5fb3699eda",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "c5b91ca2af30f268": {
+      "id": "c5b91ca2af30f268",
+      "voice": "man",
+      "text": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back."
+      },
+      "response": {
+        "type": "done",
+        "id": "c03ef173",
+        "audio_path": "c03ef173.wav",
+        "duration": 7.82,
+        "gen_time": 1.99,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.82,
+        "peak_dbfs": -5.0051008641906405,
+        "rms_dbfs": -21.96528583889699,
+        "nonsilent_rms_dbfs": -20.421076882638577,
+        "nonsilent_seconds": 5.48,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.6523485999264054,
+        "bytes": 63212,
+        "sha256": "bb7028a73b4058e9d1ce08abac5dd57e08dcc8276f9e7d3ff5835aa22b4e1057",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "d1e6ef4fee8a9f83": {
+      "id": "d1e6ef4fee8a9f83",
+      "voice": "man",
+      "text": "My dog won't come out from under the trailer. He's been under there since one.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "My dog won't come out from under the trailer. He's been under there since one."
+      },
+      "response": {
+        "type": "done",
+        "id": "d97cc75f",
+        "audio_path": "d97cc75f.wav",
+        "duration": 5.61,
+        "gen_time": 1.57,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.61,
+        "peak_dbfs": -4.168228616103814,
+        "rms_dbfs": -21.685405831311606,
+        "nonsilent_rms_dbfs": -20.365872206235878,
+        "nonsilent_seconds": 4.14,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.8086909317950841,
+        "bytes": 45548,
+        "sha256": "141f721f0b84fb4e4ddcd994b92f0e39a07f6d455d91c32103535966142e78b5",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "67c97482c2fe4f9f": {
+      "id": "67c97482c2fe4f9f",
+      "voice": "boy",
+      "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "34043cb8",
+        "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail."
+      },
+      "response": {
+        "type": "done",
+        "id": "6b344e4b",
+        "audio_path": "6b344e4b.wav",
+        "duration": 4.51,
+        "gen_time": 1.42,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.51,
+        "peak_dbfs": -6.01346246110884,
+        "rms_dbfs": -20.866041234998907,
+        "nonsilent_rms_dbfs": -20.430900345187325,
+        "nonsilent_seconds": 4.08,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.8124518618589818,
+        "bytes": 36716,
+        "sha256": "e2e450133999167173debb0c064732c0d1080358adfdabd4add3f050e3eafa0c",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4229ae217cfe9090",
+      "reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19"
+    },
+    "62c092c096e2185b": {
+      "id": "62c092c096e2185b",
+      "voice": "boy",
+      "text": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "34043cb8",
+        "text": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving."
+      },
+      "response": {
+        "type": "done",
+        "id": "00a5c864",
+        "audio_path": "00a5c864.wav",
+        "duration": 4.65,
+        "gen_time": 1.07,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.65,
+        "peak_dbfs": -6.388280932411869,
+        "rms_dbfs": -20.875065352953396,
+        "nonsilent_rms_dbfs": -20.43306350896075,
+        "nonsilent_seconds": 4.2,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.6556603115923636,
+        "bytes": 37868,
+        "sha256": "430f4f1837da267ba30ca06da7089e365695628cb075cd46932514662f8e4072",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4229ae217cfe9090",
+      "reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19"
+    },
+    "b683f3998c005cc1": {
+      "id": "b683f3998c005cc1",
+      "voice": "boy",
+      "text": "He's out with the men. It's hot out. It's July.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "34043cb8",
+        "text": "He's out with the men. It's hot out. It's July."
+      },
+      "response": {
+        "type": "done",
+        "id": "20a282e0",
+        "audio_path": "20a282e0.wav",
+        "duration": 2.33,
+        "gen_time": 0.69,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.33,
+        "peak_dbfs": -5.555591392341461,
+        "rms_dbfs": -21.093002435556187,
+        "nonsilent_rms_dbfs": -20.42977216035804,
+        "nonsilent_seconds": 2.0,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.7106182158358116,
+        "bytes": 19436,
+        "sha256": "7c9a2baf221519738dbd040b570c7d4ae0a7423b962b75b526d1431e26d24791",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4229ae217cfe9090",
+      "reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19"
+    },
+    "ecb2e42ca2955137": {
+      "id": "ecb2e42ca2955137",
+      "voice": "woman",
+      "text": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door."
+      },
+      "response": {
+        "type": "done",
+        "id": "863d9644",
+        "audio_path": "863d9644.wav",
+        "duration": 3.56,
+        "gen_time": 1.12,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.56,
+        "peak_dbfs": -3.597415826488585,
+        "rms_dbfs": -21.47108346798619,
+        "nonsilent_rms_dbfs": -20.39711595438467,
+        "nonsilent_seconds": 2.78,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.192923925469401,
+        "bytes": 29228,
+        "sha256": "241d62e6670b4b0ab88119dbbeb3e9cac534c45ef57e31cec38201369d06170a",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "7e409ca3b75f7e20": {
+      "id": "7e409ca3b75f7e20",
+      "voice": "woman",
+      "text": "I drove past the motor court a while ago. There's somebody sitting up on the roof. Small. Real still.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "I drove past the motor court a while ago. There's somebody sitting up on the roof. Small. Real still."
+      },
+      "response": {
+        "type": "done",
+        "id": "83a0f41d",
+        "audio_path": "83a0f41d.wav",
+        "duration": 4.2,
+        "gen_time": 1.16,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.2,
+        "peak_dbfs": -5.112567620517595,
+        "rms_dbfs": -21.192721238218198,
+        "nonsilent_rms_dbfs": -20.37611356266552,
+        "nonsilent_seconds": 3.48,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.764026862259925,
+        "bytes": 34220,
+        "sha256": "8635a9ebed31a17a4af00e66788ae24e83a262309119678d9af0e19243e2c41f",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "95c7de03aea281a3": {
+      "id": "95c7de03aea281a3",
+      "voice": "old",
+      "text": "Earl, you know the old survey station, out the gravel west of the highway?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "d65b2bb6",
+        "text": "Earl, you know the old survey station, out the gravel west of the highway?"
+      },
+      "response": {
+        "type": "done",
+        "id": "f33150fc",
+        "audio_path": "f33150fc.wav",
+        "duration": 4.54,
+        "gen_time": 1.57,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.54,
+        "peak_dbfs": -5.978835622998572,
+        "rms_dbfs": -21.843339043067193,
+        "nonsilent_rms_dbfs": -20.37828277682499,
+        "nonsilent_seconds": 3.24,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.574117184778988,
+        "bytes": 37100,
+        "sha256": "b4e2dce8e0939c45d659bd0ee86b361707e8c7e046d559ac1511a82bcc742073",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c02b51dd214ad450",
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6"
+    },
+    "2d085ed0881102e8": {
+      "id": "2d085ed0881102e8",
+      "voice": "old",
+      "text": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "d65b2bb6",
+        "text": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?"
+      },
+      "response": {
+        "type": "done",
+        "id": "05b99270",
+        "audio_path": "05b99270.wav",
+        "duration": 5.86,
+        "gen_time": 1.58,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.86,
+        "peak_dbfs": -4.136247508298318,
+        "rms_dbfs": -22.207223439771052,
+        "nonsilent_rms_dbfs": -20.416609621355693,
+        "nonsilent_seconds": 3.88,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.0915653268676238,
+        "bytes": 47660,
+        "sha256": "ec2a5312eb3ccfb2dbecd25398dfd70294d82416c5b8e2ec726325abf73051f0",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c02b51dd214ad450",
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6"
+    },
+    "c284a4332c75325b": {
+      "id": "c284a4332c75325b",
+      "voice": "man",
+      "text": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters."
+      },
+      "response": {
+        "type": "done",
+        "id": "eb193bc2",
+        "audio_path": "eb193bc2.wav",
+        "duration": 8.71,
+        "gen_time": 1.96,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 8.71,
+        "peak_dbfs": -4.896670990201627,
+        "rms_dbfs": -21.89545520140073,
+        "nonsilent_rms_dbfs": -20.419259513608786,
+        "nonsilent_seconds": 6.2,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.180528148756217,
+        "bytes": 70316,
+        "sha256": "94c62f9670c83e3bc001506ab9adb510cd5de954ce6ba88185acdc638c96c1f3",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "1e02934641a8316e": {
+      "id": "1e02934641a8316e",
+      "voice": "man",
+      "text": "Wind don't carry bolt cutters.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Wind don't carry bolt cutters."
+      },
+      "response": {
+        "type": "done",
+        "id": "c45a1a1b",
+        "audio_path": "c45a1a1b.wav",
+        "duration": 2.64,
+        "gen_time": 1.1,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.64,
+        "peak_dbfs": -4.760525043021912,
+        "rms_dbfs": -21.41834751307119,
+        "nonsilent_rms_dbfs": -20.383041908584435,
+        "nonsilent_seconds": 2.08,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.2195852038670303,
+        "bytes": 21740,
+        "sha256": "234e5dc6101d052ec5e7534830084ccfb728d59be7ef18ffce435a378625f026",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "014e09c1ee5284f7": {
+      "id": "014e09c1ee5284f7",
+      "voice": "woman",
+      "text": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "Earl, it's Dolores again. There's a light on out at the old survey station."
+      },
+      "response": {
+        "type": "done",
+        "id": "9be6c83a",
+        "audio_path": "9be6c83a.wav",
+        "duration": 3.15,
+        "gen_time": 1.0,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.15,
+        "peak_dbfs": -5.2326747492811085,
+        "rms_dbfs": -21.413981600278294,
+        "nonsilent_rms_dbfs": -20.37549656795814,
+        "nonsilent_seconds": 2.48,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.773649136104023,
+        "bytes": 25964,
+        "sha256": "6f1714778bfa86c71690ce7ce2671f79f587cbd80011ed8cb9174a2c665f315f",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "98ca58e7b86c541a": {
+      "id": "98ca58e7b86c541a",
+      "voice": "woman",
+      "text": "The big gate. Not the little one beside it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "The big gate. Not the little one beside it."
+      },
+      "response": {
+        "type": "done",
+        "id": "d60f2f07",
+        "audio_path": "d60f2f07.wav",
+        "duration": 2.02,
+        "gen_time": 0.86,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.02,
+        "peak_dbfs": -4.527637193375197,
+        "rms_dbfs": -22.170009531864192,
+        "nonsilent_rms_dbfs": -20.452013665110513,
+        "nonsilent_seconds": 1.36,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.0876651303955853,
+        "bytes": 16940,
+        "sha256": "9f46e60e8a760acbb140434da82daaa80bbd9917d9baec0975f28d0b11ab3cc1",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "17b3e9065c061766": {
+      "id": "17b3e9065c061766",
+      "voice": "man",
+      "text": "Earl, I drove out the survey track tonight. Just to see.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Earl, I drove out the survey track tonight. Just to see."
+      },
+      "response": {
+        "type": "done",
+        "id": "0fd824f2",
+        "audio_path": "0fd824f2.wav",
+        "duration": 4.78,
+        "gen_time": 1.24,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.78,
+        "peak_dbfs": -3.4135608435518,
+        "rms_dbfs": -21.745797541207686,
+        "nonsilent_rms_dbfs": -20.39228118765589,
+        "nonsilent_seconds": 3.5,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.9245135292466493,
+        "bytes": 39020,
+        "sha256": "68b8dd54086f7b6f51887d0eee2412f0fae0c0059cf4c1792ad17d323fd36943",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "3ce0eadf90ac1b18": {
+      "id": "3ce0eadf90ac1b18",
+      "voice": "man",
+      "text": "Chained, like you said. And it took me the longest time to find the highway again. It's one road, Earl.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Chained, like you said. And it took me the longest time to find the highway again. It's one road, Earl."
+      },
+      "response": {
+        "type": "done",
+        "id": "93af2111",
+        "audio_path": "93af2111.wav",
+        "duration": 8.84,
+        "gen_time": 2.06,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 8.84,
+        "peak_dbfs": -4.374485177450072,
+        "rms_dbfs": -21.911715756127983,
+        "nonsilent_rms_dbfs": -20.426843223875757,
+        "nonsilent_seconds": 6.28,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.9467786438365309,
+        "bytes": 71468,
+        "sha256": "ecf69a7279ababa64490eabc70a6c01b3f492fcbac027275ab7d81a294e7724d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "d1b2a7294c7db6ce": {
+      "id": "d1b2a7294c7db6ce",
+      "voice": "old",
+      "text": "Earl, is the old Roswell road open past the diner yet?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "d65b2bb6",
+        "text": "Earl, is the old Roswell road open past the diner yet?"
+      },
+      "response": {
+        "type": "done",
+        "id": "dedb07e2",
+        "audio_path": "dedb07e2.wav",
+        "duration": 2.91,
+        "gen_time": 1.25,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.91,
+        "peak_dbfs": -6.855806893513877,
+        "rms_dbfs": -20.935707866502735,
+        "nonsilent_rms_dbfs": -20.379239320062382,
+        "nonsilent_seconds": 2.56,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.463529768842992,
+        "bytes": 24044,
+        "sha256": "248b22ebfbdf289897b474821d82b514f609588c12e855200580f7c49fb34dff",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c02b51dd214ad450",
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6"
+    },
+    "fd5cb5d2764ce941": {
+      "id": "fd5cb5d2764ce941",
+      "voice": "woman",
+      "text": "Earl, I'm down at the Mesa. She says tell you the coffee's fresh and the pie isn't.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "Earl, I'm down at the Mesa. She says tell you the coffee's fresh and the pie isn't."
+      },
+      "response": {
+        "type": "done",
+        "id": "2df3fcba",
+        "audio_path": "2df3fcba.wav",
+        "duration": 3.09,
+        "gen_time": 0.96,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.09,
+        "peak_dbfs": -3.4758374978515176,
+        "rms_dbfs": -21.139991934247284,
+        "nonsilent_rms_dbfs": -20.456528446427313,
+        "nonsilent_seconds": 2.64,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.0131928261279448,
+        "bytes": 25388,
+        "sha256": "c093305748fcde5b1caf9a51fb6feacb32071dfb2a9b3206ab00f7d735796113",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "54fffedba835a228": {
+      "id": "54fffedba835a228",
+      "voice": "woman",
+      "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low."
+      },
+      "response": {
+        "type": "done",
+        "id": "dfd5a98f",
+        "audio_path": "dfd5a98f.wav",
+        "duration": 4.04,
+        "gen_time": 1.26,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.04,
+        "peak_dbfs": -4.332511770880324,
+        "rms_dbfs": -20.980049821398122,
+        "nonsilent_rms_dbfs": -20.43078834785351,
+        "nonsilent_seconds": 3.56,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.6276411147109187,
+        "bytes": 33068,
+        "sha256": "9746699e00e67cbc1b833737619686d24d31f333af9368c97956da5df780b9d1",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "f0a8133593565a22": {
+      "id": "f0a8133593565a22",
+      "voice": "woman",
+      "text": "It's watching the road.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "84bc5b84",
+        "text": "It's watching the road."
+      },
+      "response": {
+        "type": "done",
+        "id": "57748f50",
+        "audio_path": "57748f50.wav",
+        "duration": 1.63,
+        "gen_time": 0.86,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.63,
+        "peak_dbfs": -2.653431193595285,
+        "rms_dbfs": -23.04736033180504,
+        "nonsilent_rms_dbfs": -21.789279024738978,
+        "nonsilent_seconds": 1.22,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.15364230950308233,
+        "bytes": 13676,
+        "sha256": "dcc372368a66c481e8da8692a740c9ac815c72fc1b4b725af4b88aeabcf54b65",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a0c50827a31eb6b",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4"
+    },
+    "75cf70ed26245b6c": {
+      "id": "75cf70ed26245b6c",
+      "voice": "man",
+      "text": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?"
+      },
+      "response": {
+        "type": "done",
+        "id": "6c27c167",
+        "audio_path": "6c27c167.wav",
+        "duration": 6.65,
+        "gen_time": 1.72,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.65,
+        "peak_dbfs": -5.632747274199504,
+        "rms_dbfs": -22.03997639856851,
+        "nonsilent_rms_dbfs": -20.38239342023133,
+        "nonsilent_seconds": 4.54,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.266338240050782,
+        "bytes": 53996,
+        "sha256": "c17bfd4f452d74ebf6e04912e7e9e5947d41cf208b7e29f1945362c8274cad80",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "ea163bffa8cbd703": {
+      "id": "ea163bffa8cbd703",
+      "voice": "man",
+      "text": "A little after two. All of them together, like sunflowers.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "A little after two. All of them together, like sunflowers."
+      },
+      "response": {
+        "type": "done",
+        "id": "00353321",
+        "audio_path": "00353321.wav",
+        "duration": 5.08,
+        "gen_time": 1.42,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.08,
+        "peak_dbfs": -4.801637707226474,
+        "rms_dbfs": -21.742206231506845,
+        "nonsilent_rms_dbfs": -20.435486011920467,
+        "nonsilent_seconds": 3.76,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.378586943398453,
+        "bytes": 41324,
+        "sha256": "c8b09efe4550946374adb84a7b9601a7313980ce4048efa8c7b33f2840e0d7cd",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32c4a70b15192389",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "84bbb99bd8755c87": {
+      "id": "84bbb99bd8755c87",
+      "voice": "news",
+      "text": "We interrupt this program. This is a local news bulletin.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "We interrupt this program. This is a local news bulletin."
+      },
+      "response": {
+        "type": "done",
+        "id": "9da5a34a",
+        "audio_path": "9da5a34a.wav",
+        "duration": 3.27,
+        "gen_time": 1.11,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.27,
+        "peak_dbfs": -4.746169479782612,
+        "rms_dbfs": -21.303186310713087,
+        "nonsilent_rms_dbfs": -20.43913112509302,
+        "nonsilent_seconds": 2.68,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.1897949152808778,
+        "bytes": 26924,
+        "sha256": "d10c50293c749b896c6866e636ae94dcc3508dc8ea5cb0638284e392b67335c1",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    },
+    "b071311d4881f62d": {
+      "id": "b071311d4881f62d",
+      "voice": "news",
+      "text": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven."
+      },
+      "response": {
+        "type": "done",
+        "id": "12af6373",
+        "audio_path": "12af6373.wav",
+        "duration": 3.82,
+        "gen_time": 1.18,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.82,
+        "peak_dbfs": -3.9793993265189753,
+        "rms_dbfs": -21.287152820378775,
+        "nonsilent_rms_dbfs": -20.40817177693031,
+        "nonsilent_seconds": 3.12,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.506948842323748,
+        "bytes": 31340,
+        "sha256": "6a471c0b30d2d46e11866669d14a4f3a4b00133d8e1daeb042f78f0ab988b61b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    },
+    "ff6583c326f63f75": {
+      "id": "ff6583c326f63f75",
+      "voice": "news",
+      "text": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice."
+      },
+      "response": {
+        "type": "done",
+        "id": "5d4f00cb",
+        "audio_path": "5d4f00cb.wav",
+        "duration": 5.24,
+        "gen_time": 1.36,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.24,
+        "peak_dbfs": -3.542544670044659,
+        "rms_dbfs": -21.17977988541604,
+        "nonsilent_rms_dbfs": -20.42108790784208,
+        "nonsilent_seconds": 4.4,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.9066204783113534,
+        "bytes": 42668,
+        "sha256": "2f96347ef69950f068f5678d42ddc742c88f1823d6a42b012a40d6f8e2ca4ea7",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    },
+    "24cbc90ea47a4267": {
+      "id": "24cbc90ea47a4267",
+      "voice": "news",
+      "text": "There is no description of the object. The space for the name of the person reporting it is blank.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "There is no description of the object. The space for the name of the person reporting it is blank."
+      },
+      "response": {
+        "type": "done",
+        "id": "3549c8b4",
+        "audio_path": "3549c8b4.wav",
+        "duration": 5.46,
+        "gen_time": 1.41,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.46,
+        "peak_dbfs": -4.505391654969392,
+        "rms_dbfs": -21.41380278855667,
+        "nonsilent_rms_dbfs": -20.315720072722403,
+        "nonsilent_seconds": 4.24,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.0110718667970886,
+        "bytes": 44396,
+        "sha256": "28016c9437af80604113d80f3c21ba325876dfd3816062c76fdfab657d4c5538",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    },
+    "57c913f626216f0a": {
+      "id": "57c913f626216f0a",
+      "voice": "news",
+      "text": "We have received the same line twice. We are reading it just as it came through.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "We have received the same line twice. We are reading it just as it came through."
+      },
+      "response": {
+        "type": "done",
+        "id": "28237647",
+        "audio_path": "28237647.wav",
+        "duration": 4.02,
+        "gen_time": 1.2,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.02,
+        "peak_dbfs": -5.323051455418248,
+        "rms_dbfs": -21.121089848674053,
+        "nonsilent_rms_dbfs": -20.368077930580988,
+        "nonsilent_seconds": 3.38,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.0316406401224256,
+        "bytes": 32876,
+        "sha256": "53fac8b4266ca25f761ebf54c79ef98be418354330e5097bdc2a3be5d4fdcaba",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    },
+    "17798887be16c20b": {
+      "id": "17798887be16c20b",
+      "voice": "news",
+      "text": "Please stand by. We will return to our regular program.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1e28f816",
+        "text": "Please stand by. We will return to our regular program."
+      },
+      "response": {
+        "type": "done",
+        "id": "b30fbb21",
+        "audio_path": "b30fbb21.wav",
+        "duration": 3.28,
+        "gen_time": 1.02,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.28,
+        "peak_dbfs": -4.692998324663183,
+        "rms_dbfs": -21.199579015330134,
+        "nonsilent_rms_dbfs": -20.3546121506781,
+        "nonsilent_seconds": 2.7,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.1195273950939892,
+        "bytes": 26924,
+        "sha256": "62a541eff4a9206e7931b3673e266a2eacbe6e5d5c38c6284507003a1466a32e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "53eaf484be2a40ef",
+      "reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3"
+    }
+  },
+  "settings": {
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast"
+  },
+  "roles": {
+    "woman": {
+      "profile_id": "84bc5b84",
+      "kind": "clone",
+      "profile_reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+      "donation_file": "Selfie.wav",
+      "source_interval_seconds": [
+        4.5,
+        9.98
+      ],
+      "conditioning_text": "It says it's the last 10 seconds, and if that's the case, and I'd shut up previously, there would just be 10 seconds.",
+      "human_listened": false
+    },
+    "man": {
+      "profile_id": "1a160d70",
+      "kind": "clone",
+      "profile_reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "donation_file": "Butter.wav",
+      "source_interval_seconds": [
+        1.45,
+        9.9
+      ],
+      "conditioning_text": "Would like to buy an avocado one that is green on the outside and green.",
+      "human_listened": false
+    },
+    "old": {
+      "profile_id": "d65b2bb6",
+      "kind": "clone",
+      "profile_reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+      "donation_file": "oldNerd.wav",
+      "source_interval_seconds": [
+        0,
+        9.8
+      ],
+      "conditioning_text": "It's about 15 degrees, it's raining, very cozy, a great day to hack, and I can't wait to hear my voice cloned.",
+      "human_listened": false
+    },
+    "boy": {
+      "profile_id": "34043cb8",
+      "kind": "design",
+      "profile_reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "child",
+        "Pitch": "moderate pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, child, moderate pitch, american accent",
+      "conditioning_text": "Here's a quick sample of this voice so you can hear how it sounds.",
+      "human_listened": false
+    },
+    "news": {
+      "profile_id": "1e28f816",
+      "kind": "design",
+      "profile_reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "middle-aged",
+        "Pitch": "low pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, middle-aged, low pitch, american accent",
+      "conditioning_text": "We interrupt this program. This is a local news bulletin. Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "human_listened": false
+    }
+  },
+  "cache_identities": {
+    "woman": "3a0c50827a31eb6b",
+    "man": "32c4a70b15192389",
+    "old": "c02b51dd214ad450",
+    "boy": "4229ae217cfe9090",
+    "news": "53eaf484be2a40ef"
+  },
+  "human_listened": false,
+  "role_suitability": "UNVERIFIED by listening",
+  "updated_utc": "2026-10-19T19:52:25.818095+00:00"
+}
