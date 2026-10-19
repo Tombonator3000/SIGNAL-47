@@ -383,6 +383,10 @@ async function boot() {
     motelSign: ['Sierra Motor Court', 'Sierra Motor Court (back)'].map((n) => ext.group.getObjectByName(n)).filter((o): o is THREE.Object3D => !!o) });
   // the haze on the ground only out in the open (world/airlight.ts): the title's view, the cab, outdoors
   world.airOut = () => mode !== 'play' || world.driving || space === 'yard';
+  // the life in the night (world/nightlife.ts): dust in the flashlight's beam; no far car and no
+  // tumbleweed behind the title, in a cinematic, or while one of the night's strange things is on
+  world.lifeBeam = () => flashlight.light;
+  world.lifeQuiet = () => mode !== 'play' || game.cinematic || roadside.silent || !!glimpses.up || townEvents.now !== 'none';
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -1175,6 +1179,8 @@ async function boot() {
         { label: 'The silence (47 s)', run: () => roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }) },
         ...(['steps', 'knocks', 'radio', 'bulletin', 'phone', 'door'] as const).map((id) => ({ label: `Night event: ${id}`, run: () => { if (!nightEvents.now(id, nightIn(true))) ui.toast(`Not here: ${id}`, 2); } })),
         { label: 'Someone on the motel roof', run: () => roadside.roofNow() },
+        { label: 'A car on the county road (far east)', run: () => { if (!world.life.carNow()) ui.toast('No county road seen from here', 2); } },
+        { label: 'A tumbleweed', run: () => { if (!world.life.tumbleNow(true)) ui.toast('No open ground for one here', 2); } },
         { label: 'A call on the CB', run: () => cb.call([{ text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by: 'N. VEGA' }], world.driving ? null : world.truckHere()?.group.position ?? null,
           (l) => ui.toast(`CB, ${l.by}: "${l.text}"`, 4)) },
       ] });

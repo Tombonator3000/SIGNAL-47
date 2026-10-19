@@ -29,6 +29,7 @@ import { firstTime } from '../core/hints';
 import { getQuality } from '../core/quality';
 import { surfaceY } from '../drive/roadTerrain';
 import { LightCones, GroundHaze, sodiumGlows } from './airlight';
+import { NightLife, lifeLamps } from './nightlife';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -82,6 +83,14 @@ const HEAD_ON_TOWN = 1.8, TOWN_ON_ROAD = 0.8;
  *  that turned the night into day. */
 const AIR_CONES = 0.065, AIR_HAZE = 1;
 type HazeLamp = { p: THREE.Vector3; r: number; col: THREE.Color; k: number };
+type Box = { minX: number; maxX: number; minZ: number; maxZ: number };
+/** Whether (x, z) is in one of the boxes (or within m of it): what stands in a tumbleweed's way. */
+const inBoxes = (boxes: readonly Box[], x: number, z: number, m = 0.4) => boxes.some((b) => x > b.minX - m && x < b.maxX + m && z > b.minZ - m && z < b.maxZ + m);
+/** SARO's land out past the site, as Exterior.ground draws it, in the road's terms (the far lights on it). */
+const saroLand = (mx: number, mz: number) => {
+  const x = mx - SARO_IN_ROAD.x, z = mz - SARO_IN_ROAD.z, far = Math.hypot(x, z);
+  return far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
+};
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -256,7 +265,23 @@ export class World {
     for (const [x, y, z, , c] of MOTEL_GLOWS.slice(0, 2)) this.air.lamps.saro.push({ p: new THREE.Vector3(x + MOTEL_AT.x, y + MOTEL_AT.y, z + MOTEL_AT.z), r: 9, col: new THREE.Color(c), k: 1 });
     const coarse = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
     this.air.haze = new GroundHaze(d.scene, coarse ? [0.3] : [0.2, 0.5]);   // one layer on a phone
+    // the life in the night (nightlife.ts): moths round the lamps of the site, its doors and the
+    // motel's (not those indoors: the control room and the annex), bats at the big ones, lights far
+    // out on the land, a tumbleweed now and then, and the dust in the beams
+    this.life = new NightLife(d.scene);
+    const S = SARO_IN_ROAD;
+    this.life.addArea('saro', { flood: siteFlood, ground: g.floorAt, blocked: (x, z) => inBoxes(d.saro.colliders, x, z),
+      onHighway: (x) => Math.abs(x + S.x) < 5,
+      far: { toWorld: (x, z) => new THREE.Vector3(x - S.x, 0, z - S.z), toMap: (x, z) => ({ x: x + S.x, z: z + S.z }), ground: saroLand, centre: S } });
+    this.life.addMoths('saro', lifeLamps([ext, d.saro.groups[2], c.group, g.group, m.group, f.group], ext,
+      (p) => Math.abs(p.x) < 400 && p.z > -500 && p.z < 800 && p.y - ground(p.x, p.z) > 1.5), ext, 6);
   }
+  /** The life in the night: moths, bats, far lights, tumbleweeds, the dust in the beams (nightlife.ts). */
+  readonly life: NightLife;
+  /** The flashlight's beam, for its dust (main.ts). */
+  lifeBeam: () => THREE.SpotLight | null = () => null;
+  /** One of the night's strange things has it (or a cinematic, or the title): no far car, no tumbleweed (main.ts). */
+  lifeQuiet: () => boolean = () => false;
   /** The light in the air: each area's cones, the haze, and the lamps that tint it per area. */
   private air: { cones: LightCones[]; haze: GroundHaze | null; lamps: { saro: HazeLamp[]; road: HazeLamp[] }; town: LightCones | null } =
     { cones: [], haze: null, lamps: { saro: [], road: [] }, town: null };
@@ -357,6 +382,8 @@ export class World {
       drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       this.legs.station01 = { area, drive, truck: t };
       this.parkAt('station01');
+      this.life.addArea('station01', { flood: fieldFlood, ground: (x, z) => s.groundAt(x, z), blocked: (x, z) => inBoxes(s.colliders, x, z) });
+      this.life.addMoths('station01', lifeLamps([s.group], s.group, (p) => p.y - s.groundAt(p.x, p.z) > 1.5), s.group, 2);
       this.d.applyQuality();
       this.onStationLoaded?.(s);
       return s;
@@ -381,7 +408,12 @@ export class World {
       this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
       this.legs.road = { area: road, drive: this.drive, truck };
-      this.d.applyQuality();
+      this.life.addArea('road', { flood: road.headlights.set, ground: (x, z) => surfaceY(x - ROAD_ORIGIN.x, z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y,
+        blocked: (x, z) => road.obstacles.some((o) => o.kind === 'circle' ? Math.hypot(x - o.x, z - o.z) < o.r + 0.4 : inBoxes([o], x, z)) || (!!this.dinerWalk && inBoxes(this.dinerWalk.colliders, x, z)),
+        onHighway: (x) => Math.abs(x - ROAD_ORIGIN.x) < 5,
+        far: { toWorld: (x, z) => new THREE.Vector3(x + ROAD_ORIGIN.x, 0, z + ROAD_ORIGIN.z), toMap: (x, z) => ({ x: x - ROAD_ORIGIN.x, z: z - ROAD_ORIGIN.z }),
+          ground: (x, z) => surfaceY(x, z) + ROAD_ORIGIN.y, centre: { x: 0, z: 1600 } } });
+      this.d.applyQuality();   // (the tumbleweed's material too)
       this.onRoadLoaded?.(road);
     });
   }
@@ -496,6 +528,8 @@ export class World {
       this.parkAt('diner');
       this.d.applyQuality();
       this.onDinerLoaded?.(d);
+      // moths round Caliche's street lamps, the gas station's canopy and the porch lights; bats at the street lamps
+      this.life.addMoths('road', lifeLamps([town.group, d.group], town.group, (p) => p.y - surfaceY(p.x - ROAD_ORIGIN.x, p.z - ROAD_ORIGIN.z) > 1.5), town.group, 4);
       this.onTownLoaded?.(town);
       return d;
     });
@@ -1113,6 +1147,15 @@ export class World {
       } else if (this.area === 'station01' && this.site) ground = this.site.groundAt(c.x, c.z);
     }
     a.haze?.update(dt, t, c, ground, AIR_HAZE * night, fog?.color ?? new THREE.Color(), lamps);
+    // and the life in it
+    this.lifeStep(dt, t);
+  }
+  /** The life in the night (nightlife.ts), every frame with the light in the air (tests call it too). */
+  lifeStep(dt: number, t: number) {
+    const L = this.driving && this.leg ? this.legs[this.leg] : undefined, D = L?.drive;
+    this.life.update(dt, t, { area: this.area, cam: this.d.camera, clock: this.d.time(), dawn: this.d.sky().dawn, out: this.airOut(), quiet: this.lifeQuiet(),
+      foot: !this.driving, flash: this.lifeBeam(),
+      truck: L && D ? { group: L.truck.group, speed: D.speed, kind: D.surface.kind, beam: L.truck.beam } : null });
   }
   /** Each area lights its own materials from its own lamps: the truck's headlights go to the
    *  diner's, and the diner's neon to the road's and the old road's. main.ts calls it after the
