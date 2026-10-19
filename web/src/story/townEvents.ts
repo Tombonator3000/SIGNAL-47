@@ -159,7 +159,7 @@ export class TownEvents {
     const call = !this.d.seen.has('ev:phone1') ? 1 : s.later && !this.d.seen.has('ev:phone2') ? 2 : 0;
     if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < 4 * 3600 + 45 * 60 && this.free(s.clock)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
-      this.d.audio.loop('town-ring', 'phone_ring', { at: phone, gain: 0.8 });
+      this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
 
     // ---------- 8: the lamps ----------

@@ -47,7 +47,7 @@ async def main():
         toasts = lambda: ev("window.__toasts.filter((t) => typeof t === 'string')")
 
         await ev("S47.hold = true; S47.tick(0.3); S47.setAbductions(false); S47.radio.boyCalled = true; S47.jump('chapter1'); S47.tick(1.0)")
-        await ev("window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, s) => { window.__toasts.push(t); return o(t, s); };")
+        await ev("window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, s) => { window.__toasts.push(t); return o(t, s); }; 0")
         # the night's own events wait (one is set off by hand below)
         await ev("S47.nightEvents['wait'] = 1e9")
         plan = await ev("S47.tripRadio().plan")
