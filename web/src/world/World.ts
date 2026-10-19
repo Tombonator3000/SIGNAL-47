@@ -29,6 +29,8 @@ import { firstTime } from '../core/hints';
 import { getQuality } from '../core/quality';
 import { surfaceY } from '../drive/roadTerrain';
 import { LightCones, GroundHaze, sodiumGlows } from './airlight';
+import { followFlora, floraTest, type Flora } from './flora';
+import { saroFlora, stationFlora, postsOf } from './groundCover';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -171,6 +173,11 @@ export class World {
   grounds: Grounds;
   /** The antenna field north of the array fence, walked through its gate (Field.ts). */
   field: Field;
+  /** The brush, the grass and the stones round SARO, out in the array and down the highway
+   *  (flora.ts, groundCover.ts); the road, the station and the old road have their own. */
+  saroFlora: Flora;
+  /** Tests: the ground cover shown now (tools/env_ground.py). */
+  readonly flora = floraTest;
   motel: MotelFront;
   court: CourtSite;
   saroTruck: Truck | null = null;
@@ -245,6 +252,11 @@ export class World {
       d.saro.colliders.push(...part.colliders);
     }
     d.player.floor = g.floorAt;
+    // the ground cover, kept off SARO's floors, roads, tracks and things, and low where it is walked
+    this.saroFlora = saroFlora(siteFlood, d.saro.colliders, d.saro.zones);
+    d.scene.add(this.saroFlora.group);
+    d.saro.groups.push(this.saroFlora.group);
+    followFlora(d.scene);
     // the light in the air: cones under SARO's sodium lamps (the array, the highway north of the
     // site and the motel's lot, read from the outdoor glows), and the haze on the ground
     const ext = d.saro.groups[0], ground = (_x: number, z: number) => z > 600 ? MOTEL_AT.y : -0.62;
@@ -287,6 +299,7 @@ export class World {
     c.group.visible = this.area === 'saro';
     this.d.saro.groups.push(c.group);
     this.saroRoad = c.obstacles;
+    this.saroFlora.add({ blocks: postsOf(c.obstacles) });   // the posts and poles of the stretch, as the road's patch has them
     this.saroGlints = c;
     this.herds.push(c.herd);
     // the signs and big rocks beside the walk down the highway are in the way on foot too
@@ -351,6 +364,7 @@ export class World {
       // be driven from here and back to SARO on it (drive/legs.ts)
       const road = stationCorridor(fieldFlood);
       s.group.add(road.group);
+      s.group.add(stationFlora(fieldFlood, s, STATION_ORIGIN, postsOf(road.obstacles)).group);
       const area = new StationDrive(s.colliders.filter((c) => c !== s.truckCollider), (x, z) => s.groundAt(x, z), road.obstacles);
       area.headlights = this.headlightSlots(fieldFlood);
       const drive = new DriveController(this.d.camera, t, area);
@@ -406,6 +420,7 @@ export class World {
       road.addPlace(d.colliders.filter((c) => c !== this.dinerCol), { minX: o.x + 3.6, maxX: o.x + 16, minZ: o.z - 16, maxZ: o.z + 16 }, o.y);
       const drive = new DriveController(this.d.camera, truck, road);
       drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
+      road.flora.add(this.coverOf(road.group.position));
       this.oldRoad = road; this.oldTruck = truck; this.oldDrive = drive;
       this.legs.roswell = { area: road, drive, truck };
       this.d.applyQuality();
@@ -414,6 +429,13 @@ export class World {
   }
   /** The engine sound, for the chapter that stops it. */
   get engineSound() { return this.engine; }
+  /** The diner's and the town's walls and walks, for the ground cover of an area at `o` (the road's,
+   *  the old road's). The truck on the lot moves: not that one. */
+  private coverOf(o: THREE.Vector3) {
+    const at = (r: { minX: number; maxX: number; minZ: number; maxZ: number }) => ({ minX: r.minX - o.x, maxX: r.maxX - o.x, minZ: r.minZ - o.z, maxZ: r.maxZ - o.z });
+    const w = this.dinerWalk!;
+    return { blocks: w.colliders.filter((c) => c !== this.dinerCol).map(at), walks: w.zones.map(at) };
+  }
 
   /** From the diner's lot out onto the old road (chapter six), driven the whole way: the truck
    *  where it was left on the lot, now the old road's (its area has the diner too), across the
@@ -492,6 +514,8 @@ export class World {
       for (const i of this.townSlots) this.road!.headlights.set.skip.add(i);
       this.town = town;
       this.dinerWalk = { zones: [...d.zones, ...town.zones], colliders: [...d.colliders, ...town.colliders] };
+      // no ground cover in their walls, thick at their feet, low where they are walked
+      this.road!.flora.add(this.coverOf(ROAD_ORIGIN));
       this.diner = d;
       this.parkAt('diner');
       this.d.applyQuality();

@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, floodlit, floodSet, type FloodSet } from '../world/kit';
 import type { GlowPoints } from '../world/glow';
+import { desertGround } from '../world/flora';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
-import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, GROUND_TINT, GRAVEL_TINT, surfaceY, hash, smooth, edgeColour } from './roadTerrain';
+import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, GROUND_TINT, GRAVEL_TINT, surfaceY, hash, smooth, edgeColour, ranchZ, RANCH_TO, onRanchRoad } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
 import { wet, HWY_LANES, type Wear } from './roadSurface';
 import { rng } from '../core/textures';
@@ -66,12 +67,14 @@ export function retro<T extends THREE.MeshStandardMaterial>(m: T, falloff: numbe
 /** The road's materials, lit by the road's floods; a stretch of the road drawn in another
  *  area (drive/corridors.ts) takes that area's floods. Without the track's gravel picture
  *  (it comes with the road, art.ts), gravel is a plain colour. */
+export { ranchZ, onRanchRoad };
+
 export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
   const std = (o: THREE.MeshStandardMaterialParameters, fall = 0.012) => floodlit(new THREE.MeshStandardMaterial(o), fall, set);
   // road surfaces lie a few centimetres over the verges: pull them forward in depth
   const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
   const link = chainlink(); link.repeat.set(1, 1);
-  return {
+  const mats = {
     ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: GROUND_TINT, roughness: 1 }),
     // mostly dry: the damp along its edges and in the wheel paths (roadSurface.ts)
     asphalt: wet(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01), 0.5, 100, 9, { lanes: HWY_LANES, dry: -0.15 }),
@@ -85,10 +88,11 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
     sign: retro(new THREE.MeshStandardMaterial({ map: signAtlas(), roughness: 0.55 }), 0.004, set),
     fence: std({ map: link, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x9a9a92, roughness: 0.6 }),
     vc: std({ vertexColors: true, roughness: 0.9 }),
-    bush: std({ color: 0x4b4a2f, roughness: 1, flatShading: true }),
     rock: std({ color: 0x847a6c, roughness: 0.95, flatShading: true }),
     wire: std({ color: 0x55585a, roughness: 0.6, metalness: 0.3 }),
   };
+  desertGround(mats.ground);   // the brush's dark spots past the ground cover's reach (world/flora.ts)
+  return mats;
 }
 export type RoadMats = ReturnType<typeof roadMaterials>;
 export type Build = { root: THREE.Group; statics: THREE.Group; glow: GlowPoints; m: RoadMats; obstacles: Obstacle[]; wires: number[] };
@@ -171,7 +175,6 @@ const DINER_GAP: [number, number] = [DINER.z - 40, TOWN.z1], OLD_GAP: [number, n
 const EAST_GAP: [number, number] = [OLD_GAP[0], TOWN.z1];
 export const MOTEL_GAP: [number, number] = [MOTEL.z - 46, MOTEL.z + 46];
 /** The ranch's road (ranchRoad): road-local z of its middle at x, and where its gate stands in the fence. */
-export const ranchZ = (x: number) => 196 + (x - 15) * 0.012 + Math.sin(x * 0.021) * 1.2;
 const RANCH_GAP: [number, number] = [ranchZ(HWY.fence) - 3.4, ranchZ(HWY.fence) + 3.4];
 export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
@@ -292,9 +295,7 @@ export function roadClosed(b: Build) {
 // the yard (roadPlaces.ranch). A pipe gate, shut, in the right-of-way fence (the fence's wall
 // still holds the truck), a culvert under the approach, the mailbox at the highway with the
 // ranch's name on it. The track is the survey track's gravel, a little narrower.
-const RANCH_TO = 405;
 /** Whether (x, z) is on the ranch's road or by its mailbox (no plants there: roadPlaces.plants). */
-export const onRanchRoad = (x: number, z: number) => x > 6 && x < RANCH_TO + 4 && Math.abs(z - ranchZ(x)) < 3.2 || (x > 8 && x < 11 && Math.abs(z - ranchZ(9.6) + 4.2) < 1);
 export function ranchRoad(b: Build, keep: Keep = () => true) {
   const s = b.statics, m = b.m, HW = 2.5;
   // the track: rows every 4 m from the shoulder to the yard, on the land (the verge, then the desert)

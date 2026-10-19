@@ -42,7 +42,7 @@ const r = (minX: number, maxX: number, minZ: number, maxZ: number): Rect => ({ m
 const within = (b: Rect, x: number, z: number) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ;
 
 // Everything at floor level that the ground zones run up against.
-const RAISED: Rect[] = [
+export const RAISED: Rect[] = [
   r(-6.7, 6.7, -5.9, 5.9),      // the control room's plinth
   r(-6.6, 2.6, 5.8, 11.1),      // the records annex
   r(-7.6, -6.3, 4.75, 6.65),    // the step outside the fire exit
@@ -67,10 +67,10 @@ const SLOPES: Slope[] = [
 
 // The service road: down the ramp's line to the south, a bend to the west, then straight
 // to the highway's east edge (x -20). Its line, and its width.
-const ROAD_W = 5.0;
+export const ROAD_W = 5.0;
 const BEND = { cx: 5.8, cz: 20.5, r: 4.0 };
 const ROAD_Z = BEND.cz + BEND.r;   // 24.5, the straight run to the highway
-function roadLine() {
+export function roadLine() {
   const pts: THREE.Vector2[] = [new THREE.Vector2(9.8, 16.2), new THREE.Vector2(9.8, BEND.cz)];
   for (let i = 1; i <= 10; i++) {
     const a = (i / 10) * Math.PI / 2;
@@ -97,7 +97,7 @@ const SARO_WEAR: Wear[] = [
 
 // The worn path: from the foot of the fire exit's ramp, round the annex, to the foot of
 // the truck ramp where it meets the road.
-const PATH = [[-10.5, 5.7], [-9.8, 7.9], [-9.2, 10.4], [-8.1, 12.4], [-6.1, 13.5], [-2.0, 14.0], [2.0, 14.3], [4.6, 15.0], [6.0, 16.4], [6.9, 18.0]]
+export const PATH = [[-10.5, 5.7], [-9.8, 7.9], [-9.2, 10.4], [-8.1, 12.4], [-6.1, 13.5], [-2.0, 14.0], [2.0, 14.3], [4.6, 15.0], [6.0, 16.4], [6.9, 18.0]]
   .map(([x, z]) => new THREE.Vector2(x, z));
 
 export class Grounds {

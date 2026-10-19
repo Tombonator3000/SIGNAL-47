@@ -14,6 +14,8 @@ import {
   terrain, heightAt, nearest, profile, beside, rnd, sAt, type RoadPt,
 } from './oldRoadLayout';
 import { buildLandmarks } from './oldRoadLandmarks';
+import { Flora, desertGround, ragged } from '../world/flora';
+import { roadCover, roadSeam, roadSpill, COVER_SEED } from '../world/groundCover';
 import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessTex, STAKE } from './oldRoadTextures';
 
 // The old Roswell road at dawn, chapter six (KAPITLER.md, Roswell Road). The drive runs from
@@ -25,7 +27,8 @@ import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessT
 // world terms (start, obstacles, heights) have the origin added, as in RoadArea.
 //
 // Draw calls: about 26 (ground 3, asphalt 2, merged statics ~5, instanced posts, poles,
-// stakes, bushes, rocks and yucca, wires 1, far mesas 1, far SARO 1, glows 1, Kessler 2).
+// stakes and rocks, wires 1, far mesas 1, far SARO 1, glows 1, Kessler 2), and the ground cover
+// round the camera (world/flora.ts, 7).
 
 export const oldFlood = floodSet(6, 'oldroad', 0.1);
 export const OLD_HEADLIGHTS = [0, 1, 2];
@@ -117,6 +120,9 @@ export class OldRoad implements DriveArea {
   /** World pose for the truck at the start, in the right lane, facing the dawn. */
   start: { pos: THREE.Vector3; heading: number };
   obstacles: Obstacle[] = [];
+  /** The brush, the grass and the stones (world/flora.ts); the diner's and the town's walls come when
+   *  they are built (World.ensureOldRoad). */
+  flora!: Flora;
   /** Never reached: the chapter ends the drive on C, not in a zone. */
   endZone: Box2 = { minX: 1e9, maxX: 1e9, minZ: 1e9, maxZ: 1e9 };
   headlights = { set: oldFlood, slots: OLD_HEADLIGHTS };
@@ -170,7 +176,6 @@ export class OldRoad implements DriveArea {
       concrete: std({ map: artTexture('concrete'), color: 0xb8b0a0, roughness: 0.95 }),
       post: retro(new THREE.MeshStandardMaterial({ map: milepostAtlas(), roughness: 0.55 }), 0.004, oldFlood, beam),
       witness: retro(new THREE.MeshStandardMaterial({ map: witnessTex(), roughness: 0.6, alphaTest: 0.5, side: THREE.DoubleSide }), 0.006, oldFlood, beam),
-      bush: std({ color: 0x4f4c31, roughness: 1, flatShading: true }),
       rock: std({ color: 0x8a7c6a, roughness: 0.95, flatShading: true }),
       wire: std({ color: 0x5a5650, roughness: 0.6, metalness: 0.3 }),
       rust: std({ color: 0x6a3a1e, roughness: 0.8, metalness: 0.2 }),
@@ -198,6 +203,7 @@ export class OldRoad implements DriveArea {
     const own = rows.filter((p) => Math.abs(p.x - J.x) > 120);
     const ground = new THREE.Mesh(mergeGeometries([ribbon(own, left, gy, true, 0), ribbon(own, out, gy, true, 0)])!, m.ground);
     ground.name = 'desert';
+    desertGround(m.ground); desertGround(m.hwyGround);   // the brush's dark spots far out (world/flora.ts)
     const plainMesh = new THREE.Mesh(plain, m.ground);
     // the road: asphalt and shoulders in one picture, 8.8 m across, 24 m per repeat; it begins
     // at the highway's edge
@@ -383,55 +389,61 @@ export class OldRoad implements DriveArea {
       this.group.add(instances(geo, m.vc, list));
     }
 
-    // ---------- creosote, rocks and yucca, thick near the road ----------
+    // ---------- rocks, thick near the road ----------
+    // The brush, the grass and the stones round them are world/flora.ts (the draws of the brush
+    // that stood here are kept, so the rocks are where they were).
     {
-      const bush: THREE.Matrix4[] = [], rock: THREE.Matrix4[] = [], yucca: THREE.Matrix4[] = [], tints: THREE.Color[] = [];
-      for (let n = 0; n < 9000 && bush.length < 1700; n++) {
+      const rock: THREE.Matrix4[] = [];
+      for (let n = 0, bush = 0; n < 9000 && bush < 1700; n++) {
         const s = START.s - 300 + r() * (1100 - (START.s - 300)), side = r() < 0.5 ? -1 : 1, off = 7 + Math.pow(r(), 1.6) * 170;
         const b = beside(s, side * off);
         if (Math.abs(off - FENCE) < 1 || Math.abs(off + side * POWER) < 1.5 || Math.abs(b.z - C_LINE.z) < 1.2) continue;
         const k = r(), y = heightAt(b.x, b.z);
-        if (k < 0.74) {
-          const sc = 0.45 + r() * 1.0;
-          bush.push(place(b.x, y - 0.08 * sc, b.z, r() * 6, sc, 0, sc * (0.7 + r() * 0.5)));
-          tints.push(new THREE.Color().setHSL(0.13 + r() * 0.07, 0.2 + r() * 0.15, 0.27 + r() * 0.12));
-        } else if (k < 0.96) rock.push(place(b.x, y - 0.06, b.z, r() * 6, 0.15 + r() * 0.6, (r() - 0.5) * 0.5));
-        else yucca.push(place(b.x, y - 0.05, b.z, r() * 6, 0.8 + r() * 0.5));
+        if (k < 0.74) { for (let i = 0; i < 6; i++) r(); bush++; }
+        else if (k < 0.96) rock.push(place(b.x, y - 0.06, b.z, r() * 6, 0.15 + r() * 0.6, (r() - 0.5) * 0.5));
+        else { r(); r(); }
       }
-      const lobe = (rad: number, x: number, y: number, z: number) => new THREE.IcosahedronGeometry(rad, 0).scale(1, 0.6, 1).translate(x, y, z);
-      const bushes = instances(mergeGeometries([lobe(0.6, 0, 0.25, 0), lobe(0.42, 0.4, 0.2, 0.18)])!, m.bush, bush);
-      tints.forEach((c, i) => bushes.setColorAt(i, c));
-      this.group.add(bushes, instances(new THREE.DodecahedronGeometry(0.5, 0).scale(1, 0.62, 0.85).translate(0, 0.2, 0), m.rock, rock));
-      // from the diner out to there, and along the highway: beside the way, a sequence of its own
-      // (so the driven part keeps its plants)
-      const r2 = rng(48), from = START.s - 300;
-      for (let n = 0, made = 0; n < 16000 && made < 2600; n++) {
-        const hwy = r2() < 0.18, side = r2() < 0.5 ? -1 : 1, off = 7 + Math.pow(r2(), 1.8) * 120;
-        let x: number, z: number;
-        if (hwy) { x = J.x + side * (9.5 + off * 0.5); z = fromRoadZ(HWY_DRAWN[0] + r2() * (HWY_DRAWN[1] - HWY_DRAWN[0])); }
-        else { const b = beside(S0 + 25 + r2() * (from - S0 - 25), side * off); x = b.x; z = b.z; }
-        const rx = x - J.x, rz = toRoadZ(z);
-        if (Math.abs(Math.abs(rx) - HWY.fence) < 1 || (rx > -60 && rx < 0 && Math.abs(rz - DINER.z) < 60)) continue;   // the fence, the diner
-        if (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z && rz < TOWN.z1 + 20) continue;   // Caliche
-        const nn = nearest(x, z);
-        if (nn.d < 6.5 || Math.abs(Math.abs(nn.o) - FENCE) < 1 || Math.abs(nn.o + POWER) < 1.5) continue;
-        if (Math.abs(rx) < 9 && Math.abs(rz - DINER.z) < 6000) continue;   // on the highway
-        const k = r2(), y = heightAt(x, z);
-        made++;
-        if (k < 0.74) {
-          const sc = 0.45 + r2() * 1.0;
-          bush.push(place(x, y - 0.08 * sc, z, r2() * 6, sc, 0, sc * (0.7 + r2() * 0.5)));
-          tints.push(new THREE.Color().setHSL(0.13 + r2() * 0.07, 0.2 + r2() * 0.15, 0.27 + r2() * 0.12));
-        } else if (k < 0.96) rock.push(place(x, y - 0.06, z, r2() * 6, 0.15 + r2() * 0.6, (r2() - 0.5) * 0.5));
-        else yucca.push(place(x, y - 0.05, z, r2() * 6, 0.8 + r2() * 0.5));
-      }
-      const leaf = [0.28, 0.36, 0.24], dry = [0.42, 0.34, 0.24];
-      const parts = [colored(new THREE.CylinderGeometry(0.07, 0.09, 0.35, 5).translate(0, 0.17, 0), dry), colored(new THREE.CylinderGeometry(0.012, 0.02, 1.7, 4).translate(0, 1.15, 0), dry)];
-      for (let i = 0; i < 12; i++) {
-        const a = i / 12 * Math.PI * 2, tilt = 0.35 + (i % 3) * 0.3;
-        parts.push(colored(new THREE.ConeGeometry(0.035, 0.75, 3).translate(0, 0.37, 0).rotateZ(tilt).rotateY(a).translate(0, 0.32, 0), leaf));
-      }
-      this.group.add(instances(mergeGeometries(parts)!, m.vc, yucca));
+      this.group.add(instances(new THREE.DodecahedronGeometry(0.5, 0).scale(1, 0.62, 0.85).translate(0, 0.2, 0), m.rock, rock));
+    }
+    // ---------- the ground cover (world/flora.ts) ----------
+    // By the highway, the diner and the town the road area's own rules (its terms are these moved);
+    // out along the road none on it and its shoulders, thin at their edge, thick in the ditches and
+    // along the fence, none on the line of C's stakes.
+    {
+      // what stands (the posts, the bolts' witness posts, Kessler's gate and things), not long walls
+      const posts = this.obstacles.flatMap((o) => o.kind === 'circle' ? [{ minX: o.x - o.r - origin.x, maxX: o.x + o.r - origin.x, minZ: o.z - o.r - origin.z, maxZ: o.z + o.r - origin.z }]
+        : Math.max(o.maxX - o.minX, o.maxZ - o.minZ) < 30 ? [{ minX: o.minX - origin.x, maxX: o.maxX - origin.x, minZ: o.minZ - origin.z, maxZ: o.maxZ - origin.z }] : []);
+      this.flora = new Flora({
+        name: 'oldroad', seed: COVER_SEED + 1, set: oldFlood, ground: heightAt, blocks: posts,
+        cover: (x, z) => {
+          const rx = x - J.x, rz = toRoadZ(z);
+          if (Math.abs(rx) < 26 || (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z - 60 && rz < TOWN.z1 + 20)) return roadCover(rx, rz);
+          const n = nearest(x, z);
+          if (n.d === Infinity) return 1;
+          if (n.d < SHOULDER + 0.35) return 0;
+          if (Math.abs(z - C_LINE.z) < 1.2 && x > C_LINE.x0 && x < C_LINE.x1) return 0;
+          const j = ragged(x, z);   // (the edges ragged, groundCover.edge)
+          let d = n.d < SHOULDER + 0.8 + 1.2 * j ? 0.3 : n.d < 6.6 + 1.2 * j ? 1 : n.d < 10.4 ? 1.9 : 1;   // the ditches either side (profile)
+          const fo = Math.abs(Math.abs(n.o) - FENCE), side = n.o < 0 ? -1 : 1;
+          if (n.s > S0 + 40 && n.s < 700 && !fenceGaps.some((g) => g.side === side && n.s > g.s0 && n.s < g.s1)) { if (fo < 0.22) return 0; if (fo < 1.9) d *= 2.4; }
+          return d;
+        },
+        // the seam at the shoulder's outer edge, the gravel spilt past it
+        seam: (x, z) => {
+          const rx = x - J.x, rz = toRoadZ(z);
+          if (Math.abs(rx) < 26 || (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z - 60 && rz < TOWN.z1 + 20)) return roadSeam(rx, rz);
+          const n = nearest(x, z);
+          if (n.d === Infinity || (Math.abs(z - C_LINE.z) < 1.2 && x > C_LINE.x0 && x < C_LINE.x1)) return 0;
+          return n.d > SHOULDER - 0.45 && n.d < SHOULDER + 0.35 ? 0.8 : 0;
+        },
+        spill: (x, z) => {
+          const rx = x - J.x, rz = toRoadZ(z);
+          if (Math.abs(rx) < 26 || (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z - 60 && rz < TOWN.z1 + 20)) return roadSpill(rx, rz);
+          return nearest(x, z).d < SHOULDER + 1 ? 4 : 1;
+        },
+        ways: (x, z) => nearest(x, z).d < HALF ? 'the old road' : null,
+      });
+      this.group.add(this.flora.group);
     }
 
     // ---------- far away: the mesas round the horizon (they follow the camera), SARO, the diner ----------

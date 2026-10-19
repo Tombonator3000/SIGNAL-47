@@ -230,8 +230,10 @@ export class GroundHaze {
     this.base = Number.isFinite(this.base) ? this.base + (ground - this.base) * Math.min(1, dt * 1.5) : ground;
     this.mesh.position.set(cam.x, this.base, cam.z);
     const u = this.mat.uniforms;
-    // the haze is the night's own colour, a little paler than the fog it sits in
-    (u.uCol.value as THREE.Color).copy(fog).multiplyScalar(1.7).add(_lift);
+    // the haze is the night's own colour, a little paler than the fog it sits in but greyer, so
+    // the land under the horizon stays darker than the sky over it (world/flora.ts desertGround)
+    const l = fog.r * 0.3 + fog.g * 0.45 + fog.b * 0.25;
+    (u.uCol.value as THREE.Color).setRGB(l, l, l).lerp(fog, 0.45).multiplyScalar(1.25).add(_lift);
     u.uK.value = k; u.uTime.value = t;
     // the nearest few lamps tint it
     _near.length = 0;
@@ -245,5 +247,5 @@ export class GroundHaze {
     }
   }
 }
-const _lift = new THREE.Color(0.012, 0.014, 0.02);
+const _lift = new THREE.Color(0.008, 0.009, 0.011);
 const _near: { L: { p: THREE.Vector3; r: number; col: THREE.Color; k: number }; d: number }[] = [];

@@ -9,6 +9,8 @@ import { sharedHorizon } from '../world/horizon';
 import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, DINER, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
 import { Herd } from './herd';
+import { roadFlora, postsOf } from '../world/groundCover';
+import type { Flora } from '../world/flora';
 
 export { roadFlood, HEADLIGHT_SLOTS };
 
@@ -20,10 +22,12 @@ export { roadFlood, HEADLIGHT_SLOTS };
 //
 // Draw calls: about 22 for the area itself (ground and verges 1, highway 1, track 1, the ranch's
 // road 1, merged statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1,
-// mesas 1, haze 1, all lamp glows 1, the wear on the highway 1 but not on Low: roadSurface.ts);
-// measured 29 to 38 per frame with the truck and the sky.
+// mesas 1, haze 1, all lamp glows 1, the wear on the highway 1 but not on Low: roadSurface.ts),
+// and the ground cover 7 near the camera (world/flora.ts); measured 29 to 38 per frame with the
+// truck and the sky before the ground cover.
 // Triangles: about 220 k, mostly the desert grid (56 k), bushes (52 k), the dry grass merged into
-// the ground (29 k, a third of it on Low: roadPlaces.tufts), posts and poles.
+// the ground (29 k, a third of it on Low: roadPlaces.tufts), posts and poles, and the ground cover
+// round the camera.
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = {
@@ -50,6 +54,9 @@ export class RoadArea implements DriveArea {
   onCattleGuard?: (speed: number) => void;
   /** The cattle in the pasture south of the motel (drive/herd.ts; story/pasture.ts sets them). */
   readonly herd: Herd;
+  /** The brush, the grass and the stones on the road's land (world/flora.ts); the diner's and the
+   *  town's walls and walks are added when they are built (World.ensureDiner). */
+  readonly flora: Flora;
 
   private origin: THREE.Vector3;
   private night: { hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
@@ -102,7 +109,8 @@ export class RoadArea implements DriveArea {
     this.closed = roadClosed(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
-    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build());
+    this.flora = roadFlora(roadFlood, postsOf(b.obstacles));
+    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build(), this.flora.group);
 
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }

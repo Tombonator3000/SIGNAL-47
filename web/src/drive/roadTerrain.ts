@@ -261,3 +261,10 @@ export function vergeGeometry(o: { hwy?: [number, number] | null; track?: [numbe
   const trk = o.track === null ? [] : side(trackPath(...(o.track ?? [0, Infinity])), (p) => trackHalf(p.s) + TRK.soft, TRK.flat, TRK.margin);
   return [...hwy, ...trk];
 }
+
+// ---------- the ranch's road (drive/roadProps.ts builds it; world/groundCover.ts keeps the brush off it) ----------
+/** The ranch road's line: z for an x east of the highway. */
+export const ranchZ = (x: number) => 196 + (x - 15) * 0.012 + Math.sin(x * 0.021) * 1.2;
+export const RANCH_TO = 405;
+/** On the ranch's road, or its turn-off at the highway. */
+export const onRanchRoad = (x: number, z: number) => x > 6 && x < RANCH_TO + 4 && Math.abs(z - ranchZ(x)) < 3.2 || (x > 8 && x < 11 && Math.abs(z - ranchZ(9.6) + 4.2) < 1);
