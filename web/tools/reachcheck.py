@@ -235,7 +235,21 @@ function makeReachEngine() {
           report.start.seed_witnesses.push({index,...witness});break;}}
       }
       if(!seed.length)throw Error('Exact start did not reach a nearby valid grid point');
-      report.checks.start={status:'PASS',evidence:'Exact anchor to grid movement witness recorded'};
+      // The road's own ground by something to walk to (RoadArea.walks: by the herd, by the deputy's
+      // car) is walked in the diner's area but reached by the truck left there, not from the diner:
+      // each is seeded where the truck stands on the highway (the middle of the stop's stretch of
+      // it), with the same witnessed move from an exact point (tools/getout.py walks them).
+      report.start.truck_stops=[];
+      for(const z of cfg.area==='diner'?(s.world.road?.walks??[]).filter(z=>z.id==='rsHerdRoad'||z.id==='rsDeputyCar'):[]) {
+        const at={x:(z.minX+z.maxX)/2,z:(z.minZ+z.maxZ)/2},near=validIds.filter(id=>{const t=coords(id);return Math.hypot(t.x-at.x,t.z-at.z)<=spacing*3;})
+          .sort((a,b)=>{const u=coords(a),v=coords(b);return Math.hypot(u.x-at.x,u.z-at.z)-Math.hypot(v.x-at.x,v.z-at.z);});
+        let ok=false;
+        if(p.walkable(at.x,at.z)&&aabbClear(at.x,at.z,p.radius,cs))for(const index of near){const witness=mv(at,coords(index));
+          if(witness.pass){seed.push({index});report.start.seed_witnesses.push({index,truck_stop:z.id,...witness});ok=true;break;}}
+        report.start.truck_stops.push({id:z.id,x:at.x,z:at.z,seeded:ok});
+        if(!ok)throw Error(`The truck stop ${z.id} did not reach a nearby valid grid point`);
+      }
+      report.checks.start={status:'PASS',evidence:'Exact anchor to grid movement witness recorded'+(report.start.truck_stops.length?', and from each truck stop on the highway':'')};
       const graph=flood(valid,w,h,coords,seed,mv,guard),reachedSet=new Set(graph.reached);
       report.grid.reached_indices=graph.reached;report.grid.parents=graph.reached.map(id=>graph.parents[id]);
       report.grid.reached_count=graph.reached.length;report.grid.unreachable_count=validIds.length-graph.reached.length;

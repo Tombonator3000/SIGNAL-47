@@ -3,8 +3,10 @@
 # movement code (Player.update), from the windows side through the gate, up the spine and out along
 # every row and spur to all 27 drive cabinets, and back. At each cabinet the crosshair finds it
 # (the real pick), it is used (the readout behind the glass, and a line), and a closer look says
-# something. Off the gravel is not walked, the bases and cabinets are in the way, the ground is
-# flat under the whole array (the dishes stand on it), the glimpse spots behind S-11, S-14, S-19
+# something. The highway through the array is walked too (World.canGetOut: the truck left on it,
+# tools/getout.py), but not out through the fence's opening. Off the gravel is not walked, the
+# bases and cabinets are in the way, the ground is flat under the whole array (the dishes stand
+# on it), the glimpse spots behind S-11, S-14, S-19
 # and S-22 still work from 40 m out and stand on the ground, and the field is dark at night
 # without the flashlight. Screenshots on the way; draw calls looking north.
 # Usage: python3 tools/field.py OUTDIR [WxH]
@@ -175,12 +177,18 @@ async def main():
         for (a, b2, ok, what) in [
             ((-1.0, -100.0), (-12.0, -100.0), lambda x, z: x > -2.4, 'off the spine into the desert'),
             ((40.0, -74.0), (40.0, -60.0), lambda x, z: z < -72.5, 'off a row'),
-            ((-24.0, -195.0), (-24.0, -150.0), lambda x, z: z < -193.5, 'along the highway from where a row crosses it'),
+            ((-24.0, -30.0), (-24.0, -10.0), lambda x, z: z < -20.1, 'south along the highway out through the opening in the fence'),
+            ((-24.0, -190.0), (-24.0, -230.0), lambda x, z: z > -200.8, 'north along the highway past the end of the truck\'s way'),
+            ((-24.0, -100.0), (-40.0, -100.0), lambda x, z: x > -28.4, 'off the highway into the desert'),
             ((-10.0, -195.5), (-10.0, -210.0), lambda x, z: z > -196.9, 'into the base of S-11 from its row'),
             ((44.0, -91.0), (47.0, -91.0), lambda x, z: x < 45.95, 'through the cabinet of S-05')]:
             x, z = await push(a[0], a[1], b2[0], b2[1])
             if not ok(x, z): stops.append(f'{what} (ended at {x:.2f},{z:.2f})')
-        check(not stops, 'the desert between the tracks, the highway, the bases and the cabinets stop the player' + ('' if not stops else ': ' + '; '.join(stops)))
+        check(not stops, 'the desert between the tracks, the ends of the highway, the bases and the cabinets stop the player' + ('' if not stops else ': ' + '; '.join(stops)))
+        # the highway through the array is walked (the truck can be left on it, World.canGetOut): from a row along it to the next
+        await place(-24.0, -195.0)
+        r = await walk([[-24.0, -150.0], [-24.0, -138.0], [-12.0, -138.0]])
+        check(r[0], f'from where row 3 crosses the highway, along it to row 2 and onto the row ({r[1]:.1f}, {r[2]:.1f})' + ('' if r[0] else f' stuck at {r[3]:.1f}, {r[4]:.1f}'))
         # the gate shut behind the player: the field cannot be left until it is opened again
         await place(-1.0, -24.0)
         await ev("S47.game.d.inter.get('fieldGate').use(); S47.tick(1.2)")
