@@ -5,6 +5,7 @@ import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { dressAnnex } from './dressing';
 
 // Chapter two location: the south corridor behind the control room and the SARO records
 // room off it. A small extension of the main building, as the design bible asks for.
@@ -50,6 +51,8 @@ export class RecordsAnnex {
       if (m.isMesh && !Array.isArray(m.material) && outside.has(m.material)) continue;
       this.interior.add(c);
     }
+    // what has gathered in the corridor and the records room (world/dressing.ts), drawn with the rooms
+    dressAnnex({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.glow.build());
   }
 
@@ -204,7 +207,6 @@ export class RecordsAnnex {
     const f = this.flood;
     const green = this.mat({ color: 0x55705e, roughness: 0.5, metalness: 0.45 });
     const greenDark = this.mat({ color: 0x3d5446, roughness: 0.55, metalness: 0.4 });
-    const card = this.mat({ color: 0xa3865d, roughness: 0.9 });
     const paper = this.mat({ color: 0xe6dfcb, roughness: 0.9 });
     const wood = this.mat({ color: 0x6e5a42, roughness: 0.6 });
     const desk = this.mat({ color: 0x5b6664, roughness: 0.5 });
@@ -235,19 +237,10 @@ export class RecordsAnnex {
     this.objs.recordsDoor = door;
     plane(st, 0.62, 0.22, this.card(['RECORDS ROOM', 'NO SMOKING / NO FOOD'], { w: 256, h: 92, size: 24 }), -2.6, 2.32, 6.81);
 
-    // west wall: steel shelving with archive boxes
+    // west wall: steel shelving; the archive boxes on it are each their own (world/dressing.ts),
+    // with a gap at 1.135, z 8.6 where the STATION 01 box sits pulled out
     for (const z of [7.15, 8.65, 10.15]) box(st, 0.45, 2.3, 0.04, greenDark, -5.78, 1.15, z);
     for (const y of [0.12, 0.62, 1.12, 1.62, 2.12]) box(st, 0.45, 0.025, 3.0, green, -5.78, y, 8.65);
-    const r = T.rng(5);
-    for (const y of [0.135, 0.635, 1.135, 1.635]) {
-      for (let i = 0; i < 7; i++) {
-        const z = 7.4 + i * 0.4;
-        if (y === 1.135 && i === 3) continue; // the STATION 01 box sits here, pulled out
-        const bw = 0.32 + r() * 0.04, bh = 0.24 + r() * 0.05;
-        box(st, 0.38, bh, bw, card, -5.76, y + bh / 2, z);
-        plane(st, 0.16, 0.1, paper, -5.565, y + bh * 0.55, z, Math.PI / 2);
-      }
-    }
     this.col(-6.0, -5.5, 7.1, 10.2);
     // the 1947 field records box, pulled half out of the shelf
     const fb = new THREE.Group();

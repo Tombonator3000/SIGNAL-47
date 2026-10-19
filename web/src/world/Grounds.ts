@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit } from './kit';
+import { M, box, cyl, plane, rod, mergeStatic, noMerge, nearOnly, floodlit, flood } from './kit';
+import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
@@ -8,6 +9,8 @@ import { RAMP, GROUND, WEST } from './Crossing';
 import { MOTEL_AT, MOTEL_RECT, SARO_IN_ROAD } from './geo';
 import { highwayTop } from '../drive/roadShape';
 import { ARRAY_GROUND, inRect } from './arrayLayout';
+import { dressSaro } from './dressSaro';
+import { NEAR, type Dressing } from './weathering';
 
 // SARO's grounds (Tom, 4 October late evening: «SARO must look more real, with a footpath
 // and a road out from the ramp with the truck; walk round SARO, the ramp and the truck,
@@ -41,7 +44,7 @@ const r = (minX: number, maxX: number, minZ: number, maxZ: number): Rect => ({ m
 const within = (b: Rect, x: number, z: number) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ;
 
 // Everything at floor level that the ground zones run up against.
-const RAISED: Rect[] = [
+export const RAISED: Rect[] = [
   r(-6.7, 6.7, -5.9, 5.9),      // the control room's plinth
   r(-6.6, 2.6, 5.8, 11.1),      // the records annex
   r(-7.6, -6.3, 4.75, 6.65),    // the step outside the fire exit
@@ -66,10 +69,10 @@ const SLOPES: Slope[] = [
 
 // The service road: down the ramp's line to the south, a bend to the west, then straight
 // to the highway's east edge (x -20). Its line, and its width.
-const ROAD_W = 5.0;
+export const ROAD_W = 5.0;
 const BEND = { cx: 5.8, cz: 20.5, r: 4.0 };
 const ROAD_Z = BEND.cz + BEND.r;   // 24.5, the straight run to the highway
-function roadLine() {
+export function roadLine() {
   const pts: THREE.Vector2[] = [new THREE.Vector2(9.8, 16.2), new THREE.Vector2(9.8, BEND.cz)];
   for (let i = 1; i <= 10; i++) {
     const a = (i / 10) * Math.PI / 2;
@@ -78,9 +81,25 @@ function roadLine() {
   for (const x of [0, -8, -16, -20.4]) pts.push(new THREE.Vector2(x, ROAD_Z));
   return pts;
 }
+// The decals on the pad (its top at 0; the truck stands at 8.9, 8.0 facing south, ServiceYard.ts)
+// and on the service road (Grounds.constructor).
+const SARO_WEAR: Wear[] = [
+  { x: 8.9, z: 9.7, w: 2.2, l: 1.8, ry: 0.2, k: 'oil' }, { x: 8.6, z: 8.9, w: 2.4, l: 2.0, ry: 2.1, k: 'oil' },
+  { x: 9.4, z: 10.8, w: 1.6, l: 1.4, ry: 1.0, k: 'oil' }, { x: 8.9, z: 6.6, w: 0.9, l: 2.4, ry: 0.05, k: 'drips' },
+  { x: 11.4, z: 5.2, w: 2.2, l: 2.0, ry: 0.6, k: 'cracks' }, { x: 7.6, z: 4.6, w: 1.6, l: 2.6, ry: 1.4, k: 'damp' },
+  { x: 9.8, z: 18.4, w: 3.6, l: 4.2, ry: 0.3, k: 'rubber' }, { x: 7.6, z: 22.6, w: 4.4, l: 4.6, ry: 0.9, k: 'rubber' },
+  { x: 9.8, z: 21.0, w: 4.4, l: 2.4, ry: 0, k: 'grit' }, { x: 1.5, z: 24.5, w: 2.6, l: 3.4, ry: 1.5, k: 'damp' },
+  { x: -6.5, z: 24.2, w: 2.0, l: 2.6, ry: 0.4, k: 'cracks' }, { x: -16.8, z: 25.1, w: 0.9, l: 2.6, ry: 1.57, k: 'drips' },
+  { x: -15.5, z: 23.8, w: 2.4, l: 3.2, ry: 0.8, k: 'damp' }, { x: -11.0, z: 24.8, w: 3.4, l: 2.2, ry: 0.1, k: 'seal' },
+  { x: -2.5, z: 23.6, w: 2.2, l: 1.8, ry: 0.14, k: 'fade' }, { x: 4.6, z: 25.4, w: 1.8, l: 2.2, ry: 1.2, k: 'cracks' },
+  // the road's block cracks, sealed (the most of them here, not in its picture: it would come round every 8 m)
+  { x: 9.6, z: 19.0, w: 3.0, l: 2.6, ry: 0.2, k: 'seal' }, { x: 2.4, z: 24.2, w: 3.2, l: 2.8, ry: 1.4, k: 'seal' },
+  { x: -18.6, z: 24.9, w: 3.0, l: 3.4, ry: 0.5, k: 'seal' }, { x: -7.2, z: 25.6, w: 1.6, l: 1.3, ry: 0.4, k: 'patch' },
+];
+
 // The worn path: from the foot of the fire exit's ramp, round the annex, to the foot of
 // the truck ramp where it meets the road.
-const PATH = [[-10.5, 5.7], [-9.8, 7.9], [-9.2, 10.4], [-8.1, 12.4], [-6.1, 13.5], [-2.0, 14.0], [2.0, 14.3], [4.6, 15.0], [6.0, 16.4], [6.9, 18.0]]
+export const PATH = [[-10.5, 5.7], [-9.8, 7.9], [-9.2, 10.4], [-8.1, 12.4], [-6.1, 13.5], [-2.0, 14.0], [2.0, 14.3], [4.6, 15.0], [6.0, 16.4], [6.9, 18.0]]
   .map(([x, z]) => new THREE.Vector2(x, z));
 
 export class Grounds {
@@ -102,7 +121,16 @@ export class Grounds {
     this.signs(st);
     this.things(st);
     mergeStatic(st);
+    // the wear (drive/roadSurface.ts): oil and drips on the pad where the truck stands every
+    // night, rubber where it turns at the foot of the ramp and round the bend, the turning
+    // place's gravel carried onto the road, drips and a damp patch at the stop line (drawn near
+    // only, as the dressing: weathering.NEAR)
+    this.group.add(nearOnly(wearMesh(SARO_WEAR, (x, z) => this.floorAt(x, z) + 0.012, flood, 0.008), NEAR));
+    // the house's wear, its roofs and the staff's corner of the yard (dressSaro.ts), merged apart
+    this.dressing = dressSaro((f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ));
+    this.group.add(this.dressing.build());
   }
+  readonly dressing: Dressing;
 
   // ---------- where the player can go ----------
   private walkable() {
@@ -196,9 +224,10 @@ export class Grounds {
   // ---------- the service road ----------
   private road(st: THREE.Group) {
     const line = roadLine();
-    // an old, sun-bleached asphalt (5 m to a picture, as the motel's driveway): the picture
-    // is fresh wet asphalt, so it is lifted to a dry grey
-    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('asphalt', [0.2, 0.2]), color: new THREE.Color().setRGB(1.9, 1.8, 1.62), roughness: 0.95 }), 0.012);
+    // an old, sun-bleached asphalt, cracked and patched (8 m to a picture, as the motel's lot:
+    // drive/roadSurface.ts): the picture is fresh wet asphalt, so it is lifted to a dry grey,
+    // and the damp of the night is a sheen on it under the lamps
+    const asphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: lotAsphaltTex(), color: new THREE.Color().setRGB(1.9, 1.8, 1.62), roughness: 0.95 }), 0.012), 0.8, 100, 4);
     const shoulder = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [0.25, 0.25]), color: 0xd8c9ae, roughness: 1 }), 0.012);
     st.add(this.ribbon(line, ROAD_W + 1.6, GROUND + 0.004, shoulder));
     st.add(this.ribbon(line, ROAD_W, GROUND + 0.012, asphalt));

@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import { cutoutTexture } from '../core/cutouts';
 import { artImage, artLoaded, artTexture, type ArtId } from '../core/art';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import type { Surface } from '../core/Audio';
 import { surfaceY, hash, DINER, TOWN } from '../drive/roadTerrain';
 import { SIGN_OFF } from '../core/radio';
+import { wet, wearMesh, type Wear } from '../drive/roadSurface';
+import { dressTown } from './dressTown';
+import { NEAR, type Dressing } from './weathering';
 
 // Caliche, New Mexico, pop. 412 (HENDELSER.md, section 9; Tom, 16 October). The highway is its
 // main street, from Mesa Diner, the northernmost house, about 300 m south: the gas station, the
@@ -97,6 +100,10 @@ function metreUV(m: THREE.Mesh) {
   return m;
 }
 
+/** How far the gas station's apron stands over the land: 5.5 cm, and over its throat down to
+ *  1 cm at the highway's asphalt (Town.gasStation, Town.wear). */
+const apronLift = (x: number) => x <= -5.6 ? 0.055 : 0.01 + 0.045 * (-4.72 - x) / 0.88;
+
 export class Town {
   readonly group = new THREE.Group();
   readonly zones: Zone[] = [];
@@ -156,6 +163,9 @@ export class Town {
   private studioQuad = 0;
   /** The studio's window shows it after the Night Line has signed off (the picture without Earl). */
   studioEmpty = false;
+  /** Every building made, for the dressing (dressTown.ts). */
+  private readonly built: Built[] = [];
+  readonly dressing: Dressing;
 
   constructor(origin: THREE.Vector3) {
     this.origin = origin.clone();
@@ -176,7 +186,12 @@ export class Town {
     this.townSigns(); this.crossing(); this.streetLamps(); this.ground();
     this.gasStation(); this.sheriff(); this.laundromat(); this.cinema(); this.feedStore();
     this.station1420(); this.souvenirs(); this.church(); this.houses(); this.poles();
-    this.patrolCar(); this.bundle(); this.people(); this.cardboard();
+    this.patrolCar(); this.bundle(); this.people(); this.cardboard(); this.wear();
+    // every building's wear and roof, and what stands about them (dressTown.ts)
+    this.dressing = dressTown({ set: townFlood, fall: FALL, built: this.built, gy: (x, z) => this.gy(x, z),
+      col: (f, truck = true) => { this.col(f.minX, f.maxX, f.minZ, f.maxZ, truck); }, glow: (x, y, z, size, c) => { this.glow.add(x, y, z, size, c); } });
+    this.group.add(this.dressing.build());
+    for (const m of this.dressing.materials) this.materials.add(m);
     for (let i = 0; i < 3; i++) { const h = addFlood(0, -999, 0, 0, 0xfff0d8, townFlood); townFlood.skip.add(h); this.head.push(h); }
 
     // the street and the sidewalks are walked, from the diner's lot to the last house; and the
@@ -229,7 +244,11 @@ export class Town {
       dark: this.mat({ color: 0x1e2225, roughness: .7 }),
       glass: this.mat({ color: 0x1b242c, roughness: .12, metalness: .35 }),
       concrete: this.mat({ color: 0xa29d93, map: pave, roughness: 1 }),
-      pave: this.mat({ color: 0x9c978d, map: pave, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }),
+      // the sidewalks and the gas station's apron: dry, damp in patches, and wet through where the
+      // apron was hosed down round the pump island and where the laundromat's water runs out over
+      // its sidewalk (drive/roadSurface.ts; the spots in world terms)
+      pave: wet(this.mat({ color: 0x9c978d, map: pave, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.5, 100, 2.5,
+        { spots: [[this.origin.x - 9.4, this.origin.z + 2055.5, 3.6, 8.6], [this.origin.x - 15.7, this.origin.z + 2131.5, 1.7, 4.6]], spotK: 1.4 }),
       red: this.mat({ color: 0xa8382c, roughness: .7 }),
       sign: this.mat({ map: this.atlas, roughness: .85 }),
       paint: this.mat({ color: 0xdedcd4, roughness: .35, metalness: .3 }),
@@ -323,13 +342,13 @@ export class Town {
     const a = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute | undefined;
     if (!a) return; const k = new THREE.Color(c); a.setXYZ(i, k.r, k.g, k.b); a.needsUpdate = true;
   }
-  /** Ground draped with pavement (lift metres above the land, which it follows). */
-  private drape(x0: number, x1: number, z0: number, z1: number, lift = 0.05, mat = this.m.pave, step = 2) {
+  /** Ground draped with pavement (lift metres above the land, which it follows, or by x). */
+  private drape(x0: number, x1: number, z0: number, z1: number, lift: number | ((x: number) => number) = 0.05, mat = this.m.pave, step = 2) {
     const nx = Math.max(1, Math.ceil((x1 - x0) / step)), nz = Math.max(1, Math.ceil((z1 - z0) / step));
     const pos: number[] = [], uv: number[] = [], idx: number[] = [];
     for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
       const x = x0 + (x1 - x0) * i / nx, z = z0 + (z1 - z0) * j / nz;
-      pos.push(x, this.gy(x, z) + lift, z); uv.push(x, z);
+      pos.push(x, this.gy(x, z) + (typeof lift === 'number' ? lift : lift(x)), z); uv.push(x, z);
     }
     for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, c = a + nx + 1; idx.push(a, c, a + 1, a + 1, c, c + 1); }
     const g = new THREE.BufferGeometry();
@@ -352,7 +371,9 @@ export class Town {
     // a concrete band where the wall meets the ground
     box(this.st, x1 - x0 + 0.06, floor - base, z1 - z0 + 0.06, this.m.concrete, cx, (base + floor) / 2, cz);
     this.col(x0, x1, z0, z1);
-    return { x0, x1, z0, z1, floor, top, fx: s > 0 ? x1 : x0, s };
+    const b: Built = { x0, x1, z0, z1, floor, top, fx: s > 0 ? x1 : x0, s };
+    this.built.push(b);
+    return b;
   }
   /** A window or door frame on a front: four bars round w x h at (z, y). */
   private frame(b: Built, z: number, y: number, w: number, h: number, mat = this.m.metal, t = 0.07) {
@@ -419,6 +440,26 @@ export class Town {
     });
   }
 
+  // ---------- the wear on the pavement (drive/roadSurface.ts): one mesh ----------
+  // Oil where the cars stand at the pumps and the deputy's car out front, the apron hosed down by
+  // the island, rubber where the cars swing in, cracks in the sidewalks, the laundromat's water.
+  private wear() {
+    const W: Wear[] = [
+      { x: -7.6, z: 2053, w: 2.2, l: 1.9, ry: 0.4, k: 'oil' }, { x: -7.8, z: 2058.6, w: 1.9, l: 1.7, ry: 2, k: 'oil' }, { x: -12.9, z: 2055, w: 2.3, l: 2, ry: 1.1, k: 'oil' },
+      { x: -7.3, z: 2049.5, w: 0.8, l: 2.2, ry: 0.1, k: 'drips' }, { x: -8.6, z: 2060.5, w: 2.6, l: 3.4, ry: 0.5, k: 'puddle' }, { x: -12.6, z: 2050, w: 2.2, l: 2.6, ry: 2.4, k: 'puddle' },
+      { x: -7.4, z: 2044, w: 3.6, l: 5, ry: 2.7, k: 'rubber' }, { x: -7.6, z: 2067, w: 3.6, l: 5, ry: 0.4, k: 'rubber' },
+      { x: -14.8, z: 2084, w: 2.2, l: 2.6, ry: 0.3, k: 'cracks' }, { x: -14.2, z: 2046, w: 2.4, l: 2, ry: 0.12, k: 'fade' }, { x: -9.8, z: 2088.9, w: 4.4, l: 1.8, ry: Math.PI, k: 'grit' },
+      { x: -12.3, z: 2104.8, w: 2, l: 1.7, ry: 0.2, k: 'oil' }, { x: -12.3, z: 2108.3, w: 0.9, l: 0.8, ry: 1.3, k: 'drips' },
+      { x: -16, z: 2030, w: 1.8, l: 2.4, ry: 0.2, k: 'cracks' }, { x: -15.9, z: 2141, w: 1.8, l: 2.6, ry: 1.3, k: 'cracks' }, { x: -15.6, z: 2131.5, w: 2.4, l: 3.6, ry: 0.1, k: 'puddle' },
+      { x: 18.4, z: 2080, w: 1.8, l: 2.4, ry: 2.2, k: 'cracks' }, { x: 18.2, z: 2160, w: 1.8, l: 2.2, ry: 0.7, k: 'cracks' }, { x: 18.5, z: 2132, w: 2.2, l: 3, ry: 0.4, k: 'damp' },
+    ];
+    // on the apron (drape lift 0.055) and its throat down to the highway, the sidewalks (0.05) or the dirt between
+    const lift = (x: number, z: number) => z > 2040 && z < 2090 && x > -17.6 && x < -4.72 ? apronLift(x) : (x < -14.2 || x > 16.6) ? 0.05 : 0;
+    const mesh = wearMesh(W, (x, z) => this.gy(x, z) + lift(x, z), townFlood, 0.008, FALL);
+    this.materials.add(mesh.material as THREE.Material);
+    this.group.add(nearOnly(mesh, NEAR));
+  }
+
   // ---------- sidewalks and lots: concrete laid on the land ----------
   private ground() {
     this.drape(-17.6, -14.2, 2016, 2040);
@@ -430,6 +471,9 @@ export class Town {
   private gasStation() {
     const m = this.m;
     this.drape(-17.6, -5.6, 2040, 2090, 0.055);
+    // and its throat over the highway's gravel shoulder, down onto the asphalt, so the apron runs
+    // straight onto the road where the cars cross (as in the concept of the main street)
+    this.drape(-5.6, -4.72, 2040, 2090, apronLift, this.m.pave, 1);
     const office = this.building(-27, -17, 2066, 2078, 3.6, m.cream, 1);
     const bay = this.building(-27, -17.4, 2078, 2088, 4.3, m.cream, 1);
     // office front: the door with the poster in it, the window with the counter behind

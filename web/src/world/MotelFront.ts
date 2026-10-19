@@ -1,10 +1,14 @@
 import * as THREE from 'three';
 import { artTexture } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
+import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
+import { dressMotel } from './dressMotel';
+import { NEAR, type Dressing } from './weathering';
+import { dressMotelOffice } from './dressing';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -99,6 +103,12 @@ export class MotelFront {
     // the television's light on the office, low and in front of its screen (dark until it is
     // on); last, so the lamps before it keep their places in the set
     this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
+    // the court's wear, its roof and what stands on the walk and the lot (dressMotel.ts)
+    this.dressing = dressMotel(courtFlood, (f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ));
+    this.group.add(this.dressing.build());
+    for (const m of this.dressing.materials) this.materials.add(m);
+    // the office's clutter (world/dressing.ts), in the terms it was built in, moved with it
+    dressMotelOffice({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }
@@ -112,6 +122,7 @@ export class MotelFront {
     for (let i = 0; i < courtFlood.count; i++) if (!this.head.includes(i)) courtFlood.pos[i].add(new THREE.Vector4(at.x, at.y, at.z, 0));
     this.group.updateMatrixWorld(true);
   }
+  readonly dressing: Dressing;
   /** Height of the lot, the walk and the floors (world). */
   get floorY() { return this.at.y; }
 
@@ -167,7 +178,8 @@ export class MotelFront {
     });
     return {
       plaster:this.mat({map:plaster,roughness:1}), concrete:this.mat({map:artTexture('concrete',[.5,.5]),color:0xc0af96,roughness:1}),
-      asphalt:this.mat({map:artTexture('asphalt',[.2,.2]),color:0xe2d6c2,roughness:.95}),
+      // cracked and patched, damp under the lamps (drive/roadSurface.ts; 8 m to a picture, as SARO's road)
+      asphalt:wet(this.mat({map:lotAsphaltTex(),color:0xe2d6c2,roughness:.95}),.8,100,4),
       trim:this.mat({color:0x435b53,roughness:.8}), wood:this.mat({color:0x775039,roughness:.75}),
       door:this.mat({map:door,roughness:.8}), metal:this.mat({color:0x9c9988,roughness:.55,metalness:.5}),
       black:this.mat({color:0x202425,roughness:.7}), brass:this.mat({color:0xaa8954,roughness:.45,metalness:.55}),
@@ -216,6 +228,18 @@ export class MotelFront {
     box(s,13.3,.08,.16,m.concrete,-34.35,-.04,1.42);
     box(s,13.55,.08,.16,m.concrete,-34.475,-.04,70.88);
     for(let z=31;z<70;z+=5){box(s,5.6,.006,.075,m.paint,-35.2,.004,z);box(s,.17,.13,2.1,m.concrete,-38.3,.065,z+2.5);}
+    // The wear (drive/roadSurface.ts): oil where the guests' cars stand nose to the walk, a patch,
+    // cracks and tar on the driveway, damp in its low places, rubber where the cars swing in.
+    const wear:Wear[]=[];
+    [1,.7,0,1.2,.8,0,1,.9].forEach((k,i)=>{if(k)wear.push({x:-36.6,z:33.5+i*5,w:1.2*k+1,l:1*k+.9,ry:i*1.7,k:'oil'});});
+    wear.push({x:-35.4,z:43.4,w:.8,l:2.2,ry:1.5,k:'drips'},{x:-36.2,z:58.8,w:.8,l:2,ry:1.6,k:'drips'},
+      {x:-34,z:8,w:2.6,l:3,ry:.3,k:'cracks'},{x:-31,z:14,w:2,l:2.6,ry:.14,k:'patch'},{x:-29.6,z:4.2,w:3.2,l:3.6,ry:1,k:'damp'},
+      {x:-31.5,z:18.5,w:3.4,l:4.6,ry:2.4,k:'rubber'},{x:-36.5,z:12,w:4,l:3,ry:.6,k:'seal'},{x:-30,z:45,w:2.4,l:4,ry:.2,k:'damp'},
+      {x:-29.6,z:66,w:1.8,l:2.6,ry:.1,k:'cracks'},{x:-30.6,z:41,w:.9,l:2.4,ry:0,k:'drips'},{x:-28.6,z:3,w:2.4,l:3,ry:-Math.PI/2,k:'grit'},
+      // the lot's block cracks, sealed, as decals (the picture would show them every 8 m)
+      {x:-31.8,z:27,w:3.4,l:3,ry:1.2,k:'seal'},{x:-30.2,z:36,w:3,l:3.2,ry:.3,k:'seal'},{x:-32.4,z:55,w:3.4,l:3,ry:1.7,k:'seal'},
+      {x:-30.8,z:61.5,w:1.9,l:1.5,ry:-.12,k:'fade'},{x:-33.2,z:21.5,w:3,l:3.2,ry:2.6,k:'seal'});
+    this.group.add(nearOnly(wearMesh(wear,()=>0,courtFlood,.008,.055),NEAR));
     // A low, continuous fascia and slim posts carry the covered walk.
     metreUV(box(s,3.15,.18,49,m.concrete,-39.75,2.84,46.1));
     box(s,.12,.24,49,m.trim,-38.18,2.75,46.1);

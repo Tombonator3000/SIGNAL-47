@@ -663,6 +663,8 @@ export class Truck {
   setHeadlights(on: boolean) { this.headOn = on; this.applyLights(); }
   /** 0..1: headlights, tail lights and dash light together (0 is dark). */
   setLightLevel(level: number) { this.level = THREE.MathUtils.clamp(level, 0, 1); this.applyLights(); }
+  /** How bright the headlights are now, 0..1 (off, or dimmed by trouble): the dust in them (world/nightlife.ts). */
+  get beam() { return this.headOn ? this.level : 0; }
   setBrake(on: boolean) { if (on !== this.brakeOn) { this.brakeOn = on; this.applyLights(); } }
   /** The headlights' colour (white when null): the lamps, their glow and the pools on the ground. */
   setHeadColor(c: THREE.Color | null) { this.headColor.copy(c ?? HEAD); this.applyLights(); }

@@ -99,6 +99,15 @@ export function tint(x: number, z: number, out: number[], k = 0) {
   const sand = 0.22 * washAt(x, z);
   out[k] = n + sand; out[k + 1] = n * 0.98 + sand * 0.9; out[k + 2] = n * 0.95 + sand * 0.75;
 }
+/** The desert's colour and the gravel's (roadProps.roadMaterials). A track's edges are given the
+ *  desert's (edgeColour), so they fade into the land with no line (the picture fades too: gravelTex). */
+export const GROUND_TINT = 0xe8dcc8, GRAVEL_TINT = 0xf2ece0;
+const G_LIN = new THREE.Color(GROUND_TINT), T_LIN = new THREE.Color(GRAVEL_TINT), _tint: number[] = [0, 0, 0];
+/** A vertex colour for a gravel track at (x, z): white, or f of the way to the desert's own there. */
+export function edgeColour(x: number, z: number, f: number, out: number[]) {
+  tint(x, z, _tint);
+  out.push(1 + (_tint[0] * G_LIN.r / T_LIN.r - 1) * f, 1 + (_tint[1] * G_LIN.g / T_LIN.g - 1) * f, 1 + (_tint[2] * G_LIN.b / T_LIN.b - 1) * f);
+}
 
 // ---------- the desert grid: 10 m cells over the drive, wider cells out to the horizon ----------
 function axis(c0: number, c1: number, step: number, lo: number, hi: number) {
@@ -124,7 +133,12 @@ export function gridY(x: number, z: number) {
  *  beyond it (coarse out there: the road rides on it). */
 const oldBase = (x: number, z: number) => { const k = smooth(18, 26, x); return k <= 0 ? hLow(x, z) : k >= 1 ? gridY(x, z) : hLow(x, z) + (gridY(x, z) - hLow(x, z)) * k; };
 const oldLift = (d: number) => d <= OLD.half ? 0.1 + 0.04 * (1 - (d / OLD.half) ** 2) : 0.1 * (OLD.shoulder - d) / (OLD.shoulder - OLD.half);
-const trkLift = (d: number, w: number) => d <= w ? 0.03 + 0.02 * (1 - (d / w) ** 2) : 0.03 * (w + TRK.soft - d) / TRK.soft;
+/** Where the wheels have worn the track down, as fractions of the way out from the middle to its
+ *  soft edge: the ruts in the gravel picture (gravelTex) are at RUT[0], their sides RUT[1] either
+ *  way, and they are RUT[2] metres deep, a V that the track's geometry has a column at each corner of. */
+export const RUT = [0.28, 0.14, 0.045] as const;
+const rut = (d: number, e: number) => RUT[2] * Math.max(0, 1 - Math.abs(d - RUT[0] * e) / (RUT[1] * e));
+const trkLift = (d: number, w: number) => d <= w ? 0.03 + 0.02 * (1 - (d / w) ** 2) - rut(d, w + TRK.soft) : 0.03 * (w + TRK.soft - d) / TRK.soft;
 const dropY = (d: number, flat: number, edge: number) => d <= flat ? 0 : -0.6 * (d - flat) / (edge - flat);
 /** Height of whatever is on top at (x, z): road, track, verge or desert. */
 export function surfaceY(x: number, z: number) {
@@ -210,16 +224,25 @@ function trackPath(s0 = 0, s1 = Infinity): Path {
     return { x: q.x, z: q.y, tx: (b.x - a.x) / l, tz: (b.y - a.y) / l, s: track.s[i] };
   }).filter((p, i) => track.s[Math.min(track.s.length - 1, i + 1)] >= s0 && track.s[Math.max(0, i - 1)] <= s1);
 }
-/** Asphalt with paved and gravel shoulders; u spans 12 m across, the texture repeats every 24 m. */
+/** Asphalt with paved and gravel shoulders; u spans 12 m across, the texture repeats every 48 m. */
 export function highwayGeometry(z0 = HWY.z0, z1 = HWY.z1) {
-  return ribbon(highwayPath(z0, z1), (p) => [-6, -4.8, -2.4, 0, 2.4, 4.8, 6].map((o) => ({ o, y: hLow(-p.tz * o, p.z) + hwyLift(Math.abs(o)), u: (o + 6) / 12 })), false, 1 / 24);
+  return ribbon(highwayPath(z0, z1), (p) => [-6, -4.8, -2.4, 0, 2.4, 4.8, 6].map((o) => ({ o, y: hLow(-p.tz * o, p.z) + hwyLift(Math.abs(o)), u: (o + 6) / 12 })), false, 1 / 48);
 }
-/** The gravel track, its soft edges blending into the desert; 12 m per texture repeat. */
+/** The gravel track, its soft edges blending into the desert (the picture fades, and the vertex
+ *  colours go over to the desert's in the outer 1.3 m: edgeColour); 8 m per texture repeat. */
 export function trackGeometry(s0 = 0, s1 = Infinity) {
-  return ribbon(trackPath(s0, s1), (p) => {
-    const w = trackHalf(p.s), e = w + TRK.soft;
-    return [-e, -w, -w / 2, 0, w / 2, w, e].map((o) => ({ o, y: hLow(p.x - p.tz * o, p.z + p.tx * o) + trkLift(Math.abs(o), w), u: 0.5 + o / (2 * e) }));
+  const col: number[] = [];
+  const g = ribbon(trackPath(s0, s1), (p) => {
+    const w = trackHalf(p.s), e = w + TRK.soft, a = (RUT[0] - RUT[1]) * e, b = RUT[0] * e, c = (RUT[0] + RUT[1]) * e;
+    return [-e, -w, -c, -b, -a, 0, a, b, c, w, e].map((o) => {
+      const x = p.x - p.tz * o, z = p.z + p.tx * o;
+      edgeColour(x, z, Math.min(1, Math.max(0, (Math.abs(o) - w + 0.6) / (e - w + 0.6))), col);
+      return { o, y: hLow(x, z) + trkLift(Math.abs(o), w), u: 0.5 + o / (2 * e) };
+    });
   }, false, 1 / 8); // 8 m per repeat: the gravel picture is 4 m long, laid twice
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();   // the ruts' sides take the light a little differently from the crown
+  return g;
 }
 /** Verges beside both roads, in the desert's own material: flat, then dipping under the grid. */
 export function vergeGeometry(o: { hwy?: [number, number] | null; track?: [number, number] | null } = {}) {
@@ -238,3 +261,10 @@ export function vergeGeometry(o: { hwy?: [number, number] | null; track?: [numbe
   const trk = o.track === null ? [] : side(trackPath(...(o.track ?? [0, Infinity])), (p) => trackHalf(p.s) + TRK.soft, TRK.flat, TRK.margin);
   return [...hwy, ...trk];
 }
+
+// ---------- the ranch's road (drive/roadProps.ts builds it; world/groundCover.ts keeps the brush off it) ----------
+/** The ranch road's line: z for an x east of the highway. */
+export const ranchZ = (x: number) => 196 + (x - 15) * 0.012 + Math.sin(x * 0.021) * 1.2;
+export const RANCH_TO = 405;
+/** On the ranch's road, or its turn-off at the highway. */
+export const onRanchRoad = (x: number, z: number) => x > 6 && x < RANCH_TO + 4 && Math.abs(z - ranchZ(x)) < 3.2 || (x > 8 && x < 11 && Math.abs(z - ranchZ(9.6) + 4.2) < 1);

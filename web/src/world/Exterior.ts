@@ -2,12 +2,30 @@ import * as THREE from 'three';
 import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './kit';
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
+import { desertGround } from './flora';
 import { sharedHorizon } from './horizon';
 import { SARO_IN_ROAD, SARO_PATCH, MOTEL_AT, MOTEL_GLOWS, inRect, outside } from './geo';
-import { DISH_LAYOUT, DISH_LAYOUT_FAR, ARRAY_FLAT, GATE, FENCE_Z, LAMPS, onField } from './arrayLayout';
+import { DISH_LAYOUT, DISH_LAYOUT_FAR, ARRAY_FLAT, GATE, FENCE_Z, LAMPS } from './arrayLayout';
 import { hLow, smooth } from '../drive/roadShape';
+import { highwayTex } from '../drive/roadTextures';
+import { wet, HWY_LANES } from '../drive/roadSurface';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
+
+/** Height of SARO's own ground at a site point, as its rings are drawn (Exterior.ground): flat at
+ *  -0.62 within 300 m and over the array, rolling further out, and south along the highway the
+ *  road's land, kept out of the way under the road's own piece of it (geo.ts, SARO_PATCH). */
+export function saroLand(x: number, z: number) {
+  const far = Math.hypot(x, z);
+  let y = far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
+  // the array is graded flat; the land's roll comes back over 40 m past it
+  const e = outside(ARRAY_FLAT, x, z);
+  if (e < 40) y = -0.62 + (y + 0.62) * smooth(0, 40, e);
+  const rx = x + SARO_IN_ROAD.x, rz = z + SARO_IN_ROAD.z;
+  const w = smooth(40, 100, z) * (1 - smooth(0, 160, outside(SARO_PATCH, rx, rz)));
+  if (w > 0) y += (hLow(rx, rz) - (inRect(SARO_PATCH, rx, rz, -2) ? 0.7 : 0.05) - y) * w;
+  return y;
+}
 
 // World layout (metres): control room centred at the origin, windows face north (-Z).
 // The road runs north-south west of SARO; Sierra Motor Court is 650 m down it (geo.ts, MOTEL_AT).
@@ -61,47 +79,17 @@ export class Exterior {
       const x = pos.getX(i), z = pos.getZ(i);
       const n = 0.75 + 0.25 * Math.sin(x * 0.013) * Math.cos(z * 0.011) + r() * 0.12;
       col.set([n, n, n], i * 3);
-      const far = Math.hypot(x, z);
-      let y = far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
-      // the array is graded flat; the land's roll comes back over 40 m past it
-      const e = outside(ARRAY_FLAT, x, z);
-      if (e < 40) y = -0.62 + (y + 0.62) * smooth(0, 40, e);
-      // south along the highway the ground is the road's land (drive/roadShape.ts), and under
-      // the road's own piece of ground (geo.ts, SARO_PATCH) it keeps out of the way
-      const rx = x + SARO_IN_ROAD.x, rz = z + SARO_IN_ROAD.z;
-      const w = smooth(40, 100, z) * (1 - smooth(0, 160, outside(SARO_PATCH, rx, rz)));
-      if (w > 0) y += (hLow(rx, rz) - (inRect(SARO_PATCH, rx, rz, -2) ? 0.7 : 0.05) - y) * w;
-      pos.setY(i, y);
+      pos.setY(i, saroLand(x, z));
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.computeVertexNormals();
     // World-space metres avoid a radial UV singularity at the centre of the circle.
     const uv = geo.attributes.uv as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 5, pos.getZ(i) / 5);
-    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 })));
+    const ground = new THREE.Mesh(geo, desertGround(floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }))));
     this.group.add(ground);
-
-    // scrub
-    const bush = new THREE.IcosahedronGeometry(0.6, 0);
-    bush.scale(1, 0.55, 1);
-    const scrub = new THREE.InstancedMesh(bush, floodlit(new THREE.MeshStandardMaterial({ color: 0x4b4a2f, roughness: 1, flatShading: true })), 900);
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
-    let n = 0;
-    while (n < 900) {
-      const x = (r() - 0.5) * 420, z = (r() - 0.5) * 420 - 60;
-      if (Math.abs(x + 24) < 7) continue;             // road
-      if (x > -9 && x < 40 && z > -8 && z < 13) continue; // buildings and the records annex
-      if (x > 4 && x < 21 && z > -21 && z < 2) continue;  // service yard and photo lab
-      if (x > -17 && x < -6 && z > 3 && z < 8.5) continue;  // the path from the fire exit
-      if (x > -21 && x < 15 && z > 11 && z < 29) continue;  // the service road, the path and the yard behind the annex (Grounds.ts)
-      if (x > -11 && x < -6 && z > -20 && z < 12) continue;  // the west side of the house
-      if (x > -11 && x < 8 && z > -20 && z < -5) continue;  // the windows side
-      if (onField(x, z, 0.8)) continue;                       // the array's gravel tracks (Field.ts)
-      const k = 0.4 + r() * 1.1;
-      p.set(x, -0.55, z); s.set(k, k * (0.6 + r() * 0.6), k); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6);
-      scrub.setMatrixAt(n++, m.compose(p, q, s));
-    }
-    this.group.add(scrub);
+    // the brush, the grass and the stones on it are world/flora.ts (World.ts, groundCover.ts);
+    // past their reach the ground has the brush's dark spots (flora.desertGround)
   }
 
   private array() {
@@ -124,10 +112,12 @@ export class Exterior {
     // the site's own highway ends at z 36; south of it the road's own stretch takes over
     // (drive/corridors.ts), the same road the truck goes on in the road area. North it goes on
     // through the array and out past its last antennas, on the array's flat ground (z -480).
-    const tex = T.roadTex();
-    tex.repeat.set(1, 64.5);
-    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 }), 0.02);
+    // It is the road's own asphalt (drive/roadTextures.ts), its middle 8 m, in step with the
+    // stretch south of z 36 (road-local z -264, 48 m to a repeat), with the same damp sheen.
+    const asphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: highwayTex(), roughness: 0.55 }), 0.02), 0.5, 100, 9, { lanes: HWY_LANES, dry: -0.15 });
     const r = plane(this.group, 8, 516, asphalt, -24, -0.58, -222, 0, -Math.PI / 2);
+    const uv = r.geometry.attributes.uv as THREE.BufferAttribute;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (10 - 8 * uv.getX(i)) / 12, (-264 - uv.getY(i) * 516) / 48);
     noMerge(r);
     for (let z = 70; z > -200; z -= 34) {
       cyl(this.statics, 0.12, 0.16, 8, M.pole, -18.5, 3.4, z, 6);

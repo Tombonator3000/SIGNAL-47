@@ -1,14 +1,16 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
-import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed } from './roadProps';
-import { station, ranch, plants, saroLights, motelFar, trackRoute } from './roadPlaces';
+import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed, ranchRoad, culverts, highwayWear } from './roadProps';
+import { wet, wearMesh, OLD_LANES } from './roadSurface';
+import { station, ranch, plants, saroLights, motelFar, trackRoute, groundWithTufts } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
-import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
+import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, DINER, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
 import { Herd } from './herd';
+import { roadFlora, postsOf } from '../world/groundCover';
+import type { Flora } from '../world/flora';
 
 export { roadFlood, HEADLIGHT_SLOTS };
 
@@ -18,10 +20,14 @@ export { roadFlood, HEADLIGHT_SLOTS };
 // data stays small far from the world origin. Whatever is handed out in world terms
 // (start, end, endZone, obstacles, surface and height queries, floods) has the origin added.
 //
-// Draw calls: about 20 for the area itself (ground and verges 1, highway 1, track 1, merged
-// statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1, mesas 1,
-// haze 1, all lamp glows 1); measured 29 to 38 per frame with the truck and the sky.
-// Triangles: about 190 k, mostly the desert grid (56 k), bushes (52 k), posts and poles.
+// Draw calls: about 22 for the area itself (ground and verges 1, highway 1, track 1, the ranch's
+// road 1, merged statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1,
+// mesas 1, haze 1, all lamp glows 1, the wear on the highway 1 but not on Low: roadSurface.ts),
+// and the ground cover 7 near the camera (world/flora.ts); measured 29 to 38 per frame with the
+// truck and the sky before the ground cover.
+// Triangles: about 220 k, mostly the desert grid (56 k), bushes (52 k), the dry grass merged into
+// the ground (29 k, a third of it on Low: roadPlaces.tufts), posts and poles, and the ground cover
+// round the camera.
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = {
@@ -48,6 +54,9 @@ export class RoadArea implements DriveArea {
   onCattleGuard?: (speed: number) => void;
   /** The cattle in the pasture south of the motel (drive/herd.ts; story/pasture.ts sets them). */
   readonly herd: Herd;
+  /** The brush, the grass and the stones on the road's land (world/flora.ts); the diner's and the
+   *  town's walls and walks are added when they are built (World.ensureDiner). */
+  readonly flora: Flora;
 
   private origin: THREE.Vector3;
   private night: { hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
@@ -76,23 +85,32 @@ export class RoadArea implements DriveArea {
     this.night = { hemi, moon };
 
     const m = roadMaterials();
+    // Caliche's main street wet along its west edge where the water ran off: the gas station's
+    // hosed apron (Town.ts), the diner's lot and the laundromat
+    const spots = m.asphalt.userData.wetSpots as THREE.Vector4[];
+    spots[0].set(origin.x - 4.4, origin.z + 2055, 1.5, 10); spots[1].set(origin.x - 3.9, origin.z + DINER.z + 2, 1.7, 9);
+    spots[2].set(origin.x - 4.3, origin.z + 2131.5, 1.2, 6);
     const b: Build = { root: this.group, statics: new THREE.Group(), glow: this.glow, m, obstacles: [], wires: [] };
-    const ground = new THREE.Mesh(mergeGeometries([groundGeometry(), ...vergeGeometry()])!, m.ground);
-    ground.name = 'desert';
+    // the desert, its verges and the dry grass on them (roadPlaces.tufts; Low draws a third of it)
+    const ground = groundWithTufts([groundGeometry(), ...vergeGeometry()], m.ground, 'desert');
     // the old Roswell road going off east across from the diner (OldRoad.ts has the rest of it)
-    this.oldAsphalt = floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood);
-    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), new THREE.Mesh(trackGeometry(), m.gravel), new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));
+    this.oldAsphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood), 0.5, 100, 6, { lanes: OLD_LANES });
+    const trk = new THREE.Mesh(trackGeometry(), m.gravel);
+    trk.name = 'surveyTrack';
+    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), trk, new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));
     ranch(b);    // flood slot 3
     station(b);  // flood slot 4
     // the builders placed their lamps in local terms; floods live in world terms
     for (let i = HEADLIGHT_SLOTS.length; i < roadFlood.count; i++) roadFlood.pos[i].x += origin.x, roadFlood.pos[i].y += origin.y, roadFlood.pos[i].z += origin.z;
-    poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
+    poles(b); fences(b); signs(b); cattleGuard(b); plants(b); ranchRoad(b); culverts(b);
+    this.group.add(wearMesh(highwayWear(), surfaceY, roadFlood));   // the highway's wear (roadSurface.ts)
     motelFar(b);   // Sierra Motor Court from the road (its real buildings are SARO's, World.ts)
     this.herd = new Herd(b, roadFlood, 'road');   // the pasture south of it (HENDELSER.md, event 2)
     this.closed = roadClosed(b);
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
-    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build());
+    this.flora = roadFlora(roadFlood, postsOf(b.obstacles));
+    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build(), this.flora.group);
 
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }

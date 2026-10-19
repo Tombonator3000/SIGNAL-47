@@ -44,6 +44,10 @@ async def main():
         async def face(x, y, z):
             await ev(f"(()=>{{const p=S47.player; p.yaw=Math.atan2(-({x}-p.pos.x), -({z}-p.pos.z)); p.pitch=Math.atan2({y}-(p.floorY+p.eye), Math.hypot({x}-p.pos.x,{z}-p.pos.z)); S47.tick(0.05);}})()")
         await ev("S47.hold = true; S47.jump('chapter1'); S47.tick(1.0)")
+        # the night's own events (story/nightEvents.ts) come at random after a minute and a half or
+        # more: none in this test, or one run in three the 47 s of silence held the town's back
+        # (the cutout not written down, and the rest after it)
+        await ev("S47.nightEvents['wait'] = 1e9")
         await ev("window.__p = S47.world.prepare('diner')")
         for _ in range(120):
             if await ev("!!S47.world.town && !!S47.world.diner"): break

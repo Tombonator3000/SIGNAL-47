@@ -100,6 +100,9 @@ async def main():
         ring = await ev("(() => { const r = S47.scene.getObjectByName('abduct:ring'); return r ? Math.hypot(r.position.x - S47.player.pos.x, r.position.z - S47.player.pos.z) : -1; })()")
         check(0 <= ring < 1, f'in a ring of frost ({ring:.2f} m from its middle)')
         rec = lambda: ev("(() => { const r = S47.scene.getObjectByName('abduct:record'); return r ? [r.visible, Math.hypot(r.position.x - S47.player.pos.x, r.position.z - S47.player.pos.z)] : null; })()")
+        # (the calm puts the recordings up in its own steps: until() can stop on the step that ended
+        # the waking, before one of them, and then half the runs found it not there yet)
+        await ev("S47.tick(0.1)")
         r = await rec()
         check(r is not None and (r[0] == (r[1] > 45)), f'the recording stands where you were taken ({r})')
         await ev(f"S47.player.place({take[0]} + 10, {take[1]}, 0); S47.tick(0.2)")

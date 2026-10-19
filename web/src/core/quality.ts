@@ -32,6 +32,7 @@ function lambertOf(m: THREE.MeshStandardMaterial): THREE.MeshLambertMaterial {
   });
   l.name = m.name;
   l.toneMapped = m.toneMapped;
+  l.forceSinglePass = m.forceSinglePass;   // (a see-through double-sided one drawn in one pass, not two)
   // keep the fake sodium floodlights (kit.floodlit) on the cheap material too
   l.onBeforeCompile = m.onBeforeCompile;
   l.customProgramCacheKey = m.customProgramCacheKey;
@@ -57,6 +58,10 @@ export function getQuality() { return current; }
 export function setQuality(scene: THREE.Object3D, q: Quality) {
   current = q;
   scene.traverse((o) => {
+    if (o.userData.lowOff) o.visible = q !== 'low';   // detail Low goes without (drive/roadSurface.ts)
+    if (o.userData.lowRange !== undefined) (o as THREE.Mesh).geometry.setDrawRange(0, q === 'low' ? o.userData.lowRange : Infinity);   // and the part of a mesh past this (drive/roadPlaces.tufts)
+    // the small things outside (world/weathering.ts: stains, light pools, small props) are High's
+    if (o.userData.highOnly) o.visible = q !== 'low';
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh || !mesh.material) return;
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => swap(m, q)) : swap(mesh.material, q);

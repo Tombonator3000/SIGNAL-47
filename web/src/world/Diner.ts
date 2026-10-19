@@ -1,9 +1,15 @@
 import * as THREE from 'three';
 import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
+import { wearMesh } from '../drive/roadSurface';
 import type { Zone } from '../player/Player';
+import { surfaceY } from '../drive/roadTerrain';
+import { DINER } from '../drive/roadShape';
+import { dressDiner } from './dressDiner';
+import { NEAR, type Dressing } from './weathering';
+import { dressDiner as dressDinerInside } from './dressing';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
 // Load DINER_ART before construction. The five diner images are the only required art.
@@ -36,6 +42,7 @@ export class Diner {
   readonly flood=dinerFlood;
   readonly lights:{hemi:THREE.HemisphereLight};
   signLit=true;
+  readonly dressing:Dressing;
   dawn=0;
   private readonly origin:THREE.Vector3;
   private readonly shell=new THREE.Group();
@@ -56,7 +63,15 @@ export class Diner {
     for(const p of dinerFlood.pos)p.set(0,-999,0,0);
     this.m=this.makeMaterials();for(const [id,m] of Object.entries(this.m))m.name='diner/'+id;
     this.landscape();this.building();this.counter();this.booths();this.papersAndPhone();this.people();this.signAndRig();
-    mergeStatic(this.shell);mergeStatic(this.fixed);
+    // its wear, its roof and what stands about it (dressDiner.ts); by the highway the land round it is the road's
+    const gy=(x:number,z:number)=>onRoad?surfaceY(x+DINER.x,z+DINER.z)-origin.y:-.18;
+    this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy);this.shell.add(this.dressing.build());
+    for(const m of this.dressing.materials)this.materials.add(m);
+    // the counter's, the booths' and the walls' clutter (world/dressing.ts)
+    dressDinerInside({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});
+    // the counter, the booths and the walls inside are of the shell's paints: merged with it, one
+    // mesh per paint for the whole diner (seven draw calls fewer wherever it is seen)
+    this.shell.add(this.fixed);mergeStatic(this.shell);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
     this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);
     for(const z of [-5,0,5])this.light(-2.0,2.8,z,4.5,0xddeaff);
@@ -148,6 +163,15 @@ export class Diner {
     // Floor plates meet at exact edges. Zones overlap, render meshes never do.
     slab(3.6,16,-16,16,m.gravel);slab(2,3.6,-16,-9.4,m.gravel);slab(2,3.6,9.4,16,m.gravel);
     slab(2,3.6,-9.4,9.4,m.cream);slab(1.8,2,-.6,.6,m.cream);
+    // The wear on the gravel (drive/roadSurface.ts): oil where the trucks stand, under the rig's
+    // engine and along its trailer, the tracks of the night's trucks pressed into the gravel as
+    // they swung in off the highway. Gravel does not shine: hardly any sheen (k 0.1).
+    const wear=wearMesh([
+      {x:9,z:4.3,w:2.2,l:1.8,ry:.3,k:'oil'},{x:11.8,z:1.6,w:1.8,l:1.5,ry:1.2,k:'oil'},{x:6.2,z:9.5,w:2,l:1.7,ry:2.2,k:'oil'},
+      {x:13.6,z:-14.1,w:2.4,l:2,ry:.1,k:'oil'},{x:8,z:-14.2,w:5.4,l:1.2,ry:1.57,k:'drips'},{x:5.2,z:-12.6,w:1.6,l:1.4,ry:.7,k:'oil'},
+      {x:13.4,z:-3,w:4.6,l:6.5,ry:2.9,k:'tread'},{x:12.6,z:7.5,w:4.6,l:6,ry:.4,k:'tread'},{x:9.5,z:-7,w:4.4,l:5.5,ry:1.9,k:'tread'},
+    ],()=>0,dinerFlood,.006,.02,.1);
+    this.materials.add(wear.material as THREE.Material);this.group.add(nearOnly(wear,NEAR));
     if(!this.onRoad){slab(16,24,-180,180,m.asphalt);
       for(const x of [19.9,20.1])box(s,.08,.006,360,m.yellow,x,.004,0);
       for(const x of [16.3,23.7])box(s,.1,.006,360,m.cream,x,.004,0);}
