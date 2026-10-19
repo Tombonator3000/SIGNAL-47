@@ -7,6 +7,7 @@ import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
 import { Sky } from './world/Sky';
+import { Backdrop } from './world/backdrop';
 import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
 import { Prologue } from './story/Prologue';
@@ -34,7 +35,7 @@ import { SaveStore, type SaveKind, type SaveMeta } from './core/saves';
 import { saveMenu, played } from './ui/SaveMenu';
 import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
-import { loadArt, artStatus } from './core/art';
+import { loadArt, artStatus, artImage } from './core/art';
 import { initArtMaterials, floodSets } from './world/kit';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
@@ -65,6 +66,10 @@ const store = {
   set(k: string, v: unknown) { try { localStorage.setItem('s47.' + k, JSON.stringify(v)); } catch { /* ignore */ } },
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** How much of the sky's haze the far land takes at night and at dawn in the night areas (main.ts
+ *  loop; on the old road all of it at dawn): no lighter than the foot of the painted mesas behind it. */
+const NIGHT_FOG = 0.36, DAWN_FOG = 0.42;
 
 async function boot() {
   const ui = new UI();
@@ -103,6 +108,8 @@ async function boot() {
   camera.rotation.order = 'YXZ';
 
   const sky = new Sky();
+  // the painted horizon all round, on the sky's ring (world/backdrop.ts, ART_BRIEF.md round 16)
+  const backdrop = new Backdrop(sky, { night: artImage('horizonNight'), dawn: artImage('horizonDawn') });
   const ext = new Exterior();
   const room = new ControlRoom();
   const yard = new ServiceYard();
@@ -1087,7 +1094,7 @@ async function boot() {
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
@@ -1482,9 +1489,14 @@ async function boot() {
     sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
     sky.setClock(mode === 'title' ? 0 : game.clock, mode === 'title' ? null : game.ch6.sunElev);
     // out in the night areas the haze over the far land stays darker than the dawn sky behind the
-    // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02)
-    const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
-    if (world.area !== 'roswell') fogC.multiplyScalar(1 - 0.45 * THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35));
+    // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02).
+    // At night the far land is as dark as the foot of the painted mesas behind it (backdrop.ts): at
+    // the sky's own haze it was a pale cold line all round under them (the art director, 19 October)
+    const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor), dawnK = THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35);
+    fogC.multiplyScalar(world.area !== 'roswell' ? THREE.MathUtils.lerp(NIGHT_FOG, DAWN_FOG, dawnK) : THREE.MathUtils.lerp(NIGHT_FOG, 1, dawnK));
+    // the painted horizon: the area's air, the land where it ends, the lit places' glow where they are from here
+    backdrop.update(fogC, (scene.fog as THREE.FogExp2).density, world.area === 'roswell', camera.position.y - world.groundUnder(camera.position),
+      world.skyPlaces(), camera.position, world.skyYaw);
     ext.update(dt, t);
     yard.update(t);
     annex.update(t);

@@ -572,6 +572,47 @@ Lever en `MANIFEST.md` i hver mappe (`board/`, `album/`, `kit/`, `motel/` og `br
 
 Bevisbordet i `ui/Board.ts` får korken, rammen, stiftene og garnet i stedet for fargene fra CSS, og kortene får arkivkortet som underlag. Fotoalbumet bygges når det frie kameraet kommer (`todo.md`), med rammene rundt hvert bilde. Kit-fanen får tegningene ved siden av hver ting. Testbildet og bildet ovenfra brukes i hendelse 10. Delingsbildet og ikonet legges i `index.html` (`og:image` og `icon`). Mangler et bilde, brukes det som er tegnet i kode eller CSS, som i dag.
 
+## Runde 16: horisonten som malt bakteppe (Tom, 19. oktober)
+
+Levert av Codex 19. oktober (innebygd bildegenerator, `sky/MANIFEST.md`, kontroller i `production/round16/`) og bygget inn samme dag i grenen `horizon-backdrop`: `world/backdrop.ts`, `tools/backdrop.py`. Andre pass etter art director samme dag, uten nye bilder: jevn dis på hele mesakroppen og en fot på 0,32 grader i fargen landet har der det slutter, grålysningsbildet flatet ut og blågrått til sola er oppe, mesaen sola står opp bak og en høyere mesa i sør (et speilvendt utsnitt av veggen i vest) tegnes i shaderen, og båndet dipper under kameraet etter høyden.
+
+Tom: «et malt bakteppe av horisonten og mesaene laget av konseptbildene, siden spilleren aldri kommer nær dem». I dag er horisonten lavpolygon-mesaer i kode (`world/horizon.ts`, `drive/OldRoad.ts`). De fjerne ringene byttes mot ett malt bånd hele veien rundt, som spillet legger på en sylinder langt ute og blander med sin egen himmel og dis. Målet er konseptbildene i `concept/night_20261018/` (særlig `roswell_road_empty_truck.jpg`, `station01_cut_cable.jpg`, `saro_peripheral_glimpse.jpg` og `caliche_main_street.jpg`).
+
+| Fil | Mål | Hva |
+| --- | --- | --- |
+| `sky/horizon_night.png` | 8192×1024, PNG RGBA, sRGB | Horisonten rundt hele spillområdet om natta |
+| `sky/horizon_dawn.png` | 8192×1024, PNG RGBA, sRGB | Det samme landet i grålysningen, rundt 05:20 |
+
+**Geometri (begge filer, nøyaktig):**
+- 360 grader i bredden. x = 0 og x = 8192 er nord (asimut 0), øst ved x = 2048, sør ved 4096, vest ved 6144. Venstre og høyre kant møtes uten søm (kontroll: høyre halvdel lagt foran venstre).
+- Samme vinkelskala på begge leder, 22,76 piksler per grad, som et utsnitt av et ekvirektangulært panorama. Horisontlinja (der den flate ørkenen møter himmelen i øyehøyde) ligger på y = 768.
+- Himmelen er helt gjennomsiktig (alfa 0): ingen skyer, stjerner, gradient eller dis i lufta. Spillet tegner stjernene, Melkeveien og gryet selv. Land, mesaer og rygger er helt dekkende (alfa 255) med en myk kant på 1 til 2 piksler. Alt under horisontlinja er dekkende.
+- Begge filer viser nøyaktig det samme landet med samme alfamaske, piksel for piksel. Bare lyset er forskjellig.
+
+**Innhold:**
+- Under horisonten: flat høyslette helt ut til kanten, langt unna og rolig, litt mørkere og grovere nedover.
+- En lav, fjern rygg hele veien rundt (0,3 til 1,2 grader, 7 til 27 piksler), blålig i luftperspektiv, med åpninger der sletta går rett mot himmelen.
+- Foran den mesaer og frittstående buttes: flate topper med kappestein, avsatser og trappetrinn, loddrette klippebånd, raskjegler (talus) som vifter ut ved foten. De nærmeste mørkest og skarpest, de fjerneste lysere og blåere.
+- Høyder: de fleste 1 til 3 grader (23 til 70 piksler), den høyeste butten rundt 5 grader (115 piksler). Ingenting over y = 608.
+- Hvor de står, så retningene stemmer med stedene i spillet:
+  - 345 til 15 grader (nord) og 165 til 195 grader (sør): lavt, bare ryggen. Riksveien går nord og sør inn i disse åpningene.
+  - 15 til 65 grader: en lang mesarekke med avsatser, 1,5 til 2,5 grader.
+  - 65 til 95 grader (øst-nordøst, sola står opp ved 79 grader, x = 1798): bare slette og en svært lav rygg, ingenting over 0,5 grader (11 piksler). Spillet setter selv mesaen som sola tar kanten av klokka 05:30 foran den.
+  - 95 til 165 grader: spredte buttes og en brutt mesa, 1 til 3 grader, én høy butte på rundt 4 grader ved 130 grader.
+  - 195 til 250 grader: en bred mesa i to trinn, 2 til 3 grader.
+  - 250 til 310 grader (vest): det høyeste partiet, en lang mesavegg med erosjonsavsatser, 3 til 5 grader, buttes foran.
+  - 310 til 345 grader: mindre mesaer, 1 til 2 grader, som går over i ryggen.
+
+**Natt (`horizon_night.png`):** nesten svarte silhuetter (rundt RGB 8 til 24) mot en himmel spillet tegner, litt mørkere enn himmelen ved horisonten. Svake, kalde kanter av stjernelys langs toppene og klippekantene (blågrå, rundt RGB 40 til 55). Ryggen bak litt lysere og blåere enn mesaene foran. Seks til ti svært svake, varme ranchlys spredt langt ute på sletta ved foten av mesaene, hvert bare 2 til 3 piksler. Ingen glød fra byer eller anlegg: spillet legger gløden fra SARO og Caliche på i riktig retning selv, siden retningen endrer seg med hvor spilleren står.
+
+**Grålysning (`horizon_dawn.png`):** samme land som i `roswell_road_empty_truck.jpg`. Mot øst (rundt 40 til 120 grader) mørke, varmt fiolette silhuetter i motlys, med ryggen i en rosa og oransje dis. Mot vest (rundt 220 til 320 grader) blågrå mesaer der klippene som vender mot øst og dermed mot spilleren tar et svakt rosa skjær. Mellom de to en jevn overgang. Ranchlysene er slukket.
+
+**Ikke med:** tekst, folk, dyr, bygninger, veier, gjerder, strømstolper, master, kjøretøy, logoer og merkenavn. Ingen sol, måne, skyer eller himmel.
+
+**Hvordan:** som runde 13 til 15 med den innebygde bildegeneratoren. Det er lov å lage båndet av flere genererte paneler som skjøtes, maske himmelen til alfa og fargekorrigere grålysningen fra nattversjonen med Python (Pillow, NumPy), så lenge det står i manifestet. Lever `sky/MANIFEST.md` (filnavn, mål, prompter, hvordan panelene er skjøtt og maskert) og kildene og kontrollbildene i `production/round16/`: begge bånd med sømmen i midten, og en forminsket versjon av begge over hverandre. Ingen kode.
+
+**Claude kobler dem inn:** `world/backdrop.ts`, en sylinder som følger kameraet, med begge bilder i én tegning, krysstoning med gryet (`uDawn`), dis i foten, og gløden fra SARO og Caliche lagt på i koden. De fjerne mesaringene i `horizon.ts` og `OldRoad.ts` tas bort eller tynnes. Spillet bruker en WebP-kopi i `runtime/` på 4096 i bredden, og mindre på Low. Mangler bildene, maler spillet et enklere bånd i kode.
+
 ## Slik kommer bildene inn i spillet
 
 Legg filene i `web/src/assets/art/<kategori>/` med nøyaktig navn fra tabellene, for eksempel `web/src/assets/art/room/tex_floor_hextile.jpg`. På GitHub går det med Add file, Upload files i riktig mappe. Claude kobler så fila inn i `src/core/art.ts` og på flaten den hører til. Bilder som SARO trenger, lastes før verden bygges, og spillet viser TRY AGAIN hvis et bilde ikke kan hentes. Bilder som bare ett område trenger (STATION 01, veien, senere motellet og dineren), lastes når området bygges. Bare bilder som importeres i `art.ts`, kommer med i spillpakken. Konsepter, kart, `production/` og kontrollbilder blir aldri med. Store PNG-er får en lett WebP-kopi i `runtime/` med `python3 tools/prepare_art.py`.

@@ -91,7 +91,8 @@ export function stationCorridor(set: FloodSet) {
   for (const c of b.root.children) if (c instanceof THREE.InstancedMesh) bendInstances(c);
   // the lights that are seen from the road: the ranch, and SARO's lamps and beacons
   ranchLights(b);
-  b.root.add(wireMesh(b), saroLights(b), b.glow.build());
+  saroLights(b);
+  b.root.add(wireMesh(b), b.glow.build());
   b.root.name = 'stationCorridor';
   fromRoad(b.root, 'station01');
   return { group: b.root, obstacles: circles(b) };

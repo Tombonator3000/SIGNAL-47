@@ -1,0 +1,295 @@
+{
+  "result": "FAIL",
+  "checks": [
+    {
+      "check": "night format/size/RGBA8",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "night sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "profile": "sRGB built-in",
+        "icc_bytes": 588
+      }
+    },
+    {
+      "check": "night north seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "night south seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "night seam neighborhoods below horizon",
+      "result": "PASS",
+      "detail": {
+        "north": {
+          "max_RGB_step_below_horizon": 1,
+          "mean_RGB_step_below_horizon": 0.10059445898778359
+        },
+        "south": {
+          "max_RGB_step_below_horizon": 2,
+          "mean_RGB_step_below_horizon": 0.10470522469458987
+        }
+      }
+    },
+    {
+      "check": "dawn format/size/RGBA8",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "dawn sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "profile": "sRGB built-in",
+        "icc_bytes": 588
+      }
+    },
+    {
+      "check": "dawn north seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "dawn south seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "dawn seam neighborhoods below horizon",
+      "result": "FAIL",
+      "detail": {
+        "north": {
+          "max_RGB_step_below_horizon": 4,
+          "mean_RGB_step_below_horizon": 0.3430069262652705
+        },
+        "south": {
+          "max_RGB_step_below_horizon": 6,
+          "mean_RGB_step_below_horizon": 0.32417784685863876
+        }
+      }
+    },
+    {
+      "check": "identical alpha masks",
+      "result": "PASS",
+      "detail": {
+        "different_pixels": 0,
+        "alpha_sha256": "9fdf8b63f71b977b7604b588b8b07d0d3c46f6c2af8bdf915f759787aaaf35de"
+      }
+    },
+    {
+      "check": "opaque baseline and all land below",
+      "result": "PASS",
+      "detail": {
+        "baseline_y": 768,
+        "nonopaque_pixels": 0
+      }
+    },
+    {
+      "check": "no land above y608",
+      "result": "PASS",
+      "detail": {
+        "topmost_nonzero_alpha_y": 654,
+        "max_height_px": 114
+      }
+    },
+    {
+      "check": "clear sky and 1–2px contour edge",
+      "result": "PASS",
+      "detail": {
+        "max_partial_rows_per_column": 2,
+        "partial_pixels": 9741,
+        "interior_holes": 0,
+        "partial_pixels_outside_first_two_rows": 0,
+        "empty_sky_pixels": 5961304
+      }
+    },
+    {
+      "check": "north height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 27,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "sunrise_65_95 height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 10,
+        "limit_px": 11
+      }
+    },
+    {
+      "check": "south height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 27,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "azimuth layout",
+      "result": "PASS",
+      "detail": {
+        "north_x": 0,
+        "east_x": 2048,
+        "south_x": 4096,
+        "west_x": 6144,
+        "sunrise79_x": 1797.688888888889,
+        "pixels_per_degree": 22.755555555555556
+      }
+    },
+    {
+      "check": "butte130 height",
+      "result": "PASS",
+      "detail": {
+        "height_px": 91,
+        "degrees": 3.9990234375,
+        "range_px": [
+          86,
+          98
+        ]
+      }
+    },
+    {
+      "check": "west250_310 height",
+      "result": "PASS",
+      "detail": {
+        "height_px": 114,
+        "degrees": 5.009765625,
+        "range_px": [
+          100,
+          116
+        ]
+      }
+    },
+    {
+      "check": "night ranch light count/size",
+      "result": "PASS",
+      "detail": {
+        "count": 8,
+        "sizes": [
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "check": "dawn ranch light count/size",
+      "result": "PASS",
+      "detail": {
+        "count": 0,
+        "sizes": []
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "sky/horizon_night.png",
+      "bytes": 706607,
+      "sha256": "a66ba392cc2adb91c933659a24ba4259924f4c3053dc52ec1c123500645894c8",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    },
+    {
+      "file": "sky/horizon_dawn.png",
+      "bytes": 1354944,
+      "sha256": "436c73c0e491bbc4afee48a54afe0f26e9a902e7a028d1217d8c936372b9015b",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    }
+  ],
+  "source_files": [
+    {
+      "file": "sources/east_0_180.png",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "bytes": 761804,
+      "sha256": "96dd2343b20ceb3862a226d973ab02904735a35b391416d9b48350a24d3d3b8e"
+    },
+    {
+      "file": "sources/west_180_360.png",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "bytes": 765280,
+      "sha256": "de2ed4bd528e652568f8fc0944cdaefc5d78457376877f45b2f2f32936ab3961"
+    }
+  ],
+  "visual_review": "PENDING",
+  "runtime": "UNVERIFIED: Ingen integrasjon eller spillkjøring i denne rene assetleveransen."
+}

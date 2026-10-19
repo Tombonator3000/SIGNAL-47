@@ -603,7 +603,9 @@ function floraMaterial(o: THREE.MeshStandardMaterialParameters, set: FloodSet, f
 // brush-sized, filtered to their average where a pixel holds several (no shimmer far off), in
 // thicker and thinner stands; and
 // the night's haze on the far ground is darker and greyer than the sky's, so the land ends under
-// the horizon in a dark band (World.update sets the fog's colour; at dawn it is the sky's again).
+// the horizon in a dark band (main.ts sets the fog's colour: at night it is itself the darker haze
+// now, NIGHT_FOG, the colour of the painted horizon's foot, so here it is only greyer; at dawn it
+// is the sky's again).
 // High has two sizes of spot, Low one. On the desert ground's materials only: never a road or a lot.
 const DESERT_VS = /* glsl */`
   vDgW = (modelMatrix * vec4(transformed, 1.0)).xyz;`;
@@ -613,9 +615,10 @@ const DESERT_FS = /* glsl */`
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(dgH(i), dgH(i + vec2(1.0, 0.0)), f.x), mix(dgH(i + vec2(0.0, 1.0)), dgH(i + vec2(1.0, 1.0)), f.x), f.y);
   }
-  // the haze on the far land: at night darker and greyer than the sky's, at dawn the sky's
+  // the haze on the far land: at night greyer than the sky's (the fog is the darker night haze
+  // already, main.ts), at dawn the sky's
   vec3 dgFog(vec3 c) {
-    vec3 night = mix(vec3(dot(c, vec3(0.3, 0.45, 0.25))), c, 0.3) * 0.46;
+    vec3 night = mix(vec3(dot(c, vec3(0.3, 0.45, 0.25))), c, 0.3);
     return mix(night, c, smoothstep(0.24, 0.42, c.r + c.g + c.b));
   }`;
 const DESERT_MAP = /* glsl */`

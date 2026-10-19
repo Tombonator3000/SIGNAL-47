@@ -6,7 +6,6 @@ import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER, TOWN
 import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo';
 import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
-import { horizonGlowTex } from './roadTextures';
 import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall, onRanchRoad, ranchZ } from './roadProps';
 
 // Places off the road: the station gate at the end of the track, a ranch far to the east,
@@ -268,13 +267,8 @@ export function saroLights(b: Build) {
   for (const [x, y, z, size, c] of MOTEL_GLOWS) b.glow.add(x + MX, y + MOTEL_AT.y, z + MZ, size, c);
   // far ranches and a town glow to the south east, to fill the night a little
   b.glow.add(1300, 4, 1700, 7, 0xffd0a0); b.glow.add(-1500, 4, 2100, 6, 0xffc890); b.glow.add(900, 4, -1600, 6, 0xd0e4ff);
-  // a warm haze over the site, low on the northern horizon
-  const haze = new THREE.Mesh(new THREE.PlaneGeometry(1800, 300), new THREE.MeshBasicMaterial({
-    map: horizonGlowTex(), color: new THREE.Color(0.42, 0.22, 0.09), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false,
-  }));
-  haze.position.set(24, 110, -1500);
-  haze.renderOrder = 1;
-  return haze;
+  // (the warm haze over the site, low on the northern horizon, is the sky's: Sky.uGlow, set by
+  // world/backdrop.ts from where SARO is, as from every area)
 }
 // ---------- Sierra Motor Court from the road ----------
 // Its real buildings are SARO's (world/MotelFront.ts, World.ts): the truck is in SARO's area
