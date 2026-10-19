@@ -1,6 +1,6 @@
 # Kinski-opplesning
 
-Bestilt direkte av Tom 19. oktober 2026. Arbeidsgren: `codex/kinski-read-aloud`, fra main `bada636`. Dette er en lokal leveranse til gjennomgang, uten push eller publisering.
+Bestilt direkte av Tom 19. oktober 2026. Arbeidsgren: `codex/kinski-read-aloud`, fra main `bada636`. Tom ba 19. oktober om å flette inn i main. Main er oppdatert fra den testede grenen; GitHub Actions bygger og publiserer nettspillet ved push.
 
 ## Bruk
 

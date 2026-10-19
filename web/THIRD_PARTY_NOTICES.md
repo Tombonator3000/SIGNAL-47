@@ -6,7 +6,7 @@ Lydfilene i `src/assets/audio/kinski/` er genererte engelske opplesninger av spi
 
 - Generator: VoiceStudio 0.5.6, AGPL-3.0-only, https://github.com/debpalash/VoiceStudio. Programmet distribueres ikke med spillet.
 - Modell: k2-fsa/OmniVoice ved revisjon `c5fdb5ccb189668d56333f77ba2629f4cd7535f4`, https://huggingface.co/k2-fsa/OmniVoice. Det nedlastede modellkortet oppgir Apache-2.0 for kode og CC-BY-NC for modellvektene. Modellvekter distribueres ikke med spillet; genererte lydfiler merkes ikke automatisk som CC0 eller Apache.
-- Kilde, referansehash, modellkortets hash, forespørsler og etterbehandling er dokumentert i `production/kinski/provenance.json` og `generation.json`. Leveransen ligger på egen lokal gren, uten publisering.
+- Kilde, referansehash, modellkortets hash, forespørsler og etterbehandling er dokumentert i `production/kinski/provenance.json` og `generation.json`. Tom godkjente innfletting i main og publisering 19. oktober 2026.
 
 ## Tidligere innhold
 

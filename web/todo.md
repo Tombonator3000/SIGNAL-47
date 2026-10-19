@@ -282,3 +282,5 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 - [ ] Tom lytter til stemmen og den ASR-merkede A/B/C-linjen; stemmelikhet, innlevelse og fysisk lyd er ikke vurdert av kodekontrollene.
 
 - [x] Telefonutvidelse 19. oktober: alle 24 eksisterende telefonreplikker ferdig innspilt og automatisk når Kinski-valget er på. Ni nye klipp, 337 totalt; telefonprøver 49/49 og 50/50 PASS. Manus og oppdatert lokal spillfil levert.
+
+- [x] 19. oktober: Kinski-versjonen flettet inn i main etter Toms direkte beskjed, fra testet `d58b05e`. Nettspillet publiseres gjennom GitHub Actions ved push.

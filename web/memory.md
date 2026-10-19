@@ -4,6 +4,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-19: Tom ba eksplisitt «Flett inn» Kinski-versjonen i main. Main er hurtigflyttet fra `bada636` til testet kode ved `d58b05e`; dokumentert publiseringsklargjøring følger. Den tidligere begrensningen til lokal leveranse er opphevet for denne innflettingen. Push til GitHub utløser Pages-bygg og publisering. Kinski-valget er fortsatt av som standard.
+
 - 2026-10-19, telefonutvidelse direkte bestilt av Tom: det samme Kinski-valget spiller nå automatisk 24 unike telefonreplikker i kapittel 2 til 5. Ni nye opptak, 337 totalt. Telefonbankens 24 klipp forhåndslastes, bruker 320 til 3200 Hz-filter og SFX/master. Teksting og avslutning følger full dekodet varighet; pause holder både lyd- og spillklokken. Ward-valg leser bare ny tale. Tomás bruker samme opptak i hytta og på returlinjen. Prologens taleløse anrop og 47 sekunder beholdes. Manus: `production/kinski/telefonmanus.md`. Lokal leveranse på samme gren.
 
 - 2026-10-19, direkte bestilling fra Tom: valgfri Kinski-opplesning på `codex/kinski-read-aloud`. Ferdiggenererte engelske lydfiler fra lokal VoiceStudio, merket som syntetisk parodi, følger dokument- og samtalepanelene i begge bygg. Av som standard, knapp for Read aloud, valget lagres i `s47.kinskiReadAloud`, hovedvolumet gjelder. Radiostemmer og kanon beholdes. Se `KINSKI_READALOUD.md`. Lokal leveranse uten publisering.
