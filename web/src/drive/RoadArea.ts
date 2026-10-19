@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
-import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed } from './roadProps';
+import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed, ranchRoad, culverts, highwayWear } from './roadProps';
+import { wet, wearMesh } from './roadSurface';
 import { station, ranch, plants, saroLights, motelFar, trackRoute } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
 import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
@@ -18,9 +19,10 @@ export { roadFlood, HEADLIGHT_SLOTS };
 // data stays small far from the world origin. Whatever is handed out in world terms
 // (start, end, endZone, obstacles, surface and height queries, floods) has the origin added.
 //
-// Draw calls: about 20 for the area itself (ground and verges 1, highway 1, track 1, merged
-// statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1, mesas 1,
-// haze 1, all lamp glows 1); measured 29 to 38 per frame with the truck and the sky.
+// Draw calls: about 22 for the area itself (ground and verges 1, highway 1, track 1, the ranch's
+// road 1, merged statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1,
+// mesas 1, haze 1, all lamp glows 1, the wear on the highway 1 but not on Low: roadSurface.ts);
+// measured 29 to 38 per frame with the truck and the sky.
 // Triangles: about 190 k, mostly the desert grid (56 k), bushes (52 k), posts and poles.
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
@@ -80,13 +82,16 @@ export class RoadArea implements DriveArea {
     const ground = new THREE.Mesh(mergeGeometries([groundGeometry(), ...vergeGeometry()])!, m.ground);
     ground.name = 'desert';
     // the old Roswell road going off east across from the diner (OldRoad.ts has the rest of it)
-    this.oldAsphalt = floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood);
-    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), new THREE.Mesh(trackGeometry(), m.gravel), new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));
+    this.oldAsphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood), 0.8);
+    const trk = new THREE.Mesh(trackGeometry(), m.gravel);
+    trk.name = 'surveyTrack';
+    this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), trk, new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));
     ranch(b);    // flood slot 3
     station(b);  // flood slot 4
     // the builders placed their lamps in local terms; floods live in world terms
     for (let i = HEADLIGHT_SLOTS.length; i < roadFlood.count; i++) roadFlood.pos[i].x += origin.x, roadFlood.pos[i].y += origin.y, roadFlood.pos[i].z += origin.z;
-    poles(b); fences(b); signs(b); cattleGuard(b); plants(b);
+    poles(b); fences(b); signs(b); cattleGuard(b); plants(b); ranchRoad(b); culverts(b);
+    this.group.add(wearMesh(highwayWear(), surfaceY, roadFlood));   // the highway's wear (roadSurface.ts)
     motelFar(b);   // Sierra Motor Court from the road (its real buildings are SARO's, World.ts)
     this.herd = new Herd(b, roadFlood, 'road');   // the pasture south of it (HENDELSER.md, event 2)
     this.closed = roadClosed(b);

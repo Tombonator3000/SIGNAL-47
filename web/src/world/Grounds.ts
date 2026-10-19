@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit } from './kit';
+import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, flood } from './kit';
+import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
@@ -78,6 +79,19 @@ function roadLine() {
   for (const x of [0, -8, -16, -20.4]) pts.push(new THREE.Vector2(x, ROAD_Z));
   return pts;
 }
+// The decals on the pad (its top at 0; the truck stands at 8.9, 8.0 facing south, ServiceYard.ts)
+// and on the service road (Grounds.constructor).
+const SARO_WEAR: Wear[] = [
+  { x: 8.9, z: 9.7, w: 1.6, l: 1.3, ry: 0.2, k: 'oil' }, { x: 8.6, z: 9.1, w: 1.9, l: 1.6, ry: 2.1, k: 'oil' },
+  { x: 9.4, z: 10.6, w: 1.2, l: 1.0, ry: 1.0, k: 'oil' }, { x: 8.9, z: 6.6, w: 0.9, l: 2.4, ry: 0.05, k: 'drips' },
+  { x: 11.4, z: 5.2, w: 2.2, l: 2.0, ry: 0.6, k: 'cracks' }, { x: 7.6, z: 4.6, w: 1.6, l: 2.6, ry: 1.4, k: 'damp' },
+  { x: 9.8, z: 18.4, w: 3.6, l: 4.2, ry: 0.3, k: 'rubber' }, { x: 7.6, z: 22.6, w: 4.4, l: 4.6, ry: 0.9, k: 'rubber' },
+  { x: 9.8, z: 21.0, w: 4.4, l: 2.4, ry: 0, k: 'grit' }, { x: 1.5, z: 24.5, w: 2.6, l: 3.4, ry: 1.5, k: 'damp' },
+  { x: -6.5, z: 24.2, w: 2.0, l: 2.6, ry: 0.4, k: 'cracks' }, { x: -16.8, z: 25.1, w: 0.9, l: 2.6, ry: 1.57, k: 'drips' },
+  { x: -15.5, z: 23.8, w: 2.4, l: 3.2, ry: 0.8, k: 'damp' }, { x: -11.0, z: 24.8, w: 3.4, l: 2.2, ry: 0.1, k: 'seal' },
+  { x: -2.5, z: 23.6, w: 2.2, l: 1.8, ry: 0.04, k: 'patch' }, { x: 4.6, z: 25.4, w: 1.8, l: 2.2, ry: 1.2, k: 'cracks' },
+];
+
 // The worn path: from the foot of the fire exit's ramp, round the annex, to the foot of
 // the truck ramp where it meets the road.
 const PATH = [[-10.5, 5.7], [-9.8, 7.9], [-9.2, 10.4], [-8.1, 12.4], [-6.1, 13.5], [-2.0, 14.0], [2.0, 14.3], [4.6, 15.0], [6.0, 16.4], [6.9, 18.0]]
@@ -102,6 +116,10 @@ export class Grounds {
     this.signs(st);
     this.things(st);
     mergeStatic(st);
+    // the wear (drive/roadSurface.ts): oil and drips on the pad where the truck stands every
+    // night, rubber where it turns at the foot of the ramp and round the bend, the turning
+    // place's gravel carried onto the road, drips and a damp patch at the stop line
+    this.group.add(wearMesh(SARO_WEAR, (x, z) => this.floorAt(x, z) + 0.012, flood, 0.008));
   }
 
   // ---------- where the player can go ----------
@@ -196,9 +214,10 @@ export class Grounds {
   // ---------- the service road ----------
   private road(st: THREE.Group) {
     const line = roadLine();
-    // an old, sun-bleached asphalt (5 m to a picture, as the motel's driveway): the picture
-    // is fresh wet asphalt, so it is lifted to a dry grey
-    const asphalt = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('asphalt', [0.2, 0.2]), color: new THREE.Color().setRGB(1.9, 1.8, 1.62), roughness: 0.95 }), 0.012);
+    // an old, sun-bleached asphalt, cracked and patched (8 m to a picture, as the motel's lot:
+    // drive/roadSurface.ts): the picture is fresh wet asphalt, so it is lifted to a dry grey,
+    // and the damp of the night is a sheen on it under the lamps
+    const asphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: lotAsphaltTex(), color: new THREE.Color().setRGB(1.9, 1.8, 1.62), roughness: 0.95 }), 0.012), 0.9, 40, 4);
     const shoulder = floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [0.25, 0.25]), color: 0xd8c9ae, roughness: 1 }), 0.012);
     st.add(this.ribbon(line, ROAD_W + 1.6, GROUND + 0.004, shoulder));
     st.add(this.ribbon(line, ROAD_W, GROUND + 0.012, asphalt));

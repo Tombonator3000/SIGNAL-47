@@ -7,7 +7,7 @@ import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo
 import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
 import { horizonGlowTex } from './roadTextures';
-import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall } from './roadProps';
+import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall, onRanchRoad } from './roadProps';
 
 // Places off the road: the station gate at the end of the track, a ranch far to the east,
 // the desert plants and rocks, the mesas on the horizon and SARO's lights behind the start.
@@ -127,7 +127,8 @@ export function plants(b: Build, keep: Keep = () => true) {
   const add = (rr: () => number, x: number, z: number, d: number) => {
     // the same random numbers are drawn whether or not the plant is kept, so a stretch
     // drawn in another area has the very same plants
-    const k = rr(), y = surfaceY(x, z), here = keep(x, z);
+    // (none on the ranch's road, which came after them: dropped, not moved, so the rest stay put)
+    const k = rr(), y = surfaceY(x, z), here = keep(x, z) && !onRanchRoad(x, z);
     if (k < 0.72) {
       const sc = 0.45 + rr() * 1.0;
       const m = place(x, y - 0.08 * sc, z, rr() * 6, sc, 0, sc * (0.7 + rr() * 0.5));

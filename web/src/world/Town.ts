@@ -8,6 +8,7 @@ import type { Zone } from '../player/Player';
 import type { Surface } from '../core/Audio';
 import { surfaceY, hash, DINER, TOWN } from '../drive/roadTerrain';
 import { SIGN_OFF } from '../core/radio';
+import { wet, wearMesh, type Wear } from '../drive/roadSurface';
 
 // Caliche, New Mexico, pop. 412 (HENDELSER.md, section 9; Tom, 16 October). The highway is its
 // main street, from Mesa Diner, the northernmost house, about 300 m south: the gas station, the
@@ -176,7 +177,7 @@ export class Town {
     this.townSigns(); this.crossing(); this.streetLamps(); this.ground();
     this.gasStation(); this.sheriff(); this.laundromat(); this.cinema(); this.feedStore();
     this.station1420(); this.souvenirs(); this.church(); this.houses(); this.poles();
-    this.patrolCar(); this.bundle(); this.people(); this.cardboard();
+    this.patrolCar(); this.bundle(); this.people(); this.cardboard(); this.wear();
     for (let i = 0; i < 3; i++) { const h = addFlood(0, -999, 0, 0, 0xfff0d8, townFlood); townFlood.skip.add(h); this.head.push(h); }
 
     // the street and the sidewalks are walked, from the diner's lot to the last house; and the
@@ -229,7 +230,8 @@ export class Town {
       dark: this.mat({ color: 0x1e2225, roughness: .7 }),
       glass: this.mat({ color: 0x1b242c, roughness: .12, metalness: .35 }),
       concrete: this.mat({ color: 0xa29d93, map: pave, roughness: 1 }),
-      pave: this.mat({ color: 0x9c978d, map: pave, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }),
+      // the sidewalks and the gas station's apron: damp under the lamps (drive/roadSurface.ts)
+      pave: wet(this.mat({ color: 0x9c978d, map: pave, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.8, 36, 2.5),
       red: this.mat({ color: 0xa8382c, roughness: .7 }),
       sign: this.mat({ map: this.atlas, roughness: .85 }),
       paint: this.mat({ color: 0xdedcd4, roughness: .35, metalness: .3 }),
@@ -417,6 +419,26 @@ export class Town {
       const off = 5 * 3600 + 5 * 60 + [0, 9, 3, 14, 6, 21, 11][i] * 60 + Math.floor(hash(z, 7) * 50);
       this.lamps.push({ z, slot, glow, quad, off, on: true });
     });
+  }
+
+  // ---------- the wear on the pavement (drive/roadSurface.ts): one mesh ----------
+  // Oil where the cars stand at the pumps and the deputy's car out front, the apron hosed down by
+  // the island, rubber where the cars swing in, cracks in the sidewalks, the laundromat's water.
+  private wear() {
+    const W: Wear[] = [
+      { x: -7.6, z: 2053, w: 1.5, l: 1.3, ry: 0.4, k: 'oil' }, { x: -7.8, z: 2058.6, w: 1.3, l: 1.2, ry: 2, k: 'oil' }, { x: -12.9, z: 2055, w: 1.6, l: 1.4, ry: 1.1, k: 'oil' },
+      { x: -7.3, z: 2049.5, w: 0.8, l: 2.2, ry: 0.1, k: 'drips' }, { x: -8.4, z: 2061, w: 3.4, l: 4.4, ry: 0.5, k: 'damp' }, { x: -12.6, z: 2050, w: 2.6, l: 3, ry: 2.4, k: 'damp' },
+      { x: -7.4, z: 2044, w: 3.6, l: 5, ry: 2.7, k: 'rubber' }, { x: -7.6, z: 2067, w: 3.6, l: 5, ry: 0.4, k: 'rubber' },
+      { x: -14.8, z: 2084, w: 2.2, l: 2.6, ry: 0.3, k: 'cracks' }, { x: -14.2, z: 2046, w: 2.4, l: 2, ry: 0.05, k: 'patch' }, { x: -6.2, z: 2072, w: 2.6, l: 2.4, ry: Math.PI / 2, k: 'grit' },
+      { x: -12.3, z: 2104.8, w: 1.4, l: 1.2, ry: 0.2, k: 'oil' }, { x: -12.3, z: 2108.3, w: 0.9, l: 0.8, ry: 1.3, k: 'drips' },
+      { x: -16, z: 2030, w: 1.8, l: 2.4, ry: 0.2, k: 'cracks' }, { x: -15.9, z: 2141, w: 1.8, l: 2.6, ry: 1.3, k: 'cracks' }, { x: -16, z: 2131, w: 2.6, l: 4, ry: 0.1, k: 'damp' },
+      { x: 18.4, z: 2080, w: 1.8, l: 2.4, ry: 2.2, k: 'cracks' }, { x: 18.2, z: 2160, w: 1.8, l: 2.2, ry: 0.7, k: 'cracks' }, { x: 18.5, z: 2132, w: 2.2, l: 3, ry: 0.4, k: 'damp' },
+    ];
+    // on the apron (drape lift 0.055), the sidewalks (0.05) or the dirt between
+    const lift = (x: number, z: number) => x > -17.6 && x < -5.6 && z > 2040 && z < 2090 ? 0.055 : (x < -14.2 || x > 16.6) ? 0.05 : 0;
+    const mesh = wearMesh(W, (x, z) => this.gy(x, z) + lift(x, z), townFlood, 0.008, FALL);
+    this.materials.add(mesh.material as THREE.Material);
+    this.group.add(mesh);
   }
 
   // ---------- sidewalks and lots: concrete laid on the land ----------

@@ -57,6 +57,7 @@ export function getQuality() { return current; }
 export function setQuality(scene: THREE.Object3D, q: Quality) {
   current = q;
   scene.traverse((o) => {
+    if (o.userData.lowOff) o.visible = q !== 'low';   // detail Low goes without (drive/roadSurface.ts)
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh || !mesh.material) return;
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => swap(m, q)) : swap(mesh.material, q);

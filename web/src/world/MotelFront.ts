@@ -5,6 +5,7 @@ import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFloo
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
+import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -167,7 +168,8 @@ export class MotelFront {
     });
     return {
       plaster:this.mat({map:plaster,roughness:1}), concrete:this.mat({map:artTexture('concrete',[.5,.5]),color:0xc0af96,roughness:1}),
-      asphalt:this.mat({map:artTexture('asphalt',[.2,.2]),color:0xe2d6c2,roughness:.95}),
+      // cracked and patched, damp under the lamps (drive/roadSurface.ts; 8 m to a picture, as SARO's road)
+      asphalt:wet(this.mat({map:lotAsphaltTex(),color:0xe2d6c2,roughness:.95}),.9,40,4),
       trim:this.mat({color:0x435b53,roughness:.8}), wood:this.mat({color:0x775039,roughness:.75}),
       door:this.mat({map:door,roughness:.8}), metal:this.mat({color:0x9c9988,roughness:.55,metalness:.5}),
       black:this.mat({color:0x202425,roughness:.7}), brass:this.mat({color:0xaa8954,roughness:.45,metalness:.55}),
@@ -216,6 +218,15 @@ export class MotelFront {
     box(s,13.3,.08,.16,m.concrete,-34.35,-.04,1.42);
     box(s,13.55,.08,.16,m.concrete,-34.475,-.04,70.88);
     for(let z=31;z<70;z+=5){box(s,5.6,.006,.075,m.paint,-35.2,.004,z);box(s,.17,.13,2.1,m.concrete,-38.3,.065,z+2.5);}
+    // The wear (drive/roadSurface.ts): oil where the guests' cars stand nose to the walk, a patch,
+    // cracks and tar on the driveway, damp in its low places, rubber where the cars swing in.
+    const wear:Wear[]=[];
+    [1,.7,0,1.2,.8,0,1,.9].forEach((k,i)=>{if(k)wear.push({x:-36.6,z:33.5+i*5,w:1.5*k+.4,l:1.3*k+.4,ry:i*1.7,k:'oil'});});
+    wear.push({x:-35.4,z:43.4,w:.8,l:2.2,ry:1.5,k:'drips'},{x:-36.2,z:58.8,w:.8,l:2,ry:1.6,k:'drips'},
+      {x:-34,z:8,w:2.6,l:3,ry:.3,k:'cracks'},{x:-31,z:14,w:2,l:2.6,ry:.02,k:'patch'},{x:-29.6,z:4.2,w:3.2,l:3.6,ry:1,k:'damp'},
+      {x:-31.5,z:18.5,w:3.4,l:4.6,ry:2.4,k:'rubber'},{x:-36.5,z:12,w:4,l:3,ry:.6,k:'seal'},{x:-30,z:45,w:2.4,l:4,ry:.2,k:'damp'},
+      {x:-29.6,z:66,w:1.8,l:2.6,ry:.1,k:'cracks'},{x:-30.6,z:41,w:.9,l:2.4,ry:0,k:'drips'},{x:-28.6,z:3,w:2.4,l:3,ry:-Math.PI/2,k:'grit'});
+    this.group.add(wearMesh(wear,()=>0,courtFlood,.008,.055));
     // A low, continuous fascia and slim posts carry the covered walk.
     metreUV(box(s,3.15,.18,49,m.concrete,-39.75,2.84,46.1));
     box(s,.12,.24,49,m.trim,-38.18,2.75,46.1);

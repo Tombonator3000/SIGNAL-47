@@ -8,6 +8,7 @@ import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { retro, colored, instances, place, type RetroBeam } from './roadProps';
 import { smooth, hash, HWY, DINER, TOWN, highwayGeometry } from './roadTerrain';
 import { highwayTex } from './roadTextures';
+import { wet } from './roadSurface';
 import {
   path, HALF, SHOULDER, FENCE, POWER, S0, S1, START, POSTS, BOLTS, C_LINE, SUN_AZ, SARO_FROM, I0, J,
   terrain, heightAt, nearest, profile, beside, rnd, sAt, type RoadPt,
@@ -161,8 +162,9 @@ export class OldRoad implements DriveArea {
     const m = {
       ground: hazed(std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1 }), artLoaded('oldMacro') ? artTexture('oldMacro', [1, 1]) : null),
       hwyGround: hazed(std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe6d6c0, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }), artLoaded('oldMacro') ? artTexture('oldMacro', [1, 1]) : null),
-      highway: hazed(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01), null),
-      asphalt: hazed(std({ map: oldAsphaltTex(), roughness: 0.7, ...top }, 0.01), null),
+      // the dew on them in the headlights (roadSurface.ts)
+      highway: wet(hazed(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01), null)),
+      asphalt: wet(hazed(std({ map: oldAsphaltTex(), roughness: 0.7, ...top }, 0.01), null), 0.8),
       vc: std({ vertexColors: true, roughness: 0.9 }),
       steel: std({ color: 0x6f7a70, roughness: 0.5, metalness: 0.3 }),
       concrete: std({ map: artTexture('concrete'), color: 0xb8b0a0, roughness: 0.95 }),

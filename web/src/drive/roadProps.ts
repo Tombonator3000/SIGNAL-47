@@ -7,6 +7,9 @@ import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
 import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, surfaceY, hash, smooth } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
+import { wet, type Wear } from './roadSurface';
+import { rng } from '../core/textures';
+import { MILE } from './roadShape';
 import type { Rect } from './truckTextures';
 
 // The fake floods of the drive. Slots 0 to 2 belong to the truck's headlights; the road
@@ -70,7 +73,7 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
   const link = chainlink(); link.repeat.set(1, 1);
   return {
     ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }),
-    asphalt: std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01),
+    asphalt: wet(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01)),
     gravel: gravelArt ? std({ map: gravelTex(), color: 0xf2ece0, roughness: 0.95, ...top }, 0.01) : std({ color: 0x8a8070, roughness: 0.95, ...top }, 0.01),
     steel: std({ color: 0x8b9094, roughness: 0.45, metalness: 0.4 }),
     wood: std({ color: 0x6e5d4b, roughness: 0.92 }),
@@ -165,6 +168,9 @@ export function poles(b: Build, keep: Keep = () => true) {
 const DINER_GAP: [number, number] = [DINER.z - 40, TOWN.z1], OLD_GAP: [number, number] = [DINER.z - 18, DINER.z + 18];
 const EAST_GAP: [number, number] = [OLD_GAP[0], TOWN.z1];
 export const MOTEL_GAP: [number, number] = [MOTEL.z - 46, MOTEL.z + 46];
+/** The ranch's road (ranchRoad): road-local z of its middle at x, and where its gate stands in the fence. */
+export const ranchZ = (x: number) => 196 + (x - 15) * 0.012 + Math.sin(x * 0.021) * 1.2;
+const RANCH_GAP: [number, number] = [ranchZ(HWY.fence) - 3.4, ranchZ(HWY.fence) + 3.4];
 export function fences(b: Build, keep: Keep = () => true) {
   const tpost: THREE.Matrix4[] = [], wpost: THREE.Matrix4[] = [];
   const line = (ax: number, az: number, bx: number, bz: number, ...gaps: [number, number][]) => {
@@ -180,7 +186,7 @@ export function fences(b: Build, keep: Keep = () => true) {
       prev = p;
     }
   };
-  line(HWY.fence, -1000, HWY.fence, 2900, EAST_GAP);
+  line(HWY.fence, -1000, HWY.fence, 2900, EAST_GAP, RANCH_GAP);
   line(-HWY.fence, -1000, -HWY.fence, 2900, MOTEL_GAP, [GUARD.z0 - 0.6, GUARD.z1 + 0.6], DINER_GAP);
   line(-HWY.fence - 0.3, PASTURE.north, PASTURE.west, PASTURE.north);
   line(-HWY.fence - 0.3, PASTURE.south, PASTURE.west, PASTURE.south);
@@ -238,7 +244,11 @@ function sign(b: Build, x: number, z: number, ry: number, w: number, h: number, 
 }
 export function signs(b: Build, keep: Keep = () => true) {
   if (keep(-7.6, 60)) sign(b, -7.6, 60, Math.PI, 0.76, 0.95, 1.5, SIGNS.speed, [0], b.m.steel);
-  if (keep(-7.4, 210)) sign(b, -7.4, 210, Math.PI, 0.3, 0.6, 1.0, SIGNS.mile, [0], b.m.steel, false);
+  // the mile markers, both sides, a mile apart (the next one south stands short of the diner)
+  for (const [z, face] of [[210, SIGNS.mile], [210 + MILE, SIGNS.mile111]] as const) {
+    if (keep(-7.4, z)) sign(b, -7.4, z, Math.PI, 0.3, 0.6, 1.0, face, [0], b.m.steel, false);
+    if (keep(7.4, z + 6)) sign(b, 7.4, z + 6, 0, 0.3, 0.6, 1.0, face, [0], b.m.steel, false);
+  }
   if (keep(-9.2, 315)) sign(b, -9.2, 315, Math.PI, 2.6, 0.98, 1.8, SIGNS.roswell, [-0.9, 0.9], b.m.steel);
   // the turn-off: old enamel on two wooden posts, angled to the traffic from the north
   if (keep(-12.5, 511.5)) sign(b, -12.5, 511.5, 2.6, 1.8, 1.13, 1.0, SIGNS.station, [-0.65, 0.65], b.m.wood);
@@ -273,6 +283,119 @@ export function roadClosed(b: Build) {
   for (const px of [-0.5, 0.5]) cyl(g, 0.03, 0.03, 1.9, m.steel, px, 0.95, -0.02, 6);
   b.root.add(g);
   return { group: g, lamps };
+}
+
+// ---------- the ranch's road: a two-track east to the ranch, its gate and its mailbox ----------
+// Off the highway 200 m south of the start, under the telephone branch to the ranch (poles), to
+// the yard (roadPlaces.ranch). A pipe gate, shut, in the right-of-way fence (the fence's wall
+// still holds the truck), a culvert under the approach, the mailbox at the highway with the
+// ranch's name on it. The track is the survey track's gravel, a little narrower.
+const RANCH_TO = 405;
+/** Whether (x, z) is on the ranch's road or by its mailbox (no plants there: roadPlaces.plants). */
+export const onRanchRoad = (x: number, z: number) => x > 6 && x < RANCH_TO + 4 && Math.abs(z - ranchZ(x)) < 3.2 || (x > 8 && x < 11 && Math.abs(z - ranchZ(9.6) + 4.2) < 1);
+export function ranchRoad(b: Build, keep: Keep = () => true) {
+  const s = b.statics, m = b.m, HW = 2.5;
+  // the track: rows every 4 m from the shoulder to the yard, on the land (the verge, then the desert)
+  const pos: number[] = [], uv: number[] = [], idx: number[] = [];
+  let rows = 0;
+  for (let x = HWY.shoulder; x <= RANCH_TO; x += 4) {
+    if (!keep(x, ranchZ(x))) continue;
+    const t = (ranchZ(x + 1) - ranchZ(x - 1)) / 2, n = Math.hypot(1, t);
+    for (const o of [-HW, -HW / 2, 0, HW / 2, HW]) {
+      const px = x - t / n * o, pz = ranchZ(x) + o / n;
+      pos.push(px, surfaceY(px, pz) + 0.035, pz); uv.push(0.5 + o / (2 * HW), x / 8);
+    }
+    if (rows++ > 0) for (let c = 0; c < 4; c++) { const a = (rows - 2) * 5 + c, e = a + 5; idx.push(a, e, a + 1, a + 1, e, e + 1); }
+  }
+  if (rows > 1) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx); g.computeVertexNormals();
+    if (g.attributes.normal.getY(0) < 0) { g.setIndex(idx.map((_, i) => idx[i - (i % 3) + 2 - (i % 3)])); g.computeVertexNormals(); }
+    const mesh = new THREE.Mesh(g, m.gravel); mesh.name = 'ranchRoad';
+    b.root.add(mesh);
+  }
+  // the gate: a tube gate between heavy posts, shut
+  const F = HWY.fence, [g0, g1] = RANCH_GAP;
+  if (keep(F, g0)) {
+    const y0 = surfaceY(F, g0), y1 = surfaceY(F, g1);
+    cyl(s, 0.13, 0.15, 2.1, m.wood, F, y0 + 0.85, g0, 7); cyl(s, 0.13, 0.15, 2.1, m.wood, F, y1 + 0.85, g1, 7);
+    for (const h of [0.35, 0.6, 0.85, 1.1, 1.3]) rod(s, new THREE.Vector3(F, y0 + h, g0 + 0.15), new THREE.Vector3(F, y1 + h, g1 - 0.2), 0.024, m.steel, 6);
+    rod(s, new THREE.Vector3(F, y0 + 0.35, g0 + 0.15), new THREE.Vector3(F, y1 + 1.3, g1 - 0.2), 0.02, m.steel, 6);
+    for (const z of [g0 + 0.15, g1 - 0.2]) rod(s, new THREE.Vector3(F, y0 + 0.3, z), new THREE.Vector3(F, y0 + 1.35, z), 0.028, m.steel, 6);
+    circle(b, F, g0, 0.2); circle(b, F, g1, 0.2);
+  }
+  // the mailbox on its post, opening to the highway, the name on both sides
+  const mx = 9.6, mz = ranchZ(mx) - 4.2;
+  if (keep(mx, mz)) {
+    const my = surfaceY(mx, mz), g = new THREE.Group();
+    g.position.set(mx, my, mz); g.rotation.set(0, (hash(mx, mz) - 0.5) * 0.12, 0.03);
+    box(g, 0.09, 1.12, 0.09, m.wood, 0, 0.56, 0);
+    box(g, 0.26, 0.05, 0.16, m.wood, 0, 1.12, 0);
+    box(g, 0.5, 0.15, 0.2, m.steel, -0.05, 1.22, 0);
+    const top = cyl(g, 0.1, 0.1, 0.5, m.steel, -0.05, 1.3, 0, 10); top.rotation.z = Math.PI / 2;
+    for (const sd of [-1, 1]) {
+      const plate = new THREE.Mesh(uvInto(new THREE.PlaneGeometry(0.36, 0.09), SIGNS.mailbox), m.sign);
+      plate.position.set(-0.05, 1.22, sd * 0.103); plate.rotation.y = sd > 0 ? 0 : Math.PI; g.add(plate);
+    }
+    s.add(g);
+    circle(b, mx, mz, 0.15);
+  }
+  culvert(b, keep, 13.5, ranchZ(13.5), HW + 0.7, -Math.PI / 2);
+}
+
+// ---------- culverts: a corrugated pipe under an approach, its ends and their markers ----------
+/** Under a track crossing the highway's verge at (x, z): the pipe's two ends `half` metres either
+ *  side along z, a little concrete headwall behind each, and an object marker beside it facing
+ *  the highway (ry). */
+export function culvert(b: Build, keep: Keep, x: number, z: number, half: number, ry: number) {
+  const s = b.statics, m = b.m;
+  for (const sd of [-1, 1]) {
+    const pz = z + sd * half;
+    if (!keep(x, pz)) continue;
+    const y = surfaceY(x, pz);
+    // galvanised long ago, rusted brown now, half silted up
+    const pipe = cyl(s, 0.32, 0.32, 0.55, m.paint, x, y + 0.02, pz + sd * 0.1, 12); pipe.rotation.x = Math.PI / 2;
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(0.29, 12), m.dark);
+    hole.position.set(x, y + 0.02, pz + sd * 0.38); hole.rotation.y = sd > 0 ? 0 : Math.PI; s.add(hole);
+    box(s, 1.3, 0.5, 0.2, m.concrete, x, y + 0.04, pz - sd * 0.12);
+    const mx = x + (ry < 0 ? -0.9 : 0.9), mzz = pz + sd * 0.25, my = surfaceY(mx, mzz);
+    cyl(s, 0.025, 0.025, 1.25, m.steel, mx, my + 0.6, mzz, 5);
+    const plate = new THREE.Mesh(uvInto(new THREE.PlaneGeometry(0.2, 0.6), SIGNS.marker), m.sign);
+    plate.position.set(mx + (ry < 0 ? -0.03 : 0.03), my + 0.92, mzz); plate.rotation.y = ry; s.add(plate);
+    circle(b, x, pz + sd * 0.1, 0.4); circle(b, mx, mzz, 0.1);
+  }
+}
+/** The culverts by the road: under the mouth of the survey track (the ranch's has its own). */
+export function culverts(b: Build, keep: Keep = () => true) {
+  culvert(b, keep, -13.8, 520, 4.4, Math.PI / 2);
+}
+
+// ---------- wear on the highway: oil, damp patches, cracks, patches and tar (roadSurface.ts) ----------
+/** The highway's decals, road-local. The same random sequence whatever keep() keeps, so a stretch
+ *  drawn in another area (corridors.ts) has the same ones. More of them along Caliche's main
+ *  street, where the cars stand and the water lies at the edges after the street is hosed. */
+export function highwayWear(keep: Keep = () => true): Wear[] {
+  const r = rng(4711), out: Wear[] = [];
+  const add = (x: number, z: number, w: number, l: number, ry: number, k: Wear['k']) => { if (keep(x, z)) out.push({ x, z, w, l, ry, k }); };
+  const one = (z: number, town: boolean) => {
+    const k = r(), side = r() < 0.5 ? -1 : 1, a = r(), b = r(), c = r(), d = r();
+    if (k < (town ? 0.4 : 0.3)) add(town ? side * (3.6 + a * 1.2) : (a - 0.5) * 8.4, z, 1.6 + b * 2.6, 2.4 + c * 4.5, d * 6.3, 'damp');
+    else if (k < 0.5) add(side * (1.8 + (a - 0.5) * 0.4), z, 0.8 + b * 0.5, 2.5 + c * 4, (d - 0.5) * 0.2, 'drips');
+    else if (k < 0.68) add(side * (a < 0.6 ? 2.65 : 0.95), z, 1.1 + b * 0.5, 2.5 + c * 3, (d - 0.5) * 0.1, 'cracks');
+    else if (k < 0.8) add(side * (1.2 + a * 1.8), z, 1.4 + b * 1.6, 1.6 + c * 2.4, (d - 0.5) * 0.06, 'patch');
+    else add((a - 0.5) * 7, z, 3 + b * 4, 3 + c * 3, d * 6.3, 'seal');
+  };
+  for (let z = HWY.z0 + 40; z < HWY.z1 - 40; z += 10 + r() * 24) one(z, false);
+  for (let z = TOWN.z0; z < TOWN.z1; z += 6 + r() * 8) one(z, true);
+  // the mouths of the tracks and the lots: gravel carried onto the asphalt, rubber where they turn
+  add(-5.3, 520, 3.4, 6.5, Math.PI / 2, 'grit'); add(-3.4, 516.5, 3, 4.2, 0.5, 'rubber');
+  add(5.3, ranchZ(5.3), 3, 5, -Math.PI / 2, 'grit');
+  add(-2.8, DINER.z - 4, 3, 3.6, Math.PI / 2, 'grit'); add(-2.8, DINER.z + 6, 3, 3.6, Math.PI / 2, 'grit');
+  add(-2.6, DINER.z - 10, 3.4, 5, 2.6, 'rubber'); add(-2.6, DINER.z + 9, 3.4, 5, 0.6, 'rubber');
+  add(-1.6, DINER.z - 1, 1.6, 3.4, 0.3, 'drips');
+  return out;
 }
 
 // ---------- the cattle guard in the right-of-way fence, with heavy gate posts ----------

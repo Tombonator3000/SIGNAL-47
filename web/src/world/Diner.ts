@@ -3,6 +3,7 @@ import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
+import { wearMesh } from '../drive/roadSurface';
 import type { Zone } from '../player/Player';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
@@ -148,6 +149,15 @@ export class Diner {
     // Floor plates meet at exact edges. Zones overlap, render meshes never do.
     slab(3.6,16,-16,16,m.gravel);slab(2,3.6,-16,-9.4,m.gravel);slab(2,3.6,9.4,16,m.gravel);
     slab(2,3.6,-9.4,9.4,m.cream);slab(1.8,2,-.6,.6,m.cream);
+    // The wear on the gravel (drive/roadSurface.ts): oil where the trucks stand, under the rig's
+    // engine and along its trailer, the tracks of the night's trucks swinging in off the highway.
+    const wear=wearMesh([
+      {x:9,z:4.3,w:1.7,l:1.4,ry:.3,k:'oil'},{x:11.8,z:1.6,w:1.3,l:1.1,ry:1.2,k:'oil'},{x:6.2,z:9.5,w:1.5,l:1.3,ry:2.2,k:'oil'},
+      {x:13.6,z:-14.1,w:2,l:1.6,ry:.1,k:'oil'},{x:8,z:-14.2,w:5.4,l:1.2,ry:1.57,k:'drips'},{x:5.2,z:-12.6,w:1.2,l:1,ry:.7,k:'oil'},
+      {x:13.4,z:-3,w:4.2,l:6.5,ry:2.9,k:'rubber'},{x:12.6,z:7.5,w:4.2,l:6,ry:.4,k:'rubber'},{x:9.5,z:-7,w:4,l:5.5,ry:1.9,k:'rubber'},
+      {x:4.6,z:1.5,w:1.8,l:5,ry:0,k:'damp'},{x:15,z:12,w:2.6,l:2.6,ry:.8,k:'damp'},
+    ],()=>0,dinerFlood,.006,.02);
+    this.materials.add(wear.material as THREE.Material);this.group.add(wear);
     if(!this.onRoad){slab(16,24,-180,180,m.asphalt);
       for(const x of [19.9,20.1])box(s,.08,.006,360,m.yellow,x,.004,0);
       for(const x of [16.3,23.7])box(s,.1,.006,360,m.cream,x,.004,0);}
