@@ -6,7 +6,8 @@
 #         east wing), and round it, as `ctx`, what stands near enough to shade it (the yard, the
 #         photo lab, the grounds' things and the dressing, the control room's inside seen through
 #         its window), only for the bake. Also <name>.json: what the Blender script needs to know
-#         that only the running game knows (which of the wing's painted windows are lit).
+#         that only the running game knows (which of the wing's painted windows are lit, the site's
+#         lamps, the ground's height round the house).
 #   truck: SARO 07 (drive/Truck.ts) standing at the origin, unturned, as the game builds it: the
 #         merged meshes of its body, its shell and its cab, named <group>:<material> after the
 #         truck's own materials (body:paint, shell:glass, cab:vinyl, ...), and its one wheel
@@ -66,8 +67,12 @@ SARO = r"""async () => {
     const px = g.getImageData(x, Math.floor(0.51 * img.height), 1, 1).data;
     return px[0] > 150;
   };
+  // the site's lamps (kit.floodSet 'site': where, how strong, what colour), for the lamps the
+  // house bakes; and the ground's height round it (Grounds.floorAt), for the skirt
+  const site = S47.floodSets.find((s) => s.key === 'site');
+  const floods = site.pos.slice(0, site.count).map((p, i) => [p.x, p.y, p.z, p.w, site.col[i].r, site.col[i].g, site.col[i].b]);
   const facts = { litSouth: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => lit(4, i)), litNorth: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => lit(5, i)),
-    house: house.map((o) => o.name), ctx };
+    house: house.map((o) => o.name), ctx, floods, ground: S47.world.grounds.floorAt(-9, -8) };
   const glb = await new window.S47GLTFExporter().parseAsync(out, { binary: true });
   let bin = '';
   const u8 = new Uint8Array(glb);

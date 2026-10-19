@@ -1,5 +1,7 @@
 # Made again by `python3 tools/blender/build.py` from the game: the exports of the game's
-# geometry and what stands round it (several MB), and the masks' JPEGs, which are inside the .glb.
+# geometry and what stands round it (several MB), the pictures' JPEGs (they are inside the .glb),
+# and a model that did not pass the check.
 *_game.glb
-*_mask.jpg
+*.jpg
+*.new.glb
 *.blend1

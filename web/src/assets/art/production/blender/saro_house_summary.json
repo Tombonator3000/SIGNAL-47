@@ -3,17 +3,19 @@
   "glass_dark",
   "glass_lit",
   "house",
+  "skirt",
   "wing"
  ],
- "triangles": 2083,
- "vertices": 3008,
- "bytes": 1259780,
- "image_bytes": 1102894,
+ "triangles": 5989,
+ "vertices": 8258,
+ "bytes": 778972,
+ "image_bytes": 445910,
  "materials": [
   "glass_dark",
   "glass_lit",
   "house",
+  "skirt",
   "wing"
  ],
- "file_bytes": 1265124
+ "file_bytes": 788744
 }

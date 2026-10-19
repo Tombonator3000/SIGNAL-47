@@ -13,12 +13,20 @@
 #   the mirrors       rounded heads with a rim round the glass
 #   the grille        an egg-crate of slats in front of the game's grille picture
 #   the plates        frames round both licence plates
+#   the cab's roof    crowned (2.5 cm), its edges rounded down to the drip rails; the glasshouse
+#                     tapered above the belt (6 cm a side at the roof)
+#   the fenders       their front corners rounded (9 cm)
+#   the glass         rubber gaskets round the windscreen, the door windows and the back window
+#   the lamps         chrome cups behind the headlamps' lenses, bezels round the tail lamps
 #   the wheel         tyre with shoulders and tread blocks, a steel wheel with five slots, the
 #                     lug nuts and a cap (the game's four instances turn and steer it)
 # Out: src/assets/models/saro_truck.glb, in the truck's own metres: body_paint, body_chrome,
 # body_dark (always seen), shell_paint, shell_chrome, shell_dark, shell_glass (the cab from
-# outside, hidden while driving) and wheel. The paint has two UV sets, the first tiling the game's
-# paint picture every 1.1 m (as Truck.ts's boxUV); everything has a lightmap (the first and only
+# outside, hidden while driving; its dark trim has in it what shows of the cab through the glass,
+# the bench's back and its headrests, the wheel, the dash's top, told apart by the vertex colour),
+# wheel, and shadow (a quad on the ground under it with its shade, 256 by 512 px: the game
+# multiplies the ground by it). The paint has two UV sets, the first tiling the game's paint
+# picture every 1.1 m (as Truck.ts's boxUV); everything has a lightmap (the first and only
 # set where nothing tiles), where the graphics card bakes one mask (SIZE px, 1024 by default):
 # R occlusion (the ground under the truck and the wheels in their arches), G dirt (the
 # road's dust up the sides and sprayed behind the wheels, on the tailgate, on what is flat and in
@@ -83,6 +91,7 @@ drop('body', 'trim', (-0.8, 0.8, 1.103, 1.109, -2.524, -2.516))              # i
 drop('body', 'chrome', (-1.02, 1.02, 0.37, 0.565, -2.775, -2.6))             # the bumpers
 drop('body', 'chrome', (-1.0, 1.0, 0.38, 0.56, 2.6, 2.8))
 drop('shell', 'paint', (-0.99, 0.99, 0.5, 1.13, -0.86, 0.76))                # the doors and cab corners
+drop('shell', 'paint', (-0.93, 0.93, 1.765, 1.815, -0.44, 0.75))             # the cab's roof (crowned below)
 frames = [take('shell', 'paint', ((-0.95, -0.9) if s < 0 else (0.9, 0.95)) + (1.12, 1.8, -0.86, 0.76)) for s in (-1, 1)]
 # the lamps and the mirror glass stay the game's (lit by it): here only for the occlusion
 CONTEXT_MATS = {'head', 'park', 'tail', 'rev', 'mirror', 'beacon'}
@@ -127,7 +136,9 @@ fenders = K.side('fenders', FRONT, 1.98)
 K.boolean(fenders, [K.box_object('pocket', (-HOOD_X, HOOD_X, 1.095, 1.4, HOOD_Z0, HOOD_Z1))], 'DIFFERENCE')
 K.tidy(fenders)
 in_pocket = lambda p: abs(p[0]) < HOOD_X + 0.002 and p[1] > 1.09 and HOOD_Z0 - 0.002 < p[2] < HOOD_Z1 + 0.002
-bevel_by(fenders, 0.03, 3, lambda p: 0.2 if in_pocket(p) else 1.0)
+# the fenders' front corners rounded hard (9 cm: a stamped wing, not a box's corner)
+front_corner = lambda p: abs(p[0]) > 0.95 and p[2] < -2.55 and 0.55 < p[1] < 1.08
+bevel_by(fenders, 0.03, 4, lambda p: 0.2 if in_pocket(p) else 3.0 if front_corner(p) else 1.0)
 add(fenders, 'body', 'paint')
 
 def hood_top(x, z):
@@ -253,6 +264,76 @@ def plate_frame(z0, z1):
     return [(-0.155, 0.155, 0.535, 0.547, z0, z1), (-0.155, 0.155, 0.383, 0.395, z0, z1), (-0.157, -0.145, 0.395, 0.535, z0, z1), (0.145, 0.157, 0.395, 0.535, z0, z1)]
 add(boxes('plates', plate_frame(-2.781, -2.7755) + plate_frame(2.8025, 2.808)), 'body', 'chrome', 50)
 
+# ---------- the cab's roof, crowned ----------
+# (Truck.ts's roof profile along the cab, 1.765 to 1.815, now 2.5 cm higher in the middle, its
+# edges rounded down to the drip rails)
+RU = [0.44, 0.435, 0.42, 0.39, 0.36, 0.2, 0.0, -0.3, -0.6, -0.7, -0.725, -0.745, -0.75]
+def roof_top(u): return float(np.interp(-u, [-0.44, -0.43, -0.36, 0.7, 0.75], [1.768, 1.79, 1.815, 1.815, 1.8]))
+def roof():
+    rings = []
+    xs = np.linspace(-0.93, 0.93, 15)
+    for u in RU:
+        top = roof_top(u); c = 0.025 * min(1.0, (top - 1.765) / 0.05)
+        rings.append([(x, top + c * (1 - (x / 0.93) ** 2), -u) for x in xs] + [(0.93, 1.765, -u), (-0.93, 1.765, -u)])
+    o = K.sweep('roof', rings)
+    K.round_edges(o, 0.012, 2, 25)
+    return o
+add(roof(), 'shell', 'paint', 30)
+
+# ---------- rubber round the glass, cups behind the headlamps, bezels round the tail lamps ----------
+def offset(pts, d):
+    """A convex outline moved out by d (mitred corners)."""
+    n = len(pts)
+    sgn = 1 if sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n)) > 0 else -1
+    def nrm(a, b):
+        dx, dy = b[0] - a[0], b[1] - a[1]; l = math.hypot(dx, dy)
+        return (sgn * dy / l, -sgn * dx / l)
+    out = []
+    for i in range(n):
+        n1, n2 = nrm(pts[i - 1], pts[i]), nrm(pts[i], pts[(i + 1) % n])
+        m = (n1[0] + n2[0], n1[1] + n2[1]); k = m[0] * n1[0] + m[1] * n1[1]
+        out.append((pts[i][0] + m[0] * d / k, pts[i][1] + m[1] * d / k))
+    return out
+def ring(name, inner, d, at, t0, t1):
+    """A flat band round an outline (2D), d wide, as a solid from t0 to t1 across it; at(p, t)
+    places a point of the outline's plane in the game."""
+    outer = offset(inner, d)
+    bm = bmesh.new()
+    I0, O0 = [bm.verts.new(G(*at(p, t0))) for p in inner], [bm.verts.new(G(*at(p, t0))) for p in outer]
+    I1, O1 = [bm.verts.new(G(*at(p, t1))) for p in inner], [bm.verts.new(G(*at(p, t1))) for p in outer]
+    n = len(inner)
+    for k in range(n):
+        j = (k + 1) % n
+        for f in ((I1[k], I1[j], O1[j], O1[k]), (I0[k], O0[k], O0[j], I0[j]), (O0[k], O1[k], O1[j], O0[j]), (I0[k], I0[j], I1[j], I1[k])):
+            bm.faces.new(f)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return K.mesh_object(name, bm)
+PANE = [(0.746, 1.17), (-0.38, 1.17), (-0.38, 1.71), (-0.36, 1.73), (0.396, 1.73)]   # Truck.ts: the door windows (u = -z, y)
+for sx in (-1, 1):
+    add(ring(f'gasket{sx}', PANE, 0.016, lambda p, t, sx=sx: (sx * t, p[1], -p[0]), 0.917, 0.953), 'shell', 'dark', 50)
+WS_A = 0.552   # the windscreen: 1.76 by 0.705 at (0, 1.45, -0.615), leaning back
+ca, sa = math.cos(WS_A), math.sin(WS_A)
+WS = [(-0.88, -0.3525), (0.88, -0.3525), (0.88, 0.3525), (-0.88, 0.3525)]
+add(ring('gasket_ws', WS, 0.022, lambda p, t: (p[0], 1.45 + p[1] * ca - t * sa, -0.615 + p[1] * sa + t * ca), -0.009, 0.009), 'shell', 'dark', 50)
+BACK = [(-0.62, 1.25), (0.62, 1.25), (0.62, 1.68), (-0.62, 1.68)]                   # the back window
+add(ring('gasket_back', BACK, 0.02, lambda p, t: (p[0], p[1], t), 0.704, 0.766), 'shell', 'dark', 50)
+cups = []
+for cx in (-0.657, 0.657):
+    for y in (0.931, 0.756):
+        lens = [(cx - 0.172, y - 0.07), (cx + 0.172, y - 0.07), (cx + 0.172, y + 0.07), (cx - 0.172, y + 0.07)]
+        cups.append(ring('cup', lens, 0.006, lambda p, t: (p[0], p[1], t), -2.656, -2.636))
+add(K.join(cups, 'cups'), 'body', 'chrome', 50)
+bez = []
+for sx in (-1, 1):
+    for y0, y1 in ((0.855, 1.105), (0.78, 0.85)):
+        lens = [(sx * 0.93 - 0.055, y0), (sx * 0.93 + 0.055, y0), (sx * 0.93 + 0.055, y1), (sx * 0.93 - 0.055, y1)]
+        bez.append(ring('bezel', lens, 0.01, lambda p, t: (p[0], p[1], t), 2.64, 2.652))
+add(K.join(bez, 'bezels'), 'body', 'chrome', 50)
+# the headrests on the bench's back (what shows of the cab through the glass from behind)
+heads_ = boxes('headrests', [(x - 0.13, x + 0.13, 1.41, 1.6, 0.53, 0.63) for x in (-0.42, 0.42)])
+K.round_edges(heads_, 0.035, 3, 30)
+add(heads_, 'shell', 'inner', 40)
+
 log('modelled:', ', '.join(o.name for o, *_ in new))
 
 # ---------- the wheel ----------
@@ -357,6 +438,7 @@ for g in ('body', 'shell'):
     MATS[g, 'paint'] = mat(f'{g}_paint', 0.5, 0.05, lin(0xe6e2d8))
     MATS[g, 'chrome'] = mat(f'{g}_chrome', 0.26, 0.62, lin(0xc8cbcc))
     MATS[g, 'dark'] = mat(f'{g}_dark', 0.8, 0.0, lin(0x1a1b1d))
+MATS['shell', 'inner'] = mat('shell_inner', 0.7, 0.0, lin(0x5a4c3e))
 GLASS = mat('shell_glass', 0.1, 0.45, lin(0x0b0f14), 0.82)
 WHEEL = mat('wheel', 0.82)
 vc = WHEEL.node_tree.nodes.new('ShaderNodeVertexColor'); vc.layer_name = 'Col'
@@ -364,7 +446,7 @@ WHEEL.node_tree.links.new(vc.outputs['Color'], WHEEL.node_tree.nodes['Principled
 K.set_materials(wheel, [WHEEL])
 
 # the pieces: kept (their edges rounded, the flat facets of the game's curves smoothed) and new
-KIND = {'paint': 'paint', 'chrome': 'chrome', 'trim': 'dark', 'under': 'dark', 'grille': 'dark', 'dark': 'dark'}
+KIND = {'paint': 'paint', 'chrome': 'chrome', 'trim': 'dark', 'under': 'dark', 'grille': 'dark', 'dark': 'dark', 'inner': 'inner'}
 parts = []
 for p in kept:
     o = p['o']
@@ -377,18 +459,49 @@ for p in kept:
         K.smooth(o, 50)
     else:
         K.smooth(o, 61)
-    parts.append((o, p['g'], KIND[p['mat']]))
+    # (what shows of the cab through the glass: the bench's back, the wheel, the dash's top)
+    parts.append((o, p['g'], 'inner' if p['g'] == 'shell' and p['mat'] == 'under' else KIND[p['mat']]))
+    # the beacon's base up onto the crowned roof
+    if p['g'] == 'shell' and p['mat'] == 'trim' and K.bounds(o)[2] > 1.8:
+        for v in o.data.vertices: v.co.z += 0.026
 for o, g, kind, angle in new:
     K.smooth(o, angle)
     parts.append((o, g, KIND[kind]))
+# the glasshouse tapered: above the belt (1.12) the cab leans in, 6 cm a side at the roof
+# (doors' frames, glass, rubber, roof, drip rails, the back above the belt)
+def taper(o):
+    mw = o.matrix_world; inv = mw.inverted()
+    for v in o.data.vertices:
+        w = mw @ v.co
+        if w.z > 1.12:
+            w.x *= 1 - 0.063 * min((w.z - 1.12) / 0.68, 1.0)
+            v.co = inv @ w
+for o, g, kind in parts:
+    if g == 'shell' and kind != 'inner': taper(o)
+for o in glass: taper(o)
 for o, g, kind in parts:
     K.set_materials(o, [MATS[g, kind]])
 for o in glass:
     K.weld(o); K.smooth(o, 30, False); K.set_materials(o, [GLASS])
 truck = K.join([o for o, *_ in parts], 'saro_truck')
+K.flat_normals(truck)
 glass = K.join(glass, 'glass') if len(glass) > 1 else glass[0]
 for o in (truck, glass):     # (the game's dust came along in the colours: the mask has it now)
     for ca in list(o.data.color_attributes): o.data.color_attributes.remove(ca)
+# what shows of the cab through the glass goes in with the dark trim (one draw call less), told
+# apart by its vertex colour: the dark material takes the vinyl's colour, the trim's corners its
+# own share of it (the game: blenderModels.ts truckBaked, 'dark')
+VINYL, TRIM = lin(0x5a4c3e), lin(0x1a1b1d)
+RATIO = tuple(t / v for t, v in zip(TRIM, VINYL))
+me = truck.data
+ca = me.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER'); me.color_attributes.active_color = ca
+names = [m.name for m in me.materials]
+dark_i = {g: names.index(f'{g}_dark') for g in ('body', 'shell')}
+for p in me.polygons:
+    n = names[p.material_index]
+    c = (1.0, 1.0, 1.0) if n == 'shell_inner' else RATIO if n.endswith('_dark') else (1.0, 1.0, 1.0)
+    if n == 'shell_inner': p.material_index = dark_i['shell']
+    for li in p.loop_indices: ca.data[li].color = (*c, 1.0)
 log('truck:', len(truck.data.polygons), 'faces,', len(truck.data.vertices), 'vertices')
 
 # ---------- UVs ----------
@@ -435,6 +548,36 @@ K.bake_emit(truck, N, geom('True Normal'), samples=1)
 K.bake_emit(truck, A, masks(0.7, 0.06, 0.008), samples=256)
 K.baked_ok(P, 'position'); K.baked_ok(A, 'occlusion')
 log('truck baked')
+# its shade on the ground: a quad under it (3.2 by 7 m, 1.2 cm up), the occlusion the truck and
+# its wheels throw on it, fading out before its edges (SHADE: the game multiplies the ground by it)
+SW, SL = 1.6, 3.5
+bm = bmesh.new()
+vs = [bm.verts.new(G(x, 0.012, z)) for x, z in [(-SW, SL), (SW, SL), (SW, -SL), (-SW, -SL)]]
+bm.faces.new(vs); bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+shadow = K.mesh_object('shadow', bm)
+SHADOW = mat('shadow', 1.0); K.set_materials(shadow, [SHADOW])
+if K.game(shadow.data.polygons[0].normal)[1] < 0: shadow.data.flip_normals()
+suv = shadow.data.uv_layers.new(name='UVMap')
+for p in shadow.data.polygons:
+    for li in p.loop_indices:
+        x, _, z = K.game(shadow.data.vertices[shadow.data.loops[li].vertex_index].co)
+        suv.data[li].uv = ((x + SW) / (2 * SW), (z + SL) / (2 * SL))
+ground.hide_render = True
+def shade(nodes, links):
+    a = nodes.new('ShaderNodeAmbientOcclusion'); a.samples = 32; a.inputs['Distance'].default_value = 1.1
+    return a.outputs['AO']
+SP = bpy.data.images.new('shade_pos', 256, 512, alpha=True, float_buffer=True); SP.colorspace_settings.name = 'Non-Color'
+SA = bpy.data.images.new('shade', 256, 512, alpha=True, float_buffer=True); SA.colorspace_settings.name = 'Non-Color'
+K.bake_emit(shadow, SP, geom('Position'), samples=1, uv='UVMap')
+K.bake_emit(shadow, SA, shade, samples=256, uv='UVMap')
+ground.hide_render = False
+sp, sa = K.pixels(SP), K.pixels(SA)[..., 0]
+sx, sz = sp[..., 0], -sp[..., 1]
+edge = K.smoothstep(0.0, 0.45, np.minimum(SW - np.abs(sx), SL - np.abs(sz)))
+SHADE = np.clip(1 - (1 - np.clip(sa, 0, 1)) * 1.15 * edge, 0.2, 1)
+spng = os.path.join(WORK, 'saro_truck_shadow.png')
+K.save_mask(np.stack([SHADE] * 3, -1), spng)
+log(f'its shade baked: darkest {SHADE.min():.2f} under it')
 for c in copies: bpy.data.objects.remove(c)
 WP = K.image('wpos', WHEEL_SIZE, True); WN = K.image('wnrm', WHEEL_SIZE, True); WA = K.image('wao', WHEEL_SIZE, True)
 K.bake_emit(wheel, WP, geom('Position'), samples=1)
@@ -495,6 +638,7 @@ log('masks written', os.path.getsize(png) // 1024, 'and', os.path.getsize(wpng) 
 
 # ---------- out ----------
 for o in [ground] + ctx: bpy.data.objects.remove(o)
+shadow.data.name = 'shadow'
 glass.hide_render = False
 bpy.ops.object.select_all(action='DESELECT'); truck.select_set(True); bpy.context.view_layer.objects.active = truck
 bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.separate(type='MATERIAL'); bpy.ops.object.mode_set(mode='OBJECT')
@@ -502,12 +646,15 @@ out = [o for o in bpy.context.scene.objects if o.type == 'MESH' and o.name.start
 for o in out:
     o.name = o.data.name = o.active_material.name
     K.set_materials(o, [o.active_material])
+    if not o.name.endswith('_dark'):         # (the colours are the dark trim's only)
+        for c in list(o.data.color_attributes): o.data.color_attributes.remove(c)
 glass.name = glass.data.name = 'shell_glass'
 wheel.data.name = 'wheel'
 # only the paint tiles a picture (the game's paintTex on the first set): the others keep just
 # their lightmap, which is then their first set (build.py points their masks at it)
 for o in out + [glass, wheel]:
     if not o.name.endswith('_paint') and 'UVMap' in o.data.uv_layers: o.data.uv_layers.remove(o.data.uv_layers['UVMap'])
+out.append(shadow)
 # the masks in the .blend, on the second UV set, for a look in Blender
 for img_path, ms in ((png, [m for m in MATS.values()]), (wpng, [WHEEL])):
     im = bpy.data.images.load(img_path); im.colorspace_settings.name = 'Non-Color'

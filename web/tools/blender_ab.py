@@ -13,9 +13,13 @@
 #   right UV set, the modelled wheel in the instances; the lenses, decals, mirror glass, beacon
 #   and glow stay; parked on the pad at night (four sides), on the motel's lot, at the station,
 #   on the diner's lot, in its own headlights on the highway, from the driver's seat while
-#   driving (night) and on the old road at dawn (the cab and outside); the wheels turn and steer,
+#   driving (night) and on the old road at dawn (the cab and outside); from behind (the first
+#   pass's rear camera stood in a wall); the wheels turn and steer,
 #   the steering wheel, the head and brake lights, the needles, the cab while driving and the
 #   shell hidden; the rays the same; never a draw call more; Low and Ultra.
+#   the final pass: the house's lamps baked and scaled by their floods, the wall lamps' glows small,
+#   the blinds in the reveals, the lit panes' rooms, the skirt; the truck's shade on the ground, its
+#   chrome and glass with the sky; and the phone's size, 844 by 390: the wing and the pad at night.
 # No console errors.
 # Usage: python3 tools/blender_ab.py OUTDIR [WxH]   (S47_URL for another build)
 import asyncio, sys, json, os, math
@@ -51,7 +55,8 @@ NIGHT, DAWN = 1 * 3600, 5 * 3600 + 22 * 60
 TRUCK_PARKED = [
     ('t01_pad_front34', 'saro', -4.5, 1.4, -5.5, 0.9),
     ('t02_pad_side', 'saro', -6.5, 1.0, 0.3, 0.9),
-    ('t03_pad_rear34', 'saro', 5.0, 2.0, 4.5, 0.9),
+    ('t03_pad_rear34', 'saro', -3.2, 1.7, 5.4, 0.9),       # (from the walk behind the pad: the first pass's camera stood in a wall)
+    ('t03b_pad_rear', 'saro', 0.0, 1.5, 6.2, 0.9),
     ('t04_pad_wheel', 'saro', -3.2, 0.4, -3.8, 0.6),
     ('t05_motel', 'motel', -4.0, 1.5, -5.0, 0.9),
     ('t06_station', 'station01', -4.5, 1.5, -5.5, 0.9),
@@ -89,13 +94,22 @@ async def main():
         m = await ev("""(() => { const h = S47.blenderHouse, out = { meshes: [], hidden: h.replaced.every((o) => !o.visible), group: h.group.visible };
           h.group.traverse((o) => { if (o.isMesh) out.meshes.push({ name: o.name, mat: o.material.name, tris: (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3,
             ao: !!o.material.aoMap && o.material.aoMap.channel === 1 && !!o.geometry.attributes.uv1, map: o.material.map && o.material.map.name,
-            emissive: o.material.emissiveIntensity * o.material.emissive.getHex() > 0 }); });
+            emissive: !!o.material.emissive && o.material.emissiveIntensity * o.material.emissive.getHex() > 0 }); });
           return out; })()""")
         size = os.path.getsize(GLB)
         print(f"loaded in {load['ms']:.0f} ms, first frame after it {load['frame']:.0f} ms; .glb {size / 1024:.0f} KB; meshes {json.dumps(m['meshes'])}")
         names = sorted(x['mat'] for x in m['meshes'])
-        check(not load['failed'] and m['group'] and m['hidden'] and names == ['glass_dark', 'glass_lit', 'house', 'wing'],
-              f"?blender: the model is in (house, wing and the panes) and the boxes it stands for are hidden ({load['ms']:.0f} ms){' ' + load['failed'] if load['failed'] else ''}")
+        check(not load['failed'] and m['group'] and m['hidden'] and names == ['glass_dark', 'glass_lit', 'house', 'skirt', 'wing'],
+              f"?blender: the model is in (house, wing, the panes and the skirt) and the boxes it stands for are hidden ({load['ms']:.0f} ms){' ' + load['failed'] if load['failed'] else ''}")
+        lit = await ev("""(() => { const h = S47.blenderHouse, out = { glows: h.glowsAt.length, blinds: h.blinds ? h.blinds.i.length : 0, mats: {} };
+          h.group.traverse((o) => { if (o.isMesh) out.mats[o.material.name] = { key: o.material.customProgramCacheKey ? o.material.customProgramCacheKey() : '', type: o.material.type,
+            blend: o.material.blending, lamp: !!(o.material.userData && o.material.userData.lamps), emissiveMap: !!o.material.emissiveMap }; });
+          return out; })()""")
+        check(all('lamps' in lit['mats'][k]['key'] and 'floodsite' in lit['mats'][k]['key'] for k in ('house', 'wing')),
+              'the walls take the lamps\' baked light (scaled by their floods) and keep the fake ones at a part of their strength')
+        check(lit['glows'] == 6 and lit['blinds'] > 0, f"the wall lamps' glows made small ({lit['glows']}) and the lit windows' blinds moved into the reveals ({lit['blinds']} corners)")
+        check(lit['mats']['glass_lit']['emissiveMap'] and 'flood' not in lit['mats']['glass_lit']['key'] and lit['mats']['skirt']['blend'] == 4,
+              'the lit panes show their rooms (not lit by the floods), the skirt multiplies the ground')
         walls = [x for x in m['meshes'] if x['mat'] in ('house', 'wing')]
         check(all(x['ao'] and x['map'] == 'art/concrete' for x in walls) and any(x['emissive'] for x in m['meshes'] if x['mat'] == 'glass_lit'),
               'the walls carry the baked mask as aoMap on the second UV set and the concrete picture on the first; the lit panes glow')
@@ -164,9 +178,9 @@ async def main():
         await ev("S47.setQuality('low'); S47.tick(0.1)")
         await at(VIEWS[1]); low = await stats()
         await pg.screenshot(path=f'{OUT}/a02_wing_night_on_low.png')
-        lowm = await ev("""(() => { const out = []; S47.blenderHouse.group.traverse((o) => { if (o.isMesh) out.push([o.material.type, !!o.material.aoMap]); }); return out; })()""")
-        check(all(t == 'MeshLambertMaterial' for t, _ in lowm) and sum(1 for _, a in lowm if a) == 2 and low[0] <= calls['a02_wing_night']['on'][0],
-              f"Low: Lambert with the mask on the walls ({low[0]} draw calls)")
+        lowm = await ev("""(() => { const out = []; S47.blenderHouse.group.traverse((o) => { if (o.isMesh) out.push([o.material.type, !!o.material.aoMap, o.material.name]); }); return out; })()""")
+        check(all(t == 'MeshLambertMaterial' for t, _, n in lowm if n != 'skirt') and sum(1 for _, a, n in lowm if a) == 2 and low[0] <= calls['a02_wing_night']['on'][0],
+              f"Low: Lambert with the mask on the walls, the skirt as it was ({low[0]} draw calls)")
         await ev("S47.setQuality('ultra'); S47.tick(0.3)")
         for v in (VIEWS[1], VIEWS[3]):
             await at(v); await ev("S47.tick(0.2)")
@@ -174,8 +188,8 @@ async def main():
             await ev("S47.blender = false; S47.tick(0.05)")
             await pg.screenshot(path=f'{OUT}/{v[0]}_night_off_ultra.png')
             await ev("S47.blender = true")
-        shadow = await ev("""(() => { let n = 0, c = 0; S47.blenderHouse.group.traverse((o) => { if (o.isMesh) { n++; if (o.castShadow && o.receiveShadow) c++; } }); return [c, n]; })()""")
-        check(shadow[0] == shadow[1] == 4, f'Ultra: the model casts and takes the real lamps\' shadows ({shadow[0]} of {shadow[1]})')
+        shadow = await ev("""(() => { let n = 0, c = 0; S47.blenderHouse.group.traverse((o) => { if (o.isMesh && o.material.name !== 'skirt') { n++; if (o.castShadow && o.receiveShadow) c++; } }); return [c, n]; })()""")
+        check(shadow[0] == shadow[1] == 4, f'Ultra: the model casts and takes the real lamps\' shadows ({shadow[0]} of {shadow[1]}; the skirt is a shade itself)')
         await ev("S47.setQuality('high')")
 
         # ---------- the truck ----------
@@ -195,19 +209,24 @@ async def main():
             const ch = (m, g) => !!m.aoMap && !!g.attributes[m.aoMap.channel ? 'uv' + m.aoMap.channel : 'uv'];
             const keep = new Set([t.m.head, t.m.park, t.m.tail, t.m.rev, t.m.mirror, t.m.decal, t.m.beacon]);
             const kept = [...t.body.children, ...t.shell.children].filter((c) => keep.has(c.material));
+            const lit = meshes.filter((x) => x.name !== 'blender:shadow'), shade = meshes.find((x) => x.name === 'blender:shadow');
             out.push({{ i, modelled: t.modelled, n: meshes.length, shown: meshes.every((x) => x.visible), hidden: t['replaced'].every((o) => !o.visible),
-              floods: meshes.every((x) => x.material.customProgramCacheKey().includes('flood' + set.key)),
+              floods: lit.every((x) => x.material.customProgramCacheKey().includes('flood' + set.key)),
+              shade: !!shade && shade.parent === t.group && shade.material.blending === 4 && !!shade.material.map,
+              chrome: lit.filter((x) => x.name.endsWith('_chrome')).every((x) => x.material.customProgramCacheKey().includes('skychrome')),
+              glass: lit.filter((x) => x.name.endsWith('_glass')).every((x) => x.material.customProgramCacheKey().includes('skyglass') && x.material.opacity < 0.7),
               ao: meshes.filter((x) => !x.material.transparent).every((x) => ch(x.material, x.geometry)),
               paintMap: meshes.filter((x) => x.name.endsWith('_paint')).every((x) => x.material.map === t.m.paint.map),
               wheel: t.wheels.geometry !== t['codeWheel'] && ch(t.wheels.material, t.wheels.geometry) && t.wheels.material.vertexColors,
               kept: kept.length, keptShown: kept.every((c) => c.visible), glow: t['glow'].points.visible,
-              tris: meshes.reduce((a, x) => a + x.geometry.index.count / 3, 0) + 4 * t.wheels.geometry.index.count / 3 }});
+              tris: lit.reduce((a, x) => a + x.geometry.index.count / 3, 0) + 4 * t.wheels.geometry.index.count / 3 }});
           }}
           return out; }})()""")
         tsize = os.path.getsize(TRUCK_GLB)
         print(f"truck .glb {tsize / 1024:.0f} KB; {json.dumps(tm)}")
-        check(all(x['modelled'] and x['n'] == 7 and x['shown'] and x['hidden'] for x in tm),
-              'every copy of the truck shows the model (body, cab, glass) and hides the panels it stands for')
+        check(all(x['modelled'] and x['n'] == 8 and x['shown'] and x['hidden'] for x in tm),
+              'every copy of the truck shows the model (body, cab, glass, its shade on the ground) and hides the panels it stands for')
+        check(all(x['shade'] and x['chrome'] and x['glass'] for x in tm), 'each copy lays its baked shade on the ground with it; its chrome and glass take the sky')
         check(all(x['floods'] for x in tm), "each copy's model is lit by its own area's floods (site, field, road, old road)")
         check(all(x['ao'] and x['paintMap'] and x['wheel'] for x in tm), 'the mask is the aoMap on the UV set it was baked on, the paint keeps its picture, the instances turn the modelled wheel')
         check(all(x['kept'] == 8 and x['keptShown'] and x['glow'] for x in tm), 'the lenses, decals, plates, mirror glass, beacon and glow stay the code\'s, and shown')
@@ -324,7 +343,7 @@ async def main():
         # Low: Lambert with the mask; Ultra: shadows
         await ev("S47.setQuality('low'); S47.tick(0.1)")
         await truck_view('t01_pad_front34', 'saro', -4.5, 1.4, -5.5, 0.9, 'low')
-        lowt = await ev("""(() => { const t = S47.world.saroTruck, ms = [...t['modelMeshes'].map((x) => x.material), t.wheels.material];
+        lowt = await ev("""(() => { const t = S47.world.saroTruck, ms = [...t['modelMeshes'].filter((x) => x.name !== 'blender:shadow').map((x) => x.material), t.wheels.material];
           return [ms.every((m) => m.type === 'MeshLambertMaterial'), ms.filter((m) => m.aoMap).length]; })()""")
         check(lowt[0] and lowt[1] == 7 and tcalls['t01_pad_front34_low']['on'][0] <= tcalls['t01_pad_front34_low']['off'][0],
               f"Low: Lambert with the mask on the truck too ({lowt}, {tcalls['t01_pad_front34_low']['off'][0]} -> {tcalls['t01_pad_front34_low']['on'][0]} draw calls)")
@@ -348,7 +367,28 @@ async def main():
           return [ms.filter((x) => x.castShadow && x.receiveShadow).length, ms.length, t.wheels.castShadow]; })()""")
         check(tsh[0] == tsh[1] == 6 and tsh[2], f'Ultra: the truck model casts and takes the real lamps\' shadows ({tsh})')
         await ev("S47.setQuality('high'); S47.blender = false; S47.tick(0.1)")
-        json.dump({'calls': calls, 'room': room, 'truck_calls': tcalls, 'truck_both': both, 'load_ms': load['ms'], 'first_frame_ms': load['frame'], 'glb_bytes': size,
+
+        # ---------- the phone: 844 by 390, the size Tom judges it on ----------
+        # the wing's two faces and the truck on its pad at night, both models off and on
+        await pg.set_viewport_size({'width': 844, 'height': 390}); await pg.wait_for_timeout(300)
+        await ev(f"S47.game.clock = {NIGHT}; S47.world.placeTruck('saro'); S47.world.enter('saro'); S47.tick(0.2)")
+        phone = {}
+        for v in (VIEWS[1], VIEWS[4], VIEWS[0]):
+            for flag in ('false', 'true'):
+                await ev(f"S47.blender = {flag}"); await at(v)
+                await pg.screenshot(path=f"{OUT}/phone_{v[0]}_night_{'on' if flag == 'true' else 'off'}.png")
+                phone.setdefault(v[0], {})['on' if flag == 'true' else 'off'] = await stats()
+        for name, dx, dy, dz, ly in (('t01_pad_front34', -4.5, 1.4, -5.5, 0.9), ('t03_pad_rear34', -3.2, 1.7, 5.4, 0.9)):
+            for flag in ('false', 'true'):
+                await ev(f"S47.blender = {flag}"); await ev(frame_js('saro', dx, dy, dz, ly))
+                await pg.screenshot(path=f"{OUT}/phone_{name}_night_{'on' if flag == 'true' else 'off'}.png")
+                phone.setdefault(name, {})['on' if flag == 'true' else 'off'] = await stats()
+            await ev("S47.camera.fov = window.__fov; S47.camera.updateProjectionMatrix()")
+        await ev("S47.blender = false"); await pg.set_viewport_size({'width': W, 'height': H}); await pg.wait_for_timeout(300)
+        print('the phone (844x390), draw calls off -> on: ' + ', '.join(f"{k} {c['off'][0]} -> {c['on'][0]}" for k, c in phone.items()))
+        more = [f"{k} {c['off'][0]} -> {c['on'][0]}" for k, c in phone.items() if c['on'][0] > c['off'][0]]
+        check(not more, 'on the phone too, the models never cost a view a draw call more' + (': ' + ', '.join(more) if more else ''))
+        json.dump({'phone': phone, 'calls': calls, 'room': room, 'truck_calls': tcalls, 'truck_both': both, 'load_ms': load['ms'], 'first_frame_ms': load['frame'], 'glb_bytes': size,
                    'truck_load_ms': tload['ms'], 'truck_first_frame_ms': tload['frame'], 'truck_glb_bytes': tsize, 'truck': tm},
                   open(f'{OUT}/numbers.json', 'w'), indent=1)
 
@@ -373,6 +413,7 @@ async def main():
         pairs = [(v, tod) for v in [x[0] for x in VIEWS] for tod in ('night', 'dawn')]
         pairs += [(v[0], 'night') for v in TRUCK_PARKED] + [('t01_pad_front34', 'dawn'), ('t01_pad_front34', 'low'), ('t01_pad_front34', 'ultra')]
         pairs += [('t08_cab', 'night'), ('t09_headlights', 'night'), ('t10_cab', 'dawn'), ('t11_oldroad', 'dawn')]
+        pairs += [(f'phone_{v}', 'night') for v in ('a02_wing', 'a05_wing_back', 'a01_south', 't01_pad_front34', 't03_pad_rear34')]
         for v, tod in pairs:
             if True:
                 a, c = Image.open(f'{OUT}/{v}_{tod}_off.png').convert('RGB'), Image.open(f'{OUT}/{v}_{tod}_on.png').convert('RGB')

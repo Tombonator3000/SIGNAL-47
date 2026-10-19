@@ -25,9 +25,10 @@ import {
 //
 // The Blender pilot (world/blenderModels.ts, tools/blender/truck.py): with ?blender, setModel()
 // puts the body, the shell and the wheel modelled and baked in Blender in place of the merged
-// paint, chrome, trim, underside and glass, each truck with its own flood set. The lamps' lenses,
-// the decals, the mirror glass, the beacon, the glow, the cab and everything that moves stay
-// the code's; the wheel's instances only get the modelled wheel's geometry.
+// paint, chrome, trim, underside and glass, each truck with its own flood set, and its baked
+// shade on the ground under it. The lamps' lenses, the decals, the mirror glass, the beacon, the
+// glow, the cab and everything that moves stay the code's; the wheel's instances only get the
+// modelled wheel's geometry.
 
 export const WHEELBASE = 3.3;
 const FRONT_AXLE = -1.8, REAR_AXLE = FRONT_AXLE + WHEELBASE, WHEEL_R = 0.37, TRACK = 0.84;
@@ -49,6 +50,8 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3
 export interface TruckModel {
   parts: { group: 'body' | 'shell'; kind: 'paint' | 'chrome' | 'dark' | 'glass'; geometry: THREE.BufferGeometry; aoMap: THREE.Texture | null }[];
   wheel: { geometry: THREE.BufferGeometry; aoMap: THREE.Texture | null };
+  /** the truck's shade on the ground under it (baked), laid on the ground with the truck */
+  shadow: { geometry: THREE.BufferGeometry; material: THREE.Material } | null;
   /** the baked mask's dust and wear on a material made for it */
   dress: (m: THREE.MeshStandardMaterial, kind: 'paint' | 'chrome' | 'dark' | 'glass' | 'wheel') => void;
 }
@@ -652,7 +655,8 @@ export class Truck {
         // the game's own material (its colour, picture, roughness), without the dust in the
         // vertex colours: the mask has it
         const m = src[kind].clone();
-        m.vertexColors = kind === 'wheel';
+        // (the dark trim carries the cab seen through the glass in its vertex colours: truck.py)
+        m.vertexColors = kind === 'wheel' || (kind === 'dark' && !!model.parts.find((q) => q.kind === 'dark' && q.geometry.attributes.color));
         if (kind === 'dark') m.roughness = 0.85;
         m.aoMap = aoMap;
         if (this.floods) floodlit(m, 0.02, this.floods);
@@ -670,6 +674,17 @@ export class Truck {
         return mesh;
       });
       this.modelWheel = { geometry: model.wheel.geometry, material: mat('wheel', model.wheel.aoMap) };
+      // the shade on the ground: in the truck's own frame (the ground under the wheels), so it
+      // goes with the truck, not with the body on its springs
+      if (model.shadow) {
+        const sh = new THREE.Mesh(model.shadow.geometry, model.shadow.material);
+        sh.name = 'blender:shadow';
+        sh.raycast = () => {};
+        sh.userData.shared = true; sh.userData.noShadow = true;
+        sh.matrixAutoUpdate = false; sh.renderOrder = 1;
+        this.group.add(sh);
+        this.modelMeshes.push(sh);
+      }
     }
     const on = !!model && !!this.modelMeshes;
     this.modelled = on;

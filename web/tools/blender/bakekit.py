@@ -162,8 +162,10 @@ def tile_uv(o, size, layer='UVMap'):
             uv.data[li].uv = (u / size, v / size)
 
 def lightmap_uv(o, layer='Lightmap', margin=0.004, shrink=None):
-    """A second UV set where no two faces share texels, for the bake: smart projection, then
-    packed. shrink(centre, normal) -> scale of a face's island (the roofs nobody sees close)."""
+    """A second UV set where no two faces share texels, for the bake: smart projection, every
+    island at the same texel density, then shrink(centre, normal) -> scale of a face's island
+    (the roofs nobody sees close), packed (any rotation, by their outlines) with `margin` of the
+    atlas between them. Returns the share of the atlas the islands cover."""
     me = o.data
     uv = me.uv_layers.get(layer) or me.uv_layers.new(name=layer)
     me.uv_layers.active = uv
@@ -171,7 +173,10 @@ def lightmap_uv(o, layer='Lightmap', margin=0.004, shrink=None):
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.0, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.uv.select_all(action='SELECT')
+    bpy.ops.uv.average_islands_scale()
     bpy.ops.object.mode_set(mode='OBJECT')
+    split_rings(o, layer)
     if shrink:
         # scale each island about its own centre by the weight of its faces
         bm = bmesh.new(); bm.from_mesh(me)
@@ -187,9 +192,45 @@ def lightmap_uv(o, layer='Lightmap', margin=0.004, shrink=None):
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.select_all(action='SELECT')
-    bpy.ops.uv.pack_islands(margin=margin, rotate=True, shape_method='CONCAVE', scale=True)
+    # (twice: the second pass starts from the first's layout and packs tighter)
+    for _ in range(2): bpy.ops.uv.pack_islands(margin=margin, margin_method='ADD', rotate=True, rotate_method='ANY', shape_method='CONCAVE', scale=True)
     bpy.ops.object.mode_set(mode='OBJECT')
     me.uv_layers.active = me.uv_layers[0]
+    # the share of the atlas covered (the islands' area in UV)
+    uv = me.uv_layers[layer]
+    area = 0.0
+    for p in me.polygons:
+        pts = [uv.data[li].uv for li in p.loop_indices]
+        area += abs(sum(pts[i].x * pts[(i + 1) % len(pts)].y - pts[(i + 1) % len(pts)].x * pts[i].y for i in range(len(pts)))) / 2
+    return area
+
+def split_rings(o, layer='Lightmap', fill=0.35):
+    """An island that is a ring (a plinth's top round its walls, the skirt round a plinth, a
+    bevel round a roof) leaves the atlas's room inside it empty: each is cut into its four sides
+    (every face to the side of the island's box it is nearest), which pack."""
+    me = o.data
+    bm = bmesh.new(); bm.from_mesh(me)
+    lay = bm.loops.layers.uv[layer]
+    cut = 0
+    for faces in uv_islands(bm, lay):
+        if len(faces) < 4: continue
+        us = [l[lay].uv.copy() for f in faces for l in f.loops]
+        x0, x1 = min(u.x for u in us), max(u.x for u in us); y0, y1 = min(u.y for u in us), max(u.y for u in us)
+        box_a = (x1 - x0) * (y1 - y0)
+        if box_a <= 0: continue
+        a = 0.0
+        for f in faces:
+            pts = [l[lay].uv for l in f.loops]
+            a += abs(sum(pts[i].x * pts[(i + 1) % len(pts)].y - pts[(i + 1) % len(pts)].x * pts[i].y for i in range(len(pts)))) / 2
+        if a / box_a >= fill: continue
+        for f in faces:
+            c = sum((l[lay].uv for l in f.loops), Vector((0, 0))) / len(f.loops)
+            u, v = (c.x - x0) / max(x1 - x0, 1e-9), (c.y - y0) / max(y1 - y0, 1e-9)
+            side = min(range(4), key=lambda k: (u, 1 - u, v, 1 - v)[k])
+            for l in f.loops: l[lay].uv = (l[lay].uv.x + side * 0.02, l[lay].uv.y)
+        cut += 1
+    bm.to_mesh(me); bm.free()
+    return cut
 
 def uv_islands(bm, lay):
     """Faces grouped by shared UV edges."""
@@ -426,3 +467,156 @@ def smooth(o, angle=35, weighted=True):
     if weighted:
         m = o.modifiers.new('wn', 'WEIGHTED_NORMAL'); m.keep_sharp = True; m.weight = 50; m.mode = 'FACE_AREA'
         apply_mods(o)
+
+# ---------- clean flat faces (the house): rectangles, exactly flat normals ----------
+def _axis(n, tol=0.9999):
+    a = max(range(3), key=lambda k: abs(n[k]))
+    return a if abs(n[a]) >= tol else -1
+
+def grid_cut(o, min_verts=5):
+    """The booleans' big flat faces with notches and holes (a wall round a window, a door, a
+    sill's foot) cut along the lines through their corners, so each is rectangles: no long
+    sliver triangles when the exporter triangulates them. Only faces square to an axis."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    todo = []
+    for f in bm.faces:
+        a = _axis(f.normal)
+        if a < 0 or len(f.verts) < min_verts: continue
+        b, c = [k for k in range(3) if k != a]
+        lo = [min(v.co[k] for v in f.verts) for k in range(3)]; hi = [max(v.co[k] for v in f.verts) for k in range(3)]
+        cuts = [(k, x) for k in (b, c) for x in sorted({round(v.co[k], 5) for v in f.verts}) if lo[k] + 1e-4 < x < hi[k] - 1e-4]
+        todo.append((a, f.verts[0].co[a], f.normal[a] > 0, lo, hi, cuts))
+    for a, at, pos, lo, hi, cuts in todo:
+        def region():
+            out = []
+            for g in bm.faces:
+                if _axis(g.normal) != a or (g.normal[a] > 0) != pos or abs(g.verts[0].co[a] - at) > 1e-5: continue
+                m = g.calc_center_median()
+                if all(lo[k] - 1e-4 <= m[k] <= hi[k] + 1e-4 for k in range(3) if k != a): out.append(g)
+            return out
+        for k, x in cuts:
+            fs = region()
+            if not fs: break
+            geom = list(fs) + list({e for g in fs for e in g.edges}) + list({v for g in fs for v in g.verts})
+            no = Vector((0, 0, 0)); no[k] = 1.0
+            co = Vector((0, 0, 0)); co[k] = x
+            bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-6, plane_co=co, plane_no=no)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+    bm.to_mesh(o.data); bm.free()
+
+def flat_normals(o, big=0.25, wide=0.12):
+    """o triangulated, and every triangle that should read flat shaded exactly flat, each of its
+    corners carrying its own normal: those square to an axis (walls, roofs, plinths, the boxes'
+    sides, a bevel's corner where it lies in the face), and those of any flat region (triangles
+    in one plane, edge to edge) of at least `big` square metres and `wide` across (a door's skin,
+    a bumper's face, a hood's top); the rounds keep their smooth normals. (A corner shared with
+    a round once bent a whole wall's long triangle: the diagonal seam under the control room's
+    long window. glbpack.check reads the same back from the .glb.)"""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    bmesh.ops.dissolve_degenerate(bm, dist=1e-5, edges=bm.edges)
+    bmesh.ops.triangulate(bm, faces=bm.faces, quad_method='BEAUTY', ngon_method='BEAUTY')
+    bm.faces.ensure_lookup_table()
+    parent = list(range(len(bm.faces)))
+    def find(x):
+        while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    cos_t = math.cos(math.radians(0.05))
+    for e in bm.edges:
+        if len(e.link_faces) != 2: continue
+        a, b = e.link_faces
+        if a.normal.dot(b.normal) > cos_t and abs(a.normal.dot(b.calc_center_median() - a.calc_center_median())) < 2e-4:
+            parent[find(a.index)] = find(b.index)
+    area, lo, hi = {}, {}, {}
+    for f in bm.faces:
+        r = find(f.index); area[r] = area.get(r, 0) + f.calc_area()
+        for v in f.verts:
+            lo[r] = Vector([min(p, q) for p, q in zip(lo.get(r, v.co), v.co)]); hi[r] = Vector([max(p, q) for p, q in zip(hi.get(r, v.co), v.co)])
+    flat = {f.index for f in bm.faces if _axis(f.normal) >= 0 or (area[find(f.index)] >= big and area[find(f.index)] / max(max(hi[find(f.index)] - lo[find(f.index)]), 1e-6) >= wide)}
+    bm.to_mesh(o.data); bm.free()
+    me = o.data
+    out = [tuple(n.vector) for n in me.corner_normals]
+    for p in me.polygons:
+        if p.index in flat:
+            for li in p.loop_indices: out[li] = tuple(p.normal)
+    me.normals_split_custom_set(out)
+
+# ---------- bakes of light and coverage, the masks' edges ----------
+def spot(name, at, aim, size_deg, blend=0.5, energy=100.0, radius=0.04):
+    """A Cycles spot light at a game point, aimed along a game direction."""
+    d = bpy.data.lights.new(name, 'SPOT')
+    d.energy = energy; d.spot_size = math.radians(size_deg); d.spot_blend = blend; d.shadow_soft_size = radius
+    o = bpy.data.objects.new(name, d)
+    bpy.context.scene.collection.objects.link(o)
+    o.location = G(*at)
+    v = Vector((aim[0], -aim[2], aim[1])).normalized()
+    o.rotation_euler = v.to_track_quat('-Z', 'Y').to_euler()
+    return o
+
+def point(name, at, energy=10.0, radius=0.03):
+    """A Cycles point light at a game point."""
+    d = bpy.data.lights.new(name, 'POINT')
+    d.energy = energy; d.shadow_soft_size = radius
+    o = bpy.data.objects.new(name, d)
+    bpy.context.scene.collection.objects.link(o)
+    o.location = G(*at)
+    return o
+
+def bake_diffuse(o, img, samples=64, margin=8, uv='Lightmap'):
+    """The direct light the scene's lamps throw on o (no colour: white surfaces), into img."""
+    sc = bpy.context.scene
+    sc.cycles.samples = samples
+    m = bpy.data.materials.new('_lit')
+    nt = m.node_tree
+    for n in list(nt.nodes): nt.nodes.remove(n)
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    df = nt.nodes.new('ShaderNodeBsdfDiffuse'); df.inputs['Color'].default_value = (1, 1, 1, 1)
+    nt.links.new(df.outputs['BSDF'], out.inputs['Surface'])
+    tex = nt.nodes.new('ShaderNodeTexImage'); tex.image = img
+    nt.nodes.active = tex
+    keep = [s.material for s in o.material_slots]
+    for s in o.material_slots: s.material = m
+    o.data.uv_layers.active = o.data.uv_layers[uv]
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    sc.render.bake.margin = margin; sc.render.bake.margin_type = 'EXTEND'; sc.render.bake.use_clear = True
+    sc.render.bake.use_pass_direct = True; sc.render.bake.use_pass_indirect = False; sc.render.bake.use_pass_color = False
+    bpy.ops.object.bake(type='DIFFUSE', pass_filter={'DIRECT'})
+    for s, k in zip(o.material_slots, keep): s.material = k
+    o.data.uv_layers.active = o.data.uv_layers[0]
+    bpy.data.materials.remove(m)
+
+def coverage(o, size, uv='Lightmap'):
+    """Which texels of the atlas the faces cover (a bake of white with no margin)."""
+    img = image('_cover', size)
+    def white(nodes, links):
+        rgb = nodes.new('ShaderNodeRGB'); rgb.outputs[0].default_value = (1, 1, 1, 1)
+        return rgb.outputs[0]
+    bake_emit(o, img, white, samples=1, margin=0, uv=uv)
+    a = pixels(img)[..., 0] > 0.5
+    bpy.data.images.remove(img)
+    return a
+
+def dilate(arr, covered, steps=40):
+    """The covered texels' values pushed out over the empty ones (each step one texel, the mean
+    of the neighbours already filled), so the lower mip levels do not pull the empty atlas into
+    the islands' edges. The rest, past `steps`, takes the mean of all."""
+    a = np.array(arr, np.float32); have = covered.copy()
+    a[~have] = 0
+    for _ in range(steps):
+        if have.all(): break
+        acc = np.zeros_like(a); n = np.zeros(have.shape, np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
+            h = np.roll(have, (dy, dx), (0, 1))
+            acc += np.roll(a, (dy, dx), (0, 1)) * h[..., None] if a.ndim == 3 else np.roll(a, (dy, dx), (0, 1)) * h
+            n += h
+        grow = ~have & (n > 0)
+        a[grow] = (acc[grow].T / n[grow]).T if a.ndim == 3 else acc[grow] / n[grow]
+        have = have | grow
+    if not have.all(): a[~have] = a[have].mean(0)
+    return a
+
+def cylinder(name, x, z, y0, y1, r, n=12, coll=None):
+    """An upright cylinder in the game's terms (a stack, a pole), capped."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=n, radius1=r, radius2=r, depth=y1 - y0)
+    bmesh.ops.translate(bm, verts=bm.verts, vec=G(x, (y0 + y1) / 2, z))
+    return mesh_object(name, bm, coll)
