@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, faced, annexFlood } from './kit';
 import * as T from '../core/textures';
 import { fieldCameraModel } from './props';
+import { setWallClock } from './clutter';
+import { dressControlRoom } from './dressing';
 
 export type Collider = { minX: number; maxX: number; minZ: number; maxZ: number };
 
@@ -70,6 +72,8 @@ export class ControlRoom {
     this.southWall(st);
     this.nightShift(st);
     mergeStatic(st);
+    // what the night shifts have left about the room (world/dressing.ts)
+    dressControlRoom({ add: (o) => this.group.add(o), mat: (p) => new THREE.MeshStandardMaterial(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.blobs);
     mergeStatic(this.blobs);
 
@@ -685,6 +689,7 @@ export class ControlRoom {
   ledState(i: number): LedState { return i === 7 || i === 15 ? 'amber' : 'green'; }
 
   setClock(seconds: number) {
+    setWallClock(seconds);   // the other rooms' clocks keep the same time (world/clutter.ts)
     const s = seconds % 60, m = (seconds / 60) % 60, h = (seconds / 3600) % 12;
     this.clockHands.s.rotation.z = -Math.floor(s) / 60 * Math.PI * 2;
     this.clockHands.m.rotation.z = -m / 60 * Math.PI * 2;

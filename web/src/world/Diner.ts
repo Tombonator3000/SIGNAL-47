@@ -4,6 +4,7 @@ import { eachVariant } from '../core/quality';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { dressDiner } from './dressing';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
 // Load DINER_ART before construction. The five diner images are the only required art.
@@ -56,6 +57,8 @@ export class Diner {
     for(const p of dinerFlood.pos)p.set(0,-999,0,0);
     this.m=this.makeMaterials();for(const [id,m] of Object.entries(this.m))m.name='diner/'+id;
     this.landscape();this.building();this.counter();this.booths();this.papersAndPhone();this.people();this.signAndRig();
+    // the counter's, the booths' and the walls' clutter (world/dressing.ts)
+    dressDiner({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});
     mergeStatic(this.shell);mergeStatic(this.fixed);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
     this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);

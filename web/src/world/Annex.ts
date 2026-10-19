@@ -5,6 +5,7 @@ import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { dressAnnex } from './dressing';
 
 // Chapter two location: the south corridor behind the control room and the SARO records
 // room off it. A small extension of the main building, as the design bible asks for.
@@ -50,6 +51,8 @@ export class RecordsAnnex {
       if (m.isMesh && !Array.isArray(m.material) && outside.has(m.material)) continue;
       this.interior.add(c);
     }
+    // what has gathered in the corridor and the records room (world/dressing.ts), drawn with the rooms
+    dressAnnex({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.glow.build());
   }
 

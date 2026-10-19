@@ -5,6 +5,7 @@ import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFloo
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
+import { dressMotelOffice } from './dressing';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -99,6 +100,8 @@ export class MotelFront {
     // the television's light on the office, low and in front of its screen (dark until it is
     // on); last, so the lamps before it keep their places in the set
     this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
+    // the office's clutter (world/dressing.ts), in the terms it was built in, moved with it
+    dressMotelOffice({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }
