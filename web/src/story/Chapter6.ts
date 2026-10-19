@@ -73,6 +73,8 @@ export class Chapter6 {
   private et = 0;          // seconds into THE EVENT
   private pt = 0;          // seconds into the pull-out
   private done = new Set<string>();
+  /** The pressure of the time away under THE EVENT (bought sound, AudioSys.pressure). */
+  private bed: ReturnType<AudioSys['pressure']> = null;
   private frames: Frame[] | null = null;
   private still = false;
   private calm = false;
@@ -110,6 +112,7 @@ export class Chapter6 {
     this.d.fog(null);
     this.d.audio.cabRadio(null);
     this.d.audio.silence(false);
+    this.bed?.stop(); this.bed = null;
   }
 
   saveBlock(): string | null { return 'Not on the road.'; }
@@ -194,6 +197,9 @@ export class Chapter6 {
       const on = t < 2 ? (t % 0.5) < 0.25 : t >= 3.2 && t < 6.7 ? ((t - 3.2) % 0.5) < 0.25 : false;
       truck.setDashLevel(on ? 1 : 0);
     } else if (e >= 10.8) this.once('dashOff', () => truck.setDashLevel(0));
+    // + 2 s: the pressure the time away has, the same, coming up under it until FLASH
+    if (e >= 2) this.once('pressure', () => { this.bed = audio.pressure(); });
+    if (this.bed && e < 34) this.bed.gain.gain.value = 0.063 * sm(2, 6, e) + 0.187 * sm(6, 32, e);
     // + 10 s: the headlights wake: deep blue, then amber, green and red, slowly
     if (e >= 10 && e < 34) {
       const t = (e - 10) / 2.2, i = Math.min(HEADS.length - 1, Math.floor(t)), k = sm(0.55, 1, t - i);
@@ -217,6 +223,7 @@ export class Chapter6 {
       audio.cabRadio(null);
       w.engineSound?.stop();
       audio.silence(true);
+      this.bed?.stop(0.04); this.bed = null;
       truck.setHeadColor(null);
     });
     if (e >= 34) truck.setLightLevel(0.2 + 0.12 * (0.5 + 0.5 * Math.sin((e - 34) * 2.1)));

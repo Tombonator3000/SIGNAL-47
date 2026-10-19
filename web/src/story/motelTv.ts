@@ -74,7 +74,7 @@ export class MotelTv {
   private card: HTMLCanvasElement;
   private shot: HTMLCanvasElement;
   private tvAt = new THREE.Vector3();
-  private snd: { tone: GainNode; hum: GainNode; hiss: GainNode; whine: GainNode; stop: () => void } | null = null;
+  private snd: { tone: GainNode; hum: GainNode; humK: number; hiss: GainNode; whine: GainNode; stop: () => void } | null = null;
   private light = new THREE.Color();
   /** The camera over the lot, and the light from straight above that the picture has (shoot()). */
   private cam = new THREE.PerspectiveCamera(FOV, 4 / 3, 1, 120);
@@ -266,19 +266,24 @@ export class MotelTv {
       const tone = gain(), tOsc = ctx.createOscillator(); tOsc.frequency.value = 1000;
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.5;
       tOsc.connect(bp); bp.connect(tone);
-      // the carrier's hum: the mains buzz in a set with nothing coming in
-      const hum = gain(), hOsc = ctx.createOscillator(); hOsc.type = 'sawtooth'; hOsc.frequency.value = 60;
+      // the carrier's hum: the mains buzz in a set with nothing coming in. With the bought sounds
+      // it is a recorded transformer hum (an appliance's 50 Hz, played 1.2 times as fast: 60 Hz,
+      // with its uneven harmonics), as loud through the low-pass as the sawtooth (x1.8, measured)
+      const hum = gain(), hb = a.lic('tv_hum');
+      let hOsc: AudioScheduledSourceNode;
+      if (hb) { const s = ctx.createBufferSource(); s.buffer = hb; s.loop = true; hOsc = s; }
+      else { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 60; hOsc = o; }
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; hOsc.connect(lp); lp.connect(hum);
       const hiss = gain(), n = ctx.createBufferSource(); n.buffer = noise; n.loop = true;
       const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; n.connect(hp); hp.connect(hiss);
       // and the line whistle of the tube, as long as it is on
       const whine = gain(), wOsc = ctx.createOscillator(); wOsc.frequency.value = 15734; wOsc.connect(whine);
       for (const o of [tOsc, hOsc, n, wOsc]) o.start();
-      this.snd = { tone, hum, hiss, whine, stop: () => { for (const o of [tOsc, hOsc, n, wOsc]) { try { o.stop(); } catch { /* stopped */ } } spk.disconnect(); } };
+      this.snd = { tone, hum, humK: hb ? 1.8 : 1, hiss, whine, stop: () => { for (const o of [tOsc, hOsc, n, wOsc]) { try { o.stop(); } catch { /* stopped */ } } spk.disconnect(); } };
     }
     const m = this.mode, now = ctx.currentTime, set = (g: GainNode, v: number) => g.gain.setTargetAtTime(v, now, 0.04);
     set(this.snd.tone, m === 'card' ? 0.03 : 0);
-    set(this.snd.hum, m === 'carrier' ? 0.11 : 0);
+    set(this.snd.hum, m === 'carrier' ? 0.11 * this.snd.humK : 0);
     set(this.snd.hiss, m === 'carrier' ? 0.014 : m === 'card' ? 0.006 : 0);
     set(this.snd.whine, m === 'frame' ? 0 : 0.0016);
   }

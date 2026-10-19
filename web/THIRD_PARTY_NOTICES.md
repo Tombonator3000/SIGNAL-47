@@ -8,6 +8,10 @@ Lydfilene i `src/assets/audio/kinski/` er genererte engelske opplesninger av spi
 - Modell: k2-fsa/OmniVoice ved revisjon `c5fdb5ccb189668d56333f77ba2629f4cd7535f4`, https://huggingface.co/k2-fsa/OmniVoice. Det nedlastede modellkortet oppgir Apache-2.0 for kode og CC-BY-NC for modellvektene. Modellvekter distribueres ikke med spillet; genererte lydfiler merkes ikke automatisk som CC0 eller Apache.
 - Kilde, referansehash, modellkortets hash, forespørsler og etterbehandling er dokumentert i `production/kinski/provenance.json` og `generation.json`. Tom godkjente innfletting i main og publisering 19. oktober 2026.
 
+## Kjøpte lydeffekter: Ultimate SFX for Games (Function Loops), 19. oktober 2026
+
+Noen lyder kommer fra Ultimate SFX for Games av Function Loops, kjøpt av Tom (Humble Bundle). Lisensen (Function Loops' EULA) tillater bruk og redigering i spill, krever ikke kreditering, men tillater ikke at lydfilene deles videre. Derfor ligger de ikke i dette repoet: de redigerte utsnittene spillet bruker ligger i det private repoet `Tombonator3000/SIGNAL-47-assets`, som byggejobben for Pages henter til `src/assets/licensed/` (se `sfx/MANIFEST.md` der for kilde, utsnitt og bruk av hver fil). Uten mappa bygger og lyder spillet som før. De står i: suset og knitringen i AM-radioene, TV-brummen på motellkontoret, trykket under advarselen før tapt tid og under THE EVENT, én av lydene ute i mørket, den åpne linja i telefonkiosken, dørene på SARO, nøklene i tenningen, hellingen av kaffe og fremkaller, bryterne i stativet og i rom 6, og telefonrøret i prologen. Pakken nevnes i rulleteksten og tittelskjermens info når filene er med (en høflighet, ikke et krav).
+
 ## Tidligere innhold
 
 Alt under er hentet fra Unity-prosjektet i samme repo, med samme lisens som der (se `Docs/THIRD_PARTY_NOTICES.md` i roten). Lyd er konvertert til MP3 for nettleseren.

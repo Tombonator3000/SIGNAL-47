@@ -26,6 +26,9 @@ import paper1 from '../assets/audio/paper1.mp3';
 import click from '../assets/audio/click.mp3';
 import sw from '../assets/audio/switch.mp3';
 import thudSoft from '../assets/audio/thud_soft.mp3';
+// the truck's start and shut-off (drive/engineSound.ts), also heard far off on a phone line
+import engineStart from '../assets/audio/engine_start.mp3';
+import engineOff from '../assets/audio/engine_off.mp3';
 
 // the steps, by name: step_concrete0 becomes stepConcrete0
 const STEP_FILES = import.meta.glob<string>('../assets/audio/step_*.mp3', { eager: true, import: 'default' });
@@ -56,11 +59,27 @@ for (const clip of voiceCatalog.clips) {
   phoneKeys.set(text, key); phoneSources[key] = url;
 }
 
+// Bought sounds (Ultimate SFX for Games, Function Loops), cut and levelled from the packs. Their
+// licence does not allow the files in this public repo, so they live in the private repo
+// SIGNAL-47-assets, cloned to src/assets/licensed (its sfx/MANIFEST.md says what each is for).
+// A file that is there takes over its slot or adds to it (or(), lic()); without the folder the
+// game sounds as it did. sfx/door_heavy.mp3 becomes lic:door_heavy.
+const LICENSED = import.meta.glob<string>('../assets/licensed/sfx/*.{mp3,wav,ogg}', { eager: true, query: '?url', import: 'default' });
+/** The bought sounds are in this build (the credits name them only then). */
+export const BOUGHT_SFX = Object.keys(LICENSED).length > 0;
+const licSources = Object.fromEntries(Object.entries(LICENSED).map(([path, url]) => [`lic:${/([^/]+)\.\w+$/.exec(path)![1]}`, url]));
+/** A bought sound's level against the one it stands in for, at the same call: the files are cut
+ *  to match, but a click that would clip at the old level, or a crackle, is raised here. */
+const LIC_GAIN: Record<string, number> = { 'lic:rack_switch': 1.6, 'lic:small_switch': 2.2, 'lic:radio_crackle_long': 4.2, 'lic:radio_crackle_short': 3 };
+/** The bought static against white noise, through the radios' band-pass: x5.8 to x6.4 for the same
+ *  RMS, x5 to x5.5 for the same loudness (it is brighter inside the band). */
+const STATIC_MAKEUP = 5.5;
+
 const SOURCES: Record<string, string> = {
   phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
   crickets, owl, dog0, dog1, gust, ...stepSources, ...alienSources,
-  doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1,
-  ...phoneSources,
+  doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1, engineStart, engineOff,
+  ...phoneSources, ...licSources,
 };
 
 export interface PhoneCallTimeline {
@@ -198,16 +217,22 @@ export class AudioSys {
     return p;
   }
 
-  play(name: string, o: { gain?: number; rate?: number; at?: THREE.Vector3; when?: number; dest?: AudioNode; loop?: boolean; lp?: number } = {}) {
+  /** from, dur: only that part of the recording (seconds into it, how long). */
+  play(name: string, o: { gain?: number; rate?: number; at?: THREE.Vector3; when?: number; dest?: AudioNode; loop?: boolean; lp?: number; from?: number; dur?: number } = {}) {
     const ctx = this.ctx; const b = this.buf[name];
     if (!ctx || !b) return null;
     const src = ctx.createBufferSource(); src.buffer = b; src.playbackRate.value = o.rate ?? 1; src.loop = !!o.loop;
-    const g = ctx.createGain(); g.gain.value = o.gain ?? 1;
+    const g = ctx.createGain(); g.gain.value = (o.gain ?? 1) * (LIC_GAIN[name] ?? 1);
     if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; src.connect(f); f.connect(g); } else src.connect(g);
     g.connect(o.dest ?? (o.at ? this.panner(o.at) : this.sfx));
-    src.start(ctx.currentTime + (o.when ?? 0));
+    src.start(ctx.currentTime + (o.when ?? 0), o.from ?? 0, o.dur);
     return { src, gain: g };
   }
+  /** The bought sound `name` (sfx/<name>.*) to play() in place of `old`, if its file is there;
+   *  otherwise `old` (an empty name plays nothing: a sound only the bought files have). */
+  or(name: string, old = '') { return this.buf[`lic:${name}`] ? `lic:${name}` : old; }
+  /** A bought sound's buffer, for the slots that build their own nodes; undefined without it. */
+  lic(name: string): AudioBuffer | undefined { return this.buf[`lic:${name}`]; }
 
   loop(key: string, name: string, o: { gain?: number; at?: THREE.Vector3; dest?: AudioNode; rate?: number } = {}) {
     this.stop(key);
@@ -226,6 +251,32 @@ export class AudioSys {
   // ---------- Synth ----------
   private noiseSrc(brown = false, loop = true) {
     const s = this.ctx!.createBufferSource(); s.buffer = brown ? this.brown : this.noise; s.loop = loop; return s;
+  }
+  /** The static of an AM set at night, looping and already started: the bought hiss with its
+   *  random crackle when it is there (frying, the old foley stand-in for static; from a random
+   *  point, so two radios are not in step), otherwise white noise. `out` has the level the white
+   *  noise had through the radios' band-pass. Null until unlock(). */
+  staticSrc(): { src: AudioBufferSourceNode; out: AudioNode } | null {
+    const ctx = this.ctx; if (!ctx || !this.noise) return null;
+    const b = this.lic('radio_static'), src = ctx.createBufferSource(); src.buffer = b ?? this.noise; src.loop = true;
+    if (!b) { src.start(); return { src, out: src }; }
+    const g = ctx.createGain(); g.gain.value = STATIC_MAKEUP; src.connect(g);
+    src.start(0, Math.random() * b.duration);
+    return { src, out: g };
+  }
+  /** The deep pressure of the time away (story/abduction.ts) and of THE EVENT (story/Chapter6.ts),
+   *  the same in both so it is known again: a bought low bed, looping, not placed, at gain 0 for
+   *  the caller to raise. Null without the file (then the synth tone is all there is). stop(fade):
+   *  0 cuts it at once (before the sound is suspended, so it is not there on waking). */
+  pressure(): { gain: GainNode; stop: (fade?: number) => void } | null {
+    const ctx = this.ctx, b = this.lic('pressure'); if (!ctx || !b) return null;
+    const src = ctx.createBufferSource(); src.buffer = b; src.loop = true;
+    const gain = ctx.createGain(); gain.gain.value = 0; src.connect(gain); gain.connect(this.sfx); src.start();
+    return { gain, stop: (fade = 0) => {
+      const t = ctx.currentTime;
+      if (fade <= 0) { try { src.stop(); } catch { /* stopped */ } gain.disconnect(); return; }
+      gain.gain.cancelScheduledValues(t); gain.gain.setTargetAtTime(0, t, fade); src.stop(t + fade * 6);
+    } };
   }
 
   startRoomTone() {
@@ -309,10 +360,10 @@ export class AudioSys {
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07;
     const lg = ctx.createGain(); lg.gain.value = 0.4; lfo.connect(lg); lg.connect(fade.gain);
     src.connect(music); music.connect(fade); fade.connect(out);
-    const n = this.noiseSrc(false); const hiss = ctx.createGain(); hiss.gain.value = 0.18; n.connect(hiss); hiss.connect(out);
-    for (const x of [src, lfo, n]) x.start();
+    const n = this.staticSrc()!; const hiss = ctx.createGain(); hiss.gain.value = 0.18; n.out.connect(hiss); hiss.connect(out);
+    for (const x of [src, lfo]) x.start();
     out.gain.setTargetAtTime(0.11, ctx.currentTime, 0.3);
-    this.am = { out, music, hiss, stop: () => { for (const x of [src, lfo, n]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+    this.am = { out, music, hiss, stop: () => { for (const x of [src, lfo, n.src]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
   }
   amRadioJam(on: boolean) {
     const ctx = this.ctx, r = this.am; if (!ctx || !r) return;
@@ -383,6 +434,8 @@ export class AudioSys {
 
   pour(at?: THREE.Vector3) {
     const ctx = this.ctx; if (!ctx) return;
+    // a recorded pour, the fill rising, when the bought one is there
+    if (this.lic('pour')) { this.play('lic:pour', { gain: 0.33, at }); return; }
     const t = ctx.currentTime;
     const n = this.noiseSrc(false, false); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 3;
     bp.frequency.setValueAtTime(500, t); bp.frequency.linearRampToValueAtTime(1300, t + 1.6);
@@ -602,7 +655,7 @@ export class AudioSys {
     const og = ctx.createGain(); og.gain.value = 0.45; osc.connect(og); og.connect(out);
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.21;
     const lg = ctx.createGain(); lg.gain.value = 0.3; lfo.connect(lg); lg.connect(og.gain);
-    const n = this.noiseSrc(false); const ng = ctx.createGain(); ng.gain.value = 0.3; n.connect(ng); ng.connect(out);
+    const n = this.staticSrc()!; const ng = ctx.createGain(); ng.gain.value = 0.3; n.out.connect(ng); ng.connect(out);
     // the voice: noise through a speech band, chopped at a syllable rate
     const vn = this.noiseSrc(true); const vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 650; vb.Q.value = 1.8;
     const voice = ctx.createGain(); voice.gain.value = 0;
@@ -610,9 +663,9 @@ export class AudioSys {
     const sg = ctx.createGain(); sg.gain.value = 0.5; syl.connect(sg);
     const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
     vn.connect(vb); vb.connect(chop); chop.connect(voice); voice.connect(out);
-    for (const x of [osc, lfo, n, vn, syl]) x.start();
+    for (const x of [osc, lfo, vn, syl]) x.start();
     out.gain.setTargetAtTime(level, ctx.currentTime, 0.5);
-    this.radioNodes = { out, voice, stop: () => { for (const x of [osc, lfo, n, vn, syl]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+    this.radioNodes = { out, voice, stop: () => { for (const x of [osc, lfo, n.src, vn, syl]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
   }
   radioVoice(secs: number, when = 0) {
     const ctx = this.ctx, r = this.radioNodes; if (!ctx || !r) return;
@@ -661,7 +714,7 @@ export class AudioSys {
       horn.connect(mute); mute.connect(chop); chop.connect(pause); pause.connect(talk); talk.connect(out);
       const car = ctx.createGain(); car.gain.value = 0;
       const osc = ctx.createOscillator(); osc.frequency.value = 760; osc.connect(car); car.connect(out);
-      const n = this.noiseSrc(false), hiss = ctx.createGain(); hiss.gain.value = 0.25; n.connect(hiss); hiss.connect(out);
+      const n = this.staticSrc()!, hiss = ctx.createGain(); hiss.gain.value = 0.25; n.out.connect(hiss); hiss.connect(out);
       // now and then the static swells over the talk and the talk sinks under it (Tom, 16 October):
       // three slow waves that only now and then add up past a threshold, so it comes irregularly
       const fz = ctx.createGain(); fz.gain.value = 0;
@@ -674,8 +727,8 @@ export class AudioSys {
       const duckAmt = ctx.createGain(); duckAmt.gain.value = -0.8; over.connect(duckAmt);
       const duck = ctx.createGain(); duck.gain.value = 1; duckAmt.connect(duck.gain);
       talk.disconnect(); talk.connect(duck); duck.connect(out);
-      for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) x.start();
-      this.cab = { out, spk: bp, talk, car, hiss, swell, stop: () => { for (const x of [horn, p1, p2, syl, phr, osc, n, ...waves]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+      for (const x of [horn, p1, p2, syl, phr, osc, ...waves]) x.start();
+      this.cab = { out, spk: bp, talk, car, hiss, swell, stop: () => { for (const x of [horn, p1, p2, syl, phr, osc, n.src, ...waves]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
     }
     const r = this.cab, t = ctx.currentTime;
     r.out.gain.setTargetAtTime(0.09, t, 0.2);

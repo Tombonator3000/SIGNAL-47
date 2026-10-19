@@ -292,6 +292,8 @@ export class Chapter5 {
   private pour() {
     this.s.coffee = true;
     const cup = this.d.diner()?.objs.cup; if (cup) cup.visible = true;
+    // the pour into the cup, heard only with the bought sounds (Audio.ts)
+    if (cup) this.d.audio.play(this.d.audio.or('pour'), { gain: 0.33, at: cup.getWorldPosition(new THREE.Vector3()) });
     this.g.note(`${this.time()}. Coffee at the counter. Thirty-five cents.`);
     this.save();
   }
