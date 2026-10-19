@@ -76,6 +76,10 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
           float win = clamp(1.0 - sqrt(d2) / (uFloodPos[i].w * 1.6 + 8.0), 0.0, 1.0);
           fAcc += uFloodCol[i] * (uFloodPos[i].w * ndl * win * win / (1.0 + d2 * uFloodFall));
         }
+        #ifdef USE_AOMAP
+          // a baked occlusion (world/blenderModels.ts) darkens the lamps' pools in the corners too
+          fAcc *= mix( 1.0, texture2D( aoMap, vAoMapUv ).r, 0.6 );
+        #endif
         totalEmissiveRadiance += fAcc * diffuseColor.rgb * uFloodScale;`);
   };
   m.customProgramCacheKey = () => 'flood' + set.key + falloff;

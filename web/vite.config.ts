@@ -45,7 +45,9 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020',
     chunkSizeWarningLimit: 2000,
     rollupOptions: mode === 'single' ? {} : {
-      output: { manualChunks: (id) => (id.includes('node_modules/three') ? 'three' : undefined) },
+      // (three's loaders stay with whoever imports them: the Blender pilot's GLTFLoader is
+      // fetched only with ?blender, world/blenderModels.ts)
+      output: { manualChunks: (id) => (id.includes('node_modules/three') && !id.includes('/examples/jsm/loaders/') ? 'three' : undefined) },
     },
   },
 }));

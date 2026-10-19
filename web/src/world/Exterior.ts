@@ -38,6 +38,9 @@ export class Exterior {
   dishArray!: DishArray;
   // Lamp glows, poles and fence posts are batched: one point cloud and one merged group.
   glow = new GlowPoints();
+  /** The east wing and the concrete of the control room's roof and the plinths, as built here
+   *  (world/blenderModels.ts puts the modelled house in their place when it is shown). */
+  house: THREE.Mesh[] = [];
   private statics = new THREE.Group();
 
   constructor() {
@@ -141,6 +144,7 @@ export class Exterior {
     wingMats.forEach((m) => floodlit(m as THREE.MeshStandardMaterial, 0.03));
     const wing = box(g, 18, 4.2, 11, wingMats, 29.6, 1.5, 0);
     noMerge(wing);
+    wing.name = 'house:wing';
     // lettering on the south face of the wing
     const letters = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), new THREE.MeshBasicMaterial({ map: T.saroLettering(), transparent: true, toneMapped: false, color: 0xd9cfb6 }));
     letters.position.set(26.4, 2.0, 5.53);
@@ -160,6 +164,9 @@ export class Exterior {
     });
     addFlood(-7.5, 2.4, 2, 10); addFlood(24.4, 2.6, 7, 14);
     mergeStatic(g);
+    const roof = g.children.find((c) => (c as THREE.Mesh).material === M.concrete) as THREE.Mesh;
+    roof.name = 'house:roof';
+    this.house = [wing, roof];
     this.group.add(g);
   }
 

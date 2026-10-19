@@ -1,0 +1,4 @@
+# Made again by `python3 tools/blender/build.py saro` from the game: the export of the game's
+# boxes and what stands round them (several MB), and the mask's JPEG, which is inside the .glb.
+*_game.glb
+*_mask.jpg

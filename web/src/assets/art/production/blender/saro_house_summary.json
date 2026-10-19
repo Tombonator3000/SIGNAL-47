@@ -1,0 +1,19 @@
+{
+ "meshes": [
+  "glass_dark",
+  "glass_lit",
+  "house",
+  "wing"
+ ],
+ "triangles": 2083,
+ "vertices": 3008,
+ "bytes": 1259780,
+ "image_bytes": 1102894,
+ "materials": [
+  "glass_dark",
+  "glass_lit",
+  "house",
+  "wing"
+ ],
+ "file_bytes": 1265124
+}

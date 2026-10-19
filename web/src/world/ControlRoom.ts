@@ -58,6 +58,9 @@ export class ControlRoom {
   fieldCamera!: THREE.Group;
   dspScreen!: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; tex: THREE.CanvasTexture };
   reels: THREE.Object3D[] = [];
+  /** The outside of the walls: the shell's one concrete mesh after merging (world/blenderModels.ts
+   *  puts the modelled house in its place when it is shown). */
+  outside!: THREE.Mesh;
   spawn = { x: 1.55, z: 3.7, yaw: -0.22 };
   bounds = { minX: -5.75, maxX: 5.75, minZ: -4.22, maxZ: 4.22 };
 
@@ -72,6 +75,8 @@ export class ControlRoom {
     this.southWall(st);
     this.nightShift(st);
     mergeStatic(st);
+    this.outside = st.children.find((c) => (c as THREE.Mesh).material === M.concrete) as THREE.Mesh;
+    this.outside.name = 'house:room';
     // what the night shifts have left about the room (world/dressing.ts)
     dressControlRoom({ add: (o) => this.group.add(o), mat: (p) => new THREE.MeshStandardMaterial(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.blobs);

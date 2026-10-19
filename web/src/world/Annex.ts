@@ -34,6 +34,9 @@ export class RecordsAnnex {
   exitOpen = 0;                          // 0 closed, 1 open (the leaf swings 80 degrees out)
   readonly exitLeafCol: Collider = { minX: -7.3, maxX: -6.3, minZ: 5.12, maxZ: 5.32 };
   private flickerTube!: THREE.Mesh;
+  /** The outside of the walls, the roof and the plinth: the shell's concrete mesh after merging
+   *  (world/blenderModels.ts puts the modelled house in its place when it is shown). */
+  outside!: THREE.Mesh;
   private tubeOn = new THREE.MeshBasicMaterial({ color: 0xeef3ff });
   private tubeDim = new THREE.MeshBasicMaterial({ color: 0x6d7378 });
 
@@ -48,7 +51,10 @@ export class RecordsAnnex {
     const outside = new Set<THREE.Material>([M.concrete, M.steel, M.darkPlastic]);
     for (const c of [...st.children]) {
       const m = c as THREE.Mesh;
-      if (m.isMesh && !Array.isArray(m.material) && outside.has(m.material)) continue;
+      if (m.isMesh && !Array.isArray(m.material) && outside.has(m.material)) {
+        if (m.material === M.concrete) { this.outside = m; m.name = 'house:annex'; }
+        continue;
+      }
       this.interior.add(c);
     }
     // what has gathered in the corridor and the records room (world/dressing.ts), drawn with the rooms
