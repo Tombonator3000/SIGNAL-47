@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "scope": "Kun statisk EA-tale under PEOPLE.host: første møte, gjenbesøk og alle fire samtaleemner. Spillersvar, asider, knapper og vitnepapirer er utelatt.",
+  "normalization": "Whitespace collapse and trim; ID = SHA-256(normalized UTF-8 text).slice(0,16).",
+  "source": {
+    "file": "src/story/caliche.ts",
+    "sha256": "e12e4df24858cf71fa51c45fff25422e6776e00a7431a3d5bc52870368291108"
+  },
+  "summary": {
+    "clips": 16,
+    "words": 150,
+    "topics": {
+      "open": 2,
+      "calls": 4,
+      "visitors": 2,
+      "tape": 4,
+      "boy": 4
+    }
+  },
+  "clips": [
+    {
+      "id": "56e7a020339f079f",
+      "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 317,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "open"
+        }
+      ]
+    },
+    {
+      "id": "0772acf7684b121e",
+      "text": "You again. Song and a half this time.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 318,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "open"
+        }
+      ]
+    },
+    {
+      "id": "3dd0d7b88a382fe9",
+      "text": "Lights, mostly. Cattle, some nights. Engines.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 322,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "calls"
+        }
+      ]
+    },
+    {
+      "id": "073fce364994cf9e",
+      "text": "And missing time. You read that book? Everybody's read that book now.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 323,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "calls"
+        }
+      ]
+    },
+    {
+      "id": "3a345d802b2c405b",
+      "text": "Half of them, I think they read it first and then it happened to them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 324,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "calls"
+        }
+      ]
+    },
+    {
+      "id": "f60bda199fff5103",
+      "text": "The other half never read anything in their lives.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 325,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "calls"
+        }
+      ]
+    },
+    {
+      "id": "a3c152d2c160dfed",
+      "text": "On the air I call them our visitors. It keeps it friendly.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 329,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "visitors"
+        }
+      ]
+    },
+    {
+      "id": "a75c7f370b3629f3",
+      "text": "Off the air I don't call them anything.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 330,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "visitors"
+        }
+      ]
+    },
+    {
+      "id": "357153cc24cbf51d",
+      "text": "Every one, on reel. Twelve years of them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 334,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "tape"
+        }
+      ]
+    },
+    {
+      "id": "ef7a39269e528490",
+      "text": "Except one. September of '81, a boy called in. I've never played it back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 335,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "tape"
+        }
+      ]
+    },
+    {
+      "id": "281daafd0a94d01a",
+      "text": "I wasn't on the air that night. The station was off.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 336,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "tape"
+        }
+      ]
+    },
+    {
+      "id": "ecc59550da45471d",
+      "text": "Record's ending.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 338,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "tape"
+        }
+      ]
+    },
+    {
+      "id": "2965d89d13a00665",
+      "text": "You heard him too.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 342,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "boy"
+        }
+      ]
+    },
+    {
+      "id": "466b8eed89cf1d9e",
+      "text": "I put the receiver down and tried the line again. Dial tone. Just a phone.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 344,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "boy"
+        }
+      ]
+    },
+    {
+      "id": "f58484cccf41a7b6",
+      "text": "I haven't played that one. I told you.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 346,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "boy"
+        }
+      ]
+    },
+    {
+      "id": "80386b410ffeb2a1",
+      "text": "I wrote this one down.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 348,
+          "kind": "static-npc",
+          "character": "EARL",
+          "topic": "boy"
+        }
+      ]
+    }
+  ]
+}

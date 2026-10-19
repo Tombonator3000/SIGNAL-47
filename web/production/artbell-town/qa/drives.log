@@ -1,0 +1,25 @@
+PASS SARO draws the road's own stretch south of the site
+PASS the shared skyline is in the scene
+PASS out: in the truck, the engine running (saro)
+PASS out: saro to road at 26 mph looks like any other frame (difference 2.31, the frame before 1.79)
+PASS out: road to station01 at 26 mph looks like any other frame (difference 2.55, the frame before 3.21)
+PASS out: through SARO, the road and the station's area in order [('saro', 'road'), ('road', 'station01')]
+PASS out: parked by the gate, out of the truck (2.3 game minutes)
+PASS out: the chapter has arrived at STATION 01
+PASS out: the truck stands on the pad
+PASS back: in the truck, the engine running (station01)
+PASS back: station01 to road at 26 mph looks like any other frame (difference 2.68, the frame before 3.14)
+PASS back: road to saro at 26 mph looks like any other frame (difference 2.29, the frame before 1.82)
+PASS back: through the road and SARO in order [('station01', 'road'), ('road', 'saro')]
+PASS back: parked on the pad, out of the truck (2.5 game minutes)
+PASS back: the truck stands on its pad again
+PASS diner: in the truck, the engine running (saro)
+PASS diner: saro to road at 26 mph looks like any other frame (difference 2.23, the frame before 2.31)
+PASS diner: out of SARO onto the road, then the diner without another change [('saro', 'road')]
+PASS diner: left on the lot, out of the truck (10.9 game minutes)
+PASS diner: the clock went on about nine minutes (10.9)
+PASS diner: the diner, the road round it and the truck on the lot are all there
+PASS a change of area keeps the springs, their give and their speed ([0.31, -0.12, 0.05, 0, 0, -0.0])
+no console errors/warnings
+PASS no console errors or warnings
+23 of 23 PASS

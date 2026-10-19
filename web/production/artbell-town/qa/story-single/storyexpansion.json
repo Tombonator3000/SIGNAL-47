@@ -1,0 +1,267 @@
+{
+  "scenario": "API setup, real talk/Papers clicks, actual chapter-five phone clock",
+  "viewport": [
+    844,
+    390
+  ],
+  "checks": [
+    [
+      true,
+      "attendant: an unobserved payphone call supplies no follow-up"
+    ],
+    [
+      true,
+      "attendant: even with the nickel, his old-road account must be heard first"
+    ],
+    [
+      true,
+      "attendant: the old-road account unlocks the observed nickel topic"
+    ],
+    [
+      true,
+      "attendant: the completed call alone is insufficient without its nickel"
+    ],
+    [
+      true,
+      "attendant: showing the nickel receives his specific response"
+    ],
+    [
+      true,
+      "attendant: the follow-up cannot be filed twice"
+    ],
+    [
+      true,
+      "Attendant: talk fits the 844x390 viewport without horizontal overflow"
+    ],
+    [
+      true,
+      "Earl: hearing tonight's boy does not skip his original conversation"
+    ],
+    [
+      true,
+      "Earl: his unplayed 1981 reel is required before the new question"
+    ],
+    [
+      true,
+      "Earl: the boy question stays hidden when tonight's broadcast was not observed"
+    ],
+    [
+      true,
+      "Earl: the programme sheet links the observed call without inventing playback of the 1981 reel"
+    ],
+    [
+      true,
+      "Earl: the programme sheet is filed once"
+    ],
+    [
+      true,
+      "Earl: talk fits the 844x390 viewport without horizontal overflow"
+    ],
+    [
+      true,
+      "woman: an observed herd does not skip her original story"
+    ],
+    [
+      true,
+      "woman: her husband's missing time must be heard first"
+    ],
+    [
+      true,
+      "woman: without the observed missing cow there is no new question"
+    ],
+    [
+      true,
+      "woman: both herd counts are recorded while her husband's experience remains unknown"
+    ],
+    [
+      true,
+      "woman: the account is filed once"
+    ],
+    [
+      true,
+      "Woman: talk fits the 844x390 viewport without horizontal overflow"
+    ],
+    [
+      true,
+      "deputy: seeing the empty car does not skip his original pin account"
+    ],
+    [
+      true,
+      "deputy: the green-pin account is also required"
+    ],
+    [
+      true,
+      "deputy: the car follow-up is unavailable before his 04:30 return"
+    ],
+    [
+      true,
+      "04:29: the deputy is still absent"
+    ],
+    [
+      true,
+      "04:30: returning does not create an unobserved patrol-car topic"
+    ],
+    [
+      true,
+      "04:30: the observed car now produces the deputy's separate statement"
+    ],
+    [
+      true,
+      "deputy: the statement is filed once"
+    ],
+    [
+      true,
+      "Deputy: talk fits the 844x390 viewport without horizontal overflow"
+    ],
+    [
+      true,
+      "exactly four distinct witness documents exist"
+    ],
+    [
+      true,
+      "each witness account is a readable notebook copy"
+    ],
+    [
+      true,
+      "Papers offers witness-boy exactly once"
+    ],
+    [
+      true,
+      "Papers offers witness-car exactly once"
+    ],
+    [
+      true,
+      "Papers offers witness-cows exactly once"
+    ],
+    [
+      true,
+      "Papers offers witness-phone exactly once"
+    ],
+    [
+      true,
+      "a real Papers click opens the full deputy transcription"
+    ],
+    [
+      true,
+      "Continue restores all four witness documents with exactly the same content"
+    ],
+    [
+      true,
+      "Continue keeps an already asked follow-up unavailable"
+    ],
+    [
+      true,
+      "revisiting after Continue does not duplicate witness papers"
+    ],
+    [
+      true,
+      "chapter-one call: the first payphone recording is available near the phone"
+    ],
+    [
+      true,
+      "46.8 seconds of the first call does not award the complete recording or nickel"
+    ],
+    [
+      true,
+      "after 47 seconds the first recording and its 1947 nickel are awarded"
+    ],
+    [
+      true,
+      "the return-call scenario uses the actual chapter-five clock at 05:03"
+    ],
+    [
+      true,
+      "at actual 05:03 the second payphone call rings after Room 6"
+    ],
+    [
+      true,
+      "the return call schedules real engine recordings and all four-plus-seven relay clicks"
+    ],
+    [
+      true,
+      "the partial return call has not yet awarded its finding"
+    ],
+    [
+      true,
+      "walking away from the return call aborts it without a completed finding"
+    ],
+    [
+      true,
+      "walking away stops the real scheduled engine and relay sources, including the future clicks"
+    ],
+    [
+      true,
+      "the aborted call does not claim that all four and seven relay clicks were heard"
+    ],
+    [
+      true,
+      "the aborted call cannot retry before four minutes have passed"
+    ],
+    [
+      true,
+      "after four minutes the unspent return call can ring again"
+    ],
+    [
+      true,
+      "46 seconds into the retry is still an incomplete recording"
+    ],
+    [
+      true,
+      "the full 47-second return call completes while preserving the first call and nickel"
+    ],
+    [
+      true,
+      "the completed return call files exactly one observation"
+    ],
+    [
+      true,
+      "the completed return call does not ring a third time"
+    ],
+    [
+      true,
+      "a real 05:15 arrival still hears the return call in the diner dawn"
+    ],
+    [
+      true,
+      "the late return call completes before the chapter-six departure"
+    ],
+    [
+      true,
+      "no browser runtime errors: "
+    ]
+  ],
+  "witnesses": [
+    {
+      "id": "witness-boy",
+      "title": "Witness / Earl's programme sheet",
+      "kind": "hand",
+      "stamp": "REYES",
+      "page": "REYES / NOTEBOOK COPY\n\n1420 AM / NIGHT LINE\n\nI heard a boy call about a star with a little tail, low in the south.\n\nEARL'S PROGRAMME SHEET, copied by hand:\nBOY / COMET\nCaller number: blank.\n\nEARL:\n\"I put the receiver down and tried the line again. Dial tone. Just a phone.\"\n\nHe still has not played the reel from September 1981. I have not heard that reel.",
+      "transcript": "Copied into my notebook after the conversation. My observation and the witness's words.\n\n1420 AM / NIGHT LINE\n\nI heard a boy call about a star with a little tail, low in the south.\n\nEARL'S PROGRAMME SHEET, copied by hand:\nBOY / COMET\nCaller number: blank.\n\nEARL:\n\"I put the receiver down and tried the line again. Dial tone. Just a phone.\"\n\nHe still has not played the reel from September 1981. I have not heard that reel."
+    },
+    {
+      "id": "witness-car",
+      "title": "Witness / The empty patrol car",
+      "kind": "hand",
+      "stamp": "REYES",
+      "page": "REYES / NOTEBOOK COPY\n\nHIGHWAY NORTH OF CALICHE\n\nThe deputy's car on the shoulder. Engine running, driver's door open, nobody in it. His hat was on the seat.\n\nTHE DEPUTY, back at the substation:\n\"I drove the loop. I came straight back.\"\n\nWhen I mentioned the hat, he looked at the one hanging beside the door. He asked for my account on a loose sheet. This is my notebook copy.",
+      "transcript": "Copied into my notebook after the conversation. My observation and the witness's words.\n\nHIGHWAY NORTH OF CALICHE\n\nThe deputy's car on the shoulder. Engine running, driver's door open, nobody in it. His hat was on the seat.\n\nTHE DEPUTY, back at the substation:\n\"I drove the loop. I came straight back.\"\n\nWhen I mentioned the hat, he looked at the one hanging beside the door. He asked for my account on a loose sheet. This is my notebook copy."
+    },
+    {
+      "id": "witness-cows",
+      "title": "Witness / Two counts at the pasture",
+      "kind": "hand",
+      "stamp": "REYES",
+      "page": "REYES / NOTEBOOK COPY\n\nPASTURE SOUTH OF THE MOTEL\n\nFirst count: nine cattle.\nSecond count: eight. A ring of flattened grass, white with frost, where the ninth stood.\n\nTHE WOMAN AT THE LAUNDROMAT:\n\"You counted them?\"\n\"Write both numbers. Before you start thinking you counted wrong.\"\n\nI asked if her husband found one missing the night he went out to the cattle in March 1983.\n\"He never said.\"",
+      "transcript": "Copied into my notebook after the conversation. My observation and the witness's words.\n\nPASTURE SOUTH OF THE MOTEL\n\nFirst count: nine cattle.\nSecond count: eight. A ring of flattened grass, white with frost, where the ninth stood.\n\nTHE WOMAN AT THE LAUNDROMAT:\n\"You counted them?\"\n\"Write both numbers. Before you start thinking you counted wrong.\"\n\nI asked if her husband found one missing the night he went out to the cattle in March 1983.\n\"He never said.\""
+    },
+    {
+      "id": "witness-phone",
+      "title": "Witness / The attendant and the payphone",
+      "kind": "hand",
+      "stamp": "REYES",
+      "page": "REYES / NOTEBOOK COPY\n\nMAIN STREET PAYPHONE\n\nOn the line: the control room printer. Afterwards, a bright nickel dated 1947 in the coin return.\n\nTHE ATTENDANT, shown the coin:\n\"That phone takes dimes.\"\n\"Keep it. I write down what goes in the till. I want it to add up.\"\n\nHe pushed the coin back across the sill. I kept it.",
+      "transcript": "Copied into my notebook after the conversation. My observation and the witness's words.\n\nMAIN STREET PAYPHONE\n\nOn the line: the control room printer. Afterwards, a bright nickel dated 1947 in the coin return.\n\nTHE ATTENDANT, shown the coin:\n\"That phone takes dimes.\"\n\"Keep it. I write down what goes in the till. I want it to add up.\"\n\nHe pushed the coin back across the sill. I kept it."
+    }
+  ]
+}

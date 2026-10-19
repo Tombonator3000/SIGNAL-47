@@ -143,6 +143,7 @@ export function bindTown(town: Town, d: CalicheDeps) {
     d.save();
     P.talk(d.ui, {
       title: p.title,
+      earl: w === 'host',
       view: () => {
         const v: P.TalkView = { status: p.status, lines, choices: [], reply: null };
         for (const t of p.topics) if (available(w, t)) v.choices.push({ id: t.id, label: t.label });

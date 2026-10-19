@@ -998,11 +998,25 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 
 - 2026-10-19 20:26 UTC: alle 17 musikkfiler er kontrollert i Pages og offlinevarianten uten musikk. Første Pages-musikkforsøk fikk connection refused fordi den lokale forhåndsvisningsserveren var avsluttet med SIGTERM; serveren ble startet igjen og prøven bestod 12/12 på uendret payload. Feilbevis er bevart. Testet enkeltfil er kopiert til samtalens outputs/signal47/SIGNAL-47-Radio-Voices.html med identisk SHA-256; tidligere offlinefiler er beholdt.
 
+### Codex: Art Bell også i Earls bysamtale, 19. oktober
+
+- 2026-10-19 21:22 UTC: Tom ba om innfletting, bekreftet at radioverten skulle beholdes og ønsket samme stemme når man snakker med Earl i byen. Kontrollerte at PR115 allerede er flettet til main `210b52f`, og at 115 radioklipp er beholdt. Den direkte samtalen hadde ingen Art Bell-kobling. Ny avgrenset gren `codex/art-bell-town` fra samme main.
+- Prosjektbiblioteket søkt først. Det presise behovssøket ga ingen treff, deretter fant VoiceStudio-søket `debpalash/VoiceStudio` og den kontrollerte VoiceStudio-skillen. Eksisterende lokal 0.5.6/OmniVoice og profil494881fc gjenbrukes. Ingen ny modell, referanse eller profil installeres.
+- AST-kartlegging: 16 unike EARL-linjer og 150 ord, inkludert de fire nye svarene om gutten. Ingen overlapper de 115 radioklippene. Korpus holdes separat; alle 1698 gamle MP3, tre kataloger og eksisterende profiler skal bevares. TTS/ASR og GPU-nettleserprøver kjøres sekvensielt.
+
 ### Claude Code: ut av bilen ved kuene, nestlederens bil og mastene, 19. oktober
 
 - 21:20 UTC: Tom: «går ikke anå gå ut av bil ved kuene eller bilen som er forlatt ved veikanten eller ved radiomasatene». På riksveien slapp `World.canGetOut()` bare ut ved dineren og i Caliche. Nå har veien stoppesteder med egne gangsoner og kolliderere (`ROAD_STOPS` i `drive/roadTerrain.ts`, `RoadArea.walks`): beitet og riksveien ved flokken, og 40 m hver vei rundt nestlederens bil nord for Caliche. Motorveien gjennom antennefeltet kan gås (`arrayLayout.ts`, `Field.ts`). Et stopp på diner-strekningen bygger dineren bak fade-overgangen. Utstyrslisten og målteksten i kapittel 3 og 5 sier hvor bilen står når den er parkert ute på veien, og nestlederens bil blir stående mens spilleren er ved den (`Town.update(..., hold)`).
 - PASS etter fletting med main (`210b52f`): `tsc`, `build`, `build:single`, `tools/getout.py` 50 av 50 (ny), `field.py` 32 av 32, `town.py` 59 av 59. Flettet som PR #116 (`eea22d7`).
 - Kjent, ikke fikset: se todo.md («Fra Tom 19. oktober kveld»).
+
+- 2026-10-19 21:34 UTC: integrerte nyere main `f1e4616` (PR116/getout) i `ef73d4c`. Bare loggen fikk konflikt; begge historikkoppføringer er bevart. Ingen endring i Earls manus. Bygget på nytt med privatbanken `609543f`, og fallback uten banken består 22/22. CPU-prøvene er kjørt på nytt mot integrert kandidat og består.
+- Earl-funksjonen består 101/101 i Pages og 102/102 med streng CSP i enkeltfilen. Første testforsøk hadde manglende Python-import etter 93 grønne krav; gammel radiotest hadde en tilsiktet foreldet note-forventning. Testene er rettet uten å fjerne krav; begge feilbevis er bevart i samtalens outputs/artbell-town. Ingen runtimeendring var nødvendig.
+
+- Kinski Pages: første mute-prøve feilet bare på første FFT-vindu, RMS 0,0001987 etter 40 ms mot et 2048-samplesvindu på 42,67 ms ved 48 kHz. De åtte neste prøvene var eksakt null. Uendret nykjøring består 37/37. Ingen produktkode, måleterskler eller krav er endret; feilrapporten er bevart i outputs/artbell-town/failed-readaloud-mute. Dette beviser ikke fysisk høyttalerkvalitet.
+
+- 2026-10-19 21:52 UTC: lokal sluttattest PASS. Earl Pages 101/101, streng-CSP enkeltfil 102/102, alle 19 kompatibilitetskjøringer, 13 spillregresjoner og lydkostnad 17/17. Getout 50/50 og kapittel 1 til 6 med 75/76/72/69/55/44 beholdes. Alle 1698 gamle MP3, tre kataloger og 12 profilmetadata er kontrollert på nytt og bevart. Ingen runtimeendring etter det endelige bygget.
+- Manifestet dekker 2673 kildefiler og 1937 Pages-filer. Enkeltfilen er 100410706 byte, SHA-256 d2d7cc9d047daa429a728ae3f445306359af6398c81fe9df88c87e14c0e692d7. Fire nye funksjonsbilder beholdes i QA; 310 større bilder er flyttet med hashmanifest til samtalens outputs/artbell-town/integration-qa. Menneskelig lytting, stemmelikhet, uttale, fysisk lyd og enhetsytelse er UNVERIFIED. Vanlig autorisert PR/merge og faktisk publiseringskontroll følger.
 
 ### Claude Code: kjøpte modeller, rettelser etter gjennomgangen, 19. oktober
 
@@ -1010,4 +1024,3 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 - Mobil: dineren og byen venter på modellene sine bak overgangen (`modelsSettled`), bildene får høyst 512 (småting 256) på mobil og Low, og hvert områdes bilder lastes opp én om gangen og programmene kompileres (`compileAsync`) før modellene vises, og for områdets lys ved `World.enter`. Målt på en mobilside med 4x strupet CPU: lang oppgave på 371 ms etter at dineren var lastet før, ingen nå (den ligger bak overgangen); ingen lange oppgaver de første 5 s av kjøreturen; modellenes bilder på skjermkortet 60,8 MB i gjennomgangen (53,1 MB med de samme filene uten VU-enheten), 17,8 MB nå. PC på High er som før (54,5 MB uten VU-enheten).
 - Filer: `world/licensedModels.ts`, `World.ts`, `main.ts`, `kit.ts`, `Diner.ts`, `Town.ts`, `Station01.ts`, `Annex.ts`, `Room6.ts`, `dressing.ts`, `tools/licensed_models.py`; i det private repoet `tools/build_models.py` (klappstolen, kafébordet og den oransje lampa bygget på nytt i Blender) og `models/MANIFEST.md`.
 - PASS med mappa: `tsc`, `build`, `build:single`, `tools/licensed_models.py` 47 av 47 (ny sjekk av hva som faktisk tegnes etter at bildene er tegnet, og av bildestørrelsene på Low og High; den feiler med den gamle benkefeilen), `diner.py` 15 av 15, `town.py` 59 av 59, `motel.py` 31 av 31. Uten mappa: `tsc`, `build`, `build:single`, `town.py` 59 av 59, `licensed_models.py` 3 av 3 og mot bygget fra før 4 av 4 (samme tegnekall i alle 48 visninger). Ekte mobil er UNVERIFIED.
-

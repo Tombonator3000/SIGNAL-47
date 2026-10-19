@@ -1,0 +1,30 @@
+{
+  "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+  "scope": "CPU-only corpus, save compatibility and steering checks on the integrated candidate; no browser or GPU",
+  "results": [
+    {
+      "name": "readaloud-corpus",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/readaloud-core.cjs --corpus",
+      "log": "readaloud-corpus.log",
+      "exit_code": 0,
+      "seconds": 0.7582705780223478
+    },
+    {
+      "name": "saves",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/saves.cjs",
+      "log": "saves.log",
+      "exit_code": 0,
+      "seconds": 1.377409457025351
+    },
+    {
+      "name": "steercheck",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "npm run steercheck",
+      "log": "steercheck.log",
+      "exit_code": 0,
+      "seconds": 0.17629660799866542
+    }
+  ]
+}
