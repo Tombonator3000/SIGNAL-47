@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "normalization": "Whitespace collapse and trim; ID is first 16 hexadecimal SHA-256 characters of role + NUL + normalized text.",
+  "sourceFiles": [
+    "src/core/radio.ts",
+    "src/story/tripRadio.ts",
+    "src/story/nightEvents.ts"
+  ],
+  "summary": {
+    "clips": 28,
+    "words": 406,
+    "roles": {
+      "woman": 8,
+      "man": 8,
+      "old": 3,
+      "boy": 3,
+      "news": 6
+    }
+  },
+  "clips": [
+    {
+      "id": "6b58395eba556d9c",
+      "voice": "woman",
+      "text": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 114,
+          "group": "NIGHT_LINE"
+        }
+      ]
+    },
+    {
+      "id": "c5b91ca2af30f268",
+      "voice": "man",
+      "text": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 119,
+          "group": "NIGHT_LINE"
+        }
+      ]
+    },
+    {
+      "id": "d1e6ef4fee8a9f83",
+      "voice": "man",
+      "text": "My dog won't come out from under the trailer. He's been under there since one.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 127,
+          "group": "NIGHT_LINE"
+        }
+      ]
+    },
+    {
+      "id": "67c97482c2fe4f9f",
+      "voice": "boy",
+      "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 135,
+          "group": "BOY_CALL"
+        }
+      ]
+    },
+    {
+      "id": "62c092c096e2185b",
+      "voice": "boy",
+      "text": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 137,
+          "group": "BOY_CALL"
+        }
+      ]
+    },
+    {
+      "id": "b683f3998c005cc1",
+      "voice": "boy",
+      "text": "He's out with the men. It's hot out. It's July.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 139,
+          "group": "BOY_CALL"
+        }
+      ]
+    },
+    {
+      "id": "ecb2e42ca2955137",
+      "voice": "woman",
+      "text": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 58,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "7e409ca3b75f7e20",
+      "voice": "woman",
+      "text": "I drove past the motor court a while ago. There's somebody sitting up on the roof. Small. Real still.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 62,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "95c7de03aea281a3",
+      "voice": "old",
+      "text": "Earl, you know the old survey station, out the gravel west of the highway?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 67,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "2d085ed0881102e8",
+      "voice": "old",
+      "text": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 69,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "c284a4332c75325b",
+      "voice": "man",
+      "text": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 80,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "1e02934641a8316e",
+      "voice": "man",
+      "text": "Wind don't carry bolt cutters.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 81,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "014e09c1ee5284f7",
+      "voice": "woman",
+      "text": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 84,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "98ca58e7b86c541a",
+      "voice": "woman",
+      "text": "The big gate. Not the little one beside it.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 85,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "17b3e9065c061766",
+      "voice": "man",
+      "text": "Earl, I drove out the survey track tonight. Just to see.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 104,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "3ce0eadf90ac1b18",
+      "voice": "man",
+      "text": "Chained, like you said. And it took me the longest time to find the highway again. It's one road, Earl.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 105,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "d1b2a7294c7db6ce",
+      "voice": "old",
+      "text": "Earl, is the old Roswell road open past the diner yet?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 109,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "fd5cb5d2764ce941",
+      "voice": "woman",
+      "text": "Earl, I'm down at the Mesa. She says tell you the coffee's fresh and the pie isn't.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 114,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "54fffedba835a228",
+      "voice": "woman",
+      "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 123,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "f0a8133593565a22",
+      "voice": "woman",
+      "text": "It's watching the road.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 124,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "75cf70ed26245b6c",
+      "voice": "man",
+      "text": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 128,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "ea163bffa8cbd703",
+      "voice": "man",
+      "text": "A little after two. All of them together, like sunflowers.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 129,
+          "group": "PROGRAMME"
+        }
+      ]
+    },
+    {
+      "id": "84bbb99bd8755c87",
+      "voice": "news",
+      "text": "We interrupt this program. This is a local news bulletin.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 29,
+          "group": "BULLETIN"
+        }
+      ]
+    },
+    {
+      "id": "b071311d4881f62d",
+      "voice": "news",
+      "text": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 30,
+          "group": "BULLETIN"
+        }
+      ]
+    },
+    {
+      "id": "ff6583c326f63f75",
+      "voice": "news",
+      "text": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 31,
+          "group": "BULLETIN"
+        }
+      ]
+    },
+    {
+      "id": "24cbc90ea47a4267",
+      "voice": "news",
+      "text": "There is no description of the object. The space for the name of the person reporting it is blank.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 32,
+          "group": "BULLETIN"
+        }
+      ]
+    },
+    {
+      "id": "57c913f626216f0a",
+      "voice": "news",
+      "text": "We have received the same line twice. We are reading it just as it came through.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 33,
+          "group": "BULLETIN"
+        }
+      ]
+    },
+    {
+      "id": "17798887be16c20b",
+      "voice": "news",
+      "text": "Please stand by. We will return to our regular program.",
+      "sources": [
+        {
+          "file": "src/story/nightEvents.ts",
+          "line": 34,
+          "group": "BULLETIN"
+        }
+      ]
+    }
+  ]
+}

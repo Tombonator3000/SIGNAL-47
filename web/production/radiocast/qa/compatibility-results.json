@@ -1,0 +1,243 @@
+[
+  {
+    "name": "artbell-pages",
+    "exit_code": 0,
+    "seconds": 26.33,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/artbell-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/artbell-pages"
+    ],
+    "log": "artbell-pages.log"
+  },
+  {
+    "name": "artbell-single",
+    "exit_code": 0,
+    "seconds": 33.83,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/artbell-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/artbell-single"
+    ],
+    "log": "artbell-single.log"
+  },
+  {
+    "name": "storyexpansion-pages",
+    "exit_code": 0,
+    "seconds": 8.57,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/storyexpansion.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/story-pages"
+    ],
+    "log": "storyexpansion-pages.log"
+  },
+  {
+    "name": "storyexpansion-single",
+    "exit_code": 0,
+    "seconds": 11.85,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/storyexpansion.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/story-single",
+      "844x390"
+    ],
+    "log": "storyexpansion-single.log"
+  },
+  {
+    "name": "radio-pages",
+    "exit_code": 0,
+    "seconds": 103.86,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/radio-pages"
+    ],
+    "log": "radio-pages.log"
+  },
+  {
+    "name": "radio-single",
+    "exit_code": 0,
+    "seconds": 13.03,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/radio-single"
+    ],
+    "log": "radio-single.log"
+  },
+  {
+    "name": "tripradio",
+    "exit_code": 0,
+    "seconds": 203.01,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/tripradio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/tripradio"
+    ],
+    "log": "tripradio.log"
+  },
+  {
+    "name": "soundcheck",
+    "exit_code": 0,
+    "seconds": 173.73,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/soundcheck.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/soundcheck"
+    ],
+    "log": "soundcheck.log"
+  },
+  {
+    "name": "licensed-with",
+    "exit_code": 0,
+    "seconds": 132.55,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/licensed_sfx.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/licensed-with",
+      "with"
+    ],
+    "log": "licensed-with.log"
+  },
+  {
+    "name": "readaloud-pages",
+    "exit_code": 0,
+    "seconds": 14.17,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/readaloud-pages"
+    ],
+    "log": "readaloud-pages.log"
+  },
+  {
+    "name": "readaloud-single",
+    "exit_code": 0,
+    "seconds": 19.57,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/readaloud-single"
+    ],
+    "log": "readaloud-single.log"
+  },
+  {
+    "name": "phonevoices-pages",
+    "exit_code": 0,
+    "seconds": 29.96,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/phonevoices.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/phone-pages"
+    ],
+    "log": "phonevoices-pages.log"
+  },
+  {
+    "name": "phonevoices-single",
+    "exit_code": 0,
+    "seconds": 33.72,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/phonevoices.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/phone-single"
+    ],
+    "log": "phonevoices-single.log"
+  },
+  {
+    "name": "descriptions-pages",
+    "exit_code": 0,
+    "seconds": 18.99,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/descriptions.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/descriptions-pages"
+    ],
+    "log": "descriptions-pages.log"
+  },
+  {
+    "name": "descriptions-single",
+    "exit_code": 0,
+    "seconds": 22.44,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/descriptions.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/descriptions-single"
+    ],
+    "log": "descriptions-single.log"
+  },
+  {
+    "name": "csptest",
+    "exit_code": 0,
+    "seconds": 5.36,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/csptest.py"
+    ],
+    "log": "csptest.log"
+  }
+]

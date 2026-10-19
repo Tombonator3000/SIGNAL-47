@@ -171,6 +171,7 @@ async function boot() {
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
   radio.setHostVoice(store.get<boolean>('artBellRadioHost', true) === true);
+  radio.setCallerVoice(store.get<boolean>('radioCallerVoices', true) === true);
   const carRadio = radio.receiver({ vol: 0.38, ref: 1.0 });   // Tom, 18 October: 0.65 was too loud in the cab
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
@@ -473,6 +474,7 @@ async function boot() {
   const settings = () => ({
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
     artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); store.set('artBellRadioHost', v); },
+    radioCast: radio.callerVoice, onRadioCast: (v: boolean) => { radio.setCallerVoice(v); store.set('radioCallerVoices', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -862,6 +864,7 @@ async function boot() {
     step: () => audio.stepPick(surfaceAt()),
     setRadio: (st) => carRadio.set(true, st),
     bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
+    bulletinProgress: () => radio.stations.caliche.archiveStatus,
     bulletinHeard: () => world.driving && carRadio.live && carRadio.station === 'caliche' && carRadio.power > 0.5 && game.clock % 86400 < SIGN_OFF,
     openDoor: () => doors.set('east', true),
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },

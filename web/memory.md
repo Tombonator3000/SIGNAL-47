@@ -1,8 +1,11 @@
 # memory.md: hva prosjektet vet
+- 19. oktober 2026: radiostemmene er ferdig generert og integrert, med 28 klipp / 406 ord og fem roller. Gjenopptak etter nyhetene bevarer nøyaktig samme sample også ved en sen renderframe. Sluttkontroller er samlet i `production/radiocast/qa/validation.json`; menneskelig lytting og fysisk enhetsytelse er UNVERIFIED.
 
 Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nyeste beslutning står øverst i hver seksjon.
 
 ## Beslutninger
+
+- 2026-10-19, direkte videreføring etter Toms kildesøk: innringere og 1947-nyhetene får ferdige syntetiske opptak. Nyeste manus på `b6483fe` har seks bulletinlinjer og 22 innringerlinjer. Eget lagret valg `radioCallerVoices`, på som standard og uavhengig av Art Bell/Kinski. 47-sekundersavbruddet og retur til samme punkt beholdes. Kilder, profiler og prøvegrenser føres i `production/radiocast/`; se `RADIO_CAST.md`.
 
 - 2026-10-19: historie- og hendelsesutvidelsen er flettet til main som `2fbed14` etter Toms eksplisitte bestilling. Pages-kjøring `39310466192` er SUCCESS; alle 1893 publiseringsfiler er identiske med testet bygg. Live historieprøve 56/56. Se `production/story_events_20261019/qa/publication.json`. De dokumenterte begrensningene for FPS, fysisk mobil og egne stemmeopptak står fortsatt.
 

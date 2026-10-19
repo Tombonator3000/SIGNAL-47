@@ -1,0 +1,10 @@
+latency: base 0.021333333333333333, output 0.07200000000000001
+control room: level median 0.0202, p10 0.0165, max 0.1612; drop-outs 0 []; per second {'nodes': 0.8, 'params': 749.2, 'starts': 0.1, 'frames': 60.0}; params/frame 12.49
+yard at night: level median 0.0146, p10 0.0113, max 0.1517; drop-outs 0 []; per second {'nodes': 0.8, 'params': 715.6, 'starts': 0.1, 'frames': 57.2}; params/frame 12.50
+truck, radio on, standing: level median 0.0212, p10 0.0155, max 0.1162; drop-outs 0 []; per second {'nodes': 0.6, 'params': 1755.5, 'starts': 0.0, 'frames': 59.7}; params/frame 29.41
+driving, radio on: level median 0.0189, p10 0.0144, max 0.1507; drop-outs 0 []; per second {'nodes': 0.5, 'params': 1728.3, 'starts': 0.0, 'frames': 58.9}; params/frame 29.35
+PASS no more than one drop-out in 1 half-minutes anywhere ({})
+PASS sound nodes made per second stay modest ({'control room': 0.8, 'yard at night': 0.8, 'truck, radio on, standing': 0.6, 'driving, radio on': 0.5})
+PASS changes to sound parameters stay below 36 per rendered frame ({'control room': 12.49, 'yard at night': 12.5, 'truck, radio on, standing': 29.41, 'driving, radio on': 29.35})
+PASS no console errors or warnings
+4 of 4 PASS

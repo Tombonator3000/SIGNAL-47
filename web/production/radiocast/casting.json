@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "human_listened": false,
+  "roles": {
+    "woman": {
+      "profile_id": "84bc5b84",
+      "kind": "clone",
+      "profile_reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+      "donation_file": "Selfie.wav",
+      "source_interval_seconds": [
+        4.5,
+        9.98
+      ],
+      "conditioning_text": "It says it's the last 10 seconds, and if that's the case, and I'd shut up previously, there would just be 10 seconds.",
+      "human_listened": false
+    },
+    "man": {
+      "profile_id": "1a160d70",
+      "kind": "clone",
+      "profile_reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "donation_file": "Butter.wav",
+      "source_interval_seconds": [
+        1.45,
+        9.9
+      ],
+      "conditioning_text": "Would like to buy an avocado one that is green on the outside and green.",
+      "human_listened": false
+    },
+    "old": {
+      "profile_id": "d65b2bb6",
+      "kind": "clone",
+      "profile_reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+      "donation_file": "oldNerd.wav",
+      "source_interval_seconds": [
+        0,
+        9.8
+      ],
+      "conditioning_text": "It's about 15 degrees, it's raining, very cozy, a great day to hack, and I can't wait to hear my voice cloned.",
+      "human_listened": false
+    },
+    "boy": {
+      "profile_id": "34043cb8",
+      "kind": "design",
+      "profile_reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "child",
+        "Pitch": "moderate pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, child, moderate pitch, american accent",
+      "conditioning_text": "Here's a quick sample of this voice so you can hear how it sounds.",
+      "human_listened": false
+    },
+    "news": {
+      "profile_id": "1e28f816",
+      "kind": "design",
+      "profile_reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "middle-aged",
+        "Pitch": "low pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, middle-aged, low pitch, american accent",
+      "conditioning_text": "We interrupt this program. This is a local news bulletin. Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "human_listened": false
+    }
+  }
+}

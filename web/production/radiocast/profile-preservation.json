@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "baseline_profile_count": 7,
+  "new_active_profile_count": 5,
+  "profiles": [
+    {
+      "id": "494881fc",
+      "name": "Art Bell \u2013 syntetisk radio-parodi (SIGNAL / 47)",
+      "metadata_identical": true,
+      "baseline_sha256": "1dc2b067c6f92a0a953ca109d0f528a99a0b11b9a34a6024896fde5cf2f31cc6"
+    },
+    {
+      "id": "33634ea3",
+      "name": "Klaus Kinski \u2013 sint test C (Fitzcarraldo konsekvenser)",
+      "metadata_identical": true,
+      "baseline_sha256": "d333ff40e8980b6d61d67e489fbeb96d65ac851a63eb74ecdff8ddc50f5212df"
+    },
+    {
+      "id": "7a12119e",
+      "name": "Klaus Kinski \u2013 sint test B (Fitzcarraldo svar)",
+      "metadata_identical": true,
+      "baseline_sha256": "25060e07a7735615040b2f090d23de8b29b79d2061323c3fb2b52134029e455e"
+    },
+    {
+      "id": "3cf0d3a5",
+      "name": "Klaus Kinski \u2013 sint parodi (Fitzcarraldo)",
+      "metadata_identical": true,
+      "baseline_sha256": "100150c39666a71400134b2b954ecf34425dbd0bbfec3d70482aee5d58ea33c9"
+    },
+    {
+      "id": "f4e7a712",
+      "name": "Klaus Kinski \u2013 sint parodi (Jesus Christus)",
+      "metadata_identical": true,
+      "baseline_sha256": "4f029e2240481ab73989802c5a545382db4c45999e9f7de5d5787877577c07d2"
+    },
+    {
+      "id": "eee56c41",
+      "name": "Klaus Kinski \u2013 syntetisk (SRF 1985)",
+      "metadata_identical": true,
+      "baseline_sha256": "9d111c2fe3eba95d779b870d1b075ad8013a41507fe58e85dfe4a24b5b7370d9"
+    },
+    {
+      "id": "demo0001",
+      "name": "VoiceStudio Demo Voice",
+      "metadata_identical": true,
+      "baseline_sha256": "09af303eea3b03c1cab35d76a8136375042ee1425cb5c099acb9b302805968da"
+    }
+  ],
+  "scope": "Exact JSON metadata comparison for every pre-existing profile. Three failed profiles created within this task were removed after their metadata and sample recordings were preserved outside runtime."
+}

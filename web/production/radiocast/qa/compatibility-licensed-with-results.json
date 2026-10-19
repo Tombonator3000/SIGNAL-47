@@ -1,0 +1,18 @@
+[
+  {
+    "name": "licensed-with",
+    "exit_code": 0,
+    "seconds": 132.55,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/licensed_sfx.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/licensed-with",
+      "with"
+    ],
+    "log": "licensed-with.log"
+  }
+]

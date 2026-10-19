@@ -1,0 +1,1081 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "word_check_status": "CHECKED_WITH_RECORDED_DIFFERENCES",
+  "asr_empty_ids": [],
+  "clips": 28,
+  "bytes": 1024976,
+  "duration_seconds": 125.61,
+  "audio": [
+    {
+      "id": "6b58395eba556d9c",
+      "duration_seconds": 3.9,
+      "peak_dbfs": -4.77286550840845,
+      "rms_dbfs": -21.131257404878923,
+      "nonsilent_rms_dbfs": -20.432012846115633,
+      "nonsilent_seconds": 3.32,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "c5b91ca2af30f268",
+      "duration_seconds": 7.82,
+      "peak_dbfs": -5.0051008641906405,
+      "rms_dbfs": -21.96528583889699,
+      "nonsilent_rms_dbfs": -20.421076882638577,
+      "nonsilent_seconds": 5.48,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "d1e6ef4fee8a9f83",
+      "duration_seconds": 5.61,
+      "peak_dbfs": -4.168228616103814,
+      "rms_dbfs": -21.685405831311606,
+      "nonsilent_rms_dbfs": -20.365872206235878,
+      "nonsilent_seconds": 4.14,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "67c97482c2fe4f9f",
+      "duration_seconds": 4.51,
+      "peak_dbfs": -6.01346246110884,
+      "rms_dbfs": -20.866041234998907,
+      "nonsilent_rms_dbfs": -20.430900345187325,
+      "nonsilent_seconds": 4.08,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "62c092c096e2185b",
+      "duration_seconds": 4.65,
+      "peak_dbfs": -6.388280932411869,
+      "rms_dbfs": -20.875065352953396,
+      "nonsilent_rms_dbfs": -20.43306350896075,
+      "nonsilent_seconds": 4.2,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "b683f3998c005cc1",
+      "duration_seconds": 2.33,
+      "peak_dbfs": -5.555591392341461,
+      "rms_dbfs": -21.093002435556187,
+      "nonsilent_rms_dbfs": -20.42977216035804,
+      "nonsilent_seconds": 2.0,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "ecb2e42ca2955137",
+      "duration_seconds": 3.56,
+      "peak_dbfs": -3.597415826488585,
+      "rms_dbfs": -21.47108346798619,
+      "nonsilent_rms_dbfs": -20.39711595438467,
+      "nonsilent_seconds": 2.78,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "7e409ca3b75f7e20",
+      "duration_seconds": 4.2,
+      "peak_dbfs": -5.112567620517595,
+      "rms_dbfs": -21.192721238218198,
+      "nonsilent_rms_dbfs": -20.37611356266552,
+      "nonsilent_seconds": 3.48,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "95c7de03aea281a3",
+      "duration_seconds": 4.54,
+      "peak_dbfs": -5.978835622998572,
+      "rms_dbfs": -21.843339043067193,
+      "nonsilent_rms_dbfs": -20.37828277682499,
+      "nonsilent_seconds": 3.24,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "2d085ed0881102e8",
+      "duration_seconds": 5.86,
+      "peak_dbfs": -4.136247508298318,
+      "rms_dbfs": -22.207223439771052,
+      "nonsilent_rms_dbfs": -20.416609621355693,
+      "nonsilent_seconds": 3.88,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "c284a4332c75325b",
+      "duration_seconds": 8.71,
+      "peak_dbfs": -4.896670990201627,
+      "rms_dbfs": -21.89545520140073,
+      "nonsilent_rms_dbfs": -20.419259513608786,
+      "nonsilent_seconds": 6.2,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "1e02934641a8316e",
+      "duration_seconds": 2.64,
+      "peak_dbfs": -4.760525043021912,
+      "rms_dbfs": -21.41834751307119,
+      "nonsilent_rms_dbfs": -20.383041908584435,
+      "nonsilent_seconds": 2.08,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "014e09c1ee5284f7",
+      "duration_seconds": 3.15,
+      "peak_dbfs": -5.2326747492811085,
+      "rms_dbfs": -21.413981600278294,
+      "nonsilent_rms_dbfs": -20.37549656795814,
+      "nonsilent_seconds": 2.48,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "98ca58e7b86c541a",
+      "duration_seconds": 2.02,
+      "peak_dbfs": -4.527637193375197,
+      "rms_dbfs": -22.170009531864192,
+      "nonsilent_rms_dbfs": -20.452013665110513,
+      "nonsilent_seconds": 1.36,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "17b3e9065c061766",
+      "duration_seconds": 4.78,
+      "peak_dbfs": -3.4135608435518,
+      "rms_dbfs": -21.745797541207686,
+      "nonsilent_rms_dbfs": -20.39228118765589,
+      "nonsilent_seconds": 3.5,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "3ce0eadf90ac1b18",
+      "duration_seconds": 8.84,
+      "peak_dbfs": -4.374485177450072,
+      "rms_dbfs": -21.911715756127983,
+      "nonsilent_rms_dbfs": -20.426843223875757,
+      "nonsilent_seconds": 6.28,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "d1b2a7294c7db6ce",
+      "duration_seconds": 2.91,
+      "peak_dbfs": -6.855806893513877,
+      "rms_dbfs": -20.935707866502735,
+      "nonsilent_rms_dbfs": -20.379239320062382,
+      "nonsilent_seconds": 2.56,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "fd5cb5d2764ce941",
+      "duration_seconds": 3.09,
+      "peak_dbfs": -3.4758374978515176,
+      "rms_dbfs": -21.139991934247284,
+      "nonsilent_rms_dbfs": -20.456528446427313,
+      "nonsilent_seconds": 2.64,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "54fffedba835a228",
+      "duration_seconds": 4.04,
+      "peak_dbfs": -4.332511770880324,
+      "rms_dbfs": -20.980049821398122,
+      "nonsilent_rms_dbfs": -20.43078834785351,
+      "nonsilent_seconds": 3.56,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "f0a8133593565a22",
+      "duration_seconds": 1.63,
+      "peak_dbfs": -2.653431193595285,
+      "rms_dbfs": -23.04736033180504,
+      "nonsilent_rms_dbfs": -21.789279024738978,
+      "nonsilent_seconds": 1.22,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "75cf70ed26245b6c",
+      "duration_seconds": 6.65,
+      "peak_dbfs": -5.632747274199504,
+      "rms_dbfs": -22.03997639856851,
+      "nonsilent_rms_dbfs": -20.38239342023133,
+      "nonsilent_seconds": 4.54,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "ea163bffa8cbd703",
+      "duration_seconds": 5.08,
+      "peak_dbfs": -4.801637707226474,
+      "rms_dbfs": -21.742206231506845,
+      "nonsilent_rms_dbfs": -20.435486011920467,
+      "nonsilent_seconds": 3.76,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "84bbb99bd8755c87",
+      "duration_seconds": 3.27,
+      "peak_dbfs": -4.746169479782612,
+      "rms_dbfs": -21.303186310713087,
+      "nonsilent_rms_dbfs": -20.43913112509302,
+      "nonsilent_seconds": 2.68,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "b071311d4881f62d",
+      "duration_seconds": 3.82,
+      "peak_dbfs": -3.9793993265189753,
+      "rms_dbfs": -21.287152820378775,
+      "nonsilent_rms_dbfs": -20.40817177693031,
+      "nonsilent_seconds": 3.12,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "ff6583c326f63f75",
+      "duration_seconds": 5.24,
+      "peak_dbfs": -3.542544670044659,
+      "rms_dbfs": -21.17977988541604,
+      "nonsilent_rms_dbfs": -20.42108790784208,
+      "nonsilent_seconds": 4.4,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "24cbc90ea47a4267",
+      "duration_seconds": 5.46,
+      "peak_dbfs": -4.505391654969392,
+      "rms_dbfs": -21.41380278855667,
+      "nonsilent_rms_dbfs": -20.315720072722403,
+      "nonsilent_seconds": 4.24,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "57c913f626216f0a",
+      "duration_seconds": 4.02,
+      "peak_dbfs": -5.323051455418248,
+      "rms_dbfs": -21.121089848674053,
+      "nonsilent_rms_dbfs": -20.368077930580988,
+      "nonsilent_seconds": 3.38,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "17798887be16c20b",
+      "duration_seconds": 3.28,
+      "peak_dbfs": -4.692998324663183,
+      "rms_dbfs": -21.199579015330134,
+      "nonsilent_rms_dbfs": -20.3546121506781,
+      "nonsilent_seconds": 2.7,
+      "samples_at_or_above_full_scale": 0
+    }
+  ],
+  "asr_sample": [
+    {
+      "id": "6b58395eba556d9c",
+      "expected": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+      "recognized": "Earl is Dolores out on the Hondo Road. The lights are back over the mesa. Same as last fall.",
+      "group": "current_run",
+      "audio_sha256": "80712926ac47307255f31b89d14a8aed34b2c0903b86e0bfb1edda5fb3699eda",
+      "strict_word_edits": 1,
+      "expected_word_count": 19,
+      "strict_word_error_rate": 0.05263157894736842,
+      "response": {
+        "text": "Earl is Dolores out on the Hondo Road. The lights are back over the mesa. Same as last fall.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.7,
+            "text": "Earl is Dolores out on the Hondo Road. The lights are back over the mesa. Same as last fall."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.7,
+        "transcription_time_s": 3.98,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "c5b91ca2af30f268",
+      "expected": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.",
+      "recognized": "Anybody else lose the TV a little after too just a hum most of a minute then it came back.",
+      "group": "current_run",
+      "audio_sha256": "bb7028a73b4058e9d1ce08abac5dd57e08dcc8276f9e7d3ff5835aa22b4e1057",
+      "strict_word_edits": 1,
+      "expected_word_count": 20,
+      "strict_word_error_rate": 0.05,
+      "response": {
+        "text": "Anybody else lose the TV a little after too just a hum most of a minute then it came back.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 7.5,
+            "text": "Anybody else lose the TV a little after too just a hum most of a minute then it came back"
+          }
+        ],
+        "language": "en",
+        "duration_s": 7.5,
+        "transcription_time_s": 1.16,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "d1e6ef4fee8a9f83",
+      "expected": "My dog won't come out from under the trailer. He's been under there since one.",
+      "recognized": "My dog won't come out from under the trailer. He's been under there since one.",
+      "group": "current_run",
+      "audio_sha256": "141f721f0b84fb4e4ddcd994b92f0e39a07f6d455d91c32103535966142e78b5",
+      "strict_word_edits": 0,
+      "expected_word_count": 15,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "My dog won't come out from under the trailer. He's been under there since one.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.34,
+            "text": "My dog won't come out from under the trailer."
+          },
+          {
+            "start": 3.18,
+            "end": 5.16,
+            "text": "He's been under there since one."
+          }
+        ],
+        "language": "en",
+        "duration_s": 5.16,
+        "transcription_time_s": 1.18,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "ecb2e42ca2955137",
+      "expected": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door.",
+      "recognized": "I can't sleep the wind stopped all at once tonight like somebody shut a door.",
+      "group": "current_run",
+      "audio_sha256": "241d62e6670b4b0ab88119dbbeb3e9cac534c45ef57e31cec38201369d06170a",
+      "strict_word_edits": 1,
+      "expected_word_count": 16,
+      "strict_word_error_rate": 0.0625,
+      "response": {
+        "text": "I can't sleep the wind stopped all at once tonight like somebody shut a door.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.34,
+            "text": "I can't sleep the wind stopped all at once tonight like somebody shut a door"
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.34,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "7e409ca3b75f7e20",
+      "expected": "I drove past the motor court a while ago. There's somebody sitting up on the roof. Small. Real still.",
+      "recognized": "I drove past the motor court a while ago. There's somebody sitting up on the roof, small, real still.",
+      "group": "current_run",
+      "audio_sha256": "8635a9ebed31a17a4af00e66788ae24e83a262309119678d9af0e19243e2c41f",
+      "strict_word_edits": 0,
+      "expected_word_count": 19,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I drove past the motor court a while ago. There's somebody sitting up on the roof, small, real still.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.86,
+            "text": "I drove past the motor court a while ago."
+          },
+          {
+            "start": 2.12,
+            "end": 3.92,
+            "text": "There's somebody sitting up on the roof, small, real still."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.92,
+        "transcription_time_s": 0.94,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "95c7de03aea281a3",
+      "expected": "Earl, you know the old survey station, out the gravel west of the highway?",
+      "recognized": "Earl, you know the old survey station out the gravel west of the highway?",
+      "group": "current_run",
+      "audio_sha256": "b4e2dce8e0939c45d659bd0ee86b361707e8c7e046d559ac1511a82bcc742073",
+      "strict_word_edits": 0,
+      "expected_word_count": 14,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl, you know the old survey station out the gravel west of the highway?",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.22,
+            "text": "Earl, you know the old survey station out the gravel west of the highway?"
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.22,
+        "transcription_time_s": 0.92,
+        "engine": "faster-whisper"
+      },
+      "voice": "old"
+    },
+    {
+      "id": "2d085ed0881102e8",
+      "expected": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+      "recognized": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+      "group": "current_run",
+      "audio_sha256": "ec2a5312eb3ccfb2dbecd25398dfd70294d82416c5b8e2ec726325abf73051f0",
+      "strict_word_edits": 0,
+      "expected_word_count": 18,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 5.54,
+            "text": "somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?"
+          }
+        ],
+        "language": "en",
+        "duration_s": 5.54,
+        "transcription_time_s": 0.93,
+        "engine": "faster-whisper"
+      },
+      "voice": "old"
+    },
+    {
+      "id": "c284a4332c75325b",
+      "expected": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters.",
+      "recognized": "Erl, somebody's been cutting my fence on the Hondo Road. Both ends, clean, like with bolt cutters.",
+      "group": "current_run",
+      "audio_sha256": "94c62f9670c83e3bc001506ab9adb510cd5de954ce6ba88185acdc638c96c1f3",
+      "strict_word_edits": 1,
+      "expected_word_count": 17,
+      "strict_word_error_rate": 0.058823529411764705,
+      "response": {
+        "text": "Erl, somebody's been cutting my fence on the Hondo Road. Both ends, clean, like with bolt cutters.",
+        "segments": [
+          {
+            "start": 0.11,
+            "end": 3.73,
+            "text": "Erl, somebody's been cutting my fence on the Hondo Road."
+          },
+          {
+            "start": 4.39,
+            "end": 8.29,
+            "text": "Both ends, clean, like with bolt cutters."
+          }
+        ],
+        "language": "en",
+        "duration_s": 8.29,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "1e02934641a8316e",
+      "expected": "Wind don't carry bolt cutters.",
+      "recognized": "Wind don't carry bolt cutters.",
+      "group": "current_run",
+      "audio_sha256": "234e5dc6101d052ec5e7534830084ccfb728d59be7ef18ffce435a378625f026",
+      "strict_word_edits": 0,
+      "expected_word_count": 5,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Wind don't carry bolt cutters.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.2,
+            "text": "Wind don't carry bolt cutters."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.2,
+        "transcription_time_s": 0.88,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "014e09c1ee5284f7",
+      "expected": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+      "recognized": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+      "group": "current_run",
+      "audio_sha256": "6f1714778bfa86c71690ce7ce2671f79f587cbd80011ed8cb9174a2c665f315f",
+      "strict_word_edits": 0,
+      "expected_word_count": 14,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.86,
+            "text": "Earl, it's Dolores again. There's a light on out at the old survey station."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.86,
+        "transcription_time_s": 0.91,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "98ca58e7b86c541a",
+      "expected": "The big gate. Not the little one beside it.",
+      "recognized": "The big gate, not the little one beside it.",
+      "group": "current_run",
+      "audio_sha256": "9f46e60e8a760acbb140434da82daaa80bbd9917d9baec0975f28d0b11ab3cc1",
+      "strict_word_edits": 0,
+      "expected_word_count": 9,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "The big gate, not the little one beside it.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.84,
+            "text": "the big gate, not the little one beside it."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.84,
+        "transcription_time_s": 0.89,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "17b3e9065c061766",
+      "expected": "Earl, I drove out the survey track tonight. Just to see.",
+      "recognized": "Earl I drove out the survey track tonight just to see.",
+      "group": "current_run",
+      "audio_sha256": "68b8dd54086f7b6f51887d0eee2412f0fae0c0059cf4c1792ad17d323fd36943",
+      "strict_word_edits": 0,
+      "expected_word_count": 11,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl I drove out the survey track tonight just to see.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.34,
+            "text": "Earl I drove out the survey track tonight just to see"
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.34,
+        "transcription_time_s": 0.93,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "3ce0eadf90ac1b18",
+      "expected": "Chained, like you said. And it took me the longest time to find the highway again. It's one road, Earl.",
+      "recognized": "Chained like you said, and it took me the longest time to find the highway again It's one road Earl.",
+      "group": "current_run",
+      "audio_sha256": "ecf69a7279ababa64490eabc70a6c01b3f492fcbac027275ab7d81a294e7724d",
+      "strict_word_edits": 0,
+      "expected_word_count": 20,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Chained like you said, and it took me the longest time to find the highway again It's one road Earl.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 6.28,
+            "text": "Chained like you said, and it took me the longest time to find the highway again"
+          },
+          {
+            "start": 6.96,
+            "end": 8.56,
+            "text": "It's one road Earl"
+          }
+        ],
+        "language": "en",
+        "duration_s": 8.56,
+        "transcription_time_s": 1.0,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "d1b2a7294c7db6ce",
+      "expected": "Earl, is the old Roswell road open past the diner yet?",
+      "recognized": "Earl is the old Roswell Road, open past the diner yet.",
+      "group": "current_run",
+      "audio_sha256": "248b22ebfbdf289897b474821d82b514f609588c12e855200580f7c49fb34dff",
+      "strict_word_edits": 0,
+      "expected_word_count": 11,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl is the old Roswell Road, open past the diner yet.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.74,
+            "text": "Earl is the old Roswell Road, open past the diner yet."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.74,
+        "transcription_time_s": 0.91,
+        "engine": "faster-whisper"
+      },
+      "voice": "old"
+    },
+    {
+      "id": "fd5cb5d2764ce941",
+      "expected": "Earl, I'm down at the Mesa. She says tell you the coffee's fresh and the pie isn't.",
+      "recognized": "Earl, I'm down at the mesa. She says, tell you the coffee's fresh and the pie isn't.",
+      "group": "current_run",
+      "audio_sha256": "c093305748fcde5b1caf9a51fb6feacb32071dfb2a9b3206ab00f7d735796113",
+      "strict_word_edits": 0,
+      "expected_word_count": 17,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl, I'm down at the mesa. She says, tell you the coffee's fresh and the pie isn't.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.0,
+            "text": "Earl, I'm down at the mesa. She says, tell you the coffee's fresh and the pie isn't."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.0,
+        "transcription_time_s": 0.93,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "54fffedba835a228",
+      "expected": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+      "recognized": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+      "group": "current_run",
+      "audio_sha256": "9746699e00e67cbc1b833737619686d24d31f333af9368c97956da5df780b9d1",
+      "strict_word_edits": 0,
+      "expected_word_count": 20,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.78,
+            "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.78,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "f0a8133593565a22",
+      "expected": "It's watching the road.",
+      "recognized": "It's watching the road.",
+      "group": "current_run",
+      "audio_sha256": "dcc372368a66c481e8da8692a740c9ac815c72fc1b4b725af4b88aeabcf54b65",
+      "strict_word_edits": 0,
+      "expected_word_count": 4,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "It's watching the road.",
+        "segments": [
+          {
+            "start": 0.08,
+            "end": 1.26,
+            "text": "It's watching the road"
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.26,
+        "transcription_time_s": 0.88,
+        "engine": "faster-whisper"
+      },
+      "voice": "woman"
+    },
+    {
+      "id": "75cf70ed26245b6c",
+      "expected": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?",
+      "recognized": "Earl, those big dishes up at the observatory. Did they all turn it once tonight?",
+      "group": "current_run",
+      "audio_sha256": "c17bfd4f452d74ebf6e04912e7e9e5947d41cf208b7e29f1945362c8274cad80",
+      "strict_word_edits": 1,
+      "expected_word_count": 15,
+      "strict_word_error_rate": 0.06666666666666667,
+      "response": {
+        "text": "Earl, those big dishes up at the observatory. Did they all turn it once tonight?",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.56,
+            "text": "Earl, those big dishes up at the observatory."
+          },
+          {
+            "start": 4.2,
+            "end": 6.16,
+            "text": "Did they all turn it once tonight?"
+          }
+        ],
+        "language": "en",
+        "duration_s": 6.16,
+        "transcription_time_s": 0.95,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "ea163bffa8cbd703",
+      "expected": "A little after two. All of them together, like sunflowers.",
+      "recognized": "A little after two. All of them together like sunflowers.",
+      "group": "current_run",
+      "audio_sha256": "c8b09efe4550946374adb84a7b9601a7313980ce4048efa8c7b33f2840e0d7cd",
+      "strict_word_edits": 0,
+      "expected_word_count": 10,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "A little after two. All of them together like sunflowers.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.8,
+            "text": "a little after two. All of them together like sunflowers."
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.8,
+        "transcription_time_s": 0.92,
+        "engine": "faster-whisper"
+      },
+      "voice": "man"
+    },
+    {
+      "id": "84bbb99bd8755c87",
+      "expected": "We interrupt this program. This is a local news bulletin.",
+      "recognized": "We interrupt this program, this is a local news bulletin.",
+      "group": "current_run",
+      "audio_sha256": "d10c50293c749b896c6866e636ae94dcc3508dc8ea5cb0638284e392b67335c1",
+      "strict_word_edits": 0,
+      "expected_word_count": 10,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "We interrupt this program, this is a local news bulletin.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.96,
+            "text": "We interrupt this program, this is a local news bulletin."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.96,
+        "transcription_time_s": 0.92,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "b071311d4881f62d",
+      "expected": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "recognized": "Roswell, New Mexico, Tuesday, July 8th, 1947.",
+      "group": "current_run",
+      "audio_sha256": "6a471c0b30d2d46e11866669d14a4f3a4b00133d8e1daeb042f78f0ab988b61b",
+      "strict_word_edits": 4,
+      "expected_word_count": 9,
+      "strict_word_error_rate": 0.4444444444444444,
+      "response": {
+        "text": "Roswell, New Mexico, Tuesday, July 8th, 1947.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.32,
+            "text": "Roswell, New Mexico, Tuesday, July 8th, 1947."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.32,
+        "transcription_time_s": 0.95,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "ff6583c326f63f75",
+      "expected": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.",
+      "recognized": "A flying disk is reported recovered on a ranch outside town. That is the wording on the notice.",
+      "group": "current_run",
+      "audio_sha256": "2f96347ef69950f068f5678d42ddc742c88f1823d6a42b012a40d6f8e2ca4ea7",
+      "strict_word_edits": 1,
+      "expected_word_count": 18,
+      "strict_word_error_rate": 0.05555555555555555,
+      "response": {
+        "text": "A flying disk is reported recovered on a ranch outside town. That is the wording on the notice.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.28,
+            "text": "A flying disk is reported recovered on a ranch outside town."
+          },
+          {
+            "start": 3.74,
+            "end": 4.8,
+            "text": "That is the wording on the notice."
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.8,
+        "transcription_time_s": 0.99,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "24cbc90ea47a4267",
+      "expected": "There is no description of the object. The space for the name of the person reporting it is blank.",
+      "recognized": "There is no description of the object. The space for the name of the person reporting it is blank.",
+      "group": "current_run",
+      "audio_sha256": "28016c9437af80604113d80f3c21ba325876dfd3816062c76fdfab657d4c5538",
+      "strict_word_edits": 0,
+      "expected_word_count": 19,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "There is no description of the object. The space for the name of the person reporting it is blank.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.8,
+            "text": "There is no description of the object."
+          },
+          {
+            "start": 2.3,
+            "end": 5.04,
+            "text": "The space for the name of the person reporting it is blank."
+          }
+        ],
+        "language": "en",
+        "duration_s": 5.04,
+        "transcription_time_s": 0.94,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "57c913f626216f0a",
+      "expected": "We have received the same line twice. We are reading it just as it came through.",
+      "recognized": "We have received the same line twice. We are reading it just as it came through.",
+      "group": "current_run",
+      "audio_sha256": "53fac8b4266ca25f761ebf54c79ef98be418354330e5097bdc2a3be5d4fdcaba",
+      "strict_word_edits": 0,
+      "expected_word_count": 16,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "We have received the same line twice. We are reading it just as it came through.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.66,
+            "text": "We have received the same line twice. We are reading it just as it came through."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.66,
+        "transcription_time_s": 0.93,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "17798887be16c20b",
+      "expected": "Please stand by. We will return to our regular program.",
+      "recognized": "Please stand by, we will return to our regular program.",
+      "group": "current_run",
+      "audio_sha256": "62a541eff4a9206e7931b3673e266a2eacbe6e5d5c38c6284507003a1466a32e",
+      "strict_word_edits": 0,
+      "expected_word_count": 10,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Please stand by, we will return to our regular program.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.92,
+            "text": "Please stand by, we will return to our regular program."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.92,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      },
+      "voice": "news"
+    },
+    {
+      "id": "67c97482c2fe4f9f",
+      "voice": "boy",
+      "expected": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "recognized": "Hello? Is this the radio? There's a star with a tail on it, real low in the south, a little tail.",
+      "group": "current_run",
+      "audio_sha256": "e2e450133999167173debb0c064732c0d1080358adfdabd4add3f050e3eafa0c",
+      "strict_word_edits": 0,
+      "expected_word_count": 21,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south, a little tail.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.18,
+            "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south, a little tail."
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.18,
+        "transcription_time_s": 1.42,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "62c092c096e2185b",
+      "voice": "boy",
+      "expected": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "recognized": "I'm calling from my dad's place out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "group": "current_run",
+      "audio_sha256": "430f4f1837da267ba30ca06da7089e365695628cb075cd46932514662f8e4072",
+      "strict_word_edits": 0,
+      "expected_word_count": 20,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I'm calling from my dad's place out on the ranch. There's a light over the mesa too. It isn't moving.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.28,
+            "text": "I'm calling from my dad's place out on the ranch. There's a light over the mesa too. It isn't moving."
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.28,
+        "transcription_time_s": 1.08,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "b683f3998c005cc1",
+      "voice": "boy",
+      "expected": "He's out with the men. It's hot out. It's July.",
+      "recognized": "He's out with the men. It's hot out. It's July.",
+      "group": "current_run",
+      "audio_sha256": "7c9a2baf221519738dbd040b570c7d4ae0a7423b962b75b526d1431e26d24791",
+      "strict_word_edits": 0,
+      "expected_word_count": 10,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "He's out with the men. It's hot out. It's July.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.9,
+            "text": "He's out with the men. It's hot out. It's July."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.9,
+        "transcription_time_s": 0.88,
+        "engine": "faster-whisper"
+      }
+    }
+  ],
+  "catalog_ids_match_corpus": true,
+  "orphan_mp3_files": [],
+  "dropped_chunks": {
+    "confirmed_zero": 28,
+    "unrecorded_ids": []
+  },
+  "asr_interpretation": "Automatic transcription is an imperfect word check, not a listening test. Strict edits also count number spelling and abbreviations.",
+  "corpus_sha256": "b5f6036e7514bc8eee98bdae7f1fff5508321953646062983ace50d40a3cf28a",
+  "bulletin": {
+    "clips": 6,
+    "natural_duration_seconds": 25.09,
+    "maximum_seconds": 46.6,
+    "playback_rate": 1
+  },
+  "role_counts": {
+    "woman": 8,
+    "man": 8,
+    "old": 3,
+    "boy": 3,
+    "news": 6
+  },
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "asr_review": {
+    "clips_checked": 28,
+    "exact_strict_word_matches": 21,
+    "clips_with_differences": [
+      {
+        "id": "6b58395eba556d9c",
+        "voice": "woman",
+        "strict_word_edits": 1,
+        "expected": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+        "recognized": "Earl is Dolores out on the Hondo Road. The lights are back over the mesa. Same as last fall."
+      },
+      {
+        "id": "c5b91ca2af30f268",
+        "voice": "man",
+        "strict_word_edits": 1,
+        "expected": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.",
+        "recognized": "Anybody else lose the TV a little after too just a hum most of a minute then it came back."
+      },
+      {
+        "id": "ecb2e42ca2955137",
+        "voice": "woman",
+        "strict_word_edits": 1,
+        "expected": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door.",
+        "recognized": "I can't sleep the wind stopped all at once tonight like somebody shut a door."
+      },
+      {
+        "id": "c284a4332c75325b",
+        "voice": "man",
+        "strict_word_edits": 1,
+        "expected": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters.",
+        "recognized": "Erl, somebody's been cutting my fence on the Hondo Road. Both ends, clean, like with bolt cutters."
+      },
+      {
+        "id": "75cf70ed26245b6c",
+        "voice": "man",
+        "strict_word_edits": 1,
+        "expected": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?",
+        "recognized": "Earl, those big dishes up at the observatory. Did they all turn it once tonight?"
+      },
+      {
+        "id": "b071311d4881f62d",
+        "voice": "news",
+        "strict_word_edits": 4,
+        "expected": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+        "recognized": "Roswell, New Mexico, Tuesday, July 8th, 1947."
+      },
+      {
+        "id": "ff6583c326f63f75",
+        "voice": "news",
+        "strict_word_edits": 1,
+        "expected": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.",
+        "recognized": "A flying disk is reported recovered on a ranch outside town. That is the wording on the notice."
+      }
+    ],
+    "interpretation": "All 28 current files have recognized speech; all three corrected boy lines are exact. Remaining strict differences include numeric formatting, proper names, disc/disk, two/too and a few small-word or initial-name differences. These are recorded uncertainties, not a human-confirmed pass on every word. No empty ASR is accepted."
+  },
+  "completed_utc": "2026-10-19T19:54:13.899805+00:00"
+}

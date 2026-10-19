@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "voice": "Fictional synthetic radio cast",
+  "clips": [
+    {
+      "id": "6b58395eba556d9c",
+      "voice": "woman",
+      "text": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+      "duration": 3.9,
+      "file": "6b58395eba556d9c.mp3"
+    },
+    {
+      "id": "c5b91ca2af30f268",
+      "voice": "man",
+      "text": "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back.",
+      "duration": 7.82,
+      "file": "c5b91ca2af30f268.mp3"
+    },
+    {
+      "id": "d1e6ef4fee8a9f83",
+      "voice": "man",
+      "text": "My dog won't come out from under the trailer. He's been under there since one.",
+      "duration": 5.61,
+      "file": "d1e6ef4fee8a9f83.mp3"
+    },
+    {
+      "id": "67c97482c2fe4f9f",
+      "voice": "boy",
+      "text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "duration": 4.51,
+      "file": "67c97482c2fe4f9f.mp3"
+    },
+    {
+      "id": "62c092c096e2185b",
+      "voice": "boy",
+      "text": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "duration": 4.65,
+      "file": "62c092c096e2185b.mp3"
+    },
+    {
+      "id": "b683f3998c005cc1",
+      "voice": "boy",
+      "text": "He's out with the men. It's hot out. It's July.",
+      "duration": 2.33,
+      "file": "b683f3998c005cc1.mp3"
+    },
+    {
+      "id": "ecb2e42ca2955137",
+      "voice": "woman",
+      "text": "Earl? I can't sleep. The wind stopped all at once tonight, like somebody shut a door.",
+      "duration": 3.56,
+      "file": "ecb2e42ca2955137.mp3"
+    },
+    {
+      "id": "7e409ca3b75f7e20",
+      "voice": "woman",
+      "text": "I drove past the motor court a while ago. There's somebody sitting up on the roof. Small. Real still.",
+      "duration": 4.2,
+      "file": "7e409ca3b75f7e20.mp3"
+    },
+    {
+      "id": "95c7de03aea281a3",
+      "voice": "old",
+      "text": "Earl, you know the old survey station, out the gravel west of the highway?",
+      "duration": 4.54,
+      "file": "95c7de03aea281a3.mp3"
+    },
+    {
+      "id": "2d085ed0881102e8",
+      "voice": "old",
+      "text": "Somebody put a new chain on it. Shiny. Who buys a new chain for a place nobody goes?",
+      "duration": 5.86,
+      "file": "2d085ed0881102e8.mp3"
+    },
+    {
+      "id": "c284a4332c75325b",
+      "voice": "man",
+      "text": "Earl, somebody's been cutting my fence on the Hondo road. Both ends, clean, like with bolt cutters.",
+      "duration": 8.71,
+      "file": "c284a4332c75325b.mp3"
+    },
+    {
+      "id": "1e02934641a8316e",
+      "voice": "man",
+      "text": "Wind don't carry bolt cutters.",
+      "duration": 2.64,
+      "file": "1e02934641a8316e.mp3"
+    },
+    {
+      "id": "014e09c1ee5284f7",
+      "voice": "woman",
+      "text": "Earl, it's Dolores again. There's a light on out at the old survey station.",
+      "duration": 3.15,
+      "file": "014e09c1ee5284f7.mp3"
+    },
+    {
+      "id": "98ca58e7b86c541a",
+      "voice": "woman",
+      "text": "The big gate. Not the little one beside it.",
+      "duration": 2.02,
+      "file": "98ca58e7b86c541a.mp3"
+    },
+    {
+      "id": "17b3e9065c061766",
+      "voice": "man",
+      "text": "Earl, I drove out the survey track tonight. Just to see.",
+      "duration": 4.78,
+      "file": "17b3e9065c061766.mp3"
+    },
+    {
+      "id": "3ce0eadf90ac1b18",
+      "voice": "man",
+      "text": "Chained, like you said. And it took me the longest time to find the highway again. It's one road, Earl.",
+      "duration": 8.84,
+      "file": "3ce0eadf90ac1b18.mp3"
+    },
+    {
+      "id": "d1b2a7294c7db6ce",
+      "voice": "old",
+      "text": "Earl, is the old Roswell road open past the diner yet?",
+      "duration": 2.91,
+      "file": "d1b2a7294c7db6ce.mp3"
+    },
+    {
+      "id": "fd5cb5d2764ce941",
+      "voice": "woman",
+      "text": "Earl, I'm down at the Mesa. She says tell you the coffee's fresh and the pie isn't.",
+      "duration": 3.09,
+      "file": "fd5cb5d2764ce941.mp3"
+    },
+    {
+      "id": "54fffedba835a228",
+      "voice": "woman",
+      "text": "Earl, there's a light sitting over the mesa east of town. It isn't a star. Stars don't sit that low.",
+      "duration": 4.04,
+      "file": "54fffedba835a228.mp3"
+    },
+    {
+      "id": "f0a8133593565a22",
+      "voice": "woman",
+      "text": "It's watching the road.",
+      "duration": 1.63,
+      "file": "f0a8133593565a22.mp3"
+    },
+    {
+      "id": "75cf70ed26245b6c",
+      "voice": "man",
+      "text": "Earl, those big dishes up at the observatory. Did they all turn at once tonight?",
+      "duration": 6.65,
+      "file": "75cf70ed26245b6c.mp3"
+    },
+    {
+      "id": "ea163bffa8cbd703",
+      "voice": "man",
+      "text": "A little after two. All of them together, like sunflowers.",
+      "duration": 5.08,
+      "file": "ea163bffa8cbd703.mp3"
+    },
+    {
+      "id": "84bbb99bd8755c87",
+      "voice": "news",
+      "text": "We interrupt this program. This is a local news bulletin.",
+      "duration": 3.27,
+      "file": "84bbb99bd8755c87.mp3"
+    },
+    {
+      "id": "b071311d4881f62d",
+      "voice": "news",
+      "text": "Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "duration": 3.82,
+      "file": "b071311d4881f62d.mp3"
+    },
+    {
+      "id": "ff6583c326f63f75",
+      "voice": "news",
+      "text": "A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.",
+      "duration": 5.24,
+      "file": "ff6583c326f63f75.mp3"
+    },
+    {
+      "id": "24cbc90ea47a4267",
+      "voice": "news",
+      "text": "There is no description of the object. The space for the name of the person reporting it is blank.",
+      "duration": 5.46,
+      "file": "24cbc90ea47a4267.mp3"
+    },
+    {
+      "id": "57c913f626216f0a",
+      "voice": "news",
+      "text": "We have received the same line twice. We are reading it just as it came through.",
+      "duration": 4.02,
+      "file": "57c913f626216f0a.mp3"
+    },
+    {
+      "id": "17798887be16c20b",
+      "voice": "news",
+      "text": "Please stand by. We will return to our regular program.",
+      "duration": 3.28,
+      "file": "17798887be16c20b.mp3"
+    }
+  ]
+}
