@@ -1,6 +1,6 @@
 import type { Interaction } from '../core/Interaction';
 import type { Town } from '../world/Town';
-import type { UI, PersonCard } from '../ui/UI';
+import type { UI, PersonCard, DocSpec } from '../ui/UI';
 import * as P from '../ui/Panels';
 import { portrait, type PersonId } from '../core/portraits';
 import { clockText } from './time';
@@ -24,6 +24,8 @@ export interface CalicheDeps {
   secs: () => number;
   clock: () => string;
   note: (text: string) => void;
+  /** File a witness transcription in Papers; the host replaces an existing ID. */
+  file: (doc: DocSpec) => void;
   /** What the notebook already has from the town (saved with the game, main.ts). */
   seen: Set<string>;
   save: () => void;
@@ -125,6 +127,12 @@ export function bindTown(town: Town, d: CalicheDeps) {
   let who: Who | null = null;
   let lines: Line[] = [];
   const asked = (w: Who, t: string) => d.seen.has(`ask:${w}:${t}`);
+  // Follow-ups use only observations already filed in this case. The same check guards
+  // selection, so an old panel cannot supply a topic before its witness has returned.
+  const available = (w: Who, t: Topic) => !asked(w, t.id)
+    && (!t.after || asked(w, t.after))
+    && (!t.need || (Array.isArray(t.need) ? t.need : [t.need]).every((k) => d.seen.has(k)))
+    && (t.notBefore === undefined || day() >= t.notBefore);
   function talk(w: Who) {
     const p = PEOPLE[w], first = !d.seen.has('met:' + w);
     who = w;
@@ -137,7 +145,7 @@ export function bindTown(town: Town, d: CalicheDeps) {
       title: p.title,
       view: () => {
         const v: P.TalkView = { status: p.status, lines, choices: [], reply: null };
-        for (const t of p.topics) if (!asked(w, t.id) && (!t.after || asked(w, t.after)) && (!t.need || d.seen.has(t.need))) v.choices.push({ id: t.id, label: t.label });
+        for (const t of p.topics) if (available(w, t)) v.choices.push({ id: t.id, label: t.label });
         v.choices.push({ id: 'bye', label: p.bye });
         return v;
       },
@@ -145,10 +153,12 @@ export function bindTown(town: Town, d: CalicheDeps) {
       onChoice: (id) => {
         if (id === 'bye') { d.ui.close(); return; }
         const t = p.topics.find((x) => x.id === id);
-        if (!t || who !== w) return;
+        if (!t || who !== w || !available(w, t)) return;
         d.seen.add(`ask:${w}:${id}`);
         lines = t.lines;
         if (t.note) once(`note:${w}:${id}`, t.note);
+        const paper = t.paper && townWitnessDocs(d.seen).find((doc) => doc.id === t.paper!.id);
+        if (paper) { d.file(paper); d.toast('Witness note filed in Papers.', 3); }
         d.save();
       },
       onClose: () => { who = null; },
@@ -172,10 +182,17 @@ export function townPeople(seen: Set<string>): PersonCard[] {
   return (Object.keys(PEOPLE) as Who[]).filter((w) => seen.has('met:' + w)).map((w) => ({ ...PEOPLE[w].card, portrait: portrait(w) }));
 }
 
+/** Static notebook copies restored from the existing town keys after loading a case. */
+export function townWitnessDocs(seen: Set<string>): DocSpec[] {
+  return (Object.keys(PEOPLE) as Who[]).flatMap((w) => PEOPLE[w].topics
+    .filter((t) => t.paper && seen.has(`ask:${w}:${t.id}`))
+    .map((t) => ({ ...t.paper! })));
+}
+
 // ---------- the lines ----------
 type Line = P.TalkLine;
 type Who = Extract<PersonId, 'attendant' | 'deputy' | 'host' | 'radio_woman' | 'souvenir_man'>;
-interface Topic { id: string; label: string; lines: Line[]; note?: string; after?: string; need?: string }
+interface Topic { id: string; label: string; lines: Line[]; note?: string; paper?: DocSpec; after?: string; need?: string | string[]; notBefore?: number }
 interface Person {
   title: string; status: string; bye: string;
   card: Omit<PersonCard, 'portrait'>;
@@ -189,6 +206,11 @@ const DP = (text: string): Line => ({ who: 'THE DEPUTY', text });
 const EA = (text: string): Line => ({ who: 'EARL', text });
 const RW = (text: string): Line => ({ who: 'THE WOMAN', text });
 const SM = (text: string): Line => ({ who: 'THE SOUVENIR MAN', text });
+const witnessPaper = (id: string, title: string, page: string): DocSpec => ({
+  id: 'witness-' + id, title, kind: 'hand', stamp: 'REYES',
+  page: 'REYES / NOTEBOOK COPY\n\n' + page,
+  transcript: 'Copied into my notebook after the conversation. My observation and the witness\'s words.\n\n' + page,
+});
 
 // said the same way every time, the cough in the same place
 const COLD: Line[] = [A('Cold one tonight. Radio says it\'ll'), aside('He coughs into his fist.'), A('warm up by Wednesday.')];
@@ -227,6 +249,18 @@ const PEOPLE: Record<Who, Person> = {
         A('Wasn\'t me, then. I\'ve been here since ten.'),
         aside('He looks up at the clock over the register for a long time, as if it might say something else.'),
       ] },
+      { id: 'phone', label: 'Show him the nickel from the payphone', after: 'old', need: ['ev:phone1', 'nickel'], lines: [
+        you('The payphone gave me this. After the printer stopped.'),
+        aside('You set the bright nickel on the sill. He turns it over without picking it up.'),
+        A('That phone takes dimes.'),
+        you('Nineteen forty-seven.'),
+        A('I can read it.'),
+        aside('He pushes it back with the edge of his magazine.'),
+        A('Keep it. I write down what goes in the till. I want it to add up.'),
+        aside('I copy his words into the notebook, beside the account of the call.'),
+      ], note: 'The attendant examined the nickel from the payphone. "That phone takes dimes." He pushed it back and would not put it in the till.',
+      paper: witnessPaper('phone', 'Witness / The attendant and the payphone',
+        'MAIN STREET PAYPHONE\n\nOn the line: the control room printer. Afterwards, a bright nickel dated 1947 in the coin return.\n\nTHE ATTENDANT, shown the coin:\n"That phone takes dimes."\n"Keep it. I write down what goes in the till. I want it to add up."\n\nHe pushed the coin back across the sill. I kept it.') },
     ],
   },
   deputy: {
@@ -261,6 +295,18 @@ const PEOPLE: Record<Who, Person> = {
         DP('And a kid who called the radio station in September of \'81. Family moved away after.'),
         DP('Don\'t go asking them about it. They don\'t know they\'ve got a pin.'),
       ], note: 'Green pins in Caliche, people who lost time: the gas station attendant, October 19, 1985; the husband of the woman at the laundromat, March 1983; a boy who called the radio, September 1981.' },
+      { id: 'car', label: 'Tell him his patrol car was empty', after: 'green', need: 'ev:car', notBefore: 4 * 3600 + 30 * 60, lines: [
+        you('Your car was on the shoulder north of town. Engine running, door open. Nobody in it.'),
+        DP('I drove the loop. I came straight back.'),
+        you('Your hat was on the seat.'),
+        aside('He looks at the hat hanging beside the door.'),
+        DP('Write down where you saw it.'),
+        aside('He opens his logbook, then lays a loose sheet over the page.'),
+        DP('Here. In your own words.'),
+        aside('I write it on his sheet and keep a copy in the notebook.'),
+      ], note: 'The deputy, back at his desk: I described his empty patrol car and the hat on its seat. He said he drove the loop and came straight back, then asked for my account on a separate sheet.',
+      paper: witnessPaper('car', 'Witness / The empty patrol car',
+        'HIGHWAY NORTH OF CALICHE\n\nThe deputy\'s car on the shoulder. Engine running, driver\'s door open, nobody in it. His hat was on the seat.\n\nTHE DEPUTY, back at the substation:\n"I drove the loop. I came straight back."\n\nWhen I mentioned the hat, he looked at the one hanging beside the door. He asked for my account on a loose sheet. This is my notebook copy.') },
     ],
   },
   host: {
@@ -290,6 +336,19 @@ const PEOPLE: Record<Who, Person> = {
         aside('He looks back at the studio, where the reels are turning.'),
         EA('Record\'s ending.'),
       ], note: 'Earl at 1420 AM keeps every call on reel. One he has never played: September 1981, a boy, on a night the station was off the air.' },
+      { id: 'boy', label: 'Ask about the boy you heard tonight', after: 'tape', need: 'ev:boy', lines: [
+        you('I heard the boy on your show tonight. The star with the little tail.'),
+        EA('You heard him too.'),
+        aside('He pulls a programme sheet from his pocket. A line in pencil reads BOY / COMET. The space for a caller\'s number is blank.'),
+        EA('I put the receiver down and tried the line again. Dial tone. Just a phone.'),
+        you('Like the call you kept from eighty-one?'),
+        EA('I haven\'t played that one. I told you.'),
+        aside('He folds the sheet along the same crease.'),
+        EA('I wrote this one down.'),
+        aside('I copy the entry and his words into the notebook.'),
+      ], note: 'Earl showed me tonight\'s programme sheet: BOY / COMET in pencil, no caller number. He checked the line afterwards and got an ordinary dial tone. He still has not played the 1981 reel.',
+      paper: witnessPaper('boy', 'Witness / Earl\'s programme sheet',
+        '1420 AM / NIGHT LINE\n\nI heard a boy call about a star with a little tail, low in the south.\n\nEARL\'S PROGRAMME SHEET, copied by hand:\nBOY / COMET\nCaller number: blank.\n\nEARL:\n"I put the receiver down and tried the line again. Dial tone. Just a phone."\n\nHe still has not played the reel from September 1981. I have not heard that reel.') },
     ],
   },
   radio_woman: {
@@ -317,6 +376,19 @@ const PEOPLE: Record<Who, Person> = {
         RW('Washer\'s broke at home.'),
         aside('There is no basket on the bench beside her.'),
       ] },
+      { id: 'cattle', label: 'Tell her about the missing cow', after: 'husband', need: 'ev:cows', lines: [
+        you('The pasture south of the motel. There were nine. Now there are eight, and a ring of frost in the grass.'),
+        RW('You counted them?'),
+        you('Both times.'),
+        aside('She turns the radio down. The hiss is still there, very faint.'),
+        RW('Write both numbers. Before you start thinking you counted wrong.'),
+        you('Did your husband find one missing?'),
+        RW('He never said.'),
+        aside('She turns the radio back up.'),
+        aside('I copy both counts and her words into the notebook.'),
+      ], note: 'I told the woman about the pasture: nine cattle, then eight, and the frost ring. She asked whether I counted both times. Her husband never told her what he saw that night.',
+      paper: witnessPaper('cows', 'Witness / Two counts at the pasture',
+        'PASTURE SOUTH OF THE MOTEL\n\nFirst count: nine cattle.\nSecond count: eight. A ring of flattened grass, white with frost, where the ninth stood.\n\nTHE WOMAN AT THE LAUNDROMAT:\n"You counted them?"\n"Write both numbers. Before you start thinking you counted wrong."\n\nI asked if her husband found one missing the night he went out to the cattle in March 1983.\n"He never said."') },
     ],
   },
   souvenir_man: {

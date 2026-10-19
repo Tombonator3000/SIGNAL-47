@@ -72,6 +72,8 @@ Femten spor ved siden av hovedruten. Seks av dem bærer avsløringen (merket **b
 
 Hint om andre steder: høyst disse tre (9, 11 og 14). Fenomenet er større enn SARO, men spillet sier aldri hvor stort.
 
+**Vitnene kan følges opp (19. oktober 2026).** Den som har opplevd telefonautomaten, den tomme patruljebilen, gutten på Night Line eller endringen i beitet, kan gå tilbake til et relevant vitne og legge fram observasjonen. Det åpner fire korte samtaler og fire avskrifter i Papers. Ordene og de fysiske sporene kan sammenlignes; ingen gir en forklaring på fenomenet eller en ny obligatorisk oppgave. TV-bildet fra motellkontoret blir også et faktisk bilde man kan beholde og åpne igjen. Detaljer, forutsetninger og tester står øverst i `HENDELSER.md`.
+
 Telexen kan bare skrive store bokstaver, tall og noen få tegn. Derfor står det bindestrek, ikke tankestrek, i `SITE 03 - RANGE INVALID`.
 
 ## Gåtene

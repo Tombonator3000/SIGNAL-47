@@ -35,6 +35,8 @@ export const FREQ: Record<StationId, number> = { caliche: 1420, roswell: 1230, f
 export const SIGN_OFF = 4 * 3600;   // the Night Line signs off
 export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
+/** The recorded bulletin on the frequency (HENDELSER.md, event 4). */
+export const ARCHIVE_SECS = 47;
 export const streamOn = import.meta.env.MODE !== 'single';
 
 export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy' | 'news' | 'old';
@@ -77,7 +79,7 @@ const TRACK: Record<TuneId, { file: string; dur: number }> = {
   far: { file: 'anamalie', dur: 208.2 },
 };
 type Seg =
-  | { kind: 'talk'; lines: Line[]; slotted?: boolean }
+  | { kind: 'talk'; lines: Line[]; slotted?: boolean; duration?: number }
   | { kind: 'music'; tune: TuneId; len: number }
   | { kind: 'anthem' }
   | { kind: 'carrier'; len: number }
@@ -176,9 +178,12 @@ const BEFORE_FIXED = 180;
 /** Lines a trip's programme has put on a station (Station.slot). */
 export interface Slotted { readonly kind: 'talk'; readonly lines: Line[]; readonly slotted?: boolean }
 const lineText = (l: Line, clock: number) => (typeof l.text === 'function' ? l.text(clock) : l.text);
+const talkLen = (lines: Line[], clock: number) => lines.reduce((a, l) => a + secsOf(lineText(l, clock)) + GAP, 0.4);
+/** A fixed recording keeps its full duration, including the gaps, in sound and captions. */
+const talkScale = (s: Extract<Seg, { kind: 'talk' }>, clock: number) => s.duration ? s.duration / talkLen(s.lines, clock) : 1;
 /** The length of a segment; a talk's is fixed when it starts, with the clock then. */
 function segLen(s: Seg, clock: number) {
-  if (s.kind === 'talk') return s.lines.reduce((a, l) => a + secsOf(lineText(l, clock)) + GAP, 0.4);
+  if (s.kind === 'talk') return s.duration ?? talkLen(s.lines, clock);
   if (s.kind === 'music' || s.kind === 'carrier') return s.len;
   if (s.kind === 'anthem') return ANTHEM_SECS;
   return Infinity;
@@ -307,6 +312,10 @@ export class Station {
   private calm = CALM;
   /** The record on now is being faded down for the host (slot). */
   private fading = false;
+  /** Event 4 holds the programme at its exact syllable or place in the record. It is not a
+   *  queued programme item: a clock jump, sign-off or reset discards the interruption. */
+  private interrupted: { queue: Seg[]; t: number; len: number; said: number; sc: number;
+    segNo: number; trackSkip: number; fading: boolean } | null = null;
 
   constructor(readonly id: StationId, private radio: Radio) {}
   private get cfg() { return CFG[this.id]; }
@@ -365,16 +374,23 @@ export class Station {
     this.queue.splice(i, 1);
     return true;
   }
-  /** Something else on the frequency, now: these lines, and then the programme again as if
-   *  nothing had been (HENDELSER.md, event 4). Returns how long it takes, or 0 if off the air. */
+  /** Event 4: a 47-second recording on the frequency, then the interrupted programme from the
+   *  same point. Never replaces the boy, a trip's lines, or a fixed point. Returns its duration,
+   *  or 0 when the frequency is not free or too close to its sign-off. */
   cutIn(lines: { text: string; who: Voice; by: string }[], clock: number) {
-    if (!this.onAir || this.seg.kind === 'anthem') return 0;
-    const seg: Seg = { kind: 'talk', lines };
+    if (!this.free || this.interrupted || !lines.length) return 0;
+    const f = this.cfg.fixed, day = ((clock % 86400) + 86400) % 86400;
+    if (f && this.after === 'loop' && day >= f.at - BEFORE_FIXED && day < f.at) return 0;
+    const previous = { queue: this.queue.slice(), t: this.t, len: this.len, said: this.said, sc: this.sc,
+      segNo: this.segNo, trackSkip: this.trackSkip, fading: this.fading };
+    const seg: Seg = { kind: 'talk', lines, duration: ARCHIVE_SECS };
     this.start([seg], clock);
-    return segLen(seg, clock);
+    this.interrupted = previous;
+    return ARCHIVE_SECS;
   }
 
   private start(segs: Seg[], clock: number, skip = 0) {
+    this.interrupted = null;
     this.queue = segs.slice();
     this.t = 0; this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
     this.len = segLen(this.seg, clock);
@@ -418,6 +434,15 @@ export class Station {
     let changed = false;
     while (this.t >= this.len) {
       this.t -= this.len;
+      if (this.interrupted) {
+        const previous = this.interrupted;
+        this.interrupted = null;
+        this.queue = previous.queue; this.t += previous.t; this.len = previous.len;
+        this.said = previous.said; this.sc = previous.sc; this.segNo = previous.segNo;
+        this.trackSkip = previous.trackSkip; this.calm = 0; this.fading = previous.fading;
+        changed = true;
+        continue;
+      }
       this.queue.shift();
       if (!this.queue.length) this.queue.push(...this.refill(clock));
       this.len = segLen(this.seg, clock);
@@ -427,8 +452,9 @@ export class Station {
     // the lines of a talk, each once as it starts
     const s = this.seg;
     if (s.kind === 'talk') {
-      let at = 0.2, i = 0;
-      for (; i < s.lines.length; i++) { const e = at + secsOf(lineText(s.lines[i], this.sc)); if (this.t < e) break; at = e + GAP; }
+      const scale = talkScale(s, this.sc);
+      let at = 0.2 * scale, i = 0;
+      for (; i < s.lines.length; i++) { const e = at + secsOf(lineText(s.lines[i], this.sc)) * scale; if (this.t < e) break; at = e + GAP * scale; }
       if (i < s.lines.length && this.t >= at && i > this.said) {
         this.said = i;
         if (!quiet) this.onLine?.(lineText(s.lines[i], this.sc), s.lines[i].by);
@@ -439,8 +465,11 @@ export class Station {
 
   update(dt: number, clock: number) {
     this.fixed(clock);
+    // Only the part of this frame after the recording ends belongs to the ordinary programme.
+    // It gets the same breathing room before another insertion as after the boy or trip lines.
+    const archiveTime = this.interrupted ? Math.min(dt, Math.max(0, this.len - this.t)) : 0;
     if (this.forward(dt, clock)) this.sync();
-    this.calm = this.cfg.loop.includes(this.seg) ? this.calm + dt : 0;
+    this.calm = this.cfg.loop.includes(this.seg) ? this.calm + dt - archiveTime : 0;
   }
 
   // ---------- the sound ----------
@@ -508,9 +537,10 @@ export class Station {
     for (const p of [fq, mf, g]) p.cancelScheduledValues(now);
     g.setValueAtTime(0, now);
     if (s.kind === 'talk') {
-      let at = 0.2;
+      const scale = talkScale(s, this.sc);
+      let at = 0.2 * scale;
       for (const l of s.lines) {
-        const text = lineText(l, this.sc), secs = secsOf(text), base = PITCH[l.who ?? 'host'];
+        const text = lineText(l, this.sc), secs = secsOf(text) * scale, base = PITCH[l.who ?? 'host'];
         if (at + secs > t) for (const y of syllables(text, secs)) {
           if (at + y.at < t) continue;
           const ts = now + at + y.at - t, f = base * y.f;
@@ -518,7 +548,7 @@ export class Station {
           mf.setValueAtTime(330, ts); mf.linearRampToValueAtTime(1350, ts + y.d * 0.3); mf.linearRampToValueAtTime(430, ts + y.d);
           g.setValueAtTime(0, ts); g.linearRampToValueAtTime(0.42, ts + 0.025); g.setValueAtTime(0.42, ts + y.d * 0.7); g.linearRampToValueAtTime(0, ts + y.d);
         }
-        at += secs + GAP;
+        at += secs + GAP * scale;
       }
     }
     // the anthem, or the carrier

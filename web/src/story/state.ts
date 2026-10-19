@@ -18,6 +18,7 @@ export interface GameState {
   abduct?: import('./abduction').AbductSave;   // the times away (story/abduction.ts; older saves have none)
   town?: string[];        // what the notebook has from Caliche (world/Town.ts, story/caliche.ts; older saves have none)
   album?: import('../core/album').AlbumSave;   // the free frames (core/album.ts; older saves have none)
+  motelTv?: { id: string; url: string };   // the witnessed office frame, in the shared photo store
 }
 
 /** Where the truck was left and how it stands: the place (World.truckAt), its position and its

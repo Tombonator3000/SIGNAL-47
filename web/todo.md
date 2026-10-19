@@ -2,6 +2,14 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
+## Historie og hendelser, direkte bestilt 19. oktober
+
+- [x] Fire valgfrie vitneoppfølginger med lagrede notatkopier i Papers. Krever både opplevd hendelse og tidligere samtaleemne.
+- [x] 1947-bulletinen varer 47 sekunder og gir programmet tilbake uten å hoppe over den avbrutte setningen eller platen.
+- [x] Motell-TV-ens faktiske bilde kan undersøkes igjen etter Continue. Fri sikt og bilens virkelige transform kontrolleres.
+- [x] Telefonautomatens andre anrop kan oppleves etter rom 6. Ingen mynt eller fullstendig funn ved et avbrutt anrop.
+- [ ] Tom prøver rytmen, de nye vitnesamtalene og telefonopptaket på fysisk PC/mobil. Nye vitnetekster har ikke egne Kinski-opptak ennå.
+
 ## Toms liste 16. oktober kveld, i den rekkefølgen jeg tar den
 
 Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).

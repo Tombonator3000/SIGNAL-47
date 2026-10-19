@@ -26,10 +26,12 @@ export type NightEventId = 'steps' | 'knocks' | 'radio' | 'bulletin' | 'phone' |
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
 export const BULLETIN: { text: string; who: Voice; by: string }[] = [
-  { text: 'We interrupt this program. This is a bulletin.', who: 'news', by: 'a bulletin' },
-  { text: 'The Army Air Field at Roswell announced today that a flying disc has been recovered on a ranch northwest of town.', who: 'news', by: 'a bulletin' },
-  { text: 'The object was found by a rancher last week and has been flown on for examination.', who: 'news', by: 'a bulletin' },
-  { text: 'It is Tuesday, the eighth of July. We will have more as it comes in.', who: 'news', by: 'a bulletin' },
+  { text: 'We interrupt this program. This is a local news bulletin.', who: 'news', by: 'a bulletin' },
+  { text: 'Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.', who: 'news', by: 'a bulletin' },
+  { text: 'A flying disc is reported recovered on a ranch outside town. That is the wording on the notice.', who: 'news', by: 'a bulletin' },
+  { text: 'There is no description of the object. The space for the name of the person reporting it is blank.', who: 'news', by: 'a bulletin' },
+  { text: 'We have received the same line twice. We are reading it just as it came through.', who: 'news', by: 'a bulletin' },
+  { text: 'Please stand by. We will return to our regular program.', who: 'news', by: 'a bulletin' },
 ];
 
 export interface NightIn {
@@ -59,6 +61,8 @@ export interface NightDeps {
   step: () => { name: string; gain: number };
   setRadio: (station: 'far') => void;
   bulletin: () => number;
+  /** Still in the cab, tuned to this recording, and able to hear it. */
+  bulletinHeard?: () => boolean;
   openDoor: () => void;
   silence: () => void;
   place: () => string;
@@ -74,7 +78,7 @@ export class NightEvents {
   private still = 0;
   private stepsLeft: number[] = [];
   private stepAt = new THREE.Vector3();
-  private pending: { id: NightEventId; t: number; check?: () => boolean } | null = null;
+  private pending: { id: NightEventId; t: number; check?: () => boolean; heard?: boolean } | null = null;
   private radioNear = 1e9;
 
   constructor(private d: NightDeps) {}
@@ -112,8 +116,13 @@ export class NightEvents {
     // something started that ends with a note: when it has been seen or heard through
     if (this.pending) {
       const p = this.pending;
+      if (p.id === 'bulletin' && (!s.ok || this.d.bulletinHeard?.() === false)) p.heard = false;
       p.t -= dt;
-      if (p.t <= 0 && (!p.check || p.check())) { this.pending = null; this.finish(p.id, s); }
+      if (p.t <= 0 && (!p.check || p.check())) {
+        this.pending = null;
+        if (p.heard !== false) this.finish(p.id, s);
+        else this.wait = rnd(130, 260);
+      }
       return;
     }
     if (!s.ok) return;
@@ -127,14 +136,13 @@ export class NightEvents {
 
   /** One now if it can be (the developer menu, the tests). */
   now(id: NightEventId, s: NightIn) {
+    if (this.busy) return false;
     if (!this.can(id, { ...s }) && id !== 'steps') return false;
-    this.start(id, s);
-    return true;
+    return this.start(id, s);
   }
 
-  private start(id: NightEventId, s: NightIn) {
+  private start(id: NightEventId, s: NightIn): boolean {
     const a = this.d.audio, cam = s.cam;
-    this.last = { id, clock: s.clock };
     switch (id) {
       case 'steps': {
         // behind, where the player came from: on the same ground, slower than theirs
@@ -157,7 +165,8 @@ export class NightEvents {
         break;
       case 'bulletin': {
         const len = this.d.bulletin();
-        this.pending = { id, t: len + 0.5 };
+        if (len <= 0) return false;
+        this.pending = { id, t: len, heard: true };
         break;
       }
       case 'phone':
@@ -177,6 +186,8 @@ export class NightEvents {
         this.pending = { id, t: 0 };
         break;
     }
+    this.last = { id, clock: s.clock };
+    return true;
   }
   private doorAt = new THREE.Vector3();
   private doorSeen = false;

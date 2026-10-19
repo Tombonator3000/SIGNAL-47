@@ -1,5 +1,31 @@
 # Byen, det rare og dem i bakgrunnen
 
+## Utvidelse 19. oktober 2026: spor som kan følges opp
+
+Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`. Dette passet utdyper den eksisterende natten. Hendelsene under er valgfrie og åpner ingen ny obligatorisk gåte.
+
+| Opplevelse | Spillerens handling | Nytt spor |
+| --- | --- | --- |
+| Femcenten i telefonautomaten | Vis mynten til betjenten etter samtalen om den gamle veien | Han sier automaten tar ti cent. Han skyver mynten tilbake; den blir i Kit. En avskrift av samtalen går i Papers. |
+| Den tomme patruljebilen | Spør nestlederen etter at han er tilbake, etter samtalen om de grønne nålene | Han fastholder at han kjørte runden. Nøkkelen er hos ham. Observasjonen og svaret står ved siden av hverandre, uten en fasit. |
+| Gutten på Night Line | Snakk med Earl etter at du faktisk har hørt gutten og spurt om 1981-båndet | Programarket har BOY / COMET, uten telefonnummer. Det gamle båndet er fortsatt uspilt. |
+| Kua som mangler | Fortell kvinnen på benken om funnet etter samtalen om mannen hennes | Hun spør om gjerdet og de andre dyrene. Samtalen gir et vanlig holdepunkt for noe hun ikke vil forklare. |
+| 1947 på 1420 | Hør hele sendingen i bilen | Seks skrevne, oppdiktede bulletinlinjer i 47 sekunder. Deretter fortsetter den avbrutte setningen eller platen på samme sted. |
+| TV-en på motellkontoret | Se skjermen når oversiktsbildet kommer | Et faktisk bilde av spillscenen med bilen der og slik den står. Bildet kan gjenåpnes på TV-en eller i Photos, også etter Continue. |
+| Telefonautomaten etter rom 6 | Gå tilbake før avreisen 05:20 og svar | Samme motor, to host og relégrupper som på feltradioen. Anropet kan nå skje etter 05:00; det gamle tidsvinduet stengte 04:45. |
+
+De fire vitnearkene er uttrykkelig Reyes' notatkopier, ikke nye offisielle dokumenter. De dukker først opp når spilleren spør, gjenopprettes fra eksisterende `ask:`-nøkler, og kan leses igjen i Papers. Ingen av vitnene sier hva -39 betyr. Ingen av opptakene svarer på nye spørsmål. Nora, hovedgåtene, C og slutten beholder sin eksisterende rekkefølge.
+
+Akseptkriterier for passet:
+
+1. Hvert nytt samtalevalg krever både opplevd hendelse og relevant tidligere emne. Nestlederen må være tilbake. Valget gir ett notat og ett vitneark, også ved gjentatt bruk og lasting.
+2. Et avbrutt telefonanrop eller en uhørt bulletin gir ingen fullstendig observasjon. Ingen mynt eller hendelsesmerke ved et delvis anrop. Et senere forsøk er mulig.
+3. Sendingen varer nøyaktig 47 spillsekunder og ødelegger ikke gutten, reisereplikkene eller avslutningen klokka fire.
+4. TV-bildet krever fri sikt til skjermen. Det tar med faktisk bilplassering og retning, lagrer bildet i eksisterende fotolager og fabrikerer ikke et bilde ved renderfeil. Eldre saker uten bildefil viser at bildet mangler.
+5. Begge bygg og relevante spillerreiser kontrolleres. GPU-kjøring alene regnes ikke som en ytelsesmåling eller som vurdering på fysisk mobil.
+
+Kontroller og bevis føres i `production/story_events_20261019/qa/` og siste oppføring i `log.md`. Nye vitnereplikker og dokumenter er foreløpig tekst; de eksisterende Kinski-opptakene er bevart.
+
 Skrevet 16. oktober 2026 etter Toms svar på forslaget om et knutepunkt (`FORSLAG.md`, 16. oktober). Dette er en spesifikasjon å bygge fra, ikke noe som er bygd. Tall og plasseringer er utkast til de prøves i spillet.
 
 **Tom 16. oktober:** heller mot retning A, altså én natt og byen om natta. Romvesenene skal alltid være der i bakgrunnen, som noe skummelt som kan skje når som helst, og tilfeldige bortføringer skal med. Hendelsesregissøren, hendelsene, kartet med linjene, Roswell som kultur og rykter, og stemningen fra Twin Peaks skal med, forbedret og utdypet.
