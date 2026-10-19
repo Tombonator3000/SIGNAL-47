@@ -15,8 +15,10 @@ import { clockText } from './time';
 // only while the player is far off (out of the areas it stands in, or more than FAR away).
 // It turns the first time once the player has been by it once, or from 03:45 in any case, and
 // at least ten minutes of the night after the last event (as in town, story/townEvents.ts).
-// It is seen from the truck, in its headlights: on foot nobody comes near it (SARO's ground
-// ends at the motel's lot and the shoulder past it, more than 110 m short of the nearest cow).
+// It is seen from the truck, in its headlights. The truck can be left on the highway by the
+// pasture and the player walks among them (roadTerrain.ROAD_STOPS, Tom 19 October; in the diner's
+// area, main.ts gives that as the road's): nothing changes then while they are near, and what is
+// written down is still what the headlights show.
 // Kept with the town's part of the case (main.ts, `town`): 'cows:by' (been by them once),
 // 'cows:on', 'ev:cows1', 'cows:short', 'ev:cows', and a mark on the map at the pasture, on B;
 // none of it comes again after a load.

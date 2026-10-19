@@ -16,6 +16,22 @@ export const GATE = { x: -612, z: 532, half: 5 };                  // closed dou
 export const ENDZONE = { minX: -609, maxX: -585, minZ: 524, maxZ: 540 };
 export const PASTURE = { west: -760, north: 440, south: 720 };   // (north: south of the motel)
 export const DRIVE_N = -120, DRIVE_S = 2700;                         // invisible ends of the highway (past the diner)
+/** Event 12: where the deputy's car stands on the east shoulder north of Caliche (Town.ts). */
+export const DEPUTY_CAR = { x: 6.9, z: 1690 };
+/** The road's own ground walked on foot, where the truck can be left by something to walk to
+ *  (Tom, 19 October: out of the truck at the cows, at the deputy's car, at the masts; RoadArea.walks,
+ *  World.canGetOut): road-local walk zones, each with the place shown in the corner of the screen.
+ *  Elsewhere the highway is driven, not walked.
+ *    the herd       (event 2) the pasture from the right-of-way fence 140 m in, with the stock tank
+ *                   and the survey track's mouth, and the highway between its fences there; they
+ *                   overlap at the fence, whose wall keeps them apart but over the cattle guard.
+ *                   North it ends 70 m short of the motel's far front (roadPlaces.motelFar).
+ *    the patrol car (event 12) the lanes, the shoulders and the flat verge 40 m either side of it */
+export const ROAD_STOPS: readonly { id: string; name: string; minX: number; maxX: number; minZ: number; maxZ: number }[] = [
+  { id: 'rsPasture', name: 'The pasture by the highway', minX: -160, maxX: -HWY.fence + 0.5, minZ: 490, maxZ: 640 },
+  { id: 'rsHerdRoad', name: 'The highway south', minX: -HWY.fence - 0.5, maxX: HWY.fence - 0.15, minZ: 490, maxZ: 640 },
+  { id: 'rsDeputyCar', name: 'The highway north of Caliche', minX: -HWY.flat, maxX: HWY.flat, minZ: DEPUTY_CAR.z - 40, maxZ: DEPUTY_CAR.z + 40 },
+];
 
 
 // ---------- the survey track: a smooth curve through hand-placed points, every 3 m ----------

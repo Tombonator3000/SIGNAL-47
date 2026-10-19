@@ -6,11 +6,13 @@ import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build,
 import { wet, wearMesh, OLD_LANES } from './roadSurface';
 import { station, ranch, plants, saroLights, motelFar, trackRoute, groundWithTufts } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
-import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, DINER, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
+import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, DINER, ROAD_STOPS, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
 import { Herd } from './herd';
 import { roadFlora, postsOf } from '../world/groundCover';
 import type { Flora } from '../world/flora';
+import type { Zone } from '../player/Player';
+import type { Collider } from '../world/ControlRoom';
 
 export { roadFlood, HEADLIGHT_SLOTS };
 
@@ -57,6 +59,14 @@ export class RoadArea implements DriveArea {
   /** The brush, the grass and the stones on the road's land (world/flora.ts); the diner's and the
    *  town's walls and walks are added when they are built (World.ensureDiner). */
   readonly flora: Flora;
+  /** The road's own ground walked on foot where the truck can be left by something to walk to
+   *  (roadTerrain.ROAD_STOPS: by the herd, by the deputy's car), world terms. Walked in the diner's
+   *  area with its and the town's (World.roadWalk). */
+  readonly walks: Zone[];
+  /** What stands on them and holds the truck holds the player too: the fences and the cattle guard's
+   *  wings, the cows and their tank, the posts and the rocks (from obstacles, a circle as its square;
+   *  the cow that goes is in the way only while it is there, Herd.obstacle). */
+  readonly walkColliders: Collider[];
 
   private origin: THREE.Vector3;
   private night: { hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
@@ -117,6 +127,16 @@ export class RoadArea implements DriveArea {
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }
       : { ...o, minX: o.minX + origin.x, maxX: o.maxX + origin.x, minZ: o.minZ + origin.z, maxZ: o.maxZ + origin.z });
     this.obstacles.push(this.herd.obstacle(origin));   // the cow that goes, while it is there
+    this.walks = ROAD_STOPS.map((r) => ({ id: r.id, enabled: true, minX: r.minX + origin.x, maxX: r.maxX + origin.x, minZ: r.minZ + origin.z, maxZ: r.maxZ + origin.z }));
+    const near = (o: Obstacle) => {
+      const b = o.kind === 'circle' ? { minX: o.x - o.r, maxX: o.x + o.r, minZ: o.z - o.r, maxZ: o.z + o.r } : o;
+      return this.walks.some((w) => b.maxX > w.minX - 1 && b.minX < w.maxX + 1 && b.maxZ > w.minZ - 1 && b.minZ < w.maxZ + 1);
+    };
+    // (a circle's square follows it: the cow that goes is out of the way, far off, once it has gone)
+    const square = (o: Extract<Obstacle, { kind: 'circle' }>): Collider => ({
+      get minX() { return o.r > 0 ? o.x - o.r : 1e9; }, get maxX() { return o.r > 0 ? o.x + o.r : 1e9; },
+      get minZ() { return o.r > 0 ? o.z - o.r : 1e9; }, get maxZ() { return o.r > 0 ? o.z + o.r : 1e9; } });
+    this.walkColliders = this.obstacles.filter(near).map((o) => o.kind === 'circle' ? square(o) : o);
     this.start = { pos: w(START.x, 495), heading: START.heading };
     this.end = { pos: w(END.x, END.z), heading: END.heading };
     this.endZone = { minX: ENDZONE.minX + origin.x, maxX: ENDZONE.maxX + origin.x, minZ: ENDZONE.minZ + origin.z, maxZ: ENDZONE.maxZ + origin.z };

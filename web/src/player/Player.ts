@@ -63,8 +63,10 @@ export class Player {
     const r = this.radius, e = 1e-6;
     return x >= b.minX + r - e && x <= b.maxX - r + e && z >= b.minZ + r - e && z <= b.maxZ - r + e;
   }
-  walkable(x: number, z: number) {
-    for (const b of this.zones) if (b.enabled !== false && this.inside(b, x, z)) return true;
+  /** Whether the player can stand at (x, z): in the walk zones they walk in now, or in others
+   *  (World.doorSpot: where getting out of the truck would leave them). */
+  walkable(x: number, z: number, zones: readonly Zone[] = this.zones) {
+    for (const b of zones) if (b.enabled !== false && this.inside(b, x, z)) return true;
     return false;
   }
 

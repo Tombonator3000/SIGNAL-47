@@ -6,7 +6,7 @@ import { artTexture, artImage } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { GROUND } from './Crossing';
-import { ANTENNAS, APRON, FIELD_ZONES, GATE, GATE_WAY, FENCE_Z, HWY, LAMPS, onField, nearestAntenna, type Antenna } from './arrayLayout';
+import { ANTENNAS, APRON, FIELD_ZONES, GATE, GATE_WAY, FENCE_Z, HWY, HWY_WALK, LAMPS, onField, inRect, nearestAntenna, type Antenna } from './arrayLayout';
 
 // The antenna field, walked (todo: the field walkable; FORSLAG.md, section 4). North of the
 // chain-link fence at z -20 the array is a desert of gravel tracks: the walk gate north of the
@@ -14,7 +14,8 @@ import { ANTENNAS, APRON, FIELD_ZONES, GATE, GATE_WAY, FENCE_Z, HWY, LAMPS, onFi
 // latitudes, a spur to each antenna, and an apron of gravel round each base, with the drive
 // cabinet where the spur comes in. The layout is arrayLayout.ts. Part of SARO's area.
 //
-// Walking: every track and apron is a walk zone (arrayLayout.FIELD_ZONES); the desert between
+// Walking: every track and apron is a walk zone (arrayLayout.FIELD_ZONES), and so is the highway
+// through the array (HWY_WALK: the truck can be left on it, World.canGetOut); the desert between
 // them is not walked, the bases and the cabinets are colliders, and the gate's doorway zone is
 // on while the gate is open (Doors.ts, 'gate'). The ground is SARO's (-0.6, Grounds.floorAt),
 // graded flat over the whole array (Exterior.ts, ARRAY_FLAT).
@@ -79,6 +80,10 @@ export class Field {
   private walkable() {
     for (const { id, r } of FIELD_ZONES) this.addZone(id, r.minX, r.maxX, r.minZ, r.maxZ);
     this.addZone('gate', GATE_WAY.minX, GATE_WAY.maxX, GATE_WAY.minZ, GATE_WAY.maxZ, false);
+    // the highway north through the array, to get out of the truck left on it and walk to the masts
+    // along the rows; it ends short of the fence's opening (on foot the gate is the way in) and
+    // where the truck's way ends. Not part of the field's gravel (FIELD_ZONES)
+    this.addZone('fHighway', HWY_WALK.minX, HWY_WALK.maxX, HWY_WALK.minZ, HWY_WALK.maxZ);
     for (const a of ANTENNAS) this.colliders.push({ ...a.base });
     // the lamp posts beside the tracks and the highway's (Exterior.ts), where a row goes by
     for (const [x, z] of [...[-32, -66, -100, -134, -168].map((z) => [-18.5, z]), ...LAMPS]) {
@@ -90,8 +95,10 @@ export class Field {
     this.zones.push(z); this.zone[id] = z;
   }
 
-  /** On the field's gravel (for the place name and the footsteps). */
-  inField(p: THREE.Vector3) { return onField(p.x, p.z, 0.3); }
+  /** On the field's gravel or the highway through it (for the place name). */
+  inField(p: THREE.Vector3) { return onField(p.x, p.z, 0.3) || this.onHighway(p); }
+  /** On the highway's asphalt north of the fence (the footsteps). */
+  onHighway(p: THREE.Vector3) { return inRect(HWY_WALK, p.x, p.z) && p.x > HWY.x0 && p.x < HWY.x1; }
   /** What the place is called where the player stands in the field (saves, the corner). */
   placeAt(p: THREE.Vector3) {
     const { a, d } = nearestAntenna(p.x, p.z);
