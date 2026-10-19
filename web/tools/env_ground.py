@@ -2,9 +2,10 @@
 # ground in every outdoor area. Shoots eight fixed views on High (SARO's grounds, the antenna
 # field, the highway shoulder to the motel, the motel's lot, STATION 01, Caliche's street, the
 # highway from the truck, the old road at dawn), prints the draw calls of each, and checks: the
-# draw calls stay in budget (the control room about 300, SARO outside at most 340, every other
-# view at most 15 more than before the ground cover), Low draws no more than High and has less
-# ground cover, the cover is there in every area and moves in the wind, it stands on no walk the
+# draw calls stay in budget (the control room about 300, SARO outside at most 340, every view at
+# most SHARED more than before the round, for its five parts together), Low draws no more than
+# High and has less ground cover, the cover is there in every area and moves in the wind, it
+# stands on no walk the
 # story uses (the tracks, the roads, the lots; tiny grass and pebbles only in a way's seam, within
 # 0.6 m of its edge), out of the pools of light it is no brighter than the ground behind it and in
 # them brighter (each view is shot again without the cover, gN_bare.png, and the two compared
@@ -22,11 +23,18 @@ W, H = (int(v) for v in (ARGS[1] if len(ARGS) > 1 else '1280x800').split('x'))
 SHOTS = '--shots' in sys.argv
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
 X = 8000   # the road area's origin (World.ROAD_ORIGIN)
-# draw calls on High at each view before the ground cover (19 October, the graphics card)
+# draw calls on High at each view before the ground cover (main at 048fcd1, 19 October, the graphics card)
 BEFORE = {'saro': 316, 'field': 35, 'shoulder': 77, 'motel': 92, 'station': 66, 'town': 46, 'road': 151, 'oldroad': 53, 'window': 98}
 # and the triangles (the road's old brush is gone: its views can draw fewer)
 BEFORE_TRIS = {'saro': 132528, 'field': 98198, 'shoulder': 89712, 'motel': 150328, 'station': 121706, 'town': 310628, 'road': 341652, 'oldroad': 449648}
 MORE_TRIS = 90000   # the most the ground cover may add to a view on High (a phone's share of it is Low's)
+# What the round's five parts may add to a view on High together, over BEFORE (the same in
+# env_ground, env_roads, env_buildings, env_interiors and env_atmosphere). Each part was held to 15
+# in its own branch, but they meet in the same views: a part's share of a view is about six (the
+# ground cover's five meshes; the life's moths, far lights and lying tumbleweeds; the roads' wear
+# and lots; a lot's props, stains and pools; a room's things and dirt), five of them thirty. A view
+# over it has a part costing twice its share, or a sixth thing in it: a real overshoot.
+SHARED = 30
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
@@ -150,7 +158,7 @@ async def main():
         check(calls['saro'] <= 340 and calls['field'] <= 340 and calls['shoulder'] <= 340 and calls['motel'] <= 340,
               f"SARO outside at most 340 (the grounds {calls['saro']}, the field {calls['field']}, the shoulder {calls['shoulder']}, the motel {calls['motel']})")
         more = {k: calls[k] - BEFORE[k] for k in BEFORE}
-        check(all(v <= 15 for v in more.values()), f'at most about 15 more draw calls in every view than before the ground cover: {more}')
+        check(all(v <= SHARED for v in more.values()), f'at most {SHARED} more draw calls in every view than before the round, its five parts together: {more}')
         moret = {k: tris[k] - BEFORE_TRIS[k] for k in BEFORE_TRIS}
         check(all(v <= MORE_TRIS for v in moret.values()), f'and at most {MORE_TRIS} more triangles: {moret}')
 

@@ -1,7 +1,8 @@
 # The interiors (world/clutter.ts and the rooms that use it): the control room, the south
 # corridor, the records room, the photo lab, the motel office, room 6, the diner and the hut at
 # STATION 01. Shoots each from a fixed place on High (and Low), prints the draw calls, and checks
-# that each room stays within its budget, that Low draws less of the clutter than High, and that
+# that each room stays within its budget (at most SHARED more than before the round for its five
+# parts together, the control room about 300), that Low draws less of the clutter than High, and that
 # the player still walks where the chapters need them to with the real movement code.
 # Usage: python3 tools/env_interiors.py OUTDIR [WxH] [before]
 #   before: shots and draw calls only (the state before the clutter was added)
@@ -27,9 +28,17 @@ VIEWS = [
     ('station01', 'i09_hut', (-10.15, 4.05), (-12.4, 0.95, 1.8)),
 ]
 # draw calls on High measured at these views before the clutter (env_interiors.py ... before,
-# 19 October 2026, on the graphics card); a room may add at most about 15
+# main at 048fcd1, 19 October 2026, on the graphics card)
 BASE = {'i01_control_desk': 190, 'i02_control_console': 99, 'i03_corridor': 157, 'i04_records': 98, 'i05_photolab': 97,
         'i06_motel_office': 72, 'i07_room6': 56, 'i08_diner': 62, 'i09_hut': 55}
+# What the round's five parts may add to a view on High together, over BASE (the same in
+# env_ground, env_roads, env_buildings, env_interiors and env_atmosphere). Each part was held to 15
+# in its own branch, but they meet in the same views: a part's share of a view is about six (the
+# ground cover's five meshes; the life's moths, far lights and lying tumbleweeds; the roads' wear
+# and lots; a lot's props, stains and pools; a room's things and dirt), five of them thirty. A view
+# over it has a part costing twice its share, or a sixth thing in it: a real overshoot. (Through a
+# window or a door a room sees the yard, the road and the land too.)
+SHARED = 30
 # artcheck's control room views: about 300 at most
 ROOM_VIEWS = [('desk', 2.6, 3.5, 0, -0.50), ('room', -4.7, 3.5, -0.65, -0.16), ('window', 0.05, -2.2, 0, 0.06)]
 
@@ -115,8 +124,8 @@ async def main():
         room = max(res[(n, 'high')]['calls'] for n, *_ in ROOM_VIEWS + [('i01_control_desk',), ('i02_control_console',)])
         check(room <= 300, f'the control room at most about 300 draw calls on High ({room})')
         if not BEFORE:
-            over = [f"{n} {res[(n, 'high')]['calls']} (was {BASE[n]})" for _, n, *_ in VIEWS if n in BASE and res[(n, 'high')]['calls'] > BASE[n] + 15]
-            check(not over, 'each room adds at most about 15 draw calls on High: ' + ('; '.join(over) if over else f'{len(BASE)} views'))
+            over = [f"{n} {res[(n, 'high')]['calls']} (was {BASE[n]})" for _, n, *_ in VIEWS if n in BASE and res[(n, 'high')]['calls'] > BASE[n] + SHARED]
+            check(not over, f'each room at most {SHARED} draw calls on High over main before the round, the five parts together: ' + ('; '.join(over) if over else ', '.join(f"{n} +{res[(n, 'high')]['calls'] - BASE[n]}" for _, n, *_ in VIEWS if n in BASE)))
             low = [n for _, n, *_ in VIEWS if res[(n, 'low')]['calls'] > res[(n, 'high')]['calls']]
             check(not low, 'Low never draws more than High' + (': ' + ', '.join(low) if low else ''))
             cl_h, cl_l = res[('clutter', 'high')], res[('clutter', 'low')]

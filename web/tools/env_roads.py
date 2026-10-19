@@ -3,14 +3,14 @@
 # SARO from the shoulder walk, the service road and the truck pad, the motel's lot, Caliche's main
 # street, the diner's lot and the old road's mouth across the highway, the highway and the survey
 # track in the truck's headlights, and the old Roswell road at dawn. Prints the draw calls of each,
-# and checks them against what they were before this pass (at most 15 more per area), that Low
-# draws no more than High and has the wear decals and the wet sheen off, that the wear decals and
-# the sheen are there on High, that the lots have their 1024 picture (8 m) on High and Low alike,
-# that the dry grass is in the ground and Low draws a third of it, that the sheen lays a column
-# under SARO's lamps and none from the truck's own headlights, that the new things by the road
-# stand clear of the lanes and the
-# track, and that the player still walks the service road, the shoulder to the motel, the motel's
-# lot and Caliche's street with the real movement code.
+# and checks them against what they were before the round (at most SHARED more per view for its
+# five parts together), that Low draws no more than High and has the wear decals and the wet
+# sheen off, that the wear decals and the sheen are there on High, that the lots have their 1024
+# picture (8 m) on High and Low alike, that the dry grass is in the ground and Low draws a third
+# of it, that the sheen lays a column under SARO's lamps and none from the truck's own
+# headlights, that the new things by the road stand clear of the lanes and the track, and that
+# the player still walks the service road, the shoulder to the motel, the motel's lot (round the
+# guests' cars) and Caliche's street with the real movement code.
 # Usage: python3 tools/env_roads.py OUTDIR [WxH] [--shots]   (--shots: the views only, no checks)
 import asyncio, sys, json, os, math
 from playwright.async_api import async_playwright
@@ -24,9 +24,16 @@ X = 8000                                    # the road area's origin (World.ROAD
 SX, SZ = 24, -300                           # road-local = SARO + (24, 0, -300) (geo.ts)
 NIGHT = 1 * 3600 + 20 * 60                  # 01:20, the dead of the night
 DAWN = 5 * 3600 + 20 * 60                   # 05:20, the old road as chapter six has it
-# draw calls on High at each view before this pass (19 October, RTX 3080, 1280x800)
+# draw calls on High at each view before this pass (main at 048fcd1, 19 October, RTX 3080, 1280x800)
 BEFORE = {'r1_highway_from_the_shoulder': 326, 'r2_service_road_and_pad': 293, 'r3_motel_lot': 369, 'r4_caliche_main_street': 56,
           'r5_diner_lot_from_the_highway': 92, 'r6_ranch_road_in_the_headlights': 337, 'r7_survey_track_in_the_headlights': 50, 'r8_old_road_at_dawn': 50}
+# What the round's five parts may add to a view on High together, over BEFORE (the same in
+# env_ground, env_roads, env_buildings, env_interiors and env_atmosphere). Each part was held to 15
+# in its own branch, but they meet in the same views: a part's share of a view is about six (the
+# ground cover's five meshes; the life's moths, far lights and lying tumbleweeds; the roads' wear
+# and lots; a lot's props, stains and pools; a room's things and dirt), five of them thirty. A view
+# over it has a part costing twice its share, or a sixth thing in it: a real overshoot.
+SHARED = 30
 checks = []
 def check(ok, what): checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
 
@@ -124,7 +131,8 @@ async def main():
           out.lot = []; out.grass = [];
           S47.scene.traverse((o) => { const m = o.material;
             if (m && m.map && m.map.name === 'lotAsphalt' && !out.lot.includes(m.map.image.width)) out.lot.push(m.map.image.width);
-            if (o.userData.lowRange !== undefined) out.grass.push([o.name, o.userData.lowRange, o.geometry.index.count, o.geometry.drawRange.count === Infinity ? -1 : o.geometry.drawRange.count]); });
+            // (the grounds with the grass in them; the dressing's props, weathering.ts, have a Low range too)
+            if (o.userData.lowRange !== undefined && o.geometry.index) out.grass.push([o.name, o.userData.lowRange, o.geometry.index.count, o.geometry.drawRange.count === Infinity ? -1 : o.geometry.drawRange.count]); });
           return out; })()"""
         hi_sheen = await ev(SHEEN)
         await ev("S47.setQuality('low'); S47.tick(0.1)")
@@ -140,8 +148,8 @@ async def main():
             await b.close(); return
 
         # ---------- draw calls ----------
-        over = {k: (v, BEFORE[k]) for k, v in high.items() if k in BEFORE and v > BEFORE[k] + 15}
-        check(not over and all(k in high for k in BEFORE), f'at most 15 more draw calls than before at every view on High ({ {k: high[k] for k in BEFORE} }; before {BEFORE})')
+        over = {k: (v, BEFORE[k]) for k, v in high.items() if k in BEFORE and v > BEFORE[k] + SHARED}
+        check(not over and all(k in high for k in BEFORE), f'at most {SHARED} more draw calls than before the round at every view on High, its five parts together ({ {k: high[k] - BEFORE[k] for k in BEFORE} } more; before {BEFORE})')
         house = [high[k] for k in ('r1_highway_from_the_shoulder', 'r2_service_road_and_pad')]
         check(max(house) <= 340, f'by the house SARO keeps the grounds\' budget of 340 ({house})')
         more = {k: (low[k], high[k]) for k in high if low[k] > high[k]}
@@ -161,21 +169,28 @@ async def main():
         # what it adds: the same view with the sheen turned off, on the highway under SARO's lamps
         # (the stretch between the lamps and the eye, where their reflection lies: a narrow column
         # where the road is damp, so the pixels it brightens are counted, not the mean, which the
-        # picture's exposure moves the other way)
+        # picture's exposure moves the other way). The picture without it is the same frame drawn
+        # again, not a step later, and both without the ground cover: its grass sways with the
+        # clock on the wall (wind.ts), so between the two pictures the verge's tufts had moved (in
+        # one run in three under load more pixels darker than the sheen made brighter)
         from PIL import Image, ImageChops
+        WET_OFF = "S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } })"
+        WET_ON = "S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } })"
+        AGAIN = "S47.renderer.info.reset(); S47.vhs.render(S47.scene, S47.camera, performance.now() / 1000)"
+        COVER = "S47.world.flora.patches.forEach((f) => { f.group.visible = %s; })"
         CROP = (int(W * 0.52), int(H * 0.47), int(W * 0.75), int(H * 0.62))
         def lit_by(a, b): return sum(ImageChops.subtract(Image.open(a).convert('L').crop(CROP), Image.open(b).convert('L').crop(CROP)).histogram()[9:])
-        await go(VIEWS[0]); await ev("S47.tick(1.0)"); await ev("S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/sheen_on.png')
-        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } }); S47.tick(0.05)")
+        await go(VIEWS[0]); await ev("S47.tick(1.0)"); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/sheen_on.png')
+        await ev(f"{WET_OFF}; {AGAIN}")
         await pg.screenshot(path=f'{OUT}/sheen_off.png')
-        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } }); S47.tick(0.05)")
+        await ev(f"{WET_ON}; {COVER % 'true'}; S47.tick(0.05)")
         on, off = lit_by(f'{OUT}/sheen_on.png', f'{OUT}/sheen_off.png'), lit_by(f'{OUT}/sheen_off.png', f'{OUT}/sheen_on.png')
         check(on > 500 and on > off * 2.5, f'the damp sheen catches SARO\'s lamps on the highway: {on} pixels of the road there brighter with it, {off} darker')
         # and not the truck's own headlights: on the highway out of town, in the beam ahead
-        await go(EXTRA[1]); await ev("S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/beam_on.png')
-        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } }); S47.tick(0.05)")
+        await go(EXTRA[1]); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/beam_on.png')
+        await ev(f"{WET_OFF}; {AGAIN}")
         await pg.screenshot(path=f'{OUT}/beam_off.png')
-        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } }); S47.tick(0.05)")
+        await ev(f"{WET_ON}; {COVER % 'true'}; S47.tick(0.05)")
         await stop_driving()
         CROP = (int(W * 0.3), int(H * 0.47), int(W * 0.7), int(H * 0.56))
         beam = lit_by(f'{OUT}/beam_on.png', f'{OUT}/beam_off.png')
@@ -221,8 +236,12 @@ async def main():
                   if (++n > {limit}) return [false, x, z, p.pos.x, p.pos.z]; }} }}
               return [true, p.pos.x, p.pos.z]; }})()''')
         await ev("S47.world.enter('saro'); S47.player.place(9.8, 17.6, Math.PI); S47.tick(0.1)")
-        r = await walk([[9.8, 20.5], [8.6, 23.3], [4.0, 24.5], [-6.0, 24.5], [-16.0, 27.0], [-24.0, 36.0], [-24.0, 300.0], [-24.0, 640.0], [-31.0, 662.0], [-34.5, 690.0], [-39.1, 692.0], [-39.1, 717.0]])
-        check(r[0], 'down the ramp, along the service road over its oil and rubber, down the highway to the motel and over its lot to the stalls' + ('' if r[0] else f' (stuck going to {r[1]},{r[2]} at {r[3]:.2f},{r[4]:.2f})'))
+        # (at the motel the guests' pickup and sedan stand nose in to the rooms over the stalls' oil,
+        # world/dressMotel.ts: the way goes round their noses, along the front of the lot past the
+        # pickup, the empty stalls by the pool, the covered walk past the sedan, into the last stall)
+        r = await walk([[9.8, 20.5], [8.6, 23.3], [4.0, 24.5], [-6.0, 24.5], [-16.0, 27.0], [-24.0, 36.0], [-24.0, 300.0], [-24.0, 640.0], [-31.0, 662.0], [-34.5, 690.0],
+                        [-39.1, 690.5], [-40.0, 692.0], [-40.0, 697.0], [-39.1, 698.5], [-39.1, 708.5], [-42.0, 710.0], [-42.0, 716.5], [-39.1, 717.0]])
+        check(r[0], 'down the ramp, along the service road over its oil and rubber, down the highway to the motel and over its lot to the stalls, round the parked cars' + ('' if r[0] else f' (stuck going to {r[1]},{r[2]} at {r[3]:.2f},{r[4]:.2f})'))
         await ev("S47.world.enter('diner'); S47.world.placeAtDiner('arrive'); S47.tick(0.3)")
         r = await walk([[X - 10, 2021], [X - 8, 2045], [X - 7.6, 2066], [X - 13, 2096], [X - 13.9, 2100], [X - 13.9, 2111], [X - 13.1, 2114], [X - 13.1, 2180], [X + 17.6, 2190], [X + 17.8, 2060]])
         check(r[0], "Caliche on foot: the diner's lot, the gas station's apron by the pumps, the west sidewalk past the laundromat, across and up the east side" + ('' if r[0] else f' (stuck going to {r[1]},{r[2]} at {r[3]:.2f},{r[4]:.2f})'))

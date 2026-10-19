@@ -6,7 +6,8 @@
 # Calm, rare and cheap: at fixed views at SARO, the motel, Caliche and on the track it shoots the
 # night on High (OUTDIR/<view>.png), and the same frame with the life switched off beside it
 # (OUTDIR/<view>_pair.png), and checks what it costs in draw calls (at most 15 more per area, the
-# budgets of the control room and SARO's grounds kept), that it is there where it should be (a
+# budgets of the control room and SARO's grounds kept, and every view at most SHARED more than
+# before the round for its five parts together), that it is there where it should be (a
 # lamp's moths, the dust in a beam, the car moving, the tumbleweed rolling) and not where it should
 # not (indoors, at dawn, when a lamp goes out, bats late in the night), that Low has less of it and
 # no more draw calls, that the moths and the dust still show on a phone's screen (844x390) and at
@@ -59,6 +60,15 @@ VIEWS = {
     'town':    (8000.5, 2114.0, 2.51, 0.36),   # under a street lamp in Caliche
 }
 LIFE = "(() => { const L = S47.world.life; return L ? L.stats() : null; })()"
+# the draw calls of each view on High before the round (--before, main at 048fcd1, 19 October, the
+# graphics card), and what the round's five parts may add to a view together (the same in
+# env_ground, env_roads, env_buildings, env_interiors and env_atmosphere). Each part was held to 15
+# in its own branch, but they meet in the same views: a part's share of a view is about six (the
+# ground cover's five meshes; the life's moths, far lights and lying tumbleweeds; the roads' wear
+# and lots; a lot's props, stains and pools; a room's things and dirt), five of them thirty. A view
+# over it has a part costing twice its share, or a sixth thing in it: a real overshoot.
+BEFORE_ROUND = {'hwylamp': 136, 'door': 298, 'east': 27, 'motel': 49, 'flash': 322, 'room': 112, 'far': 73, 'town': 41, 'track': 54}
+SHARED = 30
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
@@ -313,6 +323,10 @@ async def main():
 
         print('draw calls:', json.dumps(calls))
         json.dump(calls, open(f'{OUT}/calls.json', 'w'), indent=1)
+        if has:
+            # with the rest of the round in the same views: over main before it
+            more = {k: calls[k] - v for k, v in BEFORE_ROUND.items() if k in calls}
+            check(len(more) == len(BEFORE_ROUND) and all(v <= SHARED for v in more.values()), f'every view at most {SHARED} draw calls over main before the round, its five parts together: {more}')
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
         await b.close()

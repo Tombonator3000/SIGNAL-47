@@ -3,11 +3,12 @@
 # Caliche's street and STATION 01's hut. Takes the same eight views every time on High (the
 # before and after pictures), prints the draw calls there and on Low, and checks: every area is
 # dressed; the draw calls stay in budget (SARO outside 340 as tools/grounds.py, the control room
-# about 300, the others what they were plus 15); Low leaves the small things, the stains and the
-# light pools out; nothing stands in front of the lettering on the wing; the new props hold
-# the player; and the player still walks where it matters
-# with the real movement code (round SARO's house and its wing, the motel's lot to the office and
-# room 6, the diner's lot to its door, Caliche's street, STATION 01's gate to the hut and the pier).
+# about 300, every view at most SHARED more than before the round for all five of its parts
+# together); Low leaves the small things, the stains and the light pools out; nothing stands in
+# front of the lettering on the wing; the new props hold the player; and the player still walks
+# where it matters with the real movement code (round SARO's house and its wing, the motel's lot
+# to the office and room 6, the diner's lot to its door, Caliche's street, STATION 01's gate to
+# the hut and the pier).
 # Usage: python3 tools/env_buildings.py OUTDIR [WxH] [--shots-only]
 #   S47_URL=file:///.../index.html takes the pictures of another build (--shots-only: the BEFORE).
 import asyncio, sys, json, os, math
@@ -35,11 +36,18 @@ VIEWS = [
     ('b07_caliche', 'diner', X - 5.0, 2094.0, X - 17.0, 2078.0, 0.05),       # the gas station's bay: tyres, drums, the machine by the office
     ('b08_station', 'station01', -6.0, SZ + 11.0, -11.0, SZ + 3.0, 0.04),    # the hut, its render, the shed
 ]
-# the draw calls on High before this work (the same views, the build of 19 October before it), and
-# the most each may have now: SARO's outside is held by grounds.py's 340, the rest by 15 more
+# the draw calls on High before this work (the same views, main at 048fcd1 on 19 October, before
+# the round), and the most each may have now: SARO's outside is held by grounds.py's 340 too
 BEFORE = {'b01_saro_south': 319, 'b02_saro_wing': 315, 'b03_saro_back': 154, 'b04_saro_north': 307, 'b05_motel': 57,
           'b06_diner': 83, 'b07_caliche': 106, 'b08_station': 59, 'b00_control_room': 211}
 AREA = {'saro': 'grounds', 'motel': 'motel', 'diner': 'diner', 'town': 'town', 'station01': 'site'}
+# What the round's five parts may add to a view on High together, over BEFORE (the same in
+# env_ground, env_roads, env_buildings, env_interiors and env_atmosphere). Each part was held to 15
+# in its own branch, but they meet in the same views: a part's share of a view is about six (the
+# ground cover's five meshes; the life's moths, far lights and lying tumbleweeds; the roads' wear
+# and lots; a lot's props, stains and pools; a room's things and dirt), five of them thirty. A view
+# over it has a part costing twice its share, or a sixth thing in it: a real overshoot.
+SHARED = 30
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
@@ -84,9 +92,12 @@ async def main():
         lo['b00_control_room'] = await room_calls()
         await at(*VIEWS[1][1:])
         await pg.screenshot(path=f'{OUT}/low_{VIEWS[1][0]}.png')
+        # (the props are one mesh, the big ones first: Low draws it only as far as they go)
         low_hidden = await ev("""(() => { const w = S47.world, ds = [w.grounds, w.motel, w.diner, w.town, w.site].map((a) => a && a.dressing);
-          if (ds.some((d) => !d)) return null;
-          return ds.every((d) => !d.fine.visible && d.core.visible && d.group.children.filter((c) => c.userData.highOnly && c.isMesh).every((m) => !m.visible)); })()""")
+          if (ds.some((d) => !d || !d.props)) return null;
+          return ds.every((d) => { const p = d.props, all = p.geometry.attributes.position.count;
+            return p.visible && p.userData.lowRange > 0 && p.userData.lowRange < all && p.geometry.drawRange.count === p.userData.lowRange
+              && d.group.children.filter((c) => c.userData.highOnly && c.isMesh).every((m) => !m.visible); }); })()""")
         # Ultra on a computer: the props cast and take the real lamps' shadows (core/ultra.ts)
         await ev("S47.setQuality('ultra')")
         for v in (VIEWS[1], VIEWS[7]):
@@ -94,7 +105,8 @@ async def main():
             await pg.screenshot(path=f'{OUT}/ultra_{v[0]}.png')
         await ev("S47.setQuality('high')")
         high_shown = await ev("""(() => { const w = S47.world, ds = [w.grounds, w.motel, w.diner, w.town, w.site].map((a) => a && a.dressing);
-          return !ds.some((d) => !d) && ds.every((d) => d.fine.visible && d.group.children.filter((c) => c.isMesh).every((m) => m.visible)); })()""")
+          return !ds.some((d) => !d || !d.props) && ds.every((d) => d.props.geometry.drawRange.count >= d.props.geometry.attributes.position.count
+            && d.group.children.filter((c) => c.isMesh).every((m) => m.visible)); })()""")
         print('draw calls on High:', json.dumps(hi))
         print('draw calls on Low: ', json.dumps(lo))
         json.dump({'high': hi, 'low': lo}, open(f'{OUT}/calls.json', 'w'), indent=1)
@@ -120,8 +132,8 @@ async def main():
         check(not hits, 'nothing of the dressing stands in front of the SARO lettering on the wing' + (f' (at {hits[:6]})' if hits else ''))
 
         # ---------- the budget ----------
-        over = [f'{k} {hi[k]} (before {BEFORE[k]})' for k in hi if hi[k] > BEFORE[k] + 15]
-        check(not over, 'no view costs more than 15 draw calls over what it did: ' + (', '.join(over) if over else ', '.join(f'{k} +{hi[k] - BEFORE[k]}' for k in hi)))
+        over = [f'{k} {hi[k]} (before {BEFORE[k]})' for k in hi if hi[k] > BEFORE[k] + SHARED]
+        check(not over, f'no view costs more than {SHARED} draw calls over main before the round (the five parts together): ' + (', '.join(over) if over else ', '.join(f'{k} +{hi[k] - BEFORE[k]}' for k in hi)))
         saro = max(hi[v[0]] for v in VIEWS if v[1] == 'saro' and not v[0].startswith('b05'))
         check(saro <= 340, f'SARO outside at most 340 draw calls on High ({saro}, tools/grounds.py)')
         check(hi['b00_control_room'] <= 300, f"the control room where the night begins, under its 300 ({hi['b00_control_room']})")
