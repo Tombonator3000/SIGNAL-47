@@ -574,7 +574,7 @@ Bevisbordet i `ui/Board.ts` får korken, rammen, stiftene og garnet i stedet for
 
 ## Runde 16: horisonten som malt bakteppe (Tom, 19. oktober)
 
-Levert av Codex 19. oktober (innebygd bildegenerator, `sky/MANIFEST.md`, kontroller i `production/round16/`) og bygget inn samme dag i grenen `horizon-backdrop`: `world/backdrop.ts`, `tools/backdrop.py`.
+Levert av Codex 19. oktober (innebygd bildegenerator, `sky/MANIFEST.md`, kontroller i `production/round16/`) og bygget inn samme dag i grenen `horizon-backdrop`: `world/backdrop.ts`, `tools/backdrop.py`. Andre pass etter art director samme dag, uten nye bilder: jevn dis på hele mesakroppen og en fot på 0,32 grader i fargen landet har der det slutter, grålysningsbildet flatet ut og blågrått til sola er oppe, mesaen sola står opp bak og en høyere mesa i sør (et speilvendt utsnitt av veggen i vest) tegnes i shaderen, og båndet dipper under kameraet etter høyden.
 
 Tom: «et malt bakteppe av horisonten og mesaene laget av konseptbildene, siden spilleren aldri kommer nær dem». I dag er horisonten lavpolygon-mesaer i kode (`world/horizon.ts`, `drive/OldRoad.ts`). De fjerne ringene byttes mot ett malt bånd hele veien rundt, som spillet legger på en sylinder langt ute og blander med sin egen himmel og dis. Målet er konseptbildene i `concept/night_20261018/` (særlig `roswell_road_empty_truck.jpg`, `station01_cut_cable.jpg`, `saro_peripheral_glimpse.jpg` og `caliche_main_street.jpg`).
 

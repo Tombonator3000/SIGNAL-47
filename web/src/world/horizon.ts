@@ -30,7 +30,10 @@ export function hazed<M extends THREE.Material>(m: M): M {
 }
 
 // ---------- near STATION 01: mesas, like the concept art ----------
-// A little lighter on the cliffs that face the moon, darker on the slopes and the tops.
+// A little lighter on the cliffs that face the moon, darker on the slopes and the tops. No lighter
+// than the painted horizon's mesas behind them (backdrop.ts), which have more air in front of them,
+// and with little between the faces of the tiers and the dark ledges, or they read as stacked
+// plastic next to the painted cliffs (the art director, 19 October).
 // Station-local terms; ground: the height under them (the station's land, which out there is
 // the road's, geo.ts).
 export function stationMesas(ground: (x: number, z: number) => number) {
@@ -44,7 +47,7 @@ export function stationMesas(ground: (x: number, z: number) => number) {
     const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(d, a)).normalize();
     const mid = a.clone().add(b).add(c).add(d).multiplyScalar(0.25);
     if (n.dot(mid.sub(from)) < 0) n.negate();
-    const k = (0.7 + 0.75 * Math.max(0, n.dot(moon))) * (0.85 + R0() * 0.3);
+    const k = (0.82 + 0.4 * Math.max(0, n.dot(moon))) * (0.93 + R0() * 0.14);
     const L = lo.map((v) => v * k), H = hi.map((v) => v * k);
     tri(a, b, c, L, L, H); tri(a, c, d, L, H, H);
   };
@@ -71,7 +74,7 @@ export function stationMesas(ground: (x: number, z: number) => number) {
     const ledge = ring(1.03, () => height * 0.66);
     const ledgeIn = ring(1.0, () => height * 0.67);
     const rim = ring(0.97, (_x, _z, i) => rim0[i]);
-    const talus = [0.009, 0.0085, 0.011], cliffLo = [0.011, 0.01, 0.013], cliffHi = [0.026, 0.021, 0.022], cap = [0.0075, 0.0075, 0.0105];
+    const talus = [0.0062, 0.0062, 0.0082], cliffLo = [0.0072, 0.0071, 0.0092], cliffHi = [0.0112, 0.0102, 0.0118], cap = [0.0066, 0.0067, 0.0088];
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
       quad(foot[i], foot[j], shoulder[j], shoulder[i], talus, talus, centre);

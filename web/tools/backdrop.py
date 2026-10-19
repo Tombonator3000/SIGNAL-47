@@ -10,7 +10,12 @@
 # the picture and in the texture), that it follows the sky's dawn and turns with the sky at
 # STATION 01, that the far mesa rings it took over from are gone, what it costs (one draw call;
 # SARO outside at most 340, the old road at most 90), its texture sizes on Ultra, High and Low,
-# and no console errors.
+# and no console errors. The art director's second pass (19 October): no pale line where the land
+# ends under it at night (against the BEFORE shots), no fog bank under it at dawn on the old road,
+# the mesas no lighter low on their bodies than at their tops, dark against the light towards the
+# sun, the night horizon cold away from the lit places, the near mesas no lighter than the band,
+# a sharp skyline, the sun's mesa in the band where the old road's ring of hills was, and the dip
+# under a high camera.
 # Usage: python3 tools/backdrop.py OUTDIR [WxH] [--shots] [--before DIR] [--low]
 #   --shots: the views and their draw calls only, no checks (the BEFORE pictures on main)
 #   --low: the views on Low as well
@@ -63,6 +68,55 @@ def pair(a, b, out):
     o = Image.new('RGB', (A.width, A.height * 2 + 6), (200, 0, 0))
     o.paste(A, (0, 0)); o.paste(B, (0, A.height + 6)); o.save(out)
 
+HY = """(() => { const T = S47.three, c = S47.camera, d = new T.Vector3(); c.updateMatrixWorld(); c.getWorldDirection(d); d.y = 0; d.normalize();
+  const p = c.position.clone().addScaledVector(d, 4000).project(c); return [(1 - p.y) / 2 * innerHeight, innerHeight / 2 / Math.tan(c.fov * Math.PI / 360)]; })()"""
+# the views whose band is also shot alone (camera layer 5), for its body and skyline
+ALONE = ('b01_saro_west_night', 'b10_saro_east_dawn', 'b11_saro_west_dawn', 'b13_oldroad_west_dawn')
+
+def rowmean(px, y, x0, x1, ch=None):
+    return sum((px[x, y] if ch is None else px[x, y][ch]) for x in range(x0, x1)) / (x1 - x0)
+
+def edge_line(path, hy, cols=(0.1, 0.9)):
+    # a pale line where the land ends under the band: the brightest row just under the horizon
+    # against the band's foot just over it and the land a little nearer
+    im = Image.open(path).convert('L'); w = im.width; px = im.load(); x0, x1 = int(w * cols[0]), int(w * cols[1]); hy = round(hy)
+    line = max(rowmean(px, y, x0, x1) for y in range(hy - 1, hy + 7))
+    above = sum(rowmean(px, y, x0, x1) for y in range(hy - 6, hy - 2)) / 4
+    below = sum(rowmean(px, y, x0, x1) for y in range(hy + 12, hy + 18)) / 6
+    return line - max(above, below), line, above, below
+
+# (the band alone is shot against magenta: a pixel is the band's where it is far from magenta)
+def mag(p): return min(p[0], p[2]) - p[1]
+def lum(p): return 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]
+
+def body_rise(path, hy, f):
+    # the band alone: per column with a mesa over 1.2 degrees, the body at 0.45 to 0.75 degrees
+    # (over the foot) against the body just under its top; the median of low minus high
+    im = Image.open(path).convert('RGB'); w = im.width; px = im.load()
+    lo0, lo1 = round(hy - math.tan(math.radians(0.75)) * f), round(hy - math.tan(math.radians(0.45)) * f)
+    hi_edge = round(hy - math.tan(math.radians(1.2)) * f)
+    out = []
+    for x in range(0, w, 3):
+        top = next((y for y in range(max(0, round(hy) - 160), round(hy)) if mag(px[x, y]) < 128), None)
+        if top is None or top > hi_edge: continue
+        up = sum(lum(px[x, y]) for y in range(top + 3, top + 7)) / 4
+        lowv = sum(lum(px[x, y]) for y in range(lo0, lo1 + 1)) / (lo1 - lo0 + 1)
+        out.append(lowv - up)
+    out.sort()
+    return (out[len(out) // 2] if out else None), len(out)
+
+def skyline_width(path, hy):
+    # the band alone: per column, how many rows the skyline takes from a fifth to four fifths of the way from magenta to the body
+    im = Image.open(path).convert('RGB'); w = im.width; px = im.load(); out = []
+    for x in range(0, w, 3):
+        top = next((y for y in range(max(0, round(hy) - 160), round(hy)) if mag(px[x, y]) < 230), None)
+        if top is None or top + 8 >= hy: continue
+        body = mag(px[x, top + 6])
+        if body > 60: continue
+        out.append(sum(1 for y in range(top - 3, top + 6) if 0.2 < (255 - mag(px[x, y])) / (255 - body) < 0.8))
+    out.sort()
+    return (out[len(out) // 2] if out else None), len(out)
+
 def seam(path, rows):
     # the step from one column to the next across the middle of the picture (where the join is when
     # the camera looks along it) against the steps beside it, in the band's rows
@@ -106,6 +160,12 @@ async def main():
             if await ev("S47.world.free !== null && S47.world.driving"):
                 await ev("S47.world.endFreeDrive()"); await ev("S47.tick(0.2)")
 
+        async def alone(path):
+            # the band alone, against the scene's plain background (camera layer 5)
+            await ev("document.getElementById('ui').style.visibility = 'hidden'; S47.backdrop.mesh.layers.enable(5); S47.camera.layers.set(5); window.__bg = S47.scene.background; S47.scene.background = new S47.three.Color(1, 0, 1); S47.tick(0)")
+            await pg.screenshot(path=path)
+            await ev("document.getElementById('ui').style.visibility = ''; S47.camera.layers.set(0); S47.backdrop.mesh.layers.disable(5); S47.scene.background = window.__bg; S47.tick(0)")
+
         async def go(v):
             name, area, x, z, az, pitch, clock = v
             await ev(f"S47.game.clock = {clock}")
@@ -132,11 +192,13 @@ async def main():
                 await ev(f"(() => {{ const w = S47.world, L = w.legs.roswell, p = w.oldRoad.poseAt({x}); L.drive.place(p.pos, p.heading + {back}); }})()")
                 await ev("S47.tick(0.6)")
 
-        high, low, shown, seams = {}, {}, {}, {}
+        high, low, shown, seams, hz = {}, {}, {}, {}, {}
         for v in VIEWS:
             await go(v)
             await pg.screenshot(path=f'{OUT}/{v[0]}.png')
             high[v[0]] = await calls()
+            hz[v[0]] = await ev(HY)
+            if band and v[0] in ALONE: await alone(f'{OUT}/{v[0]}_alone.png')
             line = f'{v[0]}: {high[v[0]]} draw calls on High'
             if band:
                 # the same picture without the band: where the horizon shows, the band changes it
@@ -157,7 +219,7 @@ async def main():
                 low[v[0]] = await calls()
             await ev("S47.setQuality('high'); S47.tick(0.1)")
         await stop_driving()
-        json.dump({'high': high, 'low': low, 'size': [W, H]}, open(f'{OUT}/backdrop_calls.json', 'w'), indent=1)
+        json.dump({'high': high, 'low': low, 'size': [W, H], 'horizon': hz}, open(f'{OUT}/backdrop_calls.json', 'w'), indent=1)
 
         if not SHOTS_ONLY:
             check(band, 'the painted band is in the game (S47.backdrop)')
@@ -193,6 +255,55 @@ async def main():
                 # (SARO's and the road's 'horizon' groups hold only the near mesas now, STATION 01 its own)
                 rings = await ev("(() => { const out = []; S47.scene.traverse((o) => { if (o.name === 'horizon') out.push(o.children.map((c) => c.name)); }); let st = 0; S47.world.site.group.traverse((o) => { if (o.name === 'mesas') st++; }); return [out, st]; })()")
                 check(len(rings[0]) == 2 and all(r == ['mesas:near'] for r in rings[0]) and rings[1] == 1, f'the far mesa rings are gone and the near mesas stay (SARO and the road: {rings[0]}, STATION 01: {rings[1]})')
+                far = await ev("!!S47.world.oldRoad && S47.world.oldRoad.far === undefined && !S47.world.oldRoad.group.getObjectByProperty('renderOrder', -5)")
+                check(far, "the old road's ring of hills is gone: the sun's mesa is the band's")
+
+                # ---------- the art director's second pass ----------
+                # no pale line where the land ends under it at night: at most 60 per cent of the one before, or a trace
+                for k in ('b01_saro_west_night', 'b02_saro_east_night', 'b07_diner_lot_north', 'b09_station_east'):
+                    hy = hz[k][0]
+                    ex, ln, ab, bl = edge_line(f'{OUT}/{k}.png', hy)
+                    msg = f'{k}: the land\'s far edge {ln:.0f} against the foot over it {ab:.0f} and the land under it {bl:.0f} (a line of {ex:+.1f})'
+                    if BEFORE_DIR and os.path.exists(f'{BEFORE_DIR}/{k}.png'):
+                        ex0 = edge_line(f'{BEFORE_DIR}/{k}.png', hy)[0]
+                        check(ex <= max(4.0, 0.6 * ex0), msg + f', {ex0:+.1f} before')
+                    else:
+                        check(ex <= 12, msg)
+                # at dawn on the old road: no fog bank under them; towards the sun dark against the light
+                for k, most in (('b13_oldroad_west_dawn', 0.6), ('b12_oldroad_east_dawn', 0.5)):
+                    hy = round(hz[k][0]); im = Image.open(f'{OUT}/{k}.png').convert('L'); px = im.load(); x0, x1 = int(W * 0.35), int(W * 0.95)
+                    foot = sum(rowmean(px, y, x0, x1) for y in range(hy - 5, hy - 1)) / 4
+                    sky = max(rowmean(px, y, x0, x1) for y in range(max(0, hy - 120), hy - 50))
+                    check(foot <= most * sky, f'{k}: the foot of the band {foot:.0f} against the sky over it {sky:.0f} (at most {most:.0%})')
+                # the mesas no lighter low on their bodies than at their tops (the band alone)
+                for k in ALONE:
+                    if k == 'b10_saro_east_dawn': continue
+                    r, n = body_rise(f'{OUT}/{k}_alone.png', *hz[k])
+                    check(r is not None and r <= 4.0, f'{k}: the body over the foot no lighter than under the top, within the picture\'s own grain ({r if r is None else round(r, 1)} of 255, {n} columns)')
+                # a sharp skyline on High (the pictures are 128 rows): at most two rows from dark to the body
+                r, n = skyline_width(f'{OUT}/b10_saro_east_dawn_alone.png', hz['b10_saro_east_dawn'][0])
+                check(r is not None and r <= 2, f'the skyline takes {r} rows on High at {W}x{H} (median of {n} columns)')
+                # the night horizon cold away from the lit places (none in view from the station looking east)
+                for k in ('b09_station_east', 'b02_saro_east_night'):
+                    hy = round(hz[k][0]); im = Image.open(f'{OUT}/{k}.png').convert('RGB'); px = im.load(); x0, x1 = int(W * 0.3), int(W * 0.7)
+                    rgb = [sum(rowmean(px, y, x0, x1, ch) for y in range(hy - 50, hy - 30)) / 20 for ch in range(3)]
+                    check(rgb[2] - rgb[0] >= 8, f'{k}: the sky over the band cold ({[round(c) for c in rgb]})')
+                # the near mesas no lighter than the band's bodies at night, and less of the dawn's haze
+                near = await ev("(() => { const m = S47.scene.getObjectByName('mesas:near'); return Math.max(...m.geometry.attributes.color.array); })()")
+                check(near <= 0.016, f'the near mesas no lighter than the band ({near:.4f} at most, linear)')
+                # the sun's mesa in the band: on the old road at 05:30, the band 0.45 degrees or more up at its azimuth
+                await go(('s', 'oldroad', 4.0, 0, 70, 0.0, 5 * 3600 + 30 * 60))
+                col = await ev(f"(() => {{ const T = S47.three, c = S47.camera, a = {81} * Math.PI / 180; c.updateMatrixWorld(); const p = c.position.clone().add(new T.Vector3(Math.sin(a), 0, -Math.cos(a)).multiplyScalar(4000)).project(c); return [(p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight, innerHeight / 2 / Math.tan(c.fov * Math.PI / 360)]; }})()")
+                await alone(f'{OUT}/sun_mesa_alone.png')
+                im = Image.open(f'{OUT}/sun_mesa_alone.png').convert('RGB'); px = im.load()
+                cx, hy, f = round(col[0]), col[1], col[2]
+                rows = max(sum(1 for y in range(round(hy) - 40, round(hy)) if mag(px[x, y]) < 128) for x in range(cx - 2, cx + 3)) if 0 < cx < W else 0
+                check(rows >= math.tan(math.radians(0.45)) * f, f'the sun\'s mesa in the band at azimuth 81: {rows} rows over the horizon ({math.tan(math.radians(0.6)) * f:.1f} for 0.6 degrees)')
+                # the dip: none to speak of from the truck, atan(h / 20 km) from the air
+                dip = await ev("S47.backdrop.uniforms.uDip.value")
+                check(dip < 0.03, f'from the truck the band dips {dip:.3f} degrees')
+                dip = await ev("(() => { const b = S47.backdrop, f = S47.scene.fog; b.update(f.color, f.density, true, 300, [], S47.camera.position, 0); return b.uniforms.uDip.value; })()")
+                check(abs(dip - math.degrees(math.atan(300 / 20000))) < 0.005, f'300 m up it dips {dip:.3f} degrees')
                 # the cost: one draw call; the budgets of the areas
                 await go(('c', 'saro', -14.0, 50.0, 262, 0.03, NIGHT))
                 on = await calls()

@@ -73,9 +73,10 @@ export class Sky {
             vec3 d = normalize(vDir);
             float h = d.y;
             vec3 col = mix(vec3(0.030, 0.034, 0.060), vec3(0.006, 0.009, 0.024), smoothstep(-0.02, 0.55, h));
-            // warm glow low on the horizon (site lights, distant towns): a little all round, and
-            // most over the lit places where they are from here (uGlow; the painted horizon, backdrop.ts)
-            float glow = 0.4;
+            // warm glow low on the horizon (site lights, distant towns): a trace all round, and
+            // most over the lit places where they are from here (uGlow; the painted horizon, backdrop.ts):
+            // away from them the horizon goes to a cold blue (the concept art of the night)
+            float glow = 0.15;
             vec2 hd = normalize(d.xz + vec2(1e-5, 0.0));
             for (int i = 0; i < ${GLOWS}; i++) {
               float t = acos(clamp(dot(hd, uGlow[i].xy), -1.0, 1.0)) / uGlow[i].w;

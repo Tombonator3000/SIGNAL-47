@@ -659,6 +659,17 @@ export class World {
     return out;
   }
   private skyOut: SkyPlace[] = [];
+  /** The height of the land under a point in the area shown (the painted horizon dips under the
+   *  camera by its height over it, backdrop.ts): SARO's ground and the road's south of it, the
+   *  road's, STATION 01's, the old road's; in room 6 the floor. */
+  groundUnder(p: THREE.Vector3) {
+    const a = this.area;
+    if (a === 'saro') return p.z > WEST.z1 ? this.grounds.floorAt(p.x, p.z) : -0.62;
+    if (a === 'road' || a === 'diner') return surfaceY(p.x - ROAD_ORIGIN.x, p.z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y;
+    if (a === 'station01' && this.site) return this.site.groundAt(p.x, p.z);
+    if (a === 'roswell' && this.oldRoad) return this.oldRoad.height(p.x, p.z);
+    return p.y - 1.6;
+  }
   private skyPts: SkyPlace[] = SKY_PLACES.map(() => ({ x: 0, z: 0, r: 1, k: 0 }));
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
@@ -1197,13 +1208,13 @@ export class World {
     for (const h of this.herds) if (h.area === herdArea) h.update(t, lamps ?? null);
     // the dawn's haze on the near mesas (horizon.ts), as on the land in front of them; none at night.
     // Less than the painted horizon behind them takes (backdrop.ts), or the nearer would look the
-    // farther: flat pale slabs in front of the far mesas' ledges.
+    // farther: flat pale slabs in front of the far mesas' ledges; they stay darker than the band.
     if (this.area !== 'roswell') {
       const sk = this.d.sky();
       // the same haze as the land's (main.ts darkens it a little at dawn out here)
       const fog = this.d.scene.fog as THREE.FogExp2 | null;
       horizonHaze.color.value.copy(fog?.color ?? sk.fog);
-      horizonHaze.k.value = Math.min(0.5, sk.dawn * 1.7);
+      horizonHaze.k.value = Math.min(0.3, sk.dawn);
       horizonHaze.density.value = (this.d.scene.fog as THREE.FogExp2 | null)?.density ?? FOG;
     }
     // the diner's own sky light near it, the road's night light up the road (both in one scene)

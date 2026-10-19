@@ -67,6 +67,10 @@ const store = {
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** How much of the sky's haze the far land takes at night and at dawn in the night areas (main.ts
+ *  loop; on the old road all of it at dawn): no lighter than the foot of the painted mesas behind it. */
+const NIGHT_FOG = 0.3, DAWN_FOG = 0.42;
+
 async function boot() {
   const ui = new UI();
   const loading = ui.loading();
@@ -1480,11 +1484,14 @@ async function boot() {
     sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
     sky.setClock(mode === 'title' ? 0 : game.clock, mode === 'title' ? null : game.ch6.sunElev);
     // out in the night areas the haze over the far land stays darker than the dawn sky behind the
-    // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02)
-    const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
-    if (world.area !== 'roswell') fogC.multiplyScalar(1 - 0.45 * THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35));
-    // the painted horizon: the area's haze at its foot, the lit places' glow where they are from here
-    backdrop.update(fogC, Math.min(0.9, sky.uniforms.uDawn.value * 3), world.area === 'roswell', world.skyPlaces(), camera.position, world.skyYaw);
+    // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02).
+    // At night the far land is as dark as the foot of the painted mesas behind it (backdrop.ts): at
+    // the sky's own haze it was a pale cold line all round under them (the art director, 19 October)
+    const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor), dawnK = THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35);
+    fogC.multiplyScalar(world.area !== 'roswell' ? THREE.MathUtils.lerp(NIGHT_FOG, DAWN_FOG, dawnK) : THREE.MathUtils.lerp(NIGHT_FOG, 1, dawnK));
+    // the painted horizon: the area's air, the land where it ends, the lit places' glow where they are from here
+    backdrop.update(fogC, (scene.fog as THREE.FogExp2).density, world.area === 'roswell', camera.position.y - world.groundUnder(camera.position),
+      world.skyPlaces(), camera.position, world.skyYaw);
     ext.update(dt, t);
     yard.update(t);
     annex.update(t);

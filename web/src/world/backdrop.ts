@@ -8,16 +8,29 @@ import { getQuality, type Quality } from '../core/quality';
 // STATION 01 (World.skyYaw), so it is never reached and never moves against the land, like the
 // stars. It is drawn as far as anything can be (behind every mesh in the scene, the near mesas of
 // horizon.ts included) and only over the sky dome, in one draw call: the night picture and the
-// dawn picture in one shader, crossfaded with the sky's own dawn (uDawn), the haze of the area
-// laid over its foot, and the warm glow of SARO and Caliche over the skyline where those places
-// are from the camera (Sky.uGlow, set here from World.skyPlaces). The sky above the land is
+// dawn picture in one shader, crossfaded with the sky's own dawn (uDawn), the air of the area
+// laid over it, and the warm glow of SARO and Caliche over the skyline where those places are
+// from the camera (Sky.uGlow, set here from World.skyPlaces). The sky above the land is
 // transparent: the stars, the Milky Way and the dawn's colours are the sky's.
+//
+// The air (the art director's second pass, 19 October): the same haze on the whole of a mesa,
+// top to foot (a cliff is as far off at its top as at its foot), and only a thin foot, the far
+// plain in front of them, over the lowest FOOT degrees, which at the horizon has the colour of
+// the area's land where it ends (horizonEdge: the land as far as it is seen from here, fogged as
+// much as the area's fog has it there). So they stand on the land, never lighter at the bottom
+// than at the top, with no line of haze between them and the land. Before the sun is up the dawn
+// picture's lit cliffs are held back (flattened, blue-grey away from the sun, a faint pink on
+// the tops at the end) and come in with the sun itself (Sky.uSun); towards the sun they are dark
+// against the light, with only a thin line of its glow along their feet. The band dips under the
+// camera's horizon by its height over the land (horizonDip), so seen from above it still stands
+// on the land; and the mesa the sun comes up behind on the old road is in it (SUN_MESA).
 //
 // The pictures (runtime/horizon_night.webp, horizon_dawn.webp, 4096 x 128: rows 576 to 832 of the
 // 8192 x 1024 originals in sky/ at half size) are 360 degrees wide, north at u = 0 and east at
 // u = 0.25, and cover the elevations EL_BOT to EL_TOP at the same scale both ways. As they are on
 // High (a phone), drawn up to 8192 on Ultra (a computer: a smoother skyline on a big screen) and
-// down to 2048 on Low. Without them a simpler band is painted here in code (paintBand).
+// down to 2048 on Low; the skyline is sharpened in the shader where it is softer than a pixel or
+// two. Without them a simpler band is painted here in code (paintBand).
 
 /** Elevations (degrees) at the top and the bottom of the band's pictures; the horizon is at 0. */
 export const EL_TOP = 8.4375, EL_BOT = -2.8125;
@@ -27,6 +40,25 @@ const R = 2500;
 export const GLOWS = 3;
 /** A lit place on the map: world position, how far across its lights are, how bright (World.skyPlaces). */
 export interface SkyPlace { x: number; z: number; r: number; k: number }
+/** How high (degrees) the thin foot of the mesas is: the far plain in front of them. */
+const FOOT = 0.32;
+/** The mesa the sun comes up behind (KAPITLER.md: the sun takes its edge at 05:30): the middle of
+ *  it (the sun's azimuth, 79, as Sky.setClock and oldRoadLayout.SUN_AZ have it, plus 2), its half
+ *  width and its top over the band's horizon, in degrees. A flat dark silhouette in the band, as far
+ *  as the rest of it; from the old road's truck its top is where the sun's upper edge is at 05:30. */
+export const SUN_MESA = { az: 81, half: 9, top: 0.6 };
+/** The higher mesa to the south, over the end of Caliche's main street (concept art 01; the band
+ *  is low where the highway runs): the middle of it, its half width, where its top is flat, how
+ *  far its ends sink, the middle of the wall in the west it is drawn from (mirrored, its azimuths
+ *  wide times as far apart), and how much lower it is than that wall. */
+const SOUTH_MESA = { az: 182, half: 13.5, flat: 10.5, drop: 3.5, from: 279, wide: 1.15, low: 0.62 };
+/** How far (degrees) the horizon dips under a camera h metres over the land: the band's foot is
+ *  the land some 20 km out, so from the air at the end of chapter six it stands on the land. */
+export const horizonDip = (h: number) => Math.atan(Math.max(0, h) / 20000) * 180 / Math.PI;
+/** The colour of the land where it ends as seen from here (World and main set it each frame through
+ *  Backdrop.update): its own colour (land, linear) fogged by fog (0..1). The band's foot meets it,
+ *  and the old road's far land takes it (OldRoad.ts), so the two are one. */
+export const horizonEdge = { land: { value: new THREE.Color() }, fog: { value: 1 } };
 
 const VS = /* glsl */`
   varying vec3 vDir; varying float vU;
@@ -37,8 +69,9 @@ const VS = /* glsl */`
     gl_Position.z = gl_Position.w * 0.999999;
   }`;
 const FS = /* glsl */`
-  uniform sampler2D uNight, uDay; uniform float uDawn, uGain, uRim, uFootK, uTopK;
-  uniform vec3 uFoot, uSunDir; uniform vec4 uGlow[${GLOWS}];
+  uniform sampler2D uNight, uDay; uniform float uDawn, uSun, uGain, uRim, uBodyK, uDip, uTexel;
+  uniform vec3 uFog, uMesa, uSunDir; uniform vec4 uGlow[${GLOWS}];
+  uniform vec3 uLand; uniform float uEdgeFog;
   varying vec3 vDir; varying float vU;
   vec3 toOut(vec3 c) {
     #if defined( TONE_MAPPING )
@@ -46,23 +79,68 @@ const FS = /* glsl */`
     #endif
     return linearToOutputTexel(vec4(c, 1.0)).rgb;
   }
+  float vOf(float el) { return (el - ${EL_BOT.toFixed(4)}) / ${(EL_TOP - EL_BOT).toFixed(4)}; }
   void main() {
     vec3 d = normalize(vDir);
-    float el = degrees(asin(clamp(d.y, -1.0, 1.0)));
-    float v = (el - ${EL_BOT.toFixed(4)}) / ${(EL_TOP - EL_BOT).toFixed(4)};
-    vec2 uv = vec2(vU, clamp(v, 0.0, 1.0));
+    // the band's own elevation: its horizon dips under the camera's by its height (horizonDip)
+    float el = degrees(asin(clamp(d.y, -1.0, 1.0))) + uDip;
+    float az = vU * 360.0;
+    vec2 uv = vec2(vU, clamp(vOf(el), 0.0, 1.0));
     // the pictures carry their alpha premultiplied (the same mask in both)
-    vec4 c = mix(texture2D(uNight, uv), texture2D(uDay, uv), smoothstep(0.05, 0.75, uDawn));
-    float a = v < 0.0 ? 1.0 : c.a;
-    vec3 col = c.rgb / max(c.a, 1e-4) * uGain;
-    // the haze at its foot: the colour of the area's own far land (its fog), towards the sun on the
-    // old road at dawn (OldRoad.ts rimHaze), all of it under the pictures, less up the cliffs
+    vec4 n = texture2D(uNight, uv);
+    // a higher mesa down the highway to the south, over the end of Caliche's main street, where
+    // the band is low (SOUTH_MESA): the west's high wall, mirrored and lower, its ends sinking
+    // into the plain; drawn from where it is the more solid of the two
+    float ds = mod(az - ${SOUTH_MESA.az.toFixed(1)} + 540.0, 360.0) - 180.0;
+    float sink = ${SOUTH_MESA.drop.toFixed(2)} * smoothstep(${SOUTH_MESA.flat.toFixed(1)}, ${SOUTH_MESA.half.toFixed(1)}, abs(ds));
+    vec2 uvS = vec2((${SOUTH_MESA.from.toFixed(1)} - ds * ${SOUTH_MESA.wide.toFixed(2)}) / 360.0, clamp(vOf((el + sink) / ${SOUTH_MESA.low.toFixed(2)}), 0.0, 1.0));
+    vec4 nS = texture2D(uNight, uvS);
+    float s = (1.0 - step(${SOUTH_MESA.half.toFixed(1)}, abs(ds))) * step(n.a + 0.002, nS.a);
+    vec2 uvF = mix(uv, uvS, s), gx = dFdx(uv), gy = dFdy(uv);
+    n = mix(n, nS, s);
+    vec4 dd = textureGrad(uDay, uvF, gx, gy);
+    float a0 = el < ${EL_BOT.toFixed(4)} ? 1.0 : n.a;
+    // the skyline sharpened where it is softer than about a pixel and a half (128 rows on a phone)
+    float w = clamp(fwidth(a0) * 0.7, 0.002, 0.5);
+    float a = smoothstep(0.5 - w, 0.5 + w, a0);
+    // the mesa the sun comes up behind (SUN_MESA), flat-topped, its sides falling off over 1.8 degrees
+    float dm = abs(mod(az - ${SUN_MESA.az.toFixed(1)} + 540.0, 360.0) - 180.0);
+    float top = ${SUN_MESA.top.toFixed(2)} * (1.0 - smoothstep(${SUN_MESA.half.toFixed(1)}, ${(SUN_MESA.half + 1.8).toFixed(1)}, dm)) * (0.97 + 0.03 * sin(az * 2.7));
+    float ew = max(fwidth(el), 1e-4) * 0.7;
+    float sm = top > 0.0 ? 1.0 - smoothstep(top - ew, top + ew, el) : 0.0;
+    float onSun = sm * (1.0 - smoothstep(0.3, 0.7, a0));
+    a = max(a, sm);
     vec3 h = normalize(vec3(d.x, 0.0, d.z) + vec3(1e-5, 0.0, 0.0));
     float east = 0.5 + 0.5 * dot(h, normalize(vec3(uSunDir.x, 0.0, uSunDir.z) + vec3(1e-5, 0.0, 0.0)));
+    vec3 cn = n.rgb / max(n.a, 1e-4), cd = dd.rgb / max(dd.a, 1e-4);
+    // the dawn picture has the low sun on the cliffs: before it is up, flattened to 60 per cent of
+    // its contrast round the mean about it, blue-grey away from the sun, and a faint pink on the
+    // tops at the end; its lit cliffs come in with the sun (as OldRoad.ts lights the hills)
+    vec4 mm = textureGrad(uDay, uvF, gx * 11.3, gy * 11.3);
+    vec3 mean = mm.rgb / max(mm.a, 1e-4), flt = mix(mean, cd, 0.6);
+    // (away from the sun one dark blue-grey, little left of the cliffs: the concept art's far mesas)
+    vec3 L = vec3(0.2126, 0.7152, 0.0722);
+    vec3 navy = mix(dot(flt, L), dot(mean, L), 0.6) * vec3(0.66, 0.8, 1.27);
+    vec3 pre = mix(flt, navy, 0.85 * (1.0 - east * east));
+    float above = textureGrad(uNight, uvF + vec2(0.0, 2.0 * uTexel), gx, gy).a;
+    pre += vec3(0.05, 0.022, 0.026) * n.a * (1.0 - above) * smoothstep(0.5, 0.9, uDawn) * (1.0 - east);
+    float up = smoothstep(-0.002, 0.012, uSunDir.y) * uSun;
+    // (and before the sun the lower slopes see less of the sky than the tops: a little darker)
+    float low = mix(0.84 + 0.16 * smoothstep(${FOOT.toFixed(2)}, 1.6, el), 1.0, up);
+    vec3 col = mix(cn, mix(pre, cd, up), smoothstep(0.05, 0.75, uDawn)) * uGain * low;
+    col = mix(col, uMesa, onSun);
+    // the air in front of them: the area's fog, on the old road the dawn's haze at the horizon
+    // (OldRoad.ts rimHaze); less of it towards the sun, where they are dark against the light
     vec3 rim = mix(vec3(0.20, 0.23, 0.30), vec3(0.62, 0.42, 0.26), pow(east, 3.0)) + vec3(0.55, 0.30, 0.12) * pow(east, 8.0) * 0.8;
-    vec3 foot = mix(uFoot, mix(uFoot, rim * 0.92, smoothstep(0.0, 1.0, uDawn)), uRim);
-    float haze = el < 0.0 ? mix(uFootK, 1.0, smoothstep(0.0, -0.6, el)) : mix(uFootK, uTopK, smoothstep(0.0, 2.5, el));
-    col = mix(col, foot, haze);
+    vec3 air = mix(uFog, mix(uFog, rim * 0.92, smoothstep(0.0, 1.0, uDawn)), uRim);
+    col = mix(col, air, uBodyK * (1.0 - 0.85 * pow(east, 5.0) * smoothstep(0.1, 0.6, uDawn)));
+    // the foot: the far plain in front of them, at the horizon the colour of the land's far edge
+    // (horizonEdge); towards the sun a thin line of its glow in the haze there; under the horizon
+    // (where an area's land ends short of it, as from above) all edge
+    vec3 edge = mix(uLand, air, uEdgeFog);
+    edge = max(edge, mix(edge, rim * 0.62, pow(east, 8.0) * smoothstep(0.1, 0.8, uDawn) * smoothstep(-0.06, 0.0, el) * uRim));
+    // (taller from the air, where their feet are seen through the haze lying on the land)
+    col = mix(col, edge, 1.0 - smoothstep(0.0, ${FOOT.toFixed(2)} + 2.0 * uDip, el));
     // the glow of the places' lights in the air in front of the far land (the sky's own is in Sky.ts)
     float g = 0.0;
     for (int i = 0; i < ${GLOWS}; i++) {
@@ -74,11 +152,14 @@ const FS = /* glsl */`
     gl_FragColor = vec4(toOut(col) * a, a);
   }`;
 
+const _c = new THREE.Color();
+
 export class Backdrop {
   readonly mesh: THREE.Mesh;
   readonly uniforms: {
-    uNight: { value: THREE.Texture | null }; uDay: { value: THREE.Texture | null }; uDawn: { value: number }; uSunDir: { value: THREE.Vector3 };
-    uGlow: { value: THREE.Vector4[] }; uGain: { value: number }; uRim: { value: number }; uFootK: { value: number }; uTopK: { value: number }; uFoot: { value: THREE.Color };
+    uNight: { value: THREE.Texture | null }; uDay: { value: THREE.Texture | null }; uDawn: { value: number }; uSun: { value: number }; uSunDir: { value: THREE.Vector3 };
+    uGlow: { value: THREE.Vector4[] }; uGain: { value: number }; uRim: { value: number }; uBodyK: { value: number }; uDip: { value: number }; uTexel: { value: number };
+    uFog: { value: THREE.Color }; uMesa: { value: THREE.Color }; uLand: { value: THREE.Color }; uEdgeFog: { value: number };
   };
   /** Tests: keep it hidden (the same picture without it). */
   hold = false;
@@ -86,13 +167,14 @@ export class Backdrop {
   private seam = { at: 0, around: 0 };
   private width = 0;
   constructor(
-    sky: { group: THREE.Group; uniforms: { uDawn: { value: number }; uSunDir: { value: THREE.Vector3 }; uGlow: { value: THREE.Vector4[] } } },
+    sky: { group: THREE.Group; uniforms: { uDawn: { value: number }; uSun: { value: number }; uSunDir: { value: THREE.Vector3 }; uGlow: { value: THREE.Vector4[] } } },
     /** The painted pictures (night, dawn), or null for the band painted in code. */
     private readonly art: { night: CanvasImageSource & { width: number; height: number }; dawn: CanvasImageSource & { width: number; height: number } } | null,
   ) {
     this.uniforms = {
-      uNight: { value: null }, uDay: { value: null }, uDawn: sky.uniforms.uDawn, uSunDir: sky.uniforms.uSunDir, uGlow: sky.uniforms.uGlow,
-      uGain: { value: 1 }, uRim: { value: 0 }, uFootK: { value: 0.5 }, uTopK: { value: 0.06 }, uFoot: { value: new THREE.Color() },
+      uNight: { value: null }, uDay: { value: null }, uDawn: sky.uniforms.uDawn, uSun: sky.uniforms.uSun, uSunDir: sky.uniforms.uSunDir, uGlow: sky.uniforms.uGlow,
+      uGain: { value: 1 }, uRim: { value: 0 }, uBodyK: { value: 0.2 }, uDip: { value: 0 }, uTexel: { value: 1 / 128 },
+      uFog: { value: new THREE.Color() }, uMesa: { value: new THREE.Color() }, uLand: horizonEdge.land, uEdgeFog: horizonEdge.fog,
     };
     const mat = new THREE.ShaderMaterial({
       uniforms: this.uniforms, vertexShader: VS, fragmentShader: FS,
@@ -117,6 +199,7 @@ export class Backdrop {
     const w = q === 'low' ? 2048 : q === 'high' ? 4096 : 8192, h = w / 32;
     if (w === this.width) return;
     this.width = w;
+    this.uniforms.uTexel.value = 1 / h;
     const old = [this.uniforms.uNight.value, this.uniforms.uDay.value];
     const night = this.canvas(w, h, 'night'), dawn = this.canvas(w, h, 'dawn');
     this.seam = seamOf(night);
@@ -133,19 +216,27 @@ export class Backdrop {
     return c;
   }
 
-  /** Every frame: the area's haze at the foot (fog: the colour of its far land; rim: the old road's
-   *  dawn haze towards the sun), and the places that glow, in world terms, seen from cam; yaw is
-   *  how the sky is turned in this area (World.skyYaw). */
-  update(fog: THREE.Color, dawnHaze: number, rim: boolean, places: SkyPlace[], cam: THREE.Vector3, yaw: number) {
+  /** Every frame: the area's air (fog: the scene's fog colour now, density its density; oldRoad: the
+   *  old road's dawn haze instead), how high the camera is over the land (h, m), and the places that
+   *  glow, in world terms, seen from cam; yaw is how the sky is turned in this area (World.skyYaw). */
+  update(fog: THREE.Color, density: number, oldRoad: boolean, h: number, places: SkyPlace[], cam: THREE.Vector3, yaw: number) {
     if (getQuality() !== this.q) this.build(getQuality());
     this.mesh.visible = !this.hold;
-    const u = this.uniforms, dawn = u.uDawn.value;
-    u.uFoot.value.copy(fog);
-    u.uRim.value = rim ? 1 : 0;
-    // as the far mesas of horizon.ts had it: dark against the night sky, a little of the haze on their
-    // feet, more of it as the day comes (dawnHaze, main.ts; the near mesas of horizon.ts take less)
-    u.uFootK.value = 0.3 + 0.45 * dawnHaze;
-    u.uTopK.value = 0.18 * dawnHaze;
+    const u = this.uniforms, dawn = u.uDawn.value, day = THREE.MathUtils.smoothstep(dawn, 0.05, 0.6);
+    u.uFog.value.copy(fog);
+    u.uRim.value = oldRoad ? 1 : 0;
+    u.uDip.value = horizonDip(h);
+    // a little of the night's air on them (dark against the night sky), more of it as the day comes;
+    // on the old road the air is the dawn sky's own haze, and less of that keeps them dark against it
+    u.uBodyK.value = oldRoad ? 0.2 - 0.1 * day : 0.2 + 0.2 * day;
+    // the land where it ends, as far as it is seen from here: about a kilometre out from a man's
+    // eye or the truck's (the rest is a line under it), many from the air; its own colour there
+    // (the night's or the dawn's on the desert)
+    const far = 900 + 40 * Math.max(0, h);
+    horizonEdge.fog.value = 1 - Math.exp(-((density * far) ** 2));
+    horizonEdge.land.value.setRGB(0.009, 0.009, 0.012).lerp(_c.setRGB(0.024, 0.017, 0.013), day);
+    // the mesa the sun comes up behind: dark, against the light at dawn
+    u.uMesa.value.setRGB(0.0045, 0.0055, 0.0085).lerp(_c.setRGB(0.02, 0.019, 0.026), day);
     // the glows: brightest a few hundred metres out, gone right inside the place (its own lamps
     // are all round then) and far off; wider the nearer it is; the night's only
     const night = 1 - THREE.MathUtils.smoothstep(dawn, 0.15, 0.6), c = Math.cos(-yaw), s = Math.sin(-yaw);
