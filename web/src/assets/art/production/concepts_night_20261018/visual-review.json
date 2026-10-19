@@ -1,0 +1,42 @@
+{
+  "result": "PASS",
+  "review_method": "Valgte generatorbilder og eksportert kontaktark visuelt inspisert av Codex.",
+  "items": [
+    {
+      "id": "01",
+      "observations": "Nattlig hovedgate, lav bebyggelse og riktig side for bensinstasjon og kirke. Perspektivdybden er kunstnerisk, ikke en ny lengde på byen."
+    },
+    {
+      "id": "02",
+      "observations": "Telefonen er hovedmotiv; betjenten bak nattluka. Mynten er en liten stemningsdetalj, ikke et nytt lesbart bevis."
+    },
+    {
+      "id": "03",
+      "observations": "Earl i vindusrammet radiostudio, analoge apparater, ingen ekte stasjonsidentitet."
+    },
+    {
+      "id": "04",
+      "observations": "Kvinnen med radioen på eksisterende benk, hverdagslig nattmiljø, ingen spøkelsesfigur."
+    },
+    {
+      "id": "05",
+      "observations": "Valgt revisjon viser pickupen rett ovenfra på CRT-en og fra bakken gjennom vinduet. Konsept for spesifisert hendelse."
+    },
+    {
+      "id": "06",
+      "observations": "Antennene er hovedmotiv. Bare én liten fjern silhuett i høyre ytterkant; ingen ansiktsdetaljer eller nærangrep."
+    },
+    {
+      "id": "07",
+      "observations": "Valgt revisjon har mørk natthorisont før gryet, to avkuttede kabelender og transitten som holdepunkt."
+    },
+    {
+      "id": "08",
+      "observations": "Valgt revisjon har én pickup i høyre kjørefelt, gry foran og til høyre, ingen solskive, lysstråle eller oppvåkning."
+    }
+  ],
+  "limitations": [
+    "Ingen av bildene er målfast geometri eller runtimebilder.",
+    "Kanoniske antall, avstander og klokkeslett fastsettes i prosjektets eksisterende kilder."
+  ]
+}

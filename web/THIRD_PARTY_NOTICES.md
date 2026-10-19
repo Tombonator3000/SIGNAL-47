@@ -100,6 +100,8 @@ Stier er relative til `src/assets/art/`. Prompts, originale kildebaner, hash, ek
 
 ## Grafikk
 
+18. oktober 2026, nye konsepter: åtte bilder i `src/assets/art/concept/night_20261018/` laget med innebygd `image_gen.imagegen`, med tre målrettede korrigeringer i samme verktøy. Eksakt modellversjon er ikke eksponert. Prosjektets egne historiefiler og tidligere konsepter er kildegrunnlaget. Ingen nye eksterne fotografier, andre spills grafikk eller påstått CC0-lisens. Originale PNG-er fra alle elleve løp, fullstendige prompter, filhash og eksportoppskrift ligger i `src/assets/art/production/concepts_night_20261018/`. Se `CONCEPT_NIGHT_DELIVERY.md`. Konseptene er ikke importert som spillgrafikk.
+
 Geometrien og instrument-/bevisgrafikken er laget i kode for dette prosjektet.
 
 4. oktober 2026: 17 nye bilder laget for SIGNAL / 47 med den innebygde ChatGPT-bildegeneratoren etter `ART_BRIEF.md`. Eksakt modellversjon er ikke oppgitt av verktøyet. Dette er genererte prosjektassets, ikke nedlastede tredjepartsbilder eller en påstått CC0-lisens. Ingen eksterne betalte assettjenester er brukt.
