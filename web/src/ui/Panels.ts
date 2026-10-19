@@ -267,7 +267,7 @@ export function talk(ui: UI, o: {
   onRead: (id: string) => void;
   onClose?: () => void;
 }) {
-  const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div>', o.onClose);
+  const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div><div data-reading></div>', o.onClose);
   const statusEl = el.querySelector('[data-status]') as HTMLElement;
   const body = el.querySelector('[data-body]') as HTMLElement;
   let shown = '';
@@ -278,11 +278,17 @@ export function talk(ui: UI, o: {
     // new lines come one after another; a redraw of the same lines does not repeat that
     const key = JSON.stringify(v.lines);
     const fresh = key !== shown;
+    if (fresh) {
+      ui.readAloud?.stop();
+      const reading = el.querySelector<HTMLElement>('[data-reading]')!;
+      reading.replaceChildren();
+      ui.readingControls(reading, v.lines.map((l) => l.text));
+    }
     shown = key;
     // the face of whoever spoke last (core/portraits.ts), once there is a picture of them
     const last = [...v.lines].reverse().find((l) => l.who && l.who !== 'YOU');
     const face = last ? portraitOf(last.who) : null;
-    const line = (l: TalkLine, i: number) => `<p class="talk-line${l.who ? '' : ' aside'}${fresh ? ' fresh' : ''}" style="animation-delay:${fresh ? i * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
+    const line = (l: TalkLine, i: number) => `<p data-reading-text class="talk-line${l.who ? '' : ' aside'}${fresh ? ' fresh' : ''}" style="animation-delay:${fresh ? i * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
     const chip = (c: TalkChip) => `<button class="lp-choice talk-chip" data-chip="${c.id}" aria-pressed="${c.on}" ${c.have ? '' : 'disabled'}>${c.image ? `<img alt="" src="${c.image}">` : ''}<span>${esc(c.label)}${c.have ? '' : ' / not in the case'}</span></button>`;
     body.innerHTML = `
       ${face ? `<img class="talk-portrait" alt="${esc(last!.who)}" src="${face}">` : ''}

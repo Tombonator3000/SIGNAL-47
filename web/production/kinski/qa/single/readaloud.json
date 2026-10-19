@@ -1,0 +1,295 @@
+{
+  "url": "file:///tmp/s47-readaloud-csp-5d15zpw0/index.html",
+  "pages": false,
+  "strict_csp": true,
+  "master_samples": {
+    "reading": {
+      "peakRms": 0.13036122558916022,
+      "levels": [
+        0.00017437768500151994,
+        0.0001787254237287711,
+        0.00024238573128458678,
+        0.005091393987480162,
+        0.04755812289686552,
+        0.12650328637198027,
+        0.09051649045937486,
+        0.0963291289944674,
+        0.11795527187184165,
+        0.0974331263195028,
+        0.05650478698624158,
+        0.05473830148259925,
+        0.13036122558916022,
+        0.12001524190590611
+      ]
+    },
+    "muted": {
+      "peakRms": 0,
+      "levels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "document": {
+    "id": "logbook",
+    "paragraphs": [
+      "23:20  handover",
+      "Kid,\n1. RX bank 3 tripped again. Big red lever on the rack by the printer.\n2. Calibrate on 1419.900 first. Card is taped to the console.\n3. Spike near 1420.1 is the highway relay. Notch it, log it, don't chase it.\n4. Then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.",
+      "Coffee is fresh-ish.\nStorm out past the Magdalenas. Should stay there.",
+      "Don't break anything.\n        D."
+    ],
+    "sources": [
+      {
+        "at": 1.728,
+        "duration": 2,
+        "expectedEnd": 3.7279999999999998,
+        "decoded": {
+          "bytes": 16748,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true
+      }
+    ]
+  },
+  "queued_sources": [
+    {
+      "at": 1.856,
+      "duration": 0.71,
+      "expectedEnd": 2.566,
+      "decoded": {
+        "bytes": 6380,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.71,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": 2.5813333333333333,
+      "stoppedAt": null,
+      "master": true
+    },
+    {
+      "at": 2.5813333333333333,
+      "duration": 0.71,
+      "expectedEnd": 3.291333333333333,
+      "decoded": {
+        "bytes": 6380,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.71,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": null,
+      "stoppedAt": null,
+      "master": true
+    }
+  ],
+  "requests": [],
+  "bad_responses": [],
+  "errors": [],
+  "checks": [
+    {
+      "pass": true,
+      "message": "Kinski reading is off on a fresh device"
+    },
+    {
+      "pass": true,
+      "message": "opening a document with reading off adds no playback controls"
+    },
+    {
+      "pass": true,
+      "message": "pause setting visibly defaults to Off"
+    },
+    {
+      "pass": true,
+      "message": "the Kinski setting switches on and is stored on this device"
+    },
+    {
+      "pass": true,
+      "message": "reading stays enabled after a full page reload"
+    },
+    {
+      "pass": true,
+      "message": "a real supported game document opens (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "desktop document and reading controls fit the viewport"
+    },
+    {
+      "pass": true,
+      "message": "description reading is explicitly labelled separately from the paper's actual text"
+    },
+    {
+      "pass": true,
+      "message": "Read decodes a real MP3 and starts its buffer through master (4.23s)"
+    },
+    {
+      "pass": true,
+      "message": "the live Read button becomes Stop reading"
+    },
+    {
+      "pass": true,
+      "message": "real narration samples reach master and obey master volume (0.13036, muted 0.00000)"
+    },
+    {
+      "pass": true,
+      "message": "Stop reading immediately cancels the current clip and queue"
+    },
+    {
+      "pass": true,
+      "message": "stopping restores the specific Read description label"
+    },
+    {
+      "pass": true,
+      "message": "document close still runs the game's original filing callback"
+    },
+    {
+      "pass": true,
+      "message": "Read document selects the actual clue on a real paper, separately from its description (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "the paper's actual text also starts a genuinely decoded prerecorded clip"
+    },
+    {
+      "pass": true,
+      "message": "Stop on document reading clears playback and restores Read document"
+    },
+    {
+      "pass": true,
+      "message": "a two-line queue starts only its first recording"
+    },
+    {
+      "pass": true,
+      "message": "the second real recording starts after the first ends, with no overlap"
+    },
+    {
+      "pass": true,
+      "message": "repeating one recording reuses its decoded buffer"
+    },
+    {
+      "pass": true,
+      "message": "a missing recording has a disabled Read button and visible explanation"
+    },
+    {
+      "pass": true,
+      "message": "the real dialogue has one Read control matching its recording coverage"
+    },
+    {
+      "pass": true,
+      "message": "a dialogue redraw with unchanged lines does not restart or overlap narration"
+    },
+    {
+      "pass": true,
+      "message": "closing a dialogue cancels narration"
+    },
+    {
+      "pass": true,
+      "message": "the test night can be saved before exercising Load case"
+    },
+    {
+      "pass": true,
+      "message": "pausing cancels narration and suspends the shared AudioContext"
+    },
+    {
+      "pass": true,
+      "message": "loading a real save keeps the device preference but starts no stale narration"
+    },
+    {
+      "pass": true,
+      "message": "the pending real recording is visibly loading"
+    },
+    {
+      "pass": true,
+      "message": "closing during pending fetch/decode prevents any delayed audio start"
+    },
+    {
+      "pass": true,
+      "message": "the original close callback still runs exactly once during loading"
+    },
+    {
+      "pass": true,
+      "message": "mobile Settings can turn Kinski reading on"
+    },
+    {
+      "pass": true,
+      "message": "the mobile settings panel scrolls without horizontal overflow at 844x390"
+    },
+    {
+      "pass": true,
+      "message": "the mobile document exposes its reading control without horizontal overflow"
+    },
+    {
+      "pass": true,
+      "message": "a real touch on Read starts decoded audio on mobile Chromium"
+    },
+    {
+      "pass": true,
+      "message": "mobile Stop and close leave no narration playing"
+    },
+    {
+      "pass": true,
+      "message": "all requested prerecorded files load without HTTP errors (0 requests)"
+    },
+    {
+      "pass": true,
+      "message": "the strict-CSP single-file build asks for no external narration files"
+    },
+    {
+      "pass": true,
+      "message": "no browser errors or warnings"
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: analyser samples are not a hardware listening test"
+}

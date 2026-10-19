@@ -25,3 +25,8 @@ Uten IndexedDB (privat vindu i noen nettlesere) lagres sakene i `localStorage`, 
 Base: `integration`. Filer: `src/story/boardRules.ts`, `src/story/caseBoard.ts`, `src/story/Chapter1.ts`, `src/ui/Panels.ts`, `tools/chapter1.py`, `tools/board.py`.
 
 Bevisbordet (`B`, eller Board i notatboka) har regelbøker for kapittel 2 til 5, men kapittel 1 bruker fortsatt valgpanelene sine: B-12 mot R-07, hypotesen og de to eksponeringene. Tom ville ha samme bord i alle kapitler (`todo.md`, punktet om bevisbord i stedet for faner). Lag en regelbok for kapittel 1 etter mønsteret i `boardRules.ts`, slik at disse funnene registreres med tråd og RECORD på bordet, med de samme svarene og den samme gangen i historien som i dag (det kapittelet kaller når et funn er gjort, skal kalles likt). Feil kobling får et kort svar og slakker tråden. Behold det gamle panelet bare der bordet ikke kan brukes. Oppdater `tools/chapter1.py` og `tools/board.py`, og kjør `chapter1.py`, `chapter1.py` med `S47_NO_IDB=1`, `chapter2.py`, `board.py` og `walkthrough.py 1280x800`.
+
+
+### 3. [x] Valgfri Kinski-opplesning, direkte bestilt av Tom (`codex/kinski-read-aloud`)
+
+Base: main `bada636`. Bestilt direkte i samtalen 19. oktober. 328 ferdig genererte lydklipp, valgfri innstilling og lese-/stoppknapper i papir- og samtalepaneler. Begge bygg og pålagte tester PASS, med resultater i `production/kinski/qa/`. Se `KINSKI_READALOUD.md` for bruk, tekstdekning og lytting som gjenstår hos Tom. Lokal commit uten push eller PR.

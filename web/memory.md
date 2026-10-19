@@ -4,6 +4,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-19, direkte bestilling fra Tom: valgfri Kinski-opplesning på `codex/kinski-read-aloud`. Ferdiggenererte engelske lydfiler fra lokal VoiceStudio, merket som syntetisk parodi, følger dokument- og samtalepanelene i begge bygg. Av som standard, knapp for Read aloud, valget lagres i `s47.kinskiReadAloud`, hovedvolumet gjelder. Radiostemmer og kanon beholdes. Se `KINSKI_READALOUD.md`. Lokal leveranse uten publisering.
+
 - 2026-10-18, Codex oppgave 2 på `codex/board-chapter1`: kapittel 1 bruker samme bevisbord som kapittel 2 til 5. P01 matcher B-12 mot R-07, P02 registrerer en testbar hypotese, og P03 kobler de to eksponeringene med den direkte kontrollobservasjonen. Tråder fyller spørsmålene; RECORD kaller kapitlets opprinnelige svarfunksjoner. Bildemarkering, fysisk B-12-kontroll og innlevering av rapporten beholder panelene sine. `CaseState.sheet` husker det leste installasjonsarket og `links` husker trådene, også før RECORD. Eldre lagringer uten tråder gjenoppretter funnene med den faktisk valgte hypotesen. De gamle svarpanelene er reserve når ingen bordkobling finnes.
 - 2026-10-18, Codex etter Toms bestilling om flere konseptbilder: åtte nye miljø- og fortellingsbilder i `concept/night_20261018/`, med galleri og kildegrunnlag i `CONCEPT_NIGHT_DELIVERY.md`. Caliche, telefonautomaten, Night Line, kvinnen ved vaskeriet, motell-TV-en, glimtet i antennefeltet, kabelen på STATION 01 og uttrekket på Roswell-veien. Dette er visuell retning etter gjeldende historie, uten nye spillkonstanter eller kodeendringer. Originaler, alle prompter og korrigeringene er bevart i `production/concepts_night_20261018/`.
 

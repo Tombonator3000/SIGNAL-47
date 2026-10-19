@@ -1,0 +1,45 @@
+PASS the title screen warns about flashing images; flashes is the default
+PASS slow fades can be picked there and is kept
+PASS in the truck where it was left on the diner's lot (0.0 m from its place), mile 0.00
+PASS the clock: 5.3333 h, 05:20
+PASS objective: the line past mile 8; no saving on the road
+PASS the grey of the dawn at 05:20 (0.70), and the far plane opened for the old road
+PASS the road came with its pictures from round 11 (mile post, witness post, brass disk, asphalt)
+PASS the diner is there, and the truck on the lot is the old road's now
+PASS out of the lot and across the highway, in the old road's right lane (0.063 mi, 1.55 m)
+PASS driven all the way past the six-mile post in the lane (6.036 mi, 1.60 m)
+PASS the clock keeps to the drive: 05:26:41.7 at 6.04 mi
+PASS north up the highway, the truck stops at the end of the open stretch (260 m from the diner) and Ward can wait
+PASS stopped short of the line for 48 s: the clock still says 05:28:56.24
+PASS and the clock on the screen says 05:28
+PASS a nudge: the line is just ahead
+PASS on the line just past the eight-mile post (8.1494 mi): 05:29:00
+PASS 05:29:00: the engine dies and the instruments go dark
+PASS +4 s: the dash blinks four times, a pause, seven times ([4, 7])
+PASS the truck has rolled out and stands in its lane (0.00 m/s)
+PASS +10 s: the headlights wake deep blue [0.33, 0.45, 1.46]
+PASS then amber, then green [0.32, 1.6, 0.56]
+PASS +24 s: on the radio, Tomás
+PASS +27 s: Nora
+PASS and the headlights red [1.6, 0.13, 0.08]
+PASS the radio played the printer, the phone and the cup
+PASS +32 s: FLASH, a frame over the screen
+PASS the frames of FLASH from round 11 were loaded for it
+PASS single frames one after another, with black between (10 frames seen)
+PASS +34 s: no more frames, total silence
+PASS 05:29:47: the camera leaves
+PASS out through the windshield: the truck from outside, alone on the road
+PASS higher: 126 m over the desert
+PASS 05:30: the sun on the edge of the mesa (clock +4.3 s from 05:30)
+PASS up to the stars: the dawn falls away
+PASS SIGNAL / 47
+PASS the credits: who made it, the music, the sounds, the fonts, three.js
+PASS after the credits: the whole photograph from 1947, no text
+PASS and back to the title screen
+PASS the title screen shows slow fades picked
+PASS slow fades: dim frames over several seconds, no flashes (max 0.35)
+PASS still shots: the camera holds each shot, then cuts
+draw calls: {'start': 87, 'mile6': 54, 'pullout': 24}
+PASS draw calls at most 87 on the old road
+no console errors/warnings
+42 of 42 PASS

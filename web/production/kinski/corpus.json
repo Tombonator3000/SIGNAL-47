@@ -1,0 +1,4848 @@
+{
+  "version": 1,
+  "segmentation": "Documents: transcript.split(/\\n\\s*\\n/), then whitespace normalization. Page first removes line-leading pencil markers (~ plus whitespace) and whole separator lines (at least three - or =, optionally spaced), then the same paragraphs. Talk: each lines[].text, same normalization. No titles, choices, status, reply or radio.",
+  "clips": [
+    {
+      "id": "c8cab78b3df10c77",
+      "text": "The antenna moved. The controller did not send a command.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 841,
+          "kind": "document",
+          "document": "'s03log'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "af6428e9d604d3a7",
+      "text": "A thin line of condensation runs across the warm inspection glass.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 841,
+          "kind": "document",
+          "document": "'s03log'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "f7a6b7013a520ba7",
+      "text": "SARO / INSTALLATION SHEET 11-86 LOCAL SURVEY REFERENCES",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 847,
+          "kind": "page",
+          "document": "'refsheet'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "2d0fec1e94e1278e",
+      "text": "B-12 ONE IVORY STRIPE MOVABLE VANE FIXED BRACKET: STATION NO. R-07 THREE HORIZONTAL BARS WEST FENCE",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 847,
+          "kind": "page",
+          "document": "'refsheet'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "22063f129472be21",
+      "text": "SIGHTLINE FROM SERVICE APRON: S-03 APRON > B-12 > CENTRAL ANTENNA",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 847,
+          "kind": "page",
+          "document": "'refsheet'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "eebcb993e5c0aa5c",
+      "text": "Local survey references: B-12 is the movable single ivory stripe north of the S-03 apron. R-07 uses three horizontal bars. The warm inspection lamp and local reference drive have independent controls.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 848,
+          "kind": "document",
+          "document": "'refsheet'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "5c9a7e36b397cdc4",
+      "text": "The installation sheet says B-12 carries one stripe.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 856,
+          "kind": "document",
+          "document": "p.id",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "0244f3f45f0900c1",
+      "text": "B-12 / PASSIVE CONTROL",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "3c6449c8c114a7eb",
+      "text": "Lamp: shielded, no direct illumination. Motor: isolated, no drive command. Direct observation: one ivory stripe on the folded reference vane; one fixed bracket.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "882321bfaf9d1432",
+      "text": "Make a control exposure from the apron without changing this setup.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "8e12ba6839893d51",
+      "text": "B-12 / ACTIVE CONTROL",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "4c27ffff88b81f3f",
+      "text": "Local command: reference 042 degrees. Encoder: 042 degrees, reference moved and settled. Direct observation: one ivory stripe on the turned vane; one fixed bracket. Work lamp remains lit.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "60aeae819686128c",
+      "text": "Make a control exposure without changing this setup.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'observation'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "a1294787d6f5fd2c",
+      "text": "One physical stripe on the vane. Expose frame 02 from the B-12 sight line mark without changing the setup.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 867,
+          "kind": "document",
+          "document": "'observation'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "e0ccb159da38ea81",
+      "text": "SARO / LOCAL INCIDENT S-03 + B-12 OPERATOR: REYES FOR: DR. E. WARD",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 1
+        },
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "0500cfcb96523ed5",
+      "text": "S-03: encoder 026; scheduled 042; commands 0. Frame 01: foreground reference does not match the one-stripe installation sheet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 2
+        },
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "8191d0c2bbb50687",
+      "text": "CONTROL: lamp shielded, motor isolated. Direct observation: one physical stripe. Frame 02: the physical vane changes; a second stripe retains its earlier alignment.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "d365a57885b983f0",
+      "text": "SUPPORTED: the discrepancy persists in the photographic record under the chosen control. The work lamp is not sufficient to explain it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "9daf1fc4fd014066",
+      "text": "LIMIT: one local test does not establish the cause of the array movement or the signal. Preserve the negatives and the original receiver printout.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 5
+        },
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 5
+        }
+      ]
+    },
+    {
+      "id": "514bc5b2069d6a7b",
+      "text": "CONTROL: local reference commanded to 042; encoder and visible vane agree. Direct observation: one physical stripe. Frame 02: the physical vane changes; a second stripe retains its earlier alignment.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "f3f07dc94f462645",
+      "text": "SUPPORTED: the discrepancy persists in the photographic record under the chosen control. Simple reference/encoder drift is not sufficient to explain it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "page",
+          "document": "'finding'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "66b1d856fa4889c7",
+      "text": "The eye saw one reference. The film kept two.",
+      "sources": [
+        {
+          "file": "src/story/Chapter1.ts",
+          "line": 870,
+          "kind": "document",
+          "document": "'finding'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "14af832e0db84ba8",
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 443,
+          "kind": "page",
+          "document": "'e07'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "ee698714dedc6d6b",
+      "text": "The reference remained visible in the plate after the lamp circuit was opened. A second plate was exposed with the local lamp isolated. The retained mark did not follow the new position of the physical vane.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 443,
+          "kind": "page",
+          "document": "'e07'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "4cba3502f2b25fbb",
+      "text": "The arrangement used three references: A, the fixed survey point; B, the optical comparison vane; and C, the closing sight line. The run was interrupted before the final observation was entered. Preserve the original plates and the complete arrangement drawing.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 443,
+          "kind": "page",
+          "document": "'e07'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "3ac492f2e51ff398",
+      "text": "N. VEGA / FIELD TECHNICIAN",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 443,
+          "kind": "page",
+          "document": "'e07'",
+          "paragraph": 4
+        },
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 447,
+          "kind": "page",
+          "document": "'e06'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "e53920a3eae8addd",
+      "text": "The original field protocol from the STATION 01 box, signed N. Vega. The arrangement drawing is clipped to it: A, the fixed survey point; B, the comparison vane; C, the closing sight line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 444,
+          "kind": "document",
+          "document": "'e07'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "efb4c05a7574d713",
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947 AMENDED COPY",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 447,
+          "kind": "page",
+          "document": "'e06'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "64ff335a007dc5b7",
+      "text": "The additional mark is attributed to a fault in plate development. The lamp and comparison vane are sufficient to describe the test. The incomplete closing sight line has been omitted from the service copy.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 447,
+          "kind": "page",
+          "document": "'e06'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "3eab0bf5edc67a53",
+      "text": "No repeat observation is required. Retain the amended copy with the routine reference records.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 447,
+          "kind": "page",
+          "document": "'e06'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "d15a0242725579e1",
+      "text": "The service copy of the same record, filed with the routine reference records. Same title, same signature. Its own arrangement drawing is clipped to the back.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 448,
+          "kind": "document",
+          "document": "'e06'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "6471b59ddd6c4120",
+      "text": "SARO / REFERENCE LINEAGE / B-12",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 451,
+          "kind": "page",
+          "document": "'b12lineage'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "49842f5d4917236d",
+      "text": "The B-12 comparison vane retains the fixed-point survey identified as STATION 01. Fixed-point register mark: outlined triangle with a short horizontal bar beneath it. The archive sleeve contains the dated plate and fixed-point sheet used for this index. Match the survey identifier and fixed-point mark before selecting the field destination.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 451,
+          "kind": "page",
+          "document": "'b12lineage'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "147aac617dd9d4c2",
+      "text": "SITE REGISTER: STATION 01 / OLD SURVEY STATION. The matching archive sleeve contains the field access sheet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 451,
+          "kind": "page",
+          "document": "'b12lineage'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "6ee13a0c0e6b7fb2",
+      "text": "A card from the maintenance index. It ties today's B-12 vane to an older survey, and names the place in the site register.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 452,
+          "kind": "document",
+          "document": "'b12lineage'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "318b5eb27590baef",
+      "text": "PLATE / 1947 / STATION 01",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 455,
+          "kind": "page",
+          "document": "'e08'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "91b0d17e581124cf",
+      "text": "Fixed-point mark: outlined triangle with a short horizontal bar beneath it. Arrangement: A - B - C. Service index: B-12. Field destination: OLD SURVEY STATION.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 455,
+          "kind": "page",
+          "document": "'e08'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "dc0d94d7a8fb1c9b",
+      "text": "RETURN CHECK: Match both STATION 01 and the fixed-point mark. A similar triangle without the bar is a general elevation symbol and is not a matching survey reference.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 455,
+          "kind": "page",
+          "document": "'e08'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "be4d5354c757d8cc",
+      "text": "From the same box: the archive sleeve for the 1947 plate, with its index card and the fixed-point sheet. This is the index, not a photograph you took.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 456,
+          "kind": "document",
+          "document": "'e08'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "3eaa1e2d122b075e",
+      "text": "SUPPORTED / E07 records A, B and C and a retained mark with the lamp isolated. E06 omits C, the closing sight line, and calls the mark a development fault. The report was changed; motive remains unknown.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 459,
+          "kind": "page",
+          "document": "'p04'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "685bad94480fc1d7",
+      "text": "Your finding at the records table. It establishes that the report was changed. It does not establish why, or who cut anything.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 460,
+          "kind": "document",
+          "document": "'p04'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "e10c9a2792f948c3",
+      "text": "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 463,
+          "kind": "page",
+          "document": "'p05'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "981f80433eb7525c",
+      "text": "Your second finding: the reference in today's B-12 leads to the old survey station, by survey ID and fixed-point mark together.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 464,
+          "kind": "document",
+          "document": "'p05'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "d9ce9afc242d4573",
+      "text": "FIELD ACCESS / OLD SURVEY STATION SURVEY: STATION 01",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 467,
+          "kind": "page",
+          "document": "'access'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "447461d1dabc6531",
+      "text": "ACCESS ROAD UNSURFACED. GATE LOCKED.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 467,
+          "kind": "page",
+          "document": "'access'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "6d72ec7779a4511c",
+      "text": "KEY HOLDER: N. VEGA SIERRA MOTOR COURT (505) 555-0119",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 467,
+          "kind": "page",
+          "document": "'access'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "f9e28b5e26191fb6",
+      "text": "DO NOT DISTURB THE FIXED-POINT MARKS.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 467,
+          "kind": "page",
+          "document": "'access'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "2ca33dad91688114",
+      "text": "Folded into the matching sleeve. The key holder for the old station is listed by initial and surname, at the motel down the road: N. Vega. The same name signs both versions of the 1947 record.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 468,
+          "kind": "document",
+          "document": "'access'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "5a1c517e10519411",
+      "text": "Sketched from the site register. SARO, the old survey station along a dashed road, and now the motel where the key holder answered. Not to scale.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 472,
+          "kind": "document",
+          "document": "'casemap'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "1ac0fca94d0e52d7",
+      "text": "Sketched from the site register. SARO, and the old survey station along a dashed road. Not to scale.",
+      "sources": [
+        {
+          "file": "src/story/Chapter2.ts",
+          "line": 472,
+          "kind": "document",
+          "document": "'casemap'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "ad119ec7e81b5cd1",
+      "text": "FIELD TRANSIT / STATION 01 / E09A",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 829,
+          "kind": "page",
+          "document": "'e09a'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "4ece452e26d15b88",
+      "text": "1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 829,
+          "kind": "page",
+          "document": "'e09a'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "4201b5f93f03ae56",
+      "text": "Compare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 829,
+          "kind": "page",
+          "document": "'e09a'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "9c490723255100b6",
+      "text": "From the steel frame on the transit pier. A plan of the 1947 set-up: A in its footing on the transit sight line, B to the west, C running off the sheet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 830,
+          "kind": "document",
+          "document": "'e09a'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "308655d388e41985",
+      "text": "FIELD TIMING RECORD / STATION 01 / E10",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 833,
+          "kind": "page",
+          "document": "'e10'",
+          "paragraph": 1
+        },
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 833,
+          "kind": "page",
+          "document": "'e10'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "e7c3e23412689964",
+      "text": "02:17:00 / Carrier ceased. Recorded voice: ‘Reference west. No. East. Hold the last reading.’ 02:17:47 / Local relay impact and reference motion observed. Final observation / Not entered.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 833,
+          "kind": "page",
+          "document": "'e10'",
+          "paragraph": 2
+        },
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 833,
+          "kind": "page",
+          "document": "'e10'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "d0ff5c160ccbd522",
+      "text": "NEW RECEIVER OBSERVATION / 1986 The received fragment repeats the same correction, ‘west’ to ‘east,’ in the same place. The original field record identifies the speaker as T. Vega.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 833,
+          "kind": "page",
+          "document": "'e10'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "73660aa258b8fbe1",
+      "text": "The ledger on the hut workbench. Times to the second, in pencil. The last line was never filled in.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 834,
+          "kind": "document",
+          "document": "'e10'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "c21188610bc7ce84",
+      "text": "A: fixed survey point. B: comparison vane. C: closing sight line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 837,
+          "kind": "page",
+          "document": "'s1diagram'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "1191c2a48fccf8a2",
+      "text": "The framed copy of the original arrangement, signed N. Vega.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 837,
+          "kind": "page",
+          "document": "'s1diagram'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "5cecea9e5cdbdc7f",
+      "text": "Behind dusty glass in the hut: the same arrangement as the original 1947 record, with all three references, A, B and C.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 838,
+          "kind": "document",
+          "document": "'s1diagram'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "d0c894582c9ade8e",
+      "text": "P06 SUPPORTED / The fixed survey marker A has moved relative to the transit record. The original footing and fixed B marker establish the comparison; this record does not identify who moved A.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 842,
+          "kind": "page",
+          "document": "'P06 / The moved fixed point'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "cfb0a3e75686d9a0",
+      "text": "Your finding at the transit. A is not where E09A puts it. Who moved it is not in the record.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 842,
+          "kind": "document",
+          "document": "'P06 / The moved fixed point'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "6eaabde76ebd130e",
+      "text": "NULL TEST RECORDED / The local source is screened. This control result does not complete the cable reconstruction.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 843,
+          "kind": "page",
+          "document": "'P07 / Local lamp null test'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "1e1856c8907d2c5f",
+      "text": "An ordinary control: the field lamp covered, the local condition normal.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 843,
+          "kind": "document",
+          "document": "'P07 / Local lamp null test'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "46d87971f2163334",
+      "text": "P08 SUPPORTED / The cable was deliberately cut. The null test separates the local lamp from the retained reference.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 844,
+          "kind": "page",
+          "document": "'P08 / The cable break'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "ea3ee12f86dc46da",
+      "text": "The cable from the hut to the pier was cut on purpose. The cut does not say by whom.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 844,
+          "kind": "document",
+          "document": "'P08 / The cable break'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "337aa78e534c1a51",
+      "text": "P09 SUPPORTED / The historic relay observation followed carrier loss by 47 seconds. The 1986 fragment repeats T. Vega's same correction and adds no final observation.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 845,
+          "kind": "page",
+          "document": "'P09 / Two timing records'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "bec1048dca9aa0cc",
+      "text": "Carrier lost at 02:17:00, relay impact at 02:17:47. The voice tonight is the same correction as in 1947.",
+      "sources": [
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 845,
+          "kind": "document",
+          "document": "'P09 / Two timing records'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "c0d08d3d753bfd5e",
+      "text": "So you came down the road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 557,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "de2cb9bf8d58b0de",
+      "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 558,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "e9b28b2d30172f56",
+      "text": "She is looking out at the road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 562,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "774b99ad39efec11",
+      "text": "She waits for you to go on.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 562,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "48c52be6f8b7dec3",
+      "text": "She lays the two prints side by side and puts the 1947 record under them.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 660,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "423428940475f813",
+      "text": "The amended copy you can keep. I know what it says. I wrote it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 661,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "60d7570444bff260",
+      "text": "I know that second line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 662,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "9e21a29e3ac50a76",
+      "text": "Tell me which source you took away before you made the control.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 663,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "24b14385b8d33964",
+      "text": "About the amended copy.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 675,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "ca09677be83845ec",
+      "text": "She does not look away from it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 675,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "6593c88f6bc7d680",
+      "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 702,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "a9148c3223545e1f",
+      "text": "You moved it, and the second line did not move with it. Then it was not the drive.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 702,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "f95cbbfaa436dd82",
+      "text": "Then you have what I had. A reference that stays on the film after its source is gone.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 703,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "d4b6a68a6b0206cd",
+      "text": "P10 recorded. She pushes a chair out for you with her foot.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 704,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "2061f90507dd4a90",
+      "text": "Why did you change it?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 718,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "9be57a3a3f711288",
+      "text": "You falsified the record.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 718,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "ed41ded37954c303",
+      "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 720,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "a5b18ca5266cf328",
+      "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 721,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "c94fdf1783fe692b",
+      "text": "I wrote that the lamp remained. It was easier than writing that he did.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 722,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "8ed709e795f91676",
+      "text": "I typed this in the office tonight, before you came. I have not signed it yet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 723,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "22179359d7598239",
+      "text": "She signs it and lays it on the table, on top of the amended copy. E12 filed.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 724,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "d9544deee5fe62bf",
+      "text": "Who was T. Vega?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 733,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "57043e5d4e30334c",
+      "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 734,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "9fd0e9afe5e2a855",
+      "text": "He has been nineteen for thirty-nine years.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 735,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "b70971b5c2bb0e4e",
+      "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 736,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "8488af50f10f1dcc",
+      "text": "He wrote me this the day before. I have never shown it to anyone.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 737,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "d78f5380923cf9c8",
+      "text": "She puts a folded letter on the table. E13 filed.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 738,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "8641b1e06202b210",
+      "text": "You put PHOTO 04 in front of her.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 747,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "c017fa1afb58792f",
+      "text": "Yes. I cut it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 748,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "8da516734c583c2e",
+      "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 749,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "b803f6c76ffd98d9",
+      "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 750,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "416866eeebe7eb15",
+      "text": "This was in his coat. He knew more than I did.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 751,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "5947162f105f570f",
+      "text": "She puts a field card on the table. E11 filed.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 752,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "ed147446edff0e55",
+      "text": "You thought the whole record would bring it back.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 777,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "ea19e3fb239cb069",
+      "text": "Write it like that. Not cleaner than it was.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 778,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "f9858b38f3654ba4",
+      "text": "P11 recorded.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 779,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "c6eaa0557b1a63f0",
+      "text": "The handset is back on the cradle.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 792,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "7f969a2e396344db",
+      "text": "Where does that phone go?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 796,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "092c02fd692aa756",
+      "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 797,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "4ca99f9ad4e705f3",
+      "text": "You left the receiver on out there. Listen.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 798,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "b1999ff96c370646",
+      "text": "She lifts the handset and holds it between you. A carrier, very faint, under the hiss.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 799,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "de5f08621099d0b6",
+      "text": "Tomás. Where did you leave the spare key?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 800,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "d111f9a951311961",
+      "text": "Reference west. No. East. Hold the last reading.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 801,
+          "kind": "talk",
+          "helper": "literal TalkLine"
+        }
+      ]
+    },
+    {
+      "id": "a9f959af50674d22",
+      "text": "That is what he said then. Not an answer to what I asked now.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 802,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "3b4a9bb475c77dd1",
+      "text": "She puts the handset down.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 803,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "5d479a4d14238300",
+      "text": "No. It is not him. It is what he left.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 826,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "17ac30812bf87870",
+      "text": "P12 recorded.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 827,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "21105dab6945501b",
+      "text": "Where did C go?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 841,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "03509ffee071f3ed",
+      "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 842,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "f7491a8f81999a39",
+      "text": "Tomás walked out to the closing point with the last reading.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 843,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "57b9b311c2f0cd75",
+      "text": "If you want to know whether the line still holds, drive the road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 844,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "27b7b87837e8d3a7",
+      "text": "Do not stop on the line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 845,
+          "kind": "talk",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "77987c97c333cad6",
+      "text": "T. VEGA / LAST OBSERVATION",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 863,
+          "kind": "page",
+          "document": "'e11'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "e594e72273074ab7",
+      "text": "Opening the lamp circuit removes the source, but not the retained reference. Masking the closing sight line prevents an organised return. These are different results.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 863,
+          "kind": "page",
+          "document": "'e11'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "5e21e77780fa4632",
+      "text": "The final reading must be taken from outside the marked reference surface. A completed observation may leave its own reference behind. Do not connect a fresh observer to a run merely to finish an old one.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 863,
+          "kind": "page",
+          "document": "'e11'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "a5e4f14b14e8e450",
+      "text": "A field card in pencil, from Tomás Vega's coat. She has kept it for thirty-nine years.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 864,
+          "kind": "document",
+          "document": "'e11'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "afe1bc1228fee416",
+      "text": "The first half separates opening the lamp from masking C. The second half says how the last reading must be taken, and who should not take it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 864,
+          "kind": "document",
+          "document": "'e11'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "eac1c9f4d9226fbb",
+      "text": "Nora,",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'e13'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "3015ae94cc321f3b",
+      "text": "I left the spare key in the mug because you said I would lose it in the sand. You were right about the reference moving. I checked it twice before I wrote it down.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'e13'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "73c8c3deda4d8b2e",
+      "text": "When we finish, I owe you breakfast and an apology for calling your first plate a mistake.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'e13'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "d37d7136ee813fba",
+      "text": "T.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 867,
+          "kind": "page",
+          "document": "'e13'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "26f24fb4cc5669d4",
+      "text": "Tomás to his sister, the day before the last observation. No instrument language. The spare key is the key to the field hut.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 868,
+          "kind": "document",
+          "document": "'e13'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "34bf22c6b4854f10",
+      "text": "CORRECTION TO THE AMENDED FIELD RECORD",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 871,
+          "kind": "page",
+          "document": "'e12'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "40a164d6f7339f80",
+      "text": "I removed the closing reference from the service copy. I attributed the additional mark to development because I believed the complete arrangement would be repeated if the original finding remained on the record.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 871,
+          "kind": "page",
+          "document": "'e12'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "fbd6c25637f3e390",
+      "text": "The interruption was deliberate. Tomás Vega was present in the active reference when I broke the connection. He was not accounted for after the interruption. I cannot replace that fact with an instrument fault.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 871,
+          "kind": "page",
+          "document": "'e12'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "c03f77a9771cf34f",
+      "text": "NORA VEGA / 1986",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 871,
+          "kind": "page",
+          "document": "'e12'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "b8e9e16e3c4c3c0e",
+      "text": "Typed on the office machine earlier tonight and signed at the table, in front of you. It is attached to the amended copy. It does not replace it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 872,
+          "kind": "document",
+          "document": "'e12'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "36a7aac06cc7f182",
+      "text": "Tonight's two B-12 prints beside the 1947 original. The control did not remove the second reference, then or now.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 876,
+          "kind": "document",
+          "document": "'P10 / The same mark'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "6a747980d01d61d3",
+      "text": "The omission of C and the cut cable had the same purpose. Neither says what became of Tomás.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 877,
+          "kind": "document",
+          "document": "'P11 / Why the record was changed'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "d1e388bc9ba04ace",
+      "text": "A new question on the old field line gets the 1947 fragment back, unchanged.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 878,
+          "kind": "document",
+          "document": "'P12 / The return line'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "b5ae0c34b776aa87",
+      "text": "P10 SUPPORTED / Tonight's B-12 control print and the 1947 plate carry the same feature: a reference that stays on the film after its local source is taken away. N. Vega knows it from her own plate in 1947.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 880,
+          "kind": "page",
+          "document": "k",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "b647ad19fd4434cc",
+      "text": "P11 SUPPORTED / N. Vega removed C from the service copy and blamed development because she believed the complete record would let someone repeat the arrangement. She cut the cable herself while T. Vega stood inside the active reference. The record does not say what became of him.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 880,
+          "kind": "page",
+          "document": "k",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "f6b62203ff70227a",
+      "text": "P12 SUPPORTED / The return line repeats T. Vega's 1947 correction word for word. A new question gets the same fragment back, not an answer. It is a retained reference, not a conversation.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 880,
+          "kind": "page",
+          "document": "k",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "70683ed02a9aec52",
+      "text": "More? No? Suit yourself.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 343,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "b3ebcd8d66b6a961",
+      "text": "Morning. Or whatever this is.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 343,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "d5d0b4ec2f82efb9",
+      "text": "Coffee?",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 343,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "3c98c0d8c0939685",
+      "text": "She fills a second cup and sets it down at the last stool along the counter. The stool is empty.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 348,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "3b0bd38ea151c75d",
+      "text": "He's a regular. Comes in when the lights are up.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 349,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "b91aa8b670cc52f9",
+      "text": "The cup steams. Nobody comes to drink it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 350,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "a47a3851d31f80cb",
+      "text": "Morning.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 356,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "3b337d3874508f72",
+      "text": "He does not look up from his eggs.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 356,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "644bc21ccde2172a",
+      "text": "A dime in the slot, and her number from the card in your wallet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 359,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "bd46454349806cd2",
+      "text": "Ward.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 360,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "1234caee4f6cb643",
+      "text": "It is Reyes. I am at the diner on the old road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 361,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "1ec6b8f6fccfd3d6",
+      "text": "I read the telex. All of it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 362,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "d5ff2e5f8a59ea81",
+      "text": "Hondo called. So did Site 11.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 363,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "8d8b78a38614c451",
+      "text": "Coffee, please.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 404,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "40d43c423bf69db1",
+      "text": "She pours without asking how you take it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 404,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "a3330a31f83c9863",
+      "text": "Thirty-five cents. Pay when you go.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 404,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "b819fa68565da949",
+      "text": "The lights over the mesa. You have seen them?",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 408,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "0d30d97187d029dd",
+      "text": "You are from the observatory. You people never ask about anything else.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 409,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "cdfb68cc5262dff1",
+      "text": "First time I was eleven. Over the mesa, steady, no sound. An hour, maybe.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 410,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "70ae91484217ceb8",
+      "text": "My daddy said it was the Army. The Army said it was weather.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 411,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "936007c51f8ade0a",
+      "text": "Every few years since. Last October was the last time.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 412,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "e5acda09dd4101a9",
+      "text": "And before you ask: no, I do not think it is little green men. I think it is the mesa.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 413,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "44be72ecc17b3692",
+      "text": "The clipping by the door.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 421,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "3be4a3a000a6174d",
+      "text": "My aunt cut that out of the Sentinel. The Kesslers had the ranch on the old road then.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 422,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "fa2f6f12f0baa6b4",
+      "text": "The paper ran it bigger. She trimmed it to fit the frame.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 423,
+          "kind": "talk",
+          "helper": "W"
+        }
+      ]
+    },
+    {
+      "id": "d8833c0e09373942",
+      "text": "You take the old road to Roswell?",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 432,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "61a9d6d2fe72caa6",
+      "text": "Nobody takes it since they put the new one through. I take it. Saves me eleven miles.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 433,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "7d6106a02448d5ac",
+      "text": "Nothing out there but fence and the mesa.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 434,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "afed30c304c52f17",
+      "text": "Anything ever happen out there?",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 440,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "a2d4da60113cfc55",
+      "text": "Last October she quit on me out there. Right past the eight-mile post.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 441,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "77a6c3dbc0fff413",
+      "text": "Lights, radio, engine, all at once. Coasted to a stop. Then it all came back by itself.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 442,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "7111439d95d1fcdb",
+      "text": "I figured battery. Put a new one in the next day. Never did it again.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 443,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "9109eac729034e15",
+      "text": "There is a survey bolt in the shoulder just past the eight-mile post.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 451,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "031b961a2329ed30",
+      "text": "The brass thing? Sure.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 452,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "7e7145fc8aa40a5d",
+      "text": "That is right where she quit on me. I remember, because I sat there looking at it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 453,
+          "kind": "talk",
+          "helper": "D"
+        }
+      ]
+    },
+    {
+      "id": "0b6f1293215564ab",
+      "text": "What did they say?",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 460,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "a59f3517c67d3523",
+      "text": "Enough. I am not doing this on a pay phone.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 460,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "d347afd54b99643b",
+      "text": "I am checking the old road first.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 464,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "ce17d6a45ae5e59f",
+      "text": "Then check it, and come back. I want you on the console before the morning series.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 465,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "3508c20fca942e50",
+      "text": "Six o'clock, Reyes.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 466,
+          "kind": "talk",
+          "helper": "E"
+        }
+      ]
+    },
+    {
+      "id": "2b34b44e5325f758",
+      "text": "She hangs up.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 467,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "9aa21e44d75f6ef5",
+      "text": "From the door pocket of the service truck. The old Roswell road leaves the highway at the diner, and its mileposts count from there. Survey bolts in the shoulder are marked BM.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 540,
+          "kind": "document",
+          "document": "'e14'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "454d1cf76013fa66",
+      "text": "C is not on it. E09A gives C as a direction from the transit, not a place.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 540,
+          "kind": "document",
+          "document": "'e14'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "332b792357163f52",
+      "text": "The Pecos Valley Sentinel, July 1947, cut out and framed by the diner door. LIGHT HELD OVER MESA FOR AN HOUR. Ranchers on the old survey road watched a steady glow; the Army field office cites weather equipment.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 554,
+          "kind": "document",
+          "document": "'e15'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "5f342b297e4ea6d6",
+      "text": "The photograph: a flat mesa, a steady light high over it, two ranchers at a fence. Low to the right of the mesa, a smudge with a short tail. The right-hand edge of the picture is trimmed close.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 554,
+          "kind": "document",
+          "document": "'e15'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "da5b2fe00cedb5ec",
+      "text": "P13 SUPPORTED / With E09A traced and laid on STATION 01, north to north, C runs due east and meets the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. It fits N. Vega's account: east from the station, across the old highway, a bolt where it crosses.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 557,
+          "kind": "page",
+          "document": "'p13'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "b2dece65377c1af6",
+      "text": "The service map from the truck with E09A traced over it. C crosses the old road just past the eight-mile post.",
+      "sources": [
+        {
+          "file": "src/story/Chapter5.ts",
+          "line": 558,
+          "kind": "document",
+          "document": "'p13'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "7ba700bad5a7ef43",
+      "text": "23:20 handover",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 46,
+          "kind": "page",
+          "document": "'log'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "5ffad8d3e622bc9c",
+      "text": "Kid, 1. RX bank 3 tripped again. Big red lever on the rack by the printer. 2. Calibrate on 1419.900 first. Card is taped to the console. 3. Spike near 1420.1 is the highway relay. Notch it, log it, don't chase it. 4. Then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 46,
+          "kind": "page",
+          "document": "'log'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "bae2e4a479235b82",
+      "text": "Coffee is fresh-ish. Storm out past the Magdalenas. Should stay there.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 46,
+          "kind": "page",
+          "document": "'log'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "7c8e88f62eb4dd3a",
+      "text": "Don't break anything. D.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 46,
+          "kind": "page",
+          "document": "'log'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "494cdc57072cce29",
+      "text": "Torn out of the night shift logbook. Dale writes like he is already halfway to his car.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'log'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "b51f14f47607ecee",
+      "text": "\"Kid. One: RX bank 3 tripped again. Big red lever on the rack by the printer. Two: calibrate on 1419.900 first. Card is taped to the console. Three: the spike near 1420.1 is the highway relay. Notch it, log it, don't chase it. Four: then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.\"",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'log'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "6364528087436d27",
+      "text": "\"Coffee is fresh-ish. Storm out past the Magdalenas. Should stay there. Don't break anything. D.\"",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'log'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "b5eac8d8e095f8fa",
+      "text": "SARO / OPERATIONS NIGHT WORK ORDER 04/13/86",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 69,
+          "kind": "page",
+          "document": "'workorder'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "ff3b9fe26dcdc75b",
+      "text": "OPERATOR: REYES ON CALL: DR. E. WARD, SHIFT SUPERVISOR",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 69,
+          "kind": "page",
+          "document": "'workorder'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "6f24941c7068263b",
+      "text": "1. RESTORE RX BANK 3. CALIBRATE ON 1419.900 MHZ. 2. RUN THE SURVEY SWEEP. LOG ANYTHING OFF SCHEDULE. 3. MORNING SERIES 06:00. IT DOES NOT RUN UNTIL EVERY ANOMALY TONIGHT IS DOCUMENTED AND SIGNED.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 69,
+          "kind": "page",
+          "document": "'workorder'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "0b270cee5bc81953",
+      "text": "A typed work order with your name on it, initialled in the corner by the shift supervisor.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 83,
+          "kind": "document",
+          "document": "'workorder'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "a0de331bfeff5539",
+      "text": "Along the bottom, in Ward's handwriting: \"Before the morning series, I need a report I can sign. Start with calibration. Keep the paper if it gives you anything you cannot account for. E.W.\"",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 83,
+          "kind": "document",
+          "document": "'workorder'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "af98b2c1ac7c5072",
+      "text": "Fan-fold paper, still warm from the print head.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 107,
+          "kind": "document",
+          "document": "'printout'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "312abf0876f925f2",
+      "text": "Everything above the last lines reads like an ordinary solve: the hydrogen line, a pulse pattern, a position in Orion.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 107,
+          "kind": "document",
+          "document": "'printout'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "457c361b7950d239",
+      "text": "The distance field is negative. Minus thirty-nine light years. The solver has no way of printing a negative distance. It was never written to.",
+      "sources": [
+        {
+          "file": "src/story/Prologue.ts",
+          "line": 107,
+          "kind": "document",
+          "document": "'printout'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "8049a76ca9fd5fff",
+      "text": "He slides the window open a hand's width, and looks at you as if you had just pulled in.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 164,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "cbb28a4c67817d1d",
+      "text": "Cold one tonight. Radio says it'll",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 194,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "bf3cdeaf866c1173",
+      "text": "He coughs into his fist.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 194,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "a5024cae75df470f",
+      "text": "warm up by Wednesday.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 194,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "8d0e1c555b1c5365",
+      "text": "You knock on the night window. He takes his time, and slides it open a hand's width.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 202,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "2568feb42daf3d88",
+      "text": "Pumps are locked till six. You want something from in here, I can pass it through.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 202,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "c8d05be39ec57d0e",
+      "text": "He slides the window open again.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 203,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "e27daede10411cb1",
+      "text": "Still out, huh.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 203,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "728a242704fd1d25",
+      "text": "Which way is quickest back up to the observatory?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 206,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "435a5d956ee22382",
+      "text": "Highway north. There is no other way that goes anywhere.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 207,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "b61cd40b19624f3a",
+      "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 208,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "705049bbdaf077d0",
+      "text": "Your people come down for gas on Fridays. Nice folks. Don't say much.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 209,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "2955f3306cad7ba3",
+      "text": "SEEN LIGHTS? CALL THE NIGHT LINE.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 212,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "25cc83f6a88a2bc9",
+      "text": "Earl brings those. The radio fella, across the street.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 213,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "5c5e62a96117c6f5",
+      "text": "I let him tape them up. He buys his gas here.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 214,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "1f88ac2e1dbdc9cb",
+      "text": "People call him. I couldn't tell you why they'd want to.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 215,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "eb9727352d5f1a2d",
+      "text": "You ever go out the old road at night?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 218,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "0064338b16cd5c18",
+      "text": "Towed a rig in off it once. Last October.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 219,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "0d35be5b9273fde2",
+      "text": "Left here a quarter to two. Got back twenty-five past four.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 220,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "4fc1cd1cdee6e29c",
+      "text": "It's a forty minute job.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 221,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "1a2499fec7f46a89",
+      "text": "He says it like a sum he has done a lot of times and cannot get to come out.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 222,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "48a4ded0af4228f2",
+      "text": "Anyway. Cold one tonight.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 223,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "5253cb18218f4fa5",
+      "text": "I was here before. You told me that.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 226,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "bc9462d661d02269",
+      "text": "Wasn't me, then. I've been here since ten.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 227,
+          "kind": "talk",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "63cd0fc29b4943a8",
+      "text": "He looks up at the clock over the register for a long time, as if it might say something else.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 228,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "5e84f50a871dc2fd",
+      "text": "He opens before you have finished knocking.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 236,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "f9e12124efe92648",
+      "text": "Quiet night. Drove the loop out to the county line and back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 236,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "e2865e475767c432",
+      "text": "He looks at his watch, and then at the clock on the wall, and does not say anything about either.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 237,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "27c798035c3790c8",
+      "text": "You knock. A chair scrapes. He opens the door on the chain, looks at your jacket, and takes the chain off.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 239,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "0ffaee15704fc08b",
+      "text": "Help you?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 239,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "65e1fa7b983a7038",
+      "text": "Reyes. From the observatory up the road.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 240,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "78f176f9832e86ef",
+      "text": "SARO. Sure. You folks lose something?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 240,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "97c4d9f53eb77270",
+      "text": "Back again.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 241,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "6bfa6801a3cac6c2",
+      "text": "The map on your wall.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 244,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "2eab3a7a56d125b1",
+      "text": "Calls. Every call I get that I can't write up as anything.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 245,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "12fc033ec1c9e9e6",
+      "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 246,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "55243ebba23b74a3",
+      "text": "I don't believe in little men. I believe in maps.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 247,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "67dbb81f36395270",
+      "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 248,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "ca73065cdead1d47",
+      "text": "The row running east.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 251,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "02d7a3fbfa7643b5",
+      "text": "The old road. Red, mostly. Engines. Out past where the county stops grading.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 252,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "285b4d119519e647",
+      "text": "Every one of those is a car somebody had to tow back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 253,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "1536e9ab71453a57",
+      "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 254,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "3be729906da1f4cf",
+      "text": "The green ones.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 257,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "c7b35e964c814cb1",
+      "text": "Three of them are right here in town.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 258,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "96cd1408b5dfba60",
+      "text": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 259,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "76e73b0c78e53c7f",
+      "text": "A man whose wife sits out at the laundromat nights. March of '83.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 260,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "304cbbf2931d3b03",
+      "text": "And a kid who called the radio station in September of '81. Family moved away after.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 261,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "1f9fae245b5fa16f",
+      "text": "Don't go asking them about it. They don't know they've got a pin.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 262,
+          "kind": "talk",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "a19725efbb31b3a7",
+      "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 270,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "56e7a020339f079f",
+      "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 270,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "0772acf7684b121e",
+      "text": "You again. Song and a half this time.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 271,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "baf148d3f178c53f",
+      "text": "What do people call in about?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 274,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "3dd0d7b88a382fe9",
+      "text": "Lights, mostly. Cattle, some nights. Engines.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 275,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "073fce364994cf9e",
+      "text": "And missing time. You read that book? Everybody's read that book now.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 276,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "3a345d802b2c405b",
+      "text": "Half of them, I think they read it first and then it happened to them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 277,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "f60bda199fff5103",
+      "text": "The other half never read anything in their lives.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 278,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "46264089a93d9980",
+      "text": "What do you think they are?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 281,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "a3c152d2c160dfed",
+      "text": "On the air I call them our visitors. It keeps it friendly.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 282,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "a75c7f370b3629f3",
+      "text": "Off the air I don't call them anything.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 283,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "2d76df5ed056575e",
+      "text": "Do you keep the calls?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 286,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "357153cc24cbf51d",
+      "text": "Every one, on reel. Twelve years of them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 287,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "ef7a39269e528490",
+      "text": "Except one. September of '81, a boy called in. I've never played it back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 288,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "281daafd0a94d01a",
+      "text": "I wasn't on the air that night. The station was off.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 289,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "e61be9c0d49ba49f",
+      "text": "He looks back at the studio, where the reels are turning.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 290,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "ecc59550da45471d",
+      "text": "Record's ending.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 291,
+          "kind": "talk",
+          "helper": "EA"
+        }
+      ]
+    },
+    {
+      "id": "7be9d2bb1f674a68",
+      "text": "A transistor radio in her lap, tuned between two stations. Hiss, and under it something that is not quite a voice.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 299,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "3b7c0995690f6b53",
+      "text": "It's louder tonight.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 299,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "63db872b216034b0",
+      "text": "She does not look at you when she says it.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 299,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "0adc77e227053348",
+      "text": "Still louder.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 300,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "c6d1be0fe527c1c3",
+      "text": "What are you listening to?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 303,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "fca5b4b13b5dfbd7",
+      "text": "Nothing. That's the point. In between.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 304,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "84b351f948f4d13a",
+      "text": "My husband said you could hear it in between, if you were quiet enough.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 305,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "cd4889f01f2647d1",
+      "text": "Most nights it's just this. Tonight it's louder.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 306,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "72f6788bcae2a2d8",
+      "text": "Your husband.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 309,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "efd830d0c62b70c5",
+      "text": "He went out to look at the cattle one night. March, three years ago.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 310,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "dca990e16f3937be",
+      "text": "Forty-seven minutes. I had the clock right there on the stove.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 311,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "2ff4a2ba5ea3343e",
+      "text": "He came back in and sat down and took off his boots, and he never said one word about it. Not then, not since.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 312,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "d29a14046594da19",
+      "text": "He sleeps fine. I don't.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 313,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "86d5c09dc6fb4f83",
+      "text": "Why sit out here?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 316,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "d1cd172c24641287",
+      "text": "Washer's broke at home.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 317,
+          "kind": "talk",
+          "helper": "RW"
+        }
+      ]
+    },
+    {
+      "id": "f3cb470aa9e6404a",
+      "text": "There is no basket on the bench beside her.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 318,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "e607894496cbfb71",
+      "text": "Shop's closed, friend. Open at ten. Tours on Saturdays.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 326,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "e32dd1a41e8207c6",
+      "text": "He taps the ash off the end of his cigarette onto the step.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 326,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "39c6b4e89bebab29",
+      "text": "Still closed.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 327,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "ccd04398a5f5ff7d",
+      "text": "The crash. 1947.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 330,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "5af3d8855363d25c",
+      "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 331,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "84743240facc0137",
+      "text": "The Army says flying disc. Same day, they say weather balloon.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 332,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "e3ddfd9a5ad775de",
+      "text": "Then nothing for thirty years, till the book.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 333,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "f7fe6ac732cb132a",
+      "text": "The boys from '47. That's what I call them. The boys.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 334,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "802daa81446028e4",
+      "text": "Have you ever seen anything yourself?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 337,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "0b71d27200d13a33",
+      "text": "Me?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 338,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "5bb51d0bdbad8d45",
+      "text": "He takes a long time over the cigarette.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 339,
+          "kind": "talk",
+          "helper": "aside"
+        }
+      ]
+    },
+    {
+      "id": "08d6e8617f071c7a",
+      "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 340,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "563b8af0e4e2a2cd",
+      "text": "I sit out here every night it's clear. Never seen a thing.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 341,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "96f7770483c3c98a",
+      "text": "You'd think they'd come by the shop once. Out of courtesy.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 342,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "de08e0423004c3a9",
+      "text": "The cardboard alien in the window.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 345,
+          "kind": "talk",
+          "helper": "you"
+        }
+      ]
+    },
+    {
+      "id": "bfa77ddef27c8fae",
+      "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 346,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "91cf45c21fb28872",
+      "text": "Last time it was out on the highway north of town. Standing up, facing the traffic.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 347,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "bdf430c38b561927",
+      "text": "Somebody's idea of a joke.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 348,
+          "kind": "talk",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "d27810c5a5447700",
+      "text": "SARO RX/DSP DIRECTION SOLVE - EXCEPTIONS FILE COPIES. DO NOT REMOVE.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "a603ba0984dc788b",
+      "text": "FROM SYSTEMS, 03/84: NEGATIVE RANGES CANNOT BE GENERATED BY THE SOLVER. RANGE IS COMPUTED FROM DELAY AND IS UNSIGNED. ANY NEGATIVE RANGE IS AN INPUT ERROR. RECLASSIFY AND FILE HERE. Then why does it keep doing it?",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "ae15a3fae81d7aeb",
+      "text": "DATE 09/22/81 01:52:07 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -34 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR clock?",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "965bb5c10466f121",
+      "text": "DATE 03/02/83 03:10:44 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -36 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR baseline file reloaded",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "6de6ba3ad6b856de",
+      "text": "DATE 10/19/85 23:58:31 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -38 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR third time. Ask Systems.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 5
+        }
+      ]
+    },
+    {
+      "id": "d2fae6a331c3bb17",
+      "text": "DATE 07/--/47 02:17:00 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -00 LY",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 53,
+          "kind": "page",
+          "document": "'binder'",
+          "paragraph": 6
+        }
+      ]
+    },
+    {
+      "id": "fa6a0b0cd0c596a7",
+      "text": "A ring binder from the shelf above the printer. The note from Systems is typed. The pencil under it looks like the hand in the shift log.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'binder'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "cbc9f43518f8c121",
+      "text": "Three printouts in the same format as tonight's, from September 1981, March 1983 and October 1985. Each one is stamped as an input error.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'binder'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "9067294575f05a5f",
+      "text": "The last sheet is on older, yellowed paper, with no stamp and no pencil. The date field says 1947. SARO's solver did not exist in 1947.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 59,
+          "kind": "document",
+          "document": "'binder'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "234ea20d1caa0d27",
+      "text": "SARO / MAINTENANCE RX BANK 3 - SERVICE RECORD",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 68,
+          "kind": "page",
+          "document": "'service'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "d308bf568c02a039",
+      "text": "09/23/81 K3 RELAY REPLACED. TRIPPED APPROX 1 MIN BEFORE LINE POWER FAILURE 09/22. NO FAULT FOUND.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 68,
+          "kind": "page",
+          "document": "'service'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "1f2e2fd19d8d50ad",
+      "text": "03/03/83 K3 REPLACED. TRIPPED BEFORE POWER DIP 03/02. RELAY TESTS GOOD. REPLACED ANYWAY.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 68,
+          "kind": "page",
+          "document": "'service'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "6fb2d5ce17fc3901",
+      "text": "10/21/85 K3 REPLACED (3RD). TRIPPED 40 SEC BEFORE OUTAGE 10/19. RELAY IS NOT FAULTY. IT TRIPS BEFORE, NOT AFTER. M.O.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 68,
+          "kind": "page",
+          "document": "'service'",
+          "paragraph": 4
+        }
+      ]
+    },
+    {
+      "id": "d6aeb63179557848",
+      "text": "A clipboard on the rack, under the status lights. Maintenance has replaced relay K3 three times since 1981.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 84,
+          "kind": "document",
+          "document": "'service'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "7a9fc01500588e03",
+      "text": "Each entry is the day after the trip. Each time, the relay tripped first and the power went after.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 84,
+          "kind": "document",
+          "document": "'service'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "c3de6a09f1a669da",
+      "text": "CALIBRATION 1419.900 MHZ GAIN 45-65 BW 34-62",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 92,
+          "kind": "page",
+          "document": "'rfiCard'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "290590e0b011a02e",
+      "text": "KNOWN INTERFERENCE 1420.110 HIGHWAY MICROWAVE RELAY. NOTCH. 1420.6 SATELLITE DOWNLINK, PASSES ONLY.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 92,
+          "kind": "page",
+          "document": "'rfiCard'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "666178816e526e25",
+      "text": "ANYTHING ELSE: LOG IT.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 92,
+          "kind": "page",
+          "document": "'rfiCard'",
+          "paragraph": 3
+        }
+      ]
+    },
+    {
+      "id": "b971e87f15dd6d8e",
+      "text": "An index card, taped to the console so long ago the tape has gone brown.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 102,
+          "kind": "document",
+          "document": "'rfiCard'",
+          "paragraph": 1
+        },
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 102,
+          "kind": "document",
+          "document": "'rfiCard'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "46bf5c4d277a88b1",
+      "text": "A pulse pattern of four and seven is not on it.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 102,
+          "kind": "document",
+          "document": "'rfiCard'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "7db37c1cd6ea6cdf",
+      "text": "HALLEY'S COMET APRIL 1986",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 109,
+          "kind": "page",
+          "document": "'halley'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "0aeafff9e9876c5c",
+      "text": "CLOSEST TO EARTH APRIL 11 LOOK LOW IN THE SOUTH EARLY APRIL: BEFORE DAWN AFTER THE 12TH: AROUND MIDNIGHT GET AWAY FROM TOWN LIGHTS Public line: comet calls go to the planetarium in town. Not us. Not at 3 a.m. E.W.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 109,
+          "kind": "page",
+          "document": "'halley'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "2f8e9df6b19fa0a8",
+      "text": "A printed poster from the spring, with a little chart of the southern sky and the comet's place for the 5th, 10th, 14th and 20th of April.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 118,
+          "kind": "document",
+          "document": "'halley'",
+          "paragraph": 1
+        }
+      ]
+    },
+    {
+      "id": "5eb7e046914be64c",
+      "text": "A note is taped in the corner, in the supervisor's hand.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 118,
+          "kind": "document",
+          "document": "'halley'",
+          "paragraph": 2
+        }
+      ]
+    },
+    {
+      "id": "11ea12de84e4fd97",
+      "text": "The roll on the teleprinter in the corner, torn off below the last message. A weather advisory at 22:50, and the network status at 23:00.",
+      "sources": [
+        {
+          "file": "src/story/nightshift.ts",
+          "line": 145,
+          "kind": "document",
+          "document": "'telex'",
+          "paragraph": 1
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "clipCount": 328,
+    "documentClipCount": 52,
+    "pageClipCount": 84,
+    "talkClipCount": 192,
+    "words": 4798,
+    "characters": 26217,
+    "transcriptDeclarations": 39,
+    "pageDeclarations": 37,
+    "staticPageVariants": 33,
+    "talkSourceSites": 189
+  },
+  "documents": [
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 841,
+      "kind": "document",
+      "document": "'s03log'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 848,
+      "kind": "document",
+      "document": "'refsheet'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 856,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 3,
+      "dynamic": true
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 867,
+      "kind": "document",
+      "document": "'observation'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 870,
+      "kind": "document",
+      "document": "'finding'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 444,
+      "kind": "document",
+      "document": "'e07'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 448,
+      "kind": "document",
+      "document": "'e06'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 452,
+      "kind": "document",
+      "document": "'b12lineage'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 456,
+      "kind": "document",
+      "document": "'e08'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 460,
+      "kind": "document",
+      "document": "'p04'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 464,
+      "kind": "document",
+      "document": "'p05'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 468,
+      "kind": "document",
+      "document": "'access'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 472,
+      "kind": "document",
+      "document": "'casemap'",
+      "variants": 2,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 830,
+      "kind": "document",
+      "document": "'e09a'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 834,
+      "kind": "document",
+      "document": "'e10'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 838,
+      "kind": "document",
+      "document": "'s1diagram'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 842,
+      "kind": "document",
+      "document": "'P06 / The moved fixed point'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 843,
+      "kind": "document",
+      "document": "'P07 / Local lamp null test'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 844,
+      "kind": "document",
+      "document": "'P08 / The cable break'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 845,
+      "kind": "document",
+      "document": "'P09 / Two timing records'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 854,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 2,
+      "dynamic": true
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 864,
+      "kind": "document",
+      "document": "'e11'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 868,
+      "kind": "document",
+      "document": "'e13'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 872,
+      "kind": "document",
+      "document": "'e12'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 876,
+      "kind": "document",
+      "document": "'P10 / The same mark'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 877,
+      "kind": "document",
+      "document": "'P11 / Why the record was changed'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 878,
+      "kind": "document",
+      "document": "'P12 / The return line'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 540,
+      "kind": "document",
+      "document": "'e14'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 554,
+      "kind": "document",
+      "document": "'e15'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 558,
+      "kind": "document",
+      "document": "'p13'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 59,
+      "kind": "document",
+      "document": "'log'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 83,
+      "kind": "document",
+      "document": "'workorder'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 107,
+      "kind": "document",
+      "document": "'printout'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/abduction.ts",
+      "line": 235,
+      "kind": "document",
+      "document": "`away${this.data.count}`",
+      "variants": 1,
+      "dynamic": true
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 59,
+      "kind": "document",
+      "document": "'binder'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 84,
+      "kind": "document",
+      "document": "'service'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 102,
+      "kind": "document",
+      "document": "'rfiCard'",
+      "variants": 2,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 118,
+      "kind": "document",
+      "document": "'halley'",
+      "variants": 1,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 145,
+      "kind": "document",
+      "document": "'telex'",
+      "variants": 1,
+      "dynamic": false
+    }
+  ],
+  "pages": [
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 840,
+      "kind": "page",
+      "document": "'s03log'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 847,
+      "kind": "page",
+      "document": "'refsheet'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 854,
+      "kind": "page",
+      "document": "p.id",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 867,
+      "kind": "page",
+      "document": "'observation'",
+      "variants": 2,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 870,
+      "kind": "page",
+      "document": "'finding'",
+      "variants": 2,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 443,
+      "kind": "page",
+      "document": "'e07'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 447,
+      "kind": "page",
+      "document": "'e06'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 451,
+      "kind": "page",
+      "document": "'b12lineage'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 455,
+      "kind": "page",
+      "document": "'e08'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 459,
+      "kind": "page",
+      "document": "'p04'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 463,
+      "kind": "page",
+      "document": "'p05'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 467,
+      "kind": "page",
+      "document": "'access'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter2.ts",
+      "line": 471,
+      "kind": "page",
+      "document": "'casemap'",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 829,
+      "kind": "page",
+      "document": "'e09a'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 833,
+      "kind": "page",
+      "document": "'e10'",
+      "variants": 2,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 837,
+      "kind": "page",
+      "document": "'s1diagram'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 842,
+      "kind": "page",
+      "document": "'P06 / The moved fixed point'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 843,
+      "kind": "page",
+      "document": "'P07 / Local lamp null test'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 844,
+      "kind": "page",
+      "document": "'P08 / The cable break'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 845,
+      "kind": "page",
+      "document": "'P09 / Two timing records'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 852,
+      "kind": "page",
+      "document": "p.id",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 863,
+      "kind": "page",
+      "document": "'e11'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 867,
+      "kind": "page",
+      "document": "'e13'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 871,
+      "kind": "page",
+      "document": "'e12'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "line": 880,
+      "kind": "page",
+      "document": "k",
+      "variants": 3,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 539,
+      "kind": "page",
+      "document": "'e14'",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 553,
+      "kind": "page",
+      "document": "'e15'",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Chapter5.ts",
+      "line": 557,
+      "kind": "page",
+      "document": "'p13'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 46,
+      "kind": "page",
+      "document": "'log'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 69,
+      "kind": "page",
+      "document": "'workorder'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 106,
+      "kind": "page",
+      "document": "'printout'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true
+    },
+    {
+      "file": "src/story/abduction.ts",
+      "line": 234,
+      "kind": "page",
+      "document": "`away${this.data.count}`",
+      "variants": 1,
+      "empty": true,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 53,
+      "kind": "page",
+      "document": "'binder'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 68,
+      "kind": "page",
+      "document": "'service'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 92,
+      "kind": "page",
+      "document": "'rfiCard'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 109,
+      "kind": "page",
+      "document": "'halley'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": false
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 144,
+      "kind": "page",
+      "document": "'telex'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true
+    }
+  ],
+  "unavailableDynamicDocuments": [
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 840,
+      "kind": "page",
+      "document": "'s03log'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "`SARO ARRAY / MOTOR BUS S-03\\nLOCAL CONTROLLER LOG // ${clockText(this.s.eventClock, false)}\\n\\nENCODER HEADING:   026 DEGREES\\nSCHEDULED HEADING: 042 DEGREES\\n\\nCOMMANDS RECEIVED: 0\\nLOCAL OVERRIDE:    NONE`"
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 856,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 3,
+      "dynamic": true,
+      "expression": "first\n        ? `Exposed from the S-03 apron at ${clockText(p.clock)}. The central antenna, and below it the B-12 reference vane in the lower foreground.\\n\\nThe installation sheet says B-12 carries one stripe.`\n        : `Exposed from the B-12 sight line at ${clockText(p.clock)}, under the ${p.method === 'passive' ? 'shielded, passive' : 'active, 042-degree'} control.`"
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 854,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 2,
+      "dynamic": true,
+      "expression": "a\n        ? `Exposed at STATION 01 at ${clockText(p.clock)}. The empty footing on the transit sight line, and the marker post with the triangle and bar standing off it.`\n        : `Exposed at STATION 01 at ${clockText(p.clock)}. The cable south of the transit pier, cut clean, the two faces opposite each other.`"
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 106,
+      "kind": "page",
+      "document": "'printout'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "lines.join('\\n')"
+    },
+    {
+      "file": "src/story/abduction.ts",
+      "line": 235,
+      "kind": "document",
+      "document": "`away${this.data.count}`",
+      "variants": 1,
+      "dynamic": true,
+      "expression": "`One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: someone lying on their back in the grass in a SARO jacket, the reflective band across the chest. Me.`"
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 144,
+      "kind": "page",
+      "document": "'telex'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "messages.join('\\n\\n')"
+    }
+  ],
+  "availabilityPolicy": "Runtime requires every paragraph/line in a requested reading to be present. Dynamic documents remain unavailable rather than silently skipping text."
+}

@@ -1,6 +1,7 @@
 import { albumPage, bindAlbum } from './album';
 import type { AlbumView } from '../core/album';
 import { KIT_ART, type KitArt } from './kitArt';
+import { documentReadingParagraphs, type ReadAloud } from '../core/readAloud';
 
 export interface DocSpec {
   id: string;
@@ -86,6 +87,8 @@ const initials = (name: string) => {
 const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
 
 export class UI {
+  /** Optional prerecorded synthetic narration, supplied by main after audio setup. */
+  readAloud: ReadAloud | null = null;
   root = document.getElementById('ui')!;
   modal: HTMLElement | null = null;
   private modalClose: (() => void) | null = null;
@@ -248,6 +251,7 @@ export class UI {
     this.onModalChange?.(true);
   }
   close(silent = false) {
+    this.readAloud?.stop();
     if (!this.modal) return;
     this.modal.remove();
     this.modal = null;
@@ -307,6 +311,34 @@ export class UI {
 
   /** Called when a paper is opened (the sound of the page; set by main). */
   onPaper?: () => void;
+  /** Explicit playback only: opening a paper or refreshing a conversation stays quiet. */
+  readingControls(parent: HTMLElement, texts: string[], label = 'Read aloud', kind = 'conversation') {
+    const reader = this.readAloud;
+    if (!reader?.enabled) return;
+    const box = document.createElement('div');
+    box.className = 'read-aloud';
+    box.dataset.readingKind = kind;
+    box.innerHTML = '<button class="lp-btn" data-a="narrate">Read aloud</button><span data-reading-status role="status" aria-live="polite"></span>';
+    const button = box.querySelector('button')!;
+    button.textContent = label;
+    const status = box.querySelector<HTMLElement>('[data-reading-status]')!;
+    const available = reader.available(texts);
+    button.disabled = !available;
+    status.textContent = available ? 'Synthetic Kinski parody' : 'No recording for this text.';
+    let active = false;
+    const update = (state: 'loading' | 'playing' | 'idle' | 'error') => {
+      active = state === 'loading' || state === 'playing';
+      button.textContent = active ? 'Stop reading' : label;
+      button.setAttribute('aria-pressed', String(active));
+      status.textContent = state === 'loading' ? 'Loading recording…' : state === 'playing' ? 'Synthetic Kinski parody' : state === 'error' ? 'Recording could not be played. Try again.' : 'Synthetic Kinski parody';
+    };
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => {
+      if (active) reader.stop();
+      else void reader.play(texts, update);
+    });
+    parent.insertBefore(box, parent.querySelector('.controls'));
+  }
   document(doc: DocSpec, onClose: () => void) {
     this.onPaper?.();
     const el = document.createElement('div');
@@ -330,6 +362,10 @@ export class UI {
     el.querySelector('[data-a=back]')!.addEventListener('click', () => this.close());
     el.addEventListener('click', (e) => { if (e.target === el) this.close(); });
     this.open(el, onClose);
+    const side = el.querySelector<HTMLElement>('.text')!;
+    const paragraphs = (text: string) => text.split(/\n\s*\n/).filter((p) => p.trim());
+    if (doc.page.trim()) this.readingControls(side, documentReadingParagraphs(doc.page), 'Read document', 'document');
+    this.readingControls(side, paragraphs(doc.transcript), 'Read description', 'description');
   }
 
   // The journal, in five tabs: tonight's tasks, the observations, the findings recorded
@@ -416,6 +452,7 @@ export class UI {
   pause(o: {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
     music: number; onMusic: (v: number) => void; radio: number; onRadio: (v: number) => void;
+    kinski: boolean; onKinski: (v: boolean) => void;
     onSave?: () => void; onLoad?: () => void;
     quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
@@ -426,7 +463,7 @@ export class UI {
     const el = document.createElement('div');
     el.className = 'overlay';
     el.innerHTML = `
-      <div class="panel">
+      <div class="panel settings-panel">
         <h3>${o.title ?? 'Paused'}</h3>
         <button class="opt" data-a="resume">${o.settingsOnly ? 'Back' : 'Resume'}</button>
         ${o.onSave ? '<button class="opt" data-a="save">Save case</button>' : ''}
@@ -434,6 +471,8 @@ export class UI {
         <div class="set"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="1" step="0.01" value="${o.volume}"></div>
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
+        <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
+        <p class="small reading-note">Synthetic parody voice. Use Read aloud in documents and conversations.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
@@ -453,6 +492,13 @@ export class UI {
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#mus') as HTMLInputElement).addEventListener('input', (e) => o.onMusic(+(e.target as HTMLInputElement).value));
     (el.querySelector('#rad') as HTMLInputElement).addEventListener('input', (e) => o.onRadio(+(e.target as HTMLInputElement).value));
+    let kinski = o.kinski;
+    el.querySelector<HTMLButtonElement>('[data-a=kinski]')!.addEventListener('click', (e) => {
+      kinski = !kinski;
+      const button = e.currentTarget as HTMLButtonElement;
+      button.textContent = kinski ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(kinski));
+      o.onKinski(kinski);
+    });
     (el.querySelector('#sens') as HTMLInputElement).addEventListener('input', (e) => o.onSens(+(e.target as HTMLInputElement).value));
     (el.querySelector('#fov') as HTMLInputElement).addEventListener('input', (e) => o.onFov(+(e.target as HTMLInputElement).value));
     let inv = o.invertY, big = o.largeText, calm = o.calmFlash, still = o.stillShots, ab = !!o.abduct;

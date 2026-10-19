@@ -242,6 +242,11 @@ html.text-large .examine { font-size: 27px; }
 .docview .text p { font-family: var(--type); font-size: 16px; line-height: 1.6; color: #d8d1bf; margin: 0 0 12px; max-width: 58ch; white-space: pre-line; }
 .docview .text .controls { margin-top: auto; padding-top: 18px; display: flex; gap: 22px; font-family: var(--term); font-size: 22px; color: #cfc8b5; }
 .docview .text .controls button { min-height: 44px; }
+.read-aloud { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; padding: 10px 0; }
+.read-aloud button { min-height: 44px; }
+.read-aloud [data-reading-status] { font-family: var(--type); font-size: 12px; line-height: 1.5; color: #b6ae9b; }
+.read-aloud button:disabled { opacity: .5; cursor: default; }
+.panel .small.reading-note { margin: 0 0 14px; }
 .docview .text .controls kbd { font-family: var(--term); border: 1px solid #8a8473; border-radius: 3px; padding: 0 6px; margin-right: 6px; color: var(--amber); }
 @media (max-width: 760px), (orientation: portrait) {
   .docview { grid-template-columns: 1fr; grid-template-rows: auto 1fr; overflow: auto; }
@@ -400,6 +405,7 @@ button.al-print:focus-visible { outline: 2px solid var(--amber); outline-offset:
 
 /* ---------- Pause / settings ---------- */
 .panel { width: min(460px, 100%); background: rgba(8,11,19,.94); border: 1px solid rgba(255,255,255,.12); padding: 28px 30px; font-family: var(--term); }
+.settings-panel { max-height: calc(100vh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
 .panel h3 { font-family: var(--display); font-weight: 500; font-size: 34px; margin: 0 0 18px; color: #f0ead8; letter-spacing: .03em; }
 .panel .opt { display: block; width: 100%; text-align: left; font-size: 28px; padding: 6px 0; min-height: 44px; color: #e8e2d2; }
 .panel .opt:hover { color: var(--amber); }

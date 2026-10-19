@@ -2,6 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import { UI } from './ui/UI';
 import { AudioSys, type Surface } from './core/Audio';
+import { ReadAloud } from './core/readAloud';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
@@ -147,6 +148,9 @@ async function boot() {
   let playtime = 0;                        // seconds of active play in this case
   let restoring: GameState | null = null;  // the save being opened; the chapters read their case from it
   const audio = new AudioSys();
+  const readAloud = new ReadAloud(audio);
+  readAloud.enabled = store.get<boolean>('kinskiReadAloud', false) === true;
+  ui.readAloud = readAloud;
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.setRadio(store.get('radioVol', 1));
@@ -435,6 +439,7 @@ async function boot() {
   let calmFlash = store.get('calmFlash', false);
   let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
+    kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; store.set('kinskiReadAloud', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -453,6 +458,7 @@ async function boot() {
 
   function openPause() {
     if (pausedByMenu) return;
+    readAloud.stop();
     pausedByMenu = true;
     audio.suspend(true); score?.pause(true);
     const resume = () => { pausedByMenu = false; audio.suspend(false); score?.pause(false); };
