@@ -1,0 +1,107 @@
+{
+  "date": "2026-09-10",
+  "source_base_commit": "08cb3c9a7a788b9bdf90ad8c95b21631c00e7857",
+  "images": [
+    {
+      "key": "01-night-sky",
+      "file": "01-night-sky.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. Create ONE high-end game environment concept image for SIGNAL / 47, an original first-person cosmic investigation game set at the fictional SARO observatory, rural New Mexico 1986. Landscape 16:9. This image is the NORMAL NIGHT SKY reference, not a supernatural event. Player eye height 1.65m, natural 60 degree field of view, facing a magnificent detailed night sky occupying 75 percent of the frame over a very low desert mesa horizon. Hundreds of fine, nonuniform star pinpoints with a physically believable brightness distribution and faint white, warm and blue color differences, subtle complex Milky Way dust lanes, coherent dark blue-black celestial depth, thin high cirrus and very faint horizon haze. Enough delicate detail to guide a major improvement over low resolution dot stars. Milky Way restrained, no saturated purple nebula. Foreground lower quarter: realistic scale worn concrete observation platform, a small dark olive analog survey box and tripod, dry clumped desert grass catching a single amber worklight; one distant large radio telescope in silhouette off-center with low outbuildings. Quiet, beautiful, ominous institutional realism. PBR surface detail and natural dark adaptation, credible first-person playable geometry rather than a poster. No spacecraft, no glowing event lights, no giant planet, no lens star spikes on every star, no HUD. Small discreet bottom caption exactly 'SIGNAL / 47 — SKY STUDY 01 — GENERATED CONCEPT'. Original concept, no branding from any other game. Not a real gameplay screenshot and not a scientific star chart.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-33195c03-bb71-4422-b046-238d5fc22377.png",
+      "sha256": "4dc4386ea1524430a461c7dc325712c905896a4f7148513debc83b945cc9dd4b",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "02-light-event",
+      "file": "02-light-event.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. Create ONE high-end first-person game concept for SIGNAL / 47, New Mexico 1986, fictional SARO. Landscape 16:9. Theme: 'The Erased Night', proposed story in which an abandoned 1947 survey begins leaving new physical evidence in 1986. Show the signature RARE SKY EVENT from an accessible desert survey platform at human eye height, 60 degree FOV. Detailed natural blue-black starfield, fine diverse pinpoints and a restrained Milky Way, dim high cirrus. Along one low arc above the dark mesa, SEVEN SMALL separate pale amber-white light points stand absolutely still, irregularly spaced, as if surveying locations below; four slightly brighter, three just appearing. They are mysterious compact lights, not gigantic suns or disks, no vehicles, no rings or beams. Their arrangement should feel like physical evidence one could map from two viewpoints. Subtle cool flash catches one antenna rim and the glass of a worn optical sight. Foreground a 1986 manual film camera held low at the bottom right, a survey tripod, a cream paper azimuth card clipped to a weathered olive B-12 field cabinet, amber worklamp, rough concrete, layered dry desert vegetation. Only one dominant dish plus small distant silhouettes, much open sky. Tension through stillness and scale, disciplined cinematic lighting, beautiful believable materials. No character faces, no purple nebula, no alien monster, no HUD. Small unobtrusive bottom caption exactly 'SIGNAL / 47 — LIGHT EVENT — GENERATED CONCEPT'. This is a proposed visual target, not implemented gameplay.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-962b6c24-dc05-4c53-ad38-cdbd03bb57ac.png",
+      "sha256": "8c19a300a0420b71cf4856fd85449a48e7ef840ee59e974fe7b97bdd5a98f2c6",
+      "edit_prompt": "Edit this SIGNAL / 47 generated concept image with only one localized change. On the small sign at the far right of the image, remove all the invented slogan text. Replace the sign lettering with exactly SARO on one line and FIELD POINT B-12 beneath it. Preserve the weathered metal sign's shape, location, perspective and material. Preserve the entire remaining composition, all seven distant mysterious lights, beautifully detailed starry sky, radio dish, camera in the foreground, tripod, calibration box, azimuth card, lighting and colors. Preserve the existing bottom GENERATED CONCEPT caption exactly. Do not add any new text, logos, slogans, people or objects. This is a concept art lettering cleanup, not a new composition.",
+      "edited_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-e0e7663f-d229-442a-bf66-f1e8bd79f0a5.png",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "03-saro-place",
+      "file": "03-saro-place.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. ONE coherent game environment concept image, landscape 16:9, for SIGNAL / 47, fictional Sierra Array Radio Observatory SARO, New Mexico1986. Show a buildable, compact research facility in first-person view from its gravel arrival courtyard at late blue night. A modest one-story cream stucco and institutional-green administration/control building with broad control room windows faces south toward one dominant distant parabolic antenna. A smaller connected photolab wing has a red safelight visible through a protected slit window and its own marked service door. A chain-link service gate opens to a legible narrow concrete route toward a weathered olive survey cabinet and reference tripod. Two visible routes converge at the main entrance; parked boxy1980s utility pickup as background scale, not main focus. Utility conduits, realistic rain drains, low fencing, worn doors and carefully chosen practical detail. Faint amber practical pools against expansive rich cool night, fine sharp stars and subtle Milky Way structure, desert vegetation clustered near fence bases. Telling ordinary place with a quiet ominous history; realistic proportions and beveled material detail, no abandoned factory ruin, no huge spaceship complex, no random clutter, no other game branding. Small bottom caption exactly 'SIGNAL / 47 — SARO — GENERATED CONCEPT'. This is an architectural concept for a future pass, not gameplay evidence.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-ddee6692-f21b-4a23-9eb5-da303f2ca69b.png",
+      "sha256": "e8a288f549ecceee4d1bbf0339b2f9879a04939b32f8d41dae98862c3f5b192a",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "04-photolab",
+      "file": "04-photolab.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. ONE high-quality photolab interior game concept, wide16:9, first-person eye height1.65m with believable60degree FOV, SIGNAL /47 SARO New Mexico1986. Long narrow institutional room: worn cream plaster over deep muted green lower walls, a suspended tile ceiling with two practical fluorescent fixtures, sealed square floor tiles reflecting BROAD soft warm and red source shapes. Left: detailed analog enlarger with bellows/height rail, three shallow processing trays, film tank, print tongs, neatly grouped chemical glass bottles, a steel stool. Rear: realistic stainless sink with taps and visible plumbing, cloth over edge, metal bin, green supply cabinet. Right: generous photographic inspection bench with a lit contact-print lightbox, two separate developed black and white prints of the SAME desert survey tripod under different conditions, magnifying loupe, tracing acetate, stamped1947 field folder and simple folded paper map, cream desk lamp; a pinboard with a few practical contact prints and measurement diagrams. Small sheets hang on clips above left bench. Functional storage and clear walking space, no excessive clutter. The room is a place for comparing evidence and controlled experiments. Rich soft indirect lighting with red safelight on left and warm archive task light on right, readable steel not black silhouettes, subtle material wear. Physical labels can be tiny and indistinct, only footer must read exactly 'SIGNAL / 47 — PHOTOLAB — GENERATED CONCEPT'. No modern displays, no neon sci-fi, no fake interactive HUD. Proposed art target, not a gameplay capture.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-72e11422-3cca-4381-92ed-82922cb3ea54.png",
+      "sha256": "2b76c8add7270175a229b020101bde1d79c12e8a63c7719bd92952575515561b",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "05-old-survey-station",
+      "file": "05-old-survey-station.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. ONE high-end environment concept for SIGNAL / 47, first-person cosmic detective game, New Mexico1986. Landscape16:9. Accessible abandoned SURVEY STATION from1947 in a dry arroyo, a place for a specific investigation not combat. Human eye-height view arriving by a short footpath. A modest cream adobe/concrete survey hut with an open green steel door and small window, rusted 1940s transit/theodolite on a concrete survey plinth outside. Seven low numbered measurement stakes follow the ground contour; a disconnected cable reel and a weathered manual power isolation switch show a physical experiment. In the doorway one can see a simple workbench, an old paper field map, wire recorder case and narrow shelving. One battery lantern lights the doorstep; warm flashlight grazing low survey marks; distant cool moonless sky with very fine stars and subtle Milky Way, no supernatural show in this image. Layered creosote-like dry scrub and grass, believable erosion, chipped plaster, worn metal, few chosen props. Extremely atmospheric, quiet, tactile, legible path and clear silhouette, no dramatic monster, no gigantic radar dome, no futuristic machinery, no postapocalyptic rubble. Detail should support close inspection and image comparison. Bottom caption exactly 'SIGNAL / 47 — SURVEY STATION — GENERATED CONCEPT'. Newly proposed later location, not an existing built level.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-d1a7bea4-d4f7-4ddb-8a55-9c49fc01ddb2.png",
+      "sha256": "758a9ea49213de1249840ea0053d436fa7719964fd08734b224d8600e23d4975",
+      "edit_prompt": "Edit this SIGNAL / 47 generated concept art with only localized lettering corrections. Make the survey station entirely fictional, removing all real United States Geological Survey / USGS attributions and the invented slogan. On the large plaque on the left instrument pedestal replace the lettering with exactly FIELD SURVEY then REFERENCE POINT then 1947. On the cream wall to the right of the open doorway replace U.S.G.S. SURVEY STATION 1947 with exactly FIELD SURVEY then STATION 01 then 1947. On the green equipment crate at lower right remove U.S.G.S. and all the slogan text, leaving only FIELD EQUIPMENT. Keep S-1 on the green door and MAIN POWER ISOLATION by the switch unchanged. Preserve all geometry, materials, detailed starry sky, stone and desert vegetation, old instrument, numbered stakes, doorway, indoor props, switch, lighting, original composition and bottom GENERATED CONCEPT caption. No new logos, slogans, captions or additional objects.",
+      "edited_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-fe851dda-f1ab-4b43-9709-20b00220166a.png",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "06-motel-witness",
+      "file": "06-motel-witness.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: stylized-concept. ONE cinematic first-person game environment concept, landscape16:9, SIGNAL /47 New Mexico1986. A small inhabited roadside motel on the edge of a fictional Southwestern town, many miles from the SARO array, proposed later investigation location. View at human eye height from a cracked concrete motel walkway toward a partly open room with number6 and a modest reception at the other end. The room is the site of a witness interview: through the open door see one warm bedside lamp, rotary telephone, folding paper road map and film negatives on a plain desk; no people visible. Dark empty pool fenced at courtyard center, an old1980s sedan beside a sodium-lit road, low faded turquoise 'MOTEL' sign, red neon vacancy accent used sparingly. A huge refined night sky over low mountain silhouettes with fine stars and restrained Milky Way; a single tiny unexplained pale light far over the desert is easy to miss. Grounded human story, somewhere people still sleep and work, no giant radio dishes next to the motel, no horror blood, no modern screens, no futuristic cars. Tactile worn adobe, green/turquoise trim, period furniture, warm/cool lighting contrast, detailed accessible layout. Bottom caption exactly 'SIGNAL / 47 — WITNESS MOTEL — GENERATED CONCEPT'. Not gameplay evidence; a proposed later chapter scene.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-bcff9ee4-78d1-4ab3-aa43-93cb6e758611.png",
+      "sha256": "33d65abe676e3553123fbd4da0ddedd08482441c316c63b9dd4b69a9c3f6d429",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "07-layout-plan",
+      "file": "07-layout-plan.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: infographic-diagram. Create ONE polished landscape16:9 game level-design concept sheet for SIGNAL /47, titled 'SARO / PROPOSED LOCAL LAYOUT'. Top-down orthographic illustrated architectural plan, no perspective distortion, coherent rooms and connected walking paths. North arrow points up. Upper central portion: a compact rectangular control building, main control room has south-facing observation windows. A smaller connected photolab wing immediately to its NORTH, clearly labeled 'LAB'; an archive nook connects east of the lab labeled 'ARCHIVE'. Control room labeled 'CONTROL'. East wall of control building has the service exit into 'SERVICE YARD'. A clear exterior footpath runs SOUTH along east side of building to a field controller 'S-03', continues SOUTH another short stretch to 'B-12' observation platform with cabinet/tripod facing westward antenna silhouettes. West and south lie three small antenna circles, separated by service tracks. A narrow public 'ACCESS ROAD' approaches from northeast and stops at the gate, distinct from walking paths. Use a soft cream drafting-paper background, institutional green fills, warm amber route line, charcoal linework, restrained watercolor material hints. Doors/openings/circulation must make physical sense; no dead-end hall without a door. NO motel or distant survey-station inside this local campus. Faint dimension ticks for scale but no false exact measurements. Short exact labels only as given, carefully legible. Footer exactly 'GENERATED CONCEPT / TOPOLOGY PROPOSAL / NOT AS-BUILT'. This is an illustrative proposal, not an authoritative measured floor plan.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-da07030a-c96a-42b6-aad2-f659b97bfd68.png",
+      "sha256": "ea74cf872582a2c333da23b2ac84f553e401c7c5eb9a709527f1fdb5ec642063",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    },
+    {
+      "key": "08-evidence-ui",
+      "file": "08-evidence-ui.png",
+      "classification": "generated concept, not runtime evidence",
+      "method": "built-in image_gen",
+      "original_prompt": "Use case: ui-mockup. ONE polished landscape16:9 high fidelity game interface concept for SIGNAL /47, an analog1986 cosmic investigation game. Screen-filling evidence-comparison UI designed to become editable Unity controls later; this generated image is only a visual mockup. Cream archival paper canvas, deep institutional green header and charcoal typography, quiet warm amber active accents, ample spacing and large readable controls. Top left title exactly 'SIGNAL / 47' with smaller 'CASE 01 / THE ERASED NIGHT'. Top navigation three short tabs 'OBSERVATIONS', 'HYPOTHESES', 'TESTS', with OBSERVATIONS active. Main content TWO large black-and-white photographic contact prints side-by-side in thin white borders: the SAME desert reference tripod and mast, photographed from the SAME camera angle. Left print labeled '01 / BASELINE' shows a single vertical marker; right print labeled '02 / CONTROL' shows that marker with a faint second offset trace. Only the discovered trace has a small hand-drawn amber circle, not a huge glowing quest icon. Below the photos a slim loupe zoom control and buttons 'ALIGN PRINTS' and 'MARK DETAIL'. Rightmost narrow paper sidebar with two short legible observation lines 'POWER DISCONNECTED' and 'SECOND TRACE REMAINS', followed by 'WORKING HYPOTHESIS' and an outlined blank ruled note area with no answer prefilled. Bottom help strip 'DRAG TO PAN / SCROLL TO ZOOM / ESC TO CLOSE'. Keep all exact text accurate and sparse, no gibberish paragraphs, no extra button grids, no modern neon HUD, no sci-fi holograms. Small footer 'GENERATED UI CONCEPT'. Design must clearly distinguish observations from a player's unconfirmed explanation and leave space for deduction. Elegant usable typographic hierarchy. No claims of a working interface.",
+      "original_source": "/home/tombonator3000t/.codex/generated_images/01a08bf7-5a56-7c00-afca-8b480ac50b5b/exec-d425123e-be76-4dbd-a9ec-59260957db14.png",
+      "sha256": "372dccbfa2cc04d3e8aefcefac41c6c69d4445d4d24a380cfd4649d4fd4917c9",
+      "width": 1672,
+      "height": 941,
+      "review": "Main agent inspected the selected generated image. See CONCEPT_11.md for concept limitations."
+    }
+  ],
+  "packaged_date": "2026-09-11"
+}
