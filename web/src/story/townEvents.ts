@@ -159,7 +159,7 @@ export class TownEvents {
     const call = !this.d.seen.has('ev:phone1') ? 1 : s.later && !this.d.seen.has('ev:phone2') ? 2 : 0;
     if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < 4 * 3600 + 45 * 60 && this.free(s.clock)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
-      this.d.audio.loop('town-ring', 'phone_ring', { at: phone, gain: 0.8 });
+      this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
 
     // ---------- 8: the lamps ----------
@@ -194,7 +194,17 @@ export class TownEvents {
       a.loop('town-line', 'printer', { at, gain: 0.35 });
       this.d.toast('No dial tone. On the line, a printer: the control room printer, line by line, the way it printed at 02:13.', 6);
     } else {
-      a.loop('town-line', 'gust', { at, gain: 0.12 });
+      // the line still open after it: a hush in the handset's band (bought sound; else the wind)
+      a.loop('town-line', a.or('line_hush', 'gust'), { at, gain: 0.12 });
+      // far off on the line, an engine: it turns over and catches, again, and dies (the truck's
+      // own start and shut-off, small in the handset's band)
+      const ear = a.spatial(at, 1.2);
+      if (ear) {
+        const line = a.phoneLine(); line.gain.disconnect(); line.gain.connect(ear); line.gain.gain.value = 0.4;
+        a.play('engineStart', { dest: line.input, when: 0.4, from: 0.7, dur: 1.5 });
+        a.play('engineStart', { dest: line.input, when: 1.9, from: 0.75, dur: 1.1, rate: 0.93 });
+        a.play('engineOff', { dest: line.input, when: 2.9, rate: 0.9 });
+      }
       // relay clicks, four and seven, after the silence
       for (let i = 0; i < 11; i++) a.play('click', { at, gain: 0.5, when: 14 + i * 0.32 + (i >= 4 ? 0.9 : 0), lp: 2200 });
       this.d.toast('Far off, an engine. It coughs, coughs again and stops. Then nothing at all.', 6);

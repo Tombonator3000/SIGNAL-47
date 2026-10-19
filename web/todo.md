@@ -2,6 +2,11 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
+## Fra Tom 19. oktober kveld
+
+- [ ] **Gå ut av bilen ved kuene, den forlatte bilen i veikanten og radiomastene.** Tom kom ikke ut der: på riksveien slipper `World.canGetOut()` bare ut ved dineren og i Caliche, og egne turer (`trip.free`) aldri. Under arbeid på grenen `getout-fix` (egen worktree), med `tools/getout.py`.
+- [ ] **Lytt på de kjøpte lydene** (Ultimate SFX for Games, se `log.md` 19. oktober): suset og knasene i radioene, trykket når de tar deg og i THE EVENT, linja og motoren i telefonkiosken, dørene på SARO, spaken i prologen, lampa og tv-en i rom 6, nøklene, kaffen og den nye lyden ute i mørket. Valgt etter måling; ingen har lyttet ennå.
+
 ## Toms liste 16. oktober kveld, i den rekkefølgen jeg tar den
 
 Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).

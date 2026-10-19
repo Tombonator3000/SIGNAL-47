@@ -36,6 +36,8 @@ async def main():
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.0)")
         names = await ev("Object.keys(S47.game.d.audio.buf).filter((k) => k.startsWith('alien'))")
         check(set(names) == ALLOWED, f"the six sounds are loaded ({sorted(names)})")
+        # with the bought sounds (src/assets/licensed, tools/licensed_sfx.py) a seventh call
+        if await ev("!!S47.audio.lic('call_tone')"): ALLOWED.add('lic:call_tone')
         # into the truck for the flashlight on the passenger seat, and out again in the yard
         await ev("S47.game.d.inter.get('truck').use()")
         for _ in range(80):

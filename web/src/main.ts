@@ -202,6 +202,7 @@ async function boot() {
     applyQuality: () => { setQuality(scene, quality); ultra.mark(scene); },
     audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
     thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
+    keys: () => audio.play(audio.or('keys'), { gain: 0.6 }),
     fade: (on, text) => ui.fade(on, text ?? ''),
     hold: (on) => { game.cinematic = on; if (on) input.reset(); },
     after: (sec, fn) => game.after(sec, fn),
