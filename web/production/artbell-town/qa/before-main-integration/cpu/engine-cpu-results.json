@@ -1,0 +1,54 @@
+{
+  "scope": "Controlled audio clock, source-end and loader fixtures plus authored Caliche interactions; no real MP3 decoder, browser, GPU, perceived-voice or physical-device claim",
+  "results": [
+    {
+      "name": "artbell-town-core",
+      "command": "node tools/artbell-town-core.cjs",
+      "log": "artbell-town-core.log",
+      "exit_code": 0,
+      "seconds": 0.6010070210031699
+    },
+    {
+      "name": "artbell-core",
+      "command": "node tools/artbell-core.cjs",
+      "log": "artbell-core.log",
+      "exit_code": 0,
+      "seconds": 0.5495303139905445
+    },
+    {
+      "name": "radiocast-core",
+      "command": "node tools/radiocast-core.cjs",
+      "log": "radiocast-core.log",
+      "exit_code": 0,
+      "seconds": 2.0224505260121077
+    },
+    {
+      "name": "radioarchive",
+      "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/artbell-town-radioarchive.cjs --log-level=warning && node node_modules/.cache/artbell-town-radioarchive.cjs",
+      "log": "radioarchive.log",
+      "exit_code": 0,
+      "seconds": 0.47482240400859155
+    },
+    {
+      "name": "readaloud-core",
+      "command": "node tools/readaloud-core.cjs",
+      "log": "readaloud-core.log",
+      "exit_code": 0,
+      "seconds": 0.5447273989848327
+    },
+    {
+      "name": "phonecalls-core",
+      "command": "node tools/phonecalls-core.cjs",
+      "log": "phonecalls-core.log",
+      "exit_code": 0,
+      "seconds": 0.37071481900056824
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "log": "typecheck.log",
+      "exit_code": 0,
+      "seconds": 2.827243539999472
+    }
+  ]
+}

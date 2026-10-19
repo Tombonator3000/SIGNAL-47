@@ -1,0 +1,288 @@
+[
+  {
+    "name": "radiocast-pages",
+    "exit_code": 0,
+    "seconds": 80.56,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radiocast-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/radiocast-pages"
+    ],
+    "log": "radiocast-pages.log"
+  },
+  {
+    "name": "radiocast-single",
+    "exit_code": 0,
+    "seconds": 86.65,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radiocast-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/radiocast-single"
+    ],
+    "log": "radiocast-single.log"
+  },
+  {
+    "name": "artbell-pages",
+    "exit_code": 0,
+    "seconds": 26.01,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/artbell-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/artbell-pages"
+    ],
+    "log": "artbell-pages.log"
+  },
+  {
+    "name": "artbell-single",
+    "exit_code": 0,
+    "seconds": 32.9,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/artbell-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/artbell-single"
+    ],
+    "log": "artbell-single.log"
+  },
+  {
+    "name": "getout",
+    "exit_code": 0,
+    "seconds": 34.2,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/getout.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/getout"
+    ],
+    "log": "getout.log"
+  },
+  {
+    "name": "storyexpansion-pages",
+    "exit_code": 0,
+    "seconds": 8.47,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/storyexpansion.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/story-pages"
+    ],
+    "log": "storyexpansion-pages.log"
+  },
+  {
+    "name": "storyexpansion-single",
+    "exit_code": 0,
+    "seconds": 10.83,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/storyexpansion.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/story-single",
+      "844x390"
+    ],
+    "log": "storyexpansion-single.log"
+  },
+  {
+    "name": "radio-pages",
+    "exit_code": 0,
+    "seconds": 17.05,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/radio-pages"
+    ],
+    "log": "radio-pages.log"
+  },
+  {
+    "name": "radio-single",
+    "exit_code": 0,
+    "seconds": 12.53,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/radio-single"
+    ],
+    "log": "radio-single.log"
+  },
+  {
+    "name": "tripradio",
+    "exit_code": 0,
+    "seconds": 67.73,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/tripradio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/tripradio"
+    ],
+    "log": "tripradio.log"
+  },
+  {
+    "name": "soundcheck",
+    "exit_code": 0,
+    "seconds": 173.71,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/soundcheck.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/soundcheck"
+    ],
+    "log": "soundcheck.log"
+  },
+  {
+    "name": "licensed-with",
+    "exit_code": 0,
+    "seconds": 64.46,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/licensed_sfx.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/licensed-with",
+      "with"
+    ],
+    "log": "licensed-with.log"
+  },
+  {
+    "name": "readaloud-pages",
+    "exit_code": 0,
+    "seconds": 14.54,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/readaloud-pages"
+    ],
+    "log": "readaloud-pages.log"
+  },
+  {
+    "name": "readaloud-single",
+    "exit_code": 0,
+    "seconds": 20.41,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/readaloud-single"
+    ],
+    "log": "readaloud-single.log"
+  },
+  {
+    "name": "phonevoices-pages",
+    "exit_code": 0,
+    "seconds": 30.34,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/phonevoices.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/phone-pages"
+    ],
+    "log": "phonevoices-pages.log"
+  },
+  {
+    "name": "phonevoices-single",
+    "exit_code": 0,
+    "seconds": 33.63,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/phonevoices.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/phone-single"
+    ],
+    "log": "phonevoices-single.log"
+  },
+  {
+    "name": "descriptions-pages",
+    "exit_code": 0,
+    "seconds": 19.18,
+    "url": "http://127.0.0.1:8501/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/descriptions.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/descriptions-pages"
+    ],
+    "log": "descriptions-pages.log"
+  },
+  {
+    "name": "descriptions-single",
+    "exit_code": 0,
+    "seconds": 22.64,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/descriptions.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-town/web/production/artbell-town/qa/descriptions-single"
+    ],
+    "log": "descriptions-single.log"
+  },
+  {
+    "name": "csptest",
+    "exit_code": 0,
+    "seconds": 5.4,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/csptest.py"
+    ],
+    "log": "csptest.log"
+  }
+]

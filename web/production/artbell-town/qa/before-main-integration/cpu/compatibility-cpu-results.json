@@ -1,0 +1,26 @@
+{
+  "scope": "CPU-only corpus, save compatibility and steering checks on the current candidate; no browser or GPU",
+  "results": [
+    {
+      "name": "readaloud-corpus",
+      "command": "node tools/readaloud-core.cjs --corpus",
+      "log": "readaloud-corpus.log",
+      "exit_code": 0,
+      "seconds": 0.44583520700689405
+    },
+    {
+      "name": "saves",
+      "command": "node tools/saves.cjs",
+      "log": "saves.log",
+      "exit_code": 0,
+      "seconds": 1.0395300849922933
+    },
+    {
+      "name": "steercheck",
+      "command": "npm run steercheck",
+      "log": "steercheck.log",
+      "exit_code": 0,
+      "seconds": 0.14711527500185184
+    }
+  ]
+}

@@ -5,7 +5,7 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
-- 2026-10-19, direkte bestilling fra Tom: samme syntetiske Art Bell-stemme skal også være Earl i samtalen ved studioet i Caliche. Samme `artBellRadioHost` styrer begge, standard På og uavhengig av Kinski. Kun EARL-linjer får stemmen; 16 nye klipp holdes i egen bank, gamle radioklipp og progresjon bevares. Arbeid på `codex/art-bell-town` fra `210b52f`.
+- 2026-10-19, direkte bestilling fra Tom: samme syntetiske Art Bell-stemme skal også være Earl i samtalen ved studioet i Caliche. Samme `artBellRadioHost` styrer begge, standard På og uavhengig av Kinski. Kun EARL-linjer får stemmen; 16 nye klipp holdes i egen bank, gamle radioklipp og progresjon bevares. Ferdig på `codex/art-bell-town` fra `210b52f`, med main `f1e4616` integrert. Pages 101/101 og streng-CSP enkeltfil 102/102; alle tidligere stemmefiler og 12 profiler er bevart.
 
 - 2026-10-19, direkte videreføring etter Toms kildesøk: innringere og 1947-nyhetene får ferdige syntetiske opptak. Nyeste manus på `b6483fe` har seks bulletinlinjer og 22 innringerlinjer. Eget lagret valg `radioCallerVoices`, på som standard og uavhengig av Art Bell/Kinski. 47-sekundersavbruddet og retur til samme punkt beholdes. Kilder, profiler og prøvegrenser føres i `production/radiocast/`; se `RADIO_CAST.md`.
 

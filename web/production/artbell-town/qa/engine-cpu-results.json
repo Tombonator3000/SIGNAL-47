@@ -1,0 +1,62 @@
+{
+  "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+  "scope": "Controlled audio clock, source-end and loader fixtures plus authored Caliche interactions; no real MP3 decoder, browser, GPU, perceived-voice or physical-device claim",
+  "results": [
+    {
+      "name": "artbell-town-core",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/artbell-town-core.cjs",
+      "log": "artbell-town-core.log",
+      "exit_code": 0,
+      "seconds": 0.7084580829832703
+    },
+    {
+      "name": "artbell-core",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/artbell-core.cjs",
+      "log": "artbell-core.log",
+      "exit_code": 0,
+      "seconds": 0.6887652899895329
+    },
+    {
+      "name": "radiocast-core",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/radiocast-core.cjs",
+      "log": "radiocast-core.log",
+      "exit_code": 0,
+      "seconds": 2.3294724059815053
+    },
+    {
+      "name": "radioarchive",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/artbell-town-radioarchive.cjs --log-level=warning && node node_modules/.cache/artbell-town-radioarchive.cjs",
+      "log": "radioarchive.log",
+      "exit_code": 0,
+      "seconds": 0.5452460320084356
+    },
+    {
+      "name": "readaloud-core",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/readaloud-core.cjs",
+      "log": "readaloud-core.log",
+      "exit_code": 0,
+      "seconds": 0.7836496839881875
+    },
+    {
+      "name": "phonecalls-core",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "node tools/phonecalls-core.cjs",
+      "log": "phonecalls-core.log",
+      "exit_code": 0,
+      "seconds": 0.5748572509910446
+    },
+    {
+      "name": "typecheck",
+      "source_commit": "ef73d4c1f96b46aebd1b871207a17d5550ec3aa3",
+      "command": "npm run typecheck",
+      "log": "typecheck.log",
+      "exit_code": 0,
+      "seconds": 3.2243976879981346
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+source_commit: ef73d4c1f96b46aebd1b871207a17d5550ec3aa3
+SIZE  six saves, 36 album + 4 case prints: inline 16036032 bytes -> shared photos 3026644 bytes (81.1% less; UTF-16 keys + values, including another game's 256 KiB)
+PASS  autosaves take turns: an update within 90 s, a new generation after that, the oldest is replaced
+PASS  manual saves keep their own slots, and cases are separate
+PASS  a photograph is stored once, saves point at it, and loading brings it back
+PASS  a photograph no save points at is deleted, one still in use is kept
+PASS  a photograph that cannot be read shows the stand-in, and the next save keeps the original
+PASS  a new photograph under the same id replaces the one that could not be read
+PASS  the first web version's case becomes the newest autosave of case 1
+PASS  without IndexedDB photographs are stored once by content and survive reopening
+PASS  old localStorage saves with inline photographs still load and become references when saved again
+PASS  localStorage cleanup keeps shared prints across cases and removes them after the last save
+PASS  overwriting the last localStorage reference frees its print and queued saves keep theirs
+PASS  unreadable localStorage photographs keep their references instead of saving the stand-in
+PASS  a missing localStorage photograph can be restored later through the preserved reference
+PASS  quota exhaustion rolls back new photographs, keeps the old save and allows a retry
+PASS  a failed localStorage write to s47.saves preserves existing saves and rolls back new prints
+PASS  a failed localStorage write to s47.save.1:manual:1 preserves existing saves and rolls back new prints
+PASS  a failed localStorage write to s47.save.1:manual:0 preserves existing saves and rolls back new prints
+PASS  a failed localStorage deletion keeps the save and its photographs
+PASS  six localStorage saves with four case prints and a full 36-frame album fit a shared 5 MiB quota
+19 of 19 PASS
