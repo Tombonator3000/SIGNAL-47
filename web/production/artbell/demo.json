@@ -1,0 +1,61 @@
+{
+  "id": "7e75559bb502f671",
+  "expected": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+  "request": {
+    "profile_id": "494881fc",
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast",
+    "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four."
+  },
+  "generation_response": {
+    "type": "done",
+    "id": "25067df3",
+    "audio_path": "25067df3.wav",
+    "duration": 3.9,
+    "gen_time": 2.35,
+    "seed": 42,
+    "sample_rate": 24000,
+    "dropped_chunks": 0
+  },
+  "audio": {
+    "duration_seconds": 3.9,
+    "peak_dbfs": -3.1816789377340653,
+    "rms_dbfs": -21.079088439271942,
+    "nonsilent_rms_dbfs": -20.431897936399626,
+    "nonsilent_seconds": 3.36,
+    "samples_at_or_above_full_scale": 0,
+    "constant_gain_db": -0.6650122258575841,
+    "bytes": 31916,
+    "sha256": "211d4fc389765b73d8e12fbad2bd43ec4aac15d720105cb67df5fc18742ba819",
+    "ffprobe": {
+      "codec_name": "mp3",
+      "sample_rate": "24000",
+      "channels": 1,
+      "bit_rate": "64000"
+    }
+  },
+  "asr": {
+    "text": "This is the Nightline on 1420 Kalish. We are on till 4.",
+    "segments": [
+      {
+        "start": 0,
+        "end": 3.56,
+        "text": "This is the Nightline on 1420 Kalish. We are on till 4."
+      }
+    ],
+    "language": "en",
+    "duration_s": 3.56,
+    "transcription_time_s": 1.26,
+    "engine": "faster-whisper"
+  },
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "technical_status": "PASS",
+  "interpretation": "MP3 format, speech energy, duration, clipping and dropped-chunk checks pass. ASR renders numeral spellings differently and the proper noun Caliche as Kalish. This is not a listening or likeness test."
+}

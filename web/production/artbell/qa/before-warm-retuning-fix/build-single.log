@@ -1,0 +1,16 @@
+
+> signal47-web@0.1.0 build:single
+> vite build --mode single
+
+vite v6.4.3 building for single...
+transforming...
+✓ 2029 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-Dwoh80Iw.js
+[plugin vite:singlefile] Inlining: style-BrWxadcZ.css
+[plugin vite:singlefile] NOTE: asset not inlined: icon_512-DOpHK4Bs.png
+computing gzip size...
+dist-single/index.html  95,595.11 kB │ gzip: 68,814.74 kB
+✓ built in 9.43s

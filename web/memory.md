@@ -4,6 +4,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-19, direkte bestilling fra Tom: Earl på Night Line/1420 får en lokal syntetisk Art Bell-parodistemme. 115 klipp dekker 38 faste vertsreplikker og seks tidsmaler med en liten tidsbank, også gutten, avmelding og kjøreinnslag. Eget lagret valg `artBellRadioHost`, på som standard; radioen starter fortsatt av. Innringere, Roswell og Kinski beholdes. Sendingen deles av bil og diner, dekodes ved behov med cache på opptil 24 buffere/24 MiB, og faktiske bufferlengder styrer avspilling og teksting. Radiotekst følger den pausable lydklokken. Se `ART_BELL_RADIO.md`.
+
 - 2026-10-19, direkte bestilling fra Tom: Kinski-opplesningen utvides til alle fortellerbeskrivelser på `codex/kinski-descriptions`, basert på main `95719a4`. Samme valg, av som standard. Stabilt nærblikk med Zoom leses etter 650 ms; V eller HUD-knappen gjentar gjeldende/siste beskrivelse. Paneler, notatbok, utstyr, personer, kart, bevisbord og frie foto har manuell lesing. Dynamiske tall, klokker og referanse-ID-er settes sammen av innspilte biter, med krav om full tekstdekning. Telefon og filmsekvenser har prioritet. De 337 tidligere lydfilene bevares. Se `KINSKI_READALOUD.md`.
 
 - 2026-10-19: Tom ba eksplisitt «Flett inn» Kinski-versjonen i main. Main er hurtigflyttet fra `bada636` til testet kode ved `d58b05e`; dokumentert publiseringsklargjøring følger. Den tidligere begrensningen til lokal leveranse er opphevet for denne innflettingen. Push til GitHub utløser Pages-bygg og publisering. Kinski-valget er fortsatt av som standard.

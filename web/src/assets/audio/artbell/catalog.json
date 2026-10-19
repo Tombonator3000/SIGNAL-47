@@ -1,0 +1,1226 @@
+{
+  "version": 1,
+  "voice": "Art Bell synthetic parody",
+  "templates": [
+    {
+      "file": "src/core/radio.ts",
+      "line": 108,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "1c4e7ce024662782",
+      "prefix": "It's ",
+      "suffix": " in Caliche.",
+      "capitalize": false,
+      "before": "1d315be944a93f19",
+      "after": "a550c489649722f4",
+      "parts": [
+        {
+          "kind": "clip",
+          "id": "1d315be944a93f19",
+          "text": "It's",
+          "raw": "It's "
+        },
+        {
+          "kind": "time",
+          "capitalize": false
+        },
+        {
+          "kind": "clip",
+          "id": "a550c489649722f4",
+          "text": "in Caliche.",
+          "raw": " in Caliche."
+        }
+      ]
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 121,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "6f4f3f8c9a0c7685",
+      "prefix": "",
+      "suffix": ". Night Line, fourteen-twenty.",
+      "capitalize": true,
+      "after": "db60994a5fe4923c",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "db60994a5fe4923c",
+          "text": ". Night Line, fourteen-twenty.",
+          "raw": ". Night Line, fourteen-twenty."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 55,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "4ce3749b1a186afa",
+      "prefix": "Night Line, fourteen-twenty. ",
+      "suffix": ", and the coffee in here is older than some of you.",
+      "capitalize": true,
+      "before": "00aaa3694dcb2ea2",
+      "after": "3256989421322886",
+      "parts": [
+        {
+          "kind": "clip",
+          "id": "00aaa3694dcb2ea2",
+          "text": "Night Line, fourteen-twenty.",
+          "raw": "Night Line, fourteen-twenty. "
+        },
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "3256989421322886",
+          "text": ", and the coffee in here is older than some of you.",
+          "raw": ", and the coffee in here is older than some of you."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 57,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "160b7f184d0a2156",
+      "prefix": "",
+      "suffix": " on the Night Line. I can see the highway out my window, and it's empty both ways.",
+      "capitalize": true,
+      "after": "2f60567a966623ee",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "2f60567a966623ee",
+          "text": "on the Night Line. I can see the highway out my window, and it's empty both ways.",
+          "raw": " on the Night Line. I can see the highway out my window, and it's empty both ways."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 77,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "6ac2b2f1fcae48cf",
+      "prefix": "",
+      "suffix": ". Not long now till four, so if you've been meaning to call, call.",
+      "capitalize": true,
+      "after": "a2c386a4506964aa",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "a2c386a4506964aa",
+          "text": ". Not long now till four, so if you've been meaning to call, call.",
+          "raw": ". Not long now till four, so if you've been meaning to call, call."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 125,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>*",
+      "id": "b2f2c656e315d739",
+      "prefix": "",
+      "suffix": " in Caliche. Pumps are locked till six, so if you're low, you're low.",
+      "capitalize": true,
+      "after": "2a05170c9f439106",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "2a05170c9f439106",
+          "text": "in Caliche. Pumps are locked till six, so if you're low, you're low.",
+          "raw": " in Caliche. Pumps are locked till six, so if you're low, you're low."
+        }
+      ]
+    }
+  ],
+  "timeBank": {
+    "hours": [
+      {
+        "value": 1,
+        "id": "7692c3ad3540bb80",
+        "text": "one"
+      },
+      {
+        "value": 2,
+        "id": "3fc4ccfe745870e2",
+        "text": "two"
+      },
+      {
+        "value": 3,
+        "id": "8b5b9db0c13db242",
+        "text": "three"
+      },
+      {
+        "value": 4,
+        "id": "04efaf080f5a3e74",
+        "text": "four"
+      },
+      {
+        "value": 5,
+        "id": "222b0bd51fcef7e6",
+        "text": "five"
+      },
+      {
+        "value": 6,
+        "id": "44778d82365e4af6",
+        "text": "six"
+      },
+      {
+        "value": 7,
+        "id": "3ba8d02b16fd2a01",
+        "text": "seven"
+      },
+      {
+        "value": 8,
+        "id": "c195d2d875623436",
+        "text": "eight"
+      },
+      {
+        "value": 9,
+        "id": "edcd8e701a2df0cd",
+        "text": "nine"
+      },
+      {
+        "value": 10,
+        "id": "e4432baa90819aae",
+        "text": "ten"
+      },
+      {
+        "value": 11,
+        "id": "e979074ebd5633a7",
+        "text": "eleven"
+      },
+      {
+        "value": 12,
+        "id": "d1a749ad879b6c07",
+        "text": "twelve"
+      }
+    ],
+    "minutes": [
+      {
+        "value": 0,
+        "id": "102ad29298b7b442",
+        "text": "o'clock"
+      },
+      {
+        "value": 1,
+        "id": "ce924287df6e8c19",
+        "text": "oh-one"
+      },
+      {
+        "value": 2,
+        "id": "ce6c523e2f6cd78d",
+        "text": "oh-two"
+      },
+      {
+        "value": 3,
+        "id": "14b417222f7f3438",
+        "text": "oh-three"
+      },
+      {
+        "value": 4,
+        "id": "00637cc75b1f2c2e",
+        "text": "oh-four"
+      },
+      {
+        "value": 5,
+        "id": "0c248f4d6cdbb967",
+        "text": "oh-five"
+      },
+      {
+        "value": 6,
+        "id": "0b7c5501e296cc41",
+        "text": "oh-six"
+      },
+      {
+        "value": 7,
+        "id": "d7bac7ab18c0c269",
+        "text": "oh-seven"
+      },
+      {
+        "value": 8,
+        "id": "6fbab77346ae2cde",
+        "text": "oh-eight"
+      },
+      {
+        "value": 9,
+        "id": "e90082735ca0a335",
+        "text": "oh-nine"
+      },
+      {
+        "value": 10,
+        "id": "e4432baa90819aae",
+        "text": "ten"
+      },
+      {
+        "value": 11,
+        "id": "e979074ebd5633a7",
+        "text": "eleven"
+      },
+      {
+        "value": 12,
+        "id": "d1a749ad879b6c07",
+        "text": "twelve"
+      },
+      {
+        "value": 13,
+        "id": "9ecc81f0a4b6dfb0",
+        "text": "thirteen"
+      },
+      {
+        "value": 14,
+        "id": "fef8f41cdcd20386",
+        "text": "fourteen"
+      },
+      {
+        "value": 15,
+        "id": "c463967e5708cab7",
+        "text": "fifteen"
+      },
+      {
+        "value": 16,
+        "id": "f2ce341fdaa67727",
+        "text": "sixteen"
+      },
+      {
+        "value": 17,
+        "id": "2c5abdef2a0eacb4",
+        "text": "seventeen"
+      },
+      {
+        "value": 18,
+        "id": "34357b18abddea18",
+        "text": "eighteen"
+      },
+      {
+        "value": 19,
+        "id": "cde4e100efd26f5b",
+        "text": "nineteen"
+      },
+      {
+        "value": 20,
+        "id": "7c2c4df740f720b0",
+        "text": "twenty"
+      },
+      {
+        "value": 21,
+        "id": "a69edb489f4eb7f2",
+        "text": "twenty-one"
+      },
+      {
+        "value": 22,
+        "id": "2a8daa7aac7ad553",
+        "text": "twenty-two"
+      },
+      {
+        "value": 23,
+        "id": "328e51fcaeaf1d92",
+        "text": "twenty-three"
+      },
+      {
+        "value": 24,
+        "id": "1bcbce780ddd2273",
+        "text": "twenty-four"
+      },
+      {
+        "value": 25,
+        "id": "ac3164d59c697639",
+        "text": "twenty-five"
+      },
+      {
+        "value": 26,
+        "id": "60b7d1f7ad4248fb",
+        "text": "twenty-six"
+      },
+      {
+        "value": 27,
+        "id": "412866d80035f66f",
+        "text": "twenty-seven"
+      },
+      {
+        "value": 28,
+        "id": "96c2a83461897741",
+        "text": "twenty-eight"
+      },
+      {
+        "value": 29,
+        "id": "a0d9676cc598d86e",
+        "text": "twenty-nine"
+      },
+      {
+        "value": 30,
+        "id": "aca5fb59db69e5df",
+        "text": "thirty"
+      },
+      {
+        "value": 31,
+        "id": "dfa5c4c47fb2f357",
+        "text": "thirty-one"
+      },
+      {
+        "value": 32,
+        "id": "7a78c7548928535f",
+        "text": "thirty-two"
+      },
+      {
+        "value": 33,
+        "id": "3c218b98f1bf8af2",
+        "text": "thirty-three"
+      },
+      {
+        "value": 34,
+        "id": "ee9764b6b1336f7b",
+        "text": "thirty-four"
+      },
+      {
+        "value": 35,
+        "id": "49fa6fb4bad94112",
+        "text": "thirty-five"
+      },
+      {
+        "value": 36,
+        "id": "56d89c668162fb95",
+        "text": "thirty-six"
+      },
+      {
+        "value": 37,
+        "id": "ee0d8e38580a98fe",
+        "text": "thirty-seven"
+      },
+      {
+        "value": 38,
+        "id": "518ce854e4d7f5dd",
+        "text": "thirty-eight"
+      },
+      {
+        "value": 39,
+        "id": "c19e6b18f754bbe8",
+        "text": "thirty-nine"
+      },
+      {
+        "value": 40,
+        "id": "9cee2304bd633d42",
+        "text": "forty"
+      },
+      {
+        "value": 41,
+        "id": "074ec9ddfe4408e6",
+        "text": "forty-one"
+      },
+      {
+        "value": 42,
+        "id": "5cc47001f7c1334d",
+        "text": "forty-two"
+      },
+      {
+        "value": 43,
+        "id": "fbcb14038f6be3f6",
+        "text": "forty-three"
+      },
+      {
+        "value": 44,
+        "id": "9a56bd594d932dd5",
+        "text": "forty-four"
+      },
+      {
+        "value": 45,
+        "id": "ce8cdef089ac0a9f",
+        "text": "forty-five"
+      },
+      {
+        "value": 46,
+        "id": "17b42cc951ba20e8",
+        "text": "forty-six"
+      },
+      {
+        "value": 47,
+        "id": "11d5b531ae2c2685",
+        "text": "forty-seven"
+      },
+      {
+        "value": 48,
+        "id": "2b8de4d500ddf4ef",
+        "text": "forty-eight"
+      },
+      {
+        "value": 49,
+        "id": "0f09c0097e477bcb",
+        "text": "forty-nine"
+      },
+      {
+        "value": 50,
+        "id": "f8d807ee15e983f8",
+        "text": "fifty"
+      },
+      {
+        "value": 51,
+        "id": "76bcec87152dfcad",
+        "text": "fifty-one"
+      },
+      {
+        "value": 52,
+        "id": "7236b63e2db57bda",
+        "text": "fifty-two"
+      },
+      {
+        "value": 53,
+        "id": "6382cd3f5ae1290b",
+        "text": "fifty-three"
+      },
+      {
+        "value": 54,
+        "id": "7da3c4346e002f6e",
+        "text": "fifty-four"
+      },
+      {
+        "value": 55,
+        "id": "25102b4dfe05dd11",
+        "text": "fifty-five"
+      },
+      {
+        "value": 56,
+        "id": "ee41e5464eec8ff2",
+        "text": "fifty-six"
+      },
+      {
+        "value": 57,
+        "id": "d376c3658fc44e8f",
+        "text": "fifty-seven"
+      },
+      {
+        "value": 58,
+        "id": "dcf2928126cc8165",
+        "text": "fifty-eight"
+      },
+      {
+        "value": 59,
+        "id": "69193cd7186a2a50",
+        "text": "fifty-nine"
+      }
+    ]
+  },
+  "clips": [
+    {
+      "id": "7e75559bb502f671",
+      "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+      "duration": 3.9,
+      "file": "7e75559bb502f671.mp3"
+    },
+    {
+      "id": "1d315be944a93f19",
+      "text": "It's",
+      "duration": 1.16,
+      "file": "1d315be944a93f19.mp3"
+    },
+    {
+      "id": "a550c489649722f4",
+      "text": "in Caliche.",
+      "duration": 1.12,
+      "file": "a550c489649722f4.mp3"
+    },
+    {
+      "id": "a75fe8476c9194e4",
+      "text": "Cold one out there. Thirty-eight on the bank sign, and the wind has laid down.",
+      "duration": 4.39,
+      "file": "a75fe8476c9194e4.mp3"
+    },
+    {
+      "id": "16d69fc1b62a3e6a",
+      "text": "Phones are open. If you are up anyway, you might as well talk to somebody.",
+      "duration": 3.99,
+      "file": "16d69fc1b62a3e6a.mp3"
+    },
+    {
+      "id": "3b571ed64f0acb86",
+      "text": "Dolores, I believe you. Now turn the porch light off and go to bed.",
+      "duration": 3.64,
+      "file": "3b571ed64f0acb86.mp3"
+    },
+    {
+      "id": "22cf84eb221737ec",
+      "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.",
+      "duration": 5.15,
+      "file": "22cf84eb221737ec.mp3"
+    },
+    {
+      "id": "0e0fd22c82477220",
+      "text": "We lost the transmitter about then. Needle went to nothing for most of a minute. Ray, if you are listening, that one is yours.",
+      "duration": 7.07,
+      "file": "0e0fd22c82477220.mp3"
+    },
+    {
+      "id": "4502af1e0505b497",
+      "text": "Jack Nicklaus, forty-six years old, took the Masters this afternoon. Thirty on the back nine. My uncle says he called it. My uncle calls everything.",
+      "duration": 8.51,
+      "file": "4502af1e0505b497.mp3"
+    },
+    {
+      "id": "db60994a5fe4923c",
+      "text": ". Night Line, fourteen-twenty.",
+      "duration": 1.99,
+      "file": "db60994a5fe4923c.mp3"
+    },
+    {
+      "id": "c5f711fdd44ac6f5",
+      "text": "Halley's comet is low in the south this week. Get out past the last streetlight and give your eyes ten minutes.",
+      "duration": 6.38,
+      "file": "c5f711fdd44ac6f5.mp3"
+    },
+    {
+      "id": "59b96b09e3d83603",
+      "text": "Smart dog.",
+      "duration": 1.13,
+      "file": "59b96b09e3d83603.mp3"
+    },
+    {
+      "id": "ba7dc83641014488",
+      "text": "That's Halley's comet, son. It's there all week. You're up late.",
+      "duration": 3.61,
+      "file": "ba7dc83641014488.mp3"
+    },
+    {
+      "id": "fc9d380225dd1df1",
+      "text": "Is your dad up?",
+      "duration": 1.12,
+      "file": "fc9d380225dd1df1.mp3"
+    },
+    {
+      "id": "71de3c549ee31d2a",
+      "text": "Folks, I want to say something. That line was dead when I picked it up. No dial tone, nothing at all.",
+      "duration": 5.86,
+      "file": "71de3c549ee31d2a.mp3"
+    },
+    {
+      "id": "3dd0dd8c7b489770",
+      "text": "I don't know who I was talking to.",
+      "duration": 1.68,
+      "file": "3dd0dd8c7b489770.mp3"
+    },
+    {
+      "id": "3675a32435189f91",
+      "text": "That's the Night Line. Thank you for staying up with us.",
+      "duration": 2.65,
+      "file": "3675a32435189f91.mp3"
+    },
+    {
+      "id": "89a95423047e84c9",
+      "text": "This is fourteen-twenty, Caliche, New Mexico, signing off until six. Good night.",
+      "duration": 4.33,
+      "file": "89a95423047e84c9.mp3"
+    },
+    {
+      "id": "00aaa3694dcb2ea2",
+      "text": "Night Line, fourteen-twenty.",
+      "duration": 1.99,
+      "file": "00aaa3694dcb2ea2.mp3"
+    },
+    {
+      "id": "3256989421322886",
+      "text": ", and the coffee in here is older than some of you.",
+      "duration": 2.71,
+      "file": "3256989421322886.mp3"
+    },
+    {
+      "id": "96fc0822d5ea7732",
+      "text": "Bank sign says thirty-six now. Warming up by Wednesday, they tell me.",
+      "duration": 4.26,
+      "file": "96fc0822d5ea7732.mp3"
+    },
+    {
+      "id": "2f60567a966623ee",
+      "text": "on the Night Line. I can see the highway out my window, and it's empty both ways.",
+      "duration": 4.62,
+      "file": "2f60567a966623ee.mp3"
+    },
+    {
+      "id": "5e8372af00d194ff",
+      "text": "I noticed that. Rattled the windows all evening, and then nothing.",
+      "duration": 3.85,
+      "file": "5e8372af00d194ff.mp3"
+    },
+    {
+      "id": "9b70343557275f10",
+      "text": "Up on a roof at this hour, they can have it.",
+      "duration": 2.34,
+      "file": "9b70343557275f10.mp3"
+    },
+    {
+      "id": "809a8e15c163c49d",
+      "text": "The government place. Nobody's been out there in years.",
+      "duration": 3.24,
+      "file": "809a8e15c163c49d.mp3"
+    },
+    {
+      "id": "9f31a2de38646b20",
+      "text": "My dad said the survey crews out there worked nights, back in forty-seven. You could see their lamps from town.",
+      "duration": 6.14,
+      "file": "9f31a2de38646b20.mp3"
+    },
+    {
+      "id": "b86e79f630dcd30f",
+      "text": "Then one summer they packed up and went, and left the lamps.",
+      "duration": 3.34,
+      "file": "b86e79f630dcd30f.mp3"
+    },
+    {
+      "id": "a2c386a4506964aa",
+      "text": ". Not long now till four, so if you've been meaning to call, call.",
+      "duration": 3.62,
+      "file": "a2c386a4506964aa.mp3"
+    },
+    {
+      "id": "e42b27bf7f08c1df",
+      "text": "Not the wind, then.",
+      "duration": 1.38,
+      "file": "e42b27bf7f08c1df.mp3"
+    },
+    {
+      "id": "c226a8ec9adcbcd0",
+      "text": "County chained that gate years ago, Dolores.",
+      "duration": 2.61,
+      "file": "c226a8ec9adcbcd0.mp3"
+    },
+    {
+      "id": "0c079c45e01ccc2c",
+      "text": "My granddad ran chain for the survey crews. Never trust one mark, he said. Sight two, and if one has walked, the other tells you.",
+      "duration": 7.52,
+      "file": "0c079c45e01ccc2c.mp3"
+    },
+    {
+      "id": "7c599e81cb074f89",
+      "text": "And if you think it's your own lamp making the shadows, put your hat over the lamp and look again.",
+      "duration": 5.49,
+      "file": "7c599e81cb074f89.mp3"
+    },
+    {
+      "id": "c4950c0d339360e3",
+      "text": "My sister ran the photo counter at the drugstore twenty years. Film doesn't care what time it is, she used to say.",
+      "duration": 6.28,
+      "file": "c4950c0d339360e3.mp3"
+    },
+    {
+      "id": "00375e42e5ef33f9",
+      "text": "But it doesn't keep, either. Not in a warm truck.",
+      "duration": 2.52,
+      "file": "00375e42e5ef33f9.mp3"
+    },
+    {
+      "id": "7edf543d86d90a3d",
+      "text": "That's about all from the Night Line. When the anthem comes on, that's me going home.",
+      "duration": 4.81,
+      "file": "7edf543d86d90a3d.mp3"
+    },
+    {
+      "id": "e8ba09e6814280d2",
+      "text": "And?",
+      "duration": 0.77,
+      "file": "e8ba09e6814280d2.mp3"
+    },
+    {
+      "id": "968a8b0dc7bad751",
+      "text": "Not past the junction. Barricade's still up. You want Roswell, go around like everybody else.",
+      "duration": 5.31,
+      "file": "968a8b0dc7bad751.mp3"
+    },
+    {
+      "id": "58960ddd0cbbc18a",
+      "text": "That European probe flew right up to the comet last month and sent back a picture of a potato. Seventy-six years we waited, for a potato.",
+      "duration": 7.8,
+      "file": "58960ddd0cbbc18a.mp3"
+    },
+    {
+      "id": "78cbdf5c6e8f7067",
+      "text": "Tell her I heard. And tell her I'm still not paying for last week's.",
+      "duration": 3.93,
+      "file": "78cbdf5c6e8f7067.mp3"
+    },
+    {
+      "id": "6ccf5dbfb58d48fb",
+      "text": "Tuesday is tax day, folks. If you haven't mailed it yet, I don't want to hear about it on this program.",
+      "duration": 5.78,
+      "file": "6ccf5dbfb58d48fb.mp3"
+    },
+    {
+      "id": "3fb42e5d00bfcedf",
+      "text": "If you're in town and you see the light on over my door, I'm in here. Lean on the buzzer during a long record.",
+      "duration": 6.01,
+      "file": "3fb42e5d00bfcedf.mp3"
+    },
+    {
+      "id": "a964091b283552a2",
+      "text": "Is it doing anything?",
+      "duration": 1.34,
+      "file": "a964091b283552a2.mp3"
+    },
+    {
+      "id": "b1e38e8c9f6d2932",
+      "text": "Well. Wave.",
+      "duration": 1.31,
+      "file": "b1e38e8c9f6d2932.mp3"
+    },
+    {
+      "id": "2a05170c9f439106",
+      "text": "in Caliche. Pumps are locked till six, so if you're low, you're low.",
+      "duration": 3.8,
+      "file": "2a05170c9f439106.mp3"
+    },
+    {
+      "id": "a5f397cd030d7f5f",
+      "text": "They do that. They're listening for something.",
+      "duration": 2.49,
+      "file": "a5f397cd030d7f5f.mp3"
+    },
+    {
+      "id": "1b3134a26b449df6",
+      "text": "Cattle report, for those of you who keep cattle and can't sleep. Feeders off again at the Roswell sale. Everybody still blames the dairy buyout.",
+      "duration": 8.34,
+      "file": "1b3134a26b449df6.mp3"
+    },
+    {
+      "id": "7692c3ad3540bb80",
+      "text": "one",
+      "duration": 1.09,
+      "file": "7692c3ad3540bb80.mp3"
+    },
+    {
+      "id": "3fc4ccfe745870e2",
+      "text": "two",
+      "duration": 0.74,
+      "file": "3fc4ccfe745870e2.mp3"
+    },
+    {
+      "id": "8b5b9db0c13db242",
+      "text": "three",
+      "duration": 0.75,
+      "file": "8b5b9db0c13db242.mp3"
+    },
+    {
+      "id": "04efaf080f5a3e74",
+      "text": "four",
+      "duration": 0.72,
+      "file": "04efaf080f5a3e74.mp3"
+    },
+    {
+      "id": "222b0bd51fcef7e6",
+      "text": "five",
+      "duration": 0.77,
+      "file": "222b0bd51fcef7e6.mp3"
+    },
+    {
+      "id": "44778d82365e4af6",
+      "text": "six",
+      "duration": 0.8,
+      "file": "44778d82365e4af6.mp3"
+    },
+    {
+      "id": "3ba8d02b16fd2a01",
+      "text": "seven",
+      "duration": 0.8,
+      "file": "3ba8d02b16fd2a01.mp3"
+    },
+    {
+      "id": "c195d2d875623436",
+      "text": "eight",
+      "duration": 1.32,
+      "file": "c195d2d875623436.mp3"
+    },
+    {
+      "id": "edcd8e701a2df0cd",
+      "text": "nine",
+      "duration": 0.73,
+      "file": "edcd8e701a2df0cd.mp3"
+    },
+    {
+      "id": "e4432baa90819aae",
+      "text": "ten",
+      "duration": 0.8,
+      "file": "e4432baa90819aae.mp3"
+    },
+    {
+      "id": "e979074ebd5633a7",
+      "text": "eleven",
+      "duration": 0.89,
+      "file": "e979074ebd5633a7.mp3"
+    },
+    {
+      "id": "d1a749ad879b6c07",
+      "text": "twelve",
+      "duration": 0.92,
+      "file": "d1a749ad879b6c07.mp3"
+    },
+    {
+      "id": "102ad29298b7b442",
+      "text": "o'clock",
+      "duration": 0.94,
+      "file": "102ad29298b7b442.mp3"
+    },
+    {
+      "id": "ce924287df6e8c19",
+      "text": "oh-one",
+      "duration": 0.84,
+      "file": "ce924287df6e8c19.mp3"
+    },
+    {
+      "id": "ce6c523e2f6cd78d",
+      "text": "oh-two",
+      "duration": 0.91,
+      "file": "ce6c523e2f6cd78d.mp3"
+    },
+    {
+      "id": "14b417222f7f3438",
+      "text": "oh-three",
+      "duration": 0.9,
+      "file": "14b417222f7f3438.mp3"
+    },
+    {
+      "id": "00637cc75b1f2c2e",
+      "text": "oh-four",
+      "duration": 0.92,
+      "file": "00637cc75b1f2c2e.mp3"
+    },
+    {
+      "id": "0c248f4d6cdbb967",
+      "text": "oh-five",
+      "duration": 0.94,
+      "file": "0c248f4d6cdbb967.mp3"
+    },
+    {
+      "id": "0b7c5501e296cc41",
+      "text": "oh-six",
+      "duration": 1.01,
+      "file": "0b7c5501e296cc41.mp3"
+    },
+    {
+      "id": "d7bac7ab18c0c269",
+      "text": "oh-seven",
+      "duration": 0.97,
+      "file": "d7bac7ab18c0c269.mp3"
+    },
+    {
+      "id": "6fbab77346ae2cde",
+      "text": "oh-eight",
+      "duration": 0.91,
+      "file": "6fbab77346ae2cde.mp3"
+    },
+    {
+      "id": "e90082735ca0a335",
+      "text": "oh-nine",
+      "duration": 0.92,
+      "file": "e90082735ca0a335.mp3"
+    },
+    {
+      "id": "9ecc81f0a4b6dfb0",
+      "text": "thirteen",
+      "duration": 0.93,
+      "file": "9ecc81f0a4b6dfb0.mp3"
+    },
+    {
+      "id": "fef8f41cdcd20386",
+      "text": "fourteen",
+      "duration": 0.91,
+      "file": "fef8f41cdcd20386.mp3"
+    },
+    {
+      "id": "c463967e5708cab7",
+      "text": "fifteen",
+      "duration": 0.84,
+      "file": "c463967e5708cab7.mp3"
+    },
+    {
+      "id": "f2ce341fdaa67727",
+      "text": "sixteen",
+      "duration": 1.16,
+      "file": "f2ce341fdaa67727.mp3"
+    },
+    {
+      "id": "2c5abdef2a0eacb4",
+      "text": "seventeen",
+      "duration": 1.0,
+      "file": "2c5abdef2a0eacb4.mp3"
+    },
+    {
+      "id": "34357b18abddea18",
+      "text": "eighteen",
+      "duration": 0.97,
+      "file": "34357b18abddea18.mp3"
+    },
+    {
+      "id": "cde4e100efd26f5b",
+      "text": "nineteen",
+      "duration": 1.02,
+      "file": "cde4e100efd26f5b.mp3"
+    },
+    {
+      "id": "7c2c4df740f720b0",
+      "text": "twenty",
+      "duration": 0.8,
+      "file": "7c2c4df740f720b0.mp3"
+    },
+    {
+      "id": "a69edb489f4eb7f2",
+      "text": "twenty-one",
+      "duration": 1.01,
+      "file": "a69edb489f4eb7f2.mp3"
+    },
+    {
+      "id": "2a8daa7aac7ad553",
+      "text": "twenty-two",
+      "duration": 1.05,
+      "file": "2a8daa7aac7ad553.mp3"
+    },
+    {
+      "id": "328e51fcaeaf1d92",
+      "text": "twenty-three",
+      "duration": 1.18,
+      "file": "328e51fcaeaf1d92.mp3"
+    },
+    {
+      "id": "1bcbce780ddd2273",
+      "text": "twenty-four",
+      "duration": 1.2,
+      "file": "1bcbce780ddd2273.mp3"
+    },
+    {
+      "id": "ac3164d59c697639",
+      "text": "twenty-five",
+      "duration": 0.97,
+      "file": "ac3164d59c697639.mp3"
+    },
+    {
+      "id": "60b7d1f7ad4248fb",
+      "text": "twenty-six",
+      "duration": 1.07,
+      "file": "60b7d1f7ad4248fb.mp3"
+    },
+    {
+      "id": "412866d80035f66f",
+      "text": "twenty-seven",
+      "duration": 1.03,
+      "file": "412866d80035f66f.mp3"
+    },
+    {
+      "id": "96c2a83461897741",
+      "text": "twenty-eight",
+      "duration": 0.97,
+      "file": "96c2a83461897741.mp3"
+    },
+    {
+      "id": "a0d9676cc598d86e",
+      "text": "twenty-nine",
+      "duration": 1.18,
+      "file": "a0d9676cc598d86e.mp3"
+    },
+    {
+      "id": "aca5fb59db69e5df",
+      "text": "thirty",
+      "duration": 0.73,
+      "file": "aca5fb59db69e5df.mp3"
+    },
+    {
+      "id": "dfa5c4c47fb2f357",
+      "text": "thirty-one",
+      "duration": 0.97,
+      "file": "dfa5c4c47fb2f357.mp3"
+    },
+    {
+      "id": "7a78c7548928535f",
+      "text": "thirty-two",
+      "duration": 1.08,
+      "file": "7a78c7548928535f.mp3"
+    },
+    {
+      "id": "3c218b98f1bf8af2",
+      "text": "thirty-three",
+      "duration": 0.92,
+      "file": "3c218b98f1bf8af2.mp3"
+    },
+    {
+      "id": "ee9764b6b1336f7b",
+      "text": "thirty-four",
+      "duration": 1.04,
+      "file": "ee9764b6b1336f7b.mp3"
+    },
+    {
+      "id": "49fa6fb4bad94112",
+      "text": "thirty-five",
+      "duration": 0.95,
+      "file": "49fa6fb4bad94112.mp3"
+    },
+    {
+      "id": "56d89c668162fb95",
+      "text": "thirty-six",
+      "duration": 1.01,
+      "file": "56d89c668162fb95.mp3"
+    },
+    {
+      "id": "ee0d8e38580a98fe",
+      "text": "thirty-seven",
+      "duration": 1.02,
+      "file": "ee0d8e38580a98fe.mp3"
+    },
+    {
+      "id": "518ce854e4d7f5dd",
+      "text": "thirty-eight",
+      "duration": 0.79,
+      "file": "518ce854e4d7f5dd.mp3"
+    },
+    {
+      "id": "c19e6b18f754bbe8",
+      "text": "thirty-nine",
+      "duration": 0.88,
+      "file": "c19e6b18f754bbe8.mp3"
+    },
+    {
+      "id": "9cee2304bd633d42",
+      "text": "forty",
+      "duration": 0.71,
+      "file": "9cee2304bd633d42.mp3"
+    },
+    {
+      "id": "074ec9ddfe4408e6",
+      "text": "forty-one",
+      "duration": 0.97,
+      "file": "074ec9ddfe4408e6.mp3"
+    },
+    {
+      "id": "5cc47001f7c1334d",
+      "text": "forty-two",
+      "duration": 1.0,
+      "file": "5cc47001f7c1334d.mp3"
+    },
+    {
+      "id": "fbcb14038f6be3f6",
+      "text": "forty-three",
+      "duration": 0.93,
+      "file": "fbcb14038f6be3f6.mp3"
+    },
+    {
+      "id": "9a56bd594d932dd5",
+      "text": "forty-four",
+      "duration": 0.97,
+      "file": "9a56bd594d932dd5.mp3"
+    },
+    {
+      "id": "ce8cdef089ac0a9f",
+      "text": "forty-five",
+      "duration": 1.02,
+      "file": "ce8cdef089ac0a9f.mp3"
+    },
+    {
+      "id": "17b42cc951ba20e8",
+      "text": "forty-six",
+      "duration": 1.14,
+      "file": "17b42cc951ba20e8.mp3"
+    },
+    {
+      "id": "11d5b531ae2c2685",
+      "text": "forty-seven",
+      "duration": 1.04,
+      "file": "11d5b531ae2c2685.mp3"
+    },
+    {
+      "id": "2b8de4d500ddf4ef",
+      "text": "forty-eight",
+      "duration": 1.14,
+      "file": "2b8de4d500ddf4ef.mp3"
+    },
+    {
+      "id": "0f09c0097e477bcb",
+      "text": "forty-nine",
+      "duration": 0.96,
+      "file": "0f09c0097e477bcb.mp3"
+    },
+    {
+      "id": "f8d807ee15e983f8",
+      "text": "fifty",
+      "duration": 0.9,
+      "file": "f8d807ee15e983f8.mp3"
+    },
+    {
+      "id": "76bcec87152dfcad",
+      "text": "fifty-one",
+      "duration": 1.07,
+      "file": "76bcec87152dfcad.mp3"
+    },
+    {
+      "id": "7236b63e2db57bda",
+      "text": "fifty-two",
+      "duration": 1.0,
+      "file": "7236b63e2db57bda.mp3"
+    },
+    {
+      "id": "6382cd3f5ae1290b",
+      "text": "fifty-three",
+      "duration": 0.94,
+      "file": "6382cd3f5ae1290b.mp3"
+    },
+    {
+      "id": "7da3c4346e002f6e",
+      "text": "fifty-four",
+      "duration": 1.08,
+      "file": "7da3c4346e002f6e.mp3"
+    },
+    {
+      "id": "25102b4dfe05dd11",
+      "text": "fifty-five",
+      "duration": 1.09,
+      "file": "25102b4dfe05dd11.mp3"
+    },
+    {
+      "id": "ee41e5464eec8ff2",
+      "text": "fifty-six",
+      "duration": 1.12,
+      "file": "ee41e5464eec8ff2.mp3"
+    },
+    {
+      "id": "d376c3658fc44e8f",
+      "text": "fifty-seven",
+      "duration": 1.14,
+      "file": "d376c3658fc44e8f.mp3"
+    },
+    {
+      "id": "dcf2928126cc8165",
+      "text": "fifty-eight",
+      "duration": 1.07,
+      "file": "dcf2928126cc8165.mp3"
+    },
+    {
+      "id": "69193cd7186a2a50",
+      "text": "fifty-nine",
+      "duration": 1.14,
+      "file": "69193cd7186a2a50.mp3"
+    }
+  ]
+}

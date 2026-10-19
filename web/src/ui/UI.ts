@@ -267,7 +267,7 @@ export class UI {
   }
   hint(on: boolean) { this.lockHint.classList.toggle('show', on); }
 
-  toast(text: string, secs = 3.2) {
+  toast(text: string, secs = 3.2, clock?: () => number) {
     // Captions already have their own radio/telephone delivery. Do not turn them
     // into a second narrator or replace the last environmental description.
     if (!/^(?:RADIO(?:,|:)|CB,|WARD:|DR\. WARD:|NORA:|N\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)/i.test(text)) {
@@ -283,7 +283,18 @@ export class UI {
     live.push(el);
     // At most two lines on screen. Older ones fade out instead of vanishing mid-read.
     while (live.length > 2) this.dismiss(live.shift()!);
-    setTimeout(() => this.dismiss(el), secs * 1000);
+    if (clock) {
+      // Recorded radio captions share the suspended AudioContext clock, so a
+      // long pause cannot consume the text while its recording is still paused.
+      const end = clock() + secs;
+      const expire = () => {
+        if (!el.isConnected || el.classList.contains('out')) return;
+        const remaining = end - clock();
+        if (remaining <= 0) this.dismiss(el);
+        else setTimeout(expire, Math.max(16, Math.min(200, remaining * 1000)));
+      };
+      setTimeout(expire, Math.min(200, secs * 1000));
+    } else setTimeout(() => this.dismiss(el), secs * 1000);
   }
   private dismiss(el: HTMLElement) {
     if (el.classList.contains('out')) return;
@@ -568,6 +579,7 @@ export class UI {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
     music: number; onMusic: (v: number) => void; radio: number; onRadio: (v: number) => void;
     kinski: boolean; onKinski: (v: boolean) => void;
+    artBell: boolean; onArtBell: (v: boolean) => void;
     onSave?: () => void; onLoad?: () => void;
     quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
@@ -586,6 +598,8 @@ export class UI {
         <div class="set"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="1" step="0.01" value="${o.volume}"></div>
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
+        <div class="set"><span class="lbl">Art Bell radio host</span><button class="opt qual" data-a="artbell" aria-label="Art Bell radio host" aria-pressed="${o.artBell}">${o.artBell ? 'On' : 'Off'}</button></div>
+        <p class="small reading-note">Synthetic Art Bell parody for Earl on Night Line, AM 1420.</p>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
         <p class="small reading-note">Synthetic parody voice. Read descriptions, notes, papers and conversations. Hold Zoom for a spoken closer look; V repeats a description. Phone voices play when you answer.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
@@ -607,6 +621,13 @@ export class UI {
     (el.querySelector('#vol') as HTMLInputElement).addEventListener('input', (e) => o.onVolume(+(e.target as HTMLInputElement).value));
     (el.querySelector('#mus') as HTMLInputElement).addEventListener('input', (e) => o.onMusic(+(e.target as HTMLInputElement).value));
     (el.querySelector('#rad') as HTMLInputElement).addEventListener('input', (e) => o.onRadio(+(e.target as HTMLInputElement).value));
+    let artBell = o.artBell;
+    el.querySelector<HTMLButtonElement>('[data-a=artbell]')!.addEventListener('click', (e) => {
+      artBell = !artBell;
+      const button = e.currentTarget as HTMLButtonElement;
+      button.textContent = artBell ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(artBell));
+      o.onArtBell(artBell);
+    });
     let kinski = o.kinski;
     el.querySelector<HTMLButtonElement>('[data-a=kinski]')!.addEventListener('click', (e) => {
       kinski = !kinski;
