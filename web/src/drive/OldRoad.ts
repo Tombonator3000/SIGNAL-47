@@ -27,7 +27,7 @@ import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessT
 // world terms (start, obstacles, heights) have the origin added, as in RoadArea.
 //
 // Draw calls: about 26 (ground 3, asphalt 2, merged statics ~5, instanced posts, poles,
-// stakes and rocks, wires 1, far mesas 1, far SARO 1, glows 1, Kessler 2), and the ground cover
+// stakes and rocks, wires 1, far haze and the sun's mesa 1, far SARO 1, glows 1, Kessler 2), and the ground cover
 // round the camera (world/flora.ts, 7).
 
 export const oldFlood = floodSet(6, 'oldroad', 0.1);
@@ -446,15 +446,18 @@ export class OldRoad implements DriveArea {
       this.group.add(this.flora.group);
     }
 
-    // ---------- far away: the mesas round the horizon (they follow the camera), SARO, the diner ----------
+    // ---------- far away: the haze at the edge of the land and the sun's mesa (they follow the camera), SARO ----------
+    // The far mesas and the ridge round the horizon are the painted band's (world/backdrop.ts,
+    // round 16); this ring is only the hazy foot of the land in front of it, a few metres high,
+    // and the mesa the sun comes up behind.
     {
       const pos: number[] = [], col: number[] = [], lit: number[] = [], N = 540, R = 4300;
       const ROAD_Y = path[I0].y;
-      // flat-topped mesas: [azimuth, half width, top]; the one in the east-north-east is where
-      // the sun comes up, its top 0.6 degrees over the road (KAPITLER.md: the sun takes its edge at 05:30)
-      const MES: [number, number, number][] = [[SUN_AZ + 2, 9, R * Math.tan(0.6 * Math.PI / 180) + 1.5], [28, 7, 70], [128, 10, 55], [205, 14, 95], [252, 6, 60], [318, 11, 110], [352, 5, 48]];
+      // the flat-topped mesa in the east-north-east where the sun comes up, its top 0.6 degrees
+      // over the road (KAPITLER.md: the sun takes its edge at 05:30): [azimuth, half width, top]
+      const MES: [number, number, number][] = [[SUN_AZ + 2, 9, R * Math.tan(0.6 * Math.PI / 180) + 1.5]];
       const h = (deg: number) => {
-        let v = 12 + 8 * Math.sin(deg * 0.061 + 1.3) + 5 * Math.sin(deg * 0.17);
+        let v = 4 + 2.5 * Math.sin(deg * 0.061 + 1.3) + 1.5 * Math.sin(deg * 0.17);
         for (const [a, w, t] of MES) {
           const d = Math.abs(((deg - a + 540) % 360) - 180);
           v = Math.max(v, t * (1 - THREE.MathUtils.smoothstep(d, w, w + 1.8)) * (0.97 + 0.03 * Math.sin(deg * 2.7)));

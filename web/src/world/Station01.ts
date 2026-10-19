@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from './stationLayout';
-import { stationMesas, roadMesas, STATION_FAR_LIGHTS, hazed } from './horizon';
-import { fromRoad, stationToRoad, stationLand, outside, inRect, STATION_PATCH } from './geo';
+import { stationMesas, STATION_FAR_LIGHTS, hazed } from './horizon';
+import { stationToRoad, stationLand, outside, inRect, STATION_PATCH } from './geo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, type FloodSet } from './kit';
 import { GlowPoints, glowScale } from './glow';
@@ -1038,12 +1038,12 @@ export class Station01 {
     this.group.add(gm);
   }
 
-  // Dark mesas and far ridges on the horizon (horizon.ts), and the road's far rings round
-  // the drive, placed as they lie on the map (geo.ts): the skyline is the road's too.
+  // Dark mesas near the station (horizon.ts); the far ones all round are the painted horizon's
+  // (world/backdrop.ts), the same from every area.
   private horizon() {
     const mesh = new THREE.Mesh(stationMesas((x, z) => Terrain.height(x, z)), hazed(this.basic({ vertexColors: true, fog: false, side: THREE.DoubleSide })));
     mesh.name = 'mesas';
-    this.group.add(mesh, fromRoad(roadMesas(), 'station01'));
+    this.group.add(mesh);
     for (const l of STATION_FAR_LIGHTS) this.glow.add(l.x, l.y, l.z, l.size, l.color, l.blink, l.phase);
   }
 

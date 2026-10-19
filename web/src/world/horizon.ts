@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { rng } from '../core/textures';
-import { fromRoad, fromStation, stationLand, stationToRoad } from './geo';
+import { fromStation, stationLand, stationToRoad } from './geo';
 
-// The skyline of the night, one for the whole map (geo.ts): the road's two far rings of
-// mesas round the drive, and the mesas and ridges near STATION 01. Every area that the truck
-// is driven through draws both, each in its own terms, so the skyline stays where it is when
-// the truck goes from one area into the next. Unlit and unfogged, very dark: silhouettes
-// against the night sky.
+// The near skyline of the night, one for the whole map (geo.ts): the mesas near STATION 01.
+// Every area that the truck is driven through draws them, each in its own terms, so they stay
+// where they are when the truck goes from one area into the next. Unlit and unfogged, very
+// dark: silhouettes against the night sky. Behind them, all round, the painted horizon
+// (backdrop.ts, round 16) has the far mesas, buttes and ridge that two rings of mesas here and
+// a ring of ridges round the station used to be (19 October).
 
 // ---------- the haze of the dawn on them ----------
 // Unfogged, the far mesas stay black when the land in front of them goes into the grey of the
@@ -28,38 +29,7 @@ export function hazed<M extends THREE.Material>(m: M): M {
   return m;
 }
 
-// ---------- mesas on the horizon: two dark rings of flat tops and cliffs, no fog ----------
-const MESAS: [number, number, number][] = [[18, 9, 150], [57, 5, 95], [96, 12, 175], [148, 6, 115], [201, 14, 155], [246, 4, 85], [273, 10, 195], [314, 7, 125], [346, 5, 100]];
-export function roadMesas() {
-  const pos: number[] = [], col: number[] = [];
-  const ring = (R: number, scale: number, lift: number, c0: number[], c1: number[], seed: number) => {
-    const N = 720;
-    const h = (deg: number) => {
-      let v = 18 + 9 * Math.sin(deg * 0.052 + seed) + 6 * Math.sin(deg * 0.13 + seed * 2);
-      for (const [a, w, top] of MESAS) {
-        const d = Math.abs(((deg - a - seed * 9 + 540) % 360) - 180);
-        v = Math.max(v, top * scale * (1 - THREE.MathUtils.smoothstep(d, w, w + 1.6)) * (0.96 + 0.04 * Math.sin(deg * 3.1)));
-      }
-      return v + lift;
-    };
-    for (let i = 0; i < N; i++) {
-      const a0 = i / N * 360, a1 = (i + 1) / N * 360;
-      const p = (deg: number, y: number) => [-250 + Math.sin(deg * Math.PI / 180) * R, y, 300 - Math.cos(deg * Math.PI / 180) * R];
-      const q = [p(a0, -40), p(a1, -40), p(a1, h(a1)), p(a0, h(a0))];
-      for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(...q[k]); col.push(...(k < 2 ? c0 : c1)); }
-    }
-  };
-  ring(3900, 0.8, 10, [0.006, 0.008, 0.016], [0.016, 0.019, 0.032], 3);
-  ring(3200, 1, 0, [0.003, 0.004, 0.009], [0.009, 0.011, 0.02], 0);
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  const mesh = new THREE.Mesh(g, hazed(new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide })));
-  mesh.frustumCulled = false;
-  return mesh;
-}
-
-// ---------- near STATION 01: mesas and far ridges, like the concept art ----------
+// ---------- near STATION 01: mesas, like the concept art ----------
 // A little lighter on the cliffs that face the moon, darker on the slopes and the tops.
 // Station-local terms; ground: the height under them (the station's land, which out there is
 // the road's, geo.ts).
@@ -128,35 +98,24 @@ export function stationMesas(ground: (x: number, z: number) => number) {
   // (turned from -95 so its east end stops short of the highway at Caliche, 180 m west of the town)
   mesa(-85, 1750, 900, 300, 48, 11, 1);
   mesa(150, 2000, 700, 300, 40, 13, 1);
-  // far ridges all round
-  const R = rng(17), N = 160, ridge: THREE.Vector3[] = [], feet: THREE.Vector3[] = [];
-  for (let i = 0; i < N; i++) {
-    const a = i / N * Math.PI * 2, rad = 2250 + Math.sin(a * 3 + 1) * 120;
-    const h = 14 + 22 * (0.5 + 0.5 * Math.sin(a * 5 + 2)) + 14 * (0.5 + 0.5 * Math.sin(a * 13)) + R() * 8;
-    const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
-    ridge.push(new THREE.Vector3(x, h, z));
-    feet.push(new THREE.Vector3(x * 0.99, ground(x, z) - 8, z * 0.99));
-  }
-  const rc = [0.006, 0.006, 0.009], rt = [0.011, 0.01, 0.013];
-  for (let i = 0; i < N; i++) { const j = (i + 1) % N; quad(feet[j], feet[i], ridge[i], ridge[j], rc, rt, ridge[i].clone().multiplyScalar(2)); }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   return g;
 }
-/** A relay tower's red light on the far ridge to the south-east, ranch lights west (station-local). */
+/** A relay tower's red light to the south-east, in front of the painted horizon's mesas there, ranch lights west (station-local). */
 export const STATION_FAR_LIGHTS: { x: number; y: number; z: number; size: number; color: number; blink?: number; phase?: number }[] = [
   { x: 1500, y: 52, z: 1650, size: 14, color: 0xff3020, blink: 1.4, phase: 0.3 }, { x: -2100, y: 22, z: 600, size: 9, color: 0xffc070 },
   { x: -1900, y: 18, z: 1100, size: 7, color: 0xffb060 },
 ];
 
-/** The whole skyline as SARO or the road sees it, and its far lights (for the area's glow). */
+/** The near skyline as SARO or the road sees it, and its far lights (for the area's glow). */
 export function sharedHorizon(area: 'saro' | 'road', glow: { add: (x: number, y: number, z: number, size: number, color: number, blink?: number, phase?: number) => unknown }) {
   const group = new THREE.Group();
   group.name = 'horizon';
-  if (area === 'saro') group.add(fromRoad(roadMesas(), 'saro')); else group.add(roadMesas());
   // on the station's land out there (the road's own, geo.ts), so the very same mesas as the station's
   const st = new THREE.Mesh(stationMesas((x, z) => stationLand(...stationToRoad(x, z))), hazed(new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide })));
+  st.name = 'mesas:near';
   st.frustumCulled = false;
   fromStation(st, area);
   st.updateMatrix();
