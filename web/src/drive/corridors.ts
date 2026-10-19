@@ -1,12 +1,11 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeStatic, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import { roadMaterials, poles, fences, delineators, signs, cattleGuard, wireMesh, headlightGlints, ranchRoad, culverts, highwayWear, type Build, type Glint } from './roadProps';
 import { wearMesh } from './roadSurface';
-import { plants, ranchLights, saroLights } from './roadPlaces';
+import { plants, ranchLights, saroLights, groundWithTufts } from './roadPlaces';
 import { gravelTex } from './roadTextures';
-import { groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, surfaceY } from './roadTerrain';
+import { groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, surfaceY, trackNearest } from './roadTerrain';
 import { SARO_PATCH, STATION_PATCH, inRect, fromRoad, stationBend } from '../world/geo';
 import { Herd } from './herd';
 
@@ -48,8 +47,7 @@ const SARO_TRACK = 100;
 export function saroCorridor(set: FloodSet) {
   const b = build(set, false), R = SARO_PATCH;
   const keep = (x: number, z: number) => z > -220 && z < 600 && inRect(R, x, z);
-  const ground = new THREE.Mesh(mergeGeometries([groundGeometry(R), ...vergeGeometry({ hwy: [SARO_FROM, 600], track: [0, SARO_TRACK] })])!, b.m.ground);
-  ground.name = 'saroCorridorGround';
+  const ground = groundWithTufts([groundGeometry(R), ...vergeGeometry({ hwy: [SARO_FROM, 600], track: [0, SARO_TRACK] })], b.m.ground, 'saroCorridorGround', keep);
   const gravel = b.m.gravel;
   b.root.add(ground, new THREE.Mesh(highwayGeometry(SARO_FROM, 600), b.m.asphalt), new THREE.Mesh(trackGeometry(0, SARO_TRACK), gravel));
   poles(b, keep);
@@ -82,8 +80,8 @@ export function saroCorridor(set: FloodSet) {
 export function stationCorridor(set: FloodSet) {
   const b = build(set, true), R = STATION_PATCH;
   const keep = (x: number, z: number) => inRect(R, x, z);
-  const ground = new THREE.Mesh(mergeGeometries([groundGeometry(R), ...vergeGeometry({ hwy: null, track: [STATION_FROM, 588] })])!, b.m.ground);
-  ground.name = 'stationCorridorGround';
+  const ground = groundWithTufts([groundGeometry(R), ...vergeGeometry({ hwy: null, track: [STATION_FROM, 588] })], b.m.ground, 'stationCorridorGround',
+    (x, z) => { const t = trackNearest(x, z); return keep(x, z) && t.d < 12 && t.s >= STATION_FROM; });
   const trk = new THREE.Mesh(trackGeometry(STATION_FROM), b.m.gravel);
   bend(ground.geometry); bend(trk.geometry);
   b.root.add(ground, trk);

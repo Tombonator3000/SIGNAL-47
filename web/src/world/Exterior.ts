@@ -7,7 +7,7 @@ import { SARO_IN_ROAD, SARO_PATCH, MOTEL_AT, MOTEL_GLOWS, inRect, outside } from
 import { DISH_LAYOUT, DISH_LAYOUT_FAR, ARRAY_FLAT, GATE, FENCE_Z, LAMPS, onField } from './arrayLayout';
 import { hLow, smooth } from '../drive/roadShape';
 import { highwayTex } from '../drive/roadTextures';
-import { wet } from '../drive/roadSurface';
+import { wet, HWY_LANES } from '../drive/roadSurface';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
 
@@ -128,7 +128,7 @@ export class Exterior {
     // through the array and out past its last antennas, on the array's flat ground (z -480).
     // It is the road's own asphalt (drive/roadTextures.ts), its middle 8 m, in step with the
     // stretch south of z 36 (road-local z -264, 48 m to a repeat), with the same damp sheen.
-    const asphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: highwayTex(), roughness: 0.55 }), 0.02));
+    const asphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: highwayTex(), roughness: 0.55 }), 0.02), 0.5, 100, 9, { lanes: HWY_LANES, dry: -0.15 });
     const r = plane(this.group, 8, 516, asphalt, -24, -0.58, -222, 0, -Math.PI / 2);
     const uv = r.geometry.attributes.uv as THREE.BufferAttribute;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, (10 - 8 * uv.getX(i)) / 12, (-264 - uv.getY(i) * 516) / 48);

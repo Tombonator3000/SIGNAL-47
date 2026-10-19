@@ -51,14 +51,25 @@ export function oldAsphaltTex() {
       for (let k = 0; k < 9; k++) { x += (r() - 0.5) * 30; y += (r() - 0.35) * 26; g.lineTo(Math.min(w - 1.3 * PX, Math.max(1.3 * PX, x)), y); }
       g.stroke();
     }
-    // over the picture too: two patches of blacker asphalt with tar round them, cracks across
-    // every few metres where the winters opened it, most of them sealed, some still open
+    // over the picture too: two patches, skewed off the lanes with a corner chipped, one newer and
+    // blacker, one sun-faded lighter than the road round it, the seams a fine line of tar and a
+    // crack carried on across the first; cracks across every few metres where the winters opened
+    // it, most of them sealed, some still open
     const a0 = 1.25 * PX, a1 = w - 1.25 * PX;
-    for (const [x0, x1, y0, len] of [[w / 2 + 0.2 * PX, a1 - 0.3 * PX, h * 0.18, 3.2 * PX], [a0 + 0.4 * PX, w / 2 - 0.5 * PX, h * 0.62, 2.2 * PX]]) {
-      const c = [[x0, y0], [x1, y0 + (r() - 0.5) * 6], [x1 + (r() - 0.5) * 4, y0 + len], [x0, y0 + len + (r() - 0.5) * 6]];
+    for (const [x0, x1, y0, len, old] of [[w / 2 + 0.2 * PX, a1 - 0.3 * PX, h * 0.18, 3.2 * PX, false], [a0 + 0.4 * PX, w / 2 - 0.5 * PX, h * 0.62, 2.2 * PX, true]] as const) {
+      const sk = (r() - 0.5) * 0.45 * PX, dx = (r() - 0.5) * 0.15 * PX, k = 0.12 + r() * 0.1, rot = (old ? 1 : -1) * (0.05 + r() * 0.05);
+      const cx = (x0 + x1) / 2, cy = y0 + len / 2, cr = Math.cos(rot), sr = Math.sin(rot);
+      const c = ([[x0, y0], [x1 - (x1 - x0) * k, y0 + sk], [x1, y0 + sk + len * k * 0.7], [x1 + dx, y0 + sk + len], [x0 + dx, y0 + len]] as const)
+        .map(([x, y]) => [cx + (x - cx) * cr - (y - cy) * sr, cy + (x - cx) * sr + (y - cy) * cr]);
       g.beginPath(); c.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath();
-      g.fillStyle = 'rgba(14,14,16,.26)'; g.fill();
-      g.strokeStyle = 'rgba(8,8,8,.45)'; g.lineWidth = 2.5; g.lineJoin = 'round'; g.stroke();
+      g.fillStyle = old ? 'rgba(176,170,158,.13)' : 'rgba(14,14,16,.15)'; g.fill();
+      g.strokeStyle = 'rgba(8,8,8,.25)'; g.lineWidth = 1; g.lineJoin = 'round'; g.stroke();
+      if (!old) {
+        let y = y0 + len * 0.4;
+        g.strokeStyle = 'rgba(4,4,4,.7)'; g.beginPath(); g.moveTo(x0 - 0.4 * PX, y);
+        for (let x = x0 - 0.4 * PX; x < x1 + 0.4 * PX; x += 4) { y += (r() - 0.5) * 2.4; g.lineTo(x, y); }
+        g.stroke();
+      }
     }
     for (let y = 12 + r() * 2 * PX; y < h - 12; y += (3 + r() * 5) * PX) {
       const sealed = r() < 0.65;

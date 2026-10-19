@@ -5,9 +5,9 @@ import type { GlowPoints } from '../world/glow';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
-import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, surfaceY, hash, smooth } from './roadTerrain';
+import { HWY, GUARD, PASTURE, DRIVE_N, DRIVE_S, DINER, MOTEL, TOWN, GROUND_TINT, GRAVEL_TINT, surfaceY, hash, smooth, edgeColour } from './roadTerrain';
 import { highwayTex, gravelTex, signAtlas, SIGNS, uvInto } from './roadTextures';
-import { wet, type Wear } from './roadSurface';
+import { wet, HWY_LANES, type Wear } from './roadSurface';
 import { rng } from '../core/textures';
 import { MILE } from './roadShape';
 import type { Rect } from './truckTextures';
@@ -72,9 +72,11 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
   const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
   const link = chainlink(); link.repeat.set(1, 1);
   return {
-    ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }),
-    asphalt: wet(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01)),
-    gravel: gravelArt ? std({ map: gravelTex(), color: 0xf2ece0, roughness: 0.95, ...top }, 0.01) : std({ color: 0x8a8070, roughness: 0.95, ...top }, 0.01),
+    ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: GROUND_TINT, roughness: 1 }),
+    // mostly dry: the damp along its edges and in the wheel paths (roadSurface.ts)
+    asphalt: wet(std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01), 0.5, 100, 9, { lanes: HWY_LANES, dry: -0.15 }),
+    // (its edges coloured to the desert's, roadTerrain.edgeColour)
+    gravel: gravelArt ? std({ map: gravelTex(), color: GRAVEL_TINT, vertexColors: true, roughness: 0.95, ...top }, 0.01) : std({ color: 0x8a8070, vertexColors: true, roughness: 0.95, ...top }, 0.01),
     steel: std({ color: 0x8b9094, roughness: 0.45, metalness: 0.4 }),
     wood: std({ color: 0x6e5d4b, roughness: 0.92 }),
     concrete: std({ map: artTexture('concrete'), color: 0xbab2a2, roughness: 0.95 }),
@@ -296,7 +298,8 @@ export const onRanchRoad = (x: number, z: number) => x > 6 && x < RANCH_TO + 4 &
 export function ranchRoad(b: Build, keep: Keep = () => true) {
   const s = b.statics, m = b.m, HW = 2.5;
   // the track: rows every 4 m from the shoulder to the yard, on the land (the verge, then the desert)
-  const pos: number[] = [], uv: number[] = [], idx: number[] = [];
+  // (its edges in the desert's colour, the picture's own fade under them: no hard line to the land)
+  const pos: number[] = [], uv: number[] = [], col: number[] = [], idx: number[] = [];
   let rows = 0;
   for (let x = HWY.shoulder; x <= RANCH_TO; x += 4) {
     if (!keep(x, ranchZ(x))) continue;
@@ -304,6 +307,7 @@ export function ranchRoad(b: Build, keep: Keep = () => true) {
     for (const o of [-HW, -HW / 2, 0, HW / 2, HW]) {
       const px = x - t / n * o, pz = ranchZ(x) + o / n;
       pos.push(px, surfaceY(px, pz) + 0.035, pz); uv.push(0.5 + o / (2 * HW), x / 8);
+      edgeColour(px, pz, Math.abs(o) === HW ? 1 : o ? 0.2 : 0, col);
     }
     if (rows++ > 0) for (let c = 0; c < 4; c++) { const a = (rows - 2) * 5 + c, e = a + 5; idx.push(a, e, a + 1, a + 1, e, e + 1); }
   }
@@ -311,6 +315,7 @@ export function ranchRoad(b: Build, keep: Keep = () => true) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     g.setIndex(idx); g.computeVertexNormals();
     if (g.attributes.normal.getY(0) < 0) { g.setIndex(idx.map((_, i) => idx[i - (i % 3) + 2 - (i % 3)])); g.computeVertexNormals(); }
     const mesh = new THREE.Mesh(g, m.gravel); mesh.name = 'ranchRoad';
@@ -342,13 +347,14 @@ export function ranchRoad(b: Build, keep: Keep = () => true) {
     s.add(g);
     circle(b, mx, mz, 0.15);
   }
-  culvert(b, keep, 13.5, ranchZ(13.5), HW + 0.7, -Math.PI / 2);
+  culvert(b, keep, ...CULVERTS[1]);
 }
 
 // ---------- culverts: a corrugated pipe under an approach, its ends and their markers ----------
 /** Under a track crossing the highway's verge at (x, z): the pipe's two ends `half` metres either
  *  side along z, a little concrete headwall behind each, and an object marker beside it facing
- *  the highway (ry). */
+ *  the highway (ry). Pipe and headwalls stand down in the ditch along the verge, 0.2 m below the
+ *  land (its decal, 'swale', is in highwayWear), so the pipe goes under the track. */
 export function culvert(b: Build, keep: Keep, x: number, z: number, half: number, ry: number) {
   const s = b.statics, m = b.m;
   for (const sd of [-1, 1]) {
@@ -356,10 +362,10 @@ export function culvert(b: Build, keep: Keep, x: number, z: number, half: number
     if (!keep(x, pz)) continue;
     const y = surfaceY(x, pz);
     // galvanised long ago, rusted brown now, half silted up
-    const pipe = cyl(s, 0.32, 0.32, 0.55, m.paint, x, y + 0.02, pz + sd * 0.1, 12); pipe.rotation.x = Math.PI / 2;
+    const pipe = cyl(s, 0.32, 0.32, 0.55, m.paint, x, y - 0.17, pz + sd * 0.1, 12); pipe.rotation.x = Math.PI / 2;
     const hole = new THREE.Mesh(new THREE.CircleGeometry(0.29, 12), m.dark);
-    hole.position.set(x, y + 0.02, pz + sd * 0.38); hole.rotation.y = sd > 0 ? 0 : Math.PI; s.add(hole);
-    box(s, 1.3, 0.5, 0.2, m.concrete, x, y + 0.04, pz - sd * 0.12);
+    hole.position.set(x, y - 0.17, pz + sd * 0.38); hole.rotation.y = sd > 0 ? 0 : Math.PI; s.add(hole);
+    box(s, 1.3, 0.62, 0.2, m.concrete, x, y - 0.1, pz - sd * 0.12);
     const mx = x + (ry < 0 ? -0.9 : 0.9), mzz = pz + sd * 0.25, my = surfaceY(mx, mzz);
     cyl(s, 0.025, 0.025, 1.25, m.steel, mx, my + 0.6, mzz, 5);
     const plate = new THREE.Mesh(uvInto(new THREE.PlaneGeometry(0.2, 0.6), SIGNS.marker), m.sign);
@@ -369,8 +375,10 @@ export function culvert(b: Build, keep: Keep, x: number, z: number, half: number
 }
 /** The culverts by the road: under the mouth of the survey track (the ranch's has its own). */
 export function culverts(b: Build, keep: Keep = () => true) {
-  culvert(b, keep, -13.8, 520, 4.4, Math.PI / 2);
+  culvert(b, keep, ...CULVERTS[0]);
 }
+/** The culverts (x, z, half, ry): under the survey track's mouth, and under the ranch's road (ranchRoad). */
+const CULVERTS: [number, number, number, number][] = [[-13.8, 520, 4.4, Math.PI / 2], [13.5, ranchZ(13.5), 3.2, -Math.PI / 2]];
 
 // ---------- wear on the highway: oil, damp patches, cracks, patches and tar (roadSurface.ts) ----------
 /** The highway's decals, road-local. The same random sequence whatever keep() keeps, so a stretch
@@ -381,20 +389,25 @@ export function highwayWear(keep: Keep = () => true): Wear[] {
   const add = (x: number, z: number, w: number, l: number, ry: number, k: Wear['k']) => { if (keep(x, z)) out.push({ x, z, w, l, ry, k }); };
   const one = (z: number, town: boolean) => {
     const k = r(), side = r() < 0.5 ? -1 : 1, a = r(), b = r(), c = r(), d = r();
-    if (k < (town ? 0.4 : 0.3)) add(town ? side * (3.6 + a * 1.2) : (a - 0.5) * 8.4, z, 1.6 + b * 2.6, 2.4 + c * 4.5, d * 6.3, 'damp');
-    else if (k < 0.5) add(side * (1.8 + (a - 0.5) * 0.4), z, 0.8 + b * 0.5, 2.5 + c * 4, (d - 0.5) * 0.2, 'drips');
-    else if (k < 0.68) add(side * (a < 0.6 ? 2.65 : 0.95), z, 1.1 + b * 0.5, 2.5 + c * 3, (d - 0.5) * 0.1, 'cracks');
-    else if (k < 0.8) add(side * (1.2 + a * 1.8), z, 1.4 + b * 1.6, 1.6 + c * 2.4, (d - 0.5) * 0.06, 'patch');
+    // the open road mostly dry, damp only by an edge now and then; in town along the gutters
+    if (k < (town ? 0.4 : 0.12)) add(side * (town ? 3.6 + a * 1.2 : 4.1 + a * 0.5), z, 1.2 + b * (town ? 2.6 : 1.2), 2.4 + c * 4.5, town ? d * 6.3 : (d - 0.5) * 0.4, 'damp');
+    else if (k < 0.42) add(side * (1.8 + (a - 0.5) * 0.4), z, 0.8 + b * 0.5, 2.5 + c * 4, (d - 0.5) * 0.2, 'drips');
+    else if (k < 0.64) add(side * (a < 0.6 ? 2.65 : 0.95), z, 1.1 + b * 0.5, 2.5 + c * 3, (d - 0.5) * 0.1, 'cracks');
+    // patches of all sizes, newer and blacker or sun-faded lighter, skewed off the lanes
+    else if (k < 0.8) add(side * (1.2 + a * 1.8), z, 1.0 + b * 2.2, 1.2 + c * 3, (d - 0.5) * 0.3, (c * 7) % 1 < 0.45 ? 'fade' : 'patch');
     else add((a - 0.5) * 7, z, 3 + b * 4, 3 + c * 3, d * 6.3, 'seal');
   };
   for (let z = HWY.z0 + 40; z < HWY.z1 - 40; z += 10 + r() * 24) one(z, false);
   for (let z = TOWN.z0; z < TOWN.z1; z += 6 + r() * 8) one(z, true);
-  // the mouths of the tracks and the lots: gravel carried onto the asphalt, rubber where they turn
-  add(-5.3, 520, 3.4, 6.5, Math.PI / 2, 'grit'); add(-3.4, 516.5, 3, 4.2, 0.5, 'rubber');
-  add(5.3, ranchZ(5.3), 3, 5, -Math.PI / 2, 'grit');
-  add(-2.8, DINER.z - 4, 3, 3.6, Math.PI / 2, 'grit'); add(-2.8, DINER.z + 6, 3, 3.6, Math.PI / 2, 'grit');
+  // the mouths of the tracks and the lots: gravel carried onto the paved shoulder (short of the
+  // edge line), rubber where they turn
+  add(-4.3, 520, 6, 1.3, Math.PI / 2, 'grit'); add(-3.4, 516.5, 3, 4.2, 0.5, 'rubber');
+  add(4.3, ranchZ(4.3), 5, 1.3, -Math.PI / 2, 'grit');
+  add(-4.3, DINER.z - 4, 3.6, 1.3, Math.PI / 2, 'grit'); add(-4.3, DINER.z + 6, 3.6, 1.3, Math.PI / 2, 'grit');
   add(-2.6, DINER.z - 10, 3.4, 5, 2.6, 'rubber'); add(-2.6, DINER.z + 9, 3.4, 5, 0.6, 'rubber');
   add(-1.6, DINER.z - 1, 1.6, 3.4, 0.3, 'drips');
+  // the ditches along the verge either side of each culvert
+  for (const [x, z, half] of CULVERTS) for (const sd of [-1, 1]) add(x, z + sd * (half + 2.8), 1.9, 6.2, 0, 'swale');
   return out;
 }
 

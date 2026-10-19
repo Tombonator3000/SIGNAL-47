@@ -5,7 +5,10 @@
 # track in the truck's headlights, and the old Roswell road at dawn. Prints the draw calls of each,
 # and checks them against what they were before this pass (at most 15 more per area), that Low
 # draws no more than High and has the wear decals and the wet sheen off, that the wear decals and
-# the sheen are there on High, that the new things by the road stand clear of the lanes and the
+# the sheen are there on High, that the lots have their 1024 picture (8 m) on High and Low alike,
+# that the dry grass is in the ground and Low draws a third of it, that the sheen lays a column
+# under SARO's lamps and none from the truck's own headlights, that the new things by the road
+# stand clear of the lanes and the
 # track, and that the player still walks the service road, the shoulder to the motel, the motel's
 # lot and Caliche's street with the real movement code.
 # Usage: python3 tools/env_roads.py OUTDIR [WxH] [--shots]   (--shots: the views only, no checks)
@@ -116,7 +119,13 @@ async def main():
             const src = gl.getShaderSource(p.fragmentShader) || '', lam = src.includes('#define LAMBERT'), w = src.includes('wetness(');
             if (lam) { out.lam++; if (w) out.lamWet++; } else { out.std++; if (w) out.stdWet++; } }
           let n = 0, shown = 0; S47.scene.traverse((o) => { if (o.userData.lowOff) { n++; let v = true; for (let q = o; q; q = q.parent) v = v && q.visible; if (o.visible) shown++; } });
-          out.decals = n; out.shown = shown; return out; })()"""
+          out.decals = n; out.shown = shown;
+          // the lots' asphalt (its picture's width) and the grounds with dry grass in them (how much is drawn)
+          out.lot = []; out.grass = [];
+          S47.scene.traverse((o) => { const m = o.material;
+            if (m && m.map && m.map.name === 'lotAsphalt' && !out.lot.includes(m.map.image.width)) out.lot.push(m.map.image.width);
+            if (o.userData.lowRange !== undefined) out.grass.push([o.name, o.userData.lowRange, o.geometry.index.count, o.geometry.drawRange.count === Infinity ? -1 : o.geometry.drawRange.count]); });
+          return out; })()"""
         hi_sheen = await ev(SHEEN)
         await ev("S47.setQuality('low'); S47.tick(0.1)")
         low = {}
@@ -132,7 +141,7 @@ async def main():
 
         # ---------- draw calls ----------
         over = {k: (v, BEFORE[k]) for k, v in high.items() if k in BEFORE and v > BEFORE[k] + 15}
-        check(not over and len(BEFORE) == len(VIEWS), f'at most 15 more draw calls than before at every view on High ({high}; before {BEFORE})')
+        check(not over and all(k in high for k in BEFORE), f'at most 15 more draw calls than before at every view on High ({ {k: high[k] for k in BEFORE} }; before {BEFORE})')
         house = [high[k] for k in ('r1_highway_from_the_shoulder', 'r2_service_road_and_pad')]
         check(max(house) <= 340, f'by the house SARO keeps the grounds\' budget of 340 ({house})')
         more = {k: (low[k], high[k]) for k in high if low[k] > high[k]}
@@ -143,18 +152,34 @@ async def main():
         check(hi_sheen['std'] > 0 and hi_sheen['stdWet'] == hi_sheen['std'], f"High's wet surfaces are compiled with the sheen ({hi_sheen['stdWet']} of {hi_sheen['std']} programs)")
         check(lo_sheen['shown'] == 0 and lo_sheen['lam'] > 0 and lo_sheen['lamWet'] == 0,
               f"Low hides the decals ({lo_sheen['shown']} shown) and its cheap copies go without the sheen ({lo_sheen['lamWet']} of {lo_sheen['lam']} programs have it)")
+        check(hi_sheen['lot'] == [1024] and lo_sheen['lot'] == [1024], f"the lots' asphalt is one 1024 px picture to 8 m, High ({hi_sheen['lot']}) and Low ({lo_sheen['lot']}) alike")
+        g_hi, g_lo = {g[0]: g for g in hi_sheen['grass']}, {g[0]: g for g in lo_sheen['grass']}
+        check(len(g_hi) >= 2 and all(g[3] == -1 and g[2] - g[1] > 3000 for g in g_hi.values()) and all(g_lo[k][3] == g_lo[k][1] for k in g_hi if k in g_lo) and len(g_lo) == len(g_hi),
+              'the dry grass is merged into the ground (no draw call), all of it drawn on High and a third on Low: ' + ', '.join(f"{k} {(g[2] - g[1]) // 6 * 3 // 2} blades" for k, g in g_hi.items()))
         await ev("S47.setQuality('high'); S47.tick(0.1)")
         await stop_driving()
         # what it adds: the same view with the sheen turned off, on the highway under SARO's lamps
-        # (the stretch between the lamps and the eye, where their reflection lies)
-        from PIL import Image, ImageStat
-        def road_light(path): return ImageStat.Stat(Image.open(path).convert('L').crop((int(W * 0.52), int(H * 0.47), int(W * 0.75), int(H * 0.62)))).mean[0]
+        # (the stretch between the lamps and the eye, where their reflection lies: a narrow column
+        # where the road is damp, so the pixels it brightens are counted, not the mean, which the
+        # picture's exposure moves the other way)
+        from PIL import Image, ImageChops
+        CROP = (int(W * 0.52), int(H * 0.47), int(W * 0.75), int(H * 0.62))
+        def lit_by(a, b): return sum(ImageChops.subtract(Image.open(a).convert('L').crop(CROP), Image.open(b).convert('L').crop(CROP)).histogram()[9:])
         await go(VIEWS[0]); await ev("S47.tick(1.0)"); await ev("S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/sheen_on.png')
         await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } }); S47.tick(0.05)")
         await pg.screenshot(path=f'{OUT}/sheen_off.png')
         await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } }); S47.tick(0.05)")
-        on, off = road_light(f'{OUT}/sheen_on.png'), road_light(f'{OUT}/sheen_off.png')
-        check(on > off * 1.25, f'the damp sheen catches SARO\'s lamps on the highway: the road there {on:.1f} with it, {off:.1f} without')
+        on, off = lit_by(f'{OUT}/sheen_on.png', f'{OUT}/sheen_off.png'), lit_by(f'{OUT}/sheen_off.png', f'{OUT}/sheen_on.png')
+        check(on > 500 and on > off * 2.5, f'the damp sheen catches SARO\'s lamps on the highway: {on} pixels of the road there brighter with it, {off} darker')
+        # and not the truck's own headlights: on the highway out of town, in the beam ahead
+        await go(EXTRA[1]); await ev("S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/beam_on.png')
+        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } }); S47.tick(0.05)")
+        await pg.screenshot(path=f'{OUT}/beam_off.png')
+        await ev("S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } }); S47.tick(0.05)")
+        await stop_driving()
+        CROP = (int(W * 0.3), int(H * 0.47), int(W * 0.7), int(H * 0.56))
+        beam = lit_by(f'{OUT}/beam_on.png', f'{OUT}/beam_off.png')
+        check(beam < 150, f"the truck's own headlights lay no sheen on the road ahead ({beam} pixels in the beam brighter with it)")
         # and it adds no colour the half-float picture cannot hold (memory.md: one NaN blooms over the screen)
         hdr = {}
         for v in (VIEWS[0], VIEWS[3], VIEWS[5]):

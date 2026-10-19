@@ -1,13 +1,12 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeStatic, addFlood, floodlit } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import type { Box2, DriveArea, Obstacle, Surface } from './Drive';
 import { roadFlood, HEADLIGHT_SLOTS, headlightGlints, roadMaterials, type Build, type Glint, poles, fences, delineators, signs, cattleGuard, wireMesh, roadClosed, ranchRoad, culverts, highwayWear } from './roadProps';
-import { wet, wearMesh } from './roadSurface';
-import { station, ranch, plants, saroLights, motelFar, trackRoute } from './roadPlaces';
+import { wet, wearMesh, OLD_LANES } from './roadSurface';
+import { station, ranch, plants, saroLights, motelFar, trackRoute, groundWithTufts } from './roadPlaces';
 import { sharedHorizon } from '../world/horizon';
-import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
+import { HWY, TRK, GUARD, START, END, ENDZONE, OLD, DINER, trackNearest, trackHalf, oldNearest, surfaceY, groundGeometry, highwayGeometry, trackGeometry, vergeGeometry, oldStubGeometry } from './roadTerrain';
 import { oldAsphaltTex } from './oldRoadTextures';
 import { Herd } from './herd';
 
@@ -23,7 +22,8 @@ export { roadFlood, HEADLIGHT_SLOTS };
 // road 1, merged statics ~8, instanced poles, posts, delineators, bushes, rocks and yucca, wires 1,
 // mesas 1, haze 1, all lamp glows 1, the wear on the highway 1 but not on Low: roadSurface.ts);
 // measured 29 to 38 per frame with the truck and the sky.
-// Triangles: about 190 k, mostly the desert grid (56 k), bushes (52 k), posts and poles.
+// Triangles: about 220 k, mostly the desert grid (56 k), bushes (52 k), the dry grass merged into
+// the ground (29 k, a third of it on Low: roadPlaces.tufts), posts and poles.
 
 const S = (kind: Surface['kind'], grip: number, top: number, rough: number): Surface => ({ kind, grip, top, rough });
 const SURF = {
@@ -78,11 +78,16 @@ export class RoadArea implements DriveArea {
     this.night = { hemi, moon };
 
     const m = roadMaterials();
+    // Caliche's main street wet along its west edge where the water ran off: the gas station's
+    // hosed apron (Town.ts), the diner's lot and the laundromat
+    const spots = m.asphalt.userData.wetSpots as THREE.Vector4[];
+    spots[0].set(origin.x - 4.4, origin.z + 2055, 1.5, 10); spots[1].set(origin.x - 3.9, origin.z + DINER.z + 2, 1.7, 9);
+    spots[2].set(origin.x - 4.3, origin.z + 2131.5, 1.2, 6);
     const b: Build = { root: this.group, statics: new THREE.Group(), glow: this.glow, m, obstacles: [], wires: [] };
-    const ground = new THREE.Mesh(mergeGeometries([groundGeometry(), ...vergeGeometry()])!, m.ground);
-    ground.name = 'desert';
+    // the desert, its verges and the dry grass on them (roadPlaces.tufts; Low draws a third of it)
+    const ground = groundWithTufts([groundGeometry(), ...vergeGeometry()], m.ground, 'desert');
     // the old Roswell road going off east across from the diner (OldRoad.ts has the rest of it)
-    this.oldAsphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood), 0.8);
+    this.oldAsphalt = wet(floodlit(new THREE.MeshStandardMaterial({ map: oldAsphaltTex(), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), 0.01, roadFlood), 0.5, 100, 6, { lanes: OLD_LANES });
     const trk = new THREE.Mesh(trackGeometry(), m.gravel);
     trk.name = 'surveyTrack';
     this.group.add(ground, new THREE.Mesh(highwayGeometry(), m.asphalt), trk, new THREE.Mesh(oldStubGeometry(), this.oldAsphalt));

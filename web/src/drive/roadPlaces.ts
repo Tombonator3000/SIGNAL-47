@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, addFlood } from '../world/kit';
 import { rng } from '../core/textures';
-import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER, TOWN } from './roadTerrain';
+import { track, trackHalf, trackNearest, oldNearest, surfaceY, hash, DINER, TOWN, TRK, MOTEL } from './roadTerrain';
 import { stationToRoad, MOTEL_AT, MOTEL_GLOWS, SARO_IN_ROAD } from '../world/geo';
 import { artTexture } from '../core/art';
 import { STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from '../world/stationLayout';
 import { horizonGlowTex } from './roadTextures';
-import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall, onRanchRoad } from './roadProps';
+import { type Build, type Keep, roadFlood, colored, instances, place, circle, wall, onRanchRoad, ranchZ } from './roadProps';
 
 // Places off the road: the station gate at the end of the track, a ranch far to the east,
 // the desert plants and rocks, the mesas on the horizon and SARO's lights behind the start.
@@ -179,6 +179,90 @@ export function plants(b: Build, keep: Keep = () => true) {
     parts.push(colored(new THREE.ConeGeometry(0.035, 0.75, 3).translate(0, 0.37, 0).rotateZ(tilt).rotateY(a).translate(0, 0.32, 0), leaf));
   }
   b.root.add(instances(mergeGeometries(parts)!, b.m.vc, yucca));
+}
+
+// ---------- dry grass: tufts on the highway's shoulders and along the tracks ----------
+/** Bunch grass, dry since the autumn, where the graders and the wheels leave it: on the gravel
+ *  shoulders and out to the fence line along the highway, on the crown between the ruts of the
+ *  survey track and the ranch's road and along their edges, lit warm by the lamps and the
+ *  headlights. A few blades in a fan to a tuft, in the desert's own material and its uv under
+ *  them, so they are merged into the ground and cost no draw call (RoadArea.ts, corridors.ts);
+ *  straw coloured, darker at the foot. No collider: the truck goes through it. Every third tuft
+ *  comes first: `rest` is how many indices follow those, which Low leaves off (userData.lowRange,
+ *  core/quality.ts). The same random numbers whether or not a tuft is kept (keep), so a stretch
+ *  drawn in another area has the very same grass. */
+export function tufts(keep: Keep = () => true) {
+  const r = rng(79), pos: number[] = [], nor: number[] = [], uv: number[] = [], col: number[] = [];
+  const few: number[] = [], rest: number[] = [];
+  let n = 0;
+  const tuft = (x: number, z: number, s: number, lift = 0) => {
+    const blades = 5 + Math.floor(r() * 4), a0 = r() * 7, tone = 0.8 + r() * 0.45, dry = r();
+    const b = Array.from({ length: blades }, () => [r(), r(), r()]);
+    if (!keep(x, z)) return;
+    const y = surfaceY(x, z) + lift - 0.015, list = n++ % 3 ? rest : few;
+    // straw, some of it greyer with age; the foot in the shade of the rest
+    const tip = [1.32 * tone, (1.16 - dry * 0.1) * tone, (0.68 + dry * 0.14) * tone], foot = tip.map((c) => c * 0.45);
+    b.forEach(([u, v, w], i) => {
+      const a = a0 + i / blades * Math.PI * 2 + (u - 0.5) * 0.8, lean = (0.08 + v * 0.18) * s, h = (0.24 + w * 0.3) * s, bw = 0.055 * s;
+      const ca = Math.cos(a), sa = Math.sin(a), k = pos.length / 3;
+      pos.push(x - sa * bw, y, z + ca * bw, x + sa * bw, y, z - ca * bw, x + ca * lean, y + h, z + sa * lean);
+      for (let j = 0; j < 3; j++) { nor.push(0, 1, 0); uv.push(x / 5, z / 5); col.push(...(j < 2 ? foot : tip)); }
+      list.push(k, k + 1, k + 2, k + 1, k, k + 2);   // both faces
+    });
+  };
+  // the shoulders and the verge out to about 9.5 m, both sides, sparse; not where the motel, the
+  // tracks, the diner, Caliche and the old road come off it
+  const shoulder = (x: number, z: number) => {
+    if (z > DINER.z - 45 && z < TOWN.z1 + 20) return false;
+    if (x < 0 && ((z > Math.min(MZ - 6, MOTEL.z - 48) && z < Math.max(MZ + 78, MOTEL.z + 48)) || (z > 500 && z < 542))) return false;
+    if (x > 0 && Math.abs(z - ranchZ(x)) < 4.5) return false;
+    return oldNearest(x, z).d > 7;
+  };
+  for (const sd of [-1, 1]) for (let z = -260; z < 2700; z += 2 + r() * 5) {
+    const x = sd * (6.15 + r() * r() * 3.3), s = 0.8 + r() * 0.7, twin = r() < 0.3;
+    if (!shoulder(x, z)) continue;
+    tuft(x, z, s);
+    if (twin) tuft(x + sd * 0.35, z + 0.4, s * 0.7);
+  }
+  // the survey track: on the crown between the ruts (not at its mouth, where the trucks turn
+  // over it) and along its edges
+  const P = track.pts, S = track.s;
+  for (let i = 0; i < P.length - 1; i++) {
+    const a = P[i], c = P[i + 1], l = a.distanceTo(c), tx = (c.x - a.x) / l, tz = (c.y - a.y) / l, e = trackHalf(S[i]) + TRK.soft;
+    for (let t = 0; t < l; t += 1.2 + r() * 2.6) {
+      const x0 = a.x + tx * t, z0 = a.y + tz * t, o = (r() - 0.5) * 0.36, side = r() < 0.5 ? -1 : 1, oe = side * (e - 0.25 + r() * r() * 1.6), edge = r() < 0.6;
+      if (S[i] > 24) tuft(x0 - tz * o, z0 + tx * o, 0.6 + r() * 0.4);
+      if (edge) tuft(x0 - tz * oe, z0 + tx * oe, 0.8 + r() * 0.7);
+    }
+  }
+  // the ranch's two-track: its crown and its edges (on its picture, 3.5 cm over the land)
+  for (let x = 12; x < 390; x += 1.4 + r() * 3) {
+    const o = (r() - 0.5) * 0.34, side = r() < 0.5 ? -1 : 1, oe = side * (2.35 + r() * r() * 1.6), edge = r() < 0.6;
+    if (Math.abs(x - 21) < 1.2) continue;   // the gate
+    tuft(x, ranchZ(x) + o, 0.6 + r() * 0.4, 0.035);
+    if (edge) tuft(x, ranchZ(x) + oe, 0.8 + r() * 0.7, Math.abs(oe) < 2.5 ? 0.035 : 0);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex([...few, ...rest]);
+  return { geo: g, rest: rest.length, count: n };
+}
+/** The ground (parts) with the tufts merged in at its end: Low told to leave most of them off, and
+ *  a ray (the tools' and the game's checks of what is in the way) stopped by the land only, never
+ *  by a blade of grass (a ray keeps to the draw range, three.js Mesh). */
+export function groundWithTufts(parts: THREE.BufferGeometry[], mat: THREE.Material, name: string, keep: Keep = () => true) {
+  const t = tufts(keep), geo = mergeGeometries(t.count ? [...parts, t.geo] : parts)!;
+  const all = geo.index!.count, land = all - (t.count ? t.geo.index!.count : 0);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = name; mesh.userData.lowRange = all - (t.count ? t.rest : 0);
+  mesh.raycast = (rc, out) => {
+    const { start, count } = geo.drawRange;
+    geo.setDrawRange(0, land); THREE.Mesh.prototype.raycast.call(mesh, rc, out); geo.setDrawRange(start, count);
+  };
+  return mesh;
 }
 
 // ---------- SARO behind the start: its lamps and beacons as they sit on the site ----------

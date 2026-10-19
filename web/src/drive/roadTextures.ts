@@ -106,12 +106,19 @@ export function highwayTex() {
     if (r() < 0.6) wrapV(o, () => { const rr = rng(seed); o.lineWidth = 1.2 + rr(); crackPath(o, rr, x, y, x, y + len, 8, 5); o.stroke(); });
     y += len + r() * 6 * PX;
   }
-  // three patches of blacker asphalt: a lane, a wheel path, a short one by the edge line
-  const patches = [[0.4, 3.3, 3.5 + r() * 2.5], [-2.6 - r() * 0.4, -1.4, 2.6 + r() * 2], [2.9, 4.6, 1.6 + r() * 1.4]].map(([m0, m1, len]) => ({ m0, m1, y: r() * HT, len: len * PX }));
-  for (const q of patches) {
-    const c: [number, number][] = [[X(q.m0), q.y], [X(q.m1), q.y], [X(q.m1), q.y + q.len], [X(q.m0), q.y + q.len]], seed = r() * 1e6;
-    wrapV(t, () => { const rr = rng(seed); for (let k = 0; k < 4; k++) { const a = c[k], b = c[(k + 1) % 4]; crackPath(t, rr, a[0], a[1], b[0], b[1], 8, 2.5); seal(2); } });
-  }
+  // three patches: a lane, a wheel path, a short one by the edge line; skewed off the lanes, a
+  // corner chipped, one newer and blacker, one sun-faded lighter than the road round it; the seam
+  // a fine line of tar, and a crack from the road carried on across the first
+  const patches = ([[0.4, 3.3, 3.5 + r() * 2.5, false], [-2.6 - r() * 0.4, -1.4, 2.6 + r() * 2, true], [2.9, 4.6, 1.6 + r() * 1.4, false]] as const).map(([m0, m1, len, old]) => {
+    const y = r() * HT, l = len * PX, sk = (r() - 0.5) * 0.5 * PX, dx = (r() - 0.5) * 0.2 * PX, c = 0.1 + r() * 0.12;
+    const q: [number, number][] = [[X(m0), y], [X(m1), y + sk], [X(m1) + dx, y + sk + l], [X(m0) + dx, y + l]];
+    // the chipped corner (the second): cut off by a few centimetres
+    const pts: [number, number][] = [q[0], [q[1][0] + (q[0][0] - q[1][0]) * c, q[1][1] + (q[0][1] - q[1][1]) * c], [q[1][0] + (q[2][0] - q[1][0]) * c * 0.5, q[1][1] + (q[2][1] - q[1][1]) * c * 0.5], q[2], q[3]];
+    return { pts, old, y, l, m0, m1 };
+  });
+  const patchPath = (g: CanvasRenderingContext2D, pts: [number, number][]) => { g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); };
+  for (const q of patches) wrapV(t, () => { patchPath(t, q.pts); t.strokeStyle = 'rgba(6,6,6,.25)'; t.lineWidth = 1; t.stroke(); });
+  { const q = patches[0], y = q.y + q.l * 0.45, y1 = y + (r() - 0.5) * 6, seed = r() * 1e6; wrapV(o, () => { o.lineWidth = 1.2; crackPath(o, rng(seed), X(q.m0 - 0.6), y, X(q.m1 + 0.4), y1, 6, 8); o.stroke(); }); }
 
   const tex = canvasTex(W, HT, (g, w, h) => {
     const asphalt = artImage('asphalt'), desert = artImage('desert');
@@ -138,11 +145,12 @@ export function highwayTex() {
       g.fillStyle = gr; g.fillRect(X(m - half), 0, 2 * half * PX, h);
     };
     for (const m of [-1.8, 1.8]) { band(m - 0.85, 0.3, 0.12); band(m + 0.85, 0.3, 0.12); band(m, 0.6, 0.22); }
-    // the patches: newer asphalt, blacker and finer
+    // the patches: newer asphalt, blacker and finer, or old and bleached by the sun
     for (const q of patches) wrapV(g, () => {
-      g.save(); g.beginPath(); g.rect(X(q.m0), q.y, (q.m1 - q.m0) * PX, q.len); g.clip();
+      g.save(); patchPath(g, q.pts); g.clip();
       g.drawImage(asphalt, X(q.m0) - 40, q.y - 60, 300, 300);
-      g.fillStyle = 'rgba(12,12,14,.3)'; g.fillRect(X(q.m0), q.y, (q.m1 - q.m0) * PX, q.len);
+      g.fillStyle = q.old ? 'rgba(160,154,144,.16)' : 'rgba(12,12,14,.3)'; g.fillRect(0, q.y - PX, w, q.l + 2 * PX);
+      if (q.old) { const rr = rng(q.y); for (let k = 0; k < 900; k++) { g.fillStyle = 'rgba(170,164,152,.35)'; g.fillRect(X(q.m0) + rr() * (q.m1 - q.m0) * PX, q.y - PX + rr() * (q.l + 2 * PX), 1.2, 1.2); } }
       g.restore();
     });
     // two spray patches of chip seal: lighter stones in tar
@@ -164,19 +172,34 @@ export function highwayTex() {
     g.drawImage(open, 0, 0);
     g.globalAlpha = 0.18; g.drawImage(open, 1, 1); g.globalAlpha = 1;   // a darker lip where the edges have spalled
     g.drawImage(tar, 0, 0);
-    // gravel shoulders, and the edge of the asphalt broken up into them
+    // gravel shoulders, and the edge of the asphalt broken up into them: a smoothed random walk in
+    // steps of 2 to 3 px (back to where it began at the end of the picture, so it has no seam),
+    // rounded bites out of it here and there, a dark lip where the asphalt has spalled, and its
+    // crumbs loose in the gravel
     for (const s of [-1, 1]) {
-      const e = s < 0 ? 1.2 * PX : w - 1.2 * PX, x0 = s < 0 ? 0 : w - 1.6 * PX;
-      g.save(); g.beginPath(); g.moveTo(e, 0);
-      for (let y = 0; y <= h; y += 5 + r() * 9) g.lineTo(e - s * (r() < 0.25 ? r() * 0.3 * PX : r() * 0.06 * PX), y);
-      g.lineTo(e, h); g.lineTo(s < 0 ? 0 : w, h); g.lineTo(s < 0 ? 0 : w, 0); g.closePath(); g.clip();
-      g.drawImage(desert, 0, 0, 256, 1024, x0, 0, 1.6 * PX, h / 2); g.drawImage(desert, 0, 0, 256, 1024, x0, h / 2, 1.6 * PX, h / 2);
-      g.fillStyle = 'rgba(70,64,56,.35)'; g.fillRect(0, 0, w, h);
-      g.restore();
-    }
-    for (let i = 0; i < 1800; i++) {
-      const left = r() < 0.5, x = left ? 1.2 * PX + r() * 8 - 3 : w - 1.2 * PX - r() * 8 + 3;
-      g.fillStyle = `rgba(${r() < 0.5 ? '60,58,55' : '140,128,110'},.8)`; g.fillRect(x, r() * h, 2 + r() * 3, 2 + r() * 3);
+      const e = s < 0 ? 1.2 * PX : w - 1.2 * PX, x0 = s < 0 ? 0 : w - 1.6 * PX, out = s < 0 ? 0 : w;
+      const walk: [number, number][] = [];
+      for (let y = 0, o = 0, v = 0; y <= h; y += 2 + r()) {
+        v = v * 0.8 + (r() - 0.5) * 0.9; o = Math.max(-2, Math.min(0.14 * PX, o * 0.985 + v));
+        walk.push([e - s * o * Math.min(1, (h - y) / 80), y]);
+      }
+      walk.push([e, h]);
+      const bites: [number, number, number][] = [];
+      for (let y = 30 + r() * 60; y < h - 30; y += 30 + r() * 150) bites.push([e - s * r() * 3, y, 4 + r() * 8]);
+      const gravel = () => {
+        g.drawImage(desert, 0, 0, 256, 1024, x0, 0, 1.6 * PX, h / 2); g.drawImage(desert, 0, 0, 256, 1024, x0, h / 2, 1.6 * PX, h / 2);
+        g.fillStyle = 'rgba(70,64,56,.35)'; g.fillRect(0, 0, w, h);
+      };
+      g.strokeStyle = 'rgba(10,10,10,.38)'; g.lineWidth = 2; g.lineJoin = 'round';
+      g.beginPath(); walk.forEach(([x, y], i) => (i ? g.lineTo(x - s * 1.4, y) : g.moveTo(x - s * 1.4, y))); g.stroke();
+      g.beginPath(); for (const [bx, by, br] of bites) { g.moveTo(bx + br + 1.4, by); g.arc(bx, by, br + 1.4, 0, Math.PI * 2); } g.stroke();
+      g.save(); g.beginPath(); g.moveTo(out, 0); walk.forEach(([x, y]) => g.lineTo(x, y)); g.lineTo(out, h); g.closePath(); g.clip(); gravel(); g.restore();
+      g.save(); g.beginPath(); for (const [bx, by, br] of bites) { g.moveTo(bx + br, by); g.arc(bx, by, br, 0, Math.PI * 2); } g.clip(); gravel(); g.restore();
+      for (let i = 0; i < 900; i++) {
+        const d = r() * r() * 0.45 * PX + 1, y = r() * h, sz = 1.2 + r() * 2.6, crumb = r() < 0.45;
+        g.fillStyle = crumb ? `rgba(${30 + r() * 18},${30 + r() * 18},${32 + r() * 18},.75)` : `rgba(${r() < 0.5 ? '64,60,56' : '146,134,114'},.7)`;
+        g.fillRect(e + s * d - sz / 2, y, sz, sz * (0.7 + r() * 0.6));
+      }
     }
   }, [1, 1]); // wraps: v runs along the whole highway
   // Ultra (core/ultra.ts): the same layout from the round 9 maps, the paint and the tar flat and smoother
@@ -234,10 +257,12 @@ export function gravelTex() {
         }
       }
     }
-    // fade the gravel out over the soft edges (0.7 m of 6 m each side)
+    // fade the gravel out over the soft edges and a little more (the outer fifth each side; the
+    // track's vertex colours go over to the desert's there too, roadTerrain.edgeColour)
     m.globalCompositeOperation = 'destination-in';
     const fade = m.createLinearGradient(0, 0, w, 0);
-    fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.13, 'rgba(0,0,0,1)'); fade.addColorStop(0.87, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+    fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.08, 'rgba(0,0,0,.25)'); fade.addColorStop(0.2, 'rgba(0,0,0,1)');
+    fade.addColorStop(0.8, 'rgba(0,0,0,1)'); fade.addColorStop(0.92, 'rgba(0,0,0,.25)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
     m.fillStyle = fade; m.fillRect(0, 0, w, h);
     g.drawImage(mid, 0, 0);
   };
