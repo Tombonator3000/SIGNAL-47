@@ -1,0 +1,59 @@
+[
+  {
+    "hour": 3,
+    "minute": 7,
+    "template_id": "1c4e7ce024662782",
+    "expected": "It's three oh-seven in Caliche.",
+    "clip_ids": [
+      "1d315be944a93f19",
+      "8b5b9db0c13db242",
+      "d7bac7ab18c0c269",
+      "a550c489649722f4"
+    ],
+    "assembled_wav_sha256": "67b7c05e4f394846d1a04460f10e78ae8ef40ad22515ee291ea9034a066e0f46",
+    "response": {
+      "text": "It's 307 in Keleshi.",
+      "segments": [
+        {
+          "start": 0.34,
+          "end": 3.74,
+          "text": "It's 307 in Keleshi."
+        }
+      ],
+      "language": "en",
+      "duration_s": 3.74,
+      "transcription_time_s": 1.38,
+      "engine": "faster-whisper"
+    },
+    "construction": "Decoded runtime MP3s concatenated in template order for QA only; assembled WAV outside repo.",
+    "human_listened": false
+  },
+  {
+    "hour": 12,
+    "minute": 0,
+    "template_id": "6f4f3f8c9a0c7685",
+    "expected": "Twelve o'clock. Night Line, fourteen-twenty.",
+    "clip_ids": [
+      "d1a749ad879b6c07",
+      "102ad29298b7b442",
+      "db60994a5fe4923c"
+    ],
+    "assembled_wav_sha256": "f9c3db1e067f1afab371b02b15c1ebff37644d3e48074353f42f98cebdd04b05",
+    "response": {
+      "text": "12 o'clock nightline 1420.",
+      "segments": [
+        {
+          "start": 0,
+          "end": 3.48,
+          "text": "12 o'clock nightline 1420"
+        }
+      ],
+      "language": "en",
+      "duration_s": 3.48,
+      "transcription_time_s": 1.1,
+      "engine": "faster-whisper"
+    },
+    "construction": "Decoded runtime MP3s concatenated in template order for QA only; assembled WAV outside repo.",
+    "human_listened": false
+  }
+]

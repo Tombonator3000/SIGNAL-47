@@ -1,0 +1,21 @@
+PASS measurement fits inside both the real clip and the procedural line
+PASS native AudioParam and both oscillator/buffer-source counters are installed and active
+On-1: 59.94fps, 1752.20params/s, 29.2306params/frame; categories {'engine': 8.0, 'listener': 9.0, 'tyres': 5.0, 'station': 0.0, 'other': 3.2305555555555556, 'receiver': 4.0}; nodes/s 0.67, sync 0, new sources 1, active 31→31, host 2→2, dropouts 0
+PASS On-1: the same real cab remains standing throughout normal rAF
+PASS On-1: no per-frame station resync, re-decode or host source multiplication
+PASS On-1: no measured master dropouts or runaway node/source growth
+PASS On-1: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+Off: 59.91fps, 1767.37params/s, 29.5028params/frame; categories {'engine': 8.0, 'listener': 9.0, 'tyres': 5.0, 'station': 0.0, 'other': 3.5027777777777778, 'receiver': 4.0}; nodes/s 1.83, sync 0, new sources 4, active 31→33, host 0→0, dropouts 0
+PASS Off: the same real cab remains standing throughout normal rAF
+PASS Off: no per-frame station resync, re-decode or host source multiplication
+PASS Off: no measured master dropouts or runaway node/source growth
+PASS Off: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+On-2: 59.90fps, 1767.01params/s, 29.4972params/frame; categories {'engine': 8.0, 'listener': 9.0, 'tyres': 5.0, 'station': 0.0, 'other': 3.4972222222222222, 'receiver': 4.0}; nodes/s 0.67, sync 0, new sources 1, active 35→32, host 2→2, dropouts 0
+PASS On-2: the same real cab remains standing throughout normal rAF
+PASS On-2: no per-frame station resync, re-decode or host source multiplication
+PASS On-2: no measured master dropouts or runaway node/source growth
+PASS On-2: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+PASS Art Bell On/Off/On has equivalent steady parameter work per frame, without raising the 1500/s threshold
+PASS parameter work per frame stays stable between early and late measurement windows
+PASS no browser runtime errors
+17/17 PASS

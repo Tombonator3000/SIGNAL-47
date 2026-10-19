@@ -923,3 +923,10 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 
 - Tom kjøpte Ultimate SFX for Games (Humble, øverste trinn) og Vintage Liminal Props Pack (Superhive). Lastet ned med Toms egen innlogging i et nettleservindu han logget inn i selv (passordene ble aldri sett, profilen slettet etterpå), i 16 deler per fil (rundt 11 MB/s per fil, begrenset hos selgerne). Pakket ut i `~/Assets/ultimate-sfx/` (8,3 GB, 5668 WAV) og `~/Assets/vintage-liminal/` (8 .blend med 147 modeller).
 - Lisensene tillater ikke råfilene åpent, og dette repoet er offentlig til testing. Nytt privat repo `Tombonator3000/SIGNAL-47-assets` (README og kilder/vilkår i `LICENSES.md`), lesenøkkel som deploy key, hemmeligheten `ASSETS_DEPLOY_KEY` her, og `pages.yml` henter det inn i `web/src/assets/licensed/` (i `.gitignore`). Spillet bruker ingen av filene ennå.
+
+
+### Codex: Art Bell som Night Line-verten, 19. oktober
+
+- 18:01 UTC: direkte bestilt av Tom: stemmeklon til radioverten og ferdig innspilte replikker. Egen gren `codex/art-bell-radio` fra kontrollert main `aa38e2b`. Prosjektbibliotekets VoiceStudio-kilde og eksisterende installasjon/modeller gjenbrukes. Ny syntetisk parodiprofil holdes atskilt fra Kinski.
+- Avgrensning: Earl på Night Line/1420, inkludert vanlig program, gutten, avmelding og kjøreinnslag. Innringere, Roswells morgenvert og Kinski beholdes. 38 faste linjer og seks dynamiske tidsmaler tas fra eksisterende manus. Eget valg i Settings, på som standard mens selve radioen starter avslått.
+- Akseptanse og produksjonsstatus føres i `ART_BELL_RADIO.md`, produksjonsbevis under `production/artbell/`. Faktisk MP3, radiobuss/filter, teksting, pause, avbrudd, to mottakere og begge bygg skal prøves. Rask spoling i gamle radio-/kjøreradiotester bruker bevisst den gamle pratelydmodusen; Art Bell får egne tester mot lydklokken.

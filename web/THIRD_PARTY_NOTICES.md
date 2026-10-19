@@ -8,6 +8,14 @@ Lydfilene i `src/assets/audio/kinski/` er genererte engelske opplesninger av spi
 - Modell: k2-fsa/OmniVoice ved revisjon `c5fdb5ccb189668d56333f77ba2629f4cd7535f4`, https://huggingface.co/k2-fsa/OmniVoice. Det nedlastede modellkortet oppgir Apache-2.0 for kode og CC-BY-NC for modellvektene. Modellvekter distribueres ikke med spillet; genererte lydfiler merkes ikke automatisk som CC0 eller Apache.
 - Kilde, referansehash, modellkortets hash, forespørsler og etterbehandling er dokumentert i `production/kinski/provenance.json` og `generation.json`. Tom godkjente innfletting i main og publisering 19. oktober 2026.
 
+## Syntetisk Art Bell-radiovert, 19. oktober 2026
+
+Lydfilene i `src/assets/audio/artbell/` er nye opplesninger av spillets eksisterende Night Line-manus. Stemmen er merket som en syntetisk Art Bell-parodi for den fiktive verten Earl. Dette er ingen original fremføring av spillmanuset eller påstand om støtte fra Art Bell.
+
+Referansen er en 4,40 sekunders frase fra Art Bells personlige `ArtFareWell.mp3` på *Artbell.com Commemorative Disc*, Rowland Network Communications, januar 2003, [bevart hos Internet Archive](https://archive.org/details/Artbell.com_Commemorative_Disc). Original og referanse følger ikke spillet. Arkivtilgang er ingen påstått lisens eller tillatelse fra rettighetshaverne.
+
+Samme lokale VoiceStudio 0.5.6 og festede OmniVoice-revisjon som over er brukt. Modell- og programvilkårene er de samme; lydfilene merkes ikke som CC0. Kildehash, profil, innstillinger og faktisk generering er dokumentert i `production/artbell/provenance.json` og `generation.json`.
+
 ## Tidligere innhold
 
 Alt under er hentet fra Unity-prosjektet i samme repo, med samme lisens som der (se `Docs/THIRD_PARTY_NOTICES.md` i roten). Lyd er konvertert til MP3 for nettleseren.

@@ -1,0 +1,4145 @@
+{
+  "url": "file:///tmp/s47-artbell-csp-_dt06zi_/index.html",
+  "pages": false,
+  "strict_csp": true,
+  "fixtures": "Exact extracted manuscript passed to the real Station planner. Canonical event/trip triggers are covered by radio.py and tripradio.py.",
+  "opening": {
+    "audio": {
+      "context": "running",
+      "now": 3.4133333333333336,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 2.406,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 2,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": true,
+            "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+            "duration": 3.9,
+            "clips": [
+              {
+                "id": "7e75559bb502f671",
+                "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+                "duration": 3.9
+              }
+            ],
+            "bufferCount": 1
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 2.6499999999999955,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 1
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 15.151778698669245,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.8617924542763207,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 1
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 1.232,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 1.2293333333333334,
+          "t": 0.22199999999999998
+        }
+      ],
+      "starts": [
+        {
+          "at": 1.2073333333333334,
+          "duration": 3.9,
+          "expectedEnd": 5.107333333333333,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 1,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "who": "host",
+          "secs": 3.9,
+          "ids": [
+            "7e75559bb502f671"
+          ],
+          "buffers": 1
+        }
+      ]
+    },
+    "station_pcm": {
+      "peakRms": 0.14529274706723816,
+      "levels": [
+        0.0007105692359111655,
+        0.09981958474542978,
+        0.11057401647815045,
+        0.08965700281320216,
+        0.09271915404231647,
+        0.13091660147637768,
+        0.11635036949476667,
+        0.06065224660780475,
+        0.10967428419957725,
+        0.13622769023246561,
+        0.12542837130390513,
+        0.14529274706723816
+      ]
+    },
+    "master": {
+      "peakRms": 0.029580953104442458,
+      "levels": [
+        0.029580953104442458,
+        0.024127608473621977,
+        0.012818611427789391,
+        0.0031958661393528946,
+        0.011780166092394177,
+        0.023468034803173866,
+        0.027901948836224346,
+        0.024004871494386387,
+        0.018493434217391167,
+        0.017837889432503203,
+        0.019810417187749754,
+        0.011306568566726544,
+        0.008137831489787748,
+        0.0023518164767527892
+      ]
+    },
+    "muted_master": {
+      "peakRms": 0,
+      "levels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "natural_end": {
+    "context": "running",
+    "now": 4.458666666666667,
+    "state": {
+      "caliche": {
+        "seg": "talk",
+        "t": 1.024,
+        "free": false,
+        "slotted": false,
+        "awake": true,
+        "listeners": 1,
+        "strength": 1,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": null,
+          "duration": null,
+          "clips": [
+            {
+              "id": "e8ba09e6814280d2",
+              "text": "And?",
+              "duration": 0.77
+            }
+          ],
+          "bufferCount": 2
+        }
+      },
+      "roswell": {
+        "seg": "dead",
+        "t": 3.683333333333325,
+        "free": false,
+        "slotted": false,
+        "awake": false,
+        "listeners": 0,
+        "strength": 0,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": null,
+          "duration": null,
+          "clips": [],
+          "bufferCount": 2
+        }
+      },
+      "far": {
+        "seg": "music",
+        "t": 16.18511203200261,
+        "free": true,
+        "slotted": false,
+        "awake": false,
+        "listeners": 0,
+        "strength": 0.8731835509434364,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": null,
+          "duration": null,
+          "clips": [],
+          "bufferCount": 2
+        }
+      }
+    },
+    "captions": [
+      {
+        "text": "RADIO: \"And?\"",
+        "seconds": 2.4,
+        "at": 3.6906666666666665,
+        "audioClock": true
+      }
+    ],
+    "lines": [
+      {
+        "id": "caliche",
+        "text": "And?",
+        "by": null,
+        "duration": 0.77,
+        "at": 3.6906666666666665,
+        "t": 0.2559999999999998
+      }
+    ],
+    "starts": [
+      {
+        "at": 3.634666666666667,
+        "duration": 0.77,
+        "expectedEnd": 4.404666666666667,
+        "decoded": {
+          "bytes": 6956,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 0.77,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.408,
+        "stoppedAt": null,
+        "master": true,
+        "hostId": "e8ba09e6814280d2",
+        "radioPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "bandpass",
+            "hz": 1250
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3400
+          },
+          {
+            "kind": "WaveShaperNode"
+          },
+          {
+            "kind": "lowpass",
+            "hz": 20000
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "PannerNode"
+          },
+          {
+            "kind": "radioBus"
+          }
+        ],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "sources": 0,
+    "pending": false,
+    "spoken": [
+      {
+        "text": "And?",
+        "who": "host",
+        "secs": 0.77,
+        "ids": [
+          "e8ba09e6814280d2"
+        ],
+        "buffers": 1
+      }
+    ]
+  },
+  "time_templates": [
+    {
+      "context": "running",
+      "now": 4.8,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.3199999999999994,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": true,
+            "text": "It's two-oh-three in Caliche.",
+            "duration": 4.025,
+            "clips": [
+              {
+                "id": "1d315be944a93f19",
+                "text": "It's",
+                "duration": 1.16
+              },
+              {
+                "id": "3fc4ccfe745870e2",
+                "text": "two",
+                "duration": 0.74
+              },
+              {
+                "id": "14b417222f7f3438",
+                "text": "oh-three",
+                "duration": 0.9
+              },
+              {
+                "id": "a550c489649722f4",
+                "text": "in Caliche.",
+                "duration": 1.12
+              }
+            ],
+            "bufferCount": 6
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0.35,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 6
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 6.64373516662343,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.8254691626140864,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 6
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"It's two-oh-three in Caliche.\"",
+          "seconds": 4.2250000000000005,
+          "at": 4.736,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "It's two-oh-three in Caliche.",
+          "by": null,
+          "duration": 4.025,
+          "at": 4.736,
+          "t": 0.25599999999999934
+        }
+      ],
+      "starts": [
+        {
+          "at": 4.680000000000001,
+          "duration": 1.16,
+          "expectedEnd": 5.840000000000001,
+          "decoded": {
+            "bytes": 10028,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.16,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "1d315be944a93f19",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 5.875,
+          "duration": 0.74,
+          "expectedEnd": 6.615,
+          "decoded": {
+            "bytes": 6572,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 0.74,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "3fc4ccfe745870e2",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 6.65,
+          "duration": 0.9,
+          "expectedEnd": 7.550000000000001,
+          "decoded": {
+            "bytes": 7916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 0.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "14b417222f7f3438",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 7.585000000000001,
+          "duration": 1.12,
+          "expectedEnd": 8.705000000000002,
+          "decoded": {
+            "bytes": 9644,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.12,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "a550c489649722f4",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 4,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "It's two-oh-three in Caliche.",
+          "who": "host",
+          "secs": 4.025,
+          "ids": [
+            "1d315be944a93f19",
+            "3fc4ccfe745870e2",
+            "14b417222f7f3438",
+            "a550c489649722f4"
+          ],
+          "buffers": 4
+        }
+      ]
+    },
+    {
+      "context": "running",
+      "now": 5.205333333333333,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.3199999999999994,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": true,
+            "text": "It's two o'clock in Caliche.",
+            "duration": 4.065,
+            "clips": [
+              {
+                "id": "1d315be944a93f19",
+                "text": "It's",
+                "duration": 1.16
+              },
+              {
+                "id": "3fc4ccfe745870e2",
+                "text": "two",
+                "duration": 0.74
+              },
+              {
+                "id": "102ad29298b7b442",
+                "text": "o'clock",
+                "duration": 0.94
+              },
+              {
+                "id": "a550c489649722f4",
+                "text": "in Caliche.",
+                "duration": 1.12
+              }
+            ],
+            "bufferCount": 7
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0.3333333333333333,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 7
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 20.144248602091743,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.7584807601075109,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 7
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"It's two o'clock in Caliche.\"",
+          "seconds": 4.265000000000001,
+          "at": 5.141333333333334,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "It's two o'clock in Caliche.",
+          "by": null,
+          "duration": 4.065,
+          "at": 5.141333333333334,
+          "t": 0.2560000000000002
+        }
+      ],
+      "starts": [
+        {
+          "at": 5.085333333333334,
+          "duration": 1.16,
+          "expectedEnd": 6.245333333333334,
+          "decoded": {
+            "bytes": 10028,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.16,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "1d315be944a93f19",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 6.280333333333333,
+          "duration": 0.74,
+          "expectedEnd": 7.020333333333333,
+          "decoded": {
+            "bytes": 6572,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 0.74,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "3fc4ccfe745870e2",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 7.0553333333333335,
+          "duration": 0.94,
+          "expectedEnd": 7.995333333333333,
+          "decoded": {
+            "bytes": 8300,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 0.94,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "102ad29298b7b442",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 8.030333333333333,
+          "duration": 1.12,
+          "expectedEnd": 9.150333333333332,
+          "decoded": {
+            "bytes": 9644,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.12,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "hostId": "a550c489649722f4",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 4,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "It's two o'clock in Caliche.",
+          "who": "host",
+          "secs": 4.065,
+          "ids": [
+            "1d315be944a93f19",
+            "3fc4ccfe745870e2",
+            "102ad29298b7b442",
+            "a550c489649722f4"
+          ],
+          "buffers": 4
+        }
+      ]
+    }
+  ],
+  "manuscript_fixtures": [
+    {
+      "label": "BOY_CALL host",
+      "audio": {
+        "context": "running",
+        "now": 5.546666666666667,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0.3200000000000003,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": true,
+              "text": "Is your dad up?",
+              "duration": 1.12,
+              "clips": [
+                {
+                  "id": "fc9d380225dd1df1",
+                  "text": "Is your dad up?",
+                  "duration": 1.12
+                }
+              ],
+              "bufferCount": 8
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 0.6666666666666671,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 8
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 20.477581935425057,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.6762663506778493,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 8
+            }
+          }
+        },
+        "captions": [
+          {
+            "text": "RADIO: \"Is your dad up?\"",
+            "seconds": 2.4,
+            "at": 5.482666666666667,
+            "audioClock": true
+          }
+        ],
+        "lines": [
+          {
+            "id": "caliche",
+            "text": "Is your dad up?",
+            "by": null,
+            "duration": 1.12,
+            "at": 5.482666666666667,
+            "t": 0.2560000000000002
+          }
+        ],
+        "starts": [
+          {
+            "at": 5.426666666666667,
+            "duration": 1.12,
+            "expectedEnd": 6.546666666666667,
+            "decoded": {
+              "bytes": 9644,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 1.12,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "hostId": "fc9d380225dd1df1",
+            "radioPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "bandpass",
+                "hz": 1250
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3400
+              },
+              {
+                "kind": "WaveShaperNode"
+              },
+              {
+                "kind": "lowpass",
+                "hz": 20000
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "PannerNode"
+              },
+              {
+                "kind": "radioBus"
+              }
+            ],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "sources": 1,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "Is your dad up?",
+            "who": "host",
+            "secs": 1.12,
+            "ids": [
+              "fc9d380225dd1df1"
+            ],
+            "buffers": 1
+          }
+        ]
+      }
+    },
+    {
+      "label": "sign-off host",
+      "audio": {
+        "context": "running",
+        "now": 5.888,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0.3200000000000003,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": true,
+              "text": "That's the Night Line. Thank you for staying up with us.",
+              "duration": 2.65,
+              "clips": [
+                {
+                  "id": "3675a32435189f91",
+                  "text": "That's the Night Line. Thank you for staying up with us.",
+                  "duration": 2.65
+                }
+              ],
+              "bufferCount": 9
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.016666666666668,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 9
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 20.827581935425037,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.5818249813629606,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 9
+            }
+          }
+        },
+        "captions": [
+          {
+            "text": "RADIO: \"That's the Night Line. Thank you for staying up with us.\"",
+            "seconds": 2.85,
+            "at": 5.824,
+            "audioClock": true
+          }
+        ],
+        "lines": [
+          {
+            "id": "caliche",
+            "text": "That's the Night Line. Thank you for staying up with us.",
+            "by": null,
+            "duration": 2.65,
+            "at": 5.824,
+            "t": 0.2560000000000002
+          }
+        ],
+        "starts": [
+          {
+            "at": 5.768,
+            "duration": 2.65,
+            "expectedEnd": 8.418,
+            "decoded": {
+              "bytes": 21932,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 2.65,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "hostId": "3675a32435189f91",
+            "radioPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "bandpass",
+                "hz": 1250
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3400
+              },
+              {
+                "kind": "WaveShaperNode"
+              },
+              {
+                "kind": "lowpass",
+                "hz": 20000
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "PannerNode"
+              },
+              {
+                "kind": "radioBus"
+              }
+            ],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "sources": 1,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "That's the Night Line. Thank you for staying up with us.",
+            "who": "host",
+            "secs": 2.65,
+            "ids": [
+              "3675a32435189f91"
+            ],
+            "buffers": 1
+          }
+        ]
+      }
+    },
+    {
+      "label": "trip programme host",
+      "audio": {
+        "context": "running",
+        "now": 6.229333333333333,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0.3199999999999994,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": true,
+              "text": "Not the wind, then.",
+              "duration": 1.38,
+              "clips": [
+                {
+                  "id": "e42b27bf7f08c1df",
+                  "text": "Not the wind, then.",
+                  "duration": 1.38
+                }
+              ],
+              "bufferCount": 10
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.3666666666666667,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 10
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 21.177581935425017,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.4885972665444179,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 10
+            }
+          }
+        },
+        "captions": [
+          {
+            "text": "RADIO: \"Not the wind, then.\"",
+            "seconds": 2.4,
+            "at": 6.165333333333334,
+            "audioClock": true
+          }
+        ],
+        "lines": [
+          {
+            "id": "caliche",
+            "text": "Not the wind, then.",
+            "by": null,
+            "duration": 1.38,
+            "at": 6.165333333333334,
+            "t": 0.2560000000000002
+          }
+        ],
+        "starts": [
+          {
+            "at": 6.109333333333334,
+            "duration": 1.38,
+            "expectedEnd": 7.489333333333334,
+            "decoded": {
+              "bytes": 11756,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 1.38,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "hostId": "e42b27bf7f08c1df",
+            "radioPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "bandpass",
+                "hz": 1250
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3400
+              },
+              {
+                "kind": "WaveShaperNode"
+              },
+              {
+                "kind": "lowpass",
+                "hz": 20000
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "PannerNode"
+              },
+              {
+                "kind": "radioBus"
+              }
+            ],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "sources": 1,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "Not the wind, then.",
+            "who": "host",
+            "secs": 1.38,
+            "ids": [
+              "e42b27bf7f08c1df"
+            ],
+            "buffers": 1
+          }
+        ]
+      }
+    }
+  ],
+  "procedural": {
+    "caller": {
+      "context": "running",
+      "now": 6.634666666666667,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.39999999999999997,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": "Is your dad up?",
+            "duration": 2.4,
+            "clips": [],
+            "bufferCount": 10
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 1.7833333333333319,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 10
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 21.59424860209166,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.3919223607605125,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 10
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO, a boy: \"Is your dad up?\"",
+          "seconds": 2.881818181818182,
+          "at": 6.506666666666667,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "Is your dad up?",
+          "by": "a boy",
+          "duration": null,
+          "at": 6.506666666666667,
+          "t": 0.21666666666666665
+        }
+      ],
+      "starts": [],
+      "sources": 0,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "Is your dad up?",
+          "who": "boy",
+          "secs": 2.4,
+          "ids": [],
+          "buffers": 0
+        }
+      ]
+    },
+    "caller_pcm": {
+      "peakRms": 0.24511067932408703,
+      "levels": [
+        0.2323153854202607,
+        0.24511067932408703,
+        0.23580387563136382,
+        0.18175999959996536,
+        0.10892828596556312,
+        0.037209497064591895,
+        0,
+        0,
+        0.023244046457880627,
+        0.2340696989093618,
+        0.24476112537812292,
+        0.2415928103903175
+      ]
+    },
+    "unknown": {
+      "context": "running",
+      "now": 8,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.3833333333333333,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": "This deliberately unknown radio fixture has no prerecorded host clip.",
+            "duration": 4.300000000000001,
+            "clips": [],
+            "bufferCount": 10
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0.39999999999999997,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 10
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 10.092568011282228,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.28633878985054495,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 10
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This deliberately unknown radio fixture has no prerecorded host clip.\"",
+          "seconds": 5.336363636363636,
+          "at": 7.872,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This deliberately unknown radio fixture has no prerecorded host clip.",
+          "by": null,
+          "duration": null,
+          "at": 7.872,
+          "t": 0.21666666666666665
+        }
+      ],
+      "starts": [],
+      "sources": 0,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "This deliberately unknown radio fixture has no prerecorded host clip.",
+          "who": "host",
+          "secs": 4.300000000000001,
+          "ids": [],
+          "buffers": 0
+        }
+      ]
+    }
+  },
+  "decode_failure": {
+    "context": "running",
+    "now": 8.341333333333333,
+    "state": {
+      "caliche": {
+        "seg": "talk",
+        "t": 0.31666666666666665,
+        "free": false,
+        "slotted": false,
+        "awake": true,
+        "listeners": 1,
+        "strength": 1,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": "And?",
+          "duration": 2.4,
+          "clips": [],
+          "bufferCount": 0
+        }
+      },
+      "roswell": {
+        "seg": "dead",
+        "t": 0.733333333333334,
+        "free": false,
+        "slotted": false,
+        "awake": false,
+        "listeners": 0,
+        "strength": 0,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": null,
+          "duration": null,
+          "clips": [],
+          "bufferCount": 0
+        }
+      },
+      "far": {
+        "seg": "music",
+        "t": 10.425901344615578,
+        "free": true,
+        "slotted": false,
+        "awake": false,
+        "listeners": 0,
+        "strength": 0.27957476146410426,
+        "anthem": null,
+        "anthemFailed": true,
+        "host": {
+          "loading": false,
+          "playing": false,
+          "text": null,
+          "duration": null,
+          "clips": [],
+          "bufferCount": 0
+        }
+      }
+    },
+    "captions": [
+      {
+        "text": "RADIO: \"And?\"",
+        "seconds": 2.381818181818182,
+        "at": 8.277333333333333,
+        "audioClock": true
+      }
+    ],
+    "lines": [
+      {
+        "id": "caliche",
+        "text": "And?",
+        "by": null,
+        "duration": null,
+        "at": 8.277333333333333,
+        "t": 0.21666666666666665
+      }
+    ],
+    "starts": [],
+    "sources": 0,
+    "pending": false,
+    "spoken": [
+      {
+        "text": "And?",
+        "who": "host",
+        "secs": 2.4,
+        "ids": [],
+        "buffers": 0
+      }
+    ]
+  },
+  "late_completion": {
+    "Off": {
+      "before": {
+        "context": "running",
+        "now": 8.362666666666666,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": true,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [
+                {
+                  "id": "e8ba09e6814280d2",
+                  "text": "And?",
+                  "duration": 0.77
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 0.7500000000000007,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 10.442568011282246,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.2797338982756224,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": true,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 0.77,
+            "ids": [
+              "e8ba09e6814280d2"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "after": {
+        "context": "running",
+        "now": 8.789333333333333,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0.39999999999999997,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": "And?",
+              "duration": 2.4,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.1500000000000008,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 10.842568011282266,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.29501524389334066,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [
+          {
+            "text": "RADIO: \"And?\"",
+            "seconds": 2.381818181818182,
+            "at": 8.64,
+            "audioClock": true
+          }
+        ],
+        "lines": [
+          {
+            "id": "caliche",
+            "text": "And?",
+            "by": null,
+            "duration": null,
+            "at": 8.64,
+            "t": 0.21666666666666665
+          }
+        ],
+        "starts": [],
+        "sources": 0,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 2.4,
+            "ids": [],
+            "buffers": 0
+          }
+        ]
+      },
+      "late": {
+        "ready": true,
+        "released": true,
+        "aborted": true
+      }
+    },
+    "station change": {
+      "before": {
+        "context": "running",
+        "now": 8.874666666666666,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": true,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [
+                {
+                  "id": "e8ba09e6814280d2",
+                  "text": "And?",
+                  "duration": 0.77
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.1666666666666674,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 10.859234677948933,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.2960476581439761,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": true,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 0.77,
+            "ids": [
+              "e8ba09e6814280d2"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "after": {
+        "context": "running",
+        "now": 9.216,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0.3333333333333333,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": "And?",
+              "duration": 0.77,
+              "clips": [
+                {
+                  "id": "e8ba09e6814280d2",
+                  "text": "And?",
+                  "duration": 0.77
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.5166666666666662,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 11.20923467794895,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.3219970884678151,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [
+          {
+            "id": "caliche",
+            "text": "And?",
+            "by": null,
+            "duration": null,
+            "at": 9.152,
+            "t": 0.21666666666666665
+          }
+        ],
+        "starts": [],
+        "sources": 0,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 0.77,
+            "ids": [
+              "e8ba09e6814280d2"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "late": {
+        "ready": true,
+        "released": true,
+        "aborted": true
+      }
+    },
+    "reset": {
+      "before": {
+        "context": "running",
+        "now": 9.237333333333334,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": true,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [
+                {
+                  "id": "e8ba09e6814280d2",
+                  "text": "And?",
+                  "duration": 0.77
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 1.5333333333333328,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 11.225901344615618,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.3233579418818757,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": true,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 0.77,
+            "ids": [
+              "e8ba09e6814280d2"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "after": {
+        "context": "running",
+        "now": 9.557333333333334,
+        "state": {
+          "caliche": {
+            "seg": "music",
+            "t": 0.7129184625637199,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 0.31666666666666665,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 10.661807230106353,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.3489396889981947,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": false,
+        "spoken": []
+      },
+      "late": {
+        "ready": true,
+        "released": true,
+        "aborted": true
+      }
+    },
+    "load case": {
+      "before": {
+        "context": "running",
+        "now": 9.578666666666667,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 0,
+            "free": false,
+            "slotted": false,
+            "awake": true,
+            "listeners": 1,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": true,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [
+                {
+                  "id": "e8ba09e6814280d2",
+                  "text": "And?",
+                  "duration": 0.77
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 0.3333333333333333,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 10.67847389677302,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.3502073371776712,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": true,
+        "spoken": [
+          {
+            "text": "And?",
+            "who": "host",
+            "secs": 0.77,
+            "ids": [
+              "e8ba09e6814280d2"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "after": {
+        "context": "running",
+        "now": 10.005333333333333,
+        "state": {
+          "caliche": {
+            "seg": "talk",
+            "t": 4.6502759493402195,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 1,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": "My dog won't come out from under the trailer. He's been under there since one.",
+              "duration": 5.9,
+              "clips": [
+                {
+                  "id": "59b96b09e3d83603",
+                  "text": "Smart dog.",
+                  "duration": 1.13
+                }
+              ],
+              "bufferCount": 1
+            }
+          },
+          "roswell": {
+            "seg": "dead",
+            "t": 0.3333333333333333,
+            "free": false,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          },
+          "far": {
+            "seg": "music",
+            "t": 11.492628749654685,
+            "free": true,
+            "slotted": false,
+            "awake": false,
+            "listeners": 0,
+            "strength": 0.3752187137423424,
+            "anthem": null,
+            "anthemFailed": true,
+            "host": {
+              "loading": false,
+              "playing": false,
+              "text": null,
+              "duration": null,
+              "clips": [],
+              "bufferCount": 1
+            }
+          }
+        },
+        "captions": [],
+        "lines": [],
+        "starts": [],
+        "sources": 0,
+        "pending": false,
+        "spoken": [
+          {
+            "text": "My dog won't come out from under the trailer. He's been under there since one.",
+            "who": "man",
+            "secs": 5.9,
+            "ids": [],
+            "buffers": 0
+          },
+          {
+            "text": "Smart dog.",
+            "who": "host",
+            "secs": 1.13,
+            "ids": [
+              "59b96b09e3d83603"
+            ],
+            "buffers": 0
+          }
+        ]
+      },
+      "late": {
+        "ready": true,
+        "released": true,
+        "aborted": true
+      }
+    }
+  },
+  "active_cancellation": {
+    "Off": {
+      "context": "running",
+      "now": 11.050666666666666,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.4661470085470094,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+            "duration": 5.26,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0.39999999999999997,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 3.518585772320591,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.27759797464270214,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 10.709333333333333,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 10.709333333333333,
+          "t": 0.2560000000000002
+        }
+      ],
+      "starts": [
+        {
+          "at": 10.653333333333332,
+          "duration": 3.9,
+          "expectedEnd": 14.553333333333333,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 10.88,
+          "stoppedAt": 10.858666666666666,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 15.253333333333334,
+          "duration": 2.65,
+          "expectedEnd": 17.903333333333332,
+          "decoded": {
+            "bytes": 21932,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.65,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 10.88,
+          "stoppedAt": 10.858666666666666,
+          "master": true,
+          "hostId": "3675a32435189f91",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 0,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "who": "host",
+          "secs": 5.26,
+          "ids": [],
+          "buffers": 0
+        },
+        {
+          "text": "That's the Night Line. Thank you for staying up with us.",
+          "who": "host",
+          "secs": 4.62,
+          "ids": [],
+          "buffers": 0
+        }
+      ]
+    },
+    "station change": {
+      "context": "running",
+      "now": 11.498666666666667,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 0.3333333333333339,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+            "duration": 3.9,
+            "clips": [
+              {
+                "id": "7e75559bb502f671",
+                "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+                "duration": 3.9
+              },
+              {
+                "id": "3675a32435189f91",
+                "text": "That's the Night Line. Thank you for staying up with us.",
+                "duration": 2.65
+              }
+            ],
+            "bufferCount": 3
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0.7500000000000007,
+          "free": false,
+          "slotted": false,
+          "awake": true,
+          "listeners": 1,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 3.8685857723205896,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.369132771777322,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 11.306666666666667,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 11.306666666666667,
+          "t": 0.2560000000000002
+        }
+      ],
+      "starts": [
+        {
+          "at": 11.250666666666666,
+          "duration": 3.9,
+          "expectedEnd": 15.150666666666666,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 11.392,
+          "stoppedAt": 11.384,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 15.850666666666665,
+          "duration": 2.65,
+          "expectedEnd": 18.500666666666664,
+          "decoded": {
+            "bytes": 21932,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.65,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 11.392,
+          "stoppedAt": 11.384,
+          "master": true,
+          "hostId": "3675a32435189f91",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 0,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "who": "host",
+          "secs": 3.9,
+          "ids": [
+            "7e75559bb502f671"
+          ],
+          "buffers": 1
+        },
+        {
+          "text": "That's the Night Line. Thank you for staying up with us.",
+          "who": "host",
+          "secs": 2.65,
+          "ids": [
+            "3675a32435189f91"
+          ],
+          "buffers": 1
+        }
+      ]
+    },
+    "reset": {
+      "context": "running",
+      "now": 11.968,
+      "state": {
+        "caliche": {
+          "seg": "music",
+          "t": 4.691907815927676,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 4.495316493018007,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.4587678436509274,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 11.776,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 11.776,
+          "t": 0.2560000000000002
+        }
+      ],
+      "starts": [
+        {
+          "at": 11.719999999999999,
+          "duration": 3.9,
+          "expectedEnd": 15.62,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 11.84,
+          "stoppedAt": 11.84,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 16.32,
+          "duration": 2.65,
+          "expectedEnd": 18.97,
+          "decoded": {
+            "bytes": 21932,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.65,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 11.84,
+          "stoppedAt": 11.84,
+          "master": true,
+          "hostId": "3675a32435189f91",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 0,
+      "pending": false,
+      "spoken": []
+    },
+    "load case": {
+      "context": "running",
+      "now": 12.565333333333333,
+      "state": {
+        "caliche": {
+          "seg": "talk",
+          "t": 4.03254074110172,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.",
+            "duration": 5.15,
+            "clips": [
+              {
+                "id": "22cf84eb221737ec",
+                "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.",
+                "duration": 5.15
+              }
+            ],
+            "bufferCount": 3
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 11.670720581516036,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.5423846676151807,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 12.288,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 12.288,
+          "t": 0.2560000000000002
+        }
+      ],
+      "starts": [
+        {
+          "at": 12.232,
+          "duration": 3.9,
+          "expectedEnd": 16.131999999999998,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 12.437333333333333,
+          "stoppedAt": 12.416,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 16.832,
+          "duration": 2.65,
+          "expectedEnd": 19.482,
+          "decoded": {
+            "bytes": 21932,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.65,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 12.437333333333333,
+          "stoppedAt": 12.416,
+          "master": true,
+          "hostId": "3675a32435189f91",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 0,
+      "pending": false,
+      "spoken": [
+        {
+          "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.",
+          "who": "host",
+          "secs": 5.15,
+          "ids": [
+            "22cf84eb221737ec"
+          ],
+          "buffers": 0
+        }
+      ]
+    },
+    "title": {
+      "context": "running",
+      "now": 13.482666666666667,
+      "state": {
+        "caliche": {
+          "seg": "music",
+          "t": 14.855849104635103,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 1,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "roswell": {
+          "seg": "dead",
+          "t": 0,
+          "free": false,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        },
+        "far": {
+          "seg": "music",
+          "t": 5.344396620904757,
+          "free": true,
+          "slotted": false,
+          "awake": false,
+          "listeners": 0,
+          "strength": 0.7080346718426237,
+          "anthem": null,
+          "anthemFailed": true,
+          "host": {
+            "loading": false,
+            "playing": false,
+            "text": null,
+            "duration": null,
+            "clips": [],
+            "bufferCount": 3
+          }
+        }
+      },
+      "captions": [
+        {
+          "text": "RADIO: \"This is the Night Line on fourteen-twenty, Caliche. We are on till four.\"",
+          "seconds": 4.1,
+          "at": 13.205333333333334,
+          "audioClock": true
+        }
+      ],
+      "lines": [
+        {
+          "id": "caliche",
+          "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+          "by": null,
+          "duration": 3.9,
+          "at": 13.205333333333334,
+          "t": 0.20800000000000018
+        }
+      ],
+      "starts": [
+        {
+          "at": 13.197333333333333,
+          "duration": 3.9,
+          "expectedEnd": 17.09733333333333,
+          "decoded": {
+            "bytes": 31916,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.9,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 13.376,
+          "stoppedAt": 13.349333333333334,
+          "master": true,
+          "hostId": "7e75559bb502f671",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        },
+        {
+          "at": 17.797333333333334,
+          "duration": 2.65,
+          "expectedEnd": 20.447333333333333,
+          "decoded": {
+            "bytes": 21932,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.65,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 13.376,
+          "stoppedAt": 13.349333333333334,
+          "master": true,
+          "hostId": "3675a32435189f91",
+          "radioPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "bandpass",
+              "hz": 1250
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3400
+            },
+            {
+              "kind": "WaveShaperNode"
+            },
+            {
+              "kind": "lowpass",
+              "hz": 20000
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "PannerNode"
+            },
+            {
+              "kind": "radioBus"
+            }
+          ],
+          "radioMaster": true,
+          "offset": 0,
+          "rate": 1
+        }
+      ],
+      "sources": 0,
+      "pending": false,
+      "spoken": []
+    }
+  },
+  "requests": [],
+  "bad_responses": [],
+  "errors": [],
+  "checks": [
+    {
+      "pass": true,
+      "message": "all 115 host/time clips preserve the extracted text hashes and have real MP3 files"
+    },
+    {
+      "pass": true,
+      "message": "the runtime catalogue contains all six exact time templates and both complete time banks"
+    },
+    {
+      "pass": true,
+      "message": "Art Bell defaults On while the radio is Off and the host bank stays undecoded"
+    },
+    {
+      "pass": true,
+      "message": "real R wakes AM 1420 and starts the recorded host on the truck's receiver"
+    },
+    {
+      "pass": true,
+      "message": "the exact opening MP3 is decoded and routed through AM filters, radioBus and master at its original rate"
+    },
+    {
+      "pass": true,
+      "message": "one exact caption begins with the recording and remains for the full decoded duration"
+    },
+    {
+      "pass": true,
+      "message": "the host station produces real nonzero PCM samples and its receiver reaches master"
+    },
+    {
+      "pass": true,
+      "message": "pause holds both the real audio clock and station position without restarting speech"
+    },
+    {
+      "pass": true,
+      "message": "the exact radio caption survives a real pause longer than the whole recording"
+    },
+    {
+      "pass": true,
+      "message": "desktop settings identify the synthetic Night Line parody and keep Kinski independent"
+    },
+    {
+      "pass": true,
+      "message": "desktop radio settings fit the viewport"
+    },
+    {
+      "pass": true,
+      "message": "the real Radio slider controls and persists the bus used by the recorded host"
+    },
+    {
+      "pass": true,
+      "message": "Resume retains the same live radio caption for the remaining speech"
+    },
+    {
+      "pass": true,
+      "message": "Radio volume zero silences master when unrelated buses are muted"
+    },
+    {
+      "pass": true,
+      "message": "resume continues the same source and station position without double playback"
+    },
+    {
+      "pass": true,
+      "message": "two receivers share one recorded station source and one caption"
+    },
+    {
+      "pass": true,
+      "message": "the natural-end fixture uses a complete authored short host line"
+    },
+    {
+      "pass": true,
+      "message": "a complete real host buffer reaches its natural end without truncation"
+    },
+    {
+      "pass": true,
+      "message": "02:03 selects every exact time fragment and schedules real decoded MP3s in order"
+    },
+    {
+      "pass": true,
+      "message": "02:03 retains the complete displayed sentence and derives its duration from all decoded fragments"
+    },
+    {
+      "pass": true,
+      "message": "02:00 selects every exact time fragment and schedules real decoded MP3s in order"
+    },
+    {
+      "pass": true,
+      "message": "02:00 retains the complete displayed sentence and derives its duration from all decoded fragments"
+    },
+    {
+      "pass": true,
+      "message": "BOY_CALL host: the extracted manuscript fixture uses its exact recording through the real station planner"
+    },
+    {
+      "pass": true,
+      "message": "sign-off host: the extracted manuscript fixture uses its exact recording through the real station planner"
+    },
+    {
+      "pass": true,
+      "message": "trip programme host: the extracted manuscript fixture uses its exact recording through the real station planner"
+    },
+    {
+      "pass": true,
+      "message": "a caller remains procedural even when its words also exist in the recorded host bank"
+    },
+    {
+      "pass": true,
+      "message": "Roswell 1230's morning host remains procedural while Art Bell is enabled"
+    },
+    {
+      "pass": true,
+      "message": "an unknown host sentence falls back to the complete original procedural line and caption"
+    },
+    {
+      "pass": true,
+      "message": "a failed real decoder returns to the complete procedural host and caption without a partial recorded start"
+    },
+    {
+      "pass": true,
+      "message": "Off: real decoded data waits before any recorded source starts"
+    },
+    {
+      "pass": true,
+      "message": "Off: a late genuine decode result cannot revive host audio or future sources"
+    },
+    {
+      "pass": true,
+      "message": "station change: real decoded data waits before any recorded source starts"
+    },
+    {
+      "pass": true,
+      "message": "station change: a late genuine decode result cannot revive host audio or future sources"
+    },
+    {
+      "pass": true,
+      "message": "reset: real decoded data waits before any recorded source starts"
+    },
+    {
+      "pass": true,
+      "message": "reset: a late genuine decode result cannot revive host audio or future sources"
+    },
+    {
+      "pass": true,
+      "message": "load case: real decoded data waits before any recorded source starts"
+    },
+    {
+      "pass": true,
+      "message": "load case: a late genuine decode result cannot revive host audio or future sources"
+    },
+    {
+      "pass": true,
+      "message": "Off: all active and future recorded host sources are stopped"
+    },
+    {
+      "pass": true,
+      "message": "station change: all active and future recorded host sources are stopped"
+    },
+    {
+      "pass": true,
+      "message": "reset: all active and future recorded host sources are stopped"
+    },
+    {
+      "pass": true,
+      "message": "load case: all active and future recorded host sources are stopped"
+    },
+    {
+      "pass": true,
+      "message": "title: all active and future recorded host sources are stopped"
+    },
+    {
+      "pass": true,
+      "message": "host buffer caching remains within the bounded 24-buffer bank"
+    },
+    {
+      "pass": true,
+      "message": "844x390 touch settings show Art Bell On and fit the screen"
+    },
+    {
+      "pass": true,
+      "message": "a real touch turns only Art Bell Off and stores its separate s47 preference"
+    },
+    {
+      "pass": true,
+      "message": "turning Kinski On by touch does not change the Art Bell preference"
+    },
+    {
+      "pass": true,
+      "message": "reloading retains the independent Art Bell Off and Kinski On choices"
+    },
+    {
+      "pass": true,
+      "message": "recorded host MP3 requests have no HTTP failures (0 requests)"
+    },
+    {
+      "pass": true,
+      "message": "strict-CSP single-file radio playback decodes inline MP3s without external host requests"
+    },
+    {
+      "pass": true,
+      "message": "no browser errors or warnings"
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: real decode/PCM/graph/lifecycle evidence is not a hardware listening or voice-similarity test"
+}

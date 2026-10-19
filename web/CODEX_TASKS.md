@@ -39,3 +39,8 @@ Videreføring av oppgave 3 fra `c3dd6b1`. 24 unike telefonreplikker, ni nye oppt
 ### 5. [x] Alle fortellerbeskrivelser som Kinski, direkte bestilt av Tom (`codex/kinski-descriptions`)
 
 Base: main `95719a4`. Nærblikk etter 650 ms, gjenta med V eller mobilknapp, og leseknapper for synlig tekst i paneler, mottaker, notatbok, kart, bevisbord og frie bilder. 1555 ferdige klipp, med alle 337 tidligere MP3 bevart uendret. Dynamiske klokker og målinger settes sammen uten å miste tall eller ord. Beskrivelser 115/115 Pages og 116/116 offline, motor 55/55 og tekstkorpus 26/26; begge bygg, telefoner og full spillregresjon PASS. Se `production/kinski/descriptions-qa/README.md`. Tom har i samtalen autorisert innfletting og vanlig publisering til nettspillet.
+
+
+### 6. [ ] Art Bell som radiovert, direkte bestilt av Tom (`codex/art-bell-radio`)
+
+Base: main `aa38e2b`. Ny lokal syntetisk parodiprofil, alle Earls eksisterende radioreplikker ferdig innspilt, inkludert dynamiske klokker, gutten, avmeldingen og kjøreinnslag. Eget lagret valg og separat bank. Kinski, innringerne og Roswell beholdes. Levering og kontroller føres i `ART_BELL_RADIO.md`.

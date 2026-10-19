@@ -1,0 +1,18 @@
+[
+  {
+    "name": "audio-cost",
+    "exit_code": 0,
+    "seconds": 27.52,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/artbell-cost.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/audio-cost",
+      "6"
+    ],
+    "log": "audio-cost.log"
+  }
+]
