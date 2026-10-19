@@ -1537,6 +1537,7 @@ async function boot() {
       head: floodSets.filter((s) => s.head.value.x >= 0).map((s) => s.key),
       windows: Object.fromEntries(windowLights.map((w) => [w.name, w.windows])),
     }),
+    windowLights,
   });
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame

@@ -10,9 +10,10 @@ import { FLASH_ANGLE, FLASH_BEAM, FLASH_GAIN, FLASH_DECAY, FLASH_PLAIN } from '.
 // through walls (main.ts passes the tier). Near the strange events it may flicker (flicker()).
 // Its beam is a cheap flashlight's, not a perfect disc (Tom, 19 October, light cookies): the
 // shaders draw it in the light (core/cookies.ts) with a hot core a little off the middle, the
-// filament's dark spot, faint rings, a ragged rim and a dim corona. It fills the old disc's cone
-// (so the shadow's camera on the PC tier sees no more than before): the beam is the inner three
-// quarters of it and the corona the rest. The same real light on Low, High and Ultra, so every
+// filament's dark spot, two faint broken arcs, a ragged rim and a dim corona, and about as much
+// light over the old disc's pool as the old disc. It fills the old disc's cone (so the shadow's
+// camera on the PC tier sees no more than before): the beam is the inner 85 percent of it and
+// the corona the rest. The same real light on Low, High and Ultra, so every
 // tier shows the same beam; the shaders know it by its linear decay (FLASH_DECAY).
 export class Flashlight {
   /** Taken off the truck's seat (saved with the case). */
@@ -42,8 +43,11 @@ export class Flashlight {
   /** The cookie in the beam, or the plain disc it had before (tools/cookies.py compares the two):
    *  the decay a hair off linear, which the shaders do not take for the flashlight. */
   cookie(on: boolean) {
-    this.cookieOn = on;
     const L = this.light;
+    // at once, not from the next frame on: a frame drawn again right after (the test's) shows the
+    // old disc at its own light, not at the cookie's raised one
+    if (on !== this.cookieOn && L.intensity > 0) L.intensity *= on ? FLASH_GAIN : 1 / FLASH_GAIN;
+    this.cookieOn = on;
     L.decay = on ? FLASH_DECAY : FLASH_PLAIN;
     L.angle = FLASH_ANGLE; L.penumbra = on ? 0.12 : 0.55;
     // for the dust in the beam (world/nightlife.ts): the beam's own cone (outer, inner), not the

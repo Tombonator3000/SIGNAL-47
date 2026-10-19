@@ -46,7 +46,8 @@ export function setFlood(i: number, intensity: number, set = flood) { if (i >= 0
 // two sealed-beam lamps of the early eighties (Tom, 19 October, light cookies): a wide, flat
 // spread, a brighter band just under the horizon (the low beam's hot spot, a little to the right),
 // less above it (a wall in front shows the cut), the road close in front a good deal less, and
-// faint streaks from the lens's flutes fanning out on the road. Nothing behind the lamps. The lamps' place and aim come from the
+// faint, uneven streaks from the lens's flutes fanning out on the road under the cut. Nothing
+// behind the lamps. The lamps' place and aim come from the
 // first and the last pool (where they stand in the truck: Truck.ts FLOODS), so a copy in another
 // set is drawn the same without being told more. Every tier: Ultra never hands these pools to a
 // real light (they move). Low takes one lamp in the middle for the two, and only the broad streaks;
@@ -75,11 +76,16 @@ const HEAD_GLSL = `
     float bv = (v + 0.028) / 0.024, bu = abs(u - 0.1);
     float band = 1.0 + 1.3 * exp(-bv * bv) * (1.0 - smoothstep(0.05, 0.5, bu));
     float low = 1.0 - 0.45 * smoothstep(0.04, 0.22, -v);
-    // the flutes of the lens: faint streaks fanning out from the lamp (Low: the broad ones)
+    // the flutes of the lens: faint, uneven streaks fanning out from the lamp, in the hot band
+    // and under the cut, nothing above it (on a wall in front they stay low and short instead of
+    // striping it to the roof like ribbed cladding: the art director, 19 October); the road far
+    // ahead is where they show. Frequencies that never repeat together, and a little of the
+    // vertical angle in them (Low: the broad ones)
+    float fa = (0.05 + 0.15 * exp(-bv * bv)) * (1.0 - smoothstep(-0.03, 0.005, v));
     #ifdef LAMBERT
-      float fl = 1.0 + 0.2 * sin(u * 34.0 + 1.7) * sin(u * 13.0 - 1.0);
+      float fl = 1.0 + fa * sin(u * 29.7 + v * 7.3 + 1.7) * sin(u * 11.83 - 1.0 + v * 3.1);
     #else
-      float fl = 1.0 + 0.2 * sin(u * 34.0 + s * 1.7) * sin(u * 13.0 - s) + 0.08 * sin(u * 97.0 + s * 3.1);
+      float fl = 1.0 + fa * (sin(u * 29.7 + v * 7.3 + s * 1.7) * sin(u * 11.83 - s + v * 3.1) + 0.4 * sin(u * 71.9 - v * 13.0 + s * 3.1));
     #endif
     return side * up * band * low * fl;
   }

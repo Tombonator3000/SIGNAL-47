@@ -121,9 +121,9 @@ export class MotelFront {
     this.windowLights = new WindowLights('motel', courtFlood, () => 0, new THREE.Vector3(this.at.x, this.at.y, this.at.z), own, .055);
     const walk = new THREE.Color(1, 1, 1), lot = new THREE.Color(.62, .6, .6), tint = (x: number) => x < -38.25 ? walk : lot;
     this.windowLights.add({ id: 'office', style: 'drawn', c: new THREE.Vector3(-40.95, 1.39, 26.2), out: new THREE.Vector3(1, 0, 0), w: 2.04, h: 1.36, floor: 0,
-      color: 0xffcf92, k: .14, slot: this.slots.office, lamp: { depth: 2.25, y: 2.35, side: 1.6 }, tint });
+      color: 0xffcf92, k: .08, slot: this.slots.office, lamp: { depth: 2.25, y: 2.35, side: 1.6 }, size: [.35, .35], tint });
     this.windowLights.add({ id: 'room6', style: 'drawn', c: new THREE.Vector3(-40.99, 1.38, 57.03), out: new THREE.Vector3(1, 0, 0), w: 1.4, h: 1.2, floor: 0,
-      color: 0xffc888, k: .12, slot: this.slots.room6, lamp: { depth: 2.6, y: 2.3 }, tint });
+      color: 0xffc888, k: .07, slot: this.slots.room6, lamp: { depth: 2.6, y: 2.3 }, size: [.35, .35], tint });
     this.group.add(this.windowLights.build());
   }
 

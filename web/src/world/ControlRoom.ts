@@ -694,8 +694,10 @@ export class ControlRoom {
    *  (world/windowLight.ts), once SARO's grounds are there to lay it on (main.ts). */
   lightOutside(ground: (x: number, z: number) => number) {
     // the band in parts of two lights, each from the lit tube behind it (shell: the front row's at
-    // x -3.5 and 0, 2.9 m in; the east third has only the back row's, 6.5 m in, whose light comes
-    // down too far out to show); the slab is concrete, the ground beyond it the red dirt
+    // x -3.5 and 0, 2.9 m in, 1.2 m long across the window: the mullions soft, the blind's slats
+    // and the screens' tops sharper; the east third has only the back row's, 6.5 m in, whose light
+    // comes down too far out to show); the slab is concrete, the ground beyond it the red dirt.
+    // About half as bright as the room seen through the glass (tools/cookies.py)
     const w = new WindowLights('saro', flood, ground, new THREE.Vector3(), [], 0.012);
     const slab = new THREE.Color(1, 1, 1), dirt = new THREE.Color(1, 0.72, 0.55);
     const tint = (x: number, z: number) => Math.abs(x) < 6.7 && z > -5.9 ? slab : dirt;
@@ -703,7 +705,7 @@ export class ControlRoom {
       // (the band's picture runs east to west seen from outside: its last third is the west one)
       const part: [number, number] = x < 0 ? [2 / 3, 1] : [1 / 3, 2 / 3];
       w.add({ id: 'room', style: 'band', part, c: new THREE.Vector3(x, 1.85, -4.75), out: new THREE.Vector3(0, 0, -1), w: 3.6, h: 1.8, floor: 0,
-        color: 0xffe8c8, k: 0.13, lamp: { depth: 2.9, y: 2.93, side: x - lx }, reach: 4.2, tint });
+        color: 0xffe8c8, k: 0.034, lamp: { depth: 2.9, y: 2.93, side: x - lx }, size: [1.0, 0.2], reach: 5.5, tint });
     }
     this.group.add(w.build());
     this.windowLights = w;

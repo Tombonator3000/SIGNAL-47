@@ -1,32 +1,40 @@
 import * as THREE from 'three';
-import { windowCookies, windowUv, type WindowStyle } from '../core/cookies';
+import { windowCookies, windowUv, WINDOW_PX, type WindowStyle } from '../core/cookies';
 import type { FloodSet } from './kit';
 
 // A lit window's light on the ground in front of it (Tom, 19 October, light cookies; the concept
 // art of Caliche and the payphone): the panes, the bars, the blinds or the curtain laid out on
-// the sidewalk the way the room's lamp throws them through the glass, near and sharp at the wall,
-// longer, wider and softer further out, and off with the window.
+// the sidewalk the way the room's lamp throws them through the glass, sharp near the wall,
+// longer, wider and softer further out, fading across the curb, and off with the window. Under
+// the window a faint, broad glow of the whole lit glass on the ground at the foot of the wall
+// ties the light to its house. Always dimmer than the room seen through the glass (the art
+// director, 19 October: light on the ground brighter than its room reads as a projector).
 //
 // One mesh for all the windows of an area, one draw call, added to what is under it (additive,
 // no depth written), on every tier. Each window is a little grid: its points on the glass seen
-// from the room's lamp, carried on to where that ray meets the ground. Each point keeps where it
-// was on the glass as (u q, v q, q), q how far past the glass the ray went, so the picture lies
-// true on the ground between the points (a projection, not a stretch); the further out, the
-// blurrier the bars (a lamp is not a point: the picture's coarser levels). How bright: the
-// window's own lamp now (a flood slot, read every frame: a television flickers, the studio dims
-// after four, the sheriff's goes out with him), the light falling off with the distance from the
-// lamp, and held back where the area's other floods already light the ground (a street lamp's
-// pool), so it shows where the street is dark, more when the lamps go out (event 8).
+// from the room's lamp, carried on to where that ray meets the ground, from a little under the
+// sill (where the lamp's size blurs the sill's edge) to the head or the reach. Each point keeps
+// where it was on the glass as (u q, v q, q), q how far past the glass the ray went (1 on the
+// glass), so the picture lies true on the ground between the points (a projection, not a
+// stretch). The blur is the lamp's size seen from the ground through the glass: size (q - 1) / q,
+// none at the glass, a bare bulb sharp, a tube soft along its length. How bright: the window's
+// own lamp now (a flood slot, read every frame: a television flickers, the studio dims after four,
+// the sheriff's goes out with him), the light falling off with the distance from the lamp and
+// faded out towards the reach, and held back where the area's other floods already light the
+// ground (a street lamp's pool), so it shows where the street is dark, more when the lamps go out
+// (event 8).
 
 const VS = /* glsl */ `
 attribute vec3 aUvq;
 attribute vec3 aCol;
+attribute vec2 aBlur;
 varying vec3 vUvq;
 varying vec3 vCol;
+varying vec2 vBlur;
 #include <common>
 #include <fog_pars_vertex>
 void main() {
-  vUvq = aUvq; vCol = aCol;
+  vUvq = aUvq; vCol = aCol; vBlur = aBlur;
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   // drawn a little nearer the eye than it lies: the ground under it is a mesh of its own, coarser
   // or finer than this one, and a few centimetres off it here and there (a decal's usual way)
@@ -39,16 +47,21 @@ uniform sampler2D uMap;
 uniform vec2 uMapSize;
 varying vec3 vUvq;
 varying vec3 vCol;
+varying vec2 vBlur;
 #include <common>
 #include <fog_pars_fragment>
 void main() {
   vec2 uv = vUvq.xy / vUvq.z;
-  // the level the picture is read at: what the screen needs, or blurrier the further out the ray
-  // went past the glass (the room's lamp is a tube or a shade, not a point: the shadows of the
-  // bars soften with the distance)
+  // the lamp's size seen from here through the glass, in the picture's pixels across and up
+  // (vBlur: the lamp's size in them): none at the glass, growing out from it
+  vec2 b = vBlur * max(vUvq.z - 1.0, 0.0) / vUvq.z;
+  float bs = min(b.x, b.y), bl = max(b.x, b.y);
+  // the level the picture is read at: what the screen needs, or the lamp's blur (its short way;
+  // a tube's long way is three reads along it)
   vec2 px = uv * uMapSize, dx = dFdx(px), dy = dFdy(px);
-  float lod = max(0.5 * log2(max(max(dot(dx, dx), dot(dy, dy)), 1e-8)), 1.0 + 2.0 * log2(max(vUvq.z, 1.0)));
-  vec3 c = textureLod(uMap, uv, lod).rgb * vCol;
+  float lod = max(0.5 * log2(max(max(dot(dx, dx), dot(dy, dy)), 1e-8)), log2(max(max(bs, 0.33 * bl), 1.0)));
+  vec2 e = (b - bs) / (3.0 * uMapSize);
+  vec3 c = (textureLod(uMap, uv - e, lod).rgb + textureLod(uMap, uv, lod).rgb + textureLod(uMap, uv + e, lod).rgb) * (vCol / 3.0);
   #ifdef USE_FOG
     // light added through the haze fades with it (the haze's own colour is not added twice)
     #ifdef FOG_EXP2
@@ -77,8 +90,12 @@ export interface WindowSpec {
   k: number;
   /** The flood slot of the window's lamp (its strength is the window's level), or none (always on). */
   slot?: number;
-  /** How far out the light is laid at most (metres from the glass). */
+  /** How far out the light is laid at most (metres from the glass): it fades out on the way there. */
   reach?: number;
+  /** The size of the room's lamp (metres, across the window and up): its blur on the ground. A
+   *  bare bulb about 0.1, a shade 0.3, a fluorescent tube its length across (or up, when it runs
+   *  into the room). */
+  size?: [number, number];
   /** The part of its picture this window shows, across (a long band of windows is laid as a few
    *  parts, each from the lamp behind it). */
   part?: [number, number];
@@ -87,7 +104,13 @@ export interface WindowSpec {
 }
 type Win = WindowSpec & { at: number; n: number; fall: number[]; level: number; w0: number; col: THREE.Color };
 
-const GRID_U = 6, GRID_V = 5;
+// the grid of a window's light (across, out) and of its glow at the foot of the wall
+const GRID_U = 6, GRID_V = 10, GLOW_U = 4, GLOW_V = 4;
+/** How far under the sill the light is laid (a part of the window's height): the sill's blur. */
+const UNDER = 0.15;
+/** The glow of the whole glass at the foot of the wall: how bright against the light through it,
+ *  how far out (metres), and how much wider than the glass either side. */
+const GLOW = 0.15, GLOW_OUT = 1.6, GLOW_SIDE = 0.35;
 const _a = new THREE.Vector3(), _w = new THREE.Vector3(), _p = new THREE.Vector3(), _l = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const OFF = 1e-3;   // a lamp core/ultra.ts holds for a real light is a tiny negative: it still burns
 
@@ -102,6 +125,8 @@ export class WindowLights {
   private uvq: number[] = [];
   private dark: number[] = [];
   private tints: number[] = [];
+  private blur: number[] = [];
+  private quads: number[] = [];
   private lit = '';
   private lastW: number[] = [];
   private readonly mat: THREE.ShaderMaterial;
@@ -128,13 +153,16 @@ export class WindowLights {
     windowLights.push(this);
   }
 
-  /** A window's light; call build() after the last. */
-  add(s: WindowSpec) {
+  /** A window's light; call build() after the last (it is laid then, on the ground as it is by then). */
+  add(s: WindowSpec) { this.specs.push(s); }
+  private specs: WindowSpec[] = [];
+
+  private lay(s: WindowSpec) {
     const a = _a.copy(_up).cross(s.out).normalize();   // across, to the right seen from outside
     const lamp = new THREE.Vector3().copy(s.c).addScaledVector(s.out, -s.lamp.depth).addScaledVector(a, s.lamp.side ?? 0);
     lamp.y = s.floor + s.lamp.y;
-    const reach = s.reach ?? 3.6;
-    // how far up the glass the light still comes down within reach (at the window's middle)
+    const reach = s.reach ?? 6;
+    // where the ray from the lamp through the glass at (u, v) meets the ground, and q there
     const hit = (u: number, v: number, o: THREE.Vector3) => {
       _w.copy(s.c).addScaledVector(a, (u - 0.5) * s.w); _w.y += (v - 0.5) * s.h;
       _l.subVectors(_w, lamp);
@@ -147,39 +175,65 @@ export class WindowLights {
       o.copy(lamp).addScaledVector(_l, t);
       return t;
     };
+    // how far up the glass the light still comes down within reach (at the window's middle)
     let v1 = 1;
     const out = (v: number) => { const t = hit(0.5, v, _p); return t < 0 ? Infinity : _p.clone().sub(s.c).dot(s.out); };
     if (out(1) > reach) { let lo = 0, hi = 1; for (let k = 0; k < 20; k++) { const m = (lo + hi) / 2; if (out(m) > reach) hi = m; else lo = m; } v1 = lo; }
     if (v1 < 0.08) return;
     const at = this.pos.length / 3, fall: number[] = [];
-    // the light at the foot of the window, for the fall-off (the irradiance there is 1)
-    let ref = 0;
+    // the lamp's size in the picture's pixels (across a part of the picture, a long band's)
+    const part = s.part ? s.part[1] - s.part[0] : 1, size = s.size ?? [0.12, 0.12];
+    const bu = size[0] * WINDOW_PX * part / s.w, bv = size[1] * WINDOW_PX / s.h;
+    const v0 = -UNDER;
     for (let j = 0; j <= GRID_V; j++) for (let i = 0; i <= GRID_U; i++) {
-      const u = i / GRID_U, v = (j / GRID_V) * v1, t = hit(u, v, _p);
+      const u = i / GRID_U, v = v0 + (j / GRID_V) * (v1 - v0), t = hit(u, v, _p);
       this.pos.push(_p.x, _p.y, _p.z);
       const tc = s.tint?.(_p.x, _p.z);
       this.tints.push(tc?.r ?? 1, tc?.g ?? 1, tc?.b ?? 1);
       const [ua, va] = windowUv(s.style, s.part ? s.part[0] + u * (s.part[1] - s.part[0]) : u, v);
       this.uvq.push(ua * t, va * t, t);
-      // irradiance from a lamp: the cosine on the ground over the distance squared; and the far
-      // end, where the light is cut by the reach rather than the window's head, fades out
-      const d = _p.distanceTo(lamp), e = (lamp.y - _p.y) / d / (d * d);
-      if (j === 0 && i === GRID_U / 2) ref = e;
-      fall.push(e * (v1 < 1 ? 1 - THREE.MathUtils.smoothstep(j / GRID_V, 0.35, 1) : 1));
+      this.blur.push(bu, bv);
+      // irradiance from a lamp: the cosine on the ground over the distance squared; faded out
+      // from about half the reach on, so the far end ends nowhere in particular (not on a curb)
+      const d = _p.distanceTo(lamp), e = (lamp.y - _p.y) / d / (d * d), far = _p.clone().sub(s.c).dot(s.out);
+      fall.push(e * (1 - THREE.MathUtils.smoothstep(far, reach * 0.45, reach)));
     }
+    // the light where the sill's line comes down at the window's middle, for the fall-off (the
+    // irradiance there is 1)
+    hit(0.5, 0, _p);
+    const d0 = _p.distanceTo(lamp), ref = (lamp.y - _p.y) / d0 / (d0 * d0);
     for (let k = 0; k < fall.length; k++) fall[k] = Math.min(1.25, fall[k] / ref);
-    const w: Win = { ...s, at, n: (GRID_U + 1) * (GRID_V + 1), fall, level: s.slot === undefined ? 1 : 0, w0: s.slot !== undefined ? Math.max(1e-3, this.set.pos[s.slot].w) : 1, col: new THREE.Color(s.color) };
+    this.quads.push(at, GRID_U, GRID_V);
+    // the glow of the whole glass at the foot of the wall, from the wall out
+    const g0 = this.pos.length / 3, wall = s.c.clone().addScaledVector(s.out, -0.05);
+    for (let j = 0; j <= GLOW_V; j++) for (let i = 0; i <= GLOW_U; i++) {
+      const u = i / GLOW_U, v = j / GLOW_V;
+      _p.copy(wall).addScaledVector(a, (u - 0.5) * (s.w + 2 * GLOW_SIDE)).addScaledVector(s.out, 0.02 + v * GLOW_OUT);
+      _p.y = this.ground(_p.x, _p.z) + 0.02;
+      this.pos.push(_p.x, _p.y, _p.z);
+      const tc = s.tint?.(_p.x, _p.z);
+      this.tints.push(tc?.r ?? 1, tc?.g ?? 1, tc?.b ?? 1);
+      const [ua, va] = windowUv('glow', u, v);
+      this.uvq.push(ua, va, 1);
+      this.blur.push(0, 0);
+      fall.push(GLOW);
+    }
+    this.quads.push(g0, GLOW_U, GLOW_V);
+    const w: Win = { ...s, at, n: fall.length, fall, level: s.slot === undefined ? 1 : 0, w0: s.slot !== undefined ? Math.max(1e-3, this.set.pos[s.slot].w) : 1, col: new THREE.Color(s.color) };
     this.wins.push(w);
   }
 
   build() {
-    const g = this.mesh.geometry, idx: number[] = [];
-    for (const w of this.wins) for (let j = 0; j < GRID_V; j++) for (let i = 0; i < GRID_U; i++) {
-      const a = w.at + j * (GRID_U + 1) + i, b = a + 1, c = a + GRID_U + 1, d = c + 1;
+    for (const s of this.specs) this.lay(s);
+    this.specs = [];
+    const g = this.mesh.geometry, idx: number[] = [], Q = this.quads;
+    for (let q = 0; q < Q.length; q += 3) for (let j = 0; j < Q[q + 2]; j++) for (let i = 0; i < Q[q + 1]; i++) {
+      const a = Q[q] + j * (Q[q + 1] + 1) + i, b = a + 1, c = a + Q[q + 1] + 1, d = c + 1;
       idx.push(a, b, d, a, d, c);
     }
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     g.setAttribute('aUvq', new THREE.Float32BufferAttribute(this.uvq, 3));
+    g.setAttribute('aBlur', new THREE.Float32BufferAttribute(this.blur, 2));
     g.setAttribute('aCol', new THREE.Float32BufferAttribute(new Float32Array(this.pos.length), 3));
     g.setIndex(idx);
     g.computeBoundingSphere();
@@ -196,6 +250,20 @@ export class WindowLights {
   get windows() { return this.wins.length; }
   /** The windows by id now, 0 (dark) to about 1 (as made): tools/cookies.py. */
   levels() { const o: Record<string, number> = {}; for (const w of this.wins) o[w.id] = Math.max(o[w.id] ?? 0, w.level); return o; }
+  /** Where a window's glass and its light on the ground are, in world terms (tools/cookies.py
+   *  compares how bright they look): the glass's corners, the points of the light's grid, the way out. */
+  shapes(id: string) {
+    const m = this.mesh.matrixWorld, o: { glass: THREE.Vector3[]; patch: THREE.Vector3[]; c: THREE.Vector3; out: THREE.Vector3 }[] = [];
+    for (const w of this.wins) {
+      if (w.id !== id) continue;
+      const a = new THREE.Vector3().copy(_up).cross(w.out).normalize();
+      const glass = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => w.c.clone().addScaledVector(a, i * w.w / 2).add(new THREE.Vector3(0, j * w.h / 2, 0)).applyMatrix4(m));
+      const patch: THREE.Vector3[] = [];
+      for (let k = w.at; k < w.at + (GRID_U + 1) * (GRID_V + 1); k++) patch.push(new THREE.Vector3(this.pos[k * 3], this.pos[k * 3 + 1], this.pos[k * 3 + 2]).applyMatrix4(m));
+      o.push({ glass, patch, c: w.c.clone().applyMatrix4(m), out: w.out.clone().transformDirection(m) });
+    }
+    return o;
+  }
   /** How much the street's own light holds the windows' back, on average (1 none): tools/cookies.py. */
   darkness() { return this.dark.reduce((a, b) => a + b, 0) / Math.max(1, this.dark.length); }
 
@@ -225,7 +293,8 @@ export class WindowLights {
   }
 
   // the light of the area's own lamps on the ground at each point (kit.floodlit's pools without
-  // the angle), and what is left for the window's: about two thirds under a street lamp
+  // the angle), and what is left for the window's: about half under a street lamp (two thirds of
+  // it held back before the windows were made dimmer than their rooms: it hid them from the street)
   private street() {
     const set = this.set, o = this.origin, n = this.pos.length / 3;
     for (let k = 0; k < n; k++) {
@@ -240,7 +309,7 @@ export class WindowLights {
         const c = set.col[i];
         e += w * win * win / (1 + d * d * this.fall) * (c.r * 0.3 + c.g * 0.59 + c.b * 0.11);
       }
-      this.dark[k] = 1 / (1 + 3 * e * set.scale.value);
+      this.dark[k] = 1 / (1 + 1.5 * e * set.scale.value);
     }
   }
 

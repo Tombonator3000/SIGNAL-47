@@ -699,6 +699,10 @@ export class Truck {
     this.driving = on;
     this.cab.visible = on;
     this.shell.visible = !on;
+    // from the driver's seat the lamps face away: their glows (screen-facing discs at the lamps)
+    // only poked over the hood as two bright half-ovals on the road (Ultra, the art director,
+    // 19 October); the light on the road is the pools' (kit.ts)
+    this.glow.points.visible = !on;
   }
   /** The camera has left the driver's seat (a cut, chapter six's pull-out): the whole truck
    *  again. World calls it each frame before the picture is drawn; the wheels' onBeforeRender
