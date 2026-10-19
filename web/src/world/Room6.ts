@@ -369,8 +369,10 @@ export class Room6 {
       this.setLamp(this.lampOn);
     }
     // the bathroom door in the north wall, the casing in the wall's thickness, painted the room's
-    // teal (the knob not), mirrored so the knob is on the right as the code's
-    if(hasModel('door_six_panel'))add(L.merged('door_six_panel',[{name:'door_six_panel',at:{x:-.97,y:0,z:-3.0,s:[-1.08,.98,1]},tint:0x43665e,paint:'_paint'}]),this.interior);
+    // teal (the knob not), mirrored so the knob is on the right as the code's; its leaf 2 cm proud
+    // of the wall as the town's doors (at the wall's face the panels' sunk mouldings were behind
+    // it, and the lamp-lit wall showed through them as orange lines)
+    if(hasModel('door_six_panel'))add(L.merged('door_six_panel',[{name:'door_six_panel',at:{x:-.97,y:0,z:-3.0+.012,s:[-1.08,.98,1]},tint:0x43665e,paint:'_paint'}]),this.interior);
   }
   /** Switch the television on (snow, a flickering blue light on the room) or off. */
   setTv(on: boolean) {

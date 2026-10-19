@@ -225,10 +225,11 @@ export function dressControlRoom(d: Dress) {
   // the filing cabinets: the top drawer nearest the desk left open, a box of logs on top (the
   // bought cabinet has its own dark slot, and its drawers 2.4 cm higher)
   const cabs = hasModel('filing_cabinet'), boxes = alongside(c, d, 'archive_box'), lic = boxes !== c, onBox = lic ? new Clutter(c.name + ':labels', d.mat) : c;
-  const dy = cabs ? 1.154 : 1.13;
-  c.box(0.33, 0.012, 0.46, -5.27, dy - 0.12, 0, 0x4e5654);
-  for (const s of [-1, 1]) c.box(0.33, 0.2, 0.012, -5.27, dy - 0.03, s * 0.225, 0x4e5654);
-  c.box(0.02, 0.29, 0.48, -5.095, dy, 0, 0x6e7a76);
+  // (the pulled drawer in the bought cabinet's darker baked steel, not the code's paler one)
+  const dy = cabs ? 1.154 : 1.13, inner = cabs ? 0x2b3130 : 0x4e5654, front = cabs ? 0x3b4240 : 0x6e7a76;
+  c.box(0.33, 0.012, 0.46, -5.27, dy - 0.12, 0, inner);
+  for (const s of [-1, 1]) c.box(0.33, 0.2, 0.012, -5.27, dy - 0.03, s * 0.225, inner);
+  c.box(0.02, 0.29, 0.48, -5.095, dy, 0, front);
   c.box(0.03, 0.025, 0.1, -5.075, dy + 0.06, 0, C.steel);
   c.box(0.3, 0.17, 0.42, -5.27, dy - 0.03, 0, C.manila, { faces: [null, null, 'folders'] });
   if (!cabs) c.box(0.03, 0.26, 0.44, -5.41, dy, 0, 0x0c0d0c);   // the dark slot it came out of (over the old handle)

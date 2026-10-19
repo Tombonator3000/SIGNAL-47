@@ -90,6 +90,10 @@ type Built = { x0: number; x1: number; z0: number; z1: number; floor: number; to
 type Panel = { at: number[]; c: THREE.Color; k: number };
 type Box = Collider & { kind: 'box' };
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+/** The middle of the bought bench under the laundromat's window (world/licensedModels.ts), 35 cm
+ *  south of the code's (2132.1): the woman with the radio (z 2132.75) sits inside its south end. */
+const BENCH_Z = 2132.1 + 0.35;
+const smooth = (a: number, b: number, x: number) => THREE.MathUtils.smoothstep(x, a, b);
 
 // Position-based UVs, in local metres (repeat scales belong to the sampler), as Diner.ts.
 function metreUV(m: THREE.Mesh) {
@@ -178,9 +182,8 @@ export class Town {
   readonly windowLights: WindowLights;
   private readonly roomLamps: number[] = [];
   readonly dressing: Dressing;
-  /** The bought models in the street (world/licensedModels.ts): the laundromat's bench, the
-   *  houses' front doors, a chair outside the gas station's office and one under the souvenir
-   *  shop's portal, in the town's floods. */
+  /** The bought models in the street (world/licensedModels.ts): the laundromat's bench and the
+   *  houses' front doors, in the town's floods. */
   readonly models = new ModelSwap('town', (m) => floodlit(m, FALL, townFlood));
 
   constructor(origin: THREE.Vector3) {
@@ -232,16 +235,25 @@ export class Town {
   private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
     const PI = Math.PI;
     const near = (o: THREE.Object3D, r = 60) => { const g = new THREE.Group(); add(o, g); this.group.add(nearOnly(g, r)); };
-    // the bench under the laundromat's window, its back 6 cm off the wall (the woman with the
-    // radio sits on its north end)
-    if (hasModel('garden_bench')) { const x = -15 + 0.06 + 0.391; near(L.mesh('garden_bench', 'garden_bench', { x, y: this.gy(x, 2132.1), z: 2132.1, ry: PI / 2 })); }
+    // the bench under the laundromat's window, its back 6 cm off the wall, 35 cm further south
+    // than the code's middle so the woman with the radio sits inside its end, not in its arm. Its
+    // grey boards painted a faded green, the paint worn through to the wood where she sits and
+    // along the front of the seat (the look: 'the paint worn through where somebody sits')
+    if (hasModel('garden_bench')) {
+      const x = -15 + 0.06 + 0.391, z = BENCH_Z;
+      // (in the bench's own terms: x along it, +x to the north end here, z to its front, the seat's
+      // slats at 0.38 to 0.44)
+      const wear = (p: THREE.Vector3) => {
+        const seat = p.y > 0.36 && p.y < 0.5 ? 1 : 0, sit = Math.hypot((p.x - (z - 2132.75)) / 0.32, p.z / 0.3);
+        return 1 - seat * Math.max(0.85 * (1 - smooth(0.55, 1.0, sit)), 0.55 * smooth(0.12, 0.3, p.z));
+      };
+      // (the tint multiplies the grey wood's picture, linear: a faded green, about 0x6b7f63, not darker)
+      const paint = new THREE.Color().setRGB(0.64, 0.93, 0.74);
+      near(L.merged('garden_bench', [{ name: 'garden_bench', at: { x, y: this.gy(x, z), z, ry: PI / 2 }, tint: paint, wear }]));
+    }
     // the houses' front doors, each painted its own (one mesh down the street)
     const doors = this.models.spots.door_six_panel;
     if (doors?.length && hasModel('door_six_panel')) add(L.merged('door_six_panel', doors.map((d) => ({ name: 'door_six_panel', at: d.at, tint: d.tone, paint: '_paint' }))), this.group);
-    // the attendant's chair at the gas station's office, between its door and its lit window
-    if (hasModel('folding_chair')) near(L.mesh('folding_chair', 'folding_chair', { x: -16.62, y: this.drapedY(-16.62, 2070.3), z: 2070.3, ry: PI / 2 }));
-    // a chair under the souvenir shop's portal, by its door, facing the street
-    if (hasModel('weathered_chair')) near(L.mesh('weathered_chair', 'weathered_chair', { x: 19.9, y: this.drapedY(19.9, 2059.6), z: 2059.6, ry: -PI / 2 + 0.25 }));
   }
 
   // ---------- materials ----------
@@ -543,8 +555,6 @@ export class Town {
     // office front: the door with the poster in it, the window with the counter behind
     this.pane(office, 2067.2, 1.12, 1.1, 2.2, m.glass); this.frame(office, 2067.2, 1.12, 1.1, 2.2); this.stoop(office, 2067.2, 1.6);
     this.board(this.st, R.poster, .46, .46, office.fx + .045, office.floor + 1.35, 2067.2, Math.PI / 2);
-    // the attendant's folding chair against the office front, the bought one (only with it)
-    if (hasModel('folding_chair')) { this.models.want('folding_chair'); this.col(-16.98, -16.3, 2070.05, 2070.55, false); }
     this.frontQuad(office, 'gasWin', R.inGas, 2073, 1.55, 4.6, 1.75, ...lit('inGas', 0xffe2b8, .85)); this.frame(office, 2073, 1.55, 4.6, 1.75);
     box(this.st, .5, .08, 9.4, m.red, office.fx + .25, office.floor + 3.45, 2072);   // the red band along the top
     // the service bay: a roll-up door, closed
@@ -627,7 +637,7 @@ export class Town {
     for (const z of [2131, 2133.2]) box(bench, .45, .42, .06, m.metal, x, y + .21, z);
     for (let i = 0; i < 3; i++) box(bench, .12, .04, 2.6, m.wood, x - .14 + i * .14, y + .44, 2132.1);
     box(bench, .04, .32, 2.6, m.wood, x - .24, y + .66, 2132.1);
-    if (hasModel('garden_bench')) this.col(b.fx + .03, b.fx + .85, 2130.9, 2133.3, false);
+    if (hasModel('garden_bench')) this.col(b.fx + .03, b.fx + .85, BENCH_Z - 1.2, BENCH_Z + 1.2, false);
     else this.col(x - .3, x + .28, 2130.75, 2133.45, false);
     this.proxy('bench', .6, .8, 2.7, x, y + .45, 2132.1);
     this.proxy('laundromat', .3, 1.9, 6.8, b.fx + .1, b.floor + 1.45, 2130.6);
@@ -718,8 +728,6 @@ export class Town {
     this.proxy('souvenir', .3, 1.8, 2.4, b.fx - .1, b.floor + 1.45, 2062.3);
     this.proxy('souvenirSign', .3, 1.4, 2.8, 18.7, py + .85, 2064.1);
     this.proxy('souvenirDoor', .3, 2.2, 1.2, b.fx - .1, b.floor + 1.1, 2066.8);
-    // a chair under the portal by the window, the bought one (only with it: world/licensedModels.ts)
-    if (hasModel('weathered_chair')) { this.models.want('weathered_chair'); this.col(19.67, 20.13, 2059.35, 2059.85, false); }
   }
 
   // ---------- the church: white, a bell gable over the door, the letter board by the street ----------

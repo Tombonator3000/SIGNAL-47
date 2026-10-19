@@ -3,7 +3,10 @@
 # area's models load (SARO's control room, records room and yard, the motel office, room 6, the
 # diner and Caliche, STATION 01), that each stands where the code's prop it replaces stood (its
 # box near the code's, its foot on the same floor), inside its room, with the code's prop hidden
-# (and back, with the model hidden, when S47.models.set(false)), that the rays still find the
+# (and back, with the model hidden, when S47.models.set(false)), and in every view, after its frames
+# are drawn, what is drawn (the scene's visible chain, as kit.followNear leaves it before a picture):
+# no code prop a model stands in for while the models are on, no model while they are off, and the
+# view's own models among what is drawn; that the rays still find the
 # terminals and their screens sit over the models' glass; prints the draw calls and triangles of
 # every view on High and Low with and without the models, the load times, the files' sizes and the
 # textures on the graphics card, and takes the same pictures with and without (SHOTS/<view>-on.png,
@@ -58,9 +61,17 @@ ROOMS = {'control': (-6.0, 6.0, -4.5, 4.5), 'annex': (-6.02, -1.0, 6.8, 10.5), '
 # the benches (a model of its own size) stand further
 # the receiver stack has the headphones and the microphone in front of it now, the scope stands at the
 # desk's end (the picks), the terminals' keyboards in front
-NEAR_XZ = {'crt_terminal': 0.2, 'garden_bench': 0.25, 'door_six_panel': 0.12, 'archive_box': 0.12, 'console_kit': 0.4, 'oscilloscope': 0.15}
+# (the laundromat's bench stands 35 cm south of the code's, so the woman sits inside its arm)
+NEAR_XZ = {'crt_terminal': 0.2, 'garden_bench': 0.4, 'door_six_panel': 0.12, 'archive_box': 0.12, 'console_kit': 0.4, 'oscilloscope': 0.15}
 # and the feet: the code's dresser stood 4 cm off the floor, the town's door frames went 8 cm under it
 FOOT = {'dresser': 0.05, 'door_six_panel': 0.09}
+# the models each view must draw (with the models on)
+VIEW_MODELS = {'c01_console_right': ['crt_terminal', 'console_kit'], 'c02_console_mid': ['crt_terminal'], 'c03_west_desk': ['crt_terminal', 'oscilloscope'],
+    'c04_cabinets': ['filing_cabinet', 'archive_box'], 'c05_room': ['crt_terminal', 'filing_cabinet'], 'r01_shelves': ['archive_box', 'filing_cabinet'],
+    'r02_cabinets': ['filing_cabinet', 'folding_chair'], 'r03_fieldbox': ['archive_box'], 'y01_yard_chair': ['folding_chair'], 'o01_office': ['bookcase', 'lamp_marble'],
+    'o02_office_chair': ['dining_chair'], 'm01_room6': ['lamp_orange', 'nightstand'], 'm02_dresser': ['dresser'], 'm03_bathroom': ['door_six_panel', 'lamp_orange'],
+    'm04_table': ['dining_table', 'dining_chair', 'lamp_orange'], 'd01_booths': ['cafe_table'], 'd02_walk_bench': ['garden_bench'], 't01_laundromat': ['garden_bench'],
+    't04_house_door': ['door_six_panel'], 't05_house_door': ['door_six_panel'], 's01_hut': ['weathered_chair'], 's02_battery': ['car_battery']}
 
 async def main():
     os.makedirs(OUT, exist_ok=True); os.makedirs(SHOTS, exist_ok=True)
@@ -106,8 +117,18 @@ async def main():
               if ({'true' if 'town' in grp else 'false'}) {{ c.y += S47.world.town.floorAt(c.x, c.z); a.y += S47.world.town.floorAt(a.x, a.z); }}
               S47.player.place(c.x, c.z, Math.atan2(-(a.x - c.x), -(a.z - c.z))); S47.tick(0.05);
               const cm = S47.camera; cm.position.copy(c); cm.lookAt(a); cm.updateMatrixWorld();
+              // (a frame drawn first: what followNear and the area set before a picture holds after it)
+              S47.renderer.render(S47.scene, cm); S47.tick(0.02); cm.position.copy(c); cm.lookAt(a); cm.updateMatrixWorld();
               S47.renderer.info.reset(); S47.renderer.render(S47.scene, cm);
-              return {{ calls: S47.renderer.info.render.calls, tris: S47.renderer.info.render.triangles, textures: S47.renderer.info.memory.textures, geometries: S47.renderer.info.memory.geometries }};
+              // what was drawn: the objects whose whole chain up to the scene is visible
+              const vis = new Set(); S47.scene.traverseVisible((o) => vis.add(o));
+              const holders = [], models = new Set();
+              if (S47.models) for (const s of S47.models.swaps) {{
+                for (const h of s.holders) if (vis.has(h)) holders.push(s.name + ':' + h.userData.licensed);
+                for (const m of s.models) m.traverse((x) => {{ if (x.isMesh && vis.has(x) && x.name.startsWith('lic:')) models.add(x.userData.model); }});
+              }}
+              return {{ calls: S47.renderer.info.render.calls, tris: S47.renderer.info.render.triangles, textures: S47.renderer.info.memory.textures, geometries: S47.renderer.info.memory.geometries,
+                drawnHolders: holders, drawnModels: [...models].sort() }};
             }})()""")
 
         views = []
@@ -240,6 +261,23 @@ async def main():
                         views.append(dict(view=name, quality=q, models='on' if m else 'off', **r))
                         if q == 'high': await pg.screenshot(path=f'{SHOTS}/{name}-{"on" if m else "off"}.png')
                         if q == 'low' and m: await pg.screenshot(path=f'{SHOTS}/{name}-low-on.png')
+            # what is drawn, after the frames: the code's props not with the models, the models not without
+            # them, and each view's own models there (a code prop in a near-only group shows again)
+            hv = [(v['view'], v['quality'], v['drawnHolders']) for v in views if v['models'] == 'on' and v['drawnHolders']]
+            check(not hv, f'with the models on no code prop they stand in for is drawn in any view ({len([v for v in views if v["models"] == "on"])} views){": " + str(hv[:5]) if hv else ""}')
+            mv = [(v['view'], v['quality'], v['drawnModels']) for v in views if v['models'] == 'off' and v['drawnModels']]
+            check(not mv, f'with the models off none is drawn ({len([v for v in views if v["models"] == "off"])} views){": " + str(mv[:5]) if mv else ""}')
+            miss = [(v['view'], v['quality'], sorted(set(VIEW_MODELS.get(v['view'], [])) - set(v['drawnModels']))) for v in views if v['models'] == 'on' and set(VIEW_MODELS.get(v['view'], [])) - set(v['drawnModels'])]
+            check(not miss, f'every view draws its own models ({sum(len(x) for x in VIEW_MODELS.values())} in {len(VIEW_MODELS)} views, High and Low){": MISSING " + str(miss[:6]) if miss else ""}')
+            # the pictures on a phone and on Low: 512 a side at most, the small props' 256, and on High
+            # (the computer's) back as built
+            caps = {}
+            for q in ['low', 'high']:
+                await ev(f"S47.setQuality('{q}')"); await ev("S47.models.fitted()")
+                st2 = await ev("S47.models.status()")
+                caps[q] = dict(capped=st2['capped'], mb=round(st2['texBytes'] / 1e6, 1), most=max(max(t['w'], t['h']) for t in st2['textures']), n=len(st2['textures']))
+            check(caps['low']['capped'] and caps['low']['most'] <= 512 and caps['low']['mb'] <= 20, f'on Low the models\' pictures are capped: at most {caps["low"]["most"]} a side, {caps["low"]["mb"]} MB ({caps["low"]["n"]} pictures)')
+            check(not caps['high']['capped'] and caps['high']['most'] == 1024 and abs(caps['high']['mb'] - status['texBytes'] / 1e6) < 0.2, f'on High they are as built again: {caps["high"]["most"]} a side, {caps["high"]["mb"]} MB (as loaded: {status["texBytes"] / 1e6:.1f} MB)')
             # Ultra (the PC's tier: shadows, the normal maps of the game's own pictures) takes them too
             for name, area, grp, cam, at in [v for v in VIEWS if v[0] in ('c01_console_right', 'm01_room6', 's01_hut')]:
                 r = await frame(area, grp, cam, at, True, 'ultra')
@@ -261,7 +299,7 @@ async def main():
             print('load (ms, from the start of each area\'s load to its models in):', loads, flush=True)
             print('files (ms, bytes):', {k: (round(v['ms']), v['bytes']) for k, v in status['files'].items()}, flush=True)
             print(f'textures: {len(status["textures"])}, {status["texBytes"] / 1e6:.1f} MB on the graphics card with mipmaps; triangles of all the models placed: {status["tris"]}', flush=True)
-            json.dump(dict(placed=placed, feet=feet, rays=rays), open(f'{OUT}/placed.json', 'w'), indent=1)
+            json.dump(dict(placed=placed, feet=feet, rays=rays, caps=caps), open(f'{OUT}/placed.json', 'w'), indent=1)
             # side by side, without on the left
             try:
                 from PIL import Image

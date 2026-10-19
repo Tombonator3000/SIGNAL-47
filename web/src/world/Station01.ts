@@ -713,13 +713,11 @@ export class Station01 {
   lampCovered = false;
   receiverOn = true;
   hutLightOn = true;
-  /** The bought models (world/licensedModels.ts): in the hut the chair and the receiver (a VU
-   *  unit, its meters lit with the receiver), in the hut's floods; the field lamp's battery in the
-   *  station's. */
+  /** The bought models (world/licensedModels.ts): the chair in the hut, in the hut's floods, and
+   *  the field lamp's battery in the station's. (The receiver on the bench stays the code's valve
+   *  set with its slide-rule dial: the story has it older than anything at SARO.) */
   readonly models = new ModelSwap('hut', (m) => floodlit(m, 0.25, hutFlood));
   readonly yardModels = new ModelSwap('station', (m) => floodlit(m, 0.03, fieldFlood));
-  /** The bought receiver's meter faces, lit with it (setReceiver). */
-  private dials: THREE.MeshStandardMaterial[] = [];
 
   private o: THREE.Vector3;
   private terrain = new Terrain();
@@ -802,20 +800,9 @@ export class Station01 {
   }
 
   // ---------- the bought models (world/licensedModels.ts) ----------
-  /** In the hut: the chair pulled out from the bench, and the receiver (the VU unit at 1.2, its
-   *  meters lit when it is on), where the code's stood. */
+  /** In the hut: the chair pulled out from the bench, where the code's stood. */
   private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
-    const inside = this.interior, { z0 } = HUT;
-    if (hasModel('weathered_chair')) add(L.mesh('weathered_chair', 'weathered_chair', { x: -12.0, y: 0.004, z: 3.05, ry: 0.6 }), inside);
-    if (hasModel('vu_meter')) {
-      // its back where the code's was (z0 + 0.13), on the bench top at 0.8
-      const rx = add(L.mesh('vu_meter', 'vu_meter', { x: -11.85, y: 0.8, z: z0 + 0.13 + 0.117 * 1.2, s: 1.2 }, { own: true }), inside);
-      rx.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-        if (m && m.emissiveMap) { m.emissive.set(0xffb048); this.dials.push(m); }
-      });
-      this.setReceiver(this.receiverOn);
-    }
+    if (hasModel('weathered_chair')) add(L.mesh('weathered_chair', 'weathered_chair', { x: -12.0, y: 0.004, z: 3.05, ry: 0.6 }), this.interior);
   }
   /** In the yard: the battery at the foot of the field lamp. */
   private placeYardModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
@@ -1389,19 +1376,19 @@ export class Station01 {
     cyl(s, 0.06, 0.06, 0.17, m.chrome, x0 + 0.85, 1.58, z0 + 0.13, 10);
 
     // the tube receiver with its speaker, headphones and lead to the field line
-    const rx = new THREE.Vector3(-11.85, top, z0 + 0.3), rs = this.models.holder(s, 'vu_meter');
-    box(rs, 0.52, 0.28, 0.34, m.crinkle, rx.x, rx.y + 0.14, rx.z);
-    box(rs, 0.54, 0.3, 0.02, m.blackIn, rx.x, rx.y + 0.15, rx.z + 0.175);
-    const dial = plane(rs, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
+    const rx = new THREE.Vector3(-11.85, top, z0 + 0.3);
+    box(s, 0.52, 0.28, 0.34, m.crinkle, rx.x, rx.y + 0.14, rx.z);
+    box(s, 0.54, 0.3, 0.02, m.blackIn, rx.x, rx.y + 0.15, rx.z + 0.175);
+    const dial = plane(s, 0.3, 0.075, m.dial, rx.x + 0.06, rx.y + 0.2, rx.z + 0.187);
     { const uv = dial.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setY(i, 0.5 + uv.getY(i) * 0.5); }
-    const meter = plane(rs, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
+    const meter = plane(s, 0.07, 0.07, m.dial, rx.x - 0.17, rx.y + 0.2, rx.z + 0.187);
     { const uv = meter.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 0.25, uv.getY(i) * 0.5); }
     for (let i = 0; i < 5; i++) {
-      const k = cyl(rs, 0.022, 0.024, 0.03, m.blackIn, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.2, 10);
+      const k = cyl(s, 0.022, 0.024, 0.03, m.blackIn, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.2, 10);
       k.rotation.x = Math.PI / 2;
-      cyl(rs, 0.006, 0.006, 0.012, m.chrome, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.217, 6).rotation.x = Math.PI / 2;
+      cyl(s, 0.006, 0.006, 0.012, m.chrome, rx.x - 0.2 + i * 0.1, rx.y + 0.08, rx.z + 0.217, 6).rotation.x = Math.PI / 2;
     }
-    for (const dx of [-0.24, 0.24]) box(rs, 0.02, 0.02, 0.05, m.chrome, rx.x + dx, rx.y + 0.27, rx.z + 0.18);
+    for (const dx of [-0.24, 0.24]) box(s, 0.02, 0.02, 0.05, m.chrome, rx.x + dx, rx.y + 0.27, rx.z + 0.18);
     box(s, 0.24, 0.24, 0.18, m.crinkle, rx.x - 0.44, rx.y + 0.12, rx.z - 0.02);
     cyl(s, 0.085, 0.085, 0.01, m.blackIn, rx.x - 0.44, rx.y + 0.12, rx.z + 0.072, 14).rotation.x = Math.PI / 2;
     for (let i = 0; i < 4; i++) box(s, 0.15, 0.006, 0.004, m.chrome, rx.x - 0.44, rx.y + 0.07 + i * 0.033, rx.z + 0.078);
@@ -1904,7 +1891,6 @@ export class Station01 {
   setReceiver(on: boolean) {
     this.receiverOn = on;
     this.m.dial.color.set(on ? 0xffffff : 0x141210);
-    for (const d of this.dials) eachVariant(d, (v) => { const m = v as THREE.MeshStandardMaterial; m.emissiveIntensity = on ? 1.1 : 0; m.color.setScalar(on ? 1 : 0.35); });
     setFlood(this.slot.dial, on ? BASE.dial : 0, hutFlood);
     this.setGlow(this.gx.dial, 0xffb050, on ? 1 : 0);
   }

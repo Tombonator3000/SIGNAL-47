@@ -364,11 +364,13 @@ export class RecordsAnnex {
       lid.material = one.material;
       (one.material as THREE.MeshStandardMaterial).color.copy(tone(0x8c6d48));
       add(one, fb); add(lid, fb);
-      // and the rest on the shelves and the cabinets
+      // and the rest on the shelves and the cabinets (the grey board ones a quarter darker than the
+      // code's tone: the kraft picture under it brightens a grey to nearly white)
       const boxes = this.models.spots.archive_box ?? [];
+      const k = (c?: number) => c === 0xc2b8a4 || c === 0xb8ae98 ? 0.75 : 1;
       if (boxes.length) {
-        add(L.instanced('archive_box', 'archive_box', boxes.map((b) => b.at), boxes.map((b) => tone(b.tone))), inside);
-        add(L.instanced('archive_box', 'archive_box_lid', boxes.map((b) => b.lid ?? b.at), boxes.map((b) => tone(b.tone, 0.94))), inside);
+        add(L.instanced('archive_box', 'archive_box', boxes.map((b) => b.at), boxes.map((b) => tone(b.tone, k(b.tone)))), inside);
+        add(L.instanced('archive_box', 'archive_box_lid', boxes.map((b) => b.lid ?? b.at), boxes.map((b) => tone(b.tone, 0.94 * k(b.tone)))), inside);
       }
     }
   }

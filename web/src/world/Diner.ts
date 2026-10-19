@@ -71,7 +71,9 @@ export class Diner {
     const gy=(x:number,z:number)=>onRoad?surfaceY(x+DINER.x,z+DINER.z)-origin.y:-.18;
     const bench=hasModel('garden_bench')?new Dressing(dinerFlood,.14,1947):undefined;
     this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy,bench);this.shell.add(this.dressing.build());
-    if(bench){const g=bench.build();this.shell.add(g);this.models.adopt(g,'garden_bench');}
+    // (the code's bench in a plain group of its own: the dressing's group is near-only, kit.nearOnly,
+    // and its own `visible` is set again before every picture, so hiding that would not hold)
+    if(bench){const g=noMerge(new THREE.Group());g.name='diner:bench';g.add(bench.build());this.shell.add(g);this.models.adopt(g,'garden_bench');}
     for(const m of this.dressing.materials)this.materials.add(m);
     // the counter's, the booths' and the walls' clutter (world/dressing.ts)
     dressDinerInside({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});

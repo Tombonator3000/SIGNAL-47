@@ -310,6 +310,7 @@ const nearOnes: { g: THREE.Group; near: number; box: THREE.Box3 | null }[] = [];
 export function nearOnly(o: THREE.Object3D, near: number) {
   const g = noMerge(new THREE.Group()) as THREE.Group;
   g.name = (o.name || 'detail') + ':near';
+  g.userData.nearOnly = true;
   g.add(o);
   nearOnes.push({ g, near, box: null });
   return g;

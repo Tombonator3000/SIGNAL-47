@@ -34,6 +34,7 @@ import { LightCones, GroundHaze, sodiumGlows } from './airlight';
 import { followFlora, floraTest, type Flora } from './flora';
 import { saroFlora, stationFlora, postsOf } from './groundCover';
 import { NightLife, lifeLamps } from './nightlife';
+import { modelsSettled } from './licensedModels';
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
 // browser fetches then) and kept afterwards. Each area lies far from the others in the
@@ -155,6 +156,8 @@ export class World {
   onRoom6Loaded?: (room: Room6) => void;
   onEnterRoom6?: () => void;
   onLeaveRoom6?: () => void;
+  /** An area is shown (enter): main.ts compiles the bought models in it for its lights. */
+  onEnter?: (area: AreaId) => void;
   room6: Room6 | null = null;
   diner: Diner | null = null;
   onDinerLoaded?: (diner: Diner) => void;
@@ -443,6 +446,7 @@ export class World {
         { bats: [[new THREE.Vector3(-7.65, 6, 8006.7), 2]], walls: this.d.scene });
       this.d.applyQuality();
       this.onStationLoaded?.(s);
+      await modelsSettled([s.models, s.yardModels]);   // (behind the fade: world/licensedModels.ts)
       return s;
     });
   }
@@ -548,6 +552,7 @@ export class World {
       this.room6 = r;
       this.d.applyQuality();
       this.onRoom6Loaded?.(r);
+      await modelsSettled([r.models]);
       return r;
     });
   }
@@ -612,6 +617,9 @@ export class World {
       this.life.addMoths('road', lifeLamps([town.group, d.group], town.group, (w) => surfaceY(w.x - R.x, w.z - R.z) + R.y, (_p, _s, h) => h > 1.5), town.group,
         { bats: [[new THREE.Vector3(R.x - 3.9, 15, 2122), 3], [new THREE.Vector3(8000.5, 10.8, 2000), 1]], walls: this.d.scene });
       this.onTownLoaded?.(town);
+      // the bought models of the diner and the town built and their pictures on the graphics card
+      // before the picture comes back (the drive does not stop for them: world/licensedModels.ts)
+      await modelsSettled([d.models, town.models]);
       return d;
     });
   }
@@ -646,6 +654,7 @@ export class World {
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
     if (area === 'diner' && this.diner) { player.zones = this.roadWalk?.zones ?? this.diner.zones; player.colliders = this.roadWalk?.colliders ?? this.diner.colliders; }
+    this.onEnter?.(area);
   }
   /** How the sky is turned in the current area: the areas lie on one map (geo.ts), and the
    *  station's terms are the road's turned a quarter round, so its sky is turned with them,
