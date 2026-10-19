@@ -258,6 +258,10 @@ async def main():
         for _ in range(80):
             await tick(0.25)
             if await ev("S47.world.driving"): break
+            # The road and cab are lazy-loaded. Advancing the simulation alone does not
+            # give the browser time to finish their network and asset work.
+            await pg.wait_for_timeout(100)
+        await pg.wait_for_function("S47.world.driving && !!S47.world.legs[S47.world.leg]")
         await ev(f"(() => {{ const w = S47.world, L = w.legs[w.leg]; L.drive.place(new S47.three.Vector3({X + 2.2}, L.area.height({X + 2.2}, 2140), 2140), L.drive.heading); }})()")
         await tick(1.0)
         can = await ev("S47.world.canGetOut()")

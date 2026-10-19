@@ -1,0 +1,98 @@
+{
+  "checks": [
+    [
+      true,
+      "the ordinary player movement reaches the TV viewing place through the office door"
+    ],
+    [
+      true,
+      "the screen can be targeted by the ordinary interaction ray"
+    ],
+    [
+      true,
+      "a nearby camera aimed at the TV through the north wall cannot witness it"
+    ],
+    [
+      true,
+      "carrier freezes during a panel or cinematic"
+    ],
+    [
+      true,
+      "leaving the area cancels without spending the event"
+    ],
+    [
+      true,
+      "standing with your back to the set does not record a finding"
+    ],
+    [
+      true,
+      "a wholly missed frame remains available later"
+    ],
+    [
+      true,
+      "turning toward the still visible frame records the actual image"
+    ],
+    [
+      true,
+      "the held frame also freezes while a panel or cinematic is open"
+    ],
+    [
+      true,
+      "using the TV reopens its recorded frame"
+    ],
+    [
+      true,
+      "a truck parked near the southern rooms produces a witnessed runtime frame"
+    ],
+    [
+      true,
+      "the whole transformed truck is inside the aerial frame ([10.979680800056428, 123.79098493063734], [45.940651164119146, 151.16549045744452])"
+    ],
+    [
+      true,
+      "the actual truck changes only its own part of the image (76.6 vs 0.20)"
+    ],
+    [
+      true,
+      "capture preserves the truck pose and renderer target, viewport and scissor"
+    ],
+    [
+      true,
+      "a failed render never substitutes artwork or claims the truck was seen"
+    ],
+    [
+      true,
+      "Continue restores the exact saved television image"
+    ],
+    [
+      true,
+      "Continue keeps the observation spent and the set on its test card"
+    ],
+    [
+      true,
+      "the saved image can be opened from the TV after Continue"
+    ],
+    [
+      true,
+      "legacy observations with no image say that the earlier picture is unavailable"
+    ],
+    [
+      true,
+      "no browser runtime errors: "
+    ]
+  ],
+  "truck": {
+    "inside": 76.58608321377332,
+    "outside": 0.1990690395989709,
+    "lo": [
+      10.979680800056428,
+      123.79098493063734
+    ],
+    "hi": [
+      45.940651164119146,
+      151.16549045744452
+    ],
+    "pose": true,
+    "render": true
+  }
+}

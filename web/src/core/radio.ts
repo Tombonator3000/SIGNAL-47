@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { AudioSys } from './Audio';
-import { RadioVoice, type RadioClip } from './radioVoice';
+import { RadioVoice, type RadioClip, type CallerVoice } from './radioVoice';
 
 // The radio stations of the night and the radios that play them (Tom, 16 October: the truck's
 // radio should work, and the national anthem should play on the radios).
@@ -37,6 +37,8 @@ export const FREQ: Record<StationId, number> = { caliche: 1420, roswell: 1230, f
 export const SIGN_OFF = 4 * 3600;   // the Night Line signs off
 export const SIGN_ON = 5 * 3600;    // Roswell signs on
 export const ANTHEM_SECS = 74.8;
+/** The recorded bulletin on the frequency (HENDELSER.md, event 4). */
+export const ARCHIVE_SECS = 47;
 export const streamOn = import.meta.env.MODE !== 'single';
 
 export type Voice = 'host' | 'woman' | 'man' | 'roswell' | 'boy' | 'news' | 'old';
@@ -79,7 +81,7 @@ const TRACK: Record<TuneId, { file: string; dur: number }> = {
   far: { file: 'anamalie', dur: 208.2 },
 };
 type Seg =
-  | { kind: 'talk'; lines: Line[]; slotted?: boolean }
+  | { kind: 'talk'; lines: Line[]; slotted?: boolean; duration?: number }
   | { kind: 'music'; tune: TuneId; len: number }
   | { kind: 'anthem' }
   | { kind: 'carrier'; len: number }
@@ -169,7 +171,11 @@ const FAR: Seg[] = [music('far', 96)];
 export const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
 const GAP = 0.7;
 const FRAGMENT_GAP = 0.035;
-interface SpokenLine { line: Line; text: string; secs: number; clips: RadioClip[] | null; buffers?: AudioBuffer[] }
+interface SpokenLine { line: Line; text: string; secs: number; at: number; clips: RadioClip[] | null; bank?: 'host' | 'caller'; buffers?: AudioBuffer[] }
+export interface ArchiveProgress {
+  id: number; state: 'loading' | 'playing' | 'complete' | 'cancelled'; elapsed: number; duration: number;
+}
+const CALLER_VOICES = new Set<string>(['woman', 'man', 'old', 'boy', 'news']);
 /** Seconds of its own programme a station has after anything else (a trip's lines, the boy, the
  *  bulletin), before it takes the next. */
 const CALM = 10;
@@ -180,9 +186,12 @@ const BEFORE_FIXED = 180;
 /** Lines a trip's programme has put on a station (Station.slot). */
 export interface Slotted { readonly kind: 'talk'; readonly lines: Line[]; readonly slotted?: boolean }
 const lineText = (l: Line, clock: number) => (typeof l.text === 'function' ? l.text(clock) : l.text);
+const talkLen = (lines: Line[], clock: number) => lines.reduce((a, l) => a + secsOf(lineText(l, clock)) + GAP, 0.4);
+/** A fixed recording keeps its full duration, including the gaps, in sound and captions. */
+const talkScale = (s: Extract<Seg, { kind: 'talk' }>, clock: number) => s.duration ? s.duration / talkLen(s.lines, clock) : 1;
 /** The length of a segment; a talk's is fixed when it starts, with the clock then. */
 function segLen(s: Seg, clock: number) {
-  if (s.kind === 'talk') return s.lines.reduce((a, l) => a + secsOf(lineText(l, clock)) + GAP, 0.4);
+  if (s.kind === 'talk') return s.duration ?? talkLen(s.lines, clock);
   if (s.kind === 'music' || s.kind === 'carrier') return s.len;
   if (s.kind === 'anthem') return ANTHEM_SECS;
   return Infinity;
@@ -311,6 +320,13 @@ export class Station {
   private calm = CALM;
   /** The record on now is being faded down for the host (slot). */
   private fading = false;
+  /** Event 4 holds the programme at its exact syllable or place in the record. It is not a
+   *  queued programme item: a clock jump, sign-off or reset discards the interruption. */
+  private interrupted: { queue: Seg[]; t: number; len: number; said: number; sc: number;
+    segNo: number; trackSkip: number; fading: boolean; spoken: SpokenLine[];
+    hostReady: boolean; hostVoice: boolean; callerVoice: boolean } | null = null;
+  private archive: ArchiveProgress | null = null;
+  private archiveId = 0;
   private spoken: SpokenLine[] = [];
   private hostSources: AudioBufferSourceNode[] = [];
   private hostPending: AbortController | null = null;
@@ -376,31 +392,69 @@ export class Station {
     this.queue.splice(i, 1);
     return true;
   }
-  /** Something else on the frequency, now: these lines, and then the programme again as if
-   *  nothing had been (HENDELSER.md, event 4). Returns how long it takes, or 0 if off the air. */
+  /** Event 4: a 47-second recording on the frequency, then the interrupted programme from the
+   *  same point. Never replaces the boy, a trip's lines, or a fixed point. Returns its duration,
+   *  or 0 when the frequency is not free or too close to its sign-off. */
   cutIn(lines: { text: string; who: Voice; by: string }[], clock: number) {
-    if (!this.onAir || this.seg.kind === 'anthem') return 0;
-    const seg: Seg = { kind: 'talk', lines };
+    if (!this.free || this.interrupted || this.hostPending || !lines.length) return 0;
+    const f = this.cfg.fixed, day = ((clock % 86400) + 86400) % 86400;
+    if (f && this.after === 'loop' && day >= f.at - BEFORE_FIXED && day < f.at) return 0;
+    const previous = { queue: this.queue.slice(), t: this.t, len: this.len, said: this.said, sc: this.sc,
+      segNo: this.segNo, trackSkip: this.trackSkip, fading: this.fading,
+      spoken: this.spoken, hostReady: this.hostReady, hostVoice: this.radio.hostVoice, callerVoice: this.radio.callerVoice };
+    const seg: Seg = { kind: 'talk', lines, duration: ARCHIVE_SECS };
     this.start([seg], clock);
-    return this.len;
+    this.interrupted = previous;
+    this.archive = { id: ++this.archiveId, state: this.hostPending ? 'loading' : 'playing', elapsed: 0, duration: ARCHIVE_SECS };
+    return ARCHIVE_SECS;
   }
 
   private lines(s: Seg, clock: number): SpokenLine[] {
     if (s.kind !== 'talk') return [];
+    const scale = talkScale(s, clock);
     return s.lines.map((line) => {
       const text = lineText(line, clock);
-      const clips = this.id === 'caliche' && this.radio.hostVoice && line.who === 'host' ? this.radio.hostBank.resolve(text, clock) : null;
-      return { line, text, clips, secs: clips ? clips.reduce((sum, clip) => sum + clip.duration, 0) + (clips.length - 1) * FRAGMENT_GAP : secsOf(text) };
+      const bank = this.id !== 'caliche' ? undefined : !s.duration && this.radio.hostVoice && line.who === 'host' ? 'host'
+        : this.radio.callerVoice && line.who && CALLER_VOICES.has(line.who) ? 'caller' : undefined;
+      const clips = bank === 'host' ? this.radio.hostBank.resolve(text, clock)
+        : bank === 'caller' ? this.radio.callerBank.resolve(text, clock, line.who as CallerVoice) : null;
+      return { line, text, clips, bank, at: 0, secs: clips ? clips.reduce((sum, clip) => sum + clip.duration, 0) + (clips.length - 1) * FRAGMENT_GAP : secsOf(text) * scale };
     });
   }
+  /** Fixed archives distribute spare time as gaps. Recorded words are never time-stretched. */
+  private layout() {
+    const s = this.seg;
+    let at = 0.2, gap = GAP;
+    if (s.kind === 'talk' && s.duration) {
+      const recorded = this.spoken.every((line) => !!line.buffers);
+      const speech = this.spoken.reduce((sum, line) => sum + line.secs, 0);
+      if (recorded && speech + 0.4 <= s.duration) {
+        gap = (s.duration - 0.4 - speech) / Math.max(1, this.spoken.length - 1);
+      } else {
+        // Missing/failed/overlong archives retain every word in the original newsreader.
+        const scale = talkScale(s, this.sc);
+        at *= scale; gap *= scale;
+        for (const line of this.spoken) {
+          line.secs = secsOf(line.text) * scale;
+          if (recorded) { line.clips = null; line.buffers = undefined; }
+        }
+      }
+    }
+    for (const line of this.spoken) { line.at = at; at += line.secs + gap; }
+  }
   private lengthOf(s: Seg, clock: number) {
-    return s.kind === 'talk' ? this.lines(s, clock).reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(s, clock);
+    return s.kind === 'talk' ? s.duration ?? this.lines(s, clock).reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(s, clock);
   }
   private plan(clock: number) {
     this.cancelHost();
     this.spoken = this.lines(this.seg, clock);
+    // An archive is atomic: an unavailable sentence must not leave a partial recording.
+    if (this.seg.kind === 'talk' && this.seg.duration && this.spoken.some((line) => !line.clips)) {
+      for (const line of this.spoken) line.clips = null;
+    }
+    this.layout();
     this.hostReady = !this.spoken.some((line) => line.clips);
-    this.len = this.seg.kind === 'talk' ? this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(this.seg, clock);
+    this.len = this.seg.kind === 'talk' ? this.seg.duration ?? this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(this.seg, clock);
   }
   /** Keep the same line and relative point when manifest lengths become decoded lengths. */
   private mapPosition(before: number[], after: number[]) {
@@ -414,15 +468,21 @@ export class Station {
     return newAt + this.t - oldAt;
   }
   /** Change the voice in place; no stale fetch or future source can survive the option. */
-  revoice() {
+  revoice(kind: 'host' | 'caller' = 'host') {
     if (this.seg.kind !== 'talk') return;
+    if (!this.seg.lines.some((line) => kind === 'host' ? line.who === 'host' : !!line.who && CALLER_VOICES.has(line.who))) return;
+    // Switching between the natural and procedural archive layouts mid-sentence can seek
+    // across words. The 47-second broadcast continues, but that mixed listen is no finding.
+    if (kind === 'caller' && this.seg.duration && this.t > 0) this.cancelArchive();
     const before = this.spoken.map((line) => line.secs);
     this.plan(this.sc);
-    this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+    if (!this.seg.duration) this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
     this.sync();
   }
 
   private start(segs: Seg[], clock: number, skip = 0) {
+    this.cancelArchive();
+    this.interrupted = null;
     this.queue = segs.slice();
     this.t = 0; this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
     this.plan(clock);
@@ -463,9 +523,36 @@ export class Station {
   /** On by `dt` seconds of programme. quiet: no lines said (skipping ahead). */
   private forward(dt: number, clock: number, quiet = false) {
     this.t += dt;
+    if (this.interrupted && this.archive && this.archive.state !== 'cancelled') {
+      this.archive.elapsed = Math.min(this.len, this.t);
+    }
     let changed = false;
     while (this.t >= this.len) {
       this.t -= this.len;
+      if (this.interrupted) {
+        if (this.archive && this.archive.state !== 'cancelled') { this.archive.state = 'complete'; this.archive.elapsed = ARCHIVE_SECS; }
+        const previous = this.interrupted;
+        this.interrupted = null;
+        this.cancelHost();
+        // The held audio has not played during this frame's archive overrun. Resume its
+        // exact sample, then sync() rebases the sound clock to the actual restart time.
+        this.queue = previous.queue; this.t = previous.t; this.len = previous.len;
+        this.said = previous.said; this.sc = previous.sc; this.segNo = previous.segNo;
+        this.trackSkip = previous.trackSkip; this.calm = 0; this.fading = previous.fading;
+        this.spoken = previous.spoken; this.hostReady = previous.hostReady;
+        // The option can change while the bulletin is on. Apply the ordinary voice mapping to
+        // the held sentence then; otherwise keep the exact decoded plan and buffer offsets.
+        if (this.seg.kind === 'talk' && (
+          previous.hostVoice !== this.radio.hostVoice && this.seg.lines.some((line) => line.who === 'host') ||
+          previous.callerVoice !== this.radio.callerVoice && this.seg.lines.some((line) => !!line.who && CALLER_VOICES.has(line.who))
+        )) {
+          const before = this.spoken.map((line) => line.secs);
+          this.plan(this.sc);
+          this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+        }
+        changed = true;
+        continue;
+      }
       this.queue.shift();
       if (!this.queue.length) this.queue.push(...this.refill(clock));
       this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
@@ -475,12 +562,12 @@ export class Station {
     // the lines of a talk, each once as it starts
     const s = this.seg;
     if (s.kind === 'talk' && (quiet || !this.n || this.hostReady)) {
-      let at = 0.2, i = 0;
-      for (; i < this.spoken.length; i++) { const e = at + this.spoken[i].secs; if (this.t < e) break; at = e + GAP; }
-      if (i < s.lines.length && this.t >= at && i > this.said) {
+      let i = 0;
+      for (; i < this.spoken.length; i++) { const line = this.spoken[i]; if (this.t < line.at + line.secs) break; }
+      if (i < s.lines.length && this.t >= this.spoken[i].at && i > this.said) {
         this.said = i;
         const line = this.spoken[i];
-        if (!quiet) this.onLine?.(line.text, line.line.by, line.buffers ? line.secs : undefined);
+        if (!quiet) this.onLine?.(line.text, line.line.by, line.buffers || s.duration ? line.secs : undefined);
       }
     }
     return changed;
@@ -492,8 +579,10 @@ export class Station {
     // No programme or caption runs ahead of a recording still being prepared, or of a
     // suspended AudioContext. On a slow rendering frame the recording remains authoritative.
     const advance = this.hostPending ? 0 : this.audioAt !== null && ctx ? Math.max(0, ctx.currentTime - this.audioAt - this.t) : dt;
+    // Until the held source is restarted, even a slow boundary frame is archive time.
+    const archiveTime = this.interrupted ? advance : 0;
     if (!this.hostPending && this.forward(advance, clock)) this.sync();
-    this.calm = this.cfg.loop.includes(this.seg) ? this.calm + dt : 0;
+    this.calm = this.cfg.loop.includes(this.seg) ? this.calm + advance - archiveTime : 0;
   }
 
   // ---------- the sound ----------
@@ -532,6 +621,7 @@ export class Station {
   private sleep() {
     const n = this.n; if (!n) return;
     this.n = null;
+    this.cancelArchive();
     this.cancelHost();
     try { n.music?.stop(); } catch { /* stopped */ }
     this.stopAnthem(n);
@@ -566,10 +656,10 @@ export class Station {
     g.setValueAtTime(0, now);
     if (s.kind === 'talk' && !this.hostReady) this.prepareHost();
     if (s.kind === 'talk' && this.hostReady) {
-      if (this.spoken.some((line) => line.buffers)) this.audioAt = now - t;
-      let at = 0.2;
+      if (s.duration || this.spoken.some((line) => line.buffers)) this.audioAt = now - t;
+      if (this.interrupted && this.archive && this.archive.state !== 'cancelled') this.archive.state = 'playing';
       for (const line of this.spoken) {
-        const { text, secs } = line, base = PITCH[line.line.who ?? 'host'];
+        const { text, secs, at } = line, base = PITCH[line.line.who ?? 'host'];
         if (line.buffers) {
           let partAt = at;
           for (const buffer of line.buffers) {
@@ -591,7 +681,6 @@ export class Station {
           mf.setValueAtTime(330, ts); mf.linearRampToValueAtTime(1350, ts + y.d * 0.3); mf.linearRampToValueAtTime(430, ts + y.d);
           g.setValueAtTime(0, ts); g.linearRampToValueAtTime(0.42, ts + 0.025); g.setValueAtTime(0.42, ts + y.d * 0.7); g.linearRampToValueAtTime(0, ts + y.d);
         }
-        at += secs + GAP;
       }
     }
     // the anthem, or the carrier
@@ -613,61 +702,80 @@ export class Station {
     this.hostPending?.abort(); this.hostPending = null;
     this.stopHostSources(); this.audioAt = null;
   }
+  private cancelArchive() {
+    if (this.archive && (this.archive.state === 'loading' || this.archive.state === 'playing')) this.archive.state = 'cancelled';
+  }
+  /** Read-only episode progress remains available after completion or cancellation. */
+  get archiveStatus(): ArchiveProgress | null { return this.archive ? { ...this.archive } : null; }
   /** A first receiver joining an already decoded recording needs its current caption too. */
   private announceRecordedLine() {
     if (!this.n || !this.hostReady) return;
-    let at = 0.2;
     for (let i = 0; i < this.spoken.length; i++) {
       const line = this.spoken[i];
-      if (line.buffers && this.t >= at && this.t < at + line.secs) {
+      if (line.buffers && this.t >= line.at && this.t < line.at + line.secs) {
         this.said = i - 1;
         this.forward(0, this.radio.clock);
         return;
       }
-      at += line.secs + GAP;
     }
   }
   private prepareHost() {
     const ctx = this.radio.audio.ctx;
     if (!ctx || !this.n || this.hostPending) return;
     const controller = this.hostPending = new AbortController(), generation = ++this.hostGeneration;
-    const clips = this.spoken.flatMap((line) => line.clips ?? []);
-    void this.radio.hostBank.load(clips, ctx, controller.signal).then((buffers) => {
+    const clips = (bank: 'host' | 'caller') => this.spoken.flatMap((line) => line.bank === bank ? line.clips ?? [] : []);
+    if (this.interrupted && this.archive && this.archive.state !== 'cancelled') this.archive.state = 'loading';
+    void Promise.all([
+      this.radio.hostBank.load(clips('host'), ctx, controller.signal),
+      this.radio.callerBank.load(clips('caller'), ctx, controller.signal),
+    ]).then(([hostBuffers, callerBuffers]) => {
       if (controller.signal.aborted || generation !== this.hostGeneration || !this.n) return;
       const before = this.spoken.map((line) => line.secs);
       for (const line of this.spoken) if (line.clips) {
-        line.buffers = line.clips.map((clip) => buffers.get(clip.id)!);
+        const buffers = line.bank === 'caller' ? callerBuffers : hostBuffers;
+        line.buffers = line.clips.map((clip) => {
+          const buffer = buffers.get(clip.id);
+          if (!buffer) throw new Error(`Incomplete radio recording: ${clip.id}`);
+          return buffer;
+        });
         line.secs = line.buffers.reduce((sum, buffer) => sum + buffer.duration, 0) + (line.buffers.length - 1) * FRAGMENT_GAP;
       }
-      this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
-      this.len = this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
+      this.layout();
+      if (this.seg.kind === 'talk' && !this.seg.duration) this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+      this.len = this.seg.kind === 'talk' && this.seg.duration ? this.seg.duration : this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
       this.hostReady = true; this.hostPending = null;
       this.sync();
       this.announceRecordedLine();
       this.forward(0, this.radio.clock);
     }).catch(() => {
       if (controller.signal.aborted || generation !== this.hostGeneration || !this.n) return;
+      controller.abort();
       // A failed request retains a complete, word-matched legacy line. No partial recording
       // and no retry loop can hold the programme forever.
       const before = this.spoken.map((line) => line.secs);
       for (const line of this.spoken) { line.clips = null; line.buffers = undefined; line.secs = secsOf(line.text); }
-      this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
-      this.len = this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
+      this.layout();
+      if (this.seg.kind === 'talk' && !this.seg.duration) this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+      this.len = this.seg.kind === 'talk' && this.seg.duration ? this.seg.duration : this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
       this.hostReady = true; this.hostPending = null; this.sync();
+      this.announceRecordedLine();
     });
   }
   /** Current recorded-host state for diagnostics, without creating a second playback path. */
-  get hostStatus() {
-    let at = 0.2, current: SpokenLine | undefined;
-    for (const line of this.spoken) { if (this.t >= at && this.t < at + line.secs) { current = line; break; } at += line.secs + GAP; }
+  private voiceStatus(bank: 'host' | 'caller') {
+    const lines = this.spoken.filter((line) => bank === 'host' ? line.line.who === 'host' : !!line.line.who && CALLER_VOICES.has(line.line.who));
+    const current = lines.find((line) => this.t >= line.at && this.t < line.at + line.secs);
     return {
       loading: !!this.hostPending,
       playing: !!current?.buffers && this.awake && this.radio.audio.ctx?.state === 'running',
       text: current?.text ?? null, duration: current?.secs ?? null,
-      clips: this.spoken.flatMap((line) => line.clips?.map((clip, i) => ({ id: clip.id, text: clip.text, duration: line.buffers?.[i]?.duration ?? clip.duration })) ?? []),
-      bufferCount: this.radio.hostBank.bufferCount,
+      clips: lines.flatMap((line) => line.clips?.map((clip, i) => ({ id: clip.id, text: clip.text, voice: clip.voice,
+        duration: line.buffers?.[i]?.duration ?? clip.duration })) ?? []),
+      bufferCount: (bank === 'host' ? this.radio.hostBank : this.radio.callerBank).bufferCount,
     };
   }
+  get hostStatus() { return this.voiceStatus('host'); }
+  get callerStatus() { return this.voiceStatus('caller'); }
   private playAnthem(n: NonNullable<Station['n']>) {
     if (n.anthem || this.anthemFailed) return;
     const ctx = this.radio.audio.ctx!;
@@ -877,12 +985,20 @@ export class Radio {
   /** The boy has called the Night Line tonight (event 9; main.ts keeps it with the case). */
   boyCalled = false;
   readonly hostBank = new RadioVoice();
+  readonly callerBank = new RadioVoice('caller');
   private recordedHost = false;
+  private recordedCallers = false;
   get hostVoice() { return this.recordedHost; }
+  get callerVoice() { return this.recordedCallers; }
   setHostVoice(on: boolean) {
     if (this.recordedHost === on) return;
     this.recordedHost = on;
     this.stations.caliche.revoice();
+  }
+  setCallerVoice(on: boolean) {
+    if (this.recordedCallers === on) return;
+    this.recordedCallers = on;
+    this.stations.caliche.revoice('caller');
   }
 
   constructor(readonly audio: AudioSys) {
@@ -906,7 +1022,8 @@ export class Radio {
     return Object.fromEntries(DIAL.map((id) => {
       const s = this.stations[id];
       return [id, { seg: s.seg.kind, t: s.t, free: s.free, slotted: s.seg.kind === 'talk' && !!s.seg.slotted, awake: s.awake, listeners: s.listeners, strength: s.strength(this.clock, this.time),
-        anthem: s.anthemEl ? { time: s.anthemEl.currentTime, paused: s.anthemEl.paused, failed: s.anthemFailed } : null, anthemFailed: s.anthemFailed, host: s.hostStatus }];
+        anthem: s.anthemEl ? { time: s.anthemEl.currentTime, paused: s.anthemEl.paused, failed: s.anthemFailed } : null, anthemFailed: s.anthemFailed,
+        host: s.hostStatus, callers: s.callerStatus, archive: s.archiveStatus }];
     }));
   }
 }

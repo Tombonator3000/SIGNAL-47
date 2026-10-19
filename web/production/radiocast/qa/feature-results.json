@@ -1,0 +1,32 @@
+[
+  {
+    "name": "radiocast-pages",
+    "exit_code": 0,
+    "seconds": 80.6,
+    "url": "http://127.0.0.1:8500/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radiocast-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/pages"
+    ],
+    "log": "radiocast-pages.log"
+  },
+  {
+    "name": "radiocast-single",
+    "exit_code": 0,
+    "seconds": 90.19,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radiocast-radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-radio-cast/web/production/radiocast/qa/single"
+    ],
+    "log": "radiocast-single.log"
+  }
+]

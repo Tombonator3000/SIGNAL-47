@@ -1,0 +1,21 @@
+PASS the ordinary player movement reaches the TV viewing place through the office door
+PASS the screen can be targeted by the ordinary interaction ray
+PASS a nearby camera aimed at the TV through the north wall cannot witness it
+PASS carrier freezes during a panel or cinematic
+PASS leaving the area cancels without spending the event
+PASS standing with your back to the set does not record a finding
+PASS a wholly missed frame remains available later
+PASS turning toward the still visible frame records the actual image
+PASS the held frame also freezes while a panel or cinematic is open
+PASS using the TV reopens its recorded frame
+PASS a truck parked near the southern rooms produces a witnessed runtime frame
+PASS the whole transformed truck is inside the aerial frame ([10.979680800056428, 123.79098493063734], [45.940651164119146, 151.16549045744452])
+PASS the actual truck changes only its own part of the image (76.7 vs 0.20)
+PASS capture preserves the truck pose and renderer target, viewport and scissor
+PASS a failed render never substitutes artwork or claims the truck was seen
+PASS Continue restores the exact saved television image
+PASS Continue keeps the observation spent and the set on its test card
+PASS the saved image can be opened from the TV after Continue
+PASS legacy observations with no image say that the earlier picture is unavailable
+PASS no browser runtime errors: 
+20/20 PASS

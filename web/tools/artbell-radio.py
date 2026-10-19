@@ -358,6 +358,9 @@ async def main():
             page = await new_page(context)
             check(await page.evaluate("S47.radio.hostVoice && !S47.carRadio.on && S47.radio.hostBank.bufferCount === 0"),
                   "Art Bell defaults On while the radio is Off and the host bank stays undecoded")
+            # Keep this host-only suite's legacy caller assertions explicit.
+            # radiocast-radio.py covers caller/news default On and all 28 MP3s.
+            await page.evaluate("S47.radio.setCallerVoice(false)")
             await page.evaluate("S47.jump('chapter1'); S47.tick(1)")
             saved = await page.evaluate("S47.saveNow('manual',0)")
             await enter_truck(page)
@@ -531,7 +534,7 @@ async def main():
             caller_pcm = await sample_station(page)
             check(not caller["starts"] and caller["sources"] == 0 and not caller["spoken"][0]["ids"] and
                   caller_pcm["peakRms"] > 1e-5,
-                  "a caller remains procedural even when its words also exist in the recorded host bank")
+                  "with caller recordings Off, a caller remains procedural even when its words exist in the host bank")
             roswell_text = "Cattle at the sale barn steady, a dollar higher on calves."
             await fixture(page, roswell_text, station="roswell", clock=5 * 3600 + 10 * 60,
                           lines=[{"who": "roswell", "text": roswell_text}])

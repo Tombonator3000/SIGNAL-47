@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { AudioSys } from '../core/Audio';
 import type { Interaction } from '../core/Interaction';
 import type { MotelFront } from '../world/MotelFront';
+import type { DocSpec } from '../ui/UI';
 import { clockText } from './time';
 
 // HENDELSER.md, event 10: the television in the office of Sierra Motor Court, on B. The station
@@ -19,8 +20,9 @@ import { clockText } from './time';
 // may bring it back later. At least ten minutes of the night after the last event, as in town
 // (story/townEvents.ts).
 //
-// Round 15's pictures are taken when they are in the repository (assets/art/motel/): the blank
-// test card as the card, and the lot from above only when the scene cannot be drawn.
+// Round 15 supplies the blank test card. The lot must be the actual scene: a painted fallback
+// cannot say where this night's truck stood. A witnessed frame is kept with the case and can
+// be looked at again, from the television or the notebook's album.
 
 const ART = import.meta.glob<string>('../assets/art/motel/tv_*.jpg', { eager: true, import: 'default' });
 const art = (name: string) => ART[`../assets/art/motel/${name}.jpg`] ?? null;
@@ -44,6 +46,12 @@ export interface MotelTvDeps {
   inter: Interaction;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
+  /** The parked truck's actual world transform, including the heading restored from a save. */
+  truck: () => THREE.Object3D | null;
+  file: (doc: DocSpec) => void;
+  /** The saved frame, including after Continue (main.ts keeps it with the case). */
+  document: () => DocSpec | undefined;
+  open: (doc: DocSpec) => void;
   /** The town's part of the case: the events and the marks for the notebook's map. */
   seen: Set<string>;
   note: (text: string) => void;
@@ -74,6 +82,8 @@ export class MotelTv {
   private card: HTMLCanvasElement;
   private shot: HTMLCanvasElement;
   private tvAt = new THREE.Vector3();
+  private frameClock = 0;
+  private canWitness = false;
   private snd: { tone: GainNode; hum: GainNode; humK: number; hiss: GainNode; whine: GainNode; stop: () => void } | null = null;
   private light = new THREE.Color();
   /** The camera over the lot, and the light from straight above that the picture has (shoot()). */
@@ -91,10 +101,19 @@ export class MotelTv {
     this.shot = document.createElement('canvas'); this.shot.width = W; this.shot.height = H;
     const px = d.motel.proxies.officeTv;
     if (px) d.inter.add({ id: 'court:officeTv', object: px, range: 3.6,
-      label: () => px.parent?.visible ? 'Television' : null,
-      use: () => d.toast(this.mode === 'card' ? 'A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.'
-        : this.mode === 'carrier' ? 'Nothing on the screen but grey, and the hum.' : 'The lot, from straight above.', 4),
-      examine: () => this.mode === 'card' ? 'Colour bars, and a thin tone. Nobody has turned it off.' : this.mode === 'carrier' ? 'A grey field. The hum of a carrier with nothing on it.' : null });
+      label: () => px.parent?.visible ? this.mode === 'card' && d.document() ? 'Television / recorded frame' : 'Television' : null,
+      use: () => {
+        const doc = d.document();
+        if (this.mode === 'card' && doc) { d.open(doc); return; }
+        if (this.mode === 'card' && d.seen.has('ev:tv')) {
+          d.toast('The test card again. The notebook has the observation, but the picture from that earlier case is unavailable.', 5); return;
+        }
+        d.toast(this.mode === 'card' ? 'A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.'
+          : this.mode === 'carrier' ? 'Nothing on the screen but grey, and the hum.' : 'The lot, from straight above. The truck exactly where you left it.', 4);
+      },
+      examine: () => this.mode === 'card' ? d.document() ? 'The test card again. The single picture of the lot is kept in the notebook.'
+        : d.seen.has('ev:tv') ? 'The test card again. The notebook has the observation, but the earlier picture is unavailable.' : 'Colour bars, and a thin tone. Nobody has turned it off.'
+        : this.mode === 'carrier' ? 'A grey field. The hum of a carrier with nothing on it.' : 'The motel lot, straight down. Your truck, at the same angle you parked it. No camera could stand there.' });
     this.paint(0);
   }
 
@@ -118,18 +137,27 @@ export class MotelTv {
     this.dwell = s.ok && s.here ? this.dwell + dt : 0;
     switch (this.mode) {
       case 'card':
-        if (!this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
+        if (s.ok && s.saro && !this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
           && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60) {
           this.carrier();
           this.d.toast('On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it.', 5.5);
         }
         break;
       case 'carrier':
-        if (s.saro) this.warm(); else this.toWarm = null;
+        if (!s.saro) { this.missed(s.clock); break; }
+        // A paper, conversation or cinematic must not consume the only chance to see it.
+        if (!s.ok) break;
+        this.warm();
         if ((this.t += dt) >= CARRIER) this.showFrame(s, dist);
         break;
       case 'frame':
-        if ((this.t += dt) >= FRAME) { this.mode = 'card'; this.t = 0; this.click(); }
+        if (!s.saro) { this.missed(s.clock); break; }
+        if (!s.ok) break;
+        this.witness(s, dist);
+        if ((this.t += dt) >= FRAME) {
+          if (!this.d.seen.has('ev:tv')) this.notBefore = s.clock + GAP;
+          this.mode = 'card'; this.t = 0; this.click();
+        }
         break;
     }
     // the picture, while someone could see it
@@ -141,24 +169,58 @@ export class MotelTv {
     this.d.motel.setTvLight(s.saro ? k * (0.94 + 0.06 * Math.random()) : 0, this.light);
   }
 
-  private carrier() { this.mode = 'carrier'; this.t = 0; this.toWarm = null; this.click(); }
+  private carrier() { this.mode = 'carrier'; this.t = 0; this.toWarm = null; this.canWitness = false; this.click(); }
+
+  private missed(clock: number) {
+    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = clock + GAP;
+    this.toWarm = null; this.canWitness = false;
+  }
 
   private showFrame(s: MotelTvIn, dist: number) {
     this.mode = 'frame'; this.t = 0;
     this.click();
     // the lot from straight above, as it is now; the scene can only be drawn in SARO's area
-    this.frame = s.saro ? this.shoot() : null;
-    if (!this.frame) {
-      const url = art('tv_lot_above');
-      if (url) { const c = blank(); const img = new Image(); img.onload = () => c.getContext('2d')!.drawImage(img, 0, 0, W, H); img.src = url; this.frame = c; }
-    }
-    const seen = s.ok && s.saro && (s.here || dist < 9);
-    if (!seen) { this.notBefore = s.clock + GAP; return; }
-    const t = clockText(s.clock, false);
-    this.d.seen.add('ev:tv'); this.d.seen.add(`mark:tv@${Math.round(s.clock)}`);
+    const truck = this.d.truck();
+    this.canWitness = s.saro && s.truckOnLot && !!truck && shown(truck);
+    this.frame = this.canWitness ? this.shoot() : null;
+    this.frameClock = s.clock;
+    if (!this.frame) { this.missed(s.clock); return; }
+    this.witness(s, dist);
+  }
+
+  private witness(s: MotelTvIn, dist: number) {
+    if (this.d.seen.has('ev:tv') || !this.frame || !this.canWitness || !s.ok || !s.saro || !(s.here || dist < 9) || !this.inView(s.cam)) return;
+    const t = clockText(this.frameClock, false);
+    let image: string;
+    try { image = this.frame.toDataURL('image/jpeg', 0.88); }
+    catch { return; } // do not spend an event whose actual frame cannot be kept
+    this.d.file(frameDocument(image, t));
+    this.d.seen.add('ev:tv'); this.d.seen.add(`mark:tv@${Math.round(this.frameClock)}`);
     this.d.toast('For a moment the screen shows the motel\'s lot from straight above: the office roof, the sign, the truck where you left it. Nothing up there could hold a camera. Then the test card again.', 7);
     this.d.note(`${t}. Motel office TV. One frame of the lot from above. My truck in it.`);
     this.d.save();
+  }
+
+  /** The screen must actually be in view, and seen from its front. Being in the office with
+   *  your back to the set is not an observation; turning during the held frame still counts. */
+  private inView(cam: THREE.Camera) {
+    cam.updateMatrixWorld(true);
+    const screen = this.d.motel.tv.group.localToWorld(new THREE.Vector3(-0.045, 0.18, 0.1815));
+    const eye = cam.getWorldPosition(new THREE.Vector3()), towards = screen.clone().sub(eye);
+    const front = new THREE.Vector3(0, 0, 1).transformDirection(this.d.motel.tv.group.matrixWorld);
+    if (towards.dot(front) >= 0) return false;
+    const ndc = screen.clone().project(cam);
+    if (!(ndc.z >= -1 && ndc.z <= 1 && Math.abs(ndc.x) < 0.9 && Math.abs(ndc.y) < 0.9)) return false;
+    // Projection alone also sees through the office walls. Ignore hit proxies and clear
+    // glass, but require a clear sight line to the face of the picture tube.
+    const ray = new THREE.Raycaster(eye, towards.clone().normalize(), 0.02, Math.max(0.02, towards.length() - 0.08));
+    return !ray.intersectObjects(this.d.scene.children, true).some((hit) => {
+      const mesh = hit.object as THREE.Mesh;
+      if (!mesh.isMesh || !shown(mesh)) return false;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const mat = materials[hit.face?.materialIndex ?? 0];
+      return mat?.visible && (!mat.transparent || mat.opacity > 0.5);
+    });
   }
 
   /** The camera over the lot as the canvas is now, and the light over it put in the scene (taken
@@ -169,7 +231,21 @@ export class MotelTv {
     const ch = Math.min(src.height, src.width * 3 / 4);
     cam.aspect = src.width / src.height;
     cam.fov = 2 * Math.atan(Math.tan(FOV * Math.PI / 360) * src.height / ch) * 180 / Math.PI;
-    const at = motel.group.localToWorld(OVER.clone()), below = at.clone().setY(motel.floorY);
+    const over = OVER.clone(), truck = this.d.truck();
+    if (truck) {
+      const bounds = new THREE.Box3().setFromObject(truck), a = motel.at;
+      // Keep the established close view for the normal parking place. A freely parked or
+      // restored truck can stand by any room, so extend the same shot to include it as well.
+      const half = OVER.y * Math.tan(FOV * Math.PI / 360);
+      if (bounds.min.x < a.x + OVER.x - half + 2 || bounds.max.x > a.x + OVER.x + half - 2
+        || bounds.min.z < a.z + OVER.z - half * 4 / 3 + 2 || bounds.max.z > a.z + OVER.z + half * 4 / 3 - 2) {
+        const x0 = Math.min(-46, bounds.min.x - a.x - 2), x1 = Math.max(-27, bounds.max.x - a.x + 2);
+        const z0 = Math.min(1.5, bounds.min.z - a.z - 2), z1 = Math.max(30, bounds.max.z - a.z + 2);
+        over.x = (x0 + x1) / 2; over.z = (z0 + z1) / 2;
+        over.y = Math.max(OVER.y, (x1 - x0) / (2 * Math.tan(FOV * Math.PI / 360)), (z1 - z0) / (2 * Math.tan(FOV * Math.PI / 360) * 4 / 3)) + 3;
+      }
+    }
+    const at = motel.group.localToWorld(over), below = at.clone().setY(motel.floorY);
     cam.position.copy(at); cam.up.set(-1, 0, 0); cam.lookAt(below);
     cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
     // a light from straight above for this one picture, as the frames of the time away have
@@ -187,6 +263,7 @@ export class MotelTv {
    *  its layers, in view). The frame then finds them made. */
   private warm() {
     const r = this.d.renderer, scene = this.d.scene;
+    const target = r.getRenderTarget();
     if (this.toWarm && !this.toWarm.length) return;
     try {
       this.aim();
@@ -209,17 +286,19 @@ export class MotelTv {
       this.part.traverseVisible = () => {};
       r.setRenderTarget(null); r.compile(this.part, cam, scene);
     } catch { this.toWarm = []; /* then they are made with the frame, as before */ }
-    finally { this.top.removeFromParent(); }
+    finally { this.top.removeFromParent(); r.setRenderTarget(target); }
   }
 
   /** The lot from a camera over it, drawn at once into a picture the size of the set's (main.ts
    *  draws the next frame over the canvas as usual). */
   private shoot(): HTMLCanvasElement | null {
+    const r = this.d.renderer, target = r.getRenderTarget(), viewport = r.getViewport(new THREE.Vector4());
+    const scissor = r.getScissor(new THREE.Vector4()), clipped = r.getScissorTest();
     try {
-      const r = this.d.renderer, src = r.domElement;
+      const src = r.domElement, size = r.getSize(new THREE.Vector2());
       const ch = this.aim();
-      try { r.setRenderTarget(null); r.render(this.d.scene, this.cam); }
-      finally { this.top.removeFromParent(); }
+      r.setRenderTarget(null); r.setViewport(0, 0, size.x, size.y); r.setScissorTest(false);
+      r.render(this.d.scene, this.cam);
       const g = this.shot.getContext('2d')!, cw = ch * 4 / 3;
       // a picture off the air: less colour, harder, and a little brighter than the night is
       g.filter = 'saturate(0.6) contrast(1.3) brightness(1.15)';
@@ -227,6 +306,10 @@ export class MotelTv {
       g.filter = 'none';
       return this.shot;
     } catch { return null; }
+    finally {
+      this.top.removeFromParent(); r.setRenderTarget(target);
+      r.setViewport(viewport); r.setScissor(scissor); r.setScissorTest(clipped);
+    }
   }
 
   // ---------- the picture tube ----------
@@ -299,12 +382,27 @@ export class MotelTv {
 
   /** A new night or a case opened: the test card, and whether it has been seen in it. */
   reset() {
-    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null; this.toWarm = null;
+    this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null; this.toWarm = null; this.canWitness = false;
     this.silence();
     this.paint(0);
   }
+  /** Restore the actual saved image after the chapter has restored its ordinary papers. Old
+   *  cases can have the finding without an image: keep the finding, never substitute artwork. */
+  refile(url?: string) {
+    if (!url || !this.d.seen.has('ev:tv')) return;
+    const mark = [...this.d.seen].find((k) => k.startsWith('mark:tv@'));
+    const clock = Number(mark?.slice('mark:tv@'.length));
+    this.d.file(frameDocument(url, Number.isFinite(clock) ? clockText(clock, false) : 'time unrecorded'));
+  }
   /** The carrier now (the developer menu): the frame comes 47 s later as it would. */
   now() { if (this.mode === 'card') this.carrier(); }
+}
+
+function shown(o: THREE.Object3D) { for (let p: THREE.Object3D | null = o; p; p = p.parent) if (!p.visible) return false; return true; }
+
+function frameDocument(image: string, t: string): DocSpec {
+  return { id: 'motel-tv-frame', kind: 'photo', title: `TV FRAME / Sierra Motor Court (${t})`, page: '', image,
+    transcript: `Motel office television, ${t}. After 47 seconds of bare carrier, one fixed frame of the lot from directly above. The office roof, the sign, and my truck exactly where I parked it, at the same angle. No camera could stand there. Then the test card again.` };
 }
 
 function blank() { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; }

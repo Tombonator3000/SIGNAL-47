@@ -42,9 +42,10 @@ async def main():
 
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.0)")
         # This suite fast-forwards the original procedural programme. Recorded
-        # host speech uses the audio clock and is tested in artbell-radio.py.
+        # host/caller speech uses the audio clock and is tested separately in
+        # artbell-radio.py and radiocast-radio.py (including all 28 new clips).
         check(await ev("S47.radio.hostVoice"), 'the recorded Art Bell host is on by default')
-        await ev("S47.radio.setHostVoice(false)")
+        await ev("S47.radio.setHostVoice(false); S47.radio.setCallerVoice(false)")
         check(not await ev("S47.radio.hostVoice"), 'the original procedural radio mode remains available')
         await ev("() => { window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, ...args) => { window.__toasts.push(t); return o(t, ...args); }; }")
         st = await ev(ST)

@@ -1,0 +1,15 @@
+{
+  "renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 3080/PCIe/SSE2, OpenGL ES 3.2)",
+  "vendor": "Google Inc. (NVIDIA Corporation)",
+  "drawingBuffer": [
+    1280,
+    800
+  ],
+  "viewport": [
+    1280,
+    800
+  ],
+  "chromium": "156.0.8078.4",
+  "mode": "headless, S47_GPU=1, ANGLE/OpenGL",
+  "fps": "UNVERIFIED, not measured"
+}

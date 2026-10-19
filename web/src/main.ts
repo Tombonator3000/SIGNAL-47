@@ -42,7 +42,7 @@ import { FLASH_DECAY } from './core/cookies';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
-import { bindTown, townPeople } from './story/caliche';
+import { bindTown, townPeople, townWitnessDocs } from './story/caliche';
 import { bindField } from './story/field';
 import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
@@ -171,6 +171,7 @@ async function boot() {
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
   radio.setHostVoice(store.get<boolean>('artBellRadioHost', true) === true);
+  radio.setCallerVoice(store.get<boolean>('radioCallerVoices', true) === true);
   const carRadio = radio.receiver({ vol: 0.38, ref: 1.0 });   // Tom, 18 October: 0.65 was too loud in the cab
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
@@ -330,12 +331,16 @@ async function boot() {
   world.onDinerLoaded = (d) => ch5.bindDiner(d);
   // Caliche, down the street from the diner (world/Town.ts): its windows and signs (story/caliche.ts)
   const townSeen = new Set<string>();
+  const fileSideDoc = (doc: import('./ui/UI').DocSpec) => {
+    const i = game.docs.findIndex((x) => x.id === doc.id);
+    if (i < 0) game.docs.push(doc); else game.docs[i] = doc;
+  };
   // what happens in the town once in a night (story/townEvents.ts), kept with the rest of it
   const townEvents = new TownEvents({ audio, toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text), seen: townSeen,
     save: () => { if (mode === 'play') requestAutosave(false); } });
   world.onTownLoaded = (t) => {
     bindTown(t, { inter, ui, toast: (text, secs) => ui.toast(text, secs), here: () => world.area === 'diner',
-      secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen,
+      secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen, file: fileSideDoc,
       save: () => { if (mode === 'play') requestAutosave(false); } });
     townEvents.bind(t);
   };
@@ -371,6 +376,7 @@ async function boot() {
   const pasture = new Pasture({ herds: () => world.herds, seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
     save: () => { if (mode === 'play') requestAutosave(false); } });
   const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
+    truck: () => world.saroTruck?.group ?? null, file: fileSideDoc, document: () => game.docs.find((d) => d.id === 'motel-tv-frame'), open: (doc) => ui.document(doc, () => {}),
     toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
   // ---------- the free camera and the album (core/album.ts; todo.md, after They Are Here) ----------
   // Once the camera is had, the shutter takes a free frame anywhere a case frame is not to be had
@@ -469,6 +475,7 @@ async function boot() {
   const settings = () => ({
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
     artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); store.set('artBellRadioHost', v); },
+    radioCast: radio.callerVoice, onRadioCast: (v: boolean) => { radio.setCallerVoice(v); store.set('radioCallerVoices', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -706,6 +713,8 @@ async function boot() {
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
+    for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
+    motelTv.refile(o.state?.motelTv?.url);
     restoringNow = false; restoring = null;
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.boyCalled = townSeen.has('ev:boy'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
@@ -732,7 +741,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     world.stopDriving();
-    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -857,6 +866,8 @@ async function boot() {
     step: () => audio.stepPick(surfaceAt()),
     setRadio: (st) => carRadio.set(true, st),
     bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
+    bulletinProgress: () => radio.stations.caliche.archiveStatus,
+    bulletinHeard: () => world.driving && carRadio.live && carRadio.station === 'caliche' && carRadio.power > 0.5 && game.clock % 86400 < SIGN_OFF,
     openDoor: () => doors.set('east', true),
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
     place: () => placeName(), silent: () => roadside.silent,
@@ -922,10 +933,12 @@ async function boot() {
     // the truck exactly where it was left; a save made on a drive finds it, and the player, where
     // the drive began (World.truckSave)
     const tk = world.truckSave();
+    const tvFrame = game.docs.find((d) => d.id === 'motel-tv-frame')?.image;
     const state: GameState = {
       v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
       truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
       album: album.data,
+      motelTv: tvFrame ? { id: 'motel-tv-frame', url: tvFrame } : undefined,
       pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
     };
     return saves.save(caseId, kind, slot, state, {
@@ -1433,7 +1446,10 @@ async function boot() {
       if (mode === 'play') {
         const cp = camera.getWorldPosition(townAt);
         townEvents.update(dt, {
-          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !nightEvents.busy,
+          // The return call follows Room 6 and remains available in the diner's dawn.
+          // Each other town event keeps its own earlier clock window.
+          ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6'
+            && (sky.uniforms.uDawn.value < 0.3 || game.phase === 'ch5') && !abduction!.busy && !nightEvents.busy,
           inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
         });

@@ -72,6 +72,9 @@ export class TownEvents {
   private cutoutSeen = false;
   private carSeen = false;
   private lineCheck = 0;
+  private recordings: ReturnType<AudioSys['play']>[] = [];
+  private lineSpeaker: AudioNode | null = null;
+  private lineBand: AudioNode | null = null;
 
   constructor(private d: TownEventsDeps) {}
 
@@ -150,14 +153,20 @@ export class TownEvents {
     const phone = this.pos(PHONE), dPhone = cam.distanceTo(phone);
     if (this.now === 'ringing') {
       this.ringT += dt;
-      if (this.ringT > RING || !s.inTown) { this.stopRing(); this.notBefore = s.clock + 4 * 60; }
+      if (this.ringT > RING || !s.inTown || !s.ok) { this.stopRing(); this.notBefore = s.clock + 4 * 60; }
     } else if (this.now === 'line') {
-      this.lineT += dt;
-      if (this.lineT > LINE || dPhone > 6 || !s.inTown) this.hangUp(s.clock);
+      // Leaving halfway through is not evidence of a complete recording. It can ring on a
+      // later visit, but no nickel, event flag or full-length observation is awarded yet.
+      if (dPhone > 6 || !s.inTown || !s.ok) {
+        this.stopAll(); this.notBefore = s.clock + 4 * 60;
+      } else if ((this.lineT += dt) >= LINE) this.hangUp(s.clock);
     }
     this.near = s.ok && s.inTown && dPhone < 45 ? this.near + dt : 0;
     const call = !this.d.seen.has('ev:phone1') ? 1 : s.later && !this.d.seen.has('ev:phone2') ? 2 : 0;
-    if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < 4 * 3600 + 45 * 60 && this.free(s.clock)) {
+    // The return call follows Room 6, at about 05:00. The original 04:45 cutoff made it
+    // unreachable in the real chapter journey. Leave enough room before the 05:20 departure.
+    const phoneUntil = call === 2 ? 5 * 3600 + 19 * 60 : 4 * 3600 + 45 * 60;
+    if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
       this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
@@ -201,16 +210,20 @@ export class TownEvents {
       const ear = a.spatial(at, 1.2);
       if (ear) {
         const line = a.phoneLine(); line.gain.disconnect(); line.gain.connect(ear); line.gain.gain.value = 0.4;
-        a.play('engineStart', { dest: line.input, when: 0.4, from: 0.7, dur: 1.5 });
-        a.play('engineStart', { dest: line.input, when: 1.9, from: 0.75, dur: 1.1, rate: 0.93 });
-        a.play('engineOff', { dest: line.input, when: 2.9, rate: 0.9 });
+        this.lineSpeaker = ear; this.lineBand = line.gain;
+        this.recordings.push(
+          a.play('engineStart', { dest: line.input, when: 0.4, from: 0.7, dur: 1.5 }),
+          a.play('engineStart', { dest: line.input, when: 1.9, from: 0.75, dur: 1.1, rate: 0.93 }),
+          a.play('engineOff', { dest: line.input, when: 2.9, rate: 0.9 }),
+        );
       }
       // relay clicks, four and seven, after the silence
-      for (let i = 0; i < 11; i++) a.play('click', { at, gain: 0.5, when: 14 + i * 0.32 + (i >= 4 ? 0.9 : 0), lp: 2200 });
+      for (let i = 0; i < 11; i++) this.recordings.push(a.play('click', { at, gain: 0.5, when: 14 + i * 0.32 + (i >= 4 ? 0.9 : 0), lp: 2200 }));
       this.d.toast('Far off, an engine. It coughs, coughs again and stops. Then nothing at all.', 6);
     }
   }
   private hangUp(clock: number) {
+    this.stopRecording();
     this.d.audio.stop('town-line', 0.2);
     this.now = 'none';
     this.town!.ringing = false;
@@ -233,7 +246,14 @@ export class TownEvents {
   }
   private stopAll() {
     this.stopRing(); this.d.audio.stop('town-line', 0.05);
+    this.stopRecording();
     this.now = 'none'; this.near = 0; this.street = 0; this.notBefore = 0;
+  }
+  private stopRecording() {
+    for (const h of this.recordings) if (h) { try { h.src.stop(); } catch {} h.gain.disconnect(); }
+    this.recordings = [];
+    this.lineBand?.disconnect(); this.lineBand = null;
+    this.lineSpeaker?.disconnect(); this.lineSpeaker = null;
   }
 }
 

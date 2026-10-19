@@ -216,10 +216,31 @@ async def main():
         check(await ev("S47.motelTv.mode") == 'carrier', 'thirty seconds on, still the carrier')
         n4 = len(await notes())
         progs = await ev("S47.renderer.info.programs.length")
-        await tick(17.2)
+        # Measure the actual aerial render. The remaining carrier also lets ordinary main-view
+        # shaders and the prewarm itself compile, so its whole 17.2 s count is diagnostic only.
+        await ev("""(() => { const T = S47.motelTv, r = S47.renderer, shoot = T['shoot'];
+          window.__tvCaptures = [];
+          T['shoot'] = function (...args) {
+            const before = r.info.programs.map((p) => p.id); let success = false;
+            try { const frame = shoot.apply(this, args); success = !!frame; return frame; }
+            finally { const after = r.info.programs.map((p) => p.id);
+              window.__tvCaptures.push({ before: before.length, after: after.length, success,
+                newProgramIds: after.filter((id) => !before.includes(id)) }); }
+          };
+          window.__restoreTvShoot = () => { T['shoot'] = shoot; };
+        })(); 0""")
+        try:
+            await tick(17.2)
+        finally:
+            await ev("window.__restoreTvShoot(); 0")
         progs2 = await ev("S47.renderer.info.programs.length")
+        captures = await ev("window.__tvCaptures")
+        successful = [c for c in captures if c['success']]
+        shader_counts = {'interval': {'before': progs, 'after': progs2}, 'captures': captures}
+        print(f'INFO carrier-to-frame interval: {progs} to {progs2} programs; actual captures: {captures}', flush=True)
         check(await ev("S47.motelTv.mode") == 'frame' and await ev("!!S47.motelTv.frame"), 'after 47 s: one frame')
-        check(progs2 == progs, f'its shaders were made during the carrier: none new for the frame ({progs} programs before, {progs2} after)')
+        check(bool(successful) and all(not c['newProgramIds'] for c in successful),
+              f'its shaders were made during the carrier: no new shader inside an actual successful frame capture ({len(successful)} captures, {captures})')
         await shot('t03_frame_on_tv')
         fr = await ev("S47.motelTv.frame.toDataURL('image/png')")
         open(f'{OUT}/t04_frame.png', 'wb').write(base64.b64decode(fr.split(',', 1)[1]))
@@ -276,7 +297,7 @@ async def main():
         # (the test's own readbacks of the screen's canvas make Chrome suggest willReadFrequently)
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e and 'willReadFrequently' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
-        json.dump({'checks': checks}, open(f'{OUT}/cowstv.json', 'w'), indent=1)
+        json.dump({'checks': checks, 'shaders': shader_counts}, open(f'{OUT}/cowstv.json', 'w'), indent=1)
         print(f"{sum(1 for c in checks if c[0] == 'PASS')} of {len(checks)} PASS")
         await b.close()
         sys.exit(0 if all(c[0] == 'PASS' for c in checks) else 1)

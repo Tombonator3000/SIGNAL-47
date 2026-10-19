@@ -1,0 +1,29 @@
+PASS the prologue
+PASS outside by the building ([6, 9.6, 6, 1.6])
+PASS chapter one, at night, outside: the director may run
+PASS the steps behind: now
+PASS two or three steps, from a place behind (2)
+PASS the notebook: ['02:16. SARO grounds. I stopped, and the footsteps behind me went on two or three more and stopped. Nobody there.']
+PASS the phone: now
+PASS the control room phone rang once (['02:16. SARO grounds. The phone in the control room rang once, and stopped. Nobody else is in the building.'])
+PASS well away from the door, looking away ([6, 27.6])
+PASS the door: now
+PASS it is open
+PASS not written down before it is seen
+PASS back by it, seeing it open (['02:16. The service door stood open. I had shut it.'])
+PASS the silence: now
+PASS no sound now
+PASS 47 s, written down where it was (['02:17. SARO grounds. No sound for 47 s. Not my footsteps either.'])
+PASS the radio: now ([8.9, 26])
+PASS the truck radio is on, on 1090
+PASS back by the truck (["02:17. The truck's radio was on when I came back to it, on 1090. I had left it off."])
+PASS driving: the knocks
+PASS three, and the notebook (3, ['02:17. Driving. Three knocks on the roof of the cab, slow, from above. Nothing on the road behind.'])
+PASS the radio on 1420: the bulletin
+PASS on the air: We interrupt this program. This is a local news bulletin.
+PASS and in the notebook (['02:40. AM 1420, a news bulletin: a flying disc found on a ranch near Roswell, the eighth of July. 1947. Then the Night Line again, as if nothing.'])
+PASS then the Night Line again (talk)
+PASS kept with the case (['ne:bulletin1', 'ne:door1', 'ne:knocks1', 'ne:phone1', 'ne:radio1', 'ne:silence1', 'ne:steps1'])
+PASS the knocks and the bulletin: once a night
+PASS no console errors or warnings
+28 of 28 PASS

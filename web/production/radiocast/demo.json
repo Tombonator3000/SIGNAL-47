@@ -1,0 +1,22 @@
+{
+  "id": "6b58395eba556d9c",
+  "expected": "Earl, it's Dolores out on the Hondo road. The lights are back over the mesa. Same as last fall.",
+  "recognized": "Earl is Delores out on the Hondo Road. The lights are back over the mesa. Same as last fall.",
+  "strict_word_edits": 2,
+  "audio_sha256": "80712926ac47307255f31b89d14a8aed34b2c0903b86e0bfb1edda5fb3699eda",
+  "response": {
+    "text": "Earl is Delores out on the Hondo Road. The lights are back over the mesa. Same as last fall.",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 3.7,
+        "text": "Earl is Delores out on the Hondo Road. The lights are back over the mesa. Same as last fall."
+      }
+    ],
+    "language": "en",
+    "duration_s": 3.7,
+    "transcription_time_s": 1.1,
+    "engine": "faster-whisper"
+  },
+  "human_listened": false
+}

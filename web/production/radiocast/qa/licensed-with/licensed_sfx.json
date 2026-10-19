@@ -1,0 +1,157 @@
+{
+ "mode": "with",
+ "checks": [
+  [
+   "PASS",
+   "all 15 bought sounds are in the build and decoded (15: missing [], extra [])"
+  ],
+  [
+   "PASS",
+   "each has sound in it (0.24 s or more)"
+  ],
+  [
+   "PASS",
+   "the loops are their full length (WAV, no padding): {'radio_static': 13.5, 'tv_hum': 6.58, 'pressure': 30.5, 'line_hush': 18.95}"
+  ],
+  [
+   "PASS",
+   "mono, but the pressure (not placed) in stereo"
+  ],
+  [
+   "PASS",
+   "or() and lic() pick the bought sounds (['lic:door_heavy', 'lic:call_tone', 1])"
+  ],
+  [
+   "PASS",
+   "opening and shutting the east and south doors: ['lic:door_latch', 'doorCreak1', 'thudSoft', 'lic:door_latch', 'doorCreak0', 'lic:door_heavy', 'lic:door_latch', 'doorCreak1', 'thudSoft', 'lic:door_latch', 'doorCreak1', 'lic:door_light']"
+  ],
+  [
+   "PASS",
+   "door_heavy against doorMetal at gain 0.32: -0.4 dB (aim +0 within 3)"
+  ],
+  [
+   "PASS",
+   "door_light against doorClose at gain 0.4: -1.5 dB (aim +0 within 3)"
+  ],
+  [
+   "PASS",
+   "door_latch against switch at gain 0.55: -6.4 dB (aim -4 within 5)"
+  ],
+  [
+   "PASS",
+   "rack_switch against switch at gain 0.9: -3.5 dB (aim +0 within 4)"
+  ],
+  [
+   "PASS",
+   "small_switch against switch at gain 0.3: -1.9 dB (aim +0 within 4)"
+  ],
+  [
+   "PASS",
+   "handset_down against thudSoft at gain 0.5: -2.2 dB (aim +0 within 3)"
+  ],
+  [
+   "PASS",
+   "the recorded pour against the synth pour: +3.3 dB at its loudest (it starts louder and tails off)"
+  ],
+  [
+   "PASS",
+   "Audio.pour(): the recording"
+  ],
+  [
+   "PASS",
+   "in the truck and started: the keys jingle (['lic:keys'])"
+  ],
+  [
+   "PASS",
+   "the dash radio's static: the bought hiss with crackle (['lic'])"
+  ],
+  [
+   "PASS",
+   "switched on: a crack of static with the sweep (1)"
+  ],
+  [
+   "PASS",
+   "the interference comes (0.23) with a recorded crash of static (1 to 2)"
+  ],
+  [
+   "PASS",
+   "the bought static as loud as the white noise it replaces, through the radio: +0.4 dB"
+  ],
+  [
+   "PASS",
+   "the long crash stands +3.3 dB over the static at that moment (aim about +4)"
+  ],
+  [
+   "PASS",
+   "the short crash stands +5.6 dB over the static at that moment (aim about +4)"
+  ],
+  [
+   "PASS",
+   "the filing-cabinet radio, the STATION 01 receiver and the cab radio have the same static (['lic', 'lic', 'lic'])"
+  ],
+  [
+   "PASS",
+   "the bare carrier on the set: the recorded hum (['carrier', 1.8])"
+  ],
+  [
+   "PASS",
+   "the recorded hum against the sawtooth it replaces: -0.8 dB (K-weighted RMS)"
+  ],
+  [
+   "PASS",
+   "the calls out in the dark: one more, the single note (lic:call_tone)"
+  ],
+  [
+   "PASS",
+   "the town is there, and the payphone with it"
+  ],
+  [
+   "PASS",
+   "the open line after the engine: line_hush"
+  ],
+  [
+   "PASS",
+   "far off on the line, the engine turns over twice and dies (['engineStart', 'engineStart', 'engineOff'])"
+  ],
+  [
+   "PASS",
+   "the engine is small on the line: -45.4 dB at its loudest, +10.2 dB over the open line after it"
+  ],
+  [
+   "PASS",
+   "the hush on the line against the gust it replaces: +1.9 dB"
+  ],
+  [
+   "PASS",
+   "the title credits name Ultimate SFX for Games"
+  ],
+  [
+   "PASS",
+   "the warning: the pressure starts under it (['warning', 0.040190961211919785])"
+  ],
+  [
+   "PASS",
+   "nine tenths through (23 s): the pressure has come up (0.040190961211919785 to 0.4254697263240814), the tone over it (0.25770559906959534)"
+  ],
+  [
+   "PASS",
+   "the pressure is heard (-30.9 dB) beside the tone (-8.3 dB, K-weighted; most of the tone is below what small speakers play)"
+  ],
+  [
+   "PASS",
+   "indoors before the light: it passes over and the pressure ebbs away"
+  ],
+  [
+   "PASS",
+   "taken: the pressure is cut with the rest of the sound"
+  ],
+  [
+   "PASS",
+   "awake again: no pressure left over"
+  ],
+  [
+   "PASS",
+   "no console errors or warnings"
+  ]
+ ]
+}

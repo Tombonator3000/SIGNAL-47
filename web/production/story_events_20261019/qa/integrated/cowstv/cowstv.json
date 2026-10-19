@@ -1,0 +1,180 @@
+{
+ "checks": [
+  [
+   "PASS",
+   "SARO's stretch and the road have the same herd of nine, in the same place (-61.0, 856.0 on SARO's map)"
+  ],
+  [
+   "PASS",
+   "the cows stop the truck, all nine while they are there, and the stock tank too ({'cow0': [1.15], 'cow4': [1.15], 'tank': [1.3]})"
+  ],
+  [
+   "PASS",
+   "they graze, each its own way, heads moving"
+  ],
+  [
+   "PASS",
+   "grazing, they face every which way"
+  ],
+  [
+   "PASS",
+   "driven past them at night: grazing all the while the truck is within 260 m (177 looks, nearest 36 m)"
+  ],
+  [
+   "PASS",
+   "on to STATION 01, parked by the gate"
+  ],
+  [
+   "PASS",
+   "out there, far off, after the player has been by them once (kept with the case): the herd turns"
+  ],
+  [
+   "PASS",
+   "every cow faces az 026, in both areas (at most 0.00 degrees off)"
+  ],
+  [
+   "PASS",
+   "and nothing moves at all"
+  ],
+  [
+   "PASS",
+   "turning is not written down: nobody saw it"
+  ],
+  [
+   "PASS",
+   "in the headlights, back along the track: written down (['03:33. The pasture south of the motel: the whole herd standing facing the same way, north-north-east, on 026. Nine head. Not one of them moved, with the headlights right on them.'])"
+  ],
+  [
+   "PASS",
+   "a mark for the map"
+  ],
+  [
+   "PASS",
+   "back at SARO, far off: one of them is gone, and a ring of frost where it stood ([[True, 4, True], [True, 4, True]])"
+  ],
+  [
+   "PASS",
+   "driven south past them: the finding as written (['03:39. Pasture by the highway: the herd facing 026. One missing. A ring of frost in the grass.'])"
+  ],
+  [
+   "PASS",
+   "eight of them, there were nine"
+  ],
+  [
+   "PASS",
+   "coming down from the north into the way they face, their eyes shine back in the beam (12.03)"
+  ],
+  [
+   "PASS",
+   "at the diner, far off: the eight graze again, the ring stays ([[False, 4, True], [False, 4, True]])"
+  ],
+  [
+   "PASS",
+   "where the ninth stood nothing stops the truck now ({'cow0': [1.15], 'cow4': [0], 'tank': [1.3]})"
+  ],
+  [
+   "PASS",
+   "on the map on B, down the highway just past the track ([['cows', 'B', 'highway', 856], ['cutout', 'A', 'highway', 1750], ['car', 'A', 'highway', 1990]])"
+  ],
+  [
+   "PASS",
+   "the carrier, with nobody there (the developer menu)"
+  ],
+  [
+   "PASS",
+   "nobody saw it: nothing written, and it is not spent (['04:05. Mesa Diner, the lot. No sound for 47 s. Not my footsteps either.'])"
+  ],
+  [
+   "PASS",
+   "in the office: the test card; the office is not out on the line"
+  ],
+  [
+   "PASS",
+   "with the truck at SARO, nothing happens on it"
+  ],
+  [
+   "PASS",
+   "on the screen the colour bars: grey, yellow, green ([75, 75, 75], [92, 88, 18], [25, 92, 46])"
+  ],
+  [
+   "PASS",
+   "the set lights the office"
+  ],
+  [
+   "PASS",
+   "driven to the motel and left on its lot: the truck stands there, seen ({'area': 'saro', 'leg': None, 'driving': False, 'at': 'motel', 'x': None, 'z': None, 'clock': 15504.166666665442})"
+  ],
+  [
+   "PASS",
+   "the truck on the lot and the player in the office: the test card goes, the carrier"
+  ],
+  [
+   "PASS",
+   "a grey field ([41, 43, 46])"
+  ],
+  [
+   "PASS",
+   "thirty seconds on, still the carrier"
+  ],
+  [
+   "PASS",
+   "after 47 s: one frame"
+  ],
+  [
+   "FAIL",
+   "its shaders were made during the carrier: none new for the frame (307 programs before, 309 after)"
+  ],
+  [
+   "PASS",
+   "the lot can be made out (mean 99 of 255)"
+  ],
+  [
+   "PASS",
+   "the finding as written (['04:19. Motel office TV. One frame of the lot from above. My truck in it.'])"
+  ],
+  [
+   "PASS",
+   "nothing up there could hold a camera"
+  ],
+  [
+   "PASS",
+   "the truck is in the frame where it stands (difference 113.8 there at (234, 152), 0.01 elsewhere)"
+  ],
+  [
+   "PASS",
+   "then the test card again"
+  ],
+  [
+   "PASS",
+   "once in a night"
+  ],
+  [
+   "PASS",
+   "on the map at the motel's office, on B"
+  ],
+  [
+   "PASS",
+   "two marks on B: no line yet"
+  ],
+  [
+   "PASS",
+   "three on B: drawn in on the map, as the map has it"
+  ],
+  [
+   "PASS",
+   "after Continue the eight graze and the ring is there, and the pass is kept ([[False, 4, True]])"
+  ],
+  [
+   "PASS",
+   "after Continue the truck is seen on the motel's lot"
+  ],
+  [
+   "PASS",
+   "and in the office with the truck on the lot, the test card stays"
+  ],
+  [
+   "PASS",
+   "no console errors or warnings"
+  ]
+ ]
+}

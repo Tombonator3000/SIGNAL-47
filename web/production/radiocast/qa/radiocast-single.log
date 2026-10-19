@@ -1,0 +1,72 @@
+PASS all 28 role/text hashes, five cast counts and real MP3 files match the extracted source
+PASS callers/news default On independently of Art Bell and Kinski; radio Off loads no caller buffers
+PASS real R wakes the truck receiver and plays its exact caller MP3 through AM/radioBus/master
+PASS the recorded caller produces real PCM at its station bus and master
+PASS two receivers share one caller source and one exact caption
+PASS woman 6b58395eba556d9c: exact MP3, natural rate, actual start and complete caption
+PASS man c5b91ca2af30f268: exact MP3, natural rate, actual start and complete caption
+PASS man d1e6ef4fee8a9f83: exact MP3, natural rate, actual start and complete caption
+PASS boy 67c97482c2fe4f9f: exact MP3, natural rate, actual start and complete caption
+PASS boy 62c092c096e2185b: exact MP3, natural rate, actual start and complete caption
+PASS boy b683f3998c005cc1: exact MP3, natural rate, actual start and complete caption
+PASS woman ecb2e42ca2955137: exact MP3, natural rate, actual start and complete caption
+PASS woman 7e409ca3b75f7e20: exact MP3, natural rate, actual start and complete caption
+PASS old 95c7de03aea281a3: exact MP3, natural rate, actual start and complete caption
+PASS old 2d085ed0881102e8: exact MP3, natural rate, actual start and complete caption
+PASS man c284a4332c75325b: exact MP3, natural rate, actual start and complete caption
+PASS man 1e02934641a8316e: exact MP3, natural rate, actual start and complete caption
+PASS woman 014e09c1ee5284f7: exact MP3, natural rate, actual start and complete caption
+PASS woman 98ca58e7b86c541a: exact MP3, natural rate, actual start and complete caption
+PASS man 17b3e9065c061766: exact MP3, natural rate, actual start and complete caption
+PASS man 3ce0eadf90ac1b18: exact MP3, natural rate, actual start and complete caption
+PASS old d1b2a7294c7db6ce: exact MP3, natural rate, actual start and complete caption
+PASS woman fd5cb5d2764ce941: exact MP3, natural rate, actual start and complete caption
+PASS woman 54fffedba835a228: exact MP3, natural rate, actual start and complete caption
+PASS woman f0a8133593565a22: exact MP3, natural rate, actual start and complete caption
+PASS man 75cf70ed26245b6c: exact MP3, natural rate, actual start and complete caption
+PASS man ea163bffa8cbd703: exact MP3, natural rate, actual start and complete caption
+PASS one Station schedules Art Bell and a separate caller with decoded lengths and a .7s gap
+PASS both mixed recordings finish without truncation and receive exact full-duration captions
+PASS the bulletin fixture is a real free Night Line segment on the live truck receiver
+PASS the actual NightEvents bulletin trigger accepts the live free station
+PASS 49 simulated seconds during cold genuine decode cannot advance or award the 47-second bulletin
+PASS tuning away cancels the partial bulletin and awards no note or completion marker
+PASS the bulletin fixture is a real free Night Line segment on the live truck receiver
+PASS the unheard bulletin can be retried through its actual event trigger
+PASS all six exact bulletin MP3s use their natural rate through AM, radioBus and master
+PASS the six complete buffers fit inside exactly 47 seconds with nonoverlapping pauses
+PASS a real pause freezes the bulletin audio, elapsed time and pending event award
+PASS at 46.65 actual audio seconds the event still has no premature notebook award
+PASS every bulletin buffer reaches its natural end without truncation
+PASS six exact news captions follow the complete decoded durations once each
+PASS the interrupted ordinary programme resumes the same decoded buffer and sample offset
+PASS only the full actual 47-second event writes one notebook note and persistent completion marker
+PASS a genuine saved case contains the one full-listen news note and event marker
+PASS the actual 02:26 boy-call selector schedules all three boy MP3s and writes its notebook/map bookmark
+PASS unknown caller text retains its whole procedural line and caption
+PASS real decoder rejection falls back to the complete caller without a partial recorded source
+PASS pending Off: genuine decoded caller data is held before source start
+PASS pending Off: a late real decode cannot revive callers or future sources
+PASS pending tune: genuine decoded caller data is held before source start
+PASS pending tune: a late real decode cannot revive callers or future sources
+PASS pending reset: genuine decoded caller data is held before source start
+PASS pending reset: a late real decode cannot revive callers or future sources
+PASS pending load: genuine decoded caller data is held before source start
+PASS pending load: a late real decode cannot revive callers or future sources
+PASS pending title: genuine decoded caller data is held before source start
+PASS pending title: a late real decode cannot revive callers or future sources
+PASS active Off: both the current and future caller buffers stop
+PASS active tune: both the current and future caller buffers stop
+PASS active reset: both the current and future caller buffers stop
+PASS active load: both the current and future caller buffers stop
+PASS active title: both the current and future caller buffers stop
+PASS both independent decoded voice caches stay within their 24-buffer bounds
+PASS 844x390 touch settings expose callers/news On without horizontal overflow
+PASS real touch turns only callers/news Off and persists its separate setting
+PASS Art Bell and Kinski touch changes remain independent of caller/news Off
+PASS reload preserves all three independent voice choices
+PASS the real touch Radio handler starts caller MP3 playback with Art Bell Off and Kinski On
+PASS caller/host MP3 requests have no HTTP failures (0 requests)
+PASS strict-CSP single-file playback uses inline bytes with no external MP3 requests
+PASS no browser errors or warnings
+71 of 71 PASS

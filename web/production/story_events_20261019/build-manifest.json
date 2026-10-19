@@ -1,0 +1,33 @@
+{
+  "createdUtc": "2026-10-19T19:03:16.874881+00:00",
+  "baseCommit": "d1bfbc0f937915186fb3fe908db78b52b410b7b3",
+  "integratedMain": "c06bf331803611b94b438b75bcbe0aa58fa44583",
+  "sourceCommit": "fb04a483a8d9f8cc7c143202e72fc2041fb3c306",
+  "branch": "codex/story-events-20261019",
+  "sourceFiles": 2631,
+  "sourceSha256": "01bec93dd8875eef6da58b27d32891f13fbb0f13a4076d36e605cf7330cd58dc",
+  "sourceHashMethod": "sorted relative path + NUL + SHA256 digest per file in src/, public/, index.html, package*.json, tsconfig.json, vite.config.ts; includes ignored local licensed assets except Git metadata",
+  "offline": {
+    "file": "outputs/signal47/SIGNAL-47-historie.html",
+    "bytes": 98525528,
+    "sha256": "33e5d75d6f5214d35d22ab98d06c576dda8e9ec891f210255db4133b31951412"
+  },
+  "pages": {
+    "files": 1893,
+    "treeSha256": "431f676e9fafb8f639f605ccee630a42d94fce9c621b185713d48984537e84ab",
+    "indexSha256": "2de6f98c8c4eb635eb2da70a735d6225e9bb4596a406d459b3e732fe77e3a4c3"
+  },
+  "versions": {
+    "node": "22.23.3",
+    "three": "0.170.0",
+    "typescript": "5.6.3",
+    "vite": "6.4.3",
+    "singlefile": "2.3.3",
+    "playwright": "1.64.0"
+  },
+  "browserMode": "headless Chromium, S47_GPU=1, ANGLE/OpenGL",
+  "performance": "UNVERIFIED: FPS not measured",
+  "preview": "http://127.0.0.1:18447/SIGNAL-47/",
+  "delivery": "Merged to main and published on GitHub Pages; verified in qa/publication.json",
+  "licensedAssets": "Copied from existing local optional asset checkout into ignored directory; preservation hashes in qa/licensed-preservation.json. No licensed source files staged."
+}

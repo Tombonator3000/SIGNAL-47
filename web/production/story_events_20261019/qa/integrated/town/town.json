@@ -1,0 +1,256 @@
+{
+ "checks": [
+  [
+   "PASS",
+   "Caliche is built with the diner: its own lamps (the porch light is the 17th) and the headlights' three ({'quads': 32, 'lamps': 20, 'colliders': 84, 'glows': 44, 'pictures': 17, 'studioEmpty': False})"
+  ],
+  [
+   "PASS",
+   "the windows, the signs, the cardboard alien and the Sentinel are round 14's pictures (17 of 17)"
+  ],
+  [
+   "PASS",
+   "in the diner's area the town, the diner and the road are all shown"
+  ],
+  [
+   "PASS",
+   "and the town is hidden at SARO"
+  ],
+  [
+   "PASS",
+   "its buildings and posts hold the truck: the road has every one of them (62/62)"
+  ],
+  [
+   "PASS",
+   "from the diner's lot down the west side to the last house, across, up the east side to 1420 AM and back to the lot (7994.1, 2009.9)"
+  ],
+  [
+   "PASS",
+   "nowhere on the street a step over 12 cm between two points 15 cm apart (worst 0.062 m at 8016.7, 2255.0)"
+  ],
+  [
+   "PASS",
+   "the diner's lot is as flat as it was (4.309 against 4.309)"
+  ],
+  [
+   "PASS",
+   "the gas station office is a wall, not a door left open (-16.73)"
+  ],
+  [
+   "PASS",
+   "02:30: the deputy at his desk, his car out front and in the way, the window lit (4.5)"
+  ],
+  [
+   "PASS",
+   "03:00: out on patrol; the office dark, the car gone, nothing left in the way"
+  ],
+  [
+   "PASS",
+   "03:00: every street lamp on, no paper yet, the Night Line on the air, Earl in the window"
+  ],
+  [
+   "PASS",
+   "04:05: the Night Line has signed off, the studio dim (1.2) and empty in the window; the deputy still out"
+  ],
+  [
+   "PASS",
+   "04:35: the deputy is back at his desk, no paper yet"
+  ],
+  [
+   "PASS",
+   "04:50: the Sentinel's bundle lies at the gas station door; the lamps still on"
+  ],
+  [
+   "PASS",
+   "05:12: some lamps have gone off and some not (4 of 7 on), the glow with each"
+  ],
+  [
+   "PASS",
+   "05:40: every street lamp off"
+  ],
+  [
+   "PASS",
+   "the light over the crossing blinks ([False, True])"
+  ],
+  [
+   "PASS",
+   "every window, door and sign has an answer (26)"
+  ],
+  [
+   "PASS",
+   "each is aimed at from the street a player can stand on (17 of 17; {})"
+  ],
+  [
+   "PASS",
+   "the sheriff's map goes into the notebook"
+  ],
+  [
+   "PASS",
+   "once each: the map not again, the flyer on the gas station door added"
+  ],
+  [
+   "PASS",
+   "no newspapers to look at before they come"
+  ],
+  [
+   "PASS",
+   "and at 04:50 there they are"
+  ],
+  [
+   "PASS",
+   "none of it answers from SARO"
+  ],
+  [
+   "PASS",
+   "at 02:30 the woman sits on the bench and the souvenir man stands on his stoop"
+  ],
+  [
+   "PASS",
+   "at 04:20 he has gone in, she is still out"
+  ],
+  [
+   "PASS",
+   "at 04:55 she has gone too, and the bench is a bench again"
+  ],
+  [
+   "PASS",
+   "and the bench is aimed at from the sidewalk"
+  ],
+  [
+   "PASS",
+   "the night window: the attendant, and his sentence with the cough in it"
+  ],
+  [
+   "PASS",
+   "his topics, and nothing yet about having been here before (['roads', 'flyer', 'old', 'bye'])"
+  ],
+  [
+   "PASS",
+   "asked about the old road: the two hours on a forty minute job, in the notebook"
+  ],
+  [
+   "PASS",
+   "a topic once asked is not offered again"
+  ],
+  [
+   "PASS",
+   "the attendant is in the People tab once met"
+  ],
+  [
+   "PASS",
+   "forty minutes later he is just still there"
+  ],
+  [
+   "PASS",
+   "the deputy opens the door; the green pins come after the map"
+  ],
+  [
+   "PASS",
+   "the pins explained, into the notebook, and the rows to ask about"
+  ],
+  [
+   "PASS",
+   "the row east points at the old road and gives no mile post"
+  ],
+  [
+   "PASS",
+   "the green pins: the three dates, in the notebook"
+  ],
+  [
+   "PASS",
+   "the studio door has a buzzer while he is on the air"
+  ],
+  [
+   "PASS",
+   "Earl: missing time, and the tape from September 1981"
+  ],
+  [
+   "PASS",
+   "the woman: \"It's louder tonight.\""
+  ],
+  [
+   "PASS",
+   "her husband, 47 minutes in March 1983, in the notebook"
+  ],
+  [
+   "PASS",
+   "the souvenir man and the boys from '47"
+  ],
+  [
+   "PASS",
+   "and he has never seen a thing"
+  ],
+  [
+   "PASS",
+   "all five in the People tab (['Dale', 'The attendant', 'The deputy', 'Earl', 'The woman on the bench', 'The souvenir man'])"
+  ],
+  [
+   "PASS",
+   "after four the studio door is just a door"
+  ],
+  [
+   "PASS",
+   "two hours on, the attendant says it again word for word, and the notebook has both times (04:35. Station attendant, 02:30 and 04:35. The same sentence, the same cough.)"
+  ],
+  [
+   "PASS",
+   "now the player can tell him about the first time"
+  ],
+  [
+   "PASS",
+   "\"Wasn't me, then.\""
+  ],
+  [
+   "PASS",
+   "the repeat goes into the notebook once"
+  ],
+  [
+   "PASS",
+   "back at 04:35 the deputy says he drove the loop and came straight back"
+  ],
+  [
+   "PASS",
+   "the corner of the screen and the footsteps know the town (Caliche, the gas station; Mesa Diner; concrete, concrete, dirt)"
+  ],
+  [
+   "PASS",
+   "the notebook map puts the player at the diner and the town"
+  ],
+  [
+   "PASS",
+   "stopped on the street in town, the truck can be left there and the player gets out beside it (['diner', False, 'diner', True, 2139.7], truck at z 2140.0)"
+  ],
+  [
+   "PASS",
+   "after Continue the map and the flyer are not written down again (20 notes)"
+  ],
+  [
+   "PASS",
+   "after Continue the people are still met and nothing from them is written twice (6 in People)"
+  ],
+  [
+   "PASS",
+   "draw calls in town within 300 on High and Low (most 168: {'high:t01_street_south': 85, 'high:t02_gas': 76, 'high:t03_east': 52, 'high:t04_mid': 79, 'high:t05_sheriff': 57, 'high:t06_north': 168, 'high:t07_dawn': 165, 'low:t01_street_south': 77, 'low:t02_gas': 68, 'low:t03_east': 44, 'low:t04_mid': 71, 'low:t05_sheriff': 49, 'low:t06_north': 157, 'low:t07_dawn': 154})"
+  ],
+  [
+   "PASS",
+   "no console errors or warnings"
+  ]
+ ],
+ "calls": {
+  "high:t01_street_south": 85,
+  "high:t02_gas": 76,
+  "high:t03_east": 52,
+  "high:t04_mid": 79,
+  "high:t05_sheriff": 57,
+  "high:t06_north": 168,
+  "high:t07_dawn": 165,
+  "low:t01_street_south": 77,
+  "low:t02_gas": 68,
+  "low:t03_east": 44,
+  "low:t04_mid": 71,
+  "low:t05_sheriff": 49,
+  "low:t06_north": 157,
+  "low:t07_dawn": 154
+ }
+}

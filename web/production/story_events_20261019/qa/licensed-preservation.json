@@ -1,0 +1,106 @@
+{
+  "source": "existing local optional SIGNAL-47-assets checkout, read only",
+  "runtimeFiles": [
+    {
+      "file": "LICENSES.md",
+      "bytes": 1163,
+      "sha256": "1d881af899e0983e53d7b2181d93aeab749ac488af6d48487cbf9fbc7dde701a"
+    },
+    {
+      "file": "README.md",
+      "bytes": 793,
+      "sha256": "14216a87c54a812fb7371b1ca519bef2a8ef6d953543f60ab12409b3bb240d58"
+    },
+    {
+      "file": "models/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "sfx/MANIFEST.md",
+      "bytes": 5951,
+      "sha256": "0e4dccc2546d4561346fa73f9f64f630a277b5e9efe2e73d2b81893d4cfd2c8c"
+    },
+    {
+      "file": "sfx/call_tone.mp3",
+      "bytes": 26792,
+      "sha256": "a9360af8bb9bcb8abeccc0b632dc6117bcbfa1b62a8494d12a13368f82013c40"
+    },
+    {
+      "file": "sfx/door_heavy.mp3",
+      "bytes": 5228,
+      "sha256": "e25929a4f13a6c3f5fa91b85861f05e99effb54cc501a6b2d21cdd264b22a103"
+    },
+    {
+      "file": "sfx/door_latch.mp3",
+      "bytes": 3177,
+      "sha256": "3c360ca24f74694c6f715ea51138e179fc9b3fbc3a6598525ac2164ea72edb84"
+    },
+    {
+      "file": "sfx/door_light.mp3",
+      "bytes": 5804,
+      "sha256": "95284caa8d261c13556abef336795841acf2573a15cf2e8e35a317c9b574ee2b"
+    },
+    {
+      "file": "sfx/handset_down.mp3",
+      "bytes": 3177,
+      "sha256": "ec24c9adf912f3050abc96ac8e065c5d56b1c11327d377053d8e540b8d8afe14"
+    },
+    {
+      "file": "sfx/keys.mp3",
+      "bytes": 9447,
+      "sha256": "50002a9dd3eb22955e05b31d72e7a77b95fcf75f7de784c204061221c0526dca"
+    },
+    {
+      "file": "sfx/line_hush.wav",
+      "bytes": 417892,
+      "sha256": "b734fd5e3993a9f5485fbbc0331a8eaf4c03269e8a02106d3e53988c0c14694e"
+    },
+    {
+      "file": "sfx/pour.mp3",
+      "bytes": 16552,
+      "sha256": "9bd42715df06c5e199c37ff88a6099a7cd5686e8cad817cb5c06ec79dbb148a3"
+    },
+    {
+      "file": "sfx/pressure.wav",
+      "bytes": 976044,
+      "sha256": "9fedd31bd3f7f3fc955629b1f8a857e98e1ea88fb05e87a4d042be5f361febfd"
+    },
+    {
+      "file": "sfx/rack_switch.mp3",
+      "bytes": 4849,
+      "sha256": "937ba8b7006d46255d65bcc99c093763b111f0c14258c78bc3f68d49c87f886e"
+    },
+    {
+      "file": "sfx/radio_crackle_long.mp3",
+      "bytes": 10283,
+      "sha256": "1476239d44d2ab0c2f8800f58d8b5ccced16df5ecb58b9c246ca7ecf285b09d0"
+    },
+    {
+      "file": "sfx/radio_crackle_short.mp3",
+      "bytes": 4013,
+      "sha256": "432d3391c507ac7a540c4ec145c9743bfeebe1d402de103fad85ff00a4a90f16"
+    },
+    {
+      "file": "sfx/radio_static.wav",
+      "bytes": 595394,
+      "sha256": "300116bbf827ac96afdd0e002248d5e43271869309a34c6e0229aa0fcb6b07c9"
+    },
+    {
+      "file": "sfx/small_switch.mp3",
+      "bytes": 2550,
+      "sha256": "4cbf5fb6a4d92f23623ecd78b00a7bf653ee60f97fc67068bdb594db114cb698"
+    },
+    {
+      "file": "sfx/tv_hum.wav",
+      "bytes": 105378,
+      "sha256": "58d7872da703341762fb08d78f1d4d581f708487254d3367a58ae19b715a6c04"
+    },
+    {
+      "file": "tools/build_sfx.py",
+      "bytes": 9581,
+      "sha256": "febec1f693c7bbcb0ce9067772f922baf2732c3903f040bf1b4e99fe3d0f7afa"
+    }
+  ],
+  "copiedIntoIgnoredDirectory": true
+}

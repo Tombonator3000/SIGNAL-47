@@ -580,6 +580,7 @@ export class UI {
     music: number; onMusic: (v: number) => void; radio: number; onRadio: (v: number) => void;
     kinski: boolean; onKinski: (v: boolean) => void;
     artBell: boolean; onArtBell: (v: boolean) => void;
+    radioCast: boolean; onRadioCast: (v: boolean) => void;
     onSave?: () => void; onLoad?: () => void;
     quality: 'ultra' | 'high' | 'low'; onQuality: (q: 'ultra' | 'high' | 'low') => void; ultraOk?: boolean; title?: string; settingsOnly?: boolean;
     picture: 'off' | 'vhs' | 'heavy'; onPicture: (p: 'off' | 'vhs' | 'heavy') => void;
@@ -600,6 +601,8 @@ export class UI {
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
         <div class="set"><span class="lbl">Art Bell radio host</span><button class="opt qual" data-a="artbell" aria-label="Art Bell radio host" aria-pressed="${o.artBell}">${o.artBell ? 'On' : 'Off'}</button></div>
         <p class="small reading-note">Synthetic Art Bell parody for Earl on Night Line, AM 1420.</p>
+        <div class="set"><span class="lbl">Radio callers &amp; bulletin</span><button class="opt qual" data-a="radiocast" aria-label="Radio callers and bulletin" aria-pressed="${o.radioCast}">${o.radioCast ? 'On' : 'Off'}</button></div>
+        <p class="small reading-note">Synthetic callers and the 1947 news bulletin on AM 1420.</p>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
         <p class="small reading-note">Synthetic parody voice. Read descriptions, notes, papers and conversations. Hold Zoom for a spoken closer look; V repeats a description. Phone voices play when you answer.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
@@ -627,6 +630,13 @@ export class UI {
       const button = e.currentTarget as HTMLButtonElement;
       button.textContent = artBell ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(artBell));
       o.onArtBell(artBell);
+    });
+    let radioCast = o.radioCast;
+    el.querySelector<HTMLButtonElement>('[data-a=radiocast]')!.addEventListener('click', (e) => {
+      radioCast = !radioCast;
+      const button = e.currentTarget as HTMLButtonElement;
+      button.textContent = radioCast ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(radioCast));
+      o.onRadioCast(radioCast);
     });
     let kinski = o.kinski;
     el.querySelector<HTMLButtonElement>('[data-a=kinski]')!.addEventListener('click', (e) => {

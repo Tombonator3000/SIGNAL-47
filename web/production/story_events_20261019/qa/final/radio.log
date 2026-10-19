@@ -1,0 +1,43 @@
+Traceback (most recent call last):
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/radio.py", line 229, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 196, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/tom/.local/share/uv/python/cpython-3.13.16-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/tom/Documents/Codex/2026-10-19-forbedre-og-utvide-historie-og-hendelser/repo/web/tools/radio.py", line 44, in main
+    await ev("window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, s) => { window.__toasts.push(t); return o(t, s); };")
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/async_api/_generated.py", line 16684, in evaluate
+    await self._impl_obj.evaluate(
+        expression=expression, arg=mapping.to_impl(arg)
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_page.py", line 476, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_frame.py", line 346, in evaluate
+    await self._channel.send(
+    ...<6 lines>...
+    )
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 78, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tom/.venvs/signal47/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 636, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: TypeError: Cannot read properties of null (reading 'replace')
+    at $n (http://127.0.0.1:18447/SIGNAL-47/assets/index-CuKByYrl.js:9349:78616)
+    at nU.resolve (http://127.0.0.1:18447/SIGNAL-47/assets/index-CuKByYrl.js:9349:79385)
+    at nU.available (http://127.0.0.1:18447/SIGNAL-47/assets/index-CuKByYrl.js:9349:79220)
+    at dU.updateDescriptionButton (http://127.0.0.1:18447/SIGNAL-47/assets/index-CuKByYrl.js:9365:3557)
+    at dU.toast (http://127.0.0.1:18447/SIGNAL-47/assets/index-CuKByYrl.js:9365:5199)
+    at u.toast (eval at evaluate (:370:30), <anonymous>:1:123)
+    at UtilityScript.evaluate (<anonymous>:377:18)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

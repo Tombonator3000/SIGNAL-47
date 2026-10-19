@@ -1,0 +1,32 @@
+PASS in town at 02:50 nothing yet
+PASS not on arriving: the player has to be near a while first
+PASS after twenty seconds near it, the payphone rings
+PASS answered: the line is open
+PASS thirty seconds on, still the printer on the line
+PASS after 47 s the line goes dead, and the notebook has it (02:51. Payphone, Main Street, Caliche: 47 s of the control room printe)
+PASS the nickel is in the kit (['Notebook', 'SARO jacket', 'Truck keys', 'Papers', 'A nickel'])
+PASS it does not ring again
+PASS not before five past three, and not within ten minutes of the phone
+PASS after forty seconds out on the street at 03:20, the lamps start
+PASS one by one they go out (7 on, then 3)
+PASS south first: the southernmost out, the northernmost still on ([False, True])
+PASS back on in the same order, and written down
+PASS the cardboard alien stands on the shoulder
+PASS sixty metres off it is not yet seen
+PASS thirty metres off, in front: written down, "Kids, probably."
+PASS three marks on A: the line is drawn in
+PASS passed and far behind, it is gone from the road
+PASS and it is back in the shop window, with dew on it
+PASS not before 03:12
+PASS at 03:14, out of sight down the road, the deputy's car is on the shoulder
+PASS come up to it: engine running, door open, nobody, in the notebook
+PASS driven on past it: gone
+PASS and it does not come back
+PASS before room 6 it rings only the once
+PASS after room 6 it rings again
+PASS an engine dying on the line, then clicks, four and seven
+PASS five marks for the map (the phone twice, the lamps, the cutout, the car: 5)
+PASS after Continue the phone does not ring and the lamps stay on
+PASS and the cutout is not on the road again; the nickel is still in the kit
+PASS no console errors or warnings
+31 of 31 PASS

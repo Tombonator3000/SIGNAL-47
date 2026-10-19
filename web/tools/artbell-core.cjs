@@ -13,16 +13,25 @@ const corpus = JSON.parse(fs.readFileSync('production/artbell/corpus.json', 'utf
 // Deliberately wrong manifest durations prove that playback and captions use decoded audio.
 const catalog = { ...corpus, clips: corpus.clips.map((clip, i) => ({ ...clip, duration: 99, file: `${clip.id}.mp3`, index: i })) };
 const files = Object.fromEntries(catalog.clips.map((clip) => [`../assets/audio/artbell/${clip.file}`, `data:audio/mpeg;base64,${Buffer.from([clip.index]).toString('base64')}`]));
-function bankModule(urls = files, fetcher = () => { throw new Error('data URLs must never fetch under strict CSP'); }) {
-  const source = fs.readFileSync('src/core/radioVoice.ts', 'utf8').replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(urls)};`);
+function bankModule(urls = files, fetcher = () => { throw new Error('data URLs must never fetch under strict CSP'); }, callerCatalog = { clips: [] }, callerFiles = {}) {
+  const source = fs.readFileSync('src/core/radioVoice.ts', 'utf8')
+    .replace(/const CALLER_FILES = import\.meta\.glob[^\n]+;/, `const CALLER_FILES = ${JSON.stringify(callerFiles)};`)
+    .replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(urls)};`);
   const result = {};
-  vm.runInNewContext(compile(source), { exports: result, atob, Uint8Array, DOMException, fetch: fetcher, require: () => ({ default: JSON.stringify(catalog) }) });
+  vm.runInNewContext(compile(source), { exports: result, atob, Uint8Array, DOMException, fetch: fetcher,
+    require: (name) => ({ default: JSON.stringify(name.includes('/radiocast/') ? callerCatalog : catalog) }) });
   return result;
 }
 const bank = bankModule(), runtime = {};
 const radioSource = fs.readFileSync('src/core/radio.ts', 'utf8').replace("import.meta.env.MODE !== 'single'", 'false');
 vm.runInNewContext(compile(radioSource), { exports: runtime, AbortController, console, require: (name) => name === 'three' ? THREE : bank });
 const { Radio, sayTime, secsOf, SIGN_OFF } = runtime;
+function radioModule(voiceModule) {
+  const result = {};
+  vm.runInNewContext(compile(radioSource), { exports: result, AbortController, console,
+    require: (name) => name === 'three' ? THREE : voiceModule });
+  return result;
+}
 const H = (text) => ({ text, who: 'host' });
 const hostText = corpus.clips.find((clip) => clip.sources.some((source) => source.kind === 'static-host')).text;
 const secondText = "Dolores, I believe you. Now turn the porch light off and go to bed.";
@@ -34,7 +43,7 @@ class Clock {
   parameter() { return { value: 0, events: [], setValueAtTime(v, t) { this.events.push([v, t]); this.value = v; }, linearRampToValueAtTime(v, t) { this.events.push([v, t]); }, cancelScheduledValues() {}, setTargetAtTime(v) { this.value = v; } }; }
   node(kind) {
     const node = { kind, connections: [], disconnected: false, stopped: false, onended: null,
-      gain: this.parameter(), frequency: this.parameter(), Q: this.parameter(), playbackRate: this.parameter(),
+      gain: this.parameter(), frequency: this.parameter(), Q: this.parameter(), playbackRate: { ...this.parameter(), value: 1 },
       positionX: this.parameter(), positionY: this.parameter(), positionZ: this.parameter(),
       connect(destination) { this.connections.push(destination); },
       disconnect(destination) { if (destination) this.connections = this.connections.filter((x) => x !== destination); else { this.disconnected = true; this.connections = []; } },
@@ -56,7 +65,7 @@ class Clock {
     return { duration, length: Math.round(duration * 24000), numberOfChannels: 1 };
   }
 }
-function setup(lines = [H(hostText), { text: 'A caller remains the muted horn.', who: 'woman', by: 'a caller' }, H(secondText)]) {
+function setup(lines = [H(hostText), { text: 'A caller remains the muted horn.', who: 'woman', by: 'a caller' }, H(secondText)], voiceModule = bank, callers = false) {
   const ctx = new Clock(), master = ctx.createGain(), radioBus = ctx.createGain(); radioBus.connect(master);
   const audio = {
     ctx, radioBus, buf: {}, noiseBuffer: () => ({ duration: 3 }),
@@ -75,11 +84,13 @@ function setup(lines = [H(hostText), { text: 'A caller remains the muted horn.',
     },
     spatial(_pos, _ref, bus) { const n = ctx.node('panner'); n.connect(bus); return n; },
   };
-  const radio = new Radio(audio), station = radio.stations.caliche;
+  const { Radio: RuntimeRadio } = voiceModule === bank ? runtime : radioModule(voiceModule);
+  const radio = new RuntimeRadio(audio), station = radio.stations.caliche;
+  radio.setCallerVoice(callers);
   radio.setHostVoice(true); station.start([{ kind: 'talk', lines }], 7200); station.prev = 7200;
   const receiver = radio.receiver({ vol: 0.7 }); receiver.pos = new THREE.Vector3(); receiver.set(true);
   receiver.update(0);
-  return { ctx, radio, station, receiver, master, radioBus };
+  return { ctx, radio, station, receiver, master, radioBus, audio };
 }
 function reaches(source, target, seen = new Set()) {
   if (source === target) return true;
@@ -87,7 +98,7 @@ function reaches(source, target, seen = new Set()) {
   return source.connections.some((next) => reaches(next, target, seen));
 }
 
-(async () => {
+async function main() {
   const resolver = new bank.RadioVoice();
   check(resolver.bufferCount === 0, 'constructing the bank decodes nothing');
   let timeCoverage = true;
@@ -170,9 +181,12 @@ function reaches(source, target, seen = new Set()) {
   check(tunePending.signal.aborted && x.station.hostSources.length === 0, 'tuning away during loading cancels the unheard station');
 
   x = setup([H(hostText)]); await flush();
+  // Event 4 only interrupts the station's own free programme. Keep real recorded sources
+  // playing here; a custom talk fixture is deliberately not eligible for the event anymore.
+  x.station.start([x.station.cfg.loop[0]], 7200); await flush();
   const before = [...x.station.hostSources];
-  x.station.cutIn([{ text: 'An unrelated interruption.', who: 'boy', by: 'a boy' }], 7200);
-  check(before.every((source) => source.stopped) && x.station.hostSources.length === 0, 'a programme interruption cancels all old host audio');
+  const interrupted = x.station.cutIn([{ text: 'An unrelated interruption.', who: 'boy', by: 'a boy' }], 7200);
+  check(interrupted === 47 && before.length > 0 && before.every((source) => source.stopped) && x.station.hostSources.length === 0, 'an accepted programme interruption cancels all old host audio');
   check(x.station.spoken.every((line) => line.clips === null), 'the boy and other callers never get the host voice');
   x.radio.stations.roswell.start([{ kind: 'talk', lines: [H(hostText)] }], 18000);
   check(x.radio.stations.roswell.spoken[0].clips === null, 'even host-tagged text on 1230 cannot use Art Bell');
@@ -220,4 +234,6 @@ function reaches(source, target, seen = new Set()) {
   const controller = new AbortController(), request = new remote.RadioVoice().load(selected, new Clock(), controller.signal).catch((error) => error.name);
   controller.abort(); check(await request === 'AbortError' && aborted, 'Pages fetch receives the real cancellation signal');
   console.log(`artbell-core: ${passed}/${passed} PASS`);
-})().catch((error) => { console.error(error); process.exitCode = 1; });
+}
+module.exports = { bankModule, radioModule, setup, Clock, compile, corpus, catalog, files, runtime, bank, flush, reaches, hostText, secondText };
+if (require.main === module) main().catch((error) => { console.error(error); process.exitCode = 1; });
