@@ -169,25 +169,28 @@ async def main():
         # what it adds: the same view with the sheen turned off, on the highway under SARO's lamps
         # (the stretch between the lamps and the eye, where their reflection lies: a narrow column
         # where the road is damp, so the pixels it brightens are counted, not the mean, which the
-        # picture's exposure moves the other way). The picture without it is the same frame drawn
-        # again, not a step later, and both without the ground cover: its grass sways with the
-        # clock on the wall (wind.ts), so between the two pictures the verge's tufts had moved (in
-        # one run in three under load more pixels darker than the sheen made brighter)
+        # picture's exposure moves the other way). The first picture once the screen has faded in
+        # from the drive before it (ui .fade, 1.2 s on the clock on the wall: one run in three
+        # under load, the merged build's as well, took it half faded, the whole picture darker
+        # and more of it darker than the sheen made brighter), the second the same frame drawn
+        # again without the sheen, both without the ground cover (its grass sways with the clock
+        # on the wall, wind.ts: in the headlights on the verge it moved between the two)
         from PIL import Image, ImageChops
         WET_OFF = "S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet && m.userData.wet0 === undefined) { m.userData.wet0 = m.userData.wet.value.x; m.userData.wet.value.x = 0; } })"
         WET_ON = "S47.scene.traverse((o) => { const m = o.material; if (m && m.userData && m.userData.wet0 !== undefined) { m.userData.wet.value.x = m.userData.wet0; delete m.userData.wet0; } })"
         AGAIN = "S47.renderer.info.reset(); S47.vhs.render(S47.scene, S47.camera, performance.now() / 1000)"
+        async def faded_in(): await pg.wait_for_function("getComputedStyle(document.querySelector('.fade')).opacity === '0'", timeout=30000)
         COVER = "S47.world.flora.patches.forEach((f) => { f.group.visible = %s; })"
         CROP = (int(W * 0.52), int(H * 0.47), int(W * 0.75), int(H * 0.62))
         def lit_by(a, b): return sum(ImageChops.subtract(Image.open(a).convert('L').crop(CROP), Image.open(b).convert('L').crop(CROP)).histogram()[9:])
-        await go(VIEWS[0]); await ev("S47.tick(1.0)"); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/sheen_on.png')
+        await go(VIEWS[0]); await ev("S47.tick(1.0)"); await faded_in(); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/sheen_on.png')
         await ev(f"{WET_OFF}; {AGAIN}")
         await pg.screenshot(path=f'{OUT}/sheen_off.png')
         await ev(f"{WET_ON}; {COVER % 'true'}; S47.tick(0.05)")
         on, off = lit_by(f'{OUT}/sheen_on.png', f'{OUT}/sheen_off.png'), lit_by(f'{OUT}/sheen_off.png', f'{OUT}/sheen_on.png')
         check(on > 500 and on > off * 2.5, f'the damp sheen catches SARO\'s lamps on the highway: {on} pixels of the road there brighter with it, {off} darker')
         # and not the truck's own headlights: on the highway out of town, in the beam ahead
-        await go(EXTRA[1]); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/beam_on.png')
+        await go(EXTRA[1]); await faded_in(); await ev(f"{COVER % 'false'}; S47.tick(0.05)"); await pg.screenshot(path=f'{OUT}/beam_on.png')
         await ev(f"{WET_OFF}; {AGAIN}")
         await pg.screenshot(path=f'{OUT}/beam_off.png')
         await ev(f"{WET_ON}; {COVER % 'true'}; S47.tick(0.05)")
