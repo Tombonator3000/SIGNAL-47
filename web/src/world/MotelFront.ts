@@ -5,6 +5,8 @@ import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFloo
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
+import { dressMotel } from './dressMotel';
+import type { Dressing } from './weathering';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -99,6 +101,10 @@ export class MotelFront {
     // the television's light on the office, low and in front of its screen (dark until it is
     // on); last, so the lamps before it keep their places in the set
     this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
+    // the court's wear, its roof and what stands on the walk and the lot (dressMotel.ts)
+    this.dressing = dressMotel(courtFlood, (f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ));
+    this.group.add(this.dressing.build());
+    for (const m of this.dressing.materials) this.materials.add(m);
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }
@@ -112,6 +118,7 @@ export class MotelFront {
     for (let i = 0; i < courtFlood.count; i++) if (!this.head.includes(i)) courtFlood.pos[i].add(new THREE.Vector4(at.x, at.y, at.z, 0));
     this.group.updateMatrixWorld(true);
   }
+  readonly dressing: Dressing;
   /** Height of the lot, the walk and the floors (world). */
   get floorY() { return this.at.y; }
 

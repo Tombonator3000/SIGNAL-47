@@ -57,6 +57,8 @@ export function getQuality() { return current; }
 export function setQuality(scene: THREE.Object3D, q: Quality) {
   current = q;
   scene.traverse((o) => {
+    // the small things outside (world/weathering.ts: stains, light pools, small props) are High's
+    if (o.userData.highOnly) o.visible = q !== 'low';
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh || !mesh.material) return;
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => swap(m, q)) : swap(mesh.material, q);

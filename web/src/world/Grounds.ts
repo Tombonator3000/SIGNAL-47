@@ -8,6 +8,8 @@ import { RAMP, GROUND, WEST } from './Crossing';
 import { MOTEL_AT, MOTEL_RECT, SARO_IN_ROAD } from './geo';
 import { highwayTop } from '../drive/roadShape';
 import { ARRAY_GROUND, inRect } from './arrayLayout';
+import { dressSaro } from './dressSaro';
+import type { Dressing } from './weathering';
 
 // SARO's grounds (Tom, 4 October late evening: «SARO must look more real, with a footpath
 // and a road out from the ramp with the truck; walk round SARO, the ramp and the truck,
@@ -102,7 +104,11 @@ export class Grounds {
     this.signs(st);
     this.things(st);
     mergeStatic(st);
+    // the house's wear, its roofs and the staff's corner of the yard (dressSaro.ts), merged apart
+    this.dressing = dressSaro((f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ));
+    this.group.add(this.dressing.build());
   }
+  readonly dressing: Dressing;
 
   // ---------- where the player can go ----------
   private walkable() {

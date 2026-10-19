@@ -4,6 +4,10 @@ import { eachVariant } from '../core/quality';
 import { box, cyl, plane, rod, noMerge, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { surfaceY } from '../drive/roadTerrain';
+import { DINER } from '../drive/roadShape';
+import { dressDiner } from './dressDiner';
+import type { Dressing } from './weathering';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
 // Load DINER_ART before construction. The five diner images are the only required art.
@@ -36,6 +40,7 @@ export class Diner {
   readonly flood=dinerFlood;
   readonly lights:{hemi:THREE.HemisphereLight};
   signLit=true;
+  readonly dressing:Dressing;
   dawn=0;
   private readonly origin:THREE.Vector3;
   private readonly shell=new THREE.Group();
@@ -56,6 +61,10 @@ export class Diner {
     for(const p of dinerFlood.pos)p.set(0,-999,0,0);
     this.m=this.makeMaterials();for(const [id,m] of Object.entries(this.m))m.name='diner/'+id;
     this.landscape();this.building();this.counter();this.booths();this.papersAndPhone();this.people();this.signAndRig();
+    // its wear, its roof and what stands about it (dressDiner.ts); by the highway the land round it is the road's
+    const gy=(x:number,z:number)=>onRoad?surfaceY(x+DINER.x,z+DINER.z)-origin.y:-.18;
+    this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy);this.shell.add(this.dressing.build());
+    for(const m of this.dressing.materials)this.materials.add(m);
     mergeStatic(this.shell);mergeStatic(this.fixed);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
     this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);

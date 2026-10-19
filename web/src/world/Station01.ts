@@ -11,6 +11,8 @@ import { eachVariant } from '../core/quality';
 import { mark } from '../story/drawings';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { dressStation } from './dressStation';
+import type { Dressing } from './weathering';
 
 // Chapter three location: STATION 01, the survey station from 1947, about 04:00.
 // Built in its own coordinates (metres): x east, z south, north is -Z as at SARO. The
@@ -704,6 +706,7 @@ export class Station01 {
   anchors: StationAnchors;
   lights: { group: THREE.Group; hemi: THREE.HemisphereLight; moon: THREE.DirectionalLight };
   glow = new GlowPoints();
+  readonly dressing: Dressing;
   lampCovered = false;
   receiverOn = true;
   hutLightOn = true;
@@ -747,6 +750,10 @@ export class Station01 {
     this.ground();
     this.scatter();
     this.fx();
+    // the hut's and the shed's wear, and what stands about them (dressStation.ts)
+    this.dressing = dressStation(fieldFlood, (f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ), (x, z) => this.y(x, z));
+    this.group.add(this.dressing.build());
+    for (const m of this.dressing.materials) this.track(m);
     mergeStatic(this.st);
     mergeStatic(this.inSt);
     this.group.add(this.glow.build());

@@ -8,6 +8,8 @@ import type { Zone } from '../player/Player';
 import type { Surface } from '../core/Audio';
 import { surfaceY, hash, DINER, TOWN } from '../drive/roadTerrain';
 import { SIGN_OFF } from '../core/radio';
+import { dressTown } from './dressTown';
+import type { Dressing } from './weathering';
 
 // Caliche, New Mexico, pop. 412 (HENDELSER.md, section 9; Tom, 16 October). The highway is its
 // main street, from Mesa Diner, the northernmost house, about 300 m south: the gas station, the
@@ -156,6 +158,9 @@ export class Town {
   private studioQuad = 0;
   /** The studio's window shows it after the Night Line has signed off (the picture without Earl). */
   studioEmpty = false;
+  /** Every building made, for the dressing (dressTown.ts). */
+  private readonly built: Built[] = [];
+  readonly dressing: Dressing;
 
   constructor(origin: THREE.Vector3) {
     this.origin = origin.clone();
@@ -177,6 +182,11 @@ export class Town {
     this.gasStation(); this.sheriff(); this.laundromat(); this.cinema(); this.feedStore();
     this.station1420(); this.souvenirs(); this.church(); this.houses(); this.poles();
     this.patrolCar(); this.bundle(); this.people(); this.cardboard();
+    // every building's wear and roof, and what stands about them (dressTown.ts)
+    this.dressing = dressTown({ set: townFlood, fall: FALL, built: this.built, gy: (x, z) => this.gy(x, z),
+      col: (f, truck = true) => { this.col(f.minX, f.maxX, f.minZ, f.maxZ, truck); }, glow: (x, y, z, size, c) => { this.glow.add(x, y, z, size, c); } });
+    this.group.add(this.dressing.build());
+    for (const m of this.dressing.materials) this.materials.add(m);
     for (let i = 0; i < 3; i++) { const h = addFlood(0, -999, 0, 0, 0xfff0d8, townFlood); townFlood.skip.add(h); this.head.push(h); }
 
     // the street and the sidewalks are walked, from the diner's lot to the last house; and the
@@ -352,7 +362,9 @@ export class Town {
     // a concrete band where the wall meets the ground
     box(this.st, x1 - x0 + 0.06, floor - base, z1 - z0 + 0.06, this.m.concrete, cx, (base + floor) / 2, cz);
     this.col(x0, x1, z0, z1);
-    return { x0, x1, z0, z1, floor, top, fx: s > 0 ? x1 : x0, s };
+    const b: Built = { x0, x1, z0, z1, floor, top, fx: s > 0 ? x1 : x0, s };
+    this.built.push(b);
+    return b;
   }
   /** A window or door frame on a front: four bars round w x h at (z, y). */
   private frame(b: Built, z: number, y: number, w: number, h: number, mat = this.m.metal, t = 0.07) {
