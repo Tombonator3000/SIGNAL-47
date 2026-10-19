@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "checked_utc": "2026-10-19T21:51:39.369698+00:00",
+  "base_commit": "210b52f3a0ea5952cc0d33affb41370da66c8a1b",
+  "licensed_assets_commit": "609543f64812d6add934ebf3b31a5404a8cae1cf",
+  "runtime_source_files": 2673,
+  "source_snapshot_sha256": "f863d119ea1f12e80d915fbedda0927d08bc9e93ddc370b07de794a806e6a384",
+  "pages_files": 1937,
+  "single": {
+    "path": "dist-single/index.html",
+    "bytes": 100410706,
+    "sha256": "d2d7cc9d047daa429a728ae3f445306359af6398c81fe9df88c87e14c0e692d7"
+  },
+  "sources_and_builds_match": true,
+  "checks": {
+    "feature": {
+      "status": "PASS",
+      "runs": 2,
+      "results": "feature-results.json"
+    },
+    "compatibility": {
+      "status": "PASS",
+      "runs": 19,
+      "results": "compatibility-results.json"
+    },
+    "regression": {
+      "status": "PASS",
+      "runs": 13,
+      "results": "regression-results.json"
+    },
+    "cost": {
+      "status": "PASS",
+      "runs": 1,
+      "results": "cost-results.json"
+    },
+    "engine-cpu-results.json": {
+      "status": "PASS",
+      "runs": 7
+    },
+    "compatibility-cpu-results.json": {
+      "status": "PASS",
+      "runs": 3
+    }
+  },
+  "earl_browser_checks": {
+    "pages": 101,
+    "single": 102
+  },
+  "audio": {
+    "clips": 16,
+    "bytes": 370496,
+    "duration_seconds": 44.92
+  },
+  "old_voice_assets": "PASS: 1698 MP3 and three catalogs unchanged against 210b52f",
+  "licensed_without": "PASS: 22/22 in separate fallback build",
+  "word_check": "CHECKED_WITH_RECORDED_DIFFERENCES",
+  "limitations": [
+    "Human listening, voice likeness, pronunciation and acting UNVERIFIED",
+    "Physical PC/mobile audio and measured device performance UNVERIFIED"
+  ],
+  "delivery": "PR/main/Pages and remote byte checks recorded after normal publication in conversation outputs/artbell-town."
+}

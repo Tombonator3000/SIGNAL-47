@@ -425,8 +425,11 @@ async def main():
                   "the exact radio caption survives a real pause longer than the whole recording")
             check(await page.locator("[data-a=artbell]").get_attribute("aria-pressed") == "true" and
                   await page.locator("[data-a=kinski]").get_attribute("aria-pressed") == "false" and
-                  "Synthetic Art Bell parody for Earl on Night Line, AM 1420." in await page.locator(".settings-panel").inner_text(),
-                  "desktop settings identify the synthetic Night Line parody and keep Kinski independent")
+                  await page.locator("[data-a=radiocast]").get_attribute("aria-pressed") == "false" and
+                  await page.evaluate("S47.radio.hostVoice && S47.earlDialogue.enabled && !S47.radio.callerVoice && !S47.game.d.ui.readAloud.enabled") and
+                  await page.locator(".settings-panel .reading-note").first.inner_text() ==
+                  "Synthetic Art Bell parody for Earl on Night Line, AM 1420, and when you speak with him in Caliche.",
+                  "desktop settings identify the full radio/Caliche parody scope and keep caller and Kinski controls independent")
             await page.locator("[data-a=artbell]").scroll_into_view_if_needed()
             await page.screenshot(path=str(OUT / "r01_desktop_settings.png"))
             check(await no_horizontal_overflow(page, ".settings-panel"), "desktop radio settings fit the viewport")

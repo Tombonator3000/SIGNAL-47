@@ -6,7 +6,7 @@ Direkte bestilt av Tom 19. oktober 2026 etter kildesøket. Arbeidsgren `codex/ra
 
 På AM 1420 får innringerne egne syntetiske stemmer, og nyhetssendingen fra 1947 får en egen nyhetsleser. Nyeste main har seks bulletinlinjer. Sammen med åtte kvinnereplikker, åtte mannsreplikker, tre replikker fra en eldre mann og tre fra gutten blir det 28 opptak. Eksisterende engelsk manus brukes ordrett.
 
-Valget **Radio callers & bulletin** er på som standard, lagres i `s47.radioCallerVoices` og er uavhengig av Art Bell-verten og Kinski-opplesningen. Selve bilradioen starter fortsatt av. Roswells morgenvert, CB og samtaler ansikt til ansikt beholder dagens lyd.
+Valget **Radio callers & bulletin** er på som standard, lagres i `s47.radioCallerVoices` og er uavhengig av Art Bell-verten og Kinski-opplesningen. Selve bilradioen starter fortsatt av. Roswells morgenvert og CB beholder dagens lyd. Earl i Caliche bruker samme Art Bell-valg som radioverten; se [Art Bell](ART_BELL_RADIO.md). De andre samtalene i byen er uendret.
 
 ## Kontrollpunkter
 

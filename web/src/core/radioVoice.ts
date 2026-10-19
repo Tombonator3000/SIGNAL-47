@@ -1,5 +1,6 @@
 import catalogSource from '../assets/audio/artbell/catalog.json?raw';
 import callerCatalogSource from '../assets/audio/radiocast/catalog.json?raw';
+import earlCatalogSource from '../assets/audio/artbell-town/catalog.json?raw';
 
 export type CallerVoice = 'woman' | 'man' | 'old' | 'boy' | 'news';
 export interface RadioClip { id: string; text: string; duration: number; file: string; voice?: CallerVoice }
@@ -15,12 +16,15 @@ interface Catalog {
 // Listing URLs does not download or decode the bank. Only the current talk loads.
 const FILES = import.meta.glob<string>('../assets/audio/artbell/*.mp3', { eager: true, query: '?url', import: 'default' });
 const CALLER_FILES = import.meta.glob<string>('../assets/audio/radiocast/*.mp3', { eager: true, query: '?url', import: 'default' });
+const EARL_FILES = import.meta.glob<string>('../assets/audio/artbell-town/*.mp3', { eager: true, query: '?url', import: 'default' });
 const catalog = JSON.parse(catalogSource) as Catalog;
 const callerCatalog = JSON.parse(callerCatalogSource) as Catalog;
+const earlCatalog = JSON.parse(earlCatalogSource) as Catalog;
 const clean = (text: string) => text.replace(/\s+/g, ' ').trim();
 const byId = new Map(catalog.clips.map((clip) => [clip.id, clip]));
 const byText = new Map(catalog.clips.map((clip) => [clean(clip.text), clip]));
 const callerByText = new Map(callerCatalog.clips.map((clip) => [`${clip.voice}\0${clean(clip.text)}`, clip]));
+const earlByText = new Map(earlCatalog.clips.map((clip) => [clean(clip.text), clip]));
 const MAX_BUFFERS = 24, MAX_BYTES = 24 * 1024 * 1024;
 
 /** Bounded lazy banks; caller identities include their role as well as the exact text. */
@@ -28,12 +32,16 @@ export class RadioVoice {
   private buffers = new Map<string, AudioBuffer>();
   private bytes = 0;
 
-  constructor(private kind: 'host' | 'caller' = 'host') {}
+  constructor(private kind: 'host' | 'caller' | 'earl' = 'host') {}
 
   get bufferCount() { return this.buffers.size; }
 
   /** Whole lines or an authored time template. Unknown words never silently disappear. */
   resolve(text: string, clock: number, voice?: CallerVoice): RadioClip[] | null {
+    if (this.kind === 'earl') {
+      const clip = earlByText.get(clean(text));
+      return clip && this.valid([clip]) ? [clip] : null;
+    }
     if (this.kind === 'caller') {
       const clip = voice && callerByText.get(`${voice}\0${clean(text)}`);
       return clip && this.valid([clip]) ? [clip] : null;
@@ -62,7 +70,8 @@ export class RadioVoice {
   }
 
   private url(clip: RadioClip) {
-    return this.kind === 'caller' ? CALLER_FILES[`../assets/audio/radiocast/${clip.file}`] : FILES[`../assets/audio/artbell/${clip.file}`];
+    return this.kind === 'earl' ? EARL_FILES[`../assets/audio/artbell-town/${clip.file}`]
+      : this.kind === 'caller' ? CALLER_FILES[`../assets/audio/radiocast/${clip.file}`] : FILES[`../assets/audio/artbell/${clip.file}`];
   }
 
   /** Decode only the selected segment; cancellation never starts or resumes audio. */

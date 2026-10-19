@@ -1,0 +1,73 @@
+PASS chapter four starts: to the motel
+PASS objective points down the highway: the truck, or the fire exit
+PASS chapter title
+PASS the fire exit offers to open
+PASS the doorway is closed while the door is shut
+PASS the fire exit swings open and its doorway opens
+PASS a brick props it open
+PASS through the doorway onto the step, at floor level
+PASS down the ramp to the ground (eye follows: -0.27 m on the ramp, -0.60 m at the foot)
+PASS along the path to the highway
+draw calls on the road: 110
+PASS draw calls on the road under 300
+PASS objective: down the highway to room 6
+PASS down the shoulder and onto the motel lot (-35.5, 657.9, floor -2.10)
+PASS into the motel office (stopped at -45.0, 674.1)
+PASS the note on the counter
+PASS her note leads to room 6
+PASS along the lot to room 6 (stopped at -41.9, 705.0)
+PASS the door of room 6
+PASS into room 6
+PASS SARO is hidden while inside
+PASS the television is on: snow and its light on the room
+PASS switched off, Nora would rather have the noise
+PASS and on again
+PASS objective: she is waiting at the table
+draw calls in room 6: 57
+PASS draw calls in room 6 under 200
+PASS walk in to the table
+PASS N. Vega can be spoken to
+PASS she speaks first
+PASS P10: one paper is not enough
+PASS P10: the prints and the original on the table; she knows the amended copy
+PASS P10: a control that does not match the print is answered
+PASS P10 recorded
+PASS T. Vega: his letter on the table (E13)
+PASS she says how long he has been nineteen
+PASS the amended record: a mild or a hard question
+PASS the amended record: her signed correction (E12)
+PASS P11 waits for all three parts
+PASS P12: a new question on the old field line, the 1947 fragment back
+PASS the talk offers the case board for P12
+PASS the case board, laid out in room 6
+PASS P12: the line against his letter: it did not give the answer
+PASS P12: the return line tied to the 1947 voice in E10
+PASS P12 recorded
+PASS back at the table she says what the line is
+PASS the cable: she cut it; his last field card (E11)
+PASS P11: a wrong motive is answered
+PASS P11: her reason tied to P04, and the deliberate interruption to the cut cable, P08
+PASS P11 recorded
+PASS back at the table she answers P11
+PASS the letter can be read from the table
+PASS where C goes: across the highway to Roswell
+PASS the papers on the table can be picked up (r6:card)
+PASS the field radio from 1947 lies on the table
+PASS switched on, with no battery in it, it plays
+PASS an engine dies, clicks in four and seven, someone breathing; Nora took the battery out in 1947
+PASS then it can be pressed to talk
+PASS pressed, four and seven come back; he pressed it too
+PASS and it can be switched off
+PASS off
+PASS objective: leave room 6
+PASS title screen offers to continue in room 6
+PASS Continue brings back room 6 and the findings
+PASS Continue puts her three papers back on the table
+PASS Continue keeps the fire exit propped open
+PASS the door: leave room 6
+PASS out on the motel front; chapter four complete
+PASS the chapter card closes room 6 and names All Night
+PASS chapter five begins at five: back to the truck
+PASS the journal has her papers, and P10 to P12 under Findings
+no console errors/warnings
+69 of 69 PASS

@@ -1,0 +1,4 @@
+source_commit: ef73d4c1f96b46aebd1b871207a17d5550ec3aa3
+
+> signal47-web@0.1.0 typecheck
+> tsc --noEmit
