@@ -2,7 +2,7 @@
 
 ## Utvidelse 19. oktober 2026: spor som kan følges opp
 
-Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`. Dette passet utdyper den eksisterende natten. Hendelsene under er valgfrie og åpner ingen ny obligatorisk gåte.
+Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`, med nyere main `c06bf33` tatt inn på arbeidsgrenen. Dette passet utdyper den eksisterende natten. Hendelsene under er valgfrie og åpner ingen ny obligatorisk gåte.
 
 | Opplevelse | Spillerens handling | Nytt spor |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`. Dette passet utdyp
 | Kua som mangler | Fortell kvinnen på benken om funnet etter samtalen om mannen hennes | Hun spør om gjerdet og de andre dyrene. Samtalen gir et vanlig holdepunkt for noe hun ikke vil forklare. |
 | 1947 på 1420 | Hør hele sendingen i bilen | Seks skrevne, oppdiktede bulletinlinjer i 47 sekunder. Deretter fortsetter den avbrutte setningen eller platen på samme sted. |
 | TV-en på motellkontoret | Se skjermen når oversiktsbildet kommer | Et faktisk bilde av spillscenen med bilen der og slik den står. Bildet kan gjenåpnes på TV-en eller i Photos, også etter Continue. |
-| Telefonautomaten etter rom 6 | Gå tilbake før avreisen 05:20 og svar | Samme motor, to host og relégrupper som på feltradioen. Anropet kan nå skje etter 05:00; det gamle tidsvinduet stengte 04:45. |
+| Telefonautomaten etter rom 6 | Gå tilbake før avreisen 05:20 og svar | En motor hoster to ganger og dør, så relégrupper på fire og sju. Nyere mains innspilte motor og linjesus er beholdt. Anropet kan nå skje etter 05:00; det gamle tidsvinduet stengte 04:45. |
 
 De fire vitnearkene er uttrykkelig Reyes' notatkopier, ikke nye offisielle dokumenter. De dukker først opp når spilleren spør, gjenopprettes fra eksisterende `ask:`-nøkler, og kan leses igjen i Papers. Ingen av vitnene sier hva -39 betyr. Ingen av opptakene svarer på nye spørsmål. Nora, hovedgåtene, C og slutten beholder sin eksisterende rekkefølge.
 

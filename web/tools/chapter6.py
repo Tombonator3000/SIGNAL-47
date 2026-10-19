@@ -162,6 +162,9 @@ async def main():
         check('Reference west. No. East.' in await toasts(), '+24 s: on the radio, Tomás')
         await tick(3.0)                                   # + 27.2
         check('Do not stop on the line.' in await toasts(), '+27 s: Nora')
+        # the pressure of the time away under it, with the bought sounds (AudioSys.pressure); none without
+        pb = await ev("(() => { const b = S47.ch6['bed']; return [!!S47.audio.lic('pressure'), b ? b.gain.gain.value : null]; })()")
+        check((pb[1] is not None and 0.1 < pb[1] < 0.25) if pb[0] else pb[1] is None, f'+27 s: {"the pressure under it, rising" if pb[0] else "no pressure bed (no bought sounds)"} ({pb})')
         hc = await ev(f"(c => [c.r, c.g, c.b])({priv('truck', 'headColor')})")
         check(hc[0] > hc[1] and hc[0] > hc[2], f'and the headlights red {[round(v, 2) for v in hc]}')
         await shot('k06_red_radio')
@@ -179,6 +182,7 @@ async def main():
         check(len(seen) >= 7, f'single frames one after another, with black between ({len(seen) - 1} frames seen)')
         await tick(35.2 - (await ev("S47.game.clock") - T))
         check(await ev(f"{priv('ch6', 'done')}.has('silence')") and await ev("getComputedStyle(document.querySelector('.ending-frame')).opacity") == '0', '+34 s: no more frames, total silence')
+        check(await ev("S47.ch6['bed']") is None, '+34 s: the pressure is gone with the rest')
         await shot('k08_silence')
 
         # ---------- the pull-out ----------

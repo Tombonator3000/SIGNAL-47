@@ -1,8 +1,30 @@
-// Event 4's interruption, using the real station and bulletin without a browser or sound device.
-// Bundle with esbuild for Node and --define:import.meta.env.MODE='"single"', then run the output.
-import { Radio, ARCHIVE_SECS, SIGN_OFF, secsOf } from '../src/core/radio';
-import { BULLETIN, NightEvents, type NightIn } from '../src/story/nightEvents';
+// Event 4's interruption, using the real station, bank and director without a browser/device.
+// Bundle with esbuild for Node: --platform=node --format=cjs --packages=external.
+// Vite's asset imports are replaced only in this source harness, as in artbell-core.cjs.
+import fs from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
 import * as THREE from 'three';
+import type { Radio as RadioType } from '../src/core/radio';
+import type { NightIn } from '../src/story/nightEvents';
+
+const compile = (source: string) => ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+const catalog = JSON.parse(fs.readFileSync('src/assets/audio/artbell/catalog.json', 'utf8'));
+const files = Object.fromEntries(catalog.clips.map((clip: { file: string }, i: number) =>
+  [`../assets/audio/artbell/${clip.file}`, `data:audio/mpeg;base64,${Buffer.from([i]).toString('base64')}`]));
+const load = (source: string, requireModule: (name: string) => unknown) => {
+  const result = {};
+  vm.runInNewContext(compile(source), { exports: result, require: requireModule, Math, console, AbortController,
+    DOMException, atob, Uint8Array, fetch: () => { throw new Error('test bank must stay offline'); } });
+  return result;
+};
+const bank = load(fs.readFileSync('src/core/radioVoice.ts', 'utf8').replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(files)};`),
+  () => ({ default: JSON.stringify(catalog) }));
+const { Radio, ARCHIVE_SECS, SIGN_OFF, secsOf } = load(fs.readFileSync('src/core/radio.ts', 'utf8').replace("import.meta.env.MODE !== 'single'", 'false'),
+  (name) => name === 'three' ? THREE : bank) as typeof import('../src/core/radio');
+const time = load(fs.readFileSync('src/story/time.ts', 'utf8'), () => undefined);
+const { BULLETIN, NightEvents } = load(fs.readFileSync('src/story/nightEvents.ts', 'utf8'),
+  (name) => name === 'three' ? THREE : time) as typeof import('../src/story/nightEvents');
 
 let failed = 0, checks = 0;
 const check = (ok: boolean, what: string) => {
@@ -19,7 +41,7 @@ function night(clock = CLOCK, boyCalled = true) {
   r.reset(clock);
   return r;
 }
-function snapshot(r: Radio) {
+function snapshot(r: RadioType) {
   const s = r.stations.caliche as any;
   return { seg: s.seg, t: s.t, said: s.said, sc: s.sc, segNo: s.segNo, loopAt: s.loopAt };
 }
@@ -37,6 +59,69 @@ function director(len = ARCHIVE_SECS) {
   const tick = (dt: number) => { input.clock += dt; event.update(dt, input); };
   return { event, input, seen, notes, plays, control, tick };
 }
+class SoundClock {
+  currentTime = 100;
+  state = 'running';
+  decodes = 0;
+  parameter() { return { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, cancelScheduledValues() {}, setTargetAtTime() {} }; }
+  node(): any {
+    return { gain: this.parameter(), frequency: this.parameter(), Q: this.parameter(), stopped: false, disconnected: false,
+      connect() {}, disconnect() { this.disconnected = true; }, start(at: number, offset = 0) { this.at = at; this.offset = offset; },
+      stop() { this.stopped = true; } };
+  }
+  createGain() { return this.node(); }
+  createOscillator() { return this.node(); }
+  createBiquadFilter() { return this.node(); }
+  createBufferSource() { return this.node(); }
+  async decodeAudioData(encoded: ArrayBuffer) {
+    this.decodes++;
+    const duration = 10 + new Uint8Array(encoded)[0] / 100;
+    return { duration, length: Math.round(duration * 22050), numberOfChannels: 1 };
+  }
+}
+const flush = async () => { for (let i = 0; i < 150; i++) await Promise.resolve(); };
+function voiced(on = true) {
+  const ctx = new SoundClock(), radio = new Radio({ ctx } as any);
+  radio.setHostVoice(on); radio.boyCalled = true; radio.reset(CLOCK);
+  radio.stations.caliche.listen(true);
+  const tick = (dt: number) => { ctx.currentTime += dt; radio.update(dt, radio.clock + dt); };
+  return { ctx, radio, station: radio.stations.caliche, tick };
+}
+async function recordedArchive() {
+  const old = Math.random; Math.random = () => 0;
+  try {
+    const v = voiced(), st = v.station as any;
+    check(st.hostStatus.loading && st.cutIn(BULLETIN, CLOCK) === 0, 'archive waits while the actual host bank decodes its current talk');
+    await flush(); v.tick(1.4);
+    const before = { ...snapshot(v.radio), len: st.len, spoken: st.spoken, buffers: st.spoken[0].buffers, secs: st.spoken[0].secs };
+    const sources = st.hostSources.slice(), decodes = v.ctx.decodes;
+    check(sources.length > 0 && before.secs > 9, 'recorded-host fixture uses decoded clip lengths rather than procedural timing');
+    check(st.cutIn(BULLETIN, v.radio.clock) === 47 && sources.every((source: any) => source.stopped && source.disconnected),
+      'starting the archive stops all held host sources without changing the host preference');
+    check(v.radio.hostVoice && st.spoken.every((line: any) => !line.clips && !line.buffers), 'the historical newsreader remains procedural while the Art Bell option stays enabled');
+    for (let i = 0; i < 188; i++) v.tick(.25);
+    check(st.spoken === before.spoken && st.spoken[0].buffers === before.buffers && near(st.len, before.len) && near(st.t, before.t),
+      'resume retains the held decoded plan, its natural duration and exact station position');
+    check(v.ctx.decodes === decodes && st.hostSources.length === sources.length && near(st.hostSources[0].offset, before.t - .2),
+      'recorded host resumes from its prior sample offset without another decode');
+    v.tick(.25);
+    check(near(st.t, before.t + .25), 'restored host rebases its audio clock instead of advancing by the 47-second interruption');
+
+    const off = voiced(); await flush(); off.tick(1.4);
+    const offSt = off.station as any, originalSecs = offSt.spoken[0].secs, originalText = offSt.spoken[0].text;
+    const relative = (offSt.t - .2) / originalSecs;
+    offSt.cutIn(BULLETIN, off.radio.clock); off.radio.setHostVoice(false); off.tick(47);
+    check(!off.radio.hostVoice && offSt.spoken.every((line: any) => !line.clips && !line.buffers)
+      && near(offSt.t, .2 + relative * secsOf(originalText)), 'disabling the host during the archive resumes the same relative word position with the legacy voice');
+
+    const on = voiced(false); on.tick(1.4);
+    const onSt = on.station as any, oldSecs = onSt.spoken[0].secs, oldT = onSt.t;
+    onSt.cutIn(BULLETIN, on.radio.clock); on.radio.setHostVoice(true); on.tick(47); await flush();
+    check(on.radio.hostVoice && !!onSt.spoken[0].buffers && near(onSt.t, .2 + (oldT - .2) / oldSecs * onSt.spoken[0].secs),
+      'enabling the host during the archive loads the ordinary recording and preserves relative position');
+  } finally { Math.random = old; }
+}
+async function main() {
 try {
   const r = night(), s = r.stations.caliche;
   const heard: string[] = [];
@@ -165,5 +250,8 @@ try {
   check(overlap.notes.length === 1 && overlap.seen.has('ne:bulletin1') && !overlap.seen.has('ne:knocks1'),
     'rejecting an overlap leaves the original completion intact');
 } finally { Math.random = oldRandom; }
+await recordedArchive();
 console.log(`${checks - failed}/${checks} PASS`);
 process.exit(failed ? 1 : 0);
+}
+void main().catch((error) => { console.error(error); process.exit(1); });

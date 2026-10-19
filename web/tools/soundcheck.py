@@ -3,7 +3,7 @@
 # truck on its pad with the radio on, and driving down the highway with the radio on. For each:
 # the level every 100 ms, and the drop-outs (the level falling under a quarter of what it was
 # the two seconds before, for 0.3 s or more); and how many sound nodes and how many changes to
-# sound parameters the game makes each second (a leak shows as a number that keeps growing).
+# sound parameters the game makes each second and per frame (a leak shows as a number that keeps growing).
 # A headless browser cannot hear the glitches a busy machine makes (UNVERIFIED on real
 # speakers); this finds the drop-outs the game makes itself, and runaway work for the sound.
 # Usage: python3 tools/soundcheck.py OUTDIR [seconds per place]
@@ -19,7 +19,9 @@ def check(ok, msg):
 
 # count every node made and every change asked of a parameter, from the start
 COUNT = """(() => {
-  const s = window.__snd = { nodes: 0, params: 0, starts: 0 };
+  const s = window.__snd = { nodes: 0, params: 0, starts: 0, frames: 0 };
+  const raf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (callback) => raf((time) => { s.frames++; callback(time); });
   const P = (window.AudioContext || window.webkitAudioContext).prototype;
   for (const k of Object.getOwnPropertyNames(BaseAudioContext.prototype)) {
     if (!k.startsWith('create')) continue;
@@ -82,11 +84,12 @@ async def main():
             lv = await ev("window.__lv.slice()")
             n1 = await ev("({...window.__snd, t: performance.now()})")
             secs = (n1['t'] - n0['t']) / 1000
-            rate = {k: round((n1[k] - n0[k]) / secs, 1) for k in ('nodes', 'params', 'starts')}
+            rate = {k: round((n1[k] - n0[k]) / secs, 1) for k in ('nodes', 'params', 'starts', 'frames')}
             d = dropouts(lv)
             med = statistics.median(lv) if lv else 0
-            report[name] = {'median': med, 'p10': sorted(lv)[len(lv) // 10] if lv else 0, 'max': max(lv) if lv else 0, 'dropouts': d, 'per_second': rate, 'level': [round(v, 4) for v in lv]}
-            print(f"{name}: level median {med:.4f}, p10 {report[name]['p10']:.4f}, max {report[name]['max']:.4f}; drop-outs {len(d)} {d[:6]}; per second {rate}", flush=True)
+            per_frame = (n1['params'] - n0['params']) / max(1, n1['frames'] - n0['frames'])
+            report[name] = {'median': med, 'p10': sorted(lv)[len(lv) // 10] if lv else 0, 'max': max(lv) if lv else 0, 'dropouts': d, 'per_second': rate, 'params_per_frame': per_frame, 'level': [round(v, 4) for v in lv]}
+            print(f"{name}: level median {med:.4f}, p10 {report[name]['p10']:.4f}, max {report[name]['max']:.4f}; drop-outs {len(d)} {d[:6]}; per second {rate}; params/frame {per_frame:.2f}", flush=True)
             return report[name]
 
         r = await place('control room', "S47.jump('chapter1'); S47.tick(1.0); S47.player.place(0, 1.5, 0); S47.tick(0.2)")
@@ -106,8 +109,14 @@ async def main():
         check(not bad, f'no more than one drop-out in {SECS / 30:.0f} half-minutes anywhere ({bad})')
         nodes = {k: v['per_second']['nodes'] for k, v in report.items()}
         check(all(v < 60 for v in nodes.values()), f'sound nodes made per second stay modest ({nodes})')
-        params = {k: v['per_second']['params'] for k, v in report.items()}
-        check(all(v < 1500 for v in params.values()), f'changes to sound parameters per second stay modest ({params})')
+        # Listener (9), engine (8), tyres (5) and receiver (4) already make 26
+        # calls/frame. The old 1500/s budget failed even with the recorded host
+        # disabled at 60 fps. tools/artbell-cost.py measured On/Off/On at
+        # 29.23/29.50/29.50 calls/frame with no resync or re-decode. Normalize to
+        # actual rendered frames; 36 allows about 20% above that measured base.
+        params = {k: round(v['params_per_frame'], 2) for k, v in report.items()}
+        check(all(v['per_second']['frames'] > 0 and v['params_per_frame'] < 36 for v in report.values()),
+              f'changes to sound parameters stay below 36 per rendered frame ({params})')
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))
         json.dump(report, open(f'{OUT}/soundcheck.json', 'w'), indent=1)

@@ -1,0 +1,309 @@
+{
+  "result": "FAIL",
+  "checks": [
+    {
+      "check": "night format, size, mode, PNG bit depth",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "night sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "icc_bytes": 588,
+        "profile_sha256": "1a243a8da3ad106b4ff87031ecae56cf93ba4c9ea8b3804501ce62ae54055bda"
+      }
+    },
+    {
+      "check": "night north wrap RGBA equality",
+      "result": "PASS",
+      "detail": {
+        "max_difference": 0
+      }
+    },
+    {
+      "check": "night no abrupt panel seam",
+      "result": "PASS",
+      "detail": {
+        "north_wrap": {
+          "center_max_rgba_difference": 0,
+          "center_mean_rgb_difference_land": 0.0,
+          "neighbor_max_rgb_difference": 28
+        },
+        "south_panel_join": {
+          "center_max_rgba_difference": 0,
+          "center_mean_rgb_difference_land": 0.0,
+          "neighbor_max_rgb_difference": 27
+        }
+      }
+    },
+    {
+      "check": "dawn format, size, mode, PNG bit depth",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "dawn sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "icc_bytes": 588,
+        "profile_sha256": "1a243a8da3ad106b4ff87031ecae56cf93ba4c9ea8b3804501ce62ae54055bda"
+      }
+    },
+    {
+      "check": "dawn north wrap RGBA equality",
+      "result": "FAIL",
+      "detail": {
+        "max_difference": 1
+      }
+    },
+    {
+      "check": "dawn no abrupt panel seam",
+      "result": "FAIL",
+      "detail": {
+        "north_wrap": {
+          "center_max_rgba_difference": 1,
+          "center_mean_rgb_difference_land": 0.006510416666666667,
+          "neighbor_max_rgb_difference": 71
+        },
+        "south_panel_join": {
+          "center_max_rgba_difference": 1,
+          "center_mean_rgb_difference_land": 0.005208333333333333,
+          "neighbor_max_rgb_difference": 70
+        }
+      }
+    },
+    {
+      "check": "identical alpha masks",
+      "result": "PASS",
+      "detail": {
+        "different_pixels": 0,
+        "alpha_sha256": "9477811d18e0ef670806a242b9d254b51c7eda970976312b7b88daa29898504b"
+      }
+    },
+    {
+      "check": "land completely opaque at and below baseline",
+      "result": "PASS",
+      "detail": {
+        "baseline_y": 768,
+        "nonopaque_pixels_below": 0
+      }
+    },
+    {
+      "check": "nothing above y608",
+      "result": "PASS",
+      "detail": {
+        "topmost_nonzero_alpha_y": 654,
+        "maximum_height_above_baseline_px": 114
+      }
+    },
+    {
+      "check": "clear sky with edge-only partial alpha",
+      "result": "PASS",
+      "detail": {
+        "max_partial_alpha_rows_per_column": 2,
+        "partial_pixels": 9748,
+        "empty_alpha_pixels": 5961125,
+        "interior_transparent_holes": 0
+      }
+    },
+    {
+      "check": "north height limit",
+      "result": "FAIL",
+      "detail": {
+        "max_height_px": 36,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "sunrise_65_95 height limit",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 10,
+        "limit_px": 11
+      }
+    },
+    {
+      "check": "south height limit",
+      "result": "FAIL",
+      "detail": {
+        "max_height_px": 28,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "exact azimuth scale",
+      "result": "PASS",
+      "detail": {
+        "north_x": 0,
+        "east_x": 2048,
+        "south_x": 4096,
+        "west_x": 6144,
+        "sunrise_79_degrees_x": 1797.688888888889,
+        "pixels_per_degree": 22.755555555555556
+      }
+    },
+    {
+      "check": "eight tiny ranch lights, dawn off",
+      "result": "PASS",
+      "detail": [
+        {
+          "azimuth": 29,
+          "x": 660,
+          "y": 774,
+          "width": 2,
+          "height": 2,
+          "rgb": [
+            66,
+            43,
+            23
+          ]
+        },
+        {
+          "azimuth": 54,
+          "x": 1229,
+          "y": 777,
+          "width": 3,
+          "height": 2,
+          "rgb": [
+            69,
+            45,
+            23
+          ]
+        },
+        {
+          "azimuth": 112,
+          "x": 2549,
+          "y": 776,
+          "width": 2,
+          "height": 2,
+          "rgb": [
+            72,
+            43,
+            23
+          ]
+        },
+        {
+          "azimuth": 151,
+          "x": 3436,
+          "y": 779,
+          "width": 2,
+          "height": 2,
+          "rgb": [
+            66,
+            45,
+            23
+          ]
+        },
+        {
+          "azimuth": 216,
+          "x": 4915,
+          "y": 775,
+          "width": 3,
+          "height": 2,
+          "rgb": [
+            69,
+            43,
+            23
+          ]
+        },
+        {
+          "azimuth": 244,
+          "x": 5552,
+          "y": 779,
+          "width": 2,
+          "height": 2,
+          "rgb": [
+            72,
+            45,
+            23
+          ]
+        },
+        {
+          "azimuth": 293,
+          "x": 6667,
+          "y": 777,
+          "width": 2,
+          "height": 2,
+          "rgb": [
+            66,
+            43,
+            23
+          ]
+        },
+        {
+          "azimuth": 329,
+          "x": 7487,
+          "y": 775,
+          "width": 3,
+          "height": 2,
+          "rgb": [
+            69,
+            45,
+            23
+          ]
+        }
+      ]
+    },
+    {
+      "check": "east_butte measured height",
+      "result": "PASS",
+      "detail": {
+        "azimuth": 130,
+        "height_px_max": 91,
+        "degrees": 3.9990234375
+      }
+    },
+    {
+      "check": "west_wall measured height",
+      "result": "PASS",
+      "detail": {
+        "azimuth": 270,
+        "height_px_max": 114,
+        "degrees": 5.009765625
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "web/src/assets/art/sky/horizon_night.png",
+      "bytes": 703934,
+      "sha256": "16121afc6b49ba6a7922fb9a93628306ffad7d15ce124ee06664d37973c15666",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    },
+    {
+      "file": "web/src/assets/art/sky/horizon_dawn.png",
+      "bytes": 1331640,
+      "sha256": "d5bcf685dbe6720123e1a934dc6da2e8f4b8cd60f11ce3a7bcc403bfe6f2d4cd",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    }
+  ],
+  "visual_review": "PENDING",
+  "runtime": "UNVERIFIED: Ingen integrasjon eller spillkjøring i denne rene assetleveransen."
+}

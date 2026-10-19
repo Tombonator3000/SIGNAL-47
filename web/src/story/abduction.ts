@@ -101,6 +101,8 @@ export class Abduction {
   private frames: HTMLCanvasElement[] = [];
   private canvas: HTMLCanvasElement;
   private tone: { stop: () => void; gain: GainNode } | null = null;
+  /** The pressure under the warning, from its start to the taking (bought sound, AudioSys.pressure). */
+  private bed: ReturnType<AudioSys['pressure']> = null;
   private rings: THREE.Mesh[] = [];
   private records: { g: THREE.Group; scene: string }[] = [];
   private lying: THREE.Group;
@@ -152,6 +154,7 @@ export class Abduction {
     this.take.copy(this.d.player.pos);
     void loadArtSome(ABDUCT_ART);
     this.d.hush(this.warnLen + 12, 0);
+    this.bed?.stop(); this.bed = this.d.audio.pressure();
     void s;
   }
   private warning(_dt: number, s: AbductIn) {
@@ -163,11 +166,14 @@ export class Abduction {
     if (t > w * 0.85 && this.d.flashlight.on) this.d.flashlight.on = false;
     if (t > w * 0.5 && !this.tone) this.toneOn();
     if (this.tone) this.tone.gain.gain.value = 0.05 + 0.25 * THREE.MathUtils.clamp((t - w * 0.5) / (w * 0.5), 0, 1);
+    // the pressure comes up slowly from nothing, and is all there by the light (held through it)
+    if (this.bed) this.bed.gain.gain.value = 0.04 + 0.46 * Math.min(1, t / w) ** 2;
     if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; }
   }
   private passOver() {
     this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15);
     this.toneOff(); this.d.flashlight.flicker(0); this.d.hush(0.1, 1);
+    this.bed?.stop(1); this.bed = null;   // got away: it ebbs over a few seconds
     if (this.hadLight && this.d.flashlight.have) this.d.flashlight.on = true;
   }
 
@@ -178,7 +184,7 @@ export class Abduction {
     this.d.overlay.classList.add('abduct-light');
     if (this.st >= 3) {
       this.stage = 'taken'; this.st = 0;
-      this.toneOff();
+      this.toneOff(); this.bed?.stop(); this.bed = null;
       this.d.glitch(1);
       this.frames = this.makeFrames();
       this.d.audio.suspend(true);
@@ -325,7 +331,7 @@ export class Abduction {
   /** The exposures that were not the player's, back among the papers (after the case is opened). */
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }
   private clear() {
-    this.toneOff(); this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15);
+    this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15);
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
     for (const r of this.records) r.g.removeFromParent();

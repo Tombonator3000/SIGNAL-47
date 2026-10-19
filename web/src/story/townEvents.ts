@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import type { AudioSys } from '../core/Audio';
 import { Town } from '../world/Town';
 import { clockText } from './time';
-import { WalkieSound } from '../core/walkie';
 
 // What happens in Caliche once in a night (HENDELSER.md, section 6; the first of the event
 // director, in the town's terms). Each repeats something that was recorded, on line A, which runs
@@ -73,8 +72,9 @@ export class TownEvents {
   private cutoutSeen = false;
   private carSeen = false;
   private lineCheck = 0;
-  private recording: WalkieSound | null = null;
+  private recordings: ReturnType<AudioSys['play']>[] = [];
   private lineSpeaker: AudioNode | null = null;
+  private lineBand: AudioNode | null = null;
 
   constructor(private d: TownEventsDeps) {}
 
@@ -168,7 +168,7 @@ export class TownEvents {
     const phoneUntil = call === 2 ? 5 * 3600 + 19 * 60 : 4 * 3600 + 45 * 60;
     if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
-      this.d.audio.loop('town-ring', 'phone_ring', { at: phone, gain: 0.8 });
+      this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
 
     // ---------- 8: the lamps ----------
@@ -203,16 +203,22 @@ export class TownEvents {
       a.loop('town-line', 'printer', { at, gain: 0.35 });
       this.d.toast('No dial tone. On the line, a printer: the control room printer, line by line, the way it printed at 02:13.', 6);
     } else {
-      // The same fixed recording as the batteryless set in Room 6: engine, two coughs,
-      // silence and the relay groups. It never answers anything said into the receiver.
-      const noise = a.noiseBuffer();
-      if (a.ctx && noise) {
-        this.lineSpeaker = a.spatial(at, 1.2);
-        if (this.lineSpeaker) {
-          this.recording = new WalkieSound(a.ctx, this.lineSpeaker, noise);
-          this.recording.start();
-        }
+      // the line still open after it: a hush in the handset's band (bought sound; else the wind)
+      a.loop('town-line', a.or('line_hush', 'gust'), { at, gain: 0.12 });
+      // far off on the line, an engine: it turns over and catches, again, and dies (the truck's
+      // own start and shut-off, small in the handset's band)
+      const ear = a.spatial(at, 1.2);
+      if (ear) {
+        const line = a.phoneLine(); line.gain.disconnect(); line.gain.connect(ear); line.gain.gain.value = 0.4;
+        this.lineSpeaker = ear; this.lineBand = line.gain;
+        this.recordings.push(
+          a.play('engineStart', { dest: line.input, when: 0.4, from: 0.7, dur: 1.5 }),
+          a.play('engineStart', { dest: line.input, when: 1.9, from: 0.75, dur: 1.1, rate: 0.93 }),
+          a.play('engineOff', { dest: line.input, when: 2.9, rate: 0.9 }),
+        );
       }
+      // relay clicks, four and seven, after the silence
+      for (let i = 0; i < 11; i++) this.recordings.push(a.play('click', { at, gain: 0.5, when: 14 + i * 0.32 + (i >= 4 ? 0.9 : 0), lp: 2200 }));
       this.d.toast('Far off, an engine. It coughs, coughs again and stops. Then nothing at all.', 6);
     }
   }
@@ -244,7 +250,9 @@ export class TownEvents {
     this.now = 'none'; this.near = 0; this.street = 0; this.notBefore = 0;
   }
   private stopRecording() {
-    this.recording?.stop(); this.recording = null;
+    for (const h of this.recordings) if (h) { try { h.src.stop(); } catch {} h.gain.disconnect(); }
+    this.recordings = [];
+    this.lineBand?.disconnect(); this.lineBand = null;
     this.lineSpeaker?.disconnect(); this.lineSpeaker = null;
   }
 }

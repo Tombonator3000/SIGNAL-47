@@ -405,7 +405,7 @@ export class Chapter4 {
       add('phone', 'phone', () => 'Phone on the nightstand', () => this.usePhone());
       add('tv', 'tv', () => room.tvOn ? 'Turn the television off' : 'Turn the television on', () => this.useTv());
       add('bed', 'bed', () => 'Bed', () => ui.toast('Made, and not slept in.', 2.6));
-      add('lamp', 'lamp', () => 'Table lamp', () => { room.setLamp(!room.lampOn); this.d.audio.play('switch', { gain: 0.3, rate: 1.4 }); });
+      add('lamp', 'lamp', () => 'Table lamp', () => { room.setLamp(!room.lampOn); this.d.audio.play(this.d.audio.or('small_switch', 'switch'), { gain: 0.3, rate: 1.4 }); });
       add('bathroom', 'bathroom', () => 'Bathroom door', () => ui.toast('Shut. A tap drips behind it.', 2.6));
       add('walkie', 'walkie', () => this.walkieLabel(), () => this.useWalkie());
       add('door', 'door', () => this.s.stage === 'leave' ? 'Leave room 6' : 'Door to the walk', () => this.useDoor(), 2.6);
@@ -421,7 +421,7 @@ export class Chapter4 {
     const room = this.d.motel.room(); if (!room) return;
     this.tvTouched = true;
     room.setTv(!room.tvOn);
-    this.d.audio.play('switch', { gain: 0.35, rate: 0.8 });
+    this.d.audio.play(this.d.audio.or('small_switch', 'switch'), { gain: 0.35, rate: 0.8 });
     this.tvSound();
     if (room.tvOn && !this.tvSeen) { this.tvSeen = true; this.d.ui.toast('Snow on every channel. The stations signed off at one.', 3.2); }
     else if (!room.tvOn) this.d.ui.toast('N. VEGA: "Leave it. The quiet is worse."', 3);

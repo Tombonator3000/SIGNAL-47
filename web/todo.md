@@ -10,6 +10,11 @@ Prioritert. Flytt ferdige punkter til log.md.
 - [x] Telefonautomatens andre anrop kan oppleves etter rom 6. Ingen mynt eller fullstendig funn ved et avbrutt anrop.
 - [ ] Tom prøver rytmen, de nye vitnesamtalene og telefonopptaket på fysisk PC/mobil. Nye vitnetekster har ikke egne Kinski-opptak ennå.
 
+## Fra Tom 19. oktober kveld
+
+- [ ] **Gå ut av bilen ved kuene, den forlatte bilen i veikanten og radiomastene.** Tom kom ikke ut der: på riksveien slipper `World.canGetOut()` bare ut ved dineren og i Caliche, og egne turer (`trip.free`) aldri. Under arbeid på grenen `getout-fix` (egen worktree), med `tools/getout.py`.
+- [ ] **Lytt på de kjøpte lydene** (Ultimate SFX for Games, se `log.md` 19. oktober): suset og knasene i radioene, trykket når de tar deg og i THE EVENT, linja og motoren i telefonkiosken, dørene på SARO, spaken i prologen, lampa og tv-en i rom 6, nøklene, kaffen og den nye lyden ute i mørket. Valgt etter måling; ingen har lyttet ennå.
+
 ## Toms liste 16. oktober kveld, i den rekkefølgen jeg tar den
 
 Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over stedet, inventar, ambient musikk i bakgrunnen (skummelt, men meditativt; åpen musikk i stil med Mike Oldfield, Angelo Badalamenti og David Lynch, som kan gå nesten i loop), og ansiktsportretter av folka (bestilles fra ChatGPT).
@@ -74,6 +79,8 @@ Tom: motellet lenger unna stasjonene, en liten landsby, karakterer, kart over st
 - [ ] Steg 0 i `HENDELSER.md` er bygget 17. oktober kveld: glimtene (`core/glimpses.ts`, `tools/glimpses.py`) og bortføringen (`story/abduction.ts`, `tools/abduct.py`), med innstillingen Missing time. Gjenstår: Tom spiller kapittel 1 til 3 og svarer på spørsmålene i punkt 11 (så du dem, ble du redd, ville du lete etter mer, skjønte du hva som skjedde da du var borte, for mye eller for lite), og grafikken til bortføringen fra ChatGPT (runde 14) i stedet for bildene tegnet i kode. Grafikken fra runde 14 er bygget inn 19. oktober (grenen `art-wiring`): vinduene, skiltene, avisa, pappfiguren, silhuettene og bortføringsbildene.
 - [x] Flere hendelser (Tom, 18. oktober: «mer levende, mer skumle ting»): 3 overalt, 4 og 13 til 17 er bygget (`story/nightEvents.ts`). Gjenstår av listen: 2 (kyrne mot az 026), 10 (tv-en på motellkontoret, venter på bildene i runde 15), og at Tom sier hvilke som virker og hvilke som er for mye. Hendelse 2 (kyrne) og 10 (motell-tv-en) bygget 18. oktober: `drive/herd.ts`, `story/pasture.ts`, `story/motelTv.ts`, `tools/cowstv.py`.
 - [ ] Steg 1 til 3 i `HENDELSER.md`: Caliche som én gate med kartfanen og linjene, så folka og nattens rytme, så hendelser på C og flere glimt. Grafikk fra Codex eller ChatGPT: silhuetten, enkeltbildene til bortføringen, papp-romvesenet, skiltene og avisforsiden.
+- [ ] Tom ser lyset med mønster (lommelykta, frontlysene, vinduslyset) og det malte bakteppet av horisonten på telefon og PC: for svakt eller for tydelig, og om mesaene i horisonten passer.
+- [ ] Enkeltfilbygget er 92,8 MB etter Kinski-opplesningen (47 MB lyd inline). Vurder å holde opplesningen utenfor enkeltfila, eller laste den bare i Pages-bygget.
 - [ ] Tom ser Blender-forsøket på telefon og PC med `?blender` bak adressen (SARO-bygningen og SARO 07), og bestemmer om resten skal gjøres slik. Rørledningen ligger i `tools/blender/`; anslaget er i `log.md` 19. oktober.
 - [ ] Tom ser de nye miljøene (19. oktober: bakkedekket, veiene, slitasjen på bygningene, rotet innendørs og livet i natta) på telefon og PC: for tett eller for glissent, for mørkt, og om fps holder. Mål `?debug` på telefon ved SARO, motellet og i Caliche.
 - [ ] Tom prøver utviklermenyen (`?dev` bak adressen, DEV-knappen øverst eller F2), den nye lastebilen utenfra og innenfra, naturlydene og musikken på ekte høyttalere. Lyd og musikk er UNVERIFIED på ekte utstyr.
@@ -295,3 +302,8 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 - [x] 19. oktober: Kinski-versjonen flettet inn i main etter Toms direkte beskjed, fra testet `d58b05e`. Nettspillet publiseres gjennom GitHub Actions ved push.
 
 - [x] Tom 19. oktober: alle fortellerbeskrivelser som Kinski-opplesning på `codex/kinski-descriptions`. 1555 klipp, nærblikk, V og leseknapper i paneler, notatbok, kart, bevisbord og foto. Beskrivelsesprøver 115/115 og 116/116, begge bygg og full spillregresjon PASS. Se `KINSKI_READALOUD.md` og `production/kinski/descriptions-qa/README.md`.
+
+
+## Art Bell som radiovert, direkte bestilt av Tom 19. oktober
+
+- [x] Ny lokal Art Bell-parodiprofil og medfølgende opptak for alle Earls Night Line-replikker, også tidsmeldinger og kjøreinnslag. Eget lagret valg, riktig radiobuss/teksting og begge bygg. 115 klipp, alle relevante kontroller PASS på `codex/art-bell-radio`; se `ART_BELL_RADIO.md`.

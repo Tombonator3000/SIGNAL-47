@@ -1,0 +1,42 @@
+PASS the programme: 51 lines in 29 pieces at 23 marks
+  d1_saro_diner: 2323 m in 3 s, said [('out1', 151, 8205), ('roof', 584, 8229), ('oldroad', 1026, 8255), ('door', 2201, 8321)]
+PASS 1: SARO to the diner on 1420, the Night Line's lines for the way (['out1', 'roof', 'oldroad', 'door'])
+PASS 1: each at its mark along the way, in order ([('out1', 151), ('roof', 584), ('oldroad', 1026), ('door', 2201)])
+PASS 1: captioned like the rest of the station
+PASS 1: the station's own programme in between
+PASS 1: after each piece, a record (['music', 'music', 'music', 'music'])
+PASS 1: driven anywhere, south past the track's mouth the trip is bound for the diner (diner)
+PASS 1: the 1947 bulletin cuts in on 1420, and nothing of the trip's is said over it (27 s)
+PASS 1: after it the Night Line's own programme first (17 s before the next of the trip's)
+PASS 1: while a trip's line is on, the bulletin could not cut in (nightIn radio1420 false)
+PASS bound by the way the truck goes: south past the track's mouth the diner, north the way SARO, in along the track STATION 01, else open ([None, 'diner', 'saro', None, 'station01', None, 'station01', 'station01', None, 'saro', None, None])
+  d2_diner_saro: 2337 m in 2 s, said [('watch', 151, 8371), ('dishes', 2062, 8903)]
+PASS 2: the diner back to SARO: the way's own (['watch', 'dishes'])
+PASS 2: at the marks ([('watch', 151), ('dishes', 2062)])
+PASS 2: captioned
+PASS 2: the boy calls the Night Line on the way, and nothing of the trip's is said over his call (68 s)
+PASS 2: his call goes in the notebook as before
+PASS 2: driven anywhere north of the track's mouth, the trip is bound for SARO (saro)
+  d3_saro_station: 1444 m in 2 s, said [('out2', 150, 8979), ('lamps', 1302, 9063)]
+PASS 3: leaving SARO again: the next of the mark's, nothing heard before again (['out2', 'lamps'])
+PASS 3: with the radio off nothing is said, and the caller about the chain is driven past (['out2', 'lamps'])
+PASS 3: on again near the gate: the host on the survey crews' lamps (['out2', 'lamps'])
+  d4_ch3_out: 1432 m in 1 s, said [('c3out', 150, 13224), ('fence', 442, 13243), ('gate', 850, 13273), ('marks', 1204, 13300)]
+PASS 4: chapter three, out to STATION 01: the cut fence, the little gate, the two marks and the lamp (['c3out', 'fence', 'gate', 'marks'])
+PASS 4: at the marks ([('c3out', 150), ('fence', 442), ('gate', 850), ('marks', 1204)])
+PASS 4: captioned
+PASS 4: the programme in between, a record after each piece (['music', 'music', 'music', 'music'])
+  d5_ch3_back: 1446 m in 2 s, said [('film', 150, 13830)]
+PASS 5: back with the film: the photo counter; nothing in the last minutes before four (['film'])
+PASS 5: the Night Line signs off at four on the way, captioned, with nothing of the trip's over it (['talk', 'talk', 'talk', 'talk'])
+PASS 5: and after four nothing on 1420
+PASS 6: Roswell has signed on and is in its morning programme (music)
+  d6_ch5_diner: 2323 m in 1 s, said [('m1', 250, 18187), ('m2', 1001, 18369), ('m3', 1600, 18517), ('m4', 2150, 18652)]
+PASS 6: chapter five on 1230: the morning man's lines for the way (['m1', 'm2', 'm3', 'm4'])
+PASS 6: at the marks ([('m1', 250), ('m2', 1001), ('m3', 1600), ('m4', 2150)])
+PASS 6: captioned
+PASS 6: the programme in between, a record after each piece (['music', 'music', 'music', 'music'])
+PASS nothing said twice in the night (['out1', 'roof', 'oldroad', 'door', 'watch', 'dishes', 'out2', 'lamps', 'c3out', 'fence', 'gate', 'marks', 'film', 'm1', 'm2', 'm3', 'm4'])
+PASS kept with the case (17 in the town's set)
+PASS no console errors or warnings
+35 of 35 PASS

@@ -7,6 +7,7 @@ import { Ending } from '../ui/Ending';
 import { flashFrames, type Frame } from './flashFrames';
 import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
+import { SUN_MESA, horizonDip } from '../world/backdrop';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
 // highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
@@ -72,6 +73,8 @@ export class Chapter6 {
   private et = 0;          // seconds into THE EVENT
   private pt = 0;          // seconds into the pull-out
   private done = new Set<string>();
+  /** The pressure of the time away under THE EVENT (bought sound, AudioSys.pressure). */
+  private bed: ReturnType<AudioSys['pressure']> = null;
   private frames: Frame[] | null = null;
   private still = false;
   private calm = false;
@@ -109,6 +112,7 @@ export class Chapter6 {
     this.d.fog(null);
     this.d.audio.cabRadio(null);
     this.d.audio.silence(false);
+    this.bed?.stop(); this.bed = null;
   }
 
   saveBlock(): string | null { return 'Not on the road.'; }
@@ -193,6 +197,9 @@ export class Chapter6 {
       const on = t < 2 ? (t % 0.5) < 0.25 : t >= 3.2 && t < 6.7 ? ((t - 3.2) % 0.5) < 0.25 : false;
       truck.setDashLevel(on ? 1 : 0);
     } else if (e >= 10.8) this.once('dashOff', () => truck.setDashLevel(0));
+    // + 2 s: the pressure the time away has, the same, coming up under it until FLASH
+    if (e >= 2) this.once('pressure', () => { this.bed = audio.pressure(); });
+    if (this.bed && e < 34) this.bed.gain.gain.value = 0.063 * sm(2, 6, e) + 0.187 * sm(6, 32, e);
     // + 10 s: the headlights wake: deep blue, then amber, green and red, slowly
     if (e >= 10 && e < 34) {
       const t = (e - 10) / 2.2, i = Math.min(HEADS.length - 1, Math.floor(t)), k = sm(0.55, 1, t - i);
@@ -216,6 +223,7 @@ export class Chapter6 {
       audio.cabRadio(null);
       w.engineSound?.stop();
       audio.silence(true);
+      this.bed?.stop(0.04); this.bed = null;
       truck.setHeadColor(null);
     });
     if (e >= 34) truck.setLightLevel(0.2 + 0.12 * (0.5 + 0.5 * Math.sin((e - 34) * 2.1)));
@@ -316,8 +324,9 @@ export class Chapter6 {
     const hgt = this.d.camera.position.y - road.height(this.d.camera.position.x, this.d.camera.position.z);
     this.d.fog(0.00055 * (1 - sm(10, 420, hgt)) + 0.00006);
     this.skyLift = 1 - 0.85 * sm(180, 640, hgt);
-    // the sun's upper edge touches the top of the mesa (as seen from here) at 05:30:00, then rises
-    const mesaTop = Math.atan2(road.crossY + 120 - this.d.camera.position.y, 4300) * 180 / Math.PI;
+    // the sun's upper edge touches the top of the mesa (as seen from here) at 05:30:00, then rises:
+    // the mesa in the painted horizon, which dips under the camera as it goes up (backdrop.ts)
+    const mesaTop = SUN_MESA.top - horizonDip(hgt);
     this.sunElev = mesaTop - 0.27 + (this.g.clock - (5 * 3600 + 30 * 60)) * 0.05;
     if (t >= PULL) this.once('black', () => {
       this.ending?.black(true, 1400);

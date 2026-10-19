@@ -1,0 +1,11 @@
+{
+  "head": "95719a408bf16b18341f717be914c04a4f0b2462",
+  "git_status_before": " M web/ART_BRIEF.md\n?? web/node_modules\n",
+  "brief_sha256": "9631a4476320261c5d6643c08feae25907cd66ceb52247f9a80eb6c94474f977",
+  "references": {
+    "roswell_road_empty_truck.jpg": "e33d74d990a344de7870b11c4252a50815067be96255ae782080bc606ce41746",
+    "station01_cut_cable.jpg": "acbb107176c1d690b1b8da373e349303df07d04683ce1183e93139c604a94f40",
+    "saro_peripheral_glimpse.jpg": "d59940b42ef25ef449a4568c7309102f46d9e8c291849a612e94f963e1f93a14",
+    "caliche_main_street.jpg": "cbb9928b80a8a6b559197bb6157da5da6e7b4751ba59ffb9ac5584893c36ffc5"
+  }
+}

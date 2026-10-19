@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FLASH_ANGLE, FLASH_BEAM, FLASH_GAIN, FLASH_DECAY, FLASH_PLAIN } from './cookies';
 
 // The flashlight (Tom 15 October: a flashlight, no battery). It lies on the truck's passenger
 // seat (drive/Truck.ts draws it there) and is taken the first time the player gets in; F
@@ -7,6 +8,13 @@ import * as THREE from 'three';
 // stays in the scene with intensity 0 when it is off, since adding or taking away a light
 // rebuilds every material's shader. On the PC tier it casts a shadow, so it does not shine
 // through walls (main.ts passes the tier). Near the strange events it may flicker (flicker()).
+// Its beam is a cheap flashlight's, not a perfect disc (Tom, 19 October, light cookies): the
+// shaders draw it in the light (core/cookies.ts) with a hot core a little off the middle, the
+// filament's dark spot, two faint broken arcs, a ragged rim and a dim corona, and about as much
+// light over the old disc's pool as the old disc. It fills the old disc's cone (so the shadow's
+// camera on the PC tier sees no more than before): the beam is the inner 85 percent of it and
+// the corona the rest. The same real light on Low, High and Ultra, so every
+// tier shows the same beam; the shaders know it by its linear decay (FLASH_DECAY).
 export class Flashlight {
   /** Taken off the truck's seat (saved with the case). */
   have = false;
@@ -23,13 +31,31 @@ export class Flashlight {
     // with the distance itself, not faster: with the physical fall-off a rail or a wall a hand's
     // breadth away came out hundreds of times brighter than the yard and blinded the picture
     // on the PC tier (Tom, 16 October); this is about as bright at 4 m and far milder up close.
-    this.light = new THREE.SpotLight(0xffe6c0, 0, 30, 0.4, 0.55, 1);
+    this.light = new THREE.SpotLight(0xffe6c0, 0, 30, FLASH_ANGLE, 0.12, FLASH_DECAY);
     this.light.name = 'flashlight';
+    this.cookie(true);
     this.light.target.name = 'flashlight target';
     const sh = this.light.shadow;
     sh.mapSize.set(512, 512); sh.bias = -0.0006; sh.normalBias = 0.02; sh.camera.near = 0.1; sh.autoUpdate = false;
     scene.add(this.light, this.light.target);
   }
+
+  /** The cookie in the beam, or the plain disc it had before (tools/cookies.py compares the two):
+   *  the decay a hair off linear, which the shaders do not take for the flashlight. */
+  cookie(on: boolean) {
+    const L = this.light;
+    // at once, not from the next frame on: a frame drawn again right after (the test's) shows the
+    // old disc at its own light, not at the cookie's raised one
+    if (on !== this.cookieOn && L.intensity > 0) L.intensity *= on ? FLASH_GAIN : 1 / FLASH_GAIN;
+    this.cookieOn = on;
+    L.decay = on ? FLASH_DECAY : FLASH_PLAIN;
+    L.angle = FLASH_ANGLE; L.penumbra = on ? 0.12 : 0.55;
+    // for the dust in the beam (world/nightlife.ts): the beam's own cone (outer, inner), not the
+    // corona's, and its intensity at full strength
+    L.userData.cone = on ? [Math.atan(FLASH_BEAM * Math.tan(FLASH_ANGLE)) * 1.12, Math.atan(FLASH_BEAM * Math.tan(FLASH_ANGLE)) * 0.6] : [0.4, 0.18];
+    L.userData.full = on ? 40 * FLASH_GAIN : 40;
+  }
+  private cookieOn = true;
 
   /** F, or the Light button. False when there is none yet. */
   toggle() {
@@ -62,7 +88,7 @@ export class Flashlight {
       k = this.dark > 0 ? 0.08 : 1 - this.flick * 0.25 * (0.5 + 0.5 * Math.sin(t * 37) * Math.sin(t * 11.3));
     }
     const L = this.light;
-    L.intensity = this.level < 0.01 ? 0 : 40 * this.level * k;
+    L.intensity = this.level < 0.01 ? 0 : 40 * (this.cookieOn ? FLASH_GAIN : 1) * this.level * k;
     cam.getWorldDirection(this._f);
     this._r.set(1, 0, 0).applyQuaternion(cam.quaternion);
     L.position.copy(cam.position).addScaledVector(this._r, 0.22); L.position.y -= 0.18;

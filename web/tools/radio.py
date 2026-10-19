@@ -41,7 +41,12 @@ async def main():
         async def heard(): return await ev("window.__toasts.join(' | ')")
 
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.0)")
-        await ev("window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, s) => { window.__toasts.push(t); return o(t, s); }; 0")
+        # This suite fast-forwards the original procedural programme. Recorded
+        # host speech uses the audio clock and is tested in artbell-radio.py.
+        check(await ev("S47.radio.hostVoice"), 'the recorded Art Bell host is on by default')
+        await ev("S47.radio.setHostVoice(false)")
+        check(not await ev("S47.radio.hostVoice"), 'the original procedural radio mode remains available')
+        await ev("() => { window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, ...args) => { window.__toasts.push(t); return o(t, ...args); }; }")
         st = await ev(ST)
         check(st['caliche']['seg'] != 'dead' and st['roswell']['seg'] == 'dead' and st['far']['seg'] != 'dead',
               f"at {await ev('S47.game.clock') / 3600:.2f} h: 1420 on the air, Roswell off until five, the far one there ({st['caliche']['seg']}, {st['roswell']['seg']}, {st['far']['seg']})")

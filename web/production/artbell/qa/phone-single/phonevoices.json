@@ -1,0 +1,1584 @@
+{
+  "url": "file:///tmp/s47-phonevoices-csp-qxm76nob/index.html",
+  "pages": false,
+  "strict_csp": true,
+  "ward": {
+    "call": {
+      "at": 0.10666666666666667,
+      "gt": 0,
+      "lines": [
+        {
+          "by": "WARD",
+          "text": "That is enough to hold the morning series. It is not enough to tell us why it happened."
+        },
+        {
+          "by": "WARD",
+          "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where."
+        }
+      ],
+      "timeline": {
+        "duration": 10.12,
+        "cues": [
+          {
+            "at": 0.3,
+            "duration": 4.12,
+            "text": "That is enough to hold the morning series. It is not enough to tell us why it happened.",
+            "by": "WARD",
+            "aside": null
+          },
+          {
+            "at": 4.87,
+            "duration": 5.05,
+            "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where.",
+            "by": "WARD",
+            "aside": null
+          }
+        ]
+      }
+    },
+    "audio": {
+      "calls": [
+        {
+          "at": 0.10666666666666667,
+          "gt": 0,
+          "lines": [
+            {
+              "by": "WARD",
+              "text": "That is enough to hold the morning series. It is not enough to tell us why it happened."
+            },
+            {
+              "by": "WARD",
+              "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where."
+            }
+          ],
+          "timeline": {
+            "duration": 10.12,
+            "cues": [
+              {
+                "at": 0.3,
+                "duration": 4.12,
+                "text": "That is enough to hold the morning series. It is not enough to tell us why it happened.",
+                "by": "WARD",
+                "aside": null
+              },
+              {
+                "at": 4.87,
+                "duration": 5.05,
+                "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where.",
+                "by": "WARD",
+                "aside": null
+              }
+            ]
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "WARD: \"That is enough to hold the morning series. It is not enough to tell us why it happened.\"",
+          "at": 0.4693333333333333,
+          "gt": 0.3
+        },
+        {
+          "text": "The phone again. The supervisor's line.",
+          "at": 1.216,
+          "gt": 1.0000000000000013
+        },
+        {
+          "text": "WARD: \"Check the reference record. If the instrument inherited the fault, the record may tell us from where.\"",
+          "at": 4.992,
+          "gt": 4.883333333333321
+        },
+        {
+          "text": "Ward hangs up. The records room is down the south corridor.",
+          "at": 10.389333333333333,
+          "gt": 10.233333333333421
+        }
+      ],
+      "dial": [],
+      "ringbacks": [],
+      "starts": [
+        {
+          "at": 0.4066666666666667,
+          "duration": 4.12,
+          "expectedEnd": 4.526666666666666,
+          "decoded": {
+            "bytes": 33644,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 4.12,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 4.536,
+          "stoppedAt": 10.229333333333333,
+          "master": true,
+          "bufferId": 1,
+          "phoneKey": "phone:411ccd2aabf90365",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 4.976666666666667,
+          "duration": 5.05,
+          "expectedEnd": 10.026666666666667,
+          "decoded": {
+            "bytes": 41132,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 5.05,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": 10.026666666666667,
+          "stoppedAt": 10.229333333333333,
+          "master": true,
+          "bufferId": 2,
+          "phoneKey": "phone:1e0e06da85e1e3f8",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        }
+      ]
+    },
+    "master": {
+      "peakRms": 0.1358448850229237,
+      "levels": [
+        0.05179354785311807,
+        0.1358448850229237,
+        0.049719357264626084,
+        0.08749747257277295,
+        0.11893774554575151,
+        0.11314112263511845,
+        0.09719324493410494,
+        0.01348288482499379,
+        0.012558972744710394,
+        0.0318767136513701
+      ]
+    },
+    "muted_master": {
+      "peakRms": 0,
+      "levels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "chapter2_nora": {
+    "audio": {
+      "calls": [
+        {
+          "at": 20.629333333333335,
+          "gt": 8.950000000000024,
+          "lines": [
+            {
+              "by": "N. VEGA",
+              "text": "Sierra Motor Court."
+            },
+            {
+              "text": "You give your name and SARO, and read her the survey number from the sleeve.",
+              "aside": true,
+              "pause": 3.4
+            },
+            {
+              "by": "N. VEGA",
+              "text": "Station One. Nobody has asked me for that key in a long time."
+            },
+            {
+              "by": "N. VEGA",
+              "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."
+            }
+          ],
+          "timeline": {
+            "duration": 15.159999999999998,
+            "cues": [
+              {
+                "at": 0.3,
+                "duration": 1.36,
+                "text": "Sierra Motor Court.",
+                "by": "N. VEGA",
+                "aside": null
+              },
+              {
+                "at": 2.11,
+                "duration": 3.4,
+                "text": "You give your name and SARO, and read her the survey number from the sleeve.",
+                "by": null,
+                "aside": true
+              },
+              {
+                "at": 5.96,
+                "duration": 3.04,
+                "text": "Station One. Nobody has asked me for that key in a long time.",
+                "by": "N. VEGA",
+                "aside": null
+              },
+              {
+                "at": 9.45,
+                "duration": 5.51,
+                "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+                "by": "N. VEGA",
+                "aside": null
+              }
+            ]
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "(505) 555-0119.",
+          "at": 11.626666666666667,
+          "gt": 0
+        },
+        {
+          "text": "The phone again. The supervisor's line.",
+          "at": 12.672,
+          "gt": 1.0000000000000013
+        },
+        {
+          "text": "N. VEGA: \"Sierra Motor Court.\"",
+          "at": 20.88533333333333,
+          "gt": 9.250000000000039
+        }
+      ],
+      "dial": [
+        {
+          "at": 11.626666666666667,
+          "duration": 1.8499999999999996
+        }
+      ],
+      "ringbacks": [
+        {
+          "at": 11.626666666666667,
+          "duration": 8.75
+        }
+      ],
+      "starts": [
+        {
+          "at": 20.929333333333336,
+          "duration": 1.36,
+          "expectedEnd": 22.289333333333335,
+          "decoded": {
+            "bytes": 11564,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.36,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 4,
+          "phoneKey": "phone:55e04efecd88edfa",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 26.589333333333336,
+          "duration": 3.04,
+          "expectedEnd": 29.629333333333335,
+          "decoded": {
+            "bytes": 25004,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 3.04,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 5,
+          "phoneKey": "phone:0f00c8288b54e9dc",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 30.079333333333334,
+          "duration": 5.51,
+          "expectedEnd": 35.589333333333336,
+          "decoded": {
+            "bytes": 44780,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 5.51,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 6,
+          "phoneKey": "phone:21df91635ff1db44",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        }
+      ]
+    },
+    "completion_gt": 24.210000000000022,
+    "limitation": "First start and complete scheduling verified; this branch was deliberately reset before full playback. No hardware listening test."
+  },
+  "chapter3_field_nora": {
+    "audio": {
+      "calls": [
+        {
+          "at": 21.098666666666666,
+          "gt": 0,
+          "lines": [
+            {
+              "by": "N. VEGA",
+              "text": "So you went out there."
+            },
+            {
+              "by": "N. VEGA",
+              "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down."
+            },
+            {
+              "by": "N. VEGA",
+              "text": "You have seen the cable now. It did not break by itself."
+            },
+            {
+              "by": "N. VEGA",
+              "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest."
+            }
+          ],
+          "timeline": {
+            "duration": 15.91,
+            "cues": [
+              {
+                "at": 0.3,
+                "duration": 1.78,
+                "text": "So you went out there.",
+                "by": "N. VEGA",
+                "aside": null
+              },
+              {
+                "at": 2.53,
+                "duration": 5.07,
+                "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+                "by": "N. VEGA",
+                "aside": null
+              },
+              {
+                "at": 8.05,
+                "duration": 2.8,
+                "text": "You have seen the cable now. It did not break by itself.",
+                "by": "N. VEGA",
+                "aside": null
+              },
+              {
+                "at": 11.3,
+                "duration": 4.41,
+                "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+                "by": "N. VEGA",
+                "aside": null
+              }
+            ]
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "N. VEGA: \"So you went out there.\"",
+          "at": 21.44,
+          "gt": 0.3
+        }
+      ],
+      "dial": [],
+      "ringbacks": [],
+      "starts": [
+        {
+          "at": 21.398666666666667,
+          "duration": 1.78,
+          "expectedEnd": 23.17866666666667,
+          "decoded": {
+            "bytes": 15020,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 1.78,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 7,
+          "phoneKey": "phone:b7e24473f2824852",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 23.628666666666668,
+          "duration": 5.07,
+          "expectedEnd": 28.698666666666668,
+          "decoded": {
+            "bytes": 41324,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 5.07,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 8,
+          "phoneKey": "phone:7f69b3847d102724",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 29.148666666666667,
+          "duration": 2.8,
+          "expectedEnd": 31.948666666666668,
+          "decoded": {
+            "bytes": 23084,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 2.8,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 9,
+          "phoneKey": "phone:c13f56f927edc83e",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        },
+        {
+          "at": 32.39866666666667,
+          "duration": 4.41,
+          "expectedEnd": 36.80866666666667,
+          "decoded": {
+            "bytes": 35948,
+            "head": [
+              73,
+              68,
+              51,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              34,
+              84,
+              83
+            ],
+            "duration": 4.41,
+            "rate": 48000,
+            "channels": 1
+          },
+          "endedAt": null,
+          "stoppedAt": null,
+          "master": true,
+          "bufferId": 10,
+          "phoneKey": "phone:c88b297e80f976bd",
+          "sfxPath": [
+            {
+              "kind": "AudioBufferSourceNode"
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "highpass",
+              "hz": 320
+            },
+            {
+              "kind": "lowpass",
+              "hz": 3200
+            },
+            {
+              "kind": "GainNode"
+            },
+            {
+              "kind": "sfx"
+            }
+          ]
+        }
+      ]
+    },
+    "completion_gt": 16.01,
+    "limitation": "First start and complete scheduling verified; this branch was deliberately reset before full playback. No hardware listening test."
+  },
+  "payphone": {
+    "calls": [
+      {
+        "at": 21.632,
+        "gt": 0,
+        "lines": [
+          {
+            "by": "E. WARD",
+            "text": "Ward."
+          },
+          {
+            "by": "YOU",
+            "text": "It is Reyes. I am at the diner on the old road."
+          },
+          {
+            "by": "E. WARD",
+            "text": "I read the telex. All of it."
+          },
+          {
+            "by": "E. WARD",
+            "text": "Hondo called. So did Site 11."
+          }
+        ],
+        "timeline": {
+          "duration": 8.709999999999999,
+          "cues": [
+            {
+              "at": 0.3,
+              "duration": 0.71,
+              "text": "Ward.",
+              "by": "E. WARD",
+              "aside": null
+            },
+            {
+              "at": 1.46,
+              "duration": 2.28,
+              "text": "It is Reyes. I am at the diner on the old road.",
+              "by": "YOU",
+              "aside": null
+            },
+            {
+              "at": 4.1899999999999995,
+              "duration": 1.83,
+              "text": "I read the telex. All of it.",
+              "by": "E. WARD",
+              "aside": null
+            },
+            {
+              "at": 6.47,
+              "duration": 2.04,
+              "text": "Hondo called. So did Site 11.",
+              "by": "E. WARD",
+              "aside": null
+            }
+          ]
+        }
+      },
+      {
+        "at": 22.122666666666667,
+        "gt": 0,
+        "lines": [
+          {
+            "by": "YOU",
+            "text": "What did they say?"
+          },
+          {
+            "by": "E. WARD",
+            "text": "Enough. I am not doing this on a pay phone."
+          }
+        ],
+        "timeline": {
+          "duration": 4.45,
+          "cues": [
+            {
+              "at": 0.3,
+              "duration": 1.34,
+              "text": "What did they say?",
+              "by": "YOU",
+              "aside": null
+            },
+            {
+              "at": 2.09,
+              "duration": 2.16,
+              "text": "Enough. I am not doing this on a pay phone.",
+              "by": "E. WARD",
+              "aside": null
+            }
+          ]
+        }
+      },
+      {
+        "at": 22.144,
+        "gt": 0,
+        "lines": [
+          {
+            "by": "YOU",
+            "text": "I am checking the old road first."
+          },
+          {
+            "by": "E. WARD",
+            "text": "Then check it, and come back. I want you on the console before the morning series."
+          },
+          {
+            "by": "E. WARD",
+            "text": "Six o'clock, Reyes."
+          }
+        ],
+        "timeline": {
+          "duration": 9,
+          "cues": [
+            {
+              "at": 0.3,
+              "duration": 1.93,
+              "text": "I am checking the old road first.",
+              "by": "YOU",
+              "aside": null
+            },
+            {
+              "at": 2.6799999999999997,
+              "duration": 4.04,
+              "text": "Then check it, and come back. I want you on the console before the morning series.",
+              "by": "E. WARD",
+              "aside": null
+            },
+            {
+              "at": 7.17,
+              "duration": 1.63,
+              "text": "Six o'clock, Reyes.",
+              "by": "E. WARD",
+              "aside": null
+            }
+          ]
+        }
+      }
+    ],
+    "captions": [],
+    "dial": [],
+    "ringbacks": [],
+    "starts": [
+      {
+        "at": 21.932000000000002,
+        "duration": 0.71,
+        "expectedEnd": 22.642000000000003,
+        "decoded": {
+          "bytes": 6380,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 0.71,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.122666666666667,
+        "stoppedAt": 22.122666666666667,
+        "master": true,
+        "bufferId": 17,
+        "phoneKey": "phone:bd46454349806cd2",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 23.092000000000002,
+        "duration": 2.28,
+        "expectedEnd": 25.372000000000003,
+        "decoded": {
+          "bytes": 18860,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.28,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.122666666666667,
+        "stoppedAt": 22.122666666666667,
+        "master": true,
+        "bufferId": 18,
+        "phoneKey": "phone:1234caee4f6cb643",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 25.822000000000003,
+        "duration": 1.83,
+        "expectedEnd": 27.652,
+        "decoded": {
+          "bytes": 15404,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.83,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.122666666666667,
+        "stoppedAt": 22.122666666666667,
+        "master": true,
+        "bufferId": 19,
+        "phoneKey": "phone:1ec6b8f6fccfd3d6",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 28.102,
+        "duration": 2.04,
+        "expectedEnd": 30.142,
+        "decoded": {
+          "bytes": 16940,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.04,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.122666666666667,
+        "stoppedAt": 22.122666666666667,
+        "master": true,
+        "bufferId": 20,
+        "phoneKey": "phone:d5ff2e5f8a59ea81",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 22.422666666666668,
+        "duration": 1.34,
+        "expectedEnd": 23.762666666666668,
+        "decoded": {
+          "bytes": 11372,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.34,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": 22.144,
+        "master": true,
+        "bufferId": 21,
+        "phoneKey": "phone:0b6f1293215564ab",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 24.212666666666667,
+        "duration": 2.16,
+        "expectedEnd": 26.372666666666667,
+        "decoded": {
+          "bytes": 17900,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.16,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": 22.144,
+        "master": true,
+        "bufferId": 22,
+        "phoneKey": "phone:a59f3517c67d3523",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 22.444,
+        "duration": 1.93,
+        "expectedEnd": 24.374,
+        "decoded": {
+          "bytes": 16172,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.93,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 23,
+        "phoneKey": "phone:d347afd54b99643b",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 24.823999999999998,
+        "duration": 4.04,
+        "expectedEnd": 28.863999999999997,
+        "decoded": {
+          "bytes": 33068,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.04,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 24,
+        "phoneKey": "phone:ce17d6a45ae5e59f",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      },
+      {
+        "at": 29.314,
+        "duration": 1.63,
+        "expectedEnd": 30.944,
+        "decoded": {
+          "bytes": 13676,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.63,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 25,
+        "phoneKey": "phone:3508c20fca942e50",
+        "sfxPath": [
+          {
+            "kind": "AudioBufferSourceNode"
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "highpass",
+            "hz": 320
+          },
+          {
+            "kind": "lowpass",
+            "hz": 3200
+          },
+          {
+            "kind": "GainNode"
+          },
+          {
+            "kind": "sfx"
+          }
+        ]
+      }
+    ]
+  },
+  "requests": [],
+  "bad_responses": [],
+  "errors": [],
+  "checks": [
+    {
+      "pass": true,
+      "message": "all 24 authored telephone recordings exist in the catalogue"
+    },
+    {
+      "pass": true,
+      "message": "telephone voices default to Off on a fresh device"
+    },
+    {
+      "pass": true,
+      "message": "the real Kinski setting enables telephone voices and persists it"
+    },
+    {
+      "pass": true,
+      "message": "telephone voices remain enabled after reload"
+    },
+    {
+      "pass": true,
+      "message": "AudioSys preloads exactly the 24 telephone MP3 buffers"
+    },
+    {
+      "pass": true,
+      "message": "the real Chapter 2 phone interaction selects both authored Ward lines"
+    },
+    {
+      "pass": true,
+      "message": "both Ward sources use genuinely decoded MP3s"
+    },
+    {
+      "pass": true,
+      "message": "Ward speech follows high-pass 320 Hz → low-pass 3200 Hz → SFX → master"
+    },
+    {
+      "pass": true,
+      "message": "caption cues and scheduled speech use each real decoded buffer's full duration"
+    },
+    {
+      "pass": true,
+      "message": "the live handset path produces nonzero master analyser samples"
+    },
+    {
+      "pass": true,
+      "message": "master volume zero silences handset analyser samples"
+    },
+    {
+      "pass": true,
+      "message": "pause holds both the AudioContext clock and story timers"
+    },
+    {
+      "pass": true,
+      "message": "pause does not prematurely finish the Ward call"
+    },
+    {
+      "pass": true,
+      "message": "both Ward buffers reach their natural ends without truncation"
+    },
+    {
+      "pass": true,
+      "message": "both exact Ward captions follow the audio-derived game-time cues"
+    },
+    {
+      "pass": true,
+      "message": "the handset and chapter advance only after the complete spoken call"
+    },
+    {
+      "pass": true,
+      "message": "loading a real saved case stops both current and future telephone sources"
+    },
+    {
+      "pass": true,
+      "message": "reset cancels the old telephone session, including its queued second line"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora speech starts only after the genuine dial and ringback interval"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora selects every exact quotation and retains stage directions as unvoiced cues"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora schedules its 3 actual decoded MP3 identities through the handset path"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora schedules scene completion after the last full clip, with no voiced aside or history"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora's first scheduled MP3 reaches its real AudioContext start"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 2 Nora's short branch check cancels all remaining scheduled speech on reset"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 3 field Nora selects every exact quotation and retains stage directions as unvoiced cues"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 3 field Nora schedules its 4 actual decoded MP3 identities through the handset path"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 3 field Nora schedules scene completion after the last full clip, with no voiced aside or history"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 3 field Nora's first scheduled MP3 reaches its real AudioContext start"
+    },
+    {
+      "pass": true,
+      "message": "Chapter 3 field Nora's short branch check cancels all remaining scheduled speech on reset"
+    },
+    {
+      "pass": true,
+      "message": "the Chapter 3 receiver selects the authored Tomás fragment"
+    },
+    {
+      "pass": true,
+      "message": "the receiver uses the existing d111f9a951311961 Tomás recording"
+    },
+    {
+      "pass": true,
+      "message": "the room-6 phone choice automatically voices all six quotations, without asides"
+    },
+    {
+      "pass": true,
+      "message": "room 6 repeats the identical decoded Tomás buffer from the Chapter 3 receiver"
+    },
+    {
+      "pass": true,
+      "message": "all room-6 quotations retain the handset filter path"
+    },
+    {
+      "pass": true,
+      "message": "closing the room-6 conversation cancels all six queued telephone sources"
+    },
+    {
+      "pass": true,
+      "message": "the payphone automatically speaks its four opening quotations, excluding the stage direction"
+    },
+    {
+      "pass": true,
+      "message": "Ask what they said speaks only the two new lines, without repeating retained history"
+    },
+    {
+      "pass": true,
+      "message": "a new payphone choice stops the previous queue before its replacement"
+    },
+    {
+      "pass": true,
+      "message": "refreshing unchanged payphone text does not replay the phone audio"
+    },
+    {
+      "pass": true,
+      "message": "the road choice speaks only its three new quotations, excluding She hangs up"
+    },
+    {
+      "pass": true,
+      "message": "the final payphone queue replaces the previous two lines without overlap"
+    },
+    {
+      "pass": true,
+      "message": "closing the payphone panel cancels the final queued lines"
+    },
+    {
+      "pass": true,
+      "message": "quitting to title stops a current call and its future second line"
+    },
+    {
+      "pass": true,
+      "message": "a real New night starts without old telephone voices"
+    },
+    {
+      "pass": true,
+      "message": "turning Kinski Off immediately stops the whole active phone queue"
+    },
+    {
+      "pass": true,
+      "message": "with Kinski Off the same real phone interaction uses the original unvoiced call"
+    },
+    {
+      "pass": true,
+      "message": "the original Off timing, exact captions and chapter progression still work"
+    },
+    {
+      "pass": true,
+      "message": "telephone MP3 requests have no HTTP failures (0 requests)"
+    },
+    {
+      "pass": true,
+      "message": "strict-CSP single-file playback needs no external telephone MP3 request"
+    },
+    {
+      "pass": true,
+      "message": "no browser errors or warnings"
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: analyser samples are not a hardware listening test"
+}

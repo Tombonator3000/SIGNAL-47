@@ -26,6 +26,16 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           persist-credentials: false
+      # The bought sounds and models live in a private repo: their licences do not allow the raw
+      # files in this public one. A read-only deploy key fetches them into web/src/assets/licensed
+      # (ignored here); the game builds without them too.
+      - name: Licensed assets (private repo)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          repository: Tombonator3000/SIGNAL-47-assets
+          ssh-key: ${{ secrets.ASSETS_DEPLOY_KEY }}
+          path: web/src/assets/licensed
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22

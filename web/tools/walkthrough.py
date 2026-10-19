@@ -37,12 +37,16 @@ async def main():
         # the picture and the sounds (core/vhs.ts, core/Audio.ts)
         check(await ev("S47.vhs.picture") == ('vhs' if Q == 'high' else 'off') and await ev("S47.vhs.on") == (Q == 'high'), f'picture defaults to {"the VHS look" if Q == "high" else "clean"} on {Q}')
         check(await ev("S47.renderer.info.render.calls") > 60, f'draw calls counted over both passes ({await ev("S47.renderer.info.render.calls")})')
-        try: await pg.wait_for_function("Object.keys(S47.game.d.audio.buf).length >= 25", timeout=60000)
+        try: await pg.wait_for_function("S47.game.d.audio.ready", timeout=60000)
         except Exception: pass
         sounds = await ev("Object.keys(S47.game.d.audio.buf)")
-        check(len([key for key in sounds if not key.startswith('phone:')]) == 45 and
-              len([key for key in sounds if key.startswith('phone:')]) == 24,
-              'all 45 ordinary sounds and 24 telephone recordings decoded')
+        ordinary = [key for key in sounds if not key.startswith(('phone:', 'lic:'))]
+        telephone = [key for key in sounds if key.startswith('phone:')]
+        licensed = [key for key in sounds if key.startswith('lic:')]
+        # engineStart/engineOff join the old 45 sounds. The private bank adds
+        # its own namespace and remains optional for builds without the folder.
+        check(len(ordinary) == 47 and len(telephone) == 24 and len(licensed) in (0, 15),
+              f'all 47 ordinary sounds, 24 telephone recordings and {len(licensed)} optional licensed sounds decoded')
         check(await ev("(()=>{ const a=S47.game.d.audio; ['tile','concrete','dirt','wood','carpet'].forEach(s=>a.step(s)); a.thunder(0.4); a.far('owl', S47.player.pos, 0.3); return true; })()"), 'steps on every surface, far thunder and a far owl play')
         dup = await ev("(()=>{ const ids = S47.game.d.inter.items.map(i => i.id); return ids.filter((x, i) => ids.indexOf(x) !== i); })()")
         check(not dup, f'every interactable has its own id ({dup})')

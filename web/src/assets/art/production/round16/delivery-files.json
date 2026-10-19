@@ -1,0 +1,130 @@
+{
+  "created_at_utc": "2026-10-19T11:51:05.613171+00:00",
+  "files": [
+    {
+      "file": "web/src/assets/art/production/round16/PROCESSING.md",
+      "bytes": 5212,
+      "sha256": "7692d6f44b17fa24303d9c9cb12d111f26f725cdeb6a93d1150f9af8642c301f"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/contact_sheet.png",
+      "bytes": 255406,
+      "sha256": "98ad67ebd6891aee89e0cdff12acaf034287ad1505ac5f50389d69a2e9002842"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/east_0_180_source_detail.jpg",
+      "bytes": 40261,
+      "sha256": "df04719b94220414d3a70497af6d49a70da9d3370f6728e4b17ebf470db56f14"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/horizon_dawn_seam_center.png",
+      "bytes": 1760553,
+      "sha256": "f27d28066998e5665ca16a1f761409ce9a3de6ed92bd7e0742b6c7c29b9d42aa"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/horizon_night_seam_center.png",
+      "bytes": 887015,
+      "sha256": "d02f30d87c55cafa659a973c58948876412d105aa6e5bdbe8031bf55a2c912e5"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/independent_review.json",
+      "bytes": 1121,
+      "sha256": "9e36e39fc97272299ed6f7f41641d271dca2420e3e807dcb24e21f18997c58d8"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/input-state.json",
+      "bytes": 639,
+      "sha256": "235a39ceef09f5f67d5b2d1455fa58347b690d18f0b2c194ea08b3c350063f22"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/land_detail_contact.png",
+      "bytes": 244645,
+      "sha256": "04c2e3ec94e3a0bd144f69af05480e7023212b47b183c09f44aad38096a5a6fd"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/processing.json",
+      "bytes": 3858,
+      "sha256": "d90131b4bb7c4d0111a21a63062247d175e87f4ff73d0a3183600e793354cb6d"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/prompts.json",
+      "bytes": 6298,
+      "sha256": "3b14641d4d91a1455c444317f4f1e982348f8c6e6df557132013ee7825139708"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/rejected_stretched_ground_contact.png",
+      "bytes": 194744,
+      "sha256": "752b3d9d649b045b35f6d6ed47929d6d60b4c6b89af8bad5d26cd0d94ad8b762"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/seam_detail.png",
+      "bytes": 296542,
+      "sha256": "8b62d0b9e43895294bfe890c6ede58bb339afbf1566434679b0aabcef68764f1"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/shared_alpha.png",
+      "bytes": 19109,
+      "sha256": "3a6e59867ec82672d1dd1979a93bbe534880a29eedf3baae6103e0d48099ae7b"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/silhouette_y.csv",
+      "bytes": 233982,
+      "sha256": "e07d3d38f572e3916d545c05d5ff01609e8edb92e5b9dec69d77880ed30734df"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/sources/east_0_180.png",
+      "bytes": 761804,
+      "sha256": "96dd2343b20ceb3862a226d973ab02904735a35b391416d9b48350a24d3d3b8e"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/sources/west_180_360.png",
+      "bytes": 765280,
+      "sha256": "de2ed4bd528e652568f8fc0944cdaefc5d78457376877f45b2f2f32936ab3961"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/srgb.icc",
+      "bytes": 588,
+      "sha256": "1a243a8da3ad106b4ff87031ecae56cf93ba4c9ea8b3804501ce62ae54055bda"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/stitched_neutral.png",
+      "bytes": 2448743,
+      "sha256": "46d9e846e25461207f43d3a18546694acdc84b38e438b35f106e63d735b1604c"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/verification.json",
+      "bytes": 8724,
+      "sha256": "cf096024df5108b353125d2685d0225c038dea7c78a1217fb4ed066c414ba16b"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/verification_before_ground_fix.json",
+      "bytes": 6035,
+      "sha256": "c4ee010450273ec21951381e3075212d5d729d78e98394639dfc6ef21be1ce97"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/verification_initial.json",
+      "bytes": 6714,
+      "sha256": "e68ad0739597bff043553123e5e09cdff4dbbb96635e680ad88135625ef7cb90"
+    },
+    {
+      "file": "web/src/assets/art/production/round16/west_180_360_source_detail.jpg",
+      "bytes": 44867,
+      "sha256": "4f837949d5ee07e4969489d18c38023343a35f44a0c992de180e059e7df360e7"
+    },
+    {
+      "file": "web/src/assets/art/sky/MANIFEST.md",
+      "bytes": 13266,
+      "sha256": "55d213bcbda4b2cba18f3b5402bb15bf386ad047f1d51675dba714328f091560"
+    },
+    {
+      "file": "web/src/assets/art/sky/horizon_dawn.png",
+      "bytes": 1760601,
+      "sha256": "67677a9549fbff03d9601680707fb28bb10f34da8787522b7d23d5149fa42238"
+    },
+    {
+      "file": "web/src/assets/art/sky/horizon_night.png",
+      "bytes": 886969,
+      "sha256": "0a0977bf22f731216a55aa0e3dde29d2e306b51cabc253073773e2b66ee0535d"
+    }
+  ]
+}

@@ -3,6 +3,8 @@
 // The 3D game has stopped by the time the title comes up, so from there on everything runs
 // on real time. Nothing here is saved.
 
+import { BOUGHT_SFX } from '../core/Audio';
+
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 export const CREDITS: [string, string][] = [
@@ -17,6 +19,8 @@ export const CREDITS: [string, string][] = [
   ['National anthem on the radio', 'The United States Air Force Band, "The Star Spangled Banner" (choral), public domain'],
   ['Out in the dark', 'Freesound: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0)'],
   ['Sound effects, CC0', 'Freesound: inspire153 and craigsmith (the truck engine), viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.'],
+  // not asked for by their licence; named because the others are
+  ...(BOUGHT_SFX ? [['Sound effects', 'Ultimate SFX for Games, Function Loops']] as [string, string][] : []),
   ['Fonts', 'VT323, Reenie Beanie and Oswald (SIL Open Font License 1.1). Special Elite (Apache License 2.0).'],
   ['Built with', 'three.js (MIT)'],
   ['', 'Everything in this story is invented. The comet was real.'],

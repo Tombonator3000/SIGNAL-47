@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { rng } from '../core/textures';
 import { artImage } from '../core/art';
+import { GLOWS } from './backdrop';
 
 // Band of the Milky Way runs diagonally across the north view, as in the concept art.
 const A = new THREE.Vector3(-0.62, 0.22, -0.75).normalize();
@@ -21,6 +22,9 @@ export class Sky {
     uDawn: { value: 0 },
     uSunDir: { value: new THREE.Vector3(0.98, -0.02, -0.19).normalize() },
     uSun: { value: 0 },
+    // the lit places from here (SARO, Caliche): the horizontal direction in the sky's own terms (x, z),
+    // how bright, and how wide (radians); set each frame by world/backdrop.ts, which uses them too
+    uGlow: { value: Array.from({ length: GLOWS }, () => new THREE.Vector4(1, 0, 0, 1)) },
   };
   /** Colour of the haze at the horizon now: the scene's fog follows it (main.ts). */
   fogColor = new THREE.Color(0x0b0f19);
@@ -55,7 +59,7 @@ export class Sky {
             gl_Position = p.xyww;
           }`,
         fragmentShader: /* glsl */`
-          uniform float uTime, uFlash, uDawn, uSun; uniform vec3 uFlashDir, uBandN, uCore, uSunDir;
+          uniform float uTime, uFlash, uDawn, uSun; uniform vec3 uFlashDir, uBandN, uCore, uSunDir; uniform vec4 uGlow[${GLOWS}];
           uniform sampler2D uPanorama;
           varying vec3 vDir;
           float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
@@ -69,8 +73,16 @@ export class Sky {
             vec3 d = normalize(vDir);
             float h = d.y;
             vec3 col = mix(vec3(0.030, 0.034, 0.060), vec3(0.006, 0.009, 0.024), smoothstep(-0.02, 0.55, h));
-            // warm glow low on the horizon (site lights, distant towns)
-            col += vec3(0.30, 0.15, 0.06) * exp(-max(h, 0.0) * 22.0) * 0.30;
+            // warm glow low on the horizon (site lights, distant towns): a trace all round, and
+            // most over the lit places where they are from here (uGlow; the painted horizon, backdrop.ts):
+            // away from them the horizon goes to a cold blue (the concept art of the night)
+            float glow = 0.15;
+            vec2 hd = normalize(d.xz + vec2(1e-5, 0.0));
+            for (int i = 0; i < ${GLOWS}; i++) {
+              float t = acos(clamp(dot(hd, uGlow[i].xy), -1.0, 1.0)) / uGlow[i].w;
+              glow += uGlow[i].z * exp(-t * t) * 2.6;
+            }
+            col += vec3(0.30, 0.15, 0.06) * exp(-max(h, 0.0) * 22.0) * 0.30 * glow;
             // Milky Way
             float b = dot(d, uBandN);
             float band = exp(-b * b / 0.022);

@@ -503,7 +503,7 @@ export class Prologue {
     this.ns.k3Open = true;
     this.log('RX BANK 3  K3 OPEN');
     const at = this.worldPos(room.objs.rack);
-    audio.play('switch', { gain: 1.0, rate: 0.62, at });
+    audio.play(audio.or('rack_switch', 'switch'), { gain: 1.0, rate: 0.62, at });
     audio.play('thudSoft', { gain: 0.45, rate: 1.4, at, when: 0.03 });
     this.decoder.stop();
     this.applyK3(true);
@@ -523,7 +523,7 @@ export class Prologue {
     this.ns.k3Open = false;
     this.log('RX BANK 3  K3 CLOSED');
     const at = this.worldPos(room.objs.rack);
-    audio.play('switch', { gain: 0.9, at });
+    audio.play(audio.or('rack_switch', 'switch'), { gain: 0.9, at });
     audio.play('thudSoft', { gain: 0.5, at, when: 0.12 });
     this.applyK3(false);
     room.lever.rotation.z = -0.6;
@@ -563,7 +563,7 @@ export class Prologue {
       return;
     }
     const at = this.worldPos(room.objs.rack);
-    audio.play('switch', { gain: 0.9, at });
+    audio.play(audio.or('rack_switch', 'switch'), { gain: 0.9, at });
     audio.play('thudSoft', { gain: 0.5, at, when: 0.12 });
     room.lever.rotation.z = -0.6;
     let k = 0;
@@ -713,7 +713,7 @@ export class Prologue {
     this.after(dur + 0.15, () => {
       ui.toast('Click. The line is dead.', 3);
       room.handset.visible = true;
-      audio.play('thudSoft', { gain: 0.5, at: this.worldPos(room.objs.phone) });
+      audio.play(audio.or('handset_down', 'thudSoft'), { gain: 0.5, at: this.worldPos(room.objs.phone) });   // the handset on its cradle
       this.cinematic = false;
       this.note(`${clockText(this.clock, false)}. Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.`);
       this.startCountdown();

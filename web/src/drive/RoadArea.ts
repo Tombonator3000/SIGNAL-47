@@ -110,7 +110,8 @@ export class RoadArea implements DriveArea {
     this.glints = delineators(b).map((g) => ({ i: g.i, p: g.p.clone().add(origin) }));
     mergeStatic(b.statics);
     this.flora = roadFlora(roadFlood, postsOf(b.obstacles));
-    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), saroLights(b), this.glow.build(), this.flora.group);
+    saroLights(b);
+    this.group.add(b.statics, wireMesh(b), sharedHorizon('road', this.glow), this.glow.build(), this.flora.group);
 
     const w = (x: number, z: number) => new THREE.Vector3(origin.x + x, origin.y + surfaceY(x, z), origin.z + z);
     this.obstacles = b.obstacles.map((o) => o.kind === 'circle' ? { ...o, x: o.x + origin.x, z: o.z + origin.z }

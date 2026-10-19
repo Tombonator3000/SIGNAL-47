@@ -1,0 +1,374 @@
+{
+  "checked_at_utc": "2026-10-19T11:48:29.385832+00:00",
+  "result": "PASS",
+  "checks": [
+    {
+      "check": "night format/size/RGBA8",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "night sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "profile": "sRGB built-in",
+        "icc_bytes": 588
+      }
+    },
+    {
+      "check": "night north exact seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "night south exact seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "night seam continuity versus local terrain texture",
+      "result": "PASS",
+      "detail": {
+        "north": {
+          "join_mean_RGB_step": 0.0,
+          "local_p95_column_mean_RGB_step": 0.15625,
+          "local_max_RGB_step": 1
+        },
+        "south": {
+          "join_mean_RGB_step": 0.0,
+          "local_p95_column_mean_RGB_step": 0.154296875,
+          "local_max_RGB_step": 2
+        }
+      }
+    },
+    {
+      "check": "dawn format/size/RGBA8",
+      "result": "PASS",
+      "detail": {
+        "size": [
+          8192,
+          1024
+        ],
+        "mode": "RGBA",
+        "bit_depth": 8,
+        "color_type": 6
+      }
+    },
+    {
+      "check": "dawn sRGB ICC",
+      "result": "PASS",
+      "detail": {
+        "profile": "sRGB built-in",
+        "icc_bytes": 588
+      }
+    },
+    {
+      "check": "dawn north exact seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "dawn south exact seam",
+      "result": "PASS",
+      "detail": {
+        "max_RGBA_difference": 0
+      }
+    },
+    {
+      "check": "dawn seam continuity versus local terrain texture",
+      "result": "PASS",
+      "detail": {
+        "north": {
+          "join_mean_RGB_step": 0.0,
+          "local_p95_column_mean_RGB_step": 0.5240885416666667,
+          "local_max_RGB_step": 4
+        },
+        "south": {
+          "join_mean_RGB_step": 0.0,
+          "local_p95_column_mean_RGB_step": 0.48372395833333337,
+          "local_max_RGB_step": 6
+        }
+      }
+    },
+    {
+      "check": "identical alpha masks",
+      "result": "PASS",
+      "detail": {
+        "different_pixels": 0,
+        "alpha_sha256": "a1ea299fa3d8a61a4b984940e0912fc0239328e396ffde2b347284742695db71"
+      }
+    },
+    {
+      "check": "opaque baseline and all land below",
+      "result": "PASS",
+      "detail": {
+        "baseline_y": 768,
+        "nonopaque_pixels": 0
+      }
+    },
+    {
+      "check": "no land above y608",
+      "result": "PASS",
+      "detail": {
+        "topmost_nonzero_alpha_y": 654,
+        "max_height_px": 114
+      }
+    },
+    {
+      "check": "clear sky and 1–2px contour edge",
+      "result": "PASS",
+      "detail": {
+        "max_partial_rows_per_column": 2,
+        "partial_pixels": 9736,
+        "interior_holes": 0,
+        "partial_pixels_outside_first_two_rows": 0,
+        "empty_sky_pixels": 5962786,
+        "zero_RGB_in_empty_sky": true
+      }
+    },
+    {
+      "check": "north height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 27,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "15_65 height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 56,
+        "limit_px": 58
+      }
+    },
+    {
+      "check": "sunrise_65_95 height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 10,
+        "limit_px": 11
+      }
+    },
+    {
+      "check": "south height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 27,
+        "limit_px": 27
+      }
+    },
+    {
+      "check": "195_250 height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 69,
+        "limit_px": 70
+      }
+    },
+    {
+      "check": "310_345 height",
+      "result": "PASS",
+      "detail": {
+        "max_height_px": 45,
+        "limit_px": 46
+      }
+    },
+    {
+      "check": "azimuth layout",
+      "result": "PASS",
+      "detail": {
+        "north_x": 0,
+        "east_x": 2048,
+        "south_x": 4096,
+        "west_x": 6144,
+        "sunrise79_x": 1797.688888888889,
+        "pixels_per_degree": 22.755555555555556
+      }
+    },
+    {
+      "check": "butte130 height",
+      "result": "PASS",
+      "detail": {
+        "height_px": 91,
+        "degrees": 3.9990234375,
+        "range_px": [
+          86,
+          98
+        ]
+      }
+    },
+    {
+      "check": "west250_310 height",
+      "result": "PASS",
+      "detail": {
+        "height_px": 114,
+        "degrees": 5.009765625,
+        "range_px": [
+          100,
+          116
+        ]
+      }
+    },
+    {
+      "check": "night ranch light count/size",
+      "result": "PASS",
+      "detail": {
+        "count": 8,
+        "sizes": [
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "check": "dawn ranch light count/size",
+      "result": "PASS",
+      "detail": {
+        "count": 0,
+        "sizes": []
+      }
+    },
+    {
+      "check": "night ground contains distinct horizontal rows",
+      "result": "PASS",
+      "detail": {
+        "minimum_mean_RGB_difference_between_bottom_rows": 0.13663736979166666,
+        "identical_adjacent_bottom_rows": 0
+      }
+    },
+    {
+      "check": "dawn ground contains distinct horizontal rows",
+      "result": "PASS",
+      "detail": {
+        "minimum_mean_RGB_difference_between_bottom_rows": 0.4262288411458333,
+        "identical_adjacent_bottom_rows": 0
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "sky/horizon_night.png",
+      "bytes": 886969,
+      "sha256": "0a0977bf22f731216a55aa0e3dde29d2e306b51cabc253073773e2b66ee0535d",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    },
+    {
+      "file": "sky/horizon_dawn.png",
+      "bytes": 1760601,
+      "sha256": "67677a9549fbff03d9601680707fb28bb10f34da8787522b7d23d5149fa42238",
+      "size": [
+        8192,
+        1024
+      ],
+      "mode": "RGBA",
+      "bit_depth": 8
+    }
+  ],
+  "source_files": [
+    {
+      "file": "sources/east_0_180.png",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "bytes": 761804,
+      "sha256": "96dd2343b20ceb3862a226d973ab02904735a35b391416d9b48350a24d3d3b8e"
+    },
+    {
+      "file": "sources/west_180_360.png",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "bytes": 765280,
+      "sha256": "de2ed4bd528e652568f8fc0944cdaefc5d78457376877f45b2f2f32936ab3961"
+    }
+  ],
+  "visual_review": {
+    "result": "PASS",
+    "reviewer": "root",
+    "inspected": [
+      "sources/east_0_180.png",
+      "sources/west_180_360.png",
+      "contact_sheet.png",
+      "land_detail_contact.png",
+      "seam_detail.png"
+    ],
+    "findings": "Samme terreng i begge lys. Åpninger mot nord/sør/øst, høyeste vegg mot vest og butte ved130°. Ingen himmel, tekst, personer, dyr, bygg, veier eller andre forbudte objekter. Ingen synlig nord-/sørskjøt. Tidlig bunnstrekk er borte i endelige filer.",
+    "independent_review": {
+      "result": "PASS",
+      "report": "independent_review.json"
+    }
+  },
+  "runtime": "UNVERIFIED: Ingen integrasjon eller spillkjøring i denne rene assetleveransen.",
+  "scope_observation": {
+    "result": "UNVERIFIED",
+    "reason": "Global Git-status kan ikke brukes som skrivebevis fordi parallelle endringer kom til mens bilder ble produsert. Agentens faktiske filskriving er begrenset til sky/ og production/round16/; innebygd bildegenerator har i tillegg sitt standardarkiv utenfor repoet. Ingen kodefiler, log.md, memory.md eller todo.md er skrevet av denne leveransen. Ingen commit eller push er kjørt.",
+    "observed_concurrent_tracked_changes": [
+      "web/ART_BRIEF.md",
+      "web/src/drive/OldRoad.ts",
+      "web/src/drive/RoadArea.ts",
+      "web/src/drive/corridors.ts",
+      "web/src/drive/roadPlaces.ts",
+      "web/src/drive/roadTextures.ts",
+      "web/src/main.ts",
+      "web/src/world/Sky.ts",
+      "web/src/world/Station01.ts",
+      "web/src/world/World.ts",
+      "web/src/world/horizon.ts"
+    ],
+    "initial_brief_preserved": true
+  }
+}

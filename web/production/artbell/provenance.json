@@ -1,0 +1,539 @@
+{
+  "synthetic": true,
+  "voice_label": "Art Bell synthetic parody",
+  "language": "en",
+  "generator": "tools/artbell/generate.py, adapted from the verified local Kinski asset pipeline without changing Kinski files",
+  "voice_profile_id": "494881fc",
+  "voice_profile_origin": "New local clone profile, explicitly named synthetic radio parody. No consent recording, own-voice assertion, endorsement or verification flag was created.",
+  "reference": {
+    "source_page": "https://archive.org/details/Artbell.com_Commemorative_Disc",
+    "artifact": "Artbell.com Commemorative Disc",
+    "creator": "Rowland Network Communications",
+    "artifact_publication": "January 2003",
+    "original_filename": "images/website/media/ArtFareWell.mp3",
+    "source_url": "https://archive.org/download/Artbell.com_Commemorative_Disc/Artbell.com.iso/images%2Fwebsite%2Fmedia%2FArtFareWell.mp3",
+    "original_sha256": "9ea6e687c7c3e0bd1f385ac806a782120bbaa377ef3447a20c155fd5e6eb3337",
+    "original_bytes": 2268481,
+    "original_encoding": "Mono 44100 Hz MP3, 80000 bit/s, 226.6383 s",
+    "selected_interval_seconds": [
+      29,
+      33.4
+    ],
+    "selected_duration_seconds": 4.4,
+    "conditioning_text": "That's no small feat and it's something I'm extremely proud of.",
+    "reference_sha256": "1e99f04ee7126f5d6f3e0a23d3cd20fd5a12d6b5ed563bc95e61220653cbea82",
+    "transcription": "Existing faster-whisper-small via VoiceStudio; clip and wider context agree on the complete sentence. Not human-listened.",
+    "selection_reason": "One complete sentence with bounded ASR start/end, no neighbouring sentence. Engine max reference is 20 seconds; this was a phrase selection, not a hard engine limit.",
+    "isolation": "The original is a continuous first-person CD message about his own Coast to Coast AM programme. No human music/overlap assessment has been performed.",
+    "source_not_bundled": true,
+    "rights_status": "Public accessibility of the preserved primary-source artifact does not constitute a licence grant or endorsement."
+  },
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "language": "en",
+    "effect_preset": "broadcast (documented API default)"
+  },
+  "runtime_assets": "Generated MP3 files and catalog.json with exact texts, templates and finite time-bank references. No source/reference recording, model, local service URL or VoiceStudio runtime dependency.",
+  "postprocessing": "Per-clip constant gain toward -20 dBFS non-silent RMS (-50 dBFS block threshold), capped at -2 dBFS decoded-MP3 peak. Mono 24 kHz, 64 kbit/s MP3; no dynamic compression, pitch shift or time stretch in the asset conversion.",
+  "scope": "Art Bell synthetic radio voice for who=host on 1420 Caliche / Night Line, including the boy call, sign-off and trip programme. Callers, 1230 Roswell, news, CB and in-person Earl are excluded.",
+  "counts": {
+    "clipCount": 115,
+    "staticHostLines": 38,
+    "dynamicHostTemplates": 6,
+    "timeFragmentClips": 8,
+    "timeBankClips": 69,
+    "words": 668,
+    "characters": 3724,
+    "excludedInPersonEarlLines": 12
+  },
+  "normalization": "text.replace(/\\s+/g, \" \").trim(); id = SHA-256(normalized UTF-8 text).slice(0,16). Template prefix/suffix/raw preserve original whitespace.",
+  "cache_identity": "3dac2dbb769eac80",
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing VoiceStudio 0.5.6 and already installed OmniVoice/faster-whisper-small reused. No new model or service installed.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "pronunciation_note": "The demo ASR writes Caliche as Kalish. Its audible pronunciation has not been human-checked. Runtime spelling remains original.",
+  "qa": {
+    "status": "PASS",
+    "completed_utc": "2026-10-19T18:09:42.666977+00:00",
+    "report": "production/artbell/verification.json",
+    "clips": 115,
+    "bytes": 2065028,
+    "duration_seconds": 247.98,
+    "corpus_sha256": "6538674fb796d1d6a6c3b241a20bafada193a1b34bb4d1500a98c80273afc019",
+    "encoding": "Every file ffprobe checked as mono 24000 Hz 64 kbit/s MP3, decoded for PCM energy/peak and positive duration, and matched by text and file SHA-256.",
+    "max_decoded_peak_dbfs": -2.441195424633576,
+    "samples_at_or_above_full_scale": 0,
+    "dropped_chunks": {
+      "confirmed_zero": 115,
+      "unrecorded_ids": []
+    },
+    "orphan_mp3_files": [],
+    "catalog_ids_match_corpus": true,
+    "template_contract_matches": true,
+    "asr_samples": 3,
+    "asr_interpretation": "Two dispersed longer lines were recognized word-for-word. The opening line differs only in numeral spellings, Nightline spacing and the proper noun Caliche (Kalish). Two actual time-bank sequences preserve their time values (307 and 12 oclock/1420); Caliche is rendered Keleshi in one. ASR is not a listening, pronunciation or likeness test.",
+    "assembled_clock_samples": 2,
+    "clock_report": "production/artbell/clock-asr.json",
+    "reference_pcm": {
+      "duration_seconds": 4.4,
+      "peak_dbfs": -3.6255552447022414,
+      "rms_dbfs": -21.38646731297795,
+      "nonsilent_rms_dbfs": -19.976355813567327,
+      "nonsilent_seconds": 3.18,
+      "samples_at_or_above_full_scale": 0
+    },
+    "demo_report": "production/artbell/demo.json",
+    "kinski_preservation": {
+      "report": "production/artbell/kinski-preservation.json",
+      "unchanged_mp3_count": 1555,
+      "unchanged_catalog": true,
+      "unchanged_profile_count": 5
+    },
+    "human_listened": false,
+    "speaker_similarity": "UNVERIFIED",
+    "emotional_delivery": "UNVERIFIED",
+    "clock_join_smoothness": "UNVERIFIED by human listening"
+  },
+  "corpus_sha256": "6538674fb796d1d6a6c3b241a20bafada193a1b34bb4d1500a98c80273afc019",
+  "pronunciation_overrides": [
+    {
+      "id": "7692c3ad3540bb80",
+      "runtime_text": "one",
+      "synthesis_text": "One.",
+      "cache_identity": "da1957b179f32145"
+    },
+    {
+      "id": "3fc4ccfe745870e2",
+      "runtime_text": "two",
+      "synthesis_text": "Two.",
+      "cache_identity": "c422246bf86f4778"
+    },
+    {
+      "id": "8b5b9db0c13db242",
+      "runtime_text": "three",
+      "synthesis_text": "Three.",
+      "cache_identity": "3020726f775ad896"
+    },
+    {
+      "id": "04efaf080f5a3e74",
+      "runtime_text": "four",
+      "synthesis_text": "Four.",
+      "cache_identity": "8fc3263bde9f69d4"
+    },
+    {
+      "id": "222b0bd51fcef7e6",
+      "runtime_text": "five",
+      "synthesis_text": "Five.",
+      "cache_identity": "3aa716e86e108082"
+    },
+    {
+      "id": "44778d82365e4af6",
+      "runtime_text": "six",
+      "synthesis_text": "Six.",
+      "cache_identity": "7aad2d95702303d0"
+    },
+    {
+      "id": "3ba8d02b16fd2a01",
+      "runtime_text": "seven",
+      "synthesis_text": "Seven.",
+      "cache_identity": "67f01e4c140b89d2"
+    },
+    {
+      "id": "c195d2d875623436",
+      "runtime_text": "eight",
+      "synthesis_text": "Eight.",
+      "cache_identity": "4d866ecaa31ffaff"
+    },
+    {
+      "id": "edcd8e701a2df0cd",
+      "runtime_text": "nine",
+      "synthesis_text": "Nine.",
+      "cache_identity": "0f2deddd12772ec2"
+    },
+    {
+      "id": "e4432baa90819aae",
+      "runtime_text": "ten",
+      "synthesis_text": "Ten.",
+      "cache_identity": "e4e62c66ebbe080d"
+    },
+    {
+      "id": "e979074ebd5633a7",
+      "runtime_text": "eleven",
+      "synthesis_text": "Eleven.",
+      "cache_identity": "a19bafd018b2c5e6"
+    },
+    {
+      "id": "d1a749ad879b6c07",
+      "runtime_text": "twelve",
+      "synthesis_text": "Twelve.",
+      "cache_identity": "8e98ea6fb6f4f11a"
+    },
+    {
+      "id": "102ad29298b7b442",
+      "runtime_text": "o'clock",
+      "synthesis_text": "O'clock.",
+      "cache_identity": "cc7d66395908901c"
+    },
+    {
+      "id": "ce924287df6e8c19",
+      "runtime_text": "oh-one",
+      "synthesis_text": "Oh-one.",
+      "cache_identity": "612901d298c007e1"
+    },
+    {
+      "id": "ce6c523e2f6cd78d",
+      "runtime_text": "oh-two",
+      "synthesis_text": "Oh-two.",
+      "cache_identity": "7ba65f78d54bcf18"
+    },
+    {
+      "id": "14b417222f7f3438",
+      "runtime_text": "oh-three",
+      "synthesis_text": "Oh-three.",
+      "cache_identity": "e51718fcb89e72f7"
+    },
+    {
+      "id": "00637cc75b1f2c2e",
+      "runtime_text": "oh-four",
+      "synthesis_text": "Oh-four.",
+      "cache_identity": "6d115062bc335e34"
+    },
+    {
+      "id": "0c248f4d6cdbb967",
+      "runtime_text": "oh-five",
+      "synthesis_text": "Oh-five.",
+      "cache_identity": "964e2f83a75fdf1b"
+    },
+    {
+      "id": "0b7c5501e296cc41",
+      "runtime_text": "oh-six",
+      "synthesis_text": "Oh-six.",
+      "cache_identity": "ff01c21f8a1be8e4"
+    },
+    {
+      "id": "d7bac7ab18c0c269",
+      "runtime_text": "oh-seven",
+      "synthesis_text": "Oh-seven.",
+      "cache_identity": "f05ac39ecb896718"
+    },
+    {
+      "id": "6fbab77346ae2cde",
+      "runtime_text": "oh-eight",
+      "synthesis_text": "Oh-eight.",
+      "cache_identity": "04a56923ea171a50"
+    },
+    {
+      "id": "e90082735ca0a335",
+      "runtime_text": "oh-nine",
+      "synthesis_text": "Oh-nine.",
+      "cache_identity": "9fe715e6e45abdb0"
+    },
+    {
+      "id": "9ecc81f0a4b6dfb0",
+      "runtime_text": "thirteen",
+      "synthesis_text": "Thirteen.",
+      "cache_identity": "fe423e06c0542762"
+    },
+    {
+      "id": "fef8f41cdcd20386",
+      "runtime_text": "fourteen",
+      "synthesis_text": "Fourteen.",
+      "cache_identity": "bc6068d53c594855"
+    },
+    {
+      "id": "c463967e5708cab7",
+      "runtime_text": "fifteen",
+      "synthesis_text": "Fifteen.",
+      "cache_identity": "d6c4d18fde3be864"
+    },
+    {
+      "id": "f2ce341fdaa67727",
+      "runtime_text": "sixteen",
+      "synthesis_text": "Sixteen.",
+      "cache_identity": "0b7156137b099f7d"
+    },
+    {
+      "id": "2c5abdef2a0eacb4",
+      "runtime_text": "seventeen",
+      "synthesis_text": "Seventeen.",
+      "cache_identity": "9956ba0520874bd9"
+    },
+    {
+      "id": "34357b18abddea18",
+      "runtime_text": "eighteen",
+      "synthesis_text": "Eighteen.",
+      "cache_identity": "e6ae2e2146598e30"
+    },
+    {
+      "id": "cde4e100efd26f5b",
+      "runtime_text": "nineteen",
+      "synthesis_text": "Nineteen.",
+      "cache_identity": "0b415fc7e709b838"
+    },
+    {
+      "id": "7c2c4df740f720b0",
+      "runtime_text": "twenty",
+      "synthesis_text": "Twenty.",
+      "cache_identity": "9b12e14add02ab67"
+    },
+    {
+      "id": "a69edb489f4eb7f2",
+      "runtime_text": "twenty-one",
+      "synthesis_text": "Twenty-one.",
+      "cache_identity": "a03425d7de1c169e"
+    },
+    {
+      "id": "2a8daa7aac7ad553",
+      "runtime_text": "twenty-two",
+      "synthesis_text": "Twenty-two.",
+      "cache_identity": "26460e39872c573a"
+    },
+    {
+      "id": "328e51fcaeaf1d92",
+      "runtime_text": "twenty-three",
+      "synthesis_text": "Twenty-three.",
+      "cache_identity": "49676b24e3c484ae"
+    },
+    {
+      "id": "1bcbce780ddd2273",
+      "runtime_text": "twenty-four",
+      "synthesis_text": "Twenty-four.",
+      "cache_identity": "707ee4d64235f9b7"
+    },
+    {
+      "id": "ac3164d59c697639",
+      "runtime_text": "twenty-five",
+      "synthesis_text": "Twenty-five.",
+      "cache_identity": "8fb8c6f7605a4eed"
+    },
+    {
+      "id": "60b7d1f7ad4248fb",
+      "runtime_text": "twenty-six",
+      "synthesis_text": "Twenty-six.",
+      "cache_identity": "80414921fce96bc7"
+    },
+    {
+      "id": "412866d80035f66f",
+      "runtime_text": "twenty-seven",
+      "synthesis_text": "Twenty-seven.",
+      "cache_identity": "1093ca1b3dc0bd36"
+    },
+    {
+      "id": "96c2a83461897741",
+      "runtime_text": "twenty-eight",
+      "synthesis_text": "Twenty-eight.",
+      "cache_identity": "2a7ea3856bf1670a"
+    },
+    {
+      "id": "a0d9676cc598d86e",
+      "runtime_text": "twenty-nine",
+      "synthesis_text": "Twenty-nine.",
+      "cache_identity": "ffe657559b04b5bd"
+    },
+    {
+      "id": "aca5fb59db69e5df",
+      "runtime_text": "thirty",
+      "synthesis_text": "Thirty.",
+      "cache_identity": "9691ed6b064799aa"
+    },
+    {
+      "id": "dfa5c4c47fb2f357",
+      "runtime_text": "thirty-one",
+      "synthesis_text": "Thirty-one.",
+      "cache_identity": "f82f31edec505172"
+    },
+    {
+      "id": "7a78c7548928535f",
+      "runtime_text": "thirty-two",
+      "synthesis_text": "Thirty-two.",
+      "cache_identity": "9e5b6dab39b6bde0"
+    },
+    {
+      "id": "3c218b98f1bf8af2",
+      "runtime_text": "thirty-three",
+      "synthesis_text": "Thirty-three.",
+      "cache_identity": "f98c4d63098a555e"
+    },
+    {
+      "id": "ee9764b6b1336f7b",
+      "runtime_text": "thirty-four",
+      "synthesis_text": "Thirty-four.",
+      "cache_identity": "950b49ae52aa1b5d"
+    },
+    {
+      "id": "49fa6fb4bad94112",
+      "runtime_text": "thirty-five",
+      "synthesis_text": "Thirty-five.",
+      "cache_identity": "d983965612a4be95"
+    },
+    {
+      "id": "56d89c668162fb95",
+      "runtime_text": "thirty-six",
+      "synthesis_text": "Thirty-six.",
+      "cache_identity": "d08bfa2d010af6b5"
+    },
+    {
+      "id": "ee0d8e38580a98fe",
+      "runtime_text": "thirty-seven",
+      "synthesis_text": "Thirty-seven.",
+      "cache_identity": "0b70ffbe471cf063"
+    },
+    {
+      "id": "518ce854e4d7f5dd",
+      "runtime_text": "thirty-eight",
+      "synthesis_text": "Thirty-eight.",
+      "cache_identity": "7e349ebb1a58a1de"
+    },
+    {
+      "id": "c19e6b18f754bbe8",
+      "runtime_text": "thirty-nine",
+      "synthesis_text": "Thirty-nine.",
+      "cache_identity": "25ab675752863d7a"
+    },
+    {
+      "id": "9cee2304bd633d42",
+      "runtime_text": "forty",
+      "synthesis_text": "Forty.",
+      "cache_identity": "e1226a65e2d834f0"
+    },
+    {
+      "id": "074ec9ddfe4408e6",
+      "runtime_text": "forty-one",
+      "synthesis_text": "Forty-one.",
+      "cache_identity": "ec6769aa45881915"
+    },
+    {
+      "id": "5cc47001f7c1334d",
+      "runtime_text": "forty-two",
+      "synthesis_text": "Forty-two.",
+      "cache_identity": "c19585c20d68ac71"
+    },
+    {
+      "id": "fbcb14038f6be3f6",
+      "runtime_text": "forty-three",
+      "synthesis_text": "Forty-three.",
+      "cache_identity": "813ddfb2ec09afc8"
+    },
+    {
+      "id": "9a56bd594d932dd5",
+      "runtime_text": "forty-four",
+      "synthesis_text": "Forty-four.",
+      "cache_identity": "064c121afec1704c"
+    },
+    {
+      "id": "ce8cdef089ac0a9f",
+      "runtime_text": "forty-five",
+      "synthesis_text": "Forty-five.",
+      "cache_identity": "c1b19d4a89606340"
+    },
+    {
+      "id": "17b42cc951ba20e8",
+      "runtime_text": "forty-six",
+      "synthesis_text": "Forty-six.",
+      "cache_identity": "3261cbd53e5377dd"
+    },
+    {
+      "id": "11d5b531ae2c2685",
+      "runtime_text": "forty-seven",
+      "synthesis_text": "Forty-seven.",
+      "cache_identity": "c10c8d530ef73eee"
+    },
+    {
+      "id": "2b8de4d500ddf4ef",
+      "runtime_text": "forty-eight",
+      "synthesis_text": "Forty-eight.",
+      "cache_identity": "58638a98a0e95a0b"
+    },
+    {
+      "id": "0f09c0097e477bcb",
+      "runtime_text": "forty-nine",
+      "synthesis_text": "Forty-nine.",
+      "cache_identity": "169e09a699bce75e"
+    },
+    {
+      "id": "f8d807ee15e983f8",
+      "runtime_text": "fifty",
+      "synthesis_text": "Fifty.",
+      "cache_identity": "5c01d8960b3e3835"
+    },
+    {
+      "id": "76bcec87152dfcad",
+      "runtime_text": "fifty-one",
+      "synthesis_text": "Fifty-one.",
+      "cache_identity": "9e8ff01987ac8b5b"
+    },
+    {
+      "id": "7236b63e2db57bda",
+      "runtime_text": "fifty-two",
+      "synthesis_text": "Fifty-two.",
+      "cache_identity": "786ba0dd9e69a85f"
+    },
+    {
+      "id": "6382cd3f5ae1290b",
+      "runtime_text": "fifty-three",
+      "synthesis_text": "Fifty-three.",
+      "cache_identity": "c67f1eac0829c2c6"
+    },
+    {
+      "id": "7da3c4346e002f6e",
+      "runtime_text": "fifty-four",
+      "synthesis_text": "Fifty-four.",
+      "cache_identity": "86b84743c0be0abb"
+    },
+    {
+      "id": "25102b4dfe05dd11",
+      "runtime_text": "fifty-five",
+      "synthesis_text": "Fifty-five.",
+      "cache_identity": "d39f61b66873f8da"
+    },
+    {
+      "id": "ee41e5464eec8ff2",
+      "runtime_text": "fifty-six",
+      "synthesis_text": "Fifty-six.",
+      "cache_identity": "afcae51e9f33727c"
+    },
+    {
+      "id": "d376c3658fc44e8f",
+      "runtime_text": "fifty-seven",
+      "synthesis_text": "Fifty-seven.",
+      "cache_identity": "1de879d28743fd5f"
+    },
+    {
+      "id": "dcf2928126cc8165",
+      "runtime_text": "fifty-eight",
+      "synthesis_text": "Fifty-eight.",
+      "cache_identity": "dde0dc62fa8df0e3"
+    },
+    {
+      "id": "69193cd7186a2a50",
+      "runtime_text": "fifty-nine",
+      "synthesis_text": "Fifty-nine.",
+      "cache_identity": "1164319665a7eaa8"
+    }
+  ]
+}

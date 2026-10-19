@@ -48,6 +48,8 @@ export class EngineSound {
     rec: { idle: AudioBufferSourceNode; drive: AudioBufferSourceNode; gi: GainNode; gd: GainNode } | null; own: AudioScheduledSourceNode[] } | null = null;
   /** Whether the recordings are playing (the tests). */
   get recorded() { return !!this.eng?.rec; }
+  /** Running or stalled; false when start() would turn the key (the key's own sound). */
+  get on() { return !!this.eng; }
   private cab: BiquadFilterNode | null = null;
   private rpm = 650; private load = 0;
   private tyre: { roll: GainNode; crunch: GainNode; shake: GainNode; rumble: GainNode; wind: GainNode } | null = null;
