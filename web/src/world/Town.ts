@@ -894,11 +894,12 @@ export class Town {
   }
   setPaper(on: boolean) { this.paperIn = on; this.paper.visible = on; }
   /** The night now: clock, seconds since midnight; t, seconds running (for the blinking). */
-  update(t: number, clock: number) {
+  /** hold: the player is out by the deputy's car on the shoulder (it stays until they leave). */
+  update(t: number, clock: number, hold = false) {
     if (floodOwner !== this) return;
     const day = ((clock % 86400) + 86400) % 86400;
     const deputy = day < 2 * 3600 + 45 * 60 || day >= 4 * 3600 + 30 * 60;
-    if (deputy !== this.deputyIn) this.setDeputy(deputy);
+    if (deputy !== this.deputyIn && !(deputy && this.carOut && hold)) this.setDeputy(deputy);
     const paper = day >= 4 * 3600 + 45 * 60 && day < 12 * 3600;
     if (paper !== this.paperIn) this.setPaper(paper);
     const woman = day < 4 * 3600 + 50 * 60, smoker = day < 4 * 3600 + 10 * 60;

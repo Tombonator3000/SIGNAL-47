@@ -768,7 +768,7 @@ async function boot() {
     const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
     const lot = world.truckOnLot();   // (or left on the highway, among the masts, in the yard: where I left it)
     const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' && lot ? 'On the lot at Mesa Diner'
-      : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && lot ? 'On the pad by the service yard' : 'Where I left it';
+      : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && (lot || (!!world.saroTruck && inside(yard.zone.truckPad, world.saroTruck.group.position))) ? 'On the pad by the service yard' : 'Where I left it';
     const kit: KitItem[] = [{ name: 'Notebook', art: 'notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
     if (game.at('ch1')) kit.push({ name: 'SARO jacket', art: 'jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
     const frames = game.docs.filter((d) => /^(frame|away)/.test(d.id)).length;

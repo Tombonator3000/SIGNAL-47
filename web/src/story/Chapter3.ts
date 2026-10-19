@@ -295,7 +295,7 @@ export class Chapter3 {
     const area = this.d.travel.area();
     switch (s.stage) {
       case 'to-truck':
-        if (!this.d.travel.driving()) return 'SERVICE YARD // TAKE THE SARO TRUCK TO STATION 01';
+        if (!this.d.travel.driving()) return area === 'diner' ? 'STATION 01 // BACK IN THE TRUCK, THEN RIGHT ONTO THE SURVEY TRACK' : 'SERVICE YARD // TAKE THE SARO TRUCK TO STATION 01';
         // one line the whole way: a change of line where the truck goes from one area into
         // the next would give the change away (World.ts)
         return 'STATION 01 // SOUTH ON THE HIGHWAY, RIGHT ONTO THE SURVEY TRACK TO THE GATE';

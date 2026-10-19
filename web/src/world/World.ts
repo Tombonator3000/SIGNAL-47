@@ -1258,7 +1258,7 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
-    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') { this.diner?.update(dt, t); this.town?.update(t, this.d.time()); }
+    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') { this.diner?.update(dt, t); this.town?.update(t, this.d.time(), this.area === 'diner' && this.roadStopAt(this.d.player.pos)?.name === 'The highway north of Caliche'); }
     // on the old road the diner and the town are there behind the truck until they are far off in
     // the haze, lit by the road's dawn
     if (this.area === 'roswell' && this.diner) {
