@@ -22,15 +22,18 @@ import { Field } from './Field';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, type FloodSet } from './kit';
 import { loadArtFor, loadArtSome, artTexture, DINER_ART, OLDROAD_ART, TOWN_ART } from '../core/art';
-import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS } from './geo';
+import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS, inRect } from './geo';
+import { FENCE_Z } from './arrayLayout';
 import { horizonHaze } from './horizon';
-import { DINER } from '../drive/roadShape';
+import { DINER, TOWN } from '../drive/roadShape';
 import { firstTime } from '../core/hints';
 import { getQuality } from '../core/quality';
 import { surfaceY } from '../drive/roadTerrain';
 import { LightCones, GroundHaze, sodiumGlows } from './airlight';
 import { followFlora, floraTest, type Flora } from './flora';
 import { saroFlora, stationFlora, postsOf } from './groundCover';
+
+import { NightLife, lifeLamps } from './nightlife';
 
 // The places of the night. SARO is built at the start; the road and STATION 01 are
 // loaded the first time they are needed (their code is in separate files that the
@@ -84,6 +87,14 @@ const HEAD_ON_TOWN = 1.8, TOWN_ON_ROAD = 0.8;
  *  that turned the night into day. */
 const AIR_CONES = 0.065, AIR_HAZE = 1;
 type HazeLamp = { p: THREE.Vector3; r: number; col: THREE.Color; k: number };
+type Box = { minX: number; maxX: number; minZ: number; maxZ: number };
+/** Whether (x, z) is in one of the boxes (or within m of it): what stands in a tumbleweed's way. */
+const inBoxes = (boxes: readonly Box[], x: number, z: number, m = 0.4) => boxes.some((b) => x > b.minX - m && x < b.maxX + m && z > b.minZ - m && z < b.maxZ + m);
+/** SARO's land out past the site, as Exterior.ground draws it, in the road's terms (the far lights on it). */
+const saroLand = (mx: number, mz: number) => {
+  const x = mx - SARO_IN_ROAD.x, z = mz - SARO_IN_ROAD.z, far = Math.hypot(x, z);
+  return far > 300 ? -2 + Math.sin(x * 0.004 + z * 0.003) * 6 * Math.min(1, (far - 300) / 600) : -0.62;
+};
 
 export interface WorldDeps {
   scene: THREE.Scene;
@@ -268,7 +279,41 @@ export class World {
     for (const [x, y, z, , c] of MOTEL_GLOWS.slice(0, 2)) this.air.lamps.saro.push({ p: new THREE.Vector3(x + MOTEL_AT.x, y + MOTEL_AT.y, z + MOTEL_AT.z), r: 9, col: new THREE.Color(c), k: 1 });
     const coarse = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
     this.air.haze = new GroundHaze(d.scene, coarse ? [0.3] : [0.2, 0.5]);   // one layer on a phone
+    // the life in the night (nightlife.ts): moths round the lamps of the site, its doors and the
+    // motel's (not those indoors: the control room and the annex), bats at the big ones, lights far
+    // out on the land, a tumbleweed now and then, and the dust in the beams
+    this.life = new NightLife(d.scene);
+    const S = SARO_IN_ROAD;
+    // (the fences stop a rolling tumbleweed too: the array's chain-link, and the ranch fence on
+    // the south and east lines, Grounds.fence)
+    const fenced = (x: number, z: number) => (Math.abs(z - FENCE_Z) < 0.35 && x > -80 && x < 60 && !(x > -28.6 && x < -19.4))
+      || (Math.abs(z - 34.5) < 0.35 && x > -18.6 && x < 46.5) || (Math.abs(x - 46.5) < 0.35 && z > -19.9 && z < 34.5);
+    this.life.addArea('saro', { flood: siteFlood, ground: g.floorAt, blocked: (x, z) => inBoxes(d.saro.colliders, x, z) || fenced(x, z),
+      onHighway: (x) => Math.abs(x + S.x) < 5,
+      far: { toWorld: (x, z) => new THREE.Vector3(x - S.x, 0, z - S.z), toMap: (x, z) => ({ x: x + S.x, z: z + S.z }), ground: saroLand, centre: S } });
+    // tumbleweeds where the wind (from the south-south-west) left them, in the lamps' light (out of
+    // it they would be as dark as the ground): against the south face of the array's chain-link,
+    // the poles and posts by the highway, the wing's wall between its doors, the control room's
+    // west wall, down between the east walk and the lab; at the motel under the walk's posts,
+    // against the pool's fence and the end of the block (lit by its own lamps). Off the doors,
+    // the gate, the walk to B-12 and the paths; the first half are those Low keeps.
+    this.life.addWeeds('saro', null, [[27.0, -19.64, 1.1], [-16.8, 28.95, 0.9], [25.5, 6.26, 0.9], [12.3, -5.0, 0.8], [-8.6, -19.66, 0.95], [-7.0, -0.5, 0.8],
+      [4.2, -19.68, 1.05], [27.75, -19.72, 0.7], [15.5, -19.7, 0.8], [33.5, 6.3, 0.75], [-18.5, 36.48, 0.8], [-14.5, 22.95, 0.7]]);
+    this.life.addWeeds('saro', m.flood, [[-33.2, 712.0, 1.0], [-41.25, 719.35, 1.0], [-47.0, 720.36, 1.1], [-41.25, 693.35, 0.85],
+      [-35.6, 711.98, 0.8], [-37.36, 711.85, 0.7], [-41.25, 678.35, 0.8], [-45.3, 720.3, 0.8]], (x, z) => inRect(MOTEL_RECT, x, z, -12));
+    this.life.addMoths('saro', lifeLamps([ext, d.saro.groups[2], c.group, g.group, m.group, f.group], ext, (w) => ground(w.x, w.z),
+      (p, _s, h) => Math.abs(p.x) < 400 && p.z > -500 && p.z < 800 && h > 1.5), ext,
+      // the bats hunt where the player walks: the highway lamp by the site's sign, the lamps along
+      // the east walk, the motel's lot
+      { bats: [[new THREE.Vector3(-20.1, 7.1, 36), 3], [new THREE.Vector3(10.3, 4.1, 1.6), 2], [new THREE.Vector3(-32.05, 4.1, 668), 1]],
+        walls: d.scene });
   }
+  /** The life in the night: moths, bats, far lights, tumbleweeds, the dust in the beams (nightlife.ts). */
+  readonly life: NightLife;
+  /** The flashlight's beam, for its dust (main.ts). */
+  lifeBeam: () => THREE.SpotLight | null = () => null;
+  /** One of the night's strange things has it (or a cinematic, or the title): no far car, no tumbleweed (main.ts). */
+  lifeQuiet: () => boolean = () => false;
   /** The light in the air: each area's cones, the haze, and the lamps that tint it per area. */
   private air: { cones: LightCones[]; haze: GroundHaze | null; lamps: { saro: HazeLamp[]; road: HazeLamp[] }; town: LightCones | null } =
     { cones: [], haze: null, lamps: { saro: [], road: [] }, town: null };
@@ -371,6 +416,14 @@ export class World {
       drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       this.legs.station01 = { area, drive, truck: t };
       this.parkAt('station01');
+      this.life.addArea('station01', { flood: fieldFlood, ground: (x, z) => s.groundAt(x, z), blocked: (x, z) => inBoxes(s.colliders, x, z) });
+      // tumbleweeds against the hut and the yard light's pole (in its light), the shed, and the
+      // outside of the south and west fences (clear of the gate and the pad)
+      const O = STATION_ORIGIN;
+      this.life.addWeeds('station01', null, ([[-12.4, 5.0, 0.8], [-6.6, 7.45, 0.7], [-13.5, 2.6, 0.8], [-16.4, 0.86, 0.7],
+        [2.0, 26.36, 1.0], [-30.36, 8.0, 0.9], [14.0, 26.36, 0.9], [5.0, -23.65, 1.0]] as [number, number, number][]).map(([x, z, k]) => [x + O.x, z + O.z, k]));
+      this.life.addMoths('station01', lifeLamps([s.group], s.group, (w) => s.groundAt(w.x, w.z), (p, _s, h) => h > 1.5 && Math.hypot(p.x - O.x, p.z - O.z) < 90), s.group,
+        { bats: [[new THREE.Vector3(-7.65, 6, 8006.7), 2]], walls: this.d.scene });
       this.d.applyQuality();
       this.onStationLoaded?.(s);
       return s;
@@ -395,7 +448,12 @@ export class World {
       this.drive.onBump = (speed) => this.d.thud(Math.min(1, speed / 8));
       road.onCattleGuard = (speed) => this.engine?.rattle(speed);
       this.legs.road = { area: road, drive: this.drive, truck };
-      this.d.applyQuality();
+      this.life.addArea('road', { flood: road.headlights.set, ground: (x, z) => surfaceY(x - ROAD_ORIGIN.x, z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y,
+        blocked: (x, z) => road.obstacles.some((o) => o.kind === 'circle' ? Math.hypot(x - o.x, z - o.z) < o.r + 0.4 : inBoxes([o], x, z)) || (!!this.dinerWalk && inBoxes(this.dinerWalk.colliders, x, z)),
+        onHighway: (x) => Math.abs(x - ROAD_ORIGIN.x) < 5,
+        far: { toWorld: (x, z) => new THREE.Vector3(x + ROAD_ORIGIN.x, 0, z + ROAD_ORIGIN.z), toMap: (x, z) => ({ x: x - ROAD_ORIGIN.x, z: z - ROAD_ORIGIN.z }),
+          ground: (x, z) => surfaceY(x, z) + ROAD_ORIGIN.y, centre: { x: 0, z: 1600 } } });
+      this.d.applyQuality();   // (the tumbleweed's material too)
       this.onRoadLoaded?.(road);
     });
   }
@@ -480,7 +538,7 @@ export class World {
   private ensureDiner() {
     return this.once('diner', async () => {
       // Caliche's pictures (round 14) come with it; one that does not is drawn in code
-      const [{ Diner }, { Town }] = await Promise.all([this.load('Diner'), this.load('Town'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt']), loadArtSome(TOWN_ART)]);
+      const [{ Diner, dinerFlood }, { Town, townFlood }] = await Promise.all([this.load('Diner'), this.load('Town'), this.ensureRoad(), loadArtFor([...DINER_ART, 'oldAsphalt']), loadArtSome(TOWN_ART)]);
       this.road!.refreshOldRoad();   // the old road going off across from it, in its own asphalt (round 11)
       const d = new Diner(DINER_ORIGIN.clone(), true);
       d.setSurfaceArt(artTexture('dinerBooth', [2, 2]), artTexture('dinerWall', [0.5, 0.5]));
@@ -520,6 +578,17 @@ export class World {
       this.parkAt('diner');
       this.d.applyQuality();
       this.onDinerLoaded?.(d);
+      // (the tumbleweeds in the town lit by its lamps, and on the diner's lot by the diner's)
+      const R = ROAD_ORIGIN, inTown = (x: number, z: number) => x > R.x + TOWN.west && x < R.x + TOWN.east && z > TOWN.z0 && z < TOWN.z1;
+      // at the feet of the street lamps' posts, the end of the pump island under the canopy, the
+      // mouths of the alleys off the main street, the fronts across it
+      this.life.addWeeds('road', townFlood, ([[-7.0, 2122.45, 0.9], [-10.25, 2063.45, 0.8], [-17.0, 2112.4, 0.9], [-7.0, 2184.45, 0.85],
+        [-7.0, 2030.45, 0.7], [-17.2, 2140.4, 0.8], [23.65, 2131.5, 0.9], [-7.0, 2150.5, 0.6]] as [number, number, number][]).map(([x, z, k]) => [x + R.x, z, k]), inTown);
+      this.life.addWeeds('road', dinerFlood, [], (x, z) => Math.hypot(x - DINER_ORIGIN.x, z - DINER_ORIGIN.z) < 40);
+      // moths round Caliche's street lamps, the gas station's canopy and the porch lights; bats at
+      // the street lamp by the laundromat, and one at the diner's lot
+      this.life.addMoths('road', lifeLamps([town.group, d.group], town.group, (w) => surfaceY(w.x - R.x, w.z - R.z) + R.y, (_p, _s, h) => h > 1.5), town.group,
+        { bats: [[new THREE.Vector3(R.x - 3.9, 15, 2122), 3], [new THREE.Vector3(8000.5, 10.8, 2000), 1]], walls: this.d.scene });
       this.onTownLoaded?.(town);
       return d;
     });
@@ -1137,6 +1206,15 @@ export class World {
       } else if (this.area === 'station01' && this.site) ground = this.site.groundAt(c.x, c.z);
     }
     a.haze?.update(dt, t, c, ground, AIR_HAZE * night, fog?.color ?? new THREE.Color(), lamps);
+    // and the life in it
+    this.lifeStep(dt, t);
+  }
+  /** The life in the night (nightlife.ts), every frame with the light in the air (tests call it too). */
+  lifeStep(dt: number, t: number) {
+    const L = this.driving && this.leg ? this.legs[this.leg] : undefined, D = L?.drive;
+    this.life.update(dt, t, { area: this.area, cam: this.d.camera, clock: this.d.time(), dawn: this.d.sky().dawn, out: this.airOut(), quiet: this.lifeQuiet(),
+      foot: !this.driving, flash: this.lifeBeam(),
+      truck: L && D ? { group: L.truck.group, speed: D.speed, kind: D.surface.kind, beam: L.truck.beam } : null });
   }
   /** Each area lights its own materials from its own lamps: the truck's headlights go to the
    *  diner's, and the diner's neon to the road's and the old road's. main.ts calls it after the
