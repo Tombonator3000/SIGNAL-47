@@ -364,13 +364,25 @@ export class Chapter5 {
       ];
       this.d.audio.play('click', { gain: 0.4 });
     }
+    let spoken: P.TalkLine[] = [];
     this.panel = P.talk(this.d.ui, {
       title: who === 'ward' ? 'PAYPHONE / E. WARD' : who === 'waitress' ? 'MESA DINER / THE WAITRESS' : 'MESA DINER / THE DRIVER',
       view: () => this.view(),
       onChip: () => {}, onTable: () => {},
       onChoice: (id) => this.choose(id),
       onRead: () => {},
-      onClose: () => { this.panel = null; this.who = null; },
+      onLines: (lines) => {
+        if (who !== 'ward') return;
+        // The panel retains the last two lines when another question is asked.
+        // Read only the newly appended speech, never the retained history or stage directions.
+        let overlap = Math.min(spoken.length, lines.length);
+        while (overlap && !spoken.slice(-overlap).every((l, i) => l.who === lines[i].who && l.text === lines[i].text)) overlap--;
+        const fresh = lines.slice(overlap).filter((l) => l.who);
+        spoken = lines.map((l) => ({ ...l }));
+        this.d.audio.stopPhoneCalls();
+        if (fresh.length) this.d.audio.phoneCall(fresh.map((l) => ({ by: l.who, text: l.text })));
+      },
+      onClose: () => { this.d.audio.stopPhoneCalls(); this.panel = null; this.who = null; },
     });
   }
 

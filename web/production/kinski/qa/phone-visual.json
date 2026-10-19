@@ -1,0 +1,46 @@
+[
+  {
+    "build": "pages",
+    "visible_lines": [
+      {
+        "text": "YOUI am checking the old road first.",
+        "opacity": "1"
+      },
+      {
+        "text": "E. WARDThen check it, and come back. I want you on the console before the morning series.",
+        "opacity": "1"
+      },
+      {
+        "text": "E. WARDSix o'clock, Reyes.",
+        "opacity": "1"
+      },
+      {
+        "text": "She hangs up.",
+        "opacity": "1"
+      }
+    ],
+    "pass": true
+  },
+  {
+    "build": "single",
+    "visible_lines": [
+      {
+        "text": "YOUI am checking the old road first.",
+        "opacity": "1"
+      },
+      {
+        "text": "E. WARDThen check it, and come back. I want you on the console before the morning series.",
+        "opacity": "1"
+      },
+      {
+        "text": "E. WARDSix o'clock, Reyes.",
+        "opacity": "1"
+      },
+      {
+        "text": "She hangs up.",
+        "opacity": "1"
+      }
+    ],
+    "pass": true
+  }
+]

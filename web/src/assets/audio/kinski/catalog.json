@@ -1,0 +1,2028 @@
+{
+  "version": 1,
+  "voice": "Kinski synthetic parody",
+  "clips": [
+    {
+      "id": "c8cab78b3df10c77",
+      "text": "The antenna moved. The controller did not send a command.",
+      "duration": 2.92,
+      "file": "c8cab78b3df10c77.mp3"
+    },
+    {
+      "id": "af6428e9d604d3a7",
+      "text": "A thin line of condensation runs across the warm inspection glass.",
+      "duration": 3.4,
+      "file": "af6428e9d604d3a7.mp3"
+    },
+    {
+      "id": "f7a6b7013a520ba7",
+      "text": "SARO / INSTALLATION SHEET 11-86 LOCAL SURVEY REFERENCES",
+      "duration": 3.48,
+      "file": "f7a6b7013a520ba7.mp3"
+    },
+    {
+      "id": "2d0fec1e94e1278e",
+      "text": "B-12 ONE IVORY STRIPE MOVABLE VANE FIXED BRACKET: STATION NO. R-07 THREE HORIZONTAL BARS WEST FENCE",
+      "duration": 5.55,
+      "file": "2d0fec1e94e1278e.mp3"
+    },
+    {
+      "id": "22063f129472be21",
+      "text": "SIGHTLINE FROM SERVICE APRON: S-03 APRON > B-12 > CENTRAL ANTENNA",
+      "duration": 3.84,
+      "file": "22063f129472be21.mp3"
+    },
+    {
+      "id": "eebcb993e5c0aa5c",
+      "text": "Local survey references: B-12 is the movable single ivory stripe north of the S-03 apron. R-07 uses three horizontal bars. The warm inspection lamp and local reference drive have independent controls.",
+      "duration": 10.49,
+      "file": "eebcb993e5c0aa5c.mp3"
+    },
+    {
+      "id": "5c9a7e36b397cdc4",
+      "text": "The installation sheet says B-12 carries one stripe.",
+      "duration": 3.03,
+      "file": "5c9a7e36b397cdc4.mp3"
+    },
+    {
+      "id": "0244f3f45f0900c1",
+      "text": "B-12 / PASSIVE CONTROL",
+      "duration": 1.92,
+      "file": "0244f3f45f0900c1.mp3"
+    },
+    {
+      "id": "3c6449c8c114a7eb",
+      "text": "Lamp: shielded, no direct illumination. Motor: isolated, no drive command. Direct observation: one ivory stripe on the folded reference vane; one fixed bracket.",
+      "duration": 7.96,
+      "file": "3c6449c8c114a7eb.mp3"
+    },
+    {
+      "id": "882321bfaf9d1432",
+      "text": "Make a control exposure from the apron without changing this setup.",
+      "duration": 3.48,
+      "file": "882321bfaf9d1432.mp3"
+    },
+    {
+      "id": "8e12ba6839893d51",
+      "text": "B-12 / ACTIVE CONTROL",
+      "duration": 1.89,
+      "file": "8e12ba6839893d51.mp3"
+    },
+    {
+      "id": "4c27ffff88b81f3f",
+      "text": "Local command: reference 042 degrees. Encoder: 042 degrees, reference moved and settled. Direct observation: one ivory stripe on the turned vane; one fixed bracket. Work lamp remains lit.",
+      "duration": 9.88,
+      "file": "4c27ffff88b81f3f.mp3"
+    },
+    {
+      "id": "60aeae819686128c",
+      "text": "Make a control exposure without changing this setup.",
+      "duration": 2.76,
+      "file": "60aeae819686128c.mp3"
+    },
+    {
+      "id": "a1294787d6f5fd2c",
+      "text": "One physical stripe on the vane. Expose frame 02 from the B-12 sight line mark without changing the setup.",
+      "duration": 5.82,
+      "file": "a1294787d6f5fd2c.mp3"
+    },
+    {
+      "id": "e0ccb159da38ea81",
+      "text": "SARO / LOCAL INCIDENT S-03 + B-12 OPERATOR: REYES FOR: DR. E. WARD",
+      "duration": 3.6,
+      "file": "e0ccb159da38ea81.mp3"
+    },
+    {
+      "id": "0500cfcb96523ed5",
+      "text": "S-03: encoder 026; scheduled 042; commands 0. Frame 01: foreground reference does not match the one-stripe installation sheet.",
+      "duration": 7.78,
+      "file": "0500cfcb96523ed5.mp3"
+    },
+    {
+      "id": "8191d0c2bbb50687",
+      "text": "CONTROL: lamp shielded, motor isolated. Direct observation: one physical stripe. Frame 02: the physical vane changes; a second stripe retains its earlier alignment.",
+      "duration": 8.52,
+      "file": "8191d0c2bbb50687.mp3"
+    },
+    {
+      "id": "d365a57885b983f0",
+      "text": "SUPPORTED: the discrepancy persists in the photographic record under the chosen control. The work lamp is not sufficient to explain it.",
+      "duration": 6.46,
+      "file": "d365a57885b983f0.mp3"
+    },
+    {
+      "id": "9daf1fc4fd014066",
+      "text": "LIMIT: one local test does not establish the cause of the array movement or the signal. Preserve the negatives and the original receiver printout.",
+      "duration": 7.27,
+      "file": "9daf1fc4fd014066.mp3"
+    },
+    {
+      "id": "514bc5b2069d6a7b",
+      "text": "CONTROL: local reference commanded to 042; encoder and visible vane agree. Direct observation: one physical stripe. Frame 02: the physical vane changes; a second stripe retains its earlier alignment.",
+      "duration": 10.43,
+      "file": "514bc5b2069d6a7b.mp3"
+    },
+    {
+      "id": "f3f07dc94f462645",
+      "text": "SUPPORTED: the discrepancy persists in the photographic record under the chosen control. Simple reference/encoder drift is not sufficient to explain it.",
+      "duration": 7.59,
+      "file": "f3f07dc94f462645.mp3"
+    },
+    {
+      "id": "66b1d856fa4889c7",
+      "text": "The eye saw one reference. The film kept two.",
+      "duration": 2.29,
+      "file": "66b1d856fa4889c7.mp3"
+    },
+    {
+      "id": "14af832e0db84ba8",
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947",
+      "duration": 3.12,
+      "file": "14af832e0db84ba8.mp3"
+    },
+    {
+      "id": "ee698714dedc6d6b",
+      "text": "The reference remained visible in the plate after the lamp circuit was opened. A second plate was exposed with the local lamp isolated. The retained mark did not follow the new position of the physical vane.",
+      "duration": 10.2,
+      "file": "ee698714dedc6d6b.mp3"
+    },
+    {
+      "id": "4cba3502f2b25fbb",
+      "text": "The arrangement used three references: A, the fixed survey point; B, the optical comparison vane; and C, the closing sight line. The run was interrupted before the final observation was entered. Preserve the original plates and the complete arrangement drawing.",
+      "duration": 12.72,
+      "file": "4cba3502f2b25fbb.mp3"
+    },
+    {
+      "id": "3ac492f2e51ff398",
+      "text": "N. VEGA / FIELD TECHNICIAN",
+      "duration": 1.88,
+      "file": "3ac492f2e51ff398.mp3"
+    },
+    {
+      "id": "e53920a3eae8addd",
+      "text": "The original field protocol from the STATION 01 box, signed N. Vega. The arrangement drawing is clipped to it: A, the fixed survey point; B, the comparison vane; C, the closing sight line.",
+      "duration": 9.19,
+      "file": "e53920a3eae8addd.mp3"
+    },
+    {
+      "id": "efb4c05a7574d713",
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947 AMENDED COPY",
+      "duration": 3.76,
+      "file": "efb4c05a7574d713.mp3"
+    },
+    {
+      "id": "64ff335a007dc5b7",
+      "text": "The additional mark is attributed to a fault in plate development. The lamp and comparison vane are sufficient to describe the test. The incomplete closing sight line has been omitted from the service copy.",
+      "duration": 10.15,
+      "file": "64ff335a007dc5b7.mp3"
+    },
+    {
+      "id": "3eab0bf5edc67a53",
+      "text": "No repeat observation is required. Retain the amended copy with the routine reference records.",
+      "duration": 4.84,
+      "file": "3eab0bf5edc67a53.mp3"
+    },
+    {
+      "id": "d15a0242725579e1",
+      "text": "The service copy of the same record, filed with the routine reference records. Same title, same signature. Its own arrangement drawing is clipped to the back.",
+      "duration": 7.79,
+      "file": "d15a0242725579e1.mp3"
+    },
+    {
+      "id": "6471b59ddd6c4120",
+      "text": "SARO / REFERENCE LINEAGE / B-12",
+      "duration": 2.08,
+      "file": "6471b59ddd6c4120.mp3"
+    },
+    {
+      "id": "49842f5d4917236d",
+      "text": "The B-12 comparison vane retains the fixed-point survey identified as STATION 01. Fixed-point register mark: outlined triangle with a short horizontal bar beneath it. The archive sleeve contains the dated plate and fixed-point sheet used for this index. Match the survey identifier and fixed-point mark before selecting the field destination.",
+      "duration": 17.19,
+      "file": "49842f5d4917236d.mp3"
+    },
+    {
+      "id": "147aac617dd9d4c2",
+      "text": "SITE REGISTER: STATION 01 / OLD SURVEY STATION. The matching archive sleeve contains the field access sheet.",
+      "duration": 5.72,
+      "file": "147aac617dd9d4c2.mp3"
+    },
+    {
+      "id": "6ee13a0c0e6b7fb2",
+      "text": "A card from the maintenance index. It ties today's B-12 vane to an older survey, and names the place in the site register.",
+      "duration": 6.24,
+      "file": "6ee13a0c0e6b7fb2.mp3"
+    },
+    {
+      "id": "318b5eb27590baef",
+      "text": "PLATE / 1947 / STATION 01",
+      "duration": 2.44,
+      "file": "318b5eb27590baef.mp3"
+    },
+    {
+      "id": "91b0d17e581124cf",
+      "text": "Fixed-point mark: outlined triangle with a short horizontal bar beneath it. Arrangement: A - B - C. Service index: B-12. Field destination: OLD SURVEY STATION.",
+      "duration": 8.04,
+      "file": "91b0d17e581124cf.mp3"
+    },
+    {
+      "id": "dc0d94d7a8fb1c9b",
+      "text": "RETURN CHECK: Match both STATION 01 and the fixed-point mark. A similar triangle without the bar is a general elevation symbol and is not a matching survey reference.",
+      "duration": 8.52,
+      "file": "dc0d94d7a8fb1c9b.mp3"
+    },
+    {
+      "id": "be4d5354c757d8cc",
+      "text": "From the same box: the archive sleeve for the 1947 plate, with its index card and the fixed-point sheet. This is the index, not a photograph you took.",
+      "duration": 8.01,
+      "file": "be4d5354c757d8cc.mp3"
+    },
+    {
+      "id": "3eaa1e2d122b075e",
+      "text": "SUPPORTED / E07 records A, B and C and a retained mark with the lamp isolated. E06 omits C, the closing sight line, and calls the mark a development fault. The report was changed; motive remains unknown.",
+      "duration": 10.36,
+      "file": "3eaa1e2d122b075e.mp3"
+    },
+    {
+      "id": "685bad94480fc1d7",
+      "text": "Your finding at the records table. It establishes that the report was changed. It does not establish why, or who cut anything.",
+      "duration": 5.97,
+      "file": "685bad94480fc1d7.mp3"
+    },
+    {
+      "id": "e10c9a2792f948c3",
+      "text": "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+      "duration": 12.32,
+      "file": "e10c9a2792f948c3.mp3"
+    },
+    {
+      "id": "981f80433eb7525c",
+      "text": "Your second finding: the reference in today's B-12 leads to the old survey station, by survey ID and fixed-point mark together.",
+      "duration": 6.52,
+      "file": "981f80433eb7525c.mp3"
+    },
+    {
+      "id": "d9ce9afc242d4573",
+      "text": "FIELD ACCESS / OLD SURVEY STATION SURVEY: STATION 01",
+      "duration": 3.0,
+      "file": "d9ce9afc242d4573.mp3"
+    },
+    {
+      "id": "447461d1dabc6531",
+      "text": "ACCESS ROAD UNSURFACED. GATE LOCKED.",
+      "duration": 1.95,
+      "file": "447461d1dabc6531.mp3"
+    },
+    {
+      "id": "6d72ec7779a4511c",
+      "text": "KEY HOLDER: N. VEGA SIERRA MOTOR COURT (505) 555-0119",
+      "duration": 4.52,
+      "file": "6d72ec7779a4511c.mp3"
+    },
+    {
+      "id": "f9e28b5e26191fb6",
+      "text": "DO NOT DISTURB THE FIXED-POINT MARKS.",
+      "duration": 2.09,
+      "file": "f9e28b5e26191fb6.mp3"
+    },
+    {
+      "id": "2ca33dad91688114",
+      "text": "Folded into the matching sleeve. The key holder for the old station is listed by initial and surname, at the motel down the road: N. Vega. The same name signs both versions of the 1947 record.",
+      "duration": 10.05,
+      "file": "2ca33dad91688114.mp3"
+    },
+    {
+      "id": "5a1c517e10519411",
+      "text": "Sketched from the site register. SARO, the old survey station along a dashed road, and now the motel where the key holder answered. Not to scale.",
+      "duration": 7.09,
+      "file": "5a1c517e10519411.mp3"
+    },
+    {
+      "id": "1ac0fca94d0e52d7",
+      "text": "Sketched from the site register. SARO, and the old survey station along a dashed road. Not to scale.",
+      "duration": 4.96,
+      "file": "1ac0fca94d0e52d7.mp3"
+    },
+    {
+      "id": "ad119ec7e81b5cd1",
+      "text": "FIELD TRANSIT / STATION 01 / E09A",
+      "duration": 2.28,
+      "file": "ad119ec7e81b5cd1.mp3"
+    },
+    {
+      "id": "4ece452e26d15b88",
+      "text": "1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.",
+      "duration": 9.8,
+      "file": "4ece452e26d15b88.mp3"
+    },
+    {
+      "id": "4201b5f93f03ae56",
+      "text": "Compare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.",
+      "duration": 7.3,
+      "file": "4201b5f93f03ae56.mp3"
+    },
+    {
+      "id": "9c490723255100b6",
+      "text": "From the steel frame on the transit pier. A plan of the 1947 set-up: A in its footing on the transit sight line, B to the west, C running off the sheet.",
+      "duration": 7.82,
+      "file": "9c490723255100b6.mp3"
+    },
+    {
+      "id": "308655d388e41985",
+      "text": "FIELD TIMING RECORD / STATION 01 / E10",
+      "duration": 2.52,
+      "file": "308655d388e41985.mp3"
+    },
+    {
+      "id": "e7c3e23412689964",
+      "text": "02:17:00 / Carrier ceased. Recorded voice: ‘Reference west. No. East. Hold the last reading.’ 02:17:47 / Local relay impact and reference motion observed. Final observation / Not entered.",
+      "duration": 10.36,
+      "file": "e7c3e23412689964.mp3"
+    },
+    {
+      "id": "d0ff5c160ccbd522",
+      "text": "NEW RECEIVER OBSERVATION / 1986 The received fragment repeats the same correction, ‘west’ to ‘east,’ in the same place. The original field record identifies the speaker as T. Vega.",
+      "duration": 9.51,
+      "file": "d0ff5c160ccbd522.mp3"
+    },
+    {
+      "id": "73660aa258b8fbe1",
+      "text": "The ledger on the hut workbench. Times to the second, in pencil. The last line was never filled in.",
+      "duration": 4.84,
+      "file": "73660aa258b8fbe1.mp3"
+    },
+    {
+      "id": "c21188610bc7ce84",
+      "text": "A: fixed survey point. B: comparison vane. C: closing sight line.",
+      "duration": 3.24,
+      "file": "c21188610bc7ce84.mp3"
+    },
+    {
+      "id": "1191c2a48fccf8a2",
+      "text": "The framed copy of the original arrangement, signed N. Vega.",
+      "duration": 3.06,
+      "file": "1191c2a48fccf8a2.mp3"
+    },
+    {
+      "id": "5cecea9e5cdbdc7f",
+      "text": "Behind dusty glass in the hut: the same arrangement as the original 1947 record, with all three references, A, B and C.",
+      "duration": 6.62,
+      "file": "5cecea9e5cdbdc7f.mp3"
+    },
+    {
+      "id": "d0c894582c9ade8e",
+      "text": "P06 SUPPORTED / The fixed survey marker A has moved relative to the transit record. The original footing and fixed B marker establish the comparison; this record does not identify who moved A.",
+      "duration": 9.75,
+      "file": "d0c894582c9ade8e.mp3"
+    },
+    {
+      "id": "cfb0a3e75686d9a0",
+      "text": "Your finding at the transit. A is not where E09A puts it. Who moved it is not in the record.",
+      "duration": 4.72,
+      "file": "cfb0a3e75686d9a0.mp3"
+    },
+    {
+      "id": "6eaabde76ebd130e",
+      "text": "NULL TEST RECORDED / The local source is screened. This control result does not complete the cable reconstruction.",
+      "duration": 5.76,
+      "file": "6eaabde76ebd130e.mp3"
+    },
+    {
+      "id": "1e1856c8907d2c5f",
+      "text": "An ordinary control: the field lamp covered, the local condition normal.",
+      "duration": 3.72,
+      "file": "1e1856c8907d2c5f.mp3"
+    },
+    {
+      "id": "46d87971f2163334",
+      "text": "P08 SUPPORTED / The cable was deliberately cut. The null test separates the local lamp from the retained reference.",
+      "duration": 6.06,
+      "file": "46d87971f2163334.mp3"
+    },
+    {
+      "id": "ea3ee12f86dc46da",
+      "text": "The cable from the hut to the pier was cut on purpose. The cut does not say by whom.",
+      "duration": 3.91,
+      "file": "ea3ee12f86dc46da.mp3"
+    },
+    {
+      "id": "337aa78e534c1a51",
+      "text": "P09 SUPPORTED / The historic relay observation followed carrier loss by 47 seconds. The 1986 fragment repeats T. Vega's same correction and adds no final observation.",
+      "duration": 9.81,
+      "file": "337aa78e534c1a51.mp3"
+    },
+    {
+      "id": "bec1048dca9aa0cc",
+      "text": "Carrier lost at 02:17:00, relay impact at 02:17:47. The voice tonight is the same correction as in 1947.",
+      "duration": 7.45,
+      "file": "bec1048dca9aa0cc.mp3"
+    },
+    {
+      "id": "c0d08d3d753bfd5e",
+      "text": "So you came down the road.",
+      "duration": 1.88,
+      "file": "c0d08d3d753bfd5e.mp3"
+    },
+    {
+      "id": "de2cb9bf8d58b0de",
+      "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.",
+      "duration": 6.83,
+      "file": "de2cb9bf8d58b0de.mp3"
+    },
+    {
+      "id": "e9b28b2d30172f56",
+      "text": "She is looking out at the road.",
+      "duration": 1.82,
+      "file": "e9b28b2d30172f56.mp3"
+    },
+    {
+      "id": "774b99ad39efec11",
+      "text": "She waits for you to go on.",
+      "duration": 1.78,
+      "file": "774b99ad39efec11.mp3"
+    },
+    {
+      "id": "48c52be6f8b7dec3",
+      "text": "She lays the two prints side by side and puts the 1947 record under them.",
+      "duration": 4.34,
+      "file": "48c52be6f8b7dec3.mp3"
+    },
+    {
+      "id": "423428940475f813",
+      "text": "The amended copy you can keep. I know what it says. I wrote it.",
+      "duration": 2.96,
+      "file": "423428940475f813.mp3"
+    },
+    {
+      "id": "60d7570444bff260",
+      "text": "I know that second line.",
+      "duration": 1.43,
+      "file": "60d7570444bff260.mp3"
+    },
+    {
+      "id": "9e21a29e3ac50a76",
+      "text": "Tell me which source you took away before you made the control.",
+      "duration": 3.2,
+      "file": "9e21a29e3ac50a76.mp3"
+    },
+    {
+      "id": "24b14385b8d33964",
+      "text": "About the amended copy.",
+      "duration": 1.8,
+      "file": "24b14385b8d33964.mp3"
+    },
+    {
+      "id": "ca09677be83845ec",
+      "text": "She does not look away from it.",
+      "duration": 1.7,
+      "file": "ca09677be83845ec.mp3"
+    },
+    {
+      "id": "6593c88f6bc7d680",
+      "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.",
+      "duration": 5.5,
+      "file": "6593c88f6bc7d680.mp3"
+    },
+    {
+      "id": "a9148c3223545e1f",
+      "text": "You moved it, and the second line did not move with it. Then it was not the drive.",
+      "duration": 3.91,
+      "file": "a9148c3223545e1f.mp3"
+    },
+    {
+      "id": "f95cbbfaa436dd82",
+      "text": "Then you have what I had. A reference that stays on the film after its source is gone.",
+      "duration": 4.1,
+      "file": "f95cbbfaa436dd82.mp3"
+    },
+    {
+      "id": "d4b6a68a6b0206cd",
+      "text": "P10 recorded. She pushes a chair out for you with her foot.",
+      "duration": 3.23,
+      "file": "d4b6a68a6b0206cd.mp3"
+    },
+    {
+      "id": "2061f90507dd4a90",
+      "text": "Why did you change it?",
+      "duration": 1.11,
+      "file": "2061f90507dd4a90.mp3"
+    },
+    {
+      "id": "9be57a3a3f711288",
+      "text": "You falsified the record.",
+      "duration": 1.38,
+      "file": "9be57a3a3f711288.mp3"
+    },
+    {
+      "id": "ed41ded37954c303",
+      "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide.",
+      "duration": 5.74,
+      "file": "ed41ded37954c303.mp3"
+    },
+    {
+      "id": "a5b18ca5266cf328",
+      "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut.",
+      "duration": 5.34,
+      "file": "a5b18ca5266cf328.mp3"
+    },
+    {
+      "id": "c94fdf1783fe692b",
+      "text": "I wrote that the lamp remained. It was easier than writing that he did.",
+      "duration": 3.51,
+      "file": "c94fdf1783fe692b.mp3"
+    },
+    {
+      "id": "8ed709e795f91676",
+      "text": "I typed this in the office tonight, before you came. I have not signed it yet.",
+      "duration": 3.84,
+      "file": "8ed709e795f91676.mp3"
+    },
+    {
+      "id": "22179359d7598239",
+      "text": "She signs it and lays it on the table, on top of the amended copy. E12 filed.",
+      "duration": 3.94,
+      "file": "22179359d7598239.mp3"
+    },
+    {
+      "id": "d9544deee5fe62bf",
+      "text": "Who was T. Vega?",
+      "duration": 1.6,
+      "file": "d9544deee5fe62bf.mp3"
+    },
+    {
+      "id": "57043e5d4e30334c",
+      "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself.",
+      "duration": 4.68,
+      "file": "57043e5d4e30334c.mp3"
+    },
+    {
+      "id": "9fd0e9afe5e2a855",
+      "text": "He has been nineteen for thirty-nine years.",
+      "duration": 2.1,
+      "file": "9fd0e9afe5e2a855.mp3"
+    },
+    {
+      "id": "b70971b5c2bb0e4e",
+      "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut.",
+      "duration": 4.92,
+      "file": "b70971b5c2bb0e4e.mp3"
+    },
+    {
+      "id": "8488af50f10f1dcc",
+      "text": "He wrote me this the day before. I have never shown it to anyone.",
+      "duration": 3.2,
+      "file": "8488af50f10f1dcc.mp3"
+    },
+    {
+      "id": "d78f5380923cf9c8",
+      "text": "She puts a folded letter on the table. E13 filed.",
+      "duration": 2.76,
+      "file": "d78f5380923cf9c8.mp3"
+    },
+    {
+      "id": "8641b1e06202b210",
+      "text": "You put PHOTO 04 in front of her.",
+      "duration": 2.05,
+      "file": "8641b1e06202b210.mp3"
+    },
+    {
+      "id": "c017fa1afb58792f",
+      "text": "Yes. I cut it.",
+      "duration": 0.81,
+      "file": "c017fa1afb58792f.mp3"
+    },
+    {
+      "id": "8da516734c583c2e",
+      "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him.",
+      "duration": 6.11,
+      "file": "8da516734c583c2e.mp3"
+    },
+    {
+      "id": "b803f6c76ffd98d9",
+      "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards.",
+      "duration": 4.43,
+      "file": "b803f6c76ffd98d9.mp3"
+    },
+    {
+      "id": "416866eeebe7eb15",
+      "text": "This was in his coat. He knew more than I did.",
+      "duration": 2.28,
+      "file": "416866eeebe7eb15.mp3"
+    },
+    {
+      "id": "5947162f105f570f",
+      "text": "She puts a field card on the table. E11 filed.",
+      "duration": 2.6,
+      "file": "5947162f105f570f.mp3"
+    },
+    {
+      "id": "ed147446edff0e55",
+      "text": "You thought the whole record would bring it back.",
+      "duration": 2.56,
+      "file": "ed147446edff0e55.mp3"
+    },
+    {
+      "id": "ea19e3fb239cb069",
+      "text": "Write it like that. Not cleaner than it was.",
+      "duration": 2.24,
+      "file": "ea19e3fb239cb069.mp3"
+    },
+    {
+      "id": "f9858b38f3654ba4",
+      "text": "P11 recorded.",
+      "duration": 1.72,
+      "file": "f9858b38f3654ba4.mp3"
+    },
+    {
+      "id": "c6eaa0557b1a63f0",
+      "text": "The handset is back on the cradle.",
+      "duration": 1.88,
+      "file": "c6eaa0557b1a63f0.mp3"
+    },
+    {
+      "id": "7f969a2e396344db",
+      "text": "Where does that phone go?",
+      "duration": 1.88,
+      "file": "7f969a2e396344db.mp3"
+    },
+    {
+      "id": "092c02fd692aa756",
+      "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947.",
+      "duration": 7.29,
+      "file": "092c02fd692aa756.mp3"
+    },
+    {
+      "id": "4ca99f9ad4e705f3",
+      "text": "You left the receiver on out there. Listen.",
+      "duration": 2.24,
+      "file": "4ca99f9ad4e705f3.mp3"
+    },
+    {
+      "id": "b1999ff96c370646",
+      "text": "She lifts the handset and holds it between you. A carrier, very faint, under the hiss.",
+      "duration": 4.21,
+      "file": "b1999ff96c370646.mp3"
+    },
+    {
+      "id": "de5f08621099d0b6",
+      "text": "Tomás. Where did you leave the spare key?",
+      "duration": 2.16,
+      "file": "de5f08621099d0b6.mp3"
+    },
+    {
+      "id": "d111f9a951311961",
+      "text": "Reference west. No. East. Hold the last reading.",
+      "duration": 2.48,
+      "file": "d111f9a951311961.mp3"
+    },
+    {
+      "id": "a9f959af50674d22",
+      "text": "That is what he said then. Not an answer to what I asked now.",
+      "duration": 3.0,
+      "file": "a9f959af50674d22.mp3"
+    },
+    {
+      "id": "3b4a9bb475c77dd1",
+      "text": "She puts the handset down.",
+      "duration": 1.63,
+      "file": "3b4a9bb475c77dd1.mp3"
+    },
+    {
+      "id": "5d479a4d14238300",
+      "text": "No. It is not him. It is what he left.",
+      "duration": 1.94,
+      "file": "5d479a4d14238300.mp3"
+    },
+    {
+      "id": "17ac30812bf87870",
+      "text": "P12 recorded.",
+      "duration": 1.25,
+      "file": "17ac30812bf87870.mp3"
+    },
+    {
+      "id": "21105dab6945501b",
+      "text": "Where did C go?",
+      "duration": 1.45,
+      "file": "21105dab6945501b.mp3"
+    },
+    {
+      "id": "03509ffee071f3ed",
+      "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.",
+      "duration": 6.68,
+      "file": "03509ffee071f3ed.mp3"
+    },
+    {
+      "id": "f7491a8f81999a39",
+      "text": "Tomás walked out to the closing point with the last reading.",
+      "duration": 3.08,
+      "file": "f7491a8f81999a39.mp3"
+    },
+    {
+      "id": "57b9b311c2f0cd75",
+      "text": "If you want to know whether the line still holds, drive the road.",
+      "duration": 3.21,
+      "file": "57b9b311c2f0cd75.mp3"
+    },
+    {
+      "id": "27b7b87837e8d3a7",
+      "text": "Do not stop on the line.",
+      "duration": 1.8,
+      "file": "27b7b87837e8d3a7.mp3"
+    },
+    {
+      "id": "77987c97c333cad6",
+      "text": "T. VEGA / LAST OBSERVATION",
+      "duration": 1.86,
+      "file": "77987c97c333cad6.mp3"
+    },
+    {
+      "id": "e594e72273074ab7",
+      "text": "Opening the lamp circuit removes the source, but not the retained reference. Masking the closing sight line prevents an organised return. These are different results.",
+      "duration": 8.35,
+      "file": "e594e72273074ab7.mp3"
+    },
+    {
+      "id": "5e21e77780fa4632",
+      "text": "The final reading must be taken from outside the marked reference surface. A completed observation may leave its own reference behind. Do not connect a fresh observer to a run merely to finish an old one.",
+      "duration": 9.97,
+      "file": "5e21e77780fa4632.mp3"
+    },
+    {
+      "id": "a5e4f14b14e8e450",
+      "text": "A field card in pencil, from Tomás Vega's coat. She has kept it for thirty-nine years.",
+      "duration": 4.24,
+      "file": "a5e4f14b14e8e450.mp3"
+    },
+    {
+      "id": "afe1bc1228fee416",
+      "text": "The first half separates opening the lamp from masking C. The second half says how the last reading must be taken, and who should not take it.",
+      "duration": 6.91,
+      "file": "afe1bc1228fee416.mp3"
+    },
+    {
+      "id": "eac1c9f4d9226fbb",
+      "text": "Nora,",
+      "duration": 1.19,
+      "file": "eac1c9f4d9226fbb.mp3"
+    },
+    {
+      "id": "3015ae94cc321f3b",
+      "text": "I left the spare key in the mug because you said I would lose it in the sand. You were right about the reference moving. I checked it twice before I wrote it down.",
+      "duration": 7.66,
+      "file": "3015ae94cc321f3b.mp3"
+    },
+    {
+      "id": "73c8c3deda4d8b2e",
+      "text": "When we finish, I owe you breakfast and an apology for calling your first plate a mistake.",
+      "duration": 4.37,
+      "file": "73c8c3deda4d8b2e.mp3"
+    },
+    {
+      "id": "d37d7136ee813fba",
+      "text": "T.",
+      "duration": 1.12,
+      "file": "d37d7136ee813fba.mp3"
+    },
+    {
+      "id": "26f24fb4cc5669d4",
+      "text": "Tomás to his sister, the day before the last observation. No instrument language. The spare key is the key to the field hut.",
+      "duration": 5.88,
+      "file": "26f24fb4cc5669d4.mp3"
+    },
+    {
+      "id": "34bf22c6b4854f10",
+      "text": "CORRECTION TO THE AMENDED FIELD RECORD",
+      "duration": 2.16,
+      "file": "34bf22c6b4854f10.mp3"
+    },
+    {
+      "id": "40a164d6f7339f80",
+      "text": "I removed the closing reference from the service copy. I attributed the additional mark to development because I believed the complete arrangement would be repeated if the original finding remained on the record.",
+      "duration": 10.48,
+      "file": "40a164d6f7339f80.mp3"
+    },
+    {
+      "id": "fbd6c25637f3e390",
+      "text": "The interruption was deliberate. Tomás Vega was present in the active reference when I broke the connection. He was not accounted for after the interruption. I cannot replace that fact with an instrument fault.",
+      "duration": 10.29,
+      "file": "fbd6c25637f3e390.mp3"
+    },
+    {
+      "id": "c03f77a9771cf34f",
+      "text": "NORA VEGA / 1986",
+      "duration": 2.0,
+      "file": "c03f77a9771cf34f.mp3"
+    },
+    {
+      "id": "b8e9e16e3c4c3c0e",
+      "text": "Typed on the office machine earlier tonight and signed at the table, in front of you. It is attached to the amended copy. It does not replace it.",
+      "duration": 6.78,
+      "file": "b8e9e16e3c4c3c0e.mp3"
+    },
+    {
+      "id": "36a7aac06cc7f182",
+      "text": "Tonight's two B-12 prints beside the 1947 original. The control did not remove the second reference, then or now.",
+      "duration": 6.72,
+      "file": "36a7aac06cc7f182.mp3"
+    },
+    {
+      "id": "6a747980d01d61d3",
+      "text": "The omission of C and the cut cable had the same purpose. Neither says what became of Tomás.",
+      "duration": 4.33,
+      "file": "6a747980d01d61d3.mp3"
+    },
+    {
+      "id": "d1e388bc9ba04ace",
+      "text": "A new question on the old field line gets the 1947 fragment back, unchanged.",
+      "duration": 4.6,
+      "file": "d1e388bc9ba04ace.mp3"
+    },
+    {
+      "id": "b5ae0c34b776aa87",
+      "text": "P10 SUPPORTED / Tonight's B-12 control print and the 1947 plate carry the same feature: a reference that stays on the film after its local source is taken away. N. Vega knows it from her own plate in 1947.",
+      "duration": 12.08,
+      "file": "b5ae0c34b776aa87.mp3"
+    },
+    {
+      "id": "b647ad19fd4434cc",
+      "text": "P11 SUPPORTED / N. Vega removed C from the service copy and blamed development because she believed the complete record would let someone repeat the arrangement. She cut the cable herself while T. Vega stood inside the active reference. The record does not say what became of him.",
+      "duration": 13.83,
+      "file": "b647ad19fd4434cc.mp3"
+    },
+    {
+      "id": "f6b62203ff70227a",
+      "text": "P12 SUPPORTED / The return line repeats T. Vega's 1947 correction word for word. A new question gets the same fragment back, not an answer. It is a retained reference, not a conversation.",
+      "duration": 10.09,
+      "file": "f6b62203ff70227a.mp3"
+    },
+    {
+      "id": "70683ed02a9aec52",
+      "text": "More? No? Suit yourself.",
+      "duration": 1.78,
+      "file": "70683ed02a9aec52.mp3"
+    },
+    {
+      "id": "b3ebcd8d66b6a961",
+      "text": "Morning. Or whatever this is.",
+      "duration": 1.96,
+      "file": "b3ebcd8d66b6a961.mp3"
+    },
+    {
+      "id": "d5d0b4ec2f82efb9",
+      "text": "Coffee?",
+      "duration": 0.76,
+      "file": "d5d0b4ec2f82efb9.mp3"
+    },
+    {
+      "id": "3c98c0d8c0939685",
+      "text": "She fills a second cup and sets it down at the last stool along the counter. The stool is empty.",
+      "duration": 4.38,
+      "file": "3c98c0d8c0939685.mp3"
+    },
+    {
+      "id": "3b0bd38ea151c75d",
+      "text": "He's a regular. Comes in when the lights are up.",
+      "duration": 2.33,
+      "file": "3b0bd38ea151c75d.mp3"
+    },
+    {
+      "id": "b91aa8b670cc52f9",
+      "text": "The cup steams. Nobody comes to drink it.",
+      "duration": 1.97,
+      "file": "b91aa8b670cc52f9.mp3"
+    },
+    {
+      "id": "a47a3851d31f80cb",
+      "text": "Morning.",
+      "duration": 1.02,
+      "file": "a47a3851d31f80cb.mp3"
+    },
+    {
+      "id": "3b337d3874508f72",
+      "text": "He does not look up from his eggs.",
+      "duration": 1.99,
+      "file": "3b337d3874508f72.mp3"
+    },
+    {
+      "id": "644bc21ccde2172a",
+      "text": "A dime in the slot, and her number from the card in your wallet.",
+      "duration": 3.16,
+      "file": "644bc21ccde2172a.mp3"
+    },
+    {
+      "id": "bd46454349806cd2",
+      "text": "Ward.",
+      "duration": 0.71,
+      "file": "bd46454349806cd2.mp3"
+    },
+    {
+      "id": "1234caee4f6cb643",
+      "text": "It is Reyes. I am at the diner on the old road.",
+      "duration": 2.28,
+      "file": "1234caee4f6cb643.mp3"
+    },
+    {
+      "id": "1ec6b8f6fccfd3d6",
+      "text": "I read the telex. All of it.",
+      "duration": 1.83,
+      "file": "1ec6b8f6fccfd3d6.mp3"
+    },
+    {
+      "id": "d5ff2e5f8a59ea81",
+      "text": "Hondo called. So did Site 11.",
+      "duration": 2.04,
+      "file": "d5ff2e5f8a59ea81.mp3"
+    },
+    {
+      "id": "8d8b78a38614c451",
+      "text": "Coffee, please.",
+      "duration": 0.83,
+      "file": "8d8b78a38614c451.mp3"
+    },
+    {
+      "id": "40d43c423bf69db1",
+      "text": "She pours without asking how you take it.",
+      "duration": 2.16,
+      "file": "40d43c423bf69db1.mp3"
+    },
+    {
+      "id": "a3330a31f83c9863",
+      "text": "Thirty-five cents. Pay when you go.",
+      "duration": 2.08,
+      "file": "a3330a31f83c9863.mp3"
+    },
+    {
+      "id": "b819fa68565da949",
+      "text": "The lights over the mesa. You have seen them?",
+      "duration": 2.32,
+      "file": "b819fa68565da949.mp3"
+    },
+    {
+      "id": "0d30d97187d029dd",
+      "text": "You are from the observatory. You people never ask about anything else.",
+      "duration": 3.64,
+      "file": "0d30d97187d029dd.mp3"
+    },
+    {
+      "id": "cdfb68cc5262dff1",
+      "text": "First time I was eleven. Over the mesa, steady, no sound. An hour, maybe.",
+      "duration": 3.56,
+      "file": "cdfb68cc5262dff1.mp3"
+    },
+    {
+      "id": "70ae91484217ceb8",
+      "text": "My daddy said it was the Army. The Army said it was weather.",
+      "duration": 2.93,
+      "file": "70ae91484217ceb8.mp3"
+    },
+    {
+      "id": "936007c51f8ade0a",
+      "text": "Every few years since. Last October was the last time.",
+      "duration": 2.76,
+      "file": "936007c51f8ade0a.mp3"
+    },
+    {
+      "id": "e5acda09dd4101a9",
+      "text": "And before you ask: no, I do not think it is little green men. I think it is the mesa.",
+      "duration": 3.91,
+      "file": "e5acda09dd4101a9.mp3"
+    },
+    {
+      "id": "44be72ecc17b3692",
+      "text": "The clipping by the door.",
+      "duration": 1.69,
+      "file": "44be72ecc17b3692.mp3"
+    },
+    {
+      "id": "3be4a3a000a6174d",
+      "text": "My aunt cut that out of the Sentinel. The Kesslers had the ranch on the old road then.",
+      "duration": 4.1,
+      "file": "3be4a3a000a6174d.mp3"
+    },
+    {
+      "id": "fa2f6f12f0baa6b4",
+      "text": "The paper ran it bigger. She trimmed it to fit the frame.",
+      "duration": 2.84,
+      "file": "fa2f6f12f0baa6b4.mp3"
+    },
+    {
+      "id": "d8833c0e09373942",
+      "text": "You take the old road to Roswell?",
+      "duration": 2.04,
+      "file": "d8833c0e09373942.mp3"
+    },
+    {
+      "id": "61a9d6d2fe72caa6",
+      "text": "Nobody takes it since they put the new one through. I take it. Saves me eleven miles.",
+      "duration": 4.09,
+      "file": "61a9d6d2fe72caa6.mp3"
+    },
+    {
+      "id": "7d6106a02448d5ac",
+      "text": "Nothing out there but fence and the mesa.",
+      "duration": 2.14,
+      "file": "7d6106a02448d5ac.mp3"
+    },
+    {
+      "id": "afed30c304c52f17",
+      "text": "Anything ever happen out there?",
+      "duration": 1.69,
+      "file": "afed30c304c52f17.mp3"
+    },
+    {
+      "id": "a2d4da60113cfc55",
+      "text": "Last October she quit on me out there. Right past the eight-mile post.",
+      "duration": 3.52,
+      "file": "a2d4da60113cfc55.mp3"
+    },
+    {
+      "id": "77a6c3dbc0fff413",
+      "text": "Lights, radio, engine, all at once. Coasted to a stop. Then it all came back by itself.",
+      "duration": 4.2,
+      "file": "77a6c3dbc0fff413.mp3"
+    },
+    {
+      "id": "7111439d95d1fcdb",
+      "text": "I figured battery. Put a new one in the next day. Never did it again.",
+      "duration": 3.36,
+      "file": "7111439d95d1fcdb.mp3"
+    },
+    {
+      "id": "9109eac729034e15",
+      "text": "There is a survey bolt in the shoulder just past the eight-mile post.",
+      "duration": 3.29,
+      "file": "9109eac729034e15.mp3"
+    },
+    {
+      "id": "031b961a2329ed30",
+      "text": "The brass thing? Sure.",
+      "duration": 1.7,
+      "file": "031b961a2329ed30.mp3"
+    },
+    {
+      "id": "7e7145fc8aa40a5d",
+      "text": "That is right where she quit on me. I remember, because I sat there looking at it.",
+      "duration": 3.85,
+      "file": "7e7145fc8aa40a5d.mp3"
+    },
+    {
+      "id": "0b6f1293215564ab",
+      "text": "What did they say?",
+      "duration": 1.34,
+      "file": "0b6f1293215564ab.mp3"
+    },
+    {
+      "id": "a59f3517c67d3523",
+      "text": "Enough. I am not doing this on a pay phone.",
+      "duration": 2.16,
+      "file": "a59f3517c67d3523.mp3"
+    },
+    {
+      "id": "d347afd54b99643b",
+      "text": "I am checking the old road first.",
+      "duration": 1.93,
+      "file": "d347afd54b99643b.mp3"
+    },
+    {
+      "id": "ce17d6a45ae5e59f",
+      "text": "Then check it, and come back. I want you on the console before the morning series.",
+      "duration": 4.04,
+      "file": "ce17d6a45ae5e59f.mp3"
+    },
+    {
+      "id": "3508c20fca942e50",
+      "text": "Six o'clock, Reyes.",
+      "duration": 1.63,
+      "file": "3508c20fca942e50.mp3"
+    },
+    {
+      "id": "2b34b44e5325f758",
+      "text": "She hangs up.",
+      "duration": 0.94,
+      "file": "2b34b44e5325f758.mp3"
+    },
+    {
+      "id": "9aa21e44d75f6ef5",
+      "text": "From the door pocket of the service truck. The old Roswell road leaves the highway at the diner, and its mileposts count from there. Survey bolts in the shoulder are marked BM.",
+      "duration": 8.33,
+      "file": "9aa21e44d75f6ef5.mp3"
+    },
+    {
+      "id": "454d1cf76013fa66",
+      "text": "C is not on it. E09A gives C as a direction from the transit, not a place.",
+      "duration": 3.84,
+      "file": "454d1cf76013fa66.mp3"
+    },
+    {
+      "id": "332b792357163f52",
+      "text": "The Pecos Valley Sentinel, July 1947, cut out and framed by the diner door. LIGHT HELD OVER MESA FOR AN HOUR. Ranchers on the old survey road watched a steady glow; the Army field office cites weather equipment.",
+      "duration": 10.89,
+      "file": "332b792357163f52.mp3"
+    },
+    {
+      "id": "5f342b297e4ea6d6",
+      "text": "The photograph: a flat mesa, a steady light high over it, two ranchers at a fence. Low to the right of the mesa, a smudge with a short tail. The right-hand edge of the picture is trimmed close.",
+      "duration": 8.77,
+      "file": "5f342b297e4ea6d6.mp3"
+    },
+    {
+      "id": "da5b2fe00cedb5ec",
+      "text": "P13 SUPPORTED / With E09A traced and laid on STATION 01, north to north, C runs due east and meets the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. It fits N. Vega's account: east from the station, across the old highway, a bolt where it crosses.",
+      "duration": 14.13,
+      "file": "da5b2fe00cedb5ec.mp3"
+    },
+    {
+      "id": "b2dece65377c1af6",
+      "text": "The service map from the truck with E09A traced over it. C crosses the old road just past the eight-mile post.",
+      "duration": 5.68,
+      "file": "b2dece65377c1af6.mp3"
+    },
+    {
+      "id": "7ba700bad5a7ef43",
+      "text": "23:20 handover",
+      "duration": 2.0,
+      "file": "7ba700bad5a7ef43.mp3"
+    },
+    {
+      "id": "5ffad8d3e622bc9c",
+      "text": "Kid, 1. RX bank 3 tripped again. Big red lever on the rack by the printer. 2. Calibrate on 1419.900 first. Card is taped to the console. 3. Spike near 1420.1 is the highway relay. Notch it, log it, don't chase it. 4. Then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.",
+      "duration": 18.37,
+      "file": "5ffad8d3e622bc9c.mp3"
+    },
+    {
+      "id": "bae2e4a479235b82",
+      "text": "Coffee is fresh-ish. Storm out past the Magdalenas. Should stay there.",
+      "duration": 3.56,
+      "file": "bae2e4a479235b82.mp3"
+    },
+    {
+      "id": "7c8e88f62eb4dd3a",
+      "text": "Don't break anything. D.",
+      "duration": 1.8,
+      "file": "7c8e88f62eb4dd3a.mp3"
+    },
+    {
+      "id": "494cdc57072cce29",
+      "text": "Torn out of the night shift logbook. Dale writes like he is already halfway to his car.",
+      "duration": 4.23,
+      "file": "494cdc57072cce29.mp3"
+    },
+    {
+      "id": "b51f14f47607ecee",
+      "text": "\"Kid. One: RX bank 3 tripped again. Big red lever on the rack by the printer. Two: calibrate on 1419.900 first. Card is taped to the console. Three: the spike near 1420.1 is the highway relay. Notch it, log it, don't chase it. Four: then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.\"",
+      "duration": 18.86,
+      "file": "b51f14f47607ecee.mp3"
+    },
+    {
+      "id": "6364528087436d27",
+      "text": "\"Coffee is fresh-ish. Storm out past the Magdalenas. Should stay there. Don't break anything. D.\"",
+      "duration": 4.76,
+      "file": "6364528087436d27.mp3"
+    },
+    {
+      "id": "b5eac8d8e095f8fa",
+      "text": "SARO / OPERATIONS NIGHT WORK ORDER 04/13/86",
+      "duration": 3.12,
+      "file": "b5eac8d8e095f8fa.mp3"
+    },
+    {
+      "id": "ff3b9fe26dcdc75b",
+      "text": "OPERATOR: REYES ON CALL: DR. E. WARD, SHIFT SUPERVISOR",
+      "duration": 2.72,
+      "file": "ff3b9fe26dcdc75b.mp3"
+    },
+    {
+      "id": "6f24941c7068263b",
+      "text": "1. RESTORE RX BANK 3. CALIBRATE ON 1419.900 MHZ. 2. RUN THE SURVEY SWEEP. LOG ANYTHING OFF SCHEDULE. 3. MORNING SERIES 06:00. IT DOES NOT RUN UNTIL EVERY ANOMALY TONIGHT IS DOCUMENTED AND SIGNED.",
+      "duration": 12.13,
+      "file": "6f24941c7068263b.mp3"
+    },
+    {
+      "id": "0b270cee5bc81953",
+      "text": "A typed work order with your name on it, initialled in the corner by the shift supervisor.",
+      "duration": 4.48,
+      "file": "0b270cee5bc81953.mp3"
+    },
+    {
+      "id": "a0de331bfeff5539",
+      "text": "Along the bottom, in Ward's handwriting: \"Before the morning series, I need a report I can sign. Start with calibration. Keep the paper if it gives you anything you cannot account for. E.W.\"",
+      "duration": 8.91,
+      "file": "a0de331bfeff5539.mp3"
+    },
+    {
+      "id": "af98b2c1ac7c5072",
+      "text": "Fan-fold paper, still warm from the print head.",
+      "duration": 2.36,
+      "file": "af98b2c1ac7c5072.mp3"
+    },
+    {
+      "id": "312abf0876f925f2",
+      "text": "Everything above the last lines reads like an ordinary solve: the hydrogen line, a pulse pattern, a position in Orion.",
+      "duration": 5.88,
+      "file": "312abf0876f925f2.mp3"
+    },
+    {
+      "id": "457c361b7950d239",
+      "text": "The distance field is negative. Minus thirty-nine light years. The solver has no way of printing a negative distance. It was never written to.",
+      "duration": 6.98,
+      "file": "457c361b7950d239.mp3"
+    },
+    {
+      "id": "8049a76ca9fd5fff",
+      "text": "He slides the window open a hand's width, and looks at you as if you had just pulled in.",
+      "duration": 4.17,
+      "file": "8049a76ca9fd5fff.mp3"
+    },
+    {
+      "id": "cbb28a4c67817d1d",
+      "text": "Cold one tonight. Radio says it'll",
+      "duration": 1.88,
+      "file": "cbb28a4c67817d1d.mp3"
+    },
+    {
+      "id": "bf3cdeaf866c1173",
+      "text": "He coughs into his fist.",
+      "duration": 1.84,
+      "file": "bf3cdeaf866c1173.mp3"
+    },
+    {
+      "id": "a5024cae75df470f",
+      "text": "warm up by Wednesday.",
+      "duration": 1.76,
+      "file": "a5024cae75df470f.mp3"
+    },
+    {
+      "id": "8d0e1c555b1c5365",
+      "text": "You knock on the night window. He takes his time, and slides it open a hand's width.",
+      "duration": 3.84,
+      "file": "8d0e1c555b1c5365.mp3"
+    },
+    {
+      "id": "2568feb42daf3d88",
+      "text": "Pumps are locked till six. You want something from in here, I can pass it through.",
+      "duration": 3.95,
+      "file": "2568feb42daf3d88.mp3"
+    },
+    {
+      "id": "c8d05be39ec57d0e",
+      "text": "He slides the window open again.",
+      "duration": 1.81,
+      "file": "c8d05be39ec57d0e.mp3"
+    },
+    {
+      "id": "e27daede10411cb1",
+      "text": "Still out, huh.",
+      "duration": 0.87,
+      "file": "e27daede10411cb1.mp3"
+    },
+    {
+      "id": "728a242704fd1d25",
+      "text": "Which way is quickest back up to the observatory?",
+      "duration": 2.52,
+      "file": "728a242704fd1d25.mp3"
+    },
+    {
+      "id": "435a5d956ee22382",
+      "text": "Highway north. There is no other way that goes anywhere.",
+      "duration": 2.76,
+      "file": "435a5d956ee22382.mp3"
+    },
+    {
+      "id": "b61cd40b19624f3a",
+      "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.",
+      "duration": 5.48,
+      "file": "b61cd40b19624f3a.mp3"
+    },
+    {
+      "id": "705049bbdaf077d0",
+      "text": "Your people come down for gas on Fridays. Nice folks. Don't say much.",
+      "duration": 3.32,
+      "file": "705049bbdaf077d0.mp3"
+    },
+    {
+      "id": "2955f3306cad7ba3",
+      "text": "SEEN LIGHTS? CALL THE NIGHT LINE.",
+      "duration": 1.94,
+      "file": "2955f3306cad7ba3.mp3"
+    },
+    {
+      "id": "25cc83f6a88a2bc9",
+      "text": "Earl brings those. The radio fella, across the street.",
+      "duration": 2.8,
+      "file": "25cc83f6a88a2bc9.mp3"
+    },
+    {
+      "id": "5c5e62a96117c6f5",
+      "text": "I let him tape them up. He buys his gas here.",
+      "duration": 2.2,
+      "file": "5c5e62a96117c6f5.mp3"
+    },
+    {
+      "id": "1f88ac2e1dbdc9cb",
+      "text": "People call him. I couldn't tell you why they'd want to.",
+      "duration": 2.6,
+      "file": "1f88ac2e1dbdc9cb.mp3"
+    },
+    {
+      "id": "eb9727352d5f1a2d",
+      "text": "You ever go out the old road at night?",
+      "duration": 2.08,
+      "file": "eb9727352d5f1a2d.mp3"
+    },
+    {
+      "id": "0064338b16cd5c18",
+      "text": "Towed a rig in off it once. Last October.",
+      "duration": 2.16,
+      "file": "0064338b16cd5c18.mp3"
+    },
+    {
+      "id": "0d35be5b9273fde2",
+      "text": "Left here a quarter to two. Got back twenty-five past four.",
+      "duration": 2.96,
+      "file": "0d35be5b9273fde2.mp3"
+    },
+    {
+      "id": "4fc1cd1cdee6e29c",
+      "text": "It's a forty minute job.",
+      "duration": 1.61,
+      "file": "4fc1cd1cdee6e29c.mp3"
+    },
+    {
+      "id": "1a2499fec7f46a89",
+      "text": "He says it like a sum he has done a lot of times and cannot get to come out.",
+      "duration": 3.61,
+      "file": "1a2499fec7f46a89.mp3"
+    },
+    {
+      "id": "48a4ded0af4228f2",
+      "text": "Anyway. Cold one tonight.",
+      "duration": 1.87,
+      "file": "48a4ded0af4228f2.mp3"
+    },
+    {
+      "id": "5253cb18218f4fa5",
+      "text": "I was here before. You told me that.",
+      "duration": 2.03,
+      "file": "5253cb18218f4fa5.mp3"
+    },
+    {
+      "id": "bc9462d661d02269",
+      "text": "Wasn't me, then. I've been here since ten.",
+      "duration": 2.16,
+      "file": "bc9462d661d02269.mp3"
+    },
+    {
+      "id": "63cd0fc29b4943a8",
+      "text": "He looks up at the clock over the register for a long time, as if it might say something else.",
+      "duration": 4.56,
+      "file": "63cd0fc29b4943a8.mp3"
+    },
+    {
+      "id": "5e84f50a871dc2fd",
+      "text": "He opens before you have finished knocking.",
+      "duration": 2.2,
+      "file": "5e84f50a871dc2fd.mp3"
+    },
+    {
+      "id": "f9e12124efe92648",
+      "text": "Quiet night. Drove the loop out to the county line and back.",
+      "duration": 2.98,
+      "file": "f9e12124efe92648.mp3"
+    },
+    {
+      "id": "e2865e475767c432",
+      "text": "He looks at his watch, and then at the clock on the wall, and does not say anything about either.",
+      "duration": 4.63,
+      "file": "e2865e475767c432.mp3"
+    },
+    {
+      "id": "27c798035c3790c8",
+      "text": "You knock. A chair scrapes. He opens the door on the chain, looks at your jacket, and takes the chain off.",
+      "duration": 5.1,
+      "file": "27c798035c3790c8.mp3"
+    },
+    {
+      "id": "0ffaee15704fc08b",
+      "text": "Help you?",
+      "duration": 0.79,
+      "file": "0ffaee15704fc08b.mp3"
+    },
+    {
+      "id": "65e1fa7b983a7038",
+      "text": "Reyes. From the observatory up the road.",
+      "duration": 2.04,
+      "file": "65e1fa7b983a7038.mp3"
+    },
+    {
+      "id": "78f176f9832e86ef",
+      "text": "SARO. Sure. You folks lose something?",
+      "duration": 2.12,
+      "file": "78f176f9832e86ef.mp3"
+    },
+    {
+      "id": "97c4d9f53eb77270",
+      "text": "Back again.",
+      "duration": 0.8,
+      "file": "97c4d9f53eb77270.mp3"
+    },
+    {
+      "id": "6bfa6801a3cac6c2",
+      "text": "The map on your wall.",
+      "duration": 1.76,
+      "file": "6bfa6801a3cac6c2.mp3"
+    },
+    {
+      "id": "2eab3a7a56d125b1",
+      "text": "Calls. Every call I get that I can't write up as anything.",
+      "duration": 2.88,
+      "file": "2eab3a7a56d125b1.mp3"
+    },
+    {
+      "id": "12fc033ec1c9e9e6",
+      "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "duration": 4.77,
+      "file": "12fc033ec1c9e9e6.mp3"
+    },
+    {
+      "id": "55243ebba23b74a3",
+      "text": "I don't believe in little men. I believe in maps.",
+      "duration": 2.44,
+      "file": "55243ebba23b74a3.mp3"
+    },
+    {
+      "id": "67dbb81f36395270",
+      "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up.",
+      "duration": 4.53,
+      "file": "67dbb81f36395270.mp3"
+    },
+    {
+      "id": "ca73065cdead1d47",
+      "text": "The row running east.",
+      "duration": 1.76,
+      "file": "ca73065cdead1d47.mp3"
+    },
+    {
+      "id": "02d7a3fbfa7643b5",
+      "text": "The old road. Red, mostly. Engines. Out past where the county stops grading.",
+      "duration": 3.8,
+      "file": "02d7a3fbfa7643b5.mp3"
+    },
+    {
+      "id": "285b4d119519e647",
+      "text": "Every one of those is a car somebody had to tow back.",
+      "duration": 2.64,
+      "file": "285b4d119519e647.mp3"
+    },
+    {
+      "id": "1536e9ab71453a57",
+      "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing.",
+      "duration": 3.72,
+      "file": "1536e9ab71453a57.mp3"
+    },
+    {
+      "id": "3be729906da1f4cf",
+      "text": "The green ones.",
+      "duration": 1.18,
+      "file": "3be729906da1f4cf.mp3"
+    },
+    {
+      "id": "c7b35e964c814cb1",
+      "text": "Three of them are right here in town.",
+      "duration": 2.08,
+      "file": "c7b35e964c814cb1.mp3"
+    },
+    {
+      "id": "96cd1408b5dfba60",
+      "text": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+      "duration": 5.96,
+      "file": "96cd1408b5dfba60.mp3"
+    },
+    {
+      "id": "76e73b0c78e53c7f",
+      "text": "A man whose wife sits out at the laundromat nights. March of '83.",
+      "duration": 3.55,
+      "file": "76e73b0c78e53c7f.mp3"
+    },
+    {
+      "id": "304cbbf2931d3b03",
+      "text": "And a kid who called the radio station in September of '81. Family moved away after.",
+      "duration": 4.47,
+      "file": "304cbbf2931d3b03.mp3"
+    },
+    {
+      "id": "1f9fae245b5fa16f",
+      "text": "Don't go asking them about it. They don't know they've got a pin.",
+      "duration": 3.16,
+      "file": "1f9fae245b5fa16f.mp3"
+    },
+    {
+      "id": "a19725efbb31b3a7",
+      "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck.",
+      "duration": 5.3,
+      "file": "a19725efbb31b3a7.mp3"
+    },
+    {
+      "id": "56e7a020339f079f",
+      "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+      "duration": 3.27,
+      "file": "56e7a020339f079f.mp3"
+    },
+    {
+      "id": "0772acf7684b121e",
+      "text": "You again. Song and a half this time.",
+      "duration": 2.08,
+      "file": "0772acf7684b121e.mp3"
+    },
+    {
+      "id": "baf148d3f178c53f",
+      "text": "What do people call in about?",
+      "duration": 1.39,
+      "file": "baf148d3f178c53f.mp3"
+    },
+    {
+      "id": "3dd0d7b88a382fe9",
+      "text": "Lights, mostly. Cattle, some nights. Engines.",
+      "duration": 2.36,
+      "file": "3dd0d7b88a382fe9.mp3"
+    },
+    {
+      "id": "073fce364994cf9e",
+      "text": "And missing time. You read that book? Everybody's read that book now.",
+      "duration": 3.24,
+      "file": "073fce364994cf9e.mp3"
+    },
+    {
+      "id": "3a345d802b2c405b",
+      "text": "Half of them, I think they read it first and then it happened to them.",
+      "duration": 3.28,
+      "file": "3a345d802b2c405b.mp3"
+    },
+    {
+      "id": "f60bda199fff5103",
+      "text": "The other half never read anything in their lives.",
+      "duration": 2.33,
+      "file": "f60bda199fff5103.mp3"
+    },
+    {
+      "id": "46264089a93d9980",
+      "text": "What do you think they are?",
+      "duration": 1.88,
+      "file": "46264089a93d9980.mp3"
+    },
+    {
+      "id": "a3c152d2c160dfed",
+      "text": "On the air I call them our visitors. It keeps it friendly.",
+      "duration": 2.88,
+      "file": "a3c152d2c160dfed.mp3"
+    },
+    {
+      "id": "a75c7f370b3629f3",
+      "text": "Off the air I don't call them anything.",
+      "duration": 2.12,
+      "file": "a75c7f370b3629f3.mp3"
+    },
+    {
+      "id": "2d76df5ed056575e",
+      "text": "Do you keep the calls?",
+      "duration": 1.67,
+      "file": "2d76df5ed056575e.mp3"
+    },
+    {
+      "id": "357153cc24cbf51d",
+      "text": "Every one, on reel. Twelve years of them.",
+      "duration": 2.16,
+      "file": "357153cc24cbf51d.mp3"
+    },
+    {
+      "id": "ef7a39269e528490",
+      "text": "Except one. September of '81, a boy called in. I've never played it back.",
+      "duration": 3.96,
+      "file": "ef7a39269e528490.mp3"
+    },
+    {
+      "id": "281daafd0a94d01a",
+      "text": "I wasn't on the air that night. The station was off.",
+      "duration": 2.6,
+      "file": "281daafd0a94d01a.mp3"
+    },
+    {
+      "id": "e61be9c0d49ba49f",
+      "text": "He looks back at the studio, where the reels are turning.",
+      "duration": 2.84,
+      "file": "e61be9c0d49ba49f.mp3"
+    },
+    {
+      "id": "ecc59550da45471d",
+      "text": "Record's ending.",
+      "duration": 1.02,
+      "file": "ecc59550da45471d.mp3"
+    },
+    {
+      "id": "7be9d2bb1f674a68",
+      "text": "A transistor radio in her lap, tuned between two stations. Hiss, and under it something that is not quite a voice.",
+      "duration": 5.41,
+      "file": "7be9d2bb1f674a68.mp3"
+    },
+    {
+      "id": "3b7c0995690f6b53",
+      "text": "It's louder tonight.",
+      "duration": 0.97,
+      "file": "3b7c0995690f6b53.mp3"
+    },
+    {
+      "id": "63db872b216034b0",
+      "text": "She does not look at you when she says it.",
+      "duration": 1.99,
+      "file": "63db872b216034b0.mp3"
+    },
+    {
+      "id": "0adc77e227053348",
+      "text": "Still louder.",
+      "duration": 0.93,
+      "file": "0adc77e227053348.mp3"
+    },
+    {
+      "id": "c6d1be0fe527c1c3",
+      "text": "What are you listening to?",
+      "duration": 1.3,
+      "file": "c6d1be0fe527c1c3.mp3"
+    },
+    {
+      "id": "fca5b4b13b5dfbd7",
+      "text": "Nothing. That's the point. In between.",
+      "duration": 2.12,
+      "file": "fca5b4b13b5dfbd7.mp3"
+    },
+    {
+      "id": "84b351f948f4d13a",
+      "text": "My husband said you could hear it in between, if you were quiet enough.",
+      "duration": 3.25,
+      "file": "84b351f948f4d13a.mp3"
+    },
+    {
+      "id": "cd4889f01f2647d1",
+      "text": "Most nights it's just this. Tonight it's louder.",
+      "duration": 2.45,
+      "file": "cd4889f01f2647d1.mp3"
+    },
+    {
+      "id": "72f6788bcae2a2d8",
+      "text": "Your husband.",
+      "duration": 1.29,
+      "file": "72f6788bcae2a2d8.mp3"
+    },
+    {
+      "id": "efd830d0c62b70c5",
+      "text": "He went out to look at the cattle one night. March, three years ago.",
+      "duration": 3.36,
+      "file": "efd830d0c62b70c5.mp3"
+    },
+    {
+      "id": "dca990e16f3937be",
+      "text": "Forty-seven minutes. I had the clock right there on the stove.",
+      "duration": 3.16,
+      "file": "dca990e16f3937be.mp3"
+    },
+    {
+      "id": "2ff4a2ba5ea3343e",
+      "text": "He came back in and sat down and took off his boots, and he never said one word about it. Not then, not since.",
+      "duration": 5.2,
+      "file": "2ff4a2ba5ea3343e.mp3"
+    },
+    {
+      "id": "d29a14046594da19",
+      "text": "He sleeps fine. I don't.",
+      "duration": 1.8,
+      "file": "d29a14046594da19.mp3"
+    },
+    {
+      "id": "86d5c09dc6fb4f83",
+      "text": "Why sit out here?",
+      "duration": 0.96,
+      "file": "86d5c09dc6fb4f83.mp3"
+    },
+    {
+      "id": "d1cd172c24641287",
+      "text": "Washer's broke at home.",
+      "duration": 1.84,
+      "file": "d1cd172c24641287.mp3"
+    },
+    {
+      "id": "f3cb470aa9e6404a",
+      "text": "There is no basket on the bench beside her.",
+      "duration": 2.18,
+      "file": "f3cb470aa9e6404a.mp3"
+    },
+    {
+      "id": "e607894496cbfb71",
+      "text": "Shop's closed, friend. Open at ten. Tours on Saturdays.",
+      "duration": 2.8,
+      "file": "e607894496cbfb71.mp3"
+    },
+    {
+      "id": "e32dd1a41e8207c6",
+      "text": "He taps the ash off the end of his cigarette onto the step.",
+      "duration": 2.88,
+      "file": "e32dd1a41e8207c6.mp3"
+    },
+    {
+      "id": "39c6b4e89bebab29",
+      "text": "Still closed.",
+      "duration": 0.9,
+      "file": "39c6b4e89bebab29.mp3"
+    },
+    {
+      "id": "ccd04398a5f5ff7d",
+      "text": "The crash. 1947.",
+      "duration": 1.89,
+      "file": "ccd04398a5f5ff7d.mp3"
+    },
+    {
+      "id": "5af3d8855363d25c",
+      "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them.",
+      "duration": 6.16,
+      "file": "5af3d8855363d25c.mp3"
+    },
+    {
+      "id": "84743240facc0137",
+      "text": "The Army says flying disc. Same day, they say weather balloon.",
+      "duration": 3.16,
+      "file": "84743240facc0137.mp3"
+    },
+    {
+      "id": "e3ddfd9a5ad775de",
+      "text": "Then nothing for thirty years, till the book.",
+      "duration": 2.29,
+      "file": "e3ddfd9a5ad775de.mp3"
+    },
+    {
+      "id": "f7fe6ac732cb132a",
+      "text": "The boys from '47. That's what I call them. The boys.",
+      "duration": 3.0,
+      "file": "f7fe6ac732cb132a.mp3"
+    },
+    {
+      "id": "802daa81446028e4",
+      "text": "Have you ever seen anything yourself?",
+      "duration": 1.81,
+      "file": "802daa81446028e4.mp3"
+    },
+    {
+      "id": "0b71d27200d13a33",
+      "text": "Me?",
+      "duration": 1.0,
+      "file": "0b71d27200d13a33.mp3"
+    },
+    {
+      "id": "5bb51d0bdbad8d45",
+      "text": "He takes a long time over the cigarette.",
+      "duration": 2.16,
+      "file": "5bb51d0bdbad8d45.mp3"
+    },
+    {
+      "id": "08d6e8617f071c7a",
+      "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.",
+      "duration": 4.08,
+      "file": "08d6e8617f071c7a.mp3"
+    },
+    {
+      "id": "563b8af0e4e2a2cd",
+      "text": "I sit out here every night it's clear. Never seen a thing.",
+      "duration": 2.88,
+      "file": "563b8af0e4e2a2cd.mp3"
+    },
+    {
+      "id": "96f7770483c3c98a",
+      "text": "You'd think they'd come by the shop once. Out of courtesy.",
+      "duration": 2.83,
+      "file": "96f7770483c3c98a.mp3"
+    },
+    {
+      "id": "de08e0423004c3a9",
+      "text": "The cardboard alien in the window.",
+      "duration": 2.05,
+      "file": "de08e0423004c3a9.mp3"
+    },
+    {
+      "id": "bfa77ddef27c8fae",
+      "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up.",
+      "duration": 3.83,
+      "file": "bfa77ddef27c8fae.mp3"
+    },
+    {
+      "id": "91cf45c21fb28872",
+      "text": "Last time it was out on the highway north of town. Standing up, facing the traffic.",
+      "duration": 3.99,
+      "file": "91cf45c21fb28872.mp3"
+    },
+    {
+      "id": "bdf430c38b561927",
+      "text": "Somebody's idea of a joke.",
+      "duration": 1.88,
+      "file": "bdf430c38b561927.mp3"
+    },
+    {
+      "id": "d27810c5a5447700",
+      "text": "SARO RX/DSP DIRECTION SOLVE - EXCEPTIONS FILE COPIES. DO NOT REMOVE.",
+      "duration": 3.44,
+      "file": "d27810c5a5447700.mp3"
+    },
+    {
+      "id": "a603ba0984dc788b",
+      "text": "FROM SYSTEMS, 03/84: NEGATIVE RANGES CANNOT BE GENERATED BY THE SOLVER. RANGE IS COMPUTED FROM DELAY AND IS UNSIGNED. ANY NEGATIVE RANGE IS AN INPUT ERROR. RECLASSIFY AND FILE HERE. Then why does it keep doing it?",
+      "duration": 10.61,
+      "file": "a603ba0984dc788b.mp3"
+    },
+    {
+      "id": "ae15a3fae81d7aeb",
+      "text": "DATE 09/22/81 01:52:07 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -34 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR clock?",
+      "duration": 11.34,
+      "file": "ae15a3fae81d7aeb.mp3"
+    },
+    {
+      "id": "965bb5c10466f121",
+      "text": "DATE 03/02/83 03:10:44 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -36 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR baseline file reloaded",
+      "duration": 12.21,
+      "file": "965bb5c10466f121.mp3"
+    },
+    {
+      "id": "6de6ba3ad6b856de",
+      "text": "DATE 10/19/85 23:58:31 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -38 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR third time. Ask Systems.",
+      "duration": 12.58,
+      "file": "6de6ba3ad6b856de.mp3"
+    },
+    {
+      "id": "d2fae6a331c3bb17",
+      "text": "DATE 07/--/47 02:17:00 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -00 LY",
+      "duration": 8.43,
+      "file": "d2fae6a331c3bb17.mp3"
+    },
+    {
+      "id": "fa6a0b0cd0c596a7",
+      "text": "A ring binder from the shelf above the printer. The note from Systems is typed. The pencil under it looks like the hand in the shift log.",
+      "duration": 6.68,
+      "file": "fa6a0b0cd0c596a7.mp3"
+    },
+    {
+      "id": "cbc9f43518f8c121",
+      "text": "Three printouts in the same format as tonight's, from September 1981, March 1983 and October 1985. Each one is stamped as an input error.",
+      "duration": 9.13,
+      "file": "cbc9f43518f8c121.mp3"
+    },
+    {
+      "id": "9067294575f05a5f",
+      "text": "The last sheet is on older, yellowed paper, with no stamp and no pencil. The date field says 1947. SARO's solver did not exist in 1947.",
+      "duration": 7.89,
+      "file": "9067294575f05a5f.mp3"
+    },
+    {
+      "id": "234ea20d1caa0d27",
+      "text": "SARO / MAINTENANCE RX BANK 3 - SERVICE RECORD",
+      "duration": 2.52,
+      "file": "234ea20d1caa0d27.mp3"
+    },
+    {
+      "id": "d308bf568c02a039",
+      "text": "09/23/81 K3 RELAY REPLACED. TRIPPED APPROX 1 MIN BEFORE LINE POWER FAILURE 09/22. NO FAULT FOUND.",
+      "duration": 6.44,
+      "file": "d308bf568c02a039.mp3"
+    },
+    {
+      "id": "1f2e2fd19d8d50ad",
+      "text": "03/03/83 K3 REPLACED. TRIPPED BEFORE POWER DIP 03/02. RELAY TESTS GOOD. REPLACED ANYWAY.",
+      "duration": 5.95,
+      "file": "1f2e2fd19d8d50ad.mp3"
+    },
+    {
+      "id": "6fb2d5ce17fc3901",
+      "text": "10/21/85 K3 REPLACED (3RD). TRIPPED 40 SEC BEFORE OUTAGE 10/19. RELAY IS NOT FAULTY. IT TRIPS BEFORE, NOT AFTER. M.O.",
+      "duration": 7.48,
+      "file": "6fb2d5ce17fc3901.mp3"
+    },
+    {
+      "id": "d6aeb63179557848",
+      "text": "A clipboard on the rack, under the status lights. Maintenance has replaced relay K3 three times since 1981.",
+      "duration": 6.01,
+      "file": "d6aeb63179557848.mp3"
+    },
+    {
+      "id": "7a9fc01500588e03",
+      "text": "Each entry is the day after the trip. Each time, the relay tripped first and the power went after.",
+      "duration": 4.78,
+      "file": "7a9fc01500588e03.mp3"
+    },
+    {
+      "id": "c3de6a09f1a669da",
+      "text": "CALIBRATION 1419.900 MHZ GAIN 45-65 BW 34-62",
+      "duration": 5.48,
+      "file": "c3de6a09f1a669da.mp3"
+    },
+    {
+      "id": "290590e0b011a02e",
+      "text": "KNOWN INTERFERENCE 1420.110 HIGHWAY MICROWAVE RELAY. NOTCH. 1420.6 SATELLITE DOWNLINK, PASSES ONLY.",
+      "duration": 8.88,
+      "file": "290590e0b011a02e.mp3"
+    },
+    {
+      "id": "666178816e526e25",
+      "text": "ANYTHING ELSE: LOG IT.",
+      "duration": 1.8,
+      "file": "666178816e526e25.mp3"
+    },
+    {
+      "id": "b971e87f15dd6d8e",
+      "text": "An index card, taped to the console so long ago the tape has gone brown.",
+      "duration": 3.56,
+      "file": "b971e87f15dd6d8e.mp3"
+    },
+    {
+      "id": "46bf5c4d277a88b1",
+      "text": "A pulse pattern of four and seven is not on it.",
+      "duration": 2.36,
+      "file": "46bf5c4d277a88b1.mp3"
+    },
+    {
+      "id": "7db37c1cd6ea6cdf",
+      "text": "HALLEY'S COMET APRIL 1986",
+      "duration": 2.2,
+      "file": "7db37c1cd6ea6cdf.mp3"
+    },
+    {
+      "id": "0aeafff9e9876c5c",
+      "text": "CLOSEST TO EARTH APRIL 11 LOOK LOW IN THE SOUTH EARLY APRIL: BEFORE DAWN AFTER THE 12TH: AROUND MIDNIGHT GET AWAY FROM TOWN LIGHTS Public line: comet calls go to the planetarium in town. Not us. Not at 3 a.m. E.W.",
+      "duration": 10.47,
+      "file": "0aeafff9e9876c5c.mp3"
+    },
+    {
+      "id": "2f8e9df6b19fa0a8",
+      "text": "A printed poster from the spring, with a little chart of the southern sky and the comet's place for the 5th, 10th, 14th and 20th of April.",
+      "duration": 7.15,
+      "file": "2f8e9df6b19fa0a8.mp3"
+    },
+    {
+      "id": "5eb7e046914be64c",
+      "text": "A note is taped in the corner, in the supervisor's hand.",
+      "duration": 2.8,
+      "file": "5eb7e046914be64c.mp3"
+    },
+    {
+      "id": "11ea12de84e4fd97",
+      "text": "The roll on the teleprinter in the corner, torn off below the last message. A weather advisory at 22:50, and the network status at 23:00.",
+      "duration": 7.93,
+      "file": "11ea12de84e4fd97.mp3"
+    },
+    {
+      "id": "411ccd2aabf90365",
+      "text": "That is enough to hold the morning series. It is not enough to tell us why it happened.",
+      "duration": 4.12,
+      "file": "411ccd2aabf90365.mp3"
+    },
+    {
+      "id": "1e0e06da85e1e3f8",
+      "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where.",
+      "duration": 5.05,
+      "file": "1e0e06da85e1e3f8.mp3"
+    },
+    {
+      "id": "55e04efecd88edfa",
+      "text": "Sierra Motor Court.",
+      "duration": 1.36,
+      "file": "55e04efecd88edfa.mp3"
+    },
+    {
+      "id": "0f00c8288b54e9dc",
+      "text": "Station One. Nobody has asked me for that key in a long time.",
+      "duration": 3.04,
+      "file": "0f00c8288b54e9dc.mp3"
+    },
+    {
+      "id": "21df91635ff1db44",
+      "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+      "duration": 5.51,
+      "file": "21df91635ff1db44.mp3"
+    },
+    {
+      "id": "b7e24473f2824852",
+      "text": "So you went out there.",
+      "duration": 1.78,
+      "file": "b7e24473f2824852.mp3"
+    },
+    {
+      "id": "7f69b3847d102724",
+      "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+      "duration": 5.07,
+      "file": "7f69b3847d102724.mp3"
+    },
+    {
+      "id": "c13f56f927edc83e",
+      "text": "You have seen the cable now. It did not break by itself.",
+      "duration": 2.8,
+      "file": "c13f56f927edc83e.mp3"
+    },
+    {
+      "id": "c88b297e80f976bd",
+      "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+      "duration": 4.41,
+      "file": "c88b297e80f976bd.mp3"
+    }
+  ]
+}

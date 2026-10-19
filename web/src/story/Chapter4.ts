@@ -569,7 +569,7 @@ export class Chapter4 {
       onTable: () => this.showEvidence(),
       onChoice: (id) => this.choose(id),
       onRead: (id) => this.read(id as Paper),
-      onClose: () => { this.panel = null; },
+      onClose: () => { this.d.audio.stopPhoneCalls(); this.panel = null; },
     });
   }
 
@@ -666,6 +666,7 @@ export class Chapter4 {
   }
 
   choose(id: string) {
+    this.d.audio.stopPhoneCalls();
     this.reply = null;
     switch (this.mode) {
       case 'control': return this.answerControl(id);
@@ -804,7 +805,8 @@ export class Chapter4 {
     ];
     s.line = true;
     this.mode = 'menu';
-    if (at) {
+    const spoken = audio.phoneCall(this.lines.filter((l) => l.who).map((l) => ({ by: l.who, text: l.text })));
+    if (!spoken && at) {
       audio.play('click', { gain: 0.5, at });
       audio.radio(at, 0.08);
       audio.radioVoice(4.4, 3.6);

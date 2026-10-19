@@ -1,0 +1,73 @@
+[
+  {
+    "name": "phonevoices-single",
+    "exit_code": 0,
+    "seconds": 34.9,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/phonevoices.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-kinski/web/production/kinski/qa/phone-single"
+    ],
+    "log": "phonevoices-single.log"
+  },
+  {
+    "name": "walkthrough",
+    "exit_code": 0,
+    "seconds": 16.63,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/walkthrough.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-kinski/web/production/kinski/qa/walkthrough",
+      "844x390",
+      "high"
+    ],
+    "log": "walkthrough.log"
+  },
+  {
+    "name": "csptest",
+    "exit_code": 0,
+    "seconds": 4.76,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/csptest.py"
+    ],
+    "log": "csptest.log"
+  },
+  {
+    "name": "readaloud-pages",
+    "exit_code": 0,
+    "seconds": 14.34,
+    "url": "http://127.0.0.1:8497/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-kinski/web/production/kinski/qa/pages"
+    ],
+    "log": "readaloud-pages.log"
+  },
+  {
+    "name": "readaloud-single",
+    "exit_code": 0,
+    "seconds": 17.97,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-kinski/web/production/kinski/qa/single"
+    ],
+    "log": "readaloud-single.log"
+  }
+]

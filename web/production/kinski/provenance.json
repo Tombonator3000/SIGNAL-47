@@ -1,0 +1,175 @@
+{
+  "synthetic": true,
+  "voice_label": "Kinski synthetic parody",
+  "language": "en",
+  "generator": "VoiceStudio 0.5.6 / OmniVoice",
+  "voice_profile_id": "3cf0d3a5",
+  "voice_profile_origin": "Original Klaus Kinski argument with Walter Saxer on the Fitzcarraldo set, reproduced in Werner Herzog's documentary Mein liebster Feind (1999). A locally selected 6.25-second excerpt conditions the synthetic parody voice; the original recording is not bundled.",
+  "reference_source_url": "https://www.dailymotion.com/video/x2siao8",
+  "reference_source_interval_seconds": [
+    156.42,
+    162.67
+  ],
+  "reference_text_status": "German ASR corrected against scene context and published transcription; no human listening verification.",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "language": "en",
+    "effect_preset": "broadcast (documented API default)"
+  },
+  "runtime_assets": "Generated MP3 files and a text-to-file catalog only. No source/reference recordings, service endpoint, model weights, profile path or dependency on VoiceStudio at runtime.",
+  "postprocessing": "Per-clip constant gain toward -20 dBFS non-silent RMS (-50 dBFS block threshold), capped at -2 dBFS decoded-MP3 peak. Mono 24 kHz, 64 kbit/s MP3; no dynamic compression, pitch shift or time stretch in the asset conversion.",
+  "scope": {
+    "documents": "DocSpec.transcript paragraphs displayed by UI.document, and a separate reading of static DocSpec.page paragraphs. No titles. Page-only pencil prefixes and pure separator lines are removed identically in runtime and extraction.",
+    "conversations": "TalkView.lines[].text from Chapter4, Chapter5 and caliche, including YOU and aside. Not choices, status or reply.",
+    "radio": "Excluded, including Chapter4 CB utterances.",
+    "counts": {
+      "clipCount": 337,
+      "documentClipCount": 52,
+      "pageClipCount": 84,
+      "talkClipCount": 192,
+      "phoneClipCount": 24,
+      "words": 4924,
+      "characters": 26859,
+      "transcriptDeclarations": 39,
+      "pageDeclarations": 37,
+      "staticPageVariants": 33,
+      "talkSourceSites": 189,
+      "phoneSourceSites": 33
+    },
+    "telephone": "Canonical literal PHONE_CALLS cue.text except aside, and PHONE_TEXTS from src/core/phoneScripts.ts. Exact speech only; actor labels, quotation marks and the unsaid player aside are excluded. 24 phone texts reuse 15 existing clips and add nine from Ward/Nora in chapters 2 and 3.",
+    "telephone_manuscript": "production/kinski/telefonmanus.md: all 24 exact authored speech lines by scene and actor, with the unsaid chapter 2 player aside explicitly marked silent."
+  },
+  "dynamic_unavailable": [
+    {
+      "kind": "description",
+      "factory": "src/story/Chapter1.ts:851 docPhoto",
+      "documents": [
+        "frame01",
+        "frame02"
+      ],
+      "reason": "Player exposure time is interpolated; both control methods are otherwise finite."
+    },
+    {
+      "kind": "description",
+      "factory": "src/story/Chapter3.ts:849 docPhoto",
+      "documents": [
+        "frame03",
+        "frame04"
+      ],
+      "reason": "Player exposure time is interpolated."
+    },
+    {
+      "kind": "description",
+      "factory": "src/story/abduction.ts:235",
+      "documents": [
+        "away*"
+      ],
+      "reason": "Player exposure counter is interpolated."
+    },
+    {
+      "kind": "paper",
+      "document": "s03log",
+      "reason": "Controller event time is interpolated in the paper."
+    },
+    {
+      "kind": "paper",
+      "document": "printout",
+      "reason": "Solve time is interpolated in the paper."
+    },
+    {
+      "kind": "paper",
+      "document": "telex",
+      "reason": "The paper is built from the changing message list."
+    }
+  ],
+  "dynamic_policy": "A requested document or dialogue block is available only when every paragraph/line has matching generated audio. No silent skipping over unknown text.",
+  "qa": {
+    "completed_utc": "2026-10-19T09:30:35.942224+00:00",
+    "report": "production/kinski/verification.json",
+    "status": "PASS",
+    "clips": 337,
+    "bytes": 11805932,
+    "duration_seconds": 1446.43,
+    "pcm_encoding": "All MP3 re-decoded and ffprobe checked: mono, 24000 Hz, MP3. All catalog IDs/text/hash/durations match corpus and generation report.",
+    "positive_catalog_and_decoded_duration": true,
+    "max_decoded_peak_dbfs": -2.483080623297776,
+    "full_scale_samples": 0,
+    "catalog_ids_match_corpus": true,
+    "orphan_mp3_files": [],
+    "dropped_chunks": {
+      "confirmed_zero": 337,
+      "unrecorded_ids": []
+    },
+    "asr": {
+      "engine": "faster-whisper-small",
+      "samples": 8,
+      "exact_token_matches": 4,
+      "strict_word_edits": 13,
+      "expected_sample_tokens": 187,
+      "interpretation": "Original six dispersed samples are preserved. Two added phone samples: Ward has no token edits; Nora has one inflection difference (developed to develop). Numeric/time spelling and a short A/B/C survey passage remain flagged from the original samples. Automatic transcription does not establish audible word accuracy or similarity.",
+      "listening_review_clip_ids": [
+        "c21188610bc7ce84",
+        "c88b297e80f976bd"
+      ]
+    },
+    "rejected_take": "Silent T. take was rejected; final initial uses Tee. A history-recovered first take was regenerated with identical text/seed to capture an explicit dropped_chunks=0 response.",
+    "human_listened": false,
+    "speaker_similarity": "UNVERIFIED",
+    "emotional_delivery": "UNVERIFIED",
+    "phone_extension": {
+      "new_clips": 9,
+      "new_ids": [
+        "411ccd2aabf90365",
+        "1e0e06da85e1e3f8",
+        "55e04efecd88edfa",
+        "0f00c8288b54e9dc",
+        "21df91635ff1db44",
+        "b7e24473f2824852",
+        "7f69b3847d102724",
+        "c13f56f927edc83e",
+        "c88b297e80f976bd"
+      ],
+      "phone_text_count": 24,
+      "old_clip_count": 328,
+      "old_texts_and_mp3_hashes_unchanged": true,
+      "new_asr_samples": 2,
+      "new_asr_strict_word_edits": 1
+    }
+  },
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing installed local API and profile reused; no new model or service installed.",
+  "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+  "generation_cache_identity": "c57f23ec9ac7dd16",
+  "pronunciation_overrides": [
+    {
+      "catalog_text": "T.",
+      "synthesis_text": "Tee.",
+      "clip_id": "d37d7136ee813fba",
+      "cache_identity": "5955264f06b7b70e",
+      "reason": "The one-letter signature T. returned a silent take. Tee. is the same English letter pronunciation. Catalog text and source text remain unchanged."
+    }
+  ]
+}

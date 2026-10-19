@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { DocSpec, UI } from '../ui/UI';
 import type { AudioSys } from '../core/Audio';
+import { PHONE_CALLS } from '../core/phoneScripts';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
 import type { FieldCamera, Photo } from '../core/FieldCamera';
@@ -487,9 +488,10 @@ export class Chapter3 {
     this.g.cinematic = true;
     const cap = (t: number, text: string, secs: number) => this.g.after(t, () => ui.toast(text, secs));
     cap(0.4, 'The dial warms to amber. A carrier comes up out of the static, very weak.', 3.4);
-    this.g.after(4.0, () => audio.radioVoice(4.6));
+    const recorded = audio.phoneCall([{ by: 'THE LINE', text: 'Reference west. No. East. Hold the last reading.' }], { lead: 4.0 });
+    if (!recorded) this.g.after(4.0, () => audio.radioVoice(4.6));
     cap(4.0, 'Under the carrier, a man\'s voice, far away: "Reference west. No. East. Hold the last reading."', 5.2);
-    this.g.after(9.4, () => {
+    this.g.after(Math.max(9.4, recorded?.duration ?? 0), () => {
       this.g.cinematic = false;
       this.s.heard = true;
       this.g.note('The receiver in the hut, on the carrier: a man\'s voice, far away. "Reference west. No. East. Hold the last reading." Then only the carrier.');
@@ -638,13 +640,18 @@ export class Chapter3 {
     const handset = this.d.travel.site()?.objs?.fieldPhoneHandset;
     if (handset) handset.visible = false;
     this.g.cinematic = true;
-    audio.callLine(18.4);
-    const cap = (t: number, text: string, secs: number) => this.g.after(t, () => ui.toast(text, secs));
-    cap(0.3, 'N. VEGA: "So you went out there."', 2.6);
-    cap(3.0, 'N. VEGA: "This line still rings in the motel office. It has since 1947. Nobody ever took it down."', 4.6);
-    cap(7.8, 'N. VEGA: "You have seen the cable now. It did not break by itself."', 3.8);
-    cap(11.8, 'N. VEGA: "Room 6. Bring the original record and your film, developed. Then I will tell you the rest."', 5.0);
-    this.g.after(17.0, () => {
+    const spoken = audio.phoneCall(PHONE_CALLS.fieldNora);
+    if (spoken) {
+      for (const cue of spoken.cues) this.g.after(cue.at, () => ui.toast(`${cue.by}: "${cue.text}"`, Math.max(2, cue.duration)));
+    } else {
+      audio.callLine(18.4);
+      const cap = (t: number, text: string, secs: number) => this.g.after(t, () => ui.toast(text, secs));
+      cap(0.3, 'N. VEGA: "So you went out there."', 2.6);
+      cap(3.0, 'N. VEGA: "This line still rings in the motel office. It has since 1947. Nobody ever took it down."', 4.6);
+      cap(7.8, 'N. VEGA: "You have seen the cable now. It did not break by itself."', 3.8);
+      cap(11.8, 'N. VEGA: "Room 6. Bring the original record and your film, developed. Then I will tell you the rest."', 5.0);
+    }
+    this.g.after(spoken ? spoken.duration + 0.1 : 17.0, () => {
       this.g.cinematic = false;
       if (handset) handset.visible = true;
       const s = this.s;

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { DocSpec, UI } from '../ui/UI';
 import type { AudioSys } from '../core/Audio';
+import { PHONE_CALLS } from '../core/phoneScripts';
 import type { ControlRoom, Collider } from '../world/ControlRoom';
 import type { Player } from '../player/Player';
 import type { Interaction } from '../core/Interaction';
@@ -245,11 +246,16 @@ export class Chapter2 {
     audio.stop('ring2', 0.02);
     room.handset.visible = false;
     this.g.cinematic = true;
-    audio.callLine(10.2);
-    const cap = (at: number, text: string, secs: number) => this.g.after(at, () => ui.toast(text, secs));
-    cap(0.3, 'WARD: "That is enough to hold the morning series. It is not enough to tell us why it happened."', 4.6);
-    cap(5.0, 'WARD: "Check the reference record. If the instrument inherited the fault, the record may tell us from where."', 5.0);
-    this.g.after(10.3, () => {
+    const spoken = audio.phoneCall(PHONE_CALLS.ward);
+    if (spoken) {
+      for (const cue of spoken.cues) this.g.after(cue.at, () => ui.toast(`${cue.by}: "${cue.text}"`, Math.max(2, cue.duration)));
+    } else {
+      audio.callLine(10.2);
+      const cap = (at: number, text: string, secs: number) => this.g.after(at, () => ui.toast(text, secs));
+      cap(0.3, 'WARD: "That is enough to hold the morning series. It is not enough to tell us why it happened."', 4.6);
+      cap(5.0, 'WARD: "Check the reference record. If the instrument inherited the fault, the record may tell us from where."', 5.0);
+    }
+    this.g.after(spoken ? spoken.duration + 0.1 : 10.3, () => {
       room.handset.visible = true;
       this.g.cinematic = false;
       this.s.answered = true;
@@ -420,14 +426,7 @@ export class Chapter2 {
     ui.toast('(505) 555-0119.', 2.4);
     const dial = audio.dial(PHONE);
     const answered = audio.ringback(2, dial + 0.5) + 0.2;
-    const talk = 13.6;
-    this.g.after(answered, () => audio.callLine(talk));
-    const cap = (at: number, text: string, secs: number) => this.g.after(answered + at, () => ui.toast(text, secs));
-    cap(0.4, 'N. VEGA: "Sierra Motor Court."', 2.4);
-    cap(2.8, 'You give your name and SARO, and read her the survey number from the sleeve.', 3.4);
-    cap(6.2, 'N. VEGA: "Station One. Nobody has asked me for that key in a long time."', 3.6);
-    cap(9.6, 'N. VEGA: "Don\'t send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."', 4.4);
-    this.g.after(answered + talk + 0.2, () => {
+    const finish = () => {
       this.g.cinematic = false;
       s.called = true; s.stage = 'complete';
       this.file(this.docMap());
@@ -435,7 +434,33 @@ export class Chapter2 {
       ui.toast('She hangs up before you can ask anything else.', 3.4);
       this.save();
       this.g.after(3.6, () => this.onEnd?.());
-    });
+    };
+    const beginCall = () => {
+      const spoken = audio.phoneCall(PHONE_CALLS.nora);
+      if (spoken) {
+        for (const cue of spoken.cues) this.g.after(cue.at, () => ui.toast(cue.aside ? cue.text : `${cue.by}: "${cue.text}"`, Math.max(2, cue.duration)));
+        this.g.after(spoken.duration + 0.1, finish);
+        return;
+      }
+      audio.callLine(13.6);
+      const cap = (at: number, text: string, secs: number) => this.g.after(at, () => ui.toast(text, secs));
+      cap(0.4, 'N. VEGA: "Sierra Motor Court."', 2.4);
+      cap(2.8, 'You give your name and SARO, and read her the survey number from the sleeve.', 3.4);
+      cap(6.2, 'N. VEGA: "Station One. Nobody has asked me for that key in a long time."', 3.6);
+      cap(9.6, 'N. VEGA: "Don\'t send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."', 4.4);
+      this.g.after(13.8, finish);
+    };
+    if (audio.kinskiCalls) this.g.after(answered, beginCall);
+    else {
+      const talk = 13.6;
+      this.g.after(answered, () => audio.callLine(talk));
+      const cap = (at: number, text: string, secs: number) => this.g.after(answered + at, () => ui.toast(text, secs));
+      cap(0.4, 'N. VEGA: "Sierra Motor Court."', 2.4);
+      cap(2.8, 'You give your name and SARO, and read her the survey number from the sleeve.', 3.4);
+      cap(6.2, 'N. VEGA: "Station One. Nobody has asked me for that key in a long time."', 3.6);
+      cap(9.6, 'N. VEGA: "Don\'t send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."', 4.4);
+      this.g.after(answered + talk + 0.2, finish);
+    }
   }
 
   // ---------- documents ----------
