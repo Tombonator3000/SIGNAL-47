@@ -107,6 +107,8 @@ export class AudioSys {
 
   private loading: Promise<void> | null = null;
   kinskiCalls = false;
+  onPhoneCall?: () => void;
+  get phonePlaying() { return this.phoneSession !== null; }
   private phoneSession: { sources: AudioBufferSourceNode[]; nodes: AudioNode[] } | null = null;
 
   // Decode every sound while the title screen is up, so Start does not wait on it.
@@ -481,6 +483,7 @@ export class AudioSys {
       return cue;
     });
     const duration = at + 0.2, started = ctx.currentTime;
+    this.onPhoneCall?.();
     const session = { sources: [] as AudioBufferSourceNode[], nodes: [] as AudioNode[] };
     this.phoneSession = session;
     try {

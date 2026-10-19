@@ -46,16 +46,17 @@ export function albumPage(photos: DocSpec[], v: AlbumView | undefined) {
 }
 
 /** The free prints open big (inside the notebook, so putting one back leaves the album open). */
-export function bindAlbum(root: HTMLElement, v: AlbumView | undefined) {
+type AlbumReading = { show: (view: HTMLElement) => void | (() => void); change: () => void };
+export function bindAlbum(root: HTMLElement, v: AlbumView | undefined, reading?: AlbumReading) {
   const shots = v?.shots ?? [];
   root.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', (e) => {
     e.stopPropagation();
     const i = shots.findIndex((s) => s.id === b.dataset.f);
-    if (i >= 0) big(root, shots, i);
+    if (i >= 0) big(root, shots, i, reading);
   }));
 }
 
-function big(root: HTMLElement, shots: AlbumView['shots'], at: number) {
+function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?: AlbumReading) {
   const el = document.createElement('div');
   el.className = 'al-view';
   el.setAttribute('role', 'dialog');
@@ -63,19 +64,29 @@ function big(root: HTMLElement, shots: AlbumView['shots'], at: number) {
   if (page?.getAttribute('style')) el.setAttribute('style', page.getAttribute('style')!);
   if (page?.classList.contains('art-instant')) el.classList.add('art-instant');
   let i = at;
+  let readingBound = false;
+  let disposeReading: (() => void) | void;
   const show = () => {
+    reading?.change();
     const s = shots[i];
     el.innerHTML = `
       <figure class="al-print al-big${s.odd ? ' odd' : ''}"><img alt="" src="${s.url}" style="${developing(s.dev)}"><figcaption class="al-cap"><b>${esc(s.text)}</b><small>${esc(s.meta)}</small></figcaption></figure>
       <button class="al-nav prev" data-v="prev" aria-label="Previous photograph"${i > 0 ? '' : ' disabled'}>&lsaquo;</button>
       <button class="al-nav next" data-v="next" aria-label="Next photograph"${i < shots.length - 1 ? '' : ' disabled'}>&rsaquo;</button>
       <button class="al-back" data-v="back"><kbd>E</kbd>Back to the album</button>`;
+    if (!readingBound) { disposeReading = reading?.show(el); readingBound = true; }
   };
   const go = (k: number) => { const j = i + k; if (j >= 0 && j < shots.length) { i = j; show(); } };
-  const close = () => { el.remove(); removeEventListener('keydown', key, true); };
+  const close = () => { reading?.change(); disposeReading?.(); el.remove(); removeEventListener('keydown', key, true); };
   // before the game's own keys (core/Input.ts): these only page through the album and put the print back
   const key = (e: KeyboardEvent) => {
     if (!el.isConnected) { removeEventListener('keydown', key, true); return; }
+    const reading = e.target instanceof Element ? e.target.closest<HTMLButtonElement>('.read-aloud button') : null;
+    if (reading && (e.code === 'Enter' || e.code === 'Space')) {
+      e.preventDefault(); e.stopPropagation();
+      if (!e.repeat) reading.click();
+      return;
+    }
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') go(-1);
     else if (e.code === 'ArrowRight' || e.code === 'KeyD') go(1);
     else if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter' || e.code === 'Space') close();
@@ -94,6 +105,7 @@ function big(root: HTMLElement, shots: AlbumView['shots'], at: number) {
     e.stopPropagation();
     if (swiped) { swiped = false; return; }
     const t = (e.target as HTMLElement).closest('[data-v]') as HTMLElement | null;
+    if ((e.target as HTMLElement).closest('.read-aloud')) return;
     if (t?.dataset.v === 'prev') go(-1); else if (t?.dataset.v === 'next') go(1);
     else if (t?.dataset.v === 'back' || !(e.target as HTMLElement).closest('.al-print')) close();
   });

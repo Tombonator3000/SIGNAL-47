@@ -57,6 +57,44 @@ export function spotXY(at: NonNullable<MapView['at']>): [number, number] {
   }
 }
 
+// The same facts as the pencil labels, plus the cross and event marks that are
+// actually drawn below. Fixed phrases can be recorded without inventing a new
+// map, reading hidden survey geometry, or generating every possible clock value.
+const MAP_READING = [
+  'A pencil sketch of the area round SARO, from memory.',
+  'The highway.',
+  'SARO. 27 dishes, azimuth 026.',
+  'Sierra Motor Court. Nora, room 6.',
+  'Mesa Diner. Open all night.',
+  'Caliche, population 412.',
+];
+const MAP_POSITION: Record<MapSpot, string> = {
+  saro: 'The red cross marks me at SARO.',
+  yard: 'The red cross marks me in the service yard.',
+  motel: 'The red cross marks me at Sierra Motor Court.',
+  office: 'The red cross marks me at the motel office.',
+  highway: 'The red cross marks me on the highway.',
+  diner: 'The red cross marks me at Mesa Diner.',
+  track: 'The red cross marks me on the track to STATION 01.',
+  station01: 'The red cross marks me at STATION 01.',
+  oldroad: 'The red cross marks me on the old road to Roswell.',
+};
+
+/** A spoken description of this notebook sketch, using its current visible state. */
+export function areaMapDescription(v: MapView): string[] {
+  const text = [...MAP_READING];
+  if (v.station) text.push('STATION 01. 1947.');
+  text.push(v.oldRoad ? 'The old road to Roswell.' : 'The old road is closed.');
+  const marks = v.marks ?? [];
+  if (marks.length) text.push('Small circles mark events and their times.');
+  if (marks.some((m) => m.kind === 'away')) text.push('A ring marks time away.');
+  for (const line of ['A', 'B'] as const) {
+    if (marks.filter((m) => (m.line ?? 'A') === line).length >= 3) text.push(line === 'A' ? 'Line A.' : 'Line B.');
+  }
+  if (v.at) text.push(MAP_POSITION[v.at.spot]);
+  return text;
+}
+
 /** The page, as an image. */
 export function areaMap(v: MapView) {
   const c = document.createElement('canvas'); c.width = W; c.height = H;

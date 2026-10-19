@@ -1,0 +1,228 @@
+{
+  "url": "http://127.0.0.1:8498/SIGNAL-47/",
+  "pages": true,
+  "strict_csp": false,
+  "master_samples": {
+    "reading": {
+      "peakRms": 0.1295724412641949,
+      "levels": [
+        0.00017437768500151994,
+        0.00017268945629608158,
+        0.00019391849681245512,
+        0.0004192762477443501,
+        0.010546430790147084,
+        0.09562178338220187,
+        0.1125662377372008,
+        0.0963291289944674,
+        0.11795527187184165,
+        0.1060529513353343,
+        0.0763440720831083,
+        0.03368196862408848,
+        0.10196469275414029,
+        0.1295724412641949
+      ]
+    },
+    "muted": {
+      "peakRms": 0,
+      "levels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "document": {
+    "id": "logbook",
+    "paragraphs": [
+      "23:20  handover",
+      "Kid,\n1. RX bank 3 tripped again. Big red lever on the rack by the printer.\n2. Calibrate on 1419.900 first. Card is taped to the console.\n3. Spike near 1420.1 is the highway relay. Notch it, log it, don't chase it.\n4. Then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.",
+      "Coffee is fresh-ish.\nStorm out past the Magdalenas. Should stay there.",
+      "Don't break anything.\n        D."
+    ],
+    "sources": [
+      {
+        "at": 1.7493333333333334,
+        "duration": 2,
+        "expectedEnd": 3.7493333333333334,
+        "decoded": {
+          "bytes": 16748,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true
+      }
+    ]
+  },
+  "queued_sources": [
+    {
+      "at": 1.856,
+      "duration": 0.8,
+      "expectedEnd": 2.656,
+      "decoded": {
+        "bytes": 7148,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.8,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": 2.6666666666666665,
+      "stoppedAt": null,
+      "master": true
+    },
+    {
+      "at": 2.6666666666666665,
+      "duration": 0.8,
+      "expectedEnd": 3.466666666666667,
+      "decoded": {
+        "bytes": 7148,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.8,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": null,
+      "stoppedAt": null,
+      "master": true
+    }
+  ],
+  "checks": [
+    {
+      "pass": true,
+      "message": "Kinski reading is off on a fresh device"
+    },
+    {
+      "pass": true,
+      "message": "opening a document with reading off adds no playback controls"
+    },
+    {
+      "pass": true,
+      "message": "pause setting visibly defaults to Off"
+    },
+    {
+      "pass": true,
+      "message": "the Kinski setting switches on and is stored on this device"
+    },
+    {
+      "pass": true,
+      "message": "reading stays enabled after a full page reload"
+    },
+    {
+      "pass": true,
+      "message": "a real supported game document opens (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "desktop document and reading controls fit the viewport"
+    },
+    {
+      "pass": true,
+      "message": "description reading is explicitly labelled separately from the paper's actual text"
+    },
+    {
+      "pass": true,
+      "message": "Read decodes a real MP3 and starts its buffer through master (4.23s)"
+    },
+    {
+      "pass": true,
+      "message": "the live Read button becomes Stop reading"
+    },
+    {
+      "pass": true,
+      "message": "real narration samples reach master and obey master volume (0.12957, muted 0.00000)"
+    },
+    {
+      "pass": true,
+      "message": "Stop reading immediately cancels the current clip and queue"
+    },
+    {
+      "pass": true,
+      "message": "stopping restores the specific Read description label"
+    },
+    {
+      "pass": true,
+      "message": "document close still runs the game's original filing callback"
+    },
+    {
+      "pass": true,
+      "message": "Read document selects the actual clue on a real paper, separately from its description (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "the paper's actual text also starts a genuinely decoded prerecorded clip"
+    },
+    {
+      "pass": true,
+      "message": "Stop on document reading clears playback and restores Read document"
+    },
+    {
+      "pass": true,
+      "message": "a two-line queue starts only its first recording"
+    },
+    {
+      "pass": true,
+      "message": "the second real recording starts after the first ends, with no overlap"
+    },
+    {
+      "pass": true,
+      "message": "repeating one recording reuses its decoded buffer"
+    },
+    {
+      "pass": true,
+      "message": "a missing recording has a disabled Read button and visible explanation"
+    },
+    {
+      "pass": false,
+      "message": "the real dialogue has one Read control matching its recording coverage"
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: analyser samples are not a hardware listening test"
+}

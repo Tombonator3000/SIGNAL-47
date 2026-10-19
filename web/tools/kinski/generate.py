@@ -26,7 +26,20 @@ SETTINGS = {
 # The model interpreted this one-letter signature as punctuation and emitted
 # silence. Keep the corpus/catalog text exact; spell its English pronunciation
 # only in the explicitly recorded synthesis request.
-SPEECH_OVERRIDES = {'T.': 'Tee.'}
+SPEECH_OVERRIDES = {
+    'T.': 'Tee.',
+    # Source "el" is the antenna elevation abbreviation. The punctuation-led
+    # fragment emitted silence; expand the same field name only for synthesis.
+    ', el': 'Elevation.',
+    **dict(zip('ABCDEFGHIJKLMNOPQRSTUVWXYZ', [
+        'Ay.', 'Bee.', 'See.', 'Dee.', 'Eee.', 'Eff.', 'Gee.', 'Aitch.',
+        'Eye.', 'Jay.', 'Kay.', 'Ell.', 'Em.', 'En.', 'Oh.', 'Pee.', 'Cue.',
+        'Ar.', 'Ess.', 'Tee.', 'You.', 'Vee.', 'Double you.', 'Ex.', 'Why.', 'Zee.',
+    ])),
+    'A': 'A!',
+    'H': 'H!',
+    'X': 'X!',
+}
 
 
 def atomic_json(path, value):
@@ -145,6 +158,9 @@ def main():
     parser.add_argument('--limit', type=int, default=0)
     args = parser.parse_args()
     corpus = json.loads((PRODUCTION / 'corpus.json').read_text())
+    # A complete, capitalized one-word sentence is more reliable than a bare
+    # lowercase numeric lexeme. Spoken words and catalog text remain identical.
+    SPEECH_OVERRIDES.update({word: word.capitalize() + '.' for word in corpus.get('numberWords', [])})
     profiles = json.load(urllib.request.urlopen(args.endpoint + '/profiles'))
     profile = next(profile for profile in profiles if profile['id'] == SETTINGS['profile_id'])
     reference = urllib.request.urlopen(args.endpoint + f"/profiles/{profile['id']}/audio").read()

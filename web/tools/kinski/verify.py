@@ -44,11 +44,16 @@ def transcribe(endpoint, file):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--asr', type=int, default=0, help='Number of dispersed clips to transcribe, serially')
+    parser.add_argument('--asr-new', type=int, default=0, help='Dispersed long clips absent from the previous verification report')
+    parser.add_argument('--asr-text', action='append', default=[], help='Also transcribe this exact catalog text, repeatable')
+    parser.add_argument('--keep-asr', action='store_true', help='Preserve historical ASR samples without retranscribing them')
     parser.add_argument('--endpoint', default='http://127.0.0.1:3900')
     args = parser.parse_args()
     corpus = json.loads((PRODUCTION / 'corpus.json').read_text())
     catalog = json.loads((ASSETS / 'catalog.json').read_text())
     generation = json.loads((PRODUCTION / 'generation.json').read_text())
+    previous_file = PRODUCTION / 'verification.json'
+    previous_report = json.loads(previous_file.read_text()) if previous_file.exists() else {}
     expected = {clip['id']: clip for clip in corpus['clips']}
     actual = {clip['id']: clip for clip in catalog['clips']}
     errors = []
@@ -100,18 +105,35 @@ def main():
         else:
             errors.append({'id': clip['id'], 'error': 'Generation reported dropped chunks', 'response': response})
         verified.append({'id': clip['id'], **audio})
-    sample = []
+    sample = list(previous_report.get('asr_sample', [])) if args.keep_asr else []
+    selected = []
     if args.asr:
         # Avoid one-word acknowledgements: choose spread-out substantial passages.
         candidates = [clip for clip in corpus['clips'] if len(tokens(clip['text'])) >= 8]
         count = min(args.asr, len(candidates))
         indexes = sorted({round(i * (len(candidates)-1) / max(count-1, 1)) for i in range(count)})
-        for index in indexes:
-            clip = candidates[index]
+        selected.extend(candidates[index] for index in indexes)
+    if args.asr_new:
+        previous_ids = {clip['id'] for clip in previous_report.get('audio', [])}
+        candidates = [clip for clip in corpus['clips'] if clip['id'] not in previous_ids and len(tokens(clip['text'])) >= 30]
+        count = min(args.asr_new, len(candidates))
+        indexes = sorted({round(i * (len(candidates)-1) / max(count-1, 1)) for i in range(count)})
+        selected.extend(candidates[index] for index in indexes)
+    for text in args.asr_text:
+        matches = [clip for clip in corpus['clips'] if clip['text'] == text]
+        if not matches:
+            raise ValueError(f'No exact catalog text for requested ASR sample: {text}')
+        selected.extend(matches)
+    if selected:
+        unique = {clip['id']: clip for clip in selected}
+        sample = [entry for entry in sample if entry['id'] not in unique]
+        for clip in unique.values():
             response = transcribe(args.endpoint, ASSETS / (clip['id'] + '.mp3'))
             left, right = tokens(clip['text']), tokens(response['text'])
             distance = edit_distance(left, right)
             result = {'id': clip['id'], 'expected': clip['text'], 'recognized': response['text'],
+                      'group': 'current_run',
+                      'audio_sha256': hashlib.sha256((ASSETS / (clip['id'] + '.mp3')).read_bytes()).hexdigest(),
                       'strict_word_edits': distance, 'expected_word_count': len(left),
                       'strict_word_error_rate': distance / max(len(left), 1), 'response': response}
             sample.append(result)

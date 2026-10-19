@@ -1,0 +1,1137 @@
+{
+  "url": "http://127.0.0.1:8498/SIGNAL-47/",
+  "pages": true,
+  "strict_csp": false,
+  "catalogue_clips": 1553,
+  "initial_inventory": {
+    "entries": [
+      {
+        "source": "looks:court:officeDoor",
+        "text": "OFFICE, in gold letters on the glass, half of them flaked away. A bell on the counter inside.",
+        "available": true
+      },
+      {
+        "source": "looks:court:otherDoors",
+        "text": "A brass number on the door, the curtains drawn. Dark behind them.",
+        "available": true
+      },
+      {
+        "source": "looks:court:iceMachine",
+        "text": "ICE. It rattles, and drops a load into the bin for nobody.",
+        "available": true
+      },
+      {
+        "source": "looks:court:car",
+        "text": "A dusty sedan nosed in by the office, dew on the glass. It has not been driven tonight.",
+        "available": true
+      },
+      {
+        "source": "looks:court:pool",
+        "text": "The pool behind its fence, closed for the season. Leaves turn slowly on the water.",
+        "available": true
+      },
+      {
+        "source": "looks:court:register",
+        "text": "A ledger in green cloth, open at April. The same name, all the way down the page.",
+        "available": true
+      },
+      {
+        "source": "looks:court:keyBoard",
+        "text": "Brass tags worn smooth by thumbs. One hook is empty.",
+        "available": true
+      },
+      {
+        "source": "looks:court:officePhone",
+        "text": "An oak wall telephone with a crank, older than anything else in the office.",
+        "available": true
+      },
+      {
+        "source": "looks:court:envelope",
+        "text": "T. VEGA, C/O SIERRA MOTOR COURT. A three-cent stamp, and a wax seal nobody has broken.",
+        "available": true
+      },
+      {
+        "source": "looks:court:message",
+        "text": "Pencil on the back of a bill, pressed hard enough to dent the paper.",
+        "available": true
+      },
+      {
+        "source": "looks:room6Door",
+        "text": "A brass 6 on the door, and a light behind the curtains.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:bed",
+        "text": "A chenille spread pulled tight. The pillow has not been touched.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:lamp",
+        "text": "A ceramic lamp with a paper shade gone brown on the side nearest the bulb.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:tv",
+        "text": "A portable set on the dresser, rabbit ears bent to find Roswell.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:window",
+        "text": "The Sierra sign through a gap in the curtains, red and cyan, and the highway.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:phone",
+        "text": "A beige phone. The cord runs to a wall jack marked OFFICE.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:bathroom",
+        "text": "Shut. A tap drips behind it, steady as a clock.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:walkie",
+        "text": "A field radio in olive drab, its whip aerial folded down. The battery door is taped shut.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:photo",
+        "text": "A snapshot in a dime-store frame, turned a little towards the window.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:door",
+        "text": "The chain is off. The door to the walk, and the cold behind it.",
+        "available": true
+      },
+      {
+        "source": "looks:r6:table",
+        "text": "A table by the window: the papers, a cup gone cold, her reading glasses on their cord.",
+        "available": true
+      },
+      {
+        "source": "looks:logbook",
+        "text": "Dale's shift log, open at tonight. His writing leans harder to the right as the page goes on.",
+        "available": true
+      },
+      {
+        "source": "looks:workOrder",
+        "text": "The night work order, typed, initialled D. A coffee ring on one corner.",
+        "available": true
+      },
+      {
+        "source": "looks:excBinder",
+        "text": "A grey ring binder, SOLVER EXCEPTIONS on the spine, fat with fan-fold.",
+        "available": true
+      },
+      {
+        "source": "looks:serviceRecord",
+        "text": "RX bank 3's service record, in three different hands. The last is Dale's.",
+        "available": true
+      },
+      {
+        "source": "looks:telex",
+        "text": "The telex roll, curling off the machine and onto the floor.",
+        "available": true
+      },
+      {
+        "source": "looks:rfiCard",
+        "text": "An index card taped to the console. Dale's block capitals.",
+        "available": true
+      },
+      {
+        "source": "looks:halley",
+        "text": "The comet over a desert, in a cheap frame. Somebody has pencilled in the night it came closest: April 11.",
+        "available": true
+      },
+      {
+        "source": "looks:opsTerminal",
+        "text": "The operations terminal. Green letters, and a cursor waiting.",
+        "available": true
+      },
+      {
+        "source": "looks:map",
+        "text": "A road map of New Mexico, the folds worn white. The pencil ring round Roswell has been gone over twice.",
+        "available": true
+      },
+      {
+        "source": "looks:clock",
+        "text": "An electric wall clock with a sweep hand. It hums, and the hand never stops.",
+        "available": true
+      },
+      {
+        "source": "looks:printer",
+        "text": "Dot matrix. The fan-fold feeds up out of a box under the table.",
+        "available": true
+      },
+      {
+        "source": "looks:phone",
+        "text": "A beige desk phone, two lines. The supervisor line has a light of its own.",
+        "available": true
+      },
+      {
+        "source": "looks:rack",
+        "text": "RX bank 3. The rack is warm to the touch and smells of dust burning off.",
+        "available": true
+      },
+      {
+        "source": "looks:crtCenter",
+        "text": "The receiver console, its screen in a hood of black card against the glare.",
+        "available": true
+      },
+      {
+        "source": "looks:crtLeft",
+        "text": "The status terminal: one line for every dish, S-01 to S-27.",
+        "available": true
+      },
+      {
+        "source": "looks:crtRight",
+        "text": "The tracking terminal. The keys in the middle are worn blank.",
+        "available": true
+      },
+      {
+        "source": "looks:coffeePot",
+        "text": "A drip coffee maker on a hot plate, the glass stained brown to the line.",
+        "available": true
+      },
+      {
+        "source": "looks:mug",
+        "text": "SARO, in brown on white. Chipped at the handle.",
+        "available": true
+      },
+      {
+        "source": "looks:radio",
+        "text": "A transistor radio on the shelf, its aerial bent where somebody caught it.",
+        "available": true
+      },
+      {
+        "source": "looks:fieldCamera",
+        "text": "The SARO field camera in its dented case, a sheet film holder beside it.",
+        "available": true
+      },
+      {
+        "source": "looks:decoder",
+        "text": "The signal processor: a tape deck and two spools behind smoked plastic.",
+        "available": true
+      },
+      {
+        "source": "looks:doorEast",
+        "text": "The service door. A push bar, and a card: KEEP CLOSED. DUST.",
+        "available": true
+      },
+      {
+        "source": "looks:doorSouth",
+        "text": "The corridor door, a square of wired glass at head height.",
+        "available": true
+      },
+      {
+        "source": "looks:labDoor",
+        "text": "The lab door. A red bulb over it for when the safelight is on.",
+        "available": true
+      },
+      {
+        "source": "looks:exitDoor",
+        "text": "FIRE EXIT, stencilled in red on grey steel.",
+        "available": true
+      },
+      {
+        "source": "looks:recordsDoor",
+        "text": "RECORDS, on a card in a brass holder.",
+        "available": true
+      },
+      {
+        "source": "looks:motorBus",
+        "text": "S-03's motor bus cabinet. A sticker on the door: DO NOT RESET WITHOUT A LOG ENTRY.",
+        "available": true
+      },
+      {
+        "source": "looks:wetBench",
+        "text": "Three trays, tongs, brown bottles in a row, and the smell of fixer.",
+        "available": true
+      },
+      {
+        "source": "looks:archive",
+        "text": "The archive bench: a light box, a loupe on a string, a print tray.",
+        "available": true
+      },
+      {
+        "source": "looks:b12Control",
+        "text": "B-12's local control, a grey box on a post with its key on a chain.",
+        "available": true
+      },
+      {
+        "source": "looks:vane",
+        "text": "A plate on a post with one ivory stripe, turned to face the apron.",
+        "available": true
+      },
+      {
+        "source": "looks:records",
+        "text": "The night report on a clipboard: observation, method, conclusion.",
+        "available": true
+      },
+      {
+        "source": "looks:r07",
+        "text": "Three black bars on white, the paint crazed by the sun.",
+        "available": true
+      },
+      {
+        "source": "looks:fieldBox",
+        "text": "A records box, STATION 01 1947 in grease pencil. The lid is soft with handling.",
+        "available": true
+      },
+      {
+        "source": "looks:binder",
+        "text": "A binder of service copies, the spine cracked white.",
+        "available": true
+      },
+      {
+        "source": "looks:lineage",
+        "text": "A long drawer of index cards with a brass pull: MAINTENANCE.",
+        "available": true
+      },
+      {
+        "source": "looks:workTable",
+        "text": "A big table under a strip light, scored all over with a craft knife.",
+        "available": true
+      },
+      {
+        "source": "looks:recPhone",
+        "text": "A wall phone, beige, the cord stretched out long.",
+        "available": true
+      },
+      {
+        "source": "looks:vending",
+        "text": "Cola, orange soda, peanut butter crackers. The light inside flickers.",
+        "available": true
+      },
+      {
+        "source": "looks:officeDoor",
+        "text": "A frosted glass door, OPERATIONS in black. Dark behind it.",
+        "available": true
+      },
+      {
+        "source": "looks:restroomDoor",
+        "text": "MEN and WOMEN. The fan inside runs all night.",
+        "available": true
+      },
+      {
+        "source": "looks:s1transit",
+        "text": "A brass transit on a concrete pier, its cover off. The bubble still settles.",
+        "available": true
+      },
+      {
+        "source": "looks:s1footing",
+        "text": "Grit in the bolt holes. Nothing has stood on it for a long time.",
+        "available": true
+      },
+      {
+        "source": "looks:s1markerA",
+        "text": "A triangle outlined on a plate, and a bar under it.",
+        "available": true
+      },
+      {
+        "source": "looks:s1markerB",
+        "text": "A vane plate on a post, still set square in its footing.",
+        "available": true
+      },
+      {
+        "source": "looks:s1stakes",
+        "text": "Wooden stakes going east into the dark, grey with age.",
+        "available": true
+      },
+      {
+        "source": "looks:s1diagram",
+        "text": "A survey diagram in a frame, the glass fly-spotted.",
+        "available": true
+      },
+      {
+        "source": "looks:s1lamp",
+        "text": "A field lamp on a stand, the glass sooted on one side.",
+        "available": true
+      },
+      {
+        "source": "looks:s1cable",
+        "text": "A field cable in the dirt, the insulation cracked by the sun.",
+        "available": true
+      },
+      {
+        "source": "looks:s1hutDoor",
+        "text": "Boards gone silver, and a door that has not been locked in years.",
+        "available": true
+      },
+      {
+        "source": "looks:s1receiver",
+        "text": "A valve receiver on the bench, older than anything at SARO.",
+        "available": true
+      },
+      {
+        "source": "looks:s1timing",
+        "text": "A timing log on a clip: pencil, columns of seconds.",
+        "available": true
+      },
+      {
+        "source": "looks:s1phone",
+        "text": "A field telephone with a crank. Its line leaves through the wall.",
+        "available": true
+      },
+      {
+        "source": "looks:s1gate",
+        "text": "The vehicle gate, chained and padlocked.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:waitress",
+        "text": "A pencil behind her ear. She looks at the window each time a truck might pass.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:driver",
+        "text": "A driver in a quilted vest, eating slowly. A feed store's name on his cap.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:coffee",
+        "text": "The pot on the warmer, a ring of old coffee baked round the rim.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:counter",
+        "text": "A radio on the shelf behind the counter, between the pie dome and the register.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:clipping",
+        "text": "Yellow newsprint behind a strip of tape, the date cut off.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:payphone",
+        "text": "A payphone in a niche. Numbers written all over the wall round it.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:booth",
+        "text": "Red vinyl, split and taped. The window beside it is cold.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:menu",
+        "text": "White letters pushed into a felt board. The P in PIE is upside down.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:jukebox",
+        "text": "OUT OF ORDER, in ballpoint behind the glass. A record still on the arm.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:window",
+        "text": "The lot, the truck, the highway, and past it the dark.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:door",
+        "text": "MESA DINER, OPEN ALL NIGHT, on the glass. The closer hisses.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:sign",
+        "text": "MESA DINER. One letter of the neon buzzes, goes out, and buzzes.",
+        "available": true
+      },
+      {
+        "source": "looks:diner:rig",
+        "text": "A refrigerated trailer, the unit running. Frost on the doors at the back.",
+        "available": true
+      },
+      {
+        "source": "looks:town:bench",
+        "text": "A bench under the window, the paint worn through where somebody sits.",
+        "available": true
+      },
+      {
+        "source": "looks:town:gasSign",
+        "text": "GAS. DIESEL. The tubes in one side of the sign are dark.",
+        "available": true
+      },
+      {
+        "source": "looks:town:feed",
+        "text": "FEED & SEED. Moths round the bulb over the door, and sacks on the dock.",
+        "available": true
+      },
+      {
+        "source": "looks:town:amDoor",
+        "text": "1420 AM. STUDIO IN USE, PLEASE WAIT. The buzzer button is worn white.",
+        "available": true
+      },
+      {
+        "source": "looks:town:souvenirSign",
+        "text": "SAUCER CRASH 1947. TOURS. ASK INSIDE. Under the paint, an older word: BAIT.",
+        "available": true
+      },
+      {
+        "source": "looks:town:souvenirDoor",
+        "text": "CLOSED. The hours on the card have faded white.",
+        "available": true
+      },
+      {
+        "source": "looks:town:letters",
+        "text": "THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked.",
+        "available": true
+      },
+      {
+        "source": "looks:town:churchDoor",
+        "text": "SUNDAY 10 AM. ALL WELCOME. The doors are new; the step is worn hollow.",
+        "available": true
+      },
+      {
+        "source": "looks:town:tv2",
+        "text": "Snow, then the test pattern, then snow. Nobody in the room.",
+        "available": true
+      },
+      {
+        "source": "looks:town:kitchen",
+        "text": "A kitchen light behind a curtain, and a shadow that does not move.",
+        "available": true
+      },
+      {
+        "source": "examine:fieldGate",
+        "text": "The walk gate into the array. A chain hangs from the post with its padlock open; nobody has locked it in years.",
+        "available": false
+      },
+      {
+        "source": "examine:field:S-01",
+        "text": "Drive cabinet S-01. The name is stencilled by hand. The paint ran under the last figure and nobody cleaned it off.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-01",
+        "text": "S-01. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-02",
+        "text": "Drive cabinet S-02. A hook for a clipboard on the side. No clipboard.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-02",
+        "text": "S-02. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-03",
+        "text": "A cable junction at the foot of S-03. Its drive is read at the motor bus cabinet on the east walk.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-03",
+        "text": "S-03. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-04",
+        "text": "Drive cabinet S-04. A service sticker on the door: INSPECTED 11/85, and initials too smudged to read.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-04",
+        "text": "S-04. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-05",
+        "text": "Drive cabinet S-05. Sand has got in behind the inspection glass and lies in a little drift along the bottom.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-05",
+        "text": "S-05. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-06",
+        "text": "Drive cabinet S-06. An old wasp nest in the vent louvre, long empty.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-06",
+        "text": "S-06. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-07",
+        "text": "Drive cabinet S-07. The conduit to the pedestal has split along its length and been wound with black tape.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-07",
+        "text": "S-07. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-08",
+        "text": "Drive cabinet S-08. Rust has run from both hinges in two thin brown lines.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-08",
+        "text": "S-08. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-09",
+        "text": "Drive cabinet S-09. The stencil was painted over an older number. Under it a 2 still shows.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-09",
+        "text": "S-09. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-10",
+        "text": "Drive cabinet S-10. Two cables come up out of the trench. One has been cut and spliced again, neatly, with new sleeving.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-10",
+        "text": "S-10. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-11",
+        "text": "Drive cabinet S-11. The name is stencilled by hand. The paint ran under the last figure and nobody cleaned it off.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-11",
+        "text": "S-11. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-12",
+        "text": "Drive cabinet S-12. A hook for a clipboard on the side. No clipboard.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-12",
+        "text": "S-12. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-13",
+        "text": "Drive cabinet S-13. The bolts on the door are new and bright. The hinges are not.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-13",
+        "text": "S-13. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-14",
+        "text": "Drive cabinet S-14. A service sticker on the door: INSPECTED 11/85, and initials too smudged to read.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-14",
+        "text": "S-14. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-15",
+        "text": "Drive cabinet S-15. Sand has got in behind the inspection glass and lies in a little drift along the bottom.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-15",
+        "text": "S-15. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-16",
+        "text": "Drive cabinet S-16. An old wasp nest in the vent louvre, long empty.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-16",
+        "text": "S-16. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-17",
+        "text": "Drive cabinet S-17. The conduit to the pedestal has split along its length and been wound with black tape.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-17",
+        "text": "S-17. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-18",
+        "text": "Drive cabinet S-18. Rust has run from both hinges in two thin brown lines.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-18",
+        "text": "S-18. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-19",
+        "text": "Drive cabinet S-19. The stencil was painted over an older number. Under it a 2 still shows.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-19",
+        "text": "S-19. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-20",
+        "text": "Drive cabinet S-20. Two cables come up out of the trench. One has been cut and spliced again, neatly, with new sleeving.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-20",
+        "text": "S-20. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-21",
+        "text": "Drive cabinet S-21. The name is stencilled by hand. The paint ran under the last figure and nobody cleaned it off.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-21",
+        "text": "S-21. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-22",
+        "text": "Drive cabinet S-22. A hook for a clipboard on the side. No clipboard.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-22",
+        "text": "S-22. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-23",
+        "text": "Drive cabinet S-23. The bolts on the door are new and bright. The hinges are not.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-23",
+        "text": "S-23. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-24",
+        "text": "Drive cabinet S-24. A service sticker on the door: INSPECTED 11/85, and initials too smudged to read.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-24",
+        "text": "S-24. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-25",
+        "text": "Drive cabinet S-25. Sand has got in behind the inspection glass and lies in a little drift along the bottom.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-25",
+        "text": "S-25. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-26",
+        "text": "Drive cabinet S-26. An old wasp nest in the vent louvre, long empty.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-26",
+        "text": "S-26. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:field:S-27",
+        "text": "Drive cabinet S-27. The conduit to the pedestal has split along its length and been wound with black tape.",
+        "available": true
+      },
+      {
+        "source": "examine:mast:S-27",
+        "text": "S-27. On the survey track with the others: az 018.0, el 48.0.",
+        "available": true
+      },
+      {
+        "source": "examine:truck",
+        "text": "SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.",
+        "available": true
+      },
+      {
+        "source": "examine:court:officeTv",
+        "text": "Colour bars, and a thin tone. Nobody has turned it off.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-01",
+        "text": "S-01. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-02",
+        "text": "S-02. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-03",
+        "text": "S-03. S-03, at the end of the east walk, its motor cabinet on the apron. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-04",
+        "text": "S-04. A ladder up the pedestal, chained at the bottom. Its red lamp blinks out of step with the next one. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-05",
+        "text": "S-05. Bird droppings down one side of the feed housing. The number is stencilled on the pedestal twice. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-06",
+        "text": "S-06. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-07",
+        "text": "S-07. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-08",
+        "text": "S-08. The drive motors tick as it tracks. There is frost on the lower rim. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-09",
+        "text": "S-09. A ladder up the pedestal, chained at the bottom. Its red lamp blinks out of step with the next one. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-10",
+        "text": "S-10. Bird droppings down one side of the feed housing. The number is stencilled on the pedestal twice. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-11",
+        "text": "S-11. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-12",
+        "text": "S-12. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-13",
+        "text": "S-13. The drive motors tick as it tracks. There is frost on the lower rim. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-14",
+        "text": "S-14. A ladder up the pedestal, chained at the bottom. Its red lamp blinks out of step with the next one. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-15",
+        "text": "S-15. Bird droppings down one side of the feed housing. The number is stencilled on the pedestal twice. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-16",
+        "text": "S-16. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-17",
+        "text": "S-17. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-18",
+        "text": "S-18. The drive motors tick as it tracks. There is frost on the lower rim. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-19",
+        "text": "S-19. A ladder up the pedestal, chained at the bottom. Its red lamp blinks out of step with the next one. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-20",
+        "text": "S-20. Bird droppings down one side of the feed housing. The number is stencilled on the pedestal twice. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-21",
+        "text": "S-21. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-22",
+        "text": "S-22. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-23",
+        "text": "S-23. The drive motors tick as it tracks. There is frost on the lower rim. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-24",
+        "text": "S-24. A ladder up the pedestal, chained at the bottom. Its red lamp blinks out of step with the next one. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-25",
+        "text": "S-25. Bird droppings down one side of the feed housing. The number is stencilled on the pedestal twice. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-26",
+        "text": "S-26. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:S-27",
+        "text": "S-27. Rust runs down the pedestal from every bolt. Two of the reflector panels are newer than the rest. Az 018, el 48.",
+        "available": true
+      },
+      {
+        "source": "examine:look:yardSign",
+        "text": "SERVICE YARD. AUTHORIZED PERSONNEL ONLY. The enamel has chipped away round the screws.",
+        "available": true
+      },
+      {
+        "source": "examine:look:routeSign",
+        "text": "EAST WALK. B-12: NORTH OF S-03. Lettered by hand, under varnish gone yellow.",
+        "available": true
+      },
+      {
+        "source": "examine:look:b12Sign",
+        "text": "B-12, OPTICAL REFERENCE. A typed card behind plexiglass gone cloudy.",
+        "available": true
+      },
+      {
+        "source": "examine:look:labSign",
+        "text": "PHOTOGRAPHIC LAB. PROCESS / EXAMINE / FILE. Under it, in marker: SHUT THE DOOR WHEN THE RED LIGHT IS ON.",
+        "available": true
+      },
+      {
+        "source": "examine:look:siteSign",
+        "text": "SARO. SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. AUTHORIZED VEHICLES ONLY. NO VISITORS AFTER DARK. Sun-bleached on the side facing the highway.",
+        "available": true
+      },
+      {
+        "source": "examine:look:quietSign",
+        "text": "RADIO QUIET ZONE. NO TRANSMITTERS BEYOND THIS SIGN. The CB under the truck's dash is meant to stay off past here.",
+        "available": true
+      },
+      {
+        "source": "examine:look:stopSign",
+        "text": "STOP. The highway is empty both ways, as far as the dark goes.",
+        "available": true
+      },
+      {
+        "source": "examine:look:wingLetters",
+        "text": "SARO, and under it SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. One bolt in the last word has rusted through.",
+        "available": true
+      },
+      {
+        "source": "examine:look:speedSign",
+        "text": "SPEED LIMIT 55. Pocked with birdshot along the bottom edge.",
+        "available": true
+      },
+      {
+        "source": "examine:look:mileSign",
+        "text": "MILE 112. A green plate on a steel post, the white numbers gone dull.",
+        "available": true
+      },
+      {
+        "source": "examine:look:roswellSign",
+        "text": "ROSWELL 64. Sixty-four miles of nothing, and then Roswell.",
+        "available": true
+      },
+      {
+        "source": "examine:look:stationSign",
+        "text": "STATION 01. U.S. SURVEY. NO THROUGH ROAD. Old enamel on wooden posts, and the survey track going off behind it.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.officeDoor",
+        "text": "OFFICE, in gold letters on the glass, half of them flaked away. A bell on the counter inside.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.otherDoors",
+        "text": "A brass number on the door, the curtains drawn. Dark behind them.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.iceMachine",
+        "text": "ICE. It rattles, and drops a load into the bin for nobody.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.car",
+        "text": "A dusty sedan nosed in by the office, dew on the glass. It has not been driven tonight.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.pool",
+        "text": "The pool behind its fence, closed for the season. Leaves turn slowly on the water.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.register",
+        "text": "A ledger in green cloth, open at April. The same name, all the way down the page.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.keyBoard",
+        "text": "Brass tags worn smooth by thumbs. One hook is empty.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.officePhone",
+        "text": "An oak wall telephone with a crank, older than anything else in the office.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.envelope",
+        "text": "T. VEGA, C/O SIERRA MOTOR COURT. A three-cent stamp, and a wax seal nobody has broken.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.message",
+        "text": "Pencil on the back of a bill, pressed hard enough to dent the paper.",
+        "available": true
+      },
+      {
+        "source": "examine:look:motel.room6Door",
+        "text": "A brass 6 on the door, and a light behind the curtains.",
+        "available": true
+      },
+      {
+        "source": "examine:look:Sierra Motor Court",
+        "text": "Sierra in red script, MOTOR COURT in cyan, a yellow star on top. CLEAN ROOMS. CABLE TV. VACANCY. The neon hums.",
+        "available": true
+      },
+      {
+        "source": "examine:look:Sierra Motor Court (back)",
+        "text": "Sierra in red script, MOTOR COURT in cyan, a yellow star on top. CLEAN ROOMS. CABLE TV. VACANCY. The neon hums.",
+        "available": true
+      },
+      {
+        "source": "map:0",
+        "text": "A pencil sketch of the area round SARO, from memory.",
+        "available": true
+      },
+      {
+        "source": "map:1",
+        "text": "The highway.",
+        "available": true
+      },
+      {
+        "source": "map:2",
+        "text": "SARO. 27 dishes, azimuth 026.",
+        "available": true
+      },
+      {
+        "source": "map:3",
+        "text": "Sierra Motor Court. Nora, room 6.",
+        "available": true
+      },
+      {
+        "source": "map:4",
+        "text": "Mesa Diner. Open all night.",
+        "available": true
+      },
+      {
+        "source": "map:5",
+        "text": "Caliche, population 412.",
+        "available": true
+      },
+      {
+        "source": "map:6",
+        "text": "The old road is closed.",
+        "available": true
+      },
+      {
+        "source": "map:7",
+        "text": "The red cross marks me at SARO.",
+        "available": true
+      },
+      {
+        "source": "kit:Notebook:name",
+        "text": "Notebook",
+        "available": true
+      },
+      {
+        "source": "kit:Notebook:note",
+        "text": "Tab opens it. Tasks, notes, findings, papers, photographs, this map.",
+        "available": true
+      },
+      {
+        "source": "person:Dale:name",
+        "text": "Dale",
+        "available": true
+      },
+      {
+        "source": "person:Dale:role",
+        "text": "SARO, the shift before",
+        "available": true
+      },
+      {
+        "source": "person:Dale:note",
+        "text": "Left the shift log on the desk and went home. \"Don't break anything. D.\"",
+        "available": true
+      },
+      {
+        "source": "task",
+        "text": "Read Dale's shift log",
+        "available": true
+      }
+    ],
+    "missing": [
+      {
+        "source": "examine:fieldGate",
+        "text": "The walk gate into the array. A chain hangs from the post with its padlock open; nobody has locked it in years.",
+        "available": false
+      }
+    ]
+  },
+  "checks": [
+    {
+      "pass": true,
+      "message": "descriptions still default to Off on a fresh device"
+    },
+    {
+      "pass": true,
+      "message": "the default notebook has no narration control until Kinski is enabled"
+    },
+    {
+      "pass": false,
+      "message": "initial_inventory: all 221 sampled authored look/map/kit/people/task/note descriptions resolve: examine:fieldGate=The walk gate into the array. A chain hangs from the post with its padlock open; nobody has locked it in years."
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: analyser samples are not a hardware listening test"
+}

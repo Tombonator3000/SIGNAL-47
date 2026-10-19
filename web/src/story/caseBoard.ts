@@ -56,7 +56,7 @@ function docCard(d: DocSpec, region: string): BoardCard {
   const page = d.kind === 'photo' || d.kind === 'map' ? '' : (d.sheets ? d.sheets.map((s) => s.page).join('\n\n') : d.page ?? '').replace(/^~ /gm, '');
   return {
     id: d.id, doc: d.id, stamp: short, title: title === short ? '' : title, kind, have: true, region,
-    image: d.image, text: line, full: [page, d.transcript].filter(Boolean).join('\n\n'),
+    image: d.image, text: line, readingText: (d.transcript ?? '').split(/\n\s*\n/)[0], full: [page, d.transcript].filter(Boolean).join('\n\n'),
   };
 }
 

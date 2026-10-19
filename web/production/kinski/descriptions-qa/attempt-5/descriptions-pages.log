@@ -1,0 +1,112 @@
+PASS descriptions still default to Off on a fresh device
+PASS the default notebook has no narration control until Kinski is enabled
+PASS initial_inventory: all 221 sampled authored look/map/kit/people/task/note descriptions resolve
+PASS an ordinary environmental toast does not autoplay or interrupt the night
+PASS V reads the actual last environmental description using a decoded MP3
+PASS description narration produces nonzero samples at master
+PASS radio, CB and actual telephone speaker captions preserve the last environmental description
+PASS a real telephone queue stops narration and blocks automatic Zoom descriptions
+PASS holding real desktop Zoom exposes a recordable raycast description
+PASS 650 ms of stable Zoom automatically reads the exact examined object
+PASS repeated frame updates on the same object do not restart automatic narration
+PASS releasing Zoom clears and stops its automatic description
+PASS the actual wall clock description retains 23:41 as four complete spoken-number segments
+PASS every clock-number segment starts a real decoded MP3 in order without overlap
+PASS receiver-description has complete recording coverage for its current visible descriptions
+PASS receiver-description plays exactly the narrative text advertised by its real control
+PASS receiver-description starts genuinely decoded MP3 narration connected to master
+PASS receiver stage 0, residual=False: the exact current reference card is read
+PASS receiver-description has complete recording coverage for its current visible descriptions
+PASS receiver-description plays exactly the narrative text advertised by its real control
+PASS receiver-description starts genuinely decoded MP3 narration connected to master
+PASS receiver stage 1, residual=False: the exact current reference card is read
+PASS receiver-description has complete recording coverage for its current visible descriptions
+PASS receiver-description plays exactly the narrative text advertised by its real control
+PASS receiver-description starts genuinely decoded MP3 narration connected to master
+PASS receiver stage 2, residual=True: the exact current reference card is read
+PASS receiver-description has complete recording coverage for its current visible descriptions
+PASS receiver-description plays exactly the narrative text advertised by its real control
+PASS receiver-description starts genuinely decoded MP3 narration connected to master
+PASS receiver stage 2, residual=False: the exact current reference card is read
+PASS receiver-description has complete recording coverage for its current visible descriptions
+PASS receiver-description plays exactly the narrative text advertised by its real control
+PASS receiver-description starts genuinely decoded MP3 narration connected to master
+PASS receiver stage 3, residual=True: the exact current reference card is read
+PASS closing the receiver stops its reference-card narration
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS Tasks reads authored task text without the x/dash status markers
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS notebook-description plays exactly the narrative text advertised by its real control
+PASS notebook-description starts genuinely decoded MP3 narration connected to master
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS Notes reads actual observations and stops the old tab's queue
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS notebook-description plays exactly the narrative text advertised by its real control
+PASS notebook-description starts genuinely decoded MP3 narration connected to master
+PASS Kit exposes item names and narrative notes
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS People exposes the actual name, role and character description
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS the map describes only its current known places and closed road
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS notebook-description plays exactly the narrative text advertised by its real control
+PASS notebook-description starts genuinely decoded MP3 narration connected to master
+PASS closing the notebook stops description playback
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description plays exactly the narrative text advertised by its real control
+PASS panel-description starts genuinely decoded MP3 narration connected to master
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS a real puzzle Hint updates the readable description and cancels the former queue
+PASS changing a puzzle description does not start another reading without a gesture
+PASS hidden panel prose and playback button labels are excluded from narration
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description plays exactly the narrative text advertised by its real control
+PASS panel-description starts genuinely decoded MP3 narration connected to master
+PASS an unsupported changed description disables playback without silently dropping its unknown words
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description plays exactly the narrative text advertised by its real control
+PASS panel-description starts genuinely decoded MP3 narration connected to master
+PASS closing a puzzle cancels its current description and remaining segments
+PASS later_inventory: all 270 sampled authored look/map/kit/people/task/note descriptions resolve
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS all five met Caliche NPC names, roles and notes join the readable People tab
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS the later map describes STATION 01 and the known old road
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description plays exactly the narrative text advertised by its real control
+PASS panel-description starts genuinely decoded MP3 narration connected to master
+PASS the service-map overlay includes its actual unaligned drag description
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS a real tracing drag snaps to STATION 01 and replaces narration with the aligned map description
+PASS panel-description has complete recording coverage for its current visible descriptions
+PASS panel-description plays exactly the narrative text advertised by its real control
+PASS panel-description starts genuinely decoded MP3 narration connected to master
+PASS closing the map overlay cancels its updated description
+PASS board-description has complete recording coverage for its current visible descriptions
+PASS board excerpts use their complete authored source paragraphs rather than arbitrary truncated suffixes
+PASS board-description has complete recording coverage for its current visible descriptions
+PASS board-description plays exactly the narrative text advertised by its real control
+PASS board-description starts genuinely decoded MP3 narration connected to master
+PASS board-description has complete recording coverage for its current visible descriptions
+PASS opening actual board TEXT replaces the excerpt with readable full source text
+PASS the board's actual Hint becomes part of its readable current description
+PASS the real field camera supplies two free photographs for caption testing
+PASS photo-description has complete recording coverage for its current visible descriptions
+PASS photo-description plays exactly the narrative text advertised by its real control
+PASS photo-description starts genuinely decoded MP3 narration connected to master
+FAIL a free photo reads its actual generated caption and place/time metadata
+PASS Enter and Space activate the focused photo reading button without closing the photograph
+PASS photo-description has complete recording coverage for its current visible descriptions
+PASS Next photo cancels the old reading and rebinds exactly one caption control
+PASS photo-description has complete recording coverage for its current visible descriptions
+PASS photo-description plays exactly the narrative text advertised by its real control
+PASS photo-description starts genuinely decoded MP3 narration connected to master
+PASS Back to album stops the nested photo reading without closing the notebook
+PASS notebook-description has complete recording coverage for its current visible descriptions
+PASS the 844×390 touch notebook description control has no horizontal overflow
+PASS a real mobile tap starts decoded notebook description audio
+PASS mobile Stop and close leave no narration playing
+PASS description MP3 requests have no HTTP failures (93 requests)
+PASS no browser errors or warnings
+110 of 111 PASS

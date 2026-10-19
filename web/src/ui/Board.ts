@@ -27,6 +27,7 @@ export interface BoardCard {
   have: boolean; where?: string;          // not collected yet: where it is
   image?: string;
   text?: string;                          // a line about what it is
+  readingText?: string;                   // the complete description behind a shortened excerpt
   full?: string;                          // the whole text behind TEXT
   lines?: BoardLine[];                    // the lines that matter, each with a pin; none: one pin
   doc?: string;                           // the paper in the journal it stands for
@@ -152,7 +153,7 @@ export function board(ui: UI, o: BoardSpec) {
       ${plain ? `<i class="pin" data-pull="${c.id}"></i>` : ''}${c.kind === 'photo' ? '<i class="tape"></i>' : ''}
       <div class="bcard-head"><b>${esc(c.stamp)}</b><span>${esc(c.title)}</span>${c.full ? '<button class="bcard-more" data-more>TEXT</button>' : ''}</div>
       ${c.image ? `<img class="bcard-img" alt="" src="${c.image}" draggable="false">` : ''}
-      ${c.text ? `<p class="bcard-sum">${esc(c.text)}</p>` : ''}
+      ${c.text ? `<p class="bcard-sum"${c.readingText ? ` data-reading-text="${esc(c.readingText)}"` : ''}>${esc(c.text)}</p>` : ''}
       <div class="bcard-full">${paras(c.full ?? '')}</div>
       ${(c.lines ?? []).map((l) => `<div class="bline" data-node="${l.id}" data-pull="${l.id}">${l.icon ? `<img alt="" src="${l.icon}" draggable="false">` : ''}<span>${esc(l.text)}</span><i class="pin"></i></div>`).join('')}
     </div>`;

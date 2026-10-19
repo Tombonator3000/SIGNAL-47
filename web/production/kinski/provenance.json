@@ -44,16 +44,19 @@
   "postprocessing": "Per-clip constant gain toward -20 dBFS non-silent RMS (-50 dBFS block threshold), capped at -2 dBFS decoded-MP3 peak. Mono 24 kHz, 64 kbit/s MP3; no dynamic compression, pitch shift or time stretch in the asset conversion.",
   "scope": {
     "documents": "DocSpec.transcript paragraphs displayed by UI.document, and a separate reading of static DocSpec.page paragraphs. No titles. Page-only pencil prefixes and pure separator lines are removed identically in runtime and extraction.",
-    "conversations": "TalkView.lines[].text from Chapter4, Chapter5 and caliche, including YOU and aside. Not choices, status or reply.",
-    "radio": "Excluded, including Chapter4 CB utterances.",
+    "conversations": "Existing Panels.talk lines retained. Visible reply and question prose is also included in narrative descriptions; button-choice labels remain excluded.",
+    "radio": "Original broadcast and CB playback is unchanged. Dedicated core/radio.ts, story/tripRadio.ts and core/cb.ts are not extracted. Quoted/captioned narrative text in chapter/event files can be read manually as descriptions.",
     "counts": {
-      "clipCount": 337,
+      "clipCount": 1555,
       "documentClipCount": 52,
       "pageClipCount": 84,
       "talkClipCount": 192,
       "phoneClipCount": 24,
-      "words": 4924,
-      "characters": 26859,
+      "descriptionClipCount": 1293,
+      "numberClipCount": 35,
+      "identifierClipCount": 27,
+      "words": 18791,
+      "characters": 100797,
       "transcriptDeclarations": 39,
       "pageDeclarations": 37,
       "staticPageVariants": 33,
@@ -61,53 +64,604 @@
       "phoneSourceSites": 33
     },
     "telephone": "Canonical literal PHONE_CALLS cue.text except aside, and PHONE_TEXTS from src/core/phoneScripts.ts. Exact speech only; actor labels, quotation marks and the unsaid player aside are excluded. 24 phone texts reuse 15 existing clips and add nine from Ward/Nora in chapters 2 and 3.",
-    "telephone_manuscript": "production/kinski/telefonmanus.md: all 24 exact authored speech lines by scene and actor, with the unsaid chapter 2 player aside explicitly marked silent."
+    "telephone_manuscript": "production/kinski/telefonmanus.md: all 24 exact authored speech lines by scene and actor, with the unsaid chapter 2 player aside explicitly marked silent.",
+    "descriptions": "Displayed narrative examination, toast and note text; document description and paper paragraphs; panel instructions, questions and replies; case-board evidence, hints and findings; notebook tasks, notes, kit/person names, states, roles and notes; album captions and place/time metadata; map descriptions; chapter recaps. Exact static variants and source fragments only. UI button labels, developer menu, credits and broadcast radio scripts are excluded.",
+    "freeze_note": "Inventory frozen after concrete selector and dynamic resolver checks. Further additions require an actual rendered narrative text coverage gap.",
+    "browser_gap_corrections": [
+      {
+        "id": "0a2978eff78cf597",
+        "source": "src/story/field.ts:53",
+        "asr": "Not rerun; full encoding and PCM verification passed.",
+        "text": "The walk gate into the array. A chain hangs from the post with its padlock open; nobody has locked it in years."
+      },
+      {
+        "id": "7a51f63b1a2ffbcd",
+        "source": "src/ui/Panels.ts:226",
+        "asr": "Not rerun; full encoding and PCM verification passed.",
+        "text": "Screen the practical lamp and observe the ordinary local null condition. This isolates the source. It does not move the physical reference, and it does not finish the cable finding."
+      }
+    ]
   },
-  "dynamic_unavailable": [
-    {
-      "kind": "description",
-      "factory": "src/story/Chapter1.ts:851 docPhoto",
-      "documents": [
-        "frame01",
-        "frame02"
+  "dynamic_unavailable": [],
+  "dynamic_policy": "No blanket exclusion for dynamic documents. Runtime first uses exact whole-text clips, then only a complete sequence of exact fragments and spoken numeric/identifier components. Any unknown word makes the whole requested block unavailable. No silent omission or unrestricted word synthesis.",
+  "qa": {
+    "completed_utc": "2026-10-19T11:43:42.617584+00:00",
+    "report": "production/kinski/verification.json",
+    "status": "PASS",
+    "clips": 1555,
+    "new_clips": 1218,
+    "bytes": 45411332,
+    "duration_seconds": 5541.3,
+    "corpus_sha256": "9f74372b7d7116c55ea2a66af4a3d8b4ab6d2d1a2dcb8225700b5e9410f2526e",
+    "encoding": "Every file ffprobe checked as mono 24000 Hz MP3 and decoded again for PCM energy, peak, positive duration and hash/manifest coverage.",
+    "max_decoded_peak_dbfs": -2.1028182818336347,
+    "full_scale_samples": 0,
+    "dropped_chunks": {
+      "confirmed_zero": 1555,
+      "unrecorded_ids": []
+    },
+    "catalog_ids_match_corpus": true,
+    "orphan_mp3_files": [],
+    "preserved_baseline": {
+      "commit": "95719a408bf16b18341f717be914c04a4f0b2462",
+      "unchanged_old_clip_count": 337,
+      "evidence": "production/kinski/descriptions-qa/asset-audit.json",
+      "text_ids_unchanged": true,
+      "mp3_sha256_unchanged": true
+    },
+    "asr": {
+      "historical_samples_retained": 8,
+      "new_samples": 6,
+      "new_long_samples": 3,
+      "new_number_samples": [
+        "zero",
+        "twenty",
+        "six"
       ],
-      "reason": "Player exposure time is interpolated; both control methods are otherwise finite."
+      "raw_strict_word_edits": 13,
+      "interpretation": "Long samples retain their sentences, with ASR differences around IDs, homophones, number spelling and WASD. Zero is exact; twenty is written 20. Standalone six was recognized as Fix; the actual concatenated number-bank context was recognized as Zero, twenty, six. The short S was omitted by ASR. No human listening or speaker-similarity check is implied.",
+      "numeric_context_report": "verification.json numeric_context_asr"
+    },
+    "rejected_silent_take_clip_ids": [
+      "f6a4add9542c2105",
+      "222b0bd51fcef7e6",
+      "559aead08264d579",
+      "44bd7ae60f478fae",
+      "4b68ab3847feda7d"
+    ],
+    "human_listened": false,
+    "speaker_similarity": "UNVERIFIED",
+    "emotional_delivery": "UNVERIFIED",
+    "letter_and_short_word_pronunciation": "UNVERIFIED by human listening",
+    "targeted_browser_gap_additions": [
+      {
+        "id": "0a2978eff78cf597",
+        "source": "src/story/field.ts:53",
+        "asr": "Not rerun; full encoding and PCM verification passed."
+      },
+      {
+        "id": "7a51f63b1a2ffbcd",
+        "source": "src/ui/Panels.ts:226",
+        "asr": "Not rerun; full encoding and PCM verification passed."
+      }
+    ]
+  },
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing installed local API and profile reused; no new model or service installed.",
+  "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+  "generation_cache_identity": "c57f23ec9ac7dd16",
+  "pronunciation_overrides": [
+    {
+      "clip_id": "d37d7136ee813fba",
+      "catalog_text": "T.",
+      "synthesis_text": "Tee.",
+      "cache_identity": "5955264f06b7b70e"
     },
     {
-      "kind": "description",
-      "factory": "src/story/Chapter3.ts:849 docPhoto",
-      "documents": [
-        "frame03",
-        "frame04"
-      ],
-      "reason": "Player exposure time is interpolated."
+      "clip_id": "f6a4add9542c2105",
+      "catalog_text": ", el",
+      "synthesis_text": "Elevation.",
+      "cache_identity": "0d7c21639b0e09de"
     },
     {
-      "kind": "description",
-      "factory": "src/story/abduction.ts:235",
-      "documents": [
-        "away*"
-      ],
-      "reason": "Player exposure counter is interpolated."
+      "clip_id": "f9194e73f9e9459e",
+      "catalog_text": "zero",
+      "synthesis_text": "Zero.",
+      "cache_identity": "592ac22ae1bda3bb"
     },
     {
-      "kind": "paper",
-      "document": "s03log",
-      "reason": "Controller event time is interpolated in the paper."
+      "clip_id": "7692c3ad3540bb80",
+      "catalog_text": "one",
+      "synthesis_text": "One.",
+      "cache_identity": "4e6b4eb3d888fe50"
     },
     {
-      "kind": "paper",
-      "document": "printout",
-      "reason": "Solve time is interpolated in the paper."
+      "clip_id": "3fc4ccfe745870e2",
+      "catalog_text": "two",
+      "synthesis_text": "Two.",
+      "cache_identity": "c2f8a0cd7428ceb5"
     },
     {
-      "kind": "paper",
-      "document": "telex",
-      "reason": "The paper is built from the changing message list."
+      "clip_id": "8b5b9db0c13db242",
+      "catalog_text": "three",
+      "synthesis_text": "Three.",
+      "cache_identity": "3970b3547579abfa"
+    },
+    {
+      "clip_id": "04efaf080f5a3e74",
+      "catalog_text": "four",
+      "synthesis_text": "Four.",
+      "cache_identity": "9d9d9f6da1bf374e"
+    },
+    {
+      "clip_id": "222b0bd51fcef7e6",
+      "catalog_text": "five",
+      "synthesis_text": "Five.",
+      "cache_identity": "9827048763d72170"
+    },
+    {
+      "clip_id": "44778d82365e4af6",
+      "catalog_text": "six",
+      "synthesis_text": "Six.",
+      "cache_identity": "10a1f63f4b7abd46"
+    },
+    {
+      "clip_id": "3ba8d02b16fd2a01",
+      "catalog_text": "seven",
+      "synthesis_text": "Seven.",
+      "cache_identity": "52e35b59d08758c8"
+    },
+    {
+      "clip_id": "c195d2d875623436",
+      "catalog_text": "eight",
+      "synthesis_text": "Eight.",
+      "cache_identity": "b2b26769b4adcdb8"
+    },
+    {
+      "clip_id": "edcd8e701a2df0cd",
+      "catalog_text": "nine",
+      "synthesis_text": "Nine.",
+      "cache_identity": "f7bcc13ede962aec"
+    },
+    {
+      "clip_id": "e4432baa90819aae",
+      "catalog_text": "ten",
+      "synthesis_text": "Ten.",
+      "cache_identity": "c2d2fb371302e1ef"
+    },
+    {
+      "clip_id": "e979074ebd5633a7",
+      "catalog_text": "eleven",
+      "synthesis_text": "Eleven.",
+      "cache_identity": "8e77b03fe63fd2d8"
+    },
+    {
+      "clip_id": "d1a749ad879b6c07",
+      "catalog_text": "twelve",
+      "synthesis_text": "Twelve.",
+      "cache_identity": "fc5785480aa47d25"
+    },
+    {
+      "clip_id": "9ecc81f0a4b6dfb0",
+      "catalog_text": "thirteen",
+      "synthesis_text": "Thirteen.",
+      "cache_identity": "ff11a6a52e3ea49f"
+    },
+    {
+      "clip_id": "fef8f41cdcd20386",
+      "catalog_text": "fourteen",
+      "synthesis_text": "Fourteen.",
+      "cache_identity": "783357b447b2b4b2"
+    },
+    {
+      "clip_id": "c463967e5708cab7",
+      "catalog_text": "fifteen",
+      "synthesis_text": "Fifteen.",
+      "cache_identity": "6c2acc636140b0e0"
+    },
+    {
+      "clip_id": "f2ce341fdaa67727",
+      "catalog_text": "sixteen",
+      "synthesis_text": "Sixteen.",
+      "cache_identity": "9c5514436c527b2e"
+    },
+    {
+      "clip_id": "2c5abdef2a0eacb4",
+      "catalog_text": "seventeen",
+      "synthesis_text": "Seventeen.",
+      "cache_identity": "ee47a83e6cb621e1"
+    },
+    {
+      "clip_id": "34357b18abddea18",
+      "catalog_text": "eighteen",
+      "synthesis_text": "Eighteen.",
+      "cache_identity": "54a798b1619493ab"
+    },
+    {
+      "clip_id": "cde4e100efd26f5b",
+      "catalog_text": "nineteen",
+      "synthesis_text": "Nineteen.",
+      "cache_identity": "59b03b547b25f8f8"
+    },
+    {
+      "clip_id": "7c2c4df740f720b0",
+      "catalog_text": "twenty",
+      "synthesis_text": "Twenty.",
+      "cache_identity": "0cef89258dfdd5cb"
+    },
+    {
+      "clip_id": "aca5fb59db69e5df",
+      "catalog_text": "thirty",
+      "synthesis_text": "Thirty.",
+      "cache_identity": "4d6e41d05360d01c"
+    },
+    {
+      "clip_id": "9cee2304bd633d42",
+      "catalog_text": "forty",
+      "synthesis_text": "Forty.",
+      "cache_identity": "ff0a1e16ad054d12"
+    },
+    {
+      "clip_id": "f8d807ee15e983f8",
+      "catalog_text": "fifty",
+      "synthesis_text": "Fifty.",
+      "cache_identity": "cf56ef5f7c59a1ac"
+    },
+    {
+      "clip_id": "df41164e151227b3",
+      "catalog_text": "sixty",
+      "synthesis_text": "Sixty.",
+      "cache_identity": "fd59786ca9533ef4"
+    },
+    {
+      "clip_id": "ab0e4b1a7839571e",
+      "catalog_text": "seventy",
+      "synthesis_text": "Seventy.",
+      "cache_identity": "46c8908ca34b586c"
+    },
+    {
+      "clip_id": "0dbc3407a7080e3d",
+      "catalog_text": "eighty",
+      "synthesis_text": "Eighty.",
+      "cache_identity": "e978909d4c730068"
+    },
+    {
+      "clip_id": "521c74a4d5824aba",
+      "catalog_text": "ninety",
+      "synthesis_text": "Ninety.",
+      "cache_identity": "22c085bfb97e01ac"
+    },
+    {
+      "clip_id": "97fe8a3749069931",
+      "catalog_text": "hundred",
+      "synthesis_text": "Hundred.",
+      "cache_identity": "be0e6853e547fbfa"
+    },
+    {
+      "clip_id": "a0af3a48cfad1fc0",
+      "catalog_text": "thousand",
+      "synthesis_text": "Thousand.",
+      "cache_identity": "18e3112bca714aa4"
+    },
+    {
+      "clip_id": "c8ce96a5ba0d15da",
+      "catalog_text": "million",
+      "synthesis_text": "Million.",
+      "cache_identity": "a892015ff16912dd"
+    },
+    {
+      "clip_id": "129fa7713adba71e",
+      "catalog_text": "minus",
+      "synthesis_text": "Minus.",
+      "cache_identity": "2b740492771b6d91"
+    },
+    {
+      "clip_id": "383ef36928344f56",
+      "catalog_text": "plus",
+      "synthesis_text": "Plus.",
+      "cache_identity": "284022ebc1bb9504"
+    },
+    {
+      "clip_id": "251fecd592e56e6c",
+      "catalog_text": "point",
+      "synthesis_text": "Point.",
+      "cache_identity": "01adcbca06ae4c9f"
+    },
+    {
+      "clip_id": "fd86717aca41c558",
+      "catalog_text": "percent",
+      "synthesis_text": "Percent.",
+      "cache_identity": "be5c7f9267c0cf51"
+    },
+    {
+      "clip_id": "559aead08264d579",
+      "catalog_text": "A",
+      "synthesis_text": "A!",
+      "cache_identity": "e29dbad0594923c6"
+    },
+    {
+      "clip_id": "df7e70e5021544f4",
+      "catalog_text": "B",
+      "synthesis_text": "Bee.",
+      "cache_identity": "b0f35bbede1fd9e9"
+    },
+    {
+      "clip_id": "6b23c0d5f35d1b11",
+      "catalog_text": "C",
+      "synthesis_text": "See.",
+      "cache_identity": "7934497c53774bdb"
+    },
+    {
+      "clip_id": "3f39d5c348e5b79d",
+      "catalog_text": "D",
+      "synthesis_text": "Dee.",
+      "cache_identity": "2651a4e339c4dd8d"
+    },
+    {
+      "clip_id": "a9f51566bd6705f7",
+      "catalog_text": "E",
+      "synthesis_text": "Eee.",
+      "cache_identity": "01eb61c0f1e70489"
+    },
+    {
+      "clip_id": "f67ab10ad4e4c531",
+      "catalog_text": "F",
+      "synthesis_text": "Eff.",
+      "cache_identity": "49e11778a061d66e"
+    },
+    {
+      "clip_id": "333e0a1e27815d0c",
+      "catalog_text": "G",
+      "synthesis_text": "Gee.",
+      "cache_identity": "04999096a023a1d2"
+    },
+    {
+      "clip_id": "44bd7ae60f478fae",
+      "catalog_text": "H",
+      "synthesis_text": "H!",
+      "cache_identity": "27f3a4895f642b8e"
+    },
+    {
+      "clip_id": "a83dd0ccbffe39d0",
+      "catalog_text": "I",
+      "synthesis_text": "Eye.",
+      "cache_identity": "370f24f95d0f9539"
+    },
+    {
+      "clip_id": "6da43b944e494e88",
+      "catalog_text": "J",
+      "synthesis_text": "Jay.",
+      "cache_identity": "698ea634cee41e44"
+    },
+    {
+      "clip_id": "86be9a55762d316a",
+      "catalog_text": "K",
+      "synthesis_text": "Kay.",
+      "cache_identity": "de9f56b105bbe744"
+    },
+    {
+      "clip_id": "72dfcfb0c470ac25",
+      "catalog_text": "L",
+      "synthesis_text": "Ell.",
+      "cache_identity": "ac087ea634f1e3a6"
+    },
+    {
+      "clip_id": "08f271887ce94707",
+      "catalog_text": "M",
+      "synthesis_text": "Em.",
+      "cache_identity": "b98e5d5ff0c6e799"
+    },
+    {
+      "clip_id": "8ce86a6ae65d3692",
+      "catalog_text": "N",
+      "synthesis_text": "En.",
+      "cache_identity": "91b698f3a201484c"
+    },
+    {
+      "clip_id": "c4694f2e93d5c4e7",
+      "catalog_text": "O",
+      "synthesis_text": "Oh.",
+      "cache_identity": "07f580f022203281"
+    },
+    {
+      "clip_id": "5c62e091b8c0565f",
+      "catalog_text": "P",
+      "synthesis_text": "Pee.",
+      "cache_identity": "be6cbc6d097dde86"
+    },
+    {
+      "clip_id": "4ae81572f06e1b88",
+      "catalog_text": "Q",
+      "synthesis_text": "Cue.",
+      "cache_identity": "498f1b2c4b0b7f76"
+    },
+    {
+      "clip_id": "8c2574892063f995",
+      "catalog_text": "R",
+      "synthesis_text": "Ar.",
+      "cache_identity": "943c37322517e137"
+    },
+    {
+      "clip_id": "8de0b3c47f112c59",
+      "catalog_text": "S",
+      "synthesis_text": "Ess.",
+      "cache_identity": "27c89eb26a854fb7"
+    },
+    {
+      "clip_id": "e632b7095b0bf32c",
+      "catalog_text": "T",
+      "synthesis_text": "Tee.",
+      "cache_identity": "5955264f06b7b70e"
+    },
+    {
+      "clip_id": "a25513c7e0f6eaa8",
+      "catalog_text": "U",
+      "synthesis_text": "You.",
+      "cache_identity": "0ba4fe556bcd02f8"
+    },
+    {
+      "clip_id": "de5a6f78116eca62",
+      "catalog_text": "V",
+      "synthesis_text": "Vee.",
+      "cache_identity": "5772d428c669fe89"
+    },
+    {
+      "clip_id": "fcb5f40df9be6bae",
+      "catalog_text": "W",
+      "synthesis_text": "Double you.",
+      "cache_identity": "763d5314499b304d"
+    },
+    {
+      "clip_id": "4b68ab3847feda7d",
+      "catalog_text": "X",
+      "synthesis_text": "X!",
+      "cache_identity": "3cc7e149e77b61c5"
+    },
+    {
+      "clip_id": "18f5384d58bcb1bb",
+      "catalog_text": "Y",
+      "synthesis_text": "Why.",
+      "cache_identity": "9194eb123982e070"
+    },
+    {
+      "clip_id": "bbeebd879e1dff69",
+      "catalog_text": "Z",
+      "synthesis_text": "Zee.",
+      "cache_identity": "e2e6c3af3f1aa9e1"
     }
   ],
-  "dynamic_policy": "A requested document or dialogue block is available only when every paragraph/line has matching generated audio. No silent skipping over unknown text.",
-  "qa": {
+  "segmentation": "Full normalized text first. Documents and plain description data split at blank paragraphs; page-only pencil markers and separator lines are removed. Narrative descriptions include displayed toast/note, examine, panel prose, board facts/hints, notebook names/roles/state/notes, album captions, map prose and chapter recaps. Finite branches are literal variants. Runtime templates retain every static fragment, resolved as a complete sequence with cardinal/decimal/clock words and strict identifier letters. No skipping unknown words. Telephone uses exact PHONE_CALLS speech except aside and PHONE_TEXTS. Button labels, development menu, credits and broadcast radio scripts are excluded.",
+  "dynamic_templates": [
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 840,
+      "kind": "page",
+      "document": "'s03log'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "`SARO ARRAY / MOTOR BUS S-03\\nLOCAL CONTROLLER LOG // ${clockText(this.s.eventClock, false)}\\n\\nENCODER HEADING:   026 DEGREES\\nSCHEDULED HEADING: 042 DEGREES\\n\\nCOMMANDS RECEIVED: 0\\nLOCAL OVERRIDE:    NONE`",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    },
+    {
+      "file": "src/story/Chapter1.ts",
+      "line": 856,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 3,
+      "dynamic": true,
+      "expression": "first\n        ? `Exposed from the S-03 apron at ${clockText(p.clock)}. The central antenna, and below it the B-12 reference vane in the lower foreground.\\n\\nThe installation sheet says B-12 carries one stripe.`\n        : `Exposed from the B-12 sight line at ${clockText(p.clock)}, under the ${p.method === 'passive' ? 'shielded, passive' : 'active, 042-degree'} control.`",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "line": 861,
+      "kind": "document",
+      "document": "p.id",
+      "variants": 2,
+      "dynamic": true,
+      "expression": "a\n        ? `Exposed at STATION 01 at ${clockText(p.clock)}. The empty footing on the transit sight line, and the marker post with the triangle and bar standing off it.`\n        : `Exposed at STATION 01 at ${clockText(p.clock)}. The cable south of the transit pier, cut clean, the two faces opposite each other.`",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    },
+    {
+      "file": "src/story/Prologue.ts",
+      "line": 106,
+      "kind": "page",
+      "document": "'printout'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "lines.join('\\n')",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    },
+    {
+      "file": "src/story/abduction.ts",
+      "line": 235,
+      "kind": "document",
+      "document": "`away${this.data.count}`",
+      "variants": 1,
+      "dynamic": true,
+      "expression": "`One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: someone lying on their back in the grass in a SARO jacket, the reflective band across the chest. Me.`",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    },
+    {
+      "file": "src/story/nightshift.ts",
+      "line": 144,
+      "kind": "page",
+      "document": "'telex'",
+      "variants": 1,
+      "empty": false,
+      "dynamic": true,
+      "expression": "messages.join('\\n\\n')",
+      "resolution": "Exact source fragments plus complete runtime number/clock/identifier composition; runtime rejects any unresolved words."
+    }
+  ],
+  "number_words": [
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
+    "twenty",
+    "thirty",
+    "forty",
+    "fifty",
+    "sixty",
+    "seventy",
+    "eighty",
+    "ninety",
+    "hundred",
+    "thousand",
+    "million",
+    "minus",
+    "plus",
+    "point",
+    "percent"
+  ],
+  "identifier_words": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "frame"
+  ],
+  "previous_337_asset_qa": {
     "completed_utc": "2026-10-19T09:30:35.942224+00:00",
     "report": "production/kinski/verification.json",
     "status": "PASS",
@@ -160,16 +714,5 @@
       "new_asr_strict_word_edits": 1
     }
   },
-  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing installed local API and profile reused; no new model or service installed.",
-  "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
-  "generation_cache_identity": "c57f23ec9ac7dd16",
-  "pronunciation_overrides": [
-    {
-      "catalog_text": "T.",
-      "synthesis_text": "Tee.",
-      "clip_id": "d37d7136ee813fba",
-      "cache_identity": "5955264f06b7b70e",
-      "reason": "The one-letter signature T. returned a silent take. Tee. is the same English letter pronunciation. Catalog text and source text remain unchanged."
-    }
-  ]
+  "pronunciation_policy": "Catalog text and IDs remain exact. Numeric lexemes use capitalized sentence punctuation. Letter names use explicit pronunciations; A/H/X use the original letter with an exclamation mark after silent phonetic takes. The source abbreviation el is expanded to Elevation. Each different synthesis text has its own cache identity."
 }

@@ -285,3 +285,5 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 - [x] Telefonutvidelse 19. oktober: alle 24 eksisterende telefonreplikker ferdig innspilt og automatisk når Kinski-valget er på. Ni nye klipp, 337 totalt; telefonprøver 49/49 og 50/50 PASS. Manus og oppdatert lokal spillfil levert.
 
 - [x] 19. oktober: Kinski-versjonen flettet inn i main etter Toms direkte beskjed, fra testet `d58b05e`. Nettspillet publiseres gjennom GitHub Actions ved push.
+
+- [x] Tom 19. oktober: alle fortellerbeskrivelser som Kinski-opplesning på `codex/kinski-descriptions`. 1555 klipp, nærblikk, V og leseknapper i paneler, notatbok, kart, bevisbord og foto. Beskrivelsesprøver 115/115 og 116/116, begge bygg og full spillregresjon PASS. Se `KINSKI_READALOUD.md` og `production/kinski/descriptions-qa/README.md`.

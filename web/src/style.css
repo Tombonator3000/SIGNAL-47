@@ -43,6 +43,7 @@ body {
 /* Full-screen layers must not swallow taps meant for the canvas. */
 #ui > .touch, #ui > .fade { pointer-events: none; }
 #ui .touch .tbtn { pointer-events: auto; }
+#ui .hud .description-read { pointer-events: auto; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
 
@@ -246,6 +247,14 @@ html.text-large .examine { font-size: 27px; }
 .read-aloud button { min-height: 44px; }
 .read-aloud [data-reading-status] { font-family: var(--type); font-size: 12px; line-height: 1.5; color: #b6ae9b; }
 .read-aloud button:disabled { opacity: .5; cursor: default; }
+.description-read { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 18px); top: calc(env(safe-area-inset-top, 0px) + 52px); pointer-events: auto; min-height: 44px; max-width: 42vw; padding: 6px 10px; font: 16px var(--term); color: #f3ead3; background: rgba(6,8,12,.85); border: 1px solid #786b51; border-radius: 3px; }
+@media (pointer: coarse) { .description-read { right: calc(env(safe-area-inset-right, 0px) + 142px); top: calc(env(safe-area-inset-top, 0px) + 108px); max-width: 32vw; } }
+.description-read:disabled { opacity: .5; }
+.board-wrap > .read-aloud { padding: 4px 12px; flex-shrink: 0; }
+.notebook > .read-aloud { padding: 6px 20px; grid-column: 1 / -1; color: var(--ink); }
+.notebook > .read-aloud [data-reading-status] { color: #5a5446; }
+.notebook > .read-aloud .lp-btn { color: var(--ink); background: #d4c8ac; border-color: #786b51; }
+.al-view > .read-aloud { position: absolute; left: 50%; bottom: 65px; transform: translateX(-50%); z-index: 4; max-width: 85vw; background: #111417; padding: 4px 10px; }
 .panel .small.reading-note { margin: 0 0 14px; }
 .docview .text .controls kbd { font-family: var(--term); border: 1px solid #8a8473; border-radius: 3px; padding: 0 6px; margin-right: 6px; color: var(--amber); }
 @media (max-width: 760px), (orientation: portrait) {

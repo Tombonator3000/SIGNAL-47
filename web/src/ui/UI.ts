@@ -33,7 +33,7 @@ export interface KitItem { name: string; note: string; state?: string; art?: Kit
 /** The notebook's map and kit (main.ts puts them together). */
 /** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
 export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
-export interface NbExtras { map?: string; kit?: KitItem[]; people?: PersonCard[]; album?: AlbumView; /** a phone: its controls first */ touch?: boolean }
+export interface NbExtras { map?: string; mapDescription?: string[]; kit?: KitItem[]; people?: PersonCard[]; album?: AlbumView; /** a phone: its controls first */ touch?: boolean }
 // Every control, for the notebook's Controls tab: the hints about them are said only once on a
 // device (core/hints.ts), so they are all kept here. Keyboard and mouse, and a phone or tablet.
 const CONTROLS: Record<'desk' | 'phone', { title: string; groups: { head: string; rows: [string, string][] }[] }> = {
@@ -43,6 +43,7 @@ const CONTROLS: Record<'desk' | 'phone', { title: string; groups: { head: string
       ['Mouse', 'Look. Click the picture first to take the mouse.'],
       ['E, Enter, click', 'Use what the crosshair is on. Put a paper back.'],
       ['Right mouse, held', 'A closer look at what the crosshair is on.'],
+      ['V', 'Read the current or last description. Press again to stop.'],
       ['F', 'The flashlight, once you have it.'],
       ['C', 'Raise or lower the field camera.'],
       ['Space', 'The shutter, with the camera raised.'],
@@ -116,11 +117,20 @@ export class UI {
   private objEl: HTMLElement;
   private camBtn: HTMLButtonElement;
   private vf: HTMLElement;
+  private descriptionObservers: MutationObserver[] = [];
+  private descriptionButton!: HTMLButtonElement;
+  private lastDescription = '';
+  private examineText = '';
+  private examineTimer: ReturnType<typeof setTimeout> | null = null;
+  private descriptionActive = false;
+  private examineActive = false;
+  /** Automatic closer-look narration yields to a handset call or a cinematic. */
+  canDescribe?: () => boolean;
 
   constructor() {
     document.body.insertAdjacentHTML('beforeend', '<div class="grain"></div><div class="vignette"></div>');
     this.root.insertAdjacentHTML('beforeend', `
-      <div class="hud passive" hidden><div class="crosshair"></div><div class="prompt"></div><div class="examine"></div><div class="toasts"></div><div class="clockline"></div><div class="objective"></div><div class="lockhint">Click to look around</div></div>
+      <div class="hud passive" hidden><div class="crosshair"></div><div class="prompt"></div><div class="examine"></div><button class="description-read" hidden data-a="read-description">Read last description [V]</button><div class="toasts"></div><div class="clockline"></div><div class="objective"></div><div class="lockhint">Click to look around</div></div>
       <div class="viewfinder passive" hidden><div class="vf-frame"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="vf-patch"></div>
         <div class="vf-top">SARO / FIELD CAMERA</div><div class="vf-no"></div><div class="vf-free"></div><div class="vf-status"></div><div class="vf-hint"></div></div><div class="vf-flash"></div></div>
       <div class="touch" hidden>
@@ -152,6 +162,8 @@ export class UI {
     this.radioBtn = this.root.querySelector('.touch .radio')!;
     this.radioBtn.addEventListener('click', () => this.onRadio?.());
     this.examineEl = this.root.querySelector('.hud .examine')!;
+    this.descriptionButton = this.root.querySelector('.description-read')!;
+    this.descriptionButton.addEventListener('click', (e) => { e.stopPropagation(); this.readLastDescription(); });
     // Zoom is held, like the right mouse button
     const zoom = this.root.querySelector('.touch .zoom') as HTMLButtonElement;
     const hold = (on: boolean) => (e: Event) => { e.preventDefault(); zoom.classList.toggle('held', on); this.onZoom?.(on); };
@@ -188,8 +200,46 @@ export class UI {
   /** What a closer look says (the zoom), under the crosshair; null clears it. */
   examine(text: string | null) {
     const t = text ?? '';
+    if (this.descriptionActive && this.canDescribe?.() === false) this.readAloud?.stop();
     if (this.examineEl.textContent !== t) this.examineEl.textContent = t;
     this.examineEl.classList.toggle('show', !!text);
+    this.descriptionButton.hidden = !this.readAloud?.enabled || !(t || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
+    if (this.examineText === t) return;
+    this.examineText = t;
+    if (this.examineTimer) clearTimeout(this.examineTimer);
+    this.examineTimer = null;
+    if (this.examineActive) this.readAloud?.stop();
+    this.examineActive = false;
+    this.updateDescriptionButton();
+    if (t && this.readAloud?.enabled) this.examineTimer = setTimeout(() => {
+      this.examineTimer = null;
+      const reader = this.readAloud;
+      if (!reader?.enabled || this.modal || !this.canDescribe?.() || reader.playing || reader.loading || !reader.available([t])) return;
+      this.playDescription(t, true);
+    }, 650);
+  }
+  private updateDescriptionButton() {
+    this.descriptionButton.hidden = !this.readAloud?.enabled || !(this.examineText || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
+    this.descriptionButton.textContent = this.descriptionActive ? 'Stop reading [V]' : this.examineText ? 'Read description [V]' : 'Read last description [V]';
+    this.descriptionButton.setAttribute('aria-pressed', String(this.descriptionActive));
+    this.descriptionButton.disabled = !this.descriptionActive && !this.readAloud?.available([this.examineText || this.lastDescription]);
+    this.descriptionButton.title = this.descriptionButton.disabled ? 'No recording for this text.' : 'Synthetic Kinski parody';
+  }
+  private playDescription(text: string, automatic = false) {
+    const reader = this.readAloud;
+    if (!reader?.enabled || !text) return;
+    if (!automatic) this.onReadingStart?.();
+    void reader.play([text], (state) => {
+      this.descriptionActive = state === 'playing' || state === 'loading';
+      this.examineActive = automatic && this.descriptionActive;
+      this.updateDescriptionButton();
+    });
+  }
+  /** A gesture-accessible repeat, also available after a short toast has disappeared. */
+  readLastDescription() {
+    if (!this.readAloud?.enabled || this.modal || this.canDescribe?.() === false) return;
+    if (this.descriptionActive) this.readAloud.stop();
+    else this.playDescription(this.examineText || this.lastDescription);
   }
   cameraButton(on: boolean, raised = false) { this.camBtn.hidden = !on; this.camBtn.textContent = raised ? 'Lower' : 'Camera'; }
 
@@ -217,6 +267,12 @@ export class UI {
   hint(on: boolean) { this.lockHint.classList.toggle('show', on); }
 
   toast(text: string, secs = 3.2) {
+    // Captions already have their own radio/telephone delivery. Do not turn them
+    // into a second narrator or replace the last environmental description.
+    if (!/^(?:RADIO(?:,|:)|CB,|WARD:|DR\. WARD:|NORA:|N\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)/i.test(text)) {
+      this.lastDescription = text;
+      this.updateDescriptionButton();
+    }
     // The same line twice in a row is noise.
     const live = [...this.toasts.children].filter((c) => !c.classList.contains('out')) as HTMLElement[];
     if (live.length && live[live.length - 1].textContent === text) return;
@@ -233,7 +289,7 @@ export class UI {
     el.classList.add('out');
     setTimeout(() => el.remove(), 650);
   }
-  clearToasts() { this.toasts.replaceChildren(); }
+  clearToasts() { this.toasts.replaceChildren(); this.lastDescription = ''; this.examine(null); this.updateDescriptionButton(); }
 
   fade(on: boolean, text = '', small = false) {
     this.fadeEl.classList.toggle('on', on);
@@ -249,8 +305,18 @@ export class UI {
     this.modal = el;
     this.modalClose = onClose ?? null;
     this.onModalChange?.(true);
+    const panel = el.querySelector<HTMLElement>('.labpanel');
+    if (panel) this.descriptionReadings(panel, '.lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card span, figcaption' + (panel.querySelector('.mapov') ? ', .lp-sub[data-status]' : ''));
+    const receiver = el.querySelector<HTMLElement>('.crt .lcol');
+    if (receiver) this.descriptionReadings(receiver, '.refcard', 'receiver-description');
+    const board = el.querySelector<HTMLElement>('.board-wrap');
+    if (board) this.descriptionReadings(board, '.board-say, .bcard-where, .bcard:not(.open) .bcard-sum, .bcard.open .bcard-full p, .bline > span, .bq-text, .bq-done, .bq-else, .bq-slots li.on, .bnote > p', 'board-description');
   }
   close(silent = false) {
+    for (const observer of this.descriptionObservers) observer.disconnect();
+    this.descriptionObservers = [];
+    if (this.examineTimer) clearTimeout(this.examineTimer);
+    this.examineTimer = null;
     this.readAloud?.stop();
     if (!this.modal) return;
     this.modal.remove();
@@ -258,6 +324,7 @@ export class UI {
     const cb = this.modalClose; this.modalClose = null;
     cb?.();
     if (!silent) this.onModalChange?.(false);
+    this.updateDescriptionButton();
   }
 
   // ---------- screens ----------
@@ -319,6 +386,7 @@ export class UI {
     const box = document.createElement('div');
     box.className = 'read-aloud';
     box.dataset.readingKind = kind;
+    box.dataset.readingTexts = JSON.stringify(texts);
     box.innerHTML = '<button class="lp-btn" data-a="narrate">Read aloud</button><span data-reading-status role="status" aria-live="polite"></span>';
     const button = box.querySelector('button')!;
     button.textContent = label;
@@ -339,6 +407,45 @@ export class UI {
       else { this.onReadingStart?.(); void reader.play(texts, update); }
     });
     parent.insertBefore(box, parent.querySelector('.controls'));
+  }
+  /** Read the descriptions currently visible in a changing puzzle or notebook.
+   *  Observe text changes, not frames: hints, answers and tab changes replace the
+   *  old queue immediately, without restarting a recording on every redraw. */
+  descriptionReadings(parent: HTMLElement, selector: string, kind = 'panel-description', extra?: () => string[]) {
+    if (!this.readAloud?.enabled) return;
+    let key = '', box: HTMLElement | null = null;
+    const refresh = () => {
+      const texts = [...parent.querySelectorAll<HTMLElement>(selector)]
+        .filter((node) => !node.closest('.read-aloud, [hidden], .nb-page:not(.on)') && getComputedStyle(node).display !== 'none')
+        .map((node) => {
+          if (node.dataset.readingText) return node.dataset.readingText;
+          const copy = node.cloneNode(true) as HTMLElement;
+          copy.querySelectorAll('.box, .noface').forEach((mark) => mark.remove());
+          copy.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+          return copy.textContent?.trim() ?? '';
+        }).flatMap(documentReadingParagraphs).filter(Boolean);
+      texts.push(...(extra?.() ?? []));
+      const next = JSON.stringify(texts);
+      if (next === key && (!texts.length || box?.parentElement === parent)) return;
+      key = next;
+      if (box?.querySelector('[aria-pressed=true]')) this.readAloud?.stop();
+      box?.remove(); box = null;
+      if (!texts.length) return;
+      this.readingControls(parent, texts, 'Read description', kind);
+      box = parent.querySelector<HTMLElement>(`:scope > .read-aloud[data-reading-kind="${kind}"]`);
+    };
+    refresh();
+    const observer = new MutationObserver((records) => {
+      if (records.every((record) => (record.target instanceof Element ? record.target : record.target.parentElement)?.closest('.read-aloud, svg, [data-labels]'))) return;
+      refresh();
+    });
+    observer.observe(parent, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+    this.descriptionObservers.push(observer);
+    return () => {
+      observer.disconnect();
+      this.descriptionObservers = this.descriptionObservers.filter((item) => item !== observer);
+      if (box?.querySelector('[aria-pressed=true]')) this.readAloud?.stop();
+    };
   }
   document(doc: DocSpec, onClose: () => void) {
     this.onPaper?.();
@@ -434,6 +541,7 @@ export class UI {
         <section class="nb-page nb-case nb-controls" data-p="controls">${controlsPage(!!extras.touch)}</section>
       </div>`;
     const show = (t: NbTab) => {
+      this.readAloud?.stop();
       this.nbTab = t;
       el.querySelectorAll<HTMLElement>('[data-p]').forEach((p) => p.classList.toggle('on', p.dataset.p === t));
       el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
@@ -446,8 +554,13 @@ export class UI {
     el.querySelectorAll<HTMLButtonElement>('[data-d]').forEach((b) => b.addEventListener('click', () => {
       const d = docs.find((x) => x.id === b.dataset.d); if (d) onDoc(d);
     }));
-    bindAlbum(el, extras.album);
+    bindAlbum(el, extras.album, {
+      show: (view) => this.descriptionReadings(view, '.al-cap b, .al-cap small', 'photo-description'),
+      change: () => this.readAloud?.stop(),
+    });
     this.open(el);
+    this.descriptionReadings(el.querySelector('.notebook')!, '.nb-page.on[data-p=tasks] li, .nb-page.on[data-p=notes] li, .nb-page.on .empty, .nb-page.on[data-p=kit] li > b, .nb-page.on[data-p=kit] li > i, .nb-page.on[data-p=kit] li > span:not(.kit-art), .nb-page.on[data-p=people] li > b, .nb-page.on[data-p=people] li > i, .nb-page.on[data-p=people] li > span:not(.noface)', 'notebook-description',
+      () => this.nbTab === 'map' ? extras.mapDescription ?? [] : []);
   }
 
   pause(o: {
@@ -473,7 +586,7 @@ export class UI {
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
-        <p class="small reading-note">Synthetic parody voice. Read papers and conversations; phone voices play when you answer.</p>
+        <p class="small reading-note">Synthetic parody voice. Read descriptions, notes, papers and conversations. Hold Zoom for a spoken closer look; V repeats a description. Phone voices play when you answer.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
@@ -525,6 +638,8 @@ export class UI {
   chapterCard(o: { closed: string; recap: string; next: string; title: string; clock: string } | null) {
     if (this.cardEl) { const old = this.cardEl; old.classList.add('out'); setTimeout(() => old.remove(), 900); this.cardEl = null; }
     if (!o) return;
+    this.lastDescription = o.recap;
+    this.updateDescriptionButton();
     const el = document.createElement('div');
     el.className = 'chapter-card';
     el.innerHTML = `
@@ -545,8 +660,9 @@ export class UI {
         <div class="row">${o.buttons.map((b, i) => `<button data-b="${i}">${esc(b.label)}</button>`).join('')}</div>
         ${o.credits ? `<p class="credits">${esc(CREDITS)}</p>` : ''}
       </div>`;
-    el.querySelectorAll<HTMLButtonElement>('[data-b]').forEach((btn) => btn.addEventListener('click', () => o.buttons[+btn.dataset.b!].on()));
+    el.querySelectorAll<HTMLButtonElement>('[data-b]').forEach((btn) => btn.addEventListener('click', () => { this.readAloud?.stop(); o.buttons[+btn.dataset.b!].on(); }));
     this.root.appendChild(el);
+    this.readingControls(el.querySelector('.after')!, o.lines, 'Read description', 'ending-description');
     return el;
   }
 }

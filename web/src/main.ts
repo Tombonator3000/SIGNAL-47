@@ -26,7 +26,7 @@ import { TripRadio } from './story/tripRadio';
 import { NightCalls } from './core/calls';
 import { CB } from './core/cb';
 import { Roadside } from './core/roadside';
-import { areaMap, type MapView } from './ui/areaMap';
+import { areaMap, areaMapDescription, type MapView } from './ui/areaMap';
 import type { KitItem, PersonCard } from './ui/UI';
 import { portrait, portraitCount } from './core/portraits';
 import { glowScale } from './world/glow';
@@ -154,6 +154,7 @@ async function boot() {
   ui.readAloud = readAloud;
   audio.kinskiCalls = readAloud.enabled;
   ui.onReadingStart = () => audio.stopPhoneCalls();
+  audio.onPhoneCall = () => readAloud.stop();
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.setRadio(store.get('radioVol', 1));
@@ -408,6 +409,7 @@ async function boot() {
 
   type Mode = 'title' | 'play' | 'end';
   let mode: Mode = 'title';
+  ui.canDescribe = () => mode === 'play' && !game.cinematic && !audio.phonePlaying;
   let titleEl: HTMLElement | null = null;
   let endEl: HTMLElement | null = null;
   let pausedByMenu = false;
@@ -533,6 +535,8 @@ async function boot() {
       toggleLight();
     } else if (code === 'KeyR') {
       turnRadio();
+    } else if (code === 'KeyV') {
+      if (!game.cinematic) ui.readLastDescription();
     } else if (code === 'KeyC') {
       if (!ui.modal && !game.cinematic && !world.driving) ch1.toggleCamera();
     } else if (code === 'Space') {
@@ -777,6 +781,7 @@ async function boot() {
   }
   game.notebookExtras = () => ({
     map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
+    mapDescription: areaMapDescription({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
     kit: kitItems(),
     people: peopleItems(),
     touch: input.touchMode,

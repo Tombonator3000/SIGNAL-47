@@ -35,3 +35,7 @@ Base: main `bada636`. Bestilt direkte i samtalen 19. oktober. 328 ferdig generer
 ### 4. [x] Telefonstemmene som ferdig Kinski, direkte bestilt av Tom (`codex/kinski-read-aloud`)
 
 Videreføring av oppgave 3 fra `c3dd6b1`. 24 unike telefonreplikker, ni nye opptak. Automatisk avspilling ved svar/oppringing/telefonvalg, ekte bufferlengder, pause og ryddig avbrudd. Telefonmanuset følger leveransen. TypeScript, begge bygg, telefonprøver og pålagte spilltester PASS. Lokal commit uten push eller PR.
+
+### 5. [x] Alle fortellerbeskrivelser som Kinski, direkte bestilt av Tom (`codex/kinski-descriptions`)
+
+Base: main `95719a4`. Nærblikk etter 650 ms, gjenta med V eller mobilknapp, og leseknapper for synlig tekst i paneler, mottaker, notatbok, kart, bevisbord og frie bilder. 1555 ferdige klipp, med alle 337 tidligere MP3 bevart uendret. Dynamiske klokker og målinger settes sammen uten å miste tall eller ord. Beskrivelser 115/115 Pages og 116/116 offline, motor 55/55 og tekstkorpus 26/26; begge bygg, telefoner og full spillregresjon PASS. Se `production/kinski/descriptions-qa/README.md`. Tom har i samtalen autorisert innfletting og vanlig publisering til nettspillet.

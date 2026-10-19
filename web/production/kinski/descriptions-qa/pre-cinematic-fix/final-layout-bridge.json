@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "source_ts_count": 126,
+  "source_ts_unchanged_after_full_regression": true,
+  "final_change": "HUD description button CSS position only; final descriptions test adds desktop/mobile overlap checks and real touch playback.",
+  "final_descriptions_pages": "114/114 PASS",
+  "final_descriptions_single": "115/115 PASS",
+  "regression_payload": "regression-payload.json",
+  "final_payload": "../build-manifest.json"
+}

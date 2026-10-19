@@ -11,6 +11,86 @@ const FILES = import.meta.glob<string>('../assets/audio/kinski/*.mp3', { eager: 
 const catalog = JSON.parse(catalogSource) as Catalog;
 const clips = new Map(catalog.clips.map((clip) => [normalizeReadingText(clip.text), clip]));
 const MAX_BUFFERS = 4, MAX_BYTES = 32 * 1024 * 1024;
+const MAX_RESOLVED = 128;
+function initialCaseAlternative(text: string) {
+  const first = text[0] ?? '';
+  return (first === first.toUpperCase() ? first.toLowerCase() : first.toUpperCase()) + text.slice(1);
+}
+const indexed = new Map<string, { text: string; clip: Clip }[]>();
+for (const [text, clip] of clips) {
+  if (!text || !FILES[`../assets/audio/kinski/${clip.file}`]) continue;
+  // A clock-prefixed observation can also be stored without its clock. The
+  // leading sentence punctuation in its recorded fragment carries no words.
+  // Keep signs and hyphens: a recorded minus must never disappear this way.
+  const bases = new Set([text, text.replace(/^[\s.,;:!?]+/, '')].filter(Boolean));
+  // Album captions capitalize the first letter of their stored description.
+  // Preserve every other letter: US/us and AM/am are not interchangeable.
+  for (const key of new Set([...bases].flatMap((base) => {
+    const alternative = initialCaseAlternative(base);
+    return [base, ...(alternative !== base && !clips.has(alternative) ? [alternative] : [])];
+  }))) {
+    const list = indexed.get(key[0]) ?? [];
+    list.push({ text: key, clip }); indexed.set(key[0], list);
+  }
+}
+for (const list of indexed.values()) list.sort((a, b) => b.text.length - a.text.length);
+
+const SMALL = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const wordCharacter = (s: string) => /[\p{L}\p{N}_]/u.test(s);
+const insideWord = (text: string, at: number) => at > 0 && at < text.length && (
+  (wordCharacter(text[at - 1]) && wordCharacter(text[at])) ||
+  (/[’']/.test(text[at - 1]) && at > 1 && wordCharacter(text[at - 2]) && wordCharacter(text[at])) ||
+  (/[’']/.test(text[at]) && at + 1 < text.length && wordCharacter(text[at - 1]) && wordCharacter(text[at + 1]))
+);
+// Punctuation has no spoken content. Signs and hyphens are deliberately absent:
+// a missing minus in -39 LY must never turn into an apparently complete reading.
+const silentCharacter = (s: string) => /[\s.,;:!?"'“”‘’()[\]{}\/\\|…•]/u.test(s);
+
+function cardinal(value: number): string[] {
+  if (value < 20) return [SMALL[value]];
+  if (value < 100) return [TENS[Math.floor(value / 10)], ...(value % 10 ? cardinal(value % 10) : [])];
+  for (const [scale, name] of [[1000000, 'million'], [1000, 'thousand'], [100, 'hundred']] as const)
+    if (value >= scale) return [...cardinal(Math.floor(value / scale)), name, ...(value % scale ? cardinal(value % scale) : [])];
+  return [];
+}
+
+function integerWords(value: string): string[] {
+  // Leading zeroes in angles and reference numbers are meaningful, as are the
+  // individual digits of unusually large identifiers. Do not round either.
+  if ((value.length > 1 && value[0] === '0') || value.length > 9) return [...value].map((digit) => SMALL[Number(digit)]);
+  return cardinal(Number(value));
+}
+
+function numberWords(token: string): string[] {
+  if (token.includes(':')) return token.split(':').flatMap((part, i) => {
+    const value = Number(part);
+    // A clock reads 03:05 as "three zero five"; seconds use the same rule.
+    return i && value < 10 ? ['zero', ...cardinal(value)] : cardinal(value);
+  });
+  const sign = token[0] === '-' ? ['minus'] : token[0] === '+' ? ['plus'] : [];
+  const unsigned = token.replace(/^[+-]/, '').replace(/%$/, '').replace(/,/g, '');
+  const [whole, fraction] = unsigned.split('.');
+  return [...sign, ...integerWords(whole), ...(fraction === undefined ? [] : ['point', ...[...fraction].map((digit) => SMALL[Number(digit)])]), ...(token.endsWith('%') ? ['percent'] : [])];
+}
+
+function numericAt(text: string, at: number): { token: string; words: string[] } | null {
+  if (at && wordCharacter(text[at - 1])) return null;
+  const rest = text.slice(at);
+  const clock = /^\d{1,2}:\d{2}(?::\d{2})?(?![\p{L}\p{N}_])/u.exec(rest);
+  const number = clock ?? /^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?(?![\p{L}\p{N}_])/u.exec(rest);
+  if (!number) return null;
+  return { token: number[0], words: numberWords(number[0]) };
+}
+
+function identifierAt(text: string, at: number): { token: string; words: string[] } | null {
+  if (at && wordCharacter(text[at - 1])) return null;
+  const rest = text.slice(at);
+  const code = /^([A-Z]{1,3}|[a-z])-?(\d{1,3})([A-Za-z])?(?![\p{L}\p{N}_])/u.exec(rest);
+  if (code) return { token: code[0], words: [...code[1].toUpperCase(), ...integerWords(code[2]), ...(code[3] ? [code[3].toUpperCase()] : [])] };
+  const frame = /^(?:frame|FRAME)(\d{1,3})(?![\p{L}\p{N}_])/u.exec(rest);
+  return frame ? { token: frame[0], words: ['frame', ...integerWords(frame[1])] } : null;
+}
 
 export function normalizeReadingText(text: string) { return text.replace(/\s+/g, ' ').trim(); }
 
@@ -31,6 +111,7 @@ export class ReadAloud {
   private finishSource: (() => void) | null = null;
   private buffers = new Map<string, AudioBuffer>();
   private bufferBytes = 0;
+  private resolved = new Map<string, Clip[] | null>();
 
   constructor(private audio: AudioSys) {}
 
@@ -41,16 +122,60 @@ export class ReadAloud {
   get loading() { return this.currentState === 'loading'; }
 
   available(texts: string[]) { return this.resolve(texts) !== null; }
+  /** The actual recorded fragments, useful when checking a composed description. */
+  segments(texts: string[]): string[] | null { return this.resolve(texts)?.map((clip) => clip.text) ?? null; }
 
   private resolve(texts: string[]): Clip[] | null {
     if (!texts.length) return null;
     const result: Clip[] = [];
     for (const text of texts) {
-      const clip = clips.get(normalizeReadingText(text));
-      // A changed or missing line must not silently vanish from a document.
-      if (!clip || !FILES[`../assets/audio/kinski/${clip.file}`]) return null;
-      result.push(clip);
+      const sequence = this.resolveText(normalizeReadingText(text));
+      // A changed or missing word must not silently vanish from a description.
+      if (!sequence) return null;
+      result.push(...sequence);
     }
+    return result;
+  }
+
+  private resolveText(text: string): Clip[] | null {
+    if (!text) return null;
+    if (this.resolved.has(text)) return this.resolved.get(text)!;
+    const whole = clips.get(text) ?? clips.get(initialCaseAlternative(text));
+    let result: Clip[] | null = null;
+    if (whole && FILES[`../assets/audio/kinski/${whole.file}`]) result = [whole];
+    else {
+      // Work backwards so a long matching prefix cannot hide a shorter valid
+      // route. Links avoid recursion and keep long notebooks cheap to resolve.
+      const paths: ({ clips: Clip[]; next: number } | undefined)[] = new Array(text.length + 1);
+      paths[text.length] = { clips: [], next: text.length };
+      for (let at = text.length - 1; at >= 0; --at) {
+        for (const item of indexed.get(text[at]) ?? []) {
+          const end = at + item.text.length;
+          if (!paths[end] || !text.startsWith(item.text, at)) continue;
+          if (wordCharacter(item.text[0]) && insideWord(text, at)) continue;
+          if (wordCharacter(item.text[item.text.length - 1]) && insideWord(text, end)) continue;
+          paths[at] = { clips: [item.clip], next: end }; break;
+        }
+        if (paths[at]) continue;
+        const token = /[+\-\d]/.test(text[at]) ? numericAt(text, at)
+          : /[A-Za-z]/.test(text[at]) ? identifierAt(text, at) : null;
+        if (token) {
+          if (paths[at + token.token.length]) {
+            const spoken = token.words.map((word) => clips.get(word) ?? clips.get(initialCaseAlternative(word)));
+            if (spoken.every((clip) => clip && FILES[`../assets/audio/kinski/${clip.file}`]))
+              paths[at] = { clips: spoken as Clip[], next: at + token.token.length };
+          }
+        }
+        if (!paths[at] && silentCharacter(text[at]) && paths[at + 1]) paths[at] = { clips: [], next: at + 1 };
+      }
+      if (paths[0]) {
+        result = [];
+        for (let at = 0; at < text.length;) { const path = paths[at]!; result.push(...path.clips); at = path.next; }
+        if (!result.length) result = null;
+      }
+    }
+    if (this.resolved.size >= MAX_RESOLVED) this.resolved.delete(this.resolved.keys().next().value!);
+    this.resolved.set(text, result);
     return result;
   }
 

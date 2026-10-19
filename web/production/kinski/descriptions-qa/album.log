@@ -1,0 +1,106 @@
+PASS before the camera is had, C raises nothing
+PASS field camera collected
+PASS viewfinder: a free frame is ready, 36 left (FREE FRAME // 36 LEFT)
+   frame: "" / Control room / 43 kB / {"names": [], "odd": [], "mean": 51.76972324218759, "ms": 259, "lookMs": 0.699999988079071, "ghost": false}
+PASS in the control room the shutter takes a free frame
+PASS and no case frame
+PASS S-03 log read
+PASS on the apron the case frame has the shutter (ALIGN THE CENTRAL ANTENNA IN THE FRAME / 35 FREE FRAMES LEFT)
+PASS misaimed on the apron: refused, no free frame taken
+PASS S-03 framed from the apron
+PASS frame 01 exposed as before, and the album untouched
+   frame: "S-03 and the S-03 motor cabinet." / Service yard / 59 kB / {"names": ["S-03", "the S-03 motor cabinet"], "odd": [], "mean": 55.981112226566395, "ms": 40.599999994039536, "lookMs": 8.300000011920929, "ghost": false}
+PASS off the apron with frame 01 taken: a free frame (UNPROCESSED FILM // PHOTO LAB)
+PASS chapter two: the camera is had
+   frame: "The receivers and the antennas." / Control room / 50 kB / {"names": ["the receivers", "the antennas"], "odd": [], "mean": 41.28632851561786, "ms": 37.099999994039536, "lookMs": 8.399999976158142, "ghost": false}
+PASS control room: something named (The receivers and the antennas.)
+   frame: "S-03 and B-12." / Service yard / 58 kB / {"names": ["S-03", "B-12"], "odd": [], "mean": 48.928910820312616, "ms": 23.700000017881393, "lookMs": 5.100000023841858, "ghost": false}
+PASS the yard looking north: the antennas (S-03 and B-12.)
+PASS the truck is here
+   frame: "The truck." / Service yard / 54 kB / {"names": ["the truck"], "odd": [], "mean": 54.29935152344484, "ms": 159.30000001192093, "lookMs": 9.600000023841858, "ghost": false}
+PASS the truck from the yard, 14 m (The truck., Service yard)
+   frame: "Halley's comet, low in the south, and the Sierra Motor Court sign." / The highway south / 43 kB / {"names": ["Halley's comet, low in the south", "the Sierra Motor Court sign"], "odd": [], "mean": 23.185196562491406, "ms": 26.299999982118607, "lookMs": 5.199999988079071, "ghost": false}
+PASS the motel's sign down the highway (Halley's comet, low in the south, and the Sierra Motor Court sign., The highway south)
+PASS the cardboard alien is put somewhere out of the view
+PASS and it can be framed from the yard
+   frame: "The truck. The cardboard alien. Who keeps moving it?" / Service yard / 55 kB / {"names": ["the truck"], "odd": ["The cardboard alien. Who keeps moving it?"], "mean": 57.20201210937963, "ms": 42.60000002384186, "lookMs": 11.300000011920929, "ghost": false}
+PASS photographed: the cardboard alien gets its own line (The truck. The cardboard alien. Who keeps moving it?)
+PASS a glimpse 178 m off is only a speck on the print: no line for it
+   frame: "The antennas and R-07. Nobody was there when I took it." / Service yard / 57 kB / {"names": ["the antennas", "R-07"], "odd": ["Nobody was there when I took it."], "mean": 50.49172503906758, "ms": 33, "lookMs": 13.399999976158142, "ghost": true}
+PASS on the film only: "The antennas and R-07. Nobody was there when I took it." (placed: True)
+PASS and not there to the eye after the exposure
+PASS the recording stands where the time was lost
+   frame: "A ring of flattened grass, white with frost, and S-02. Nobody was there when I took it. Someone in a SARO jacket, standing out there. I was the only one on shift." / SARO grounds / 58 kB / {"names": ["a ring of flattened grass, white with frost", "S-02"], "odd": ["Nobody was there when I took it.", "Someone in a SARO jacket, standing out there. I was the only one on shift."], "mean": 71.33565855468517, "ms": 50.30000001192093, "lookMs": 8.300000011920929, "ghost": true}
+PASS photographed from 54 m: "A ring of flattened grass, white with frost, and S-02. Nobody was there when I took it. Someone in a SARO jacket, standing out there. I was the only one on shift."
+   frame: "A ring of flattened grass, white with frost, and the antennas. Someone in a SARO jacket, standing out there. I was the only one on shift." / SARO grounds / 55 kB / {"names": ["a ring of flattened grass, white with frost", "the antennas"], "odd": ["Someone in a SARO jacket, standing out there. I was the only one on shift."], "mean": 59.10555703124963, "ms": 24.19999998807907, "lookMs": 5.799999982118607, "ghost": false}
+PASS and the ring: "A ring of flattened grass, white with frost, and the antennas. Someone in a SARO jacket, standing out there. I was the only one on shift."
+PASS every free frame counts on the roll
+   frame: "S-03 and B-12." / Service yard / 58 kB / {"names": ["S-03", "B-12"], "odd": [], "mean": 51.62248574219028, "ms": 23.400000005960464, "lookMs": 5.4000000059604645, "ghost": false}
+   frame: "The antennas and B-12." / Service yard / 58 kB / {"names": ["the antennas", "B-12"], "odd": [], "mean": 52.29423148437876, "ms": 25, "lookMs": 7.700000017881393, "ghost": false}
+   frame: "The antennas and B-12." / Service yard / 57 kB / {"names": ["the antennas", "B-12"], "odd": [], "mean": 49.42035292969053, "ms": 23.400000005960464, "lookMs": 7.0999999940395355, "ghost": false}
+   frame: "The antennas and R-07." / Service yard / 55 kB / {"names": ["the antennas", "R-07"], "odd": [], "mean": 46.32126355468677, "ms": 30, "lookMs": 7.5999999940395355, "ghost": false}
+   frame: "The antennas." / Service yard / 54 kB / {"names": ["the antennas"], "odd": [], "mean": 45.44246886718062, "ms": 21.099999994039536, "lookMs": 4, "ghost": false}
+   frame: "The antennas." / Service yard / 52 kB / {"names": ["the antennas"], "odd": [], "mean": 43.38426812499914, "ms": 22.200000017881393, "lookMs": 4, "ghost": false}
+   frame: "The antennas." / Service yard / 50 kB / {"names": ["the antennas"], "odd": [], "mean": 40.586600156250256, "ms": 24.19999998807907, "lookMs": 6.4000000059604645, "ghost": false}
+   frame: "The RX consoles and the antennas." / Service yard / 50 kB / {"names": ["the RX consoles", "the antennas"], "odd": [], "mean": 39.30554562500139, "ms": 23, "lookMs": 6.5999999940395355, "ghost": false}
+   frame: "The RX consoles." / Service yard / 50 kB / {"names": ["the RX consoles"], "odd": [], "mean": 41.649526445311196, "ms": 27.099999994039536, "lookMs": 4.799999982118607, "ghost": false}
+   frame: "The RX consoles and the clock." / Service yard / 49 kB / {"names": ["the RX consoles", "the clock"], "odd": [], "mean": 46.33325343750023, "ms": 61.5, "lookMs": 11.700000017881393, "ghost": false}
+   frame: "The RX consoles and the clock." / Service yard / 48 kB / {"names": ["the RX consoles", "the clock"], "odd": [], "mean": 50.77458304687681, "ms": 40.19999998807907, "lookMs": 9.299999982118607, "ghost": false}
+   frame: "The RX consoles and the clock." / Service yard / 49 kB / {"names": ["the RX consoles", "the clock"], "odd": [], "mean": 53.47007613281611, "ms": 29.200000017881393, "lookMs": 11.900000005960464, "ghost": false}
+   frame: "The clock and the RX consoles." / Service yard / 49 kB / {"names": ["the clock", "the RX consoles"], "odd": [], "mean": 54.391770507808516, "ms": 25.400000005960464, "lookMs": 9.200000017881393, "ghost": false}
+   frame: "The clock and the RX consoles." / Service yard / 50 kB / {"names": ["the clock", "the RX consoles"], "odd": [], "mean": 54.21707570313297, "ms": 32.900000005960464, "lookMs": 9.199999988079071, "ghost": false}
+   frame: "The truck and the clock." / Service yard / 51 kB / {"names": ["the truck", "the clock"], "odd": [], "mean": 53.25235234375062, "ms": 30.19999998807907, "lookMs": 9.299999982118607, "ghost": false}
+   frame: "The truck and the clock." / Service yard / 52 kB / {"names": ["the truck", "the clock"], "odd": [], "mean": 51.20269023437472, "ms": 29.5, "lookMs": 11.199999988079071, "ghost": false}
+   frame: "The truck." / Service yard / 53 kB / {"names": ["the truck"], "odd": [], "mean": 47.476917617192406, "ms": 35.10000002384186, "lookMs": 12.5, "ghost": false}
+   frame: "The truck." / Service yard / 53 kB / {"names": ["the truck"], "odd": [], "mean": 45.60731593750501, "ms": 29.399999976158142, "lookMs": 10.5, "ghost": false}
+   frame: "The truck." / Service yard / 55 kB / {"names": ["the truck"], "odd": [], "mean": 46.55432347656954, "ms": 39.5, "lookMs": 12.5, "ghost": false}
+   frame: "The truck." / Service yard / 55 kB / {"names": ["the truck"], "odd": [], "mean": 50.05830425781979, "ms": 26.80000001192093, "lookMs": 8.099999994039536, "ghost": false}
+   frame: "The truck." / Service yard / 54 kB / {"names": ["the truck"], "odd": [], "mean": 54.2818710156311, "ms": 34.400000005960464, "lookMs": 8.400000005960464, "ghost": false}
+   frame: "The photo lab." / Service yard / 53 kB / {"names": ["the photo lab"], "odd": [], "mean": 57.26570179687885, "ms": 27.799999982118607, "lookMs": 4.5, "ghost": false}
+   frame: "The photo lab." / Service yard / 53 kB / {"names": ["the photo lab"], "odd": [], "mean": 61.37492769531962, "ms": 24.599999994039536, "lookMs": 2.5, "ghost": false}
+   frame: "The photo lab." / Service yard / 52 kB / {"names": ["the photo lab"], "odd": [], "mean": 65.92333589843584, "ms": 21.100000023841858, "lookMs": 4.100000023841858, "ghost": false}
+   frame: "The photo lab." / Service yard / 49 kB / {"names": ["the photo lab"], "odd": [], "mean": 65.09325894531825, "ms": 23, "lookMs": 4.100000023841858, "ghost": false}
+   frame: "The photo lab." / Service yard / 47 kB / {"names": ["the photo lab"], "odd": [], "mean": 61.879353945317746, "ms": 26.599999994039536, "lookMs": 5.5999999940395355, "ghost": false}
+   frame: "The photo lab." / Service yard / 47 kB / {"names": ["the photo lab"], "odd": [], "mean": 57.55117140624863, "ms": 19.899999976158142, "lookMs": 4, "ghost": false}
+   frame: "The photo lab." / Service yard / 47 kB / {"names": ["the photo lab"], "odd": [], "mean": 52.982534843752475, "ms": 20.400000005960464, "lookMs": 4, "ghost": false}
+PASS 36 free frames in a night (36)
+the last frames took 1.5 s in the software renderer
+PASS viewfinder: none left (NO FREE FRAMES LEFT)
+PASS the 37th: no film
+free frames: 36, 1881 kB as data URLs, 43.4 to 58.4 kB each, 640 px wide
+PASS 640 px wide ([640, 640, 640])
+PASS small enough to keep (58 kB at most)
+PASS the Photos tab is the album
+PASS the album shows the 36 free frames
+captions: ['The receivers and the antennas.Control room, 02:55', 'S-03 and B-12.Service yard, 02:55', 'The truck.Service yard, 02:55', "Halley's comet, low in the south, and the Sierra Motor Court sign.The highway south, 02:55"]
+PASS each print has a caption
+PASS a click opens the print big
+PASS the third print, big
+PASS the arrow key turns to the next print, the notebook stays
+PASS Escape puts the print back and leaves the album open
+PASS a click outside the print puts it back
+PASS the kit says so (0 case frames, 0 of 36 free frames left)
+PASS the save points at the 36 prints in IndexedDB
+PASS and stays small (7.4 kB)
+PASS a print is stored once, under its content key
+PASS 39 photographs in IndexedDB
+PASS a second save stores no print twice
+PASS Continue brings the album back, every print as it was (36)
+PASS with its captions and an empty roll
+PASS and in the notebook
+   frame: "The waitress and the driver." / Mesa Diner / 55 kB / {"names": ["the waitress", "the driver"], "odd": [], "mean": 73.32187183592949, "ms": 300, "lookMs": 29.200000017881393, "ghost": false}
+PASS inside the diner: "The waitress and the driver." (Mesa Diner)
+   frame: "The gas station and the church." / Caliche / 47 kB / {"names": ["the gas station", "the church"], "odd": [], "mean": 28.14782437497814, "ms": 111.09999999403954, "lookMs": 14.5, "ghost": false}
+PASS Caliche's street: "The gas station and the church." (Caliche)
+PASS a glimpse round Caliche can be framed at the edge of the view (('town-mast', 1, 50))
+   frame: "Earl at the microphone. Nobody was there when I took it." / Caliche / 45 kB / {"names": ["Earl at the microphone"], "odd": ["Nobody was there when I took it."], "mean": 25.450008476557812, "ms": 45, "lookMs": 15.5, "ghost": false}
+PASS the frame keeps it: "Earl at the microphone. Nobody was there when I took it."
+PASS the figure on screen did not notice the camera
+no console errors/warnings
+PASS phone: the Camera button is there
+PASS phone: the Camera button raises the camera
+PASS phone: a tap takes the free frame
+PASS phone: a tap opens the print big
+PASS phone: Back puts it back in the album
+no console errors/warnings
+59 of 59 PASS

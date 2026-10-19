@@ -1,0 +1,113 @@
+PASS chapter one: B opens the board before any photograph, without a finding to record
+PASS the installation sheet must be read in the photo lab, not taken from the board
+PASS a finding cannot be recorded with no supporting thread
+PASS a developed print needs its detail marked at the archive before it has comparison pins
+PASS reading the reference file lays out the chapter-one board instead of the old choices
+PASS R-07 contradicts the marked detail: the old reply, one mistake and a slack thread
+PASS two lines on the installation sheet do not make a finding or count as another wrong answer
+PASS the fourth chapter-one hint waits for two more misses after the third hint
+PASS after two more misses the fourth hint names the useful thread
+PASS P01 needs RECORD after tying the matching reference
+PASS RECORD calls the original B-12 match and opens the working hypothesis
+PASS the second-command hypothesis keeps its original rejection
+PASS a different testable hypothesis replaces the earlier draft thread and its note
+PASS Continue keeps the read sheet and the unrecorded hypothesis thread; it does not advance the story
+PASS RECORD calls the original encoder-drift hypothesis and releases the B-12 field test
+PASS a recorded working hypothesis and its thread cannot change later
+PASS reviewing an already recorded hypothesis keeps the original reply and does not add a mistake
+PASS FRAME 02 still has to be marked before its conclusion can be recorded
+PASS the active control gives the original lamp rejection
+PASS the two-command conclusion gives the original reply and counts once
+PASS P03 requires the direct control observation as well as the two prints
+PASS RECORD calls the original two-exposure finding; filing the report is still a separate action
+PASS the finding is in the journal and only once on the board, as P03
+PASS reviewing a recorded conclusion does not count another mistake
+PASS an old save without threads restores every finding and the actual encoder-drift hypothesis
+PASS without a board hook the original reference panel remains available
+PASS without a board hook the original two-exposure panel remains available
+PASS the notebook has a Board entry first in its row of tabs
+PASS Board opens the case board
+PASS the board is the case board, with P04 and P05 open
+PASS everything in the journal is on the board, with the archive records (12 cards)
+PASS the printout is the RX card; a record not found yet says where it is
+PASS each part of the night so far has its patch of cork (['NIGHT SHIFT', '1  THE SECOND EXPOSURE', '2  THE AMENDED RECORD'])
+PASS B opens the board from the game
+PASS and closes it
+PASS B in the notebook goes to the board
+PASS E07 lies on the board with its drawing and its lines
+PASS opened on the archive's patch at a readable size (scale 0.83)
+PASS a card follows the mouse (-145 board px for -120 screen px)
+PASS and its place is kept in the case
+PASS a paper from chapter one moves when dragged by its head
+PASS a thread pulled from the three references to the omitted sight line: C goes into P04
+PASS and stays on the board, red
+PASS a wrong thread falls slack with the Unity reply and counts ('The shared signature identifies the report. It doe', wrong 1, slack True)
+PASS two cards that say nothing about each other: a short reply, nothing counted
+PASS the retained mark and the development fault fill P04: RECORD
+PASS P04 recorded; the finding card has a pin of its own now
+PASS the finding is its question card, not a second card
+PASS a thread that answers nothing leaves a note on the board
+PASS ALL shows the whole board (scale 0.32)
+PASS the + button zooms in
+PASS ctrl and the wheel zoom too
+PASS dragging the cork moves the view
+PASS closed and opened again, the card lies where it was left
+PASS after Continue the cards lie where they were saved
+PASS and the threads and notes are back
+PASS chapter three: P06 to P09 are on the board
+PASS E09A is read; FRAME 03 and E10 say where they are
+PASS FRAME 03, exposed, lies on the board sealed until it is developed
+PASS P06: B is answered and counts
+PASS A on E09A tied to FRAME 03: P06 can be recorded
+PASS P06 recorded through the chapter's own rule
+PASS P07 is made at the lamp, not on the board
+PASS FRAME 04 against A: the Unity reply
+PASS FRAME 04 tied to the null test: P08 can be recorded
+PASS P08 recorded
+PASS P09: the relay line is answered with the Unity reply
+PASS the receiver tied to the same words in E10
+PASS P09 recorded: the field telephone will ring
+PASS P10 from the talk keeps both automatic threads, to the control print with line pins and the 1947 record
+PASS her correction, his letter, his card and the return line are on the board
+PASS P11: a development fault is answered from her own correction
+PASS her reason tied to P04, across the board
+PASS the deliberate interruption tied to the cut cable: P11 can be recorded
+PASS P11 recorded
+PASS P12: "he answered" is refused
+PASS the return line tied to the 1947 voice in E10
+PASS P12 recorded
+PASS back at her table she answers, and the last question is there
+PASS landscape: two finger taps reject R-07 on the chapter-one board
+PASS landscape: two taps and RECORD match B-12
+PASS landscape: a hypothesis is recorded by touch
+PASS landscape: the two-exposure finding is recorded by touch
+PASS landscape: the two-exposure question fits the phone width at readable scale
+PASS landscape: the board opens from the notebook at a readable size (scale 0.80)
+PASS landscape: the board fits the screen, nothing to scroll sideways
+PASS landscape: a line to tap is 70 px high
+PASS landscape: a tap chooses one end
+PASS landscape: a second tap ties the thread, and the note goes into P04
+PASS landscape: a finger on the cork moves the view
+PASS landscape: a card follows a finger (50 board px; under the finger:  in s03log)
+landscape pinch hit test: {"at": [422, 195.40625], "old": [{"tag": "DIV", "button": null, "card": null, "ok": true}, {"tag": "DIV", "button": null, "card": null, "ok": true}], "chosen": [{"tag": "DIV", "button": null, "card": null, "ok": true}, {"tag": "DIV", "button": null, "card": null, "ok": true}]}
+PASS landscape: both pinch fingers start on the board, clear of buttons
+PASS landscape: both native touches land on the cork ([{'tag': 'DIV', 'button': None, 'cork': True}, {'tag': 'DIV', 'button': None, 'cork': True}])
+PASS landscape: two fingers pinch the board smaller (0.80 to 0.27)
+PASS portrait: two finger taps reject R-07 on the chapter-one board
+PASS portrait: two taps and RECORD match B-12
+PASS portrait: a hypothesis is recorded by touch
+PASS portrait: the two-exposure finding is recorded by touch
+PASS portrait: the two-exposure question fits the phone width at readable scale
+PASS portrait: the board opens from the notebook at a readable size (scale 0.80)
+PASS portrait: the board fits the screen, nothing to scroll sideways
+PASS portrait: a line to tap is 70 px high
+PASS portrait: a tap chooses one end
+PASS portrait: a second tap ties the thread, and the note goes into P04
+PASS portrait: a finger on the cork moves the view
+PASS portrait: a card follows a finger (50 board px; under the finger:  in s03log)
+portrait pinch hit test: {"at": [195, 433.90625], "old": [{"tag": "DIV", "button": null, "card": null, "ok": true}, {"tag": "DIV", "button": null, "card": null, "ok": true}], "chosen": [{"tag": "DIV", "button": null, "card": null, "ok": true}, {"tag": "DIV", "button": null, "card": null, "ok": true}]}
+PASS portrait: both pinch fingers start on the board, clear of buttons
+PASS portrait: both native touches land on the cork ([{'tag': 'DIV', 'button': None, 'cork': True}, {'tag': 'DIV', 'button': None, 'cork': True}])
+PASS portrait: two fingers pinch the board smaller (0.80 to 0.27)
+no console errors/warnings
+109 of 109 PASS

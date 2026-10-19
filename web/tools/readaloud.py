@@ -208,7 +208,10 @@ async def main():
     clips = catalogue.get("clips", [])
     if not clips:
         raise AssertionError("Generate the prerecorded clip catalogue before running this browser check")
-    shortest = min(clips, key=lambda clip: clip["duration"])
+    # The expanded bank includes sub-second number/identifier pieces. Use a
+    # complete line above the trace's 0.5 s sound-effect exclusion for this
+    # natural-end queue check; short pieces are covered by descriptions.py.
+    shortest = min((clip for clip in clips if clip["duration"] >= 0.8), key=lambda clip: clip["duration"])
     stems = {Path(clip["file"]).stem for clip in clips}
 
     def reading_url(url):
@@ -361,7 +364,7 @@ async def main():
               .map(line => [...line.childNodes].filter(node => node.nodeType === Node.TEXT_NODE)
                 .map(node => node.textContent).join(''))""")
             supported = await page.evaluate("texts => S47.game.d.ui.readAloud.available(texts)", line_texts)
-            button = page.locator(".labpanel [data-a=narrate]")
+            button = page.locator(".labpanel .read-aloud[data-reading-kind=conversation] [data-a=narrate]")
             check(bool(line_texts) and await button.count() == 1 and await button.is_disabled() == (not supported),
                   "the real dialogue has one Read control matching its recording coverage")
             if supported:

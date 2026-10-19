@@ -1,0 +1,43 @@
+PASS S-03 from the end of the east walk, zoomed in: S-03. Az 026, el 32. Every dish in the array points the same way.
+PASS nothing to use on the antenna (None)
+PASS S-02 from the yard: S-02. Az 026, el 32. Every dish in the array points the same way.
+PASS without the zoom nothing is said under the crosshair
+PASS its azimuth in the text (az 26): S-03. Az 026, el 32. Every dish in the array points the same way.
+PASS the service yard sign: SERVICE YARD. AUTHORIZED PERSONNEL ONLY. The enamel has chipped away round the screws.
+PASS the site sign by the highway: SARO. SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. AUTHORIZED VEHICLES ONLY. NO VISITORS AFTER DARK. Sun-bleached on the side facing the highway.
+PASS the radio quiet zone: RADIO QUIET ZONE. NO TRANSMITTERS BEYOND THIS SIGN. The CB under the truck's dash is meant to stay off past here.
+PASS the speed limit sign down the shoulder: SPEED LIMIT 55. Pocked with birdshot along the bottom edge.
+PASS its hit area stands on the sign's posts (face 2.01, ground 0.11)
+PASS the shift log, close: Dale's shift log, open at tonight. His writing leans harder to the right as the page goes on. (use: logbook)
+PASS not read from 6.5 m off, through the wall (None)
+PASS halley: The comet over a desert, in a cheap frame. Somebody has pencilled in the night it came closest: April 11.
+PASS telex: The telex roll, curling off the machine and onto the floor.
+PASS excBinder: A grey ring binder, SOLVER EXCEPTIONS on the spine, fat with fan-fold.
+PASS crtLeft: The status terminal: one line for every dish, S-01 to S-27.
+PASS motel iceMachine: ICE. It rattles, and drops a load into the bin for nobody. (look:motel.iceMachine, use None)
+PASS motel car: A dusty sedan nosed in by the office, dew on the glass. It has not been driven tonight. (look:motel.car, use None)
+PASS motel officeDoor: OFFICE, in gold letters on the glass, half of them flaked away. A bell on the counter inside. (look:motel.officeDoor, use None)
+PASS motel pool: The pool behind its fence, closed for the season. Leaves turn slowly on the water. (look:motel.pool, use None)
+PASS the motel's sign from the shoulder: Sierra in red script, MOTOR COURT in cyan, a yellow star on top. CLEAN ROOMS. CABLE TV. VACANCY. The neon hums.
+PASS the flashlight flickers through the silence on the shoulder and stops after (0, 0.4, 0)
+PASS and while a figure stands at the edge of the view (True: 0.3, then 0)
+PASS the field camera, the first time: the keys (['Field camera. C to raise, Space to expose.'])
+PASS kept on the device (['camera'])
+PASS the first drive: the keys and where to stop (['You take the flashlight off the passenger seat. F switches it on.', 'W, S, A and D: drive. R: radio. Stop and press E to get out. On the highway, stop at the motel or the diner.'])
+PASS the flashlight: which key, the first time
+PASS the second drive says neither again ([])
+PASS all four kept (['camera', 'flashlight', 'drive', 'roam'])
+PASS H opens the notebook at Controls (['Keyboard and mouse', 'Phone and tablet'])
+PASS every control is on the page, desktop and phone
+PASS Tab closes it again
+PASS on a phone its own controls come first (['Phone and tablet', 'Keyboard and mouse'])
+PASS after a reload the camera's keys are not said again (['Field camera.'])
+PASS the flashlight is taken, without the key, and the drive says nothing about the keys (['You take the flashlight off the passenger seat.'])
+PASS chapter four: the office door, looked at and used (court:officeDoor, use court:officeDoor)
+PASS diner:sign: MESA DINER. One letter of the neon buzzes, goes out, and buzzes.
+PASS town:gasSign: GAS. DIESEL. The tubes in one side of the sign are dark.
+PASS town:letters: THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked.
+PASS town:payphone: A payphone on a post, a phone book on a chain with half its pages gone.
+PASS 98 texts by id, 52 hit areas only for a closer look
+PASS no console errors or warnings
+42 of 42 PASS

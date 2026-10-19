@@ -1,0 +1,40 @@
+[
+  {
+    "name": "readaloud-core",
+    "exit_code": 0,
+    "seconds": 0.45,
+    "command": [
+      "node",
+      "tools/readaloud-core.cjs",
+      "--corpus"
+    ]
+  },
+  {
+    "name": "phonecalls-core",
+    "exit_code": 0,
+    "seconds": 0.25,
+    "command": [
+      "node",
+      "tools/phonecalls-core.cjs"
+    ]
+  },
+  {
+    "name": "saves",
+    "exit_code": 0,
+    "seconds": 1.07,
+    "command": [
+      "node",
+      "tools/saves.cjs"
+    ]
+  },
+  {
+    "name": "steercheck",
+    "exit_code": 0,
+    "seconds": 0.15,
+    "command": [
+      "npm",
+      "run",
+      "steercheck"
+    ]
+  }
+]

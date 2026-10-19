@@ -1,0 +1,19 @@
+{
+  "checked_at_utc": "2026-10-19T12:09:07.960869+00:00",
+  "status": "PASS",
+  "branch": "codex/kinski-descriptions",
+  "base": "95719a408bf16b18341f717be914c04a4f0b2462",
+  "runtime_source_files": 2436,
+  "pages_files": 1765,
+  "single": {
+    "path": "dist-single/index.html",
+    "bytes": 92698822,
+    "sha256": "6eefe277b8df5f1ded283ca18aa3ce90ab6cc84055bc0dba09e658755c0b7a79"
+  },
+  "full_regression_matches_final_payload": true,
+  "description_checks": {
+    "pages": 115,
+    "single_strict_csp": 116
+  },
+  "physical_audio_and_similarity": "UNVERIFIED"
+}
