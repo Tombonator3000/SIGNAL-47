@@ -1,0 +1,277 @@
+{
+  "result": "PASS",
+  "utc": "2026-10-18T20:31:57.560170+00:00",
+  "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/index.html",
+  "checks": [
+    {
+      "check": "desktop: åtte dekodede 1920x1080-bilder",
+      "pass": true
+    },
+    {
+      "check": "desktop: HTTP 200",
+      "pass": true
+    },
+    {
+      "check": "desktop: ingen vannrett overflow",
+      "pass": true
+    },
+    {
+      "check": "desktop: kildepanelene kan åpnes uten overflow",
+      "pass": true
+    },
+    {
+      "check": "desktop: alle åtte figurer har beskrivende alternativtekst",
+      "pass": true
+    },
+    {
+      "check": "desktop: alle lenkene svarer HTTP 200",
+      "pass": true
+    },
+    {
+      "check": "mobile: åtte dekodede 1920x1080-bilder",
+      "pass": true
+    },
+    {
+      "check": "mobile: HTTP 200",
+      "pass": true
+    },
+    {
+      "check": "mobile: ingen vannrett overflow",
+      "pass": true
+    },
+    {
+      "check": "mobile: kildepanelene kan åpnes uten overflow",
+      "pass": true
+    },
+    {
+      "check": "mobile: alle åtte figurer har beskrivende alternativtekst",
+      "pass": true
+    },
+    {
+      "check": "mobile: alle lenkene svarer HTTP 200",
+      "pass": true
+    },
+    {
+      "check": "Ingen nettleserfeil eller mislykkede forespørsler",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "failed_requests": [],
+  "viewports": [
+    {
+      "label": "desktop",
+      "viewport": [
+        1360,
+        900
+      ],
+      "images": [
+        {
+          "file": "caliche_main_street.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "caliche_payphone.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "night_line_window.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "laundromat_radio.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "motel_office_tv.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "saro_peripheral_glimpse.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "station01_cut_cable.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "roswell_road_empty_truck.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        }
+      ],
+      "link_status": [
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/index.html",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/CONCEPT_NIGHT_DELIVERY.md",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/caliche_main_street.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/caliche_payphone.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/night_line_window.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/laundromat_radio.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/motel_office_tv.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/saro_peripheral_glimpse.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/station01_cut_cable.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/roswell_road_empty_truck.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/production/concepts_night_20261018/prompts.json",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/production/concepts_night_20261018/manifest.json",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "label": "mobile",
+      "viewport": [
+        390,
+        844
+      ],
+      "images": [
+        {
+          "file": "caliche_main_street.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "caliche_payphone.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "night_line_window.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "laundromat_radio.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "motel_office_tv.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "saro_peripheral_glimpse.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "station01_cut_cable.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        },
+        {
+          "file": "roswell_road_empty_truck.jpg",
+          "width": 1920,
+          "height": 1080,
+          "complete": true
+        }
+      ],
+      "link_status": [
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/index.html",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/CONCEPT_NIGHT_DELIVERY.md",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/caliche_main_street.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/caliche_payphone.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/night_line_window.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/laundromat_radio.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/motel_office_tv.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/saro_peripheral_glimpse.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/station01_cut_cable.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/concept/night_20261018/roswell_road_empty_truck.jpg",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/production/concepts_night_20261018/prompts.json",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:45807/src/assets/art/production/concepts_night_20261018/manifest.json",
+          "status": 200
+        }
+      ]
+    }
+  ]
+}

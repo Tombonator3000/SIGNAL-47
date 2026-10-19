@@ -1,0 +1,148 @@
+✓ 269 modules transformed.
+rendering chunks...
+[plugin vite:reporter]
+(!) /home/tom/Documents/Codex/2026-10-18-sjekk-repo-signal-47-og-sjekk/repo/web/src/world/Town.ts is dynamically imported by /home/tom/Documents/Codex/2026-10-18-sjekk-repo-signal-47-og-sjekk/repo/web/src/world/World.ts but also statically imported by /home/tom/Documents/Codex/2026-10-18-sjekk-repo-signal-47-og-sjekk/repo/web/src/story/townEvents.ts, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                        0.56 kB │ gzip:   0.34 kB
+dist/assets/step_wood0-B3gx4Wcz.mp3                    4.12 kB
+dist/assets/tex_cabinet_metal_r-DscFS6HP.jpg           4.24 kB
+dist/assets/step_gravel0-C9eKUmbo.mp3                  5.37 kB
+dist/assets/step_gravel2-BPO3dlBL.mp3                  5.37 kB
+dist/assets/step_gravel1-CSfERATN.mp3                  5.37 kB
+dist/assets/step_gravel3-vPjfYV6o.mp3                  5.37 kB
+dist/assets/step_gravel4-Hu4lAYs_.mp3                  5.37 kB
+dist/assets/door_metal-6X0tY0Io.mp3                    5.44 kB
+dist/assets/door_creak1-CT44ZwNE.mp3                   6.31 kB
+dist/assets/tex_floor_vinyl_r-xrMRtMnp.jpg             6.64 kB
+dist/assets/owl-BETgVC68.mp3                           6.96 kB
+dist/assets/dog0-DeJyp9TS.mp3                          7.82 kB
+dist/assets/door_creak0-CEX3jrk-.mp3                   7.82 kB
+dist/assets/tex_floor_checker_r-mAg2cp2D.jpg           9.82 kB
+dist/assets/printer-BgHr7nD5.mp3                      10.08 kB
+dist/assets/gust-zLVpP-yc.mp3                         10.20 kB
+dist/assets/tex_wall_panel_r-C3-rNGxj.jpg             10.63 kB
+dist/assets/tex_floorboards_r-CDUh6tkK.jpg            11.23 kB
+dist/assets/board_r07-CICTXAql.png                    11.57 kB
+dist/assets/tex_wall_paint_r-BLViXS8a.jpg             11.83 kB
+dist/assets/oswald-B-eyT0Dw.woff2                     12.70 kB
+dist/assets/sign_blank-CyyMIRp8.webp                  13.71 kB
+dist/assets/vane_b12-CYGxMpzR.png                     14.10 kB
+dist/assets/ceramic-CYs4Yg7c.mp3                      15.20 kB
+dist/assets/vt323-wDgJuOC9.woff2                      17.94 kB
+dist/assets/engine_off-i__fstPq.mp3                   19.48 kB
+dist/assets/tex_paper_card-q13FphZv.jpg               20.28 kB
+dist/assets/tex_floor_hextile_r-DtbVC4l7.jpg          26.62 kB
+dist/assets/map_field_yard-Cz9g6mYA.png               28.24 kB
+dist/assets/reeniebeanie-4a-HEdeI.woff2               28.51 kB
+dist/assets/tex_asphalt_wet_r-CCSFxFuI.jpg            28.52 kB
+dist/assets/window_night_dark-B52ukejP.jpg            29.73 kB
+dist/assets/crickets-zTn1i0Rh.mp3                     33.64 kB
+dist/assets/engine_start-BW7g6Ukq.mp3                 35.99 kB
+dist/assets/alien_radio-fVb_ud11.mp3                  38.63 kB
+dist/assets/alien_calls-deZqduAB.mp3                  39.91 kB
+dist/assets/witness_post-CTmSOVMS.webp                40.10 kB
+dist/assets/window_night_lit-Djh81JOY.jpg             40.34 kB
+dist/assets/alien_temple-_U_SlL-Z.mp3                 41.19 kB
+dist/assets/label_s03_procedure-CXX065Te.webp         41.61 kB
+dist/assets/menu_board_blank-Dnkja3rn.webp            42.78 kB
+dist/assets/tex_counter_laminate-DvSDkrC9.jpg         42.96 kB
+dist/assets/alien_song-CgOPUpsv.mp3                   44.11 kB
+dist/assets/milepost_blank-B2zpNxgt.webp              47.26 kB
+dist/assets/phone_ring-DMWhUlYR.mp3                   48.11 kB
+dist/assets/floor_paint_frame-C-gc6eSh.webp           49.27 kB
+dist/assets/alien_voice-MobmAQuk.mp3                  51.43 kB
+dist/assets/specialelite-YjDd9tmf.woff2               53.30 kB
+dist/assets/tex_wall_panel_n-CId8-MON.png             53.30 kB
+dist/assets/tex_booth_vinyl-CcNW0ZEv.jpg              54.80 kB
+dist/assets/sign_diner_blank-CbozwhkI.webp            54.94 kB
+dist/assets/vending_front-CAwnFsox.webp               58.09 kB
+dist/assets/portrait_ward-D2l8J3Gp.jpg                64.04 kB
+dist/assets/tex_floor_checker_n-Di8Ab2sJ.png          66.04 kB
+dist/assets/door_room_blank-Cy3ddAvZ.jpg              66.84 kB
+dist/assets/tex_floor_vinyl_n-CBVwK6wt.png            67.07 kB
+dist/assets/portrait_deputy-CnMvnoqZ.jpg              67.93 kB
+dist/assets/portrait_attendant-BqwPZA26.jpg           70.36 kB
+dist/assets/tex_ceiling_tile-CWNRSV5r.jpg             71.38 kB
+dist/assets/tex_counter_laminate_n-D17LUPa1.png       72.71 kB
+dist/assets/portrait_dale-DFXFc7V1.jpg                74.19 kB
+dist/assets/portrait_driver-C7WXCD6A.jpg              75.18 kB
+dist/assets/tex_floorboards_n-CIIgUJVZ.png            75.87 kB
+dist/assets/tex_cabinet_metal_n-GgGDMWd8.png          76.12 kB
+dist/assets/portrait_host-J60pI7FS.jpg                77.05 kB
+dist/assets/portrait_waitress-4il1eISU.jpg            77.69 kB
+dist/assets/tex_desk_laminate_n-CXUGldRV.png          88.30 kB
+dist/assets/portrait_nora-Cts39Y_o.jpg                88.80 kB
+dist/assets/portrait_tomas_1947-BtYRMBOl.jpg          89.00 kB
+dist/assets/portrait_souvenir_man-6sWI1gfd.jpg        90.18 kB
+dist/assets/tex_booth_vinyl_n-C1z1b_TW.png            90.98 kB
+dist/assets/portrait_radio_woman-BEUPJBIL.jpg         92.72 kB
+dist/assets/sign_service_yard-Bt58Evbl.webp           95.91 kB
+dist/assets/tex_floor_hextile_n-CE66BKqA.png          99.93 kB
+dist/assets/survey_disk_brass-DYzUypCw.webp          100.68 kB
+dist/assets/alien_horn-bslZOIE2.mp3                  100.80 kB
+dist/assets/tex_floor_vinyl-Bmk3Rduj.jpg             111.44 kB
+dist/assets/tex_wood_weathered_n-B18u7Kxx.png        113.90 kB
+dist/assets/wind-DS2ae9tG.mp3                        116.73 kB
+dist/assets/fanfold_1986-CKBUJAi7.jpg                117.85 kB
+dist/assets/card_field_1947-Bvek_jv1.jpg             120.14 kB
+dist/assets/tex_desk_laminate-CkaoLgea.jpg           124.28 kB
+dist/assets/logo_saro-Bgp4ZRdW.webp                  130.86 kB
+dist/assets/tex_cabinet_metal-c_i-ed8n.jpg           143.28 kB
+dist/assets/flash_face-BXLWF5x8.jpg                  152.28 kB
+dist/assets/flash_hand-BCaKaFtc.jpg                  153.38 kB
+dist/assets/tex_floor_hextile-BoUw-Xpl.jpg           155.67 kB
+dist/assets/tex_wall_paint-BCbWdE2K.jpg              168.72 kB
+dist/assets/flash_eye-CnQI41Kk.jpg                   170.48 kB
+dist/assets/poster_listen-DzQ_TlJ3.webp              174.34 kB
+dist/assets/flash_man-CVaeroS9.jpg                   176.59 kB
+dist/assets/tex_wall_panel-B0fQtxCJ.jpg              180.54 kB
+dist/assets/tex_wall_paint_n-DR981Rmg.png            186.52 kB
+dist/assets/engine_idle-uaMMZutL.wav                 196.32 kB
+dist/assets/poster_saro-B6TgLO2l.webp                196.68 kB
+dist/assets/engine_drive-B__yRml8.wav                207.35 kB
+dist/assets/fanfold_1947-CbQ10OPM.jpg                220.59 kB
+dist/assets/tex_motel_wall_n-B_hsowhK.png            223.67 kB
+dist/assets/sign_sierra_on-q35jqmeR.webp             239.03 kB
+dist/assets/tex_stucco_wall_n-CJL1EjXG.png           247.93 kB
+dist/assets/letter_paper_1947-Be-t0ZQz.jpg           257.52 kB
+dist/assets/tex_floorboards-C_qdI9wr.jpg             265.96 kB
+dist/assets/tex_floor_checker-C9bLCg-f.jpg           271.87 kB
+dist/assets/tex_ceiling_tile_n-Bd5_GkWn.png          271.97 kB
+dist/assets/poster_halley_1986_blank-BulfB6Jq.jpg    293.05 kB
+dist/assets/tex_wood_weathered-1SeYm1Fb.jpg          302.86 kB
+dist/assets/tex_concrete_n-BhwIuZFL.png              304.13 kB
+dist/assets/tex_asphalt_wet_n-DxygEAbz.png           304.16 kB
+dist/assets/tex_asphalt_wet-CdDTEnd8.jpg             305.61 kB
+dist/assets/tex_concrete-qlyt9Rj6.jpg                309.80 kB
+dist/assets/tex_stucco_wall-CUpJbC2E.jpg             315.15 kB
+dist/assets/tex_concrete_old-B76ESOkU.jpg            335.15 kB
+dist/assets/map_new_mexico-B4JTsLo6.webp             351.50 kB
+dist/assets/tex_concrete_old_n-Bt7NrDhz.png          368.24 kB
+dist/assets/sky_milkyway_equirect-D58-EjC9.jpg       370.45 kB
+dist/assets/tex_desert_ground-B41f7Cix.jpg           372.46 kB
+dist/assets/tex_desert_ground_n-BlAL6URD.png         407.25 kB
+dist/assets/tex_motel_wall-BouN_T1t.jpg              407.77 kB
+dist/assets/tex_gravel_track_n-_GY62XKc.png          408.66 kB
+dist/assets/tex_gravel_track-DGTXnbs_.jpg            419.12 kB
+dist/assets/title_music-DikIeeOZ.mp3                 450.66 kB
+dist/assets/tex_oldroad_asphalt-CdVKSr_E.jpg         465.30 kB
+dist/assets/tex_oldroad_macro-CiWulVUz.jpg           844.77 kB
+dist/assets/photo_1947_master-D5rxXEH7.jpg         1,105.63 kB
+dist/assets/index-ikuWEwi5.css                        51.19 kB │ gzip:  11.82 kB
+dist/assets/corridors-CxVgvsnQ.js                      1.99 kB │ gzip:   0.99 kB
+dist/assets/RoadArea-Cv6YOaRi.js                       4.52 kB │ gzip:   2.14 kB
+dist/assets/oldRoadTextures-CEY-gocS.js                5.27 kB │ gzip:   2.08 kB
+dist/assets/legs-BR6xMSVR.js                           6.23 kB │ gzip:   2.91 kB
+dist/assets/Drive-BS0qCLhv.js                          6.82 kB │ gzip:   2.84 kB
+dist/assets/roadPlaces-aDIw31Se.js                     7.27 kB │ gzip:   3.64 kB
+dist/assets/engineSound-DCQ30kAS.js                   10.00 kB │ gzip:   3.24 kB
+dist/assets/Room6-BMFSMiCr.js                         14.21 kB │ gzip:   5.64 kB
+dist/assets/roadProps-DpoD-UmG.js                     14.95 kB │ gzip:   6.40 kB
+dist/assets/Diner-Ds_bbsge.js                         19.24 kB │ gzip:   7.74 kB
+dist/assets/OldRoad-D6JhWqkh.js                       28.21 kB │ gzip:  12.55 kB
+dist/assets/Truck-DCDew8xP.js                         35.86 kB │ gzip:  13.13 kB
+dist/assets/Station01-EnWTTRpZ.js                     62.15 kB │ gzip:  23.32 kB
+dist/assets/three-D6H18a68.js                        739.43 kB │ gzip: 189.52 kB
+dist/assets/index-CoiQfnhS.js                        781.24 kB │ gzip: 282.92 kB
+✓ built in 3.37s

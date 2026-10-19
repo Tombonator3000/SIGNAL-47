@@ -1,5 +1,7 @@
 # SIGNAL / 47 — aktuell overlevering
 
+Eldre designleveranse fra 11. september 2026, flettet inn 19. oktober: [Konsept11, Den slettede natten](CONCEPT_11.md), med åtte genererte bilder i `VisualTargets/Concept11/`, forslag til rammehistorie, nattehimmel og undersøkbare himmellys.
+
 ## Lokalt Voices of the Void-analyseoppsett, 5. oktober 2026
 
 Tom ba om å klargjøre Voices of the Void for undersøkelse i SIGNAL / 47-repoet. [PR #62](https://github.com/Tombonator3000/SIGNAL-47/pull/62) leverer egne verktøy, verktøypinner, dokumentasjon og metadata under [`Docs/Research/VoicesOfTheVoid/`](Research/VoicesOfTheVoid/README.md). PR-en er **åpen, ikke flettet** ved denne oppfølgingen. Ingen runtime-kode, grafikk, Unity-filer eller spillkonstanter er endret. Nettversjonens gjeldende status finnes i `web/README.md`, `web/memory.md`, `web/todo.md` og `web/log.md`; main `551555e` har All Night fra PR #61. Eldre kapittelstatus nedenfor er historikk.

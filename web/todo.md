@@ -261,6 +261,8 @@ Kapittel 4 trenger først at spilleren kan gå fra SARO til motellet. I dag er S
 
 ## Grafikk fra ChatGPT (se ART_BRIEF.md)
 
+- [x] Åtte nye konseptbilder etter Toms bestilling 18. oktober: Caliche og nattens personer, motell-TV-en, antennefeltet, STATION 01 og Roswell-veien. Se `CONCEPT_NIGHT_DELIVERY.md` og `src/assets/art/concept/night_20261018/index.html`. Konseptene er visuell retning, ikke nye runtimeassets.
+
 28 bilder er i spillet fra 4. oktober: 16 fra PR #30, de seks fra runde 3 i PR #31 og de seks fra rundene 4 og 5 i PR #34. 24 lastes ved start; de fire til STATION 01 lastes når stasjonen bygges. Se `ART_DELIVERY.md`, `ART_ROUND45_DELIVERY.md`, `CLAUDE_HANDOFF.md` og loggen.
 
 - [ ] Gulvets heksagonfuger: fjern den lille registreringsfeilen i vanlig vertikal repeat. Speiling ble vurdert og forkastet fordi den lager smale romber.

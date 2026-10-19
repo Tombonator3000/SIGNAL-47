@@ -1,0 +1,188 @@
+{
+  "base_commit": "f019dd6bddad44fe45d4c5b1fbfc2d7f06095412",
+  "tool": "image_gen.imagegen",
+  "generator_model": "not exposed",
+  "export": "Pillow; Lanczos til 1920x1080; JPEG 90, subsampling 0; frosset sRGB-profil",
+  "concepts_only": true,
+  "assets": [
+    {
+      "id": "01",
+      "file": "concept/night_20261018/caliche_main_street.jpg",
+      "title": "Caliche, litt over tre",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/01_caliche_main_street_r0.png",
+      "source_sha256": "a3f366aef73b41353f1ad145ae21450a091e37b6811152c4af0ccb5740d5ae97",
+      "sha256": "cbb9928b80a8a6b559197bb6157da5da6e7b4751ba59ffb9ac5584893c36ffc5",
+      "bytes": 430790,
+      "selected_revision": 0,
+      "sources": [
+        "web/HENDELSER.md, del 9",
+        "web/src/world/Town.ts, plasseringene langs gata"
+      ]
+    },
+    {
+      "id": "02",
+      "file": "concept/night_20261018/caliche_payphone.jpg",
+      "title": "Telefonen ved nattluka",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/02_caliche_payphone_r0.png",
+      "source_sha256": "75d4bce13738f64fd5f7cf089d261a1a9100aa743459f232504fd218c44b9db6",
+      "sha256": "227d0eebbb96e238d970a46de934ab7d81c4086b85ddd44a3f8461f2dde58c80",
+      "bytes": 564036,
+      "selected_revision": 0,
+      "sources": [
+        "web/HENDELSER.md, hendelse 1 og 5",
+        "web/src/story/caliche.ts"
+      ]
+    },
+    {
+      "id": "03",
+      "file": "concept/night_20261018/night_line_window.jpg",
+      "title": "Night Line, den døde linja",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/03_night_line_window_r0.png",
+      "source_sha256": "864e343645f393e2352e0f7fe93a9731eb4e694d4209fbd49fac947164e7c1bc",
+      "sha256": "725cd6d0082558db01f4946afa56e64942facf994cbb9de2dc9c22c6d2b3d84c",
+      "bytes": 391065,
+      "selected_revision": 0,
+      "sources": [
+        "web/HENDELSER.md, hendelse 9 og del 9",
+        "web/src/core/radio.ts, BOY_CALL"
+      ]
+    },
+    {
+      "id": "04",
+      "file": "concept/night_20261018/laundromat_radio.jpg",
+      "title": "Kvinnen utenfor vaskeriet",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/04_laundromat_radio_r0.png",
+      "source_sha256": "a6b9792d2be8e549d4b5c359acbf5ab97823f45f96abbf4d01d5450c7186a08e",
+      "sha256": "d6f83b9ce522549390df1fd4e4062526a00afa627391727c44cb8f27ab49cab5",
+      "bytes": 479929,
+      "selected_revision": 0,
+      "sources": [
+        "web/HENDELSER.md, del 9, kvinnen på benken",
+        "web/src/story/caliche.ts, kvinnen"
+      ]
+    },
+    {
+      "id": "05",
+      "file": "concept/night_20261018/motel_office_tv.jpg",
+      "title": "Bildet på motell-TV-en",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/05_motel_office_tv_r1.png",
+      "source_sha256": "80b526a891cc785e2f78d5d2ec422003402ebe3df6cb71261e41d3f3daca0e65",
+      "sha256": "07700665db4ce47d3e0175c749a02c2e61fa17cef6229c5464d6c45aa5e47c3c",
+      "bytes": 376574,
+      "selected_revision": 1,
+      "sources": [
+        "web/HENDELSER.md, hendelse 10",
+        "web/src/world/MotelFront.ts",
+        "web/ART_BRIEF.md, runde 15, motell-TV"
+      ]
+    },
+    {
+      "id": "06",
+      "file": "concept/night_20261018/saro_peripheral_glimpse.jpg",
+      "title": "Mellom antennene",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/06_saro_peripheral_glimpse_r0.png",
+      "source_sha256": "2bf5b633e66256568fe6faed7988f54ff4ed42f457065f4207baebebe09c6aee",
+      "sha256": "d59940b42ef25ef449a4568c7309102f46d9e8c291849a612e94f963e1f93a14",
+      "bytes": 477256,
+      "selected_revision": 0,
+      "sources": [
+        "web/HENDELSER.md, del 7",
+        "web/memory.md, 27 antenner og az 026",
+        "web/src/core/glimpses.ts"
+      ]
+    },
+    {
+      "id": "07",
+      "file": "concept/night_20261018/station01_cut_cable.jpg",
+      "title": "Kabelen på STATION 01",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/07_station01_cut_cable_r1.png",
+      "source_sha256": "95e65393f8118dac198d09e3b1ea72aac696ab7525f096619ee4731b63f64151",
+      "sha256": "acbb107176c1d690b1b8da373e349303df07d04683ce1183e93139c604a94f40",
+      "bytes": 464020,
+      "selected_revision": 1,
+      "sources": [
+        "web/HISTORIE.md, The Survey Station og forfatterfasit",
+        "web/src/world/Station01.ts"
+      ]
+    },
+    {
+      "id": "08",
+      "file": "concept/night_20261018/roswell_road_empty_truck.jpg",
+      "title": "Roswell-veien, 05:29:47",
+      "size": [
+        1920,
+        1080
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "source": "sources/08_roswell_road_empty_truck_r1.png",
+      "source_sha256": "641219dad73f3272019a35fcf082cdffb1db5428cb41b25fd3c9b25b117911f3",
+      "sha256": "e33d74d990a344de7870b11c4252a50815067be96255ae782080bc606ce41746",
+      "bytes": 397255,
+      "selected_revision": 1,
+      "sources": [
+        "web/HISTORIE.md, THE EVENT og uttrekket",
+        "web/KAPITLER.md, Roswell Road, kurs og uttrekk"
+      ]
+    }
+  ],
+  "attempts": 11
+}
