@@ -966,7 +966,7 @@ export class NightLife {
 
   // ---------- dust in the beams ----------
   private beams(dt: number, o: LifeIn, on: boolean, low: boolean) {
-    const F = this.flash, u = F.u, L = o.flash, k = L ? L.intensity / 40 : 0;
+    const F = this.flash, u = F.u, L = o.flash, k = L ? L.intensity / (L.userData.full ?? 40) : 0;
     F.points.visible = on && k > 0.01;
     if (F.points.visible && L) {
       const cam = o.cam.position, f = o.cam.getWorldDirection(this._f);
@@ -977,7 +977,9 @@ export class NightLife {
       u.uBeamPos.value[0].copy(L.position);
       u.uBeamDir.value[0].subVectors(L.target.position, L.position).normalize();
       u.uBeamK.value[0] = k; u.uBeamK.value[1] = 0;
-      u.uCos.value.set(Math.cos(L.angle), Math.cos(L.angle * (1 - L.penumbra)));
+      // (the flashlight's beam inside its cookie's corona, core/Flashlight.ts)
+      const cone = (L.userData.cone as [number, number] | undefined) ?? [L.angle, L.angle * (1 - L.penumbra)];
+      u.uCos.value.set(Math.cos(cone[0]), Math.cos(cone[1]));
       u.uFall.value = 0.12; u.uSize.value = 0.02; u.uHead.value = 0; u.uNear.value = 0.8;
       // out in the open a breeze carries it (and a few gnats); indoors it hangs in the air
       if (o.out) { F.drift(dt, _v.copy(WIND).multiplyScalar(0.35)); u.uWobble.value = 0.05; u.uDensity.value = 0.75; }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { box, cyl, rod, plane, noMerge, floodlit, floodSet, type FloodSet } from '../world/kit';
+import { box, cyl, rod, plane, noMerge, floodlit, floodSet, headSlots, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import {
   DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
@@ -699,6 +699,10 @@ export class Truck {
     this.driving = on;
     this.cab.visible = on;
     this.shell.visible = !on;
+    // from the driver's seat the lamps face away: their glows (screen-facing discs at the lamps)
+    // only poked over the hood as two bright half-ovals on the road (Ultra, the art director,
+    // 19 October); the light on the road is the pools' (kit.ts)
+    this.glow.points.visible = !on;
   }
   /** The camera has left the driver's seat (a cut, chapter six's pull-out): the whole truck
    *  again. World calls it each frame before the picture is drawn; the wheels' onBeforeRender
@@ -764,7 +768,9 @@ export class Truck {
   /** Use these slots of a flood set as headlight pools on the ground (moved in update()). */
   headlightFloods(set: FloodSet, slots: number[]) {
     this.flood = { set, slots: slots.slice(0, FLOODS.length) };
-    for (const i of this.flood.slots) set.skip.add(i);   // they move with the truck: never a fixed real light
+    // drawn through the sealed beams' pattern (kit.headSlots), and they move with the truck:
+    // never a fixed real light
+    headSlots(set, this.flood.slots);
     this.placeFloods();
   }
   /** How far each wheel hangs below its place on the body (fl, fr, rl, rr), in metres: the
