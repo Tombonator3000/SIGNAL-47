@@ -178,9 +178,9 @@ async def main():
         await pg.screenshot(path=f'{OUT}/phone_0503_ringing.png', animations='disabled')
         n0 = await ev("S47.game.notes.filter(n=>n.includes('Payphone, Main Street, Caliche, again')).length")
         await ev("""window.phoneAudio=[]; window.phonePlay=S47.audio.play;
-          S47.audio.play=function(name,opts){const h=phonePlay.call(this,name,opts);if(h){const stop=h.src.stop.bind(h.src);h.src.stop=(...args)=>{h.stoppedByGame=true;return stop(...args);};phoneAudio.push({name,h});}return h;};""")
+          S47.audio.play=function(name,opts){const h=phonePlay.call(this,name,opts);if(h){const stop=h.src.stop.bind(h.src);h.src.stop=(...args)=>{h.stoppedByGame=true;return stop(...args);};phoneAudio.push({name,h});}return h;};0""")
         await use('town:payphone')
-        await ev('S47.audio.play=phonePlay')
+        await ev('S47.audio.play=phonePlay;0')
         check(await ev("phoneAudio.filter(x=>x.name==='engineStart'||x.name==='engineOff').length===3 && phoneAudio.filter(x=>x.name==='click').length===11"), 'the return call schedules real engine recordings and all four-plus-seven relay clicks')
         await tick(10)
         check(await ev("S47.townEvents.now==='line'&&!S47.townSeen.has('ev:phone2')"), 'the partial return call has not yet awarded its finding')
