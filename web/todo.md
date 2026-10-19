@@ -14,6 +14,8 @@ Prioritert. Flytt ferdige punkter til log.md.
 
 ## Fra Tom 19. oktober kveld
 
+- [ ] **Art Bell også når man snakker med Earl i byen.** Samme profil og lagrede valg som radioverten, 16 eksisterende EARL-replikker og alle samtalevalg. Automatisk avspilling, replay/stopp, tydelig prioritet og avbrudd. Radioverten beholdes. Se `ART_BELL_RADIO.md` og `production/artbell-town/`.
+
 - [x] **Lyd til radioinnslaget fra 1947.** De seks eksisterende nyhetslinjene er innspilt med en fiktiv nyhetsleser. Sendingen varer 47 faktiske lydsekunder med naturlig talehastighet, pauser og retur til samme sample i det avbrutte programmet. Bare full lytting gir notatet. ABC/Roswell og Universal/Ed Herlihy er dokumenterte stilreferanser; ingen arkivlyd følger spillet. Se `RADIO_CAST.md` og `production/radiocast/qa/validation.json`.
 - [x] **Stemmer til radioens innringere.** Alle 22 unike replikker er ferdige: kvinne 8, mann 8, eldre 3 og gutt 3. Voksenreferanser fra Kyutais CC0-donasjoner Selfie, Butter og oldNerd; gutten er fiktivt stemmedesign. Sammen med nyhetene: 28 kontrollerte MP3. Eget lagret valg, standard På, uavhengig av Art Bell og Kinski. Alle tidligere profiler, 1670 MP3 og to kataloger er bevart. Menneskelig lytting og rolleklang er UNVERIFIED; se `RADIO_CAST.md`.
 - [ ] **Gå ut av bilen ved kuene, den forlatte bilen i veikanten og radiomastene.** Tom kom ikke ut der: på riksveien slipper `World.canGetOut()` bare ut ved dineren og i Caliche, og egne turer (`trip.free`) aldri. Under arbeid på grenen `getout-fix` (egen worktree), med `tools/getout.py`.
@@ -189,7 +191,7 @@ Status 5. oktober natt: PR #34, #35, #39, #45, #51 (runde 9), #54 (runde 10), #5
 
 Levert i PR #59 (`2791a7c`) og tatt inn i testrekka: exit 0 på main.
 
-PR #57 er tatt inn. Det eneste ekte spillfunnet (sidene av motellinnkjørselen kunne gås av og på, 0,14 til 0,44 m) er rettet med kantstein og kolliderere i `Crossing.ts`; ny kjøring gir 0 gulvhopp. Det som står igjen som FAIL, er ikke feil i spillet: 
+PR #57 er tatt inn. Det eneste ekte spillfunnet (sidene av motellinnkjørselen kunne gås av og på, 0,14 til 0,44 m) er rettet med kantstein og kolliderere i `Crossing.ts`; ny kjøring gir 0 gulvhopp. Det som står igjen som FAIL, er ikke feil i spillet:
 
 - Bestillingen min ba om sirkelklarering, men `Player.resolve` bruker en firkant rundt spilleren. Det var min feil. Bruk motorens firkant (samme regel som `Player.resolve`) når et punkt er gyldig, så forsvinner de rundt 339 hjørnepunktene.
 - De tre lommene er kjente og ufarlige: bak B-12-skiltet ved enden av østgangen (x 8,4 til 10,65, z -19,2 til -17,55), et hjørne ved stasjonshytta (x -12,6 til -12,3, z 8002,65 til 8003,1) og nordhjørnet inne i dineren (lokalt x -0,4 til 1,4, z -8,4 til -7,65). Før dem som forventet med koordinater og grunn, slik at en ny lomme et annet sted gir FAIL.

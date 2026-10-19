@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { UI } from './ui/UI';
 import { AudioSys, type Surface } from './core/Audio';
 import { ReadAloud } from './core/readAloud';
+import { EarlDialogue } from './core/earlDialogue';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
@@ -161,9 +162,13 @@ async function boot() {
   const readAloud = new ReadAloud(audio);
   readAloud.enabled = store.get<boolean>('kinskiReadAloud', false) === true;
   ui.readAloud = readAloud;
+  const earlDialogue = new EarlDialogue(audio);
+  earlDialogue.enabled = store.get<boolean>('artBellRadioHost', true) === true;
+  ui.earlDialogue = earlDialogue;
   audio.kinskiCalls = readAloud.enabled;
-  ui.onReadingStart = () => audio.stopPhoneCalls();
-  audio.onPhoneCall = () => readAloud.stop();
+  ui.onReadingStart = () => { earlDialogue.stop(); audio.stopPhoneCalls(); };
+  ui.onEarlStart = () => { readAloud.stop(); audio.stopPhoneCalls(); };
+  audio.onPhoneCall = () => { readAloud.stop(); earlDialogue.stop(); };
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.setRadio(store.get('radioVol', 1));
@@ -473,7 +478,7 @@ async function boot() {
   let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
-    artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); store.set('artBellRadioHost', v); },
+    artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); earlDialogue.enabled = v; store.set('artBellRadioHost', v); },
     radioCast: radio.callerVoice, onRadioCast: (v: boolean) => { radio.setCallerVoice(v); store.set('radioCallerVoices', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
@@ -494,6 +499,7 @@ async function boot() {
   function openPause() {
     if (pausedByMenu) return;
     readAloud.stop();
+    earlDialogue.stop();
     pausedByMenu = true;
     audio.suspend(true); score?.pause(true);
     const resume = () => { pausedByMenu = false; audio.suspend(false); score?.pause(false); };
@@ -1111,10 +1117,11 @@ async function boot() {
     art: artStatus,
     jump: (p: string) => {
       audio.stopPhoneCalls();
+      earlDialogue.stop();
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),

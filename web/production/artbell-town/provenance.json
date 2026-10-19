@@ -1,0 +1,115 @@
+{
+  "synthetic": true,
+  "voice_profile_id": "494881fc",
+  "reference": {
+    "source_page": "https://archive.org/details/Artbell.com_Commemorative_Disc",
+    "artifact": "Artbell.com Commemorative Disc",
+    "creator": "Rowland Network Communications",
+    "artifact_publication": "January 2003",
+    "original_filename": "images/website/media/ArtFareWell.mp3",
+    "source_url": "https://archive.org/download/Artbell.com_Commemorative_Disc/Artbell.com.iso/images%2Fwebsite%2Fmedia%2FArtFareWell.mp3",
+    "original_sha256": "9ea6e687c7c3e0bd1f385ac806a782120bbaa377ef3447a20c155fd5e6eb3337",
+    "original_bytes": 2268481,
+    "original_encoding": "Mono 44100 Hz MP3, 80000 bit/s, 226.6383 s",
+    "selected_interval_seconds": [
+      29,
+      33.4
+    ],
+    "selected_duration_seconds": 4.4,
+    "conditioning_text": "That's no small feat and it's something I'm extremely proud of.",
+    "reference_sha256": "1e99f04ee7126f5d6f3e0a23d3cd20fd5a12d6b5ed563bc95e61220653cbea82",
+    "transcription": "Existing faster-whisper-small via VoiceStudio; clip and wider context agree on the complete sentence. Not human-listened.",
+    "selection_reason": "One complete sentence with bounded ASR start/end, no neighbouring sentence. Engine max reference is 20 seconds; this was a phrase selection, not a hard engine limit.",
+    "isolation": "The original is a continuous first-person CD message about his own Coast to Coast AM programme. No human music/overlap assessment has been performed.",
+    "source_not_bundled": true,
+    "rights_status": "Public accessibility of the preserved primary-source artifact does not constitute a licence grant or endorsement.",
+    "reuse_note": "Samme tidligere valgte referanse og lokal profil som radioverten; ingen ny innhenting eller referanseendring i denne leveransen."
+  },
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "language": "en",
+    "effect_preset": "broadcast (documented API default)"
+  },
+  "postprocessing": "Per-clip constant gain toward -20 dBFS non-silent RMS (-50 dBFS block threshold), capped at -2 dBFS decoded-MP3 peak. Mono 24 kHz, 64 kbit/s MP3; no dynamic compression, pitch shift or time stretch in the asset conversion.",
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing VoiceStudio 0.5.6 and already installed OmniVoice/faster-whisper-small reused. No new model or service installed.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "voice_label": "Art Bell synthetic parody for Earl in town",
+  "language": "en",
+  "scope": "Kun statisk EA-tale under PEOPLE.host: første møte, gjenbesøk og alle fire samtaleemner. Spillersvar, asider, knapper og vitnepapirer er utelatt.",
+  "counts": {
+    "clips": 16,
+    "words": 150,
+    "topics": {
+      "open": 2,
+      "calls": 4,
+      "visitors": 2,
+      "tape": 4,
+      "boy": 4
+    }
+  },
+  "generator": "tools/artbell-town/generate.py; separat bank basert på den kontrollerte Art Bell-generatoren.",
+  "voice_profile_origin": "Eksisterende lokal profil 494881fc gjenbrukes uten endring. Ingen ny referanse, profil, modell eller samtykkebekreftelse.",
+  "normalization": "Whitespace collapse and trim; ID = SHA-256(normalized UTF-8 text).slice(0,16).",
+  "runtime_assets": "16 genererte MP3-filer og catalog.json. Ingen kildelyd, referanse-WAV, modell, lokal tjeneste eller private filstier.",
+  "pinned_reference_sha256": "1e99f04ee7126f5d6f3e0a23d3cd20fd5a12d6b5ed563bc95e61220653cbea82",
+  "corpus_sha256": "0f70a660094569966dc01173d8d2bbddfe2f1e7fac9c87b7013846d8ceab7f42",
+  "preservation_base": "210b52f",
+  "qa": {
+    "status": "PASS",
+    "word_check_status": "CHECKED_WITH_RECORDED_DIFFERENCES",
+    "clips": 16,
+    "bytes": 370496,
+    "duration_seconds": 44.92,
+    "corpus_sha256": "0f70a660094569966dc01173d8d2bbddfe2f1e7fac9c87b7013846d8ceab7f42",
+    "dropped_chunks": {
+      "confirmed_zero": 16,
+      "unrecorded_ids": []
+    },
+    "orphan_mp3_files": [],
+    "catalog_ids_match_corpus": true,
+    "completed_utc": "2026-10-19T21:23:44.343721+00:00",
+    "report": "production/artbell-town/verification.json",
+    "max_decoded_peak_dbfs": -2.6478746652569747,
+    "samples_at_or_above_full_scale": 0,
+    "asr_clips_checked": 16,
+    "asr_exact_strict_matches": 14,
+    "asr_differing_clips": 2,
+    "asr_interpretation": "Alle 16 har gjenkjennelig, sammenhengende tale. De to strenge avvikene er sammenskrivingen Every one/Everyone, homofonen reel/Real, Twelve/12 og apostrofen i Record's/Records. Ingen omgenerering er begrunnet av disse alene. Dette er automatisk ordkontroll, ikke menneskelig lytting.",
+    "asset_preservation": "production/artbell-town/asset-preservation.json",
+    "profile_preservation": "production/artbell-town/profile-preservation.json",
+    "human_listened": false,
+    "speaker_similarity": "UNVERIFIED",
+    "emotional_delivery": "UNVERIFIED"
+  },
+  "source": {
+    "file": "src/story/caliche.ts",
+    "sha256": "e12e4df24858cf71fa51c45fff25422e6776e00a7431a3d5bc52870368291108"
+  },
+  "cache_identity": "3dac2dbb769eac80"
+}

@@ -266,6 +266,8 @@ export function talk(ui: UI, o: {
   onChoice: (id: string) => void;
   onRead: (id: string) => void;
   onLines?: (lines: TalkLine[]) => void;
+  /** The studio-door conversation, with its own optional voice. */
+  earl?: boolean;
   onClose?: () => void;
 }) {
   const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div><div data-reading></div>', o.onClose);
@@ -279,11 +281,16 @@ export function talk(ui: UI, o: {
     // new lines come one after another; a redraw of the same lines does not repeat that
     const key = JSON.stringify(v.lines);
     const fresh = key !== shown;
+    let playEarl: (() => void) | null = null;
     if (fresh) {
       ui.readAloud?.stop();
+      if (o.earl) ui.earlDialogue?.stop();
       const reading = el.querySelector<HTMLElement>('[data-reading]')!;
       reading.replaceChildren();
-      ui.readingControls(reading, v.lines.map((l) => l.text));
+      const earl = o.earl && ui.earlDialogue?.enabled;
+      const texts = v.lines.filter((line) => !earl || line.who !== 'EARL').map((line) => line.text);
+      if (texts.length) ui.readingControls(reading, texts);
+      if (earl) playEarl = ui.earlReadingControls(reading, v.lines);
     }
     shown = key;
     // the face of whoever spoke last (core/portraits.ts), once there is a picture of them
@@ -302,9 +309,13 @@ export function talk(ui: UI, o: {
       ${v.given?.length ? `<p class="lp-small">On the table</p><div class="lp-row">${v.given.map((g) => `<button class="lp-btn" data-read="${g.id}">${esc(g.label)}</button>`).join('')}</div>` : ''}`;
     body.querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((b) => b.addEventListener('click', () => { o.onChip(b.dataset.chip!); render(); }));
     body.querySelector('[data-a=table]')?.addEventListener('click', () => { o.onTable(); render(); });
-    body.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => { o.onChoice(b.dataset.c!); render(); }));
+    body.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => {
+      if (o.earl) ui.earlDialogue?.stop();
+      o.onChoice(b.dataset.c!); render();
+    }));
     body.querySelectorAll<HTMLButtonElement>('[data-read]').forEach((b) => b.addEventListener('click', () => o.onRead(b.dataset.read!)));
     if (fresh) o.onLines?.(v.lines);
+    playEarl?.();
   };
   render();
   return { el, refresh: render };

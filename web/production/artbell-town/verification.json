@@ -1,0 +1,572 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "word_check_status": "CHECKED_WITH_RECORDED_DIFFERENCES",
+  "asr_empty_ids": [],
+  "clips": 16,
+  "bytes": 370496,
+  "duration_seconds": 44.92,
+  "audio": [
+    {
+      "id": "56e7a020339f079f",
+      "duration_seconds": 3.97,
+      "peak_dbfs": -2.9895884199423457,
+      "rms_dbfs": -21.56416303668508,
+      "nonsilent_rms_dbfs": -20.545645216689373,
+      "nonsilent_seconds": 3.14,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "0772acf7684b121e",
+      "duration_seconds": 2.16,
+      "peak_dbfs": -2.6478746652569747,
+      "rms_dbfs": -23.28748151592958,
+      "nonsilent_rms_dbfs": -21.586717306553417,
+      "nonsilent_seconds": 1.46,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "3dd0d7b88a382fe9",
+      "duration_seconds": 2.8,
+      "peak_dbfs": -2.715908381008998,
+      "rms_dbfs": -21.939017834933672,
+      "nonsilent_rms_dbfs": -21.04685320741341,
+      "nonsilent_seconds": 2.28,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "073fce364994cf9e",
+      "duration_seconds": 4.02,
+      "peak_dbfs": -4.046709026842708,
+      "rms_dbfs": -21.67925904935092,
+      "nonsilent_rms_dbfs": -20.40828045844932,
+      "nonsilent_seconds": 3.0,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "3a345d802b2c405b",
+      "duration_seconds": 3.86,
+      "peak_dbfs": -2.7196143276457443,
+      "rms_dbfs": -22.479037156895778,
+      "nonsilent_rms_dbfs": -21.022419687723882,
+      "nonsilent_seconds": 2.76,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "f60bda199fff5103",
+      "duration_seconds": 2.73,
+      "peak_dbfs": -2.68144633885595,
+      "rms_dbfs": -21.106439997952307,
+      "nonsilent_rms_dbfs": -20.43701309297898,
+      "nonsilent_seconds": 2.34,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "a3c152d2c160dfed",
+      "duration_seconds": 3.17,
+      "peak_dbfs": -2.953084969436296,
+      "rms_dbfs": -21.613711472589294,
+      "nonsilent_rms_dbfs": -20.405339407007183,
+      "nonsilent_seconds": 2.4,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "a75c7f370b3629f3",
+      "duration_seconds": 2.13,
+      "peak_dbfs": -3.965660406942619,
+      "rms_dbfs": -21.512931458298823,
+      "nonsilent_rms_dbfs": -20.4303270368978,
+      "nonsilent_seconds": 1.66,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "357153cc24cbf51d",
+      "duration_seconds": 2.38,
+      "peak_dbfs": -3.3303733889979044,
+      "rms_dbfs": -21.287578466662698,
+      "nonsilent_rms_dbfs": -20.354929915134797,
+      "nonsilent_seconds": 1.92,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "ef7a39269e528490",
+      "duration_seconds": 4.64,
+      "peak_dbfs": -2.7784090588992836,
+      "rms_dbfs": -22.903664436786237,
+      "nonsilent_rms_dbfs": -21.55339182513213,
+      "nonsilent_seconds": 3.4,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "281daafd0a94d01a",
+      "duration_seconds": 2.76,
+      "peak_dbfs": -2.6598498594890962,
+      "rms_dbfs": -22.616034389300008,
+      "nonsilent_rms_dbfs": -21.709614346026278,
+      "nonsilent_seconds": 2.24,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "ecc59550da45471d",
+      "duration_seconds": 1.28,
+      "peak_dbfs": -2.6498622436566217,
+      "rms_dbfs": -25.399897046026435,
+      "nonsilent_rms_dbfs": -23.6729368638765,
+      "nonsilent_seconds": 0.86,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "2965d89d13a00665",
+      "duration_seconds": 1.22,
+      "peak_dbfs": -4.8138610415033884,
+      "rms_dbfs": -22.157471967369293,
+      "nonsilent_rms_dbfs": -20.43209628024659,
+      "nonsilent_seconds": 0.82,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "466b8eed89cf1d9e",
+      "duration_seconds": 4.28,
+      "peak_dbfs": -3.2584039100215105,
+      "rms_dbfs": -21.59606104501362,
+      "nonsilent_rms_dbfs": -20.360327969543107,
+      "nonsilent_seconds": 3.22,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "f58484cccf41a7b6",
+      "duration_seconds": 1.94,
+      "peak_dbfs": -2.6980351605252997,
+      "rms_dbfs": -22.917388866235147,
+      "nonsilent_rms_dbfs": -21.800350053045662,
+      "nonsilent_seconds": 1.5,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "80386b410ffeb2a1",
+      "duration_seconds": 1.58,
+      "peak_dbfs": -2.7343128009829143,
+      "rms_dbfs": -22.478997071063745,
+      "nonsilent_rms_dbfs": -21.06153690520736,
+      "nonsilent_seconds": 1.14,
+      "samples_at_or_above_full_scale": 0
+    }
+  ],
+  "asr_sample": [
+    {
+      "id": "56e7a020339f079f",
+      "expected": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+      "recognized": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+      "group": "current_run",
+      "audio_sha256": "8cb7a6fd7492ec5bd919a67c9b216cfa5730e4cd513918ed53a196c408fa6916",
+      "strict_word_edits": 0,
+      "expected_word_count": 13,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.58,
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.58,
+        "transcription_time_s": 1.45,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "0772acf7684b121e",
+      "expected": "You again. Song and a half this time.",
+      "recognized": "You again, song and a half this time.",
+      "group": "current_run",
+      "audio_sha256": "6f7569f82568d98d38a00466576c80e42e8eecaaa1a497ecda5aa2422fb1cfbf",
+      "strict_word_edits": 0,
+      "expected_word_count": 8,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "You again, song and a half this time.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.94,
+            "text": "you again, song and a half this time."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.94,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "3dd0d7b88a382fe9",
+      "expected": "Lights, mostly. Cattle, some nights. Engines.",
+      "recognized": "Lights, mostly cattle, some nights, engines.",
+      "group": "current_run",
+      "audio_sha256": "5f7ef7c80a48893ee7f0c8ecacdf04e29c13c12d36924154c5585781c6ef7be7",
+      "strict_word_edits": 0,
+      "expected_word_count": 6,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Lights, mostly cattle, some nights, engines.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.36,
+            "text": "lights, mostly cattle, some nights, engines."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.36,
+        "transcription_time_s": 0.92,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "073fce364994cf9e",
+      "expected": "And missing time. You read that book? Everybody's read that book now.",
+      "recognized": "And Missing Time. You read that book? Everybody's read that book now.",
+      "group": "current_run",
+      "audio_sha256": "8b94189cf36e89f30bbd0d45b2bed8b7c2e0e7f7564ce453fa301f8fb5925a35",
+      "strict_word_edits": 0,
+      "expected_word_count": 12,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "And Missing Time. You read that book? Everybody's read that book now.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.72,
+            "text": "and Missing Time. You read that book? Everybody's read that book now."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.72,
+        "transcription_time_s": 0.78,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "3a345d802b2c405b",
+      "expected": "Half of them, I think they read it first and then it happened to them.",
+      "recognized": "Half of them, I think they read it first, and then it happened to them.",
+      "group": "current_run",
+      "audio_sha256": "20a0d898ba1d52d872c3ef005cd43ea61f460654683a5572b8b3b6237f59bbb4",
+      "strict_word_edits": 0,
+      "expected_word_count": 15,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Half of them, I think they read it first, and then it happened to them.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.58,
+            "text": "Half of them, I think they read it first, and then it happened to them."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.58,
+        "transcription_time_s": 0.8,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "f60bda199fff5103",
+      "expected": "The other half never read anything in their lives.",
+      "recognized": "The other half never read anything in their lives.",
+      "group": "current_run",
+      "audio_sha256": "574121c41afb9df404ce8be401af4aeca6bdad94628b3c4cd3506aeedc706476",
+      "strict_word_edits": 0,
+      "expected_word_count": 9,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "The other half never read anything in their lives.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.32,
+            "text": "the other half never read anything in their lives."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.32,
+        "transcription_time_s": 0.75,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "a3c152d2c160dfed",
+      "expected": "On the air I call them our visitors. It keeps it friendly.",
+      "recognized": "On the air, I call them our visitors. It keeps it friendly.",
+      "group": "current_run",
+      "audio_sha256": "adfae4ef58988d6ec1edf67b07ddfb3501385358a81fda3acdba70c344ab87db",
+      "strict_word_edits": 0,
+      "expected_word_count": 12,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "On the air, I call them our visitors. It keeps it friendly.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.78,
+            "text": "On the air, I call them our visitors. It keeps it friendly."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.78,
+        "transcription_time_s": 0.81,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "a75c7f370b3629f3",
+      "expected": "Off the air I don't call them anything.",
+      "recognized": "Off the air, I don't call them anything.",
+      "group": "current_run",
+      "audio_sha256": "c9b6233e97ec6a17cbd8e4a4ab40a2ea795cf3d17ec2e87b072649b5fe4c2826",
+      "strict_word_edits": 0,
+      "expected_word_count": 8,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Off the air, I don't call them anything.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.74,
+            "text": "Off the air, I don't call them anything."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.74,
+        "transcription_time_s": 0.79,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "357153cc24cbf51d",
+      "expected": "Every one, on reel. Twelve years of them.",
+      "recognized": "Everyone on Real, 12 years of them.",
+      "group": "current_run",
+      "audio_sha256": "4d91cc8dff630ebf26da4a80cd2effacdca697d0973c85ad6c362ab35bf896a1",
+      "strict_word_edits": 4,
+      "expected_word_count": 8,
+      "strict_word_error_rate": 0.5,
+      "response": {
+        "text": "Everyone on Real, 12 years of them.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.14,
+            "text": "Everyone on Real, 12 years of them."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.14,
+        "transcription_time_s": 0.83,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "ef7a39269e528490",
+      "expected": "Except one. September of '81, a boy called in. I've never played it back.",
+      "recognized": "Except one September of 81 a boy called in I've never played it back.",
+      "group": "current_run",
+      "audio_sha256": "675101e82c19a7b44f6e18d2c75bbc1f054828d0eb0c3d7e80338d2af0a48dd3",
+      "strict_word_edits": 0,
+      "expected_word_count": 14,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "Except one September of 81 a boy called in I've never played it back.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 4.38,
+            "text": "Except one September of 81 a boy called in I've never played it back"
+          }
+        ],
+        "language": "en",
+        "duration_s": 4.38,
+        "transcription_time_s": 0.81,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "281daafd0a94d01a",
+      "expected": "I wasn't on the air that night. The station was off.",
+      "recognized": "I wasn't on the air that night, the station was off.",
+      "group": "current_run",
+      "audio_sha256": "f77de3297b1c50a0c05f5c3bc7979f49a11d252e4d35258e5f2eecdf37b294b8",
+      "strict_word_edits": 0,
+      "expected_word_count": 11,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I wasn't on the air that night, the station was off.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 2.5,
+            "text": "I wasn't on the air that night, the station was off."
+          }
+        ],
+        "language": "en",
+        "duration_s": 2.5,
+        "transcription_time_s": 0.76,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "ecc59550da45471d",
+      "expected": "Record's ending.",
+      "recognized": "Records ending.",
+      "group": "current_run",
+      "audio_sha256": "edb36b80b8621c36d04bb002e227aa5df81079fb74f4fb2d2cd101b1b88ba325",
+      "strict_word_edits": 1,
+      "expected_word_count": 2,
+      "strict_word_error_rate": 0.5,
+      "response": {
+        "text": "Records ending.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 0.9,
+            "text": "records ending."
+          }
+        ],
+        "language": "en",
+        "duration_s": 0.9,
+        "transcription_time_s": 0.73,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "2965d89d13a00665",
+      "expected": "You heard him too.",
+      "recognized": "You heard him too.",
+      "group": "current_run",
+      "audio_sha256": "3c4aa63bccac9fefe3b5e90ceaff915f8d9cc98ab47026e898e746348f74ae70",
+      "strict_word_edits": 0,
+      "expected_word_count": 4,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "You heard him too.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 0.88,
+            "text": "You heard him too."
+          }
+        ],
+        "language": "en",
+        "duration_s": 0.88,
+        "transcription_time_s": 0.8,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "466b8eed89cf1d9e",
+      "expected": "I put the receiver down and tried the line again. Dial tone. Just a phone.",
+      "recognized": "I put the receiver down and tried the line again. Dial tone. Just a phone.",
+      "group": "current_run",
+      "audio_sha256": "842b625075a96cc6e83d2de2fb676696a83f6c714c21a81b299484926b20d180",
+      "strict_word_edits": 0,
+      "expected_word_count": 15,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I put the receiver down and tried the line again. Dial tone. Just a phone.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.96,
+            "text": "I put the receiver down and tried the line again. Dial tone. Just a phone."
+          }
+        ],
+        "language": "en",
+        "duration_s": 3.96,
+        "transcription_time_s": 0.98,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "f58484cccf41a7b6",
+      "expected": "I haven't played that one. I told you.",
+      "recognized": "I haven't played that one, I told you.",
+      "group": "current_run",
+      "audio_sha256": "f0e2c9efba2b64018466397a2fa32661919d6171d875dee0fb051f0ba707e2bf",
+      "strict_word_edits": 0,
+      "expected_word_count": 8,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I haven't played that one, I told you.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.68,
+            "text": "I haven't played that one, I told you."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.68,
+        "transcription_time_s": 0.75,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "80386b410ffeb2a1",
+      "expected": "I wrote this one down.",
+      "recognized": "I wrote this one down.",
+      "group": "current_run",
+      "audio_sha256": "6c3b256c7e580c5a65a703c35102772a0a17cd62db844511867670101235ebf7",
+      "strict_word_edits": 0,
+      "expected_word_count": 5,
+      "strict_word_error_rate": 0.0,
+      "response": {
+        "text": "I wrote this one down.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 1.16,
+            "text": "I wrote this one down."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.16,
+        "transcription_time_s": 0.75,
+        "engine": "faster-whisper"
+      }
+    }
+  ],
+  "catalog_ids_match_corpus": true,
+  "orphan_mp3_files": [],
+  "dropped_chunks": {
+    "confirmed_zero": 16,
+    "unrecorded_ids": []
+  },
+  "asr_interpretation": "Automatic transcription is an imperfect word check, not a listening test. Strict edits also count number spelling and abbreviations.",
+  "corpus_sha256": "0f70a660094569966dc01173d8d2bbddfe2f1e7fac9c87b7013846d8ceab7f42",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "asr_review": {
+    "clips_checked": 16,
+    "exact_strict_matches": 14,
+    "differences": [
+      {
+        "id": "357153cc24cbf51d",
+        "expected": "Every one, on reel. Twelve years of them.",
+        "recognized": "Everyone on Real, 12 years of them.",
+        "strict_word_edits": 4
+      },
+      {
+        "id": "ecc59550da45471d",
+        "expected": "Record's ending.",
+        "recognized": "Records ending.",
+        "strict_word_edits": 1
+      }
+    ],
+    "interpretation": "Alle 16 har gjenkjennelig, sammenhengende tale. De to strenge avvikene er sammenskrivingen Every one/Everyone, homofonen reel/Real, Twelve/12 og apostrofen i Record's/Records. Ingen omgenerering er begrunnet av disse alene. Dette er automatisk ordkontroll, ikke menneskelig lytting."
+  },
+  "completed_utc": "2026-10-19T21:23:44.343721+00:00"
+}

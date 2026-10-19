@@ -2,6 +2,7 @@ import { albumPage, bindAlbum } from './album';
 import type { AlbumView } from '../core/album';
 import { KIT_ART, type KitArt } from './kitArt';
 import { documentReadingParagraphs, type ReadAloud } from '../core/readAloud';
+import type { EarlDialogue, EarlLine, EarlState } from '../core/earlDialogue';
 import { BOUGHT_SFX } from '../core/Audio';
 
 export interface DocSpec {
@@ -91,6 +92,7 @@ const PICTURE = { off: 'Clean', vhs: 'VHS', heavy: 'Worn VHS' } as const;
 export class UI {
   /** Optional prerecorded synthetic narration, supplied by main after audio setup. */
   readAloud: ReadAloud | null = null;
+  earlDialogue: EarlDialogue | null = null;
   root = document.getElementById('ui')!;
   modal: HTMLElement | null = null;
   private modalClose: (() => void) | null = null;
@@ -330,6 +332,7 @@ export class UI {
     if (this.examineTimer) clearTimeout(this.examineTimer);
     this.examineTimer = null;
     this.readAloud?.stop();
+    this.earlDialogue?.stop();
     if (!this.modal) return;
     this.modal.remove();
     this.modal = null;
@@ -391,6 +394,33 @@ export class UI {
   /** Called when a paper is opened (the sound of the page; set by main). */
   onPaper?: () => void;
   onReadingStart?: () => void;
+  onEarlStart?: () => void;
+  /** Controls belong only to the live conversation with Earl, never papers or People. */
+  earlReadingControls(parent: HTMLElement, lines: EarlLine[]) {
+    const reader = this.earlDialogue;
+    if (!reader?.enabled) return null;
+    const box = document.createElement('div');
+    box.className = 'read-aloud'; box.dataset.readingKind = 'earl-dialogue';
+    box.dataset.readingTexts = JSON.stringify(lines.filter((line) => line.who === 'EARL').map((line) => line.text));
+    box.innerHTML = '<button class="lp-btn" data-a="earl">Replay Earl</button><span data-reading-status role="status" aria-live="polite"></span>';
+    const button = box.querySelector('button')!, status = box.querySelector<HTMLElement>('[data-reading-status]')!;
+    button.disabled = !reader.available(lines);
+    let active = false;
+    const update = (state: EarlState) => {
+      active = state === 'loading' || state === 'playing';
+      button.textContent = active ? 'Stop Earl' : 'Replay Earl';
+      button.setAttribute('aria-pressed', String(active));
+      status.textContent = state === 'loading' ? 'Loading Earl…' : state === 'error' ? 'Recording could not be played. Try again.'
+        : button.disabled ? 'No recording for this reply.' : 'Synthetic Art Bell parody';
+    };
+    const play = () => {
+      this.onEarlStart?.();
+      void reader.play(lines, update);
+    };
+    button.addEventListener('click', () => { if (active) reader.stop(); else play(); });
+    update('idle'); parent.appendChild(box);
+    return play;
+  }
   /** Explicit playback only: opening a paper or refreshing a conversation stays quiet. */
   readingControls(parent: HTMLElement, texts: string[], label = 'Read aloud', kind = 'conversation') {
     const reader = this.readAloud;
@@ -600,7 +630,7 @@ export class UI {
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
         <div class="set"><span class="lbl">Art Bell radio host</span><button class="opt qual" data-a="artbell" aria-label="Art Bell radio host" aria-pressed="${o.artBell}">${o.artBell ? 'On' : 'Off'}</button></div>
-        <p class="small reading-note">Synthetic Art Bell parody for Earl on Night Line, AM 1420.</p>
+        <p class="small reading-note">Synthetic Art Bell parody for Earl on Night Line, AM 1420, and when you speak with him in Caliche.</p>
         <div class="set"><span class="lbl">Radio callers &amp; bulletin</span><button class="opt qual" data-a="radiocast" aria-label="Radio callers and bulletin" aria-pressed="${o.radioCast}">${o.radioCast ? 'On' : 'Off'}</button></div>
         <p class="small reading-note">Synthetic callers and the 1947 news bulletin on AM 1420.</p>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>

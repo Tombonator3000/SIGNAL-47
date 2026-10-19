@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "profiles_before": 12,
+  "profiles_after": 12,
+  "profiles": [
+    {
+      "id": "34043cb8",
+      "name": "SIGNAL 47 fictional boy v4 (synthetic voice design)",
+      "before_sha256": "4eb9daa60fe3cd4239fe9b991143075f237385d743d4dccf23834f548a9308d0",
+      "metadata_identical": true
+    },
+    {
+      "id": "1e28f816",
+      "name": "SIGNAL 47 fictional news (synthetic voice design)",
+      "before_sha256": "4df923df7cb5f88dc864eaa125079f0f266f4de9e40f1d0d3fcaca39c3fdde3b",
+      "metadata_identical": true
+    },
+    {
+      "id": "d65b2bb6",
+      "name": "SIGNAL 47 fictional old caller (synthetic CC0 cast)",
+      "before_sha256": "8febbf1056ada319158711827baafd2a8046fb575078436af9e38851e636cab1",
+      "metadata_identical": true
+    },
+    {
+      "id": "1a160d70",
+      "name": "SIGNAL 47 fictional man caller (synthetic CC0 cast)",
+      "before_sha256": "191765d29cfd57ebbace10fb7878dddcd3f818eaefb698e8440047ae190a4694",
+      "metadata_identical": true
+    },
+    {
+      "id": "84bc5b84",
+      "name": "SIGNAL 47 fictional woman caller (synthetic CC0 cast)",
+      "before_sha256": "aec86ba9f3d3949ea6d3431ce86bfd1ac0c19470c117f2f569a5da06b0807dcd",
+      "metadata_identical": true
+    },
+    {
+      "id": "494881fc",
+      "name": "Art Bell – syntetisk radio-parodi (SIGNAL / 47)",
+      "before_sha256": "1dc2b067c6f92a0a953ca109d0f528a99a0b11b9a34a6024896fde5cf2f31cc6",
+      "metadata_identical": true
+    },
+    {
+      "id": "33634ea3",
+      "name": "Klaus Kinski – sint test C (Fitzcarraldo konsekvenser)",
+      "before_sha256": "d333ff40e8980b6d61d67e489fbeb96d65ac851a63eb74ecdff8ddc50f5212df",
+      "metadata_identical": true
+    },
+    {
+      "id": "7a12119e",
+      "name": "Klaus Kinski – sint test B (Fitzcarraldo svar)",
+      "before_sha256": "25060e07a7735615040b2f090d23de8b29b79d2061323c3fb2b52134029e455e",
+      "metadata_identical": true
+    },
+    {
+      "id": "3cf0d3a5",
+      "name": "Klaus Kinski – sint parodi (Fitzcarraldo)",
+      "before_sha256": "100150c39666a71400134b2b954ecf34425dbd0bbfec3d70482aee5d58ea33c9",
+      "metadata_identical": true
+    },
+    {
+      "id": "f4e7a712",
+      "name": "Klaus Kinski – sint parodi (Jesus Christus)",
+      "before_sha256": "4f029e2240481ab73989802c5a545382db4c45999e9f7de5d5787877577c07d2",
+      "metadata_identical": true
+    },
+    {
+      "id": "eee56c41",
+      "name": "Klaus Kinski – syntetisk (SRF 1985)",
+      "before_sha256": "9d111c2fe3eba95d779b870d1b075ad8013a41507fe58e85dfe4a24b5b7370d9",
+      "metadata_identical": true
+    },
+    {
+      "id": "demo0001",
+      "name": "VoiceStudio Demo Voice",
+      "before_sha256": "09af303eea3b03c1cab35d76a8136375042ee1425cb5c099acb9b302805968da",
+      "metadata_identical": true
+    }
+  ],
+  "scope": "Eksakt JSON-metadata før og etter; ingen profil er opprettet, endret eller slettet. Eksisterende Art Bell-referanse er kontrollert mot fast SHA-256."
+}

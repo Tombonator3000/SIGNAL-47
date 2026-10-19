@@ -13,13 +13,14 @@ const corpus = JSON.parse(fs.readFileSync('production/artbell/corpus.json', 'utf
 // Deliberately wrong manifest durations prove that playback and captions use decoded audio.
 const catalog = { ...corpus, clips: corpus.clips.map((clip, i) => ({ ...clip, duration: 99, file: `${clip.id}.mp3`, index: i })) };
 const files = Object.fromEntries(catalog.clips.map((clip) => [`../assets/audio/artbell/${clip.file}`, `data:audio/mpeg;base64,${Buffer.from([clip.index]).toString('base64')}`]));
-function bankModule(urls = files, fetcher = () => { throw new Error('data URLs must never fetch under strict CSP'); }, callerCatalog = { clips: [] }, callerFiles = {}) {
+function bankModule(urls = files, fetcher = () => { throw new Error('data URLs must never fetch under strict CSP'); }, callerCatalog = { clips: [] }, callerFiles = {}, earlCatalog = { clips: [] }, earlFiles = {}) {
   const source = fs.readFileSync('src/core/radioVoice.ts', 'utf8')
     .replace(/const CALLER_FILES = import\.meta\.glob[^\n]+;/, `const CALLER_FILES = ${JSON.stringify(callerFiles)};`)
+    .replace(/const EARL_FILES = import\.meta\.glob[^\n]+;/, `const EARL_FILES = ${JSON.stringify(earlFiles)};`)
     .replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(urls)};`);
   const result = {};
   vm.runInNewContext(compile(source), { exports: result, atob, Uint8Array, DOMException, fetch: fetcher,
-    require: (name) => ({ default: JSON.stringify(name.includes('/radiocast/') ? callerCatalog : catalog) }) });
+    require: (name) => ({ default: JSON.stringify(name.includes('/artbell-town/') ? earlCatalog : name.includes('/radiocast/') ? callerCatalog : catalog) }) });
   return result;
 }
 const bank = bankModule(), runtime = {};
