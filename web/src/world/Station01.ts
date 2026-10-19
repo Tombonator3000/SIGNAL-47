@@ -14,6 +14,7 @@ import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { dressStation } from './dressStation';
 import type { Dressing } from './weathering';
+import { dressHut } from './dressing';
 
 // Chapter three location: STATION 01, the survey station from 1947, about 04:00.
 // Built in its own coordinates (metres): x east, z south, north is -Z as at SARO. The
@@ -743,6 +744,8 @@ export class Station01 {
     this.power();
     this.hut();
     this.hutInside();
+    // what the survey crews have left in the hut (world/dressing.ts)
+    dressHut({ add: (o) => this.interior.add(o), mat: (p) => this.litIn(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.shed();
     this.transit();
     this.markers();

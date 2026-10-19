@@ -9,6 +9,7 @@ import { surfaceY } from '../drive/roadTerrain';
 import { DINER } from '../drive/roadShape';
 import { dressDiner } from './dressDiner';
 import type { Dressing } from './weathering';
+import { dressDiner as dressDinerInside } from './dressing';
 
 // All Night: local metres, north -Z. World normally supplies (-8000,0,0).
 // Load DINER_ART before construction. The five diner images are the only required art.
@@ -66,6 +67,8 @@ export class Diner {
     const gy=(x:number,z:number)=>onRoad?surfaceY(x+DINER.x,z+DINER.z)-origin.y:-.18;
     this.dressing=dressDiner(dinerFlood,(f)=>this.col(f.minX,f.maxX,f.minZ,f.maxZ),gy);this.shell.add(this.dressing.build());
     for(const m of this.dressing.materials)this.materials.add(m);
+    // the counter's, the booths' and the walls' clutter (world/dressing.ts)
+    dressDinerInside({add:o=>this.interior.add(o),mat:p=>this.mat(p),col:(a,b,c,d)=>this.col(a,b,c,d)});
     mergeStatic(this.shell);mergeStatic(this.fixed);
     const hemi=new THREE.HemisphereLight(0x6d87a4,0x55402f,.55);hemi.name='Diner ambient';this.group.add(hemi);this.lights={hemi};
     this.slots.red=this.light(13,2.2,-10,10,0xff5341);this.slots.cyan=this.light(12.8,1.8,-10,5,0x52ddd7);

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, flood, faced } from './kit';
+import { dressLab } from './dressing';
 import { lampPost, railing, clipboard } from './props';
 import { GlowPoints } from './glow';
 import * as T from '../core/textures';
@@ -60,6 +61,8 @@ export class ServiceYard {
     this.details(st);
     mergeStatic(st);
     mergeStatic(lab);
+    // the lab's clutter (world/dressing.ts), under the safelights like the rest of it
+    dressLab({ add: (o) => this.group.add(o), mat: (p) => floodlit(new THREE.MeshStandardMaterial(p), 0.22, this.labFlood), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.glow.build());
   }
 

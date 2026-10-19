@@ -8,6 +8,7 @@ import { MOTEL_AT } from './geo';
 import { wet, wearMesh, lotAsphaltTex, type Wear } from '../drive/roadSurface';
 import { dressMotel } from './dressMotel';
 import type { Dressing } from './weathering';
+import { dressMotelOffice } from './dressing';
 
 // Built in the SARO coordinates it was made in (across the road from SARO), north -Z, all
 // walkable surfaces at y=0; then the whole court is moved to where it stands now, 650 m south
@@ -106,6 +107,8 @@ export class MotelFront {
     this.dressing = dressMotel(courtFlood, (f) => this.col(f.minX, f.maxX, f.minZ, f.maxZ));
     this.group.add(this.dressing.build());
     for (const m of this.dressing.materials) this.materials.add(m);
+    // the office's clutter (world/dressing.ts), in the terms it was built in, moved with it
+    dressMotelOffice({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
   }

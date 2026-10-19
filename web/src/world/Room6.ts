@@ -3,6 +3,7 @@ import { box, cyl, plane, rod, faced, mergeStatic, noMerge, floodSet, floodlit, 
 import { eachVariant } from '../core/quality';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
+import { dressRoom6 } from './dressing';
 
 // Chapter-four integration contract: todo.md at 1a08434. Local metres, north -Z.
 // Interior x [-2.25, 2.25], z [-3, 3], floor y=0. South door x [-1.98, -.82].
@@ -60,6 +61,8 @@ export class Room6 {
     this.buildFurniture(m);
     this.buildTable(m);
     this.buildNora(m);
+    // Nora's things and the room's wear (world/dressing.ts)
+    dressRoom6({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.shell);
     mergeStatic(this.fixed);
 
