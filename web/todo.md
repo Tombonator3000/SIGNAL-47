@@ -280,3 +280,5 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 
 - [x] Valgfri lokal parodistemme til papirtekster, beskrivelser og samtaler på `codex/kinski-read-aloud`. 328 medfølgende klipp, begge bygg og pålagte tester PASS. Se `KINSKI_READALOUD.md`. Lokal leveranse til gjennomgang.
 - [ ] Tom lytter til stemmen og den ASR-merkede A/B/C-linjen; stemmelikhet, innlevelse og fysisk lyd er ikke vurdert av kodekontrollene.
+
+- [x] Telefonutvidelse 19. oktober: alle 24 eksisterende telefonreplikker ferdig innspilt og automatisk når Kinski-valget er på. Ni nye klipp, 337 totalt; telefonprøver 49/49 og 50/50 PASS. Manus og oppdatert lokal spillfil levert.

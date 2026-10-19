@@ -1148,6 +1148,7 @@ export class Prologue {
   // ---------- lifecycle ----------
   reset() {
     const { room, audio, ext, ui } = this.d;
+    audio.stopPhoneCalls();
     this.timers = []; this.gt = 0; this.clock = START_CLOCK;
     this.phase = 'intro'; this.cinematic = false;
     this.logRead = false; this.coffee = 'none'; this.powered = false; this.answered = false;

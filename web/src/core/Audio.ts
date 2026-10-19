@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { SignalVoice } from './signalVoice';
 import { Ambience } from './ambience';
+import { PHONE_TEXTS, type PhoneCue } from './phoneScripts';
+import { normalizeReadingText } from './readAloud';
+import voiceCatalogSource from '../assets/audio/kinski/catalog.json?raw';
 import phoneRing from '../assets/audio/phone_ring.mp3';
 import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
@@ -39,11 +42,31 @@ const alienSources = Object.fromEntries(Object.entries(ALIEN_FILES).map(([path, 
   return [`alien${m[1][0].toUpperCase()}${m[1].slice(1)}`, url];
 }));
 
+// Only the 24 telephone lines join the ordinary title-screen preload. Document
+// narration keeps its separate bounded, lazy cache in ReadAloud.
+const PHONE_FILES = import.meta.glob<string>('../assets/audio/kinski/*.mp3', { eager: true, query: '?url', import: 'default' });
+const voiceCatalog = JSON.parse(voiceCatalogSource) as { clips: { id: string; text: string; file: string }[] };
+const phoneTexts = new Set(PHONE_TEXTS.map(normalizeReadingText));
+const phoneKeys = new Map<string, string>();
+const phoneSources: Record<string, string> = {};
+for (const clip of voiceCatalog.clips) {
+  const text = normalizeReadingText(clip.text), url = PHONE_FILES[`../assets/audio/kinski/${clip.file}`];
+  if (!phoneTexts.has(text) || !url) continue;
+  const key = `phone:${clip.id}`;
+  phoneKeys.set(text, key); phoneSources[key] = url;
+}
+
 const SOURCES: Record<string, string> = {
   phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
   crickets, owl, dog0, dog1, gust, ...stepSources, ...alienSources,
   doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1,
+  ...phoneSources,
 };
+
+export interface PhoneCallTimeline {
+  duration: number;
+  cues: { at: number; duration: number; text: string; by?: string; aside?: boolean }[];
+}
 
 // What the player walks on, and how a step on it sounds: which recordings, how loud, the
 // pitch, and a low-pass to take the edge off. Quieter than before and never the same
@@ -83,6 +106,8 @@ export class AudioSys {
   motor: { gain: GainNode; osc: OscillatorNode } | null = null;
 
   private loading: Promise<void> | null = null;
+  kinskiCalls = false;
+  private phoneSession: { sources: AudioBufferSourceNode[]; nodes: AudioNode[] } | null = null;
 
   // Decode every sound while the title screen is up, so Start does not wait on it.
   // An OfflineAudioContext needs no user gesture and logs no autoplay warning. Its
@@ -386,7 +411,7 @@ export class AudioSys {
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200;
     const g = ctx.createGain(); g.gain.value = 1.0;
     hp.connect(lp); lp.connect(g); g.connect(this.sfx);
-    return { input: hp, gain: g };
+    return { input: hp, gain: g, nodes: [hp, lp, g] };
   }
 
   futureCall(): number {
@@ -431,6 +456,71 @@ export class AudioSys {
     const n = this.noiseSrc(false); const g = ctx.createGain(); g.gain.value = 0.035;
     n.connect(g); g.connect(line.input); n.start(t); n.stop(t + secs);
     this.play('click', { gain: 0.6 }); this.play('click', { gain: 0.5, when: secs });
+  }
+
+  /** One prerecorded handset session. Captions and story events use the returned
+   *  game-time timeline; every sound itself uses the pausable AudioContext clock. */
+  phoneCall(lines: PhoneCue[], options: { lead?: number; gap?: number } = {}): PhoneCallTimeline | null {
+    this.stopPhoneCalls();
+    const ctx = this.ctx;
+    if (!this.kinskiCalls || !ctx || ctx.state === 'closed' || !this.noise || !lines.length || !lines.some((l) => !l.aside)) return null;
+    const buffers = lines.map((line) => {
+      const key = phoneKeys.get(normalizeReadingText(line.text));
+      return key ? this.buf[key] : undefined;
+    });
+    // Validate the entire call before making any sound. Missing recordings fall
+    // back to the existing caption/line flow, never a half-spoken conversation.
+    if (lines.some((line, i) => !line.aside && (!buffers[i] || !Number.isFinite(buffers[i]!.duration) || buffers[i]!.duration <= 0))) return null;
+    const seconds = (value: number | undefined, fallback: number) => value !== undefined && Number.isFinite(value) ? Math.max(0, value) : fallback;
+    const lead = seconds(options.lead, 0.3), gap = seconds(options.gap, 0.45);
+    let at = lead;
+    const cues = lines.map((line, i) => {
+      const duration = line.aside ? seconds(line.pause, 1.2) : buffers[i]!.duration;
+      const cue = { at, duration, text: line.text, by: line.by, aside: line.aside };
+      at += duration + (i < lines.length - 1 ? gap : 0);
+      return cue;
+    });
+    const duration = at + 0.2, started = ctx.currentTime;
+    const session = { sources: [] as AudioBufferSourceNode[], nodes: [] as AudioNode[] };
+    this.phoneSession = session;
+    try {
+      const line = this.phoneLine();
+      // phoneLine's input is the high-pass, followed by low-pass and output gain.
+      const speech = ctx.createGain(); speech.gain.value = 0.95; speech.connect(line.input);
+      session.nodes.push(speech, ...line.nodes);
+      lines.forEach((cue, i) => {
+        if (cue.aside) return;
+        const source = ctx.createBufferSource(); source.buffer = buffers[i]!;
+        source.connect(speech); session.sources.push(source); source.start(started + cues[i].at);
+      });
+      const hiss = this.noiseSrc(false), level = ctx.createGain(); level.gain.value = 0.025;
+      hiss.connect(level); level.connect(line.input);
+      session.sources.push(hiss); session.nodes.push(level);
+      hiss.onended = () => { if (this.phoneSession === session) this.stopPhoneCalls(); };
+      hiss.start(started); hiss.stop(started + duration);
+      for (const [when, gain] of [[0, 0.6], [at, 0.5]] as const) {
+        const click = this.play('click', { gain, when, dest: line.input });
+        if (click) { session.sources.push(click.src); session.nodes.push(click.gain); }
+      }
+      return { duration, cues };
+    } catch (error) {
+      this.stopPhoneCalls();
+      console.warn('Telephone recording could not play', error);
+      return null;
+    }
+  }
+
+  /** A hang-up, replacement, new night, save load or title: future sources stop too. */
+  stopPhoneCalls() {
+    const session = this.phoneSession;
+    if (!session) return;
+    this.phoneSession = null;
+    for (const source of session.sources) {
+      source.onended = null;
+      try { source.stop(); } catch { /* already stopped or never started */ }
+      source.disconnect();
+    }
+    for (const node of session.nodes) node.disconnect();
   }
 
   // Touch-tone dialling. Returns how long it takes.

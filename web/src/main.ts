@@ -151,6 +151,8 @@ async function boot() {
   const readAloud = new ReadAloud(audio);
   readAloud.enabled = store.get<boolean>('kinskiReadAloud', false) === true;
   ui.readAloud = readAloud;
+  audio.kinskiCalls = readAloud.enabled;
+  ui.onReadingStart = () => audio.stopPhoneCalls();
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.setRadio(store.get('radioVol', 1));
@@ -439,7 +441,7 @@ async function boot() {
   let calmFlash = store.get('calmFlash', false);
   let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
-    kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; store.set('kinskiReadAloud', v); },
+    kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -676,7 +678,7 @@ async function boot() {
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
     restoringNow = false; restoring = null;
-    roadside.reset(); cb.stop(); radio.boyCalled = townSeen.has('ev:boy'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
+    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.boyCalled = townSeen.has('ev:boy'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
     if (world.area === 'room6') world.placeAtRoom6();
@@ -701,7 +703,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     world.stopDriving();
-    roadside.reset(); cb.stop(); radio.reset(0);
+    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -944,7 +946,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     world.stopDriving();
-    roadside.reset(); cb.stop(); radio.reset(0);
+    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -1046,7 +1048,7 @@ async function boot() {
     ui.showHud(false, input.touchMode);
     world.stopDriving();
     audio.cabRadio(null);
-    roadside.reset(); cb.stop(); radio.reset(0);
+    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     audio.silence(false);
     score?.stop();
     if (!end) { toTitle(); return; }
@@ -1066,6 +1068,7 @@ async function boot() {
   (window as any).S47 = {
     art: artStatus,
     jump: (p: string) => {
+      audio.stopPhoneCalls();
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },

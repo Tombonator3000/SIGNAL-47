@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Extract only the English text displayed by UI.document and Panels.talk.
+// Extract the English document, conversation and authored telephone speech.
 // The AST is inspected, never evaluated. Radio and gameplay code are not imported.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -127,7 +127,7 @@ function pageReader(sf) {
   return (node) => [...new Set(read(node))];
 }
 
-const clips = new Map(), dynamic = [], documents = [], pages = [], talkSites = [];
+const clips = new Map(), dynamic = [], documents = [], pages = [], talkSites = [], phoneSites = [];
 function add(text, source) {
   text = normalize(text);
   if (!text || text.includes(DYNAMIC)) return;
@@ -205,25 +205,66 @@ for (const name of fs.readdirSync(path.join(ROOT, 'src/story')).filter((name) =>
   walk(sf);
 }
 
+// Canonical telephone scripts are plain literal data. Read the AST without
+// importing game code, and exclude the player's unsaid caption/aside.
+{
+  const file = 'src/core/phoneScripts.ts';
+  const sf = ts.createSourceFile(file, fs.readFileSync(path.join(ROOT, file), 'utf8'), ts.ScriptTarget.Latest, true);
+  const source = (node, declaration) => ({ file, line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, kind: 'phone', declaration });
+  function cue(node) {
+    if (ts.isObjectLiteralExpression(node)) {
+      const prop = (name) => node.properties.find((p) => ts.isPropertyAssignment(p) && p.name.getText(sf) === name);
+      const text = prop('text')?.initializer;
+      if (text && prop('aside')?.initializer.kind !== ts.SyntaxKind.TrueKeyword) {
+        if (!ts.isStringLiteral(text)) throw new Error(`Nonliteral telephone cue: ${file}:${source(text).line}`);
+        const where = source(text, 'PHONE_CALLS');
+        phoneSites.push(where); add(text.text, where);
+      }
+    }
+    ts.forEachChild(node, cue);
+  }
+  let calls = false, texts = false;
+  for (const statement of sf.statements) if (ts.isVariableStatement(statement)) {
+    for (const declaration of statement.declarationList.declarations) {
+      if (declaration.name.getText(sf) === 'PHONE_CALLS') {
+        calls = true; cue(declaration.initializer);
+      }
+      if (declaration.name.getText(sf) === 'PHONE_TEXTS') {
+        texts = true;
+        if (!ts.isArrayLiteralExpression(declaration.initializer)) throw new Error('PHONE_TEXTS must remain a literal array');
+        for (const text of declaration.initializer.elements) {
+          if (!ts.isStringLiteral(text)) throw new Error('PHONE_TEXTS must contain only literal speech strings');
+          const where = source(text, 'PHONE_TEXTS');
+          phoneSites.push(where); add(text.text, where);
+        }
+      }
+    }
+  }
+  if (!calls || !texts) throw new Error('Missing canonical telephone declarations');
+}
+
 const items = [...clips.values()];
 const report = {
   version: 1,
-  segmentation: 'Documents: transcript.split(/\\n\\s*\\n/), then whitespace normalization. Page first removes line-leading pencil markers (~ plus whitespace) and whole separator lines (at least three - or =, optionally spaced), then the same paragraphs. Talk: each lines[].text, same normalization. No titles, choices, status, reply or radio.',
+  segmentation: 'Documents: transcript.split(/\\n\\s*\\n/), then whitespace normalization. Page first removes line-leading pencil markers (~ plus whitespace) and whole separator lines (at least three - or =, optionally spaced), then the same paragraphs. Talk: each lines[].text. Telephone: literal PHONE_CALLS cue.text except aside, and PHONE_TEXTS. Same whitespace normalization. No titles, choices, status, reply, actor labels or radio.',
   clips: items,
   summary: {
     clipCount: items.length,
     documentClipCount: items.filter((item) => item.sources.some((s) => s.kind === 'document')).length,
     pageClipCount: items.filter((item) => item.sources.some((s) => s.kind === 'page')).length,
     talkClipCount: items.filter((item) => item.sources.some((s) => s.kind === 'talk')).length,
+    phoneClipCount: items.filter((item) => item.sources.some((s) => s.kind === 'phone')).length,
     words: items.reduce((sum, item) => sum + item.text.split(/\s+/).length, 0),
     characters: items.reduce((sum, item) => sum + item.text.length, 0),
     transcriptDeclarations: documents.length,
     pageDeclarations: pages.length,
     staticPageVariants: pages.filter((p) => !p.dynamic && !p.empty).reduce((sum, p) => sum + p.variants, 0),
     talkSourceSites: talkSites.length,
+    phoneSourceSites: phoneSites.length,
   },
   documents,
   pages,
+  phoneSites,
   unavailableDynamicDocuments: dynamic,
   availabilityPolicy: 'Runtime requires every paragraph/line in a requested reading to be present. Dynamic documents remain unavailable rather than silently skipping text.',
 };

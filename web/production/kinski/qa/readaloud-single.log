@@ -8,7 +8,7 @@ PASS desktop document and reading controls fit the viewport
 PASS description reading is explicitly labelled separately from the paper's actual text
 PASS Read decodes a real MP3 and starts its buffer through master (4.23s)
 PASS the live Read button becomes Stop reading
-PASS real narration samples reach master and obey master volume (0.13036, muted 0.00000)
+PASS real narration samples reach master and obey master volume (0.12957, muted 0.00000)
 PASS Stop reading immediately cancels the current clip and queue
 PASS stopping restores the specific Read description label
 PASS document close still runs the game's original filing callback

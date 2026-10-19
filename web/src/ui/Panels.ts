@@ -265,6 +265,7 @@ export function talk(ui: UI, o: {
   onTable: () => void;
   onChoice: (id: string) => void;
   onRead: (id: string) => void;
+  onLines?: (lines: TalkLine[]) => void;
   onClose?: () => void;
 }) {
   const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div><div data-reading></div>', o.onClose);
@@ -303,6 +304,7 @@ export function talk(ui: UI, o: {
     body.querySelector('[data-a=table]')?.addEventListener('click', () => { o.onTable(); render(); });
     body.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => { o.onChoice(b.dataset.c!); render(); }));
     body.querySelectorAll<HTMLButtonElement>('[data-read]').forEach((b) => b.addEventListener('click', () => o.onRead(b.dataset.read!)));
+    if (fresh) o.onLines?.(v.lines);
   };
   render();
   return { el, refresh: render };

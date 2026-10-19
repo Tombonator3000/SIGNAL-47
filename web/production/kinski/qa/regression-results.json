@@ -2,7 +2,7 @@
   {
     "name": "walkthrough",
     "exit_code": 0,
-    "seconds": 15.61,
+    "seconds": null,
     "url": null,
     "command": [
       "bash",
@@ -13,12 +13,13 @@
       "844x390",
       "high"
     ],
-    "log": "walkthrough.log"
+    "log": "walkthrough.log",
+    "note": "57/57 on rerun after updating expected ordinary/telephone sound counts; first log retained."
   },
   {
     "name": "chapter1",
     "exit_code": 0,
-    "seconds": 20.78,
+    "seconds": 20.88,
     "url": null,
     "command": [
       "bash",
@@ -33,7 +34,7 @@
   {
     "name": "chapter2",
     "exit_code": 0,
-    "seconds": 18.31,
+    "seconds": 18.88,
     "url": null,
     "command": [
       "bash",
@@ -47,7 +48,7 @@
   {
     "name": "chapter3",
     "exit_code": 0,
-    "seconds": 25.27,
+    "seconds": 26.52,
     "url": null,
     "command": [
       "bash",
@@ -61,7 +62,7 @@
   {
     "name": "chapter4",
     "exit_code": 0,
-    "seconds": 20.12,
+    "seconds": 20.35,
     "url": null,
     "command": [
       "bash",
@@ -75,7 +76,7 @@
   {
     "name": "chapter5",
     "exit_code": 0,
-    "seconds": 16.19,
+    "seconds": 16.73,
     "url": null,
     "command": [
       "bash",
@@ -89,7 +90,7 @@
   {
     "name": "chapter6",
     "exit_code": 0,
-    "seconds": 51.01,
+    "seconds": 51.22,
     "url": null,
     "command": [
       "bash",
@@ -103,7 +104,7 @@
   {
     "name": "devmenu",
     "exit_code": 0,
-    "seconds": 10.92,
+    "seconds": 11.31,
     "url": null,
     "command": [
       "bash",
@@ -117,7 +118,7 @@
   {
     "name": "drives",
     "exit_code": 0,
-    "seconds": 53.37,
+    "seconds": 54.42,
     "url": null,
     "command": [
       "bash",
@@ -131,7 +132,7 @@
   {
     "name": "ambience",
     "exit_code": 0,
-    "seconds": 12.19,
+    "seconds": 13.56,
     "url": null,
     "command": [
       "bash",
@@ -144,7 +145,7 @@
   {
     "name": "diner",
     "exit_code": 0,
-    "seconds": 12.22,
+    "seconds": 12.28,
     "url": null,
     "command": [
       "bash",
@@ -158,7 +159,7 @@
   {
     "name": "music-pages",
     "exit_code": 0,
-    "seconds": 32.42,
+    "seconds": 32.48,
     "url": "http://127.0.0.1:8497/SIGNAL-47/",
     "command": [
       "bash",
@@ -171,7 +172,7 @@
   {
     "name": "music-single",
     "exit_code": 0,
-    "seconds": 9.17,
+    "seconds": 6.67,
     "url": null,
     "command": [
       "bash",

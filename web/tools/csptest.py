@@ -26,7 +26,10 @@ async def main():
         fonts = await pg.evaluate("[...document.fonts].filter(f => f.status === 'loaded').map(f => f.family)")
         await pg.click('button[data-a=start]'); await pg.wait_for_timeout(1500)
         await pg.evaluate("S47.hold = true; S47.tick(1)")
-        sounds = await pg.evaluate("Object.keys(S47.game.d.audio.buf || {}).length")
+        sound_keys = await pg.evaluate("Object.keys(S47.game.d.audio.buf || {})")
+        sounds = len(sound_keys)
+        ordinary = len([key for key in sound_keys if not key.startswith('phone:')])
+        telephone = len([key for key in sound_keys if key.startswith('phone:')])
         art = await pg.evaluate("S47.art()")
         print('fonts loaded:', len(fonts), fonts)
         print('sounds decoded:', sounds)
@@ -37,7 +40,7 @@ async def main():
         start = [i for i in art['loaded'] if i not in art['later']]
         early = sorted(i for i in art['loaded'] if i in art['later'])
         print('later images already loaded:', early)
-        passed = len(fonts) == 4 and sounds == 45 and len(start) == art['expected'] == 28 and 'halleyPoster' in early and not errs
+        passed = len(fonts) == 4 and ordinary == 45 and telephone == 24 and len(start) == art['expected'] == 28 and 'halleyPoster' in early and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:

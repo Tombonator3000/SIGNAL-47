@@ -39,7 +39,10 @@ async def main():
         check(await ev("S47.renderer.info.render.calls") > 60, f'draw calls counted over both passes ({await ev("S47.renderer.info.render.calls")})')
         try: await pg.wait_for_function("Object.keys(S47.game.d.audio.buf).length >= 25", timeout=60000)
         except Exception: pass
-        check(await ev("Object.keys(S47.game.d.audio.buf).length") == 45, 'all 45 sounds decoded')
+        sounds = await ev("Object.keys(S47.game.d.audio.buf)")
+        check(len([key for key in sounds if not key.startswith('phone:')]) == 45 and
+              len([key for key in sounds if key.startswith('phone:')]) == 24,
+              'all 45 ordinary sounds and 24 telephone recordings decoded')
         check(await ev("(()=>{ const a=S47.game.d.audio; ['tile','concrete','dirt','wood','carpet'].forEach(s=>a.step(s)); a.thunder(0.4); a.far('owl', S47.player.pos, 0.3); return true; })()"), 'steps on every surface, far thunder and a far owl play')
         dup = await ev("(()=>{ const ids = S47.game.d.inter.items.map(i => i.id); return ids.filter((x, i) => ids.indexOf(x) !== i); })()")
         check(not dup, f'every interactable has its own id ({dup})')

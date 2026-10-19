@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "segmentation": "Documents: transcript.split(/\\n\\s*\\n/), then whitespace normalization. Page first removes line-leading pencil markers (~ plus whitespace) and whole separator lines (at least three - or =, optionally spaced), then the same paragraphs. Talk: each lines[].text, same normalization. No titles, choices, status, reply or radio.",
+  "segmentation": "Documents: transcript.split(/\\n\\s*\\n/), then whitespace normalization. Page first removes line-leading pencil markers (~ plus whitespace) and whole separator lines (at least three - or =, optionally spaced), then the same paragraphs. Talk: each lines[].text. Telephone: literal PHONE_CALLS cue.text except aside, and PHONE_TEXTS. Same whitespace normalization. No titles, choices, status, reply, actor labels or radio.",
   "clips": [
     {
       "id": "c8cab78b3df10c77",
@@ -1394,6 +1394,12 @@
           "line": 796,
           "kind": "talk",
           "helper": "you"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 36,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1406,6 +1412,12 @@
           "line": 797,
           "kind": "talk",
           "helper": "n"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 37,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1418,6 +1430,12 @@
           "line": 798,
           "kind": "talk",
           "helper": "n"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 38,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1442,6 +1460,12 @@
           "line": 800,
           "kind": "talk",
           "helper": "n"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 39,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1454,6 +1478,12 @@
           "line": 801,
           "kind": "talk",
           "helper": "literal TalkLine"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 40,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1466,6 +1496,12 @@
           "line": 802,
           "kind": "talk",
           "helper": "n"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 41,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1955,6 +1991,12 @@
           "line": 360,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 42,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1967,6 +2009,12 @@
           "line": 361,
           "kind": "talk",
           "helper": "you"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 43,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1979,6 +2027,12 @@
           "line": 362,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 44,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -1991,6 +2045,12 @@
           "line": 363,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 45,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -2267,6 +2327,12 @@
           "line": 460,
           "kind": "talk",
           "helper": "you"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 46,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -2279,6 +2345,12 @@
           "line": 460,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 47,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -2291,6 +2363,12 @@
           "line": 464,
           "kind": "talk",
           "helper": "you"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 48,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -2303,6 +2381,12 @@
           "line": 465,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 49,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -2315,6 +2399,12 @@
           "line": 466,
           "kind": "talk",
           "helper": "E"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 50,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
         }
       ]
     },
@@ -4122,19 +4212,183 @@
           "paragraph": 1
         }
       ]
+    },
+    {
+      "id": "411ccd2aabf90365",
+      "text": "That is enough to hold the morning series. It is not enough to tell us why it happened.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 6,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 27,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "1e0e06da85e1e3f8",
+      "text": "Check the reference record. If the instrument inherited the fault, the record may tell us from where.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 7,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 28,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "55e04efecd88edfa",
+      "text": "Sierra Motor Court.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 10,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 29,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "0f00c8288b54e9dc",
+      "text": "Station One. Nobody has asked me for that key in a long time.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 12,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 30,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "21df91635ff1db44",
+      "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 13,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 31,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "b7e24473f2824852",
+      "text": "So you went out there.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 16,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 32,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "7f69b3847d102724",
+      "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 17,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 33,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "c13f56f927edc83e",
+      "text": "You have seen the cable now. It did not break by itself.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 18,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 34,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
+    },
+    {
+      "id": "c88b297e80f976bd",
+      "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 19,
+          "kind": "phone",
+          "declaration": "PHONE_CALLS"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 35,
+          "kind": "phone",
+          "declaration": "PHONE_TEXTS"
+        }
+      ]
     }
   ],
   "summary": {
-    "clipCount": 328,
+    "clipCount": 337,
     "documentClipCount": 52,
     "pageClipCount": 84,
     "talkClipCount": 192,
-    "words": 4798,
-    "characters": 26217,
+    "phoneClipCount": 24,
+    "words": 4924,
+    "characters": 26859,
     "transcriptDeclarations": 39,
     "pageDeclarations": 37,
     "staticPageVariants": 33,
-    "talkSourceSites": 189
+    "talkSourceSites": 189,
+    "phoneSourceSites": 33
   },
   "documents": [
     {
@@ -4783,6 +5037,206 @@
       "variants": 1,
       "empty": false,
       "dynamic": true
+    }
+  ],
+  "phoneSites": [
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 6,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 7,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 10,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 12,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 13,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 16,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 17,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 18,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 19,
+      "kind": "phone",
+      "declaration": "PHONE_CALLS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 27,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 28,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 29,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 30,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 31,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 32,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 33,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 34,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 35,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 36,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 37,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 38,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 39,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 40,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 41,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 42,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 43,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 44,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 45,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 46,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 47,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 48,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 49,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "line": 50,
+      "kind": "phone",
+      "declaration": "PHONE_TEXTS"
     }
   ],
   "unavailableDynamicDocuments": [

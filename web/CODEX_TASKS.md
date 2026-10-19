@@ -30,3 +30,8 @@ Bevisbordet (`B`, eller Board i notatboka) har regelbøker for kapittel 2 til 5,
 ### 3. [x] Valgfri Kinski-opplesning, direkte bestilt av Tom (`codex/kinski-read-aloud`)
 
 Base: main `bada636`. Bestilt direkte i samtalen 19. oktober. 328 ferdig genererte lydklipp, valgfri innstilling og lese-/stoppknapper i papir- og samtalepaneler. Begge bygg og pålagte tester PASS, med resultater i `production/kinski/qa/`. Se `KINSKI_READALOUD.md` for bruk, tekstdekning og lytting som gjenstår hos Tom. Lokal commit uten push eller PR.
+
+
+### 4. [x] Telefonstemmene som ferdig Kinski, direkte bestilt av Tom (`codex/kinski-read-aloud`)
+
+Videreføring av oppgave 3 fra `c3dd6b1`. 24 unike telefonreplikker, ni nye opptak. Automatisk avspilling ved svar/oppringing/telefonvalg, ekte bufferlengder, pause og ryddig avbrudd. Telefonmanuset følger leveransen. TypeScript, begge bygg, telefonprøver og pålagte spilltester PASS. Lokal commit uten push eller PR.

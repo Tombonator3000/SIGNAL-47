@@ -311,6 +311,7 @@ export class UI {
 
   /** Called when a paper is opened (the sound of the page; set by main). */
   onPaper?: () => void;
+  onReadingStart?: () => void;
   /** Explicit playback only: opening a paper or refreshing a conversation stays quiet. */
   readingControls(parent: HTMLElement, texts: string[], label = 'Read aloud', kind = 'conversation') {
     const reader = this.readAloud;
@@ -335,7 +336,7 @@ export class UI {
     button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', () => {
       if (active) reader.stop();
-      else void reader.play(texts, update);
+      else { this.onReadingStart?.(); void reader.play(texts, update); }
     });
     parent.insertBefore(box, parent.querySelector('.controls'));
   }
@@ -472,7 +473,7 @@ export class UI {
         <div class="set"><label for="mus">Music</label><input id="mus" type="range" min="0" max="1" step="0.01" value="${o.music}"></div>
         <div class="set"><label for="rad">Radio</label><input id="rad" type="range" min="0" max="1" step="0.01" value="${o.radio}"></div>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
-        <p class="small reading-note">Synthetic parody voice. Use Read aloud in documents and conversations.</p>
+        <p class="small reading-note">Synthetic parody voice. Read papers and conversations; phone voices play when you answer.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>

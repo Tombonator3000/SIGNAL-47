@@ -47,17 +47,21 @@
     "conversations": "TalkView.lines[].text from Chapter4, Chapter5 and caliche, including YOU and aside. Not choices, status or reply.",
     "radio": "Excluded, including Chapter4 CB utterances.",
     "counts": {
-      "clipCount": 328,
+      "clipCount": 337,
       "documentClipCount": 52,
       "pageClipCount": 84,
       "talkClipCount": 192,
-      "words": 4798,
-      "characters": 26217,
+      "phoneClipCount": 24,
+      "words": 4924,
+      "characters": 26859,
       "transcriptDeclarations": 39,
       "pageDeclarations": 37,
       "staticPageVariants": 33,
-      "talkSourceSites": 189
-    }
+      "talkSourceSites": 189,
+      "phoneSourceSites": 33
+    },
+    "telephone": "Canonical literal PHONE_CALLS cue.text except aside, and PHONE_TEXTS from src/core/phoneScripts.ts. Exact speech only; actor labels, quotation marks and the unsaid player aside are excluded. 24 phone texts reuse 15 existing clips and add nine from Ward/Nora in chapters 2 and 3.",
+    "telephone_manuscript": "production/kinski/telefonmanus.md: all 24 exact authored speech lines by scene and actor, with the unsaid chapter 2 player aside explicitly marked silent."
   },
   "dynamic_unavailable": [
     {
@@ -104,12 +108,12 @@
   ],
   "dynamic_policy": "A requested document or dialogue block is available only when every paragraph/line has matching generated audio. No silent skipping over unknown text.",
   "qa": {
-    "completed_utc": "2026-10-19T09:13:12.189724+00:00",
+    "completed_utc": "2026-10-19T09:30:35.942224+00:00",
     "report": "production/kinski/verification.json",
     "status": "PASS",
-    "clips": 328,
-    "bytes": 11534432,
-    "duration_seconds": 1413.29,
+    "clips": 337,
+    "bytes": 11805932,
+    "duration_seconds": 1446.43,
     "pcm_encoding": "All MP3 re-decoded and ffprobe checked: mono, 24000 Hz, MP3. All catalog IDs/text/hash/durations match corpus and generation report.",
     "positive_catalog_and_decoded_duration": true,
     "max_decoded_peak_dbfs": -2.483080623297776,
@@ -117,24 +121,44 @@
     "catalog_ids_match_corpus": true,
     "orphan_mp3_files": [],
     "dropped_chunks": {
-      "confirmed_zero": 328,
+      "confirmed_zero": 337,
       "unrecorded_ids": []
     },
     "asr": {
       "engine": "faster-whisper-small",
-      "samples": 6,
-      "exact_token_matches": 3,
-      "strict_word_edits": 12,
-      "expected_sample_tokens": 152,
-      "interpretation": "Three exact token matches; two differ in numeric/time spelling and hyphenation. One short A/B/C survey-label passage has six edits in eleven tokens and needs listening review. Automatic transcription does not establish audible word accuracy or similarity.",
+      "samples": 8,
+      "exact_token_matches": 4,
+      "strict_word_edits": 13,
+      "expected_sample_tokens": 187,
+      "interpretation": "Original six dispersed samples are preserved. Two added phone samples: Ward has no token edits; Nora has one inflection difference (developed to develop). Numeric/time spelling and a short A/B/C survey passage remain flagged from the original samples. Automatic transcription does not establish audible word accuracy or similarity.",
       "listening_review_clip_ids": [
-        "c21188610bc7ce84"
+        "c21188610bc7ce84",
+        "c88b297e80f976bd"
       ]
     },
     "rejected_take": "Silent T. take was rejected; final initial uses Tee. A history-recovered first take was regenerated with identical text/seed to capture an explicit dropped_chunks=0 response.",
     "human_listened": false,
     "speaker_similarity": "UNVERIFIED",
-    "emotional_delivery": "UNVERIFIED"
+    "emotional_delivery": "UNVERIFIED",
+    "phone_extension": {
+      "new_clips": 9,
+      "new_ids": [
+        "411ccd2aabf90365",
+        "1e0e06da85e1e3f8",
+        "55e04efecd88edfa",
+        "0f00c8288b54e9dc",
+        "21df91635ff1db44",
+        "b7e24473f2824852",
+        "7f69b3847d102724",
+        "c13f56f927edc83e",
+        "c88b297e80f976bd"
+      ],
+      "phone_text_count": 24,
+      "old_clip_count": 328,
+      "old_texts_and_mp3_hashes_unchanged": true,
+      "new_asr_samples": 2,
+      "new_asr_strict_word_edits": 1
+    }
   },
   "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing installed local API and profile reused; no new model or service installed.",
   "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",

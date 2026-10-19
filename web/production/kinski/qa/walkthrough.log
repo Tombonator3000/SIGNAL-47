@@ -1,7 +1,7 @@
 PASS game starts in intro phase
 PASS picture defaults to the VHS look on high
 PASS draw calls counted over both passes (242)
-PASS all 45 sounds decoded
+PASS all 45 ordinary sounds and 24 telephone recordings decoded
 PASS steps on every surface, far thunder and a far owl play
 PASS every interactable has its own id ([])
 PASS shift log read and filed
