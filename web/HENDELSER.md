@@ -7,9 +7,9 @@ Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`, med nyere main `c0
 | Opplevelse | Spillerens handling | Nytt spor |
 | --- | --- | --- |
 | Femcenten i telefonautomaten | Vis mynten til betjenten etter samtalen om den gamle veien | Han sier automaten tar ti cent. Han skyver mynten tilbake; den blir i Kit. En avskrift av samtalen går i Papers. |
-| Den tomme patruljebilen | Spør nestlederen etter at han er tilbake, etter samtalen om de grønne nålene | Han fastholder at han kjørte runden. Nøkkelen er hos ham. Observasjonen og svaret står ved siden av hverandre, uten en fasit. |
+| Den tomme patruljebilen | Spør nestlederen etter at han er tilbake, etter samtalen om de grønne nålene | Han fastholder at han kjørte runden. Når hatten på setet nevnes, ser han på hatten ved døra. Observasjonen og svaret står ved siden av hverandre, uten en fasit. |
 | Gutten på Night Line | Snakk med Earl etter at du faktisk har hørt gutten og spurt om 1981-båndet | Programarket har BOY / COMET, uten telefonnummer. Det gamle båndet er fortsatt uspilt. |
-| Kua som mangler | Fortell kvinnen på benken om funnet etter samtalen om mannen hennes | Hun spør om gjerdet og de andre dyrene. Samtalen gir et vanlig holdepunkt for noe hun ikke vil forklare. |
+| Kua som mangler | Fortell kvinnen på benken om funnet etter samtalen om mannen hennes | Hun ber deg skrive begge opptellingene før du antar at du telte feil. Mannens opplevelse forblir ufortalt. |
 | 1947 på 1420 | Hør hele sendingen i bilen | Seks skrevne, oppdiktede bulletinlinjer i 47 sekunder. Deretter fortsetter den avbrutte setningen eller platen på samme sted. |
 | TV-en på motellkontoret | Se skjermen når oversiktsbildet kommer | Et faktisk bilde av spillscenen med bilen der og slik den står. Bildet kan gjenåpnes på TV-en eller i Photos, også etter Continue. |
 | Telefonautomaten etter rom 6 | Gå tilbake før avreisen 05:20 og svar | En motor hoster to ganger og dør, så relégrupper på fire og sju. Nyere mains innspilte motor og linjesus er beholdt. Anropet kan nå skje etter 05:00; det gamle tidsvinduet stengte 04:45. |
