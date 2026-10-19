@@ -32,6 +32,7 @@ function lambertOf(m: THREE.MeshStandardMaterial): THREE.MeshLambertMaterial {
   });
   l.name = m.name;
   l.toneMapped = m.toneMapped;
+  l.forceSinglePass = m.forceSinglePass;   // (a see-through double-sided one drawn in one pass, not two)
   // keep the fake sodium floodlights (kit.floodlit) on the cheap material too
   l.onBeforeCompile = m.onBeforeCompile;
   l.customProgramCacheKey = m.customProgramCacheKey;

@@ -3,13 +3,14 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { GlowPoints, glowScale } from './glow';
 import { floodlit, type FloodSet } from './kit';
 import { canvasTex, rng } from '../core/textures';
-import { getQuality } from '../core/quality';
+import { getQuality, materialFor } from '../core/quality';
 
 // Life in the night (Tom, 19 October: more realistic places, with more in them). The night is
-// alive without being busy: moths round the sodium lamps and the porch lights, bats near the big
-// lamps in the early night, dust in the flashlight's beam and in the headlights on the survey
-// track, lights far out on the land (a car on a county road now and then, a ranch window that
-// goes out, a kitchen that lights up before dawn), and now and then a tumbleweed across the
+// alive without being busy: moths round the sodium lamps and the porch lights (and a few resting
+// on the wall by a porch light), bats at the lamps the player walks under in the early night,
+// dust in the flashlight's beam and in the headlights on the survey track, lights far out on the
+// land (a car on a county road now and then, ranch and trailer windows that go out and come on, a
+// siding's lamps), tumbleweeds caught where the wind left them, and now and then one across the
 // highway or the lot in a gust. None of it is the story's: nothing comes near, nothing stops to
 // look, nothing glows in the sky (core/glimpses.ts, story/nightEvents.ts and story/townEvents.ts
 // have the night's strange things, and while one of them is on there is no car and no tumbleweed).
@@ -17,21 +18,29 @@ import { getQuality } from '../core/quality';
 // Cheap on purpose, a phone runs High: all the moths and bats of an area are one point cloud that
 // moves in its vertex shader (no work per frame but a few numbers), the dust is one cloud for the
 // flashlight and one for the headlights, drawn only while the light is on, the far lights are one
-// GlowPoints per area, and a tumbleweed is three crossed planes, drawn only while one rolls. Low
-// draws a third of the moths, half the dust and no bats. Nothing here is a collider or a light,
-// and nothing can be hit by a ray (the crosshair, the ground under the feet).
+// GlowPoints per area, a tumbleweed is six crossed planes, drawn only while one rolls, and those
+// lying about are one mesh per lamp set. Low keeps two thirds of the moths, half the dust and
+// half the lying tumbleweeds, and no bats. Nothing here is a collider or a light, and nothing can
+// be hit by a ray (the crosshair, the ground under the feet). It has its own random numbers, so
+// the rest of the night goes the same with it or without it.
 //
 // Every area's lamps are read from its own glows (world/glow.ts), as airlight.ts reads its cones,
 // so a lamp that goes out (Caliche's at dawn and in event 8) takes its moths with it, and the
 // areas' own files need not know about any of this.
 
-/** A lamp the insects find: where (in the moth cloud's terms), its colour, how lit it is now. */
-export interface LifeLamp { p: THREE.Vector3; col: THREE.Color; k: () => number; big: boolean }
+/** The life's own random numbers (never Math.random: the rest of the night draws from that). */
+const rand = rng((Date.now() % 2147483647) ^ 0x4747);
+const rnd = (a: number, b: number) => a + rand() * (b - a);
+
+/** A lamp the insects find: where (in the moth cloud's terms), its colour, how lit it is now, how
+ *  high over the ground; a porch light has the wall it is on (normal, and places to rest on it). */
+export interface LifeLamp { p: THREE.Vector3; col: THREE.Color; k: () => number; big: boolean; h: number; wall?: { n: THREE.Vector3; rest: THREE.Vector3[] } }
 export type LifeArea = 'saro' | 'road' | 'station01';
 
 /** The lamps among some groups' glows: warm or white, bright, the size of a lamp's own glow (not
- *  its halo, not an indicator, not a red beacon or a coloured sign), in `into`'s terms. */
-export function lifeLamps(roots: THREE.Object3D[], into: THREE.Object3D, ok: (p: THREE.Vector3, size: number) => boolean): LifeLamp[] {
+ *  its halo, not an indicator or a lamp indoors, not a red beacon or a coloured sign), in `into`'s
+ *  terms. ground: the ground under a world point. */
+export function lifeLamps(roots: THREE.Object3D[], into: THREE.Object3D, ground: (w: THREE.Vector3) => number, ok: (w: THREE.Vector3, size: number, h: number) => boolean): LifeLamp[] {
   const out: LifeLamp[] = [];
   into.updateWorldMatrix(true, false);
   const inv = new THREE.Matrix4().copy(into.matrixWorld).invert(), m = new THREE.Matrix4(), w = new THREE.Vector3();
@@ -45,12 +54,13 @@ export function lifeLamps(roots: THREE.Object3D[], into: THREE.Object3D, ok: (p:
       m.multiplyMatrices(inv, pts.matrixWorld);
       for (let i = 0; i < pos.count; i++) {
         const r = col.getX(i), g = col.getY(i), b = col.getZ(i), s = size.getX(i);
-        if (r < 0.75 || g < 0.3 || b > g || s < 0.3 || s > 6) continue;
+        if (r < 0.75 || g < 0.3 || b > g || s < 0.38 || s > 6) continue;
         const p = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(m);
         w.copy(p).applyMatrix4(into.matrixWorld);
-        if (!ok(w, s) || out.some((L) => L.p.distanceToSquared(p) < 0.6)) continue;
+        const h = w.y - ground(w);
+        if (!ok(w, s, h) || out.some((L) => L.p.distanceToSquared(p) < 0.6)) continue;
         // lit as long as its glow is (Town.ts darkens a lamp's glow when it goes off)
-        out.push({ p, col: new THREE.Color(r, g, b).multiplyScalar(1 / r), k: () => col.getX(i) / r, big: s >= 2 });
+        out.push({ p, col: new THREE.Color(r, g, b).multiplyScalar(1 / r), k: () => col.getX(i) / r, big: s >= 2, h });
       }
     });
   }
@@ -72,65 +82,126 @@ export function activity(clock: number, dawn: number) {
 }
 
 // ---------- moths and bats round an area's lamps ----------
+// Four kinds of point in one cloud: 0 a moth flying round the lamp, 1 a bat, 2 a moth resting on
+// the wall by a porch light, 3 a moth that keeps close in front of the lens (a dark flicker
+// against it). A flying moth is drawn as a short streak along its way on the screen over the last
+// thirtieth of a second, as the eye and a camera see one, and never thinner than one and a half
+// pixels (a phone's screen and the adaptive resolution would lose them under a pixel).
 const MOTH_VS = /* glsl */`
-  attribute vec4 aSeed; attribute float aLamp; attribute float aKind; attribute vec3 aCol;
-  uniform float uTime, uPx, uMoth, uBat;
+  attribute vec4 aSeed; attribute float aLamp; attribute float aKind; attribute vec3 aCol; attribute vec4 aWall;
+  uniform float uTime, uPx, uMoth, uBat, uShut;
   uniform float uK[LAMPS];
-  varying vec3 vCol; varying float vA; varying float vKind; varying float vFlap;
+  varying vec3 vCol; varying float vA; varying float vKind; varying float vFlap; varying vec2 vDir; varying vec3 vS;
+  // where a moth is round its lamp (the lens, at position) at time t
+  vec3 mothAt(float t) {
+    float porch = aWall.w, wide = step(0.86, aSeed.y) * step(aKind, 2.5);
+    float tt = t * (0.8 + 0.5 * aSeed.x);
+    // most of a swarm keeps within half a metre of the lens, a few go out on wider loops
+    float r0 = mix(0.12 + 0.38 * aSeed.y * aSeed.y, 0.6 + 0.8 * aSeed.z, wide) * (aKind > 2.5 ? 0.4 : 1.0);
+    float r = r0 * (0.75 + 0.25 * sin(tt * 1.3 + aSeed.z * 6.28));
+    // (the tighter the loop, the quicker round it)
+    float a1 = tt * (4.0 + 4.0 * aSeed.z) / (0.5 + 2.5 * r0) * (aSeed.w < 0.5 ? 1.0 : -1.0) + aSeed.w * 6.28;
+    // under a pole lamp's head; at or above the bottom edge of a porch light
+    float y = mix(-0.16 + 0.14 * sin(tt * 2.1 + aSeed.x * 9.0), 0.1 + 0.12 * sin(tt * 2.3 + aSeed.x * 9.0), porch) * (1.0 + 2.0 * wide);
+    vec3 o = vec3(cos(a1) * r, y + 0.06 * sin(tt * 7.3 + aSeed.y * 7.0), sin(a1 * 1.17 + aSeed.y * 3.0) * r);
+    // and the dart and jink of a moth at a light
+    o += 0.04 * vec3(sin(tt * 17.0 + aSeed.w * 30.0), sin(tt * 19.0 + aSeed.z * 20.0), cos(tt * 15.0 + aSeed.x * 25.0));
+    // a wall behind the light: a loop that would go into it comes back out in front
+    float on = dot(o, aWall.xyz);
+    o += aWall.xyz * (abs(on) - on + 0.05 * porch);
+    return position + o;
+  }
+  vec2 screen(vec4 mv) { return mv.xy / max(-mv.z, 0.05) * uPx; }
   void main() {
     float k = uK[int(aLamp + 0.5)];
-    vec3 c = position, p;
-    float size, a, lit;
-    if (aKind < 0.5) {
-      // a moth: loops round the lamp and a little under it, never still, darting now and then
-      float t = uTime * (0.7 + 0.6 * aSeed.x);
-      float r = 0.18 + 0.75 * aSeed.y * (0.65 + 0.35 * sin(t * 0.9 + aSeed.z * 6.28));
-      float a1 = t * (2.0 + aSeed.z * 1.8) + aSeed.w * 6.28;
-      p = c + vec3(cos(a1) * r, -0.3 + 0.4 * sin(t * 1.7 + aSeed.x * 9.0) + 0.12 * sin(t * 5.3 + aSeed.y * 7.0), sin(a1 * 1.31 + aSeed.y * 3.0) * r);
-      p += 0.07 * vec3(sin(t * 11.0 + aSeed.w * 30.0), sin(t * 13.0 + aSeed.z * 20.0), cos(t * 12.0 + aSeed.x * 25.0));
-      float d = length(p - c);
-      lit = 0.2 + 1.0 / (1.0 + d * d * 3.0);
-      size = 0.05;
+    vec3 c = position, p = c;
+    float size, a, px, len = 0.0;
+    vec2 dir = vec2(1.0, 0.0);
+    vec4 mv;
+    vS = vec3(0.0);
+    if (aKind < 0.5 || aKind > 2.5) {
+      p = mothAt(uTime);
+      mv = modelViewMatrix * vec4(p, 1.0);
+      vec2 d = screen(mv) - screen(modelViewMatrix * vec4(mothAt(uTime - uShut), 1.0));
+      len = length(d);
+      if (len > 1e-3) dir = d / len;
+      float dl = length(p - c);
+      float lit = 0.25 + 1.0 / (1.0 + dl * dl * 3.0);
+      // between the eye and the lens it is a silhouette against the light
+      vec3 lv = (modelViewMatrix * vec4(c, 1.0)).xyz;
+      float perp = length(mv.xy / -mv.z - lv.xy / -lv.z) * -lv.z;
+      float R = aKind > 2.5 ? 0.3 : 0.16;
+      float dark = (1.0 - smoothstep(R * 0.5, R, perp)) * smoothstep(0.0, 0.06, mv.z - lv.z);
+      vFlap = 0.5 + 0.5 * abs(sin(uTime * (31.0 + 17.0 * aSeed.y) + aSeed.w * 6.28));
+      vCol = mix(mix(aCol, vec3(1.0, 0.86, 0.66), 0.15) * lit * vFlap, vec3(0.03, 0.021, 0.013), dark);
+      size = 0.055;
       // fewer as the night cools: each moth has its own threshold
-      a = k * step(aSeed.x, uMoth);
-      vFlap = 0.45 + 0.55 * abs(sin(uTime * (31.0 + 17.0 * aSeed.y) + aSeed.w * 6.28));
-    } else {
+      a = k * step(aSeed.x, uMoth) * mix(1.0, 0.75, dark);
+      vKind = 0.0;
+    } else if (aKind < 1.5) {
       // a bat: wide quick loops through the lamp's light and out of it, hunting the moths;
-      // each comes for a while and is off into the dark for a while
+      // each comes for a while and is off into the dark for a while (aWall.w: the lamp's height)
       float t = uTime * (0.85 + 0.3 * aSeed.x) + aSeed.w * 40.0;
-      float R = 2.5 + 4.5 * (0.5 + 0.5 * sin(t * 0.23 + aSeed.y * 6.28));
+      float R = (2.5 + 4.5 * (0.5 + 0.5 * sin(t * 0.23 + aSeed.y * 6.28))) * aWall.w;
       float a1 = t * (6.0 / R) * (aSeed.z < 0.5 ? 1.0 : -1.0);
-      p = c + vec3(cos(a1) * R + 1.2 * sin(t * 2.3 + aSeed.y * 9.0), -1.4 + 1.3 * sin(t * 0.9 + aSeed.z * 5.0) + 0.4 * sin(t * 3.1), sin(a1 * 0.83 + aSeed.x * 4.0) * R);
+      p = c + vec3(cos(a1) * R + 1.2 * sin(t * 2.3 + aSeed.y * 9.0), (-1.4 + 1.3 * sin(t * 0.9 + aSeed.z * 5.0) + 0.4 * sin(t * 3.1)) * aWall.w, sin(a1 * 0.83 + aSeed.x * 4.0) * R);
+      mv = modelViewMatrix * vec4(p, 1.0);
       float d = length(p - c);
-      lit = 1.0 / (1.0 + d * d * 0.07);
+      vCol = aCol / (1.0 + d * d * 0.07) * (0.25 + 0.75 * k);
       size = 0.3;
       a = uBat * smoothstep(-0.3, 0.2, sin(t * 0.045 + aSeed.y * 6.28));
       vFlap = sin(uTime * (13.0 + 3.0 * aSeed.x) + aSeed.w * 6.28);
-      lit *= 0.25 + 0.75 * k;
+      vKind = 1.0;
+    } else {
+      // resting on the wall by the light, wings flat; now and then one twitches, shifts a little
+      // and settles again
+      float per = 14.0 + 22.0 * aSeed.y, ph = uTime / per + aSeed.z, n = floor(ph);
+      p = c + vec3(0.0, 0.018 * (fract(sin(n * 12.9898 + aSeed.w * 78.2) * 43758.5) - 0.5), 0.0);
+      mv = modelViewMatrix * vec4(p, 1.0);
+      vFlap = 1.0 + 0.6 * step(fract(ph), 0.012) * abs(sin(uTime * 40.0));
+      vCol = aCol * (0.05 + 0.1 * k) + 0.003;
+      size = 0.042;
+      a = 0.92;
+      vKind = 2.0;
+      dir = vec2(cos(aSeed.x * 6.28), sin(aSeed.x * 6.28));
     }
-    vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
     float dist = -mv.z;
-    float px = size * uPx / max(dist, 0.1);
-    // under a pixel: kept at one, fainter instead; gone well before they would only flicker
-    gl_PointSize = clamp(px, 1.0, 64.0);
-    vA = a * min(px, 1.0) * (1.0 - smoothstep(32.0, 55.0, dist)) * smoothstep(0.5, 1.5, dist);
+    px = size * uPx / max(dist, 0.1);
+    float w = max(px, 1.5);
+    if (vKind < 0.5) {
+      // the streak: from where it was a thirtieth of a second ago to where it is
+      float L = clamp(len, 2.5, 6.0);
+      gl_PointSize = L + w + 1.0;
+      vS = vec3(gl_PointSize, L, 0.5 * w);
+      // the point's middle is half way along it
+      gl_Position.xy -= dir * (0.5 * L) / uPx * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * gl_Position.w;
+    } else if (vKind < 1.5) {
+      gl_PointSize = clamp(px, 1.0, 64.0);
+    } else {
+      gl_PointSize = w * 1.4 + 1.0;
+      vS = vec3(gl_PointSize, 0.0, 0.5 * w);
+    }
+    vDir = dir;
+    // never thinner than a pixel and a half; fainter when really smaller; gone well before they would only flicker
+    vA = a * clamp(px / 0.9, 0.45, 1.0) * (1.0 - smoothstep(26.0, 48.0, dist)) * smoothstep(0.4, 1.0, dist);
+    if (vKind > 0.5 && vKind < 1.5) vA = a * min(px, 1.0) * (1.0 - smoothstep(32.0, 55.0, dist)) * smoothstep(0.5, 1.5, dist);
     if (vA < 0.002) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);   // (not flying now, or too far: no pixels)
-    // (a moth close under the lamp is all but white in it)
-    vCol = mix(aCol, vec3(1.0, 0.8, 0.55), 0.2 * (1.0 - aKind)) * lit;
-    vKind = aKind;
   }`;
 const MOTH_FS = /* glsl */`
   uniform float uGain;
-  varying vec3 vCol; varying float vA; varying float vKind; varying float vFlap;
+  varying vec3 vCol; varying float vA; varying float vKind; varying float vFlap; varying vec2 vDir; varying vec3 vS;
   void main() {
     vec2 q = gl_PointCoord - 0.5;
     float a; vec3 col;
     if (vKind < 0.5) {
-      // a fleck of light, brighter as a wing turns to the lamp
-      a = smoothstep(0.5, 0.12, length(q)) * vA;
-      col = vCol * vFlap * uGain;
-    } else {
+      // a streak with round ends, brighter at its head (where the moth is now)
+      vec2 s = vec2(q.x, -q.y) * vS.x;
+      float h = clamp(dot(s, vDir), -0.5 * vS.y, 0.5 * vS.y);
+      float e = length(s - vDir * h);
+      a = (1.0 - smoothstep(vS.z - 0.5, vS.z + 0.5, e)) * (0.55 + 0.45 * (h / max(vS.y, 1e-3) + 0.5)) * vA;
+      col = vCol * uGain;
+    } else if (vKind < 1.5) {
       // a bat from below: a small body and two wings, their tips going up and down, the
       // trailing edges scalloped between the fingers; dark, warm where the lamp catches it
       q.y = -q.y;
@@ -141,6 +212,13 @@ const MOTH_FS = /* glsl */`
       float body = step(length(q / vec2(0.075, 0.17)), 1.0);
       a = max(wing, body) * vA;
       col = vCol * vec3(0.1, 0.075, 0.055) + 0.0015;
+    } else {
+      // a moth at rest: a small dark delta, the wings opening a little when it twitches
+      vec2 s = vec2(q.x, -q.y) * vS.x;
+      vec2 u = vec2(dot(s, vDir), dot(s, vec2(-vDir.y, vDir.x))) / max(vS.z * 2.0, 1e-3);
+      float wing = step(-0.55, u.x) * step(u.x, 0.5) * step(abs(u.y), (0.55 - u.x) * 0.55 * vFlap);
+      a = max(wing, 1.0 - smoothstep(0.35, 0.6, length(u))) * vA;
+      col = vCol;
     }
     if (a < 0.01) discard;
     gl_FragColor = vec4(col, a);
@@ -153,42 +231,51 @@ export class LampMoths {
   readonly points: THREE.Points;
   private readonly mat: THREE.ShaderMaterial;
   private readonly k: number[];
-  /** Points in the buffer: the third of the moths Low draws first, then the rest, then the bats. */
-  readonly n: { low: number; moths: number; bats: number };
-  constructor(readonly lamps: LifeLamp[], parent: THREE.Object3D, bats: number, seed: number) {
+  /** Points in the buffer: what Low draws first (two thirds of each lamp's moths and those at rest), then the rest, then the bats. */
+  readonly n: { low: number; moths: number; bats: number; resting: number };
+  /** bats: how many hunt at each lamp (by index). */
+  constructor(readonly lamps: LifeLamp[], parent: THREE.Object3D, bats: number[], seed: number) {
     const r = rng(seed), L = Math.max(1, lamps.length);
-    const pos: number[] = [], sd: number[] = [], li: number[] = [], kind: number[] = [], col: number[] = [];
-    const put = (i: number, b: number) => {
-      const p = lamps[i].p, c = lamps[i].col;
-      pos.push(p.x, p.y - (b ? 0 : 0.12), p.z); sd.push(r(), r(), r(), r()); li.push(i); kind.push(b); col.push(c.r, c.g, c.b);
+    const pos: number[] = [], sd: number[] = [], li: number[] = [], kind: number[] = [], col: number[] = [], wall: number[] = [];
+    const put = (i: number, b: number, at?: THREE.Vector3) => {
+      const x = lamps[i], p = at ?? x.p, c = x.col, n = x.wall?.n;
+      pos.push(p.x, p.y, p.z); sd.push(r(), r(), r(), r()); li.push(i); kind.push(b); col.push(c.r, c.g, c.b);
+      // a moth: the wall behind its light and whether it is a porch light; a bat: how wide it hunts (a low lamp, closer in)
+      if (b === 1) wall.push(0, 0, 0, THREE.MathUtils.clamp(x.h / 7.5, 0.55, 1));
+      else wall.push(n?.x ?? 0, n?.y ?? 0, n?.z ?? 0, n ? 1 : 0);
     };
-    // a big lamp has about a dozen, a porch light half that, at the dead of night
-    const per = lamps.map((x) => x.big ? 12 : 7);
-    let low = 0, moths = 0;
-    lamps.forEach((_, i) => { for (let j = 0; j < Math.ceil(per[i] / 3); j++) { put(i, 0); low++; } });
-    lamps.forEach((_, i) => { for (let j = Math.ceil(per[i] / 3); j < per[i]; j++) put(i, 0); });
-    moths = pos.length / 3;
-    // the bats at the big lamps, spread along them
-    const big = lamps.map((x, i) => x.big ? i : -1).filter((i) => i >= 0);
-    const nb = big.length ? bats : 0;
-    for (let b = 0; b < nb; b++) put(big[Math.floor((b + 0.5) / nb * big.length)], 1);
+    // no two lamps alike: one swarmed, one all but empty (0.3 to 1.8 times a dozen at a pole
+    // lamp, eight at a porch light), at the dead of night
+    const per = lamps.map((x) => Math.max(1, Math.round((x.wall ? 8 : 12) * (0.3 + 1.5 * Math.pow(r(), 1.6)))));
+    let resting = 0;
+    lamps.forEach((x, i) => {
+      for (let j = 0; j < Math.ceil(per[i] * 2 / 3); j++) put(i, 0);
+      put(i, 3);
+      for (const q of x.wall?.rest ?? []) { put(i, 2, q); resting++; }
+    });
+    const low = pos.length / 3;
+    lamps.forEach((_, i) => { for (let j = Math.ceil(per[i] * 2 / 3); j < per[i]; j++) put(i, 0); put(i, 3); });
+    const moths = pos.length / 3;
+    bats.forEach((nb, i) => { for (let b = 0; b < nb; b++) put(i, 1); });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('aSeed', new THREE.Float32BufferAttribute(sd, 4));
     g.setAttribute('aLamp', new THREE.Float32BufferAttribute(li, 1));
     g.setAttribute('aKind', new THREE.Float32BufferAttribute(kind, 1));
     g.setAttribute('aCol', new THREE.Float32BufferAttribute(col, 3));
-    this.n = { low, moths, bats: nb };
+    g.setAttribute('aWall', new THREE.Float32BufferAttribute(wall, 4));
+    this.n = { low, moths, bats: pos.length / 3 - moths, resting };
     this.k = new Array(L).fill(1);
     this.mat = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 }, uPx: glowScale, uMoth: { value: 1 }, uBat: { value: 0 }, uGain: { value: 2.4 }, uK: { value: this.k } },
+      // (a gain over one and the tonemapping turns the sodium's amber white, like the stars behind)
+      uniforms: { uTime: { value: 0 }, uPx: glowScale, uMoth: { value: 1 }, uBat: { value: 0 }, uGain: { value: 1.2 }, uShut: { value: 1 / 30 }, uK: { value: this.k } },
       defines: { LAMPS: L }, vertexShader: MOTH_VS, fragmentShader: MOTH_FS,
       transparent: true, depthWrite: false, fog: false,
     });
     this.points = new THREE.Points(g, this.mat);
     this.points.name = 'life:moths';
     this.points.frustumCulled = false;
-    this.points.renderOrder = 3;   // over the lamps' own glows (2): a bat crossing one darkens it
+    this.points.renderOrder = 3;   // over the lamps' own glows (2): a bat or a moth crossing one darkens it
     this.points.raycast = () => {};
     this.points.visible = false;
     parent.add(this.points);
@@ -196,7 +283,7 @@ export class LampMoths {
   /** Points drawn now (moths, bats), for the tests. */
   drawn = { moths: 0, bats: 0 };
   /** Round all the lamps in world terms, 60 m out: farther off nothing of them shows (the shader
-   *  fades them out by 55 m), so they are not drawn at all (Caliche from the survey track). */
+   *  fades them out by 48 m), so they are not drawn at all (Caliche from the survey track). */
   private reach: THREE.Box3 | null = null;
   update(t: number, on: boolean, low: boolean, act: { moth: number; bat: number }, cam: THREE.Vector3) {
     const P = this.points;
@@ -217,13 +304,81 @@ export class LampMoths {
   }
 }
 
+/** The triangles of the scene's meshes within r of a point (world terms), once per porch light:
+ *  the rays that find its wall then test these few and not every triangle of a merged block. */
+function trisNear(scene: THREE.Object3D, p: THREE.Vector3, r: number) {
+  const out: THREE.Triangle[] = [], box = new THREE.Box3(p.clone().subScalar(r), p.clone().addScalar(r)), local = new THREE.Box3(), inv = new THREE.Matrix4();
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), tb = new THREE.Box3();
+  scene.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh || m.name.startsWith('life') || !m.geometry.getAttribute('position')) return;
+    const g = m.geometry;
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    _sph.copy(g.boundingSphere!).applyMatrix4(m.matrixWorld);
+    if (_sph.distanceToPoint(p) > r) return;
+    local.copy(box).applyMatrix4(inv.copy(m.matrixWorld).invert());
+    const pos = g.getAttribute('position'), idx = g.index, n = idx ? idx.count : pos.count;
+    for (let i = 0; i + 2 < n; i += 3) {
+      const i0 = idx ? idx.getX(i) : i, i1 = idx ? idx.getX(i + 1) : i + 1, i2 = idx ? idx.getX(i + 2) : i + 2;
+      a.fromBufferAttribute(pos, i0); b.fromBufferAttribute(pos, i1); c.fromBufferAttribute(pos, i2);
+      if (!local.intersectsBox(tb.setFromPoints([a, b, c]))) continue;
+      out.push(new THREE.Triangle(a.clone().applyMatrix4(m.matrixWorld), b.clone().applyMatrix4(m.matrixWorld), c.clone().applyMatrix4(m.matrixWorld)));
+    }
+  });
+  return out;
+}
+/** The nearest of some triangles along a ray within far, with the face's normal turned to the ray. */
+function hitTris(tris: THREE.Triangle[], o: THREE.Vector3, d: THREE.Vector3, far: number) {
+  _ray.set(o, d);
+  let best: { t: number; n: THREE.Vector3; at: THREE.Vector3 } | null = null;
+  for (const T of tris) {
+    if (!_ray.intersectTriangle(T.a, T.b, T.c, false, _hit)) continue;
+    const t = _hit.distanceTo(o);
+    if (t > far || (best && t >= best.t)) continue;
+    const n = T.getNormal(new THREE.Vector3());
+    best = { t, n: n.dot(d) > 0 ? n.negate() : n, at: _hit.clone() };
+  }
+  return best;
+}
+/** The wall a porch light is on (world terms), found with short rays round the fixture: the side
+ *  of it where most of nine of them meet an upright face within 0.8 m (a wall, not a post or a
+ *  narrow board the lamp hangs by). Then two to four places round the fixture where a moth can
+ *  sit, each on the wall itself (or the door's frame), none on the fixture. */
+function wallOf(p: THREE.Vector3, scene: THREE.Object3D, r: () => number) {
+  const tris = trisNear(scene, p, 1.4);
+  if (!tris.length) return null;
+  const at = (n: THREE.Vector3, u: number, v: number) => _o.copy(p).addScaledVector(_side.set(-n.z, 0, n.x), u).setY(p.y + v);
+  let best: { n: THREE.Vector3; d: number[] } | null = null;
+  for (const [x, z] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const n = new THREE.Vector3(-x, 0, -z), d: number[] = [];
+    for (const u of [-0.45, 0, 0.45]) for (const v of [-0.3, 0.15, 0.35]) {
+      const h = hitTris(tris, at(n, u, v), _dir.set(x, 0, z), 0.8);
+      if (h && Math.abs(h.n.y) < 0.25) d.push(h.t);
+    }
+    if (d.length >= 4 && (!best || d.length > best.d.length)) best = { n, d };
+  }
+  if (!best) return null;
+  const n = best.n, D = best.d.sort((x, y) => x - y)[best.d.length >> 1];
+  const rest: THREE.Vector3[] = [], want = 2 + Math.floor(r() * 3);
+  for (let k = 0; k < 10 && rest.length < want; k++) {
+    // beside and above the fixture more than under it (the door is under it)
+    const u = (r() < 0.5 ? -1 : 1) * (0.16 + 0.3 * r()), v = -0.12 + 0.5 * r();
+    if (Math.abs(u) < 0.2 && v < 0.12) continue;
+    const h = hitTris(tris, at(n, u, v), _dir.copy(n).negate(), D + 0.3);
+    if (!h || Math.abs(h.t - D) > 0.2 || h.n.dot(n) < 0.9 || rest.some((o) => o.distanceTo(h.at) < 0.1)) continue;
+    rest.push(h.at.addScaledVector(n, 0.022));
+  }
+  return { n, rest };
+}
+const _ray = new THREE.Ray(), _hit = new THREE.Vector3(), _sph = new THREE.Sphere(), _o = new THREE.Vector3(), _side = new THREE.Vector3(), _dir = new THREE.Vector3();
+
 // ---------- dust in a beam ----------
 const MOTE_VS = /* glsl */`
   attribute vec4 aSeed;
-  uniform float uTime, uPx, uSize, uDensity, uWobble, uFall, uPuff, uPuffSize, uPuffA, uCut;
+  uniform float uTime, uPx, uSize, uDensity, uWobble, uFall, uPuff, uPuffSize, uPuffA, uHead, uNear;
   uniform vec3 uCenter, uBox, uDrift;   // (uDrift: how far the air has carried them, wrapped by the box)
   uniform vec3 uBeamPos[2]; uniform vec3 uBeamDir[2]; uniform float uBeamK[2]; uniform vec2 uCos;
-  varying float vA; varying float vPuff;
+  varying float vA; varying float vPuff; varying float vSoft;
   void main() {
     // each mote has its place in the world, drifting; the box round the beam (always the same
     // size) wraps them, so they stay where they are as the light moves through them
@@ -234,34 +389,43 @@ const MOTE_VS = /* glsl */`
     vec3 wp = base + l;
     vec3 e = min(l, uBox - l) / (0.16 * uBox);
     float edge = clamp(min(min(e.x, e.y), e.z), 0.0, 1.0);
-    float light = 0.0;
+    // a few of them (when there is dust about) are soft puffs of it a metre or more across
+    float puff = step(uPuff, aSeed.w);
+    float light = 0.0, L0 = 0.0;
     for (int i = 0; i < 2; i++) {
       vec3 v = wp - uBeamPos[i];
       float L = length(v);
-      // (headlights on low beam: nothing much above uCut over the lamps)
-      light += uBeamK[i] * smoothstep(uCos.x, uCos.y, dot(v, uBeamDir[i]) / max(L, 1e-3)) / (1.0 + L * L * uFall) * (1.0 - smoothstep(0.0, uCut, v.y));
+      float b = uBeamK[i] * smoothstep(uCos.x, uCos.y, dot(v, uBeamDir[i]) / max(L, 1e-3)) / (1.0 + L * L * uFall);
+      // headlights on low beam: the top of the beam comes down with the distance
+      b *= mix(1.0, 1.0 - smoothstep(-0.12, 0.1, v.y - (0.15 - 0.012 * L)), uHead);
+      light += b;
+      if (i == 0) L0 = L;
     }
+    // the headlights' puffs only in the near part of the beam, thinning out along it
+    light *= mix(1.0, smoothstep(2.5, 4.0, L0) * (1.0 - smoothstep(8.0, 14.0, L0)), puff * uHead);
     vec4 mv = viewMatrix * vec4(wp, 1.0);
     gl_Position = projectionMatrix * mv;
     float dist = -mv.z;
-    // a few of them (when there is dust about) are soft puffs of it a metre or more across
-    float puff = step(uPuff, aSeed.w);
     float px = mix(uSize * (0.6 + 0.8 * aSeed.w), uPuffSize * (0.6 + 0.8 * fract(aSeed.w * 7.0)), puff) * uPx / max(dist, 0.05);
     gl_PointSize = clamp(px, 1.0, mix(16.0, 64.0, puff));
     vPuff = puff;
-    // brightest looking down the beam (the light scatters forward), glinting as each one turns
-    float fwd = 0.3 + 0.7 * pow(max(dot(normalize(wp - cameraPosition), uBeamDir[0]), 0.0), 3.0);
+    // a speck close to the eye is out of focus: a faint soft disc with the same light in it
+    float blur = puff > 0.5 ? 1.0 : min(1.0, 16.0 / max(px * px, 16.0));
+    vSoft = puff > 0.5 ? 1.0 : smoothstep(4.0, 9.0, px);
+    // specks are brightest looking down the beam (the light scatters forward), glinting as each one turns
+    float fwd = mix(0.3 + 0.7 * pow(max(dot(normalize(wp - cameraPosition), uBeamDir[0]), 0.0), 3.0), 1.0, puff);
     float glint = 0.55 + 0.45 * sin(uTime * (2.0 + 5.0 * aSeed.y) + aSeed.z * 6.28);
-    vA = step(aSeed.x, uDensity) * edge * light * fwd * mix(glint, uPuffA, puff) * min(px, 1.0) * smoothstep(mix(0.3, 2.0, puff), mix(0.7, 5.0, puff), dist);
+    vA = step(aSeed.x, uDensity) * edge * light * fwd * mix(glint, uPuffA, puff) * min(px, 1.0) * blur
+      * smoothstep(mix(uNear, 2.0, puff), mix(2.0 * uNear, 5.0, puff), dist);
     // out of the light: not drawn at all (outside the view, so it costs no pixels)
     if (vA < 0.002) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   }`;
 const MOTE_FS = /* glsl */`
   uniform vec3 uCol;
-  varying float vA; varying float vPuff;
+  varying float vA; varying float vPuff; varying float vSoft;
   void main() {
     float d = length(gl_PointCoord - 0.5), s = smoothstep(0.5, 0.0, d);
-    float a = mix(smoothstep(0.5, 0.1, d), s * s, vPuff) * vA;
+    float a = mix(mix(smoothstep(0.5, 0.1, d), s, vSoft), s * s, vPuff) * vA;
     if (a < 0.004) discard;
     gl_FragColor = vec4(uCol, a);
     #include <tonemapping_fragment>
@@ -289,7 +453,7 @@ export class Motes {
     this.mat = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 }, uPx: glowScale, uSize: { value: 0.01 }, uDensity: { value: 1 }, uWobble: { value: 0.05 }, uFall: { value: 0.1 },
-        uPuff: { value: 2 }, uPuffSize: { value: 1.4 }, uPuffA: { value: 0.05 }, uCut: { value: 1000 },
+        uPuff: { value: 2 }, uPuffSize: { value: 1.4 }, uPuffA: { value: 0.05 }, uHead: { value: 0 }, uNear: { value: 0.8 },
         uCenter: { value: new THREE.Vector3() }, uBox: { value: box.clone() }, uDrift: { value: new THREE.Vector3() },
         uBeamPos: { value: [new THREE.Vector3(), new THREE.Vector3()] }, uBeamDir: { value: [new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 0, -1)] },
         uBeamK: { value: [0, 0] }, uCos: { value: new THREE.Vector2(0.92, 0.98) }, uCol: { value: new THREE.Color(1, 0.9, 0.75) },
@@ -317,29 +481,42 @@ export class Motes {
 
 // ---------- far lights out on the land ----------
 // In the road's terms (the map, geo.ts): SARO sees them less (24, -300), the road area plus its
-// origin. A county road runs north and south 1.4 km east of the highway, past a ranch; a car comes
-// along it now and then, its lights crawling across the dark, and goes on. Ranch and trailer
-// windows: one goes out in the small hours, one comes on before dawn (a rancher up early), one is
-// lit for a while at half past three. Each area shows only those over its own drawn land.
+// origin. A county road runs north and south 1.4 km east of the highway, beyond the swells; a car
+// comes along it now and then, its lights crawling across the dark, and goes on. Ranch, farm and
+// trailer windows: some go out in the small hours, some come on before dawn (a rancher up early),
+// one is lit for a while at half past three, a trailer's is the blue of a television until it is
+// switched off. A siding on the railroad to Roswell has a string of lamps far off, north of SARO
+// and north-east of Caliche. Each area shows those over its own drawn land, where the land does not
+// hide them (east of SARO a ridge does, and the land rising east of Caliche). The farther off, the
+// dimmer and redder, and the more the air near the ground makes them twinkle.
 const COUNTY = (z: number) => 1450 + 70 * Math.sin(z / 900 + 0.4);
-const WINDOWS: { x: number; z: number; y: number; size: number; col: number; on: [number, number] }[] = [
-  { x: 1478, z: 1652, y: 1.4, size: 3.2, col: 0xffc27a, on: [4.58, 9] },      // the ranch's kitchen, from 04:35
-  { x: 1492, z: 1700, y: 5.5, size: 4.5, col: 0xbcd4ff, on: [-6, 9] },        // its yard light (mercury), all night
-  { x: -1650, z: 1480, y: 1.4, size: 3, col: 0xffb868, on: [-6, 2.87] },      // a house west of Caliche, out at 02:52
-  { x: 1420, z: -820, y: 1.4, size: 3, col: 0xffc888, on: [3.33, 3.75] },     // north-east of SARO, lit 03:20 to 03:45
-  { x: -1300, z: 250, y: 1.4, size: 2.8, col: 0xffb060, on: [-6, 3.08] },     // a trailer west of SARO, out at 03:05
+type Far = { x: number; z: number; y: number; size: number; col: number; on: [number, number]; k?: number; tv?: boolean };
+const WINDOWS: Far[] = [
+  { x: 835, z: 1118, y: 1.4, size: 3.2, col: 0xffc27a, on: [4.58, 9] },      // a ranch north-east of Caliche: its kitchen, from 04:35
+  { x: 850, z: 1100, y: 5.5, size: 4.5, col: 0xbcd4ff, on: [-6, 9] },        // its yard light (mercury), all night
+  { x: -1000, z: 1270, y: 1.4, size: 3, col: 0xffb868, on: [-6, 2.87] },     // a house north-west of Caliche, out at 02:52
+  { x: -1220, z: 1080, y: 1.3, size: 2.6, col: 0xffb466, on: [-6, 9] },      // a farmhouse past it: its porch light,
+  { x: -1208, z: 1070, y: 1.4, size: 2.3, col: 0xffc690, on: [4.83, 9] },    // and its kitchen from ten to five
+  { x: -470, z: -1170, y: 1.4, size: 3, col: 0xffc888, on: [3.33, 3.75] },   // north of SARO, lit 03:20 to 03:45
+  { x: -1300, z: 250, y: 1.4, size: 2.8, col: 0x9ab4ff, on: [-6, 3.08], tv: true },   // a trailer west of SARO: the television, off at 03:05
+  { x: -742, z: -943, y: 6.5, size: 4.2, col: 0xc4dcff, on: [-6, 9] },       // a ranch north-west of SARO: its yard light,
+  { x: -760, z: -930, y: 1.4, size: 2.6, col: 0xffbe78, on: [-6, 3.6] },     // a window out at 03:36,
+  { x: -748, z: -918, y: 1.4, size: 2.2, col: 0xffc888, on: [-6, 9], k: 0.6 },   // and a dim one all night
+  // the siding's lamps
+  ...[[-330, -1530], [-260, -1545], [-190, -1556], [-120, -1566], [-50, -1574]].map(([x, z]): Far => ({ x, z, y: 4, size: 2.6, col: 0xffa850, on: [-6, 9], k: 0.75 })),
+  ...[0, 1, 2, 3, 4, 5].map((i): Far => ({ x: 900 + i * 48, z: 1000 - i * 36, y: 4, size: 2.6, col: 0xffa850, on: [-6, 9], k: 0.7 })),
 ];
 const HEAD = new THREE.Color(1, 0.9, 0.72), TAIL = new THREE.Color(1, 0.05, 0.03), POOL = new THREE.Color(0.11, 0.085, 0.05);
 
 export class FarLights {
   readonly glow = new GlowPoints();
-  private readonly win: { i: number; w: typeof WINDOWS[number]; lit: number }[] = [];
+  private readonly win: { i: number; w: Far; ph: number; p: THREE.Vector3 }[] = [];
   private readonly car: number[];
   constructor(scene: THREE.Scene, private readonly toWorld: (x: number, z: number) => THREE.Vector3, ground: (x: number, z: number) => number, centre: { x: number; z: number }) {
     for (const w of WINDOWS) {
       if (Math.hypot(w.x - centre.x, w.z - centre.z) > 1800) continue;
-      const p = toWorld(w.x, w.z);
-      this.win.push({ i: this.glow.add(p.x, ground(w.x, w.z) + w.y, p.z, w.size, w.col), w, lit: 1 });
+      const p = toWorld(w.x, w.z).setY(ground(w.x, w.z) + w.y);
+      this.win.push({ i: this.glow.add(p.x, p.y, p.z, w.size, w.col), w, ph: rand() * 60, p });
     }
     this.car = [this.glow.add(0, -999, 0, 8, 0), this.glow.add(0, -999, 0, 5, 0), this.glow.add(0, -999, 0, 46, 0)];
     this.ground = ground;
@@ -356,6 +533,19 @@ export class FarLights {
     const a = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
     a.setXYZ(i, c.r * k, c.g * k, c.b * k); a.needsUpdate = true;
   }
+  /** A glow's size: its own in metres, but never under three and a half pixels across (its
+   *  bright core a pixel or two: so far off, and on a phone's screen, it is a point of light and
+   *  not lost under a pixel). */
+  private size(i: number, m: number, d: number) {
+    const a = this.glow.points.geometry.getAttribute('aSize') as THREE.BufferAttribute, s = Math.max(m, 3.5 * d / glowScale.value);
+    if (Math.abs(a.getX(i) - s) > 0.05 * s) { a.setX(i, s); a.needsUpdate = true; }
+  }
+  /** A light this far off: dimmer and redder (the air near the ground), twinkling a little more. */
+  private far(i: number, c: THREE.Color, k: number, d: number, t: number, ph: number) {
+    const f = THREE.MathUtils.smoothstep(d, 900, 1900), amp = 0.04 + 0.16 * THREE.MathUtils.smoothstep(d, 300, 1800);
+    const tw = 1 + amp * (0.6 * Math.sin(t * 1.9 + ph) * Math.sin(t * 0.73 + ph * 1.7) + 0.4 * Math.sin(t * 3.1 + ph * 2.3));
+    this.set(i, _c.setRGB(c.r, c.g * (1 - 0.12 * f), c.b * (1 - 0.3 * f)), k * (1 - 0.35 * f) * tw);
+  }
   /** car: where on the county road (map z, heading +1 south or -1 north, how visible), or null. */
   update(t: number, on: boolean, hour: number, night: number, cam: THREE.Vector3, car: { z: number; dir: number; k: number } | null) {
     const P = this.glow.points;
@@ -363,10 +553,12 @@ export class FarLights {
     if (!P.visible) return;
     this.glow.update(t);
     for (const W of this.win) {
-      const want = (hour >= W.w.on[0] && hour < W.w.on[1] ? 1 : 0) * night;
-      if (Math.abs(want - W.lit) < 0.004) continue;
-      W.lit = want;
-      this.set(W.i, _c.set(W.w.col), want);
+      const w = W.w, lit = (hour >= w.on[0] && hour < w.on[1] ? 1 : 0) * night * (w.k ?? 1);
+      const d = Math.hypot(W.p.x - cam.x, W.p.z - cam.z);
+      // (a television: its light jumps with the pictures, and is greyer between them)
+      const tv = w.tv ? 0.7 + 0.3 * Math.sin(t * 2.3 + W.ph) * Math.sin(t * 5.1) + 0.15 * Math.sign(Math.sin(t * 0.37 + W.ph)) : 1;
+      this.far(W.i, _c2.set(w.col), lit * tv, d, t, W.ph);
+      this.size(W.i, w.size, d);
     }
     if (!car) { if (!this.gone) for (const i of this.car) this.glow.setPosition(i, _off); this.gone = true; return; }
     this.gone = false;
@@ -380,14 +572,15 @@ export class FarLights {
     this.glow.setPosition(ti, this._p.set(p.x - fx * 4, y + 0.9, p.z - fz * 4));
     this.glow.setPosition(pi, this._p.set(p.x + fx * 30, y + 0.6, p.z + fz * 30));
     const k = car.k * far * night;
-    this.set(hi, HEAD, k * (0.18 + 0.82 * THREE.MathUtils.smoothstep(face, -0.35, 0.9)));
-    this.set(ti, TAIL, k * 0.7 * THREE.MathUtils.smoothstep(-face, -0.2, 0.9));
+    this.far(hi, HEAD, k * (0.18 + 0.82 * THREE.MathUtils.smoothstep(face, -0.35, 0.9)), d, t, 3.1);
+    this.far(ti, TAIL, k * 0.7 * THREE.MathUtils.smoothstep(-face, -0.2, 0.9), d, t, 7.7);
+    this.size(hi, 8, d); this.size(ti, 5, d);
     this.set(pi, POOL, k);
   }
 }
-const _off = new THREE.Vector3(0, -999, 0), _c = new THREE.Color();
+const _off = new THREE.Vector3(0, -999, 0), _c = new THREE.Color(), _c2 = new THREE.Color();
 
-// ---------- a tumbleweed ----------
+// ---------- tumbleweeds ----------
 let weedTex: THREE.Texture | null = null;
 /** A ball of dry twigs, drawn once: thin arcs that cross and leave gaps between them (it is seen
  *  through), a few spikes past the ragged edge, the stems darker towards the core. */
@@ -415,6 +608,62 @@ function tumbleTex() {
   });
   return weedTex;
 }
+const WEED_R = 0.36;
+/** The ball: six crossed planes (the three axes and three between them, so it never turns to a flat
+ *  cross as it rolls), a little flattened, as a tumbleweed is. */
+function weedBall() {
+  const planes: THREE.BufferGeometry[] = [];
+  for (const [rx, ry, rz] of [[0, 0, 0], [Math.PI / 2, 0, 0], [0, Math.PI / 2, 0], [-Math.PI / 4, 0, 0], [0, Math.PI / 4, 0], [0, Math.PI / 2, Math.PI / 4]]) {
+    const p = new THREE.PlaneGeometry(2 * WEED_R, 2 * WEED_R);
+    p.rotateX(rx); p.rotateY(ry); p.rotateZ(rz); p.scale(1.08, 0.86, 1);
+    planes.push(p);
+  }
+  return mergeGeometries(planes)!;
+}
+/** The dry stems, lit only by the scene: the floods of a lamp set, the flashlight, the sky (no glow
+ *  of their own: a pale thing that shone in the dark would be too like the night's strange ones).
+ *  See-through, so far off it is a tangle and not a solid ball (alpha-tested lace turns into a disc
+ *  in the smaller mipmaps); a grey tan, so out of the lamps' pools it is as dark as the ground. */
+function weedMat(set: FloodSet) {
+  const m = floodlit(new THREE.MeshStandardMaterial({ map: tumbleTex(), transparent: true, depthWrite: false, alphaTest: 0.03, side: THREE.DoubleSide,
+    color: 0xb5a68a, roughness: 1 }), 0.012, set);
+  m.forceSinglePass = true;   // (three draws a see-through double-sided mesh twice, back faces first; lace needs no such care)
+  return m;
+}
+/** A random turn from the life's own numbers (Quaternion.random draws on Math.random). */
+const turn = (q: THREE.Quaternion, r: () => number) => q.setFromEuler(_e.set(r() * 6.283, r() * 6.283, r() * 6.283));
+const _e = new THREE.Euler();
+
+/** Tumbleweeds caught where the wind left them (x, z in world terms; s: size), one mesh for a lamp
+ *  set; Low draws the first half. Seen through, no collider, never hit by a ray. */
+export class RestingWeeds {
+  readonly mesh: THREE.Mesh;
+  private readonly low: number;
+  constructor(scene: THREE.Scene, mat: THREE.Material, spots: [number, number, number][], ground: (x: number, z: number) => number, name: string, seed: number) {
+    const r = rng(seed), ball = weedBall(), parts: THREE.BufferGeometry[] = [], q = new THREE.Quaternion(), m = new THREE.Matrix4();
+    for (const [x, z, s] of spots) {
+      // squat, a little sunk where it lies, turned any way
+      const g = ball.clone();
+      m.compose(_v.set(x, ground(x, z) + WEED_R * s * 0.66, z), turn(q, r), _sc.set(s, s * (0.78 + 0.12 * r()), s));
+      g.applyMatrix4(m);
+      parts.push(g);
+    }
+    const all = mergeGeometries(parts)!;
+    this.low = (ball.index!.count) * Math.ceil(spots.length / 2);
+    this.mesh = new THREE.Mesh(all, mat);
+    this.mesh.name = name;
+    this.mesh.raycast = () => {};
+    this.mesh.visible = false;
+    scene.add(this.mesh);
+  }
+  /** Drawn in its area within 150 m (farther off they are less than a pixel: the motel's from the site). */
+  show(on: boolean, low: boolean, cam: THREE.Vector3) {
+    const b = this.mesh.geometry.boundingSphere ?? (this.mesh.geometry.computeBoundingSphere(), this.mesh.geometry.boundingSphere!);
+    this.mesh.visible = on && cam.distanceTo(b.center) < b.radius + 150;
+    this.mesh.geometry.setDrawRange(0, low ? this.low : Infinity);
+  }
+}
+const _sc = new THREE.Vector3();
 
 /** One tumbleweed: rolls along a path on the ground in a gust, hops now and then, and is gone. */
 export class Tumbleweed {
@@ -422,6 +671,10 @@ export class Tumbleweed {
   on = false;
   /** The ground under it (world x, z). */
   ground: (x: number, z: number) => number = () => 0;
+  /** Which lamp set lights it where it starts (the first that holds the place, or the area's own). */
+  floods: { mat: THREE.Material; where: (x: number, z: number) => boolean }[] = [];
+  /** Its own material, lit by the area's lamp set. */
+  readonly base: THREE.Material;
   private readonly from = new THREE.Vector3();
   private readonly dir = new THREE.Vector3();
   private s = 0;
@@ -431,35 +684,28 @@ export class Tumbleweed {
   /** How far it has turned over (for the tests). */
   spin = 0;
   private readonly axis = new THREE.Vector3();
-  private readonly R = 0.36;
+  private readonly R = WEED_R;
   /** Seconds it lies still against what stopped it, before it is gone (unseen). */
   private rest = 0;
   constructor(scene: THREE.Scene, set: FloodSet, name: string) {
-    const R = this.R, planes: THREE.BufferGeometry[] = [];
-    // three crossed planes, a little flattened, as a tumbleweed is
-    for (const [rx, ry] of [[0, 0], [Math.PI / 2, 0], [0, Math.PI / 2]]) {
-      const p = new THREE.PlaneGeometry(2 * R, 2 * R);
-      p.rotateX(rx); p.rotateY(ry); p.scale(1.08, 0.86, 1);
-      planes.push(p);
-    }
-    // see-through, so far off it is a pale tangle and not a solid ball (alpha-tested lace turns into
-    // a disc in the smaller mipmaps); pale, as dry stems are in the lamps and the starlight
-    const mat = floodlit(new THREE.MeshStandardMaterial({ map: tumbleTex(), transparent: true, depthWrite: false, alphaTest: 0.03, side: THREE.DoubleSide,
-      color: 0xf2e4c6, emissive: 0x0d0b08, roughness: 1 }), 0.012, set);
-    this.mesh = new THREE.Mesh(mergeGeometries(planes)!, mat);
+    this.base = weedMat(set);
+    this.mesh = new THREE.Mesh(weedBall(), this.base);
     this.mesh.name = name;
     this.mesh.raycast = () => {};   // never in the way of the crosshair or the ground under the feet
     this.mesh.visible = false;
     scene.add(this.mesh);
   }
+  /** The material for a place: lit by the lamp set that lights it. */
+  matAt(x: number, z: number) { return this.floods.find((f) => f.where(x, z))?.mat ?? this.base; }
   get at() { return this.mesh.position; }
   /** Roll from a point along a direction (world, on the ground) for len metres, at up to top m/s. */
   start(from: THREE.Vector3, dir: THREE.Vector3, len: number, top: number) {
     this.from.copy(from); this.dir.copy(dir).setY(0).normalize();
     this.s = 0; this.len = len; this.top = top; this.rest = 0; this.on = true; this.spin = 0;
     this.axis.set(0, 1, 0).cross(this.dir).normalize();
-    this.hop = { h: 0, phase: 0, next: 2 + Math.random() * 4 };
-    this.mesh.quaternion.random();
+    this.hop = { h: 0, phase: 0, next: rnd(2, 6) };
+    turn(this.mesh.quaternion, rand);
+    this.mesh.material = materialFor(this.matAt(from.x, from.z));
     this.mesh.visible = true;
     this.place();
   }
@@ -478,7 +724,7 @@ export class Tumbleweed {
     const ds = v * dt;
     this.s += ds;
     // a hop over a stone now and then
-    if ((this.hop.next -= ds) <= 0) { this.hop = { h: 0.15 + Math.random() * 0.45, phase: 0, next: 2 + Math.random() * 6 }; }
+    if ((this.hop.next -= ds) <= 0) { this.hop = { h: rnd(0.15, 0.6), phase: 0, next: rnd(2, 8) }; }
     if (this.hop.h > 0) { this.hop.phase += ds / (0.9 + this.hop.h * 2.5); if (this.hop.phase >= 1) this.hop.h = 0; }
     this.mesh.quaternion.premultiply(_q.setFromAxisAngle(this.axis, ds / this.R));
     this.spin += ds / this.R;
@@ -496,9 +742,9 @@ const _q = new THREE.Quaternion();
 
 // ---------- the night's life, every frame ----------
 /** The way the wind blows the tumbleweeds and drifts the dust out in the open, in every area's
- *  terms (they all lie north up): towards the north-north-east. */
+ *  terms (they all lie north up): towards the north-north-east. They fetch up on the south and
+ *  west faces of what stands in the way. */
 const WIND = new THREE.Vector3(0.45, 0, -0.89).normalize();
-const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
 export interface LifeIn {
   area: string;
@@ -520,6 +766,8 @@ interface AreaLife {
   moths: LampMoths | null;
   far: FarLights | null;
   weed: Tumbleweed | null;
+  /** Tumbleweeds lying about, one mesh per lamp set that lights them. */
+  resting: RestingWeeds[];
   /** In the way of a tumbleweed (world x, z): a wall, a fence, a parked truck. */
   blocked: (x: number, z: number) => boolean;
   /** The road's terms of a world point here (the far car), or null for none. */
@@ -528,6 +776,9 @@ interface AreaLife {
   onHighway: (x: number, z: number) => boolean;
   /** Its lamps in world terms (a tumbleweed on foot comes where one of them lights it). */
   lampsW: THREE.Vector3[];
+  ground: (x: number, z: number) => number;
+  /** How long finding the porch lights' walls took, when the area was built (the tests). */
+  wallMs?: number;
 }
 
 export class NightLife {
@@ -537,7 +788,11 @@ export class NightLife {
   private readonly flash: Motes;
   private readonly head: Motes;
   private act = { moth: 1, bat: 0, hour: 2 };
-  private dust = 0;
+  /** The headlights' dust: fine specks raised as the truck goes (by its speed), and the cloud it
+   *  trails catching up with it as it slows and stops (thick, soft, then settling). */
+  private specks = 0;
+  private cloud = 0;
+  private lastSpeed = 0;
   private weedT = rnd(70, 160);
   private carT = rnd(30, 90);
   private car: { z: number; dir: number; end: number; speed: number } | null = null;
@@ -549,8 +804,9 @@ export class NightLife {
   private readonly _f = new THREE.Vector3();
 
   constructor(private readonly scene: THREE.Scene) {
-    // (the boxes hold the near part of a beam whichever way it points)
-    this.flash = new Motes(scene, 900, 'life:flashDust', 61, new THREE.Vector3(5.2, 3.6, 5.2));
+    // (the flashlight's box holds the near part of its beam whichever way it points, where the
+    // dust shows; the headlights' the first thirty metres of theirs)
+    this.flash = new Motes(scene, 900, 'life:flashDust', 61, new THREE.Vector3(3.4, 2.6, 3.4));
     this.head = new Motes(scene, 3000, 'life:headDust', 62, new THREE.Vector3(34, 4.6, 34), true);
   }
 
@@ -561,15 +817,42 @@ export class NightLife {
     const far = o.far ? new FarLights(this.scene, o.far.toWorld, o.far.ground, o.far.centre) : null;
     const weed = new Tumbleweed(this.scene, o.flood, `life:tumbleweed:${id}`);
     weed.ground = o.ground;
-    this.areas[id] = { moths: null, far, weed, blocked: o.blocked, toMap: o.far?.toMap ?? null, onHighway: o.onHighway ?? (() => false), lampsW: [] };
+    this.areas[id] = { moths: null, far, weed, resting: [], blocked: o.blocked, toMap: o.far?.toMap ?? null, onHighway: o.onHighway ?? (() => false), lampsW: [], ground: o.ground };
   }
-  /** An area's moths and bats: its lamps (lifeLamps), in parent's terms. */
-  addMoths(id: LifeArea, lamps: LifeLamp[], parent: THREE.Object3D, bats: number) {
+  /** Tumbleweeds lying where the wind left them in an area (world x, z, size), lit by a lamp set
+   *  (the area's own when null); with `where`, a rolling one there is lit by that set too. */
+  addWeeds(id: LifeArea, set: FloodSet | null, spots: [number, number, number][], where?: (x: number, z: number) => boolean) {
+    const A = this.areas[id];
+    if (!A?.weed) return;
+    const mat = set ? weedMat(set) : A.weed.base;
+    if (set && where) A.weed.floods.push({ mat, where });
+    if (spots.length) A.resting.push(new RestingWeeds(this.scene, mat, spots, A.ground, `life:weeds:${id}:${A.resting.length}`, id.length * 7 + A.resting.length));
+  }
+  /** An area's moths and bats: its lamps (lifeLamps), in parent's terms. bats: [world place, how
+   *  many] for the lamps the player walks under (the nearest lamp to each); walls: what a porch
+   *  light's wall is found in. */
+  addMoths(id: LifeArea, lamps: LifeLamp[], parent: THREE.Object3D, o: { bats: [THREE.Vector3, number][]; walls?: THREE.Object3D }) {
     const A = this.areas[id];
     if (!A || A.moths || !lamps.length) return;
-    A.moths = new LampMoths(lamps, parent, bats, id.length * 31 + lamps.length);
     parent.updateWorldMatrix(true, false);
-    A.lampsW = lamps.filter((L) => L.big).map((L) => parent.localToWorld(L.p.clone()));
+    const W = lamps.map((L) => parent.localToWorld(L.p.clone())), inv = new THREE.Matrix4().copy(parent.matrixWorld).invert();
+    const r = rng(id.length * 131 + lamps.length);
+    // (a porch light is one at a door's height; a lamp higher up is on a pole)
+    const t0 = performance.now();
+    if (o.walls) lamps.forEach((L, i) => {
+      if (L.h > 3.6) return;
+      const w = wallOf(W[i], o.walls!, r);
+      if (w) L.wall = { n: w.n.transformDirection(inv), rest: w.rest.map((q) => q.applyMatrix4(inv)) };
+    });
+    const bats = lamps.map(() => 0);
+    for (const [p, n] of o.bats) {
+      let best = -1;
+      W.forEach((w, i) => { if (w.distanceTo(p) < 30 && (best < 0 || w.distanceTo(p) < W[best].distanceTo(p))) best = i; });
+      if (best >= 0) bats[best] += n;
+    }
+    A.wallMs = performance.now() - t0;
+    A.moths = new LampMoths(lamps, parent, bats, id.length * 31 + lamps.length);
+    A.lampsW = W.filter((_, i) => lamps[i].big);
   }
 
   update(dt: number, t: number, o: LifeIn) {
@@ -579,8 +862,11 @@ export class NightLife {
     if (here !== this.here) { for (const A of Object.values(this.areas)) A.weed?.stop(); this.here = here; }
     this.act = activity(o.clock, o.dawn);
     const night = 1 - THREE.MathUtils.smoothstep(o.dawn, 0.12, 0.4);
-    // the moths and bats of the area shown, out in the open
-    for (const [id, A] of Object.entries(this.areas) as [LifeArea, AreaLife][]) A.moths?.update(t, on && id === here && o.out, low, this.act, o.cam.position);
+    // the moths and bats of the area shown, out in the open; its tumbleweeds lying about
+    for (const [id, A] of Object.entries(this.areas) as [LifeArea, AreaLife][]) {
+      A.moths?.update(t, on && id === here && o.out, low, this.act, o.cam.position);
+      for (const R of A.resting) R.show(on && id === here, low, o.cam.position);
+    }
     // the far lights and the car on the county road
     this.carStep(dt, o, on && night > 0.2);
     const cam = o.cam.position;
@@ -611,7 +897,7 @@ export class NightLife {
   carNow(near = true) {
     const A = this.here ? this.areas[this.here] : undefined, c = this.last?.cam.position;
     if (!A?.toMap || !c) return false;
-    const m = A.toMap(c.x, c.z), dir = Math.random() < 0.5 ? 1 : -1;
+    const m = A.toMap(c.x, c.z), dir = rand() < 0.5 ? 1 : -1;
     this.car = { z: m.z - dir * (near ? 700 : 2200), dir, end: m.z + dir * 2200, speed: rnd(20, 25) };
     return true;
   }
@@ -685,25 +971,32 @@ export class NightLife {
     if (F.points.visible && L) {
       const cam = o.cam.position, f = o.cam.getWorldDirection(this._f);
       u.uTime.value = this.t;
-      // a box round the near part of the beam, where the dust shows
-      u.uCenter.value.copy(cam).addScaledVector(f, 2.4);
+      // a box round the near part of the beam, where the dust shows (a speck right at the lens is
+      // out of focus, and fades in from 0.8 m)
+      u.uCenter.value.copy(cam).addScaledVector(f, 1.6);
       u.uBeamPos.value[0].copy(L.position);
       u.uBeamDir.value[0].subVectors(L.target.position, L.position).normalize();
       u.uBeamK.value[0] = k; u.uBeamK.value[1] = 0;
       u.uCos.value.set(Math.cos(L.angle), Math.cos(L.angle * (1 - L.penumbra)));
-      u.uFall.value = 0.12; u.uSize.value = 0.02;
+      u.uFall.value = 0.12; u.uSize.value = 0.02; u.uHead.value = 0; u.uNear.value = 0.8;
       // out in the open a breeze carries it (and a few gnats); indoors it hangs in the air
       if (o.out) { F.drift(dt, _v.copy(WIND).multiplyScalar(0.35)); u.uWobble.value = 0.05; u.uDensity.value = 0.75; }
       else { F.drift(dt, _v.set(0.01, 0.006, -0.004)); u.uWobble.value = 0.09; u.uDensity.value = 1; }
       (u.uCol.value as THREE.Color).setRGB(1, 0.9, 0.75).multiplyScalar(1.6);
       F.points.geometry.setDrawRange(0, low ? F.n >> 1 : F.n);
     }
-    // the truck's headlights: the dust it raises on gravel and dirt hangs in them, and lingers
-    // when it slows (the cloud catches up); on the highway now and then a bug in the beam
+    // the truck's headlights: on gravel and dirt fine specks of the dust it raises, a few at a
+    // steady speed; when it slows and stops the cloud it trails catches up with it and hangs in
+    // the near part of the beam, low over the road, and settles. On the highway now and then a
+    // bug in the beam.
     const T = o.truck, H = this.head, h = H.u;
-    const loose = !!T && T.kind !== 'asphalt';
-    const want = loose ? THREE.MathUtils.clamp(Math.abs(T!.speed) / 10, 0, 1) : 0;
-    this.dust += (want - this.dust) * Math.min(1, dt * (want > this.dust ? 0.8 : 0.22));
+    const loose = !!T && T.kind !== 'asphalt', sp = T ? Math.abs(T.speed) : 0;
+    const want = loose ? THREE.MathUtils.clamp(sp / 10, 0, 1) : 0;
+    this.specks += (want - this.specks) * Math.min(1, dt * (want > this.specks ? 0.8 : 0.3));
+    const slowing = dt > 0 && T ? Math.max(0, this.lastSpeed - sp) : 0;
+    this.lastSpeed = sp;
+    this.cloud = THREE.MathUtils.clamp(this.cloud + (loose ? slowing * 0.11 * Math.min(1, this.specks * 1.5 + 0.3) : 0) - dt * 0.09 * (0.4 + this.cloud), 0, 1);
+    if (!T) this.cloud = 0;
     H.points.visible = on && !!T && T.beam > 0.01;
     if (H.points.visible && T) {
       const g = T.group, fw = this._v.set(0, 0, -1).applyQuaternion(g.quaternion);
@@ -715,15 +1008,16 @@ export class NightLife {
         h.uBeamDir.value[i].copy(down);
         h.uBeamK.value[i] = T.beam;
       });
-      h.uCos.value.set(Math.cos(0.42), Math.cos(0.2)); h.uCut.value = 1.3;
+      // (the pool on the road is about its width a dozen metres out: a cone of 12 degrees)
+      h.uCos.value.set(Math.cos(0.21), Math.cos(0.09)); h.uHead.value = 1; h.uNear.value = 0.8;
       h.uFall.value = 0.004;
-      const d = this.dust;
-      h.uDensity.value = Math.max(0.04, d);
+      const c = this.cloud, s = this.specks;
+      h.uDensity.value = Math.max(0.04, 0.22 * s + 0.7 * c);
       h.uSize.value = 0.03;
-      h.uPuff.value = 1 - 0.14 * d; h.uPuffSize.value = 2.2; h.uPuffA.value = 0.12;
-      h.uWobble.value = 0.12 + 0.2 * d;
-      H.drift(dt, _v.copy(WIND).multiplyScalar(0.6).addScaledVector(fw, 0.9 * d).setY(0.12 * d));
-      (h.uCol.value as THREE.Color).setRGB(1, 0.9, 0.72).multiplyScalar(1 - 0.3 * d);
+      h.uPuff.value = 1 - 0.16 * c; h.uPuffSize.value = 2.0; h.uPuffA.value = 0.13;
+      h.uWobble.value = 0.12 + 0.2 * c;
+      H.drift(dt, _v.copy(WIND).multiplyScalar(0.6).addScaledVector(fw, 1.2 * c).setY(0.1 * c));
+      (h.uCol.value as THREE.Color).setRGB(1, 0.9, 0.72).multiplyScalar(1 - 0.3 * c);
       H.points.geometry.setDrawRange(0, low ? H.n >> 1 : H.n);
     }
   }
@@ -733,8 +1027,10 @@ export class NightLife {
   tumbleMesh() { return (this.weedArea && this.areas[this.weedArea]?.weed?.mesh) || this.areas.saro?.weed?.mesh || null; }
   stats() {
     const a = (id: LifeArea) => {
-      const M = this.areas[id]?.moths;
-      return { lamps: M?.lamps.length ?? 0, moths: M?.n.moths ?? 0, bats: M?.n.bats ?? 0, drawn: M?.drawn.moths ?? 0, batsDrawn: M?.drawn.bats ?? 0, visible: !!M?.points.visible };
+      const A = this.areas[id], M = A?.moths;
+      return { lamps: M?.lamps.length ?? 0, porch: M?.lamps.filter((L) => L.wall).length ?? 0, moths: M?.n.moths ?? 0, low: M?.n.low ?? 0, resting: M?.n.resting ?? 0,
+        bats: M?.n.bats ?? 0, drawn: M?.drawn.moths ?? 0, batsDrawn: M?.drawn.bats ?? 0, visible: !!M?.points.visible,
+        weeds: A?.resting.reduce((n, R) => n + (R.mesh.visible ? 1 : 0), 0) ?? 0, wallMs: Math.round(A?.wallMs ?? 0) };
     };
     const W = this.tumbleMesh(), A = this.weedArea ? this.areas[this.weedArea] : undefined, weed = A?.weed;
     const c = this.car, toMap = this.here ? this.areas[this.here]?.toMap : null, cam = this.last?.cam.position;
@@ -742,8 +1038,8 @@ export class NightLife {
     if (c && toMap && cam) { const m = toMap(cam.x, cam.z); carDist = Math.hypot(COUNTY(c.z) - m.x, c.z - m.z); }
     return {
       saro: a('saro'), road: a('road'), station01: a('station01'), activity: this.act,
-      motes: { flash: this.flash.points.visible, flashN: this.flash.points.geometry.drawRange.count, flashMax: this.flash.n, head: this.head.points.visible, dust: this.dust },
-      far: { car: !!c, carAt: c ? [COUNTY(c.z), c.z] : [0, 0], carDist },
+      motes: { flash: this.flash.points.visible, flashN: this.flash.points.geometry.drawRange.count, flashMax: this.flash.n, head: this.head.points.visible, specks: this.specks, cloud: this.cloud },
+      far: { car: !!c, carAt: c ? [COUNTY(c.z), c.z] : [0, 0], carDist, lights: this.here ? this.areas[this.here]?.far?.['win'].length ?? 0 : 0 },
       tumble: { on: !!weed?.on, at: W ? [W.position.x, W.position.y, W.position.z] : [0, 0, 0], ground: W && weed ? weed.ground(W.position.x, W.position.z) : 0, spin: weed?.spin ?? 0 },
     };
   }
