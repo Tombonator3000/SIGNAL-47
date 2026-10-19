@@ -732,6 +732,7 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 ### Claude: Caliche til main (17. oktober)
 
 - 13:18 UTC: PR #98 laget fra arbeidsgrenen og fikk konflikt: Tom hadde alt flettet grenen selv mens testene gikk ([PR #96](https://github.com/Tombonator3000/SIGNAL-47/pull/96), head `8c3fac0`: Caliche og dokumentene), og en annen Claude-økt på Toms maskin hadde flettet `ART_BRIEF.md` runde 14 (grafikk til byen, romvesenene og bortføringen, [PR #97](https://github.com/Tombonator3000/SIGNAL-47/pull/97), main `4143030`). Hele testrekka over gikk altså på koden som nå er på main. Main flettet inn i arbeidsgrenen; konflikten var bare i `log.md` (begge avsnittene beholdt). PR #98 har nå bare loggen.
+- 13:19 UTC: [PR #98](https://github.com/Tombonator3000/SIGNAL-47/pull/98) (bare loggen, tittel og tekst rettet til det) flettet til main som `726b2d9` (head `f962ea8`). Live `index.html`, `index-BYHzL-hI.js` og `Town-D7jzp5UK.js` på Pages er byte for byte like bygget fra koden på main. Arbeidsgrenen startet på nytt fra main. Neste for byen: folka med replikker og hendelsene (steg 2), og vindusbildene fra runde 14 når de kommer.
 
 ### Claude: Caliche steg 2, glimtene og bortføringen (17. oktober kveld)
 
