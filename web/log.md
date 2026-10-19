@@ -923,3 +923,11 @@ Tidene under er nøyaktige UTC-tider fra maskinen.
 
 - Tom kjøpte Ultimate SFX for Games (Humble, øverste trinn) og Vintage Liminal Props Pack (Superhive). Lastet ned med Toms egen innlogging i et nettleservindu han logget inn i selv (passordene ble aldri sett, profilen slettet etterpå), i 16 deler per fil (rundt 11 MB/s per fil, begrenset hos selgerne). Pakket ut i `~/Assets/ultimate-sfx/` (8,3 GB, 5668 WAV) og `~/Assets/vintage-liminal/` (8 .blend med 147 modeller).
 - Lisensene tillater ikke råfilene åpent, og dette repoet er offentlig til testing. Nytt privat repo `Tombonator3000/SIGNAL-47-assets` (README og kilder/vilkår i `LICENSES.md`), lesenøkkel som deploy key, hemmeligheten `ASSETS_DEPLOY_KEY` her, og `pages.yml` henter det inn i `web/src/assets/licensed/` (i `.gitignore`). Spillet bruker ingen av filene ennå.
+
+### Claude: de kjøpte lydene i spillet (19. oktober kveld)
+
+- Tre analytikere målte pakkene i Ultimate SFX for Games (lydstyrke, spekter, knepp, skjøter; ingen kunne lytte) og foreslo 22 lyder; 15 er tatt inn. De ligger ferdig klippet i det private repoet (`SIGNAL-47-assets`, `sfx/MANIFEST.md`, laget på nytt av `tools/build_sfx.py` der) og lastes med en glob som er tom uten mappa, så spillet lyder som før uten dem. `tools/licensed_sfx.py` prøver begge (38/38 med, 22/22 uten).
+- Suset i alle AM-radioene er nå ekte steking (to opptak skjøtt til en løkke på 13,5 s), med knaser ved forstyrrelsene og når radioen stilles. Tv-en på motellet brummer på 60 Hz, et lavt trykk ligger under advarselen når de tar deg og i THE EVENT, telefonkiosken har en hul linje og motoren som hoster (den var bare tekst før), og dørene, spaken, lampa, røret, nøklene og kaffen er ekte opptak. Stillheten på 47 s, glimtene og lyset er fortsatt stille med vilje.
+- Funnet underveis: telefonkiosken i Caliche ringte uten lyd (`'phone_ring'` i stedet for `'phoneRing'`), rettet. Toast-spionen i `radio.py` og `tripradio.py` returnerte en funksjon til Playwright, rettet.
+- Maskinen gikk tom for minne 19.37 (en analytiker dekodet lang musikk i 16 prosesser; Toms programmer krasjet). Mellomfiler skal på disk (`~/scratch-sfx/`), ikke i `/tmp`, og lydanalyse én fil om gangen.
+

@@ -611,16 +611,20 @@ export class Receiver {
    *  5 to 20 seconds the static swells over the station for half a second to three, crackling,
    *  and the station sinks under it, then comes back. */
   private fuzz = { next: 12 + Math.random() * 20, left: 0, len: 1, depth: 0 };
+  /** The dial was turned or the set switched on: a crack of static with the sweep (bought sound). */
+  private dial = false;
   /** How far under the static the station is now, 0..1 (the tests). */
   interference = 0;
-  private n: { sig: GainNode; stat: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
+  /** The bought crackles played so far (the tests). */
+  cracks = 0;
+  private n: { sig: GainNode; stat: GainNode; mix: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
   private listening: StationId | null = null;
 
   constructor(private radio: Radio, private o: ReceiverOpts) {}
 
   set(on: boolean, station: StationId = this.station) {
-    if (station !== this.station) { this.station = station; this.sweep = 0.5; }
-    if (on && !this.on) this.sweep = Math.max(this.sweep, 0.25);
+    if (station !== this.station) { this.station = station; this.sweep = 0.5; this.dial = true; }
+    if (on && !this.on) { this.sweep = Math.max(this.sweep, 0.25); this.dial = true; }
     this.on = on;
   }
   /** The next station on the dial, and after the last, off. Returns the station or null. */
@@ -635,12 +639,11 @@ export class Receiver {
   get live() { return this.on && !!this.pos; }
 
   private build() {
-    const a = this.radio.audio, ctx = a.ctx, noise = a.noiseBuffer();
-    if (!ctx || !noise) return null;
+    const a = this.radio.audio, ctx = a.ctx, n = a.staticSrc();
+    if (!ctx || !n) return null;
     // the station and the static, through a small speaker: a narrow band, a little overdriven
     const sig = ctx.createGain(); sig.gain.value = 0;
-    const n = ctx.createBufferSource(); n.buffer = noise; n.loop = true;
-    const stat = ctx.createGain(); stat.gain.value = 0; n.connect(stat);
+    const stat = ctx.createGain(); stat.gain.value = 0; n.out.connect(stat);
     const mix = ctx.createGain(); sig.connect(mix); stat.connect(mix);
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1250; bp.Q.value = 0.7;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400;
@@ -653,8 +656,7 @@ export class Receiver {
     mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(cab); cab.connect(out);
     const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2, a.radioBus) as PannerNode;
     out.connect(pan);
-    n.start();
-    return { sig, stat, out, cab, pan, bus: null, stop: () => { try { n.stop(); } catch { /* stopped */ } out.disconnect(); } };
+    return { sig, stat, mix, out, cab, pan, bus: null, stop: () => { try { n.src.stop(); } catch { /* stopped */ } out.disconnect(); } };
   }
 
   update(dt: number) {
@@ -685,8 +687,10 @@ export class Receiver {
     const z = this.fuzz;
     if (this.live && s > 0) {
       if (z.left > 0) z.left = Math.max(0, z.left - dt);
-      else if ((z.next -= dt) <= 0) { z.len = z.left = 0.4 + Math.random() * 1.2; z.depth = 0.3 + Math.random() * 0.4; z.next = 20 + Math.random() * 40; }
+      else if ((z.next -= dt) <= 0) { z.len = z.left = 0.4 + Math.random() * 1.2; z.depth = 0.3 + Math.random() * 0.4; z.next = 20 + Math.random() * 40; this.crack(z.len, z.depth); }
     } else z.left = 0;
+    if (this.dial && this.live) this.crack(0, 0.6);
+    this.dial = false;
     const k = z.left > 0 ? z.depth * Math.sqrt(Math.sin(Math.PI * (1 - z.left / z.len))) : 0;
     this.interference = k;
     const crackle = k > 0 ? 0.5 + Math.random() * 1.1 : 1;
@@ -701,9 +705,18 @@ export class Receiver {
       else (p as unknown as { setPosition: (x: number, y: number, z: number) => void }).setPosition(this.pos.x, this.pos.y, this.pos.z);
     }
   }
+  /** A crash of static over the station, recorded (crunches, which the band-pass makes into
+   *  cracks): the long one stretched over an interference of `len` seconds, the short one for a
+   *  short one or the dial (len 0). Only with the bought sounds; the static's own swell stays. */
+  private crack(len: number, k: number) {
+    const a = this.radio.audio, name = len > 0.8 ? a.or('radio_crackle_long') : a.or('radio_crackle_short'), b = a.buf[name];
+    if (!b || !this.n) return;
+    a.play(name, { dest: this.n.mix, gain: k * this.power, rate: len ? THREE.MathUtils.clamp(b.duration / len, 0.75, 1.5) : 1 });
+    this.cracks++;
+  }
   /** Off, and let the station go (a new night). */
   reset() {
-    this.on = false; this.sweep = 0;
+    this.on = false; this.sweep = 0; this.dial = false;
     if (this.listening) { this.radio.stations[this.listening].listen(false); this.listening = null; }
     if (this.n) { if (this.n.bus) { try { this.n.bus.disconnect(this.n.sig); } catch { /* not connected */ } } this.n.stop(); this.n = null; }
   }

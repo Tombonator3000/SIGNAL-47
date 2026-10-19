@@ -109,6 +109,8 @@ export interface WorldDeps {
   applyQuality: () => void;
   audio: () => { ctx: AudioContext | null; sfx: AudioNode };
   thud: (gain: number) => void;
+  /** The keys in the ignition as the engine is started (only with the bought sounds). */
+  keys?: () => void;
   // story hooks: the fade, a locked moment, and game time
   fade: (on: boolean, text?: string) => void;
   hold: (on: boolean) => void;
@@ -1087,6 +1089,8 @@ export class World {
       if (!EngineSound) { void this.load('engine').then(() => { if (this.driving) this.startEngine(); }); return; }
       this.engine = new EngineSound(a.ctx, a.sfx);
     }
+    // the keys, left in it, jingle as it is turned (the start's recording is quiet at its head)
+    if (!this.engine.on) this.d.keys?.();
     this.engine.start();
   }
 
