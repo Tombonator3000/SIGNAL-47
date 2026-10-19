@@ -69,7 +69,7 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** How much of the sky's haze the far land takes at night and at dawn in the night areas (main.ts
  *  loop; on the old road all of it at dawn): no lighter than the foot of the painted mesas behind it. */
-const NIGHT_FOG = 0.3, DAWN_FOG = 0.42;
+const NIGHT_FOG = 0.36, DAWN_FOG = 0.42;
 
 async function boot() {
   const ui = new UI();
