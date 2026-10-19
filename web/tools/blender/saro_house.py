@@ -191,6 +191,7 @@ K.bake_emit(model, P, geom('Position'), samples=1)
 K.bake_emit(model, N, geom('True Normal'), samples=1)
 log('position and normal baked')
 K.bake_emit(model, A, masks, samples=256)
+K.baked_ok(P, 'position'); K.baked_ok(A, 'occlusion')
 log('occlusion and edges baked')
 
 # ---------- the mask ----------

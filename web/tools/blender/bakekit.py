@@ -17,6 +17,7 @@ def game(v):
 
 def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.context.preferences.filepaths.save_version = 0     # (no .blend1 beside the .blend)
 
 def gpu(samples=128):
     """Cycles on the RTX 3080 through OptiX."""
@@ -240,6 +241,14 @@ def bake_emit(o, img, build, samples=1, margin=8, uv='Lightmap'):
     o.data.uv_layers.active = o.data.uv_layers[0]
     bpy.data.materials.remove(m)
 
+def baked_ok(img, what):
+    """Stops when a bake came out empty or flat (seen once while the graphics card was full of
+    browser tests: an all-black occlusion, and a mask that looked like nothing)."""
+    a = pixels(img)[..., :3]
+    if not np.isfinite(a).all() or a.max() <= 0.0 or a.std() < 1e-3:
+        raise SystemExit(f'the {what} bake came out empty (max {a.max():.3f}, spread {a.std():.4f}): run it again with the graphics card free')
+    return a
+
 def pixels(img):
     a = np.empty(img.size[0] * img.size[1] * 4, np.float32)
     img.pixels.foreach_get(a)
@@ -291,3 +300,129 @@ def fbm(x, y, z, octaves=4, seed=0):
 def smoothstep(a, b, x):
     t = np.clip((x - a) / (b - a), 0, 1)
     return t * t * (3 - 2 * t)
+
+# ---------- the truck's tools (tools/blender/truck.py): outlines, extrusions, sweeps, parts ----------
+class Shape:
+    """A closed 2D outline as three.js's Shape draws it (drive/Truck.ts): lines, arcs (absarc,
+    clockwise or not) and quadratic curves, as a list of points."""
+    def __init__(self, x, y): self.pts = [(x, y)]
+    def line(self, x, y):
+        if (x, y) != self.pts[-1]: self.pts.append((x, y))
+        return self
+    def arc(self, cx, cy, r, a0, a1, cw, n=24):
+        d = a1 - a0
+        while d < 0: d += 2 * math.pi
+        while d > 2 * math.pi: d -= 2 * math.pi
+        if cw: d -= 2 * math.pi
+        for i in range(n + 1):
+            a = a0 + d * i / n
+            self.line(cx + r * math.cos(a), cy + r * math.sin(a))
+        return self
+    def quad(self, cx, cy, x, y, n=6):
+        x0, y0 = self.pts[-1]
+        for i in range(1, n + 1):
+            t = i / n
+            self.line((1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x, (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y)
+        return self
+    def points(self):
+        p = self.pts[:-1] if self.pts[0] == self.pts[-1] else self.pts
+        return [q for i, q in enumerate(p) if i == 0 or (abs(q[0] - p[i - 1][0]) > 1e-7 or abs(q[1] - p[i - 1][1]) > 1e-7)]
+
+def rrect(x0, y0, x1, y1, r, n=4):
+    """Truck.ts's rrect: a rectangle with quadratic corners."""
+    s = Shape(x0 + r, y0).line(x1 - r, y0).quad(x1, y0, x1, y0 + r, n).line(x1, y1 - r).quad(x1, y1, x1 - r, y1, n)
+    s.line(x0 + r, y1).quad(x0, y1, x0, y1 - r, n).line(x0, y0 + r).quad(x0, y0, x0 + r, y0, n)
+    return s
+
+def extrude(name, pts3, along, length, coll=None):
+    """An outline (game points, a flat polygon) as a solid: the face and a copy `length` along
+    the game direction `along`."""
+    bm = bmesh.new()
+    vs = [bm.verts.new(G(*p)) for p in pts3]
+    f = bm.faces.new(vs)
+    r = bmesh.ops.extrude_face_region(bm, geom=[f])
+    moved = [v for v in r['geom'] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, verts=moved, vec=G(*along) * length)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return mesh_object(name, bm, coll)
+
+def side(name, shape, w, x=0.0, coll=None):
+    """Truck.ts's side(): a side profile (u = -z forward, y up) across the truck, w wide, centred on x."""
+    return extrude(name, [(x - w / 2, y, -u) for u, y in shape.points()], (1, 0, 0), w, coll)
+
+def face_z(name, shape, d, z=0.0, coll=None):
+    """Truck.ts's face(): a face outline (x, y) along z, d deep, centred on z."""
+    return extrude(name, [(x, y, z - d / 2) for x, y in shape.points()], (0, 0, 1), d, coll)
+
+def round_edges(o, width, segments=3, angle=30):
+    """Every edge sharper than `angle` rounded (the modifier's angle limit), hardened normals."""
+    for p in o.data.polygons: p.use_smooth = True
+    m = o.modifiers.new('bevel', 'BEVEL')
+    m.width = width; m.segments = segments; m.limit_method = 'ANGLE'; m.angle_limit = math.radians(angle)
+    m.harden_normals = True; m.use_clamp_overlap = True; m.miter_outer = 'MITER_ARC'
+    apply_mods(o)
+
+def sweep(name, rings, closed=False, caps=True, coll=None):
+    """Rings of game points (each as many, in the same turn) joined in order into a tube; the
+    ends capped. The caller lays each ring: a profile carried along a path."""
+    bm = bmesh.new()
+    R = [[bm.verts.new(G(*p)) for p in ring] for ring in rings]
+    n, m = len(R), len(R[0])
+    for i in range(n if closed else n - 1):
+        r0, r1 = R[i], R[(i + 1) % n]
+        for k in range(m):
+            bm.faces.new((r0[k], r0[(k + 1) % m], r1[(k + 1) % m], r1[k]))
+    if caps and not closed:
+        bm.faces.new(R[0][::-1]); bm.faces.new(R[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return mesh_object(name, bm, coll)
+
+def revolve(bm, profile, n, a0=0.0, a1=2 * math.pi, closed=True):
+    """A lathe about the game's X axis: profile (x, r) points, n steps round. Its faces look the
+    way the profile turns: towards +x where r falls along it, outwards where x grows. Returns
+    the rings of verts (game x, r cos a, r sin a) and the faces by (step, profile segment)."""
+    rings = []
+    steps = n if closed else n + 1
+    for i in range(steps):
+        a = a0 + (a1 - a0) * i / n
+        rings.append([bm.verts.new(G(x, r * math.cos(a), r * math.sin(a))) for x, r in profile])
+    faces = {}
+    for i in range(n):
+        r0, r1 = rings[i], rings[(i + 1) % steps]
+        for k in range(len(profile) - 1):
+            faces[i, k] = bm.faces.new((r0[k], r1[k], r1[k + 1], r0[k + 1]))
+    return rings, faces
+
+def weld(o, dist=1e-5):
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=dist)
+    bm.to_mesh(o.data); bm.free()
+    if o.data.has_custom_normals:
+        with bpy.context.temp_override(object=o, active_object=o):
+            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+
+def loose_parts(o):
+    """o welded and cut into its loose parts (the boxes and extrusions three.js merged), each its own object."""
+    weld(o)
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.separate(type='LOOSE'); bpy.ops.object.mode_set(mode='OBJECT')
+    return list(bpy.context.selected_objects)
+
+def bounds(o):
+    """Game bounds (x0, x1, y0, y1, z0, z1) of an object's vertices."""
+    mw = o.matrix_world
+    ps = [game(mw @ v.co) for v in o.data.vertices]
+    return tuple(f(p[i] for p in ps) for i in range(3) for f in (min, max))
+
+def smooth(o, angle=35, weighted=True):
+    """Smooth where the faces meet at less than `angle` (the game's flat facets become round),
+    sharp elsewhere; weighted normals, so the big faces stay flat."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    for e in bm.edges:
+        e.smooth = len(e.link_faces) == 2 and e.calc_face_angle(0) < math.radians(angle)
+    for f in bm.faces: f.smooth = True
+    bm.to_mesh(o.data); bm.free()
+    if weighted:
+        m = o.modifiers.new('wn', 'WEIGHTED_NORMAL'); m.keep_sharp = True; m.weight = 50; m.mode = 'FACE_AREA'
+        apply_mods(o)

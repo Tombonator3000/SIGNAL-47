@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { floodlit, flood } from './kit';
 import { artTexture } from '../core/art';
 import houseUrl from '../assets/models/saro_house.glb?url';
+import truckUrl from '../assets/models/saro_truck.glb?url';
+import type { Truck, TruckModel } from '../drive/Truck';
 
 // The Blender pilot (Tom, 19 October): SARO's house modelled from the game's own boxes in Blender,
 // its occlusion, dirt and worn edges baked on the graphics card (tools/blender/build.py saro), in
@@ -10,6 +12,9 @@ import houseUrl from '../assets/models/saro_house.glb?url';
 // Pages build; inside the single file they are part of it). The code-built shell is hidden, never
 // taken away: its colliders, zones, doors, proxies, lamps, stains and lettering are the game's as
 // before, and the rays still hit the hidden boxes (the model itself takes no rays).
+// Step two: SARO 07, the service truck, the same way (tools/blender/build.py truck): every copy
+// of it (on SARO's pad and the motel's lot, on the road and the diner's lot, at STATION 01, on
+// the old road) gets the modelled body, cab and wheel, in its own area's floods (Truck.setModel).
 
 export const blenderWanted = (() => { try { return new URLSearchParams(location.search).has('blender'); } catch { return false; } })();
 
@@ -84,6 +89,48 @@ async function bytes(url: string) {
   return r.arrayBuffer();
 }
 
+/** The baked mask on the truck (R occlusion, G dirt, B worn edges), after the vertex colours:
+ *  the road's dust warms and darkens what is light and greys what is dark (the tyres, the
+ *  rubber), dulls the paint and the chrome; worn edges show the primer through the paint, pits
+ *  in the chrome, scuffs on the rubber and the rims. */
+const WEAR: Record<string, string> = {
+  paint: 'mix( diffuseColor.rgb, vec3( 0.16, 0.12, 0.09 ), bakedMask.b * 0.55 )',
+  chrome: 'diffuseColor.rgb * ( 1.0 - bakedMask.b * 0.45 )',
+  dark: 'mix( diffuseColor.rgb, vec3( 0.075 ), bakedMask.b * 0.6 )',
+  wheel: 'mix( diffuseColor.rgb, min( diffuseColor.rgb, vec3( 0.18, 0.15, 0.12 ) ), bakedMask.b * 0.7 )',
+};
+function truckBaked(m: THREE.MeshStandardMaterial, kind: string) {
+  if (!m.aoMap || !WEAR[kind]) return;
+  const prev = m.onBeforeCompile, key = m.customProgramCacheKey;
+  // (the chrome takes less of it: a bumper should still read as chrome under the dust)
+  const dirt = kind === 'chrome' ? 0.55 : 0.9, rough = kind === 'chrome' ? 0.35 : 0.7;
+  m.onBeforeCompile = (sh, r) => {
+    prev.call(m, sh, r);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        #ifdef USE_AOMAP
+          vec3 bakedMask = texture2D( aoMap, vAoMapUv ).rgb;
+          diffuseColor.rgb = mix( diffuseColor.rgb, max( diffuseColor.rgb * vec3( 0.62, 0.5, 0.37 ), vec3( 0.15, 0.12, 0.09 ) ), bakedMask.g * ${dirt.toFixed(2)} );
+          diffuseColor.rgb = ${WEAR[kind]};
+        #endif`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        #ifdef USE_AOMAP
+          roughnessFactor = mix( roughnessFactor, 0.95, bakedMask.g * ${rough.toFixed(2)} );
+        #endif`);
+  };
+  m.customProgramCacheKey = () => key.call(m) + 'truckBaked' + kind;
+  m.needsUpdate = true;
+}
+
+/** A .glb parsed with three's GLTFLoader (fetched only now, with the flag). */
+async function parse(url: string) {
+  const [{ GLTFLoader }, data] = await Promise.all([import('three/examples/jsm/loaders/GLTFLoader.js'), bytes(url)]);
+  const loader = new GLTFLoader();
+  // the masks through an <img> from a blob, not fetch (the same content policy)
+  loader.register((parser) => { parser.textureLoader = new THREE.TextureLoader(parser.options.manager); return { name: 's47_img' }; });
+  return loader.parseAsync(data, '');
+}
+
 export class BlenderHouse {
   /** In the SARO area's group, so it is shown and hidden with the area. */
   readonly group = new THREE.Group();
@@ -115,14 +162,61 @@ export class BlenderHouse {
   }
 
   private async load() {
-    const [{ GLTFLoader }, data] = await Promise.all([import('three/examples/jsm/loaders/GLTFLoader.js'), bytes(houseUrl)]);
-    const loader = new GLTFLoader();
-    // the mask through an <img> from a blob, not fetch (the same content policy)
-    loader.register((parser) => { parser.textureLoader = new THREE.TextureLoader(parser.options.manager); return { name: 's47_img' }; });
-    const gltf = await loader.parseAsync(data, '');
+    const gltf = await parse(houseUrl);
     dress(gltf.scene);
     this.model = gltf.scene;
     this.group.add(gltf.scene);
     this.prepare(this.group);
+  }
+}
+
+/** The truck: every copy the world builds is handed in (World.onTruck) and given the model,
+ *  or the code's again, when the flag changes. */
+export class BlenderTruck {
+  on = false;
+  failed = '';
+  readonly trucks = new Set<Truck>();
+  private model: TruckModel | null = null;
+  private loading: Promise<void> | null = null;
+
+  /** prepare: the graphics level for what was added late. */
+  constructor(private prepare: (root: THREE.Object3D) => void) {}
+
+  /** Loaded and in the picture. */
+  get shown() { return this.on && !!this.model; }
+
+  add(t: Truck) {
+    this.trucks.add(t);
+    if (this.shown) { t.setModel(this.model); this.prepare(t.group); }
+  }
+
+  async set(on: boolean) {
+    this.on = on;
+    if (on && !this.model) {
+      this.loading ??= this.load().catch((e) => { this.failed = String(e?.message ?? e); console.warn('the Blender truck could not load:', this.failed); });
+      await this.loading;
+    }
+    for (const t of this.trucks) {
+      if (t.modelled === this.shown) continue;
+      t.setModel(this.shown ? this.model : null);
+      this.prepare(t.group);
+    }
+  }
+
+  private async load() {
+    const gltf = await parse(truckUrl);
+    const parts: TruckModel['parts'] = [];
+    let wheel: TruckModel['wheel'] | null = null;
+    gltf.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const m = mesh.material as THREE.MeshStandardMaterial, g = mesh.geometry;
+      // (the meshes stand at the truck's origin, unturned: their nodes carry no transform)
+      if (m.name === 'wheel') { wheel = { geometry: g, aoMap: m.aoMap }; return; }
+      const [group, kind] = m.name.split('_') as [TruckModel['parts'][number]['group'], TruckModel['parts'][number]['kind']];
+      parts.push({ group, kind, geometry: g, aoMap: m.aoMap });
+    });
+    if (!wheel || parts.length < 7) throw new Error(`the truck model is not whole (${parts.length} parts${wheel ? '' : ', no wheel'})`);
+    this.model = { parts, wheel, dress: truckBaked };
   }
 }

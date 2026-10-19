@@ -190,6 +190,8 @@ export class World {
   motel: MotelFront;
   court: CourtSite;
   saroTruck: Truck | null = null;
+  /** Each copy of the truck as it is built (main.ts: the Blender pilot gives it the model). */
+  onTruck?: (t: Truck) => void;
   /** Tests steer the truck through this instead of the keys (tools/chapter3.py): fixed
    *  input, or a function asked every step (an autopilot along road.route). */
   testInput: { steer: number; throttle: number } | (() => { steer: number; throttle: number }) | null = null;
@@ -329,6 +331,7 @@ export class World {
   async initSaro() {
     const { Truck } = await import('../drive/Truck');
     const t = new Truck({ flood: siteFlood });
+    this.onTruck?.(t);
     const p = this.d.saro.truck;
     t.group.position.set(p.x, 0, p.z);
     t.group.rotation.y = p.heading;
@@ -397,6 +400,7 @@ export class World {
       this.d.scene.add(s.group);
       // the truck the player came in, parked outside the gate with its lights off
       const t = new Truck({ flood: fieldFlood });
+      this.onTruck?.(t);
       const a = s.anchors.truck;
       t.group.position.set(a.x, 0, a.z);
       t.group.rotation.y = a.heading;
@@ -434,6 +438,7 @@ export class World {
       const [{ RoadArea, roadFlood }, { DriveController }, { Truck }] = await Promise.all([this.load('RoadArea'), this.load('Drive'), this.load('Truck'), this.load('engine'),
         loadArtFor(['gravelTrack'])]); // the survey track's gravel comes with the road
       const truck = new Truck({ flood: roadFlood });
+      this.onTruck?.(truck);
       truck.headlightFloods(roadFlood, [0, 1, 2]);
       truck.group.visible = false;
       this.d.scene.add(truck.group);
@@ -464,6 +469,7 @@ export class World {
       const [{ OldRoad, oldFlood, OLD_HEADLIGHTS }, { DriveController }, { Truck }] = await Promise.all([this.load('OldRoad'), this.load('Drive'), this.load('Truck'), this.load('engine'),
         loadArtFor(OLDROAD_ART), this.ensureDiner()]); // round 11: the road's own pictures come with it
       const truck = new Truck({ flood: oldFlood });
+      this.onTruck?.(truck);
       truck.headlightFloods(oldFlood, OLD_HEADLIGHTS);
       truck.group.visible = false;
       this.d.scene.add(truck.group);
