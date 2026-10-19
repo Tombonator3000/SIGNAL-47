@@ -1,0 +1,240 @@
+{
+  "size": [
+    8192,
+    1024
+  ],
+  "baseline_y": 768,
+  "pixels_per_degree": 22.755555555555556,
+  "panel_sources_native_size": [
+    2172,
+    724
+  ],
+  "source_baseline_y": 579,
+  "source_contour_alpha_threshold": 160,
+  "contour_median_window": 5,
+  "contour_gaussian_sigma": 0.6,
+  "horizontal_maps_degrees": {
+    "east": {
+      "target": [
+        0,
+        10,
+        15,
+        65,
+        95,
+        130,
+        165,
+        180
+      ],
+      "source": [
+        0,
+        15,
+        23,
+        73,
+        103,
+        134.0884,
+        165,
+        180
+      ]
+    },
+    "west": {
+      "target": [
+        180,
+        195,
+        250,
+        310,
+        345,
+        360
+      ],
+      "source": [
+        0,
+        25,
+        70,
+        130,
+        165,
+        180
+      ]
+    }
+  },
+  "vertical_scales": {
+    "east": {
+      "azimuth": [
+        0,
+        15,
+        65,
+        120,
+        130,
+        138,
+        165,
+        180
+      ],
+      "scale": [
+        1,
+        1,
+        1,
+        1,
+        1.28,
+        1,
+        1,
+        1
+      ]
+    },
+    "west": {
+      "azimuth": [
+        180,
+        195,
+        240,
+        250,
+        270,
+        310,
+        345,
+        360
+      ],
+      "scale": [
+        1,
+        1.1,
+        1.1,
+        1.3,
+        1.37,
+        1.3,
+        1.1,
+        1
+      ]
+    }
+  },
+  "sunrise_gap_height_cap_px": 9,
+  "seam_mirror_blend_radius_px": 192,
+  "alpha_edge_width_px": 1.25,
+  "night_lights": [
+    {
+      "azimuth": 29,
+      "x": 660,
+      "y": 774,
+      "width": 2,
+      "height": 2,
+      "rgb": [
+        66,
+        43,
+        23
+      ]
+    },
+    {
+      "azimuth": 54,
+      "x": 1229,
+      "y": 777,
+      "width": 3,
+      "height": 2,
+      "rgb": [
+        69,
+        45,
+        23
+      ]
+    },
+    {
+      "azimuth": 112,
+      "x": 2549,
+      "y": 776,
+      "width": 2,
+      "height": 2,
+      "rgb": [
+        72,
+        43,
+        23
+      ]
+    },
+    {
+      "azimuth": 151,
+      "x": 3436,
+      "y": 779,
+      "width": 2,
+      "height": 2,
+      "rgb": [
+        66,
+        45,
+        23
+      ]
+    },
+    {
+      "azimuth": 216,
+      "x": 4915,
+      "y": 775,
+      "width": 3,
+      "height": 2,
+      "rgb": [
+        69,
+        43,
+        23
+      ]
+    },
+    {
+      "azimuth": 244,
+      "x": 5552,
+      "y": 779,
+      "width": 2,
+      "height": 2,
+      "rgb": [
+        72,
+        45,
+        23
+      ]
+    },
+    {
+      "azimuth": 293,
+      "x": 6667,
+      "y": 777,
+      "width": 2,
+      "height": 2,
+      "rgb": [
+        66,
+        43,
+        23
+      ]
+    },
+    {
+      "azimuth": 329,
+      "x": 7487,
+      "y": 775,
+      "width": 3,
+      "height": 2,
+      "rgb": [
+        69,
+        45,
+        23
+      ]
+    }
+  ],
+  "final_low_ridge_cap_px": 26,
+  "low_ridge_cap_transition": "20 px per degree outside ±15° of north and south",
+  "postgrade_seam_quantization": "Pairwise mean of two join columns after rounding, at x8191/0 and4095/4096",
+  "initial_qa": "verification_initial.json: north36px and south28px; dawn seam difference1; corrected before delivery.",
+  "final_sector_height_caps_px": {
+    "north_south": 26,
+    "15_65": 56,
+    "65_95": 9,
+    "195_250": 68,
+    "310_345": 44
+  },
+  "ground_sampling": "Each panel source y579..723 maps linearly onto final y768..1023. No repeated/clamped source bottom rows.",
+  "opening_degrees_and_radius": [
+    [
+      0,
+      1.4
+    ],
+    [
+      79,
+      1.5
+    ],
+    [
+      174,
+      1
+    ],
+    [
+      185,
+      0.9
+    ],
+    [
+      355,
+      0.8
+    ]
+  ],
+  "revisions": "Initial ridge/1-level seam fixes preserved in verification_initial.json. Ground stretch and northwest mesa corrected in final resampling; previous report/contact preserved with explicit before/rejected names."
+}

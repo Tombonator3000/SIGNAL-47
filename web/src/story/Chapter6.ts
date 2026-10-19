@@ -7,6 +7,7 @@ import { Ending } from '../ui/Ending';
 import { flashFrames, type Frame } from './flashFrames';
 import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
+import { SUN_MESA, horizonDip } from '../world/backdrop';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
 // highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
@@ -316,8 +317,9 @@ export class Chapter6 {
     const hgt = this.d.camera.position.y - road.height(this.d.camera.position.x, this.d.camera.position.z);
     this.d.fog(0.00055 * (1 - sm(10, 420, hgt)) + 0.00006);
     this.skyLift = 1 - 0.85 * sm(180, 640, hgt);
-    // the sun's upper edge touches the top of the mesa (as seen from here) at 05:30:00, then rises
-    const mesaTop = Math.atan2(road.crossY + 120 - this.d.camera.position.y, 4300) * 180 / Math.PI;
+    // the sun's upper edge touches the top of the mesa (as seen from here) at 05:30:00, then rises:
+    // the mesa in the painted horizon, which dips under the camera as it goes up (backdrop.ts)
+    const mesaTop = SUN_MESA.top - horizonDip(hgt);
     this.sunElev = mesaTop - 0.27 + (this.g.clock - (5 * 3600 + 30 * 60)) * 0.05;
     if (t >= PULL) this.once('black', () => {
       this.ending?.black(true, 1400);

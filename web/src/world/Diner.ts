@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { artImage, artTexture, PHOTO_1947 } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, headSlots, type FloodSet } from './kit';
 import type { Collider } from './ControlRoom';
 import { wearMesh } from '../drive/roadSurface';
 import type { Zone } from '../player/Player';
@@ -79,7 +79,7 @@ export class Diner {
     this.light(2.5,1.7,-4.8,4,0xffcf98);this.light(2.5,1.7,4.8,4,0xffcf98);
     this.slots.dawn=this.light(16,7,3,0,0xaac7df);
     this.slots.phone=this.light(.5,2.6,8.1,1.8,0xddddd2);
-    this.head=[0,1,2].map(()=>addFlood(0,-999,0,0,0xfff0d8,dinerFlood));for(const h of this.head)dinerFlood.skip.add(h);
+    this.head=[0,1,2].map(()=>addFlood(0,-999,0,0,0xfff0d8,dinerFlood));headSlots(dinerFlood,this.head);   // (the sealed beams' pattern, kit.ts)
     this.zone('lot',2.8,16.7,-16,16);this.zone('walk',1.55,3.7,-9.4,9.4);
     this.zone('door',.7,3.3,-.6,.6);this.zone('inside',-4.05,1.8,-8.8,8.8);
     this.zone('phone',-1.6,1.8,7.4,8.8);

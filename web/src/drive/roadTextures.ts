@@ -379,15 +379,6 @@ export function signAtlas() {
   });
 }
 
-// A warm haze on the northern horizon above SARO's floodlights.
-export function horizonGlowTex() {
-  return canvasTex(256, 128, (g, w, h) => {
-    const gr = g.createRadialGradient(w / 2, h, 0, w / 2, h, w / 2);
-    gr.addColorStop(0, 'rgba(255,170,90,1)'); gr.addColorStop(0.35, 'rgba(255,130,60,.45)'); gr.addColorStop(1, 'rgba(255,110,40,0)');
-    g.save(); g.scale(1, 0.5); g.translate(0, h); g.fillStyle = gr; g.fillRect(0, -h, w, h * 2); g.restore();
-  });
-}
-
 /** UVs of a plane mapped into one rectangle of an atlas. */
 export function uvInto(geo: THREE.BufferGeometry, r: Rect) {
   const uv = geo.attributes.uv as THREE.BufferAttribute;

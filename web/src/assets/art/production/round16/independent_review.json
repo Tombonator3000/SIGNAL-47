@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "reviewer": "qa_requirements (uavhengig subagent, skrivebeskyttet)",
+  "reviewed_at_utc": "2026-10-19T11:51:05.612548+00:00",
+  "findings": {
+    "PNG": "Begge8192×1024 RGBA8, color type6, sRGB ICC.",
+    "alpha": "Pikselidentisk, monotont nedover, ingen hull eller luftdis, høyst2 delalfa-piksler per kolonne. Alt y>=768 dekkende.",
+    "geometry": "Topp y654. Nord/sør maks27px; øst65–95 maks10px; butte130°91px; vest114px; nordvest310–345 maks45px.",
+    "seams": "Eksakt RGBA-samsvar ved nordwrap og sørjoin. Ingen synlig skjøt; lokale naboforskjeller små.",
+    "visual": "Kontaktark og begge detaljark PASS. Tidligere bunnstrekk er borte. Samme rolige land, kald mørk natt, fiolett gry og rosa vestklipper. Ingen synlige forbudte objekter."
+  },
+  "confirmed_sha256": {
+    "sky/horizon_night.png": "0a0977bf22f731216a55aa0e3dde29d2e306b51cabc253073773e2b66ee0535d",
+    "sky/horizon_dawn.png": "67677a9549fbff03d9601680707fb28bb10f34da8787522b7d23d5149fa42238"
+  },
+  "files_written_by_reviewer": [],
+  "limits": "Ingen runtimeintegrasjon, fysisk skjerm- eller ytelsestest."
+}

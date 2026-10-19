@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { cutoutTexture } from '../core/cutouts';
 import { artImage, artLoaded, artTexture, type ArtId } from '../core/art';
-import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, headSlots, type FloodSet } from './kit';
 import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
@@ -11,6 +11,8 @@ import { SIGN_OFF } from '../core/radio';
 import { wet, wearMesh, type Wear } from '../drive/roadSurface';
 import { dressTown } from './dressTown';
 import { NEAR, type Dressing } from './weathering';
+import { WindowLights } from './windowLight';
+import type { WindowStyle } from '../core/cookies';
 
 // Caliche, New Mexico, pop. 412 (HENDELSER.md, section 9; Tom, 16 October). The highway is its
 // main street, from Mesa Diner, the northernmost house, about 300 m south: the gas station, the
@@ -103,6 +105,12 @@ function metreUV(m: THREE.Mesh) {
 /** How far the gas station's apron stands over the land: 5.5 cm, and over its throat down to
  *  1 cm at the highway's asphalt (Town.gasStation, Town.wear). */
 const apronLift = (x: number) => x <= -5.6 ? 0.055 : 0.01 + 0.045 * (-4.72 - x) / 0.88;
+/** What is laid on the land there: the apron and its throat down to the highway, the sidewalks (0.05), or the dirt between. */
+const paveLift = (x: number, z: number) => z > 2040 && z < 2090 && x > -17.6 && x < -4.72 ? apronLift(x) : (x < -14.2 || x > 16.6) ? 0.05 : 0;
+/** The ground's own colour there, for the light a window adds to it (windowLight.ts): the sidewalks
+ *  and the apron, the highway's asphalt, or the red dirt between. */
+const CONCRETE = new THREE.Color(1, 1, 1), ASPHALT = new THREE.Color(0.6, 0.6, 0.62), DIRT = new THREE.Color(1, 0.7, 0.52);
+const groundTint = (x: number, z: number) => paveLift(x, z) > 0 ? CONCRETE : Math.abs(x) < 6 ? ASPHALT : DIRT;
 
 export class Town {
   readonly group = new THREE.Group();
@@ -165,6 +173,9 @@ export class Town {
   studioEmpty = false;
   /** Every building made, for the dressing (dressTown.ts). */
   private readonly built: Built[] = [];
+  /** The lit windows' light on the ground in front of them (windowLight.ts), and their rooms' lamps. */
+  readonly windowLights: WindowLights;
+  private readonly roomLamps: number[] = [];
   readonly dressing: Dressing;
 
   constructor(origin: THREE.Vector3) {
@@ -175,6 +186,7 @@ export class Town {
     noMerge(this.car); noMerge(this.paper); noMerge(this.woman); noMerge(this.smoker); noMerge(this.cutout);
     floodOwner = this; townFlood.count = 0;
     for (const p of townFlood.pos) p.set(0, -999, 0, 0);
+    this.windowLights = new WindowLights('town', townFlood, (x, z) => this.drapedY(x, z), origin, this.roomLamps, FALL);
     this.materials.add(this.hit);
     const c = document.createElement('canvas'); c.width = AW; c.height = AH;
     drawAtlas(c.getContext('2d')!);
@@ -192,7 +204,8 @@ export class Town {
       col: (f, truck = true) => { this.col(f.minX, f.maxX, f.minZ, f.maxZ, truck); }, glow: (x, y, z, size, c) => { this.glow.add(x, y, z, size, c); } });
     this.group.add(this.dressing.build());
     for (const m of this.dressing.materials) this.materials.add(m);
-    for (let i = 0; i < 3; i++) { const h = addFlood(0, -999, 0, 0, 0xfff0d8, townFlood); townFlood.skip.add(h); this.head.push(h); }
+    for (let i = 0; i < 3; i++) this.head.push(addFlood(0, -999, 0, 0, 0xfff0d8, townFlood));
+    headSlots(townFlood, this.head);   // (the sealed beams' pattern, kit.ts)
 
     // the street and the sidewalks are walked, from the diner's lot to the last house; and the
     // crossing in front of the diner, to the verge across the highway (the old road's barricades
@@ -204,7 +217,7 @@ export class Town {
 
     mergeStatic(this.st); mergeStatic(this.car); mergeStatic(this.paper); mergeStatic(this.woman); mergeStatic(this.smoker);
     this.qMesh = this.quadMesh();
-    this.group.add(this.qMesh, this.glow.build());
+    this.group.add(this.qMesh, this.glow.build(), this.windowLights.build());
     this.setDeputy(true); this.setPaper(false); this.setCutout(false);
     this.group.updateMatrixWorld(true);
   }
@@ -306,6 +319,15 @@ export class Town {
   private frontQuad(b: Built, id: PanelId, r: Rect, z: number, y: number, w: number, h: number, color: THREE.ColorRepresentation = 0xffffff, k = 1, flip = false) {
     return this.quad(id, r, V(b.fx + b.s * 0.035, b.floor + y, z), V(0, 0, (flip ? b.s : -b.s) * w / 2), V(0, h / 2, 0), color, k);
   }
+  /** A lit window's light on the ground in front of it (windowLight.ts), as frontQuad's window:
+   *  slot, its room's lamp in the floods (its level is the window's); lamp, where that lamp
+   *  hangs (behind the glass, over the floor) and how big it is (across, up: its blur). k is kept
+   *  to about half of what the room shows through the glass (tools/cookies.py measures it). */
+  private winLight(b: Built, id: string, style: WindowStyle, z: number, y: number, w: number, h: number, color: THREE.ColorRepresentation, k: number,
+    slot: number | undefined, lamp: { depth: number; y: number; side?: number }, size?: [number, number]) {
+    if (slot !== undefined) this.roomLamps.push(slot);
+    this.windowLights.add({ id, style, c: V(b.fx + b.s * 0.05, b.floor + y, z), out: V(b.s, 0, 0), w, h, floor: b.floor, color, k, slot, lamp, size, tint: groundTint });
+  }
   /** Show another part of the atlas on a lit quad (the studio after four). */
   private setQuadRect(at: number, r: Rect) {
     const u0 = r[0] / AW, u1 = (r[0] + r[2]) / AW, v0 = 1 - (r[1] + r[3]) / AH, v1 = 1 - r[1] / AH;
@@ -345,6 +367,7 @@ export class Town {
   /** Ground draped with pavement (lift metres above the land, which it follows, or by x). */
   private drape(x0: number, x1: number, z0: number, z1: number, lift: number | ((x: number) => number) = 0.05, mat = this.m.pave, step = 2) {
     const nx = Math.max(1, Math.ceil((x1 - x0) / step)), nz = Math.max(1, Math.ceil((z1 - z0) / step));
+    this.drapes.push({ x0, x1, z0, z1, nx, nz, lift });
     const pos: number[] = [], uv: number[] = [], idx: number[] = [];
     for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
       const x = x0 + (x1 - x0) * i / nx, z = z0 + (z1 - z0) * j / nz;
@@ -355,6 +378,26 @@ export class Town {
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     g.setIndex(idx); g.computeVertexNormals();
     this.st.add(new THREE.Mesh(g, mat));
+  }
+  private readonly drapes: { x0: number; x1: number; z0: number; z1: number; nx: number; nz: number; lift: number | ((x: number) => number) }[] = [];
+  /** The height of what is drawn on the ground there: a drape's own triangles where one lies (they
+   *  are coarser than the land and a few centimetres off it here and there), the land elsewhere
+   *  (the windows' light lies on it, windowLight.ts). */
+  private drapedY(x: number, z: number) {
+    for (const d of this.drapes) {
+      if (x < d.x0 || x > d.x1 || z < d.z0 || z > d.z1) continue;
+      const fx = (x - d.x0) / (d.x1 - d.x0) * d.nx, fz = (z - d.z0) / (d.z1 - d.z0) * d.nz;
+      const i = Math.min(d.nx - 1, Math.floor(fx)), j = Math.min(d.nz - 1, Math.floor(fz)), u = fx - i, v = fz - j;
+      const h = (a: number, b: number) => {
+        const px = d.x0 + (d.x1 - d.x0) * a / d.nx, pz = d.z0 + (d.z1 - d.z0) * b / d.nz;
+        return this.gy(px, pz) + (typeof d.lift === 'number' ? d.lift : d.lift(px));
+      };
+      // drape()'s two triangles of a cell: (i, j) (i, j + 1) (i + 1, j), and (i + 1, j) (i, j + 1) (i + 1, j + 1)
+      if (u + v <= 1) { const h00 = h(i, j); return h00 + u * (h(i + 1, j) - h00) + v * (h(i, j + 1) - h00); }
+      const h11 = h(i + 1, j + 1);
+      return h11 + (1 - u) * (h(i, j + 1) - h11) + (1 - v) * (h(i + 1, j) - h11);
+    }
+    return this.gy(x, z);
   }
   /** A plain building on its own footing: the floor a little above the highest ground under it,
    *  the walls down below the lowest, a dark roof and a lip round it. s: the way its front faces. */
@@ -454,8 +497,7 @@ export class Town {
       { x: 18.4, z: 2080, w: 1.8, l: 2.4, ry: 2.2, k: 'cracks' }, { x: 18.2, z: 2160, w: 1.8, l: 2.2, ry: 0.7, k: 'cracks' }, { x: 18.5, z: 2132, w: 2.2, l: 3, ry: 0.4, k: 'damp' },
     ];
     // on the apron (drape lift 0.055) and its throat down to the highway, the sidewalks (0.05) or the dirt between
-    const lift = (x: number, z: number) => z > 2040 && z < 2090 && x > -17.6 && x < -4.72 ? apronLift(x) : (x < -14.2 || x > 16.6) ? 0.05 : 0;
-    const mesh = wearMesh(W, (x, z) => this.gy(x, z) + lift(x, z), townFlood, 0.008, FALL);
+    const mesh = wearMesh(W, (x, z) => this.gy(x, z) + paveLift(x, z), townFlood, 0.008, FALL);
     this.materials.add(mesh.material as THREE.Material);
     this.group.add(nearOnly(mesh, NEAR));
   }
@@ -500,6 +542,7 @@ export class Town {
     this.quad('canopy', R.white, V(-10.25, cy - .01, 2058), V(.5, 0, 0), V(0, 0, 1.6), 0xf4f1e0, 1);
     this.light('canopy', -10.25, cy - .5, 2055, 11, 0xf0eedf);
     this.light('gasWin', -15.6, office.floor + 1.6, 2073, 4, 0xffcf96);
+    this.winLight(office, 'gasWin', 'shop', 2073, 1.55, 4.6, 1.75, 0xffe6c4, 0.095, this.slots.gasWin, { depth: 2.6, y: 3.1, side: -0.4 }, [0.5, 0.3]);   // (a two-tube fixture)
     this.glow.add(-10.25, cy - .1, 2052, 1.6, 0xeceadc); this.glow.add(-10.25, cy - .1, 2058, 1.6, 0xeceadc);
     this.glow.add(-10.25, cy - 1, 2055, 16, 0x1a1a14);
     this.glow.add(office.fx + .4, office.floor + 1.5, 2073, 4, 0x2a1c0e);
@@ -530,6 +573,7 @@ export class Town {
     for (let i = 0; i < 6; i++) box(this.st, .03, 1.6, .03, m.dark, b.fx + .07, b.floor + 1.6, 2105.8 + i * .6);   // the bars
     this.board(this.st, R.sheriff, 3.4, hasArt('sheriff') ? .8 : .85, b.fx + .04, b.floor + 2.95, 2105.4, Math.PI / 2);
     this.light('sheriffWin', -15.4, b.floor + 1.7, 2107.3, 4.5, 0xfff0d0);
+    this.winLight(b, 'sheriffWin', 'bars', 2107.3, 1.6, 3.6, 1.6, 0xfff0d6, 0.08, this.slots.sheriffWin, { depth: 2.4, y: 3.0, side: 0.3 }, [0.1, 0.1]);   // (a bare bulb: the bars sharp)
     this.slots.sheriffGlow = this.glow.add(b.fx + .4, b.floor + 1.6, 2107.3, 4, 0x2a2618);
     // the flagpole, the flag taken in for the night
     const fy = this.gy(-14.6, 2099.2);
@@ -552,6 +596,7 @@ export class Town {
     this.frontQuad({ ...b, fx: b.fx + .28 }, 'laundro', R.laundro, 2131, 2.85, 4.2, 1.05, 0xffffff, .95);
     box(this.st, .3, 1.2, 4.6, m.dark, b.fx + .12, b.floor + 2.85, 2131);
     this.light('laundro', -14.6, b.floor + 2.2, 2131, 6, 0xdcecff);
+    for (const z of [2128.9, 2132.3]) this.winLight(b, 'laundroWin', 'panes', z, 1.45, 3.1, 1.7, 0xe2eeff, 0.055, this.slots.laundro, { depth: 3.0, y: 3.15, side: z - 2130.6 }, [0.15, 0.5]);   // (tubes running into the room)
     this.glow.add(b.fx + .3, b.floor + 1.5, 2130.6, 5, 0x18202a);
     // the bench under the window
     const x = b.fx + .55, y = this.gy(x, 2132);
@@ -611,6 +656,7 @@ export class Town {
     box(this.st, .12, 1.7, 5.4, m.dark, b.fx + .3, b.top + 1.05, 2036.1);
     this.frontQuad({ ...b, fx: b.fx + .24, floor: b.top }, 'amSign', R.am, 2036.1, 1.05, 3.3, 1.6, 0xffffff, .95);
     this.light('studio', 19.4, b.floor + 1.6, 2037.2, 4, 0xffd8a8);
+    this.winLight(b, 'studio', 'blinds', 2037.2, 1.55, 3.7, 1.65, 0xffdcae, 0.05, this.slots.studio, { depth: 2.6, y: 2.9, side: 0.4 }, [0.2, 0.2]);
     this.glow.add(b.fx - .4, b.floor + 1.6, 2037.2, 4, 0x2a1c10); this.glow.add(b.fx - .3, b.top + 1.05, 2036.1, 6, 0x221812);
     // the mast: three legs and their bracing, guyed three ways, a red lamp at the top and halfway
     const mx = 38, mz = 2036, my = this.gy(mx, mz), H = 36, r = .32;
@@ -640,6 +686,7 @@ export class Town {
     for (const z of [2063, 2065.2]) box(this.st, .1, 1.2, .1, m.wood, 18.8, py + .6, z);
     this.board(this.st, R.souvenir, 2.6, 1.3, 18.7, py + .85, 2064.1, -Math.PI / 2);
     this.frontQuad(b, 'display', R.display, 2062.3, 1.45, 2.2, 1.7, ...lit('display', 0xffe0b0, .35, .8)); this.frame(b, 2062.3, 1.45, 2.2, 1.7, m.trim);
+    this.winLight(b, 'display', 'panes', 2062.3, 1.45, 2.2, 1.7, 0xffd9a6, 0.05, undefined, { depth: 1.8, y: 2.5, side: -0.3 }, [0.2, 0.2]);
     this.pane(b, 2066.8, 1.1, 1.0, 2.15, m.trim); this.frame(b, 2066.8, 1.1, 1.0, 2.15, m.wood); this.stoop(b, 2066.8, 1.4);
     this.board(this.st, R.closed, .42, .2, b.fx - .045, b.floor + 1.5, 2066.8, -Math.PI / 2);
     this.glow.add(b.fx - .3, b.floor + 1.4, 2062.3, 2.4, 0x1a120a);
@@ -696,6 +743,11 @@ export class Town {
     const hw = house(-28, -19, 2236, 2246, m.cream, 1, 'warm', 2239.2);
     this.light('tv1', h1.fx - .5, h1.floor + 1.5, 2131.2, 3, 0x9db6ff);
     this.light('tv2', h3.fx - .5, h3.floor + 1.5, 2186.6, 3, 0x9db6ff);
+    // the televisions' rooms light the ground only a little, and close (a screen low in the room);
+    // the kitchen's lamp hangs over its table, behind the curtain
+    this.winLight(h1, 'tv1', 'tv', 2131.2, 1.5, 1.5, 1.15, 0xa8bfff, 0.06, this.slots.tv1, { depth: 2.2, y: 2.0 }, [0.45, 0.35]);
+    this.winLight(h3, 'tv2', 'tv', 2186.6, 1.5, 1.5, 1.15, 0xa8bfff, 0.06, this.slots.tv2, { depth: 2.2, y: 2.0 }, [0.45, 0.35]);
+    this.winLight(hw, 'warm', 'curtain', 2239.2, 1.5, 1.5, 1.15, 0xffd2a0, 0.07, undefined, { depth: 2.0, y: 2.4 }, [0.35, 0.35]);
     this.slots.tv1Glow = this.glow.add(h1.fx - .3, h1.floor + 1.5, 2131.2, 2.4, 0x101828);
     this.glow.add(h3.fx - .3, h3.floor + 1.5, 2186.6, 2.4, 0x101828);
     this.glow.add(hw.fx + .3, hw.floor + 1.5, 2239.2, 2.2, 0x1e140a);
@@ -887,6 +939,8 @@ export class Town {
     this.setPanel('laundroWin', st); setFlood(this.slots.laundro, 6 * st, townFlood);
     if (this.dirty) { (this.qMesh.geometry.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true; this.dirty = false; }
     this.glow.update(t);
+    // the windows' light on the ground goes with their lamps (and the street lamps)
+    this.windowLights.update();
   }
 
   /** The driven truck's headlights on the town: lamps of another set copied into the town's

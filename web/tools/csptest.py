@@ -40,7 +40,7 @@ async def main():
         start = [i for i in art['loaded'] if i not in art['later']]
         early = sorted(i for i in art['loaded'] if i in art['later'])
         print('later images already loaded:', early)
-        passed = len(fonts) == 4 and ordinary == 45 and telephone == 24 and len(start) == art['expected'] == 28 and 'halleyPoster' in early and not errs
+        passed = len(fonts) == 4 and ordinary == 45 and telephone == 24 and len(start) == art['expected'] == 30 and 'halleyPoster' in early and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:

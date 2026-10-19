@@ -20,6 +20,12 @@ FILES = ['room/poster_listen.png', 'room/poster_saro.png', 'room/map_new_mexico.
          'alien/silhouette_stand.png', 'alien/silhouette_turned.png', 'alien/silhouette_far.png',
          'kit/kit_notebook.png', 'kit/kit_jacket.png', 'kit/kit_camera.png', 'kit/kit_flashlight.png',
          'kit/kit_keys.png', 'kit/kit_papers.png', 'kit/kit_nickel_1947.png']
+# Round 16, the painted horizon (world/backdrop.ts): only the rows round the horizon go to the game,
+# 576 to 832 of the 1024 (8.44 degrees over it to 2.81 under it; nothing is painted above 654), at
+# half size: the two generated panels behind them had about 4300 pixels round, and a phone keeps the
+# decoded picture in memory (4096 x 128 is 2 MB, the whole crop 8).
+CROPS = {'sky/horizon_night.png': ((0, 576, 8192, 832), (4096, 128)), 'sky/horizon_dawn.png': ((0, 576, 8192, 832), (4096, 128))}
+FILES += list(CROPS)
 OUT = ROOT / 'runtime'
 OUT.mkdir(exist_ok=True)
 sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
@@ -36,7 +42,9 @@ for relative in FILES:
         manifest.append(old)
         continue
     with Image.open(source) as im:
-        im.save(target, 'WEBP', quality=88, method=6, icc_profile=im.info.get('icc_profile', b''))
+        icc = im.info.get('icc_profile', b'')
+        if relative in CROPS: im = im.crop(CROPS[relative][0]).resize(CROPS[relative][1], Image.LANCZOS)
+        im.save(target, 'WEBP', quality=88, method=6, icc_profile=icc)
         size = im.size
     with Image.open(target) as check:
         check.load()

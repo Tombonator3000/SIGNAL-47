@@ -15,6 +15,10 @@ import yard from '../assets/art/runtime/sign_service_yard.webp';
 import procedure from '../assets/art/runtime/label_s03_procedure.webp';
 import sky from '../assets/art/sky/sky_milkyway_equirect.jpg';
 import sierra from '../assets/art/runtime/sign_sierra_on.webp';
+// Round 16 (Codex, 19 October): the painted horizon all round, night and dawn (world/backdrop.ts).
+// The rows round the horizon of the 8192 x 1024 originals in sky/, at half size (tools/prepare_art.py).
+import horizonNight from '../assets/art/runtime/horizon_night.webp';
+import horizonDawn from '../assets/art/runtime/horizon_dawn.webp';
 // Round 3 (PR #31): text-free surfaces. The game draws every label on them in code.
 import vane from '../assets/art/yard/vane_b12.png';
 import bars from '../assets/art/yard/board_r07.png';
@@ -143,7 +147,7 @@ import dinerWallR from '../assets/art/diner/tex_wall_panel_r.jpg';
 // Only files imported here reach the game: concept/, maps/, production/ and QA
 // pictures in the same folder tree are never bundled.
 const urls = { floor, ceiling, wall, desk, concrete, desert, asphalt, cabinet,
-  listen, saro, map, logo, yard, procedure, sky, sierra,
+  listen, saro, map, logo, yard, procedure, sky, sierra, horizonNight, horizonDawn,
   vane, bars, frame, fieldMap, sign, paper, vinyl, vending,
   stucco, oldConcrete, weatheredWood, floorboards, gravelTrack,
   motelWall, motelDoor, motelWindowLit, motelWindowDark, cardField, letterPaper,

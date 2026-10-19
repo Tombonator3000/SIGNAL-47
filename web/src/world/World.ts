@@ -22,7 +22,8 @@ import { Field } from './Field';
 import { MotelFront } from './MotelFront';
 import { flood as siteFlood, addFlood, followNear, type FloodSet } from './kit';
 import { loadArtFor, loadArtSome, artTexture, DINER_ART, OLDROAD_ART, TOWN_ART } from '../core/art';
-import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS, inRect } from './geo';
+import { STATION_TURN, SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT, MOTEL_GLOWS, inRect, roadToStation } from './geo';
+import type { SkyPlace } from './backdrop';
 import { FENCE_Z } from './arrayLayout';
 import { horizonHaze } from './horizon';
 import { DINER, TOWN } from '../drive/roadShape';
@@ -85,6 +86,12 @@ const HEAD_ON_TOWN = 1.8, TOWN_ON_ROAD = 0.8;
  *  that turned the night into day. */
 const AIR_CONES = 0.065, AIR_HAZE = 1;
 type HazeLamp = { p: THREE.Vector3; r: number; col: THREE.Color; k: number };
+/** The lit places on the map whose glow is on the sky (skyPlaces): road-local x, z, how far across
+ *  their lights are (m), how bright. SARO's lamps and dishes lie round its site's (0, -80) (geo.ts),
+ *  Caliche's street from the diner south (roadShape.TOWN), the motel 650 m down from SARO. */
+const SKY_PLACES: [number, number, number, number][] = [
+  [SARO_IN_ROAD.x, SARO_IN_ROAD.z - 80, 380, 1], [0, (DINER.z + TOWN.z1) / 2, 200, 0.7], [SARO_IN_ROAD.x + MOTEL_AT.x - 38, SARO_IN_ROAD.z + MOTEL_AT.z + 40, 50, 0.18],
+];
 type Box = { minX: number; maxX: number; minZ: number; maxZ: number };
 /** Whether (x, z) is in one of the boxes (or within m of it): what stands in a tumbleweed's way. */
 const inBoxes = (boxes: readonly Box[], x: number, z: number, m = 0.4) => boxes.some((b) => x > b.minX - m && x < b.maxX + m && z > b.minZ - m && z < b.maxZ + m);
@@ -634,6 +641,36 @@ export class World {
    *  station's terms are the road's turned a quarter round, so its sky is turned with them,
    *  or the stars would swing round where the truck comes in. */
   get skyYaw() { return this.area === 'station01' ? STATION_TURN : 0; }
+  /** The lit places whose glow shows on the sky from the area shown, in world terms (world/backdrop.ts):
+   *  SARO's lamps and dishes, Caliche's main street with the diner, the motel. None on the old road
+   *  (it is dawn there) or in room 6. The same array each frame. */
+  skyPlaces(): SkyPlace[] {
+    const out = this.skyOut, a = this.area;
+    out.length = 0;
+    if (a === 'roswell' || a === 'room6') return out;
+    for (let i = 0; i < SKY_PLACES.length; i++) {
+      const [rx, rz, r, k] = SKY_PLACES[i], P = this.skyPts[i];
+      if (a === 'saro') { P.x = rx - SARO_IN_ROAD.x; P.z = rz - SARO_IN_ROAD.z; }
+      else if (a === 'station01') { const [sx, sz] = roadToStation(rx, rz); P.x = STATION_ORIGIN.x + sx; P.z = STATION_ORIGIN.z + sz; }
+      else { P.x = ROAD_ORIGIN.x + rx; P.z = ROAD_ORIGIN.z + rz; }
+      P.r = r; P.k = k;
+      out.push(P);
+    }
+    return out;
+  }
+  private skyOut: SkyPlace[] = [];
+  /** The height of the land under a point in the area shown (the painted horizon dips under the
+   *  camera by its height over it, backdrop.ts): SARO's ground and the road's south of it, the
+   *  road's, STATION 01's, the old road's; in room 6 the floor. */
+  groundUnder(p: THREE.Vector3) {
+    const a = this.area;
+    if (a === 'saro') return p.z > WEST.z1 ? this.grounds.floorAt(p.x, p.z) : -0.62;
+    if (a === 'road' || a === 'diner') return surfaceY(p.x - ROAD_ORIGIN.x, p.z - ROAD_ORIGIN.z) + ROAD_ORIGIN.y;
+    if (a === 'station01' && this.site) return this.site.groundAt(p.x, p.z);
+    if (a === 'roswell' && this.oldRoad) return this.oldRoad.height(p.x, p.z);
+    return p.y - 1.6;
+  }
+  private skyPts: SkyPlace[] = SKY_PLACES.map(() => ({ x: 0, z: 0, r: 1, k: 0 }));
   /** Inside a building of the current area (for the sound of the space). */
   indoors(p: THREE.Vector3) {
     if (this.area === 'room6') return !!this.room6 && p.z < ROOM6_ORIGIN.z + 3.0;   // in the room, not on the walk outside
@@ -1169,13 +1206,15 @@ export class World {
     const herdArea = this.area === 'saro' ? 'saro' : this.area === 'road' || this.area === 'diner' ? 'road' : null;
     const lamps = this.driving && this.leg === herdArea ? (herdArea === 'saro' ? this.legs.saro?.area.headlights : this.road?.headlights) : undefined;
     for (const h of this.herds) if (h.area === herdArea) h.update(t, lamps ?? null);
-    // the dawn's haze on the far mesas (horizon.ts), as on the land in front of them; none at night
+    // the dawn's haze on the near mesas (horizon.ts), as on the land in front of them; none at night.
+    // Less than the painted horizon behind them takes (backdrop.ts), or the nearer would look the
+    // farther: flat pale slabs in front of the far mesas' ledges; they stay darker than the band.
     if (this.area !== 'roswell') {
       const sk = this.d.sky();
       // the same haze as the land's (main.ts darkens it a little at dawn out here)
       const fog = this.d.scene.fog as THREE.FogExp2 | null;
       horizonHaze.color.value.copy(fog?.color ?? sk.fog);
-      horizonHaze.k.value = Math.min(0.9, sk.dawn * 3);
+      horizonHaze.k.value = Math.min(0.3, sk.dawn);
       horizonHaze.density.value = (this.d.scene.fog as THREE.FogExp2 | null)?.density ?? FOG;
     }
     // the diner's own sky light near it, the road's night light up the road (both in one scene)

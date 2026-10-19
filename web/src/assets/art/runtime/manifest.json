@@ -361,5 +361,27 @@
     "source_sha256": "33fc884139b7e4ac15c6acd3d27d7a1983623b54784ee38e5b4e5fe98795c1d1",
     "runtime_sha256": "407c6c505901c98c05dbeb1dcf664bbfa00c22ab73f09e7eede2b40cbf5895f6",
     "bytes": 23992
+  },
+  {
+    "source": "sky/horizon_night.png",
+    "runtime": "runtime/horizon_night.webp",
+    "dimensions": [
+      4096,
+      128
+    ],
+    "source_sha256": "0a0977bf22f731216a55aa0e3dde29d2e306b51cabc253073773e2b66ee0535d",
+    "runtime_sha256": "4d4f6a273d38c2951fff8061f94d0a2c8bb87cd38dc0d073cdd9e152af07b812",
+    "bytes": 16598
+  },
+  {
+    "source": "sky/horizon_dawn.png",
+    "runtime": "runtime/horizon_dawn.webp",
+    "dimensions": [
+      4096,
+      128
+    ],
+    "source_sha256": "67677a9549fbff03d9601680707fb28bb10f34da8787522b7d23d5149fa42238",
+    "runtime_sha256": "b7003f692340625013a67d28968d604d0b4e6b3e77f972e97b70d13f269700e7",
+    "bytes": 33130
   }
 ]
