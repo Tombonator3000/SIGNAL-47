@@ -27,7 +27,8 @@ STEP = """((s) => { S47.tick(s, 20); const w = S47.world, t = w.tripNow, R = S47
   const l0 = g.kind === 'talk' ? g.lines[0] : null;
   return { driving: w.driving, area: w.area, metres: t ? t.metres : null, bound: t ? t.bound : null, seg: g.kind, slotted: g.kind === 'talk' && !!g.slotted,
     by: l0 ? (l0.by || 'host') : null, first: l0 && typeof l0.text === 'string' ? l0.text : '', free: st.free, own: st['cfg'].loop.includes(g), station: R.station, on: R.on,
-    last: last ? last.id + '@' + Math.round(last.metres) : null, clock: S47.game.clock, r1420: S47.nightIn().radio1420 }; })"""
+    last: last ? last.id + '@' + Math.round(last.metres) : null, clock: S47.game.clock, r1420: S47.nightIn().radio1420,
+    audioTime: S47.audio.ctx?.currentTime ?? null, archive: st.archiveStatus }; })"""
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
@@ -48,8 +49,22 @@ async def main():
 
         await ev("S47.hold = true; S47.tick(0.3); S47.setAbductions(false); S47.radio.boyCalled = true; S47.jump('chapter1'); S47.tick(1.0)")
         # Route and slot regressions fast-forward the original procedural mode;
-        # real recorded host timing is covered separately by artbell-radio.py.
-        await ev("S47.radio.setHostVoice(false)")
+        # real host/caller/bulletin timing is covered by artbell-radio.py and
+        # radiocast-radio.py; the latter observes all 28 new recordings.
+        await ev("S47.radio.setHostVoice(false); S47.radio.setCallerVoice(false)")
+        async def route_step():
+            # The procedural bulletin also occupies 47 real audio seconds. The
+            # route can fast-forward between broadcasts, but cannot drive past
+            # every remaining mark while those scheduled syllables are playing.
+            target = await ev("""() => {
+              const st=S47.radio.stations.caliche,ctx=S47.audio.ctx;
+              return st.archiveStatus?.state==='playing' && ctx
+                ? ctx.currentTime+1 : null;
+            }""")
+            if target is not None:
+                await pg.wait_for_function("target => S47.audio.ctx.currentTime >= target",
+                                           arg=target, polling=20, timeout=10000)
+            return await ev(f"{STEP}(1.0)")
         await ev("() => { window.__toasts = []; const u = S47.game.d.ui, o = u.toast.bind(u); u.toast = (t, ...args) => { window.__toasts.push(t); return o(t, ...args); }; }")
         # the night's own events wait (one is set off by hand below)
         await ev("S47.nightEvents['wait'] = 1e9")
@@ -77,7 +92,7 @@ async def main():
             shoot = False
             samples, said, prev, t0 = [], [], await ev("(() => { const l = S47.tripRadio().last; return l ? l.id + '@' + Math.round(l.metres) : null; })()"), time.time()
             for i in range(budget):
-                s = await ev(f"{STEP}(1.0)")
+                s = await route_step()
                 s['t'] = i
                 samples.append(s)
                 if s['last'] and s['last'] != prev:
@@ -88,7 +103,7 @@ async def main():
                 if at and s['metres'] is not None: await at(s['metres'], s)
                 if not s['driving']: break
             # a piece taken just before the lot is said once the talk before it is over
-            for _ in range(14): samples.append({**await ev(f"{STEP}(1.0)"), 't': len(samples)})
+            for _ in range(14): samples.append({**await route_step(), 't': len(samples)})
             ids = [x[0] for x in said]
             print(f"  {name}: {round(max([s['metres'] or 0 for s in samples] + [0]))} m in {time.time() - t0:.0f} s, said {[(x[0], x[1], round(x[2]) % 86400) for x in said]}", flush=True)
             return samples, said

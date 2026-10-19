@@ -29,7 +29,7 @@ import { horizonHaze } from './horizon';
 import { DINER, TOWN } from '../drive/roadShape';
 import { firstTime } from '../core/hints';
 import { getQuality } from '../core/quality';
-import { surfaceY } from '../drive/roadTerrain';
+import { surfaceY, ROAD_STOPS, HWY as ROAD_HWY } from '../drive/roadTerrain';
 import { LightCones, GroundHaze, sodiumGlows } from './airlight';
 import { followFlora, floraTest, type Flora } from './flora';
 import { saroFlora, stationFlora, postsOf } from './groundCover';
@@ -161,8 +161,12 @@ export class World {
   /** Caliche, the town south of the diner (Town.ts): built with the diner, walked in its area. */
   town: Town | null = null;
   onTownLoaded?: (town: Town) => void;
-  /** The diner's and the town's ground together, walked in the diner's area. */
+  /** The diner's and the town's ground together (the ground cover keeps to it, coverOf). */
   private dinerWalk: { zones: Zone[]; colliders: Collider[] } | null = null;
+  /** What is walked in the diner's area: the diner's and the town's ground, and the road's own
+   *  where the truck can be left by something to walk to (RoadArea.walks: by the herd, by the
+   *  deputy's car), with what stands on them. */
+  private roadWalk: { zones: Zone[]; colliders: Collider[] } | null = null;
   /** Caliche's nearest street lamps as lamps in the road's set (Town.lampsTo). */
   private townSlots: number[] = [];
   /** The highway has been built (the barricades on the old road get a closer look, main.ts). */
@@ -273,7 +277,8 @@ export class World {
     }
     d.player.floor = g.floorAt;
     // the ground cover, kept off SARO's floors, roads, tracks and things, and low where it is walked
-    this.saroFlora = saroFlora(siteFlood, d.saro.colliders, d.saro.zones);
+    // (the highway through the array is walked too, Field.ts, but it has no cover to lower)
+    this.saroFlora = saroFlora(siteFlood, d.saro.colliders, d.saro.zones.filter((z) => z.id !== 'fHighway'));
     d.scene.add(this.saroFlora.group);
     d.saro.groups.push(this.saroFlora.group);
     followFlora(d.scene);
@@ -514,8 +519,9 @@ export class World {
    *  highway and out to C. ready() runs behind the black, before the picture comes back. */
   driveOldRoad(ready: () => void) {
     void this.ensureDiner().then(() => {
-      // (a chapter started from the menu has the truck somewhere else)
-      if (this.truckAt !== 'diner') this.placeTruck('diner');
+      // (a chapter started from the menu has the truck somewhere else, and the player may have left
+      // it on the highway or in Caliche's street: the old road goes out from the lot)
+      if (this.truckAt !== 'diner' || !inBox(this.dinerPark, this.truck!.group.position)) this.placeTruck('diner');
       this.startTrip('diner', 'roswell', { leg: 'roswell', onStart: () => {
         this.oldRoad!.hitBack = false;
         this.oldControl = null;
@@ -586,6 +592,8 @@ export class World {
       for (const i of this.townSlots) this.road!.headlights.set.skip.add(i);
       this.town = town;
       this.dinerWalk = { zones: [...d.zones, ...town.zones], colliders: [...d.colliders, ...town.colliders] };
+      const rd = this.road!;
+      this.roadWalk = { zones: [...this.dinerWalk.zones, ...rd.walks], colliders: [...this.dinerWalk.colliders, ...rd.walkColliders] };
       // no ground cover in their walls, thick at their feet, low where they are walked
       this.road!.flora.add(this.coverOf(ROAD_ORIGIN));
       this.diner = d;
@@ -637,7 +645,7 @@ export class World {
     if (area === 'saro') { player.zones = saro.zones; player.colliders = saro.colliders; }
     if (area === 'station01' && this.site) { player.zones = this.site.zones; player.colliders = this.site.colliders; }
     if (area === 'room6' && this.room6) { player.zones = this.room6.zones; player.colliders = this.room6.colliders; }
-    if (area === 'diner' && this.diner) { player.zones = this.dinerWalk?.zones ?? this.diner.zones; player.colliders = this.dinerWalk?.colliders ?? this.diner.colliders; }
+    if (area === 'diner' && this.diner) { player.zones = this.roadWalk?.zones ?? this.diner.zones; player.colliders = this.roadWalk?.colliders ?? this.diner.colliders; }
   }
   /** How the sky is turned in the current area: the areas lie on one map (geo.ts), and the
    *  station's terms are the road's turned a quarter round, so its sky is turned with them,
@@ -794,7 +802,11 @@ export class World {
   /** From the truck at the station (or wherever it was left) back to SARO, the whole way, onto the pad. */
   driveBack() {
     this.startTrip(this.truckAt ?? 'station01', 'saro', { hint: 'The truck goes back on its pad by the service yard: up the ramp, and stop there.',
-      onArrive: () => { this.onArriveSaro?.(); this.d.toast(`${this.d.clock()}. The truck is back on its pad.`, 3); } });
+      onArrive: () => {
+        this.onArriveSaro?.();
+        // (left on SARO's ground somewhere else, out among the masts say, it is back at SARO but not on its pad)
+        if (inBox(this.parkBox('saro'), this.saroTruck!.group.position)) this.d.toast(`${this.d.clock()}. The truck is back on its pad.`, 3);
+      } });
   }
 
   // ---------- trips ----------
@@ -941,6 +953,9 @@ export class World {
   // Stopped where the truck is left: the engine off, and the player gets out by the door.
   private park(place: LegId) {
     const id = this.leg!, L = this.legs[id]!, trip = this.trip;
+    // the trip's place reached; on the highway that is the diner's lot or Caliche's street, not
+    // anywhere else the truck is left on the road (by the herd, by the deputy's car)
+    const arrived = trip?.to === place && (place !== 'diner' || this.atDiner(L.drive.pos));
     this.trouble.reset(L.truck, L.drive);
     this.driving = false;
     this.engine?.stop();
@@ -951,12 +966,15 @@ export class World {
     const { fade, hold } = this.d;
     hold(true);
     fade(true, '');
+    // out by the door at once: from this frame the camera is the player's again, and it must not
+    // stand for a moment where they were before they got in (kilometres off, in another area's
+    // terms: the deputy's car and the herd took that for the player gone, townEvents.ts, pasture.ts)
+    this.enter(areaOf(place));
+    this.getOut(L.truck);
     this.d.after(0.4, () => {
-      this.enter(areaOf(place));
-      this.getOut(L.truck);
       hold(false);
       fade(false);
-      if (trip?.to === place) trip.onArrive?.();
+      if (arrived) trip!.onArrive?.();
       this.onParked?.(place);
     });
   }
@@ -965,13 +983,14 @@ export class World {
     const v = this.doorSpot(t) ?? new THREE.Vector3(-1.75, 0, -0.3).applyAxisAngle(UP, h).add(g.position);
     p.place(v.x, v.z, h);
   }
-  /** Ground to stand on by one of the truck's doors in the area's walkable zones, clear of
-   *  everything in the way, or null. */
-  private doorSpot(t: Truck) {
+  /** Ground to stand on by one of the truck's doors, in the given walk (the area's walkable zones
+   *  and what stands on them; the player's own by default), clear of everything in the way, or null. */
+  private doorSpot(t: Truck, walk?: { zones: Zone[]; colliders: Collider[] } | null) {
     const g = t.group, h = g.rotation.y, p = this.d.player, r = p.radius;
+    const zones = walk?.zones ?? p.zones, cols = walk?.colliders ?? p.colliders;
     for (const side of [-1, 1, -1.4, 1.4]) {
       const v = new THREE.Vector3(side * 1.75, 0, -0.3).applyAxisAngle(UP, h).add(g.position);
-      if (p.walkable(v.x, v.z) && !p.colliders.some((c) => v.x + r > c.minX && v.x - r < c.maxX && v.z + r > c.minZ && v.z - r < c.maxZ)) return v;
+      if (p.walkable(v.x, v.z, zones) && !cols.some((c) => v.x + r > c.minX && v.x - r < c.maxX && v.z + r > c.minZ && v.z - r < c.maxZ)) return v;
     }
     return null;
   }
@@ -988,30 +1007,83 @@ export class World {
     return null;
   }
 
-  // ---------- getting out wherever the truck is stopped (Tom, 16 October) ----------
+  // ---------- getting out wherever the truck is stopped (Tom, 16 and 19 October) ----------
   /** The place a stop in this leg leaves the truck at (its parked truck is this leg's). */
   private placeOfLeg(id: LegId): LegId | null { return id === 'saro' || id === 'station01' ? id : id === 'road' ? 'diner' : null; }
-  /** Whether the player can get out now: stopped, on a trip of the story's or their own, and
-   *  with ground by a door (round SARO and STATION 01 anywhere the area can be walked; on the
-   *  highway only at the diner and in Caliche, the road itself is not walked). E or Use gets out
-   *  (main.ts). */
+  /** By the diner's lot (within 6 m) or on Caliche's street: a stop on the highway that is at the diner. */
+  private atDiner(q: THREE.Vector3) {
+    const b = this.dinerPark;
+    if (this.town?.inTown(q.x, q.z)) return true;
+    return !!b && q.x > b.minX - 6 && q.x < b.maxX + 6 && q.z > b.minZ - 6 && q.z < b.maxZ + 6;
+  }
+  private saroWalk: { zones: Zone[]; colliders: Collider[] } | null = null;
+  /** What is walked where a stop in this leg leaves the player: SARO's ground (with the motel's and
+   *  the field's, the highway through the array too), STATION 01's, or on the highway the diner's
+   *  area; before the diner is built (the story's trips to STATION 01 and the motel do not need
+   *  it), the road's own stops. */
+  private walkOf(id: LegId): { zones: Zone[]; colliders: Collider[] } | null {
+    if (id === 'saro') return this.saroWalk ??= { zones: this.d.saro.zones, colliders: this.d.saro.colliders };
+    if (id === 'station01') return this.site ? { zones: this.site.zones, colliders: this.site.colliders } : null;
+    if (id === 'road') return this.roadWalk ?? (this.road ? { zones: this.road.walks, colliders: this.road.walkColliders } : null);
+    return null;
+  }
+  /** Whether the truck stands on its place's own lot or pad (within 2 m of where it is left
+   *  there), and not left somewhere else on that place's ground: the yard, the masts, the highway
+   *  by the herd or the deputy's car, Caliche's street (main.ts: the truck keys in the kit). */
+  truckOnLot() {
+    const at = this.truckAt, t = at ? this.truckOf(at) : null, b = at ? this.parkBox(at) : null;
+    if (!t || !b) return false;
+    const q = t.group.position;
+    return q.x > b.minX - 2 && q.x < b.maxX + 2 && q.z > b.minZ - 2 && q.z < b.maxZ + 2;
+  }
+  /** On foot on the road's own ground by something to walk to (roadTerrain.ROAD_STOPS: by the herd,
+   *  by the deputy's car): what the place is called and whether it is the highway's asphalt, or null
+   *  (main.ts: the corner of the screen, the footsteps, the music, the notebook's map). */
+  roadStopAt(p: THREE.Vector3): { name: string; paved: boolean } | null {
+    if (this.area !== 'diner' || !this.road || this.indoors(p) || this.town?.inTown(p.x, p.z)) return null;
+    const lx = p.x - ROAD_ORIGIN.x, lz = p.z - ROAD_ORIGIN.z;
+    const s = ROAD_STOPS.find((r) => lx >= r.minX && lx <= r.maxX && lz >= r.minZ && lz <= r.maxZ);
+    return s ? { name: s.name, paved: Math.abs(lx) <= ROAD_HWY.paved } : null;
+  }
+  /** Whether the player can get out now: stopped, on a trip of the story's or their own, and with
+   *  ground by a door: round SARO (the motel's lot and the highway through the array too) and
+   *  STATION 01 anywhere the area is walked; on the highway by the diner and in Caliche, and where
+   *  the road has ground of its own walked by something to walk to (by the herd, by the deputy's
+   *  car). Not on a free drive (the developer menu puts everything back after it). E or Use gets
+   *  out, and the phone shows its button by this (main.ts). */
   canGetOut() {
     const id = this.leg, trip = this.trip;
     if (!this.driving || this.busy || !id || !trip || trip.free || this.trouble.wantsKey) return false;
     const L = this.legs[id], place = this.placeOfLeg(id);
     if (!L || !place || Math.abs(L.drive.speed) > 0.6) return false;
-    if (id === 'road') {
-      const b = this.dinerPark, q = L.drive.pos;
-      if (this.town?.inTown(q.x, q.z)) return true;
-      return !!b && q.x > b.minX - 6 && q.x < b.maxX + 6 && q.z > b.minZ - 6 && q.z < b.maxZ + 6;
-    }
-    return !!this.doorSpot(L.truck);
+    // (by the diner and anywhere in Caliche's street, as since 16 October)
+    if (id === 'road' && this.atDiner(L.drive.pos)) return true;
+    return !!this.doorSpot(L.truck, this.walkOf(id));
   }
   /** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
   getOutHere() {
     if (!this.canGetOut()) return false;
     const id = this.leg!, q = this.legs[id]!.drive.pos;
-    this.park(id === 'saro' && inBox(this.parkBox('motel'), q) ? 'motel' : this.placeOfLeg(id)!);
+    const place = id === 'saro' && inBox(this.parkBox('motel'), q) ? 'motel' : this.placeOfLeg(id)!;
+    // on the highway the player walks in the diner's area: on the story's trips that have not needed
+    // it yet it is built first, behind the black, while the truck stands
+    if (place === 'diner' && !this.diner) {
+      const { fade, hold, toast } = this.d, trip = this.trip;
+      this.busy = true; this.autopilot = null;
+      hold(true);
+      fade(true, '');
+      this.ensureDiner().then(() => {
+        this.busy = false;
+        if (this.driving && this.trip === trip && this.leg === id) this.park(place);
+        else { hold(false); fade(false); }
+      }).catch((e: Error) => {
+        console.error(e);
+        this.busy = false; hold(false); fade(false);
+        toast('The way could not be loaded. Check your connection and try again.', 5);
+      });
+      return true;
+    }
+    this.park(place);
     return true;
   }
 
@@ -1126,7 +1198,8 @@ export class World {
 
   /** The truck stands where the story has left it (a new night or a restored save): on
    *  SARO's pad, on the motel's lot, outside STATION 01's gate or on the diner's lot; with
-   *  a pose from a save, exactly where it was left there (on the grounds, in Caliche's street). */
+   *  a pose from a save, exactly where it was left there (on the grounds, among the masts, in
+   *  Caliche's street, on the highway by the herd 1.5 km north of the diner's lot). */
   placeTruck(at: LegId, pose?: TruckPose | null) {
     this.stopDriving();
     this.truckAt = at;
@@ -1144,7 +1217,7 @@ export class World {
     // within reach of that place (the areas lie kilometres apart), or it goes on the place as before
     const t = this.truckOf(at), ok = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
     if (t && pose && pose.at === at && ok(pose.x) && ok(pose.y) && ok(pose.z) && ok(pose.h)
-      && Math.hypot(pose.x - t.group.position.x, pose.z - t.group.position.z) < 1500) {
+      && Math.hypot(pose.x - t.group.position.x, pose.z - t.group.position.z) < 2600) {
       t.group.position.set(pose.x, pose.y, pose.z);
       t.group.rotation.set(ok(pose.p) ? pose.p : 0, pose.h, ok(pose.r) ? pose.r : 0, 'YXZ');
     }
@@ -1189,7 +1262,7 @@ export class World {
   update(dt: number, t: number, input: { steer: number; throttle: number } | null, look: { x: number; y: number }) {
     if (this.area === 'station01') this.site?.update(dt, t);
     if (this.area === 'room6') this.room6?.update(dt, t);
-    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') { this.diner?.update(dt, t); this.town?.update(t, this.d.time()); }
+    if (this.area === 'diner' || this.area === 'road' || this.area === 'roswell') { this.diner?.update(dt, t); this.town?.update(t, this.d.time(), this.area === 'diner' && this.roadStopAt(this.d.player.pos)?.name === 'The highway north of Caliche'); }
     // on the old road the diner and the town are there behind the truck until they are far off in
     // the haze, lit by the road's dawn
     if (this.area === 'roswell' && this.diner) {

@@ -149,7 +149,8 @@ export class Herd {
     this.group.add(this.bodies, this.heads, this.ring);
     b.root.add(this.group);
     // off the survey track the truck can be driven into the pasture: the cows stop it, as the
-    // posts and the rocks do; the one that will not be there only while it is (obstacle())
+    // posts and the rocks do; the one that will not be there only while it is (obstacle()). They
+    // stop the player on foot too, walked from the truck left by them (RoadArea.walkColliders)
     COWS.forEach(([x, z], i) => { if (i !== MISSING) circle(b, x, z, COW_R); });
     // a galvanised stock tank among them, the float box on its rim; it stops the truck too
     const tx = -45.0, tz = 537.5, ty = surfaceY(tx, tz);

@@ -6,7 +6,7 @@ import { GlowPoints } from './glow';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import type { Surface } from '../core/Audio';
-import { surfaceY, hash, DINER, TOWN } from '../drive/roadTerrain';
+import { surfaceY, hash, DINER, TOWN, DEPUTY_CAR } from '../drive/roadTerrain';
 import { SIGN_OFF } from '../core/radio';
 import { wet, wearMesh, type Wear } from '../drive/roadSurface';
 import { dressTown } from './dressTown';
@@ -141,7 +141,7 @@ export class Town {
   /** Event 12: the deputy's car on the highway's shoulder north of town, engine running, the
    *  door open, nobody in it (while he is out on patrol). */
   carOut = false;
-  readonly carShoulder = V(6.9, 0, 1690);
+  readonly carShoulder = V(DEPUTY_CAR.x, 0, DEPUTY_CAR.z);   // (walked when the truck is left by it: roadTerrain.ROAD_STOPS)
   private readonly carDoor = new THREE.Group();
   /** Event 8: the street lamps out one by one down the street and back on (running time). */
   private waveT0 = -1e9;
@@ -926,11 +926,12 @@ export class Town {
   }
   setPaper(on: boolean) { this.paperIn = on; this.paper.visible = on; }
   /** The night now: clock, seconds since midnight; t, seconds running (for the blinking). */
-  update(t: number, clock: number) {
+  /** hold: the player is out by the deputy's car on the shoulder (it stays until they leave). */
+  update(t: number, clock: number, hold = false) {
     if (floodOwner !== this) return;
     const day = ((clock % 86400) + 86400) % 86400;
     const deputy = day < 2 * 3600 + 45 * 60 || day >= 4 * 3600 + 30 * 60;
-    if (deputy !== this.deputyIn) this.setDeputy(deputy);
+    if (deputy !== this.deputyIn && !(deputy && this.carOut && hold)) this.setDeputy(deputy);
     const paper = day >= 4 * 3600 + 45 * 60 && day < 12 * 3600;
     if (paper !== this.paperIn) this.setPaper(paper);
     const woman = day < 4 * 3600 + 50 * 60, smoker = day < 4 * 3600 + 10 * 60;

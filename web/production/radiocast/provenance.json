@@ -1,0 +1,205 @@
+{
+  "synthetic": true,
+  "voice_label": "Fictional synthetic radio cast",
+  "scope": "The 22 authored woman/man/old/boy caller lines on 1420 Caliche and all six authored fictional July 1947 bulletin lines. Host, Roswell 1230, CB and in-person NPC dialogue remain outside this bank.",
+  "counts": {
+    "clips": 28,
+    "words": 406,
+    "roles": {
+      "woman": 8,
+      "man": 8,
+      "old": 3,
+      "boy": 3,
+      "news": 6
+    }
+  },
+  "source_recordings": [
+    {
+      "role": "woman",
+      "repository": "https://huggingface.co/kyutai/tts-voices",
+      "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+      "file": "voice-donations/Selfie.wav",
+      "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Selfie.wav",
+      "original_bytes": 480044,
+      "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+      "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+      "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+      "original_sha256": "076968c3122520f3412eb7090e8c1c3f75fe57be1e24a2f96465583d84c71e16",
+      "duration": 10.0,
+      "autocorrelation_f0_median_hz": 192.7710843373494,
+      "voiced_frames": 68,
+      "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+      "selected_interval_seconds": [
+        4.5,
+        9.98
+      ],
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+      "conditioning_text": "It says it's the last 10 seconds, and if that's the case, and I'd shut up previously, there would just be 10 seconds."
+    },
+    {
+      "role": "man",
+      "repository": "https://huggingface.co/kyutai/tts-voices",
+      "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+      "file": "voice-donations/Butter.wav",
+      "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Butter.wav",
+      "original_bytes": 480044,
+      "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+      "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+      "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+      "original_sha256": "b889e080eec3efa824bddaf875b4f531d75464f88128d08941ae648d9d3ade70",
+      "duration": 10.0,
+      "autocorrelation_f0_median_hz": 85.3339401524633,
+      "voiced_frames": 102,
+      "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+      "selected_interval_seconds": [
+        1.45,
+        9.9
+      ],
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "conditioning_text": "Would like to buy an avocado one that is green on the outside and green."
+    },
+    {
+      "role": "old",
+      "repository": "https://huggingface.co/kyutai/tts-voices",
+      "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+      "file": "voice-donations/oldNerd.wav",
+      "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/oldNerd.wav",
+      "original_bytes": 480044,
+      "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+      "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+      "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+      "original_sha256": "094f2a17864a9715a17c89d68189fc1ab1e20b1537f66decb6105c7493a78800",
+      "duration": 10.0,
+      "autocorrelation_f0_median_hz": 101.91082802547771,
+      "voiced_frames": 172,
+      "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+      "selected_interval_seconds": [
+        0,
+        9.8
+      ],
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+      "conditioning_text": "It's about 15 degrees, it's raining, very cozy, a great day to hack, and I can't wait to hear my voice cloned."
+    }
+  ],
+  "design_roles": {
+    "boy": {
+      "profile_id": "34043cb8",
+      "kind": "design",
+      "profile_reference_sha256": "ef594fdda6c408bc5e01c9266e86285c10163d096fe301cf98d8151e129a8b19",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "child",
+        "Pitch": "moderate pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, child, moderate pitch, american accent",
+      "conditioning_text": "Here's a quick sample of this voice so you can hear how it sounds.",
+      "human_listened": false
+    },
+    "news": {
+      "profile_id": "1e28f816",
+      "kind": "design",
+      "profile_reference_sha256": "48808956627ea4de12ead97ab5f6ff39bf28708d88d06d53e09050b82d0e3ef3",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "middle-aged",
+        "Pitch": "low pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, middle-aged, low pitch, american accent",
+      "conditioning_text": "We interrupt this program. This is a local news bulletin. Roswell, New Mexico. Tuesday, July eighth, nineteen forty-seven.",
+      "human_listened": false
+    }
+  },
+  "casting_basis": "Selfie has measured median periodic F0 around 193 Hz, Butter 85 Hz and oldNerd 102 Hz. These estimates support distinct registers but do not verify donor gender, age, accent or acting. oldNerd is a source filename, not verified age metadata. Source recordings and outputs have not been human-listened.",
+  "profile_policy": "Five new local profiles identify fictional synthetic roles. Existing profiles are preserved. No consent recording, verified-own-voice assertion, donor endorsement or real-child reference was created.",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "language": "en",
+    "effect_preset": "broadcast (documented API default)"
+  },
+  "voice_design_implementation": "Installed VoiceStudio /profiles kind=design with vd_states; valid OmniVoice gender/age/pitch/accent tags. Deterministic identity samples use32steps, seed42, speed1; saved references condition subsequent synthesis. No new model or service.",
+  "postprocessing": "One constant gain per clip targets -20 dBFS non-silent RMS with a decoded MP3 peak cap of -2 dBFS. Mono 24 kHz, 64 kbit/s MP3. No pitch shift, time stretch or runtime speed change.",
+  "bulletin_timing": "Six natural-speed clips must total no more than 46.6 seconds; the remaining time in the 47 second event may hold natural pauses. This is a fictional game bulletin, not an authentic 1947 recording or actual historical announcer.",
+  "runtime_assets": "Only generated MP3 files and catalog.json. No donor, source or design reference WAV, model, service URL or private paths.",
+  "normalization": "Whitespace collapse and trim; id = SHA-256(role + NUL + normalized UTF-8 text).slice(0,16). Original wording is unchanged.",
+  "cache_identity": "Per-role hash of settings, profile ID and reference SHA-256. No runtime service dependency.",
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing VoiceStudio 0.5.6 and already installed OmniVoice/faster-whisper-small reused. No new model or service installed.",
+  "human_listened": false,
+  "role_suitability": "UNVERIFIED by human listening",
+  "period_style_authenticity": "UNVERIFIED; news is fictional voice design, not an archival imitation",
+  "qa": {
+    "status": "PASS",
+    "word_check_status": "CHECKED_WITH_RECORDED_DIFFERENCES",
+    "clips": 28,
+    "bytes": 1024976,
+    "duration_seconds": 125.61,
+    "corpus_sha256": "b5f6036e7514bc8eee98bdae7f1fff5508321953646062983ace50d40a3cf28a",
+    "dropped_chunks": {
+      "confirmed_zero": 28,
+      "unrecorded_ids": []
+    },
+    "orphan_mp3_files": [],
+    "catalog_ids_match_corpus": true,
+    "bulletin": {
+      "clips": 6,
+      "natural_duration_seconds": 25.09,
+      "maximum_seconds": 46.6,
+      "playback_rate": 1
+    },
+    "role_counts": {
+      "woman": 8,
+      "man": 8,
+      "old": 3,
+      "boy": 3,
+      "news": 6
+    },
+    "completed_utc": "2026-10-19T19:54:13.899805+00:00",
+    "report": "production/radiocast/verification.json",
+    "max_decoded_peak_dbfs": -2.653431193595285,
+    "samples_at_or_above_full_scale": 0,
+    "asr_clips_checked": 28,
+    "asr_exact_strict_matches": 21,
+    "asr_differing_clips": 7,
+    "human_listened": false,
+    "profile_preservation": "production/radiocast/profile-preservation.json",
+    "demo": "production/radiocast/demo.json"
+  },
+  "boy_correction": {
+    "report": "production/radiocast/rejected-boy-design.json",
+    "final_profile_id": "34043cb8",
+    "final_reference_asr": "Exact match to the renderer default complete sample sentence.",
+    "final_output_asr": "All three authored boy lines match word-for-word.",
+    "changed_assets": [
+      "67c97482c2fe4f9f.mp3",
+      "62c092c096e2185b.mp3",
+      "b683f3998c005cc1.mp3"
+    ],
+    "explanation": "Three question-led identity sample variants failed ASR. Child/moderate pitch with the renderer default complete statement produced an exact reference transcription, then exact final lines. The cause is not conclusively diagnosed. Failed samples are outside runtime, and the three failed temporary profiles were removed."
+  },
+  "corpus_sha256": "b5f6036e7514bc8eee98bdae7f1fff5508321953646062983ace50d40a3cf28a"
+}

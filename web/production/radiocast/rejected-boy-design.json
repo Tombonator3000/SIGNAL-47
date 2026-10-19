@@ -1,0 +1,89 @@
+{
+  "reason": "Three design references using the question-led first boy line had no recognized words. Initial child/high-pitch outputs had no recognized words; no-VAD CPU reference check empty. New sample uses the installed design renderer default statement.",
+  "profiles": [
+    {
+      "profile_id": "dec62680",
+      "kind": "design",
+      "profile_reference_sha256": "0b02e4367d6fce0fb623ffd9c9ee125a3247209bc04628450af0a2f4e09b8007",
+      "design_attributes": {
+        "Gender": "male",
+        "Age": "child",
+        "Pitch": "high pitch",
+        "EnglishAccent": "american accent"
+      },
+      "instruct": "male, child, high pitch, american accent",
+      "conditioning_text": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "human_listened": false
+    },
+    {
+      "id": "8c8a7d2d",
+      "instruct": "male, child, moderate pitch, american accent"
+    },
+    {
+      "id": "014bf342",
+      "instruct": "male, teenager, moderate pitch, american accent"
+    }
+  ],
+  "initial_asr": [
+    {
+      "id": "67c97482c2fe4f9f",
+      "expected": "Hello? Is this the radio? There's a star with a tail on it, real low in the south. A little tail.",
+      "recognized": "",
+      "group": "current_run",
+      "audio_sha256": "563c69675ad28140d43661222bb47ee71e25dc7c6071cfcf79de0eb60ba6a0c0",
+      "strict_word_edits": 21,
+      "expected_word_count": 21,
+      "strict_word_error_rate": 1.0,
+      "response": {
+        "text": "",
+        "segments": [],
+        "language": "en",
+        "duration_s": 0.0,
+        "transcription_time_s": 0.95,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "62c092c096e2185b",
+      "expected": "I'm calling from my dad's place, out on the ranch. There's a light over the mesa too. It isn't moving.",
+      "recognized": "",
+      "group": "current_run",
+      "audio_sha256": "e020bba93148ed6bf9cde18658187fbb0c4c2d7b27c8b6ad040cc30779a7ce55",
+      "strict_word_edits": 20,
+      "expected_word_count": 20,
+      "strict_word_error_rate": 1.0,
+      "response": {
+        "text": "",
+        "segments": [],
+        "language": "en",
+        "duration_s": 0.0,
+        "transcription_time_s": 0.97,
+        "engine": "faster-whisper"
+      }
+    },
+    {
+      "id": "b683f3998c005cc1",
+      "expected": "He's out with the men. It's hot out. It's July.",
+      "recognized": "",
+      "group": "current_run",
+      "audio_sha256": "70d6d80d6d70aa46fbb0593fe8d90f92d566b214954aca970533479320811a73",
+      "strict_word_edits": 10,
+      "expected_word_count": 10,
+      "strict_word_error_rate": 1.0,
+      "response": {
+        "text": "",
+        "segments": [],
+        "language": "en",
+        "duration_s": 0.0,
+        "transcription_time_s": 0.96,
+        "engine": "faster-whisper"
+      }
+    }
+  ],
+  "human_listened": false,
+  "discarded_profiles_removed": [
+    "dec62680",
+    "8c8a7d2d",
+    "014bf342"
+  ]
+}

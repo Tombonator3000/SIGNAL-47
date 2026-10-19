@@ -172,6 +172,7 @@ async function boot() {
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
   radio.setHostVoice(store.get<boolean>('artBellRadioHost', true) === true);
+  radio.setCallerVoice(store.get<boolean>('radioCallerVoices', true) === true);
   const carRadio = radio.receiver({ vol: 0.38, ref: 1.0 });   // Tom, 18 October: 0.65 was too loud in the cab
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
@@ -233,13 +234,14 @@ async function boot() {
   const surfaceAt = (): Surface => {
     const p = player.pos;
     if (world.area === 'room6') return 'carpet';
-    if (world.area === 'diner') return world.indoors(p) ? 'tile' : world.town?.inTown(p.x, p.z) ? world.town.surfaceAt(p.x, p.z) : 'dirt';
+    if (world.area === 'diner') return world.indoors(p) ? 'tile' : world.town?.inTown(p.x, p.z) ? world.town.surfaceAt(p.x, p.z) : world.roadStopAt(p)?.paved ? 'concrete' : 'dirt';
     if (world.area === 'station01') return world.indoors(p) ? 'wood' : 'dirt';
     if (world.area !== 'saro') return 'dirt';
     if (inside(motelOffice, p)) return 'carpet';
     if (space !== 'yard') return 'tile';
     if (world.grounds.onRoad(p) || world.crossing.atMotel(p)) return 'concrete';
     if (p.z > 64 && Math.abs(p.x + 24) < 6) return 'concrete';   // the highway south and its shoulders
+    if (world.field.onHighway(p)) return 'concrete';               // and north through the array
     return player.floorY < -0.3 ? 'dirt' : 'concrete';
   };
   player.onStep = () => { if (!roadside.silent && !abduction?.silent) audio.step(surfaceAt()); };   // the silence takes the footsteps too
@@ -477,6 +479,7 @@ async function boot() {
   const settings = () => ({
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
     artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); store.set('artBellRadioHost', v); },
+    radioCast: radio.callerVoice, onRadioCast: (v: boolean) => { radio.setCallerVoice(v); store.set('radioCallerVoices', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -761,7 +764,7 @@ async function boot() {
     const p = player.pos, tr = world.driving ? world.truckHere() : null, q = tr ? tr.group.position : p;
     switch (world.area) {
       case 'road': return { spot: 'highway', m: q.z - ROAD_ORIGIN.z - SARO_IN_ROAD.z };
-      case 'diner': return { spot: 'diner' };
+      case 'diner': return world.roadStopAt(p) ? { spot: 'highway', m: p.z - ROAD_ORIGIN.z - SARO_IN_ROAD.z } : { spot: 'diner' };
       case 'room6': return { spot: 'motel' };
       case 'roswell': { const d = world.oldDrive; return { spot: 'oldroad', mi: world.oldRoad && d ? world.oldRoad.where(d.pos.x, d.pos.z).mi : 0 }; }
       case 'station01': {
@@ -779,8 +782,9 @@ async function boot() {
   }
   function kitItems(): KitItem[] {
     const photos = game.docs.filter((d) => d.kind === 'photo' && d.image).length, papers = game.docs.length - photos;
-    const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' ? 'On the lot at Mesa Diner'
-      : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && world.saroTruck && world.saroTruck.group.position.z < 40 ? 'On the pad by the service yard' : 'Where I left it';
+    const lot = world.truckOnLot();   // (or left on the highway, among the masts, in the yard: where I left it)
+    const truckAt = world.truckAt === 'station01' ? 'Outside the gate at STATION 01' : world.truckAt === 'diner' && lot ? 'On the lot at Mesa Diner'
+      : world.truckAt === 'motel' ? 'On the lot at Sierra Motor Court' : world.truckAt === 'saro' && (lot || (!!world.saroTruck && inside(yard.zone.truckPad, world.saroTruck.group.position))) ? 'On the pad by the service yard' : 'Where I left it';
     const kit: KitItem[] = [{ name: 'Notebook', art: 'notebook', note: 'Tab opens it. Tasks, notes, findings, papers, photographs, this map.' }];
     if (game.at('ch1')) kit.push({ name: 'SARO jacket', art: 'jacket', state: 'On', note: 'From the hook by the east door. The reflective band across the back.' });
     const frames = game.docs.filter((d) => /^(frame|away)/.test(d.id)).length;
@@ -866,6 +870,7 @@ async function boot() {
     step: () => audio.stepPick(surfaceAt()),
     setRadio: (st) => carRadio.set(true, st),
     bulletin: () => radio.stations.caliche.cutIn(BULLETIN, game.clock),
+    bulletinProgress: () => radio.stations.caliche.archiveStatus,
     bulletinHeard: () => world.driving && carRadio.live && carRadio.station === 'caliche' && carRadio.power > 0.5 && game.clock % 86400 < SIGN_OFF,
     openDoor: () => doors.set('east', true),
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
@@ -898,7 +903,7 @@ async function boot() {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
-    if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : world.town?.inTown(p.x, p.z) ? world.town.placeAt(p.x, p.z) : 'Mesa Diner, the lot';
+    if (world.area === 'diner') return world.indoors(p) ? 'Mesa Diner' : world.town?.inTown(p.x, p.z) ? world.town.placeAt(p.x, p.z) : world.roadStopAt(p)?.name ?? 'Mesa Diner, the lot';
     if (world.area === 'roswell') return 'The old Roswell road';
     if (inside(motelOffice, p)) return 'Sierra Motor Court, office';
     if (world.grounds.onRoad(p)) return 'Service road';
@@ -1316,7 +1321,7 @@ async function boot() {
     if (world.area === 'saro' && world.crossing.atMotel(player.pos)) return 'motel';
     const hour = (((game.clock % 86400) + 86400) % 86400) / 3600;
     if (hour >= 5 && hour < 12) return 'dawn';
-    if (world.area === 'diner') return 'town';   // the lot and the road by the diner at night (inside, its radio)
+    if (world.area === 'diner') return world.roadStopAt(player.pos) ? 'eerie' : 'town';   // the lot and the road by the diner at night (inside, its radio); out on the highway, the dark
     return space === 'yard' ? 'night' : 'eerie';
   }
   const HELD = ['ringing', 'call', 'countdown', 'event', 'turning', 'end'];
@@ -1375,7 +1380,8 @@ async function boot() {
   let lineBCheck = 0;
   function eventsOnB(dt: number, ok: boolean) {
     const p = player.pos;
-    pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' ? 'road' : null, cam: camera, clock: game.clock,
+    // (on foot on the road's ground, by the herd too, the area is the diner's: the road's herd)
+    pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' || world.area === 'diner' ? 'road' : null, cam: camera, clock: game.clock,
       driving: world.driving });
     motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
       truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock });
