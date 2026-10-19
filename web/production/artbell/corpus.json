@@ -1,0 +1,2716 @@
+{
+  "version": 1,
+  "scope": "Art Bell synthetic radio voice for who=host on 1420 Caliche / Night Line, including the boy call, sign-off and trip programme. Callers, 1230 Roswell, news, CB and in-person Earl are excluded.",
+  "normalization": "text.replace(/\\s+/g, \" \").trim(); id = SHA-256(normalized UTF-8 text).slice(0,16). Template prefix/suffix/raw preserve original whitespace.",
+  "clips": [
+    {
+      "id": "7e75559bb502f671",
+      "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 108,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "1d315be944a93f19",
+      "text": "It's",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 108,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "time-prefix"
+        }
+      ]
+    },
+    {
+      "id": "a550c489649722f4",
+      "text": "in Caliche.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 108,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "a75fe8476c9194e4",
+      "text": "Cold one out there. Thirty-eight on the bank sign, and the wind has laid down.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 110,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "16d69fc1b62a3e6a",
+      "text": "Phones are open. If you are up anyway, you might as well talk to somebody.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 110,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "3b571ed64f0acb86",
+      "text": "Dolores, I believe you. Now turn the porch light off and go to bed.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 113,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "22cf84eb221737ec",
+      "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 115,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "0e0fd22c82477220",
+      "text": "We lost the transmitter about then. Needle went to nothing for most of a minute. Ray, if you are listening, that one is yours.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 118,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "4502af1e0505b497",
+      "text": "Jack Nicklaus, forty-six years old, took the Masters this afternoon. Thirty on the back nine. My uncle says he called it. My uncle calls everything.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 120,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "db60994a5fe4923c",
+      "text": ". Night Line, fourteen-twenty.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 121,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "c5f711fdd44ac6f5",
+      "text": "Halley's comet is low in the south this week. Get out past the last streetlight and give your eyes ten minutes.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 123,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "59b96b09e3d83603",
+      "text": "Smart dog.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 125,
+          "station": "caliche",
+          "voice": "host",
+          "group": "NIGHT_LINE",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "ba7dc83641014488",
+      "text": "That's Halley's comet, son. It's there all week. You're up late.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 134,
+          "station": "caliche",
+          "voice": "host",
+          "group": "BOY_CALL",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "fc9d380225dd1df1",
+      "text": "Is your dad up?",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 136,
+          "station": "caliche",
+          "voice": "host",
+          "group": "BOY_CALL",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "71de3c549ee31d2a",
+      "text": "Folks, I want to say something. That line was dead when I picked it up. No dial tone, nothing at all.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 139,
+          "station": "caliche",
+          "voice": "host",
+          "group": "BOY_CALL",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "3dd0dd8c7b489770",
+      "text": "I don't know who I was talking to.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 140,
+          "station": "caliche",
+          "voice": "host",
+          "group": "BOY_CALL",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "3675a32435189f91",
+      "text": "That's the Night Line. Thank you for staying up with us.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 144,
+          "station": "caliche",
+          "voice": "host",
+          "group": "SIGN_OFF_SEQ",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "89a95423047e84c9",
+      "text": "This is fourteen-twenty, Caliche, New Mexico, signing off until six. Good night.",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 144,
+          "station": "caliche",
+          "voice": "host",
+          "group": "SIGN_OFF_SEQ",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "00aaa3694dcb2ea2",
+      "text": "Night Line, fourteen-twenty.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 55,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "time-prefix"
+        }
+      ]
+    },
+    {
+      "id": "3256989421322886",
+      "text": ", and the coffee in here is older than some of you.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 55,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "96fc0822d5ea7732",
+      "text": "Bank sign says thirty-six now. Warming up by Wednesday, they tell me.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 56,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "2f60567a966623ee",
+      "text": "on the Night Line. I can see the highway out my window, and it's empty both ways.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 57,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "5e8372af00d194ff",
+      "text": "I noticed that. Rattled the windows all evening, and then nothing.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 59,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "9b70343557275f10",
+      "text": "Up on a roof at this hour, they can have it.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 63,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "809a8e15c163c49d",
+      "text": "The government place. Nobody's been out there in years.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 68,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "9f31a2de38646b20",
+      "text": "My dad said the survey crews out there worked nights, back in forty-seven. You could see their lamps from town.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 72,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "b86e79f630dcd30f",
+      "text": "Then one summer they packed up and went, and left the lamps.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 73,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "a2c386a4506964aa",
+      "text": ". Not long now till four, so if you've been meaning to call, call.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 77,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "e42b27bf7f08c1df",
+      "text": "Not the wind, then.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 81,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "c226a8ec9adcbcd0",
+      "text": "County chained that gate years ago, Dolores.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 85,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "0c079c45e01ccc2c",
+      "text": "My granddad ran chain for the survey crews. Never trust one mark, he said. Sight two, and if one has walked, the other tells you.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 88,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "7c599e81cb074f89",
+      "text": "And if you think it's your own lamp making the shadows, put your hat over the lamp and look again.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 89,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>station01",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "c4950c0d339360e3",
+      "text": "My sister ran the photo counter at the drugstore twenty years. Film doesn't care what time it is, she used to say.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 93,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "station01>saro",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "00375e42e5ef33f9",
+      "text": "But it doesn't keep, either. Not in a warm truck.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 94,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "station01>saro",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "7edf543d86d90a3d",
+      "text": "That's about all from the Night Line. When the anthem comes on, that's me going home.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 97,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "station01>saro",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "e8ba09e6814280d2",
+      "text": "And?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 104,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "station01>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "968a8b0dc7bad751",
+      "text": "Not past the junction. Barricade's still up. You want Roswell, go around like everybody else.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 110,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>diner",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "58960ddd0cbbc18a",
+      "text": "That European probe flew right up to the comet last month and sent back a picture of a potato. Seventy-six years we waited, for a potato.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 111,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>diner",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "78cbdf5c6e8f7067",
+      "text": "Tell her I heard. And tell her I'm still not paying for last week's.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 115,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>diner",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "6ccf5dbfb58d48fb",
+      "text": "Tuesday is tax day, folks. If you haven't mailed it yet, I don't want to hear about it on this program.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 116,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>diner",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "3fb42e5d00bfcedf",
+      "text": "If you're in town and you see the light on over my door, I'm in here. Lean on the buzzer during a long record.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 119,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "saro>diner",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "a964091b283552a2",
+      "text": "Is it doing anything?",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 124,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "diner>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "b1e38e8c9f6d2932",
+      "text": "Well. Wave.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 124,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "diner>*",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "2a05170c9f439106",
+      "text": "in Caliche. Pumps are locked till six, so if you're low, you're low.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 125,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "diner>*",
+          "kind": "time-suffix"
+        }
+      ]
+    },
+    {
+      "id": "a5f397cd030d7f5f",
+      "text": "They do that. They're listening for something.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 129,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "diner>saro",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "1b3134a26b449df6",
+      "text": "Cattle report, for those of you who keep cattle and can't sleep. Feeders off again at the Roswell sale. Everybody still blames the dairy buyout.",
+      "sources": [
+        {
+          "file": "src/story/tripRadio.ts",
+          "line": 130,
+          "station": "caliche",
+          "voice": "host",
+          "group": "PROGRAMME",
+          "trip": "diner>saro",
+          "kind": "static-host"
+        }
+      ]
+    },
+    {
+      "id": "7692c3ad3540bb80",
+      "text": "one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "3fc4ccfe745870e2",
+      "text": "two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "8b5b9db0c13db242",
+      "text": "three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "04efaf080f5a3e74",
+      "text": "four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "222b0bd51fcef7e6",
+      "text": "five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "44778d82365e4af6",
+      "text": "six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "3ba8d02b16fd2a01",
+      "text": "seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "id": "c195d2d875623436",
+      "text": "eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "edcd8e701a2df0cd",
+      "text": "nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 9
+        }
+      ]
+    },
+    {
+      "id": "e4432baa90819aae",
+      "text": "ten",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 10
+        },
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "e979074ebd5633a7",
+      "text": "eleven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 11
+        },
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "id": "d1a749ad879b6c07",
+      "text": "twelve",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "hour",
+          "value": 12
+        },
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "id": "102ad29298b7b442",
+      "text": "o'clock",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ce924287df6e8c19",
+      "text": "oh-one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "ce6c523e2f6cd78d",
+      "text": "oh-two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "14b417222f7f3438",
+      "text": "oh-three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "00637cc75b1f2c2e",
+      "text": "oh-four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "0c248f4d6cdbb967",
+      "text": "oh-five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "0b7c5501e296cc41",
+      "text": "oh-six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "d7bac7ab18c0c269",
+      "text": "oh-seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "id": "6fbab77346ae2cde",
+      "text": "oh-eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "e90082735ca0a335",
+      "text": "oh-nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 9
+        }
+      ]
+    },
+    {
+      "id": "9ecc81f0a4b6dfb0",
+      "text": "thirteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 13
+        }
+      ]
+    },
+    {
+      "id": "fef8f41cdcd20386",
+      "text": "fourteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 14
+        }
+      ]
+    },
+    {
+      "id": "c463967e5708cab7",
+      "text": "fifteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "f2ce341fdaa67727",
+      "text": "sixteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 16
+        }
+      ]
+    },
+    {
+      "id": "2c5abdef2a0eacb4",
+      "text": "seventeen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 17
+        }
+      ]
+    },
+    {
+      "id": "34357b18abddea18",
+      "text": "eighteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 18
+        }
+      ]
+    },
+    {
+      "id": "cde4e100efd26f5b",
+      "text": "nineteen",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 19
+        }
+      ]
+    },
+    {
+      "id": "7c2c4df740f720b0",
+      "text": "twenty",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "a69edb489f4eb7f2",
+      "text": "twenty-one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 21
+        }
+      ]
+    },
+    {
+      "id": "2a8daa7aac7ad553",
+      "text": "twenty-two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 22
+        }
+      ]
+    },
+    {
+      "id": "328e51fcaeaf1d92",
+      "text": "twenty-three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 23
+        }
+      ]
+    },
+    {
+      "id": "1bcbce780ddd2273",
+      "text": "twenty-four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 24
+        }
+      ]
+    },
+    {
+      "id": "ac3164d59c697639",
+      "text": "twenty-five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 25
+        }
+      ]
+    },
+    {
+      "id": "60b7d1f7ad4248fb",
+      "text": "twenty-six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 26
+        }
+      ]
+    },
+    {
+      "id": "412866d80035f66f",
+      "text": "twenty-seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 27
+        }
+      ]
+    },
+    {
+      "id": "96c2a83461897741",
+      "text": "twenty-eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 28
+        }
+      ]
+    },
+    {
+      "id": "a0d9676cc598d86e",
+      "text": "twenty-nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 29
+        }
+      ]
+    },
+    {
+      "id": "aca5fb59db69e5df",
+      "text": "thirty",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "dfa5c4c47fb2f357",
+      "text": "thirty-one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 31
+        }
+      ]
+    },
+    {
+      "id": "7a78c7548928535f",
+      "text": "thirty-two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 32
+        }
+      ]
+    },
+    {
+      "id": "3c218b98f1bf8af2",
+      "text": "thirty-three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 33
+        }
+      ]
+    },
+    {
+      "id": "ee9764b6b1336f7b",
+      "text": "thirty-four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 34
+        }
+      ]
+    },
+    {
+      "id": "49fa6fb4bad94112",
+      "text": "thirty-five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 35
+        }
+      ]
+    },
+    {
+      "id": "56d89c668162fb95",
+      "text": "thirty-six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 36
+        }
+      ]
+    },
+    {
+      "id": "ee0d8e38580a98fe",
+      "text": "thirty-seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 37
+        }
+      ]
+    },
+    {
+      "id": "518ce854e4d7f5dd",
+      "text": "thirty-eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 38
+        }
+      ]
+    },
+    {
+      "id": "c19e6b18f754bbe8",
+      "text": "thirty-nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 39
+        }
+      ]
+    },
+    {
+      "id": "9cee2304bd633d42",
+      "text": "forty",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 40
+        }
+      ]
+    },
+    {
+      "id": "074ec9ddfe4408e6",
+      "text": "forty-one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 41
+        }
+      ]
+    },
+    {
+      "id": "5cc47001f7c1334d",
+      "text": "forty-two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 42
+        }
+      ]
+    },
+    {
+      "id": "fbcb14038f6be3f6",
+      "text": "forty-three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 43
+        }
+      ]
+    },
+    {
+      "id": "9a56bd594d932dd5",
+      "text": "forty-four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 44
+        }
+      ]
+    },
+    {
+      "id": "ce8cdef089ac0a9f",
+      "text": "forty-five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "id": "17b42cc951ba20e8",
+      "text": "forty-six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 46
+        }
+      ]
+    },
+    {
+      "id": "11d5b531ae2c2685",
+      "text": "forty-seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 47
+        }
+      ]
+    },
+    {
+      "id": "2b8de4d500ddf4ef",
+      "text": "forty-eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 48
+        }
+      ]
+    },
+    {
+      "id": "0f09c0097e477bcb",
+      "text": "forty-nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 49
+        }
+      ]
+    },
+    {
+      "id": "f8d807ee15e983f8",
+      "text": "fifty",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "76bcec87152dfcad",
+      "text": "fifty-one",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 51
+        }
+      ]
+    },
+    {
+      "id": "7236b63e2db57bda",
+      "text": "fifty-two",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 52
+        }
+      ]
+    },
+    {
+      "id": "6382cd3f5ae1290b",
+      "text": "fifty-three",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 53
+        }
+      ]
+    },
+    {
+      "id": "7da3c4346e002f6e",
+      "text": "fifty-four",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 54
+        }
+      ]
+    },
+    {
+      "id": "25102b4dfe05dd11",
+      "text": "fifty-five",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 55
+        }
+      ]
+    },
+    {
+      "id": "ee41e5464eec8ff2",
+      "text": "fifty-six",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 56
+        }
+      ]
+    },
+    {
+      "id": "d376c3658fc44e8f",
+      "text": "fifty-seven",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 57
+        }
+      ]
+    },
+    {
+      "id": "dcf2928126cc8165",
+      "text": "fifty-eight",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 58
+        }
+      ]
+    },
+    {
+      "id": "69193cd7186a2a50",
+      "text": "fifty-nine",
+      "sources": [
+        {
+          "file": "src/core/radio.ts",
+          "line": 92,
+          "station": "caliche",
+          "voice": "host",
+          "kind": "time-bank",
+          "component": "minute",
+          "value": 59
+        }
+      ]
+    }
+  ],
+  "staticLines": [
+    {
+      "file": "src/core/radio.ts",
+      "line": 108,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "7e75559bb502f671",
+      "text": "This is the Night Line on fourteen-twenty, Caliche. We are on till four."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 110,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "a75fe8476c9194e4",
+      "text": "Cold one out there. Thirty-eight on the bank sign, and the wind has laid down."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 110,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "16d69fc1b62a3e6a",
+      "text": "Phones are open. If you are up anyway, you might as well talk to somebody."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 113,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "3b571ed64f0acb86",
+      "text": "Dolores, I believe you. Now turn the porch light off and go to bed."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 115,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "22cf84eb221737ec",
+      "text": "This one goes out to the night crew up at the observatory. Somebody has to listen to the sky."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 118,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "0e0fd22c82477220",
+      "text": "We lost the transmitter about then. Needle went to nothing for most of a minute. Ray, if you are listening, that one is yours."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 120,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "4502af1e0505b497",
+      "text": "Jack Nicklaus, forty-six years old, took the Masters this afternoon. Thirty on the back nine. My uncle says he called it. My uncle calls everything."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 123,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "c5f711fdd44ac6f5",
+      "text": "Halley's comet is low in the south this week. Get out past the last streetlight and give your eyes ten minutes."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 125,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "59b96b09e3d83603",
+      "text": "Smart dog."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 134,
+      "station": "caliche",
+      "voice": "host",
+      "group": "BOY_CALL",
+      "id": "ba7dc83641014488",
+      "text": "That's Halley's comet, son. It's there all week. You're up late."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 136,
+      "station": "caliche",
+      "voice": "host",
+      "group": "BOY_CALL",
+      "id": "fc9d380225dd1df1",
+      "text": "Is your dad up?"
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 139,
+      "station": "caliche",
+      "voice": "host",
+      "group": "BOY_CALL",
+      "id": "71de3c549ee31d2a",
+      "text": "Folks, I want to say something. That line was dead when I picked it up. No dial tone, nothing at all."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 140,
+      "station": "caliche",
+      "voice": "host",
+      "group": "BOY_CALL",
+      "id": "3dd0dd8c7b489770",
+      "text": "I don't know who I was talking to."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 144,
+      "station": "caliche",
+      "voice": "host",
+      "group": "SIGN_OFF_SEQ",
+      "id": "3675a32435189f91",
+      "text": "That's the Night Line. Thank you for staying up with us."
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 144,
+      "station": "caliche",
+      "voice": "host",
+      "group": "SIGN_OFF_SEQ",
+      "id": "89a95423047e84c9",
+      "text": "This is fourteen-twenty, Caliche, New Mexico, signing off until six. Good night."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 56,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "96fc0822d5ea7732",
+      "text": "Bank sign says thirty-six now. Warming up by Wednesday, they tell me."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 59,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "5e8372af00d194ff",
+      "text": "I noticed that. Rattled the windows all evening, and then nothing."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 63,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "9b70343557275f10",
+      "text": "Up on a roof at this hour, they can have it."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 68,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "809a8e15c163c49d",
+      "text": "The government place. Nobody's been out there in years."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 72,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "9f31a2de38646b20",
+      "text": "My dad said the survey crews out there worked nights, back in forty-seven. You could see their lamps from town."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 73,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "b86e79f630dcd30f",
+      "text": "Then one summer they packed up and went, and left the lamps."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 81,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "e42b27bf7f08c1df",
+      "text": "Not the wind, then."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 85,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "c226a8ec9adcbcd0",
+      "text": "County chained that gate years ago, Dolores."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 88,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "0c079c45e01ccc2c",
+      "text": "My granddad ran chain for the survey crews. Never trust one mark, he said. Sight two, and if one has walked, the other tells you."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 89,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "7c599e81cb074f89",
+      "text": "And if you think it's your own lamp making the shadows, put your hat over the lamp and look again."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 93,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "station01>saro",
+      "id": "c4950c0d339360e3",
+      "text": "My sister ran the photo counter at the drugstore twenty years. Film doesn't care what time it is, she used to say."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 94,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "station01>saro",
+      "id": "00375e42e5ef33f9",
+      "text": "But it doesn't keep, either. Not in a warm truck."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 97,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "station01>saro",
+      "id": "7edf543d86d90a3d",
+      "text": "That's about all from the Night Line. When the anthem comes on, that's me going home."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 104,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "station01>*",
+      "id": "e8ba09e6814280d2",
+      "text": "And?"
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 110,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>diner",
+      "id": "968a8b0dc7bad751",
+      "text": "Not past the junction. Barricade's still up. You want Roswell, go around like everybody else."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 111,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>diner",
+      "id": "58960ddd0cbbc18a",
+      "text": "That European probe flew right up to the comet last month and sent back a picture of a potato. Seventy-six years we waited, for a potato."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 115,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>diner",
+      "id": "78cbdf5c6e8f7067",
+      "text": "Tell her I heard. And tell her I'm still not paying for last week's."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 116,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>diner",
+      "id": "6ccf5dbfb58d48fb",
+      "text": "Tuesday is tax day, folks. If you haven't mailed it yet, I don't want to hear about it on this program."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 119,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>diner",
+      "id": "3fb42e5d00bfcedf",
+      "text": "If you're in town and you see the light on over my door, I'm in here. Lean on the buzzer during a long record."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 124,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>*",
+      "id": "a964091b283552a2",
+      "text": "Is it doing anything?"
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 124,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>*",
+      "id": "b1e38e8c9f6d2932",
+      "text": "Well. Wave."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 129,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>saro",
+      "id": "a5f397cd030d7f5f",
+      "text": "They do that. They're listening for something."
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 130,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>saro",
+      "id": "1b3134a26b449df6",
+      "text": "Cattle report, for those of you who keep cattle and can't sleep. Feeders off again at the Roswell sale. Everybody still blames the dairy buyout."
+    }
+  ],
+  "templates": [
+    {
+      "file": "src/core/radio.ts",
+      "line": 108,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "1c4e7ce024662782",
+      "prefix": "It's ",
+      "suffix": " in Caliche.",
+      "capitalize": false,
+      "before": "1d315be944a93f19",
+      "after": "a550c489649722f4",
+      "parts": [
+        {
+          "kind": "clip",
+          "id": "1d315be944a93f19",
+          "text": "It's",
+          "raw": "It's "
+        },
+        {
+          "kind": "time",
+          "capitalize": false
+        },
+        {
+          "kind": "clip",
+          "id": "a550c489649722f4",
+          "text": "in Caliche.",
+          "raw": " in Caliche."
+        }
+      ]
+    },
+    {
+      "file": "src/core/radio.ts",
+      "line": 121,
+      "station": "caliche",
+      "voice": "host",
+      "group": "NIGHT_LINE",
+      "id": "6f4f3f8c9a0c7685",
+      "prefix": "",
+      "suffix": ". Night Line, fourteen-twenty.",
+      "capitalize": true,
+      "after": "db60994a5fe4923c",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "db60994a5fe4923c",
+          "text": ". Night Line, fourteen-twenty.",
+          "raw": ". Night Line, fourteen-twenty."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 55,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "4ce3749b1a186afa",
+      "prefix": "Night Line, fourteen-twenty. ",
+      "suffix": ", and the coffee in here is older than some of you.",
+      "capitalize": true,
+      "before": "00aaa3694dcb2ea2",
+      "after": "3256989421322886",
+      "parts": [
+        {
+          "kind": "clip",
+          "id": "00aaa3694dcb2ea2",
+          "text": "Night Line, fourteen-twenty.",
+          "raw": "Night Line, fourteen-twenty. "
+        },
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "3256989421322886",
+          "text": ", and the coffee in here is older than some of you.",
+          "raw": ", and the coffee in here is older than some of you."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 57,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>*",
+      "id": "160b7f184d0a2156",
+      "prefix": "",
+      "suffix": " on the Night Line. I can see the highway out my window, and it's empty both ways.",
+      "capitalize": true,
+      "after": "2f60567a966623ee",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "2f60567a966623ee",
+          "text": "on the Night Line. I can see the highway out my window, and it's empty both ways.",
+          "raw": " on the Night Line. I can see the highway out my window, and it's empty both ways."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 77,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "saro>station01",
+      "id": "6ac2b2f1fcae48cf",
+      "prefix": "",
+      "suffix": ". Not long now till four, so if you've been meaning to call, call.",
+      "capitalize": true,
+      "after": "a2c386a4506964aa",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "a2c386a4506964aa",
+          "text": ". Not long now till four, so if you've been meaning to call, call.",
+          "raw": ". Not long now till four, so if you've been meaning to call, call."
+        }
+      ]
+    },
+    {
+      "file": "src/story/tripRadio.ts",
+      "line": 125,
+      "station": "caliche",
+      "voice": "host",
+      "group": "PROGRAMME",
+      "trip": "diner>*",
+      "id": "b2f2c656e315d739",
+      "prefix": "",
+      "suffix": " in Caliche. Pumps are locked till six, so if you're low, you're low.",
+      "capitalize": true,
+      "after": "2a05170c9f439106",
+      "parts": [
+        {
+          "kind": "time",
+          "capitalize": true
+        },
+        {
+          "kind": "clip",
+          "id": "2a05170c9f439106",
+          "text": "in Caliche. Pumps are locked till six, so if you're low, you're low.",
+          "raw": " in Caliche. Pumps are locked till six, so if you're low, you're low."
+        }
+      ]
+    }
+  ],
+  "timeBank": {
+    "hours": [
+      {
+        "value": 1,
+        "id": "7692c3ad3540bb80",
+        "text": "one"
+      },
+      {
+        "value": 2,
+        "id": "3fc4ccfe745870e2",
+        "text": "two"
+      },
+      {
+        "value": 3,
+        "id": "8b5b9db0c13db242",
+        "text": "three"
+      },
+      {
+        "value": 4,
+        "id": "04efaf080f5a3e74",
+        "text": "four"
+      },
+      {
+        "value": 5,
+        "id": "222b0bd51fcef7e6",
+        "text": "five"
+      },
+      {
+        "value": 6,
+        "id": "44778d82365e4af6",
+        "text": "six"
+      },
+      {
+        "value": 7,
+        "id": "3ba8d02b16fd2a01",
+        "text": "seven"
+      },
+      {
+        "value": 8,
+        "id": "c195d2d875623436",
+        "text": "eight"
+      },
+      {
+        "value": 9,
+        "id": "edcd8e701a2df0cd",
+        "text": "nine"
+      },
+      {
+        "value": 10,
+        "id": "e4432baa90819aae",
+        "text": "ten"
+      },
+      {
+        "value": 11,
+        "id": "e979074ebd5633a7",
+        "text": "eleven"
+      },
+      {
+        "value": 12,
+        "id": "d1a749ad879b6c07",
+        "text": "twelve"
+      }
+    ],
+    "minutes": [
+      {
+        "value": 0,
+        "id": "102ad29298b7b442",
+        "text": "o'clock"
+      },
+      {
+        "value": 1,
+        "id": "ce924287df6e8c19",
+        "text": "oh-one"
+      },
+      {
+        "value": 2,
+        "id": "ce6c523e2f6cd78d",
+        "text": "oh-two"
+      },
+      {
+        "value": 3,
+        "id": "14b417222f7f3438",
+        "text": "oh-three"
+      },
+      {
+        "value": 4,
+        "id": "00637cc75b1f2c2e",
+        "text": "oh-four"
+      },
+      {
+        "value": 5,
+        "id": "0c248f4d6cdbb967",
+        "text": "oh-five"
+      },
+      {
+        "value": 6,
+        "id": "0b7c5501e296cc41",
+        "text": "oh-six"
+      },
+      {
+        "value": 7,
+        "id": "d7bac7ab18c0c269",
+        "text": "oh-seven"
+      },
+      {
+        "value": 8,
+        "id": "6fbab77346ae2cde",
+        "text": "oh-eight"
+      },
+      {
+        "value": 9,
+        "id": "e90082735ca0a335",
+        "text": "oh-nine"
+      },
+      {
+        "value": 10,
+        "id": "e4432baa90819aae",
+        "text": "ten"
+      },
+      {
+        "value": 11,
+        "id": "e979074ebd5633a7",
+        "text": "eleven"
+      },
+      {
+        "value": 12,
+        "id": "d1a749ad879b6c07",
+        "text": "twelve"
+      },
+      {
+        "value": 13,
+        "id": "9ecc81f0a4b6dfb0",
+        "text": "thirteen"
+      },
+      {
+        "value": 14,
+        "id": "fef8f41cdcd20386",
+        "text": "fourteen"
+      },
+      {
+        "value": 15,
+        "id": "c463967e5708cab7",
+        "text": "fifteen"
+      },
+      {
+        "value": 16,
+        "id": "f2ce341fdaa67727",
+        "text": "sixteen"
+      },
+      {
+        "value": 17,
+        "id": "2c5abdef2a0eacb4",
+        "text": "seventeen"
+      },
+      {
+        "value": 18,
+        "id": "34357b18abddea18",
+        "text": "eighteen"
+      },
+      {
+        "value": 19,
+        "id": "cde4e100efd26f5b",
+        "text": "nineteen"
+      },
+      {
+        "value": 20,
+        "id": "7c2c4df740f720b0",
+        "text": "twenty"
+      },
+      {
+        "value": 21,
+        "id": "a69edb489f4eb7f2",
+        "text": "twenty-one"
+      },
+      {
+        "value": 22,
+        "id": "2a8daa7aac7ad553",
+        "text": "twenty-two"
+      },
+      {
+        "value": 23,
+        "id": "328e51fcaeaf1d92",
+        "text": "twenty-three"
+      },
+      {
+        "value": 24,
+        "id": "1bcbce780ddd2273",
+        "text": "twenty-four"
+      },
+      {
+        "value": 25,
+        "id": "ac3164d59c697639",
+        "text": "twenty-five"
+      },
+      {
+        "value": 26,
+        "id": "60b7d1f7ad4248fb",
+        "text": "twenty-six"
+      },
+      {
+        "value": 27,
+        "id": "412866d80035f66f",
+        "text": "twenty-seven"
+      },
+      {
+        "value": 28,
+        "id": "96c2a83461897741",
+        "text": "twenty-eight"
+      },
+      {
+        "value": 29,
+        "id": "a0d9676cc598d86e",
+        "text": "twenty-nine"
+      },
+      {
+        "value": 30,
+        "id": "aca5fb59db69e5df",
+        "text": "thirty"
+      },
+      {
+        "value": 31,
+        "id": "dfa5c4c47fb2f357",
+        "text": "thirty-one"
+      },
+      {
+        "value": 32,
+        "id": "7a78c7548928535f",
+        "text": "thirty-two"
+      },
+      {
+        "value": 33,
+        "id": "3c218b98f1bf8af2",
+        "text": "thirty-three"
+      },
+      {
+        "value": 34,
+        "id": "ee9764b6b1336f7b",
+        "text": "thirty-four"
+      },
+      {
+        "value": 35,
+        "id": "49fa6fb4bad94112",
+        "text": "thirty-five"
+      },
+      {
+        "value": 36,
+        "id": "56d89c668162fb95",
+        "text": "thirty-six"
+      },
+      {
+        "value": 37,
+        "id": "ee0d8e38580a98fe",
+        "text": "thirty-seven"
+      },
+      {
+        "value": 38,
+        "id": "518ce854e4d7f5dd",
+        "text": "thirty-eight"
+      },
+      {
+        "value": 39,
+        "id": "c19e6b18f754bbe8",
+        "text": "thirty-nine"
+      },
+      {
+        "value": 40,
+        "id": "9cee2304bd633d42",
+        "text": "forty"
+      },
+      {
+        "value": 41,
+        "id": "074ec9ddfe4408e6",
+        "text": "forty-one"
+      },
+      {
+        "value": 42,
+        "id": "5cc47001f7c1334d",
+        "text": "forty-two"
+      },
+      {
+        "value": 43,
+        "id": "fbcb14038f6be3f6",
+        "text": "forty-three"
+      },
+      {
+        "value": 44,
+        "id": "9a56bd594d932dd5",
+        "text": "forty-four"
+      },
+      {
+        "value": 45,
+        "id": "ce8cdef089ac0a9f",
+        "text": "forty-five"
+      },
+      {
+        "value": 46,
+        "id": "17b42cc951ba20e8",
+        "text": "forty-six"
+      },
+      {
+        "value": 47,
+        "id": "11d5b531ae2c2685",
+        "text": "forty-seven"
+      },
+      {
+        "value": 48,
+        "id": "2b8de4d500ddf4ef",
+        "text": "forty-eight"
+      },
+      {
+        "value": 49,
+        "id": "0f09c0097e477bcb",
+        "text": "forty-nine"
+      },
+      {
+        "value": 50,
+        "id": "f8d807ee15e983f8",
+        "text": "fifty"
+      },
+      {
+        "value": 51,
+        "id": "76bcec87152dfcad",
+        "text": "fifty-one"
+      },
+      {
+        "value": 52,
+        "id": "7236b63e2db57bda",
+        "text": "fifty-two"
+      },
+      {
+        "value": 53,
+        "id": "6382cd3f5ae1290b",
+        "text": "fifty-three"
+      },
+      {
+        "value": 54,
+        "id": "7da3c4346e002f6e",
+        "text": "fifty-four"
+      },
+      {
+        "value": 55,
+        "id": "25102b4dfe05dd11",
+        "text": "fifty-five"
+      },
+      {
+        "value": 56,
+        "id": "ee41e5464eec8ff2",
+        "text": "fifty-six"
+      },
+      {
+        "value": 57,
+        "id": "d376c3658fc44e8f",
+        "text": "fifty-seven"
+      },
+      {
+        "value": 58,
+        "id": "dcf2928126cc8165",
+        "text": "fifty-eight"
+      },
+      {
+        "value": 59,
+        "id": "69193cd7186a2a50",
+        "text": "fifty-nine"
+      }
+    ]
+  },
+  "summary": {
+    "clipCount": 115,
+    "staticHostLines": 38,
+    "dynamicHostTemplates": 6,
+    "timeFragmentClips": 8,
+    "timeBankClips": 69,
+    "words": 668,
+    "characters": 3724,
+    "excludedInPersonEarlLines": 12
+  },
+  "coverage": {
+    "kind": "text-only AST extraction and isolated formatter verification; no audio playback",
+    "minutesChecked": 1440,
+    "dynamicRenderedChecks": 8640,
+    "idsChecked": 115
+  },
+  "excludedNpc": [
+    {
+      "file": "src/story/caliche.ts",
+      "line": 270,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 271,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 275,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 276,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 277,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 278,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 282,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 283,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 287,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 288,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 289,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    },
+    {
+      "file": "src/story/caliche.ts",
+      "line": 291,
+      "reason": "In-person Earl remains outside Art Bell radio scope."
+    }
+  ]
+}

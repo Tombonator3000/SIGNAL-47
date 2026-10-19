@@ -1,0 +1,50 @@
+PASS all 115 host/time clips preserve the extracted text hashes and have real MP3 files
+PASS the runtime catalogue contains all six exact time templates and both complete time banks
+PASS Art Bell defaults On while the radio is Off and the host bank stays undecoded
+PASS real R wakes AM 1420 and starts the recorded host on the truck's receiver
+PASS the exact opening MP3 is decoded and routed through AM filters, radioBus and master at its original rate
+PASS one exact caption begins with the recording and remains for the full decoded duration
+PASS the host station produces real nonzero PCM samples and its receiver reaches master
+PASS pause holds both the real audio clock and station position without restarting speech
+PASS the exact radio caption survives a real pause longer than the whole recording
+PASS desktop settings identify the synthetic Night Line parody and keep Kinski independent
+PASS desktop radio settings fit the viewport
+PASS the real Radio slider controls and persists the bus used by the recorded host
+PASS Resume retains the same live radio caption for the remaining speech
+PASS Radio volume zero silences master when unrelated buses are muted
+PASS resume continues the same source and station position without double playback
+PASS two receivers share one recorded station source and one caption
+PASS the natural-end fixture uses a complete authored short host line
+PASS a complete real host buffer reaches its natural end without truncation
+PASS 02:03 selects every exact time fragment and schedules real decoded MP3s in order
+PASS 02:03 retains the complete displayed sentence and derives its duration from all decoded fragments
+PASS 02:00 selects every exact time fragment and schedules real decoded MP3s in order
+PASS 02:00 retains the complete displayed sentence and derives its duration from all decoded fragments
+PASS BOY_CALL host: the extracted manuscript fixture uses its exact recording through the real station planner
+PASS sign-off host: the extracted manuscript fixture uses its exact recording through the real station planner
+PASS trip programme host: the extracted manuscript fixture uses its exact recording through the real station planner
+PASS a caller remains procedural even when its words also exist in the recorded host bank
+PASS Roswell 1230's morning host remains procedural while Art Bell is enabled
+PASS an unknown host sentence falls back to the complete original procedural line and caption
+PASS a failed real decoder returns to the complete procedural host and caption without a partial recorded start
+PASS Off: real decoded data waits before any recorded source starts
+PASS Off: a late genuine decode result cannot revive host audio or future sources
+PASS station change: real decoded data waits before any recorded source starts
+PASS station change: a late genuine decode result cannot revive host audio or future sources
+PASS reset: real decoded data waits before any recorded source starts
+PASS reset: a late genuine decode result cannot revive host audio or future sources
+PASS load case: real decoded data waits before any recorded source starts
+PASS load case: a late genuine decode result cannot revive host audio or future sources
+PASS Off: all active and future recorded host sources are stopped
+PASS station change: all active and future recorded host sources are stopped
+PASS reset: all active and future recorded host sources are stopped
+PASS load case: all active and future recorded host sources are stopped
+PASS title: all active and future recorded host sources are stopped
+PASS host buffer caching remains within the bounded 24-buffer bank
+PASS 844x390 touch settings show Art Bell On and fit the screen
+PASS a real touch turns only Art Bell Off and stores its separate s47 preference
+PASS turning Kinski On by touch does not change the Art Bell preference
+PASS reloading retains the independent Art Bell Off and Kinski On choices
+PASS recorded host MP3 requests have no HTTP failures (20 requests)
+PASS no browser errors or warnings
+49 of 49 PASS

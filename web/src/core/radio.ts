@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { AudioSys } from './Audio';
+import { RadioVoice, type RadioClip } from './radioVoice';
 
 // The radio stations of the night and the radios that play them (Tom, 16 October: the truck's
 // radio should work, and the national anthem should play on the radios).
@@ -19,7 +20,8 @@ import type { AudioSys } from './Audio';
 // drive, the trip's own lines (story/tripRadio.ts) are said in between, in the station's voices
 // (Station.slot).
 //
-// The voices are not words but a muted horn that talks, "wah wah", like the grown-ups in
+// The optional recorded host replaces only Night Line's who='host' lines. The other voices
+// are a muted horn that talks, "wah wah", like the grown-ups in
 // Peanuts (Tom, 16 October: a little cartoonish, but it works in the surreal night); what they
 // say is in the caption. The tunes are Kevin MacLeod's (incompetech.com, CC BY 4.0,
 // THIRD_PARTY_NOTICES.md), streamed from public/radio/: a part of a song each time, a different
@@ -166,6 +168,8 @@ const FAR: Seg[] = [music('far', 96)];
 /** How long a line takes to say. */
 export const secsOf = (text: string) => THREE.MathUtils.clamp(1.1 + text.split(/\s+/).length * 0.32, 2.4, 7.5);
 const GAP = 0.7;
+const FRAGMENT_GAP = 0.035;
+interface SpokenLine { line: Line; text: string; secs: number; clips: RadioClip[] | null; buffers?: AudioBuffer[] }
 /** Seconds of its own programme a station has after anything else (a trip's lines, the boy, the
  *  bulletin), before it takes the next. */
 const CALM = 10;
@@ -302,11 +306,18 @@ export class Station {
   /** Whether the anthem file could not be played (the carrier stands in). */
   anthemFailed = !streamOn;
   /** Each line as it starts: (text, who said it). */
-  onLine?: (text: string, by: string | undefined) => void;
+  onLine?: (text: string, by: string | undefined, duration?: number) => void;
   /** Seconds the station has been in its own programme (since the last of anything else). */
   private calm = CALM;
   /** The record on now is being faded down for the host (slot). */
   private fading = false;
+  private spoken: SpokenLine[] = [];
+  private hostSources: AudioBufferSourceNode[] = [];
+  private hostPending: AbortController | null = null;
+  private hostGeneration = 0;
+  private hostReady = false;
+  /** Station position is tied to the pausable sound clock while recorded talk is heard. */
+  private audioAt: number | null = null;
 
   constructor(readonly id: StationId, private radio: Radio) {}
   private get cfg() { return CFG[this.id]; }
@@ -371,13 +382,50 @@ export class Station {
     if (!this.onAir || this.seg.kind === 'anthem') return 0;
     const seg: Seg = { kind: 'talk', lines };
     this.start([seg], clock);
-    return segLen(seg, clock);
+    return this.len;
+  }
+
+  private lines(s: Seg, clock: number): SpokenLine[] {
+    if (s.kind !== 'talk') return [];
+    return s.lines.map((line) => {
+      const text = lineText(line, clock);
+      const clips = this.id === 'caliche' && this.radio.hostVoice && line.who === 'host' ? this.radio.hostBank.resolve(text, clock) : null;
+      return { line, text, clips, secs: clips ? clips.reduce((sum, clip) => sum + clip.duration, 0) + (clips.length - 1) * FRAGMENT_GAP : secsOf(text) };
+    });
+  }
+  private lengthOf(s: Seg, clock: number) {
+    return s.kind === 'talk' ? this.lines(s, clock).reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(s, clock);
+  }
+  private plan(clock: number) {
+    this.cancelHost();
+    this.spoken = this.lines(this.seg, clock);
+    this.hostReady = !this.spoken.some((line) => line.clips);
+    this.len = this.seg.kind === 'talk' ? this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4) : segLen(this.seg, clock);
+  }
+  /** Keep the same line and relative point when manifest lengths become decoded lengths. */
+  private mapPosition(before: number[], after: number[]) {
+    let oldAt = 0.2, newAt = 0.2;
+    for (let i = 0; i < before.length; i++) {
+      if (this.t < oldAt) return newAt - (oldAt - this.t);
+      if (this.t < oldAt + before[i]) return newAt + (this.t - oldAt) / before[i] * after[i];
+      if (this.t < oldAt + before[i] + GAP) return newAt + after[i] + (this.t - oldAt - before[i]);
+      oldAt += before[i] + GAP; newAt += after[i] + GAP;
+    }
+    return newAt + this.t - oldAt;
+  }
+  /** Change the voice in place; no stale fetch or future source can survive the option. */
+  revoice() {
+    if (this.seg.kind !== 'talk') return;
+    const before = this.spoken.map((line) => line.secs);
+    this.plan(this.sc);
+    this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+    this.sync();
   }
 
   private start(segs: Seg[], clock: number, skip = 0) {
     this.queue = segs.slice();
     this.t = 0; this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
-    this.len = segLen(this.seg, clock);
+    this.plan(clock);
     this.forward(skip, clock, true);
     this.sync();
   }
@@ -408,7 +456,7 @@ export class Station {
   private cross(since: number, clock: number) {
     const f = this.cfg.fixed!;
     this.after = f.then;
-    const total = f.seq.reduce((a, s) => a + segLen(s, clock), 0);
+    const total = f.seq.reduce((a, s) => a + this.lengthOf(s, clock), 0);
     if (since > total + 30) this.start(this.refill(clock), clock, f.then === 'loop' ? Math.random() * 20 : 0);
     else this.start(f.seq, clock, since);
   }
@@ -420,18 +468,19 @@ export class Station {
       this.t -= this.len;
       this.queue.shift();
       if (!this.queue.length) this.queue.push(...this.refill(clock));
-      this.len = segLen(this.seg, clock);
       this.said = -1; this.sc = clock; this.segNo++; this.fading = false;
+      this.plan(clock);
       changed = true;
     }
     // the lines of a talk, each once as it starts
     const s = this.seg;
-    if (s.kind === 'talk') {
+    if (s.kind === 'talk' && (quiet || !this.n || this.hostReady)) {
       let at = 0.2, i = 0;
-      for (; i < s.lines.length; i++) { const e = at + secsOf(lineText(s.lines[i], this.sc)); if (this.t < e) break; at = e + GAP; }
+      for (; i < this.spoken.length; i++) { const e = at + this.spoken[i].secs; if (this.t < e) break; at = e + GAP; }
       if (i < s.lines.length && this.t >= at && i > this.said) {
         this.said = i;
-        if (!quiet) this.onLine?.(lineText(s.lines[i], this.sc), s.lines[i].by);
+        const line = this.spoken[i];
+        if (!quiet) this.onLine?.(line.text, line.line.by, line.buffers ? line.secs : undefined);
       }
     }
     return changed;
@@ -439,7 +488,11 @@ export class Station {
 
   update(dt: number, clock: number) {
     this.fixed(clock);
-    if (this.forward(dt, clock)) this.sync();
+    const ctx = this.radio.audio.ctx;
+    // No programme or caption runs ahead of a recording still being prepared, or of a
+    // suspended AudioContext. On a slow rendering frame the recording remains authoritative.
+    const advance = this.hostPending ? 0 : this.audioAt !== null && ctx ? Math.max(0, ctx.currentTime - this.audioAt - this.t) : dt;
+    if (!this.hostPending && this.forward(advance, clock)) this.sync();
     this.calm = this.cfg.loop.includes(this.seg) ? this.calm + dt : 0;
   }
 
@@ -474,10 +527,12 @@ export class Station {
     for (const x of [horn, vib, osc]) x.start();
     this.n = { voice, horn, mute, car, mus, music: null, anthem: null, track: null, stop: () => { for (const x of [horn, vib, osc]) { try { x.stop(); } catch { /* stopped */ } } voice.disconnect(); car.disconnect(); mus.disconnect(); } };
     this.sync();
+    this.announceRecordedLine();
   }
   private sleep() {
     const n = this.n; if (!n) return;
     this.n = null;
+    this.cancelHost();
     try { n.music?.stop(); } catch { /* stopped */ }
     this.stopAnthem(n);
     this.stopTrack(n);
@@ -488,6 +543,8 @@ export class Station {
     const n = this.n, ctx = this.radio.audio.ctx;
     if (!n || !ctx) return;
     const now = ctx.currentTime, s = this.seg, t = this.t;
+    this.stopHostSources();
+    this.audioAt = null;
     // the music's level: up, or going down for the host (slot)
     const mg = n.mus.gain;
     mg.cancelScheduledValues(now); mg.setValueAtTime(1, now);
@@ -507,11 +564,27 @@ export class Station {
     const fq = n.horn.frequency, mf = n.mute.frequency, g = n.voice.gain;
     for (const p of [fq, mf, g]) p.cancelScheduledValues(now);
     g.setValueAtTime(0, now);
-    if (s.kind === 'talk') {
+    if (s.kind === 'talk' && !this.hostReady) this.prepareHost();
+    if (s.kind === 'talk' && this.hostReady) {
+      if (this.spoken.some((line) => line.buffers)) this.audioAt = now - t;
       let at = 0.2;
-      for (const l of s.lines) {
-        const text = lineText(l, this.sc), secs = secsOf(text), base = PITCH[l.who ?? 'host'];
-        if (at + secs > t) for (const y of syllables(text, secs)) {
+      for (const line of this.spoken) {
+        const { text, secs } = line, base = PITCH[line.line.who ?? 'host'];
+        if (line.buffers) {
+          let partAt = at;
+          for (const buffer of line.buffers) {
+            if (partAt + buffer.duration > t) {
+              const source = ctx.createBufferSource(); source.buffer = buffer;
+              // The station bus then passes through each receiver's existing AM filter,
+              // tuning, interference, position and AudioSys.radioBus volume control.
+              source.connect(this.bus!);
+              source.onended = () => { source.disconnect(); const i = this.hostSources.indexOf(source); if (i >= 0) this.hostSources.splice(i, 1); };
+              this.hostSources.push(source);
+              source.start(now + Math.max(0, partAt - t), Math.max(0, t - partAt));
+            }
+            partAt += buffer.duration + FRAGMENT_GAP;
+          }
+        } else if (at + secs > t) for (const y of syllables(text, secs)) {
           if (at + y.at < t) continue;
           const ts = now + at + y.at - t, f = base * y.f;
           fq.setValueAtTime(f, ts); fq.linearRampToValueAtTime(f * 0.94, ts + y.d);
@@ -525,6 +598,75 @@ export class Station {
     if (s.kind === 'anthem') this.playAnthem(n); else this.stopAnthem(n);
     const carrier = s.kind === 'carrier' || (s.kind === 'anthem' && this.anthemFailed);
     n.car.gain.setTargetAtTime(carrier ? 0.03 : 0, now, 0.05);   // quiet: a dead carrier mostly hushes the static
+  }
+
+  private stopHostSources() {
+    for (const source of this.hostSources) {
+      source.onended = null;
+      try { source.stop(); } catch { /* already ended */ }
+      source.disconnect();
+    }
+    this.hostSources = [];
+  }
+  private cancelHost() {
+    this.hostGeneration++;
+    this.hostPending?.abort(); this.hostPending = null;
+    this.stopHostSources(); this.audioAt = null;
+  }
+  /** A first receiver joining an already decoded recording needs its current caption too. */
+  private announceRecordedLine() {
+    if (!this.n || !this.hostReady) return;
+    let at = 0.2;
+    for (let i = 0; i < this.spoken.length; i++) {
+      const line = this.spoken[i];
+      if (line.buffers && this.t >= at && this.t < at + line.secs) {
+        this.said = i - 1;
+        this.forward(0, this.radio.clock);
+        return;
+      }
+      at += line.secs + GAP;
+    }
+  }
+  private prepareHost() {
+    const ctx = this.radio.audio.ctx;
+    if (!ctx || !this.n || this.hostPending) return;
+    const controller = this.hostPending = new AbortController(), generation = ++this.hostGeneration;
+    const clips = this.spoken.flatMap((line) => line.clips ?? []);
+    void this.radio.hostBank.load(clips, ctx, controller.signal).then((buffers) => {
+      if (controller.signal.aborted || generation !== this.hostGeneration || !this.n) return;
+      const before = this.spoken.map((line) => line.secs);
+      for (const line of this.spoken) if (line.clips) {
+        line.buffers = line.clips.map((clip) => buffers.get(clip.id)!);
+        line.secs = line.buffers.reduce((sum, buffer) => sum + buffer.duration, 0) + (line.buffers.length - 1) * FRAGMENT_GAP;
+      }
+      this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+      this.len = this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
+      this.hostReady = true; this.hostPending = null;
+      this.sync();
+      this.announceRecordedLine();
+      this.forward(0, this.radio.clock);
+    }).catch(() => {
+      if (controller.signal.aborted || generation !== this.hostGeneration || !this.n) return;
+      // A failed request retains a complete, word-matched legacy line. No partial recording
+      // and no retry loop can hold the programme forever.
+      const before = this.spoken.map((line) => line.secs);
+      for (const line of this.spoken) { line.clips = null; line.buffers = undefined; line.secs = secsOf(line.text); }
+      this.t = this.mapPosition(before, this.spoken.map((line) => line.secs));
+      this.len = this.spoken.reduce((sum, line) => sum + line.secs + GAP, 0.4);
+      this.hostReady = true; this.hostPending = null; this.sync();
+    });
+  }
+  /** Current recorded-host state for diagnostics, without creating a second playback path. */
+  get hostStatus() {
+    let at = 0.2, current: SpokenLine | undefined;
+    for (const line of this.spoken) { if (this.t >= at && this.t < at + line.secs) { current = line; break; } at += line.secs + GAP; }
+    return {
+      loading: !!this.hostPending,
+      playing: !!current?.buffers && this.awake && this.radio.audio.ctx?.state === 'running',
+      text: current?.text ?? null, duration: current?.secs ?? null,
+      clips: this.spoken.flatMap((line) => line.clips?.map((clip, i) => ({ id: clip.id, text: clip.text, duration: line.buffers?.[i]?.duration ?? clip.duration })) ?? []),
+      bufferCount: this.radio.hostBank.bufferCount,
+    };
   }
   private playAnthem(n: NonNullable<Station['n']>) {
     if (n.anthem || this.anthemFailed) return;
@@ -611,16 +753,20 @@ export class Receiver {
    *  5 to 20 seconds the static swells over the station for half a second to three, crackling,
    *  and the station sinks under it, then comes back. */
   private fuzz = { next: 12 + Math.random() * 20, left: 0, len: 1, depth: 0 };
+  /** The dial was turned or the set switched on: a crack of static with the sweep (bought sound). */
+  private dial = false;
   /** How far under the static the station is now, 0..1 (the tests). */
   interference = 0;
-  private n: { sig: GainNode; stat: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
+  /** The bought crackles played so far (the tests). */
+  cracks = 0;
+  private n: { sig: GainNode; stat: GainNode; mix: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
   private listening: StationId | null = null;
 
   constructor(private radio: Radio, private o: ReceiverOpts) {}
 
   set(on: boolean, station: StationId = this.station) {
-    if (station !== this.station) { this.station = station; this.sweep = 0.5; }
-    if (on && !this.on) this.sweep = Math.max(this.sweep, 0.25);
+    if (station !== this.station) { this.station = station; this.sweep = 0.5; this.dial = true; }
+    if (on && !this.on) { this.sweep = Math.max(this.sweep, 0.25); this.dial = true; }
     this.on = on;
   }
   /** The next station on the dial, and after the last, off. Returns the station or null. */
@@ -635,12 +781,11 @@ export class Receiver {
   get live() { return this.on && !!this.pos; }
 
   private build() {
-    const a = this.radio.audio, ctx = a.ctx, noise = a.noiseBuffer();
-    if (!ctx || !noise) return null;
+    const a = this.radio.audio, ctx = a.ctx, n = a.staticSrc();
+    if (!ctx || !n) return null;
     // the station and the static, through a small speaker: a narrow band, a little overdriven
     const sig = ctx.createGain(); sig.gain.value = 0;
-    const n = ctx.createBufferSource(); n.buffer = noise; n.loop = true;
-    const stat = ctx.createGain(); stat.gain.value = 0; n.connect(stat);
+    const stat = ctx.createGain(); stat.gain.value = 0; n.out.connect(stat);
     const mix = ctx.createGain(); sig.connect(mix); stat.connect(mix);
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1250; bp.Q.value = 0.7;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400;
@@ -653,8 +798,7 @@ export class Receiver {
     mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(cab); cab.connect(out);
     const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2, a.radioBus) as PannerNode;
     out.connect(pan);
-    n.start();
-    return { sig, stat, out, cab, pan, bus: null, stop: () => { try { n.stop(); } catch { /* stopped */ } out.disconnect(); } };
+    return { sig, stat, mix, out, cab, pan, bus: null, stop: () => { try { n.src.stop(); } catch { /* stopped */ } out.disconnect(); } };
   }
 
   update(dt: number) {
@@ -685,8 +829,10 @@ export class Receiver {
     const z = this.fuzz;
     if (this.live && s > 0) {
       if (z.left > 0) z.left = Math.max(0, z.left - dt);
-      else if ((z.next -= dt) <= 0) { z.len = z.left = 0.4 + Math.random() * 1.2; z.depth = 0.3 + Math.random() * 0.4; z.next = 20 + Math.random() * 40; }
+      else if ((z.next -= dt) <= 0) { z.len = z.left = 0.4 + Math.random() * 1.2; z.depth = 0.3 + Math.random() * 0.4; z.next = 20 + Math.random() * 40; this.crack(z.len, z.depth); }
     } else z.left = 0;
+    if (this.dial && this.live) this.crack(0, 0.6);
+    this.dial = false;
     const k = z.left > 0 ? z.depth * Math.sqrt(Math.sin(Math.PI * (1 - z.left / z.len))) : 0;
     this.interference = k;
     const crackle = k > 0 ? 0.5 + Math.random() * 1.1 : 1;
@@ -701,9 +847,18 @@ export class Receiver {
       else (p as unknown as { setPosition: (x: number, y: number, z: number) => void }).setPosition(this.pos.x, this.pos.y, this.pos.z);
     }
   }
+  /** A crash of static over the station, recorded (crunches, which the band-pass makes into
+   *  cracks): the long one stretched over an interference of `len` seconds, the short one for a
+   *  short one or the dial (len 0). Only with the bought sounds; the static's own swell stays. */
+  private crack(len: number, k: number) {
+    const a = this.radio.audio, name = len > 0.8 ? a.or('radio_crackle_long') : a.or('radio_crackle_short'), b = a.buf[name];
+    if (!b || !this.n) return;
+    a.play(name, { dest: this.n.mix, gain: k * this.power, rate: len ? THREE.MathUtils.clamp(b.duration / len, 0.75, 1.5) : 1 });
+    this.cracks++;
+  }
   /** Off, and let the station go (a new night). */
   reset() {
-    this.on = false; this.sweep = 0;
+    this.on = false; this.sweep = 0; this.dial = false;
     if (this.listening) { this.radio.stations[this.listening].listen(false); this.listening = null; }
     if (this.n) { if (this.n.bus) { try { this.n.bus.disconnect(this.n.sig); } catch { /* not connected */ } } this.n.stop(); this.n = null; }
   }
@@ -718,13 +873,21 @@ export class Radio {
   /** Seconds the radio has run (the far station's fading). */
   time = 0;
   /** A line said on a station: (station, text, who said it). */
-  onLine?: (station: StationId, text: string, by: string | undefined) => void;
+  onLine?: (station: StationId, text: string, by: string | undefined, duration?: number) => void;
   /** The boy has called the Night Line tonight (event 9; main.ts keeps it with the case). */
   boyCalled = false;
+  readonly hostBank = new RadioVoice();
+  private recordedHost = false;
+  get hostVoice() { return this.recordedHost; }
+  setHostVoice(on: boolean) {
+    if (this.recordedHost === on) return;
+    this.recordedHost = on;
+    this.stations.caliche.revoice();
+  }
 
   constructor(readonly audio: AudioSys) {
     this.stations = { caliche: new Station('caliche', this), roswell: new Station('roswell', this), far: new Station('far', this) };
-    for (const id of DIAL) this.stations[id].onLine = (text, by) => this.onLine?.(id, text, by);
+    for (const id of DIAL) this.stations[id].onLine = (text, by, duration) => this.onLine?.(id, text, by, duration);
   }
   receiver(o: ReceiverOpts) { const r = new Receiver(this, o); this.receivers.push(r); return r; }
   /** A new night, or a save opened at this clock: every radio off, every station where it is. */
@@ -743,7 +906,7 @@ export class Radio {
     return Object.fromEntries(DIAL.map((id) => {
       const s = this.stations[id];
       return [id, { seg: s.seg.kind, t: s.t, free: s.free, slotted: s.seg.kind === 'talk' && !!s.seg.slotted, awake: s.awake, listeners: s.listeners, strength: s.strength(this.clock, this.time),
-        anthem: s.anthemEl ? { time: s.anthemEl.currentTime, paused: s.anthemEl.paused, failed: s.anthemFailed } : null, anthemFailed: s.anthemFailed }];
+        anthem: s.anthemEl ? { time: s.anthemEl.currentTime, paused: s.anthemEl.paused, failed: s.anthemFailed } : null, anthemFailed: s.anthemFailed, host: s.hostStatus }];
     }));
   }
 }

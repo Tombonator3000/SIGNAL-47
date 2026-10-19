@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "checked_utc": "2026-10-19T18:49:09.820208+00:00",
+  "candidate_commit": "66667c3ce65ebd24912fe624bf777667a2d949f7",
+  "integrated_main": "d6dc68b94e289b919ec95d6c856a20729c64f0fc",
+  "licensed_assets_commit": "12afec3c522c4e3210e9b99356dd271219f9e437",
+  "single": {
+    "path": "dist-single/index.html",
+    "bytes": 98514754,
+    "sha256": "fb62e9c4894fad42752f55fa929493805896f0c5285f61b6f348641e2b0f12e7"
+  },
+  "source_files": 2604,
+  "pages_files": 1893,
+  "source_and_build_hashes_match": true,
+  "checks": {
+    "cpu": {
+      "runs": 7,
+      "status": "PASS",
+      "results": "cpu-results.json"
+    },
+    "feature": {
+      "runs": 2,
+      "status": "PASS",
+      "results": "feature-results.json"
+    },
+    "compatibility": {
+      "runs": 12,
+      "status": "PASS",
+      "results": "compatibility-results.json"
+    },
+    "regression": {
+      "runs": 13,
+      "status": "PASS",
+      "results": "regression-results.json"
+    },
+    "cost": {
+      "runs": 1,
+      "status": "PASS",
+      "results": "cost-results.json"
+    }
+  },
+  "licensed_without": "PASS 22/22, separate fallback build",
+  "audio_files": "PASS 115/115",
+  "kinski_preserved": "1555 MP3 and catalog unchanged against aa38e2b",
+  "runtime_since_build": "unchanged; subsequent edits only tests/docs/evidence",
+  "limitations": [
+    "Human listening, likeness, Caliche pronunciation and timing seams UNVERIFIED",
+    "Physical speakers and device performance UNVERIFIED"
+  ],
+  "delivery": "PR/main/Pages verification follows this candidate check; final delivery record in conversation outputs."
+}

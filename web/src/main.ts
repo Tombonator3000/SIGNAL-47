@@ -170,6 +170,7 @@ async function boot() {
   audio.preload(); // decodes while the title screen is up
   // the stations of the night, the truck's radio and the one behind the diner's counter (core/radio.ts)
   const radio = new Radio(audio);
+  radio.setHostVoice(store.get<boolean>('artBellRadioHost', true) === true);
   const carRadio = radio.receiver({ vol: 0.38, ref: 1.0 });   // Tom, 18 October: 0.65 was too loud in the cab
   const dinerRadio = radio.receiver({ vol: 0.3, ref: 1.6 });
   // something out in the dark now and then, when the player walks about with the flashlight (core/calls.ts)
@@ -201,6 +202,7 @@ async function boot() {
     applyQuality: () => { setQuality(scene, quality); ultra.mark(scene); },
     audio: () => ({ ctx: audio.ctx, sfx: audio.sfx }),
     thud: (gain) => audio.play('thudSoft', { gain, rate: 0.8 }),
+    keys: () => audio.play(audio.or('keys'), { gain: 0.6 }),
     fade: (on, text) => ui.fade(on, text ?? ''),
     hold: (on) => { game.cinematic = on; if (on) input.reset(); },
     after: (sec, fn) => game.after(sec, fn),
@@ -466,6 +468,7 @@ async function boot() {
   let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
+    artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); store.set('artBellRadioHost', v); },
     volume: audio.volume, sens: input.sensitivity,
     onVolume: (v: number) => { audio.setVolume(v); store.set('vol', v); },
     music: audio.musicLevel, onMusic: (v: number) => { audio.setMusic(v); store.set('music', v); },
@@ -1338,11 +1341,13 @@ async function boot() {
     radioHeard = (carRadio.live && carNear) || (dinerRadio.live && !world.driving && player.pos.distanceTo(counterAt) < 12);
     ui.radioButton(world.driving && !!tr, carRadio.on);
   }
-  // a line said on the station the truck's radio is tuned to, captioned when it can be heard
-  radio.onLine = (id, text, by) => {
-    if (mode !== 'play' || game.cinematic || !carRadio.live || carRadio.station !== id || !carNear) return;
+  // A station's line is captioned once while the truck or counter radio can be heard.
+  radio.onLine = (id, text, by, duration) => {
+    const car = carRadio.live && carRadio.station === id && carNear;
+    const diner = dinerRadio.live && dinerRadio.station === id && !world.driving && player.pos.distanceTo(counterAt) < 12;
+    if (mode !== 'play' || game.cinematic || !(car || diner)) return;
     if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
-    ui.toast(by ? `RADIO, ${by}: "${text}"` : `RADIO: "${text}"`, Math.min(8, 2.2 + text.length / 22));
+    ui.toast(by ? `RADIO, ${by}: "${text}"` : `RADIO: "${text}"`, duration === undefined ? Math.min(8, 2.2 + text.length / 22) : Math.max(2.4, duration + 0.2), () => audio.ctx!.currentTime);
     // event 9 (HENDELSER.md): heard, the boy's call goes into the notebook and onto the map
     if (by === BOY && !townSeen.has('ev:boy')) {
       townSeen.add('ev:boy'); townSeen.add(`mark:boy@${Math.round(game.clock)}`);

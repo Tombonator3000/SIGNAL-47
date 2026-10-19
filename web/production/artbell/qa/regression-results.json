@@ -1,0 +1,197 @@
+[
+  {
+    "name": "walkthrough",
+    "exit_code": 0,
+    "seconds": 16.42,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/walkthrough.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/walkthrough",
+      "844x390",
+      "high"
+    ],
+    "log": "walkthrough.log"
+  },
+  {
+    "name": "chapter1",
+    "exit_code": 0,
+    "seconds": 24.19,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter1.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch1",
+      "passive"
+    ],
+    "log": "chapter1.log"
+  },
+  {
+    "name": "chapter2",
+    "exit_code": 0,
+    "seconds": 21.34,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter2.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch2"
+    ],
+    "log": "chapter2.log"
+  },
+  {
+    "name": "chapter3",
+    "exit_code": 0,
+    "seconds": 29.85,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter3.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch3"
+    ],
+    "log": "chapter3.log"
+  },
+  {
+    "name": "chapter4",
+    "exit_code": 0,
+    "seconds": 22.46,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter4.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch4"
+    ],
+    "log": "chapter4.log"
+  },
+  {
+    "name": "chapter5",
+    "exit_code": 0,
+    "seconds": 19.73,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter5.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch5"
+    ],
+    "log": "chapter5.log"
+  },
+  {
+    "name": "chapter6",
+    "exit_code": 0,
+    "seconds": 56.21,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/chapter6.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/ch6"
+    ],
+    "log": "chapter6.log"
+  },
+  {
+    "name": "devmenu",
+    "exit_code": 0,
+    "seconds": 15.68,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/devmenu.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/dev"
+    ],
+    "log": "devmenu.log"
+  },
+  {
+    "name": "drives",
+    "exit_code": 0,
+    "seconds": 58.87,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/drives.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/drives"
+    ],
+    "log": "drives.log"
+  },
+  {
+    "name": "ambience",
+    "exit_code": 0,
+    "seconds": 15.18,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/ambience.py"
+    ],
+    "log": "ambience.log"
+  },
+  {
+    "name": "diner",
+    "exit_code": 0,
+    "seconds": 13.78,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/diner.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/diner"
+    ],
+    "log": "diner.log"
+  },
+  {
+    "name": "music-pages",
+    "exit_code": 0,
+    "seconds": 32.91,
+    "url": "http://127.0.0.1:8499/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/music.py"
+    ],
+    "log": "music-pages.log"
+  },
+  {
+    "name": "music-single",
+    "exit_code": 0,
+    "seconds": 9.34,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/music.py"
+    ],
+    "log": "music-single.log"
+  }
+]

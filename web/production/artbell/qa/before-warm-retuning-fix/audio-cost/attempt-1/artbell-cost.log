@@ -1,0 +1,20 @@
+PASS measurement fits inside both the real clip and the procedural line
+On-1: 59.89fps, 0.00params/s, 0.0000params/frame; categories {}; nodes/s 0.00, sync 0, new sources 0, active 0→0, host 2→2, dropouts 0
+PASS On-1: the same real cab remains standing throughout normal rAF
+PASS On-1: no per-frame station resync, re-decode or host source multiplication
+PASS On-1: no measured master dropouts or runaway node/source growth
+FAIL On-1: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+Off: 57.41fps, 0.00params/s, 0.0000params/frame; categories {}; nodes/s 0.00, sync 0, new sources 0, active 0→0, host 0→0, dropouts 0
+PASS Off: the same real cab remains standing throughout normal rAF
+PASS Off: no per-frame station resync, re-decode or host source multiplication
+PASS Off: no measured master dropouts or runaway node/source growth
+FAIL Off: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+On-2: 46.88fps, 0.00params/s, 0.0000params/frame; categories {}; nodes/s 0.00, sync 0, new sources 0, active 0→0, host 2→2, dropouts 0
+PASS On-2: the same real cab remains standing throughout normal rAF
+PASS On-2: no per-frame station resync, re-decode or host source multiplication
+PASS On-2: no measured master dropouts or runaway node/source growth
+FAIL On-2: the existing listener/engine/tyres/receiver contribute exactly 26 calls per frame
+PASS Art Bell On/Off/On has equivalent steady parameter work per frame, without raising the 1500/s threshold
+PASS parameter work per frame stays stable between early and late measurement windows
+FAIL no browser runtime errors
+12/16 PASS

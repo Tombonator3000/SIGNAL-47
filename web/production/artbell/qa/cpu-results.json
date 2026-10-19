@@ -1,0 +1,68 @@
+[
+  {
+    "name": "extract",
+    "command": [
+      "node",
+      "tools/artbell/extract.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.33
+  },
+  {
+    "name": "artbell-core",
+    "command": [
+      "node",
+      "tools/artbell-core.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.39
+  },
+  {
+    "name": "readaloud-core",
+    "command": [
+      "node",
+      "tools/readaloud-core.cjs",
+      "--corpus"
+    ],
+    "exit_code": 0,
+    "seconds": 0.47
+  },
+  {
+    "name": "phonecalls-core",
+    "command": [
+      "node",
+      "tools/phonecalls-core.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.26
+  },
+  {
+    "name": "saves",
+    "command": [
+      "node",
+      "tools/saves.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 1.06
+  },
+  {
+    "name": "steercheck",
+    "command": [
+      "npm",
+      "run",
+      "steercheck"
+    ],
+    "exit_code": 0,
+    "seconds": 0.15
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit_code": 0,
+    "seconds": 2.85
+  }
+]

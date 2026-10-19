@@ -1,0 +1,72 @@
+[
+  {
+    "name": "radio-pages",
+    "exit_code": 0,
+    "seconds": 17.22,
+    "url": "http://127.0.0.1:8499/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/radio-pages"
+    ],
+    "log": "radio-pages.log"
+  },
+  {
+    "name": "radio-single",
+    "exit_code": 0,
+    "seconds": 13.81,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/radio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/radio-single"
+    ],
+    "log": "radio-single.log"
+  },
+  {
+    "name": "tripradio",
+    "exit_code": 0,
+    "seconds": 21.0,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/tripradio.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/tripradio"
+    ],
+    "log": "tripradio.log"
+  },
+  {
+    "name": "soundcheck",
+    "exit_code": 0,
+    "seconds": 173.42,
+    "url": null,
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/soundcheck.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/soundcheck"
+    ],
+    "log": "soundcheck.log"
+  },
+  {
+    "name": "readaloud-pages",
+    "exit_code": 0,
+    "seconds": 14.16,
+    "url": "http://127.0.0.1:8499/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/readaloud.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-art-bell-radio/web/production/artbell/qa/readaloud-pages"
+    ],
+    "log": "readaloud-pages.log"
+  }
+]

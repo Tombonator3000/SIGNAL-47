@@ -77,11 +77,12 @@ export class Doors {
     if (door.open && this.inDoorway(door)) { this.d.toast('Step out of the doorway first.', 2.2); return; }
     this.set(id, !door.open);
     const at = door.spec.proxy.getWorldPosition(new THREE.Vector3());
-    const heavy = door.spec.sound !== 'light';
-    this.d.audio.play('switch', { gain: heavy ? 0.55 : 0.45, rate: door.open ? 1 : 0.85, at });
+    const heavy = door.spec.sound !== 'light', a = this.d.audio;
+    // the handle (a recorded latch, with the bought sounds), the creak, then the leaf
+    a.play(a.or('door_latch', 'switch'), { gain: heavy ? 0.55 : 0.45, rate: door.open ? 1 : 0.85, at });
     // hinges that want oil on the way, then the leaf meets the frame (steel or wood)
     this.d.audio.play(Math.random() < 0.5 ? 'doorCreak0' : 'doorCreak1', { gain: heavy ? 0.16 : 0.12, rate: (heavy ? 0.8 : 1) * (0.95 + Math.random() * 0.1), when: 0.08, at });
-    if (!door.open) this.d.audio.play(heavy ? 'doorMetal' : 'doorClose', { gain: heavy ? 0.32 : 0.4, when: 0.78, at });
+    if (!door.open) a.play(heavy ? a.or('door_heavy', 'doorMetal') : a.or('door_light', 'doorClose'), { gain: heavy ? 0.32 : 0.4, when: 0.78, at });
     else this.d.audio.play('thudSoft', { gain: 0.25, when: 0.6, at });
   }
 

@@ -1,0 +1,14 @@
+{
+  "clipCount": 115,
+  "staticHostLines": 38,
+  "dynamicHostTemplates": 6,
+  "timeFragmentClips": 8,
+  "timeBankClips": 69,
+  "words": 668,
+  "characters": 3724,
+  "excludedInPersonEarlLines": 12,
+  "kind": "text-only AST extraction and isolated formatter verification; no audio playback",
+  "minutesChecked": 1440,
+  "dynamicRenderedChecks": 8640,
+  "idsChecked": 115
+}

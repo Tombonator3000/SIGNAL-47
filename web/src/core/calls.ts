@@ -11,7 +11,8 @@ import type { AudioSys } from './Audio';
 // The sounds are Freesound originals from the credits of They Are Here, CC0 and CC BY
 // (THIRD_PARTY_NOTICES.md): a voice with clicks in it (resourcemoon), something on a radio
 // (superhalo), calls of animals that are not from here and a singing (InSintesi), a rush of air
-// (szegvari), and now and then a long dark horn across the desert (JarredGibb).
+// (szegvari), and now and then a long dark horn across the desert (JarredGibb). With the bought
+// sounds (Audio.ts) there is one more: a single note that swells out of nowhere and is gone.
 
 const CALLS = ['alienVoice', 'alienRadio', 'alienCalls', 'alienSong', 'alienTemple'];
 const RARE = 'alienHorn';
@@ -62,8 +63,9 @@ export class NightCalls {
   }
 
   private call(cam: THREE.Camera) {
-    let name = Math.random() < 0.12 ? RARE : CALLS[Math.floor(Math.random() * CALLS.length)];
-    if (name === this.before) name = CALLS[(CALLS.indexOf(name) + 1) % CALLS.length];
+    const tone = this.audio.or('call_tone'), calls = tone ? [...CALLS, tone] : CALLS;
+    let name = Math.random() < 0.12 ? RARE : calls[Math.floor(Math.random() * calls.length)];
+    if (name === this.before) name = calls[(calls.indexOf(name) + 1) % calls.length];
     this.before = name;
     // behind the player or off to one side, out of the beam, and far
     const f = new THREE.Vector3(); cam.getWorldDirection(f);
