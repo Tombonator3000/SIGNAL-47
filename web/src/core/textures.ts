@@ -241,6 +241,13 @@ export function facadeWindows(cols: number, rows: number, seed = 3) {
   });
 }
 
+/** Which of facadeWindows' windows are lit, column by column (the same draws it makes). */
+export function facadeLit(cols: number, rows: number, seed = 3) {
+  const r = rng(seed), lit: boolean[] = [];
+  for (let i = 0; i < cols * rows; i++) { const on = r() < 0.55; if (on) { r(); r(); r(); } lit.push(on); }
+  return lit;
+}
+
 export function saroLettering() {
   return canvasTex(512, 160, (g, w, h) => {
     g.clearRect(0, 0, w, h);

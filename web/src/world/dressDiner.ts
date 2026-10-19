@@ -9,12 +9,17 @@ import { Dressing, type Foot, type Opening } from './weathering';
 // land round it from `gy` (the road's, World.ts).
 export function dressDiner(set: FloodSet, col: (f: Foot) => void, gy: (x: number, z: number) => number) {
   const d = new Dressing(set, 0.14, 1947);
-  // the front (x 2): the long windows from 0.85 to 2.57, the door, the pier beside it
+  d.ground = gy;
+  // the kitchen's corner, where its cans and the grease drum stand
+  const clear = (x: number, z: number) => x < -5.8 && z > 7.6;
+  // the front (x 2): the long windows from 0.85 to 2.57, the door, the pier beside it; the walk at 0
   const front: Opening[] = [{ a0: -9, a1: -0.6, y0: 0.85, y1: 2.57 }, { a0: -0.6, a1: 0.6, y0: 0, y1: 2.24 }, { a0: 2.15, a1: 9, y0: 0.85, y1: 2.57 }];
-  d.wall({ face: '+x', at: 2.0, a0: -9, a1: 9, y0: 0, y1: 3.2 }, { openings: front, streaks: 0.8, patches: 0.4, k: 0.8 });
-  d.wall({ face: '-z', at: -9.0, a0: -8, a1: 2, y0: -0.14, y1: 3.2 }, { streaks: 1.3, patches: 1.2, k: 0.9 });
-  d.wall({ face: '+z', at: 9.0, a0: -8, a1: 2, y0: -0.14, y1: 3.2 }, { streaks: 1.3, patches: 1.2, k: 0.9 });
-  d.wall({ face: '-x', at: -8.0, a0: -9, a1: 9, y0: -0.14, y1: 3.2 }, { streaks: 1.1, k: 0.9 });
+  d.wall({ face: '+x', at: 2.0, a0: -9, a1: 9, y0: 0, y1: 3.2 }, { openings: front, streaks: 0.5, patches: 0.4, grime: 0.9, ground: 0, drift: 0.3, k: 0.8 });
+  // the sides and the back on the gravel: darker to the foot, the drifted dirt and the brush
+  const side = { streaks: 0.9, patches: 1.2, grime: 1.1, drift: 0.55, tufts: 4, clear, k: 0.9 };
+  d.wall({ face: '-z', at: -9.0, a0: -8, a1: 2, y0: -0.14, y1: 3.2 }, { ...side, drips: [-5.0] });
+  d.wall({ face: '+z', at: 9.0, a0: -8, a1: 2, y0: -0.14, y1: 3.2 }, { ...side, drips: [-5.0, -7.1] });
+  d.wall({ face: '-x', at: -8.0, a0: -9, a1: 9, y0: -0.14, y1: 3.2 }, { ...side, streaks: 0.7, drips: [-2.4, 5.2], tufts: 3 });
   // grease run down the back wall under the kitchen's hood
   d.stain('streak', -8.0, 2.4, -2.4, '-x', 1.1, 1.6, 1, 2, 0x8a7050);
 

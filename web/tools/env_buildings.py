@@ -4,7 +4,8 @@
 # before and after pictures), prints the draw calls there and on Low, and checks: every area is
 # dressed; the draw calls stay in budget (SARO outside 340 as tools/grounds.py, the control room
 # about 300, the others what they were plus 15); Low leaves the small things, the stains and the
-# light pools out; the new props hold the player; and the player still walks where it matters
+# light pools out; nothing stands in front of the lettering on the wing; the new props hold
+# the player; and the player still walks where it matters
 # with the real movement code (round SARO's house and its wing, the motel's lot to the office and
 # room 6, the diner's lot to its door, Caliche's street, STATION 01's gate to the hut and the pier).
 # Usage: python3 tools/env_buildings.py OUTDIR [WxH] [--shots-only]
@@ -106,6 +107,17 @@ async def main():
         print('dressing:', json.dumps(st))
         check(all(s['stains'] >= 60 and s['props'] >= 4 for s in st.values()), 'every area is dressed: stains on its walls and props about it (' + ', '.join(f"{k} {v['stains']}/{v['props']}" for k, v in st.items()) + ')')
         check(st['town']['pools'] >= 6 and st['diner']['pools'] >= 3 and st['motel']['pools'] >= 3, f"porch lights and the drinks machines throw their light (pools: town {st['town']['pools']}, diner {st['diner']['pools']}, motel {st['motel']['pools']})")
+
+        # ---------- the wing's lettering (Exterior.ts: 8 m at x 26.4) stays clear of the pipes ----------
+        hits = await ev("""(() => { const T = S47.three, g = S47.world.grounds.dressing.group, rc = new T.Raycaster(), out = [];
+          g.updateMatrixWorld(true);
+          for (let x = 22.6; x <= 29.4; x += 0.1) for (const y of [1.1, 1.6, 2.1, 2.6, 3.1]) {
+            rc.set(new T.Vector3(x, y, 14), new T.Vector3(0, 0, -1)); rc.far = 8.46;
+            const h = rc.intersectObjects(g.children, true).filter((q) => q.object.material.name.endsWith('/props'));
+            if (h.length) out.push([+x.toFixed(1), y]);
+          }
+          return out; })()""")
+        check(not hits, 'nothing of the dressing stands in front of the SARO lettering on the wing' + (f' (at {hits[:6]})' if hits else ''))
 
         # ---------- the budget ----------
         over = [f'{k} {hi[k]} (before {BEFORE[k]})' for k in hi if hi[k] > BEFORE[k] + 15]

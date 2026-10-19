@@ -1,10 +1,12 @@
 import type { FloodSet } from './kit';
 import { Dressing, type Face, type Foot } from './weathering';
+import { rng } from '../core/textures';
 
 // Caliche's houses and shops from the street (weathering.ts; the concept art of the main street,
-// the payphone and the laundromat): every wall stained down from its parapet and splashed up its
-// footing, the swamp coolers and the stacks on the roofs, the antennas on the houses, a meter
-// and a downspout on each side; at the gas station the tyres, the drums and the drinks machine
+// the payphone and the laundromat): every wall grimy to its foot, stained down from its parapet
+// and splashed up its footing, the dirt drifted against it and the brush in it, about one in
+// three worn hard; the swamp coolers and the stacks on the roofs, the antennas on the houses, a
+// meter and a downspout or two, each building's in its own places; at the gas station the tyres, the drums and the drinks machine
 // by the office, at the laundromat a machine and a can, at the feed store the pallets and the
 // crates; the cars in the driveways, porch lights on at two houses. In the town's road-local
 // metres (Town.ts); `built` is every building Town.building() made.
@@ -26,17 +28,45 @@ export function dressTown(t: TownDress) {
   // a face another building stands against (the gas station's office and its bay)
   const shared = (b: Built, f: Face) => t.built.some((q) => q !== b && (f === '+z' ? q.z0 === b.z1 : f === '-z' ? q.z1 === b.z0 : f === '+x' ? q.x0 === b.x1 : q.x1 === b.x0)
     && (f === '+z' || f === '-z' ? q.x0 < b.x1 && q.x1 > b.x0 : q.z0 < b.z1 && q.z1 > b.z0));
+  d.ground = pave;
+  const onPave = (x: number, z: number) => DRAPES.some(([x0, x1, z0, z1]) => x >= x0 - 0.3 && x <= x1 + 0.3 && z >= z0 - 0.3 && z <= z1 + 0.3);
+  // each building its own wear and its own fixtures, the same every night: about one in three
+  // worn hard, the rest lightly (the concept's street: no two fronts alike)
+  const rr = rng(1947);
+  const pick = <T,>(xs: T[]) => xs[Math.floor(rr() * xs.length)];
   let n = 0;
   for (const b of t.built) {
     const h = b.top - b.floor, house = Math.abs(h - 3.0) < 0.01, tin = h > 5 && h < 5.3, church = h > 5.3 && h < 5.5;
-    const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, back = b.s > 0 ? b.x0 : b.x1, side: Face = b.s > 0 ? '+x' : '-x';
+    const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, back = b.s > 0 ? b.x0 : b.x1, side: Face = b.s > 0 ? '+x' : '-x', backFace: Face = b.s > 0 ? '-x' : '+x';
+    const heavy = rr() < 0.36, w = b.x1 - b.x0, dz = b.z1 - b.z0;
     // the walls from the floor to the parapet's top (Town.building's lip); the front less, it is painted
     const top = b.top + (tin ? 0.2 : h > 6 ? 0.5 : house || church ? 0.3 : 0.35);
+    // the fixtures first, so the water runs where they are: the meter on one side (near the
+    // front, the middle or the back), one or two downspouts at the corners, the cooler somewhere
+    // on the back half of the roof
+    const sides = (['-z', '+z'] as Face[]).filter((f) => !shared(b, f));
+    const mf = sides.length ? pick(sides) : null, mx = pick([b.fx - b.s * 1.6, cx + b.s * rr() * 1.5, back + b.s * 1.4]);
+    const corners: [Face, number][] = [];
+    for (const f of sides) corners.push([f, back + b.s * 0.3], [f, b.fx - b.s * 0.35]);
+    if (!shared(b, backFace)) corners.push([backFace, b.z0 + 0.3], [backFace, b.z1 - 0.3]);
+    const spouts: [Face, number][] = [];
+    for (let k = 0; k < (rr() < 0.4 ? 2 : 1) && corners.length; k++) {
+      const c = corners.splice(Math.floor(rr() * corners.length), 1)[0];
+      if (!(c[0] === mf && Math.abs(c[1] - mx) < 1.2)) spouts.push(c);
+    }
+    const cool = !tin && !church ? { x: cx + (back - cx) * (0.15 + rr() * 0.5), z: cz + (rr() - 0.5) * dz * 0.6 } : null;
     const faces: [Face, number, number, number][] = [['-x', b.x0, b.z0, b.z1], ['+x', b.x1, b.z0, b.z1], ['-z', b.z0, b.x0, b.x1], ['+z', b.z1, b.x0, b.x1]];
     for (const [f, at, a0, a1] of faces) {
       if (shared(b, f)) continue;
-      const front = f === side;
-      d.wall({ face: f, at, a0, a1, y0: b.floor, y1: top }, { streaks: front ? 0.7 : 1.3, patches: tin ? 0.3 : front ? 0.5 : 1.3, chips: tin ? 0 : 0.45, band: 0.4, k: tin ? 0.7 : 0.95, peel: house ? 0.35 : 0.15 });
+      const front = f === side, along = f === '-z' || f === '+z';
+      const drips = spouts.filter((q) => q[0] === f).map((q) => q[1]);
+      // the cooler's bleed water runs to the nearest edge
+      if (cool && along && Math.abs((f === '-z' ? b.z0 : b.z1) - cool.z) < dz * 0.4) drips.push(cool.x);
+      d.wall({ face: f, at, a0, a1, y0: b.floor, y1: top }, {
+        streaks: (heavy ? 1.1 : 0.4) * (front ? 0.6 : 1), drips, patches: tin ? 0.2 : (heavy ? 1.4 : 0.5) * (front ? 0.5 : 1), peel: house ? (heavy ? 0.45 : 0.25) : 0.15,
+        chips: tin ? 0 : heavy ? 0.5 : 0.3, band: heavy ? 0.5 : 0.35, grime: heavy ? 1.2 : 0.7, k: (tin ? 0.7 : heavy ? 1.0 : 0.8),
+        drift: front ? 0.35 : 0.55, tufts: front ? 0 : heavy ? 4.5 : 2.5, clear: onPave,
+      });
       // the footing, 3 cm proud of the wall, splashed up from where the ground meets it
       const len = a1 - a0, m = Math.max(1, Math.round(len / 2.4)), s = len / m;
       for (let i = 0; i < m; i++) {
@@ -46,22 +76,24 @@ export function dressTown(t: TownDress) {
       }
     }
     // the roof: a cooler on all but the tin shed and the church, the stacks, an antenna on a house
-    const ry = b.top + 0.04, w = b.x1 - b.x0, dz = b.z1 - b.z0;
-    if (!tin && !church) {
-      d.swampCooler(cx + (back - cx) * 0.35, ry, cz + (n % 2 ? 0.25 : -0.25) * dz * 0.5, b.s > 0 ? Math.PI / 2 : -Math.PI / 2, house ? 0.85 : 1);
-      if (dz > 18) d.swampCooler(cx, ry, cz + dz * 0.28, b.s > 0 ? Math.PI / 2 : -Math.PI / 2);
+    const ry = b.top + 0.04;
+    if (cool) {
+      d.swampCooler(cool.x, ry, cool.z, pick([Math.PI / 2, -Math.PI / 2, 0, Math.PI]), house ? 0.85 : 1);
+      if (dz > 18) d.swampCooler(cx + (b.fx - cx) * 0.2, ry, cz + dz * (cool.z > cz ? -0.28 : 0.28), b.s > 0 ? Math.PI / 2 : -Math.PI / 2);
     }
-    d.vent(cx + w * 0.18, ry, cz - dz * 0.3, { h: 0.5, r: 0.05 });
+    d.vent(cx + w * (rr() * 0.5 - 0.1), ry, cz - dz * (0.15 + rr() * 0.2), { h: 0.4 + rr() * 0.25, r: 0.05 });
     if (tin) for (const k of [-0.3, 0, 0.3]) d.vent(cx, ry, cz + dz * k, { turbine: true, h: 0.35, r: 0.12 });
-    else if (!house) d.vent(cx - w * 0.2, ry, cz + dz * 0.32, { turbine: n % 2 === 0, h: 0.3, r: 0.08 });
-    if (house) d.antenna(cx + (back - cx) * 0.6, ry, cz - dz * 0.25, 3.6 + (n % 3) * 0.5, n * 0.7);
-    // a meter and its conduit on one side, near the front; a downspout at a back corner of the other
-    let north = n % 2 === 1;
-    if (shared(b, north ? '-z' : '+z')) north = !north;
-    const mz = north ? b.z0 : b.z1, mf: Face = north ? '-z' : '+z', ox = b.fx - b.s * 1.6;
-    if (!church) { d.meter(ox, b.floor + 1.5, mz, mf, top - b.floor - 1.75, true); d.rust(ox, b.floor + 1.25, mz, mf, 0.8, 0.28, 0.7); }
-    const sf: Face = north ? '+z' : '-z', sz = north ? b.z1 : b.z0;
-    if (!shared(b, sf)) d.downspout(back + b.s * 0.3, top - 0.15, Math.min(b.floor, gy(back, sz)), sz, sf, 'galvDark');
+    else if (!house) d.vent(cx - w * 0.2, ry, cz + dz * (0.2 + rr() * 0.15), { turbine: rr() < 0.5, h: 0.3, r: 0.08 });
+    if (house) d.antenna(cx + (back - cx) * (0.3 + rr() * 0.4), ry, cz + dz * (rr() - 0.5) * 0.6, 3.6 + (n % 3) * 0.5, n * 0.7);
+    // the meter and its conduit up to the parapet, the rust run from it; the downspouts
+    if (mf && !church) {
+      const mz = mf === '-z' ? b.z0 : b.z1;
+      d.meter(mx, b.floor + 1.5, mz, mf, top - b.floor - 1.75, true); d.rust(mx, b.floor + 1.25, mz, mf, 0.8, 0.42, 0.6);
+    }
+    for (const [f, a] of spouts) {
+      if (f === '-z' || f === '+z') { const sz = f === '-z' ? b.z0 : b.z1; d.downspout(a, top - 0.15, Math.min(b.floor, gy(a, sz)), sz, f, 'galvDark'); }
+      else d.downspout(back, top - 0.15, Math.min(b.floor, gy(back, a)), a, f, 'galvDark');
+    }
     n++;
   }
 
