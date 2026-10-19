@@ -144,7 +144,7 @@ export class Chapter5 {
   private save() { this.d.save(); }
   private time() { return clockText(this.g.clock, false); }
   private inDiner() { return this.d.area() === 'diner'; }
-  private truckWhere() { return this.d.truckAt() === 'motel' ? 'The truck is on the motel\'s lot.' : 'The truck is on its pad at SARO, up the highway.'; }
+  private truckWhere() { return this.d.truckAt() === 'motel' ? 'The truck is on the motel\'s lot.' : this.d.truckAt() === 'diner' ? 'The truck is out on the highway, where I left it.' : 'The truck is on its pad at SARO, up the highway.'; }
   private file(doc: DocSpec) {
     const i = this.g.docs.findIndex((x) => x.id === doc.id);
     if (i >= 0) { this.g.docs[i] = doc; return false; }
@@ -174,7 +174,7 @@ export class Chapter5 {
     const s = this.s;
     switch (s.stage) {
       case 'to-truck': return this.d.driving() ? 'MESA DINER // SOUTH ON THE HIGHWAY, ON THE RIGHT AFTER TWO KILOMETRES'
-        : this.d.truckAt() === 'motel' ? 'ALL NIGHT // THE TRUCK IS ON THE MOTEL\'S LOT' : 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
+        : this.d.truckAt() === 'motel' ? 'ALL NIGHT // THE TRUCK IS ON THE MOTEL\'S LOT' : this.d.truckAt() === 'diner' ? 'ALL NIGHT // THE TRUCK IS OUT ON THE HIGHWAY, WHERE I LEFT IT' : 'ALL NIGHT // THE TRUCK IS ON ITS PAD AT SARO';
       case 'diner':
         if (!this.inDiner()) return 'ALL NIGHT // MESA DINER';
         return 'MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13)';

@@ -7,7 +7,10 @@
 //                 the cable trench from the control room (x -1)
 //   the spine     a gravel track from the gate north along the trench, to the last row
 //   the rows      east-west tracks off the spine, between the antennas' latitudes; they cross
-//                 the highway at grade (the highway itself is not walked)
+//                 the highway at grade
+//   the highway   walked from just inside the fence to where the truck's way north ends, so the
+//                 truck can be left on it among the masts (World.canGetOut; Tom, 19 October); not
+//                 through the fence's opening: on foot the gate is the way in
 //   the spurs     a short straight track from a row, or the spine, to each antenna
 //   the aprons    gravel round each antenna's base, with its drive cabinet where the spur comes in
 //
@@ -48,8 +51,11 @@ export const APRON = 6;
 /** The lamps out in the array (Exterior.ts): on posts beside the tracks, never on one. */
 export const LAMPS: [number, number][] = [[30, -30], [-10, -42], [-40, -56], [12, -78], [48, -86],
   [-70, -94], [-33, -100], [60, -146], [-52, -158], [-4, -190], [94, -110]];
-/** The highway north through the array (Exterior.ts draws it to z -480): the rows cross it. */
-export const HWY = { x0: -28, x1: -20 };
+/** The highway north through the array (Exterior.ts draws it to z -480): the rows cross it. The
+ *  truck's way north on it ends at z0 (drive/legs.ts SARO_HWY.z0), and so does the walk on it. */
+export const HWY = { x0: -28, x1: -20, z0: -200 };
+/** The highway's walk zone in the array, as wide as the opening in the fence (Field.ts). */
+export const HWY_WALK: Rect = { minX: HWY.x0 - 0.6, maxX: HWY.x1 + 0.6, minZ: HWY.z0 - 1, maxZ: FENCE_Z - 0.15 };
 
 const H = TRACK_W / 2;
 const rect = (minX: number, maxX: number, minZ: number, maxZ: number): Rect => ({ minX, maxX, minZ, maxZ });
