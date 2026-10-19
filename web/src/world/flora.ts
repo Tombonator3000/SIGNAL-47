@@ -529,11 +529,18 @@ function stainShape() {
 // top; the flashlight, the headlights and the lamps (spot and point lights, and the floods) are
 // not. And a card's blades face the flashlight and the headlights more than the ground does (its
 // normals are the ground's, up): for the spot lights its normal turns towards the eye by fFace.
-const SKY_IN = THREE.ShaderChunk.lights_fragment_begin
-  .replace('#if ( NUM_SPOT_LIGHTS > 0 ) && defined( RE_Direct )', 'vec3 fN0 = geometryNormal;\ngeometryNormal = normalize(mix(geometryNormal, geometryViewDir, fFace));\n#if ( NUM_SPOT_LIGHTS > 0 ) && defined( RE_Direct )')
-  .replace('#if ( NUM_DIR_LIGHTS > 0 ) && defined( RE_Direct )', 'geometryNormal = fN0;\nvec3 fDir0 = reflectedLight.directDiffuse;\n#if ( NUM_DIR_LIGHTS > 0 ) && defined( RE_Direct )')
-  .replace('#if ( NUM_RECT_AREA_LIGHTS > 0 ) && defined( RE_Direct_RectArea )', 'reflectedLight.directDiffuse = fDir0 + (reflectedLight.directDiffuse - fDir0) * fSky;\n#if ( NUM_RECT_AREA_LIGHTS > 0 ) && defined( RE_Direct_RectArea )');
-if (!SKY_IN.includes('fDir0 +') || !SKY_IN.includes('fN0;')) console.warn('flora: three.js lights chunk changed, the cover takes the sky and the moon as the ground does');
+// (made from the chunk as it is when the first tuft is compiled, so it has what core/cookies.ts
+// puts in it: the flashlight's beam)
+let skyIn = '';
+const SKY_IN = () => {
+  if (skyIn) return skyIn;
+  skyIn = THREE.ShaderChunk.lights_fragment_begin
+    .replace('#if ( NUM_SPOT_LIGHTS > 0 ) && defined( RE_Direct )', 'vec3 fN0 = geometryNormal;\ngeometryNormal = normalize(mix(geometryNormal, geometryViewDir, fFace));\n#if ( NUM_SPOT_LIGHTS > 0 ) && defined( RE_Direct )')
+    .replace('#if ( NUM_DIR_LIGHTS > 0 ) && defined( RE_Direct )', 'geometryNormal = fN0;\nvec3 fDir0 = reflectedLight.directDiffuse;\n#if ( NUM_DIR_LIGHTS > 0 ) && defined( RE_Direct )')
+    .replace('#if ( NUM_RECT_AREA_LIGHTS > 0 ) && defined( RE_Direct_RectArea )', 'reflectedLight.directDiffuse = fDir0 + (reflectedLight.directDiffuse - fDir0) * fSky;\n#if ( NUM_RECT_AREA_LIGHTS > 0 ) && defined( RE_Direct_RectArea )');
+  if (!skyIn.includes('fDir0 +') || !skyIn.includes('fN0;')) console.warn('flora: three.js lights chunk changed, the cover takes the sky and the moon as the ground does');
+  return skyIn;
+};
 /** Card materials made before the first picture: they take alpha to coverage once the renderer
  *  is known to have MSAA (followFlora); the ones made after, when they are made. */
 const cardMats: THREE.Material[] = [];
@@ -584,7 +591,7 @@ function floraMaterial(o: THREE.MeshStandardMaterialParameters, set: FloodSet, f
     if (twoSided) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n#ifdef DOUBLE_SIDED\nnormal = normalize( vNormal );\n#endif');
     // the sky and the moon in it: a third at the root, three quarters at the tips
     if (shade) sh.fragmentShader = sh.fragmentShader
-      .replace('#include <lights_fragment_begin>', `float fSky = mix(0.35, 0.75, min(1.0, vFSway * 1.6)), fFace = ${back ? 'mix(0.35, 0.9, vFSway)' : '0.0'};\n${SKY_IN}`)
+      .replace('#include <lights_fragment_begin>', `float fSky = mix(0.35, 0.75, min(1.0, vFSway * 1.6)), fFace = ${back ? 'mix(0.35, 0.9, vFSway)' : '0.0'};\n${SKY_IN()}`)
       .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\nreflectedLight.indirectDiffuse *= fSky;');
     // a lamp behind the blades (the camera looking towards it through them) shows through their
     // edges, the tips most; still in the lamp's own pool (the floods' windowed falloff)

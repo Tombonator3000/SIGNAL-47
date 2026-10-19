@@ -35,7 +35,9 @@ import { saveMenu, played } from './ui/SaveMenu';
 import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
 import { loadArt, artStatus } from './core/art';
-import { initArtMaterials, floodSets } from './world/kit';
+import { initArtMaterials, floodSets, headCookie } from './world/kit';
+import { windowLights, setWindowCookies } from './world/windowLight';
+import { FLASH_DECAY } from './core/cookies';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
 import { SARO_IN_ROAD } from './world/geo';
 import { Doors } from './world/Doors';
@@ -206,6 +208,8 @@ async function boot() {
   const blenderHouse = new BlenderHouse(ext.group, [room.outside, annex.outside, ...ext.house], (root) => { setQuality(root, quality); ultra.mark(root); },
     [ext.glow, annex.glow], () => world.grounds.dressing?.props ?? null);
   if (blenderWanted) void blenderHouse.set(true);
+  // the control room's windows on the ground outside (world/windowLight.ts), laid on SARO's grounds
+  room.lightOutside((x, z) => world.grounds.floorAt(x, z));
   // and the truck, every copy the world builds (step two: drive/Truck.ts setModel)
   const blenderTruck = new BlenderTruck((root) => { setQuality(root, quality); ultra.mark(root); });
   world.onTruck = (t) => blenderTruck.add(t);
@@ -1481,6 +1485,7 @@ async function boot() {
     const fogC = (scene.fog as THREE.FogExp2).color.copy(sky.fogColor);
     if (world.area !== 'roswell') fogC.multiplyScalar(1 - 0.45 * THREE.MathUtils.smoothstep(sky.uniforms.uDawn.value, 0, 0.35));
     ext.update(dt, t);
+    room.updateOutside();
     yard.update(t);
     annex.update(t);
     room.lights.hemi.intensity = hemiBase + sky.uniforms.uFlash.value * 2.4;
@@ -1523,6 +1528,16 @@ async function boot() {
   Object.assign((window as any).S47, { blenderHouse, blenderTruck, floodSets });
   // tests: the truck as a save finds it, and the light in the air (world/airlight.ts)
   Object.assign((window as any).S47, { truckSave: () => world.truckSave(), air: () => (world as any).air });
+  // tests: the light cookies on and off (tools/cookies.py): the flashlight's map, the headlights'
+  // sealed beams in the floods, the windows' light on the ground
+  Object.assign((window as any).S47, {
+    cookies: (on: boolean) => { flashlight.cookie(on); headCookie.value = on ? 1 : 0; setWindowCookies(on); },
+    cookieStats: () => ({
+      flashlight: { cookie: flashlight.light.decay === FLASH_DECAY, map: !!flashlight.light.map },
+      head: floodSets.filter((s) => s.head.value.x >= 0).map((s) => s.key),
+      windows: Object.fromEntries(windowLights.map((w) => [w.name, w.windows])),
+    }),
+  });
   Object.assign((window as any).S47, {
     // advance the game by `seconds` in fixed steps, then render one frame
     tick(seconds = 0, fps = 30) { const n = Math.max(1, Math.round(seconds * fps)); for (let i = 0; i < n; i++) step(1 / fps); draw(); flushAutosave(); },

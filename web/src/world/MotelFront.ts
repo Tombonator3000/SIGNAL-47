@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { artTexture } from '../core/art';
 import { eachVariant } from '../core/quality';
-import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, type FloodSet } from './kit';
+import { box, cyl, plane, rod, noMerge, nearOnly, mergeStatic, floodSet, floodlit, addFlood, setFlood, headSlots, type FloodSet } from './kit';
+import { WindowLights } from './windowLight';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { MOTEL_AT } from './geo';
@@ -71,6 +72,8 @@ export class MotelFront {
   private darkWindow!: THREE.Texture;
   private litWindow!: THREE.Texture;
   private disposed = false;
+  /** The office's window and room 6's on the walk in front of them (windowLight.ts). */
+  readonly windowLights: WindowLights;
 
   constructor(at = MOTEL_AT) {
     this.at = { ...at };
@@ -100,6 +103,7 @@ export class MotelFront {
     this.lotLamps();
     // the truck's headlights on the court (shine), when it is driven at SARO
     for (let i = 0; i < 3; i++) this.head.push(this.light(0, -999, 0, 0, 0xfff0d8));
+    headSlots(courtFlood, this.head);   // (the sealed beams' pattern, kit.ts)
     // the television's light on the office, low and in front of its screen (dark until it is
     // on); last, so the lamps before it keep their places in the set
     this.slots.tv = this.light(-44.93, 1.62, 26.48, 0, 0x9fb2d8);
@@ -111,6 +115,16 @@ export class MotelFront {
     dressMotelOffice({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
     mergeStatic(this.st); mergeStatic(this.inSt);
     this.moveTo(this.at);
+    // the office's lamp and room 6's light lay their windows' curtains on the walk (the walk and
+    // the lot are at the floor's height); the rooms' porch lamps are the light already there
+    const own = [this.slots.office, this.slots.officeSpill, this.slots.room6, this.slots.tv];
+    this.windowLights = new WindowLights('motel', courtFlood, () => 0, new THREE.Vector3(this.at.x, this.at.y, this.at.z), own, .055);
+    const walk = new THREE.Color(1, 1, 1), lot = new THREE.Color(.62, .6, .6), tint = (x: number) => x < -38.25 ? walk : lot;
+    this.windowLights.add({ id: 'office', style: 'drawn', c: new THREE.Vector3(-40.95, 1.39, 26.2), out: new THREE.Vector3(1, 0, 0), w: 2.04, h: 1.36, floor: 0,
+      color: 0xffcf92, k: .14, slot: this.slots.office, lamp: { depth: 2.25, y: 2.35, side: 1.6 }, tint });
+    this.windowLights.add({ id: 'room6', style: 'drawn', c: new THREE.Vector3(-40.99, 1.38, 57.03), out: new THREE.Vector3(1, 0, 0), w: 1.4, h: 1.2, floor: 0,
+      color: 0xffc888, k: .12, slot: this.slots.room6, lamp: { depth: 2.6, y: 2.3 }, tint });
+    this.group.add(this.windowLights.build());
   }
 
   // Everything above was made where the court first stood; here it goes where it stands now.
@@ -440,9 +454,11 @@ export class MotelFront {
     const k=.97+.03*Math.sin(t*5.3)*Math.sin(t*.73);
     setFlood(this.slots.red,9*k,courtFlood);setFlood(this.slots.cyan,4*(.985+.015*Math.sin(t*3.1)),courtFlood);
     setFlood(this.slots.r34,5*(.96+.04*Math.sin(t*8.3)),courtFlood);
+    this.windowLights.update();
   }
   dispose(){
     if(this.disposed)return;this.disposed=true;
+    this.windowLights.dispose();
     const geos=new Set<THREE.BufferGeometry>();this.group.traverse(o=>{const m=o as THREE.Mesh;if(m.isMesh)geos.add(m.geometry);});
     for(const g of geos)g.dispose();
     const mats=new Set<THREE.Material>();for(const m of this.materials)eachVariant(m,v=>mats.add(v));for(const m of mats)m.dispose();

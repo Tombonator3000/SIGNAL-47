@@ -8,14 +8,15 @@ import { artTexture } from '../core/art';
 // A material belongs to one set of fake lights. The big outdoor set lights the site;
 // small sets light a single interior (the photo lab) without paying for the site.
 /** skip: lamps never handed to a real light in the PC tier (core/ultra.ts), because they move
- *  (the truck's headlights) or copy another set's lamps (World: the diner and the road). */
-export type FloodSet = { n: number; pos: THREE.Vector4[]; col: THREE.Color[]; count: number; scale: { value: number }; key: string; skip: Set<number> };
+ *  (the truck's headlights) or copy another set's lamps (World: the diner and the road).
+ *  head: the slots that hold the driven truck's three headlight pools (headSlots), -1 for none. */
+export type FloodSet = { n: number; pos: THREE.Vector4[]; col: THREE.Color[]; count: number; scale: { value: number }; key: string; skip: Set<number>; head: { value: THREE.Vector3 } };
 // Every set made, so the PC tier can swap the nearest lamps for real lights with
 // shadows (core/ultra.ts) without importing the areas that own them.
 export const floodSets: FloodSet[] = [];
 export function floodSet(n: number, key: string, scale = 0.07): FloodSet {
   const set: FloodSet = {
-    n, key, count: 0, scale: { value: scale }, skip: new Set(),
+    n, key, count: 0, scale: { value: scale }, skip: new Set(), head: { value: new THREE.Vector3(-1, -1, -1) },
     pos: Array.from({ length: n }, () => new THREE.Vector4(0, -999, 0, 0)),
     col: Array.from({ length: n }, () => new THREE.Color(1, 0.6, 0.25)),
   };
@@ -37,6 +38,67 @@ export function addFlood(x: number, y: number, z: number, intensity: number, col
 }
 export function setFlood(i: number, intensity: number, set = flood) { if (i >= 0) set.pos[i].w = intensity; }
 
+// ---------- the headlights' pattern ----------
+// The driven truck's headlights are three fake pools in a row down the road (Truck.headlightFloods,
+// FLOODS), in the floods of the area it drives in, and copied into the diner's, the town's and
+// the motel's sets (their shine()). Round pools light the road like a lamp on a pole, behind and
+// beside the truck as well as ahead, with no edge. Those pools are drawn through the pattern of
+// two sealed-beam lamps of the early eighties (Tom, 19 October, light cookies): a wide, flat
+// spread, a brighter band just under the horizon (the low beam's hot spot, a little to the right),
+// less above it (a wall in front shows the cut), the road close in front a good deal less, and
+// faint streaks from the lens's flutes fanning out on the road. Nothing behind the lamps. The lamps' place and aim come from the
+// first and the last pool (where they stand in the truck: Truck.ts FLOODS), so a copy in another
+// set is drawn the same without being told more. Every tier: Ultra never hands these pools to a
+// real light (they move). Low takes one lamp in the middle for the two, and only the broad streaks;
+// a point past the reach of the first and the last pool pays nothing.
+/** The sealed beams on (1) or the round pools as before (0), every set at once (tools/cookies.py). */
+export const headCookie = { value: 1 };
+/** These slots of a set hold the truck's three headlight pools (nearest first): drawn through the
+ *  sealed beams' pattern, and never handed to a real light (core/ultra.ts). */
+export function headSlots(set: FloodSet, slots: readonly number[]) {
+  set.head.value.set(slots[0] ?? -1, slots[1] ?? -1, slots[2] ?? -1);
+  for (const i of slots) if (i >= 0) set.skip.add(i);
+}
+const HEAD_GLSL = `
+  // one lamp at d from the point (lamp to point), F its aim, R right, U up; s which of the two
+  float fHeadLamp(vec3 d, vec3 F, vec3 R, vec3 U, float s) {
+    float z = dot(d, F);
+    if (z <= 0.05) return 0.0;
+    float u = dot(d, R) / z, v = dot(d, U) / z;
+    // wide and flat across, further to the right (the shoulder) than to the left (the oncoming
+    // lane), ragged at its sides
+    float uu = u - 0.05 + 0.025 * sin(v * 41.0 + s * 2.0);
+    float side = 1.0 - smoothstep(uu < 0.0 ? 0.3 : 0.4, uu < 0.0 ? 0.72 : 0.95, abs(uu));
+    // some light above the horizon (a sealed beam has no sharp cut), the bright band just under
+    // it, and the road close in front a good deal less
+    float up = mix(1.0, 0.16, smoothstep(-0.016, 0.07, v));
+    float bv = (v + 0.028) / 0.024, bu = abs(u - 0.1);
+    float band = 1.0 + 1.3 * exp(-bv * bv) * (1.0 - smoothstep(0.05, 0.5, bu));
+    float low = 1.0 - 0.45 * smoothstep(0.04, 0.22, -v);
+    // the flutes of the lens: faint streaks fanning out from the lamp (Low: the broad ones)
+    #ifdef LAMBERT
+      float fl = 1.0 + 0.2 * sin(u * 34.0 + 1.7) * sin(u * 13.0 - 1.0);
+    #else
+      float fl = 1.0 + 0.2 * sin(u * 34.0 + s * 1.7) * sin(u * 13.0 - s) + 0.08 * sin(u * 97.0 + s * 3.1);
+    #endif
+    return side * up * band * low * fl;
+  }
+  // the pattern of the truck's two lamps at this point, from its first and last pool
+  float fHead(vec3 p0, vec3 p2) {
+    vec3 e = p2 - p0;
+    // (the last pool stands 0.9 m higher than the first, 20.8 m on: Truck.ts FLOODS)
+    vec3 F = normalize(vec3(e.x, e.y - 0.9, e.z));
+    vec3 R = normalize(cross(F, vec3(0.0, 1.0, 0.0)));
+    vec3 U = cross(R, F);
+    // the lamps 5.16 m behind the first pool and 5 cm under it, 0.657 m either side of the middle
+    vec3 d = vFWorld - (p0 - F * 5.16 - U * 0.05);
+    #ifdef LAMBERT
+      return fHeadLamp(d, F, R, U, 0.0);
+    #else
+      return 0.5 * (fHeadLamp(d + R * 0.657, F, R, U, -1.0) + fHeadLamp(d - R * 0.657, F, R, U, 1.0));
+    #endif
+  }`;
+
 /** weights: some lamps of the set at a part of their strength on this material (world/blenderModels.ts:
  *  the lamps whose light the Blender house has baked in keep only a little of their fake pool there). */
 export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0.012, set = flood, weights?: Record<number, number>): T {
@@ -48,6 +110,8 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
     sh.uniforms.uFloodCol = { value: set.col };
     sh.uniforms.uFloodFall = { value: falloff };
     sh.uniforms.uFloodScale = set.scale;
+    sh.uniforms.uFloodHead = set.head;
+    sh.uniforms.uHeadCookie = headCookie;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vFWorld;\nvarying vec3 vFNormal;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
@@ -66,10 +130,21 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
       .replace('#include <common>', `#include <common>
         varying vec3 vFWorld; varying vec3 vFNormal;
         uniform vec4 uFloodPos[${FLOOD_N}]; uniform vec3 uFloodCol[${FLOOD_N}];
-        uniform float uFloodFall; uniform float uFloodScale;`)
+        uniform float uFloodFall; uniform float uFloodScale;
+        uniform vec3 uFloodHead; uniform float uHeadCookie;${HEAD_GLSL}`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         vec3 fAcc = vec3(0.0);
         vec3 fN = normalize(vFNormal);
+        int fHa = int(uFloodHead.x), fHb = int(uFloodHead.y), fHc = int(uFloodHead.z);
+        float fHk = 1.0;
+        if (fHa >= 0 && fHc >= 0 && uHeadCookie > 0.0 && uFloodPos[fHa].w > 0.0) {
+          // only within the reach of the first or the last pool (the far land pays nothing)
+          vec4 fH0 = uFloodPos[fHa], fH2 = uFloodPos[fHc];
+          vec3 fE0 = vFWorld - fH0.xyz, fE2 = vFWorld - fH2.xyz;
+          float fR0 = fH0.w * 1.6 + 8.0, fR2 = fH2.w * 1.6 + 8.0;
+          if (dot(fE0, fE0) < fR0 * fR0 || dot(fE2, fE2) < fR2 * fR2)
+            fHk = mix(1.0, sqrt(fHead(fH0.xyz, fH2.xyz)), uHeadCookie);
+        }
         for (int i = 0; i < ${FLOOD_N}; i++) {
           if (uFloodPos[i].w <= 0.0) continue;
           vec3 L = uFloodPos[i].xyz - vFWorld;
@@ -78,6 +153,7 @@ export function floodlit<T extends THREE.MeshStandardMaterial>(m: T, falloff = 0
           float ndl = abs(dot(fN, L)) * 0.75 + 0.25;
           // windowed falloff: each lamp lights a pool, not the whole desert
           float win = clamp(1.0 - sqrt(d2) / (uFloodPos[i].w * 1.6 + 8.0), 0.0, 1.0);
+          if (i == fHa || i == fHb || i == fHc) win *= fHk;   // (squared below: the headlights' pattern once)
           ${weigh}fAcc += uFloodCol[i] * (uFloodPos[i].w * ndl * win * win / (1.0 + d2 * uFloodFall))${ws.length ? ' * fWt' : ''};
         }
         #ifdef USE_AOMAP
