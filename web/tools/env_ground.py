@@ -5,10 +5,15 @@
 # draw calls stay in budget (the control room about 300, SARO outside at most 340, every other
 # view at most 15 more than before the ground cover), Low draws no more than High and has less
 # ground cover, the cover is there in every area and moves in the wind, it stands on no walk the
-# story uses (the tracks, the roads, the lots), and the player still walks where it matters with
-# the real movement code. --shots only shoots and prints (the pictures from before).
+# story uses (the tracks, the roads, the lots; tiny grass and pebbles only in a way's seam, within
+# 0.6 m of its edge), out of the pools of light it is no brighter than the ground behind it and in
+# them brighter (each view is shot again without the cover, gN_bare.png, and the two compared
+# pixel by pixel), and the player still walks where it matters with the real movement code.
+# --shots only shoots and prints (the pictures from before). The flashlight does not flicker here
+# (the town's events would make it, at random), so two runs light a view alike.
 # Usage: python3 tools/env_ground.py OUTDIR [WxH] [--shots]
 import asyncio, sys, json, os, math
+from PIL import Image
 from playwright.async_api import async_playwright
 
 ARGS = [a for a in sys.argv[1:] if not a.startswith('--')]
@@ -25,6 +30,27 @@ MORE_TRIS = 90000   # the most the ground cover may add to a view on High (a pho
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
+
+def glow(name):
+    """The cover against the ground behind it: the pixels of the ground (under the horizon, over the
+    captions) that the cover changes (by more than the picture's grain), by how lit the bare ground
+    is there. Out of the pools of light (bare ground 40 or darker): the mean with the cover over the
+    mean bare. In them (45 or brighter): the lit straw, the brightest tenth of the pixels the cover
+    makes brighter, over the bare ground's median there (its dark feet, the stones and the tufts
+    between the eye and the pool are the rest). Returns ((dark ratio, pixels), (lit ratio, pixels))."""
+    a = Image.open(f'{OUT}/{name}.png').convert('L'); b = Image.open(f'{OUT}/{name}_bare.png').convert('L')
+    w, h = a.size; pa, pb = a.load(), b.load()
+    dark, lit = [0, 0, 0], []
+    for y in range(int(h * 0.46), int(h * 0.8)):
+        for x in range(0, w, 2):
+            f, g = pa[x, y], pb[x, y]
+            if abs(f - g) < max(6, 0.12 * g): continue
+            if g <= 40: dark[0] += f; dark[1] += g; dark[2] += 1
+            elif g >= 45 and f > g: lit.append((f, g))
+    d = (dark[0] / dark[1] if dark[1] else 0, dark[2])
+    if len(lit) < 50: return d, (0, len(lit))
+    fs = sorted(f for f, g in lit); gs = sorted(g for f, g in lit)
+    return d, (fs[int(len(fs) * 0.9)] / gs[len(gs) // 2], len(lit))
 
 # each view: the area, how to get there, and the camera (on foot: x, z, yaw, pitch; or a drive)
 VIEWS = [
@@ -55,7 +81,7 @@ async def main():
         has = await ev("!!(S47.world && S47.world.flora)")
         await ev("S47.hold = true; S47.jump('chapter3'); S47.tick(1.0)")
         await ev("S47.game.clock = 3 * 3600 + 5 * 60")   # a little past three, the dead of the night
-        await ev("S47.flashlight.have = true; S47.flashlight.on = true")
+        await ev("S47.flashlight.have = true; S47.flashlight.on = true; S47.flashlight.flicker = () => {}; S47.flashlight.flick = 0")
         for area in ('station01', 'road', 'diner'):
             await ev(f"window.__p = S47.world.prepare('{area}')")
             for _ in range(200):
@@ -63,14 +89,23 @@ async def main():
                 await pg.wait_for_timeout(100)
         await ev("S47.setQuality('high')"); await tick(0.2)
 
-        calls, tris, low, cover = {}, {}, {}, {}
+        calls, tris, low, cover, glows = {}, {}, {}, {}, {}
         # the cover in the scene now: instances drawn per kind, over every part of the ground shown
         COVER = "S47.world.flora.drawn()"
+        async def bare(key, name):
+            # the same picture without the cover, to weigh it against the ground behind it
+            await ev("S47.world.flora.patches.forEach((f) => { f.group.visible = false; })"); await tick(0.02)
+            await shot(name + '_bare')
+            await ev("S47.world.flora.patches.forEach((f) => { f.group.visible = true; })"); await tick(0.02)
+            glows[key] = glow(name)
+            print(f"  {name}: out of the light the cover is {glows[key][0][0]:.2f} times the ground ({glows[key][0][1]} px), in it {glows[key][1][0]:.2f} ({glows[key][1][1]} px)", flush=True)
         async def view(key, name, js, q='high'):
             await ev(js); await tick(0.6)
             if q == 'high': await shot(name)
             i = await info()
-            return i, (await ev(COVER) if has else None)
+            c = await ev(COVER) if has else None
+            if q == 'high' and has: await bare(key, name)
+            return i, c
 
         for key, name, js in VIEWS:
             i, c = await view(key, name, js)
@@ -86,6 +121,7 @@ async def main():
         await ev(f"(() => {{ const w = S47.world, L = w.legs.road; L.drive.place(new S47.three.Vector3({X} - 1.8, L.area.height({X} - 1.8, 1180), 1180), Math.PI); w['leg'] = 'road'; w.enter('road'); }})()")
         await tick(0.5); await shot('g7_highway_from_the_truck')
         i = await info(); calls['road'] = i['calls']; tris['road'] = i['tris']; cover['road'] = await ev(COVER) if has else None
+        if has: await bare('road', 'g7_highway_from_the_truck')
         print(f"g7_highway_from_the_truck: {i['calls']} draw calls, {i['tris']} triangles; cover {cover['road']}", flush=True)
         await ev("S47.world.endFreeDrive()"); await tick(0.3)
 
@@ -97,6 +133,7 @@ async def main():
           const a = r.lane(s), b = r.lane(s + 4); d.place(a, Math.atan2(-(b.x - a.x), -(b.z - a.z))); S47.world.testInput = { steer: 0, throttle: -1 }; })()""")
         await tick(0.6); await shot('g8_old_road_at_dawn')
         i = await info(); calls['oldroad'] = i['calls']; tris['oldroad'] = i['tris']; cover['oldroad'] = await ev(COVER) if has else None
+        if has: await ev("S47.world.testInput = { steer: 0, throttle: 0 }"); await bare('oldroad', 'g8_old_road_at_dawn')
         print(f"g8_old_road_at_dawn: {i['calls']} draw calls, {i['tris']} triangles; cover {cover['oldroad']}", flush=True)
         await ev("S47.world.testInput = null; S47.world.stopDriving(); S47.jump('chapter3'); S47.tick(0.5)")
 
@@ -125,12 +162,21 @@ async def main():
         w0 = await ev("S47.world.flora.wind.time.value"); await tick(1.0); await pg.wait_for_timeout(300); await tick(0.1); w1 = await ev("S47.world.flora.wind.time.value")
         check(w1 > w0 and await ev("S47.world.flora.wind.strength.value") > 0, f'the wind moves on from picture to picture ({w0:.2f} to {w1:.2f}), one shared uniform')
 
+        # ---------- dark out of the light, bright in it ----------
+        # (the views on foot at night: out of the pools no brighter than the ground behind it, in the
+        # flashlight's pool and under the lamps clearly brighter; dawn and the cab are left out)
+        night = {k: glows[k] for k in ('saro', 'field', 'shoulder', 'motel', 'station', 'town') if k in glows}
+        check(all(v[0][0] <= 1.1 for v in night.values() if v[0][1] > 200), 'out of the pools of light the cover is no more than 1.1 times the ground behind it: ' + str({k: round(v[0][0], 2) for k, v in night.items()}))
+        check(all(v[1][0] >= 1.5 for v in night.values() if v[1][1] >= 300), 'and lit in them at least 1.5 times (where the light falls on enough of it): ' + str({k: (round(v[1][0], 2), v[1][1]) for k, v in night.items()}))
+
         # ---------- not on the ways the story uses ----------
-        bad = []
+        bad, seams = [], {}
         for key, name, js in VIEWS:
             await ev(js); await tick(0.2)
             bad += await ev("S47.world.flora.onWays()")
+            seams[key] = await ev("S47.world.flora.seams()")
         check(not bad, 'nothing stands on the tracks, the roads, the paths, the lots or the floors round any view' + ('' if not bad else f': {len(bad)}, {bad[:6]}'))
+        check(all(seams[k]['n'] > 20 for k in ('field', 'motel', 'town')), f"tiny grass and pebbles in the seams at the edges of the ways (and how many of them inside a way's edge): {seams}")
 
         # ---------- Low ----------
         await ev("S47.setQuality('low')")
@@ -176,7 +222,7 @@ async def main():
 
         bad = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not bad, 'console clean' + ('' if not bad else ': ' + '; '.join(bad[:4])))
-        json.dump({'checks': checks, 'calls': calls, 'tris': tris, 'low': low, 'cover': cover}, open(f'{OUT}/checks.json', 'w'), indent=1)
+        json.dump({'checks': checks, 'calls': calls, 'tris': tris, 'low': low, 'cover': cover, 'glows': glows, 'seams': seams}, open(f'{OUT}/checks.json', 'w'), indent=1)
         fails = [c for c in checks if c[0] == 'FAIL']
         print(f'{len(checks) - len(fails)} of {len(checks)} PASS')
         await b.close()

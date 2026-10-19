@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, rod, floodlit, floodSet, type FloodSet } from '../world/kit';
 import type { GlowPoints } from '../world/glow';
+import { desertGround } from '../world/flora';
 import { chainlink } from '../core/textures';
 import { artTexture } from '../core/art';
 import type { Obstacle } from './Drive';
@@ -68,7 +69,7 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
   // road surfaces lie a few centimetres over the verges: pull them forward in depth
   const top = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 };
   const link = chainlink(); link.repeat.set(1, 1);
-  return {
+  const mats = {
     ground: std({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }),
     asphalt: std({ map: highwayTex(), roughness: 0.62, ...top }, 0.01),
     gravel: gravelArt ? std({ map: gravelTex(), color: 0xf2ece0, roughness: 0.95, ...top }, 0.01) : std({ color: 0x8a8070, roughness: 0.95, ...top }, 0.01),
@@ -83,6 +84,8 @@ export function roadMaterials(set: FloodSet = roadFlood, gravelArt = true) {
     rock: std({ color: 0x847a6c, roughness: 0.95, flatShading: true }),
     wire: std({ color: 0x55585a, roughness: 0.6, metalness: 0.3 }),
   };
+  desertGround(mats.ground);   // the brush's dark spots past the ground cover's reach (world/flora.ts)
+  return mats;
 }
 export type RoadMats = ReturnType<typeof roadMaterials>;
 export type Build = { root: THREE.Group; statics: THREE.Group; glow: GlowPoints; m: RoadMats; obstacles: Obstacle[]; wires: number[] };

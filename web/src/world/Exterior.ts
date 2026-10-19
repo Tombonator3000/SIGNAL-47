@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './kit';
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
+import { desertGround } from './flora';
 import { sharedHorizon } from './horizon';
 import { SARO_IN_ROAD, SARO_PATCH, MOTEL_AT, MOTEL_GLOWS, inRect, outside } from './geo';
 import { DISH_LAYOUT, DISH_LAYOUT_FAR, ARRAY_FLAT, GATE, FENCE_Z, LAMPS } from './arrayLayout';
@@ -83,9 +84,10 @@ export class Exterior {
     // World-space metres avoid a radial UV singularity at the centre of the circle.
     const uv = geo.attributes.uv as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 5, pos.getZ(i) / 5);
-    const ground = new THREE.Mesh(geo, floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 })));
+    const ground = new THREE.Mesh(geo, desertGround(floodlit(new THREE.MeshStandardMaterial({ map: artTexture('desert', [1, 1]), vertexColors: true, color: 0xe8dcc8, roughness: 1 }))));
     this.group.add(ground);
-    // the brush, the grass and the stones on it are world/flora.ts (World.ts, groundCover.ts)
+    // the brush, the grass and the stones on it are world/flora.ts (World.ts, groundCover.ts);
+    // past their reach the ground has the brush's dark spots (flora.desertGround)
   }
 
   private array() {

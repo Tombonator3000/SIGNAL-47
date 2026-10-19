@@ -5,6 +5,7 @@ import { fromRoad, stationToRoad, stationLand, outside, inRect, STATION_PATCH } 
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, type FloodSet } from './kit';
 import { GlowPoints, glowScale } from './glow';
+import { desertGround } from './flora';
 import { canvasTex, rng } from '../core/textures';
 import { artTexture, artImage } from '../core/art';
 import { eachVariant } from '../core/quality';
@@ -986,7 +987,7 @@ export class Station01 {
   // ---------- ground, gravel, road ----------
   private ground() {
     const map = this.tex(groundMapTex(this.shades));
-    const sand = groundMap(this.lit({ map: artTexture('desert', [1 / 3.5, 1 / 3.5]), vertexColors: true, color: 0xe2d6c2, roughness: 1 }, 0.04), map);
+    const sand = desertGround(groundMap(this.lit({ map: artTexture('desert', [1 / 3.5, 1 / 3.5]), vertexColors: true, color: 0xe2d6c2, roughness: 1 }, 0.04), map));
     const ground = new THREE.Mesh(this.terrain.geometry(), sand);
     ground.name = 'stationGround';
     this.group.add(ground);

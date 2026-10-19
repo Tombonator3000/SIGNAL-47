@@ -13,8 +13,8 @@ import {
   terrain, heightAt, nearest, profile, beside, rnd, sAt, type RoadPt,
 } from './oldRoadLayout';
 import { buildLandmarks } from './oldRoadLandmarks';
-import { Flora } from '../world/flora';
-import { roadCover, COVER_SEED } from '../world/groundCover';
+import { Flora, desertGround, ragged } from '../world/flora';
+import { roadCover, roadSeam, roadSpill, COVER_SEED } from '../world/groundCover';
 import { oldAsphaltTex, milepostAtlas, POST_NUMBERS, postRect, boltTex, witnessTex, STAKE } from './oldRoadTextures';
 
 // The old Roswell road at dawn, chapter six (KAPITLER.md, Roswell Road). The drive runs from
@@ -201,6 +201,7 @@ export class OldRoad implements DriveArea {
     const own = rows.filter((p) => Math.abs(p.x - J.x) > 120);
     const ground = new THREE.Mesh(mergeGeometries([ribbon(own, left, gy, true, 0), ribbon(own, out, gy, true, 0)])!, m.ground);
     ground.name = 'desert';
+    desertGround(m.ground); desertGround(m.hwyGround);   // the brush's dark spots far out (world/flora.ts)
     const plainMesh = new THREE.Mesh(plain, m.ground);
     // the road: asphalt and shoulders in one picture, 8.8 m across, 24 m per repeat; it begins
     // at the highway's edge
@@ -419,10 +420,24 @@ export class OldRoad implements DriveArea {
           if (n.d === Infinity) return 1;
           if (n.d < SHOULDER + 0.35) return 0;
           if (Math.abs(z - C_LINE.z) < 1.2 && x > C_LINE.x0 && x < C_LINE.x1) return 0;
-          let d = n.d < SHOULDER + 1.4 ? 0.3 : n.d < 7.2 ? 1 : n.d < 10.4 ? 1.9 : 1;   // the ditches either side (profile)
+          const j = ragged(x, z);   // (the edges ragged, groundCover.edge)
+          let d = n.d < SHOULDER + 0.8 + 1.2 * j ? 0.3 : n.d < 6.6 + 1.2 * j ? 1 : n.d < 10.4 ? 1.9 : 1;   // the ditches either side (profile)
           const fo = Math.abs(Math.abs(n.o) - FENCE), side = n.o < 0 ? -1 : 1;
           if (n.s > S0 + 40 && n.s < 700 && !fenceGaps.some((g) => g.side === side && n.s > g.s0 && n.s < g.s1)) { if (fo < 0.22) return 0; if (fo < 1.9) d *= 2.4; }
           return d;
+        },
+        // the seam at the shoulder's outer edge, the gravel spilt past it
+        seam: (x, z) => {
+          const rx = x - J.x, rz = toRoadZ(z);
+          if (Math.abs(rx) < 26 || (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z - 60 && rz < TOWN.z1 + 20)) return roadSeam(rx, rz);
+          const n = nearest(x, z);
+          if (n.d === Infinity || (Math.abs(z - C_LINE.z) < 1.2 && x > C_LINE.x0 && x < C_LINE.x1)) return 0;
+          return n.d > SHOULDER - 0.45 && n.d < SHOULDER + 0.35 ? 0.8 : 0;
+        },
+        spill: (x, z) => {
+          const rx = x - J.x, rz = toRoadZ(z);
+          if (Math.abs(rx) < 26 || (rx > TOWN.west - 8 && rx < TOWN.east + 8 && rz > DINER.z - 60 && rz < TOWN.z1 + 20)) return roadSpill(rx, rz);
+          return nearest(x, z).d < SHOULDER + 1 ? 4 : 1;
         },
         ways: (x, z) => nearest(x, z).d < HALF ? 'the old road' : null,
       });
