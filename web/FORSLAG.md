@@ -6,7 +6,7 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
 
-Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober (merket under); resten er ikke bygget.
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #N). Det som er bygget, er merket under; resten er ikke bygget.
 
 ### Det jeg ville bygget først
 
@@ -47,6 +47,7 @@ Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntake
 8. **Fire, og ikke ennå sju: bilen på B.** Fra kap. 2, første gang du kjører over B, går radioen til bærebølge et sekund, motoren feiler, og lampene blinker fire ganger. Etter rom 6 dør motoren, OIL og VOLTS lyser, og den tar på andre forsøk og blinker sju. Kompasset på dashbordet står på 026 over B, og på den gamle veien glir det mot 026 fra mil 6.
    - Hvorfor: en stige mot 05:29 og tegnene i bilen fra `HENDELSER.md` §8 for dem som kjører overalt, med `drive/trouble.ts`, som står ubrukt. Den lærer nøkkelen som punkt 6 tar bort. Blinkene teller opp her; fargene i frontlysene er spart til 05:29.
    - Forutsetning: én plassering av B. Lysene svinger ved m 330 (`lineLights.ts`), kartnotatet sier "just south of the motel" (`main.ts:1435`), og STATION 01 ligger rundt 840 m sør for SARO.
+   - **Forutsetningen er på plass (bygget 20. oktober, PR #N):** B går fra transitten gjennom B-12-vingen på SARO-tunet og krysser riksveien ved avkjøringen, 23 m sør for tomta (`story/lines.ts`, `CROSSINGS`). Selve stigen i bilen er ikke bygget.
    - Kap. 2 til 5. Bygger på `trouble.ts` (blinkingen finnes bare i `Chapter6.event`) og `drive/Truck.ts`. Middels.
 
 9. **Bortføringen får følger.** Ved STATION 01 må alle gå. Har ingen tatt spilleren ennå, starter advarselen på vei fra hytta etter Noras samtale. Senere går noen i SARO-jakke dine siste 47 sekunder der du ble tatt: stopper der du stoppet, løper det samme snublende løpet, står stille og begynner på nytt. Nora: "You have been out on the line. One side of your face." Nestlederen har tørket blod under nesa og har ikke merket det.
@@ -88,12 +89,12 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 4. **Sjåførens klokke.** Den står på 11:58, mot permens 10/19/85 23:58:31. En slepelapp fra bensinstasjonen kan bære de tapte timene.
 5. **Morgenen holder pusten.** 05:13 i dineren stopper fuglene og kjøleren. "There. Some mornings about now." ("Every morning" strider mot `Chapter5.ts:426`.)
 6. **Kortet ender på en ring.** Telefonen ringer under CHAPTER TWO. Oppsummeringene står, fordi stemmene er nøklet på teksten.
-7. **Linjene møtes.** Dra linjene videre på kartet. Notatet i `main.ts:1435` sier allerede "through STATION 01" og må skrives om.
+7. **Linjene møtes.** Dra linjene videre på kartet. Notatet i `main.ts:1435` sier allerede "through STATION 01" og må skrives om. **Notatet og B-streken er rettet (bygget 20. oktober, PR #N):** "across the highway at the turn-off to SARO, and on to the south-west, through STATION 01", og streken går gjennom avkjøringen. Linjene er ikke dratt videre.
 8. **En tråd du ikke husker.** Etter en bortføring: en blyanttråd med "same" i din hånd, aldri på et P-spørsmål.
 
 ### Forslag til rekkefølge
 
-1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett.
+1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett. **Modulen og telleren er bygget 20. oktober, PR #N** (`story/lines.ts`, `story/seen.ts`); punkt 1 og 2 er ikke bygget.
 2. Små grep 1 og 2, Hondo (4) og arkivet (5, eller valg 1).
 3. Bilen: 8, så 10, så 6. Stigen lærer nøkkelen som 05:29 tar bort.
 4. Saken: 3 og 11, konvolutten og klokka.
@@ -104,7 +105,7 @@ Tell 47-ene: dette legger til minst fem. Motor, stillhet, 4/7 og pust høres all
 
 ### Hull
 
-Ingen foreslo måling: en logg over hva som skjedde og ble sett, og spilletid per kapittel, så man vet om glimtene sees på telefon. Ingenting sier hva den som slår av Missing time får i stedet. Lydslagene trenger teksting, nye linjer trenger stemmer, og hvert engangsslag trenger en `townSeen`-nøkkel og oppdaterte `tools/*.py`. Fortsatt tomt: mil 0 til 6 på den gamle veien, Caliche etter 04:50 og hytta på STATION 01. Ikke tatt opp: glimtet bak labbens glass, figuren blant kyrne, "STA 01 / B", nettverkstelexen (SITE 03, SITE 11) og en lydflate fra den kjøpte pakken som følger trykket.
+Ingen foreslo måling: en logg over hva som skjedde og ble sett, og spilletid per kapittel, så man vet om glimtene sees på telefon. (Loggen er bygget 20. oktober, PR #N: `story/seen.ts`, vist med `?debug`. Spilletid per kapittel er ikke bygget.) Ingenting sier hva den som slår av Missing time får i stedet. Lydslagene trenger teksting, nye linjer trenger stemmer, og hvert engangsslag trenger en `townSeen`-nøkkel og oppdaterte `tools/*.py`. Fortsatt tomt: mil 0 til 6 på den gamle veien, Caliche etter 04:50 og hytta på STATION 01. Ikke tatt opp: glimtet bak labbens glass, figuren blant kyrne, "STA 01 / B", nettverkstelexen (SITE 03, SITE 11) og en lydflate fra den kjøpte pakken som følger trykket.
 
 ## Forbedringer, 16. oktober kveld (Tom spurte)
 
