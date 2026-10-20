@@ -225,6 +225,48 @@ export function cabAtlas() {
   });
 }
 
+/** The odometer when the shift began: the work order on the seat has it as MILES OUT. */
+export const ODOMETER_OUT = 84217;
+
+/** Frost on the windshield (story/truckTaken.ts: found that way after the time away, in April):
+ *  thick along the rubber at the edges and in the lower corners, a thin rime of crystals over the
+ *  rest, the middle in front of the driver almost clear. White where the alpha is. */
+export function frostGlassTex() {
+  return canvasTex(512, 256, (g, w, h) => {
+    const r = rng(47), im = g.createImageData(w, h);
+    // a coarse noise for the patches the frost grows in
+    const N = 12, cell = Array.from({ length: (N + 1) * (N + 1) }, r);
+    const noise = (u: number, v: number) => {
+      const x = u * N, y = v * N, ix = Math.floor(x), iy = Math.floor(y), ax = x - ix, ay = y - iy, at = (i: number, j: number) => cell[Math.min(N, j) * (N + 1) + Math.min(N, i)];
+      return (at(ix, iy) * (1 - ax) + at(ix + 1, iy) * ax) * (1 - ay) + (at(ix, iy + 1) * (1 - ax) + at(ix + 1, iy + 1) * ax) * ay;
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const u = x / w, v = y / h;
+      // nearest edge, in parts of the glass; the lower corners and the bottom heaviest
+      const edge = Math.min(u, 1 - u, v * 1.4, (1 - v) * 0.8);
+      const k = Math.max(0, 1 - edge / 0.22) ** 1.6;
+      // the driver's side (left, from inside) a little clearer in the middle, as a breath leaves it
+      const dx = (u - 0.27) / 0.2, dy = (v - 0.45) / 0.3, clear = Math.exp(-(dx * dx + dy * dy));
+      const a = Math.min(1, (0.04 + 0.96 * k) * (0.35 + 0.85 * noise(u, v)) * (1 - 0.85 * clear)) * (0.6 + 0.4 * r());
+      const i = (y * w + x) * 4; im.data[i] = 236; im.data[i + 1] = 243; im.data[i + 2] = 250; im.data[i + 3] = Math.round(255 * a * 0.85);
+    }
+    g.putImageData(im, 0, 0);
+    // and the fern of the crystals, grown in from the rubber
+    g.strokeStyle = 'rgba(245,250,255,.2)'; g.lineWidth = 1;
+    for (let n = 0; n < 28; n++) {
+      const side = Math.floor(r() * 4);
+      let x = side === 0 ? 0 : side === 1 ? w : r() * w, y = side === 2 ? h : side === 3 ? 0 : r() * h, a = side === 0 ? 0 : side === 1 ? Math.PI : side === 2 ? -Math.PI / 2 : Math.PI / 2;
+      a += (r() - 0.5) * 1.2;
+      for (let s = 0; s < 4; s++) {
+        const len = 4 + r() * 9, nx = x + Math.cos(a) * len, ny = y + Math.sin(a) * len;
+        g.beginPath(); g.moveTo(x, y); g.lineTo(nx, ny); g.stroke();
+        for (const b of [-0.9, 0.9]) { g.beginPath(); g.moveTo(nx, ny); g.lineTo(nx + Math.cos(a + b) * len * 0.45, ny + Math.sin(a + b) * len * 0.45); g.stroke(); }
+        x = nx; y = ny; a += (r() - 0.5) * 0.7;
+      }
+    }
+  });
+}
+
 /** The windshield from inside: a green shade band along the top, road film low down, the
  *  two clean arcs the wipers leave. Drawn with alpha over the view. */
 export function windshieldTex() {
@@ -296,11 +338,8 @@ export function dashAtlas() {
   dial(g, DIALS.fuel, [[0, 'E'], [0.5, '1/2'], [1, 'F']], 4, 'FUEL');
   dial(g, DIALS.temp, [[0, 'C'], [1, 'H']], 4, 'TEMP');
   g.shadowBlur = 0;
-  // odometer and the dark warning lamps
-  g.fillStyle = '#000'; g.fillRect(sp.x - 34, sp.y + 34, 68, 18);
-  g.strokeStyle = 'rgba(214,234,220,.5)'; g.lineWidth = 1; g.strokeRect(sp.x - 34, sp.y + 34, 68, 18);
-  g.fillStyle = MARK; g.font = '17px VT323'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('084217', sp.x, sp.y + 44);
-  g.font = '500 11px Oswald'; g.fillText('P   R   N   D   2   1', sp.x, 152);
+  // the odometer (drawOdo below: five drums of miles and the tenths in white) and the dark warning lamps
+  g.fillStyle = MARK; g.font = '500 11px Oswald'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('P   R   N   D   2   1', sp.x, 152);
   g.font = '500 10px Oswald';
   WARN.forEach((t, i) => {
     const [x, y] = WARN_AT[t];
@@ -338,9 +377,26 @@ export function dashAtlas() {
     s.tex.needsUpdate = true;
   };
   drawClock('');
+  // The odometer in the face of the speedometer, above the needle's hub where it shows over the
+  // wheel from the seat (under the hub the rim hides it): five drums of whole miles, light on black,
+  // and the tenths on a white drum, as the trucks of the time had it. It starts at the work order's
+  // MILES OUT, 84,217, and turns with the miles the truck is driven (World.odometer; story/truckTaken.ts).
+  const drawOdo = (miles: number) => {
+    const w = 54, h = 16, x0 = sp.x - w / 2, y0 = sp.y - 32;
+    g.shadowBlur = 0;
+    g.fillStyle = '#000'; g.fillRect(x0, y0, w, h);
+    g.strokeStyle = 'rgba(214,234,220,.5)'; g.lineWidth = 1; g.strokeRect(x0, y0, w, h);
+    const tenths = Math.floor(miles * 10 + 1e-6), whole = Math.floor(tenths / 10) % 100000, tenth = tenths % 10;
+    g.fillStyle = MARK; g.font = '16px VT323'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    String(whole).padStart(5, '0').split('').forEach((d, i) => g.fillText(d, x0 + 5.5 + i * 8.2, y0 + 8.5));
+    g.fillStyle = '#e8e4d8'; g.fillRect(x0 + w - 12, y0 + 2, 10, h - 4);
+    g.fillStyle = '#141414'; g.fillText(String(tenth), x0 + w - 7, y0 + 8.5);
+    s.tex.needsUpdate = true;
+  };
+  drawOdo(ODOMETER_OUT);
   s.tex.anisotropy = 4;
   s.tex.minFilter = THREE.LinearMipmapLinearFilter;
-  return { tex: s.tex, drawClock, drawRadio };
+  return { tex: s.tex, drawClock, drawRadio, drawOdo };
 }
 
 // ---------- the compass ball on the instrument hood ----------

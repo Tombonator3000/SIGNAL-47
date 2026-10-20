@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { box, cyl, rod, plane, noMerge, floodlit, floodSet, headSlots, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import {
-  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, compassCardTex, type Rect,
+  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, compassCardTex, frostGlassTex, ODOMETER_OUT, type Rect,
 } from './truckTextures';
 
 // SARO 07, the observatory's service truck: a full-size single-cab pickup of the early
@@ -794,6 +794,7 @@ export class Truck {
     this.compass.a = o.compass.a; this.compass.v = o.compass.v; this.compass.set = o.compass.set;
     this.compassPull = o.compassPull ? { ...o.compassPull } : null;
     this.keys.rotation.copy(o.keys.rotation);
+    this.setOdometer(o.odoTonight); this.setFrost(o.frosted);
     this.update(0, 0, o.wheelAngle);   // the needles drawn where they are now, in this frame
   }
   /** Dashboard values. Needles ease in update(); the clock canvas redraws at most 10 times a second. */
@@ -819,6 +820,40 @@ export class Truck {
     this.dash.drawRadio(x, on);
   }
   private radioShown = '214:false';
+  /** The odometer: the miles on it since the shift began (World.odometer), over the work order's
+   *  MILES OUT (truckTextures.ts drawOdo). Redrawn only when its tenths turn. */
+  setOdometer(tonight: number) {
+    const miles = ODOMETER_OUT + Math.max(0, tonight), k = Math.floor(miles * 10 + 1e-6);
+    if (k === this.odoShown) return;
+    this.odoShown = k;
+    this.dash.drawOdo(miles);
+  }
+  private odoShown = Math.floor(ODOMETER_OUT * 10);
+  /** The odometer as it reads now (miles, to the tenth; the tests). */
+  get odometer() { return this.odoShown / 10; }
+  /** The miles on it since the shift began, as it reads now. */
+  private get odoTonight() { return this.odoShown / 10 - ODOMETER_OUT; }
+  /** Frost on the windshield, 0..1 (story/truckTaken.ts): made the first time it is wanted. */
+  setFrost(k: number) {
+    if (k <= 0.001 && !this.frost) return;
+    if (!this.frost) {
+      // (no light of its own: the night's on it, a pale rime against the dark, not a glow)
+      const mat = new THREE.MeshBasicMaterial({ map: frostGlassTex(), color: 0x77808b, transparent: true, depthWrite: false, opacity: 0 });
+      this.frost = decal(this.cab, 1.74, 0.7, mat, [0, 0, 1, 1], 0, 1.452, -0.604, 0, 0.552);
+      this.frost.renderOrder = 4; noMerge(this.frost); this.frost.name = 'truck:frost';
+    }
+    const mat = this.frost.material as THREE.MeshBasicMaterial;
+    mat.opacity = THREE.MathUtils.clamp(k, 0, 1);
+    this.frost.visible = k > 0.001;
+  }
+  private frost: THREE.Mesh | null = null;
+  /** A white light from straight over the truck, 0..1 (story/abduction.ts: the light coming in the
+   *  truck): into the cab from above through the glass, on the dash, the wheel and the seat. The
+   *  cab's own flood (its sky slot), no light of the scene's. */
+  lightFromAbove(k: number) { this.above = THREE.MathUtils.clamp(k, 0, 1); this.placeFloods(); }
+  private above = 0;
+  /** How much frost is on the windshield now (the tests). */
+  get frosted() { return this.frost?.visible ? (this.frost.material as THREE.MeshBasicMaterial).opacity : 0; }
   /** -1 (full left) to 1 (full right). Turns the steering wheel. */
   setSteer(v: number) { this.wheelSpin.rotation.z = -THREE.MathUtils.clamp(v, -1, 1) * 2.4; }
   setHeadlights(on: boolean) { this.headOn = on; this.applyLights(); }
@@ -877,8 +912,9 @@ export class Truck {
     this.cabFlood.col[0].setRGB(0.6, 0.78, 0.68).multiplyScalar(D);
     // the sky through the glass: a faint cool light from above the cab
     const k = this.cabFlood.pos[1].set(0.1, 2.3, -0.2, 1).applyMatrix4(this.group.matrixWorld);
-    k.w = 0.35;
-    this.cabFlood.col[1].setRGB(0.32, 0.36, 0.46);
+    const up = this.above;
+    k.w = 0.35 + 1.6 * up;
+    this.cabFlood.col[1].setRGB(0.32 + 4.5 * up, 0.36 + 4.6 * up, 0.46 + 4.6 * up);
     if (!this.flood) return;
     const { set, slots } = this.flood;
     const on = this.headOn && this.level > 0.01;

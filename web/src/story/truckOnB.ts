@@ -138,6 +138,9 @@ export class TruckOnB {
   get racing() { return this.phase === 'four' || this.phase === 'stall' || this.phase === 'seven'; }
   /** The stall and its seven: the peak's own thing (the curve's rest counts from when it is over). */
   get peaking() { return this.phase === 'stall' || this.phase === 'seven'; }
+  /** A rung is due on the next pass over B as the night stands (story/truckTaken.ts: that pass is
+   *  the ladder's, and the time away in the truck does not come on it). */
+  due(s: TruckOnBIn) { return s.open && !this.off && !this.seven && (s.after6 || !this.four); }
 
   update(dt: number, s: TruckOnBIn) {
     const off = s.at ? Math.abs(offset('B', s.at[0], s.at[1])) : null;

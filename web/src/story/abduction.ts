@@ -54,6 +54,14 @@ import { facing } from './seen';
 // item 9 A; story/stationTaken.ts): a player not yet taken gets the warning on the way from the
 // hut, and there is no getting away from it there (force).
 //
+// In the truck (FORSLAG.md, 20 October, item 10; story/truckTaken.ts): over B at SARO's turn-off,
+// southbound, at the night's peak, the warning comes in the cab (beginCab). The same 47 seconds;
+// the truck has the beats the flashlight and the footsteps have on foot (the engine, the tyres, the
+// headlights), and it is the truck they have hold of: the engine catching, or the player out of it
+// and away from it, lets the warning pass (AbductIn.cabFree), and nothing else does. Taken, the
+// player wakes at the wheel 300 m further on, facing the wrong way (AbductDeps.cab puts the truck
+// there), and the one over them is on the bonnet, bent to the glass, black against SARO's lamps.
+//
 // At least 40 minutes of the night between two, at most three in a night; the director sees to
 // one before chapter five. The setting turns them off (on by default). main.ts decides when it
 // may run (chapters one to four, at night, no panel, no cinematic), the night's curve when (its
@@ -87,6 +95,32 @@ export interface AbductIn {
   /** The night's curve (story/curve.ts) is at its peak: the warning may begin. Before that the
    *  pressure on the line still rises, and waits at the top. Left out, it may. */
   may?: boolean;
+  /** The warning in the truck has let go of the player (story/truckTaken.ts: the engine caught, or
+   *  they are out of the truck and away from it): it passes. */
+  cabFree?: boolean;
+}
+/** The truck, as the time away in it needs it (main.ts, story/truckTaken.ts). */
+export interface AbductCab {
+  /** The player is at the wheel now (else out of the truck, on foot). */
+  inCab(): boolean;
+  /** The truck in the world: its group (its own metres, -z forward), or null. */
+  group(): THREE.Object3D | null;
+  /** The head's look in the cab (from straight ahead: yaw left, pitch up), set at once, and kept
+   *  within a box (null lets it go). */
+  look(yaw: number, pitch: number): void;
+  lookNow(): { yaw: number; pitch: number } | null;
+  lookBox(b: { yaw: [number, number]; pitch: [number, number] } | null): void;
+  /** Where the truck will be put down (world, on the ground), once the light has come. */
+  plan(): THREE.Vector3 | null;
+  /** The waking: the truck put down further on (inCab: the player at the wheel), and where it
+   *  stands now (world, on the ground). */
+  wake(lost: number, inCab: boolean): THREE.Vector3 | null;
+  /** The notes of it, after the time away's own (a: the clock it was taken, b: the clock now). */
+  woke(a: string, b: string, inCab: boolean): void;
+  /** What the waking says once the view has come up, at the wheel. */
+  backText(): string;
+  /** The light from above, into the cab through the glass (0..1). */
+  light(k: number): void;
 }
 export interface AbductDeps {
   audio: AudioSys;
@@ -101,6 +135,8 @@ export interface AbductDeps {
   ground: (x: number, z: number) => number;
   /** Ground a player can stand on (the area's zones, minus the boxes in the way). */
   standable: (x: number, z: number) => boolean;
+  /** The truck, for the time away in it (story/truckTaken.ts; main.ts). */
+  cab?: AbductCab;
   /** Off the asphalt, onto the verge, where the place has one (main.ts). */
   settle?: (p: THREE.Vector3) => void;
   flashlight: { have: boolean; on: boolean; flicker: (k: number) => void };
@@ -132,7 +168,10 @@ export interface AbductSave { count: number; last: number; spots: { scene: strin
   /** When the recording walked them (the night's clock): once, never again. */
   walked?: number;
   /** STATION 01's, after N. Vega's call (story/stationTaken.ts). */
-  station?: boolean }[];
+  station?: boolean;
+  /** In the truck, over B at SARO's turn-off (story/truckTaken.ts): nobody stands for it, and
+   *  nothing walks it (the recording is the truck itself, found further on). */
+  cab?: boolean }[];
   dishes?: { clock: number; ids: string[]; back: boolean };
   /** STATION 01 after N. Vega's call (story/stationTaken.ts): 'taken' once the warning there has
    *  begun, 'passed' when Missing time was turned off on the way (then never again tonight). */
@@ -140,6 +179,7 @@ export interface AbductSave { count: number; last: number; spots: { scene: strin
 
 type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+const UP = new THREE.Vector3(0, 1, 0);
 const MAX = 3, GAP = 40 * 60, MIN_LOST = 17 * 60;
 /** The warning's length, and its beats: the 47 seconds after the line went dead in the prologue
  *  (Prologue.startCountdown), the same seconds (story/dishesFollow.ts times the dishes by them). */
@@ -159,6 +199,20 @@ const OVER: { stars: boolean; up: number; at: { dist: number; side: number; pose
 ];
 /** The cold light of the sky along their edges out here. */
 const OVER_RIM = 0x232c3a;
+// Over you on waking in the truck (story/truckTaken.ts): at the wheel, slumped, the dash dark; the
+// blink; the head comes up to look out through the glass, and one of them is on the bonnet with its
+// head bent down to the windshield, black against SARO's lamps 300 m off (the truck faces north).
+// Where each stands, in the truck's own metres (x right, z forward negative; the bonnet's top is at
+// HOOD), nearer each time: the first at the front of the bonnet, the second up against the glass,
+// the third time two, the second one turned aside, with no dark first.
+const HOOD = 1.12, SLUMP = -0.78;
+const OVER_CAB: { stars: boolean; up: number; at: { x: number; z: number; pose: Pose }[] }[] = [
+  { stars: true, up: 0.3, at: [{ x: -0.3, z: -2.45, pose: 'bent' }] },
+  { stars: true, up: 0.26, at: [{ x: -0.48, z: -1.8, pose: 'bent' }] },
+  { stars: false, up: 0.28, at: [{ x: -0.55, z: -1.95, pose: 'bent' }, { x: 0.5, z: -2.5, pose: 'turned' }] },
+];
+/** The driver's eye in the cab, the truck's own metres (drive/Truck.ts driverEye). */
+const CAB_EYE = new THREE.Vector3(-0.42, 1.48, 0.2);
 /** Which way you lie is chosen from this many (the view along you), for them to stand against
  *  the sky; the picture it is judged by is this many pixels across (main.ts, probe). */
 const FACINGS = 8, PROBE_W = 112;
@@ -192,20 +246,24 @@ export class Abduction {
   private rings: THREE.Mesh[] = [];
   /** The one standing where each time away was (n is which, 1 to 3): held while it walks (story/
    *  recording.ts), and hidden after that until its place has been out of the view. */
-  private records: { g: THREE.Group; fig: Walker; scene: string; held: boolean; hide: boolean }[] = [];
+  private records: { g: THREE.Group; fig: Walker; scene: string; held: boolean; hide: boolean; none?: boolean }[] = [];
   /** The warning as it is lived (story/recording.ts): the player's way, a quarter second at a time. */
   private path: number[] = [];
   private pathT = 0;
   /** This warning cannot be got away from (story/stationTaken.ts): only Missing time turned off, or
    *  the night left, ends it. */
   forced = false;
+  /** This warning is the truck's (story/truckTaken.ts): only the truck letting go ends it. */
+  cab = false;
+  /** In the truck at the wheel when the light came (the waking is at the wheel too). */
+  private cabIn = false;
   private lying: THREE.Group;
   private hadLight = false;
   /** Over you on waking (the outlines are asked for when the warning starts), and where it is up
    *  to: the stars first, the blink, then there; and each one's head as seen from the eye, to know
    *  when the eyes have gone to it. */
   private overFigs: Silhouette[] = [new Silhouette('abduct:over', OVER_RIM, 'bent'), new Silhouette('abduct:over', OVER_RIM, 'turned')];
-  private over: { v: number; t: number; phase: 'stars' | 'blink' | 'there'; pitch: number; yaw: number; dirs: THREE.Vector3[]; off: number[]; heads: THREE.Vector3[] } | null = null;
+  private over: { v: number; t: number; phase: 'stars' | 'blink' | 'there'; pitch: number; yaw: number; dirs: THREE.Vector3[]; off: number[]; heads: THREE.Vector3[]; cab?: boolean } | null = null;
   /** Yourself as the eye has you, looking down along you on your back (only while one is there). */
   private self = selfFigure();
   private probeCam = new THREE.PerspectiveCamera();
@@ -281,6 +339,7 @@ export class Abduction {
     this.path = []; this.pathT = 0; this.sample();
     this.hadLight = this.d.flashlight.on;
     this.take.copy(this.d.player.pos);
+    this.cab = false; this.cabIn = false;
     void loadArtSome(ABDUCT_ART);
     for (const f of this.overFigs) f.wake();
     this.d.hush(this.warnLen + 12, 0);
@@ -288,6 +347,18 @@ export class Abduction {
   }
   /** Start the warning that cannot be got away from (STATION 01 after N. Vega's call). */
   force(s: AbductIn) { this.begin(s); this.forced = true; }
+  /** Start the warning in the truck (story/truckTaken.ts): the player at the wheel. */
+  beginCab(s: AbductIn) {
+    this.begin(s); this.cab = true; this.path = [];
+    const g = this.d.cab?.group();
+    if (g) this.take.set(g.position.x, 0, g.position.z);
+  }
+  /** Whether the time away could begin now as far as it goes itself, wherever the player is: the
+   *  setting, at most three, 40 minutes since the last, and room for the lost time before the
+   *  story's next fixed point (story/truckTaken.ts asks this for the truck). */
+  mayBegin(s: AbductIn) {
+    return this.stage === 'calm' && s.enabled && this.data.count < MAX && s.clock - this.data.last >= GAP && s.nextFixed - s.clock >= MIN_LOST + 60;
+  }
   /** The player where they are now, on the way the recording will walk (a quarter second apart). */
   private sample() {
     const p = this.d.player;
@@ -296,9 +367,11 @@ export class Abduction {
   private warning(_dt: number, s: AbductIn) {
     const t = this.st, w = this.warnLen, a = this.d.audio;
     // got away: off the line, inside, among people, before the light (not from the one that is forced:
-    // only Missing time turned off, or the night left, ends that)
-    if (!s.ok || !s.enabled || (!s.line && !this.forced)) { this.passOver(); return; }
-    while (this.pathT + PATH_DT <= Math.min(t, w) + 1e-6) { this.pathT += PATH_DT; this.sample(); }
+    // only Missing time turned off, or the night left, ends that; nor from the truck's, which only
+    // the truck letting go ends)
+    if (this.cab) { if (!s.enabled || s.cabFree) { this.passOver(); return; } }
+    else if (!s.ok || !s.enabled || (!s.line && !this.forced)) { this.passOver(); return; }
+    if (!this.cab) while (this.pathT + PATH_DT <= Math.min(t, w) + 1e-6) { this.pathT += PATH_DT; this.sample(); }
     // :16, the beep of 02:13 (the same low tone, and a small one over it that a phone's speaker
     // plays), and the footsteps are gone
     if (t >= BEAT.steps && this.beat < 1) {
@@ -320,10 +393,20 @@ export class Abduction {
       this.d.flashlight.flicker(0);
     }
     if (this.beat >= 3 && this.d.flashlight.on) this.d.flashlight.on = false;
-    if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; this.backAt = this.further(this.take, s.along); }
+    if (t >= w) {
+      this.stage = 'light'; this.st = 0; this.from = s.clock;
+      if (this.cab) {
+        // (in the truck: where the truck is; out of it, where the player is, and they wake by the
+        // truck where it is put down)
+        this.cabIn = !!this.d.cab?.inCab();
+        const g = this.d.cab?.group();
+        if (this.cabIn && g) this.take.set(g.position.x, 0, g.position.z); else this.take.copy(this.d.player.pos);
+        this.backAt = this.d.cab?.plan() ?? null;
+      } else { this.take.copy(this.d.player.pos); this.backAt = this.further(this.take, s.along); }
+    }
   }
   private passOver() {
-    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15); this.beat = 0; this.forced = false; this.path = [];
+    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15); this.beat = 0; this.forced = false; this.path = []; this.cab = false;
     this.toneOff(); this.d.flashlight.flicker(0); this.d.hush(0.1, 1);
     this.bed?.stop(1); this.bed = null;   // got away: it ebbs over a few seconds
     if (this.hadLight && this.d.flashlight.have) this.d.flashlight.on = true;
@@ -334,7 +417,10 @@ export class Abduction {
     const k = Math.min(1, this.st / 3);
     this.d.overlay.style.setProperty('--abduct', String(k));
     this.d.overlay.classList.add('abduct-light');
+    // (at the wheel it comes into the cab from above, through the glass, before it is everything)
+    if (this.cab && this.cabIn) this.d.cab?.light(Math.min(1, this.st / 1.6));
     if (this.st >= 3) {
+      if (this.cab && this.cabIn) this.d.cab?.light(0);
       this.stage = 'taken'; this.st = 0;
       this.toneOff(); this.bed?.stop(); this.bed = null;
       this.d.glitch(1);
@@ -364,36 +450,54 @@ export class Abduction {
     const p = this.d.player, d = this.d;
     d.skipClock(this.lost);
     const t1 = this.from + this.lost;
-    // further along the line, on ground that can be stood on
-    const back = this.backAt ?? this.further(this.take, s.along);
+    // the truck's (story/truckTaken.ts): the truck put down further on, the player at its wheel, or
+    // (out of it at the light) on their back on the verge beside it
+    const cab = this.cab, inCab = cab && this.cabIn;
+    const truckAt = cab ? d.cab?.wake(this.lost, inCab) ?? null : null;
+    if (cab && !inCab && truckAt) {
+      const g = d.cab?.group(), side = new THREE.Vector3(-1, 0, 0).applyAxisAngle(UP, g?.rotation.y ?? 0);
+      this.backAt = truckAt.clone().addScaledVector(side, 3.4);
+      if (!d.standable(this.backAt.x, this.backAt.z)) this.backAt = truckAt.clone().addScaledVector(side, -3.4);
+    }
+    let back: THREE.Vector3;
+    if (inCab && truckAt) back = truckAt.clone();
+    else {
+      // further along the line, on ground that can be stood on
+      back = this.backAt ?? this.further(this.take, s.along);
+      p.place(back.x, back.z, p.yaw + rnd(-2, 2));
+      p.pitch = 1.3; p.eye = 0.35;
+      p.update(0, 0, 0, false);   // the view is there on the first frame after the black, not the one before
+    }
     this.backAt = null;
-    p.place(back.x, back.z, p.yaw + rnd(-2, 2));
-    p.pitch = 1.3; p.eye = 0.35;
-    p.update(0, 0, 0, false);   // the view is there on the first frame after the black, not the one before
     back.y = d.ground(back.x, back.z); this.take.y = d.ground(this.take.x, this.take.z);
-    this.ring(back);
+    // (round the truck it is a wider ring, the truck in the middle of it, out over the asphalt)
+    if (inCab && truckAt) this.ring(back, 2.05); else this.ring(back);
+    if (cab && !inCab && truckAt) this.ring(truckAt.clone().setY(d.ground(truckAt.x, truckAt.z)), 2.05);
     d.flashlight.flicker(0);
     d.audio.suspend(false);
     this.canvas.style.display = 'none';
     this.silent = false;
     this.data.count++; this.data.last = t1;
     const spot: AbductSave['spots'][number] = { scene: this.sceneId, take: [this.take.x, this.take.y, this.take.z], back: [back.x, back.y, back.z], clock: this.from };
-    if (this.path.length >= 6) spot.path = this.path;
+    if (this.path.length >= 6 && !cab) spot.path = this.path;
     if (this.forced) spot.station = true;
-    this.path = []; this.forced = false;
+    if (cab) spot.cab = true;
+    this.path = []; this.forced = false; this.cab = false;
     this.data.spots.push(spot);
-    this.record(this.take, this.sceneId);
-    d.keyStall();
+    this.record(this.take, this.sceneId, cab);
+    if (!inCab) d.keyStall();
     // the traces
     const a = clockText(this.from, false), b = clockText(t1, false);
     d.note(`${a} to ${b}. Nothing.`);
     d.note(`${b}. A line in the notebook in my own hand. I do not remember writing it: ${Math.random() < 0.5 ? '026' : clockText(s.nextFixed, false)}.`);
     d.note(`${b}. A nosebleed. It had stopped by itself.`);
+    if (cab) d.cab?.woke(a, b, inCab);
     if (d.camera()) {
-      const pic = this.fromAbove(back, true) ?? painted('abductAbove', 0.5, 21, 0.9);
+      const pic = (inCab ? this.fromAbove(back, false, true) : this.fromAbove(back, true)) ?? painted(inCab ? 'abductTruck' : 'abductAbove', 0.5, 21, 0.9);
       if (pic) {
         spot.doc = { id: `away${this.data.count}`, kind: 'photo', image: pic.toDataURL('image/jpeg', 0.8), page: '', title: `PHOTO / Not exposed by me (${a})`,
-          transcript: `One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: someone lying on their back in the grass in a SARO jacket, the reflective band across the chest. Me.` };
+          transcript: inCab ? `One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: the truck standing in the road with every light out, white in a light from straight over it. Someone at the wheel. Me.`
+            : `One more exposure on the roll than there should be, with the counter at ${b}. Taken from above, from higher than anyone could stand: someone lying on their back in the grass in a SARO jacket, the reflective band across the chest. Me.` };
         d.file(spot.doc);
       }
     }
@@ -402,9 +506,54 @@ export class Abduction {
     // above, so it is in none of them. Until it is not there, no sound at all and no light; the case
     // is kept from then (a save has a picture of the frame).
     const v = Math.min(OVER.length, this.data.count) - 1;
-    if (s.enabled && this.overFigs[0].painted) { spot.over = v + 1; this.overStart(v); }
-    else { if (d.flashlight.have) d.flashlight.on = true; d.hush(6, 0.2); d.save(); }
+    this.awakeCab = inCab;
+    if (s.enabled && this.overFigs[0].painted) { spot.over = v + 1; if (inCab) this.overStartCab(v); else this.overStart(v); }
+    else {
+      if (d.flashlight.have && !inCab) d.flashlight.on = true;
+      if (inCab) d.cab?.look(0, -0.6);
+      d.hush(6, 0.2); d.save();
+    }
     this.stage = 'back'; this.st = 0;
+  }
+  /** The waking is at the wheel (the time away in the truck), until it is over. */
+  awakeCab = false;
+
+  // ---------- over you, in the truck ----------
+  /** At the wheel, slumped over it and dark; then the head comes up and one of them is on the bonnet. */
+  private overStartCab(v: number) {
+    const c = this.d.cab!;
+    OVER_CAB[v].at.forEach((a, i) => this.overFigs[i].pose(a.pose));
+    c.look(0, SLUMP);
+    this.over = { v, t: 0, phase: 'stars', pitch: SLUMP, yaw: 0, dirs: [], off: [], heads: [], cab: true };
+    this.overLooked = false;
+    this.d.hush(60, 0, 0.05);
+    document.documentElement.classList.add('abduct-held');
+    if (!OVER_CAB[v].stars) this.overRevealCab();
+  }
+  private overRevealCab() {
+    const o = this.over!, c = this.d.cab!, g = c.group(), spec = OVER_CAB[o.v], cam = this.d.player.camera;
+    if (!g) { this.overGone(); return; }
+    g.updateMatrixWorld(true);
+    // the head raised to look out through the glass, a little towards the nearest of them, just so
+    // far that its head is at `up` of the half height over the middle of the view, on any screen
+    const ty = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
+    const a0 = spec.at[0], hy = HOOD + this.overFigs[0].headY;
+    const dx = a0.x - CAB_EYE.x, dz = a0.z - CAB_EYE.z, dist = Math.hypot(dx, dz);
+    const yaw = 0.55 * Math.atan2(-dx, -dz), pitch = Math.atan2(hy - CAB_EYE.y, dist) - Math.atan(spec.up * ty);
+    c.look(yaw, pitch);
+    c.lookBox({ yaw: [yaw - 0.4, yaw + 0.4], pitch: [pitch - 0.3, pitch + 0.5] });
+    o.pitch = pitch; o.yaw = yaw; o.phase = 'there'; o.t = 0;
+    const eye = g.localToWorld(CAB_EYE.clone());
+    const q = g.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ')));
+    const look = new THREE.Vector3(0, 0, -1).applyQuaternion(q);
+    spec.at.forEach((a, i) => {
+      const f = this.overFigs[i], feet = g.localToWorld(new THREE.Vector3(a.x, HOOD, a.z));
+      f.group.position.copy(feet);
+      f.group.visible = true; this.d.scene.add(f.group);
+      f.group.traverse((x) => { x.renderOrder = 2; });
+      const at = feet.clone().setY(feet.y + f.headY), head = at.clone().sub(eye).normalize();
+      o.heads.push(at); o.dirs.push(head); o.off.push(look.angleTo(head));
+    });
   }
 
   // ---------- over you ----------
@@ -535,19 +684,22 @@ export class Abduction {
       return;
     }
     if (o.phase === 'blink') {
-      if (o.t >= BLINK_T) { this.overReveal(); this.canvas.style.display = 'none'; }
+      if (o.t >= BLINK_T) { if (o.cab) this.overRevealCab(); else this.overReveal(); this.canvas.style.display = 'none'; }
       return;
     }
-    const look = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
+    // (in the cab the eyes are the camera's, turned by the drive's look and the truck under it)
+    const look = o.cab ? p.camera.getWorldDirection(new THREE.Vector3()) : new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
     const looked = o.dirs.some((d, i) => look.angleTo(d) < o.off[i] - 0.05);
     if (looked) this.overLooked = true;
     if (o.t >= OVER_T || looked) this.overGone();
   }
   private overGone() {
+    const cab = !!this.over?.cab;
     this.overDrop();
-    // the crickets, all at once, and the rest of the night after them; the light, on
+    // the crickets, all at once, and the rest of the night after them; the light, on (in the cab:
+    // the instruments, story/truckTaken.ts)
     this.d.hush(5, 0.6, 0.06, 1.8);
-    if (this.d.flashlight.have) this.d.flashlight.on = true;
+    if (this.d.flashlight.have && !cab) this.d.flashlight.on = true;
     this.d.save();
     this.st = 0;
   }
@@ -556,8 +708,12 @@ export class Abduction {
     this.self.visible = false; this.self.removeFromParent();
     document.documentElement.classList.remove('abduct-held');
     if (this.over?.phase === 'blink') this.canvas.style.display = 'none';
+    if (this.over?.cab) this.d.cab?.lookBox(null);
     this.over = null;
   }
+  /** The look while held at the wheel (main.ts gives it to the drive, which keeps it in the box):
+   *  only while one of them is there, and stiffly. */
+  cabGaze(dx: number, dy: number) { return this.over?.cab && this.over.phase === 'there' ? { x: dx * 0.45, y: dy * 0.45 } : { x: 0, y: 0 }; }
   /** The look while you are held (main.ts): only while one of them is there, and stiffly; towards
    *  it is enough. */
   gaze(dx: number, dy: number) {
@@ -580,11 +736,20 @@ export class Abduction {
     return true;
   }
   private back(dt: number) {
+    if (this.awakeCab) { this.backCab(dt); return; }
     const p = this.d.player, k = Math.min(1, this.st / 6);
     p.eye = 0.35 + (1.62 - 0.35) * THREE.MathUtils.smoothstep(k, 0.3, 1);
     p.pitch += (-0.06 - p.pitch) * Math.min(1, dt * (k > 0.4 ? 1.4 : 0.2));
     if (this.st > 2.5 && this.st - dt <= 2.5) this.d.toast('On your back in the grass. Stars. The flashlight is lying beside you, on. The grass round you is flat, and white with frost.', 6);
     if (k >= 1) { p.eye = 1.62; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); }
+  }
+  /** At the wheel: the head comes down to the dash, where the odometer is, and the night goes on. */
+  private backCab(dt: number) {
+    const c = this.d.cab, now = c?.lookNow();
+    // (down to the instruments, where the odometer is under the speedometer)
+    if (now) c!.look(now.yaw + (0 - now.yaw) * Math.min(1, dt * 1.2), now.pitch + (-0.6 - now.pitch) * Math.min(1, dt * 1.2));
+    if (this.st > 1.6 && this.st - dt <= 1.6 && c) this.d.toast(c.backText(), 6.5);
+    if (this.st >= 4) { this.awakeCab = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); }
   }
   private further(from: THREE.Vector3, along: THREE.Vector3) {
     const dir = along.clone().setY(0).normalize();
@@ -597,17 +762,17 @@ export class Abduction {
   }
 
   // ---------- what is left ----------
-  private ring(at: THREE.Vector3) {
+  private ring(at: THREE.Vector3, scale = 1) {
     // (patchy, soft at both edges: seen from the grass, lying in it, as well as standing)
-    const geo = new THREE.RingGeometry(1.3, 2.7, 40, 1); geo.rotateX(-Math.PI / 2);
+    const geo = new THREE.RingGeometry(1.3 * scale, 2.7 * scale, 40, 1); geo.rotateX(-Math.PI / 2);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xc8d4dc, map: frost(), transparent: true, opacity: 0.32, depthWrite: false }));
     m.position.set(at.x, at.y + 0.03, at.z); m.name = 'abduct:ring';
     this.d.scene.add(m); this.rings.push(m);
   }
-  private record(at: THREE.Vector3, scene: string) {
+  private record(at: THREE.Vector3, scene: string, none = false) {
     const fig = new Walker('abduct:record'), g = fig.group;
     g.position.copy(at); g.rotation.y = rnd(0, Math.PI * 2);
-    g.visible = false; this.d.scene.add(g); this.records.push({ g, fig, scene, held: false, hide: false });
+    g.visible = false; this.d.scene.add(g); this.records.push({ g, fig, scene, held: false, hide: false, none });
     g.userData.home = { x: at.x, y: at.y, z: at.z, yaw: g.rotation.y };
   }
   /** The recordings standing where the player was taken that are shown from here (story/seen.ts):
@@ -618,7 +783,7 @@ export class Abduction {
   private recordsStep() {
     const c = this.d.player.pos;
     for (const r of this.records) {
-      if (r.held) continue;
+      if (r.held || r.none) continue;
       const far = r.scene === this.sceneId && Math.hypot(r.g.position.x - c.x, r.g.position.z - c.z) > 45;
       // (back where it stands after it walked: only once that place has been out of the view)
       if (r.hide && (!far || !facing(this.d.player.camera, this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2), 1000, 50))) r.hide = false;
@@ -631,7 +796,7 @@ export class Abduction {
   recordings(): Rec[] {
     return this.records.flatMap((r, i) => {
       const sp = this.data.spots[i];
-      return sp ? [{ n: i + 1, scene: r.scene, take: new THREE.Vector3(...sp.take), path: sp.path, walked: sp.walked, clock: sp.clock, fig: r.fig,
+      return sp && !sp.cab ? [{ n: i + 1, scene: r.scene, take: new THREE.Vector3(...sp.take), path: sp.path, walked: sp.walked, clock: sp.clock, fig: r.fig,
         markWalked: (c: number | undefined) => { if (c === undefined) delete sp.walked; else sp.walked = c; } }] : [];
     });
   }
@@ -648,14 +813,15 @@ export class Abduction {
     }
   }
   /** Yourself lying in the grass, from above (the frame and the extra exposure). */
-  private fromAbove(at: THREE.Vector3, me: boolean) {
+  private fromAbove(at: THREE.Vector3, me: boolean, truck = false) {
     const y = this.d.ground(at.x, at.z);
     if (me) { this.lying.position.set(at.x, y + 0.12, at.z); this.lying.rotation.y = rnd(0, Math.PI * 2); this.lying.visible = true; }
     const cam = new THREE.PerspectiveCamera(40, 1.6, 0.5, 400);
-    cam.position.set(at.x + 0.3, y + (me ? 7.5 : 5.5), at.z + 0.2); cam.lookAt(at.x, y, at.z);
+    // (the truck: higher, the whole of it and the ring round it in the frame)
+    cam.position.set(at.x + 0.3, y + (truck ? 13 : me ? 7.5 : 5.5), at.z + 0.2); cam.lookAt(at.x, y, at.z);
     cam.updateMatrixWorld(true);
     // their light, from straight above: the only time the ground here is seen like this
-    const L = new THREE.PointLight(0xeef4ff, 140, 30, 1.6); L.position.set(at.x, y + 9, at.z);
+    const L = new THREE.PointLight(0xeef4ff, truck ? 320 : 140, truck ? 40 : 30, 1.6); L.position.set(at.x, y + (truck ? 14 : 9), at.z);
     this.d.scene.add(L); L.updateMatrixWorld(true);
     const c = this.d.shoot(cam);
     L.removeFromParent(); L.dispose();
@@ -667,10 +833,13 @@ export class Abduction {
     // drawn here and the grass from above with nobody in it
     const light = painted('abductLight', 0.25, 3);
     const out: HTMLCanvasElement[] = [light ?? frameLight(3)];
-    if (!light) { const grass = this.fromAbove(this.d.player.pos, false); if (grass) out.push(grass); }
+    // (at the wheel: the truck, not where the player's body was left when they got in)
+    const truck = this.cab && this.cabIn ? this.d.cab?.group() : null;
+    if (!light) { const grass = this.fromAbove(truck?.position ?? this.d.player.pos, false); if (grass) out.push(grass); }
     out.push(frameHand(11, artLoaded('abductLight') ? artImage('abductLight') : null));
     for (const [id, y, seed] of [['abductTruck', 0.5, 13], ['abductFigures', 0.45, 17]] as const) { const f = painted(id, y, seed); if (f) out.push(f); }
-    const me = this.fromAbove(this.d.player.pos, true) ?? painted('abductAbove', 0.5, 19, 0.9);
+    // (at the wheel: the truck from above, with the player in it)
+    const me = (truck ? this.fromAbove(truck.position, false, true) : this.fromAbove(this.d.player.pos, true)) ?? painted('abductAbove', 0.5, 19, 0.9);
     if (me) out.push(me);
     return out;
   }
@@ -699,8 +868,8 @@ export class Abduction {
     this.clear();
     this.data = v ? { count: v.count, last: v.last, spots: [...v.spots], ...(v.dishes ? { dishes: { ...v.dishes, ids: [...v.dishes.ids] } } : {}), ...(v.station ? { station: v.station } : {}) } : { count: 0, last: -1e9, spots: [] };
     for (const sp of this.data.spots) {
-      this.ring(new THREE.Vector3(...sp.back));
-      this.record(new THREE.Vector3(...sp.take), sp.scene);
+      this.ring(new THREE.Vector3(...sp.back), sp.cab && Math.hypot(sp.back[0] - sp.take[0], sp.back[2] - sp.take[2]) > 100 ? 2.05 : 1);
+      this.record(new THREE.Vector3(...sp.take), sp.scene, !!sp.cab);
     }
   }
   /** Out to the title in the middle of it (main.ts, toTitle): nothing of the warning or the taking is
@@ -716,8 +885,9 @@ export class Abduction {
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }
   private clear() {
     this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.beat = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); this.backAt = null;
-    this.forced = false; this.path = [];
+    this.forced = false; this.path = []; this.cab = false; this.cabIn = false; this.awakeCab = false;
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
+    this.d.cab?.light(0);
     this.overDrop();
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
     for (const r of this.records) r.g.removeFromParent();
