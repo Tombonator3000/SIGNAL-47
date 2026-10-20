@@ -88,6 +88,10 @@ export class Ambience {
   private t = { gust: rnd(15, 40), life: rnd(20, 50), poorwill: rnd(60, 180), coyote: rnd(150, 420), train: rnd(240, 900), truck: rnd(120, 400), birds: rnd(10, 40), mood: rnd(60, 150), bugs: 0 };
   private mood = 0.7;
   private space: Space = 'room';
+  /** How far the night has thinned out, 0..1 (story/curve.ts, its build): the crickets drop out one
+   *  by one and the far-off life comes less often, as if something were listening. Back at 0 they
+   *  come back the same way. */
+  thin = 0;
 
   constructor(private ctx: AudioContext, dest: AudioNode, private buf: Record<string, AudioBuffer>, private noise: AudioBuffer, private brown: AudioBuffer) {
     this.out = ctx.createGain(); this.out.gain.value = 0;
@@ -160,7 +164,7 @@ export class Ambience {
     this.wind.colour.step(dt, now);
     if ((t.gust -= dt) <= 0) { t.gust = rnd(14, 55) / (0.4 + m); this.gust(); }
     // ---------- crickets: fewer and slower as it cools, gone by dawn ----------
-    const active = THREE.MathUtils.clamp((temp - 6.3) / 5, 0, 1) * (1 - dawn);
+    const active = THREE.MathUtils.clamp((temp - 6.3) / 5, 0, 1) * (1 - dawn) * (1 - THREE.MathUtils.clamp(this.thin, 0, 1));
     const rate = Math.max(0.2, (temp - 4) / 7.5);
     this.bugRec?.level.step(dt, now, active * (0.5 + 0.5 * m));
     if ((t.bugs -= dt) <= 0) {
@@ -176,7 +180,7 @@ export class Ambience {
     for (const c of this.crickets) c.schedule(rate);
     // ---------- far off ----------
     if (this.space === 'lab') return;                                // the engine covers it
-    const busy = 0.3 + m;
+    const busy = (0.3 + m) * (1 - 0.7 * THREE.MathUtils.clamp(this.thin, 0, 1));
     if ((t.life -= dt) <= 0) {
       t.life = rnd(25, 70) / busy;
       const r = Math.random();

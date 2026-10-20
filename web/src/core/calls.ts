@@ -6,7 +6,9 @@ import type { AudioSys } from './Audio';
 // flashlight on, something sounds out in the dark now and then: first the crickets and the wind
 // go quiet, the flashlight stutters, and then a call, far off (35 to 110 m) and never in front
 // where the beam goes, but behind or off to one side. Nothing comes closer and nothing answers
-// (R5, HENDELSER.md). The more the light is used, the sooner the next one comes.
+// (R5, HENDELSER.md). The more the light is used, the sooner the next one comes. They are one of
+// the signs of the night's curve (story/curve.ts): in its build and its peak, one or two in a
+// cycle, and never in the quiet after a peak.
 //
 // The sounds are Freesound originals from the credits of They Are Here, CC0 and CC BY
 // (THIRD_PARTY_NOTICES.md): a voice with clicks in it (resourcemoon), something on a radio
@@ -26,6 +28,10 @@ export interface CallsWhen {
   flicker: (k: number) => void;
   /** The night goes quiet for a few seconds (Ambience.hush). */
   hush: (secs: number) => void;
+  /** The night's curve lets one come now (story/curve.ts); left out, it may. */
+  may?: boolean;
+  /** How much sooner the next comes than its own pace (the curve's build: 1 and up). */
+  pace?: number;
 }
 
 export class NightCalls {
@@ -38,11 +44,13 @@ export class NightCalls {
   private lead = 0;              // seconds from the hush to the call
   private stutter = 0;           // the flashlight's stutter, fading after the call
   private before: string | null = null;
+  /** Asked for now (the developer menu, tests): the curve is not asked. */
+  private forced = false;
 
   constructor(private audio: AudioSys) {}
 
   /** One now (the developer menu, tests): the hush, then the call in a moment. */
-  now() { this.next = 0; }
+  now() { this.next = 0; this.forced = true; }
 
   update(dt: number, w: CallsWhen) {
     // the stutter fades out after a call
@@ -54,8 +62,11 @@ export class NightCalls {
       if (this.lead <= 0) this.call(w.cam);
       return;
     }
-    this.next -= dt;
+    // (the night's curve says when: in its build and its peak, never in the quiet after)
+    if (w.may === false && !this.forced) return;
+    this.next -= dt * (w.pace ?? 1);
     if (this.next > 0) return;
+    this.forced = false;
     // first the quiet: the crickets and the wind drop away, the light starts to stutter
     this.lead = 1.8;
     w.hush(10);

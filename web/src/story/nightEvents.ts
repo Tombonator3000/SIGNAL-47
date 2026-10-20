@@ -7,7 +7,9 @@ import { clockText } from './time';
 // that can happen in the game; more alive, more frightening"). The town has its own director
 // (story/townEvents.ts); this one is for everywhere else. One thing at a time, a few minutes
 // apart, at night only, and each in the notebook in the player's own words. Nothing chases and
-// nothing answers (HENDELSER.md, the rules).
+// nothing answers (HENDELSER.md, the rules). The night's curve (story/curve.ts) says when: the
+// small ones in the second half of its build, the 47-second ones (the bulletin, the silence) as a
+// peak, one extra in a chapter, and none in the quiet after a peak.
 //
 //   steps     on foot outside: the player stops, and two or three steps go on behind them, on
 //             the same ground, and stop. Up to three a night.
@@ -51,6 +53,12 @@ export interface NightIn {
   saro: { phone: THREE.Vector3; door: THREE.Vector3; doorOpen: boolean } | null;
   /** The silence of core/roadside.ts can come now (not had in this case). */
   silenceFree: boolean;
+  /** The night's curve (story/curve.ts) lets one start now: the events, and the 47-second ones
+   *  (the bulletin, the silence: one extra in a chapter). Left out, they may. */
+  may?: boolean;
+  mayLong?: boolean;
+  /** How much sooner the next comes than its own pace (the curve's build). */
+  pace?: number;
 }
 
 export interface NightDeps {
@@ -86,6 +94,10 @@ export class NightEvents {
   constructor(private d: NightDeps) {}
   /** Something of this director's is going on (the town's director waits for it). */
   get busy() { return !!this.pending || this.stepsLeft.length > 0 || this.d.silent(); }
+  /** Something is playing out now (the steps, the knocks, the phone, the bulletin, the silence);
+   *  not the radio left on or the door left open, which wait to be come back to (story/curve.ts:
+   *  one at a time). */
+  get running() { return (!!this.pending && this.pending.id !== 'radio' && this.pending.id !== 'door') || this.stepsLeft.length > 0 || this.d.silent(); }
 
   private count(id: string) { let n = 0; for (const k of this.d.seen) if (k.startsWith(`ne:${id}`)) n++; return n; }
   private done(id: NightEventId, clock: number) {
@@ -143,11 +155,12 @@ export class NightEvents {
       }
       return;
     }
-    if (!s.ok) return;
-    this.wait -= dt;
+    if (!s.ok || (s.may === false && s.mayLong === false)) return;
+    this.wait -= dt * (s.pace ?? 1);
     if (this.wait > 0) return;
     const all: NightEventId[] = ['steps', 'knocks', 'radio', 'bulletin', 'phone', 'door', 'silence'];
-    const can = all.filter((id) => this.can(id, s));
+    // (the night's curve: the 47-second ones are a peak, the rest come in its build)
+    const can = all.filter((id) => this.can(id, s) && ((id === 'bulletin' || id === 'silence') ? s.mayLong !== false : s.may !== false));
     if (!can.length) return;
     this.start(can[Math.floor(Math.random() * can.length)], s);
   }

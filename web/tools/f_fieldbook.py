@@ -110,7 +110,8 @@ async def main():
         fb = lambda: ev("T.fb()")
         has = lambda k: ev(f"T.has('{k}')")
         async def quiet(): await ev("S47.nightEvents['wait'] = 1e9")   # the night's other events out of the way
-        await ev("S47.hold = true")
+        # (the night's curve stands aside: the knocks come on the book's own terms here; story/curve.ts)
+        await ev("S47.hold = true; S47.curve.free = true")
         await quiet()
 
         # ---------- not before chapter three ----------

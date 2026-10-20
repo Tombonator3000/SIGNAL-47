@@ -5,8 +5,8 @@ import type { LineId } from './lines';
 // measured what happened and was seen). Every scare, event, glimpse, time away and call is written
 // here when it happens: the game's clock, where the player was, which line it was on (story/lines.ts)
 // and whether the player was looking. Kept with the case (main.ts, GameState.seen), shown on the
-// ?debug overlay, S47.seen for the tests. It changes nothing in the night; the next step's pacing
-// reads it.
+// ?debug overlay, S47.seen for the tests. It changes nothing in the night by itself; the night's
+// one curve (story/curve.ts) reads it: what the player actually got is what counts as a peak.
 //
 // Looking: the camera faced the thing, within an angle of the middle of the view, on the screen
 // (a phone held upright sees less to the sides) and within a range, at any moment while it was
@@ -59,10 +59,13 @@ export class SeenLog {
   static MAX = 300;
   /** The night so far, oldest first (the same array for the whole game: S47.seen). */
   readonly entries: SeenEntry[] = [];
+  /** How many have been written since the log was last put back (story/curve.ts reads the new ones). */
+  added = 0;
   private watches: { e: SeenEntry; w: SeenWatch; t: number }[] = [];
 
   add(e: SeenEntry, w?: SeenWatch | null) {
     this.entries.push(e);
+    this.added++;
     if (this.entries.length > SeenLog.MAX) this.entries.splice(0, this.entries.length - SeenLog.MAX);
     if (w) this.watches.push({ e, w, t: 0 });
     return e;
@@ -90,6 +93,7 @@ export class SeenLog {
   restore(list?: SeenEntry[] | null) {
     this.watches = [];
     this.entries.length = 0;
+    this.added = 0;
     // (a save is the game's own, but one that is not what this expects opens with an empty log)
     if (!Array.isArray(list)) return;
     for (const e of list.slice(-SeenLog.MAX)) {
@@ -98,6 +102,7 @@ export class SeenLog {
       if (Array.isArray(e.at) && e.at.length === 2) c.at = [e.at[0], e.at[1]]; else delete c.at;
       this.entries.push(c);
     }
+    this.added = this.entries.length;
   }
   /** What is kept with the case. */
   get data(): SeenEntry[] { return this.entries.map((e) => ({ ...e })); }

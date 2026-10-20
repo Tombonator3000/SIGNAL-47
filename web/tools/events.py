@@ -43,7 +43,8 @@ async def main():
         async def clock(c): await ev(f"S47.game.clock = {c}")
         async def face(x, y, z):
             await ev(f"(()=>{{const p=S47.player; p.yaw=Math.atan2(-({x}-p.pos.x), -({z}-p.pos.z)); p.pitch=Math.atan2({y}-(p.floorY+p.eye), Math.hypot({x}-p.pos.x,{z}-p.pos.z)); S47.tick(0.05);}})()")
-        await ev("S47.hold = true; S47.jump('chapter1'); S47.tick(1.0)")
+        # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
+        await ev("S47.hold = true; S47.curve.free = true; S47.jump('chapter1'); S47.tick(1.0)")
         # the night's own events (story/nightEvents.ts) come at random after a minute and a half or
         # more: none in this test, or one run in three the 47 s of silence held the town's back
         # (the cutout not written down, and the rest after it)
@@ -161,7 +162,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)")
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)")
         for _ in range(60):
             if await ev("!!S47.world.town"): break
             await pg.wait_for_timeout(200)

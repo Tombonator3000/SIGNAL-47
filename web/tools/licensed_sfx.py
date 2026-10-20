@@ -73,7 +73,8 @@ async def main():
         async def tick(s, n=1):
             for _ in range(n): await ev(f"S47.tick({s})")
         await ev("S47.jump('chapter1')"); await pg.wait_for_timeout(500)
-        await ev("S47.hold = true; S47.game.d.ui.close(); S47.tick(1.0); S47.nightEvents['wait'] = 1e9")
+        # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
+        await ev("S47.hold = true; S47.curve.free = true; S47.game.d.ui.close(); S47.tick(1.0); S47.nightEvents['wait'] = 1e9")
         await ev(HELPERS)
 
         # ---------- which are here, and do they decode ----------

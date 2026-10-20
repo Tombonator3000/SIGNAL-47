@@ -44,6 +44,10 @@ export interface GlimpsesIn {
   truck: { pos: THREE.Vector3; dir: THREE.Vector3 } | null;
   flashlight: boolean;
   zoom: number;
+  /** The night's curve lets one stand now (story/curve.ts: its peak); left out, it may. */
+  may?: boolean;
+  /** How much sooner one comes than its own pace (the curve's peak). */
+  pace?: number;
 }
 
 export class Glimpses {
@@ -78,14 +82,16 @@ export class Glimpses {
     this.t += dt;
     if (this.up) {
       const sg = this.sight(s.cam, this.fig.position);
-      if (this.t > 40 || !s.ok || sg.off < 25 || sg.dist < 40 || s.zoom > 0.25 || (s.flashlight && sg.off < 40 && sg.dist < 70)) this.hide();
+      // (the peak over, and it stood there unseen: it goes as soon as it is out of the view)
+      if (this.t > 40 || !s.ok || sg.off < 25 || sg.dist < 40 || s.zoom > 0.25 || (s.flashlight && sg.off < 40 && sg.dist < 70) || (s.may === false && !sg.inView)) this.hide();
       return;
     }
-    if (!s.ok || !s.scene || this.count >= MAX) return;
+    if (!s.ok || !s.scene || this.count >= MAX || s.may === false) return;
     this.sil.wake();
     // rarely at first, more often towards morning: about every four minutes at three, two at five
+    // (the night's curve lets them only at its peak, and sooner there)
     const day = ((s.clock % 86400) + 86400) % 86400, k = THREE.MathUtils.clamp((day - 2.5 * 3600) / (2.5 * 3600), 0, 1);
-    this.wait -= dt * (0.6 + 1.4 * k);
+    this.wait -= dt * (0.6 + 1.4 * k) * (s.pace ?? 1);
     if (this.wait > 0) return;
     this.wait = rnd(20, 40);   // nowhere to stand just now: try again soon
     const at = this.pick(s);

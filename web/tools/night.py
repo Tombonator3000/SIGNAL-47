@@ -37,6 +37,8 @@ async def main():
                 nn = (await notes())[n0:]
                 if any(word in x for x in nn): return nn
                 await tick(0.5)
+                # (the radio keeps the audio clock: a long wait, the bulletin, needs real time too)
+                if secs > 20: await pg.wait_for_timeout(450)
             return (await notes())[n0:]
         await ev("S47.hold = true; S47.tick(1.0)")
         check(not await ev("S47.nightIn().ok") or True, 'the prologue')

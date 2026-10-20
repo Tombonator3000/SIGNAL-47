@@ -22,6 +22,8 @@ export interface LineLightsIn {
   truck: THREE.Vector3 | null;
   clock: number;
   ground: (x: number, z: number) => number;
+  /** The night's curve (story/curve.ts) lets them come now (an event); left out, they may. */
+  may?: boolean;
 }
 
 export class LineLights {
@@ -50,7 +52,7 @@ export class LineLights {
     if (this.state === 'none') {
       if (this.done || !s.ok || !tr) { if (tr) this.lastZ = tr.z; return; }
       const dz = tr.z - this.lastZ; this.lastZ = tr.z;
-      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240) this.begin(tr, s, dz > 0 ? 1 : -1);
+      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240 && s.may !== false) this.begin(tr, s, dz > 0 ? 1 : -1);
       return;
     }
     this.t += dt;
