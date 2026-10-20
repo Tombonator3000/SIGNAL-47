@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, annexFlood, setFlood, faced } from './kit';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 import { GlowPoints } from './glow';
 import * as T from '../core/textures';
 import { artTexture } from '../core/art';
@@ -38,6 +39,9 @@ export class RecordsAnnex {
    *  (world/blenderModels.ts puts the modelled house in its place when it is shown). */
   outside!: THREE.Mesh;
   private tubeOn = new THREE.MeshBasicMaterial({ color: 0xeef3ff });
+  /** The bought models in the records room (world/licensedModels.ts): the filing cabinets, the
+   *  archive boxes (the STATION 01 box among them) and the chair, lit by the annex's tubes. */
+  readonly models = new ModelSwap('annex', (m) => this.lit(m));
   private tubeDim = new THREE.MeshBasicMaterial({ color: 0x6d7378 });
 
   constructor() {
@@ -58,8 +62,9 @@ export class RecordsAnnex {
       this.interior.add(c);
     }
     // what has gathered in the corridor and the records room (world/dressing.ts), drawn with the rooms
-    dressAnnex({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d) });
+    dressAnnex({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d), swap: this.models });
     this.group.add(this.glow.build());
+    this.models.place((L, add) => this.placeModels(L, add));
   }
 
   private col(minX: number, maxX: number, minZ: number, maxZ: number) { this.colliders.push({ minX, maxX, minZ, maxZ }); }
@@ -251,20 +256,23 @@ export class RecordsAnnex {
     // the 1947 field records box, pulled half out of the shelf
     const fb = new THREE.Group();
     fb.position.set(-5.62, 1.135, 8.6);
-    box(fb, 0.38, 0.28, 0.34, this.mat({ color: 0x8c6d48, roughness: 0.9 }), 0, 0.14, 0);
-    plane(fb, 0.26, 0.17, this.card(['STATION 01', 'FIELD RECORDS', '1947'], { w: 192, h: 128, font: 'Special Elite', size: 22, surface: 'paper' }), 0.191, 0.15, 0, Math.PI / 2);
+    box(this.models.holder(fb, 'archive_box'), 0.38, 0.28, 0.34, this.mat({ color: 0x8c6d48, roughness: 0.9 }), 0, 0.14, 0);
+    // (on the bought box the card a little smaller and lower, under its hand hole)
+    const fbLic = hasModel('archive_box');
+    plane(fb, fbLic ? 0.21 : 0.26, fbLic ? 0.137 : 0.17, this.card(['STATION 01', 'FIELD RECORDS', '1947'], { w: 192, h: 128, font: 'Special Elite', size: 22, surface: 'paper' }), 0.191, fbLic ? 0.1 : 0.15, 0, Math.PI / 2);
     mergeStatic(fb);
     this.interior.add(fb);
     this.objs.fieldBoxModel = fb;
     this.proxy('fieldBox', 0.5, 0.4, 0.5, -5.55, 1.28, 8.6);
 
     // south wall: three four-drawer filing cabinets, then a low bookcase with binders
+    const cab = this.models.holder(st, 'filing_cabinet');
     for (const x of [-5.0, -4.46, -3.92]) {
-      box(st, 0.5, 1.32, 0.62, green, x, 0.66, 10.17);
+      box(cab, 0.5, 1.32, 0.62, green, x, 0.66, 10.17);
       for (let k = 0; k < 4; k++) {
-        box(st, 0.44, 0.27, 0.02, greenDark, x, 0.2 + k * 0.32, 9.855);
-        box(st, 0.12, 0.025, 0.03, steel, x, 0.28 + k * 0.32, 9.84);
-        plane(st, 0.09, 0.05, paper, x, 0.33 + k * 0.32, 9.843, Math.PI);
+        box(cab, 0.44, 0.27, 0.02, greenDark, x, 0.2 + k * 0.32, 9.855);
+        box(cab, 0.12, 0.025, 0.03, steel, x, 0.28 + k * 0.32, 9.84);
+        plane(cab, 0.09, 0.05, paper, x, 0.33 + k * 0.32, 9.843, Math.PI);
       }
     }
     this.col(-5.27, -3.65, 9.84, 10.5);
@@ -328,14 +336,43 @@ export class RecordsAnnex {
     this.col(-4.53, -2.77, 8.15, 9.05);
     this.proxy('workTable', 1.7, 0.3, 0.85, -3.65, 0.9, 8.6);
     // a chair pushed in at the table
-    const chair = this.mat({ color: 0x3a3f46, roughness: 0.95 });
-    box(st, 0.44, 0.05, 0.42, chair, -3.65, 0.46, 9.35);
-    box(st, 0.44, 0.42, 0.05, chair, -3.65, 0.72, 9.58);
-    for (const [x, z] of [[-3.85, 9.17], [-3.45, 9.17], [-3.85, 9.53], [-3.45, 9.53]]) box(st, 0.03, 0.44, 0.03, steel, x, 0.22, z);
-    this.col(-3.9, -3.4, 9.15, 9.62);
+    const chair = this.mat({ color: 0x3a3f46, roughness: 0.95 }), ch = this.models.holder(st, 'folding_chair');
+    box(ch, 0.44, 0.05, 0.42, chair, -3.65, 0.46, 9.35);
+    box(ch, 0.44, 0.42, 0.05, chair, -3.65, 0.72, 9.58);
+    for (const [x, z] of [[-3.85, 9.17], [-3.45, 9.17], [-3.85, 9.53], [-3.45, 9.53]]) box(ch, 0.03, 0.44, 0.03, steel, x, 0.22, z);
+    // (the bought folding chair's legs splay back to 9.66)
+    if (hasModel('folding_chair')) this.col(-3.9, -3.4, 9.05, 9.7); else this.col(-3.9, -3.4, 9.15, 9.62);
     // fire extinguisher by the door
     cyl(st, 0.08, 0.08, 0.46, this.mat({ color: 0xa3241b, roughness: 0.45 }), -4.75, 0.5, 6.95, 12);
     box(st, 0.04, 0.06, 0.2, steel, -4.75, 0.6, 6.83);
+  }
+
+  /** The bought models in the records room, where the code's stood (world/licensedModels.ts). */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const PI = Math.PI, inside = this.interior;
+    // the three cabinets against the south wall, fronts to the room; the middle one with its second
+    // drawer out (dressing.ts pulls it)
+    if (hasModel('filing_cabinet')) add(L.merged('filing_cabinet', [-5.0, -4.46, -3.92].map((x) => ({ name: x === -4.46 ? 'filing_cabinet_rec_open' : 'filing_cabinet_rec', at: { x, y: 0, z: 10.17, ry: PI } }))), inside);
+    // the chair pushed in at the table, its back to the cabinets
+    if (hasModel('folding_chair')) add(L.mesh('folding_chair', 'folding_chair', { x: -3.65, y: 0, z: 9.35, ry: PI }), inside);
+    if (hasModel('archive_box')) {
+      const tone = L.tones('archive_box', 'archive_box');
+      // the STATION 01 box, pulled half out: its own copy in the box's group, older and darker
+      const fb = this.objs.fieldBoxModel;
+      const one = L.mesh('archive_box', 'archive_box', { x: 0, y: 0, z: 0, ry: PI / 2, s: [0.34 / 0.327, 1, 0.38 / 0.413] }, { own: true }) as THREE.Mesh;
+      const lid = L.mesh('archive_box', 'archive_box_lid', { x: 0, y: 0, z: 0, ry: PI / 2, s: [0.34 / 0.327, 1, 0.38 / 0.413] }) as THREE.Mesh;
+      lid.material = one.material;
+      (one.material as THREE.MeshStandardMaterial).color.copy(tone(0x8c6d48));
+      add(one, fb); add(lid, fb);
+      // and the rest on the shelves and the cabinets (the grey board ones a quarter darker than the
+      // code's tone: the kraft picture under it brightens a grey to nearly white)
+      const boxes = this.models.spots.archive_box ?? [];
+      const k = (c?: number) => c === 0xc2b8a4 || c === 0xb8ae98 ? 0.75 : 1;
+      if (boxes.length) {
+        add(L.instanced('archive_box', 'archive_box', boxes.map((b) => b.at), boxes.map((b) => tone(b.tone, k(b.tone)))), inside);
+        add(L.instanced('archive_box', 'archive_box_lid', boxes.map((b) => b.lid ?? b.at), boxes.map((b) => tone(b.tone, 0.94 * k(b.tone)))), inside);
+      }
+    }
   }
 
   /** Swings the records room door into the room and round against the wall: 0 shut, 1 open. */

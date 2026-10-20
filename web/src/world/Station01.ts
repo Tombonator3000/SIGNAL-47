@@ -15,6 +15,7 @@ import type { Zone } from '../player/Player';
 import { dressStation } from './dressStation';
 import type { Dressing } from './weathering';
 import { dressHut } from './dressing';
+import { ModelSwap, hasModel, type Lib } from './licensedModels';
 
 // Chapter three location: STATION 01, the survey station from 1947, about 04:00.
 // Built in its own coordinates (metres): x east, z south, north is -Z as at SARO. The
@@ -712,6 +713,11 @@ export class Station01 {
   lampCovered = false;
   receiverOn = true;
   hutLightOn = true;
+  /** The bought models (world/licensedModels.ts): the chair in the hut, in the hut's floods, and
+   *  the field lamp's battery in the station's. (The receiver on the bench stays the code's valve
+   *  set with its slide-rule dial: the story has it older than anything at SARO.) */
+  readonly models = new ModelSwap('hut', (m) => floodlit(m, 0.25, hutFlood));
+  readonly yardModels = new ModelSwap('station', (m) => floodlit(m, 0.03, fieldFlood));
 
   private o: THREE.Vector3;
   private terrain = new Terrain();
@@ -764,6 +770,8 @@ export class Station01 {
     this.texs.push((this.glow.points.material as THREE.ShaderMaterial).uniforms.uMap.value);
     this.walkable();
     this.lights = this.nightLights();
+    this.models.place((L, add) => this.placeModels(L, add));
+    this.yardModels.place((L, add) => this.placeYardModels(L, add));
 
     const ox = this.o.x, oz = this.o.z;
     const w = (x: number, y: number, z: number) => new THREE.Vector3(x + ox, y + this.o.y, z + oz);
@@ -789,6 +797,17 @@ export class Station01 {
         generator: w(-16.2, 1.0, -0.4), gateInside: w(-22.3, 0, 23.5), stakesC: w(STAKES[0], 0.3, T.z),
       },
     };
+  }
+
+  // ---------- the bought models (world/licensedModels.ts) ----------
+  /** In the hut: the chair pulled out from the bench, where the code's stood. */
+  private placeModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    if (hasModel('weathered_chair')) add(L.mesh('weathered_chair', 'weathered_chair', { x: -12.0, y: 0.004, z: 3.05, ry: 0.6 }), this.interior);
+  }
+  /** In the yard: the battery at the foot of the field lamp. */
+  private placeYardModels(L: Lib, add: (o: THREE.Object3D, parent: THREE.Object3D) => THREE.Object3D) {
+    const L0 = LAMP;
+    if (hasModel('car_battery')) add(L.mesh('car_battery', 'car_battery', { x: L0.x - 0.32, y: G, z: L0.z + 0.36, ry: 0.35, s: 0.9 }), this.group);
   }
 
   // ---------- materials ----------
@@ -1460,7 +1479,7 @@ export class Station01 {
     box(ch, 0.42, 0.06, 0.03, m.woodIn, 0, 0.62, -0.19);
     for (const [x, z] of [[-0.18, -0.17], [0.18, -0.17]]) box(ch, 0.035, 0.86, 0.035, m.woodIn, x, 0.43, z);
     for (const [x, z] of [[-0.18, 0.17], [0.18, 0.17]]) box(ch, 0.035, 0.45, 0.035, m.woodIn, x, 0.225, z);
-    s.add(ch);
+    this.models.holder(s, 'weathered_chair').add(ch);
     this.col(-12.15, -11.85, 2.9, 3.2);
     // a bare bulb under a tin shade in the middle of the ceiling
     rod(s, v(-11.0, HUT.h, 3.0), v(-11.0, 2.2, 3.0), 0.004, m.blackIn, 4);
@@ -1631,9 +1650,11 @@ export class Station01 {
     cyl(st, 0.03, 0.03, 0.06, m.darkMetal, L.x, 1.0, L.z, 8);
     rod(st, collar, new THREE.Vector3(L.x, 1.8, L.z), 0.016, m.galv, 6);
     // battery box at the foot, and its lead up the pole
-    box(st, 0.32, 0.22, 0.2, m.paint, L.x - 0.32, G + 0.11, L.z + 0.36);
-    box(st, 0.06, 0.04, 0.04, m.darkMetal, L.x - 0.38, G + 0.24, L.z + 0.36);
-    rod(st, new THREE.Vector3(L.x - 0.3, G + 0.22, L.z + 0.33), new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), 0.006, m.rubber, 4);
+    // (or the bought car battery in its place, its lead from the post on its top: world/licensedModels.ts)
+    const bat = this.yardModels.holder(st, 'car_battery');
+    box(bat, 0.32, 0.22, 0.2, m.paint, L.x - 0.32, G + 0.11, L.z + 0.36);
+    box(bat, 0.06, 0.04, 0.04, m.darkMetal, L.x - 0.38, G + 0.24, L.z + 0.36);
+    rod(st, new THREE.Vector3(L.x - 0.3, G + (bat !== st ? 0.255 : 0.22), L.z + 0.33), new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), 0.006, m.rubber, 4);
     rod(st, new THREE.Vector3(L.x - 0.05, 0.6, L.z + 0.05), new THREE.Vector3(L.x - 0.02, 1.7, L.z + 0.02), 0.006, m.rubber, 4);
     // the head, aimed at the transit
     const head = new THREE.Group();

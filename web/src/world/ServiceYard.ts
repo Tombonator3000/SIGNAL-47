@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, flood, faced } from './kit';
+import { M, box, cyl, plane, rod, mergeStatic, noMerge, floodlit, addFlood, floodSet, setFlood, flood, faced, nearOnly } from './kit';
+import { ModelSwap } from './licensedModels';
 import { dressLab } from './dressing';
 import { lampPost, railing, clipboard } from './props';
 import { GlowPoints } from './glow';
@@ -31,6 +32,8 @@ export class ServiceYard {
   zones: Zone[] = [];
   colliders: Collider[] = [];
   objs: Record<string, THREE.Object3D> = {};
+  /** The bought folding chair by the wall (world/licensedModels.ts), in the site's floods. */
+  readonly models = new ModelSwap('yard', (m) => floodlit(m));
   /** The parked truck's collider (World.ts moves it with the truck). */
   truckCol!: Collider;
   occluders: THREE.Object3D[] = [];
@@ -64,6 +67,12 @@ export class ServiceYard {
     // the lab's clutter (world/dressing.ts), under the safelights like the rest of it
     dressLab({ add: (o) => this.group.add(o), mat: (p) => floodlit(new THREE.MeshStandardMaterial(p), 0.22, this.labFlood), col: (a, b, c, d) => this.col(a, b, c, d) });
     this.group.add(this.glow.build());
+    // (drawn only near: SARO outside is close to its 340 draw calls, tools/grounds.py)
+    this.models.place((L, add) => {
+      const g = new THREE.Group();
+      add(L.mesh('folding_chair', 'folding_chair', { x: 6.78, y: 0, z: 3.0, ry: 0.5 }), g);
+      this.group.add(nearOnly(g, 25));
+    });
   }
 
   private col(minX: number, maxX: number, minZ: number, maxZ: number) { this.colliders.push({ minX, maxX, minZ, maxZ }); }
@@ -438,7 +447,7 @@ export class ServiceYard {
     rod(chair, v(0.19, 0, 0.2), v(0.19, 0.9, -0.24), 0.012, dark, 4);
     rod(chair, v(-0.19, 0, -0.22), v(-0.19, 0.45, 0.16), 0.012, dark, 4);
     rod(chair, v(0.19, 0, -0.22), v(0.19, 0.45, 0.16), 0.012, dark, 4);
-    st.add(chair);
+    this.models.holder(st, 'folding_chair').add(chair);
     this.col(6.45, 7.12, 2.7, 3.3);
     cyl(st, 0.065, 0.065, 0.14, copper, 7.25, 0.07, 3.15, 10);
     cyl(st, 0.06, 0.06, 0.005, dark, 7.25, 0.142, 3.15, 10);

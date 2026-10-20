@@ -7,7 +7,9 @@ import { Dressing, type Foot, type Opening } from './weathering';
 // the door; the cook's car on the south side and a pickup on the north, out of the lot where
 // the truck is left. In the diner's own metres (Diner.ts): the floor and the walk at 0, the
 // land round it from `gy` (the road's, World.ts).
-export function dressDiner(set: FloodSet, col: (f: Foot) => void, gy: (x: number, z: number) => number) {
+/** bench: a dressing of its own for the bench on the walk, when the bought one stands there
+ *  (Diner.ts, world/licensedModels.ts): 2.3 m long and 0.78 deep, its back 4 cm off the wall. */
+export function dressDiner(set: FloodSet, col: (f: Foot) => void, gy: (x: number, z: number) => number, bench?: Dressing) {
   const d = new Dressing(set, 0.14, 1947);
   d.ground = gy;
   // the kitchen's corner, where its cans and the grease drum stand
@@ -32,7 +34,8 @@ export function dressDiner(set: FloodSet, col: (f: Foot) => void, gy: (x: number
 
   // ---------- the walk (x 2 to 3.6) ----------
   col(d.newsBox(3.25, 0, 1.45, Math.PI / 2, 'newsBlue'));
-  col(d.bench(2.42, 0, 5.0, Math.PI / 2, 1.8));
+  const foot = d.bench(2.42, 0, 5.0, Math.PI / 2, 1.8, 'bench', bench);
+  col(bench ? { minX: 2.04, maxX: 2.82, minZ: 3.85, maxZ: 6.15 } : foot);
   col(d.sodaMachine(2.56, 0, 8.3, Math.PI / 2));
   col(d.drum(3.3, 0, -1.45, 'drumOlive', { open: true }));
   // ---------- beside the house, off the lot ----------
