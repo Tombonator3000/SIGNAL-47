@@ -313,3 +313,9 @@ Seks miljøkonsepter og fire lokasjonskart er levert 4. oktober. Se `CONCEPT_DEL
 ## Art Bell som radiovert, direkte bestilt av Tom 19. oktober
 
 - [x] Ny lokal Art Bell-parodiprofil og medfølgende opptak for alle Earls Night Line-replikker, også tidsmeldinger og kjøreinnslag. Eget lagret valg, riktig radiobuss/teksting og begge bygg. 115 klipp, alle relevante kontroller PASS på `codex/art-bell-radio`; se `ART_BELL_RADIO.md`.
+
+## Seks stemmer og Serling-forteller, 20. oktober
+
+- [x] Generere og koble Stanton, Bacall, Stack, Lynch, Price og Serling til de avtalte rollene. Serling skal også lese objektbeskrivelser og all mellomkapitteltekst. Fullt manus, riktige aktører, avbrudd og lagrede valg; eksisterende stemmer og spillkanon bevares.
+- [x] Automatisk ord-/filkontroll, begge bygg, ekte brukerreise og nødvendige regresjoner. Sluttkandidaten består alle kjøringer i `production/ensemble/qa/validation.json`. Vanlig autorisert PR/merge og publisert kontroll føres separat etter faktisk levering.
+- [ ] Menneskelig prøvelytting av stemmelikhet, uttale og nivåer på fysisk PC/mobil er UNVERIFIED her.

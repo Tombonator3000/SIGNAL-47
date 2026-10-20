@@ -1,0 +1,98 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+  "source_state": "uncommitted voice-ensemble runtime",
+  "scope": "All 12 commands freshly rerun after the legacy Kinski dialogue-redraw fix: Bacall reply tracking now requires Character voices On. The original browser redraw assertion is unchanged and browser playback proof is rerun separately. Frozen catalogs contain 1402 Serling and 100 ensemble clips; every actual Serling entry receives availability checking. TTS ready SHA256: 08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9. Serling corpus SHA256: 771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74. CPU-controlled clocks, loaders and source-end fixtures include never-settling deadlines, text-only corpus resolution, visible chapter phases and real main/UI/story functions. No previous command result is reused. Does not prove actual MP3 decode, audible quality or device performance. Typecheck was freshly rerun into cpu-typecheck.log after a build log naming collision; the independent build output is retained in build-typecheck.log.",
+  "results": [
+    {
+      "name": "ensemble-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/ensemble-core.cjs",
+      "log": "ensemble-core.log",
+      "exit_code": 0,
+      "seconds": 1.0476740550075192
+    },
+    {
+      "name": "serling-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/serling-core.cjs",
+      "log": "serling-core.log",
+      "exit_code": 0,
+      "seconds": 1.0481468139914796
+    },
+    {
+      "name": "artbell-town-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/artbell-town-core.cjs",
+      "log": "artbell-town-core.log",
+      "exit_code": 0,
+      "seconds": 1.0398399170080665
+    },
+    {
+      "name": "artbell-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/artbell-core.cjs",
+      "log": "artbell-core.log",
+      "exit_code": 0,
+      "seconds": 0.8029164779873099
+    },
+    {
+      "name": "radiocast-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/radiocast-core.cjs",
+      "log": "radiocast-core.log",
+      "exit_code": 0,
+      "seconds": 2.71924413999659
+    },
+    {
+      "name": "radioarchive",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/ensemble-radioarchive.cjs --log-level=warning && node node_modules/.cache/ensemble-radioarchive.cjs",
+      "log": "radioarchive.log",
+      "exit_code": 0,
+      "seconds": 0.8478217119991314
+    },
+    {
+      "name": "readaloud-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/readaloud-core.cjs",
+      "log": "readaloud-core.log",
+      "exit_code": 0,
+      "seconds": 1.1645131459808908
+    },
+    {
+      "name": "phonecalls-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/phonecalls-core.cjs",
+      "log": "phonecalls-core.log",
+      "exit_code": 0,
+      "seconds": 0.5961660640023183
+    },
+    {
+      "name": "typecheck",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "npm run typecheck",
+      "log": "cpu-typecheck.log",
+      "exit_code": 0,
+      "seconds": 2.6168594410119113
+    }
+  ]
+}

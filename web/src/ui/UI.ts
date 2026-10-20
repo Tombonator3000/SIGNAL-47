@@ -3,6 +3,7 @@ import type { AlbumView } from '../core/album';
 import { KIT_ART, type KitArt } from './kitArt';
 import { documentReadingParagraphs, type ReadAloud } from '../core/readAloud';
 import type { EarlDialogue, EarlLine, EarlState } from '../core/earlDialogue';
+import { characterLines, CHARACTER_LABELS, type NPCDialogue, type CharacterVoice } from '../core/npcDialogue';
 import { BOUGHT_SFX } from '../core/Audio';
 
 export interface DocSpec {
@@ -93,6 +94,10 @@ export class UI {
   /** Optional prerecorded synthetic narration, supplied by main after audio setup. */
   readAloud: ReadAloud | null = null;
   earlDialogue: EarlDialogue | null = null;
+  narrator: ReadAloud | null = null;
+  npcDialogue: NPCDialogue | null = null;
+  get descriptionReader() { return this.narrator?.enabled ? this.narrator : this.readAloud?.enabled ? this.readAloud : null; }
+  stopSpeech() { this.readAloud?.stop(); this.narrator?.stop(); this.earlDialogue?.stop(); this.npcDialogue?.stop(); }
   root = document.getElementById('ui')!;
   modal: HTMLElement | null = null;
   private modalClose: (() => void) | null = null;
@@ -203,35 +208,35 @@ export class UI {
   /** What a closer look says (the zoom), under the crosshair; null clears it. */
   examine(text: string | null) {
     const t = text ?? '';
-    if (this.descriptionActive && this.canDescribe?.() === false) this.readAloud?.stop();
+    if (this.descriptionActive && this.canDescribe?.() === false) this.descriptionReader?.stop();
     if (this.examineEl.textContent !== t) this.examineEl.textContent = t;
     this.examineEl.classList.toggle('show', !!text);
-    this.descriptionButton.hidden = !this.readAloud?.enabled || !(t || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
+    this.descriptionButton.hidden = !this.descriptionReader?.enabled || !(t || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
     if (this.examineText === t) return;
     this.examineText = t;
     if (this.examineTimer) clearTimeout(this.examineTimer);
     this.examineTimer = null;
-    if (this.examineActive) this.readAloud?.stop();
+    if (this.examineActive) this.descriptionReader?.stop();
     this.examineActive = false;
     this.updateDescriptionButton();
-    if (t && this.readAloud?.enabled) this.examineTimer = setTimeout(() => {
+    if (t && this.descriptionReader?.enabled) this.examineTimer = setTimeout(() => {
       this.examineTimer = null;
-      const reader = this.readAloud;
+      const reader = this.descriptionReader;
       if (!reader?.enabled || this.modal || !this.canDescribe?.() || reader.playing || reader.loading || !reader.available([t])) return;
       this.playDescription(t, true);
     }, 650);
   }
   private updateDescriptionButton() {
-    this.descriptionButton.hidden = !this.readAloud?.enabled || !(this.examineText || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
+    this.descriptionButton.hidden = !this.descriptionReader?.enabled || !(this.examineText || this.lastDescription) || !!this.modal || this.canDescribe?.() === false;
     this.descriptionButton.textContent = this.descriptionActive ? 'Stop reading [V]' : this.examineText ? 'Read description [V]' : 'Read last description [V]';
     this.descriptionButton.setAttribute('aria-pressed', String(this.descriptionActive));
-    this.descriptionButton.disabled = !this.descriptionActive && !this.readAloud?.available([this.examineText || this.lastDescription]);
-    this.descriptionButton.title = this.descriptionButton.disabled ? 'No recording for this text.' : 'Synthetic Kinski parody';
+    this.descriptionButton.disabled = !this.descriptionActive && !this.descriptionReader?.available([this.examineText || this.lastDescription]);
+    this.descriptionButton.title = this.descriptionButton.disabled ? 'No recording for this text.' : this.descriptionReader?.label ?? '';
   }
   private playDescription(text: string, automatic = false) {
-    const reader = this.readAloud;
+    const reader = this.descriptionReader;
     if (!reader?.enabled || !text) return;
-    if (!automatic) this.onReadingStart?.();
+    this.onReadingStart?.(reader);
     void reader.play([text], (state) => {
       this.descriptionActive = state === 'playing' || state === 'loading';
       this.examineActive = automatic && this.descriptionActive;
@@ -240,8 +245,8 @@ export class UI {
   }
   /** A gesture-accessible repeat, also available after a short toast has disappeared. */
   readLastDescription() {
-    if (!this.readAloud?.enabled || this.modal || this.canDescribe?.() === false) return;
-    if (this.descriptionActive) this.readAloud.stop();
+    if (!this.descriptionReader?.enabled || this.modal || this.canDescribe?.() === false) return;
+    if (this.descriptionActive) this.descriptionReader.stop();
     else this.playDescription(this.examineText || this.lastDescription);
   }
   cameraButton(on: boolean, raised = false) { this.camBtn.hidden = !on; this.camBtn.textContent = raised ? 'Lower' : 'Camera'; }
@@ -331,8 +336,7 @@ export class UI {
     this.descriptionObservers = [];
     if (this.examineTimer) clearTimeout(this.examineTimer);
     this.examineTimer = null;
-    this.readAloud?.stop();
-    this.earlDialogue?.stop();
+    this.stopSpeech(); this.chapterCard(null);
     if (!this.modal) return;
     this.modal.remove();
     this.modal = null;
@@ -393,8 +397,42 @@ export class UI {
 
   /** Called when a paper is opened (the sound of the page; set by main). */
   onPaper?: () => void;
-  onReadingStart?: () => void;
+  onReadingStart?: (reader?: ReadAloud) => void;
+  onCharacterStart?: () => void;
   onEarlStart?: () => void;
+  characterReadingControls(parent: HTMLElement, voice: CharacterVoice, lines: EarlLine[]) {
+    const reader = this.npcDialogue;
+    if (!reader?.enabled) return null;
+    const speech = characterLines(voice, lines);
+    if (!speech.length) return null;
+    const parodyLabel = voice === 'bacall' && speech.some((line) => line.who === 'THE LINE')
+      ? 'Synthetic Lauren Bacall / Vincent Price parodies' : `Synthetic ${CHARACTER_LABELS[voice]} parody`;
+    const input = { voice, lines };
+    const box = document.createElement('div'); box.className = 'read-aloud';
+    box.dataset.readingKind = 'character-dialogue'; box.dataset.voice = voice;
+    box.dataset.readingTexts = JSON.stringify(speech.map((line) => line.text));
+    box.innerHTML = '<button class="lp-btn" data-a="character">Replay voice</button><span data-reading-status role="status" aria-live="polite"></span>';
+    const button = box.querySelector('button')!, status = box.querySelector<HTMLElement>('[data-reading-status]')!;
+    button.disabled = !reader.available(input); let active = false;
+    const update = (state: EarlState) => {
+      active = state === 'loading' || state === 'playing';
+      button.textContent = active ? 'Stop voice' : 'Replay voice';
+      button.setAttribute('aria-pressed', String(active));
+      status.textContent = state === 'loading' ? 'Loading voice…' : state === 'error' ? 'Recording could not be played. Try again.'
+        : button.disabled ? 'No recording for this reply.' : parodyLabel;
+    };
+    const play = () => { this.onCharacterStart?.(); void reader.play(input, update); };
+    button.addEventListener('click', () => { if (active) reader.stop(); else play(); });
+    update('idle'); parent.appendChild(box); return play;
+  }
+  /** Only Chapter4 calls this for its authored N. VEGA quote replies/toasts. */
+  speakNora(text: string) {
+    if (!this.npcDialogue?.enabled) return;
+    const match = /^N\. VEGA: "([\s\S]*)"$/.exec(text);
+    if (!match) return;
+    this.onCharacterStart?.();
+    void this.npcDialogue.play({ voice: 'bacall', lines: [{ who: 'N. VEGA', text: match[1] }] });
+  }
   /** Controls belong only to the live conversation with Earl, never papers or People. */
   earlReadingControls(parent: HTMLElement, lines: EarlLine[]) {
     const reader = this.earlDialogue;
@@ -423,7 +461,7 @@ export class UI {
   }
   /** Explicit playback only: opening a paper or refreshing a conversation stays quiet. */
   readingControls(parent: HTMLElement, texts: string[], label = 'Read aloud', kind = 'conversation') {
-    const reader = this.readAloud;
+    const reader = kind === 'document' || kind === 'conversation' ? this.readAloud : this.descriptionReader;
     if (!reader?.enabled) return;
     const box = document.createElement('div');
     box.className = 'read-aloud';
@@ -435,18 +473,18 @@ export class UI {
     const status = box.querySelector<HTMLElement>('[data-reading-status]')!;
     const available = reader.available(texts);
     button.disabled = !available;
-    status.textContent = available ? 'Synthetic Kinski parody' : 'No recording for this text.';
+    status.textContent = available ? reader.label : 'No recording for this text.';
     let active = false;
     const update = (state: 'loading' | 'playing' | 'idle' | 'error') => {
       active = state === 'loading' || state === 'playing';
       button.textContent = active ? 'Stop reading' : label;
       button.setAttribute('aria-pressed', String(active));
-      status.textContent = state === 'loading' ? 'Loading recording…' : state === 'playing' ? 'Synthetic Kinski parody' : state === 'error' ? 'Recording could not be played. Try again.' : 'Synthetic Kinski parody';
+      status.textContent = state === 'loading' ? 'Loading recording…' : state === 'playing' ? reader.label : state === 'error' ? 'Recording could not be played. Try again.' : reader.label;
     };
     button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', () => {
       if (active) reader.stop();
-      else { this.onReadingStart?.(); void reader.play(texts, update); }
+      else { this.onReadingStart?.(reader); void reader.play(texts, update); }
     });
     parent.insertBefore(box, parent.querySelector('.controls'));
   }
@@ -454,11 +492,12 @@ export class UI {
    *  Observe text changes, not frames: hints, answers and tab changes replace the
    *  old queue immediately, without restarting a recording on every redraw. */
   descriptionReadings(parent: HTMLElement, selector: string, kind = 'panel-description', extra?: () => string[]) {
-    if (!this.readAloud?.enabled) return;
+    const reader = this.descriptionReader;
+    if (!reader?.enabled) return;
     let key = '', box: HTMLElement | null = null;
     const refresh = () => {
       const texts = [...parent.querySelectorAll<HTMLElement>(selector)]
-        .filter((node) => !node.closest('.read-aloud, [hidden], .nb-page:not(.on)') && getComputedStyle(node).display !== 'none')
+        .filter((node) => !node.closest('.read-aloud, [data-character-quote], [hidden], .nb-page:not(.on)') && getComputedStyle(node).display !== 'none')
         .map((node) => {
           if (node.dataset.readingText) return node.dataset.readingText;
           const copy = node.cloneNode(true) as HTMLElement;
@@ -470,7 +509,7 @@ export class UI {
       const next = JSON.stringify(texts);
       if (next === key && (!texts.length || box?.parentElement === parent)) return;
       key = next;
-      if (box?.querySelector('[aria-pressed=true]')) this.readAloud?.stop();
+      if (box?.querySelector('[aria-pressed=true]')) reader.stop();
       box?.remove(); box = null;
       if (!texts.length) return;
       this.readingControls(parent, texts, 'Read description', kind);
@@ -486,7 +525,7 @@ export class UI {
     return () => {
       observer.disconnect();
       this.descriptionObservers = this.descriptionObservers.filter((item) => item !== observer);
-      if (box?.querySelector('[aria-pressed=true]')) this.readAloud?.stop();
+      if (box?.querySelector('[aria-pressed=true]')) reader.stop();
     };
   }
   document(doc: DocSpec, onClose: () => void) {
@@ -583,7 +622,7 @@ export class UI {
         <section class="nb-page nb-case nb-controls" data-p="controls">${controlsPage(!!extras.touch)}</section>
       </div>`;
     const show = (t: NbTab) => {
-      this.readAloud?.stop();
+      this.stopSpeech();
       this.nbTab = t;
       el.querySelectorAll<HTMLElement>('[data-p]').forEach((p) => p.classList.toggle('on', p.dataset.p === t));
       el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
@@ -598,7 +637,7 @@ export class UI {
     }));
     bindAlbum(el, extras.album, {
       show: (view) => this.descriptionReadings(view, '.al-cap b, .al-cap small', 'photo-description'),
-      change: () => this.readAloud?.stop(),
+      change: () => this.stopSpeech(),
     });
     this.open(el);
     this.descriptionReadings(el.querySelector('.notebook')!, '.nb-page.on[data-p=tasks] li, .nb-page.on[data-p=notes] li, .nb-page.on .empty, .nb-page.on[data-p=kit] li > b, .nb-page.on[data-p=kit] li > i, .nb-page.on[data-p=kit] li > span:not(.kit-art), .nb-page.on[data-p=people] li > b, .nb-page.on[data-p=people] li > i, .nb-page.on[data-p=people] li > span:not(.noface)', 'notebook-description',
@@ -608,6 +647,8 @@ export class UI {
   pause(o: {
     onResume: () => void; onTitle: () => void; volume: number; sens: number; onVolume: (v: number) => void; onSens: (v: number) => void;
     music: number; onMusic: (v: number) => void; radio: number; onRadio: (v: number) => void;
+    characters: boolean; onCharacters: (v: boolean) => void;
+    serling: boolean; onSerling: (v: boolean) => void;
     kinski: boolean; onKinski: (v: boolean) => void;
     artBell: boolean; onArtBell: (v: boolean) => void;
     radioCast: boolean; onRadioCast: (v: boolean) => void;
@@ -633,8 +674,12 @@ export class UI {
         <p class="small reading-note">Synthetic Art Bell parody for Earl on Night Line, AM 1420, and when you speak with him in Caliche.</p>
         <div class="set"><span class="lbl">Radio callers &amp; bulletin</span><button class="opt qual" data-a="radiocast" aria-label="Radio callers and bulletin" aria-pressed="${o.radioCast}">${o.radioCast ? 'On' : 'Off'}</button></div>
         <p class="small reading-note">Synthetic callers and the 1947 news bulletin on AM 1420.</p>
+        <div class="set"><span class="lbl">Character voices</span><button class="opt qual" data-a="characters" aria-label="Character voices" aria-pressed="${o.characters}">${o.characters ? 'On' : 'Off'}</button></div>
+        <p class="small reading-note">Synthetic parody voices for the attendant, deputy, souvenir man, Nora and the recorded field line.</p>
+        <div class="set"><span class="lbl">Rod Serling narrator</span><button class="opt qual" data-a="serling" aria-label="Rod Serling narrator" aria-pressed="${o.serling}">${o.serling ? 'On' : 'Off'}</button></div>
+        <p class="small reading-note">Synthetic Rod Serling parody for descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description.</p>
         <div class="set"><span class="lbl">Kinski read-aloud</span><button class="opt qual" data-a="kinski" aria-label="Kinski read-aloud" aria-pressed="${o.kinski}">${o.kinski ? 'On' : 'Off'}</button></div>
-        <p class="small reading-note">Synthetic parody voice. Read descriptions, notes, papers and conversations. Hold Zoom for a spoken closer look; V repeats a description. Phone voices play when you answer.</p>
+        <p class="small reading-note">Synthetic Kinski parody for papers, optional conversation reading and other phone voices. Also reads descriptions when the Rod Serling narrator is Off.</p>
         <div class="set"><label for="sens">Look speed</label><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="${o.sens}"></div>
         <div class="set"><label for="fov">Field of view</label><input id="fov" type="range" min="60" max="90" step="1" value="${o.fov}"></div>
         <div class="set"><span class="lbl">Invert look</span><button class="opt qual" data-a="inv" aria-label="Invert vertical look">${o.invertY ? 'On' : 'Off'}</button></div>
@@ -668,6 +713,13 @@ export class UI {
       button.textContent = radioCast ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(radioCast));
       o.onRadioCast(radioCast);
     });
+    for (const [key, initial, apply] of [['characters', o.characters, o.onCharacters], ['serling', o.serling, o.onSerling]] as const) {
+      let on = initial;
+      el.querySelector<HTMLButtonElement>(`[data-a=${key}]`)!.addEventListener('click', (event) => {
+        on = !on; const button = event.currentTarget as HTMLButtonElement;
+        button.textContent = on ? 'On' : 'Off'; button.setAttribute('aria-pressed', String(on)); apply(on);
+      });
+    }
     let kinski = o.kinski;
     el.querySelector<HTMLButtonElement>('[data-a=kinski]')!.addEventListener('click', (e) => {
       kinski = !kinski;
@@ -697,8 +749,13 @@ export class UI {
   // Between chapters: on the black, a line about what was just closed, then the next
   // chapter's title and the night's clock. The night does not stop for it.
   private cardEl: HTMLElement | null = null;
-  chapterCard(o: { closed: string; recap: string; next: string; title: string; clock: string } | null) {
+  private cardGeneration = 0;
+  chapterStage: 'idle' | 'a' | 'b' | 'text-b' | 'error-b' | 'cancelled' = 'idle';
+  async chapterCard(o: { closed: string; recap: string; next: string; title: string; clock: string } | null) {
+    const generation = ++this.cardGeneration;
+    this.chapterStage = 'idle';
     if (this.cardEl) { const old = this.cardEl; old.classList.add('out'); setTimeout(() => old.remove(), 900); this.cardEl = null; }
+    this.narrator?.stop();
     if (!o) return;
     this.lastDescription = o.recap;
     this.updateDescriptionButton();
@@ -709,6 +766,26 @@ export class UI {
       <div class="cc-b"><div class="cc-next">${esc(o.next)}</div><h2>${esc(o.title)}</h2><div class="cc-clock">${esc(o.clock)}</div></div>`;
     document.body.appendChild(el);
     this.cardEl = el;
+    const reader = this.narrator;
+    if (!reader?.enabled) return;
+    el.classList.add('voiced'); el.dataset.voicePhase = 'a'; this.chapterStage = 'a';
+    const current = () => generation === this.cardGeneration && this.cardEl === el;
+    this.onReadingStart?.(reader);
+    const narration = reader.play([o.closed, o.recap, o.next, o.title, o.clock], undefined, (index) => {
+      if (index === 2 && current() && reader.enabled) { el.dataset.voicePhase = 'b'; this.chapterStage = 'b'; }
+    });
+    const run = reader.runId;
+    await narration;
+    if (!current()) return;
+    if (!reader.enabled) {
+      el.dataset.voicePhase = 'b'; this.chapterStage = 'text-b'; return;
+    }
+    if (reader.runId !== run) { this.chapterStage = 'cancelled'; return; }
+    if (reader.state === 'error') {
+      // A failed load still gives the next chapter readable screen time. No
+      // replacement voice or later phase of speech starts after the failure.
+      el.dataset.voicePhase = 'b'; this.chapterStage = 'error-b';
+    }
   }
 
   // Black card with the title, a few lines and buttons. Used where the built night ends.
@@ -722,7 +799,7 @@ export class UI {
         <div class="row">${o.buttons.map((b, i) => `<button data-b="${i}">${esc(b.label)}</button>`).join('')}</div>
         ${o.credits ? `<p class="credits">${esc(CREDITS)}</p>` : ''}
       </div>`;
-    el.querySelectorAll<HTMLButtonElement>('[data-b]').forEach((btn) => btn.addEventListener('click', () => { this.readAloud?.stop(); o.buttons[+btn.dataset.b!].on(); }));
+    el.querySelectorAll<HTMLButtonElement>('[data-b]').forEach((btn) => btn.addEventListener('click', () => { this.stopSpeech(); o.buttons[+btn.dataset.b!].on(); }));
     this.root.appendChild(el);
     this.readingControls(el.querySelector('.after')!, o.lines, 'Read description', 'ending-description');
     return el;

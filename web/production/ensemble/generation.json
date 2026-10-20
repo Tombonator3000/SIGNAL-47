@@ -1,0 +1,4745 @@
+{
+  "clips": {
+    "ca2bcf4aea43640a": {
+      "id": "ca2bcf4aea43640a",
+      "voice": "stanton",
+      "text": "Cold one tonight. Radio says it'll",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Cold one tonight. Radio says it'll"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "686b4586",
+        "audio_path": "686b4586.wav",
+        "duration": 2.4,
+        "gen_time": 1.13,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.4,
+        "peak_dbfs": -3.1820142373696196,
+        "rms_dbfs": -20.93489010098378,
+        "nonsilent_rms_dbfs": -20.43692137752716,
+        "nonsilent_seconds": 2.14,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.7900363776790513,
+        "bytes": 19820,
+        "sha256": "889a74161663dc61a3ea0966d4012390f5560e5de57681e7f739e39915c8aa01",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "9b111b5a718d2921",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "427711e0ef49e13b": {
+      "id": "427711e0ef49e13b",
+      "voice": "stack",
+      "text": "Quiet night. Drove the loop out to the county line and back.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Quiet night. Drove the loop out to the county line and back."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c24434f2",
+        "audio_path": "c24434f2.wav",
+        "duration": 4.08,
+        "gen_time": 1.2,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.08,
+        "peak_dbfs": -8.85046832071367,
+        "rms_dbfs": -20.687116278737005,
+        "nonsilent_rms_dbfs": -20.401177698804872,
+        "nonsilent_seconds": 3.82,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.335249460713667,
+        "bytes": 33260,
+        "sha256": "07c709a41c7579f7848d0b8c6c228f976d6309bb5a332a2bcb452b9c58c38f55",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "84607d557df5066a",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "8388b47761d38f43": {
+      "id": "8388b47761d38f43",
+      "voice": "bacall",
+      "text": "Leave it. The quiet is worse.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Leave it. The quiet is worse."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "e987ac91",
+        "audio_path": "e987ac91.wav",
+        "duration": 1.94,
+        "gen_time": 0.86,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.94,
+        "peak_dbfs": -4.9679752769804,
+        "rms_dbfs": -22.295539469746856,
+        "nonsilent_rms_dbfs": -20.28157989317301,
+        "nonsilent_seconds": 1.22,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.508030682327565,
+        "bytes": 16172,
+        "sha256": "4504f11d567a48923a478a4c3bc527bc38dc3d1e8cd4ff2c8d2e5d1f2a7d4ea6",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "7a484d7d9c8c26fa",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "2ec6af00557caa0e": {
+      "id": "2ec6af00557caa0e",
+      "voice": "price",
+      "text": "Reference west. No. East. Hold the last reading.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "ee2d0eb3",
+        "text": "Reference west. No. East. Hold the last reading."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ef40c551",
+        "audio_path": "ef40c551.wav",
+        "duration": 2.6,
+        "gen_time": 0.86,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.6,
+        "peak_dbfs": -2.5550234056484866,
+        "rms_dbfs": -25.031033661637714,
+        "nonsilent_rms_dbfs": -24.610521177638518,
+        "nonsilent_seconds": 2.36,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.271270909521792,
+        "bytes": 21548,
+        "sha256": "fc2b4e0f619b868001fd42a6895af49384c3a187970dcfe3e2ded24aff1887df",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "d34a5400fa5d17f2",
+      "reference_sha256": "3b1da495e096a0dc163881ef0f663ee6d65f3b81a13d38757a9dbf275e8e60b7"
+    },
+    "df7e6361795f2db1": {
+      "id": "df7e6361795f2db1",
+      "voice": "lynch",
+      "text": "Shop's closed, friend. Open at ten. Tours on Saturdays.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Shop's closed, friend. Open at ten. Tours on Saturdays."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "844f74aa",
+        "audio_path": "844f74aa.wav",
+        "duration": 4.72,
+        "gen_time": 1.59,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.72,
+        "peak_dbfs": -6.160577746200348,
+        "rms_dbfs": -20.621524799415702,
+        "nonsilent_rms_dbfs": -20.29697018324269,
+        "nonsilent_seconds": 4.38,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.683327872502634,
+        "bytes": 38444,
+        "sha256": "d74103abb514e516250b7503c85365b4b28622d1aa8342d46e960c688ac4650e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "98f4efc1154fdd1b",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "26d248729e687aee": {
+      "id": "26d248729e687aee",
+      "voice": "stanton",
+      "text": "warm up by Wednesday.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "warm up by Wednesday."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "292f2e03",
+        "audio_path": "292f2e03.wav",
+        "duration": 1.96,
+        "gen_time": 0.89,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.96,
+        "peak_dbfs": -8.845095934776873,
+        "rms_dbfs": -21.781692229637844,
+        "nonsilent_rms_dbfs": -19.998866563511783,
+        "nonsilent_seconds": 1.3,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.399440385000943,
+        "bytes": 16364,
+        "sha256": "ff515cb84a23873fd21f0323e13414f11d575812d960c02c3391630e423bdd86",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "36820e812a8b251a",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "84296ab6db5394ae": {
+      "id": "84296ab6db5394ae",
+      "voice": "stanton",
+      "text": "Pumps are locked till six. You want something from in here, I can pass it through.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Pumps are locked till six. You want something from in here, I can pass it through."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "fb0b7817",
+        "audio_path": "fb0b7817.wav",
+        "duration": 4.49,
+        "gen_time": 1.37,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.49,
+        "peak_dbfs": -3.854749032914099,
+        "rms_dbfs": -21.091594435235944,
+        "nonsilent_rms_dbfs": -20.38987483919133,
+        "nonsilent_seconds": 3.82,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.4160054480899085,
+        "bytes": 36716,
+        "sha256": "86559f38ac2d2d673aabca8248bb93b0d9bea529f728f9179315be692fdf10b8",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "bb71b7430de3f6d5",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "7efc5b03b0dc7416": {
+      "id": "7efc5b03b0dc7416",
+      "voice": "stanton",
+      "text": "Still out, huh.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Still out, huh."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "b1a4dcf6",
+        "audio_path": "b1a4dcf6.wav",
+        "duration": 1.76,
+        "gen_time": 0.87,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.76,
+        "peak_dbfs": -6.2693430497543154,
+        "rms_dbfs": -21.96687257569369,
+        "nonsilent_rms_dbfs": -20.303811065094134,
+        "nonsilent_seconds": 1.2,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.8447908393914396,
+        "bytes": 14828,
+        "sha256": "50da4c780801ac1803fee65cd5b194c4a8d9d43c367f9e48a3e1d13c3d407a67",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "7beed03ed874d048",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "8a4ed39c42bfe191": {
+      "id": "8a4ed39c42bfe191",
+      "voice": "stanton",
+      "text": "Highway north. There is no other way that goes anywhere.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Highway north. There is no other way that goes anywhere."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "dc4b162b",
+        "audio_path": "dc4b162b.wav",
+        "duration": 3.84,
+        "gen_time": 1.14,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.84,
+        "peak_dbfs": -7.482213201060974,
+        "rms_dbfs": -21.240330529678296,
+        "nonsilent_rms_dbfs": -19.774898450484315,
+        "nonsilent_seconds": 2.74,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.962487031171236,
+        "bytes": 31340,
+        "sha256": "419e2541645a18c8fc71c12fb4e2369cf73050ac1696908c4590f8565f7ad58d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "eb1c5f55859724c7",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "22010a044849c8f3": {
+      "id": "22010a044849c8f3",
+      "voice": "stanton",
+      "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "44b64e5d",
+        "audio_path": "44b64e5d.wav",
+        "duration": 7.4,
+        "gen_time": 1.52,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.4,
+        "peak_dbfs": -5.3305193108407,
+        "rms_dbfs": -21.070876536660702,
+        "nonsilent_rms_dbfs": -19.99831223466893,
+        "nonsilent_seconds": 5.78,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.982638918013258,
+        "bytes": 59948,
+        "sha256": "0a216bee9a0948a6d54e4f625b67872ede440a61d4a6214e694f104384a86893",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6a80761364445445",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "30178bdc0269961d": {
+      "id": "30178bdc0269961d",
+      "voice": "stanton",
+      "text": "Your people come down for gas on Fridays. Nice folks. Don't say much.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Your people come down for gas on Fridays. Nice folks. Don't say much."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ab7d3aa3",
+        "audio_path": "ab7d3aa3.wav",
+        "duration": 4.6,
+        "gen_time": 1.11,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.6,
+        "peak_dbfs": -4.228044389504749,
+        "rms_dbfs": -21.004918646752664,
+        "nonsilent_rms_dbfs": -20.332514116495517,
+        "nonsilent_seconds": 3.94,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.8929618005019648,
+        "bytes": 37484,
+        "sha256": "3623b711a757b35dafe9d0c5b02989c38dd53e1910bd85d6c931d7e10e00df23",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "d52d101be1036d5e",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "42993f8b291e1a59": {
+      "id": "42993f8b291e1a59",
+      "voice": "stanton",
+      "text": "Earl brings those. The radio fella, across the street.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Earl brings those. The radio fella, across the street."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "8cb2c70c",
+        "audio_path": "8cb2c70c.wav",
+        "duration": 3.72,
+        "gen_time": 1.11,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.72,
+        "peak_dbfs": -6.994464049132814,
+        "rms_dbfs": -21.263334504504137,
+        "nonsilent_rms_dbfs": -20.415158201235823,
+        "nonsilent_seconds": 3.06,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.522115692376325,
+        "bytes": 30380,
+        "sha256": "537c021e6277129fe1dfd3819640dc88ce90978e7f4e09bd27cee36f5130b77d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "eeea5951b8b6ffe4",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "d19bade7874887fa": {
+      "id": "d19bade7874887fa",
+      "voice": "stanton",
+      "text": "I let him tape them up. He buys his gas here.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "I let him tape them up. He buys his gas here."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c03e115b",
+        "audio_path": "c03e115b.wav",
+        "duration": 2.96,
+        "gen_time": 0.93,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.96,
+        "peak_dbfs": -6.830341360397175,
+        "rms_dbfs": -20.91021889118547,
+        "nonsilent_rms_dbfs": -20.41338082062596,
+        "nonsilent_seconds": 2.64,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.474915821503046,
+        "bytes": 24428,
+        "sha256": "543ce631aade2d2d378500f9d20b17f9704b1a8dbb7d392e3fba81321bbfad16",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3ccd2d462835ab58",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "454878a0f1f50e56": {
+      "id": "454878a0f1f50e56",
+      "voice": "stanton",
+      "text": "People call him. I couldn't tell you why they'd want to.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "People call him. I couldn't tell you why they'd want to."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "9aa6a53c",
+        "audio_path": "9aa6a53c.wav",
+        "duration": 3.72,
+        "gen_time": 1.18,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.72,
+        "peak_dbfs": -5.702335753021121,
+        "rms_dbfs": -22.06663493179953,
+        "nonsilent_rms_dbfs": -20.409691042705678,
+        "nonsilent_seconds": 2.54,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.167650930858578,
+        "bytes": 30380,
+        "sha256": "f38cc2dba551deee71d5538eb6a5bd1df9c23761558691f6b285581169531219",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "cfa25b56e4845dba",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "79a44e7e5fd1e5bf": {
+      "id": "79a44e7e5fd1e5bf",
+      "voice": "stanton",
+      "text": "Towed a rig in off it once. Last October.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 45,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Toad. A rig in off it once. Last October."
+      },
+      "pronunciation_override": true,
+      "response": {
+        "type": "done",
+        "id": "e4506b93",
+        "audio_path": "e4506b93.wav",
+        "duration": 2.72,
+        "gen_time": 1.08,
+        "seed": 45,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.72,
+        "peak_dbfs": -4.849548717170425,
+        "rms_dbfs": -21.604172873572793,
+        "nonsilent_rms_dbfs": -20.43937087294182,
+        "nonsilent_seconds": 2.08,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.667252608377723,
+        "bytes": 22508,
+        "sha256": "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "38de331d4031e3b9",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "d56bdd61a80ce2fb": {
+      "id": "d56bdd61a80ce2fb",
+      "voice": "stanton",
+      "text": "Left here a quarter to two. Got back twenty-five past four.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Left here a quarter to two. Got back twenty-five past four."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "f1279075",
+        "audio_path": "f1279075.wav",
+        "duration": 3.74,
+        "gen_time": 1.19,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.74,
+        "peak_dbfs": -5.162744756178953,
+        "rms_dbfs": -20.968762400531602,
+        "nonsilent_rms_dbfs": -20.372324835016002,
+        "nonsilent_seconds": 3.26,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.7517816416440475,
+        "bytes": 30572,
+        "sha256": "f9fe44128ff2bd9ebdc6d4b4683954b91e8efcdc5835eeedb4f37145874b6b8b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "66c0e7d49450899e",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "080a38b87176fc6c": {
+      "id": "080a38b87176fc6c",
+      "voice": "stanton",
+      "text": "It's a forty minute job.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "It's a forty minute job."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "169fcbdc",
+        "audio_path": "169fcbdc.wav",
+        "duration": 2.0,
+        "gen_time": 0.85,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.0,
+        "peak_dbfs": -8.053405652382592,
+        "rms_dbfs": -22.119438814789056,
+        "nonsilent_rms_dbfs": -20.380409706360666,
+        "nonsilent_seconds": 1.34,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.5684518994972585,
+        "bytes": 16748,
+        "sha256": "035333f0890548dfda209d37f116bd9a35ea3a645f4b1e4e84858793cc45ba50",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "f4d046dc9306e3d9",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "093d3f6ceb740aa7": {
+      "id": "093d3f6ceb740aa7",
+      "voice": "stanton",
+      "text": "Anyway. Cold one tonight.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Anyway. Cold one tonight."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "61a18a78",
+        "audio_path": "61a18a78.wav",
+        "duration": 2.04,
+        "gen_time": 0.85,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.04,
+        "peak_dbfs": -6.004985045104138,
+        "rms_dbfs": -21.781098469650235,
+        "nonsilent_rms_dbfs": -20.268722306431286,
+        "nonsilent_seconds": 1.44,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.46795708955597,
+        "bytes": 16940,
+        "sha256": "91c8a77b9008c41d206e8f0aee30fdb0964a91dabdbaabedf5d40d46e3252c3e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "be702ee260ed5398",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "1af93cf161994ee3": {
+      "id": "1af93cf161994ee3",
+      "voice": "stanton",
+      "text": "Wasn't me, then. I've been here since ten.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Wasn't me, then. I've been here since ten."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "37b7f602",
+        "audio_path": "37b7f602.wav",
+        "duration": 2.8,
+        "gen_time": 0.87,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.8,
+        "peak_dbfs": -9.304114107532822,
+        "rms_dbfs": -21.524411648197635,
+        "nonsilent_rms_dbfs": -20.31628542180323,
+        "nonsilent_seconds": 2.12,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.895728833666885,
+        "bytes": 23084,
+        "sha256": "8f1012ddaec9655c72fb68ebf5b787aa4cf6ab0ae293fd7dbd21823ffb19f1ce",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4aefbbba00663edf",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "ea2ae90b1d91d117": {
+      "id": "ea2ae90b1d91d117",
+      "voice": "stanton",
+      "text": "That phone takes dimes.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "That phone takes dimes."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "271ebb02",
+        "audio_path": "271ebb02.wav",
+        "duration": 2.0,
+        "gen_time": 0.8,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.0,
+        "peak_dbfs": -7.801289900672884,
+        "rms_dbfs": -21.309991891292334,
+        "nonsilent_rms_dbfs": -20.286372850835626,
+        "nonsilent_seconds": 1.58,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.438679936787686,
+        "bytes": 16748,
+        "sha256": "f1ca403228858ba200cb8da67b76da3cf54c5f640de4d6c0bfd7e5aa35e6ae7e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "acbc88a328adb33e",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "625190e94de15be0": {
+      "id": "625190e94de15be0",
+      "voice": "stanton",
+      "text": "I can read it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "I can read it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "dc8dc443",
+        "audio_path": "dc8dc443.wav",
+        "duration": 1.55,
+        "gen_time": 0.87,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.55,
+        "peak_dbfs": -8.464360352907788,
+        "rms_dbfs": -23.21750956660036,
+        "nonsilent_rms_dbfs": -20.006944619482745,
+        "nonsilent_seconds": 0.74,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.028051193576417,
+        "bytes": 13100,
+        "sha256": "ad5d4ad12f38b8db3d313e18be488be9690c92db8aa6af3af91d26018857a86b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c8eb629e0f1c4977",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "71fd7972fd78795e": {
+      "id": "71fd7972fd78795e",
+      "voice": "stanton",
+      "text": "Keep it. I write down what goes in the till. I want it to add up.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Keep it. I write down what goes in the till. I want it to add up."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "79888e42",
+        "audio_path": "79888e42.wav",
+        "duration": 4.16,
+        "gen_time": 1.06,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.16,
+        "peak_dbfs": -5.90278476836829,
+        "rms_dbfs": -21.581996190760417,
+        "nonsilent_rms_dbfs": -20.304885398609223,
+        "nonsilent_seconds": 3.1,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.5585959274032177,
+        "bytes": 34028,
+        "sha256": "8e599050fa06081f7710695791e7f0b3b99c462c4ed9c3800d7da1b2302809cd",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32f2665a6137196f",
+      "reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    },
+    "bb25a63657a9b521": {
+      "id": "bb25a63657a9b521",
+      "voice": "stack",
+      "text": "Help you?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Help you?"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c6e18754",
+        "audio_path": "c6e18754.wav",
+        "duration": 1.52,
+        "gen_time": 0.92,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.52,
+        "peak_dbfs": -2.626766296339978,
+        "rms_dbfs": -21.21426336456699,
+        "nonsilent_rms_dbfs": -20.468017305686168,
+        "nonsilent_seconds": 1.28,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.16872634739771764,
+        "bytes": 12908,
+        "sha256": "6b02d09306b68fd58f71d35c8d75727eedec65069f99f20215abf9fc833b1785",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "041b79a6c2a33ea5",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "9e9f7acf824b7a81": {
+      "id": "9e9f7acf824b7a81",
+      "voice": "stack",
+      "text": "SARO. Sure. You folks lose something?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "SARO. Sure. You folks lose something?"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "42a68154",
+        "audio_path": "42a68154.wav",
+        "duration": 2.64,
+        "gen_time": 0.96,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.64,
+        "peak_dbfs": -8.684856520030824,
+        "rms_dbfs": -20.827999692384882,
+        "nonsilent_rms_dbfs": -20.37775730249065,
+        "nonsilent_seconds": 2.38,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.2964779784429545,
+        "bytes": 21740,
+        "sha256": "b19e43033c20c58b63a902f32eee50e6c4fa6edf8afb46d5210d04f10949305f",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4c2302dfbd47e246",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "d3c6ddc2817816c2": {
+      "id": "d3c6ddc2817816c2",
+      "voice": "stack",
+      "text": "Back again.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Back again."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "4d6ce358",
+        "audio_path": "4d6ce358.wav",
+        "duration": 1.64,
+        "gen_time": 0.83,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.64,
+        "peak_dbfs": -4.794555975142606,
+        "rms_dbfs": -21.00738969358934,
+        "nonsilent_rms_dbfs": -20.442584595855617,
+        "nonsilent_seconds": 1.44,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.3421766151787224,
+        "bytes": 13868,
+        "sha256": "4d9dcc44cc4b1621a75ad3c3c057b714595e8ee98ea3d29b4ce01857d7ed8b7e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "d468e8c44d97bc9c",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "16b8aad01575b86b": {
+      "id": "16b8aad01575b86b",
+      "voice": "stack",
+      "text": "Calls. Every call I get that I can't write up as anything.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Calls. Every call I get that I can't write up, as anything."
+      },
+      "pronunciation_override": true,
+      "response": {
+        "type": "done",
+        "id": "d1bfd990",
+        "audio_path": "d1bfd990.wav",
+        "duration": 3.92,
+        "gen_time": 1.21,
+        "seed": 44,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.92,
+        "peak_dbfs": -7.271529326267848,
+        "rms_dbfs": -20.717596716764856,
+        "nonsilent_rms_dbfs": -20.41956657127921,
+        "nonsilent_seconds": 3.66,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.934177992389596,
+        "bytes": 32108,
+        "sha256": "6fd3ed27290686bcb3f82d19312611e6dd68419ffa1ff1e74445049028347bb4",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "f7f958344d036ed2",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "bcd48344aa27b453": {
+      "id": "bcd48344aa27b453",
+      "voice": "stack",
+      "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "f3d3c6e3",
+        "audio_path": "f3d3c6e3.wav",
+        "duration": 6.6,
+        "gen_time": 1.59,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.6,
+        "peak_dbfs": -9.110320536969052,
+        "rms_dbfs": -20.59189025594517,
+        "nonsilent_rms_dbfs": -20.431032992330863,
+        "nonsilent_seconds": 6.36,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.752390974149407,
+        "bytes": 53420,
+        "sha256": "5c4d9c1758163410e8c5005d26187fa6417347f3eac27d7bac24b75e87a73806",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "fe7ebc6b323c2f83",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "fac7ad64a3049092": {
+      "id": "fac7ad64a3049092",
+      "voice": "stack",
+      "text": "I don't believe in little men. I believe in maps.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "I don't believe in little men. I believe in maps."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "3b478e97",
+        "audio_path": "3b478e97.wav",
+        "duration": 3.32,
+        "gen_time": 1.03,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.32,
+        "peak_dbfs": -6.251851518001561,
+        "rms_dbfs": -20.707896287363823,
+        "nonsilent_rms_dbfs": -20.410154568494544,
+        "nonsilent_seconds": 3.1,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.8242666561686534,
+        "bytes": 27308,
+        "sha256": "dbb48df80b743c0e534849b38aac733b936e06e2ec7b49e6f25d375b159b2cd9",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3ff40f72be22ebed",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "39891e2464e2e381": {
+      "id": "39891e2464e2e381",
+      "voice": "stack",
+      "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "dc783a5e",
+        "audio_path": "dc783a5e.wav",
+        "duration": 6.44,
+        "gen_time": 1.6,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.44,
+        "peak_dbfs": -8.243276866679517,
+        "rms_dbfs": -20.58221604822095,
+        "nonsilent_rms_dbfs": -20.431274957090654,
+        "nonsilent_seconds": 6.22,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.766976133592509,
+        "bytes": 52268,
+        "sha256": "7aa55aa0c7b485b104d65d24a4194ecf57c35d057ec2dd5a0a649440dbdc13da",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "cfe271b605d768b7",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "2710dc407d1dd102": {
+      "id": "2710dc407d1dd102",
+      "voice": "stack",
+      "text": "The old road. Red, mostly. Engines. Out past where the county stops grading.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "The old road. Red, mostly. Engines. Out past where the county stops grading."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "573345d0",
+        "audio_path": "573345d0.wav",
+        "duration": 5.16,
+        "gen_time": 1.45,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.16,
+        "peak_dbfs": -8.790678005837353,
+        "rms_dbfs": -20.635827980102842,
+        "nonsilent_rms_dbfs": -20.411329926508945,
+        "nonsilent_seconds": 4.9,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.404933177474891,
+        "bytes": 41900,
+        "sha256": "e09341f34c926ed6042e88319268ed5a9ff7df3e79197108792085268dd58000",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "097f47c2bc86a169",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "a5757a82a7e037fc": {
+      "id": "a5757a82a7e037fc",
+      "voice": "stack",
+      "text": "Every one of those is a car somebody had to tow back.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Every one of those is a car somebody had to tow back."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "7a949ed4",
+        "audio_path": "7a949ed4.wav",
+        "duration": 3.56,
+        "gen_time": 1.07,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.56,
+        "peak_dbfs": -7.71854030706939,
+        "rms_dbfs": -20.696614542771773,
+        "nonsilent_rms_dbfs": -20.419592036418933,
+        "nonsilent_seconds": 3.34,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.459840970311532,
+        "bytes": 29228,
+        "sha256": "36276df4370607a2d6564b2bbb9710b4926fa8fa97772ab06fd7333e82f1ef50",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "e1591d615f9f2ce6",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "58b532bab9a7b9b7": {
+      "id": "58b532bab9a7b9b7",
+      "voice": "stack",
+      "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "56dd4193",
+        "audio_path": "56dd4193.wav",
+        "duration": 5.56,
+        "gen_time": 1.42,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.56,
+        "peak_dbfs": -8.200902199671361,
+        "rms_dbfs": -20.621672295557975,
+        "nonsilent_rms_dbfs": -20.430056392970286,
+        "nonsilent_seconds": 5.32,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.806142037176343,
+        "bytes": 45164,
+        "sha256": "bbea5d84f110c6b8b2db22f393d361237cfffd98456604ace1225c7f9e45e340",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "cd32ab81eeb620f2",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "c2931e01331160a6": {
+      "id": "c2931e01331160a6",
+      "voice": "stack",
+      "text": "Three of them are right here in town.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Three of them are right here in town."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "1690b08d",
+        "audio_path": "1690b08d.wav",
+        "duration": 2.6,
+        "gen_time": 0.95,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.6,
+        "peak_dbfs": -8.985323142504267,
+        "rms_dbfs": -20.829732503135048,
+        "nonsilent_rms_dbfs": -20.22124762026553,
+        "nonsilent_seconds": 2.26,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.679569819232142,
+        "bytes": 21548,
+        "sha256": "38b37d86cf5d9443bb1db42d43c34e02f1bc4926f73ee021d6a26ea5db6f9330",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6a73f621cdb59de1",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "a3d657e1a59ed461": {
+      "id": "a3d657e1a59ed461",
+      "voice": "stack",
+      "text": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "The fella at the gas station. October nineteenth, last year. Went out to toe a rig and lost two hours he can't account for."
+      },
+      "pronunciation_override": true,
+      "response": {
+        "type": "done",
+        "id": "d210712f",
+        "audio_path": "d210712f.wav",
+        "duration": 8.12,
+        "gen_time": 1.76,
+        "seed": 44,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 8.12,
+        "peak_dbfs": -7.998835512049908,
+        "rms_dbfs": -20.562904177441407,
+        "nonsilent_rms_dbfs": -20.443616911672677,
+        "nonsilent_seconds": 7.9,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.564282294043281,
+        "bytes": 65708,
+        "sha256": "a629a611a006c9980017070bf1b704cc738429b58daabc549efb6cbd15e8530b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "e391a2bac5ce5540",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "4080f29637b3f907": {
+      "id": "4080f29637b3f907",
+      "voice": "stack",
+      "text": "A man whose wife sits out at the laundromat nights. March of '83.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "A man whose wife sits out at the laundromat nights. March of '83."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "b603fc85",
+        "audio_path": "b603fc85.wav",
+        "duration": 5.12,
+        "gen_time": 1.46,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.12,
+        "peak_dbfs": -7.402823084830057,
+        "rms_dbfs": -20.65051792440073,
+        "nonsilent_rms_dbfs": -20.40631203022402,
+        "nonsilent_seconds": 4.84,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.904529457304783,
+        "bytes": 41708,
+        "sha256": "bf74bf491ee103dad3e3ba111a00efe77e62f84754824cfcce3c8657d36564bc",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "88bcdf69cd069691",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "16d01f724af485f2": {
+      "id": "16d01f724af485f2",
+      "voice": "stack",
+      "text": "And a kid who called the radio station in September of '81. Family moved away after.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "And a kid who called the radio station in September of eighty-one. Family moved away, after."
+      },
+      "pronunciation_override": true,
+      "response": {
+        "type": "done",
+        "id": "4bd5d0f3",
+        "audio_path": "4bd5d0f3.wav",
+        "duration": 6.24,
+        "gen_time": 1.56,
+        "seed": 44,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.24,
+        "peak_dbfs": -8.553739026571566,
+        "rms_dbfs": -20.599385088460032,
+        "nonsilent_rms_dbfs": -20.414569054529647,
+        "nonsilent_seconds": 5.98,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.100463924367938,
+        "bytes": 50540,
+        "sha256": "c7ba9f84da43ff40f58bedd937357411c8dbc4a8f526ad1810cd8fddaf71e86b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "bde23622618eb5cd",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "7f7d4cb8653d87ad": {
+      "id": "7f7d4cb8653d87ad",
+      "voice": "stack",
+      "text": "Don't go asking them about it. They don't know they've got a pin.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Don't go asking them about it. They don't know they've got a pin."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "e6d54655",
+        "audio_path": "e6d54655.wav",
+        "duration": 4.28,
+        "gen_time": 1.2,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.28,
+        "peak_dbfs": -6.232969478926757,
+        "rms_dbfs": -20.66887324737337,
+        "nonsilent_rms_dbfs": -20.375105613201463,
+        "nonsilent_seconds": 4.0,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.9317205379461555,
+        "bytes": 34988,
+        "sha256": "39c7cfe8d6e13539c73c528a7a55b94d6d632af4cc6bc89e6852e30bab226327",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "a682d109b3c58376",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "b7e40d1580be6b24": {
+      "id": "b7e40d1580be6b24",
+      "voice": "stack",
+      "text": "I drove the loop. I came straight back.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "I drove the loop. I came straight back."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "832c128c",
+        "audio_path": "832c128c.wav",
+        "duration": 2.68,
+        "gen_time": 0.97,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.68,
+        "peak_dbfs": -9.100909209163637,
+        "rms_dbfs": -20.81726654803279,
+        "nonsilent_rms_dbfs": -20.374115464135897,
+        "nonsilent_seconds": 2.42,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.556935615645617,
+        "bytes": 22124,
+        "sha256": "4789349991015d7fe53af82b6cff829c5a0d3b1614f4050634f01af267ca8678",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "ae837eacdbf65461",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "901352230f22a966": {
+      "id": "901352230f22a966",
+      "voice": "stack",
+      "text": "Write down where you saw it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Write down where you saw it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "4b43f459",
+        "audio_path": "4b43f459.wav",
+        "duration": 2.12,
+        "gen_time": 0.93,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.12,
+        "peak_dbfs": -8.986186989560283,
+        "rms_dbfs": -20.918641494948815,
+        "nonsilent_rms_dbfs": -20.39689910614875,
+        "nonsilent_seconds": 1.88,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -6.535780409374542,
+        "bytes": 17708,
+        "sha256": "cdd3167eaf1cd3d5044e8ae322e0efca63d2d76c1c126b2c5cea998f84a606df",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6c2c0cea4ac20ddb",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "98cd293a4f8783be": {
+      "id": "98cd293a4f8783be",
+      "voice": "stack",
+      "text": "Here. In your own words.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Here. In your own words."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "cfa5c3ab",
+        "audio_path": "cfa5c3ab.wav",
+        "duration": 2.0,
+        "gen_time": 0.92,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.0,
+        "peak_dbfs": -10.36370425721925,
+        "rms_dbfs": -20.95113631077947,
+        "nonsilent_rms_dbfs": -20.445039849765912,
+        "nonsilent_seconds": 1.78,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -7.75754281910687,
+        "bytes": 16748,
+        "sha256": "acc99b3b24b21c8dae36788c0f1a915e5ede90ed1af7c493b7c384b7b3cd0aed",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "0fc0174e4d3e2926",
+      "reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "a4cd9f72f9dbbc66": {
+      "id": "a4cd9f72f9dbbc66",
+      "voice": "lynch",
+      "text": "Still closed.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Still closed."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "cf1b4d0c",
+        "audio_path": "cf1b4d0c.wav",
+        "duration": 1.84,
+        "gen_time": 1.08,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.84,
+        "peak_dbfs": -4.794172954453463,
+        "rms_dbfs": -20.980310859670382,
+        "nonsilent_rms_dbfs": -19.85552537337535,
+        "nonsilent_seconds": 1.42,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.292259543475211,
+        "bytes": 15404,
+        "sha256": "0829d5713b883b5eb39b7b08a297135ee0066c813bea3523c606a11f9c57daab",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "b22c140d503fee03",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "4eeda12417ff0bb6": {
+      "id": "4eeda12417ff0bb6",
+      "voice": "lynch",
+      "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c3c0c604",
+        "audio_path": "c3c0c604.wav",
+        "duration": 10.96,
+        "gen_time": 2.3,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 10.96,
+        "peak_dbfs": -5.015075713217499,
+        "rms_dbfs": -20.521530763779996,
+        "nonsilent_rms_dbfs": -20.192538991573933,
+        "nonsilent_seconds": 10.16,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.6970646645562084,
+        "bytes": 88364,
+        "sha256": "5cf1e7ffd2d6d279b90e5276de20bfcd1f47541ba1e4f9ea3b59043c4c49177e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "8941cc0da74e7e7d",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "6aba5d47fd49f4de": {
+      "id": "6aba5d47fd49f4de",
+      "voice": "lynch",
+      "text": "The Army says flying disc. Same day, they say weather balloon.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "The Army says flying disc. Same day, they say weather balloon."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "1f73f598",
+        "audio_path": "1f73f598.wav",
+        "duration": 5.32,
+        "gen_time": 1.59,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.32,
+        "peak_dbfs": -8.094933634045818,
+        "rms_dbfs": -20.59562183703629,
+        "nonsilent_rms_dbfs": -20.378050914367165,
+        "nonsilent_seconds": 5.06,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.5821744536768865,
+        "bytes": 43244,
+        "sha256": "ef442c0bb689fea428cf15b76f0ba1f7f90c44620c8a23edcfc92fd625c65fbc",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4e6f1fbcca8691b0",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "def63b4b7af9de97": {
+      "id": "def63b4b7af9de97",
+      "voice": "lynch",
+      "text": "Then nothing for thirty years, till the book.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Then nothing for thirty years, till the book."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "a4dd122e",
+        "audio_path": "a4dd122e.wav",
+        "duration": 3.96,
+        "gen_time": 1.48,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.96,
+        "peak_dbfs": -7.422858528358257,
+        "rms_dbfs": -20.6995947173547,
+        "nonsilent_rms_dbfs": -20.309854948981307,
+        "nonsilent_seconds": 3.62,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.812337906061163,
+        "bytes": 32300,
+        "sha256": "9ef85a5bc985ae36163f44a22bce6c6d2c891649193466d3c6d722827e948011",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "44eac6dfb960e0f1",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "f1ff47f83555b48e": {
+      "id": "f1ff47f83555b48e",
+      "voice": "lynch",
+      "text": "The boys from '47. That's what I call them. The boys.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "The boys from '47. That's what I call them. The boys."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "257005fa",
+        "audio_path": "257005fa.wav",
+        "duration": 5.2,
+        "gen_time": 1.56,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.2,
+        "peak_dbfs": -5.187393511941387,
+        "rms_dbfs": -20.62179797470058,
+        "nonsilent_rms_dbfs": -20.310322641001754,
+        "nonsilent_seconds": 4.84,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.712459384992634,
+        "bytes": 42284,
+        "sha256": "8641e7741ba6cf77c707d308cf64857c78c329a1eb727ceb52651c1e8e746851",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "fbac419c7b80ffb7",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "7cb1d70b18a6c64d": {
+      "id": "7cb1d70b18a6c64d",
+      "voice": "lynch",
+      "text": "Me?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Me?"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "221998f5",
+        "audio_path": "221998f5.wav",
+        "duration": 1.16,
+        "gen_time": 1.02,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.16,
+        "peak_dbfs": -7.804824108254307,
+        "rms_dbfs": -21.358535012814098,
+        "nonsilent_rms_dbfs": -20.256565902371342,
+        "nonsilent_seconds": 0.9,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -5.31357535161758,
+        "bytes": 10028,
+        "sha256": "e3645eb2a2326b40f92827bfdae905dae5e5f236f68e0eed470ff06c592f3096",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "a75aac789f7fb755",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "5245817fc464e752": {
+      "id": "5245817fc464e752",
+      "voice": "lynch",
+      "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "b0f0e877",
+        "audio_path": "b0f0e877.wav",
+        "duration": 7.08,
+        "gen_time": 1.71,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.08,
+        "peak_dbfs": -4.4963281378438404,
+        "rms_dbfs": -20.568001593076595,
+        "nonsilent_rms_dbfs": -20.328510630064123,
+        "nonsilent_seconds": 6.7,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.0143856462152456,
+        "bytes": 57260,
+        "sha256": "f100cb4abd033477f8ac38637c93ab2f3f645a4d8022dd2892b0dd27ca65f06d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "ab488d7e1ce34797",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "180ca70eebd4666d": {
+      "id": "180ca70eebd4666d",
+      "voice": "lynch",
+      "text": "I sit out here every night it's clear. Never seen a thing.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "I sit out here every night it's clear. Never seen a thing."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "d6334f5f",
+        "audio_path": "d6334f5f.wav",
+        "duration": 4.84,
+        "gen_time": 1.56,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.84,
+        "peak_dbfs": -3.703196932088767,
+        "rms_dbfs": -20.65612732435835,
+        "nonsilent_rms_dbfs": -20.37830940629341,
+        "nonsilent_seconds": 4.54,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.4834546568076021,
+        "bytes": 39404,
+        "sha256": "4621fbb653fa66068bbfbdf596d132ac68252d2ad45db2d1cdafeda413210a42",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "70c6762f8de8cc8d",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "12e727c4fca81298": {
+      "id": "12e727c4fca81298",
+      "voice": "lynch",
+      "text": "You'd think they'd come by the shop once. Out of courtesy.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "You'd think they'd come by the shop once. Out of courtesy."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "123b4bcf",
+        "audio_path": "123b4bcf.wav",
+        "duration": 4.88,
+        "gen_time": 1.62,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.88,
+        "peak_dbfs": -3.593491261842175,
+        "rms_dbfs": -20.799204717040553,
+        "nonsilent_rms_dbfs": -20.349727614853382,
+        "nonsilent_seconds": 4.4,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.132797778909179,
+        "bytes": 39788,
+        "sha256": "c3eedf763d6a99579517cdcaacadf7f9be05c5717240cbc38694d86f4faac367",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "942cd158805e9235",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "11324fdeba045345": {
+      "id": "11324fdeba045345",
+      "voice": "lynch",
+      "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "46d66855",
+        "audio_path": "46d66855.wav",
+        "duration": 6.72,
+        "gen_time": 1.87,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.72,
+        "peak_dbfs": -4.881719185613866,
+        "rms_dbfs": -20.563666227214675,
+        "nonsilent_rms_dbfs": -20.32464212797446,
+        "nonsilent_seconds": 6.36,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.3786490239106826,
+        "bytes": 54380,
+        "sha256": "a859a18828ec3725eab40a9220992e3324e42e832e5d1a201daeafed932d0d62",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "754d495f5e896e17",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "8bd5406fec860296": {
+      "id": "8bd5406fec860296",
+      "voice": "lynch",
+      "text": "Last time it was out on the highway north of town. Standing up, facing the traffic.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Last time it was out on the highway north of town. Standing up, facing the traffic."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "68037c22",
+        "audio_path": "68037c22.wav",
+        "duration": 7.0,
+        "gen_time": 1.66,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.0,
+        "peak_dbfs": -5.134567967823594,
+        "rms_dbfs": -20.59364559408088,
+        "nonsilent_rms_dbfs": -20.285273349026415,
+        "nonsilent_seconds": 6.52,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.672924652366106,
+        "bytes": 56684,
+        "sha256": "ae0d47a29c5e6070348ff4da7eded17ee8cbd522fc0c268e6179890d3e5a1098",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "cf4553f1d26738cb",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "ae5e57e8b83918fe": {
+      "id": "ae5e57e8b83918fe",
+      "voice": "lynch",
+      "text": "Somebody's idea of a joke.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "49934b6f",
+        "text": "Somebody's idea of a joke."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "3dc671e0",
+        "audio_path": "3dc671e0.wav",
+        "duration": 2.32,
+        "gen_time": 1.26,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.32,
+        "peak_dbfs": -6.460744758524842,
+        "rms_dbfs": -20.82461844313307,
+        "nonsilent_rms_dbfs": -20.391955044864364,
+        "nonsilent_seconds": 2.1,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.301844974349869,
+        "bytes": 19244,
+        "sha256": "ba538dd129158ff4a665d88d8fd0fcaef5b3863392596cf607506eabf69ae3ae",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "9675d08521b49270",
+      "reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "faf124d4985a757f": {
+      "id": "faf124d4985a757f",
+      "voice": "bacall",
+      "text": "I took the battery out in 1947.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I took the battery out in 1947."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ae9b420a",
+        "audio_path": "ae9b420a.wav",
+        "duration": 2.63,
+        "gen_time": 0.97,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.63,
+        "peak_dbfs": -5.347501688018907,
+        "rms_dbfs": -21.00778991079372,
+        "nonsilent_rms_dbfs": -20.387650719085432,
+        "nonsilent_seconds": 2.28,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.610606968681033,
+        "bytes": 21740,
+        "sha256": "692b7fce184b4f8f038ce66a59ffa93a4c565e1dc5a31b48de950bae0566772e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "00cea05f9a4e8ad0",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "afd0d210f97099da": {
+      "id": "afd0d210f97099da",
+      "voice": "bacall",
+      "text": "He pressed it too. Twice.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "He pressed it too. Twice."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "9b27ea09",
+        "audio_path": "9b27ea09.wav",
+        "duration": 1.96,
+        "gen_time": 0.84,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.96,
+        "peak_dbfs": -3.939624572004115,
+        "rms_dbfs": -22.203937744182042,
+        "nonsilent_rms_dbfs": -20.353856057771026,
+        "nonsilent_seconds": 1.28,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.367625781680914,
+        "bytes": 16364,
+        "sha256": "b579f2d692d2693d3d2fd947a7dc6c9f2f8c0900c6ce7951e278eb4487b6cefc",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "72858e846e28ee48",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "82a279bb09d21f42": {
+      "id": "82a279bb09d21f42",
+      "voice": "bacall",
+      "text": "Go if you need to. I will be here.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Go if you need to. I will be here."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "de53b24b",
+        "audio_path": "de53b24b.wav",
+        "duration": 2.08,
+        "gen_time": 0.87,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.08,
+        "peak_dbfs": -6.028816898780894,
+        "rms_dbfs": -21.698023092773326,
+        "nonsilent_rms_dbfs": -20.39278620759589,
+        "nonsilent_seconds": 1.54,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.6337487438165468,
+        "bytes": 17324,
+        "sha256": "7c535b814fd2a6aac93ffb6baa34b522ad10398b5eee3e82cc0b230d86d9d2df",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "7300e9ad023b7b38",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "9d66821ab435e199": {
+      "id": "9d66821ab435e199",
+      "voice": "bacall",
+      "text": "So you came down the road.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "So you came down the road."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "e7e96bfa",
+        "audio_path": "e7e96bfa.wav",
+        "duration": 1.72,
+        "gen_time": 0.83,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.72,
+        "peak_dbfs": -5.783112024314477,
+        "rms_dbfs": -21.33177483487679,
+        "nonsilent_rms_dbfs": -20.437811065103002,
+        "nonsilent_seconds": 1.4,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.3568798935603077,
+        "bytes": 14444,
+        "sha256": "e89168a56917ae09c799824fe6ae0dc56bdfa98fb76c3d23d79f145c0777700f",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "83344f4691db630c",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "ca236ebd5ccf6d40": {
+      "id": "ca236ebd5ccf6d40",
+      "voice": "bacall",
+      "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "8aa704fb",
+        "audio_path": "8aa704fb.wav",
+        "duration": 7.99,
+        "gen_time": 1.96,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.99,
+        "peak_dbfs": -4.5524840323680085,
+        "rms_dbfs": -20.89616811996872,
+        "nonsilent_rms_dbfs": -20.371160255805577,
+        "nonsilent_seconds": 7.08,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.0788860480866624,
+        "bytes": 64556,
+        "sha256": "4cc1fe0397fc800ced5426b39a8912d3d3bf61fc6191be0ad5d3494e8fcd38d3",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "1e38dafb6c9da27c",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "f4dcafd4fb68524a": {
+      "id": "f4dcafd4fb68524a",
+      "voice": "bacall",
+      "text": "Both prints from B-12. The first one, and the control.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Both prints from B-12. The first one, and the control."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "a53de33e",
+        "audio_path": "a53de33e.wav",
+        "duration": 3.48,
+        "gen_time": 1.12,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.48,
+        "peak_dbfs": -4.830031543653611,
+        "rms_dbfs": -21.67129958621291,
+        "nonsilent_rms_dbfs": -20.372037799222195,
+        "nonsilent_seconds": 2.58,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.512361221055606,
+        "bytes": 28460,
+        "sha256": "98c51df0907f47ef5a47f2d7a263d0bc8fae9d1bf972673b3bf4ec5155da8c30",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "50f83e820072d6c8",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "a661a1d7f76c195c": {
+      "id": "a661a1d7f76c195c",
+      "voice": "bacall",
+      "text": "And the original. The one from the field box, not the service copy.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "And the original. The one from the field box, not the service copy."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "59c56f58",
+        "audio_path": "59c56f58.wav",
+        "duration": 3.71,
+        "gen_time": 1.09,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.71,
+        "peak_dbfs": -5.098248195287645,
+        "rms_dbfs": -21.389165736900807,
+        "nonsilent_rms_dbfs": -20.3196499297488,
+        "nonsilent_seconds": 2.9,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.4024924356866997,
+        "bytes": 30380,
+        "sha256": "e73d70afdf6d2083c3bed9718ff4eb4fc730c2e38baa7aff58842bc80d0ad2c8",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3f79cae095da84a8",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5c3d4ea31c185df1": {
+      "id": "5c3d4ea31c185df1",
+      "voice": "bacall",
+      "text": "The amended copy you can keep. I know what it says. I wrote it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "The amended copy you can keep. I know what it says. I wrote it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c0032982",
+        "audio_path": "c0032982.wav",
+        "duration": 3.33,
+        "gen_time": 1.02,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.33,
+        "peak_dbfs": -5.604635902765706,
+        "rms_dbfs": -21.22791591336435,
+        "nonsilent_rms_dbfs": -20.34930885989079,
+        "nonsilent_seconds": 2.72,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.0437918183390913,
+        "bytes": 27308,
+        "sha256": "17278c86f390714a5ea98998696d48e1e383ec460b41916ae94eb17cb8648a72",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "807701e96fc9c5a4",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "3bc3e9e1c9293377": {
+      "id": "3bc3e9e1c9293377",
+      "voice": "bacall",
+      "text": "I know that second line.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I know that second line."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "88962310",
+        "audio_path": "88962310.wav",
+        "duration": 1.76,
+        "gen_time": 0.83,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.76,
+        "peak_dbfs": -4.128707586284117,
+        "rms_dbfs": -21.31446576405851,
+        "nonsilent_rms_dbfs": -20.38231434303937,
+        "nonsilent_seconds": 1.42,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.6792245624237694,
+        "bytes": 14828,
+        "sha256": "fd039266807945f9e4084daee01df563ce425bafd2e3766452c54c4991d9bf71",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "092ce283eee91583",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "45b280586021faf4": {
+      "id": "45b280586021faf4",
+      "voice": "bacall",
+      "text": "Tell me which source you took away before you made the control.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Tell me which source you took away before you made the control."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "b7e22b3a",
+        "audio_path": "b7e22b3a.wav",
+        "duration": 3.72,
+        "gen_time": 1.05,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.72,
+        "peak_dbfs": -5.789969839094866,
+        "rms_dbfs": -20.929493594268376,
+        "nonsilent_rms_dbfs": -20.356352886198962,
+        "nonsilent_seconds": 3.26,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.2528450740988077,
+        "bytes": 30380,
+        "sha256": "d672f1fd18e1c9ed8c6fbe3a5d81d0bf07a7ed27b6f9c5f8910ab4aebb8686ae",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "ad705506912a92e1",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "f84b3f14afca6731": {
+      "id": "f84b3f14afca6731",
+      "voice": "bacall",
+      "text": "The receiver has nothing to do with the film. Look at how you made the second print.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "The receiver has nothing to do with the film. Look at how you made the second print."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "11f752eb",
+        "audio_path": "11f752eb.wav",
+        "duration": 4.84,
+        "gen_time": 1.24,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.84,
+        "peak_dbfs": -4.93370802767775,
+        "rms_dbfs": -21.220531475338447,
+        "nonsilent_rms_dbfs": -20.23826304652284,
+        "nonsilent_seconds": 3.86,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.729138796186632,
+        "bytes": 39404,
+        "sha256": "5a1b6537782c27cb13a392ed5014c5f3abbe25b8d5452e227579dbf16c707efb",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "b56144b0cfdc5535",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "8158a555371ce804": {
+      "id": "8158a555371ce804",
+      "voice": "bacall",
+      "text": "That is not what your print says. The lamp was on when you took it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "That is not what your print says. The lamp was on when you took it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c511ea4f",
+        "audio_path": "c511ea4f.wav",
+        "duration": 3.75,
+        "gen_time": 1.06,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.75,
+        "peak_dbfs": -4.434129382576892,
+        "rms_dbfs": -21.239153630907683,
+        "nonsilent_rms_dbfs": -20.35630374066274,
+        "nonsilent_seconds": 3.06,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.3053502901813197,
+        "bytes": 30764,
+        "sha256": "e8cae0a84836bf487d88f10c72bde89524ff9ecfcb3e3d9290616f3ce2802e8e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "90bee392ecb77cd0",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "3667d3f97769f675": {
+      "id": "3667d3f97769f675",
+      "voice": "bacall",
+      "text": "That is not what your print says. Your lamp was shielded.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "That is not what your print says. Your lamp was shielded."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "f093a0ea",
+        "audio_path": "f093a0ea.wav",
+        "duration": 3.22,
+        "gen_time": 1.03,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.22,
+        "peak_dbfs": -4.50637184981508,
+        "rms_dbfs": -21.102035068759164,
+        "nonsilent_rms_dbfs": -20.33730279449225,
+        "nonsilent_seconds": 2.7,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.132853007111855,
+        "bytes": 26540,
+        "sha256": "e056f9130540b6fb1f84e8953ecb980b14c6d41c6507ac23b8429f4b69f8eee6",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "9668028fff27e29a",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "ce995ae71d9e8d18": {
+      "id": "ce995ae71d9e8d18",
+      "voice": "bacall",
+      "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c84903a9",
+        "audio_path": "c84903a9.wav",
+        "duration": 6.2,
+        "gen_time": 1.45,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.2,
+        "peak_dbfs": -3.926080171388942,
+        "rms_dbfs": -20.941779351176635,
+        "nonsilent_rms_dbfs": -20.374038403423786,
+        "nonsilent_seconds": 5.44,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.539389158526511,
+        "bytes": 50348,
+        "sha256": "f9e34ab2b44eef2bce31726d36968556507712fb9b496f71bb70de029f95da40",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "9805eb9b85326a9f",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "207c2ae2a8a31a71": {
+      "id": "207c2ae2a8a31a71",
+      "voice": "bacall",
+      "text": "You moved it, and the second line did not move with it. Then it was not the drive.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "You moved it, and the second line did not move with it. Then it was not the drive."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "4bbd5ab7",
+        "audio_path": "4bbd5ab7.wav",
+        "duration": 4.49,
+        "gen_time": 1.24,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.49,
+        "peak_dbfs": -5.745329015586622,
+        "rms_dbfs": -21.152075127333404,
+        "nonsilent_rms_dbfs": -20.28831269094884,
+        "nonsilent_seconds": 3.68,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.215427188932072,
+        "bytes": 36716,
+        "sha256": "84f7aed767e3122be7fc47c7ab32e389417c79193a1df34909eae779cf44acf8",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "da83d6cfb03ac447",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "74a2c89dd3ec206f": {
+      "id": "74a2c89dd3ec206f",
+      "voice": "bacall",
+      "text": "Then you have what I had. A reference that stays on the film after its source is gone.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Then you have what I had. A reference that stays on the film after its source is gone."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "9f805a84",
+        "audio_path": "9f805a84.wav",
+        "duration": 4.92,
+        "gen_time": 1.24,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.92,
+        "peak_dbfs": -4.272006076076781,
+        "rms_dbfs": -20.909057510065967,
+        "nonsilent_rms_dbfs": -20.324296377892345,
+        "nonsilent_seconds": 4.3,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.9971157936194999,
+        "bytes": 39980,
+        "sha256": "03109dbbd85a7b239a70913628d49a66f15c2ffadb6cd6f9194d61cf49fbcd4d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "78fc4e8b93c1aa00",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5c3c8caf314dc788": {
+      "id": "5c3c8caf314dc788",
+      "voice": "bacall",
+      "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "99ddd1b1",
+        "audio_path": "99ddd1b1.wav",
+        "duration": 6.78,
+        "gen_time": 1.47,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.78,
+        "peak_dbfs": -4.86548036162507,
+        "rms_dbfs": -21.076866404502393,
+        "nonsilent_rms_dbfs": -20.42877665014466,
+        "nonsilent_seconds": 5.84,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.3219009634004664,
+        "bytes": 54956,
+        "sha256": "4cc49800e6b9e04b8de15ca63ecb30fc207c1f400fbd4ad6b6d4486115bfbcde",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "63029521282065e9",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "35461dadbd30f0ea": {
+      "id": "35461dadbd30f0ea",
+      "voice": "bacall",
+      "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "3cded647",
+        "audio_path": "3cded647.wav",
+        "duration": 6.35,
+        "gen_time": 1.64,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.35,
+        "peak_dbfs": -4.693543101233375,
+        "rms_dbfs": -21.028394219916223,
+        "nonsilent_rms_dbfs": -20.372776007227618,
+        "nonsilent_seconds": 5.46,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.293877090649069,
+        "bytes": 51500,
+        "sha256": "be77ef5e227d96144afda252fa90dd6abf01f4d55fd7c012dab996d1612d87fa",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "b185ebd2a04b2f3f",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "01b20196513bcb85": {
+      "id": "01b20196513bcb85",
+      "voice": "bacall",
+      "text": "I wrote that the lamp remained. It was easier than writing that he did.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I wrote that the lamp remained. It was easier than writing that he did."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "6bf09a92",
+        "audio_path": "6bf09a92.wav",
+        "duration": 3.82,
+        "gen_time": 1.07,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.82,
+        "peak_dbfs": -3.9714127802657746,
+        "rms_dbfs": -21.225352478634388,
+        "nonsilent_rms_dbfs": -20.429134621813297,
+        "nonsilent_seconds": 3.18,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.4621038654518443,
+        "bytes": 31340,
+        "sha256": "5b2fa6d8cd5cf47a777384054f1b83b323ef48abfa06068b907c891a7a3c31e3",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "5c573e505c3f4734",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "8d7fa89c7100b30e": {
+      "id": "8d7fa89c7100b30e",
+      "voice": "bacall",
+      "text": "I typed this in the office tonight, before you came. I have not signed it yet.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I typed this in the office tonight, before you came. I have not signed it yet."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "7de46b6d",
+        "audio_path": "7de46b6d.wav",
+        "duration": 4.15,
+        "gen_time": 1.12,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 4.15,
+        "peak_dbfs": -4.248479582693706,
+        "rms_dbfs": -20.960947633954717,
+        "nonsilent_rms_dbfs": -20.415384688083314,
+        "nonsilent_seconds": 3.66,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.895181315611726,
+        "bytes": 33836,
+        "sha256": "a785c6739b18d611256f27986f916ade737488d2c7cb20d05a4786d67c5db7a9",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "27df515e11ecaeb4",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "dcc580841dce7894": {
+      "id": "dcc580841dce7894",
+      "voice": "bacall",
+      "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "70001874",
+        "audio_path": "70001874.wav",
+        "duration": 5.4,
+        "gen_time": 1.43,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.4,
+        "peak_dbfs": -3.8816474432448693,
+        "rms_dbfs": -21.156610092148128,
+        "nonsilent_rms_dbfs": -20.306814248802162,
+        "nonsilent_seconds": 4.44,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.2668218545736352,
+        "bytes": 43820,
+        "sha256": "3d5ed0aa6fcc61fd6f93d35e2dc9e42622030172df24c4d961589ba02df54c5b",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c174aec2e2112758",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "7e69bd76dd3ecf4f": {
+      "id": "7e69bd76dd3ecf4f",
+      "voice": "bacall",
+      "text": "He has been nineteen for thirty-nine years.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "He has been nineteen for thirty-nine years."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "d15da07c",
+        "audio_path": "d15da07c.wav",
+        "duration": 2.64,
+        "gen_time": 0.95,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.64,
+        "peak_dbfs": -5.221086982819159,
+        "rms_dbfs": -21.12651974518071,
+        "nonsilent_rms_dbfs": -20.255282729171583,
+        "nonsilent_seconds": 2.16,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.8671214119296486,
+        "bytes": 21740,
+        "sha256": "2f7a613d6fabb9925c445f203961335fdbe9ecaef1d11179db8fa2ee9c77c218",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "8c99bed90512221d",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "4b40492a2266bc74": {
+      "id": "4b40492a2266bc74",
+      "voice": "bacall",
+      "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "29d1ff80",
+        "audio_path": "29d1ff80.wav",
+        "duration": 5.5,
+        "gen_time": 1.28,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.5,
+        "peak_dbfs": -6.12464172630223,
+        "rms_dbfs": -20.938570464175047,
+        "nonsilent_rms_dbfs": -20.329368103914952,
+        "nonsilent_seconds": 4.78,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.597859441772325,
+        "bytes": 44780,
+        "sha256": "d52878336581fdb5de472a46bcddba854b051eb8888b04c7cfaa8d45d8a79291",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "85b0e26e07ad425b",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "606484b48432f654": {
+      "id": "606484b48432f654",
+      "voice": "bacall",
+      "text": "He wrote me this the day before. I have never shown it to anyone.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "He wrote me this the day before. I have never shown it to anyone."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c38ad220",
+        "audio_path": "c38ad220.wav",
+        "duration": 3.72,
+        "gen_time": 1.05,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.72,
+        "peak_dbfs": -3.354482378977441,
+        "rms_dbfs": -20.87567247379858,
+        "nonsilent_rms_dbfs": -20.355510957355772,
+        "nonsilent_seconds": 3.3,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.2710635232097225,
+        "bytes": 30380,
+        "sha256": "6d9ea9a391fd0a2c513ad00c5e6ecbeae439a7d654f4a352f1e1b169fc1ef374",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "ef08209bf8bc29ec",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "23a18b69c2dd563d": {
+      "id": "23a18b69c2dd563d",
+      "voice": "bacall",
+      "text": "Yes. I cut it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Yes. I cut it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "5a32635f",
+        "audio_path": "5a32635f.wav",
+        "duration": 1.51,
+        "gen_time": 0.83,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.51,
+        "peak_dbfs": -2.6126150201551686,
+        "rms_dbfs": -23.901471851222922,
+        "nonsilent_rms_dbfs": -21.143629682798313,
+        "nonsilent_seconds": 0.8,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -0.0595320236323551,
+        "bytes": 12716,
+        "sha256": "c21901b25ab9b166c1413d57deabfc7549cd70a8b79c21dd08dadec3be2721eb",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "a8fa51b40ebf37b1",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "7a1aa4c150a4b87a": {
+      "id": "7a1aa4c150a4b87a",
+      "voice": "bacall",
+      "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "76dab26c",
+        "audio_path": "76dab26c.wav",
+        "duration": 7.26,
+        "gen_time": 1.68,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.26,
+        "peak_dbfs": -5.271294568959114,
+        "rms_dbfs": -21.332311846621366,
+        "nonsilent_rms_dbfs": -20.327471131588428,
+        "nonsilent_seconds": 5.76,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.657832609391658,
+        "bytes": 58796,
+        "sha256": "299f0c0f65e37144b9db4d1f30afbad20e29398840bb04fb70b8e0fddc368902",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "32a6707e1b72743e",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5d0c3638d1513fa8": {
+      "id": "5d0c3638d1513fa8",
+      "voice": "bacall",
+      "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ce586a2d",
+        "audio_path": "ce586a2d.wav",
+        "duration": 5.15,
+        "gen_time": 1.32,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.15,
+        "peak_dbfs": -4.030030451046996,
+        "rms_dbfs": -21.532710232275882,
+        "nonsilent_rms_dbfs": -20.43545362176075,
+        "nonsilent_seconds": 4.0,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.418888255814874,
+        "bytes": 41900,
+        "sha256": "245632a98d0b63588147566068f913c5a3018cb04a61a8b96ae79f6acc565f36",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6082451bae32da1c",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "d2144ce74927a006": {
+      "id": "d2144ce74927a006",
+      "voice": "bacall",
+      "text": "This was in his coat. He knew more than I did.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "This was in his coat. He knew more than I did."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "3c62aa93",
+        "audio_path": "3c62aa93.wav",
+        "duration": 2.53,
+        "gen_time": 1.04,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.53,
+        "peak_dbfs": -7.037883200929146,
+        "rms_dbfs": -21.255579333338204,
+        "nonsilent_rms_dbfs": -20.320824783547987,
+        "nonsilent_seconds": 2.04,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.483771836238164,
+        "bytes": 20972,
+        "sha256": "19e5e10a5ede65a98c2faec1e79280795dab6e14051b9b45f39b06b240b6edd3",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "eefbba72ebdf3932",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "9e8d7b1a73287e73": {
+      "id": "9e8d7b1a73287e73",
+      "voice": "bacall",
+      "text": "Write it like that. Not cleaner than it was.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Write it like that. Not cleaner than it was."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "9f880e13",
+        "audio_path": "9f880e13.wav",
+        "duration": 2.58,
+        "gen_time": 1.01,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.58,
+        "peak_dbfs": -4.049903837164032,
+        "rms_dbfs": -21.594130403891985,
+        "nonsilent_rms_dbfs": -20.444753512376547,
+        "nonsilent_seconds": 1.98,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.869753917373501,
+        "bytes": 21356,
+        "sha256": "87677b03b4bb4b1b9916714a959335918baa96a7747dc27014fa651ef1d277fa",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "af60f178dc8f45e8",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "dccecc142489647e": {
+      "id": "dccecc142489647e",
+      "voice": "bacall",
+      "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c43cb6ce",
+        "audio_path": "c43cb6ce.wav",
+        "duration": 8.37,
+        "gen_time": 1.84,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 8.37,
+        "peak_dbfs": -4.127480156696862,
+        "rms_dbfs": -21.093011024886003,
+        "nonsilent_rms_dbfs": -20.39072958765845,
+        "nonsilent_seconds": 7.12,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.5462591440654485,
+        "bytes": 67628,
+        "sha256": "3a7392e19efa0906bfaa60dd6d00e58f581b754d5e71373b1618c200471fc630",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "83f77f3b1b11b35d",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5a199f5b1f85fdad": {
+      "id": "5a199f5b1f85fdad",
+      "voice": "bacall",
+      "text": "You left the receiver on out there. Listen.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "You left the receiver on out there. Listen."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c7edb5b5",
+        "audio_path": "c7edb5b5.wav",
+        "duration": 2.58,
+        "gen_time": 0.92,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.58,
+        "peak_dbfs": -6.623562756779874,
+        "rms_dbfs": -21.626063618694367,
+        "nonsilent_rms_dbfs": -20.29766527261351,
+        "nonsilent_seconds": 1.9,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.375868485284212,
+        "bytes": 21356,
+        "sha256": "d95ad55b506346ce63c186d89584a148204aba3a08dee7de80c9d6c00d2c4ed3",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6e3119d98bd16416",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "608946d9f2c0a181": {
+      "id": "608946d9f2c0a181",
+      "voice": "bacall",
+      "text": "Tomás. Where did you leave the spare key?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Tomás. Where did you leave the spare key?"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "fcb07fc7",
+        "audio_path": "fcb07fc7.wav",
+        "duration": 2.44,
+        "gen_time": 0.94,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.44,
+        "peak_dbfs": -6.619172661339037,
+        "rms_dbfs": -21.808778498694224,
+        "nonsilent_rms_dbfs": -20.34066987081678,
+        "nonsilent_seconds": 1.74,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.9736461893524826,
+        "bytes": 20204,
+        "sha256": "64f91113dbd0935495ed4c65071aefa4781e1e0901024f7d9b3f1c6a98569555",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "6f58429c8fc1407a",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "14abdf91d38d2dfe": {
+      "id": "14abdf91d38d2dfe",
+      "voice": "bacall",
+      "text": "That is what he said then. Not an answer to what I asked now.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "That is what he said then. Not an answer to what I asked now."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "a4be42d3",
+        "audio_path": "a4be42d3.wav",
+        "duration": 3.42,
+        "gen_time": 1.18,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.42,
+        "peak_dbfs": -4.527136726138634,
+        "rms_dbfs": -21.942059597535675,
+        "nonsilent_rms_dbfs": -20.331356391023803,
+        "nonsilent_seconds": 2.36,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.078211931443917,
+        "bytes": 28076,
+        "sha256": "ec35f659972eb72701dc1fb8cd94c6fb17aca4f795a28765977c3240f2415e98",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "de3e9140b4e35996",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "c9cfa96198e3803f": {
+      "id": "c9cfa96198e3803f",
+      "voice": "bacall",
+      "text": "No. It is not him. It is what he left.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "No. It is not him. It is what he left."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c0314e7e",
+        "audio_path": "c0314e7e.wav",
+        "duration": 2.16,
+        "gen_time": 0.87,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.16,
+        "peak_dbfs": -4.591317882417403,
+        "rms_dbfs": -21.190501386401618,
+        "nonsilent_rms_dbfs": -20.39879447672707,
+        "nonsilent_seconds": 1.8,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.1184393473888754,
+        "bytes": 17900,
+        "sha256": "72dc6463537289cba144ae5b929dc96705458c04dd879ac2865207239462301a",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "c9ac70238402aa86",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "3d59a04286f12ef5": {
+      "id": "3d59a04286f12ef5",
+      "voice": "bacall",
+      "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "e4452b49",
+        "audio_path": "e4452b49.wav",
+        "duration": 7.54,
+        "gen_time": 1.73,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 7.54,
+        "peak_dbfs": -5.146492096152578,
+        "rms_dbfs": -20.90013454543099,
+        "nonsilent_rms_dbfs": -20.335152373005656,
+        "nonsilent_seconds": 6.62,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.690082917322542,
+        "bytes": 61100,
+        "sha256": "babd9658d1cb7718a8f4470afb5e866758f29236993c10ff1e01155fa03c1ed1",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "f8d31d2d5409d143",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5d136a44926a94d9": {
+      "id": "5d136a44926a94d9",
+      "voice": "bacall",
+      "text": "Tomás walked out to the closing point with the last reading.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Tomás walked out to the closing point with the last reading."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "2a604db3",
+        "audio_path": "2a604db3.wav",
+        "duration": 3.36,
+        "gen_time": 1.11,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.36,
+        "peak_dbfs": -5.052626822373688,
+        "rms_dbfs": -21.291217913827396,
+        "nonsilent_rms_dbfs": -20.177985300836152,
+        "nonsilent_seconds": 2.6,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.2331152258987004,
+        "bytes": 27500,
+        "sha256": "40de85bd388bc3a83a69bfddf4e2b3d335f1ed09db580faf5a308808bd6ad7f1",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "9ce136377164aa28",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "724f654400170f6d": {
+      "id": "724f654400170f6d",
+      "voice": "bacall",
+      "text": "If you want to know whether the line still holds, drive the road.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "If you want to know whether the line still holds, drive the road."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "dcee7631",
+        "audio_path": "dcee7631.wav",
+        "duration": 3.74,
+        "gen_time": 1.06,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.74,
+        "peak_dbfs": -6.183544733637466,
+        "rms_dbfs": -21.36953233047069,
+        "nonsilent_rms_dbfs": -20.32447633159338,
+        "nonsilent_seconds": 2.94,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.648354869822125,
+        "bytes": 30572,
+        "sha256": "0b3ece0b977cdfd59e6bd5da97162f7d81f774b21b39fd5e4ed36826b15b2dbc",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "1a9a07073915d088",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "472a9fdcabf516a3": {
+      "id": "472a9fdcabf516a3",
+      "voice": "bacall",
+      "text": "Do not stop on the line.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Do not stop on the line."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "4186c860",
+        "audio_path": "4186c860.wav",
+        "duration": 1.9,
+        "gen_time": 0.85,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.9,
+        "peak_dbfs": -4.859002200254192,
+        "rms_dbfs": -21.736664655991436,
+        "nonsilent_rms_dbfs": -20.22063820937097,
+        "nonsilent_seconds": 1.34,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.007898589270045,
+        "bytes": 15980,
+        "sha256": "7b24ae14c894b8bb0a190ab8a964a23eea3354e3236a9c3162e78db0ee9dbdf4",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "ba5b20aa200dbab8",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "92bb6712734394f8": {
+      "id": "92bb6712734394f8",
+      "voice": "bacall",
+      "text": "SARO seven, this is Sierra. You hear me?",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "SARO seven, this is Sierra. You hear me?"
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "c7eed761",
+        "audio_path": "c7eed761.wav",
+        "duration": 2.31,
+        "gen_time": 0.89,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.31,
+        "peak_dbfs": -6.287142137475009,
+        "rms_dbfs": -21.04712845152352,
+        "nonsilent_rms_dbfs": -20.4213254493021,
+        "nonsilent_seconds": 2.0,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.6353125269579323,
+        "bytes": 19244,
+        "sha256": "fc4cfeeea9b40334ca998fdb2965c560c324496002cf27c44e206dce38f13d0a",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "814add57eb574e83",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "5e8511505fa4a670": {
+      "id": "5e8511505fa4a670",
+      "voice": "bacall",
+      "text": "Pull in at the north end, by the office. Not down past the rooms.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Pull in at the north end, by the office. Not down past the rooms."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "dda53384",
+        "audio_path": "dda53384.wav",
+        "duration": 3.68,
+        "gen_time": 1.06,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.68,
+        "peak_dbfs": -4.624334814892766,
+        "rms_dbfs": -21.075979112661507,
+        "nonsilent_rms_dbfs": -20.414491451685297,
+        "nonsilent_seconds": 3.16,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.1720740713139506,
+        "bytes": 30188,
+        "sha256": "70a1720c57ffd5564b79923ff9f78f0d945ffe693fbd7f9aff7741fee5c9c142",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "07539ff29f8533f7",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "8c47f08abfb81ab6": {
+      "id": "8c47f08abfb81ab6",
+      "voice": "bacall",
+      "text": "Room six. The door is open. Bring the prints.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Room six. The door is open. Bring the prints."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "66ab8038",
+        "audio_path": "66ab8038.wav",
+        "duration": 2.64,
+        "gen_time": 0.97,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 2.64,
+        "peak_dbfs": -5.4973829452725305,
+        "rms_dbfs": -21.03024999606388,
+        "nonsilent_rms_dbfs": -20.238648966273356,
+        "nonsilent_seconds": 2.2,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.144628731997887,
+        "bytes": 21740,
+        "sha256": "0fd864ec6cc72dd5416636b35862dcfbeed7759ea67e72a34d162aa0d04496cc",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "d72bf18f1e58f5f3",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "340b583d2574915a": {
+      "id": "340b583d2574915a",
+      "voice": "bacall",
+      "text": "Sierra Motor Court.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Sierra Motor Court."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "f71b4ad0",
+        "audio_path": "f71b4ad0.wav",
+        "duration": 1.52,
+        "gen_time": 0.82,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.52,
+        "peak_dbfs": -6.608982969666207,
+        "rms_dbfs": -21.70234552370583,
+        "nonsilent_rms_dbfs": -20.376236146327077,
+        "nonsilent_seconds": 1.12,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.111735658124855,
+        "bytes": 12908,
+        "sha256": "c984d0413caae1b18f082e182baff7943467fe386196bacb120e951c3ae130b0",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "f8f35e7e9765e69c",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "2dfe917e2ee127fe": {
+      "id": "2dfe917e2ee127fe",
+      "voice": "bacall",
+      "text": "Station One. Nobody has asked me for that key in a long time.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Station One. Nobody has asked me for that key in a long time."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "61a0b9b7",
+        "audio_path": "61a0b9b7.wav",
+        "duration": 3.37,
+        "gen_time": 1.12,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.37,
+        "peak_dbfs": -3.578160875880985,
+        "rms_dbfs": -21.259058680693208,
+        "nonsilent_rms_dbfs": -20.392074619297247,
+        "nonsilent_seconds": 2.76,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -1.37227002558976,
+        "bytes": 27692,
+        "sha256": "7efae99c25a7cc1057e82c04ca7ea5563c36f2b6b6d30025ec98a14b5d68ddb2",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "68023cb64e7f22be",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "438ee647319842e8": {
+      "id": "438ee647319842e8",
+      "voice": "bacall",
+      "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "345d22db",
+        "audio_path": "345d22db.wav",
+        "duration": 6.54,
+        "gen_time": 1.59,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 6.54,
+        "peak_dbfs": -5.483958120457297,
+        "rms_dbfs": -21.06478138741778,
+        "nonsilent_rms_dbfs": -20.39106078356482,
+        "nonsilent_seconds": 5.6,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.9100481529773212,
+        "bytes": 53036,
+        "sha256": "54d6b38a5b14b34274d162b50781b984b42b8aaf900e038c6c8b6c60b803cd81",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "4eff1bcae99d8b8e",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "99611d00f1377a31": {
+      "id": "99611d00f1377a31",
+      "voice": "bacall",
+      "text": "So you went out there.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "So you went out there."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ec9cce86",
+        "audio_path": "ec9cce86.wav",
+        "duration": 1.47,
+        "gen_time": 0.83,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 1.47,
+        "peak_dbfs": -5.5295069947025475,
+        "rms_dbfs": -21.7146125305058,
+        "nonsilent_rms_dbfs": -20.45546094510129,
+        "nonsilent_seconds": 1.1,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.17788754058013,
+        "bytes": 12524,
+        "sha256": "6153eaeab05bdd65667957f6d504e4fa271bc5ed908fddae60fa52253825a98d",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "97e2f3960c029d03",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "aa6fc98ee734307c": {
+      "id": "aa6fc98ee734307c",
+      "voice": "bacall",
+      "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "a1211ff5",
+        "audio_path": "a1211ff5.wav",
+        "duration": 5.67,
+        "gen_time": 1.49,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.67,
+        "peak_dbfs": -5.11845562543505,
+        "rms_dbfs": -20.83780879864555,
+        "nonsilent_rms_dbfs": -20.411686903997115,
+        "nonsilent_seconds": 5.14,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -2.4720849686387467,
+        "bytes": 46124,
+        "sha256": "9454e600cade2ae9149ec7220c2c6308e36430fd8683d09803fa127ccbb9852e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "b2cde101fbe0899a",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "8108de94d7f99846": {
+      "id": "8108de94d7f99846",
+      "voice": "bacall",
+      "text": "You have seen the cable now. It did not break by itself.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "You have seen the cable now. It did not break by itself."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "5b3c0450",
+        "audio_path": "5b3c0450.wav",
+        "duration": 3.14,
+        "gen_time": 1.03,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 3.14,
+        "peak_dbfs": -5.659233426176582,
+        "rms_dbfs": -21.128105579214974,
+        "nonsilent_rms_dbfs": -20.308710910916915,
+        "nonsilent_seconds": 2.6,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.143200863847561,
+        "bytes": 25772,
+        "sha256": "b6d5d5a5157de1a0875d22786b5c29f1f2c38611387d05ca9fd89516e90933a5",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "3a99c89d5539f697",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "c5487e62a7151d91": {
+      "id": "c5487e62a7151d91",
+      "voice": "bacall",
+      "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "380a1761",
+        "audio_path": "380a1761.wav",
+        "duration": 5.25,
+        "gen_time": 1.27,
+        "seed": 43,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "audio": {
+        "duration_seconds": 5.25,
+        "peak_dbfs": -5.773735140467458,
+        "rms_dbfs": -21.30588998044147,
+        "nonsilent_rms_dbfs": -20.316299089430203,
+        "nonsilent_seconds": 4.18,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.3400662971492387,
+        "bytes": 42668,
+        "sha256": "d0f58e71f0d37e1a9f217929e81ad96370861d2de48b14350f7cc542f0c5f4cd",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      },
+      "cache_identity": "e53e96d0abe2a10d",
+      "reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    }
+  },
+  "settings": {
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast"
+  },
+  "roles": {
+    "bacall": {
+      "actor": "Lauren Bacall",
+      "profile_id": "c5964307",
+      "profile_reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161"
+    },
+    "lynch": {
+      "actor": "David Lynch",
+      "profile_id": "49934b6f",
+      "profile_reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4"
+    },
+    "price": {
+      "actor": "Vincent Price",
+      "profile_id": "ee2d0eb3",
+      "profile_reference_sha256": "3b1da495e096a0dc163881ef0f663ee6d65f3b81a13d38757a9dbf275e8e60b7"
+    },
+    "stack": {
+      "actor": "Robert Stack",
+      "profile_id": "5af36427",
+      "profile_reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a"
+    },
+    "stanton": {
+      "actor": "Harry Dean Stanton",
+      "profile_id": "21cc4af1",
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca"
+    }
+  },
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "updated_utc": "2026-10-19T22:56:44.899381+00:00"
+}

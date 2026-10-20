@@ -1,0 +1,51 @@
+PASS cows: chapter three, the truck offers its drive (Drive to STATION 01); the diner's area is not built
+PASS cows: in the truck on the chapter's drive
+PASS cows: driven down the highway into the road's area to the pasture, the diner still not built (road)
+PASS cows: moving (16.2 m/s) Get out is not offered, and E does not get out
+PASS cows: stopped, Get out is offered (prompt "EGet out", the phone's Use button shown: True)
+PASS cows: E gets out; the diner's area (the road on foot) was built behind the black
+PASS cows: out of the truck, which stays where it was left (diner, at diner, 0.00 m from the spot)
+PASS cows: the player stands by its door (1.78 m) on the ground (floor -2.334, ground -2.334)
+PASS cows: on the highway: "The highway south", footsteps concrete, the truck keys: Where I left it
+PASS cows: walked to the fence, over the cattle guard and into the pasture (-27.0, 530.9; floor -2.246, ground -2.246)
+PASS cows: "The pasture by the highway", footsteps dirt
+PASS cows: walking into a cow, it stops the player 1.42 m from it (37 m from the herd's middle at the truck, 21 m now)
+PASS cows: standing among them the herd does not change (graze: they are near, as from the road)
+PASS cows: the right-of-way fence stops the player both ways but at the guard (-20.58, -21.42), and the walk ends north (490.3) and west (-159.7)
+PASS cows: back at the truck the crosshair finds it (dinerTruck): "Drive to STATION 01"
+PASS cows: a save made there and Continue: the truck (0.00 m) and the player (0.00 m) are by the herd again, 1.5 km from the diner's lot
+PASS cows: and the truck still offers the chapter's drive (Drive to STATION 01)
+PASS cows: back in the truck
+PASS cows: and drives on towards STATION 01 (6.9 m on the way)
+PASS masts: chapter one, the truck offers a drive (Drive)
+PASS masts: in the truck
+PASS masts: moving (4.9 m/s) Get out is not offered, and E does not get out
+PASS masts: stopped, Get out is offered (prompt "EGet out", the phone's Use button shown: True)
+PASS masts: out of the truck, which stays where it was left (saro, at saro, 0.00 m from the spot)
+PASS masts: the player stands by its door (1.78 m) on the ground (floor -0.600, ground -0.600)
+PASS masts: on the highway in the array: "The array", footsteps concrete, the truck keys: Where I left it
+PASS masts: walked from the truck to the drive cabinet of S-02 (14.6 m from the antenna at the truck, 6.2 m now; floor -0.600)
+PASS masts: the crosshair finds the cabinet (field:S-02): "Read drive cabinet S-02"
+PASS masts: and it reads out: "S-02. Encoder az 026.0, el 32.0. Scheduled az 042, el 48. Commands rec"
+PASS masts: the walk on the highway ends at the fence (-20.42: on foot the gate is the way out), at the end of the truck's way (-200.7) and at its edge (-28.33)
+PASS masts: from the highway along row 2 to the spine (-1.1, -138.0)
+PASS masts: back at the truck the crosshair finds it (truck): "Drive"
+PASS masts: back in the truck
+PASS masts: and drives on (10.3 m)
+PASS car: at 03:20, with the deputy out, his car stands on the shoulder north of town
+PASS car: in the truck on the diner's lot
+PASS car: moving (4.9 m/s) Get out is not offered, and E does not get out
+PASS car: stopped, Get out is offered (prompt "EGet out", the phone's Use button shown: True)
+PASS car: out of the truck, which stays where it was left (diner, at diner, 0.00 m from the spot)
+PASS car: the player stands by its door (1.78 m) on the ground (floor -0.353, ground -0.353)
+PASS car: "The highway north of Caliche", footsteps concrete
+PASS car: walked up to the open door (14.2 m from the car at the truck, 2.4 m now; floor -0.547, ground -0.548)
+PASS car: the crosshair finds it (town:patrolCar): "Patrol car"
+PASS car: and the door hangs open: "The engine is running. The driver's door hangs open with the keys in i"
+PASS car: the car is in the way (5.63), and the walk ends 40 m on (1650.3) and at the verge (16.2)
+PASS car: back at the truck the crosshair finds it (dinerTruck): "Drive"
+PASS car: back in the truck
+PASS car: and drives on (10.3 m)
+PASS car: stopped on the open highway between them, Get out is not offered (nothing there to walk to)
+PASS no console errors or warnings
+50 of 50 PASS

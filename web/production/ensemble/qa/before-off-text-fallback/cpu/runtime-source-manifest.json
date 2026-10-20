@@ -1,0 +1,546 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+  "files": [
+    {
+      "path": "src/core/Audio.ts",
+      "sha256": "52f74a60a59eba793c50fde59eb755ba79613283122bd90e1532a112aea60a32"
+    },
+    {
+      "path": "src/core/FieldCamera.ts",
+      "sha256": "1b437e5367ebb841c91560436e9479a3105793a0c4a2eb80da53469504f687a7"
+    },
+    {
+      "path": "src/core/Flashlight.ts",
+      "sha256": "b14cd542b8cbdfaf85deca4c2e8e72ba46c3ec4e6d589a0013bde8f77c02ac2c"
+    },
+    {
+      "path": "src/core/Input.ts",
+      "sha256": "3c4f9b9cd13c7fe9ba0b582b189921c0439b9438f8b7b2bd9af40a33a353e2a2"
+    },
+    {
+      "path": "src/core/Interaction.ts",
+      "sha256": "087b22c5574f7f7643eddcc93bead39efa6485a00c2000674e1b5d42499cede4"
+    },
+    {
+      "path": "src/core/album.ts",
+      "sha256": "e696e0e4b8cacb1e26d78a446ec083eb1ed489b4ef1064f21138653844c7f83b"
+    },
+    {
+      "path": "src/core/ambience.ts",
+      "sha256": "e26755e3ab74644a542eaacd8b798659bae39d1e34c5edf28ba65ce76eb6349f"
+    },
+    {
+      "path": "src/core/art.ts",
+      "sha256": "55f86263287c598f013d3e67539bfcf29db617f9f0f79c762d4b161951af6ce2"
+    },
+    {
+      "path": "src/core/calls.ts",
+      "sha256": "20e5a30f8ddb29d5d1712d700f27319c5fcda8c91d4b8259605efc4cfc96924f"
+    },
+    {
+      "path": "src/core/cb.ts",
+      "sha256": "0df35d16c377316e08ca3e52bde9a10f9a93bd60e3dba0707fd3fbccd4603cbc"
+    },
+    {
+      "path": "src/core/cookies.ts",
+      "sha256": "55c40fc65285e50adcf7897991336e66501aca13cae36f8a4e257a5a29023f02"
+    },
+    {
+      "path": "src/core/cutouts.ts",
+      "sha256": "1ca8ae96598bf850064753b2fdae870ab4a84bfd5e57b832b288c05ac6d3b5ae"
+    },
+    {
+      "path": "src/core/debug.ts",
+      "sha256": "2d1a3c93e01bbf27f7333185aebc9ca195c95af62e41ce7fca5dacac45648738"
+    },
+    {
+      "path": "src/core/decoder.ts",
+      "sha256": "5df9e17ebaeefbf9567185c21c3fe362f12526b9607c783788d16def10ce2fee"
+    },
+    {
+      "path": "src/core/earlDialogue.ts",
+      "sha256": "df33d4f4122b72f020927f1821160d0ce0917b15ece2038d5b4fed7295aef045"
+    },
+    {
+      "path": "src/core/fonts.ts",
+      "sha256": "33a56f87e3cb715c5f643520a0e91ed38d0a7b9036c6d46c536664a0dbead9c0"
+    },
+    {
+      "path": "src/core/glimpses.ts",
+      "sha256": "cf03e7d7e6bd5e17ff0a781809d6834540fd96c4fed593c018e9df5a796bf4b8"
+    },
+    {
+      "path": "src/core/hints.ts",
+      "sha256": "a58e1a48a4f51a0fad39224aeb126902c90cc5b32feacaae79814e4d3177087c"
+    },
+    {
+      "path": "src/core/narrationBanks.ts",
+      "sha256": "3da6f1cccba03decab205298c9393fb7f44bd7cdb9e2d1ce8b6a529a92a48878"
+    },
+    {
+      "path": "src/core/npcDialogue.ts",
+      "sha256": "ca9b29de5800c7051368af71ca85d15befc344632548eca2a09544523df2e308"
+    },
+    {
+      "path": "src/core/phoneScripts.ts",
+      "sha256": "cd8549257df65af633773519e0690f88a8226c130fd4ffb0f701c3e86e37c325"
+    },
+    {
+      "path": "src/core/portraits.ts",
+      "sha256": "2cfe5028e7b5821a2ea66a1f5b45b6c0dedd0d1148833037cdeec2a7a94866c8"
+    },
+    {
+      "path": "src/core/quality.ts",
+      "sha256": "a11d5b83f74ec6c51b8fd66637a9bd8d7aa9e5a0277867854ed3d1452221a7bc"
+    },
+    {
+      "path": "src/core/radio.ts",
+      "sha256": "1c1ffe3d22b264f6b0c36357c03cb5db8ba999ec0275887c136dd05276f32e4a"
+    },
+    {
+      "path": "src/core/radioVoice.ts",
+      "sha256": "3f13819226fa6e632378e38525a7ba54c2f067d83e9f41f9c75e48ba1b260b2d"
+    },
+    {
+      "path": "src/core/readAloud.ts",
+      "sha256": "f7757a03475fd2de109b06927ea4e4551f8ed5e4696e21d55825f9aff2480ed0"
+    },
+    {
+      "path": "src/core/recordedDialogue.ts",
+      "sha256": "6403cdb891b0ee96629862ee9bb6029d8758b335526e0580bda0d7aca8f6b5ba"
+    },
+    {
+      "path": "src/core/roadside.ts",
+      "sha256": "edc9c00c54f8a20056cbfae203865382c80af829c26ac9123a6587c51a89b563"
+    },
+    {
+      "path": "src/core/saves.ts",
+      "sha256": "f74db18180aae433b9e67e01954b17066318bc2764fcbf5f566d687801cd4dd9"
+    },
+    {
+      "path": "src/core/score.ts",
+      "sha256": "afffd67d4cb6042cf71fbd96b4aafbdb51bf4d1e61174e45b242fa77af254d5c"
+    },
+    {
+      "path": "src/core/signalVoice.ts",
+      "sha256": "3bc5a0eeebe43009d21338bdef0ce9c4318f08720e2f638c8f0c34e24e559a46"
+    },
+    {
+      "path": "src/core/textures.ts",
+      "sha256": "48cf1cd0445d92fb3fab6a398fa011aff78bc61326d4788f2db7e212dfd76a30"
+    },
+    {
+      "path": "src/core/ultra.ts",
+      "sha256": "cfaf5c353d5179f6e1224145539e659ed01a275a98ddbf158b3cf99154b26fe9"
+    },
+    {
+      "path": "src/core/vhs.ts",
+      "sha256": "0f505f569bca49fde3ddaacd1276c5c3cb2c056cfe54635d2a00d5521108dd60"
+    },
+    {
+      "path": "src/core/walkie.ts",
+      "sha256": "80c1094a8c670712b6b1a4c0cc32982366f91bc9ee019060e5aac1705298a65b"
+    },
+    {
+      "path": "src/drive/Drive.ts",
+      "sha256": "915b46a7f726f6e7a3b195df858d02c053384cb800e797c1ec3d84586d09edbd"
+    },
+    {
+      "path": "src/drive/OldRoad.ts",
+      "sha256": "b4351b045d0a9c6836584aea69232830964499fa2417839cea543ccd63b2a0c6"
+    },
+    {
+      "path": "src/drive/RoadArea.ts",
+      "sha256": "aab9bba750ab67623ec53f0f04f370dc3772e9f4726551b6a49d48b6232ae1e2"
+    },
+    {
+      "path": "src/drive/Truck.ts",
+      "sha256": "9bcbc771310b15306ccb354b13dc3499f845754e0830e72d03e2da57afaea8c8"
+    },
+    {
+      "path": "src/drive/corridors.ts",
+      "sha256": "000ddb48f4b221f8a66d18562463f83797c7e96b707718806804ee296b0f288f"
+    },
+    {
+      "path": "src/drive/engineSound.ts",
+      "sha256": "3034751cdecdb5c309bdd79ed45ad1e2dcaff6b394dcbe6693e3c552c025eb85"
+    },
+    {
+      "path": "src/drive/herd.ts",
+      "sha256": "89382791f6dbcd0c6428b40e90a415a5c79d217940377cb55a60feb573ca8c1b"
+    },
+    {
+      "path": "src/drive/legs.ts",
+      "sha256": "0c8da1daf01164818eab51a7ea7edff5035fb4a33061ea623a693774d738ed14"
+    },
+    {
+      "path": "src/drive/oldRoadLandmarks.ts",
+      "sha256": "5b9697eeafbde4f0072747a6cabd63488d4f9eac40bfd00a45ba74248cf74781"
+    },
+    {
+      "path": "src/drive/oldRoadLayout.ts",
+      "sha256": "780649a33581af64c2ffac6beeaac81ca59eb531e21a1b26f28bd6afad2751c7"
+    },
+    {
+      "path": "src/drive/oldRoadTextures.ts",
+      "sha256": "560f9dac2a250bc2e23b48e0ea5a53c230a27ea6455069a48a8e15566d36a002"
+    },
+    {
+      "path": "src/drive/roadPlaces.ts",
+      "sha256": "f110ea396465aa948b437a1a312e02804a1094fd596f36cb9f6363c77672119f"
+    },
+    {
+      "path": "src/drive/roadProps.ts",
+      "sha256": "0c15d8fd0bafcd0b1249c00d3afeac0f1f2f926939eea1a53381c85b97984bdd"
+    },
+    {
+      "path": "src/drive/roadShape.ts",
+      "sha256": "10b9a8f6ddf6aa730cd6e3443ad38fcc61547e7223a3d48d2d41d037b8dceef8"
+    },
+    {
+      "path": "src/drive/roadSurface.ts",
+      "sha256": "2d3e8f267c7891d32f917c474745c1583dfeb2587e916aabd84ef9e003688388"
+    },
+    {
+      "path": "src/drive/roadTerrain.ts",
+      "sha256": "231b426f124438109efafb164e7082eaccc81f80b88b3b3b3df1f37e3e1f4c5d"
+    },
+    {
+      "path": "src/drive/roadTextures.ts",
+      "sha256": "5f7a2dcb242f6e6da1cc81b0921b307932a0203add7e64e46063037f8a32cb87"
+    },
+    {
+      "path": "src/drive/trouble.ts",
+      "sha256": "b563defd37845cfedf21443f3fbc507b53cff164b7b42c341fe4e273ec55836e"
+    },
+    {
+      "path": "src/drive/truckTextures.ts",
+      "sha256": "083a5cc021884be09c6a6ac8e34b2866dabd43c23cf0c23491dfbaad9036afb8"
+    },
+    {
+      "path": "src/main.ts",
+      "sha256": "f5df03f828c1f85c6818bbb0cbb8875930ff87a640a85904d985f3b7f5be6cae"
+    },
+    {
+      "path": "src/player/Player.ts",
+      "sha256": "32c797198e3ec39bd6b6c11fcf6850b6681a7c386ba4191d6b7edf423de40854"
+    },
+    {
+      "path": "src/story/Chapter1.ts",
+      "sha256": "db37972756323662683a5f7cbe31f6df0a91af783906f2d7788529d7e785d51a"
+    },
+    {
+      "path": "src/story/Chapter2.ts",
+      "sha256": "0417e0641311e049fa2ed2c51dd7d37b23218a2e21e11be79f9ae41121fc27b2"
+    },
+    {
+      "path": "src/story/Chapter3.ts",
+      "sha256": "b93a3b60b5286ad34b21e8590921ffd7782f547566c8e93db9353b5985f89ee4"
+    },
+    {
+      "path": "src/story/Chapter4.ts",
+      "sha256": "0b181547cc1ee33e0b62761066976d8398f5a71cec7839da6950e0df9d8e4c90"
+    },
+    {
+      "path": "src/story/Chapter5.ts",
+      "sha256": "991addca35f2d1ed97637b45b76c3bb50fb9601f402854be3138b35c68009e92"
+    },
+    {
+      "path": "src/story/Chapter6.ts",
+      "sha256": "c3fc1019fbf79145d64dfb9b37f0e114f872f14c050c779b6606d0e6a318f83f"
+    },
+    {
+      "path": "src/story/Decoder.ts",
+      "sha256": "888703930e8768c743d7fdd15f04331f2d9937c61d3e42a23c9c8cc6b488f45e"
+    },
+    {
+      "path": "src/story/Prologue.ts",
+      "sha256": "86f3dc7c95c912e78475653fda518e4d3447929b578a2f3f37252b2e4a3e2084"
+    },
+    {
+      "path": "src/story/Signal.ts",
+      "sha256": "d53778e735d844673a56374607e95e1040315443b4ea343eadac29a952561371"
+    },
+    {
+      "path": "src/story/abduction.ts",
+      "sha256": "30b6c78dcceb896194afd6048a428a2cc1765cfbf1abd6b6d3fd6bc6f1ef8d48"
+    },
+    {
+      "path": "src/story/albumSubjects.ts",
+      "sha256": "5dbb2d40f79fa0ea2ea60d7f1fd3137e0dd8c2e55ecd9a867d63bc260ff9833c"
+    },
+    {
+      "path": "src/story/boardRules.ts",
+      "sha256": "31ca4af5e545d826c5d832f69d425cdb99f2ba610bce1cd13d1e443f48c538b6"
+    },
+    {
+      "path": "src/story/caliche.ts",
+      "sha256": "42eb09e9075bf827b9c89bffb0fc343f314e0dde59576f0d9dc61ba7cdad94eb"
+    },
+    {
+      "path": "src/story/caseBoard.ts",
+      "sha256": "f9de7482929a294df07f4bab61532fc2d3adb907dade186bd3b6faf612b02c28"
+    },
+    {
+      "path": "src/story/drawings.ts",
+      "sha256": "05fee11a0a2060d496b6c5cfe6dfc179efc9d01b797e9aa0aabb7fac73e795cb"
+    },
+    {
+      "path": "src/story/field.ts",
+      "sha256": "b9c0cf4ee262a154b28a90ccc0d9d906eedeb2426314632232ad0811cc6d9445"
+    },
+    {
+      "path": "src/story/flashFrames.ts",
+      "sha256": "6780ecb61b897a710d9a202af922dd0d7a5cd90cfe94f9052bec5d4c7255d7a0"
+    },
+    {
+      "path": "src/story/lineLights.ts",
+      "sha256": "c1bc0af33c7ba7b0940d50cbd12862711276c60450b222f9a20cf6e5f042cb13"
+    },
+    {
+      "path": "src/story/looks.ts",
+      "sha256": "522a39c8cce66d476a0ff05bc783baee0c3bf8e6623b1e25fbbe59ae32f9bc0e"
+    },
+    {
+      "path": "src/story/motelTv.ts",
+      "sha256": "0b4919f9b1e9529f9fc3e36ed0d473a9cb65c3229f0e3ae731712bee86c058be"
+    },
+    {
+      "path": "src/story/nightEvents.ts",
+      "sha256": "cf2a68945bfd54aef5d52dca0bb9cda610438601636e80627d408be8cb4ee902"
+    },
+    {
+      "path": "src/story/nightshift.ts",
+      "sha256": "3fef45a50eaffd1f976b4060d45994aca317efde11995f93ec56b9d8ed22dca1"
+    },
+    {
+      "path": "src/story/pasture.ts",
+      "sha256": "f95ff386932ef84da713e96b1754921af6ca6745db540046024d86f5e0948c9a"
+    },
+    {
+      "path": "src/story/state.ts",
+      "sha256": "aec78db8920f028eb1f28891262ee9b49c3972280d55f5b58558a17c379ae0b1"
+    },
+    {
+      "path": "src/story/time.ts",
+      "sha256": "bc8cb8315938fe909d40d36c5dd1eb8c53c70e6b1273770ac2dfbd95fd8c6689"
+    },
+    {
+      "path": "src/story/townEvents.ts",
+      "sha256": "c2e58c212eac27d1496e3d89586048691e0ca08c1251494715556c78476648d2"
+    },
+    {
+      "path": "src/story/tripRadio.ts",
+      "sha256": "001fca2cfcaa1327be3139566b2aa321fe7dc66e0cf11f6c1b6b470791c449e7"
+    },
+    {
+      "path": "src/style.css",
+      "sha256": "8b92dfa40636b74fc1433764fac8eb9658508e0a09a9cc891e410133471b2770"
+    },
+    {
+      "path": "src/ui/Board.ts",
+      "sha256": "d55d1fdee20a05046ca5572114352be27ffe948bb451120785823ecdd2674405"
+    },
+    {
+      "path": "src/ui/DevMenu.ts",
+      "sha256": "7a4cb0c148edf0aaf1aefbca922be35d23405c4764cc9f2c51dafdfe4df8b058"
+    },
+    {
+      "path": "src/ui/Ending.ts",
+      "sha256": "07e352fdf0c449a1f0be2e0368935719dc3483bf28ff7ecdf18e5d59aaf991c9"
+    },
+    {
+      "path": "src/ui/MapOverlay.ts",
+      "sha256": "a6861fde79f351ad2594bc8a0593e1a5b41cb43277d1e888e667f9b6c363b608"
+    },
+    {
+      "path": "src/ui/Panels.ts",
+      "sha256": "eaea22eea8f73e10eb909755459bccddbc57280fdb991a9c35ee27808986b31b"
+    },
+    {
+      "path": "src/ui/RxConsole.ts",
+      "sha256": "0e13ca21de65b12b2d6d658f741a84f7ab3cc9a818d2f38b3904be33766962b9"
+    },
+    {
+      "path": "src/ui/SaveMenu.ts",
+      "sha256": "c928bd8a42bfa95260f5cf6af26dbc89e1ebdc54cd72ed8da8027fd7961ecf9e"
+    },
+    {
+      "path": "src/ui/Terminal.ts",
+      "sha256": "418ac2f11f7a91019e16dca1f510d5127725c5163dccbc8d762b0268fa05df9a"
+    },
+    {
+      "path": "src/ui/UI.ts",
+      "sha256": "23ff2b4d1cbbeef07d6c51791bb394ad666f1fca6e58fc41d6a82ce396e30be6"
+    },
+    {
+      "path": "src/ui/album.ts",
+      "sha256": "17315ea731fa9d0ab6e70da3b02464b4f6a1dc4faac454b4c6f90d11ab7e8c3f"
+    },
+    {
+      "path": "src/ui/areaMap.ts",
+      "sha256": "9c7d2b187087fab851a4b64e11d05e91be459330e0c6028adfcf38ae370f1ae2"
+    },
+    {
+      "path": "src/ui/kitArt.ts",
+      "sha256": "b48ff3a316d03b8d6977b38b5620b7420c5713ef15686003c92040d5b71699ca"
+    },
+    {
+      "path": "src/world/Annex.ts",
+      "sha256": "defec4b94dd9e0d513b8e435ce91763a84684cc19dbb447ab4ceb384a69ee13a"
+    },
+    {
+      "path": "src/world/ControlRoom.ts",
+      "sha256": "8a07e849e85cfc2ebe8bb8a8aed365c12930e35d40d55bb079bc20128a627e41"
+    },
+    {
+      "path": "src/world/Crossing.ts",
+      "sha256": "b6194e876ee1b745f059cbf2a24b95922b0a229132b889eb6b3bac9e5e20b2d8"
+    },
+    {
+      "path": "src/world/Diner.ts",
+      "sha256": "ee4bea20f4710b0a2f318b4fc9d3a1d3d33d039a3bf5d2f8f3627a83c7b9acbd"
+    },
+    {
+      "path": "src/world/Dish.ts",
+      "sha256": "9bb41f2c92cf97b119c63e0056b6b047e1220c86825edd38312eb9747e26b2a5"
+    },
+    {
+      "path": "src/world/Doors.ts",
+      "sha256": "02730d695b5b77a84a31eff16166870f47d55e19998f7a5f20d437efffbaaa0a"
+    },
+    {
+      "path": "src/world/Exterior.ts",
+      "sha256": "c716628fa94f1649927df6ba69373f844c87e684015734dc050c957bf4b56d8e"
+    },
+    {
+      "path": "src/world/Field.ts",
+      "sha256": "aea2dd1ca61c61d448a252657f0ded28ab0c8f28aa572e00da7700566475e17b"
+    },
+    {
+      "path": "src/world/Grounds.ts",
+      "sha256": "21b9c8320dd65ae7eafe5cce8b8f44abe742ddf54da6e3cef6d7f705944a0433"
+    },
+    {
+      "path": "src/world/MotelFront.ts",
+      "sha256": "4faf2b1ba8c55c4ce90345899c5f4def7ab76c2ca9b09341cd783b61350222fc"
+    },
+    {
+      "path": "src/world/Room6.ts",
+      "sha256": "beb7e87d8f945c41080b01a16ad262bc635be125ed704da73dec3d95147d9548"
+    },
+    {
+      "path": "src/world/ServiceYard.ts",
+      "sha256": "223f62f60c7a54a301ed1bc05498e287ad58bc419bc5b76af59fdeb6cf0aa8fb"
+    },
+    {
+      "path": "src/world/Sky.ts",
+      "sha256": "b6170de9ec5c57613354c3223225b47902264bc28b86900e821308764e8f4513"
+    },
+    {
+      "path": "src/world/Station01.ts",
+      "sha256": "21ea29469b4c1eb16851451933b2168e3070c0e816a619314ce73b33a2501fdf"
+    },
+    {
+      "path": "src/world/Town.ts",
+      "sha256": "a32a9f46c93f398513336edb9e929fee1e548228c20637ded3f21ac3e7f40601"
+    },
+    {
+      "path": "src/world/World.ts",
+      "sha256": "7c08d65046c6c1a88bd23f4b170e131c74d61e7010a5756a12149f907e89e5d1"
+    },
+    {
+      "path": "src/world/airlight.ts",
+      "sha256": "e90a3ca715d45adef4c4932db5c25b3a4488bd587906a62d41e37001205edec1"
+    },
+    {
+      "path": "src/world/arrayLayout.ts",
+      "sha256": "3a8984cf06a2e9a313d92d118a708d5e4917734b09a138380e86f227822aa04c"
+    },
+    {
+      "path": "src/world/backdrop.ts",
+      "sha256": "cba484befafad3aae127499ce097a7bdd3e520a61d0034c90bfcc3752d3715a9"
+    },
+    {
+      "path": "src/world/blenderModels.ts",
+      "sha256": "ecae76120c087644872a8a52cf1d904e2521c52eb0cf6692330d38794469540f"
+    },
+    {
+      "path": "src/world/clutter.ts",
+      "sha256": "709ff70ee337891a149b4d9edaa7690ca340f353f3aae78ee8b03d38e15f1572"
+    },
+    {
+      "path": "src/world/dressDiner.ts",
+      "sha256": "da47a8eb86d02abd1bfe511fa683095bed61dc90023e8a4d194d5f582db0a450"
+    },
+    {
+      "path": "src/world/dressMotel.ts",
+      "sha256": "16ec8400d3273f02db28eb3546a105f94bbe25678c2a0dc38ae08eb8647c1679"
+    },
+    {
+      "path": "src/world/dressSaro.ts",
+      "sha256": "abcff7237b290b2cb2729ec259a05c733d5947717e03078d25031f2ee7cb8a36"
+    },
+    {
+      "path": "src/world/dressStation.ts",
+      "sha256": "b24cca456a3c0de27a286bcefd078ae9136142463df28b1247072746d87a279c"
+    },
+    {
+      "path": "src/world/dressTown.ts",
+      "sha256": "f7b36d6cbdb3bf7ca4e44921e81c4c82fec6bc64719df3fb757c269e0b524ab2"
+    },
+    {
+      "path": "src/world/dressing.ts",
+      "sha256": "e123ac28eadd8593a70857e65eecd989bfd147fe4ee89c120015e1f0b7700d67"
+    },
+    {
+      "path": "src/world/flora.ts",
+      "sha256": "3bb1d4b85a09cd529af1fc68a3b44ce92edd0933e8b02c8eddbe8d595f5670ab"
+    },
+    {
+      "path": "src/world/geo.ts",
+      "sha256": "8f667ff1cf5a9b14d48ef274ec2108bfcc6826b014c31b30ace8a40b8249bab0"
+    },
+    {
+      "path": "src/world/glow.ts",
+      "sha256": "bf92cbf36bbb43b2171387f6c90d5a8a7e3e564e8422b613a6c2af2510b351ce"
+    },
+    {
+      "path": "src/world/groundCover.ts",
+      "sha256": "f90f2b08b311d24ac31902091b5cf285be24fbe2af4218236cc2ccd8a3e83739"
+    },
+    {
+      "path": "src/world/horizon.ts",
+      "sha256": "1ea60cfb03be48ac304817da2e40298d863733965eb3384fe8fc2ecfab337d6b"
+    },
+    {
+      "path": "src/world/kit.ts",
+      "sha256": "8d2af9af2cfe527640670a6d6a05586c4f1aed9a902aed291cefefcfeef6393e"
+    },
+    {
+      "path": "src/world/nightlife.ts",
+      "sha256": "2936482cedbc234867a16b70c9dc6c8ba4514f236386f3f0572f32e530ca583e"
+    },
+    {
+      "path": "src/world/props.ts",
+      "sha256": "235d2914f6b9e9fe2eebfef31329191278fc93fe26ede737ac0ebf4f973b5ce6"
+    },
+    {
+      "path": "src/world/stationLayout.ts",
+      "sha256": "c585738a27064bff4bc477a9240ed869a9dd9c2eee13395471c1db9e2854bfaa"
+    },
+    {
+      "path": "src/world/weathering.ts",
+      "sha256": "178e484abfb20228e24178bdeab27bab72e396f88aae4ce1b1e86a2c2d500091"
+    },
+    {
+      "path": "src/world/wind.ts",
+      "sha256": "6223fd0e164ccf86efba420a112193141f17002bc3de3522de2f426128f6b681"
+    },
+    {
+      "path": "src/world/windowLight.ts",
+      "sha256": "348423f98651aab3cf1fab7f3cb76f7cc30d885f5a8dae511b90c2a5d98379cc"
+    }
+  ]
+}

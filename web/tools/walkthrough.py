@@ -17,6 +17,8 @@ async def main():
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         # Headless Chromium stalls screenshots while the pointer is locked, so tests skip the lock.
+        # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+        await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
@@ -40,13 +42,14 @@ async def main():
         try: await pg.wait_for_function("S47.game.d.audio.ready", timeout=60000)
         except Exception: pass
         sounds = await ev("Object.keys(S47.game.d.audio.buf)")
-        ordinary = [key for key in sounds if not key.startswith(('phone:', 'lic:'))]
+        ordinary = [key for key in sounds if not key.startswith(('phone:', 'lic:', 'character:'))]
         telephone = [key for key in sounds if key.startswith('phone:')]
         licensed = [key for key in sounds if key.startswith('lic:')]
+        characters = [key for key in sounds if key.startswith('character:')]
         # engineStart/engineOff join the old 45 sounds. The private bank adds
         # its own namespace and remains optional for builds without the folder.
-        check(len(ordinary) == 47 and len(telephone) == 24 and len(licensed) in (0, 15),
-              f'all 47 ordinary sounds, 24 telephone recordings and {len(licensed)} optional licensed sounds decoded')
+        check(len(ordinary) == 47 and len(telephone) == 24 and len(characters) == 11 and len(licensed) in (0, 15),
+              f'all 47 ordinary sounds, 24 telephone recordings, 11 character call recordings and {len(licensed)} optional licensed sounds decoded')
         check(await ev("(()=>{ const a=S47.game.d.audio; ['tile','concrete','dirt','wood','carpet'].forEach(s=>a.step(s)); a.thunder(0.4); a.far('owl', S47.player.pos, 0.3); return true; })()"), 'steps on every surface, far thunder and a far owl play')
         dup = await ev("(()=>{ const ids = S47.game.d.inter.items.map(i => i.id); return ids.filter((x, i) => ids.indexOf(x) !== i); })()")
         check(not dup, f'every interactable has its own id ({dup})')

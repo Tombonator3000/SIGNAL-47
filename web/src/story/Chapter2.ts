@@ -450,7 +450,7 @@ export class Chapter2 {
       cap(9.6, 'N. VEGA: "Don\'t send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals."', 4.4);
       this.g.after(13.8, finish);
     };
-    if (audio.kinskiCalls) this.g.after(answered, beginCall);
+    if (audio.kinskiCalls || audio.characterVoices) this.g.after(answered, beginCall);
     else {
       const talk = 13.6;
       this.g.after(answered, () => audio.callLine(talk));

@@ -14,7 +14,7 @@ const { PHONE_CALLS, PHONE_TEXTS } = scripts;
 const catalog = { clips: [...PHONE_TEXTS, 'Unrelated narration.', 'Another unrelated document.'].map((text, i) => ({ id: `test${i}`, text, duration: 999, file: `test${i}.mp3` })) };
 const urls = Object.fromEntries(catalog.clips.map((clip, i) => [`../assets/audio/kinski/${clip.file}`, `data:audio/mpeg;base64,${Buffer.from([i]).toString('base64')}`]));
 let source = fs.readFileSync('src/core/Audio.ts', 'utf8');
-source = source.replace(/const (STEP_FILES|ALIEN_FILES|PHONE_FILES|LICENSED) = import\.meta\.glob[^\n]+;/g, (_match, name) => `const ${name} = ${name === 'PHONE_FILES' ? JSON.stringify(urls) : '{}'};`);
+source = source.replace(/const (STEP_FILES|ALIEN_FILES|PHONE_FILES|CHARACTER_FILES|LICENSED) = import\.meta\.glob[^\n]+;/g, (_match, name) => `const ${name} = ${name === 'PHONE_FILES' ? JSON.stringify(urls) : '{}'};`);
 assert.ok(!source.includes('import.meta.glob'), 'asset imports are isolated');
 const normalize = (text) => text.replace(/\s+/g, ' ').trim();
 class Decoder {
@@ -28,7 +28,7 @@ vm.runInNewContext(compile(source), { exports: exportsForAudio, atob, console,
   window: { OfflineAudioContext: Decoder }, require(name) {
     if (name === './phoneScripts') return scripts;
     if (name === './readAloud') return { normalizeReadingText: normalize };
-    if (name.endsWith('catalog.json?raw')) return { default: JSON.stringify(catalog) };
+    if (name.endsWith('catalog.json?raw')) return { default: JSON.stringify(name.includes('/ensemble/') ? { clips: [] } : catalog) };
     if (name.endsWith('.mp3')) return { default: 'data:audio/mpeg;base64,AA==' };
     return {};
   },

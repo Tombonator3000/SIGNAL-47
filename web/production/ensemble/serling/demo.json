@@ -1,0 +1,21 @@
+{
+  "id": "c8cab78b3df10c77",
+  "expected": "The antenna moved. The controller did not send a command.",
+  "recognized": "The antenna moved. The controller did not send a command.",
+  "word_edits": 0,
+  "response": {
+    "text": "The antenna moved. The controller did not send a command.",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 3.64,
+        "text": "The antenna moved. The controller did not send a command."
+      }
+    ],
+    "language": "en",
+    "duration_s": 3.64,
+    "transcription_time_s": 1.14,
+    "engine": "faster-whisper"
+  },
+  "human_listened": false
+}

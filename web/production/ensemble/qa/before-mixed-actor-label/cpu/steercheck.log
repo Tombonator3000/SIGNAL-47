@@ -1,0 +1,13 @@
+base_commit: 5c25e05664e668b245d95c4a25d98be4e312a4d8
+runtime_source_sha256: bd0781c3489137e9a3f797c2d95bac5c20b7da7419b1d4042af9310300265557
+command: npm run steercheck
+
+
+> signal47-web@0.1.0 steercheck
+> esbuild tools/steercheck.ts --bundle --platform=node --format=esm --log-level=warning --outfile=node_modules/.cache/steercheck.mjs --loader:.jpg=empty --loader:.png=empty --loader:.webp=empty --loader:.mp3=empty --loader:.ogg=empty --loader:.wav=empty --loader:.svg=empty && node node_modules/.cache/steercheck.mjs
+
+PASS 12 m/s, wanted 2.000 deg wheel: steer 0.2051 x lock 9.752 deg = 2.000 deg (old fixed-32 deg conversion gave 0.610 deg)
+PASS closed loop at 11.95 m/s: path radius 94.5 m, wanted 94.5 m
+PASS turns right with positive curvature (heading -0.374)
+PASS lock at 12 m/s on asphalt 9.752 deg (Codex: 9.752)
+PASS clamped to full lock both ways

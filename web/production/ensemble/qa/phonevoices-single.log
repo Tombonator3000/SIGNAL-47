@@ -1,0 +1,51 @@
+PASS all 24 authored telephone recordings exist in the catalogue
+PASS telephone voices default to Off on a fresh device
+PASS the real Kinski setting enables telephone voices and persists it
+PASS telephone voices remain enabled after reload
+PASS AudioSys preloads exactly the 24 telephone MP3 buffers
+PASS the real Chapter 2 phone interaction selects both authored Ward lines
+PASS both Ward sources use genuinely decoded MP3s
+PASS Ward speech follows high-pass 320 Hz → low-pass 3200 Hz → SFX → master
+PASS caption cues and scheduled speech use each real decoded buffer's full duration
+PASS the live handset path produces nonzero master analyser samples
+PASS master volume zero silences handset analyser samples
+PASS pause holds both the AudioContext clock and story timers
+PASS pause does not prematurely finish the Ward call
+PASS both Ward buffers reach their natural ends without truncation
+PASS both exact Ward captions follow the audio-derived game-time cues
+PASS the handset and chapter advance only after the complete spoken call
+PASS loading a real saved case stops both current and future telephone sources
+PASS reset cancels the old telephone session, including its queued second line
+PASS Chapter 2 Nora speech starts only after the genuine dial and ringback interval
+PASS Chapter 2 Nora selects every exact quotation and retains stage directions as unvoiced cues
+PASS Chapter 2 Nora schedules its 3 actual decoded MP3 identities through the handset path
+PASS Chapter 2 Nora schedules scene completion after the last full clip, with no voiced aside or history
+PASS Chapter 2 Nora's first scheduled MP3 reaches its real AudioContext start
+PASS Chapter 2 Nora's short branch check cancels all remaining scheduled speech on reset
+PASS Chapter 3 field Nora selects every exact quotation and retains stage directions as unvoiced cues
+PASS Chapter 3 field Nora schedules its 4 actual decoded MP3 identities through the handset path
+PASS Chapter 3 field Nora schedules scene completion after the last full clip, with no voiced aside or history
+PASS Chapter 3 field Nora's first scheduled MP3 reaches its real AudioContext start
+PASS Chapter 3 field Nora's short branch check cancels all remaining scheduled speech on reset
+PASS the Chapter 3 receiver selects the authored Tomás fragment
+PASS the receiver uses the existing d111f9a951311961 Tomás recording
+PASS the room-6 phone choice automatically voices all six quotations, without asides
+PASS room 6 repeats the identical decoded Tomás buffer from the Chapter 3 receiver
+PASS all room-6 quotations retain the handset filter path
+PASS closing the room-6 conversation cancels all six queued telephone sources
+PASS the payphone automatically speaks its four opening quotations, excluding the stage direction
+PASS Ask what they said speaks only the two new lines, without repeating retained history
+PASS a new payphone choice stops the previous queue before its replacement
+PASS refreshing unchanged payphone text does not replay the phone audio
+PASS the road choice speaks only its three new quotations, excluding She hangs up
+PASS the final payphone queue replaces the previous two lines without overlap
+PASS closing the payphone panel cancels the final queued lines
+PASS quitting to title stops a current call and its future second line
+PASS a real New night starts without old telephone voices
+PASS turning Kinski Off immediately stops the whole active phone queue
+PASS with Kinski Off the same real phone interaction uses the original unvoiced call
+PASS the original Off timing, exact captions and chapter progression still work
+PASS telephone MP3 requests have no HTTP failures (0 requests)
+PASS strict-CSP single-file playback needs no external telephone MP3 request
+PASS no browser errors or warnings
+50 of 50 PASS

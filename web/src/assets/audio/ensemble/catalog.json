@@ -1,0 +1,706 @@
+{
+  "version": 1,
+  "voice": "Synthetic character voice ensemble",
+  "clips": [
+    {
+      "id": "ca2bcf4aea43640a",
+      "voice": "stanton",
+      "text": "Cold one tonight. Radio says it'll",
+      "duration": 2.4,
+      "file": "ca2bcf4aea43640a.mp3"
+    },
+    {
+      "id": "26d248729e687aee",
+      "voice": "stanton",
+      "text": "warm up by Wednesday.",
+      "duration": 1.96,
+      "file": "26d248729e687aee.mp3"
+    },
+    {
+      "id": "84296ab6db5394ae",
+      "voice": "stanton",
+      "text": "Pumps are locked till six. You want something from in here, I can pass it through.",
+      "duration": 4.49,
+      "file": "84296ab6db5394ae.mp3"
+    },
+    {
+      "id": "7efc5b03b0dc7416",
+      "voice": "stanton",
+      "text": "Still out, huh.",
+      "duration": 1.76,
+      "file": "7efc5b03b0dc7416.mp3"
+    },
+    {
+      "id": "8a4ed39c42bfe191",
+      "voice": "stanton",
+      "text": "Highway north. There is no other way that goes anywhere.",
+      "duration": 3.84,
+      "file": "8a4ed39c42bfe191.mp3"
+    },
+    {
+      "id": "22010a044849c8f3",
+      "voice": "stanton",
+      "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.",
+      "duration": 7.4,
+      "file": "22010a044849c8f3.mp3"
+    },
+    {
+      "id": "30178bdc0269961d",
+      "voice": "stanton",
+      "text": "Your people come down for gas on Fridays. Nice folks. Don't say much.",
+      "duration": 4.6,
+      "file": "30178bdc0269961d.mp3"
+    },
+    {
+      "id": "42993f8b291e1a59",
+      "voice": "stanton",
+      "text": "Earl brings those. The radio fella, across the street.",
+      "duration": 3.72,
+      "file": "42993f8b291e1a59.mp3"
+    },
+    {
+      "id": "d19bade7874887fa",
+      "voice": "stanton",
+      "text": "I let him tape them up. He buys his gas here.",
+      "duration": 2.96,
+      "file": "d19bade7874887fa.mp3"
+    },
+    {
+      "id": "454878a0f1f50e56",
+      "voice": "stanton",
+      "text": "People call him. I couldn't tell you why they'd want to.",
+      "duration": 3.72,
+      "file": "454878a0f1f50e56.mp3"
+    },
+    {
+      "id": "79a44e7e5fd1e5bf",
+      "voice": "stanton",
+      "text": "Towed a rig in off it once. Last October.",
+      "duration": 2.72,
+      "file": "79a44e7e5fd1e5bf.mp3"
+    },
+    {
+      "id": "d56bdd61a80ce2fb",
+      "voice": "stanton",
+      "text": "Left here a quarter to two. Got back twenty-five past four.",
+      "duration": 3.74,
+      "file": "d56bdd61a80ce2fb.mp3"
+    },
+    {
+      "id": "080a38b87176fc6c",
+      "voice": "stanton",
+      "text": "It's a forty minute job.",
+      "duration": 2.0,
+      "file": "080a38b87176fc6c.mp3"
+    },
+    {
+      "id": "093d3f6ceb740aa7",
+      "voice": "stanton",
+      "text": "Anyway. Cold one tonight.",
+      "duration": 2.04,
+      "file": "093d3f6ceb740aa7.mp3"
+    },
+    {
+      "id": "1af93cf161994ee3",
+      "voice": "stanton",
+      "text": "Wasn't me, then. I've been here since ten.",
+      "duration": 2.8,
+      "file": "1af93cf161994ee3.mp3"
+    },
+    {
+      "id": "ea2ae90b1d91d117",
+      "voice": "stanton",
+      "text": "That phone takes dimes.",
+      "duration": 2.0,
+      "file": "ea2ae90b1d91d117.mp3"
+    },
+    {
+      "id": "625190e94de15be0",
+      "voice": "stanton",
+      "text": "I can read it.",
+      "duration": 1.55,
+      "file": "625190e94de15be0.mp3"
+    },
+    {
+      "id": "71fd7972fd78795e",
+      "voice": "stanton",
+      "text": "Keep it. I write down what goes in the till. I want it to add up.",
+      "duration": 4.16,
+      "file": "71fd7972fd78795e.mp3"
+    },
+    {
+      "id": "427711e0ef49e13b",
+      "voice": "stack",
+      "text": "Quiet night. Drove the loop out to the county line and back.",
+      "duration": 4.08,
+      "file": "427711e0ef49e13b.mp3"
+    },
+    {
+      "id": "bb25a63657a9b521",
+      "voice": "stack",
+      "text": "Help you?",
+      "duration": 1.52,
+      "file": "bb25a63657a9b521.mp3"
+    },
+    {
+      "id": "9e9f7acf824b7a81",
+      "voice": "stack",
+      "text": "SARO. Sure. You folks lose something?",
+      "duration": 2.64,
+      "file": "9e9f7acf824b7a81.mp3"
+    },
+    {
+      "id": "d3c6ddc2817816c2",
+      "voice": "stack",
+      "text": "Back again.",
+      "duration": 1.64,
+      "file": "d3c6ddc2817816c2.mp3"
+    },
+    {
+      "id": "16b8aad01575b86b",
+      "voice": "stack",
+      "text": "Calls. Every call I get that I can't write up as anything.",
+      "duration": 3.92,
+      "file": "16b8aad01575b86b.mp3"
+    },
+    {
+      "id": "bcd48344aa27b453",
+      "voice": "stack",
+      "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "duration": 6.6,
+      "file": "bcd48344aa27b453.mp3"
+    },
+    {
+      "id": "fac7ad64a3049092",
+      "voice": "stack",
+      "text": "I don't believe in little men. I believe in maps.",
+      "duration": 3.32,
+      "file": "fac7ad64a3049092.mp3"
+    },
+    {
+      "id": "39891e2464e2e381",
+      "voice": "stack",
+      "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up.",
+      "duration": 6.44,
+      "file": "39891e2464e2e381.mp3"
+    },
+    {
+      "id": "2710dc407d1dd102",
+      "voice": "stack",
+      "text": "The old road. Red, mostly. Engines. Out past where the county stops grading.",
+      "duration": 5.16,
+      "file": "2710dc407d1dd102.mp3"
+    },
+    {
+      "id": "a5757a82a7e037fc",
+      "voice": "stack",
+      "text": "Every one of those is a car somebody had to tow back.",
+      "duration": 3.56,
+      "file": "a5757a82a7e037fc.mp3"
+    },
+    {
+      "id": "58b532bab9a7b9b7",
+      "voice": "stack",
+      "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing.",
+      "duration": 5.56,
+      "file": "58b532bab9a7b9b7.mp3"
+    },
+    {
+      "id": "c2931e01331160a6",
+      "voice": "stack",
+      "text": "Three of them are right here in town.",
+      "duration": 2.6,
+      "file": "c2931e01331160a6.mp3"
+    },
+    {
+      "id": "a3d657e1a59ed461",
+      "voice": "stack",
+      "text": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+      "duration": 8.12,
+      "file": "a3d657e1a59ed461.mp3"
+    },
+    {
+      "id": "4080f29637b3f907",
+      "voice": "stack",
+      "text": "A man whose wife sits out at the laundromat nights. March of '83.",
+      "duration": 5.12,
+      "file": "4080f29637b3f907.mp3"
+    },
+    {
+      "id": "16d01f724af485f2",
+      "voice": "stack",
+      "text": "And a kid who called the radio station in September of '81. Family moved away after.",
+      "duration": 6.24,
+      "file": "16d01f724af485f2.mp3"
+    },
+    {
+      "id": "7f7d4cb8653d87ad",
+      "voice": "stack",
+      "text": "Don't go asking them about it. They don't know they've got a pin.",
+      "duration": 4.28,
+      "file": "7f7d4cb8653d87ad.mp3"
+    },
+    {
+      "id": "b7e40d1580be6b24",
+      "voice": "stack",
+      "text": "I drove the loop. I came straight back.",
+      "duration": 2.68,
+      "file": "b7e40d1580be6b24.mp3"
+    },
+    {
+      "id": "901352230f22a966",
+      "voice": "stack",
+      "text": "Write down where you saw it.",
+      "duration": 2.12,
+      "file": "901352230f22a966.mp3"
+    },
+    {
+      "id": "98cd293a4f8783be",
+      "voice": "stack",
+      "text": "Here. In your own words.",
+      "duration": 2.0,
+      "file": "98cd293a4f8783be.mp3"
+    },
+    {
+      "id": "df7e6361795f2db1",
+      "voice": "lynch",
+      "text": "Shop's closed, friend. Open at ten. Tours on Saturdays.",
+      "duration": 4.72,
+      "file": "df7e6361795f2db1.mp3"
+    },
+    {
+      "id": "a4cd9f72f9dbbc66",
+      "voice": "lynch",
+      "text": "Still closed.",
+      "duration": 1.84,
+      "file": "a4cd9f72f9dbbc66.mp3"
+    },
+    {
+      "id": "4eeda12417ff0bb6",
+      "voice": "lynch",
+      "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them.",
+      "duration": 10.96,
+      "file": "4eeda12417ff0bb6.mp3"
+    },
+    {
+      "id": "6aba5d47fd49f4de",
+      "voice": "lynch",
+      "text": "The Army says flying disc. Same day, they say weather balloon.",
+      "duration": 5.32,
+      "file": "6aba5d47fd49f4de.mp3"
+    },
+    {
+      "id": "def63b4b7af9de97",
+      "voice": "lynch",
+      "text": "Then nothing for thirty years, till the book.",
+      "duration": 3.96,
+      "file": "def63b4b7af9de97.mp3"
+    },
+    {
+      "id": "f1ff47f83555b48e",
+      "voice": "lynch",
+      "text": "The boys from '47. That's what I call them. The boys.",
+      "duration": 5.2,
+      "file": "f1ff47f83555b48e.mp3"
+    },
+    {
+      "id": "7cb1d70b18a6c64d",
+      "voice": "lynch",
+      "text": "Me?",
+      "duration": 1.16,
+      "file": "7cb1d70b18a6c64d.mp3"
+    },
+    {
+      "id": "5245817fc464e752",
+      "voice": "lynch",
+      "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.",
+      "duration": 7.08,
+      "file": "5245817fc464e752.mp3"
+    },
+    {
+      "id": "180ca70eebd4666d",
+      "voice": "lynch",
+      "text": "I sit out here every night it's clear. Never seen a thing.",
+      "duration": 4.84,
+      "file": "180ca70eebd4666d.mp3"
+    },
+    {
+      "id": "12e727c4fca81298",
+      "voice": "lynch",
+      "text": "You'd think they'd come by the shop once. Out of courtesy.",
+      "duration": 4.88,
+      "file": "12e727c4fca81298.mp3"
+    },
+    {
+      "id": "11324fdeba045345",
+      "voice": "lynch",
+      "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up.",
+      "duration": 6.72,
+      "file": "11324fdeba045345.mp3"
+    },
+    {
+      "id": "8bd5406fec860296",
+      "voice": "lynch",
+      "text": "Last time it was out on the highway north of town. Standing up, facing the traffic.",
+      "duration": 7.0,
+      "file": "8bd5406fec860296.mp3"
+    },
+    {
+      "id": "ae5e57e8b83918fe",
+      "voice": "lynch",
+      "text": "Somebody's idea of a joke.",
+      "duration": 2.32,
+      "file": "ae5e57e8b83918fe.mp3"
+    },
+    {
+      "id": "8388b47761d38f43",
+      "voice": "bacall",
+      "text": "Leave it. The quiet is worse.",
+      "duration": 1.94,
+      "file": "8388b47761d38f43.mp3"
+    },
+    {
+      "id": "faf124d4985a757f",
+      "voice": "bacall",
+      "text": "I took the battery out in 1947.",
+      "duration": 2.63,
+      "file": "faf124d4985a757f.mp3"
+    },
+    {
+      "id": "afd0d210f97099da",
+      "voice": "bacall",
+      "text": "He pressed it too. Twice.",
+      "duration": 1.96,
+      "file": "afd0d210f97099da.mp3"
+    },
+    {
+      "id": "82a279bb09d21f42",
+      "voice": "bacall",
+      "text": "Go if you need to. I will be here.",
+      "duration": 2.08,
+      "file": "82a279bb09d21f42.mp3"
+    },
+    {
+      "id": "9d66821ab435e199",
+      "voice": "bacall",
+      "text": "So you came down the road.",
+      "duration": 1.72,
+      "file": "9d66821ab435e199.mp3"
+    },
+    {
+      "id": "ca236ebd5ccf6d40",
+      "voice": "bacall",
+      "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.",
+      "duration": 7.99,
+      "file": "ca236ebd5ccf6d40.mp3"
+    },
+    {
+      "id": "f4dcafd4fb68524a",
+      "voice": "bacall",
+      "text": "Both prints from B-12. The first one, and the control.",
+      "duration": 3.48,
+      "file": "f4dcafd4fb68524a.mp3"
+    },
+    {
+      "id": "a661a1d7f76c195c",
+      "voice": "bacall",
+      "text": "And the original. The one from the field box, not the service copy.",
+      "duration": 3.71,
+      "file": "a661a1d7f76c195c.mp3"
+    },
+    {
+      "id": "5c3d4ea31c185df1",
+      "voice": "bacall",
+      "text": "The amended copy you can keep. I know what it says. I wrote it.",
+      "duration": 3.33,
+      "file": "5c3d4ea31c185df1.mp3"
+    },
+    {
+      "id": "3bc3e9e1c9293377",
+      "voice": "bacall",
+      "text": "I know that second line.",
+      "duration": 1.76,
+      "file": "3bc3e9e1c9293377.mp3"
+    },
+    {
+      "id": "45b280586021faf4",
+      "voice": "bacall",
+      "text": "Tell me which source you took away before you made the control.",
+      "duration": 3.72,
+      "file": "45b280586021faf4.mp3"
+    },
+    {
+      "id": "f84b3f14afca6731",
+      "voice": "bacall",
+      "text": "The receiver has nothing to do with the film. Look at how you made the second print.",
+      "duration": 4.84,
+      "file": "f84b3f14afca6731.mp3"
+    },
+    {
+      "id": "8158a555371ce804",
+      "voice": "bacall",
+      "text": "That is not what your print says. The lamp was on when you took it.",
+      "duration": 3.75,
+      "file": "8158a555371ce804.mp3"
+    },
+    {
+      "id": "3667d3f97769f675",
+      "voice": "bacall",
+      "text": "That is not what your print says. Your lamp was shielded.",
+      "duration": 3.22,
+      "file": "3667d3f97769f675.mp3"
+    },
+    {
+      "id": "ce995ae71d9e8d18",
+      "voice": "bacall",
+      "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.",
+      "duration": 6.2,
+      "file": "ce995ae71d9e8d18.mp3"
+    },
+    {
+      "id": "207c2ae2a8a31a71",
+      "voice": "bacall",
+      "text": "You moved it, and the second line did not move with it. Then it was not the drive.",
+      "duration": 4.49,
+      "file": "207c2ae2a8a31a71.mp3"
+    },
+    {
+      "id": "74a2c89dd3ec206f",
+      "voice": "bacall",
+      "text": "Then you have what I had. A reference that stays on the film after its source is gone.",
+      "duration": 4.92,
+      "file": "74a2c89dd3ec206f.mp3"
+    },
+    {
+      "id": "5c3c8caf314dc788",
+      "voice": "bacall",
+      "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide.",
+      "duration": 6.78,
+      "file": "5c3c8caf314dc788.mp3"
+    },
+    {
+      "id": "35461dadbd30f0ea",
+      "voice": "bacall",
+      "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut.",
+      "duration": 6.35,
+      "file": "35461dadbd30f0ea.mp3"
+    },
+    {
+      "id": "01b20196513bcb85",
+      "voice": "bacall",
+      "text": "I wrote that the lamp remained. It was easier than writing that he did.",
+      "duration": 3.82,
+      "file": "01b20196513bcb85.mp3"
+    },
+    {
+      "id": "8d7fa89c7100b30e",
+      "voice": "bacall",
+      "text": "I typed this in the office tonight, before you came. I have not signed it yet.",
+      "duration": 4.15,
+      "file": "8d7fa89c7100b30e.mp3"
+    },
+    {
+      "id": "dcc580841dce7894",
+      "voice": "bacall",
+      "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself.",
+      "duration": 5.4,
+      "file": "dcc580841dce7894.mp3"
+    },
+    {
+      "id": "7e69bd76dd3ecf4f",
+      "voice": "bacall",
+      "text": "He has been nineteen for thirty-nine years.",
+      "duration": 2.64,
+      "file": "7e69bd76dd3ecf4f.mp3"
+    },
+    {
+      "id": "4b40492a2266bc74",
+      "voice": "bacall",
+      "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut.",
+      "duration": 5.5,
+      "file": "4b40492a2266bc74.mp3"
+    },
+    {
+      "id": "606484b48432f654",
+      "voice": "bacall",
+      "text": "He wrote me this the day before. I have never shown it to anyone.",
+      "duration": 3.72,
+      "file": "606484b48432f654.mp3"
+    },
+    {
+      "id": "23a18b69c2dd563d",
+      "voice": "bacall",
+      "text": "Yes. I cut it.",
+      "duration": 1.51,
+      "file": "23a18b69c2dd563d.mp3"
+    },
+    {
+      "id": "7a1aa4c150a4b87a",
+      "voice": "bacall",
+      "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him.",
+      "duration": 7.26,
+      "file": "7a1aa4c150a4b87a.mp3"
+    },
+    {
+      "id": "5d0c3638d1513fa8",
+      "voice": "bacall",
+      "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards.",
+      "duration": 5.15,
+      "file": "5d0c3638d1513fa8.mp3"
+    },
+    {
+      "id": "d2144ce74927a006",
+      "voice": "bacall",
+      "text": "This was in his coat. He knew more than I did.",
+      "duration": 2.53,
+      "file": "d2144ce74927a006.mp3"
+    },
+    {
+      "id": "9e8d7b1a73287e73",
+      "voice": "bacall",
+      "text": "Write it like that. Not cleaner than it was.",
+      "duration": 2.58,
+      "file": "9e8d7b1a73287e73.mp3"
+    },
+    {
+      "id": "dccecc142489647e",
+      "voice": "bacall",
+      "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947.",
+      "duration": 8.37,
+      "file": "dccecc142489647e.mp3"
+    },
+    {
+      "id": "5a199f5b1f85fdad",
+      "voice": "bacall",
+      "text": "You left the receiver on out there. Listen.",
+      "duration": 2.58,
+      "file": "5a199f5b1f85fdad.mp3"
+    },
+    {
+      "id": "608946d9f2c0a181",
+      "voice": "bacall",
+      "text": "Tomás. Where did you leave the spare key?",
+      "duration": 2.44,
+      "file": "608946d9f2c0a181.mp3"
+    },
+    {
+      "id": "2ec6af00557caa0e",
+      "voice": "price",
+      "text": "Reference west. No. East. Hold the last reading.",
+      "duration": 2.6,
+      "file": "2ec6af00557caa0e.mp3"
+    },
+    {
+      "id": "14abdf91d38d2dfe",
+      "voice": "bacall",
+      "text": "That is what he said then. Not an answer to what I asked now.",
+      "duration": 3.42,
+      "file": "14abdf91d38d2dfe.mp3"
+    },
+    {
+      "id": "c9cfa96198e3803f",
+      "voice": "bacall",
+      "text": "No. It is not him. It is what he left.",
+      "duration": 2.16,
+      "file": "c9cfa96198e3803f.mp3"
+    },
+    {
+      "id": "3d59a04286f12ef5",
+      "voice": "bacall",
+      "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.",
+      "duration": 7.54,
+      "file": "3d59a04286f12ef5.mp3"
+    },
+    {
+      "id": "5d136a44926a94d9",
+      "voice": "bacall",
+      "text": "Tomás walked out to the closing point with the last reading.",
+      "duration": 3.36,
+      "file": "5d136a44926a94d9.mp3"
+    },
+    {
+      "id": "724f654400170f6d",
+      "voice": "bacall",
+      "text": "If you want to know whether the line still holds, drive the road.",
+      "duration": 3.74,
+      "file": "724f654400170f6d.mp3"
+    },
+    {
+      "id": "472a9fdcabf516a3",
+      "voice": "bacall",
+      "text": "Do not stop on the line.",
+      "duration": 1.9,
+      "file": "472a9fdcabf516a3.mp3"
+    },
+    {
+      "id": "92bb6712734394f8",
+      "voice": "bacall",
+      "text": "SARO seven, this is Sierra. You hear me?",
+      "duration": 2.31,
+      "file": "92bb6712734394f8.mp3"
+    },
+    {
+      "id": "5e8511505fa4a670",
+      "voice": "bacall",
+      "text": "Pull in at the north end, by the office. Not down past the rooms.",
+      "duration": 3.68,
+      "file": "5e8511505fa4a670.mp3"
+    },
+    {
+      "id": "8c47f08abfb81ab6",
+      "voice": "bacall",
+      "text": "Room six. The door is open. Bring the prints.",
+      "duration": 2.64,
+      "file": "8c47f08abfb81ab6.mp3"
+    },
+    {
+      "id": "340b583d2574915a",
+      "voice": "bacall",
+      "text": "Sierra Motor Court.",
+      "duration": 1.52,
+      "file": "340b583d2574915a.mp3"
+    },
+    {
+      "id": "2dfe917e2ee127fe",
+      "voice": "bacall",
+      "text": "Station One. Nobody has asked me for that key in a long time.",
+      "duration": 3.37,
+      "file": "2dfe917e2ee127fe.mp3"
+    },
+    {
+      "id": "438ee647319842e8",
+      "voice": "bacall",
+      "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+      "duration": 6.54,
+      "file": "438ee647319842e8.mp3"
+    },
+    {
+      "id": "99611d00f1377a31",
+      "voice": "bacall",
+      "text": "So you went out there.",
+      "duration": 1.47,
+      "file": "99611d00f1377a31.mp3"
+    },
+    {
+      "id": "aa6fc98ee734307c",
+      "voice": "bacall",
+      "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+      "duration": 5.67,
+      "file": "aa6fc98ee734307c.mp3"
+    },
+    {
+      "id": "8108de94d7f99846",
+      "voice": "bacall",
+      "text": "You have seen the cable now. It did not break by itself.",
+      "duration": 3.14,
+      "file": "8108de94d7f99846.mp3"
+    },
+    {
+      "id": "c5487e62a7151d91",
+      "voice": "bacall",
+      "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+      "duration": 5.25,
+      "file": "c5487e62a7151d91.mp3"
+    }
+  ]
+}

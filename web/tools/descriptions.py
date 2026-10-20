@@ -200,6 +200,8 @@ async def main():
             async def new_page(ctx):
                 pg = await ctx.new_page()
                 pg.set_default_timeout(60000)
+                # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+                await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
                 await pg.add_init_script(DESCRIPTION_INSTRUMENT + TAG_READING)
                 pg.on("pageerror", lambda e: errors.append("PAGEERROR: " + str(e)))
                 pg.on("console", lambda m: errors.append(m.type + ": " + m.text)
@@ -212,8 +214,8 @@ async def main():
             page = await new_page(context)
             await page.goto(URL)
             await wait_for_js(page, "!!window.S47")
-            # Await the complete optional licensed/ordinary/telephone preload;
-            # a total of 69 can now be reached while phone clips still load.
+            # Await complete ordinary, telephone, character and optional licensed
+            # preloads; a partial total cannot prove any individual bank ready.
             await page.evaluate("() => S47.audio.preload()")
             await page.evaluate("localStorage.clear()")
             await page.reload()

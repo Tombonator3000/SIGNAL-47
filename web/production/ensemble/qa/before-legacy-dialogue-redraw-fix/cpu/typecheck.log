@@ -1,0 +1,8 @@
+
+> signal47-web@0.1.0 typecheck
+> tsc --noEmit
+tts_ready_sha256: 08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9
+serling_corpus_sha256: 771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74
+serling_clips: 1402
+ensemble_clips: 100
+

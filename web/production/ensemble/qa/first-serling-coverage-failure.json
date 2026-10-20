@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "documented_utc": "2026-10-20T00:03:09.317996+00:00",
+  "status": "CONFIRMED_CORPUS_COVERAGE_FAILURE",
+  "candidate": "before-town-coverage",
+  "old_serling_clips": 1384,
+  "result": {
+    "passed": 106,
+    "checks": 107,
+    "failed_check": "chapter5/diner: current object/notebook/people/map descriptions resolve in the actual prepared area"
+  },
+  "evidence": {
+    "archive_base": "outputs/ensemble/before-town-coverage",
+    "report": {
+      "file": "qa/serling-pages/serling.json",
+      "sha256": "655e266670cadbce40ed800793df92225d484eb3e8054192ff30311a5020ab70"
+    },
+    "log": {
+      "file": "qa/serling-pages.log",
+      "sha256": "3b398e122c10814582f0990f60e70967bd6a5e11c36ed3dfebdb1941fed72eb8"
+    },
+    "build_manifest": {
+      "file": "build-manifest.json",
+      "sha256": "9d44296d4f4c0536d7c057dcf388588d1e5d9ad2e9f757ccebef133151683b26"
+    }
+  },
+  "missing": [
+    {
+      "source": "examine:town:gasDoor",
+      "text": "SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again.",
+      "available": false
+    },
+    {
+      "source": "examine:town:gasWindow",
+      "text": "Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.",
+      "available": false
+    },
+    {
+      "source": "examine:town:pumps",
+      "text": "Two pumps on a concrete island. The counters stand at zero.",
+      "available": false
+    },
+    {
+      "source": "examine:town:payphone",
+      "text": "A payphone on a post, a phone book on a chain with half its pages gone.",
+      "available": false
+    },
+    {
+      "source": "examine:town:paper",
+      "text": "NICKLAUS, 46, WINS MASTERS. Under the fold, smaller: County to grade the old Roswell road this summer.",
+      "available": false
+    },
+    {
+      "source": "examine:town:sheriffWindow",
+      "text": "One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it.",
+      "available": false
+    },
+    {
+      "source": "examine:town:sheriffDoor",
+      "text": "COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.",
+      "available": false
+    },
+    {
+      "source": "examine:town:patrolCar",
+      "text": "The hood is still warm. Pins in a cigar box on the dash.",
+      "available": false
+    },
+    {
+      "source": "examine:town:laundromat",
+      "text": "The one machine turns, stops, turns. There is no basket on the bench and no one waiting.",
+      "available": false
+    },
+    {
+      "source": "examine:town:cinema",
+      "text": "A box office with its blind down, and a card: CLOSED.",
+      "available": false
+    },
+    {
+      "source": "examine:town:marquee",
+      "text": "CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line.",
+      "available": false
+    },
+    {
+      "source": "examine:town:studio",
+      "text": "His chair pushed back. The phone's line light still blinking.",
+      "available": false
+    },
+    {
+      "source": "examine:town:souvenir",
+      "text": "The foil has been crumpled by hand. There is a price sticker on the alien too.",
+      "available": false
+    }
+  ],
+  "root_cause": {
+    "file": "tools/ensemble/extract-serling.mjs",
+    "detail": "Uttrekket fanget Caliche once/say, men ikke examine-funksjonen i argument 3 til den lokale add-hjelperen. De 13 faste beskrivelsene manglet i korpuset.",
+    "area_guard": "main.ts binder Caliche here til world.area===diner. Examine-wrapperen returnerer ikke disse tekstene i et annet område.",
+    "inventory_side_effects": "Enkelte originale examine-funksjoner fører flyer/map-notat ved nærblikk. Dette skaper ikke de manglende faste examine-tekstene og forklarer ikke available=false."
+  },
+  "decision": "Behold INVENTORY og rett faktisk extractor-/lyddekning. Dette forsøket kan ikke brukes som PASS for en senere kandidat.",
+  "limits": [
+    "Tekstlig kilde-/korpusdiagnose med faktisk nettleserbevis. Ingen menneskelig lytting eller ny GPU-kjøring i denne diagnosen."
+  ]
+}

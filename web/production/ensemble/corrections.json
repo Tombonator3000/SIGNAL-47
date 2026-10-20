@@ -1,0 +1,672 @@
+{
+  "initial_seed": 42,
+  "new_seed": 43,
+  "human_listened": false,
+  "attempts": [
+    {
+      "id": "454878a0f1f50e56",
+      "before_audio_sha256": "0f319a2c9982e6cdaa5cf13b24c798037c111b8531869d709459d03b45bbfb9a",
+      "before_asr": {
+        "id": "454878a0f1f50e56",
+        "group": "all_ensemble",
+        "expected": "People call him. I couldn't tell you why they'd want to.",
+        "recognized": "People call them, I couldn't tell you why they'd want to.",
+        "strict_word_edits": 1,
+        "expected_words": 11,
+        "normalized_word_edits": 1,
+        "audio_sha256": "0f319a2c9982e6cdaa5cf13b24c798037c111b8531869d709459d03b45bbfb9a",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "People call them, I couldn't tell you why they'd want to.",
+          "segments": [
+            {
+              "start": 0.05,
+              "end": 2.87,
+              "text": "People call them, I couldn't tell you why they'd want to."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.87,
+          "transcription_time_s": 0.8,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      }
+    },
+    {
+      "id": "79a44e7e5fd1e5bf",
+      "before_audio_sha256": "75c5f75a9031fcca728a7c79181e324b6f97274831821168416c280dec41dd4f",
+      "before_asr": {
+        "id": "79a44e7e5fd1e5bf",
+        "group": "all_ensemble",
+        "expected": "Towed a rig in off it once. Last October.",
+        "recognized": "Total rigging off at once, last October.",
+        "strict_word_edits": 5,
+        "expected_words": 9,
+        "normalized_word_edits": 5,
+        "audio_sha256": "75c5f75a9031fcca728a7c79181e324b6f97274831821168416c280dec41dd4f",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Total rigging off at once, last October.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 2.3,
+              "text": "Total rigging off at once, last October."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.3,
+          "transcription_time_s": 0.77,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      }
+    },
+    {
+      "id": "1af93cf161994ee3",
+      "before_audio_sha256": "0175e9a71f9163812048baba60050ca30ef848d6032f36e05178ce2e977f0023",
+      "before_asr": {
+        "id": "1af93cf161994ee3",
+        "group": "all_ensemble",
+        "expected": "Wasn't me, then. I've been here since ten.",
+        "recognized": "It wasn't me then. I've been here since 10.",
+        "strict_word_edits": 2,
+        "expected_words": 8,
+        "normalized_word_edits": 1,
+        "audio_sha256": "0175e9a71f9163812048baba60050ca30ef848d6032f36e05178ce2e977f0023",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "It wasn't me then. I've been here since 10.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 2.44,
+              "text": "It wasn't me then. I've been here since 10."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.44,
+          "transcription_time_s": 0.78,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      }
+    },
+    {
+      "id": "71fd7972fd78795e",
+      "before_audio_sha256": "8ba2c159ef3ca5f921a062298816769a31a40df2e2b4ec1a16e5900922b3afa1",
+      "before_asr": {
+        "id": "71fd7972fd78795e",
+        "group": "all_ensemble",
+        "expected": "Keep it. I write down what goes in the till. I want it to add up.",
+        "recognized": "Keep I write down what goes in the till I wanted to add up.",
+        "strict_word_edits": 3,
+        "expected_words": 16,
+        "normalized_word_edits": 3,
+        "audio_sha256": "8ba2c159ef3ca5f921a062298816769a31a40df2e2b4ec1a16e5900922b3afa1",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Keep I write down what goes in the till I wanted to add up.",
+          "segments": [
+            {
+              "start": 0.27,
+              "end": 3.81,
+              "text": "Keep I write down what goes in the till I wanted to add up"
+            }
+          ],
+          "language": "en",
+          "duration_s": 3.81,
+          "transcription_time_s": 0.81,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      }
+    },
+    {
+      "id": "16b8aad01575b86b",
+      "before_audio_sha256": "2b0e4feaa0c1bd798e4bf05a03e4ec944dfba9b5a1ed3ba957e23d90bcd7ce47",
+      "before_asr": {
+        "id": "16b8aad01575b86b",
+        "group": "all_ensemble",
+        "expected": "Calls. Every call I get that I can't write up as anything.",
+        "recognized": "Every call I get that I can't write up is anything.",
+        "strict_word_edits": 2,
+        "expected_words": 12,
+        "normalized_word_edits": 2,
+        "audio_sha256": "2b0e4feaa0c1bd798e4bf05a03e4ec944dfba9b5a1ed3ba957e23d90bcd7ce47",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Every call I get that I can't write up is anything.",
+          "segments": [
+            {
+              "start": 1.59,
+              "end": 3.55,
+              "text": "Every call I get that I can't write up is anything."
+            }
+          ],
+          "language": "en",
+          "duration_s": 3.55,
+          "transcription_time_s": 0.82,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      }
+    },
+    {
+      "id": "a3d657e1a59ed461",
+      "before_audio_sha256": "874fea8f341a28d80db6f294b355a54e8e9cbb43c2f8aa1a1f8004b23a3a6028",
+      "before_asr": {
+        "id": "a3d657e1a59ed461",
+        "group": "all_ensemble",
+        "expected": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+        "recognized": "The fella at the gas station October 19th last year went out to throw a rig and lost two hours. He can't account for.",
+        "strict_word_edits": 2,
+        "expected_words": 24,
+        "normalized_word_edits": 2,
+        "audio_sha256": "874fea8f341a28d80db6f294b355a54e8e9cbb43c2f8aa1a1f8004b23a3a6028",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "The fella at the gas station October 19th last year went out to throw a rig and lost two hours. He can't account for.",
+          "segments": [
+            {
+              "start": 0.53,
+              "end": 7.89,
+              "text": "The fella at the gas station October 19th last year went out to throw a rig and lost two hours. He can't account for"
+            }
+          ],
+          "language": "en",
+          "duration_s": 7.89,
+          "transcription_time_s": 0.84,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      }
+    },
+    {
+      "id": "16d01f724af485f2",
+      "before_audio_sha256": "6da38c9ef9f4fbfb7fda1e226e2ad4a3e9940d68109121f486f381babf337d74",
+      "before_asr": {
+        "id": "16d01f724af485f2",
+        "group": "all_ensemble",
+        "expected": "And a kid who called the radio station in September of '81. Family moved away after.",
+        "recognized": "And a kid who called the radio station in September of 81.",
+        "strict_word_edits": 4,
+        "expected_words": 16,
+        "normalized_word_edits": 4,
+        "audio_sha256": "6da38c9ef9f4fbfb7fda1e226e2ad4a3e9940d68109121f486f381babf337d74",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "And a kid who called the radio station in September of 81.",
+          "segments": [
+            {
+              "start": 0.59,
+              "end": 3.65,
+              "text": "and a kid who called the radio station in September of 81."
+            }
+          ],
+          "language": "en",
+          "duration_s": 3.65,
+          "transcription_time_s": 0.8,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      }
+    },
+    {
+      "id": "f4dcafd4fb68524a",
+      "before_audio_sha256": "9683a58d7a796214aa926fb74699278d11387956da81f6462fecf6c185eca8c7",
+      "before_asr": {
+        "id": "f4dcafd4fb68524a",
+        "group": "all_ensemble",
+        "expected": "Both prints from B-12. The first one, and the control.",
+        "recognized": "Both prints from B12, the first one in the control.",
+        "strict_word_edits": 3,
+        "expected_words": 11,
+        "normalized_word_edits": 3,
+        "audio_sha256": "9683a58d7a796214aa926fb74699278d11387956da81f6462fecf6c185eca8c7",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Both prints from B12, the first one in the control.",
+          "segments": [
+            {
+              "start": 0.14,
+              "end": 2.86,
+              "text": "both prints from B12, the first one in the control."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.86,
+          "transcription_time_s": 0.92,
+          "engine": "faster-whisper"
+        },
+        "voice": "bacall"
+      }
+    },
+    {
+      "id": "14abdf91d38d2dfe",
+      "before_audio_sha256": "9154559b576ba1444050a14b2e5a6955903e842a2338b9fea0d4b81c7279256f",
+      "before_asr": {
+        "id": "14abdf91d38d2dfe",
+        "group": "all_ensemble",
+        "expected": "That is what he said then. Not an answer to what I asked now.",
+        "recognized": "That is what he said then, not an answer to what I ask now.",
+        "strict_word_edits": 1,
+        "expected_words": 14,
+        "normalized_word_edits": 1,
+        "audio_sha256": "9154559b576ba1444050a14b2e5a6955903e842a2338b9fea0d4b81c7279256f",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "That is what he said then, not an answer to what I ask now.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 3.1,
+              "text": "That is what he said then, not an answer to what I ask now."
+            }
+          ],
+          "language": "en",
+          "duration_s": 3.1,
+          "transcription_time_s": 0.86,
+          "engine": "faster-whisper"
+        },
+        "voice": "bacall"
+      }
+    },
+    {
+      "id": "c5487e62a7151d91",
+      "before_audio_sha256": "afb08d67287b63b3198e5afa1f51bfd041f7fbf16ffc0315f3fb24008d3d3567",
+      "before_asr": {
+        "id": "c5487e62a7151d91",
+        "group": "all_ensemble",
+        "expected": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+        "recognized": "Room 6. Bring the original record in your film, Developed, then I will tell you the rest.",
+        "strict_word_edits": 1,
+        "expected_words": 17,
+        "normalized_word_edits": 1,
+        "audio_sha256": "afb08d67287b63b3198e5afa1f51bfd041f7fbf16ffc0315f3fb24008d3d3567",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Room 6. Bring the original record in your film, Developed, then I will tell you the rest.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 4.66,
+              "text": "Room 6. Bring the original record in your film, Developed, then I will tell you the rest."
+            }
+          ],
+          "language": "en",
+          "duration_s": 4.66,
+          "transcription_time_s": 0.9,
+          "engine": "faster-whisper"
+        },
+        "voice": "bacall"
+      }
+    },
+    {
+      "id": "79a44e7e5fd1e5bf",
+      "before_seed": 43,
+      "before_audio_sha256": "ab9b1cf243f0be02e9c921e6a4ef4a81e89302b05d6520a9a86de1e09e7a6a80",
+      "before_asr": {
+        "id": "79a44e7e5fd1e5bf",
+        "group": "all_ensemble",
+        "expected": "Towed a rig in off it once. Last October.",
+        "recognized": "Toad to rigging off at once last October.",
+        "strict_word_edits": 5,
+        "expected_words": 9,
+        "normalized_word_edits": 5,
+        "audio_sha256": "ab9b1cf243f0be02e9c921e6a4ef4a81e89302b05d6520a9a86de1e09e7a6a80",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Toad to rigging off at once last October.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 2.3,
+              "text": "Toad to rigging off at once last October."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.3,
+          "transcription_time_s": 0.91,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      },
+      "next_seed": 44,
+      "next_request_text": "Towed, a rig in off it, once. Last October.",
+      "reason": "Third take: punctuation articulates the original words; eighty-one spells the same year; toe is the homophone of tow. Runtime script/ID and profile are unchanged."
+    },
+    {
+      "id": "16b8aad01575b86b",
+      "before_seed": 43,
+      "before_audio_sha256": "b72a96dceeac5cc74e8cade7f651d81ec8d9bf1551f7801dbd7888135fea02f9",
+      "before_asr": {
+        "id": "16b8aad01575b86b",
+        "group": "all_ensemble",
+        "expected": "Calls. Every call I get that I can't write up as anything.",
+        "recognized": "Calls. Every call I get that I can't write up is anything.",
+        "strict_word_edits": 1,
+        "expected_words": 12,
+        "normalized_word_edits": 1,
+        "audio_sha256": "b72a96dceeac5cc74e8cade7f651d81ec8d9bf1551f7801dbd7888135fea02f9",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Calls. Every call I get that I can't write up is anything.",
+          "segments": [
+            {
+              "start": 0.46,
+              "end": 3.62,
+              "text": "Calls. Every call I get that I can't write up is anything."
+            }
+          ],
+          "language": "en",
+          "duration_s": 3.62,
+          "transcription_time_s": 0.89,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      },
+      "next_seed": 44,
+      "next_request_text": "Calls. Every call I get that I can't write up, as anything.",
+      "reason": "Third take: punctuation articulates the original words; eighty-one spells the same year; toe is the homophone of tow. Runtime script/ID and profile are unchanged."
+    },
+    {
+      "id": "a3d657e1a59ed461",
+      "before_seed": 43,
+      "before_audio_sha256": "9cdb7c3aa37fadf1881ee698fb323e670599610e4896ea2ecf4c4d5fc7ab72c1",
+      "before_asr": {
+        "id": "a3d657e1a59ed461",
+        "group": "all_ensemble",
+        "expected": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+        "recognized": "The fellow at the gas station. October 19th last year. Went out to throw a rig and lost two hours he can't account for.",
+        "strict_word_edits": 3,
+        "expected_words": 24,
+        "normalized_word_edits": 3,
+        "audio_sha256": "9cdb7c3aa37fadf1881ee698fb323e670599610e4896ea2ecf4c4d5fc7ab72c1",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "The fellow at the gas station. October 19th last year. Went out to throw a rig and lost two hours he can't account for.",
+          "segments": [
+            {
+              "start": 0.62,
+              "end": 7.84,
+              "text": "The fellow at the gas station. October 19th last year. Went out to throw a rig and lost two hours he can't account for."
+            }
+          ],
+          "language": "en",
+          "duration_s": 7.84,
+          "transcription_time_s": 0.97,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      },
+      "next_seed": 44,
+      "next_request_text": "The fella at the gas station. October nineteenth, last year. Went out to toe a rig and lost two hours he can't account for.",
+      "reason": "Third take: punctuation articulates the original words; eighty-one spells the same year; toe is the homophone of tow. Runtime script/ID and profile are unchanged."
+    },
+    {
+      "id": "16d01f724af485f2",
+      "before_seed": 43,
+      "before_audio_sha256": "c8100bac077747ce2ac3fe7301d7aaed1df9528ea896513e62168144a33076d4",
+      "before_asr": {
+        "id": "16d01f724af485f2",
+        "group": "all_ensemble",
+        "expected": "And a kid who called the radio station in September of '81. Family moved away after.",
+        "recognized": "And a kid who called the radio station in September of 81. Kid, family moved away after...",
+        "strict_word_edits": 1,
+        "expected_words": 16,
+        "normalized_word_edits": 1,
+        "audio_sha256": "c8100bac077747ce2ac3fe7301d7aaed1df9528ea896513e62168144a33076d4",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "And a kid who called the radio station in September of 81. Kid, family moved away after...",
+          "segments": [
+            {
+              "start": 0.53,
+              "end": 3.59,
+              "text": "and a kid who called the radio station in September of 81."
+            },
+            {
+              "start": 4.07,
+              "end": 6.15,
+              "text": "Kid, family moved away after..."
+            }
+          ],
+          "language": "en",
+          "duration_s": 6.15,
+          "transcription_time_s": 0.95,
+          "engine": "faster-whisper"
+        },
+        "voice": "stack"
+      },
+      "next_seed": 44,
+      "next_request_text": "And a kid who called the radio station in September of eighty-one. Family moved away, after.",
+      "reason": "Third take: punctuation articulates the original words; eighty-one spells the same year; toe is the homophone of tow. Runtime script/ID and profile are unchanged."
+    },
+    {
+      "id": "79a44e7e5fd1e5bf",
+      "before_seed": 44,
+      "before_audio_sha256": "784873d64ae5772e0cd2b267488338eec3088a2f337069a79e28311dfe216ad5",
+      "before_asr": {
+        "id": "79a44e7e5fd1e5bf",
+        "group": "all_ensemble",
+        "expected": "Towed a rig in off it once. Last October.",
+        "recognized": "Tired to rig in off it once last October.",
+        "strict_word_edits": 2,
+        "expected_words": 9,
+        "normalized_word_edits": 2,
+        "required_negative_signs": 0,
+        "recognized_negative_signs": 0,
+        "audio_sha256": "784873d64ae5772e0cd2b267488338eec3088a2f337069a79e28311dfe216ad5",
+        "status": "REVIEW_REQUIRED",
+        "note": "",
+        "response": {
+          "text": "Tired to rig in off it once last October.",
+          "segments": [
+            {
+              "start": 0.0,
+              "end": 2.4,
+              "text": "Tired to rig in off it once last October."
+            }
+          ],
+          "language": "en",
+          "duration_s": 2.4,
+          "transcription_time_s": 0.95,
+          "engine": "faster-whisper"
+        },
+        "voice": "stanton"
+      },
+      "next_seed": 45,
+      "next_request_text": "Toad. A rig in off it once. Last October.",
+      "reason": "Toad is the exact homophone of towed. A sentence pause isolates this difficult word; source words/ID/profile remain unchanged."
+    }
+  ],
+  "final_selected": {
+    "14abdf91d38d2dfe": {
+      "audio_sha256": "ec35f659972eb72701dc1fb8cd94c6fb17aca4f795a28765977c3240f2415e98",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "That is what he said then. Not an answer to what I asked now."
+      },
+      "profile_reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161",
+      "cache_identity": "de3e9140b4e35996"
+    },
+    "16b8aad01575b86b": {
+      "audio_sha256": "6fd3ed27290686bcb3f82d19312611e6dd68419ffa1ff1e74445049028347bb4",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "Calls. Every call I get that I can't write up, as anything."
+      },
+      "profile_reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a",
+      "cache_identity": "f7f958344d036ed2"
+    },
+    "16d01f724af485f2": {
+      "audio_sha256": "c7ba9f84da43ff40f58bedd937357411c8dbc4a8f526ad1810cd8fddaf71e86b",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "And a kid who called the radio station in September of eighty-one. Family moved away, after."
+      },
+      "profile_reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a",
+      "cache_identity": "bde23622618eb5cd"
+    },
+    "1af93cf161994ee3": {
+      "audio_sha256": "8f1012ddaec9655c72fb68ebf5b787aa4cf6ab0ae293fd7dbd21823ffb19f1ce",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Wasn't me, then. I've been here since ten."
+      },
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca",
+      "cache_identity": "4aefbbba00663edf"
+    },
+    "454878a0f1f50e56": {
+      "audio_sha256": "f38cc2dba551deee71d5538eb6a5bd1df9c23761558691f6b285581169531219",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "People call him. I couldn't tell you why they'd want to."
+      },
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca",
+      "cache_identity": "cfa25b56e4845dba"
+    },
+    "71fd7972fd78795e": {
+      "audio_sha256": "8e599050fa06081f7710695791e7f0b3b99c462c4ed9c3800d7da1b2302809cd",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Keep it. I write down what goes in the till. I want it to add up."
+      },
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca",
+      "cache_identity": "32f2665a6137196f"
+    },
+    "79a44e7e5fd1e5bf": {
+      "audio_sha256": "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 45,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "21cc4af1",
+        "text": "Toad. A rig in off it once. Last October."
+      },
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca",
+      "cache_identity": "38de331d4031e3b9"
+    },
+    "a3d657e1a59ed461": {
+      "audio_sha256": "a629a611a006c9980017070bf1b704cc738429b58daabc549efb6cbd15e8530b",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "5af36427",
+        "text": "The fella at the gas station. October nineteenth, last year. Went out to toe a rig and lost two hours he can't account for."
+      },
+      "profile_reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a",
+      "cache_identity": "e391a2bac5ce5540"
+    },
+    "c5487e62a7151d91": {
+      "audio_sha256": "d0f58e71f0d37e1a9f217929e81ad96370861d2de48b14350f7cc542f0c5f4cd",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest."
+      },
+      "profile_reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161",
+      "cache_identity": "e53e96d0abe2a10d"
+    },
+    "f4dcafd4fb68524a": {
+      "audio_sha256": "98c51df0907f47ef5a47f2d7a263d0bc8fae9d1bf972673b3bf4ec5155da8c30",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 43,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "c5964307",
+        "text": "Both prints from B-12. The first one, and the control."
+      },
+      "profile_reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161",
+      "cache_identity": "50f83e820072d6c8"
+    }
+  },
+  "interpretation": "Attempt entries preserve prior hashes/ASR and queued correction reasoning; final_selected is the actual reproducible selected rendering. Source wording, ID and profile are unchanged."
+}

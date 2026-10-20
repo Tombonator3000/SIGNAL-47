@@ -144,6 +144,7 @@ export function bindTown(town: Town, d: CalicheDeps) {
     P.talk(d.ui, {
       title: p.title,
       earl: w === 'host',
+      character: w === 'attendant' ? 'stanton' : w === 'deputy' ? 'stack' : w === 'souvenir_man' ? 'lynch' : undefined,
       view: () => {
         const v: P.TalkView = { status: p.status, lines, choices: [], reply: null };
         for (const t of p.topics) if (available(w, t)) v.choices.push({ id: t.id, label: t.label });

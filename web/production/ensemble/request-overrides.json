@@ -1,0 +1,46 @@
+{
+  "454878a0f1f50e56": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  },
+  "79a44e7e5fd1e5bf": {
+    "seed": 45,
+    "text": "Toad. A rig in off it once. Last October.",
+    "reason": "Same-word homophone and pause after repeated short-phrase word recognition difficulty."
+  },
+  "1af93cf161994ee3": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  },
+  "71fd7972fd78795e": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  },
+  "16b8aad01575b86b": {
+    "seed": 44,
+    "text": "Calls. Every call I get that I can't write up, as anything.",
+    "reason": "Targeted pronunciation/articulation correction after standalone and dialogue-context word checks; same source wording/value/ID."
+  },
+  "a3d657e1a59ed461": {
+    "seed": 44,
+    "text": "The fella at the gas station. October nineteenth, last year. Went out to toe a rig and lost two hours he can't account for.",
+    "reason": "Targeted pronunciation/articulation correction after standalone and dialogue-context word checks; same source wording/value/ID."
+  },
+  "16d01f724af485f2": {
+    "seed": 44,
+    "text": "And a kid who called the radio station in September of eighty-one. Family moved away, after.",
+    "reason": "Targeted pronunciation/articulation correction after standalone and dialogue-context word checks; same source wording/value/ID."
+  },
+  "f4dcafd4fb68524a": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  },
+  "14abdf91d38d2dfe": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  },
+  "c5487e62a7151d91": {
+    "seed": 43,
+    "reason": "Targeted second take after automatic word check found a changed or omitted word; original runtime text and stable ID retained."
+  }
+}

@@ -269,6 +269,8 @@ async def main():
             context = await browser.new_context(viewport={"width": 1280, "height": 800})
             page = await context.new_page()
             page.set_default_timeout(60000)
+            # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+            await page.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
             await page.add_init_script(INSTRUMENT + PHONE_GRAPH)
             page.on("pageerror", lambda e: errors.append("PAGEERROR: " + str(e)))
             page.on("console", lambda m: errors.append(m.type + ": " + m.text)

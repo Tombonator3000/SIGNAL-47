@@ -1,0 +1,6812 @@
+{
+  "pages": false,
+  "strict_csp": true,
+  "fixtures": "Prepared diner and aimed studio-door position; actual E/Use and talk buttons. ev:boy is an observation-key fixture, not a replay of that radio journey. Lifecycle API cases are labelled explicitly.",
+  "url": "file:///tmp/s47-earl-csp-g0cuzspc/index.html",
+  "opening": {
+    "now": 4.8,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "56e7a020339f079f",
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "duration": 3.97,
+          "voice": null
+        }
+      ],
+      "bufferCount": 1
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "",
+        "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+      },
+      {
+        "who": "EARL",
+        "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+      }
+    ],
+    "choices": [
+      "calls",
+      "visitors",
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "calls": {
+    "now": 19.157333333333334,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "3dd0d7b88a382fe9",
+          "text": "Lights, mostly. Cattle, some nights. Engines.",
+          "duration": 2.8,
+          "voice": null
+        },
+        {
+          "id": "073fce364994cf9e",
+          "text": "And missing time. You read that book? Everybody's read that book now.",
+          "duration": 4.02,
+          "voice": null
+        },
+        {
+          "id": "3a345d802b2c405b",
+          "text": "Half of them, I think they read it first and then it happened to them.",
+          "duration": 3.86,
+          "voice": null
+        },
+        {
+          "id": "f60bda199fff5103",
+          "text": "The other half never read anything in their lives.",
+          "duration": 2.73,
+          "voice": null
+        }
+      ],
+      "bufferCount": 5
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      },
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 4.970666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "at": 5.016
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 4.970666666666666,
+        "duration": 3.97,
+        "expectedEnd": 8.940666666666667,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 5.034666666666666,
+        "stoppedAt": 5.013333333333334,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 5.056,
+        "duration": 2.8,
+        "expectedEnd": 7.856,
+        "decoded": {
+          "bytes": 23084,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.8,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 7.8613333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 6,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3dd0d7b88a382fe9",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 8.078666666666667,
+        "duration": 4.02,
+        "expectedEnd": 12.098666666666666,
+        "decoded": {
+          "bytes": 32876,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.02,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 12.098666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 7,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "073fce364994cf9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 12.316,
+        "duration": 3.86,
+        "expectedEnd": 16.176000000000002,
+        "decoded": {
+          "bytes": 31532,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.86,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 16.184,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 13,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3a345d802b2c405b",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 16.404,
+        "duration": 2.73,
+        "expectedEnd": 19.134,
+        "decoded": {
+          "bytes": 22508,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.73,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 19.136,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 15,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f60bda199fff5103",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "YOU",
+        "text": "What do people call in about?"
+      },
+      {
+        "who": "EARL",
+        "text": "Lights, mostly. Cattle, some nights. Engines."
+      },
+      {
+        "who": "EARL",
+        "text": "And missing time. You read that book? Everybody's read that book now."
+      },
+      {
+        "who": "EARL",
+        "text": "Half of them, I think they read it first and then it happened to them."
+      },
+      {
+        "who": "EARL",
+        "text": "The other half never read anything in their lives."
+      }
+    ],
+    "choices": [
+      "visitors",
+      "tape",
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "visitors": {
+    "now": 24.746666666666666,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "a3c152d2c160dfed",
+          "text": "On the air I call them our visitors. It keeps it friendly.",
+          "duration": 3.17,
+          "voice": null
+        },
+        {
+          "id": "a75c7f370b3629f3",
+          "text": "Off the air I don't call them anything.",
+          "duration": 2.13,
+          "voice": null
+        }
+      ],
+      "bufferCount": 7
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      },
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 4.970666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "at": 5.016
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do you think they are?"
+          },
+          {
+            "who": "EARL",
+            "text": "On the air I call them our visitors. It keeps it friendly."
+          },
+          {
+            "who": "EARL",
+            "text": "Off the air I don't call them anything."
+          }
+        ],
+        "at": 19.2
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 4.970666666666666,
+        "duration": 3.97,
+        "expectedEnd": 8.940666666666667,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 5.034666666666666,
+        "stoppedAt": 5.013333333333334,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 5.056,
+        "duration": 2.8,
+        "expectedEnd": 7.856,
+        "decoded": {
+          "bytes": 23084,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.8,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 7.8613333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 6,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3dd0d7b88a382fe9",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 8.078666666666667,
+        "duration": 4.02,
+        "expectedEnd": 12.098666666666666,
+        "decoded": {
+          "bytes": 32876,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.02,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 12.098666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 7,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "073fce364994cf9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 12.316,
+        "duration": 3.86,
+        "expectedEnd": 16.176000000000002,
+        "decoded": {
+          "bytes": 31532,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.86,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 16.184,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 13,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3a345d802b2c405b",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 16.404,
+        "duration": 2.73,
+        "expectedEnd": 19.134,
+        "decoded": {
+          "bytes": 22508,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.73,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 19.136,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 15,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f60bda199fff5103",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 19.221333333333334,
+        "duration": 3.17,
+        "expectedEnd": 22.391333333333336,
+        "decoded": {
+          "bytes": 26156,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.17,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.397333333333332,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 16,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a3c152d2c160dfed",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 22.614666666666665,
+        "duration": 2.13,
+        "expectedEnd": 24.744666666666664,
+        "decoded": {
+          "bytes": 17708,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.13,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 24.746666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 17,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a75c7f370b3629f3",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "YOU",
+        "text": "What do you think they are?"
+      },
+      {
+        "who": "EARL",
+        "text": "On the air I call them our visitors. It keeps it friendly."
+      },
+      {
+        "who": "EARL",
+        "text": "Off the air I don't call them anything."
+      }
+    ],
+    "choices": [
+      "tape",
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "tape": {
+    "now": 36.586666666666666,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "357153cc24cbf51d",
+          "text": "Every one, on reel. Twelve years of them.",
+          "duration": 2.38,
+          "voice": null
+        },
+        {
+          "id": "ef7a39269e528490",
+          "text": "Except one. September of '81, a boy called in. I've never played it back.",
+          "duration": 4.64,
+          "voice": null
+        },
+        {
+          "id": "281daafd0a94d01a",
+          "text": "I wasn't on the air that night. The station was off.",
+          "duration": 2.76,
+          "voice": null
+        },
+        {
+          "id": "ecc59550da45471d",
+          "text": "Record's ending.",
+          "duration": 1.28,
+          "voice": null
+        }
+      ],
+      "bufferCount": 11
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      },
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 4.970666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "at": 5.016
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do you think they are?"
+          },
+          {
+            "who": "EARL",
+            "text": "On the air I call them our visitors. It keeps it friendly."
+          },
+          {
+            "who": "EARL",
+            "text": "Off the air I don't call them anything."
+          }
+        ],
+        "at": 19.2
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "Do you keep the calls?"
+          },
+          {
+            "who": "EARL",
+            "text": "Every one, on reel. Twelve years of them."
+          },
+          {
+            "who": "EARL",
+            "text": "Except one. September of '81, a boy called in. I've never played it back."
+          },
+          {
+            "who": "EARL",
+            "text": "I wasn't on the air that night. The station was off."
+          },
+          {
+            "who": "",
+            "text": "He looks back at the studio, where the reels are turning."
+          },
+          {
+            "who": "EARL",
+            "text": "Record's ending."
+          }
+        ],
+        "at": 24.810666666666666
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 4.970666666666666,
+        "duration": 3.97,
+        "expectedEnd": 8.940666666666667,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 5.034666666666666,
+        "stoppedAt": 5.013333333333334,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 5.056,
+        "duration": 2.8,
+        "expectedEnd": 7.856,
+        "decoded": {
+          "bytes": 23084,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.8,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 7.8613333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 6,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3dd0d7b88a382fe9",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 8.078666666666667,
+        "duration": 4.02,
+        "expectedEnd": 12.098666666666666,
+        "decoded": {
+          "bytes": 32876,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.02,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 12.098666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 7,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "073fce364994cf9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 12.316,
+        "duration": 3.86,
+        "expectedEnd": 16.176000000000002,
+        "decoded": {
+          "bytes": 31532,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.86,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 16.184,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 13,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3a345d802b2c405b",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 16.404,
+        "duration": 2.73,
+        "expectedEnd": 19.134,
+        "decoded": {
+          "bytes": 22508,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.73,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 19.136,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 15,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f60bda199fff5103",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 19.221333333333334,
+        "duration": 3.17,
+        "expectedEnd": 22.391333333333336,
+        "decoded": {
+          "bytes": 26156,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.17,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.397333333333332,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 16,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a3c152d2c160dfed",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 22.614666666666665,
+        "duration": 2.13,
+        "expectedEnd": 24.744666666666664,
+        "decoded": {
+          "bytes": 17708,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.13,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 24.746666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 17,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a75c7f370b3629f3",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 24.832,
+        "duration": 2.38,
+        "expectedEnd": 27.212,
+        "decoded": {
+          "bytes": 19820,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.38,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 27.216,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 18,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "357153cc24cbf51d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 27.433333333333334,
+        "duration": 4.64,
+        "expectedEnd": 32.07333333333333,
+        "decoded": {
+          "bytes": 37868,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.64,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 32.077333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 19,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ef7a39269e528490",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 32.297333333333334,
+        "duration": 2.76,
+        "expectedEnd": 35.05733333333333,
+        "decoded": {
+          "bytes": 22700,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.76,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 35.06133333333333,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 20,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "281daafd0a94d01a",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 35.278666666666666,
+        "duration": 1.28,
+        "expectedEnd": 36.55866666666667,
+        "decoded": {
+          "bytes": 10988,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.28,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 36.562666666666665,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 22,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ecc59550da45471d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "YOU",
+        "text": "Do you keep the calls?"
+      },
+      {
+        "who": "EARL",
+        "text": "Every one, on reel. Twelve years of them."
+      },
+      {
+        "who": "EARL",
+        "text": "Except one. September of '81, a boy called in. I've never played it back."
+      },
+      {
+        "who": "EARL",
+        "text": "I wasn't on the air that night. The station was off."
+      },
+      {
+        "who": "",
+        "text": "He looks back at the studio, where the reels are turning."
+      },
+      {
+        "who": "EARL",
+        "text": "Record's ending."
+      }
+    ],
+    "choices": [
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "repeat_opening": {
+    "now": 38.82666666666667,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "0772acf7684b121e",
+          "text": "You again. Song and a half this time.",
+          "duration": 2.16,
+          "voice": null
+        }
+      ],
+      "bufferCount": 12
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      },
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 4.970666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "at": 5.016
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do you think they are?"
+          },
+          {
+            "who": "EARL",
+            "text": "On the air I call them our visitors. It keeps it friendly."
+          },
+          {
+            "who": "EARL",
+            "text": "Off the air I don't call them anything."
+          }
+        ],
+        "at": 19.2
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "Do you keep the calls?"
+          },
+          {
+            "who": "EARL",
+            "text": "Every one, on reel. Twelve years of them."
+          },
+          {
+            "who": "EARL",
+            "text": "Except one. September of '81, a boy called in. I've never played it back."
+          },
+          {
+            "who": "EARL",
+            "text": "I wasn't on the air that night. The station was off."
+          },
+          {
+            "who": "",
+            "text": "He looks back at the studio, where the reels are turning."
+          },
+          {
+            "who": "EARL",
+            "text": "Record's ending."
+          }
+        ],
+        "at": 24.810666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "EARL",
+            "text": "You again. Song and a half this time."
+          }
+        ],
+        "at": 36.608
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 4.970666666666666,
+        "duration": 3.97,
+        "expectedEnd": 8.940666666666667,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 5.034666666666666,
+        "stoppedAt": 5.013333333333334,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 5.056,
+        "duration": 2.8,
+        "expectedEnd": 7.856,
+        "decoded": {
+          "bytes": 23084,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.8,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 7.8613333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 6,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3dd0d7b88a382fe9",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 8.078666666666667,
+        "duration": 4.02,
+        "expectedEnd": 12.098666666666666,
+        "decoded": {
+          "bytes": 32876,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.02,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 12.098666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 7,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "073fce364994cf9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 12.316,
+        "duration": 3.86,
+        "expectedEnd": 16.176000000000002,
+        "decoded": {
+          "bytes": 31532,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.86,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 16.184,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 13,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3a345d802b2c405b",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 16.404,
+        "duration": 2.73,
+        "expectedEnd": 19.134,
+        "decoded": {
+          "bytes": 22508,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.73,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 19.136,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 15,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f60bda199fff5103",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 19.221333333333334,
+        "duration": 3.17,
+        "expectedEnd": 22.391333333333336,
+        "decoded": {
+          "bytes": 26156,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.17,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.397333333333332,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 16,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a3c152d2c160dfed",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 22.614666666666665,
+        "duration": 2.13,
+        "expectedEnd": 24.744666666666664,
+        "decoded": {
+          "bytes": 17708,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.13,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 24.746666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 17,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a75c7f370b3629f3",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 24.832,
+        "duration": 2.38,
+        "expectedEnd": 27.212,
+        "decoded": {
+          "bytes": 19820,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.38,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 27.216,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 18,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "357153cc24cbf51d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 27.433333333333334,
+        "duration": 4.64,
+        "expectedEnd": 32.07333333333333,
+        "decoded": {
+          "bytes": 37868,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.64,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 32.077333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 19,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ef7a39269e528490",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 32.297333333333334,
+        "duration": 2.76,
+        "expectedEnd": 35.05733333333333,
+        "decoded": {
+          "bytes": 22700,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.76,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 35.06133333333333,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 20,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "281daafd0a94d01a",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 35.278666666666666,
+        "duration": 1.28,
+        "expectedEnd": 36.55866666666667,
+        "decoded": {
+          "bytes": 10988,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.28,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 36.562666666666665,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 22,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ecc59550da45471d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 36.629333333333335,
+        "duration": 2.16,
+        "expectedEnd": 38.78933333333333,
+        "decoded": {
+          "bytes": 17900,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.16,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 38.78933333333333,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 23,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "0772acf7684b121e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "EARL",
+        "text": "You again. Song and a half this time."
+      }
+    ],
+    "choices": [
+      "boy",
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "boy": {
+    "now": 48.576,
+    "context": "running",
+    "status": {
+      "state": "idle",
+      "enabled": true,
+      "text": null,
+      "clips": [
+        {
+          "id": "2965d89d13a00665",
+          "text": "You heard him too.",
+          "duration": 1.22,
+          "voice": null
+        },
+        {
+          "id": "466b8eed89cf1d9e",
+          "text": "I put the receiver down and tried the line again. Dial tone. Just a phone.",
+          "duration": 4.28,
+          "voice": null
+        },
+        {
+          "id": "f58484cccf41a7b6",
+          "text": "I haven't played that one. I told you.",
+          "duration": 1.94,
+          "voice": null
+        },
+        {
+          "id": "80386b410ffeb2a1",
+          "text": "I wrote this one down.",
+          "duration": 1.58,
+          "voice": null
+        }
+      ],
+      "bufferCount": 16
+    },
+    "pending": false,
+    "active": false,
+    "calls": [
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 0.768
+      },
+      {
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "at": 4.970666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "at": 5.016
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do you think they are?"
+          },
+          {
+            "who": "EARL",
+            "text": "On the air I call them our visitors. It keeps it friendly."
+          },
+          {
+            "who": "EARL",
+            "text": "Off the air I don't call them anything."
+          }
+        ],
+        "at": 19.2
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "Do you keep the calls?"
+          },
+          {
+            "who": "EARL",
+            "text": "Every one, on reel. Twelve years of them."
+          },
+          {
+            "who": "EARL",
+            "text": "Except one. September of '81, a boy called in. I've never played it back."
+          },
+          {
+            "who": "EARL",
+            "text": "I wasn't on the air that night. The station was off."
+          },
+          {
+            "who": "",
+            "text": "He looks back at the studio, where the reels are turning."
+          },
+          {
+            "who": "EARL",
+            "text": "Record's ending."
+          }
+        ],
+        "at": 24.810666666666666
+      },
+      {
+        "lines": [
+          {
+            "who": "EARL",
+            "text": "You again. Song and a half this time."
+          }
+        ],
+        "at": 36.608
+      },
+      {
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "I heard the boy on your show tonight. The star with the little tail."
+          },
+          {
+            "who": "EARL",
+            "text": "You heard him too."
+          },
+          {
+            "who": "",
+            "text": "He pulls a programme sheet from his pocket. A line in pencil reads BOY / COMET. The space for a caller's number is blank."
+          },
+          {
+            "who": "EARL",
+            "text": "I put the receiver down and tried the line again. Dial tone. Just a phone."
+          },
+          {
+            "who": "YOU",
+            "text": "Like the call you kept from eighty-one?"
+          },
+          {
+            "who": "EARL",
+            "text": "I haven't played that one. I told you."
+          },
+          {
+            "who": "",
+            "text": "He folds the sheet along the same crease."
+          },
+          {
+            "who": "EARL",
+            "text": "I wrote this one down."
+          },
+          {
+            "who": "",
+            "text": "I copy the entry and his words into the notebook."
+          }
+        ],
+        "at": 38.86933333333333
+      }
+    ],
+    "starts": [
+      {
+        "at": 0.768,
+        "duration": 3.97,
+        "expectedEnd": 4.738,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 4.736,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 4.970666666666666,
+        "duration": 3.97,
+        "expectedEnd": 8.940666666666667,
+        "decoded": {
+          "bytes": 32492,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.97,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 5.034666666666666,
+        "stoppedAt": 5.013333333333334,
+        "master": true,
+        "bufferId": 5,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "56e7a020339f079f",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 5.056,
+        "duration": 2.8,
+        "expectedEnd": 7.856,
+        "decoded": {
+          "bytes": 23084,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.8,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 7.8613333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 6,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3dd0d7b88a382fe9",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 8.078666666666667,
+        "duration": 4.02,
+        "expectedEnd": 12.098666666666666,
+        "decoded": {
+          "bytes": 32876,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.02,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 12.098666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 7,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "073fce364994cf9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 12.316,
+        "duration": 3.86,
+        "expectedEnd": 16.176000000000002,
+        "decoded": {
+          "bytes": 31532,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.86,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 16.184,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 13,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "3a345d802b2c405b",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 16.404,
+        "duration": 2.73,
+        "expectedEnd": 19.134,
+        "decoded": {
+          "bytes": 22508,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.73,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 19.136,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 15,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f60bda199fff5103",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 19.221333333333334,
+        "duration": 3.17,
+        "expectedEnd": 22.391333333333336,
+        "decoded": {
+          "bytes": 26156,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 3.17,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 22.397333333333332,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 16,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a3c152d2c160dfed",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 22.614666666666665,
+        "duration": 2.13,
+        "expectedEnd": 24.744666666666664,
+        "decoded": {
+          "bytes": 17708,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.13,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 24.746666666666666,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 17,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "a75c7f370b3629f3",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 24.832,
+        "duration": 2.38,
+        "expectedEnd": 27.212,
+        "decoded": {
+          "bytes": 19820,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.38,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 27.216,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 18,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "357153cc24cbf51d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 27.433333333333334,
+        "duration": 4.64,
+        "expectedEnd": 32.07333333333333,
+        "decoded": {
+          "bytes": 37868,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.64,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 32.077333333333335,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 19,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ef7a39269e528490",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 32.297333333333334,
+        "duration": 2.76,
+        "expectedEnd": 35.05733333333333,
+        "decoded": {
+          "bytes": 22700,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.76,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 35.06133333333333,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 20,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "281daafd0a94d01a",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 35.278666666666666,
+        "duration": 1.28,
+        "expectedEnd": 36.55866666666667,
+        "decoded": {
+          "bytes": 10988,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.28,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 36.562666666666665,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 22,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "ecc59550da45471d",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 36.629333333333335,
+        "duration": 2.16,
+        "expectedEnd": 38.78933333333333,
+        "decoded": {
+          "bytes": 17900,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2.16,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 38.78933333333333,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 23,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "0772acf7684b121e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 38.89066666666667,
+        "duration": 1.22,
+        "expectedEnd": 40.11066666666667,
+        "decoded": {
+          "bytes": 10412,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.22,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 40.114666666666665,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 24,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "2965d89d13a00665",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 40.332,
+        "duration": 4.28,
+        "expectedEnd": 44.612,
+        "decoded": {
+          "bytes": 34988,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 4.28,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 44.616,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 25,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "466b8eed89cf1d9e",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 44.833333333333336,
+        "duration": 1.94,
+        "expectedEnd": 46.77333333333333,
+        "decoded": {
+          "bytes": 16172,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.94,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 46.776,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 26,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "f58484cccf41a7b6",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      },
+      {
+        "at": 46.99333333333333,
+        "duration": 1.58,
+        "expectedEnd": 48.57333333333333,
+        "decoded": {
+          "bytes": 13292,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 1.58,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": 48.576,
+        "stoppedAt": null,
+        "master": true,
+        "bufferId": 27,
+        "phoneKey": null,
+        "sfxPath": [],
+        "hostId": null,
+        "earlId": "80386b410ffeb2a1",
+        "narration": false,
+        "earlPath": [
+          "AudioBufferSourceNode",
+          "master"
+        ],
+        "radioPath": [],
+        "radioMaster": true,
+        "offset": 0,
+        "rate": 1
+      }
+    ],
+    "lines": [
+      {
+        "who": "YOU",
+        "text": "I heard the boy on your show tonight. The star with the little tail."
+      },
+      {
+        "who": "EARL",
+        "text": "You heard him too."
+      },
+      {
+        "who": "",
+        "text": "He pulls a programme sheet from his pocket. A line in pencil reads BOY / COMET. The space for a caller's number is blank."
+      },
+      {
+        "who": "EARL",
+        "text": "I put the receiver down and tried the line again. Dial tone. Just a phone."
+      },
+      {
+        "who": "YOU",
+        "text": "Like the call you kept from eighty-one?"
+      },
+      {
+        "who": "EARL",
+        "text": "I haven't played that one. I told you."
+      },
+      {
+        "who": "",
+        "text": "He folds the sheet along the same crease."
+      },
+      {
+        "who": "EARL",
+        "text": "I wrote this one down."
+      },
+      {
+        "who": "",
+        "text": "I copy the entry and his words into the notebook."
+      }
+    ],
+    "choices": [
+      "bye"
+    ],
+    "host": true,
+    "callers": true,
+    "kinski": false
+  },
+  "pending_cancellation": {
+    "choice": {
+      "before": {
+        "now": 49.536,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 49.536
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 49.984,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "Lights, mostly. Cattle, some nights. Engines.",
+          "clips": [
+            {
+              "id": "3dd0d7b88a382fe9",
+              "text": "Lights, mostly. Cattle, some nights. Engines.",
+              "duration": 2.8,
+              "voice": null
+            },
+            {
+              "id": "073fce364994cf9e",
+              "text": "And missing time. You read that book? Everybody's read that book now.",
+              "duration": 4.02,
+              "voice": null
+            },
+            {
+              "id": "3a345d802b2c405b",
+              "text": "Half of them, I think they read it first and then it happened to them.",
+              "duration": 3.86,
+              "voice": null
+            },
+            {
+              "id": "f60bda199fff5103",
+              "text": "The other half never read anything in their lives.",
+              "duration": 2.73,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 49.536
+          },
+          {
+            "lines": [
+              {
+                "who": "YOU",
+                "text": "What do people call in about?"
+              },
+              {
+                "who": "EARL",
+                "text": "Lights, mostly. Cattle, some nights. Engines."
+              },
+              {
+                "who": "EARL",
+                "text": "And missing time. You read that book? Everybody's read that book now."
+              },
+              {
+                "who": "EARL",
+                "text": "Half of them, I think they read it first and then it happened to them."
+              },
+              {
+                "who": "EARL",
+                "text": "The other half never read anything in their lives."
+              }
+            ],
+            "at": 49.57866666666666
+          }
+        ],
+        "starts": [
+          {
+            "at": 49.6,
+            "duration": 2.8,
+            "expectedEnd": 52.4,
+            "decoded": {
+              "bytes": 23084,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 2.8,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 31,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "3dd0d7b88a382fe9",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "choices": [
+          "visitors",
+          "tape",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "Off (API)": {
+      "before": {
+        "now": 50.090666666666664,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 50.026666666666664
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 50.432,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": false,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 50.026666666666664
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": false,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "close": {
+      "before": {
+        "now": 50.58133333333333,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 50.51733333333333
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 50.965333333333334,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 50.51733333333333
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "Escape": {
+      "before": {
+        "now": 51.029333333333334,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.008
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 51.370666666666665,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.008
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "UI replacement (API)": {
+      "before": {
+        "now": 51.477333333333334,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.413333333333334
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 51.84,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.413333333333334
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "phone (API)": {
+      "before": {
+        "now": 51.925333333333334,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.86666666666667
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 52.266666666666666,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 51.86666666666667
+          }
+        ],
+        "starts": [
+          {
+            "at": 52.23333333333333,
+            "duration": 4.12,
+            "expectedEnd": 56.353333333333325,
+            "decoded": {
+              "bytes": 33644,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 4.12,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 35,
+            "phoneKey": "phone:411ccd2aabf90365",
+            "sfxPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "highpass",
+                "hz": 320
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3200
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "sfx"
+              }
+            ],
+            "hostId": null,
+            "earlId": null,
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "GainNode",
+              "highpass",
+              "lowpass",
+              "GainNode",
+              "sfx",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          },
+          {
+            "at": 56.80333333333333,
+            "duration": 5.05,
+            "expectedEnd": 61.853333333333325,
+            "decoded": {
+              "bytes": 41132,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 5.05,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 36,
+            "phoneKey": "phone:1e0e06da85e1e3f8",
+            "sfxPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "highpass",
+                "hz": 320
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3200
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "sfx"
+              }
+            ],
+            "hostId": null,
+            "earlId": null,
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "GainNode",
+              "highpass",
+              "lowpass",
+              "GainNode",
+              "sfx",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "reset (API)": {
+      "before": {
+        "now": 52.373333333333335,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 52.309333333333335
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 52.693333333333335,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 52.309333333333335
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "jump (API)": {
+      "before": {
+        "now": 52.8,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 52.736
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 53.144,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 52.736
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "load": {
+      "before": {
+        "now": 53.248,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 53.184
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 53.653333333333336,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 53.184
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "title": {
+      "before": {
+        "now": 53.76,
+        "context": "running",
+        "status": {
+          "state": "loading",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 53.696
+          }
+        ],
+        "starts": [],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 54.136,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 1
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 53.696
+          }
+        ],
+        "starts": [],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    }
+  },
+  "active_cancellation": {
+    "choice": {
+      "before": {
+        "now": 54.272,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 1
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 54.24
+          }
+        ],
+        "starts": [
+          {
+            "at": 54.24,
+            "duration": 3.97,
+            "expectedEnd": 58.21,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 54.69866666666667,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "Lights, mostly. Cattle, some nights. Engines.",
+          "clips": [
+            {
+              "id": "3dd0d7b88a382fe9",
+              "text": "Lights, mostly. Cattle, some nights. Engines.",
+              "duration": 2.8,
+              "voice": null
+            },
+            {
+              "id": "073fce364994cf9e",
+              "text": "And missing time. You read that book? Everybody's read that book now.",
+              "duration": 4.02,
+              "voice": null
+            },
+            {
+              "id": "3a345d802b2c405b",
+              "text": "Half of them, I think they read it first and then it happened to them.",
+              "duration": 3.86,
+              "voice": null
+            },
+            {
+              "id": "f60bda199fff5103",
+              "text": "The other half never read anything in their lives.",
+              "duration": 2.73,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 54.24
+          },
+          {
+            "lines": [
+              {
+                "who": "YOU",
+                "text": "What do people call in about?"
+              },
+              {
+                "who": "EARL",
+                "text": "Lights, mostly. Cattle, some nights. Engines."
+              },
+              {
+                "who": "EARL",
+                "text": "And missing time. You read that book? Everybody's read that book now."
+              },
+              {
+                "who": "EARL",
+                "text": "Half of them, I think they read it first and then it happened to them."
+              },
+              {
+                "who": "EARL",
+                "text": "The other half never read anything in their lives."
+              }
+            ],
+            "at": 54.29333333333334
+          }
+        ],
+        "starts": [
+          {
+            "at": 54.24,
+            "duration": 3.97,
+            "expectedEnd": 58.21,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 54.31466666666667,
+            "stoppedAt": 54.29333333333334,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          },
+          {
+            "at": 54.32266666666667,
+            "duration": 2.8,
+            "expectedEnd": 57.12266666666667,
+            "decoded": {
+              "bytes": 23084,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 2.8,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 41,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "3dd0d7b88a382fe9",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "YOU",
+            "text": "What do people call in about?"
+          },
+          {
+            "who": "EARL",
+            "text": "Lights, mostly. Cattle, some nights. Engines."
+          },
+          {
+            "who": "EARL",
+            "text": "And missing time. You read that book? Everybody's read that book now."
+          },
+          {
+            "who": "EARL",
+            "text": "Half of them, I think they read it first and then it happened to them."
+          },
+          {
+            "who": "EARL",
+            "text": "The other half never read anything in their lives."
+          }
+        ],
+        "choices": [
+          "visitors",
+          "tape",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "Off (API)": {
+      "before": {
+        "now": 54.74666666666667,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 54.74133333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 54.74133333333333,
+            "duration": 3.97,
+            "expectedEnd": 58.71133333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 55.08266666666667,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": false,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 54.74133333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 54.74133333333333,
+            "duration": 3.97,
+            "expectedEnd": 58.71133333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 54.76266666666667,
+            "stoppedAt": 54.752,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": false,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "close": {
+      "before": {
+        "now": 55.13066666666667,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.12533333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.12533333333333,
+            "duration": 3.97,
+            "expectedEnd": 59.09533333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 55.50933333333333,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.12533333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.12533333333333,
+            "duration": 3.97,
+            "expectedEnd": 59.09533333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 55.18933333333333,
+            "stoppedAt": 55.168,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "Escape": {
+      "before": {
+        "now": 55.57333333333333,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.552
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.552,
+            "duration": 3.97,
+            "expectedEnd": 59.522,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 55.906666666666666,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.552
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.552,
+            "duration": 3.97,
+            "expectedEnd": 59.522,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 55.58133333333333,
+            "stoppedAt": 55.57333333333333,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "UI replacement (API)": {
+      "before": {
+        "now": 55.95466666666667,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.936
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.936,
+            "duration": 3.97,
+            "expectedEnd": 59.906,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 56.29866666666667,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 55.936
+          }
+        ],
+        "starts": [
+          {
+            "at": 55.936,
+            "duration": 3.97,
+            "expectedEnd": 59.906,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 55.965333333333334,
+            "stoppedAt": 55.96,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "phone (API)": {
+      "before": {
+        "now": 56.34133333333333,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 56.34133333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 56.34133333333333,
+            "duration": 3.97,
+            "expectedEnd": 60.31133333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 56.68266666666667,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 56.34133333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 56.34133333333333,
+            "duration": 3.97,
+            "expectedEnd": 60.31133333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 56.35733333333334,
+            "stoppedAt": 56.346666666666664,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          },
+          {
+            "at": 56.64666666666666,
+            "duration": 4.12,
+            "expectedEnd": 60.76666666666666,
+            "decoded": {
+              "bytes": 33644,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 4.12,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 35,
+            "phoneKey": "phone:411ccd2aabf90365",
+            "sfxPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "highpass",
+                "hz": 320
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3200
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "sfx"
+              }
+            ],
+            "hostId": null,
+            "earlId": null,
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "GainNode",
+              "highpass",
+              "lowpass",
+              "GainNode",
+              "sfx",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          },
+          {
+            "at": 61.21666666666666,
+            "duration": 5.05,
+            "expectedEnd": 66.26666666666667,
+            "decoded": {
+              "bytes": 41132,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 5.05,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 36,
+            "phoneKey": "phone:1e0e06da85e1e3f8",
+            "sfxPath": [
+              {
+                "kind": "AudioBufferSourceNode"
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "highpass",
+                "hz": 320
+              },
+              {
+                "kind": "lowpass",
+                "hz": 3200
+              },
+              {
+                "kind": "GainNode"
+              },
+              {
+                "kind": "sfx"
+              }
+            ],
+            "hostId": null,
+            "earlId": null,
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "GainNode",
+              "highpass",
+              "lowpass",
+              "GainNode",
+              "sfx",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "reset (API)": {
+      "before": {
+        "now": 56.72533333333333,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 56.72533333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 56.72533333333333,
+            "duration": 3.97,
+            "expectedEnd": 60.69533333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 57.05866666666667,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 56.72533333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 56.72533333333333,
+            "duration": 3.97,
+            "expectedEnd": 60.69533333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 56.736,
+            "stoppedAt": 56.728,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "jump (API)": {
+      "before": {
+        "now": 57.13066666666667,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.093333333333334
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.093333333333334,
+            "duration": 3.97,
+            "expectedEnd": 61.06333333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 57.472,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.093333333333334
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.093333333333334,
+            "duration": 3.97,
+            "expectedEnd": 61.06333333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 57.144,
+            "stoppedAt": 57.13066666666667,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "load": {
+      "before": {
+        "now": 57.51466666666666,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.512
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.512,
+            "duration": 3.97,
+            "expectedEnd": 61.482,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 57.94133333333333,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.512
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.512,
+            "duration": 3.97,
+            "expectedEnd": 61.482,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 57.536,
+            "stoppedAt": 57.51466666666666,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    },
+    "title": {
+      "before": {
+        "now": 58.00533333333333,
+        "context": "running",
+        "status": {
+          "state": "playing",
+          "enabled": true,
+          "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+          "clips": [
+            {
+              "id": "56e7a020339f079f",
+              "text": "I've got a record on. Three minutes and forty seconds, so talk fast.",
+              "duration": 3.97,
+              "voice": null
+            }
+          ],
+          "bufferCount": 5
+        },
+        "pending": true,
+        "active": true,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.99733333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.99733333333333,
+            "duration": 3.97,
+            "expectedEnd": 61.96733333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": null,
+            "stoppedAt": null,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [
+          {
+            "who": "",
+            "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+          },
+          {
+            "who": "EARL",
+            "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+          }
+        ],
+        "choices": [
+          "calls",
+          "visitors",
+          "bye"
+        ],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      },
+      "after": {
+        "now": 58.346666666666664,
+        "context": "running",
+        "status": {
+          "state": "idle",
+          "enabled": true,
+          "text": null,
+          "clips": [],
+          "bufferCount": 5
+        },
+        "pending": false,
+        "active": false,
+        "calls": [
+          {
+            "lines": [
+              {
+                "who": "",
+                "text": "You lean on the buzzer. After a while the door opens on a man with his headphones pushed down round his neck."
+              },
+              {
+                "who": "EARL",
+                "text": "I've got a record on. Three minutes and forty seconds, so talk fast."
+              }
+            ],
+            "at": 57.99733333333333
+          }
+        ],
+        "starts": [
+          {
+            "at": 57.99733333333333,
+            "duration": 3.97,
+            "expectedEnd": 61.96733333333333,
+            "decoded": {
+              "bytes": 32492,
+              "head": [
+                73,
+                68,
+                51,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                34,
+                84,
+                83
+              ],
+              "duration": 3.97,
+              "rate": 48000,
+              "channels": 1
+            },
+            "endedAt": 58.026666666666664,
+            "stoppedAt": 58.00533333333333,
+            "master": true,
+            "bufferId": 40,
+            "phoneKey": null,
+            "sfxPath": [],
+            "hostId": null,
+            "earlId": "56e7a020339f079f",
+            "narration": false,
+            "earlPath": [
+              "AudioBufferSourceNode",
+              "master"
+            ],
+            "radioPath": [],
+            "radioMaster": true,
+            "offset": 0,
+            "rate": 1
+          }
+        ],
+        "lines": [],
+        "choices": [],
+        "host": true,
+        "callers": true,
+        "kinski": true
+      }
+    }
+  },
+  "errors": [],
+  "requests": [],
+  "bad_responses": [],
+  "checks": [
+    {
+      "pass": true,
+      "message": "all 16 exact Earl manuscript hashes, topic counts and real MP3 files are present"
+    },
+    {
+      "pass": true,
+      "message": "Art Bell enables radio and Earl by default, independently of caller voices and Kinski, without preloading Earl"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "the first automatic reply works with Kinski Off and preserves the original topic gates"
+    },
+    {
+      "pass": true,
+      "message": "genuine Earl PCM reaches ordinary master while AM/radio and SFX buses are muted"
+    },
+    {
+      "pass": true,
+      "message": "an actual AudioContext suspension holds the same Earl source without wall-clock queue advance (API fixture)"
+    },
+    {
+      "pass": true,
+      "message": "First opening: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "First opening: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "First opening: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "Replay Earl starts the same exact recording through its real button"
+    },
+    {
+      "pass": true,
+      "message": "Calls topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "Calls topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "Calls topic: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "choosing Calls stops the replay before the fresh reply and unlocks only the proper next topic"
+    },
+    {
+      "pass": true,
+      "message": "Visitors topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "Visitors topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "Visitors topic: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "Tape topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "Tape topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "Tape topic: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "the boy follow-up still requires the observed radio broadcast"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "Repeat opening: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "Repeat opening: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "Repeat opening: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "the observed-boy fixture and prior tape conversation unlock Boy together"
+    },
+    {
+      "pass": true,
+      "message": "Boy follow-up: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route"
+    },
+    {
+      "pass": true,
+      "message": "Boy follow-up: every real buffer finishes naturally, with decoded durations and audio-clock gaps"
+    },
+    {
+      "pass": true,
+      "message": "Boy follow-up: spoken words match the actual Earl dialogue and Replay returns after completion"
+    },
+    {
+      "pass": true,
+      "message": "the existing boy witness paper and notebook note are filed once by the genuine topic button"
+    },
+    {
+      "pass": true,
+      "message": "all 16 Earl recordings actually start; player replies, asides and witness-paper prose never enter this bank"
+    },
+    {
+      "pass": true,
+      "message": "Stop Earl cancels the active reply and returns its control to Replay"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "the real Art Bell Off preference silences Earl and the radio host together"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "Art Bell Off retains genuine manual Kinski reading without automatic Earl or overlap"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "Art Bell On excludes Earl lines from the separate Kinski narration control"
+    },
+    {
+      "pass": true,
+      "message": "manual Kinski reading takes priority and stops Earl immediately"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending choice: genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending choice: fresh reply cancels the previous opening without replaying it"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending Off (API): genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending Off (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending close: genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending close: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending Escape: genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending Escape: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending UI replacement (API): genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending UI replacement (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending phone (API): genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending phone (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "a genuine two-buffer Ward telephone fixture takes priority over Earl"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending reset (API): genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending reset (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending jump (API): genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending jump (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending load: genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending load: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "pending title: genuine decoded data waits before any Earl source"
+    },
+    {
+      "pass": true,
+      "message": "pending title: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active choice: fresh reply cancels the previous opening without replaying it"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active Off (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active close: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active Escape: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active UI replacement (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active phone (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "a genuine two-buffer Ward telephone fixture takes priority over Earl"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active reset (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active jump (API): old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active load: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "real aimed E opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "active title: old Earl audio cannot survive or revive"
+    },
+    {
+      "pass": true,
+      "message": "Earl's lazy cache stays within its 24-buffer bound"
+    },
+    {
+      "pass": true,
+      "message": "real touch Use opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "844x390 genuine touch Earl conversation fits the screen"
+    },
+    {
+      "pass": true,
+      "message": "a real mobile topic tap replaces the reply and Stop Earl cancels it"
+    },
+    {
+      "pass": true,
+      "message": "touch settings share one persisted Art Bell choice while caller and Kinski choices remain separate"
+    },
+    {
+      "pass": true,
+      "message": "reload retains the independent Art Bell Off, callers Off and Kinski On choices"
+    },
+    {
+      "pass": true,
+      "message": "real touch Use opens Earl at the studio door"
+    },
+    {
+      "pass": true,
+      "message": "the shared Art Bell choice re-enables actual touch dialogue without changing caller or Kinski preferences"
+    },
+    {
+      "pass": true,
+      "message": "recorded MP3 requests have no HTTP failures"
+    },
+    {
+      "pass": true,
+      "message": "strict-CSP single playback uses inline MP3 bytes with no external MP3 requests"
+    },
+    {
+      "pass": true,
+      "message": "no browser errors or warnings"
+    }
+  ],
+  "limits": "Real decoding/PCM/source lifecycle and controls; human listening, pronunciation, voice likeness and physical device performance UNVERIFIED. API lifecycle and observed-boy fixtures are labelled."
+}
