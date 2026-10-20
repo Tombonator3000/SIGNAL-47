@@ -827,7 +827,9 @@ async function boot() {
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     // what was seen in that night, and nothing written down while it is put back (story/seen.ts)
     seenQuiet = true; seenLog.restore(o.state?.seen);
-    curve.restore(o.state?.curve, !!o.state);   // where the night's curve was (a case without one goes on after a short quiet)
+    // where the night's curve was (a case without one goes on after a short quiet; a save from the
+    // prologue, which keeps no case yet, gets the plain ten minutes when chapter one begins)
+    curve.restore(o.state?.curve, !!o.state?.case);
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     pasture.reset(); motelTv.reset(); roofSteps.reset();
@@ -1253,7 +1255,9 @@ async function boot() {
    *  also waits for the others itself, as before). */
   function oneAtATime() {
     return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
-      || lineLights.state !== 'none' || faceQuiet > 0;
+      || lineLights.state !== 'none' || faceQuiet > 0
+      // (the shape at the end of the headlights, until the lights have reached it)
+      || cutouts.up === 'post';
   }
   /** The small signs the curve has given (the tests): which, and at what clock. */
   const curveSigns: { what: string; clock: number }[] = [];

@@ -13,10 +13,12 @@
 #     it off, and the glimpse is still a peak then
 #   - 47 seconds: the silence lands a peak, the rest waits for it to be over, and no second extra
 #     47 in that chapter (the next chapter may); the one-at-a-time rule
-#   - held: a panel open, Nora's room
+#   - held: a panel open, Nora's room; no sign of the curve while one of the night's things is going
+#   - a save from the prologue still gets the plain ten minutes; an older case a short quiet
 #   - the cutout's twist, once: driving in a build after the cutout has been met twice, the same
 #     shape at the end of the headlights; when the lights reach it they stutter and it is a
-#     reflector post, with the note; not again in the next build, nor after Continue
+#     reflector post, with the note; not again in the next build, nor after Continue; on a phone
+#     held upright the lights reach it sooner, so the post is still in the picture after the blink
 #   - the curve is kept with the case; on S47 and the ?debug overlay
 #   - desktop 1280x720 and a phone 412x892 with touch; no console errors or warnings
 # Usage (from web/): python3 tools/f_curve.py OUTDIR
@@ -116,6 +118,9 @@ async def drive_to_post(ev, tick, shot, tag):
     await tick(1 / 30, 8)
     await shot(f'{tag}_post_after')
     post = await ev("S47.cutouts.post")
+    # where the post stands in the picture now (the card stood in front of it): still in view
+    side = await ev("(() => { const c = S47.cutouts.position.clone(); c.y += 0.9; const n = c.project(S47.camera); return n.z < 1 ? Math.max(Math.abs(n.x), Math.abs(n.y)) : 9; })()")
+    if post is not None: post['side'] = round(side, 2)
     trouble1 = await ev("S47.world.trouble.count")
     return placed, d0, pics, post, trouble1 > trouble0
 
@@ -202,6 +207,18 @@ async def main():
         await ev("S47.player.yaw += Math.PI; S47.tick(0.2)"); await tick(0.5, 8)
         await ev("S47.cutouts['wait'] = 0"); await tick(0.5, 4)
         check(await ev("S47.cutouts.up") is None, 'looked away: gone, and no second one in this build')
+        # one at a time: while one of the night's things is going, the curve gives no sign of its own
+        # (a blink of the dash would make the 1947 bulletin not heard through)
+        await ev(f"{C}.force('build', 0.5); {C}['signT'] = 1e9"); await tick(0.1)
+        k0 = await ev("S47.curveSigns.length")
+        st = await ev("S47.nightEvents.now('steps', S47.nightIn())")
+        await ev(f"{C}['signT'] = 0"); await tick(0.1, 3)
+        busy, k1 = await ev("S47.oneAtATime()"), await ev("S47.curveSigns.length")
+        check(st and busy and k1 == k0, f'while the steps behind are going, no sign of the curve on top of them ({st}, {busy}, {k1 - k0})')
+        for _ in range(30):
+            if not await ev("S47.oneAtATime()"): break
+            await tick(0.5)
+        await ev(f"{C}['signT'] = 1e9"); await tick(0.1)
         # one put out and not found is gone again once the build is over (never at the peak's moment)
         await ev("S47.player.place(-2, -24, 0); S47.tick(0.2)"); await look_off()
         await ev(f"{C}.force('build', 0.5); {C}['signT'] = 1e9"); await put()
@@ -350,6 +367,11 @@ async def main():
               f'after Continue the curve is where it was ({before} and {after})')
         check(await ev("S47.townSeen.has('cut:post')"), 'and the shape at the end of the headlights stays had')
 
+        # a save from the prologue (02:13, no case yet, the curve off) still gets the plain ten
+        # minutes when chapter one begins; an older case without a curve, a short quiet
+        u = await ev(f"(() => {{ const c = new {C}.constructor(S47.seenLog); c.restore({{ phase: 'off', t: 0, len: 0, cycle: 0, long: [] }}, true); c.update(0.1, {{ chapter: 'ch1', held: false, exposed: true, busy: false, peaking: false, clock: 8200 }}); const a = [c.phase, Math.round(c.len)]; c.restore(undefined, true); c.update(0.1, {{ chapter: 'ch2', held: false, exposed: true, busy: false, peaking: false, clock: 11000 }}); return [a, [c.phase, Math.round(c.len)]]; }})()")
+        check(u == [['plain', 600], ['rest', 150]], f'a save from the prologue: the plain ten minutes; an older case: a short quiet ({u})')
+
         # ---------- chapter six and Nora's room: no curve ----------
         u = await ev(f"(() => {{ const c = new {C}.constructor(S47.seenLog); c.update(0.1, {{ chapter: 'ch1', held: false, exposed: true, busy: false, peaking: false, clock: 9000 }}); const a = c.phase; c.force('peak'); c.update(0.1, {{ chapter: 'ch6', held: false, exposed: true, busy: false, peaking: false, clock: 19000 }}); return [a, c.phase, c.may('glimpse')]; }})()")
         check(u == ['plain', 'off', False], f'chapter six (THE EVENT has the night): the curve is off ({u})')
@@ -368,6 +390,7 @@ async def main():
         placed, d0, pics, post, blinked = await drive_to_post(e2, tick2, shot2, 'p01')
         nn = await e2("S47.game.notes.filter((n) => n.includes('The same shape'))")
         check(placed and post and post['looked'] and len(nn) == 1, f'phone: the shape at the end of the headlights, then the post ({d0 and round(d0)} m, {post}, {pics})')
+        check(post and 20 < post['dist'] < 45 and post['side'] < 0.95, f'phone held upright: the lights reach it while it is well in view, so the post is still in the picture after the blink ({post})')
         await e2(f"{C}.force('build', 0.42); {C}['signT'] = 1e9"); await tick2(0.1)
         await e2("S47.hold = false"); await pp.wait_for_timeout(1500); await e2("S47.hold = true")
         box = await e2("(() => { const e = document.querySelector('.debughud'); if (!e) return null; const r = e.getBoundingClientRect(); return { text: e.textContent, right: r.right, w: innerWidth }; })()")

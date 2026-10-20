@@ -104,7 +104,7 @@ export class Cutouts {
     const c = cam.getWorldPosition(new THREE.Vector3());
     const mid = at.clone().setY(at.y + 0.8), dist = mid.distanceTo(c);
     const ndc = mid.clone().project(cam);
-    return { dist, inView: ndc.z < 1 && Math.abs(ndc.x) < 1.05 && Math.abs(ndc.y) < 1.05 };
+    return { dist, inView: ndc.z < 1 && Math.abs(ndc.x) < 1.05 && Math.abs(ndc.y) < 1.05, side: Math.abs(ndc.x) };
   }
 
   update(dt: number, s: CutoutsIn) {
@@ -194,8 +194,11 @@ export class Cutouts {
       if ((this.reveal += dt) >= 0.09) { const looked = this.looked > 0.6; this.post = { dist: d, looked }; this.hide(rnd(70, 200)); if (looked) this.postNote(looked); }
       return;
     }
-    // the headlights (or the flashlight, on foot) are full on it: near enough to see it is the cutout
-    if (s.ok && d < (s.drive ? 20 : 12)) { this.reveal = 0; s.blink?.(); return; }
+    // the headlights (or the flashlight, on foot) are full on it: near enough to see it is the cutout.
+    // On a narrow view (a phone held upright) the shoulder runs out of the picture sooner: the lights
+    // reach it while it is still well in view, so the post is there to be seen after the blink
+    const near = d < (s.drive ? 20 : 12) || (!!s.drive && d < 45 && v.inView && v.side > 0.42);
+    if (s.ok && near) { this.reveal = 0; s.blink?.(); return; }
     // turned back, gone by another way, out of the truck, or never got to: gone, unseen, when nobody looks
     if (!v.inView && (!s.ok || d > 280 || this.age > 90)) this.hide(rnd(30, 90));
   }

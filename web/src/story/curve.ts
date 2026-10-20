@@ -183,12 +183,12 @@ export class NightCurve {
         // indoors the night goes on building, but slowly: it is out there it is felt
         this.t += dt * (exposed ? 1 : 0.35);
         this.level = clamp01(this.t / this.len);
-        this.signs(dt, exposed);
+        this.signs(dt, exposed, busy);
         if (this.level >= 1) this.to('peak');
         break;
       case 'peak':
         this.level = 1;
-        this.signs(dt, exposed);
+        this.signs(dt, exposed, busy);
         // the peak waits while the player is somewhere it cannot reach them, or while something runs
         if (exposed && !busy && (this.t += dt) >= this.len) { this.ebb = true; this.to('rest'); }
         break;
@@ -198,9 +198,11 @@ export class NightCurve {
         break;
     }
   }
-  /** The small signs: now and then, closer together as the build goes on and towards morning. */
-  private signs(dt: number, exposed: boolean) {
-    if (!exposed || this.level < FROM.sign) return;
+  /** The small signs: now and then, closer together as the build goes on and towards morning.
+   *  Not while one of the night's things is going (one at a time): a blink of the dash or the radio
+   *  under its static would land on top of it (the 1947 bulletin would not be heard through). */
+  private signs(dt: number, exposed: boolean, busy: boolean) {
+    if (!exposed || busy || this.level < FROM.sign) return;
     if ((this.signT -= dt) > 0) return;
     this.sign = true;
     this.signT = rnd(28, 60) / (0.55 + this.level) * (1 - 0.35 * this.strength);
@@ -267,12 +269,14 @@ export class NightCurve {
     return { phase: this.phase, t: Math.round(this.t), len: Math.round(this.len), cycle: this.cycle, long: [...this.long], ebb: this.ebb || undefined };
   }
   /** A save opened (its curve, or none: an older case goes on after a short quiet), or a new night
-   *  (null: the plain ten minutes when chapter one begins). */
+   *  (null: the plain ten minutes when chapter one begins). A save from before the curve began (the
+   *  prologue, from 02:13) has it 'off': its night still gets the plain ten minutes. */
   restore(save: CurveSave | null | undefined, started: boolean) {
     this.stop(); this.cycle = 0; this.long.clear(); this.landed = null; this.ebb = false;
     this.took.call = this.took.cutout = this.took.event = 0;
     this.restored = null; this.resume = started ? 'short' : 'plain';
     if (save && typeof save === 'object' && ['off', 'plain', 'build', 'peak', 'rest'].includes(save.phase)) {
+      this.resume = 'plain';
       this.cycle = Number.isFinite(save.cycle) ? save.cycle : 0;
       for (const c of Array.isArray(save.long) ? save.long : []) if (CHAPTERS.includes(c)) this.long.add(c);
       if (save.phase !== 'off') this.restored = { ...save, t: Number.isFinite(save.t) ? save.t : 0, len: Number.isFinite(save.len) ? save.len : 0 };
