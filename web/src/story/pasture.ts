@@ -126,7 +126,8 @@ export class Pasture {
       if (![...seen].some((k) => k.startsWith('mark:cows@'))) seen.add(`mark:cows@${Math.round(s.clock)}`);
       const found = !!this.d.ninthFound?.();
       this.d.toast(found ? 'The herd in the pasture, all facing the same way. Eight of them. Where the ninth stood, the grass is flattened in a ring, white with frost. She is lying inside the fence at STATION 01.'
-        : 'The herd in the pasture, still facing the same way. Eight of them. There were nine. Where the ninth stood, the grass is flattened in a ring, white with frost.', 6.5);
+        // (still, if they were seen standing so; turned while nobody saw, if not: Pasture.takeNinth)
+        : `The herd in the pasture, ${seen.has('ev:cows1') ? 'still facing the same way' : 'all facing the same way'}. Eight of them. There were nine. Where the ninth stood, the grass is flattened in a ring, white with frost.`, 6.5);
       this.d.note(`${t}. Pasture by the highway: the herd facing 026. One missing. A ring of frost in the grass.${found ? ' The one missing is lying at STATION 01, on B.' : ''}`);
       this.d.save();
     }

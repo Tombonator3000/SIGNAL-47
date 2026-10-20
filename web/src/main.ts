@@ -559,10 +559,17 @@ async function boot() {
   // with the town's part of the case
   const pasture = new Pasture({ herds: () => world.herds, seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
     save: () => { if (mode === 'play') requestAutosave(false); }, ninthFound: () => townSeen.has('nine:found') });
+  let ninthEar: { at: THREE.Vector3; dest: AudioNode | null } | null = null;
   // where the ninth went: lying at STATION 01 on B, found in chapter three (story/ninthCow.ts;
   // FORSLAG.md, 20 October, the order's item 6), kept with the town's part of the case
   const ninth = new NinthCow({ seen: townSeen, site: () => world.site, pasture, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
     hush: (secs) => audio.night?.hush(secs, 0.04), clock: () => game.clock,
+    // (the click, higher and duller, from where she lies: faint from the pad, plain within 20 m)
+    tick: (at) => {
+      // (one point in the world for all of them, where she lies)
+      if (!ninthEar?.dest || ninthEar.at.distanceTo(at) > 0.5) ninthEar = { at: at.clone(), dest: audio.spatial(at.clone().setY(at.y + 0.3), 3) };
+      if (ninthEar.dest) audio.play('click', { gain: 0.55, rate: 2.0 + Math.random() * 0.5, lp: 4800, dest: ninthEar.dest });
+    },
     save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
   // a frame of her near the transit is a free frame, not a refused case frame (story/Chapter3.ts)
   ch3.freeShot = () => {
@@ -1643,7 +1650,9 @@ async function boot() {
   // ---------- the night's one curve (story/curve.ts; FORSLAG.md, 20 October, item 1) ----------
   /** One of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
    *  also waits for the others itself, as before). */
-  function oneAtATime() {
+  function oneAtATime() { return nightGoing() || ninth.quiet > 0; }
+  /** All of oneAtATime but the quiet round the ninth cow (story/ninthCow.ts: that quiet is hers). */
+  function nightGoing() {
     return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
       || lineLights.state !== 'none' || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.busy || archive.busy
       // (the array put back on the schedule, until it has gone back: story/arrayBack.ts)
@@ -1651,9 +1660,7 @@ async function boot() {
       // (the shape at the end of the headlights, until the lights have reached it)
       || cutouts.up === 'post'
       // (the recording walking where the player was taken: story/recording.ts)
-      || recWalk.busy
-      // (the quiet round the ninth cow once she is found: story/ninthCow.ts)
-      || ninth.quiet > 0;
+      || recWalk.busy;
   }
   /** The small signs the curve has given (the tests): which, and at what clock. */
   const curveSigns: { what: string; clock: number }[] = [];
@@ -2497,7 +2504,7 @@ async function boot() {
       // the ninth, at STATION 01 (story/ninthCow.ts): a found thing, but one at a time all the same
       if (mode === 'play') {
         bindHerdLooks();
-        ninth.update(dt, { ok: !modalOpen && !game.cinematic, free: !oneAtATime() && !audio.phonePlaying && !cb.busy, chapter: game.phase, area: world.area,
+        ninth.update(dt, { ok: !modalOpen && !game.cinematic, free: !nightGoing() && !audio.phonePlaying && !cb.busy, chapter: game.phase, area: world.area,
           driving: world.driving, inHut: world.area === 'station01' && world.indoors(player.pos), cam: camera, light: flashlight.on });
       }
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));

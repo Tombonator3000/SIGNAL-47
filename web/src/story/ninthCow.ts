@@ -28,14 +28,22 @@ import { HERD } from '../drive/roadShape';
 //     and her place cannot be seen (the player is far off, in the hut, or turned away from it); at
 //     the same moment she goes from the pasture (Pasture.takeNinth: the herd far off too). She
 //     stays for the rest of the night. Before chapter three she is not there.
-//   - Found: on foot, nothing else going, no panel open, the eyes on her within 28 degrees and
-//     something to see her by (within 7 m, or the flashlight on her within 24 m), for half a
-//     second; or a closer look (the zoom) at her. Then the night goes quiet round her for a while
-//     (the crickets, the music: `quiet`), a toast, a note, the mark on the map at STATION 01 on B
-//     (which writes the seen log: main.ts sawKey), her card on the board.
+//   - Found: on foot, nothing else going, no panel open, out of the hut, with nothing between (the
+//     hut, the shed, the pier: Station01.occluders) and something to see her by (within 7 m and on
+//     the screen within 50 degrees of its middle, or the flashlight on her within 24 m and 22
+//     degrees), for half a second; or a closer look (the zoom) at her. Then the night goes quiet round her for a while (the crickets,
+//     the music: `quiet`), a toast, a short note, the mark on the map at STATION 01 on B (which
+//     writes the seen log: main.ts sawKey), her card on the board.
+//   - Close to (within CLOSE of her, looking at her): what was done to her, once, a toast and a
+//     note. From the far end of the flashlight she is a cow in the frost; the rest is up close.
+//   - Until she is found, while the player is on foot at the station (not in the hut) and nothing
+//     else of the night's is going: something out there in the dark ticks, now and then, the way
+//     an engine ticks as it cools, from where she lies (main.ts `tick`, the click at a higher
+//     rate, in the world). Heard near enough, once, it is said in words too (a phone is often
+//     muted). It stops when she is found, and the night goes quiet.
 //   - Looked at closely (the zoom): her head (the eye, the jaw, the tag), her side, the frost.
 //   - Used ("Dead cow"): knelt by and touched: cold, the smell.
-// Kept with the town's part of the case: 'nine:down', 'nine:found', 'nine:tag', 'nine:touch',
+// Kept with the town's part of the case: 'nine:down', 'nine:tick', 'nine:found', 'nine:close', 'nine:tag', 'nine:touch',
 // 'mark:ninth@<clock>', the board's threads as 'nl:<a|b>'; none of it comes again after a load.
 
 /** Her ear tag, as it is read. */
@@ -46,12 +54,19 @@ export const NINTH_PRINT = 'The ninth one from the pasture, inside the fence. No
 const QUIET = 26;
 /** Finding her: the eyes on her this long. */
 const LOOK = 0.5;
+/** Near enough to see what was done to her (metres from her head or her side). */
+const CLOSE = 3.4;
+/** The ticking: heard from this far (metres), and said in words once heard this near. */
+const TICK_R = 45, TICK_SAID = 28;
 const LINK = 'nl:';
+const PARTS = ['middle', 'head', 'body'] as const;
 
 export interface NinthSite {
   ninthDown: boolean;
   setNinth(on: boolean): void;
   ninthAt(part: 'head' | 'body' | 'middle'): THREE.Vector3;
+  /** What stands between the player and things at the station (the hut, the shed, the pier). */
+  occluders: THREE.Object3D[];
 }
 export interface NinthDeps {
   seen: Set<string>;
@@ -61,6 +76,8 @@ export interface NinthDeps {
   toast: (text: string, secs?: number) => void;
   /** The crickets and the wind drop out for secs (Ambience.hush). */
   hush: (secs: number) => void;
+  /** One tick, from where she lies (main.ts: in the world, so it comes from her way). */
+  tick?: (at: THREE.Vector3) => void;
   clock: () => number;
   save: () => void;
   refresh: () => void;
@@ -68,7 +85,7 @@ export interface NinthDeps {
 export interface NinthIn {
   /** In play, no panel open, not in a cinematic. */
   ok: boolean;
-  /** Nothing else of the night's is going (main.ts oneAtATime), no call on the line. */
+  /** Nothing else of the night's is going (main.ts oneAtATime, all but her own quiet), no call on the line. */
   free: boolean;
   chapter: string;
   area: string;
@@ -105,6 +122,12 @@ export class NinthCow {
   off = false;
   private look = 0;
   private links: string[] = [];
+  private rc = new THREE.Raycaster();
+  /** At the last step the player was in the hut (its walls between: no closer look at her from there). */
+  private inHut = false;
+  /** The next tick, and how many have been heard within TICK_SAID since the night was opened. */
+  private tickT = 2;
+  private ticks = 0;
   /** At the last step she could have been found (nothing else going, on foot at the station). */
   private canFind = false;
 
@@ -123,6 +146,7 @@ export class NinthCow {
 
   get down() { return this.d.seen.has('nine:down'); }
   get found() { return this.d.seen.has('nine:found'); }
+  get close() { return this.d.seen.has('nine:close'); }
   /** For the tests and the developer menu. */
   get state() { return this.found ? 'found' : this.down ? 'down' : 'not yet'; }
   /** Her card on the board, once found. */
@@ -135,14 +159,49 @@ export class NinthCow {
     if (!site) return;
     // a case opened with her there, or the station built since
     if (this.down !== site.ninthDown) site.setNinth(this.down);
+    this.inHut = s.inHut;
     if (!this.down) { this.canFind = false; this.putDown(site, s); return; }
-    this.canFind = s.area === 'station01' && !s.driving && s.ok && s.free;
-    if (this.found || !this.canFind) { this.look = 0; return; }
-    // found: the eyes on her, and something to see her by
+    // (in the hut its walls are between, the east window too far round: she is not seen from there)
+    this.canFind = s.area === 'station01' && !s.driving && s.ok && s.free && !s.inHut;
+    if (!this.canFind) { this.look = 0; return; }
     const mid = site.ninthAt('middle'), cam = s.cam.getWorldPosition(new THREE.Vector3()), d = cam.distanceTo(mid);
-    const see = facing(s.cam, mid, 30, 28) && (d < 7 || (s.light && d < 24 && facing(s.cam, mid, 24, 22)));
+    if (this.found) {
+      // close to: what was done to her (her own quiet does not hold this back: it is hers)
+      if (!this.close && Math.min(cam.distanceTo(site.ninthAt('head')), cam.distanceTo(site.ninthAt('body'))) < CLOSE
+        && PARTS.some((p) => facing(s.cam, site.ninthAt(p), 8, 40)) && this.inSight(site, cam)) this.closeTo();
+      this.look = 0; return;
+    }
+    // before she is found: the ticking, from her
+    if (d < TICK_R) this.ticking(dt, site, d);
+    // found: the eyes on her with nothing between, and something to see her by (near, on the
+    // screen and not far off the middle of it; or in the flashlight)
+    const see = (d < 7 ? facing(s.cam, mid, 7, 50) : s.light && d < 24 && facing(s.cam, mid, 24, 22)) && this.inSight(site, cam);
     this.look = see ? this.look + dt : 0;
     if (this.look >= LOOK) this.find();
+  }
+  private ticking(dt: number, site: NinthSite, d: number) {
+    this.tickT -= dt;
+    if (this.tickT > 0) return;
+    // (now and then; sometimes two close together, as cooling metal does)
+    this.tickT = Math.random() < 0.25 ? 0.15 + Math.random() * 0.1 : 1.3 + Math.random() * 2.6;
+    this.d.tick?.(site.ninthAt('body'));
+    if (d >= TICK_SAID) return;
+    this.ticks++;
+    if (this.ticks === 3 && !this.d.seen.has('nine:tick')) {
+      this.d.seen.add('nine:tick');
+      this.d.toast('Somewhere in the dark inside the fence, a small, sharp tick. Then another, the way an engine ticks as it cools.', 5);
+    }
+  }
+  /** Some part of her can be seen from `from`: nothing of the station's (the hut, the shed, the pier) in the way. */
+  private inSight(site: NinthSite, from: THREE.Vector3) {
+    if (!site.occluders.length) return true;
+    for (const part of PARTS) {
+      const to = site.ninthAt(part).sub(from), len = to.length();
+      if (len < 0.4) return true;
+      this.rc.set(from, to.divideScalar(len)); this.rc.near = 0.05; this.rc.far = len - 0.3;
+      if (this.rc.intersectObjects(site.occluders, false).length === 0) return true;
+    }
+    return false;
   }
 
   /** In chapter three at the station, while nobody can see her place: she is put down there, and goes from the pasture. */
@@ -175,10 +234,21 @@ export class NinthCow {
     this.look = 0;
     this.quiet = QUIET;
     this.d.hush(QUIET);
-    this.d.toast('Inside the fence, on the path out to the B vane: a cow, on her side in a patch of frost. She does not move.', 5.5);
+    const ticked = this.ticks >= 2 || seen.has('nine:tick');
+    this.d.toast(`Inside the fence, on the path out to the B vane: a cow, on her side in a patch of frost. She does not move.${ticked ? ' The ticking has stopped.' : ''}`, 5.5);
     const ring = seen.has('ev:cows') ? ' She is the one missing from the ring of frost in the pasture.' : seen.has('ev:cows1') ? ' There were nine in the pasture by the highway tonight.' : '';
-    this.d.note(`${t}. STATION 01, inside the fence: a Hereford cow, dead on her side on B, between the transit and the comparison vane, her head to 026. No blood anywhere. Cut out clean: an oval of the jaw to the bone, the tongue, a round piece of her side, the edges dark and hard. No tracks in the frost round her. The vehicle gate is chained.${ring}`);
+    this.d.note(`${t}. STATION 01, inside the fence: a Hereford cow, dead on her side on B, between the transit and the comparison vane, her head to 026, in a ring of frost.${ticked ? ' Something out here was ticking like an engine cooling. It stopped when I found her.' : ''} The vehicle gate is chained.${ring}`);
     this.d.refresh();
+    this.d.save();
+  }
+  /** Close to her, once: no blood, and how clean it is. */
+  private closeTo() {
+    const seen = this.d.seen;
+    seen.add('nine:close');
+    // (the night stays quiet while it is taken in, if her quiet has nearly gone)
+    if (this.quiet < 10) { this.quiet = 10; this.d.hush(10); }
+    this.d.toast('No blood. Not on her, not in the frost under her. The jaw bare to the bone, the tongue gone, a round piece of her side cut out clean. The edges are dark and hard.', 7);
+    this.d.note(`${clockText(this.d.clock(), false)}. Close to: no blood anywhere, on her or under her. Cut out clean: an oval of the jaw to the bone, the tongue, a round piece of her side, the edges dark and hard. No tracks in the frost round her.`);
     this.d.save();
   }
 
@@ -187,6 +257,9 @@ export class NinthCow {
   examine(part: 'head' | 'body' | 'frost', cam: THREE.Camera): string | null {
     const site = this.d.site();
     if (!site?.ninthDown) return null;
+    // (not through the hut's walls or the shed: the zoom looks past her hit area to what is there)
+    const from = cam.getWorldPosition(new THREE.Vector3());
+    if (this.inHut || !this.inSight(site, from)) return null;
     // a closer look finds her too, but not while another of the night's things is going
     if (!this.found) { if (!this.canFind) return null; this.find(); }
     const d = cam.getWorldPosition(new THREE.Vector3()).distanceTo(site.ninthAt(part === 'head' ? 'head' : 'middle'));
@@ -242,7 +315,7 @@ export class NinthCow {
   // ---------- a night opened ----------
   /** A new night or a case opened: as the case has her; her threads. */
   reset() {
-    this.quiet = 0; this.look = 0; this.force = false;
+    this.quiet = 0; this.look = 0; this.force = false; this.tickT = 2; this.ticks = 0;
     this.links = [...this.d.seen].filter((k) => k.startsWith(LINK)).map((k) => k.slice(LINK.length)).filter((k) => RULES.some((r) => pair(r.a, r.b) === k));
     this.d.site()?.setNinth(this.down);
   }

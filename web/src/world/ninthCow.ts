@@ -14,8 +14,10 @@ import { rng } from '../core/textures';
 // What was taken is cut out clean, the edges dark and hard as if burnt, and there is no blood
 // anywhere: an oval of hide off the jaw down to the bone, the tongue (the mouth hangs open on
 // nothing), and a round piece out of her side. Drawn on small flat pieces laid on the surfaces,
-// from one picture (cuts()), so the edges stay sharp at night on a phone: a pale cut with a black
-// rim reads in the flashlight from a few metres, and nothing in it is red.
+// from one picture (cuts()), so the edges stay sharp at night on a phone: a black rim reads in the
+// flashlight from a few metres, the side's cut a dark hole inside it, the jaw's bare bone with the
+// teeth set in it (dull, so the flashlight does not burn it white; bone, not a mouth), and nothing
+// in it is red.
 //
 // Draw calls: her hide and head 1 (vertex colours), the cuts and the eye 1, the frost on the
 // ground 1. Built with the station (world/Station01.ts) and hidden until she is put down.
@@ -56,45 +58,69 @@ function cuts() {
   const g = c.getContext('2d')!, r = rng(909);
   g.clearRect(0, 0, c.width, c.height);
   const oval = (cx: number, rx: number, ry: number) => { g.beginPath(); g.ellipse(cx, S / 2, rx, ry, 0, 0, Math.PI * 2); };
-  // the cut: a thin hard black rim, as if burnt in, and inside it the hide's own cut edge, a pale
-  // line all the way round, even, the way nothing tears; inside that, what was under the hide, dry
+  // the cut: a thin hard black rim, as if burnt in, and inside it the hide's own cut edge, a thin
+  // dull line all the way round, even, the way nothing tears
   const cut = (cx: number, rx: number, ry: number) => {
-    oval(cx, rx, ry); g.fillStyle = '#080504'; g.fill();
+    oval(cx, rx, ry); g.fillStyle = '#070403'; g.fill();
     for (let i = 0; i < 50; i++) {
       const a = r() * Math.PI * 2;
-      g.fillStyle = `rgba(30,16,10,${(0.5 + r() * 0.4).toFixed(2)})`;
-      g.beginPath(); g.arc(cx + Math.cos(a) * (rx - 2), S / 2 + Math.sin(a) * (ry - 2), 1 + r() * 1.6, 0, Math.PI * 2); g.fill();
+      g.fillStyle = `rgba(26,14,9,${(0.5 + r() * 0.4).toFixed(2)})`;
+      g.beginPath(); g.arc(cx + Math.cos(a) * (rx - 2), S / 2 + Math.sin(a) * (ry - 2), 1 + r() * 1.4, 0, Math.PI * 2); g.fill();
     }
-    oval(cx, rx - 6, ry - 6); g.fillStyle = '#cdbca2'; g.fill();
-    oval(cx, rx - 10, ry - 10);
+    oval(cx, rx - 5, ry - 5); g.fillStyle = '#8f7c66'; g.fill();
+    oval(cx, rx - 7, ry - 7);
   };
-  // 0: the round piece out of her side: dark and dry inside, nothing wet, nothing red
+  // 0: the round piece out of her side: a hole, dark and dry, deeper in the middle; nothing wet,
+  // nothing red
   {
     const cx = S / 2;
     cut(cx, 62, 62);
-    const gr = g.createRadialGradient(cx, S / 2, 4, cx, S / 2, 52);
-    gr.addColorStop(0, '#1c0f0c'); gr.addColorStop(0.75, '#2e1a15'); gr.addColorStop(1, '#170c0a');
+    const gr = g.createRadialGradient(cx, S / 2 + 6, 2, cx, S / 2, 55);
+    gr.addColorStop(0, '#050303'); gr.addColorStop(0.55, '#130908'); gr.addColorStop(0.88, '#2a1813'); gr.addColorStop(1, '#3a241c');
     g.fillStyle = gr; g.fill();
-    // the grain of what is under the hide, cut straight across
-    g.strokeStyle = 'rgba(70,46,38,0.55)'; g.lineWidth = 1.4;
-    for (let i = 0; i < 8; i++) { const y = S / 2 - 36 + i * 10 + r() * 3; g.beginPath(); g.moveTo(cx - 40, y); g.bezierCurveTo(cx - 10, y + 4, cx + 10, y - 4, cx + 40, y + 1); g.stroke(); }
+    // (the cut face of what is under the hide, catching the light only at the upper edge)
+    g.save(); oval(cx, 55, 55); g.clip();
+    g.strokeStyle = 'rgba(96,66,52,0.5)'; g.lineWidth = 3;
+    g.beginPath(); g.ellipse(cx, S / 2 + 5, 52, 50, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke();
+    g.restore();
   }
-  // 1: the oval off the jaw: down to the bone, the jawbone along its lower part and the teeth in it
+  // 1: the oval off the jaw, down to the bone: round the edge the cheek's own cut face, dried dark;
+  // inside it the jawbone bare and dry, grey-ivory, and the cheek teeth standing out of it along its
+  // upper edge (towards the eye), yellowed, uneven, the gum between them dried black. Bone, not a
+  // mouth, and dull enough to hold its shape in the flashlight.
   {
     const cx = S + S / 2;
-    cut(cx, 62, 42);
-    g.fillStyle = '#1e110d'; g.fill();
-    g.save(); oval(cx, 52, 32); g.clip();
-    // the jawbone, pale, along the bottom, and the cheek teeth set in it, the gaps between them dark
-    g.fillStyle = '#d6ccb2'; g.beginPath(); g.ellipse(cx, S / 2 + 30, 60, 22, 0, 0, Math.PI * 2); g.fill();
-    // (worn and uneven, set a little crooked, as teeth are: not a comb)
-    let x = cx - 40;
-    for (let i = 0; i < 6 && x < cx + 34; i++) {
-      const w = 9 + r() * 5, h = 13 + r() * 9, y = S / 2 - 6 + r() * 4;
-      g.fillStyle = '#120a07'; g.fillRect(x - 2, y - 2, w + 4, h + 4);
-      g.fillStyle = r() < 0.5 ? '#e8e0c8' : '#d8cdaf'; g.beginPath(); g.moveTo(x, y + h); g.lineTo(x + 1, y + 2); g.lineTo(x + w * 0.5, y); g.lineTo(x + w - 1, y + 3); g.lineTo(x + w, y + h); g.fill();
-      x += w + 2 + r() * 2;
+    cut(cx, 62, 40);
+    g.fillStyle = '#3b2219'; g.fill();
+    g.save(); oval(cx, 50, 29); g.clip();
+    // the bone, mottled, darker towards the back of the jaw
+    const bg = g.createLinearGradient(cx - 50, 0, cx + 50, 0);
+    bg.addColorStop(0, '#7f735e'); bg.addColorStop(0.55, '#9a8e76'); bg.addColorStop(1, '#8c806a');
+    g.fillStyle = bg; g.fillRect(cx - 60, 0, 120, S);
+    for (let i = 0; i < 46; i++) {
+      g.fillStyle = `rgba(${52 + Math.floor(r() * 30)},${36 + Math.floor(r() * 20)},${26 + Math.floor(r() * 14)},${(0.12 + r() * 0.2).toFixed(2)})`;
+      g.beginPath(); g.ellipse(cx - 48 + r() * 96, S / 2 - 26 + r() * 54, 2 + r() * 8, 1.5 + r() * 4, r() * 3, 0, Math.PI * 2); g.fill();
     }
+    // the gum and what was under the lip, dried black-brown, along the top
+    g.fillStyle = '#2b1810'; g.beginPath(); g.moveTo(cx - 60, S / 2 - 40); g.lineTo(cx + 60, S / 2 - 40); g.lineTo(cx + 60, S / 2 - 15);
+    for (let x = cx + 56; x > cx - 60; x -= 8) g.lineTo(x, S / 2 - 15 - r() * 4);
+    g.closePath(); g.fill();
+    // the cheek teeth: six, worn and uneven, rounded at the root, the seams between them black
+    let x = cx - 40;
+    for (let i = 0; i < 6 && x < cx + 36; i++) {
+      const w = 11 + r() * 4, h = 15 + r() * 7, y = S / 2 - 23 + r() * 3, c = 150 + Math.floor(r() * 24);
+      g.fillStyle = '#1a0e09'; g.fillRect(x - 2, y - 1, w + 4, h + 3);
+      g.fillStyle = `rgb(${c + 12},${c},${c - 34})`;
+      g.beginPath(); g.moveTo(x, y + 1); g.lineTo(x + w * 0.3, y + r() * 2); g.lineTo(x + w * 0.7, y + 1 + r() * 2); g.lineTo(x + w, y + 1);
+      g.lineTo(x + w, y + h - 4); g.quadraticCurveTo(x + w, y + h, x + w * 0.5, y + h); g.quadraticCurveTo(x, y + h, x, y + h - 4); g.closePath(); g.fill();
+      // (the worn crown, a darker line across the top of each)
+      g.fillStyle = 'rgba(80,60,36,0.55)'; g.fillRect(x + 1.5, y + 3, w - 3, 2);
+      x += w + 3.5;
+    }
+    // the jaw's lower edge, a shade paler, and the line of the roots in the bone
+    g.fillStyle = 'rgba(188,176,150,0.35)'; g.beginPath(); g.ellipse(cx, S / 2 + 30, 56, 9, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(50,34,24,0.5)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(cx - 46, S / 2 + 4); g.bezierCurveTo(cx - 16, S / 2 + 8, cx + 16, S / 2 + 2, cx + 46, S / 2 + 6); g.stroke();
     g.restore();
   }
   // 2: the eye, open, a frost glaze over it and frost in the lashes round it

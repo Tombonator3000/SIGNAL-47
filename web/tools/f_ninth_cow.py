@@ -9,8 +9,13 @@
 #   - chapter three: not put down while her place is in view; turned away, she is, and at the same
 #     moment she goes from the pasture (cows:short, the herd's missing one hidden)
 #   - one at a time: during another 47 (the silence) she is not found, not even with a closer look;
-#     after it, looked at in the flashlight, she is: once, a toast and a note, the mark at STATION 01
-#     on B on the map, a line in the seen log (looked at), the night quiet round her
+#   - not through the hut: from behind it with the flashlight on her, a closer look, and from inside
+#     it, she is not found
+#   - until she is found, something ticks out there like an engine cooling, from her (said once in
+#     words); it stops when she is found
+#     after it, looked at in the flashlight, she is: once, a toast and a short note, the mark at
+#     STATION 01 on B on the map, a line in the seen log (looked at), the night quiet round her;
+#     close to: no blood, the cuts, once, a toast and a note
 #   - a closer look: her head (the eye, the jaw, the tongue, the tag ALDERETE 25, a note once), her
 #     side (the cut), the frost (no tracks); kneeling by her: cold, hot metal, a note once
 #   - a free frame of her: the line under the print
@@ -36,10 +41,12 @@ def check(ok, what):
 HELPERS = """(() => {
   const V = S47.three.Vector3;
   window.T = {
-    toasts: [],
+    toasts: [], ticks: 0,
     hook() {
       const ui = S47.game.d.ui; if (ui.__hooked) return; ui.__hooked = true;
       const o = ui.toast.bind(ui); ui.toast = (t, s, c) => { T.toasts.push(t); return o(t, s, c); };
+      // (the ticking from where she lies, story/ninthCow.ts: counted, and still played)
+      const n = S47.ninth, k = n.d.tick; n.d.tick = (at) => { T.ticks++; if (k) k(at); };
     },
     site() { return S47.world.site; },
     o() { return S47.world.site.group.position; },
@@ -164,15 +171,35 @@ async def main():
             if not await ev("S47.roadside.silent"): break
             await tick(1.0)
         check(await state() == 'down', 'turned away while it lasts: still not found')
+        # ---------- not through the hut ----------
+        bh = await ev("(() => { T.at(-11.6, 9.6, 'middle'); const s = S47.world.site, c = S47.camera.getWorldPosition(new S47.three.Vector3()); return c.distanceTo(s.ninthAt('middle')); })()")
+        await tick(0.5, 4)
+        check(not await ev("S47.roadside.silent") and await state() == 'down', f'behind the hut, {bh:.1f} m from her with the flashlight on her: the hut is between, not found')
+        bz = await ev("(() => { T.at(-11.8, 5.3, 'middle'); const s = S47.world.site, c = S47.camera.getWorldPosition(new S47.three.Vector3()); return c.distanceTo(s.ninthAt('body')); })()")
+        await tick(0.5, 2)
+        zb0 = await zoom()
+        check(await state() == 'down' and (zb0 is None or 'cow' not in zb0.lower()), f'right behind the hut, {bz:.1f} m from her, a closer look through it: nothing of her, not found ({zb0})')
+        await ev("T.at(-11.0, 3.2, 'middle')"); await tick(0.5, 4)
+        zh0 = await zoom()
+        check(await ev("S47.world.indoors(S47.player.pos)") and await state() == 'down' and (zh0 is None or 'cow' not in zh0.lower()),
+              f'in the hut, the flashlight and a closer look her way through the wall: not found ({zh0})')
+        # ---------- the ticking, until she is found ----------
+        await ev("T.ticks = 0; (() => { const o = T.o(); T.near('middle', 14.0, 0.6); const p = S47.player; T.at(p.pos.x - o.x, p.pos.z - o.z, 'middle', Math.PI); })()")
+        await tick(0.5, 28)
+        nt = await ev("T.ticks"); tt0 = ' '.join(await ev("T.toasts"))
+        check(nt >= 3 and await has('nine:tick') and tt0.count('the way an engine ticks as it cools') == 1 and await state() == 'down',
+              f'turned away from her, 14 m off: something out there ticks ({nt} in 14 s), said once in words; not found')
         n0 = len(await notes())
-        await ev("T.near('middle', 4.0, 0.6)"); await tick(0.3, 3)
+        await ev("T.near('middle', 6.0, 0.6)"); await tick(0.3, 3)
         nn = (await notes())[n0:]
         found = [n for n in nn if 'dead on her side' in n]
         tt = ' '.join(await ev("T.toasts"))
-        check(not await ev("S47.roadside.silent") and await state() == 'found' and len(found) == 1, f'after it, looked at in the flashlight: found, once ({len(found)} notes)')
-        check(found and 'No blood anywhere' in found[0] and 'between the transit and the comparison vane' in found[0] and 'her head to 026' in found[0]
-              and 'No tracks in the frost' in found[0] and 'The vehicle gate is chained.' in found[0], f'the note: on B, no blood, cut out clean, no tracks ({found[:1]})')
-        check('a cow, on her side in a patch of frost. She does not move.' in tt, 'the toast: a cow on her side in a patch of frost, not moving')
+        check(not await ev("S47.roadside.silent") and await state() == 'found' and len(found) == 1, f'after it, 6 m off, looked at in the flashlight: found, once ({len(found)} notes)')
+        check(found and 'between the transit and the comparison vane' in found[0] and 'her head to 026' in found[0] and 'ring of frost' in found[0]
+              and 'The vehicle gate is chained.' in found[0] and 'No blood' not in found[0] and not await has('nine:close'),
+              f'the note: on B, her head to 026, the gate chained; what was done to her not yet, from there ({found[:1]})')
+        check('a cow, on her side in a patch of frost. She does not move. The ticking has stopped.' in tt and found and 'ticking like an engine cooling. It stopped when I found her.' in found[0],
+              'the toast: a cow on her side in a patch of frost, not moving; the ticking has stopped (the note too)')
         marks = await ev("S47.mapMarks().filter((m) => m.kind === 'ninth')")
         check(len(marks) == 1 and marks[0]['line'] == 'B' and (marks[0].get('at') or {}).get('spot') == 'station01', f'a mark on the map at STATION 01, on B ({marks})')
         seen = await ev("S47.seen.filter((e) => e.what === 'ninth')")
@@ -180,7 +207,19 @@ async def main():
               f'the seen log: one line, an event on B, looked at ({seen})')
         check(await ev("S47.ninth.quiet") > 20 and await ev("S47.ninth.books().length") == 1 and await ev("S47.oneAtATime()") and await ev("S47.musicHeld()"),
               'the night goes quiet round her (the crickets, the music, and nothing else of the night\'s starts), and she is on the board')
+        await ev("T.ticks = 0"); await tick(0.5, 12)
+        check(await ev("T.ticks") == 0, 'found, she ticks no more')
         await shot('desk_02_found')
+        # ---------- close to: what was done to her ----------
+        nc = len(await notes())
+        await ev("T.near('body', 2.6, 0.6)"); await tick(0.3, 3)
+        await ev("T.near('body', 2.4, 0.9)"); await tick(0.3, 2)
+        cn = [n for n in (await notes())[nc:] if 'Close to' in n]
+        ct = ' '.join(await ev("T.toasts.slice(-2)"))
+        check(await has('nine:close') and len(cn) == 1 and 'no blood anywhere' in cn[0] and 'jaw to the bone' in cn[0] and 'No tracks in the frost' in cn[0]
+              and 'No blood. Not on her' in ct and await ev("S47.ninth.quiet") > 5,
+              f'close to her: no blood, the jaw to the bone, the cuts clean, once, and still quiet ({cn[:1]}; {ct}; {await ev("S47.ninth.quiet")})')
+        await shot('desk_02b_close')
 
         # ---------- a closer look, and kneeling by her ----------
         n1 = len(await notes())
