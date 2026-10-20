@@ -56,7 +56,7 @@ import { DishesFollow, nearArray } from './story/dishesFollow';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
-import { Album, rollText } from './core/album';
+import { Album, rollText, FACE_LINE } from './core/album';
 import { albumSubjects } from './story/albumSubjects';
 import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
@@ -461,7 +461,22 @@ async function boot() {
       else if (left === 5 || left === 0) ui.toast(left ? '5 free frames left on the roll.' : 'That was the last free frame on the roll.', 3);
       requestAutosave(false);
     },
+    // once in the night: the face a foot from the lens, on the first free frame out of doors in
+    // chapter four (core/filmFace.ts). Only on the print; in the scene there is nothing.
+    face: () => mode === 'play' && game.phase === 'ch4' && space === 'yard' && !world.driving && !game.cinematic,
+    // the first close look at it, come up: the night goes quiet round the player while it is
+    // looked at, the music with it, and the notebook gets a line in the player's hand (in words
+    // both narrators have, so the notebook can still be read aloud; the print says the rest)
+    faceSeen: (shot) => {
+      audio.night?.hush(FACE_QUIET, 0.02);
+      faceQuiet = FACE_QUIET;
+      game.note(`${clockText(shot.clock, false)}, ${shot.place.replace(/^The /, 'the ')}. ${FACE_LINE}`);
+      requestAutosave(false);
+    },
   });
+  /** Seconds the night and the music keep quiet from the first close look at the face. */
+  const FACE_QUIET = 34;
+  let faceQuiet = 0;
   ch1.free = { left: () => album.left, expose: () => { album.expose(); } };
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
@@ -1235,6 +1250,8 @@ async function boot() {
   Object.assign((window as any).S47, {
     album, albumArt,
     albumSubjects: () => subjectsHere().map((s) => ({ name: s.name, n: s.at.length, odd: !!s.odd })),
+    // the face on the film (tools/horror_face.py): where the player is, and how long the night keeps quiet
+    space: () => space, faceQuiet: () => faceQuiet,
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
@@ -1311,8 +1328,9 @@ async function boot() {
         { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
         { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
       ] });
-      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
+      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then. The face on the film comes once, on the first free frame out of doors in chapter four.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
+        { label: album.forceFace ? 'The face on the film: on the next free frame' : `The face on the film${album.data.face ? ' (taken)' : ''}: put it on the next free frame`, run: () => { album.forceFace = true; }, on: album.forceFace },
       ] });
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
@@ -1484,7 +1502,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1531,6 +1549,12 @@ async function boot() {
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') { radioStep(dt); audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
+      // the print with the face has come up (core/album.ts): said once, when nothing else holds the player
+      if (faceQuiet > 0) faceQuiet -= dt;
+      if (mode === 'play' && !modalOpen && !game.cinematic) {
+        const up = album.faceUp(game.clock);
+        if (up) { ui.toast(`The print from ${clockText(up.clock, false)} has come up.`, 3.6); requestAutosave(false); }
+      }
       if (mode === 'play') roadside.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && world.area === 'saro' && world.crossing.onHighway(player.pos) && game.at('ch1') && game.phase !== 'ch6'
           && sky.uniforms.uDawn.value < 0.3,

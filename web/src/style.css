@@ -411,6 +411,12 @@ button.al-print:focus-visible { outline: 2px solid var(--amber); outline-offset:
 .al-view .al-back { position: absolute; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 8px); min-height: 44px; font-family: var(--term); font-size: 22px; color: #cfc8b5; }
 .al-view .al-back kbd { font-family: var(--term); border: 1px solid #8a8473; border-radius: 3px; padding: 0 6px; margin-right: 6px; color: var(--amber); }
 @media (pointer: coarse) { .al-view .al-back kbd { display: none; } }
+/* a phone held upright: the print as wide as the screen (what is at its edges matters), the arrows under it */
+@media (max-aspect-ratio: 4/5) {
+  .al-view { padding-left: 12px; padding-right: 12px; }
+  .al-view .al-big { --w: min(calc(100vw - 36px), calc((100vh - 48px) / .844), 920px); }
+  .al-view .al-nav { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); height: 50px; margin-top: 0; font-size: 44px; }
+}
 
 /* ---------- Pause / settings ---------- */
 .panel { width: min(460px, 100%); background: rgba(8,11,19,.94); border: 1px solid rgba(255,255,255,.12); padding: 28px 30px; font-family: var(--term); }
