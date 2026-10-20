@@ -64,5 +64,12 @@ export class GlowPoints {
     a.setXYZ(i, p.x, p.y, p.z); a.needsUpdate = true;
   }
 
+  /** Where in its blink a point is (radians); its rate stays. */
+  setPhase(i: number, phase: number) {
+    const a = this.points.geometry.getAttribute('aBlink') as THREE.BufferAttribute | undefined;
+    if (!a || a.getY(i) === phase) return;
+    a.setY(i, phase); a.needsUpdate = true;
+  }
+
   update(t: number) { this.uTime.value = t; }
 }

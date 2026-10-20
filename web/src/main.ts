@@ -52,6 +52,7 @@ import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
 import { Abduction, type AbductIn } from './story/abduction';
+import { DishesFollow, nearArray } from './story/dishesFollow';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
@@ -398,6 +399,15 @@ async function boot() {
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
     keyStall: () => { world.keyStall = true; }, save: () => { if (mode === 'play') requestAutosave(false); },
   });
+  // the dishes come down out of 026 and follow the player through a warning in the antenna field,
+  // once in the night (story/dishesFollow.ts; FORSLAG.md, 20 October, Valg for Tom 2), kept with
+  // the time away
+  const follow = new DishesFollow({ dishes: ext.dishes, array: ext.dishArray, audio,
+    store: { get: () => abduction!.data.dishes, set: (v) => { abduction!.data.dishes = v; } },
+    ground: (x, z) => world.grounds.floorAt(x, z),
+    toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text), log: (text, at) => game.consoleLog(text, at),
+    save: () => { if (mode === 'play') requestAutosave(false); }, face: (yaw) => { player.yaw = yaw; } });
+  const followEye = new THREE.Vector3(), followView = new THREE.Vector3();
   // HENDELSER.md, events 2 and 10, on B: the herd in the pasture south of the motel, facing 026
   // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
   // with the town's part of the case
@@ -749,6 +759,7 @@ async function boot() {
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
+    follow.restore();   // after the log is back (game.start): a save made while the dishes were out
     for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
     motelTv.refile(o.state?.motelTv?.url);
     restoringNow = false; restoring = null;
@@ -776,6 +787,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    follow.reset();
     world.stopDriving();
     roadside.reset(); townEvents.reset(); nightEvents.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
@@ -870,7 +882,9 @@ async function boot() {
       else if (world.area === 'station01' && !world.indoors(p)) { line = 'C'; abAlong.set(1, 0, 0); }
     }
     return { ok, enabled: abductOn, line, along: abAlong, clock: game.clock, nextFixed: FIXED[game.phase]?.() ?? -1e9,
-      late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash };
+      late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash,
+      // out among the dishes before they have turned: a little sooner there (story/dishesFollow.ts)
+      boost: line === 'B' && !abduction?.data.dishes && nearArray(p.x, p.z) ? 1.5 : 1 };
   }
   // the marks on the notebook's map: the town's events on A (the cutout and the deputy's car on the
   // highway north of it), the lights on B, and the times away where they happened
@@ -1025,6 +1039,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    follow.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
@@ -1161,6 +1176,7 @@ async function boot() {
       earlDialogue.stop();
       narrator.stop(); npcDialogue.stop(); ui.chapterCard(null);
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
+      follow.reset();
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
     game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
@@ -1197,6 +1213,7 @@ async function boot() {
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+  Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1285,6 +1302,11 @@ async function boot() {
         { label: 'A tumbleweed', run: () => { if (!world.life.tumbleNow(true)) ui.toast('No open ground for one here', 2); } },
         { label: 'A call on the CB', run: () => cb.call([{ text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by: 'N. VEGA' }], world.driving ? null : world.truckHere()?.group.position ?? null,
           (l) => ui.toast(`CB, ${l.by}: "${l.text}"`, 4)) },
+      ] });
+      // the time away (story/abduction.ts), and the dishes that follow in the antenna field (story/dishesFollow.ts)
+      groups.push({ title: 'Missing time', note: 'Alone outdoors on a line at night. In the antenna field the warning brings the dishes down, once in a night.', items: [
+        { label: 'Begin the warning here', run: () => { const s = abductIn(true); if (abduction!.busy || !s.line) ui.toast(abduction!.busy ? 'Already under way' : 'Not on a line here', 2); else abduction!.begin(s); } },
+        { label: abduction!.data.dishes ? 'The dishes: done tonight (let them again)' : 'The dishes: not yet tonight', run: () => { follow.reset(); delete abduction!.data.dishes; } },
       ] });
     }
     if (mode === 'play' && score) {
@@ -1526,6 +1548,10 @@ async function boot() {
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
           && !roadside.silent && townEvents.now === 'none' && !motelTv.busy));
+        // the eyes from where the player stands now (the waking puts them down in the grass this step)
+        follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
+          eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
+          clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last });
       }
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }

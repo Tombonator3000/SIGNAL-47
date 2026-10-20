@@ -51,6 +51,9 @@ export interface AbductIn {
   /** Chapter three or four: the one before chapter five is due. */
   late: boolean;
   calm: boolean;
+  /** How much faster the pressure rises here (the antenna field before its dishes have turned,
+   *  story/dishesFollow.ts); 1 when left out. */
+  boost?: number;
 }
 export interface AbductDeps {
   audio: AudioSys;
@@ -76,8 +79,10 @@ export interface AbductDeps {
   keyStall: () => void;
   save: () => void;
 }
-/** What is kept with the case. */
-export interface AbductSave { count: number; last: number; spots: { scene: string; take: [number, number, number]; back: [number, number, number]; clock: number; pic?: string; doc?: DocSpec }[] }
+/** What is kept with the case. dishes: the one night the array came down out of 026 and followed
+ *  the player through a warning (story/dishesFollow.ts), when, which, and whether they are back. */
+export interface AbductSave { count: number; last: number; spots: { scene: string; take: [number, number, number]; back: [number, number, number]; clock: number; pic?: string; doc?: DocSpec }[];
+  dishes?: { clock: number; ids: string[]; back: boolean } }
 
 type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -107,6 +112,9 @@ export class Abduction {
   private records: { g: THREE.Group; scene: string }[] = [];
   private lying: THREE.Group;
   private hadLight = false;
+  /** Where the player will wake, once the light has come: it is chosen then (the dishes turn to
+   *  it before anyone is there, story/dishesFollow.ts). */
+  backAt: THREE.Vector3 | null = null;
 
   constructor(private d: AbductDeps) {
     const css = document.createElement('style');
@@ -120,6 +128,8 @@ export class Abduction {
   }
 
   get busy() { return this.stage !== 'calm'; }
+  /** How far into the warning, and how long it runs (seconds); null outside it. */
+  get warn(): { t: number; len: number } | null { return this.stage === 'warning' ? { t: this.st, len: this.warnLen } : null; }
   /** Holds the player still (the taking and the waking). */
   get holds() { return this.stage === 'light' || this.stage === 'taken' || this.stage === 'black' || this.stage === 'back'; }
 
@@ -144,7 +154,7 @@ export class Abduction {
     // about four to eight minutes alone on a line, sooner towards morning, much sooner when the
     // one before chapter five is due and has not come
     const day = ((s.clock % 86400) + 86400) % 86400, k = THREE.MathUtils.clamp((day - 2.3 * 3600) / (2.5 * 3600), 0, 1);
-    this.pressure += dt / 360 * (0.7 + 0.8 * k) * (s.late && this.data.count === 0 ? 2.5 : 1);
+    this.pressure += dt / 360 * (0.7 + 0.8 * k) * (s.late && this.data.count === 0 ? 2.5 : 1) * (s.boost ?? 1);
     if (this.pressure >= this.top) this.begin(s);
   }
   /** Start the warning now (the developer menu, the tests). */
@@ -168,7 +178,7 @@ export class Abduction {
     if (this.tone) this.tone.gain.gain.value = 0.05 + 0.25 * THREE.MathUtils.clamp((t - w * 0.5) / (w * 0.5), 0, 1);
     // the pressure comes up slowly from nothing, and is all there by the light (held through it)
     if (this.bed) this.bed.gain.gain.value = 0.04 + 0.46 * Math.min(1, t / w) ** 2;
-    if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; }
+    if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; this.backAt = this.further(this.take, s.along); }
   }
   private passOver() {
     this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15);
@@ -213,7 +223,8 @@ export class Abduction {
     d.skipClock(this.lost);
     const t1 = this.from + this.lost;
     // further along the line, on ground that can be stood on
-    const back = this.further(this.take, s.along);
+    const back = this.backAt ?? this.further(this.take, s.along);
+    this.backAt = null;
     p.place(back.x, back.z, p.yaw + rnd(-2, 2));
     p.pitch = 1.3; p.eye = 0.35;
     back.y = d.ground(back.x, back.z); this.take.y = d.ground(this.take.x, this.take.z);
@@ -322,7 +333,7 @@ export class Abduction {
   // ---------- the case ----------
   restore(v: AbductSave | null | undefined) {
     this.clear();
-    this.data = v ? { count: v.count, last: v.last, spots: [...v.spots] } : { count: 0, last: -1e9, spots: [] };
+    this.data = v ? { count: v.count, last: v.last, spots: [...v.spots], ...(v.dishes ? { dishes: { ...v.dishes, ids: [...v.dishes.ids] } } : {}) } : { count: 0, last: -1e9, spots: [] };
     for (const sp of this.data.spots) {
       this.ring(new THREE.Vector3(...sp.back));
       this.record(new THREE.Vector3(...sp.take), sp.scene);
@@ -331,7 +342,7 @@ export class Abduction {
   /** The exposures that were not the player's, back among the papers (after the case is opened). */
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }
   private clear() {
-    this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15);
+    this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); this.backAt = null;
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
     for (const r of this.records) r.g.removeFromParent();
