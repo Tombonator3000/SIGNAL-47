@@ -6,7 +6,7 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
 
-Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121). Det som er bygget, er merket under; resten er ikke bygget.
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121), og punkt 3 med lite grep 3: Tomás' feltbok og konvolutten for plate 4 (bygget 20. oktober, PR #122). Det som er bygget, er merket under; resten er ikke bygget.
 
 ### Det jeg ville bygget først
 
@@ -21,9 +21,10 @@ Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntake
    - Hvorfor: nedtellingen er det spilleren har lært med kroppen. I dag varer advarselen 20 til 47 s (`abduction.ts:152`). Det er Toms godkjente spesifikasjon og bryter ikke R3, men en fast lengde gjør bortføringen til et løp, og sekunder er det tydeligste varselet på telefon.
    - Kap. 1 til 4. Bygger på `warning()` (lykta slukker allerede ved 0,85 av lengden, altså 40 av 47) og `clockText`. Liten.
 
-3. **Tomás' feltbok: hans juli er i natt.** I hytteskuffen på STATION 01 ligger "T. VEGA / FIELD BOOK 3 / JUNE-JULY 47": kyrne vendt mot stasjonen, tre bank i taket på bilen, lampene som gikk ut med hundene, en fylkesbil med motoren i gang og ingen i. Siste side: "Three on plate 4. There were two of us." En tråd til ditt eget notat holder: "He wrote it in July 1947. I saw it tonight." Det du ikke har sett ennå, ser du etter på veien tilbake.
+3. **Bygget 20. oktober, PR #122 (`story/fieldBook.ts`, `ui/fieldBookView.ts`, skuffen i `world/Station01.ts`). Tomás' feltbok: hans juli er i natt.** I hytteskuffen på STATION 01 ligger "T. VEGA / FIELD BOOK 3 / JUNE-JULY 47": kyrne vendt mot stasjonen, tre bank i taket på bilen, lampene som gikk ut med hundene, en fylkesbil med motoren i gang og ingen i. Siste side: "Three on plate 4. There were two of us." En tråd til ditt eget notat holder: "He wrote it in July 1947. I saw it tonight." Det du ikke har sett ennå, ser du etter på veien tilbake.
    - Hvorfor: det største grepet mot at hendelsene aldri når saken. Spilleren finner R5 selv, og resten av natta blir forventning uten at noe jager. Bygger spor 10 (ingen "plate 4" i `src`).
    - Kap. 3. Bygger på `Chapter3.ts` og `boardRules.ts`; hver hendelse trenger et kort knyttet til nøkkelen den har (`ev:`, `ne:`, `mark:`). Stor.
+   - Slik det ble bygget: skuffen under benken, under lampa, fra kapittel 3; ni sider, juni (oppmålingen, «Told her it was a mistake», som brevet i kapittel 4) og juli 1 til 7 (lysene langs B, kyrne, tre bank, lampene og hundene i Caliche, fylkesbilen). Det spilleren har sett, står med spillerens eget klokkeslett, fryst ved første lesing (R4). Kyrne står mot az 026, ikke mot stasjonen (`pasture.ts`), så boka har «Took a bearing on them: 026». Lysene langs B er lagt til, fordi nesten alle ser dem på vei ut. På veien tilbake kommer det boka har og spilleren ikke har sett: kyrne snur når spilleren er langt unna, lysene kan komme nordover, og tre bank i taket rundt 20 s ut fra porten, gjennom nattregissøren og bare etter 30 s uten noe annet (én ting om gangen). Lampene og bilen ligger i Caliche og står som «In his book. Not yet in mine.» til de skjer. Ingen ny 47, ingen nye stemmer.
 
 4. **02:29: SARO blir mørkt, og Hondo skriver.** Mens spilleren er i labben, klakker K3 i det tomme kontrollrommet. Førti sekunder senere går alle lys på SARO ut i 47 sekunder, også mørkeromslampa og de røde lampene på antennene, og en liten silhuett står ytterst på plassen. Når strømmen kommer, går telexen: "FM HONDO VALLEY RADIO STN / RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE."
    - Hvorfor: labhalvdelen av kap. 1 får en topp, og reléregelen kommer igjen når spilleren vet hva klakket betyr. Det retter også en blindvei: Ward sier "I read the telex. All of it." (`Chapter5.ts:364`), men telexen finnes ikke. Den er spesifisert i `KAPITLER.md` (The Second Exposure, Nytt).
@@ -85,7 +86,7 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 
 1. **Gården holder pusten.** 02:16, første gang ut: helt stille, så kommer sirissene én og én over 47 s. `Prologue.ts:998`, `Ambience.hush`.
 2. **Reléet går først.** 23:52 slår K3 ut før skippet, og 40 s senere dipper lyset. 40 s er servicekortets ("TRIPPED 40 SEC BEFORE OUTAGE"); i nedtellingen er det 7 s. Tom velger.
-3. **Konvolutten mot lampa.** "Plate 4. 1 print. 35c." Mot lampa: tre små skikkelser. La "There were two of us" være Tomás' setning.
+3. **Bygget 20. oktober, PR #122 (med feltboka). Konvolutten mot lampa.** "Plate 4. 1 print. 35c." Mot lampa: tre små skikkelser. La "There were two of us" være Tomás' setning. Den forseglede konvolutten på motellkontorets disk er blitt fotobutikkonvolutten fra Roswell, og kan holdes mot lampa fra kapittel 1; en tråd går til bokas siste side.
 4. **Sjåførens klokke.** Den står på 11:58, mot permens 10/19/85 23:58:31. En slepelapp fra bensinstasjonen kan bære de tapte timene.
 5. **Morgenen holder pusten.** 05:13 i dineren stopper fuglene og kjøleren. "There. Some mornings about now." ("Every morning" strider mot `Chapter5.ts:426`.)
 6. **Kortet ender på en ring.** Telefonen ringer under CHAPTER TWO. Oppsummeringene står, fordi stemmene er nøklet på teksten.
@@ -97,7 +98,7 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett. **Modulen og telleren er bygget 20. oktober, PR #121** (`story/lines.ts`, `story/seen.ts`); punkt 1 og 2 er ikke bygget.
 2. Små grep 1 og 2, Hondo (4) og arkivet (5, eller valg 1).
 3. Bilen: 8, så 10, så 6. Stigen lærer nøkkelen som 05:29 tar bort.
-4. Saken: 3 og 11, konvolutten og klokka.
+4. Saken: 3 og 11, konvolutten og klokka. **3 og konvolutten er bygget 20. oktober, PR #122**; 11 og klokka er ikke bygget.
 5. 9, 7 og 12.
 6. Den niende kua, blodløs ved B-fløyen på STATION 01 (570 m fra beitet), passer når som helst i kap. 3, men er kroppsskrekk Tom bør se først.
 
@@ -105,7 +106,7 @@ Tell 47-ene: dette legger til minst fem. Motor, stillhet, 4/7 og pust høres all
 
 ### Hull
 
-Ingen foreslo måling: en logg over hva som skjedde og ble sett, og spilletid per kapittel, så man vet om glimtene sees på telefon. (Loggen er bygget 20. oktober, PR #121: `story/seen.ts`, vist med `?debug`. Spilletid per kapittel er ikke bygget.) Ingenting sier hva den som slår av Missing time får i stedet. Lydslagene trenger teksting, nye linjer trenger stemmer, og hvert engangsslag trenger en `townSeen`-nøkkel og oppdaterte `tools/*.py`. Fortsatt tomt: mil 0 til 6 på den gamle veien, Caliche etter 04:50 og hytta på STATION 01. Ikke tatt opp: glimtet bak labbens glass, figuren blant kyrne, "STA 01 / B", nettverkstelexen (SITE 03, SITE 11) og en lydflate fra den kjøpte pakken som følger trykket.
+Ingen foreslo måling: en logg over hva som skjedde og ble sett, og spilletid per kapittel, så man vet om glimtene sees på telefon. (Loggen er bygget 20. oktober, PR #121: `story/seen.ts`, vist med `?debug`. Spilletid per kapittel er ikke bygget.) Ingenting sier hva den som slår av Missing time får i stedet. Lydslagene trenger teksting, nye linjer trenger stemmer, og hvert engangsslag trenger en `townSeen`-nøkkel og oppdaterte `tools/*.py`. Fortsatt tomt: mil 0 til 6 på den gamle veien og Caliche etter 04:50 (hytta på STATION 01 har fått feltboka, PR #122). Ikke tatt opp: glimtet bak labbens glass, figuren blant kyrne, "STA 01 / B", nettverkstelexen (SITE 03, SITE 11) og en lydflate fra den kjøpte pakken som følger trykket.
 
 ## Forbedringer, 16. oktober kveld (Tom spurte)
 

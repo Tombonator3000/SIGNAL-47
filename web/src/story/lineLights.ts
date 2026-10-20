@@ -29,6 +29,9 @@ export interface LineLightsIn {
 export class LineLights {
   state: 'none' | 'pace' | 'off' = 'none';
   done = false;
+  /** T. Vega's field book has them (story/fieldBook.ts): not seen yet, they may come northbound too,
+   *  on the way back. */
+  anyWay = false;
   private pts: THREE.Points;
   private mat: THREE.PointsMaterial;
   private base: THREE.Vector3[] = [];
@@ -48,8 +51,8 @@ export class LineLights {
     const tr = s.truck;
     if (this.state === 'none') {
       if (this.done || !s.ok || !tr) { if (tr) this.lastZ = tr.z; return; }
-      const south = tr.z - this.lastZ > 0.05; this.lastZ = tr.z;
-      if (south && tr.z > 120 && tr.z < 240 && s.may !== false) this.begin(tr, s);
+      const dz = tr.z - this.lastZ; this.lastZ = tr.z;
+      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240 && s.may !== false) this.begin(tr, s, dz > 0 ? 1 : -1);
       return;
     }
     this.t += dt;
@@ -79,13 +82,14 @@ export class LineLights {
   }
   /** Where they are now (the middle one, in SARO's terms), or null when they are not there. */
   get at() { return this.state === 'none' || !this.base.length ? null : (this.base[1] ?? this.base[0]); }
-  private begin(tr: THREE.Vector3, s: LineLightsIn) {
+  /** `ahead`: +1 driving south, -1 north; the three stand a little ahead of abreast either way. */
+  private begin(tr: THREE.Vector3, s: LineLightsIn, ahead = 1) {
     this.done = true; this.state = 'pace'; this.t = 0; this.lastZ = tr.z;
-    this.base = [0, 1, 2].map((i) => { const x = tr.x - 210 - i * 6, z = tr.z + 30 + i * 16; return new THREE.Vector3(x, s.ground(x, z) + 19 + i * 1.5, z); });
+    this.base = [0, 1, 2].map((i) => { const x = tr.x - 210 - i * 6, z = tr.z + ahead * (30 + i * 16); return new THREE.Vector3(x, s.ground(x, z) + 19 + i * 1.5, z); });
     this.pts.visible = true; this.mat.opacity = 0;
     const a = this.pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     this.base.forEach((b, i) => a.setXYZ(i, b.x, b.y, b.z)); a.needsUpdate = true;
   }
   /** A new night or a case opened: whether it has been seen in it. */
-  reset(done: boolean) { this.done = done; this.state = 'none'; this.pts.visible = false; }
+  reset(done: boolean) { this.done = done; this.state = 'none'; this.pts.visible = false; this.anyWay = false; }
 }
