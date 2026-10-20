@@ -258,11 +258,14 @@ async def main():
         await use('recPhone')
         # the archive's phone comes first (story/archivePhone.ts; tools/f_archive.py has all of it): lifted to
         # call the key holder, the line is already open, the room before it happens, 47 s, the drawer, the dishes
-        for _ in range(140):
+        # (straight from the board to the phone, the steps on the roof not come yet: the line is dead and
+        # they come first; then the phone rings by itself, and it is answered)
+        for _ in range(170):
             if await ev("S47.archive.phase") == 'done': break
+            if await ev("S47.archive.phase") == 'ringing': await use('recPhone')
             await tick(1.0)
-        check(await ev("S47.archive.phase") == 'done' and await ev("S47.archive.how") == 'lift' and await ev("S47.townSeen.has('arc:done')"),
-              'the archive\'s phone first: the line already open, and 47 s after it went dead the drawer and the dishes')
+        check(await ev("S47.archive.phase") == 'done' and await ev("S47.roofSteps.phase") == 'done' and await ev("S47.townSeen.has('arc:done')"),
+              f'the archive\'s phone first, after the steps on the roof ({await ev("S47.archive.how")}), and 47 s after its line went dead the drawer and the dishes')
         await use('recPhone')
         seen = ''
         for _ in range(30):

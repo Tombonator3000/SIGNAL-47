@@ -1140,7 +1140,9 @@ async function boot() {
     const p = player.pos, stage = ch2.s.stage;
     return {
       ok: ok && game.phase === 'ch2' && ch2.active && (stage === 'records' || stage === 'call-nora') && !game.decoder.playing
-        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none' && !archive.busy && !archive.resting,
+        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none' && !archive.busy && !archive.resting
+        // (they are the archive's phone's build: never after it, story/archivePhone.ts)
+        && !townSeen.has('arc:call'),
       quiet: !ui.modal && !game.cinematic && !audio.phonePlaying,
       hold: game.cinematic || audio.phonePlaying,
       inRoom: world.area === 'saro' && !world.driving && inside(annex.zone.records, p),
@@ -1196,20 +1198,26 @@ async function boot() {
     wardCall: () => { for (const n of game.notes) { const m = /^(\d\d):(\d\d)\. Dr\. Ward read the B-12 report/.exec(n); if (m) return +m[1] * 3600 + +m[2] * 60 - 20; } return null; },
     paper: (kind, k) => {
       const pp = room.printerPaper, m = pp.material as THREE.MeshStandardMaterial;
-      if (!kind) { pp.visible = false; pp.scale.y = 0.001; if (m.map !== solvePaper) { m.map = solvePaper; m.needsUpdate = true; } return; }
+      if (!kind) { if (m.map !== solvePaper) { m.map = solvePaper; m.needsUpdate = true; } if (k >= 0) { pp.visible = false; pp.scale.y = 0.001; } return; }
       const want = kind === 'blank' ? (blankPaper ??= greenbarPaper([])) : solvePaper;
       if (m.map !== want) { m.map = want; m.needsUpdate = true; }
       pp.visible = true; pp.scale.y = Math.max(0.001, k);
     },
     refresh: () => game.board.refresh(),
     deckReady: () => game.dark ? 'Nothing. The power is out.' : !game.bankIn ? 'No power to the processor. It runs off RX bank 3.' : null,
+    roofNow: () => roofSteps.now(roofIn(true)),
   });
   archiveBooks = () => archive.books();
   ch2.phoneHook = { label: () => archive.phoneLabel(), use: (where) => archive.phoneUse(where, arcIn()) };
   game.printerHook = { label: () => archive.printerLabel(), use: () => archive.printerUse() };
+  // (the reel waits while something else of the night's is going: one thing at a time)
   game.decoder.reel = {
-    label: () => archive.deckLabel(),
-    use: () => { if (archive.reel === 'kit' && !reel047.playing && game.decoder.playing) game.decoder.stop(); return archive.deckUse(); },
+    label: () => reel047.playing || !oneAtATime() ? archive.deckLabel() : null,
+    use: () => {
+      if (!reel047.playing && oneAtATime()) return false;
+      if (archive.reel === 'kit' && !reel047.playing && game.decoder.playing) game.decoder.stop();
+      return archive.deckUse();
+    },
     owns: () => reel047.playing || (reel047.finished && !game.decoder.playing),
   };
   /** Where the player is for it: the records room, the rest of the annex, the control room, out at SARO. */
@@ -1227,7 +1235,9 @@ async function boot() {
       ok: on && (stage === 'records' || stage === 'call-nora') && !archive.off,
       stage, read: Object.values(ch2.s.read).some(Boolean),
       quiet: !ui.modal && !game.cinematic && !audio.phonePlaying,
-      free: !oneAtATime() && !game.decoder.playing && !cb.busy,
+      // (and the dishes nobody else's: story/dishesFollow.ts has them while a warning's are out)
+      free: !oneAtATime() && !game.decoder.playing && !cb.busy && !arrayTip.taken,
+      others: oneAtATime() || arrayTip.taken,
       roofBusy: roofSteps.busy, roofDone: roofSteps.phase === 'done',
       where, hold: !!ui.modal || pausedByMenu, clock: game.clock, cam: camera,
       saro: world.area === 'saro', view: where === 'out' || where === 'room',
@@ -2320,7 +2330,9 @@ async function boot() {
         ab.update(dt, { ...abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
           && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy && !saroDark.busy && !officePhone.busy && !archive.busy), may: curve.may('abduct') });
         // the eyes from where the player stands now (the waking puts them down in the grass this step)
-        follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
+        // (the dishes have one owner at a time: while the archive's phone has them tipped, story/archiveDishes.ts,
+        // the warning's dishes do not begin)
+        follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro' && (follow.mode !== 'idle' || !arrayTip.holds), onFoot: !world.driving,
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
           clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last, over: ab.overPhase !== null });
       } else if (mode === 'play') follow.wait();

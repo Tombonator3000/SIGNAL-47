@@ -324,6 +324,18 @@ async def main():
         await ev("T.aim(-2.3, 8.6, -3.65, 0.8, 8.6)")
         await tick(1, 60)
         check((await arc())['phase'] == 'done' and len([n for n in await notes() if 'The wall phone in the records room' in n]) == 1, '60 s in the records room after Continue: it never rings again, one note')
+        # one owner for the dishes: a warning out in the field while they are tipped does not take them
+        # (story/dishesFollow.ts begins only when nothing else has them)
+        A = "S47.abduction()"
+        await ev(f"S47.setAbductions(true); S47.player.place(-1, -62, Math.PI); S47.player.pitch = 0.3; S47.tick(0.3); {A}.data.last = -1e9; {A}.pressure = 5; S47.tick(0.05)")
+        warned = await ev(f"{A}.stage") == 'warning'
+        if warned: await ev(f"{A}['warnLen'] = 47")
+        await tick(0.5, 46)
+        f = await ev("({ mode: S47.follow.mode, tip: S47.arrayTip.mode, el: [Math.min(...S47.ext.dishes.map((d) => d.curEl)), Math.max(...S47.ext.dishes.map((d) => d.curEl))] })")
+        check(warned and f['mode'] == 'idle' and f['tip'] == 'down' and f['el'] == [2, 2], f'a warning in the field while the array is tipped: the warning\'s dishes do not take them ({f})')
+        await ev("S47.input.keys.clear(); S47.player.place(S47.room.spawn.x, S47.room.spawn.z, 0); S47.tick(0.3)")
+        await ev("T.until(() => S47.abduction().stage === 'calm', 20, 0.25)")
+        await ev("T.quiet()")
 
         # ---------- reel 047 on the deck ----------
         await ev("T.aim(4.6, -1.55, 5.45, 1.2, -1.55)")
@@ -392,14 +404,21 @@ async def main():
         await ev("S47.game.d.inter.get('phone').use()"); await tick(1, 12)
         await ev("S47.game.ns.k3Open = true")   # (bank 3 out, and left out)
         await ev("Object.assign(S47.ch2.s, { read: { original: true, amended: true, lineage: true, index: true }, p04: true, p05: true, stage: 'call-nora' })")
-        # straight to the phone, before the steps can come: tapped with the Use button
+        # straight to the phone, before the steps can come: tapped with the Use button. The line is dead,
+        # and the steps come now: the build is always before the peak
         await ev("T.aim(-1.75, 9.25, -1.12, 1.42, 9.25)"); await tick(0.1)
         check(await ev("(() => { const it = S47.game.d.inter.update(S47.camera); return it && it.id; })()") == 'recPhone', 'phone: aimed at the wall phone')
         await ev("S47.game.d.ui.clearToasts(); T.toasts.length = 0"); await tick(0.05)
         await pp.tap('.tbtn.use'); await tick(0.1)
         a = await arc()
+        check(a['phase'] == 'idle' and 'line is dead' in await ev("T.said()") and await ev("S47.roofSteps.busy") and not await ev("S47.ch2.s.called"),
+              'phone: straight to the phone from the board, before the steps: the line is dead, and the steps come now')
+        await ev("T.until(() => S47.roofSteps.phase === 'done', 45, 0.1)")
+        await ev("S47.game.d.ui.clearToasts(); T.toasts.length = 0"); await tick(0.5)
+        await pp.tap('.tbtn.use'); await tick(0.1)
+        a = await arc()
         check(a['phase'] == 'line' and a['how'] == 'lift' and 'No dial tone' in await ev("T.said()") and any('IN   TRK1  EXT 201' in l for l in a['lines']),
-              'phone: lifted to call the key holder, no dial tone, the line already open (and the recorder has it)')
+              'phone: lifted again after them: no dial tone, the line already open (and the recorder has it)')
         await pp.wait_for_timeout(1200); await tick(1.2); await pp.wait_for_timeout(600); await tick(0.05)
         await shot('phone_01_line')
         await ev("T.until(() => S47.archive.phase === 'count', 14, 0.1)")
@@ -413,6 +432,10 @@ async def main():
         a = await arc()
         check(a['papers'] and a['box'][1] < 0.3 and 'arc:out' in a['town'], 'phone: the drawer, the box on the floor; bank 3 was out')
         await ev("T.until(() => S47.archive.phase === 'done', 40, 0.2)")
+        # standing in the records room after it: the steps do not come again (they were its build)
+        await ev("T.aim(-2.3, 8.6, -3.65, 0.8, 8.6)"); n0 = await ev("S47.roofSteps.log.length")
+        await tick(0.5, 100)
+        check(await ev("S47.roofSteps.phase") == 'done' and await ev("S47.roofSteps.log.length") == n0, 'phone: 50 s in the records room after it, nothing more on the roof')
         await ev("T.aim(4.6, -0.4, 5.5, 0.9, -0.4)")
         await ev("S47.game.d.inter.get('printer').use()"); await tick(0.1)
         txt = await ev("document.querySelector('.docview').textContent")

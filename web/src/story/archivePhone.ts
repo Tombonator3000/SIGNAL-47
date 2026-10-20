@@ -67,6 +67,9 @@ export interface ArcIn {
   quiet: boolean;
   /** Nothing else of the night's is going (one at a time). */
   free: boolean;
+  /** Something else of the night's is going now (main.ts, oneAtATime; the tape on the processor and
+   *  the CB not counted): a handset lifted then finds the line dead, it does not open this. */
+  others: boolean;
   /** The steps on the roof are going / have been. */
   roofBusy: boolean; roofDone: boolean;
   where: Where;
@@ -111,12 +114,17 @@ export interface ArcDeps {
   solveAt: () => number | null;
   firstCall: () => number | null;
   wardCall: () => number | null;
-  /** The control room's printer: the paper feeding out (k 0..1) with the solve or blank, or none. */
+  /** The control room's printer: the paper feeding out (k 0..1) with the solve or blank, or none
+   *  (null: torn off; with k below 0 only the printer's own paper put back, nothing hidden). */
   paper: (kind: 'same' | 'blank' | null, k: number) => void;
   /** The case board, drawn again. */
   refresh: () => void;
   /** The signal processor can play (power, a tape locked tonight). */
   deckReady: () => string | null;
+  /** The steps on the roof now (story/roofSteps.ts, now): false if they cannot come. The handset
+   *  lifted for the key holder before they have come finds the line dead, and they come; so the
+   *  build is always before this, never after it. */
+  roofNow: () => boolean;
 }
 
 /** Seconds after the steps on the roof are over before the phone can ring (they are the build). */
@@ -166,6 +174,8 @@ export class ArchivePhone {
   t = 0;
   /** How it began: the phone rang and was answered, or the handset was lifted to dial. */
   how: 'ring' | 'lift' | null = null;
+  /** Which phone it was taken on: the records room's wall phone, or the control room's. */
+  via: 'room' | 'desk' | null = null;
   /** Where the player was at :47. */
   at47: Where | null = null;
   /** The captions given since it began (tests). */
@@ -296,8 +306,13 @@ export class ArchivePhone {
     if (this.phase === 'line') return true;
     if (this.phase === 'count' || this.phase === 'moment') { this.say('The line is dead. Not even a dial tone.', 3); return true; }
     if (!this.pending || !s.ok) return false;
-    // something on the roof: the line is dead (and the steps go on, not held for a call)
-    if (s.roofBusy) { this.say('You lift the handset. The line is dead. Not even a dial tone.', 3.4); this.d.audio.play('click', { gain: 0.45, at: this.d.at.recPhone() }); return true; }
+    const deadLine = () => { this.say('You lift the handset. The line is dead. Not even a dial tone.', 3.4); this.d.audio.play('click', { gain: 0.45, at: this.d.at.recPhone() }); };
+    // something on the roof, or something else of the night's going: the line is dead (and the
+    // steps go on, not held for a call; nothing of this starts over the other thing)
+    if (s.roofBusy || s.others) { deadLine(); return true; }
+    // the key holder next and the steps not come yet (the player went straight to the phone from
+    // the board): the line is dead, and they come now. The build is always before the peak.
+    if (s.stage === 'call-nora' && !s.roofDone && this.d.roofNow()) { deadLine(); return true; }
     // to call the key holder (or before): no dial tone, the line is already open
     if (s.stage === 'call-nora' || (s.stage === 'records' && s.roofDone && s.read)) { this.lift(s); return true; }
     return false;
@@ -339,12 +354,12 @@ export class ArchivePhone {
   private lineEnd = CALL.end + 0.1;
   private answer(where: 'room' | 'desk') {
     this.stopRing();
-    this.how = 'ring';
+    this.how = 'ring'; this.via = where;
     this.d.audio.play('click', { gain: 0.6, at: where === 'room' ? this.d.at.recPhone() : this.d.at.desk() });
     this.call(0);
   }
   private lift(s: ArcIn) {
-    this.how = 'lift'; this.rings = Math.max(this.rings, 1); this.shown = [];
+    this.how = 'lift'; this.via = 'room'; this.rings = Math.max(this.rings, 1); this.shown = [];
     this.d.audio.play('click', { gain: 0.5, at: this.d.at.recPhone() });
     this.printIn(s.clock);
     this.say('You lift the handset to dial. No dial tone. The line is already open.', 3.2);
@@ -419,11 +434,16 @@ export class ArchivePhone {
     this.phase = 'count'; this.t = 0; this.beats = []; this.beats47.clear();
     this.deadAt = Math.round(s.clock);
     this.d.seen.add(`arc@${this.deadAt}`);
-    this.d.audio.play(this.d.audio.or('handset_down', 'thudSoft'), { gain: 0.5, at: this.d.at.recPhone() });
+    this.d.audio.play(this.d.audio.or('handset_down', 'thudSoft'), { gain: 0.5, at: this.via === 'desk' ? this.d.at.desk() : this.d.at.recPhone() });
     this.say('Click. The line is dead.', 2.6);
-    const first = this.d.firstCall();
-    this.cue(2.4, () => this.say(`Like the call at ${first !== null ? clockText(first, false) : '02:14'}. Only this time the room was this one.`, 4.2));
-    this.d.note(`${clockText(this.deadAt, false)}. The wall phone in the records room. No voice. This room, very quiet, with the tube ticking: a thump through concrete, a drawer rolling out on its runners and slamming, something heavy falling, paper. Then nothing. I have heard a call like this once before tonight, ${first !== null ? `at ${clockText(first, false)}, ` : ''}in the control room. Forty-seven seconds after that one the floor shook.`);
+    const first = this.d.firstCall(), at = first !== null ? clockText(first, false) : '02:14';
+    // (answered in the control room, on the same line: the room on it was the records room)
+    const desk = this.via === 'desk';
+    this.cue(2.4, () => this.say(desk ? `Like the call at ${at}, on this same phone. Only this time the room on the line was the records room.`
+      : `Like the call at ${at}. Only this time the room was this one.`, 4.2));
+    this.d.note(desk
+      ? `${clockText(this.deadAt, false)}. The control room's phone, ringing with the records room's on the same line. No voice. The records room, very quiet, with the tube ticking: a thump through concrete, a drawer rolling out on its runners and slamming, something heavy falling, paper. Then nothing. I have heard a call like this once before tonight, ${first !== null ? `at ${at}, ` : ''}on this phone. Forty-seven seconds after that one the floor shook.`
+      : `${clockText(this.deadAt, false)}. The wall phone in the records room. No voice. This room, very quiet, with the tube ticking: a thump through concrete, a drawer rolling out on its runners and slamming, something heavy falling, paper. Then nothing. I have heard a call like this once before tonight, ${first !== null ? `at ${at}, ` : ''}in the control room. Forty-seven seconds after that one the floor shook.`);
     this.d.log('STATION CLOCK  WWVB REFERENCE LOST', this.deadAt);
     // K3 at once: it trips before, not after (bank 3 out, and 47 seconds to put it back)
     const tripped = this.d.relay();
@@ -820,12 +840,12 @@ export class ArchivePhone {
     this.releaseLine(0);
     if (this.phase === 'line') this.d.cinematic(false);
     if (this.phase === 'count' || this.phase === 'moment') this.d.audio.holdRoomTone(1, 0.1);
-    this.d.deck.stop();
+    this.d.deck.reset();   // (and not finished: the processor's display is the processor's own again)
     this.cues = []; this.clockShow = null; this.fallT = -1; this.printT = -1;
     if (this.d.annex.tubeMode) this.d.annex.holdTubes(null);
     this.d.annex.arc.lamp('trk1', 0); this.d.annex.arc.lamp('trk2', 0);
     this.beats47.clear();
-    this.phase = 'idle'; this.t = 0; this.how = null; this.rings = 0; this.q = 0; this.since = -1; this.inRoom = 0; this.wasRoof = false; this.tail = 0;
+    this.phase = 'idle'; this.t = 0; this.how = null; this.via = null; this.rings = 0; this.q = 0; this.since = -1; this.inRoom = 0; this.wasRoof = false; this.tail = 0;
   }
   /** A night put back from the town's part of the case: the drawer, the box, the strip, the paper
    *  in the printer, the dishes, the papers in the journal. A night saved in the middle of it (it
@@ -841,8 +861,9 @@ export class ArchivePhone {
     A.arc.reel.visible = !s.has('arc:reel');
     if (done) this.boxDown(); else this.boxBack();
     this.strip();
-    // (only a sheet of its own: the prologue has the printer's paper until then)
-    if (this.sheet) this.d.paper(this.sheet, 1);
+    // (only a sheet of its own: the prologue has the printer's paper until then, on its own paper
+    // again, not a blank one left from another night opened before in this session)
+    if (this.sheet) this.d.paper(this.sheet, 1); else this.d.paper(null, -1);
     // the dishes: down and at rest if they were saved down, else as the night left them
     this.d.dishes.restore(s.has('arc:tip') && !s.has('arc:up'));
     this.links = [...s].filter((k) => k.startsWith(LINK)).map((k) => k.slice(LINK.length)).filter((k) => RULES.some((r) => pair(r.a, r.b) === k));

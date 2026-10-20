@@ -94,6 +94,9 @@ export class Reel047 {
     this.playing = false; this.cb = null;
     this.release(true);
   }
+  /** A night opened or put back: stopped, and nothing of it on the processor (its display and
+   *  reels the processor's own again, story/Decoder.ts). */
+  reset() { this.stop(); this.finished = false; this.t = 0; this.heard = []; this.gate = 0; }
 
   update(dt: number) {
     if (!this.playing) return;
