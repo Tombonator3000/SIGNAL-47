@@ -59,6 +59,7 @@ import { DishesFollow, nearArray } from './story/dishesFollow';
 import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { MotelTv } from './story/motelTv';
+import { FieldBook } from './story/fieldBook';
 import { Album, rollText, FACE_LINE } from './core/album';
 import { albumSubjects } from './story/albumSubjects';
 import { albumArt } from './ui/album';
@@ -339,6 +340,12 @@ async function boot() {
       label: () => world.area === 'station01' && !game.at('ch3') ? 'Walk gate' : null,
       use: () => ui.toast('Chained, with a padlock. N. Vega holds the keys out here.', 3.4),
       examine: () => world.area === 'station01' && !game.at('ch3') ? 'A chain through the walk gap, and a padlock a good deal newer than the fence.' : null });
+    // the drawer under the bench in the hut: T. Vega's field book from 1947 (story/fieldBook.ts)
+    if (site.proxies.drawer) inter.add({ id: 's1drawer', object: site.proxies.drawer, range: 2.2,
+      label: () => world.area === 'station01' && game.at('ch3') ? fieldBook.drawerLabel() : null,
+      use: () => fieldBook.useDrawer(),
+      examine: () => world.area === 'station01' && game.at('ch3') ? fieldBook.drawerExamine() : null, examineRange: 3 });
+    fieldBook.drawerNow();
   };
   world.onArriveStation = () => ch3.arrivedStation();
   world.onArriveSaro = () => ch3.arrivedSaro();
@@ -453,6 +460,25 @@ async function boot() {
   const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
     truck: () => world.saroTruck?.group ?? null, file: fileSideDoc, document: () => game.docs.find((d) => d.id === 'motel-tv-frame'), open: (doc) => ui.document(doc, () => {}),
     toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
+  // T. Vega's field book in the drawer in the hut at STATION 01, and the envelope for plate 4 on
+  // the motel office's counter (story/fieldBook.ts; FORSLAG.md, 20 October, item 3 and small
+  // tweak 3): the book is chapter three's (Ch3State.fb), the envelope the town's ('env:lamp')
+  const fieldBook = new FieldBook({
+    ui, audio, seen: townSeen, notes: () => game.notes, note: (s) => game.note(s), toast: (text, secs) => ui.toast(text, secs),
+    clock: () => game.clock, after: (s, fn) => game.after(s, fn),
+    state: { get: () => ch3.s.fb, set: (v) => { ch3.s.fb = v; } },
+    file: fileSideDoc, save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh(),
+    drawer: (open, now) => world.site?.setDrawer(open, now),
+    // what it has that the night has not shown yet comes on the way back: the herd turns as soon as
+    // the player is far from it, and the lights along B can come northbound too (the knocks are
+    // the book's own, fieldBook.update)
+    foretell: () => { if (pasture.stage === 'graze') pasture.now(); lineLights.anyWay = true; },
+  });
+  game.extraBooks = () => fieldBook.books();
+  game.openDoc = (doc) => { if (doc.id !== 'fieldbook' || !fieldBook.read) return false; fieldBook.openBook(); return true; };
+  if (world.motel.proxies.envelope) inter.add({ id: 'court:envelope', object: world.motel.proxies.envelope, range: 2.2,
+    label: () => mode === 'play' && world.area === 'saro' && !world.driving && game.at('ch1') ? fieldBook.envelopeLabel() : null,
+    use: () => fieldBook.useEnvelope() });
   // ---------- the free camera and the album (core/album.ts; todo.md, after They Are Here) ----------
   // Once the camera is had, the shutter takes a free frame anywhere a case frame is not to be had
   // (Chapter1.shutter); 36 in a night, kept with the case, in the notebook's album.
@@ -822,6 +848,7 @@ async function boot() {
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
     follow.restore();   // after the log is back (game.start): a save made while the dishes were out
+    fieldBook.restore();   // after chapter three's state is back (game.start)
     for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
     motelTv.refile(o.state?.motelTv?.url);
     restoringNow = false; restoring = null;
@@ -1520,6 +1547,7 @@ async function boot() {
     lineHere: () => { const tr = truckNow(); return { player: lineHere(playerAt()), truck: tr ? lineHere(tr.group.position) : null }; } });
   Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
+  Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1599,6 +1627,10 @@ async function boot() {
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
+      groups.push({ title: 'T. Vega\'s field book', note: 'In the drawer under the bench in the hut at STATION 01, from chapter three. What it has that you have not seen comes on the way back. The envelope for plate 4 is on the counter of the motel office.', items: [
+        { label: fieldBook.read ? 'The field book (read)' : 'Read the field book here', run: () => fieldBook.openBook() },
+        { label: 'The envelope for plate 4', run: () => fieldBook.useEnvelope() },
       ] });
       groups.push({ title: 'The records room', note: 'Once in chapter two, at a quiet moment in the records room: light steps on the roof, right over you.', items: [
         { label: `Steps on the roof: ${roofSteps.phase}`, run: () => { if (!roofSteps.now(roofIn(true))) ui.toast('Only from the records room, once', 2); } },
@@ -1851,7 +1883,13 @@ async function boot() {
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
-      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy));
+      const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy;
+      if (mode === 'play') nightEvents.update(dt, nightIn(nightOk));
+      // T. Vega's field book: what it has, seen after it was read; the knocks on the roof it has, on a
+      // drive after it, when nothing else of the night's is going on (one thing at a time)
+      if (mode === 'play') fieldBook.update(dt, { ok: nightOk && !nightEvents.busy && lineLights.state === 'none' && !motelTv.busy && !cb.busy && !audio.phonePlaying
+        && faceQuiet <= 0 && !world.trouble.kind, driving: world.driving,
+        knock: () => nightEvents.now('knocks', nightIn(true)) });
       if (mode === 'play') roofSteps.update(dt, roofIn(true));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
       if (mode === 'play') {
