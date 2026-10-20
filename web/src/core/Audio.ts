@@ -555,14 +555,7 @@ export class AudioSys {
     this.stopPhoneCalls();
     const ctx = this.ctx;
     if ((!this.kinskiCalls && !this.characterVoices) || !ctx || ctx.state === 'closed' || !this.noise || !lines.length || !lines.some((l) => !l.aside)) return null;
-    const buffers = lines.map((line) => {
-      const actor = line.by === 'N. VEGA' ? this.characterBuffer('bacall', line.text)
-        : line.by === 'THE LINE' ? this.characterBuffer('price', line.text) : undefined;
-      if (actor) return actor;
-      if (!this.kinskiCalls) return undefined;
-      const key = phoneKeys.get(normalizeReadingText(line.text));
-      return key ? this.buf[key] : undefined;
-    });
+    const buffers = lines.map((line) => this.lineBuffer(line.by, line.text));
     // Validate the entire call before making any sound. Missing recordings fall
     // back to the existing caption/line flow, never a half-spoken conversation.
     if (lines.some((line, i) => !line.aside && (!buffers[i] || !Number.isFinite(buffers[i]!.duration) || buffers[i]!.duration <= 0))) return null;
@@ -604,6 +597,17 @@ export class AudioSys {
       console.warn('Telephone recording could not play', error);
       return null;
     }
+  }
+
+  /** The recording phoneCall() plays for a line on the telephone: the character's voice, else
+   *  Kinski's when his calls are on; undefined when the line has none (then it is the caption). */
+  lineBuffer(by: string | undefined, text: string): AudioBuffer | undefined {
+    const actor = by === 'N. VEGA' ? this.characterBuffer('bacall', text)
+      : by === 'THE LINE' ? this.characterBuffer('price', text) : undefined;
+    if (actor) return actor;
+    if (!this.kinskiCalls) return undefined;
+    const key = phoneKeys.get(normalizeReadingText(text));
+    return key ? this.buf[key] : undefined;
   }
 
   /** A hang-up, replacement, new night, save load or title: future sources stop too. */
@@ -860,20 +864,21 @@ export class AudioSys {
     setTimeout(() => { if (!this.ctx) return; const t2 = this.ctx.currentTime; this.sfx.gain.setTargetAtTime(1, t2, 0.2); this.amb.gain.setTargetAtTime(1, t2, 0.5); }, seconds * 1000);
   }
 
-  // Rangefinder shutter: two dry clicks, then the film advance lever.
-  shutter() {
+  // Rangefinder shutter: two dry clicks, then the film advance lever. The same shutter can be
+  // heard somewhere else, later (dest, when: the office line plays one back, story/officePhone.ts).
+  shutter(o: { dest?: AudioNode; when?: number } = {}) {
     const ctx = this.ctx; if (!ctx) return;
-    const t = ctx.currentTime;
+    const t = ctx.currentTime + (o.when ?? 0), out = o.dest ?? this.sfx;
     const click = (when: number, f: number, g: number) => {
       const n = this.noiseSrc(false, false); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 2.5;
       const gn = ctx.createGain(); gn.gain.setValueAtTime(0, t + when); gn.gain.linearRampToValueAtTime(g, t + when + 0.002); gn.gain.exponentialRampToValueAtTime(0.001, t + when + 0.04);
-      n.connect(bp); bp.connect(gn); gn.connect(this.sfx); n.start(t + when); n.stop(t + when + 0.06);
+      n.connect(bp); bp.connect(gn); gn.connect(out); n.start(t + when); n.stop(t + when + 0.06);
     };
     click(0, 3400, 0.8); click(0.05, 2200, 0.55);
-    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(150, t + 0.16); o.frequency.linearRampToValueAtTime(95, t + 0.42);
+    const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, t + 0.16); osc.frequency.linearRampToValueAtTime(95, t + 0.42);
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100;
     const g = ctx.createGain(); g.gain.setValueAtTime(0, t + 0.16); g.gain.linearRampToValueAtTime(0.07, t + 0.19); g.gain.linearRampToValueAtTime(0, t + 0.44);
-    o.connect(lp); lp.connect(g); g.connect(this.sfx); o.start(t + 0.16); o.stop(t + 0.46);
+    osc.connect(lp); lp.connect(g); g.connect(out); osc.start(t + 0.16); osc.stop(t + 0.46);
   }
 
   // A small geared motor running for `secs` (the B-12 reference drive).
