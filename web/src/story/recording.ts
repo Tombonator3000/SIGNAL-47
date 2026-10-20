@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { facing } from './seen';
 import { glowSprite } from '../core/textures';
 
@@ -129,6 +130,54 @@ export class Walker {
   }
   /** Standing still, as it has always stood. */
   stand() { this.pose(0, 0, 0, 0, 0); }
+  /** The one standing as one piece of geometry, so it costs one draw (story/theThird.ts): the same
+   *  boxes and colours, standing still, facing -z from the feet. Each corner has its colour
+   *  (`color`, linear), `aBand` 1 on the tape (the chest and the sleeves), and `aShade`, how much a
+   *  light from behind it (+z) falls there: the back full, the shoulders and the sides some, the
+   *  front none. From behind the head is hair, not skin. */
+  static baked(): THREE.BufferGeometry {
+    const w = new Walker('baked');
+    w.stand();
+    // (standing as a person stands, not a post: the feet a little apart, the arms off the sides, so
+    // it is someone and not a box at 9 m)
+    w.legs[0].rotation.z = -0.05; w.legs[1].rotation.z = 0.05;
+    w.arms[0].rotation.z = -0.1; w.arms[1].rotation.z = 0.1;
+    // and the head a little down and forward, as if it looked at the ground in front of it
+    w.head.position.set(0, 1.575, -0.045);
+    w.group.updateMatrixWorld(true);
+    const hair = new THREE.Color(0x221b15), _n = new THREE.Vector3(), _p = new THREE.Vector3();
+    const parts: THREE.BufferGeometry[] = [];
+    w.body.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const tape = w.tapes.includes(m), head = m === w.head;
+      const src = (m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone());
+      const pos = src.getAttribute('position') as THREE.BufferAttribute, nor = src.getAttribute('normal') as THREE.BufferAttribute;
+      const n = pos.count, col = new Float32Array(n * 3), band = new Float32Array(n), shade = new Float32Array(n);
+      const base = (m.material as THREE.MeshBasicMaterial).color;
+      for (let i = 0; i < n; i++) {
+        _p.fromBufferAttribute(pos, i); _n.fromBufferAttribute(nor, i);
+        const c = head && (_p.z > -0.045 || _p.y > 0.075) ? hair : base;
+        col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+        band[i] = tape ? 1 : 0;
+        shade[i] = Math.min(1, 0.22 + 0.78 * Math.max(0, _n.z) + 0.3 * Math.max(0, _n.y) + 0.12 * Math.abs(_n.x));
+      }
+      src.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      src.setAttribute('aBand', new THREE.BufferAttribute(band, 1));
+      src.setAttribute('aShade', new THREE.BufferAttribute(shade, 1));
+      src.deleteAttribute('uv');
+      src.applyMatrix4(m.matrixWorld);
+      parts.push(src);
+    });
+    const geo = mergeGeometries(parts)!;
+    parts.forEach((p) => p.dispose());
+    // (the walker it was baked from is not kept)
+    w.group.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); });
+    for (const m of [w.band, w.coat, w.dark, w.glintMat]) m.dispose();
+    (w.head.material as THREE.Material).dispose();
+    geo.computeBoundingSphere();
+    return geo;
+  }
   /** How it is carried: the stride (-1..1 through a step), how wide (0 standing, 1 a full run's),
    *  how far it leans forward and to the side (radians), and how high the body is lifted (metres). */
   pose(swing: number, wide: number, lean: number, roll: number, lift: number) {

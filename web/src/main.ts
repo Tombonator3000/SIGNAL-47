@@ -70,6 +70,8 @@ import { ArrayBack, type ArrayGate } from './story/arrayBack';
 import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { NinthCow } from './story/ninthCow';
+import { FilmThird } from './story/theThird';
+import { STATION_TRANSIT, STATION_STAKES_C } from './world/stationLayout';
 import { TAG_RANCH, TAGS } from './drive/herd';
 import { MotelTv } from './story/motelTv';
 import { OfficePhone } from './story/officePhone';
@@ -595,6 +597,51 @@ async function boot() {
     const m = site.ninthAt('middle');
     return m.distanceTo(camera.position) < 14 && fcam.inFrame(m, 0.2, 0.8, 0.12, 0.88);
   };
+  // ---------- the third one on FRAME 03 (story/theThird.ts; FORSLAG.md, 20 October, Valg for Tom 4 a) ----------
+  // When the shutter goes on FRAME 03, someone in a SARO jacket stands out on C's ground past the
+  // fence, in the picture, back to the camera; the band gives the flash back. Not while the night has
+  // something else going (one at a time). Only on the film. Kept in the photograph itself (R4), and
+  // where it is in it in the photo's targets (band, and bandC when it stood on the C stakes' line).
+  const filmThird = new FilmThird(scene);
+  const _ray = new THREE.Raycaster();
+  ch3.third = (cam) => {
+    const site = world.site;
+    if (world.area !== 'station01' || !site || oneAtATime()) return null;
+    const o = site.group.position;
+    const transit = new THREE.Vector3(STATION_TRANSIT.x + o.x, 0, STATION_TRANSIT.z + o.z);
+    transit.y = site.groundAt(transit.x, transit.z);
+    const cDir = new THREE.Vector3(STATION_STAKES_C.x, 0, STATION_STAKES_C.z).normalize();
+    return filmThird.shot({ cam, transit, cDir, ground: (x, z) => site.groundAt(x, z),
+      clear: (from, to) => {
+        // the land between (sampled), then the hut, the shed and the footing
+        for (let k = 0.08; k < 0.97; k += 0.04) {
+          const x = from.x + (to.x - from.x) * k, y = from.y + (to.y - from.y) * k, z = from.z + (to.z - from.z) * k;
+          if (site.groundAt(x, z) > y - 0.08) return false;
+        }
+        const d = to.clone().sub(from), len = d.length();
+        _ray.set(from, d.normalize()); _ray.near = 0.2; _ray.far = len - 0.5;
+        return !(site.occluders?.length && _ray.intersectObjects(site.occluders, true).length);
+      } });
+  };
+  /** The band on FRAME 03, looked at closely (the field prints, the print on the drying line): written
+   *  down once, in the player's words. */
+  function thirdNoticed() {
+    const t = ch3.s.f3?.targets;
+    if (!t?.band || townSeen.has('third:band')) return;
+    townSeen.add('third:band');
+    game.note(`${clockText(game.clock, false)}. FRAME 03, looked at closely: out in the dark past the fence${t.bandC ? ', along the C stakes' : ''}, at chest height, a short pale line, and something darker than the dark round it. Something out there gave the flash back, the way the tape on a SARO jacket gives a light back. There was nobody out there when I took it.`);
+    if (mode === 'play') requestAutosave(false);
+  }
+  ch3.onBand = () => thirdNoticed();
+  // FRAME 03 pegged on the drying line in the photo lab, for a closer look (the zoom)
+  inter.add({ id: 'lab:print03', object: yard.dryPrints[2], look: true, examineRange: 2.6, label: () => null, use: () => {},
+    examine: () => {
+      const f = ch3.s.f3;
+      if (!f || ch3.s.dev < 3) return null;
+      if (!f.targets.band) return 'FRAME 03 on the drying line: the empty footing, and the post with the triangle and bar on its pile of stones.';
+      thirdNoticed();
+      return `FRAME 03 on the drying line. The footing, the post on its stones. And out in the dark past the fence${f.targets.bandC ? ', along the C stakes' : ''}, a short pale line at chest height. Something out there gave the flash back.`;
+    } });
   /** A closer look at a cow in the pasture, on foot among them: her tag (drive/herd.ts). */
   const herdBound = new Set<object>();
   function bindHerdLooks() {
@@ -1547,7 +1594,7 @@ async function boot() {
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
     follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, dark: 'idle', darkFig: false, office: 'idle' as string, array: false,
-    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, truck: 'idle' as string };
+    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, truck: 'idle' as string, third: false };
   let truckEntry: SeenEntry | null = null;
   let walkEntry: SeenEntry | null = null;
   let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, darkEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
@@ -1709,6 +1756,11 @@ async function boot() {
     const ev = game.ch6.stage === 'event';
     if (ev && !was.event) saw('event', 'THE EVENT', { line: 'C', looking: null });
     was.event = ev;
+    // the third one on the road at 05:29, in the headlights from 05:29:10 (story/theThird.ts): looked
+    // at if the eyes went to it (once in THE EVENT, whatever happens to the view)
+    const third = game.ch6.thirdAt;
+    if (third && !was.third) { saw('scare', 'the third', { at: third, line: 'C', watch: { pos: () => game.ch6.thirdAt, secs: 34, range: 140, deg: 26 } }); was.third = true; }
+    if (!ev) was.third = false;
     seenLog.update(dt, camera);
   }
   function cutoutIn(ok: boolean): CutoutsIn {

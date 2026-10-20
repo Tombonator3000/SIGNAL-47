@@ -238,10 +238,26 @@ export function nullTest(ui: UI, o: {
 }
 
 // Two developed field prints side by side, for a look before they go into the case file.
-export function fieldPrints(ui: UI, o: { prints: { url: string; caption: string }[]; text: string; onClose?: () => void }) {
-  shell(ui, 'STATION 01 / FIELD PRINTS', `
-    <div class="lp-pair">${o.prints.map((p) => `<figure><img alt="" src="${p.url}"><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div>
+// (a print can be looked at closer where it is clicked or tapped, and back: onLook says where, in
+// the photograph's u and v, story/theThird.ts; the tip is outside the recorded descriptions, so the
+// panel's read description stays as it was)
+export function fieldPrints(ui: UI, o: { prints: { url: string; caption: string }[]; text: string; onClose?: () => void; onLook?: (i: number, u: number, v: number) => void }) {
+  const el = shell(ui, 'STATION 01 / FIELD PRINTS', `
+    <div class="lp-pair">${o.prints.map((p, i) => `<figure data-print="${i}"><div class="lp-closer"><img alt="" src="${p.url}" draggable="false"></div><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div>
+    <p class="lp-tip">${matchMedia('(pointer: coarse)').matches ? 'Tap' : 'Click'} a print to look closer.</p>
     <p class="lp-text">${esc(o.text)}</p>`, o.onClose);
+  el.querySelectorAll<HTMLElement>('[data-print]').forEach((fig) => {
+    const box = fig.querySelector('.lp-closer') as HTMLElement, img = box.querySelector('img') as HTMLImageElement;
+    box.addEventListener('click', (e) => {
+      if (box.classList.contains('close')) { box.classList.remove('close'); img.style.transform = ''; return; }
+      const r = img.getBoundingClientRect();
+      const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+      img.style.transformOrigin = `${px * 100}% ${py * 100}%`;
+      img.style.transform = 'scale(3)';
+      box.classList.add('close');
+      o.onLook?.(Number(fig.dataset.print), (px * PRINT.w - PRINT.x) / PHOTO_W, (py * PRINT.h - PRINT.y) / PHOTO_H);
+    });
+  });
 }
 
 // ---------- chapter four: a conversation in room 6 ----------
@@ -258,6 +274,9 @@ export interface TalkView {
   choices: { id: string; label: string; disabled?: boolean }[];
   reply?: Result | null;
   given?: { id: string; label: string }[];
+  /** What happens after the lines, told under them a moment later, and never voiced or read aloud
+   *  with them, so the recorded lines keep their voice (story/Chapter4.ts, PHOTO 03 face down). */
+  after?: TalkLine;
 }
 export function talk(ui: UI, o: {
   title: string;
@@ -277,6 +296,7 @@ export function talk(ui: UI, o: {
   const body = el.querySelector('[data-body]') as HTMLElement;
   let shown = '';
   let shownLines: TalkLine[] = [];
+  let shownAfter = '';
   let readingShown = '';
   const render = () => {
     if (!el.isConnected) return;
@@ -316,10 +336,13 @@ export function talk(ui: UI, o: {
     const last = [...v.lines].reverse().find((l) => l.who && l.who !== 'YOU');
     const face = last ? portraitOf(last.who) : null;
     const line = (l: TalkLine, i: number) => `<p data-reading-text class="talk-line${l.who ? '' : ' aside'}${fresh && i >= kept ? ' fresh' : ''}" style="animation-delay:${fresh && i >= kept ? (i - kept) * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
+    const afterNew = !!v.after && v.after.text !== shownAfter;
+    shownAfter = v.after?.text ?? '';
+    const after = v.after ? `<p class="talk-line aside talk-after${afterNew ? ' fresh' : ''}" style="animation-delay:${afterNew ? (fresh ? (v.lines.length - kept) * 0.55 : 0) + 0.9 : 0}s">${esc(v.after.text)}</p>` : '';
     const chip = (c: TalkChip) => `<button class="lp-choice talk-chip" data-chip="${c.id}" aria-pressed="${c.on}" ${c.have ? '' : 'disabled'}>${c.image ? `<img alt="" src="${c.image}">` : ''}<span>${esc(c.label)}${c.have ? '' : ' / not in the case'}</span></button>`;
     body.innerHTML = `
       ${face ? `<img class="talk-portrait" alt="${esc(last!.who)}" src="${face}">` : ''}
-      <div class="talk-lines">${v.lines.map(line).join('')}</div>
+      <div class="talk-lines">${v.lines.map(line).join('')}${after}</div>
       ${v.table ? `<p class="lp-q">${esc(v.table.prompt)}</p><div class="talk-table">${v.table.chips.map(chip).join('')}</div>
         <div class="lp-row"><button class="lp-btn primary" data-a="table">${esc(v.table.submit)}</button></div>` : ''}
       ${v.question ? `<p class="lp-q">${esc(v.question)}</p>` : ''}

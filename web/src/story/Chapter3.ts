@@ -12,6 +12,8 @@ import { RuleBook, type BoardHook, type BookNote, type BookRule } from './boardR
 import * as D from './drawings';
 import { clockText } from './time';
 import type { FbSave } from './fieldBook';
+import type { FilmShot } from './theThird';
+import { PRINT, PHOTO_W, PHOTO_H } from '../core/FieldCamera';
 
 // Chapter three, "The Survey Station" (K3 in the design bible). Ported from the Unity
 // field pass (Station26): P06, which fixed point moved, with FRAME 03; P07, the local
@@ -171,6 +173,12 @@ export class Chapter3 {
    *  (the ninth cow lying by B's vane, story/ninthCow.ts; main.ts): the shutter takes a free frame
    *  of it rather than refusing a case frame. */
   freeShot: (() => boolean) | null = null;
+  /** The third one on FRAME 03 (story/theThird.ts; main.ts): where it stands for this exposure, out
+   *  on C's ground in the picture, or null (none of it in the picture, or the night has something
+   *  else going). */
+  third: ((cam: THREE.PerspectiveCamera) => FilmShot | null) | null = null;
+  /** The band on FRAME 03 has been looked at closely (main.ts writes it down, once). */
+  onBand: (() => void) | null = null;
   private radioOn = false;
   /** P06 to P09 on the case board: the station's records and frames, the questions, the rules. */
   readonly book: RuleBook;
@@ -745,9 +753,14 @@ export class Chapter3 {
     // out here at night the camera needs its flash; nearer subjects get less of it
     const subject = cable ? this.target('cable') : this.target('marker');
     const flash = Math.min(18, Math.max(3, this.dist(subject) * 2.4));
+    // out on C's ground, in the picture, the third one (story/theThird.ts): in it from the moment
+    // it is exposed, and nowhere but on the film
+    const third = !cable && this.third ? this.third(fcam.photoCam) : null;
+    if (third) { targets.band = [third.u, third.v]; if (third.onC) targets.bandC = [third.u, third.v]; }
     const canvas = fcam.expose({
-      before: () => site.setFlash?.(fcam.photoCam.position, flash),
-      after: () => site.setFlash?.(null),
+      before: () => { site.setFlash?.(fcam.photoCam.position, flash); third?.before(); },
+      after: () => { site.setFlash?.(null); third?.after(); },
+      post: third ? (raw) => third.post(raw) : undefined,
       restore: () => this.d.view.restore(),
       caption: cable ? 'STATION 01 // CABLE BREAK' : 'STATION 01 // FIXED POINT A',
       time: clockText(clock),
@@ -830,7 +843,20 @@ export class Chapter3 {
       prints: [{ url: s.f3!.url, caption: 'FRAME 03 / FIXED POINT A' }, { url: s.f4!.url, caption: 'FRAME 04 / CABLE BREAK' }],
       text: 'The footing without its marker, and the marker standing where nobody recorded it. The cable, cut clean. Both prints go into the case with the original record, for room 6.',
       onClose: () => this.finish(),
+      onLook: (i, u, v) => { if (i === 0 && this.bandInLook(u, v)) this.onBand?.(); },
     });
+  }
+
+  /** FRAME 03 looked at closer (three times, round where it was clicked: Panels.fieldPrints): the
+   *  band is well inside what is shown. */
+  private bandInLook(u: number, v: number) {
+    const b = this.s.f3?.targets.band;
+    if (!b) return false;
+    // in the print's terms: the window shown is a third of it, round the point clicked
+    const P = (pu: number, pv: number) => [(PRINT.x + pu * PHOTO_W) / PRINT.w, (PRINT.y + pv * PHOTO_H) / PRINT.h];
+    const [cx, cy] = P(u, v), [bx, by] = P(b[0], b[1]);
+    const mid = (c: number) => (1 + 4 * c) / 6;
+    return Math.abs(bx - mid(cx)) <= 0.14 && Math.abs(by - mid(cy)) <= 0.14;
   }
 
   private finish() {
