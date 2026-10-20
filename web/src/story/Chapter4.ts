@@ -57,6 +57,8 @@ export interface Ch4State {
   links?: string[];          // this chapter's threads on the case board, 'a|b' sorted
   /** She has seen it on the player's face, after a time away (story/abduction.ts): said once. */
   mark?: boolean;
+  /** She has turned PHOTO 03 face down (the band on it: story/theThird.ts), without a word: once. */
+  down3?: boolean;
 }
 
 // What chapter four needs from the places (main.ts and world/World.ts).
@@ -249,7 +251,7 @@ export class Chapter4 {
   }
 
   reset() {
-    this.active = false; this.started = false;
+    this.active = false; this.started = false; this.after = null;
     this.s = fresh(); this.lines = []; this.mode = 'menu'; this.reply = null; this.panel = null;
     const brick = this.d.motel.brick(); if (brick) brick.visible = false;
     this.d.motel.court().setRoom6Light?.(true);
@@ -609,7 +611,7 @@ export class Chapter4 {
 
   private view(): P.TalkView {
     const s = this.s;
-    const v: P.TalkView = { status: this.objective(), lines: this.lines, choices: [], reply: this.reply };
+    const v: P.TalkView = { status: this.objective(), lines: this.lines, choices: [], reply: this.reply, after: this.after ? aside(this.after) : undefined };
     v.given = [];
     if (s.topics.record) v.given.push({ id: 'correction', label: 'E12 / Her correction' });
     if (s.topics.tomas) v.given.push({ id: 'letter', label: 'E13 / The letter' });
@@ -684,13 +686,33 @@ export class Chapter4 {
       n('I know that second line.'),
       n('Tell me which source you took away before you made the control.'),
     ];
+    if (p.includes('frame03')) this.faceDown('table');
     this.save();
+  }
+
+  // The third one (story/theThird.ts): when FRAME 03 has the band on it, she sees it the first time
+  // the print is in front of her, on the table or under PHOTO 04 from the same roll, and turns it face
+  // down. Not a word: told under her lines a moment after them (TalkView.after), never voiced or read
+  // with them, so her recorded lines keep their voice; and kept in the notebook. (A toast would be
+  // under the talk, not over it.)
+  private after: string | null = null;
+  private faceDown(how: 'table' | 'roll') {
+    const s = this.s;
+    if (s.down3 || !this.d.ch3.s.f3?.targets.band) return;
+    s.down3 = true;
+    this.after = how === 'table'
+      ? 'Her hand stops on PHOTO 03. She looks at it for a long moment, then turns it face down on the table and keeps her hand flat on it. She does not say anything.'
+      : 'PHOTO 03 is under it, from the same roll. She slides it out, looks at it for a long moment, and turns it face down on the table. She does not say anything.';
+    this.g.note(how === 'table'
+      ? `${this.time()}. N. Vega turned PHOTO 03 face down on her table and kept her hand on it. She did not say a word about it.`
+      : `${this.time()}. N. Vega turned PHOTO 03 face down on her table. It was under PHOTO 04, from the same roll. She did not say a word about it.`);
   }
 
   choose(id: string) {
     this.d.audio.stopPhoneCalls();
     this.d.ui.npcDialogue?.stop();
     this.reply = null;
+    this.after = null;
     switch (this.mode) {
       case 'control': return this.answerControl(id);
       case 'tone': return this.answerTone(id as 'mild' | 'critical');
@@ -761,6 +783,8 @@ export class Chapter4 {
     const s = this.s;
     s.mark = true;
     this.mode = 'menu';
+    // (PHOTO 03 face down was told under the lines before these: not under these)
+    this.after = null;
     this.lines = [
       aside(later ? 'She looks up when you come to the table, and does not look away. She tips the shade of the lamp towards you.'
         : 'You sit. She does not. She tips the shade of the lamp towards you and looks at the side of your face.'),
@@ -798,6 +822,7 @@ export class Chapter4 {
       n('This was in his coat. He knew more than I did.'),
       aside('She puts a field card on the table. E11 filed.'),
     ];
+    this.faceDown('roll');
     this.give('card');
     this.g.note('She cut the cable in 1947, with Tomás standing on C inside the active reference. Afterwards he was not there. She gave me his last field card (E11).');
   }

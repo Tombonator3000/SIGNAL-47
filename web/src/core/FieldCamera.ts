@@ -83,7 +83,8 @@ export class FieldCamera {
 
   // Renders the photograph. `before`/`after` switch film-only objects on and off;
   // `restore` puts the screen back (size, pixel ratio) and is followed by a normal frame.
-  expose(o: { before: () => void; after: () => void; restore: () => void; caption: string; time: string; seed: number }) {
+  // `post` may draw on the frame before the film goes over it (story/theThird.ts, FRAME 03).
+  expose(o: { before: () => void; after: () => void; restore: () => void; caption: string; time: string; seed: number; post?: (raw: HTMLCanvasElement) => void }) {
     const r = this.renderer;
     const exp = r.toneMappingExposure, glow = glowScale.value;
     o.before();
@@ -99,6 +100,7 @@ export class FieldCamera {
     glowScale.value = glow;
     o.after();
     o.restore();
+    o.post?.(raw);
     return makePrint(raw, o.caption, o.time, o.seed);
   }
 

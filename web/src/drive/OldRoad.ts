@@ -145,6 +145,8 @@ export class OldRoad implements DriveArea {
   private origin: THREE.Vector3;
   private glow = new GlowPoints();
   private glints: { i: number; p: THREE.Vector3; k: number }[] = [];
+  /** Glow points for the band on the third one's jacket (thirdGlints). */
+  private thirdIds: number[] = [];
   /** Steady lamps by the road (the Kessler yard): glow indices, dimmed as the day comes. */
   private lamps: number[] = [];
   private hemi: THREE.HemisphereLight;
@@ -473,6 +475,9 @@ export class OldRoad implements DriveArea {
       this.group.add(saro);
     }
 
+    // the band on the third one's jacket in the headlights at 05:29:10 (story/theThird.ts, Chapter6):
+    // dark and out of the way until then
+    for (let i = 0; i < 7; i++) this.thirdIds.push(this.glow.add(0, -999, 0, i < 5 ? 0.2 : 0.16, 0));
     mergeStatic(statics);
     this.group.add(statics, this.glow.build());
 
@@ -513,6 +518,18 @@ export class OldRoad implements DriveArea {
   poseAt(mi: number) {
     const s = (mi - 8.15) * 1609.34, a = this.lane(s), b = this.lane(s + 4);
     return { pos: a, heading: Math.atan2(-(b.x - a.x), -(b.z - a.z)) };
+  }
+  /** The band across the third one's back and its sleeves, giving the headlights back (story/theThird.ts):
+   *  world points along it and the colour (additive), or null to put them out. */
+  thirdGlints(pts: THREE.Vector3[] | null, col?: THREE.Color) {
+    const geo = this.glow.points.geometry, c = geo.getAttribute('aCol') as THREE.BufferAttribute | undefined;
+    if (!c) return;
+    this.thirdIds.forEach((id, i) => {
+      const p = pts?.[i];
+      if (p && col) { this.glow.setPosition(id, _v.copy(p).sub(this.origin)); c.setXYZ(id, col.r, col.g, col.b); }
+      else c.setXYZ(id, 0, 0, 0);
+    });
+    c.needsUpdate = true;
   }
   /** Signed distance of a world point past C (positive once over the line, going north-east). */
   pastC(x: number, z: number) { return -(z - this.origin.z - C_LINE.z); }

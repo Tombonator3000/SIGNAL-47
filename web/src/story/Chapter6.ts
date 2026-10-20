@@ -8,6 +8,7 @@ import { flashFrames, type Frame } from './flashFrames';
 import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
 import { SUN_MESA, horizonDip } from '../world/backdrop';
+import { ThirdFigure } from './theThird';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
 // highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
@@ -58,6 +59,18 @@ const sm = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max
 const dir = (deg: number) => new THREE.Vector3(Math.sin(deg * Math.PI / 180), 0, -Math.cos(deg * Math.PI / 180));
 const UP = new THREE.Vector3(0, 1, 0);
 const HEADS = [new THREE.Color(0.12, 0.25, 1.0), new THREE.Color(1.0, 0.55, 0.12), new THREE.Color(0.2, 1.0, 0.35), new THREE.Color(1.0, 0.08, 0.05)];
+/** The third one (story/theThird.ts). Where the night takes the truck, it stands on the road ahead,
+ *  where the truck will come to stand `ahead` m short of it (its middle; where the pull-out's first
+ *  shot stands, keyframes().front): a dark shape in the grey, the band catching the dead headlights
+ *  a little as the truck rolls up to it. When they wake (+10 s) it is someone in a SARO jacket, back
+ *  to the cab, and the band across the back takes each colour as it comes (`flares`: the blue up,
+ *  amber, green, red), except with slow fades or still shots, where it only follows them. It never
+ *  moves. Gone in the FLASH (+32 s): with the first frame, or with slow fades or still shots let go
+ *  over `letGo` s of the first fade instead. The truck brakes to stand where it should: `brake` is
+ *  the braking the stop is planned on (m/s/s), after `react` s, and never more than `far` m on. */
+export const THIRD = { until: 32, ahead: 9, letGo: 1.2, flares: [11.0, 12.2, 14.4, 16.6], brake: 3.2, react: 0.8, near: 3, far: 120 } as const;
+const HEAD_WHITE = new THREE.Color(1.0, 0.9, 0.72), THIRD_AMB = new THREE.Color(0.035, 0.038, 0.048);
+const _band = new THREE.Color(), _glint = new THREE.Color(), _eye = new THREE.Vector3();
 const _c = new THREE.Color(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 
 export class Chapter6 {
@@ -82,6 +95,16 @@ export class Chapter6 {
   private backT = 0;
   private from = { pos: new THREE.Vector3(), q: new THREE.Quaternion() };
   private truckAt = { pos: new THREE.Vector3(), heading: 0 };
+  /** The third one in the headlights (story/theThird.ts), while THE EVENT has it. */
+  third: ThirdFigure | null = null;
+  private steady = false;
+  private bandPts: THREE.Vector3[] = [];
+  private headNow = new THREE.Color();
+  private _head = new THREE.Vector3();
+  /** Where the truck's middle comes to stand (along the road, m), planned when the night takes it. */
+  private stopS: number | null = null;
+  /** Where its head is while it stands there (the night's log, main.ts; the tests), else null. */
+  get thirdAt(): THREE.Vector3 | null { return this.third?.mesh.visible ? this.third.head(this._head) : null; }
 
   constructor(private g: Chapter6Host, private d: Chapter6Deps) {}
 
@@ -105,7 +128,7 @@ export class Chapter6 {
 
   reset() {
     this.active = false; this.started = false; this.stage = 'drive';
-    this.et = 0; this.pt = 0; this.done.clear(); this.idle = 0; this.backT = 0;
+    this.et = 0; this.pt = 0; this.done.clear(); this.idle = 0; this.backT = 0; this.stopS = null;
     this.skyLift = null; this.sunElev = null;
     this.ending?.dispose(); this.ending = null;
     if (this.d.world.oldControl) this.d.world.oldControl = null;
@@ -113,6 +136,11 @@ export class Chapter6 {
     this.d.audio.cabRadio(null);
     this.d.audio.silence(false);
     this.bed?.stop(); this.bed = null;
+    this.dropThird();
+  }
+  private dropThird() {
+    this.third?.dispose(); this.third = null;
+    this.d.world.oldRoad?.thirdGlints(null);
   }
 
   saveBlock(): string | null { return 'Not on the road.'; }
@@ -156,21 +184,37 @@ export class Chapter6 {
     this.et = 0;
     this.g.clock = T;
     this.calm = this.d.settings().calmFlash;
+    this.steady = this.calm || this.d.settings().stillShots;
     if (!this.frames) this.frames = flashFrames();
     this.ending = new Ending();
+    // where it rolls out and stands: as far as it would, braking gently, from the speed it had
+    const drv = w.oldDrive, road = w.oldRoad;
+    if (drv && road) {
+      const v = Math.max(0, drv.speed);
+      this.stopS = road.where(drv.pos.x, drv.pos.z).s + THREE.MathUtils.clamp(v * v / (2 * THIRD.brake) + v * THIRD.react, THIRD.near, THIRD.far);
+    }
+    this.headNow.copy(HEAD_WHITE);
     // the truck coasts to a stop in its lane; the player keeps only their eyes
     w.oldControl = { input: (dt) => this.coast(dt) };
     this.d.ui.objective(null);
     this.d.ui.clearToasts();
   }
 
-  /** Steer along the right lane and brake gently: the truck rolls out and stands. */
+  /** Steer along the right lane and brake gently: the truck rolls out and stands, where it was
+   *  planned to (stopS: the third one is standing 9 m on from there). */
   private coast(_dt: number): DriveInput {
     const w = this.d.world, drv = w.oldDrive!, road = w.oldRoad!;
-    const tg = road.lane(road.where(drv.pos.x, drv.pos.z).s + 14, _w);
+    const s = road.where(drv.pos.x, drv.pos.z).s;
+    const tg = road.lane(s + 14, _w);
     let err = Math.atan2(-(tg.x - drv.pos.x), -(tg.z - drv.pos.z)) - drv.heading;
     err = Math.atan2(Math.sin(err), Math.cos(err));
-    return { steer: THREE.MathUtils.clamp(-err * 2.2, -1, 1), throttle: this.et > 0.8 && drv.speed > 0.05 ? -0.42 : 0 };
+    let throttle = 0;
+    if (this.et > THIRD.react && drv.speed > 0.05) {
+      const rem = (this.stopS ?? s + 40) - s, v = drv.speed;
+      // the braking it takes to stand there (Drive.ts: 8 m/s/s at full brake on asphalt, a little drag)
+      throttle = rem <= 0.3 ? -1 : -THREE.MathUtils.clamp((v * v / (2 * rem) - 0.2) / 7.8, 0.05, 1);
+    }
+    return { steer: THREE.MathUtils.clamp(-err * 2.2, -1, 1), throttle };
   }
 
   private once(k: string, fn: () => void) { if (!this.done.has(k)) { this.done.add(k); fn(); } }
@@ -205,8 +249,11 @@ export class Chapter6 {
       const t = (e - 10) / 2.2, i = Math.min(HEADS.length - 1, Math.floor(t)), k = sm(0.55, 1, t - i);
       _c.copy(HEADS[i]).lerp(HEADS[Math.min(HEADS.length - 1, i + 1)], i < HEADS.length - 1 ? k : 0);
       truck.setHeadColor(_c.multiplyScalar(1.6));
+      this.headNow.copy(_c);
       truck.setLightLevel(0.16 + 0.84 * sm(10, 11.2, e));
     }
+    // someone in a SARO jacket on the road ahead, back to the truck (story/theThird.ts)
+    this.thirdStep(e);
     // + 18 s: the radio comes back with the night in pieces, in the wrong order
     if (e >= 18) this.once('radio', () => audio.cabRadio('hiss'));
     const piece = (at: number, k: string, fn: () => void) => { if (e >= at) this.once(k, fn); };
@@ -228,6 +275,45 @@ export class Chapter6 {
     });
     if (e >= 34) truck.setLightLevel(0.2 + 0.12 * (0.5 + 0.5 * Math.sin((e - 34) * 2.1)));
     if (e >= EVENT) this.startPullout();
+  }
+
+  // The third one: on the road where the truck will stand, 9 m on (its back to the cab, looking east
+  // along C, this area's line z 0: drive/oldRoadLayout.ts), from the moment the night takes the
+  // truck. Lit by the headlights in their colour, less the further off it is; the band gives them
+  // back. It does not move. Gone in the FLASH.
+  private thirdStep(e: number) {
+    const w = this.d.world, truck = w.oldTruck, drv = w.oldDrive, road = w.oldRoad;
+    if (!truck || !drv || !road || this.stopS === null) return;
+    const letGo = this.steady ? THIRD.letGo : 0;
+    if (e >= THIRD.until + letGo) {
+      if (this.third?.mesh.visible) { this.third.mesh.visible = false; road.thirdGlints(null); }
+      return;
+    }
+    if (!this.third) {
+      const f = this.third = new ThirdFigure('third:road');
+      // the truck's middle will stand in the lane at stopS, facing along it
+      const a = road.lane(this.stopS, new THREE.Vector3()), b = road.lane(this.stopS + 4, new THREE.Vector3());
+      const h = Math.atan2(-(b.x - a.x), -(b.z - a.z));
+      const at = a.addScaledVector(_v.set(-Math.sin(h), 0, -Math.cos(h)), THIRD.ahead);
+      at.y = road.height(at.x, at.z);
+      // east along C, but never more than 40 degrees off the way the truck faces: its back to the cab
+      let d = -Math.PI / 2 - h; d = Math.atan2(Math.sin(d), Math.cos(d));
+      f.place(at, h + THREE.MathUtils.clamp(d, -0.7, 0.7));
+      road.group.attach(f.mesh);
+    }
+    const f = this.third;
+    f.mesh.visible = true;
+    f.fade = this.steady ? 1 - sm(THIRD.until, THIRD.until + letGo, e) : 1;
+    // the headlights on its back: their colour and level now, less the further off it is (the tape
+    // gives a beam back much further than the jacket takes it)
+    const eye = _eye.copy(truck.driverEye).applyMatrix4(truck.group.matrixWorld);
+    const dist = f.mesh.getWorldPosition(_w).distanceTo(eye);
+    const level = truck.beam, near = 1 / (1 + (dist / 12) ** 2), tape = 1 / (1 + (dist / 45) ** 2);
+    let flare = 0;
+    if (!this.steady) for (const tc of THIRD.flares) flare = Math.max(flare, Math.exp(-(((e - tc) / 0.2) ** 2)));
+    f.light(_c.copy(this.headNow).multiplyScalar(level * near * 1.8), THIRD_AMB, _band.copy(this.headNow).multiplyScalar(level * tape * (0.8 + 1.3 * flare)));
+    // and the tape's glint in the beam (the road's own glow points: no draw of its own)
+    road.thirdGlints(f.bandPoints(eye, this.bandPts), _glint.copy(this.headNow).multiplyScalar(level * tape * (0.24 + 0.6 * flare) * f.fade));
   }
 
   // The frames, one after the other with black between; or slow, dim fades instead.
@@ -253,6 +339,7 @@ export class Chapter6 {
   // ---------- the pull-out ----------
   private startPullout() {
     const w = this.d.world, drv = w.oldDrive!;
+    this.dropThird();
     this.stage = 'pullout';
     this.pt = 0;
     this.ending?.flash(null);
