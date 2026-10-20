@@ -369,9 +369,14 @@ async function boot() {
   const seenV = new THREE.Vector3();
   /** Nothing is written down while no night runs, or while a save puts one back (startGame). */
   let seenQuiet = true;
+  /** The log only watches: a fault in it is said once in the console and never stops the night. */
+  let seenFault = false;
+  const seenSafe = (f: () => void) => {
+    try { f(); } catch (e) { if (!seenFault) { seenFault = true; console.warn('seen log:', e); } }
+  };
   {
     const add = townSeen.add.bind(townSeen);
-    townSeen.add = (k: string) => { const fresh = !townSeen.has(k); add(k); if (fresh && !seenQuiet) sawKey(k); return townSeen; };
+    townSeen.add = (k: string) => { const fresh = !townSeen.has(k); add(k); if (fresh && !seenQuiet) seenSafe(() => sawKey(k)); return townSeen; };
   }
   const fileSideDoc = (doc: import('./ui/UI').DocSpec) => {
     const i = game.docs.findIndex((x) => x.id === doc.id);
@@ -472,9 +477,11 @@ async function boot() {
       audio.shutter(); ui.shutterFlash();
       // on the film only (story/seen.ts): the face a foot from the lens (seen when the print is
       // looked at large, come up), someone at the edge of the frame
-      const l = album.last;
-      if (l?.face) saw('face', 'on film', { at: camera.getWorldPosition(new THREE.Vector3()), looking: false, watch: null });
-      else if (l?.ghost && l.odd.length) saw('glimpse', 'on film', { looking: null });
+      seenSafe(() => {
+        const l = album.last;
+        if (l?.face) saw('face', 'on film', { at: camera.getWorldPosition(new THREE.Vector3()), looking: false, watch: null });
+        else if (l?.ghost && l.odd.length) saw('glimpse', 'on film', { looking: null });
+      });
       if (first) ui.toast(`A free frame, out of the instant back. The print goes in the album in the notebook. ${left} left.`, 4.4);
       else if (left === 5 || left === 0) ui.toast(left ? '5 free frames left on the roll.' : 'That was the last free frame on the roll.', 3);
       requestAutosave(false);
@@ -938,6 +945,10 @@ async function boot() {
     if (area === 'room6') return [0, 0];
     return null;
   }
+  /** The truck in the area shown, the old road's too (World.truckHere has none there). */
+  const truckNow = () => world.truckHere() ?? (world.area === 'roswell' ? world.oldTruck : null);
+  /** Where the player is: with the truck when driving (the body stays where they got in), else on foot. */
+  const playerAt = () => (world.driving && truckNow()?.group.position) || player.pos;
   /** Which line a world point of the area shown is on, or null (story/lines.ts). */
   function lineHere(p: THREE.Vector3, area: string = world.area) { const l = localOf(area, p); return l ? lines.lineAt(area, l[0], l[1]) : null; }
   /** A world point of the area shown, on the map (road-local metres); null where the area has no place on it. */
@@ -1060,10 +1071,13 @@ async function boot() {
   function saw(kind: SeenKind, what: string, o: { at?: THREE.Vector3 | null; map?: lines.MapPt | null; line?: lines.LineId | null; looking?: boolean | null; watch?: Partial<SeenWatch> | null } = {}) {
     const at = o.at ? o.at.clone() : null;
     const m = o.map ?? (at ? mapOf(at) : null);
+    const me = playerAt();
     let line: lines.LineId | null;
     if (o.line !== undefined) line = o.line;
-    else line = (at ? lineHere(at) : o.map ? lines.lineAt('road', o.map[0], o.map[1]) : lineHere(player.pos))?.line ?? null;
-    const e: SeenEntry = { kind, what, clock: Math.round(game.clock), place: placeName(), area: world.area, line, looking: null };
+    else line = (at ? lineHere(at) : o.map ? lines.lineAt('road', o.map[0], o.map[1]) : lineHere(me))?.line ?? null;
+    // (in the truck the player is where the truck is, not where they got in)
+    const place = world.driving ? `${placeName(me)}, in the truck` : placeName();
+    const e: SeenEntry = { kind, what, clock: Math.round(game.clock), place, area: world.area, line, looking: null };
     if (m) e.at = [Math.round(m[0]), Math.round(m[1])];
     const w: SeenWatch | null = o.watch === null || (!at && !o.watch?.pos) ? null : { pos: o.watch?.pos ?? (() => at), secs: 3, ...o.watch };
     const now = w?.pos() ?? at;
@@ -1121,14 +1135,17 @@ async function boot() {
   }
   // the things that leave no key, written down as they change: the glimpses, the sounds out in the
   // dark, the cutout, the walk to the motel, the time away, the four from 20 October, the lights,
-  // the regular's cup, THE EVENT
+  // the regular's cup, THE EVENT; and the one in the SARO jacket standing where the player was
+  // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
-    follow: 'idle', roof: false, lights: 'none', regular: false, event: false };
+    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>() };
   let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null;
+  const recordV = new THREE.Vector3();
   /** Where things stand now, without writing anything down (a night started or put back). */
   function seenSync() {
     Object.assign(was, { glimpse: glimpses.up, calls: calls.count, cutSeen: cutouts.seen, road: roadside.last, stage: abduction!.stage, over: abduction!.overPhase,
-      follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event' });
+      follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event',
+      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)) });
     warnEntry = overEntry = null;
   }
   function seenStep(dt: number) {
@@ -1147,6 +1164,17 @@ async function boot() {
       // (the cutout turns up anywhere, out of the view, again and again: written down when it is seen)
       if (cutouts.seen > was.cutSeen) saw('scare', cutouts.up === 'shoulder' ? 'cutout, road' : 'cutout', { at: cutouts.where, looking: true, watch: null });
       was.cutSeen = cutouts.seen;
+    }
+    // (it stands there for the rest of the night, shown only from more than 45 m: written down once,
+    // when it is in the middle of the view and near enough to make out, as the cutout is)
+    for (const r of abduction!.recordsShown) {
+      // (which time away it stands for: the first, the second, the third)
+      const what = `record ${r.n}`;
+      if (was.records.has(what)) continue;
+      recordV.copy(r.at).setY(r.at.y + 1.2);
+      if (!facing(camera, recordV, 160, 15)) continue;
+      was.records.add(what);
+      saw('scare', what, { at: recordV, looking: true, watch: null });
     }
     if (roadside.last !== was.road) {
       was.road = roadside.last;
@@ -1205,8 +1233,7 @@ async function boot() {
       drive: tr && ground ? { pos: tr.group.position, dir: camera.getWorldDirection(new THREE.Vector3()), ground: g.ground } : null,
     };
   }
-  function placeName() {
-    const p = player.pos;
+  function placeName(p: THREE.Vector3 = player.pos) {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
     if (world.area === 'room6') return world.indoors(p) ? 'Sierra Motor Court, room 6' : 'Sierra Motor Court';
@@ -1490,7 +1517,7 @@ async function boot() {
   // the lines on the ground and what was seen (story/lines.ts, story/seen.ts; tools/f_abc_lines.py):
   // S47.seen is the night's log itself; lineHere says which line the player and the truck are on
   Object.assign((window as any).S47, { lines, seen: seenLog.entries, seenLog,
-    lineHere: () => { const tr = world.truckHere(); return { player: lineHere(player.pos), truck: tr ? lineHere(tr.group.position) : null }; } });
+    lineHere: () => { const tr = truckNow(); return { player: lineHere(playerAt()), truck: tr ? lineHere(tr.group.position) : null }; } });
   Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
@@ -1799,7 +1826,7 @@ async function boot() {
       }
       // what the night did, before it moves on (story/seen.ts): what came in the last step, and the
       // camera on what is still there
-      if (mode === 'play') seenStep(dt);
+      if (mode === 'play') seenSafe(() => seenStep(dt));
       if (mode === 'play') roadside.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && world.area === 'saro' && world.crossing.onHighway(player.pos) && game.at('ch1') && game.phase !== 'ch6'
           && sky.uniforms.uDawn.value < 0.3,

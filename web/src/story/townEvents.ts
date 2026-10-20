@@ -49,10 +49,8 @@ export interface TownEventsDeps {
   save: () => void;
 }
 
-/** The kinds of mark that are on line B, not A (the map, and the line drawn in): the lights along
- *  the highway (lineLights.ts), the herd facing 026 (pasture.ts), the motel's television (motelTv.ts).
- *  It is where their places are that says so (story/lines.ts, PLACES). */
-export const ON_B = new Set(Object.keys(PLACES).filter((k) => lineOfMark(k) === 'B'));
+// (which line each kind of mark is on, A or B, is where its place is: story/lines.ts, lineOfMark;
+// the lights along the highway, the herd facing 026 and the motel's television are B's)
 const GAP = 10 * 60;              // seconds of the night between two events
 const RING = 30;                  // how long the payphone rings if nobody answers
 const LINE = 47;                  // seconds of the printer on the line

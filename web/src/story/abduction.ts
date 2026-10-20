@@ -520,6 +520,9 @@ export class Abduction {
     g.position.copy(at); g.rotation.y = rnd(0, Math.PI * 2);
     g.visible = false; this.d.scene.add(g); this.records.push({ g, scene });
   }
+  /** The recordings standing where the player was taken that are shown from here (story/seen.ts):
+   *  which time away each is from (1 to 3), and where it stands (world terms, at the ground). */
+  get recordsShown() { return this.records.flatMap((r, i) => r.g.visible ? [{ n: i + 1, at: r.g.position }] : []); }
   /** The recordings stand where they were taken; walk up to one and it was not there. */
   private recordsStep() {
     const c = this.d.player.pos;

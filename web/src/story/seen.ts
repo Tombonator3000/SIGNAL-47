@@ -90,7 +90,14 @@ export class SeenLog {
   restore(list?: SeenEntry[] | null) {
     this.watches = [];
     this.entries.length = 0;
-    for (const e of list ?? []) { const c: SeenEntry = { ...e }; if (e.at) c.at = [e.at[0], e.at[1]]; else delete c.at; this.entries.push(c); }
+    // (a save is the game's own, but one that is not what this expects opens with an empty log)
+    if (!Array.isArray(list)) return;
+    for (const e of list.slice(-SeenLog.MAX)) {
+      if (!e || typeof e !== 'object' || typeof e.kind !== 'string' || typeof e.what !== 'string' || !Number.isFinite(e.clock)) continue;
+      const c: SeenEntry = { ...e };
+      if (Array.isArray(e.at) && e.at.length === 2) c.at = [e.at[0], e.at[1]]; else delete c.at;
+      this.entries.push(c);
+    }
   }
   /** What is kept with the case. */
   get data(): SeenEntry[] { return this.entries.map((e) => ({ ...e })); }

@@ -14,7 +14,8 @@
 #     it, the steps behind, the lights, the town's and the night's events by their keys, the time
 #     away got away from and taken, the one over you on waking (missed, then looked at), the
 #     dishes that follow (looked at), the steps on the roof (looked up at), the face on the film
-#     (seen when the print is opened large); each once, with the clock, the place and the line;
+#     (seen when the print is opened large), the one in the SARO jacket that stands where the
+#     player was taken (when it is first looked at from further off); each once, with the clock, the place and the line;
 #     nothing in the prologue and nothing written down as a save is put back; saved with the case
 #     and back after Continue; on the ?debug overlay
 #   - desktop 1280x720 and a phone 412x892 with touch; no console errors or warnings
@@ -251,6 +252,17 @@ async def main():
             await tick(0.1)
         mk = await ev("S47.mapMarks().filter((m) => m.kind === 'away').map((m) => m.line)")
         check(mk == ['B', 'B'], f'the times away on the map, on B where they were taken ({mk})')
+        # the one in the SARO jacket that stands where the player was taken (abduction.ts, the
+        # recordings): written down the first time it is looked at from further off, once
+        rec0 = len([e for e in await log() if e['kind'] == 'scare' and e['what'].startswith('record ')])
+        await ev("S47.player.place(-24, 330, Math.PI); S47.player.pitch = 0; S47.tick(0.3)")
+        rec1 = len([e for e in await log() if e['kind'] == 'scare' and e['what'].startswith('record ')])
+        await ev("(() => { const t = S47.abduction().data.spots[0].take; T.look(t[0], t[1] + 1.2, t[2]); })()"); await tick(0.2, 2)
+        rec = [e for e in await log() if e['kind'] == 'scare' and e['what'].startswith('record ')]
+        await tick(0.5, 2)
+        rec2 = [e for e in await log() if e['kind'] == 'scare' and e['what'].startswith('record ')]
+        check(rec0 == 0 and rec1 == 0 and len(rec) == 2 and all(e['looking'] is True and e['line'] == 'B' for e in rec) and len(rec2) == 2,
+              f'the one in the SARO jacket where they were taken: nothing until it is looked at, from 130 m; then each of the two, once ({[e["what"] for e in rec]})')
 
         # ---------- the three lights, where B runs west of the highway ----------
         await ev("S47.setAbductions(false); S47.game.clock = 3 * 3600 + 5 * 60; S47.player.place(-30.5, 150, Math.PI / 2); S47.player.pitch = 0.05; S47.tick(0.2)")
