@@ -34,12 +34,12 @@ Skrevet 16. oktober 2026 etter Toms svar på forslaget om et knutepunkt (`FORSLA
 
 | Før | Nå |
 | --- | --- |
-| Ingen monstre (4. og 15. oktober). Ansiktet som minner om en Grey, finnes bare i omtrent tre bilder i FLASH. | Romvesenene er i bakgrunnen hele natten: silhuetter langt unna, i kanten av synsfeltet og på film. De jager ikke og angriper ikke. Ansiktet spares fortsatt til THE EVENT (forslag, se punkt 12). |
+| Ingen monstre (4. og 15. oktober). Ansiktet som minner om en Grey, finnes bare i omtrent tre bilder i FLASH. | Romvesenene er i bakgrunnen hele natten: silhuetter langt unna, i kanten av synsfeltet og på film. De jager ikke og angriper ikke. Ansiktet ble spart til THE EVENT (16. oktober). Fra 20. oktober kommer det én gang før, på et fritt bilde i kapittel 4 (punkt 12). |
 | R1: ingenting overnaturlig utenfor A, B og C. | Står. Men linjene er siktlinjer som går ut over landet fra STATION 01, så byen og SARO ligger på dem (punkt 3). |
 | THE EVENT: ingen tapt tid og ingen oppvåkning. | Står for THE EVENT. Bortføringene underveis har tapt tid, og man kommer tilbake. Det er hele poenget: de andre gangene slipper de deg. Klokka 05:29 gjør de ikke det. |
 | Retning B (kvelden før) som mål. | A er retningen. B står som en mulighet senere, ikke som mål. |
 
-R5 står uendret: et avtrykk gjentar det som ble registrert og kan ikke svare. Ingenting i verden gjør noe fordi spilleren er der.
+R5 står for avtrykkene: et avtrykk gjentar det som ble registrert og kan ikke svare. At ingenting i verden gjør noe fordi spilleren er der, bøyes fra 20. oktober to steder, hver én gang i natta: antennene som kommer ned og følger deg under et varsel i feltet, og skrittene over arkivtaket som stopper rett over deg (punkt 12). Tom: «Spenning og skummelt slår faste regler».
 
 ## 2. Kjernen
 
@@ -79,9 +79,10 @@ En liten styring som bestemmer når ting skjer, i fire lag:
 **Reglene:**
 
 - Hver hendelse gjentar noe som ble registrert (en lyd, et lys, en setning), eller forstyrrer instrumentene. Den skjer på eller nær en linje, ofte i 47 sekunder.
-- Ingenting jager deg eller svarer. Regissøren sørger for at spilleren er i nærheten, men i verden skjer det ikke fordi spilleren er der.
+- Ingenting jager deg eller svarer. Regissøren sørger for at spilleren er i nærheten, og ellers skjer ingenting i verden fordi spilleren er der. To unntak fra 20. oktober (punkt 12), hver én gang i natta: antennene i feltet følger øynene dine under et varsel, og skrittene på arkivtaket går dit du går og stopper over deg. Ingen av dem jager. Antennene går bare når du går, og de når deg aldri (el -15 er grensen), og skrittene går sin vei igjen.
 - Det skumle er at noe mangler: stillhet, mørke, ting som står helt stille.
 - Romvesenene kommer aldri nærmere enn rundt 40 m, beveger seg aldri mens du ser på dem, og står aldri i fullt lys. De lager ingen lyd, ikke engang skritt.
+- Unntakene fra 20. oktober (punkt 12): når du våkner etter en bortføring, står en av dem 2 til 3 m fra deg, rett bak støvlene dine, med hodet bøyd ned mot deg, i høyst halvannet sekund (punkt 8). Den beveger seg ikke og lager ingen lyd. Én gang i kapittel 2 er det skritt på arkivtaket, lette og for tette. Og én gang i kapittel 4 er det et ansikt på film, helt inntil linsa (punkt 7). Glimtene ellers følger reglene over.
 - Ingenting skjer i prologen (spilleren er i kontrollrommet til 02:16), under samtalen med Nora og kartgåta i dineren, og fra kapittel 6 tar THE EVENT over. Ingen bortføring ved åttemilsstolpen før kapittel 6.
 - Hendelser og bortføringer lagres med saken. En hendelse kommer aldri igjen, heller ikke etter lasting.
 
@@ -150,7 +151,7 @@ Det som allerede står i `FORSLAG.md` (15. oktober, punkt 2), kommer i tillegg: 
 
 De skal alltid kunne være der. Spilleren skal aldri være sikker på om det var noe.
 
-**Slik ser de ut:** små, rundt 1,2 m, store hoder og tynne lemmer, som de klassiske fra Roswell-historien. Alltid som silhuett mot noe lysere, aldri med ansikt, aldri i fullt lys. De står helt stille. De lager ingen lyd.
+**Slik ser de ut:** små, rundt 1,2 m, store hoder og tynne lemmer, som de klassiske fra Roswell-historien. Alltid som silhuett mot noe lysere, aldri med ansikt, aldri i fullt lys. De står helt stille. De lager ingen lyd. Unntakene fra 20. oktober står i punkt 4 og 12: én over deg når du våkner, skrittene på arkivtaket og ett ansikt på film.
 
 **To slags glimt:**
 
@@ -168,6 +169,7 @@ De skal alltid kunne være der. Spilleren skal aldri være sikker på om det var
 7. Bak frostglasset i døra til fotolaben, i det røde mørkeromslyset.
 8. På taket av motellet, mot himmelen.
 9. På et bilde fra feltkameraet, langt bak det du fotograferte.
+10. **Bygget 20. oktober:** én gang, på det første frie bildet ute til fots i kapittel 4, helt inntil linsa: siden av et blekt hode og ett svart øye med blitsen i, opplyst av blitsen en fot unna (`core/filmFace.ts`). Ingenting i scenen. Bildet kommer fram etter 90 s, og når du ser på det stort første gang, blir natta stille i 34 s. Teksten under er den samme som under de fjerne skikkelsene: *Nobody was there when I took it.*
 
 **Teknisk:** én lav silhuett (et par hundre trekanter, svart med en svak kant av lys), noen få stillinger, plassert av regissøren på steder langs linjene 40 til 300 m unna. En vinkelsjekk hver ramme. Billig på mobil.
 
@@ -183,7 +185,11 @@ De skal alltid kunne være der. Spilleren skal aldri være sikker på om det var
 
 **Tapt tid.** Klokka hopper fram 17 til 47 minutter, men aldri forbi neste faste punkt eller slutten av kapitlets tidsvindu. Natta er trang (kapittel 1 går fra 02:16 til 02:55, kapittel 2 til 03:35 og så videre), så regissøren tar bare spilleren når det er minst 17 minutter igjen, og kutter den tapte tiden til det som er igjen (`story/time.ts`).
 
-**Tilbake.** Du ligger på rygg i gresset og ser stjernene. Synet løfter seg. Du er 100 til 400 m lenger ut på den samme linja, i en ring av flatt, rimete gress. Lommelykta ligger ved siden av deg, på. Lastebilen står der du forlot den, med døra åpen og frontlysene på, og motoren må startes med nøkkelen (`trouble.start('stall', { key: true })`).
+**Tilbake.** Du ligger på rygg i gresset og ser stjernene. Synet løfter seg.
+
+**Over deg (bygget 20. oktober, `story/abduction.ts`).** Første gang: stjernene i 1,3 s, et blunk, og så står en av dem 2,8 m bak støvlene dine, med hodet bøyd ned mot deg. Andre gang står den 1,85 m unna. Tredje gang kommer den uten stjernene først, og de er to: den nærmeste 2,2 m unna, den andre 3,7 m unna og vendt til siden. Du ser deg selv langs bunnen av bildet: brystet, beina og støvlene som peker opp. Spillet velger hvilken vei du ligger, slik at den står svart mot noe lysere (himmelen, en opplyst antenne eller vegg). Den er borte etter halvannet sekund, eller når blikket går til den, og ikke med en effekt. Til da er det ingen lyd, intet lys og ingen knapper på skjermen. Så kommer sirissene på én gang, og lommelykta er på. Ikke med Missing time slått av.
+
+**I antennefeltet (bygget 20. oktober, `story/dishesFollow.ts`).** Én gang i natta, når varselet kommer mens du er ute blant antennene: noen sekunder inn i stillheten starter en drivmotor, og den nærmeste antennen senker seg ut av 026 og snur til den peker på deg, så de to neste. Lenger ut senere og saktere. De følger øynene dine. Går du, går motorene; står du stille, bremser de én etter én. Den rett over deg presser mot grensen sin (el -15) med et knirk. Kommer du deg unna, blir de stående mot stedet en stund og går tilbake til 026 i farten fra 02:15. Blir du tatt, snur de alle samtidig mot gresset der du skal våkne, og der peker de ned på deg. Konsolloggen har hver drift som gikk uten kommando (`DRIVE S-03  MOTION  NO COMMAND`), og notatboka det du så. Trykket stiger halvannen gang så fort i feltet før det har skjedd. Du er 100 til 400 m lenger ut på den samme linja, i en ring av flatt, rimete gress. Lommelykta ligger ved siden av deg, på. Lastebilen står der du forlot den, med døra åpen og frontlysene på, og motoren må startes med nøkkelen (`trouble.start('stall', { key: true })`).
 
 **Sporene** (alle blir funn):
 
@@ -310,12 +316,23 @@ Tom 16. oktober: finnes det romvesenlyder i lenkene i rulleteksten til They Are 
 
 ## 12. Det Tom har avgjort
 
-**Tom svarte 16. oktober: ja på alle fire.** Spilleren kan slippe unna i de første sekundene av varselet, alle får minst én bortføring før kapittel 5 (høyst tre i løpet av natten), ansiktet spares til THE EVENT, og bortføringer kan slås av i innstillingene (på som standard). Spørsmålene står under slik de ble stilt.
+**Tom svarte 16. oktober: ja på alle fire.** Spilleren kan slippe unna i de første sekundene av varselet, alle får minst én bortføring før kapittel 5 (høyst tre i løpet av natten), ansiktet spares til THE EVENT, og bortføringer kan slås av i innstillingene (på som standard). Spørsmålene står under slik de ble stilt. Svaret på spørsmål 3 er endret 20. oktober (se under).
 
 1. **Komme seg unna:** kan spilleren slippe unna en bortføring i de første sekundene av varselet? Jeg anbefaler ja.
 2. **Minst én:** skal alle få minst én bortføring før kapittel 5, med tilfeldig tid og sted? Jeg anbefaler ja, høyst tre i løpet av natten.
 3. **Ansiktet:** spares det til THE EVENT, med bare silhuetter i bortføringene og glimtene? Jeg anbefaler det, så slutten beholder kraften.
 4. **Av-bryter:** skal bortføringer kunne slås av i innstillingene? Jeg anbefaler ja, på som standard.
+
+**Tom 20. oktober: «Spenning og skummelt slår faste regler».** Han valgte fire av de dristige ideene i `FORSLAG.md` (20. oktober, Valg for Tom 2, 3 og 5 og skrittene på taket), og de er bygget samme dag. Det løfter fire regler, hver bare på ett sted:
+
+| Regel før | Nå | Hvor |
+| --- | --- | --- |
+| R5: ingenting i verden gjør noe fordi spilleren er der (punkt 1 og 4). | Antennene kommer ned av seg selv og følger deg under et varsel i feltet, én gang i natta. De når deg aldri og jager ikke: de går når du går. | `story/dishesFollow.ts` |
+| Romvesenene kommer aldri nærmere enn rundt 40 m (punkt 4). | Når du våkner etter en bortføring, står en av dem 2 til 3 m fra deg med hodet bøyd ned mot deg, i høyst halvannet sekund. | `story/abduction.ts` |
+| De lager ingen lyd, ikke engang skritt (punkt 4 og 7). | Én gang i kapittel 2 går lette, for tette skritt over arkivtaket, følger deg og stopper rett over deg. 10 s stillhet, noen skritt til ut mot kanten, og rim på takaggregatet etterpå. | `story/roofSteps.ts`, `world/roofFrost.ts` |
+| Ansiktet spares til THE EVENT (spørsmål 3). | Ett ansikt før 05:29: siden av et blekt hode og ett svart øye i blitsen, på det første frie bildet ute i kapittel 4. FLASH blir dermed gjenkjennelse. | `core/filmFace.ts`, `core/album.ts` |
+
+Det som står: én slutt (THE EVENT 05:29, der de ikke slipper deg), 026 og el 32 (antennene ender alltid der igjen), 1420 og 47 (ingen ny 47 er lagt til: stillheten etter ansiktet er 34 s, pausen på taket 10,5 s), 1947-sporet, navnene, at ingenting jager eller angriper, at de aldri beveger seg mens du ser på dem, og at glimtene ellers holder 40 m. Antennene, skrittene og ansiktet kommer én gang i natta og ikke igjen etter Continue; skikkelsen over deg kommer ved hver bortføring (høyst tre). Missing time av slår av skikkelsen over deg og antennene (de hører til bortføringen), men ikke skrittene eller ansiktet.
 
 Fakta som er fra hukommelsen og må sjekkes før de står i spillet: når Roswell-historien fikk nytt liv (rundt 1978 til 1980), når turismen kom (tidlig på 1990-tallet), at *missing time* var et kjent uttrykk tidlig på 1980-tallet, og at små AM-stasjoner tok farvel med nasjonalsangen.
 
