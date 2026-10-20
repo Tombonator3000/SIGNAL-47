@@ -199,7 +199,23 @@ export class UI {
     }
   }
 
-  clock(text: string) { if (this.clockEl.textContent !== text) this.clockEl.textContent = text; }
+  /** The corner clock: the night's (hh:mm), set every frame by the story. */
+  clock(text: string) { this.clockBase = text; this.paintClock(); }
+  /** The corner clock with seconds, over the night's (the warning before the time away, story/
+   *  abduction.ts: the minute it began and the warning's own seconds, as the station clock showed
+   *  seconds at 02:13), or null for the night's clock again. */
+  clockSeconds(v: { hm: string; ss: string } | null) { this.clockHeld = v; this.paintClock(); }
+  private clockBase = '';
+  private clockHeld: { hm: string; ss: string } | null = null;
+  private clockKey = '';
+  private paintClock() {
+    const h = this.clockHeld, key = h ? `${h.hm}:${h.ss}` : this.clockBase;
+    if (key === this.clockKey) return;
+    this.clockKey = key;
+    if (h) this.clockEl.innerHTML = `${esc(h.hm)}<span class="ss">:${esc(h.ss)}</span>`;
+    else this.clockEl.textContent = key;
+    this.clockEl.classList.toggle('secs', !!h);
+  }
   objective(text: string | null) { const t = text ?? ''; if (this.objEl.textContent !== t) this.objEl.textContent = t; }
   /** The flashlight's button on a phone: shown once there is a flashlight, lit while it is on. */
   lightButton(have: boolean, on: boolean) { this.lightBtn.hidden = !have; this.lightBtn.classList.toggle('on', on); }

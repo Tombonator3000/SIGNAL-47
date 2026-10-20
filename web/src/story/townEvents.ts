@@ -23,6 +23,12 @@ import { PLACES, lineOfMark } from './lines';
 //                     shoulder north of town, engine running, the door open, nobody in it. Once
 //                     passed it is gone; at 04:30 he is at his desk and says he drove the loop.
 //
+// The payphone's first call is one of the 47-second events, which come at the night's peak
+// (story/curve.ts). While the player is near the payphone in its hours and nothing else stands in
+// its way, it is waiting (`waiting`): the curve hurries its build to the peak and keeps the peak
+// for it. The box shows the hurry (`unrest`, the curve's level): now and then its bell tinks once,
+// by itself, the way a phone's bell does when something is on the line.
+//
 // Event 5, the attendant's sentence, is in story/caliche.ts (it is said when he is spoken to).
 // At least ten minutes of the night between two, nothing in the prologue, nothing once THE EVENT
 // has the night (main.ts decides when it may run).
@@ -43,6 +49,8 @@ export interface TownEventsIn {
    *  first time (47 s on the line); left out, they may. The second call, after room 6, is the story's. */
   may?: boolean;
   mayLong?: boolean;
+  /** 0..1: the curve is hurrying to its peak for the first call (NightCurve.unrest); the bell tinks. */
+  unrest?: number;
 }
 export interface TownEventsDeps {
   audio: AudioSys;
@@ -79,6 +87,13 @@ export class TownEvents {
   private recordings: ReturnType<AudioSys['play']>[] = [];
   private lineSpeaker: AudioNode | null = null;
   private lineBand: AudioNode | null = null;
+  /** The first call could ring now but for the night's curve: the player near the payphone a
+   *  while in its hours, nothing else of the town's going, ten minutes after the last (story/
+   *  curve.ts hurries for it). Set by update(). */
+  waiting = false;
+  /** The bell's tinks while the curve hurries (the tests count them), and when the next may come. */
+  tinks = 0;
+  private tinkT = 3;
 
   constructor(private d: TownEventsDeps) {}
 
@@ -89,7 +104,7 @@ export class TownEvents {
   }
   /** After a load the town's part of the case is new: the cutout is where that case had it. */
   reset() {
-    this.stopAll();
+    this.stopAll(); this.waiting = false;
     this.carSeen = this.d.seen.has('ev:car');
     this.town?.setCarOut(false);
     this.cutoutSeen = this.d.seen.has('ev:cutout');
@@ -170,7 +185,12 @@ export class TownEvents {
     // The return call follows Room 6, at about 05:00. The original 04:45 cutoff made it
     // unreachable in the real chapter journey. Leave enough room before the 05:20 departure.
     const phoneUntil = call === 2 ? 5 * 3600 + 19 * 60 : 4 * 3600 + 45 * 60;
-    if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock) && (call === 2 || s.mayLong !== false)) {
+    const could = call !== 0 && this.near > 0 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock);
+    this.waiting = could && call === 1;
+    // the curve hurrying for it: the bell in the box tinks once now and then, by itself
+    const u = this.waiting ? Math.min(1, Math.max(0, s.unrest ?? 0)) : 0;
+    if (u > 0.15 && (this.tinkT -= dt * (0.4 + u)) <= 0) { this.tinkT = 4 + Math.random() * 6; this.tink(phone, u); }
+    if (could && this.near > 20 && (call === 2 || s.mayLong !== false)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
       this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
@@ -198,6 +218,14 @@ export class TownEvents {
     }
   }
 
+  /** One tink of the bell: a few hundredths of a second of its ring, soft, from inside the box. */
+  private tink(at: THREE.Vector3, u: number) {
+    const h = this.d.audio.play('phoneRing', { at, gain: 0.16 + 0.22 * u, from: 0.03, dur: 0.16, rate: 0.97 + 0.06 * Math.random() });
+    if (!h) return;
+    const ctx = this.d.audio.ctx!, t = ctx.currentTime;
+    h.gain.gain.setValueAtTime(h.gain.gain.value, t + 0.035); h.gain.gain.setTargetAtTime(0, t + 0.04, 0.025);
+    this.tinks++;
+  }
   private answer() {
     if (this.now !== 'ringing' || !this.town) return;
     this.stopRing();
