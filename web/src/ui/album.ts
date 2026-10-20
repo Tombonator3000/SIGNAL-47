@@ -52,11 +52,11 @@ export function bindAlbum(root: HTMLElement, v: AlbumView | undefined, reading?:
   root.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', (e) => {
     e.stopPropagation();
     const i = shots.findIndex((s) => s.id === b.dataset.f);
-    if (i >= 0) big(root, shots, i, reading);
+    if (i >= 0) big(root, shots, i, reading, v?.look);
   }));
 }
 
-function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?: AlbumReading) {
+function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?: AlbumReading, look?: AlbumView['look']) {
   const el = document.createElement('div');
   el.className = 'al-view';
   el.setAttribute('role', 'dialog');
@@ -75,6 +75,7 @@ function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?:
       <button class="al-nav next" data-v="next" aria-label="Next photograph"${i < shots.length - 1 ? '' : ' disabled'}>&rsaquo;</button>
       <button class="al-back" data-v="back"><kbd>E</kbd>Back to the album</button>`;
     if (!readingBound) { disposeReading = reading?.show(el); readingBound = true; }
+    look?.(s.id);   // the album is told which print is being looked at (core/album.ts, the face)
   };
   const go = (k: number) => { const j = i + k; if (j >= 0 && j < shots.length) { i = j; show(); } };
   const close = () => { reading?.change(); disposeReading?.(); el.remove(); removeEventListener('keydown', key, true); };
