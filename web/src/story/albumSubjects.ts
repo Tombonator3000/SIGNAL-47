@@ -9,12 +9,14 @@ import type { RecordsAnnex } from '../world/Annex';
 import type { Sky } from '../world/Sky';
 import type { Cutouts } from '../core/cutouts';
 import { MOTEL_AT, MOTEL_GLOWS } from '../world/geo';
+import { NINTH_PRINT } from './ninthCow';
 
 // What the album can name under a free frame (core/album.ts), where the player is: the known
 // things of each area by where they stand, the people of the night, the sky, and the things the
 // player may not have noticed: the cardboard alien wherever it has been put (core/cutouts.ts),
 // one of them at the edge of the view (core/glimpses.ts), the someone in a SARO jacket standing
-// where the time was lost (story/abduction.ts), and the ring of frost there.
+// where the time was lost (story/abduction.ts), and the ring of frost there; and the ninth cow lying
+// at STATION 01 (story/ninthCow.ts).
 
 export interface SubjectDeps {
   world: World; ext: Exterior; room: ControlRoom; yard: ServiceYard; annex: RecordsAnnex; sky: Sky;
@@ -104,6 +106,8 @@ export function albumSubjects(d: SubjectDeps): Subject[] {
     }
     case 'station01':
       things(world.site?.proxies, STATION);
+      // the ninth cow from the pasture, once she lies there (story/ninthCow.ts): a line of her own
+      if (world.site?.ninthDown) add('the dead cow', [P(world.site.proxies.ninthBody), P(world.site.proxies.ninthHead)], { r: 1.3, max: 45, w: 3, odd: NINTH_PRINT });
       break;
     case 'room6': {
       const r6 = world.room6;

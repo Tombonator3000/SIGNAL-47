@@ -167,6 +167,10 @@ export class Chapter3 {
   /** At the station after the call, everyone goes (story/stationTaken.ts, main.ts): the hut door
    *  shut by itself and what trying it does, and the truck without its keys. */
   taken: { shut: () => boolean; tryDoor: () => void; truck: () => string | null } | null = null;
+  /** Something of the night's is in the middle of the viewfinder, nearer than the case's subjects
+   *  (the ninth cow lying by B's vane, story/ninthCow.ts; main.ts): the shutter takes a free frame
+   *  of it rather than refusing a case frame. */
+  freeShot: (() => boolean) | null = null;
   private radioOn = false;
   /** P06 to P09 on the case board: the station's records and frames, the questions, the rules. */
   readonly book: RuleBook;
@@ -719,7 +723,7 @@ export class Chapter3 {
     if (c4?.ok) return c4;
     const c3 = s.f3 ? null : this.check03();
     if (c3?.ok) return c3;
-    const near = !!(c4?.near || c3?.near);
+    const near = !!(c4?.near || c3?.near) && !this.freeShot?.();
     if (c4 && (!c3 || this.dist(this.target('cable')) < 6)) return { ...c4, near };
     return { ...c3!, near };
   }

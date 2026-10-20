@@ -69,6 +69,8 @@ import { DishesFollow, nearArray } from './story/dishesFollow';
 import { ArrayBack, type ArrayGate } from './story/arrayBack';
 import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
+import { NinthCow } from './story/ninthCow';
+import { TAG_RANCH, TAGS } from './drive/herd';
 import { MotelTv } from './story/motelTv';
 import { OfficePhone } from './story/officePhone';
 import { TruckOnB, type TruckOnBIn } from './story/truckOnB';
@@ -369,6 +371,18 @@ async function boot() {
       use: () => fieldBook.useDrawer(),
       examine: () => world.area === 'station01' && game.at('ch3') ? fieldBook.drawerExamine() : null, examineRange: 3 });
     fieldBook.drawerNow();
+    // the ninth cow from the pasture, once she is put down (story/ninthCow.ts): her head and her
+    // side for a closer look and to kneel by, the frost round her for a closer look only
+    const st = world.site;
+    for (const part of ['head', 'body'] as const) {
+      const o = site.proxies[part === 'head' ? 'ninthHead' : 'ninthBody'];
+      if (o) inter.add({ id: `s1ninth:${part}`, object: o, range: 2.6, examineRange: 16,
+        label: () => world.area === 'station01' && mode === 'play' ? ninth.label() : null, use: () => ninth.use(),
+        examine: () => world.area === 'station01' ? ninth.examine(part, camera) : null });
+    }
+    if (site.proxies.ninthFrost) inter.add({ id: 's1ninth:frost', object: site.proxies.ninthFrost, look: true, examineRange: 14, label: () => null, use: () => {},
+      examine: () => world.area === 'station01' ? ninth.examine('frost', camera) : null });
+    if (st) st.setNinth(ninth.down);
   };
   world.onArriveStation = () => ch3.arrivedStation();
   world.onArriveSaro = () => ch3.arrivedSaro();
@@ -545,7 +559,39 @@ async function boot() {
   // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
   // with the town's part of the case
   const pasture = new Pasture({ herds: () => world.herds, seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
-    save: () => { if (mode === 'play') requestAutosave(false); } });
+    save: () => { if (mode === 'play') requestAutosave(false); }, ninthFound: () => townSeen.has('nine:found') });
+  let ninthEar: { at: THREE.Vector3; dest: AudioNode | null } | null = null;
+  // where the ninth went: lying at STATION 01 on B, found in chapter three (story/ninthCow.ts;
+  // FORSLAG.md, 20 October, the order's item 6), kept with the town's part of the case
+  const ninth = new NinthCow({ seen: townSeen, site: () => world.site, pasture, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
+    hush: (secs) => audio.night?.hush(secs, 0.04), clock: () => game.clock,
+    // (the click, higher and duller, from where she lies: faint from the pad, plain within 20 m)
+    tick: (at) => {
+      // (one point in the world for all of them, where she lies)
+      if (!ninthEar?.dest || ninthEar.at.distanceTo(at) > 0.5) ninthEar = { at: at.clone(), dest: audio.spatial(at.clone().setY(at.y + 0.3), 3) };
+      if (ninthEar.dest) audio.play('click', { gain: 0.55, rate: 2.0 + Math.random() * 0.5, lp: 4800, dest: ninthEar.dest });
+    },
+    save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
+  // a frame of her near the transit is a free frame, not a refused case frame (story/Chapter3.ts)
+  ch3.freeShot = () => {
+    const site = world.site;
+    if (world.area !== 'station01' || !site?.ninthDown) return false;
+    const m = site.ninthAt('middle');
+    return m.distanceTo(camera.position) < 14 && fcam.inFrame(m, 0.2, 0.8, 0.12, 0.88);
+  };
+  /** A closer look at a cow in the pasture, on foot among them: her tag (drive/herd.ts). */
+  const herdBound = new Set<object>();
+  function bindHerdLooks() {
+    for (const h of world.herds) {
+      if (herdBound.has(h)) continue;
+      herdBound.add(h);
+      h.lookAreas.forEach((m, i) => inter.add({ id: `look:cow:${h.area}:${i}`, object: m, look: true, examineRange: 9, label: () => null, use: () => {},
+        examine: () => {
+          const tag = `A yellow tag in her left ear: ${TAG_RANCH} ${TAGS[i]}.`;
+          return pasture.stage === 'still' || pasture.stage === 'short' ? `She stands quite still, her head up, facing the way the others face. ${tag}` : `A Hereford cow, red with a white face. ${tag}`;
+        } }));
+    }
+  }
   const motelTv = new MotelTv({ motel: world.motel, audio, inter, renderer, scene, seen: townSeen, note: (text) => game.note(text),
     truck: () => world.saroTruck?.group ?? null, file: fileSideDoc, document: () => game.docs.find((d) => d.id === 'motel-tv-frame'), open: (doc) => ui.document(doc, () => {}),
     toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); } });
@@ -599,7 +645,7 @@ async function boot() {
   });
   ch5.driverMore = { examine: () => lostNights.driverExamine(), open: () => lostNights.driverOpen(),
     choices: (october) => lostNights.driverChoices(october), choose: (id) => lostNights.driverChoose(id) };
-  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks()];
+  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks(), ...ninth.books()];
   game.openDoc = (doc) => { if (doc.id !== 'fieldbook' || !fieldBook.read) return false; fieldBook.openBook(); return true; };
   if (world.motel.proxies.envelope) inter.add({ id: 'court:envelope', object: world.motel.proxies.envelope, range: 2.2,
     label: () => mode === 'play' && world.area === 'saro' && !world.driving && game.at('ch1') ? fieldBook.envelopeLabel() : null,
@@ -973,7 +1019,7 @@ async function boot() {
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     recWalk.reset(); stationTaken.reset();
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     saroDark.halt();
     game.start(o.state?.checkpoint ?? o.jump);
@@ -1186,7 +1232,7 @@ async function boot() {
   function mapMarks(): NonNullable<MapView['marks']> {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: lines.mSouth(roadZ) });
     const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: lines.lineOfMark(m.kind),
-      at: m.kind === 'tv' ? { spot: 'office' } : ['cutout', 'car', 'lights', 'cows', 'truck4', 'truck7', 'truck7m'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
+      at: m.kind === 'tv' ? { spot: 'office' } : m.kind === 'ninth' ? { spot: 'station01' } : ['cutout', 'car', 'lights', 'cows', 'truck4', 'truck7', 'truck7m'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
     for (const sp of abduction!.data.spots) {
       const area = sp.scene === 'road' ? 'diner' : sp.scene, take = new THREE.Vector3(...sp.take);
       out.push({ kind: 'away', clock: sp.clock, line: lineHere(take, area)?.line ?? (sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C'),
@@ -1412,16 +1458,19 @@ async function boot() {
       case 'radio': { const tr = world.truckHere(); return tr ? tr.group.position.clone().setY(tr.group.position.y + 1.4) : null; }
       case 'roomphone': return objAt(room.objs.phone);
       case 'door': return objAt(room.objs.doorEast);
+      case 'ninth': return world.area === 'station01' && world.site?.ninthDown ? world.site.ninthAt('middle') : null;
       default: return null;
     }
   }
   /** How far off each event's thing can be looked at (metres). */
-  const EVENT_RANGE: Record<string, number> = { cutout: 60, car: 60, lamps: 250, cows: 160, cows2: 160, tv: 10, regular: 15, steps: 20, radio: 60, roomphone: 45, door: 40 };
+  const EVENT_RANGE: Record<string, number> = { ninth: 30, cutout: 60, car: 60, lamps: 250, cows: 160, cows2: 160, tv: 10, regular: 15, steps: 20, radio: 60, roomphone: 45, door: 40 };
   /** An event's key has just been added (story/townEvents.ts, nightEvents.ts, pasture.ts, motelTv.ts,
    *  caliche.ts, the boy on the radio): the map's mark or the night event's count. */
   function sawKey(k: string) {
     const m = /^mark:([a-z0-9]+)@/.exec(k), n = /^ne:([a-z]+)\d+$/.exec(k);
     const what = m ? m[1] : k === 'ev:cows' ? 'cows2' : n ? (n[1] === 'phone' ? 'roomphone' : n[1]) : null;
+    // (the eight seen without the nine first get the herd's mark too: story/pasture.ts; one sighting, one line)
+    if (what === 'cows' && townSeen.has('ev:cows')) return;
     // (the lights are written down when they come, the silence when it starts: seenStep)
     if (!what || what === 'lights' || what === 'silence') return;
     const place = lines.PLACES[what], at = eventAt(what);
@@ -1613,7 +1662,9 @@ async function boot() {
   // ---------- the night's one curve (story/curve.ts; FORSLAG.md, 20 October, item 1) ----------
   /** One of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
    *  also waits for the others itself, as before). */
-  function oneAtATime() {
+  function oneAtATime() { return nightGoing() || ninth.quiet > 0; }
+  /** All of oneAtATime but the quiet round the ninth cow (story/ninthCow.ts: that quiet is hers). */
+  function nightGoing() {
     return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
       || lineLights.state !== 'none' || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.busy || archive.busy
       // (the array put back on the schedule, until it has gone back: story/arrayBack.ts)
@@ -2012,6 +2063,7 @@ async function boot() {
   // 02:29, SARO dark (tools/f_relay_hondo.py): the event, the power, where the player counts as being
   Object.assign((window as any).S47, { saroDark, saroPower, darkIn: () => darkIn(true, !!ui.modal), darkWhere: () => darkWhere() });
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
+  Object.assign((window as any).S47, { ninth, musicHeld: () => musicHeld() });   // the ninth cow at STATION 01 (tools/f_ninth_cow.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
   Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
@@ -2108,6 +2160,7 @@ async function boot() {
       ] });
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
+        { label: `The ninth at STATION 01: ${ninth.state}`, run: () => { ninth.now(); ui.toast(ninth.down ? 'She is lying there already' : 'At STATION 01, the next moment her place is out of sight', 2.4); } },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
       ] });
       groups.push({ title: 'The truck on B', note: 'B crosses the highway at the turn-off to SARO. From chapter two, the first time the truck goes over it: carrier, a misfire, every light out four times. After room 6, the next time: the engine dies, the key twice, seven. The compass on the dash reads 026 over B.', items: [
@@ -2322,7 +2375,7 @@ async function boot() {
     }
   }
   // (and while the yard holds its breath, and SARO is dark: core/ambience.ts, story/saroDark.ts)
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || recWalk.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || recWalk.busy || faceQuiet > 0 || ninth.quiet > 0 || roofSteps.busy || reelTape.busy
     || saroDark.busy || officePhone.busy || archive.busy || arrayBack.busy || truckB.racing || !!audio.night?.breathing; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
    *  the office, on the motel's court or within earshot of the office's open door (22 m, the
@@ -2488,6 +2541,12 @@ async function boot() {
       });
       // (the office's television waits while its telephone rings or is off the hook: one at a time)
       if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !officePhone.busy && !arrayBack.busy);
+      // the ninth, at STATION 01 (story/ninthCow.ts): a found thing, but one at a time all the same
+      if (mode === 'play') {
+        bindHerdLooks();
+        ninth.update(dt, { ok: !modalOpen && !game.cinematic, free: !nightGoing() && !audio.phonePlaying && !cb.busy, chapter: game.phase, area: world.area,
+          driving: world.driving, inHut: world.area === 'station01' && world.indoors(player.pos), cam: camera, light: flashlight.on });
+      }
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));
       // the truck on B (story/truckOnB.ts), and the compass on the dash of the truck being driven
       if (mode === 'play') {
