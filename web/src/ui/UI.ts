@@ -439,7 +439,9 @@ export class UI {
     };
     const play = () => { this.onCharacterStart?.(); void reader.play(input, update); };
     button.addEventListener('click', () => { if (active) reader.stop(); else play(); });
-    update('idle'); parent.appendChild(box); return play;
+    update('idle'); parent.appendChild(box);
+    // a reply without a recording stays text, and says so (not a failed playback), as Earl's does
+    return button.disabled ? null : play;
   }
   /** Only Chapter4 calls this for its authored N. VEGA quote replies/toasts. */
   speakNora(text: string) {

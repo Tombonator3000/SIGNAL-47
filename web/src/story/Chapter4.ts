@@ -55,6 +55,8 @@ export interface Ch4State {
   /** Nora has called the truck on the CB (saves from before 16 October have none). */
   cb?: boolean;
   links?: string[];          // this chapter's threads on the case board, 'a|b' sorted
+  /** She has seen it on the player's face, after a time away (story/abduction.ts): said once. */
+  mark?: boolean;
 }
 
 // What chapter four needs from the places (main.ts and world/World.ts).
@@ -128,7 +130,7 @@ const CHIPS: { id: string; label: string }[] = [
   { id: 'frame04', label: 'PHOTO 04 / Cable break' },
 ];
 
-type Mode = 'menu' | 'table' | 'control' | 'tone';
+type Mode = 'menu' | 'table' | 'control' | 'tone' | 'mark';
 
 // ---------- the case board ----------
 // What her papers and the return line show together with what was found before tonight
@@ -162,6 +164,9 @@ export class Chapter4 {
   started = false;
   s: Ch4State = fresh();
   onEnd?: () => void;
+  /** The player has been taken tonight and lost the time (main.ts; story/abduction.ts): it shows on
+   *  one side of the face, and she sees it once P10 is on the table. */
+  taken: () => boolean = () => false;
   private lines: Line[] = [];
   private mode: Mode = 'menu';
   private reply: { ok: boolean; text: string } | null = null;
@@ -568,6 +573,9 @@ export class Chapter4 {
         n('Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.'),
       ];
       this.save();
+    } else if (s.p10 && !s.mark && this.taken() && (this.mode === 'menu' || this.mode === 'mark')) {
+      // taken since, or the chair never sat in: she sees it as you come to the table
+      this.markTalk(true);
     } else if (this.mode === 'menu' && !this.lines.length) {
       this.lines = [aside(s.told ? 'She is looking out at the road.' : 'She waits for you to go on.')];
     }
@@ -621,6 +629,9 @@ export class Chapter4 {
           { id: 'none', label: 'None. I drove the vane to 042 and left the lamp on.' },
           { id: 'receiver', label: 'The receiver bank. I switched it off.' },
         ];
+        break;
+      case 'mark':
+        v.choices = [{ id: 'sit', label: 'Sit down' }];
         break;
       case 'tone':
         v.question = 'How do you ask her?';
@@ -683,6 +694,7 @@ export class Chapter4 {
     switch (this.mode) {
       case 'control': return this.answerControl(id);
       case 'tone': return this.answerTone(id as 'mild' | 'critical');
+      case 'mark': return this.markTalk(false);
     }
     switch (id) {
       case 'record': this.mode = 'tone'; this.lines = [you('About the amended copy.'), aside('She does not look away from it.')]; return;
@@ -710,7 +722,8 @@ export class Chapter4 {
       return;
     }
     s.p10 = true;
-    this.mode = 'menu';
+    // (taken tonight: she has a chair out for you, and then she sees it: markTalk)
+    this.mode = this.taken() && !s.mark ? 'mark' : 'menu';
     this.lines = [
       id === 'lamp' ? n('The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.') : n('You moved it, and the second line did not move with it. Then it was not the drive.'),
       n('Then you have what I had. A reference that stays on the film after its source is gone.'),
@@ -738,6 +751,27 @@ export class Chapter4 {
     ];
     this.give('correction');
     this.g.note(`N. Vega on the amended record: she left out C so that nobody would connect the arrangement again, and blamed development. She signed a correction tonight (E12). ${tone === 'critical' ? 'I put it to her as falsification. She did not argue.' : ''}`.trim());
+  }
+
+  // The mark (FORSLAG.md, 20 October, item 9 C): after a time away it is on one side of the face,
+  // and nobody has said so. She sees it in her lamp. New lines, not recorded: their own exchange,
+  // so the recorded ones around them keep their voice (core/npcDialogue.ts).
+  // Tomás in June: his field book has the night (story/fieldBook.ts, Jun 27).
+  private markTalk(later: boolean) {
+    const s = this.s;
+    s.mark = true;
+    this.mode = 'menu';
+    this.lines = [
+      aside(later ? 'She looks up when you come to the table, and does not look away. She tips the shade of the lamp towards you.'
+        : 'You sit. She does not. She tips the shade of the lamp towards you and looks at the side of your face.'),
+      n('You have been out on the line.'),
+      n('One side of your face.'),
+      aside('You put a hand to it. The skin there is hot and tight, as after a day in the sun. You had not felt it until now.'),
+      n('Tomás came back from it like that in June.'),
+      aside('She lets the shade go back.'),
+    ];
+    this.g.note(`${this.time()}. N. Vega, under her lamp in room 6: "You have been out on the line. One side of your face." The skin on that side is hot and tight, like sunburn. I had not felt it. "Tomás came back from it like that in June."${this.d.ch3.s.fb ? ' His field book has it: June 27, 1947.' : ''}`);
+    this.save();
   }
 
   private topicTomas() {

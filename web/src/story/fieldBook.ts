@@ -16,7 +16,9 @@ import { fieldBookView, envelopeView, envelopeFront, envelopeLit, type BookPage 
 // book is read once and stays as it was read (R4). What it has that the player has not seen yet,
 // comes on the way back (the herd turned for the truck, the knocks on the cab's roof, the lights
 // along B northbound too), each in its own director, one thing at a time as always.
-// The last page: "Three on plate 4. There were two of us." The envelope from the photo shop in
+// In June, one night out along C, he lost an hour and came back with one side of his face burned
+// (FORSLAG.md, 20 October, item 9 C): N. Vega sees the same on the player in room 6 after a time
+// away (story/Chapter4.ts, markTalk). The last page: "Three on plate 4. There were two of us." The envelope from the photo shop in
 // Roswell came back for him after he was gone; nobody opened it. Held up to the lamp: the
 // transit, and three small figures by it, the third not as sharp.
 // On the case board each thing in the book has its card from tonight, tied to the key the event
@@ -83,7 +85,7 @@ export function fbPages(times: Partial<Record<FbEvent, string>>): BookPage[] {
   const t = (e: FbEvent) => times[e] ? `${times[e]}. ` : '';
   const pages = [
     'T. VEGA\nFIELD BOOK 3\nJUNE - JULY 47\n\nSTA 01.  A, B, C.\n\nIf found, Sierra Motor Court,\nCaliche, N. Mex.',
-    'Jun 9. Footing for A poured on the transit line. Backsight to B. N. on the rod.\n\nJun 14. C staked out east, forty stakes. Cable laid from the hut to the pier.\n\nJun 20. N.\'s first plate has a mark on it that should not be there. Told her it was a mistake.',
+    'Jun 9. Footing for A poured on the transit line. Backsight to B. N. on the rod.\n\nJun 14. C staked out east, forty stakes. Cable laid from the hut to the pier.\n\nJun 20. N.\'s first plate has a mark on it that should not be there. Told her it was a mistake.\n\nJun 27. Night sight out on C. Lost an hour. One side of my face burned. Told N. it was the lamp.',
     `Jul 1. ${t('lights')}The highway north of the motel. Three lights, low, west of the road, keeping pace with the car. Then they turned off along B and went out.\n\nN. says ranch trucks. Ranch trucks have two lights.`,
     `Jul 3. ${t('cows')}The pasture south of the motel. The whole herd standing the same way. Took a bearing on them: 026. Nine head. Not one of them moved, with the headlights right on them.\n\nJul 4. ${t('cows2')}Eight. Where the ninth stood the grass is flat in a ring, white with frost. In July.`,
     `Jul 5. ${t('knocks')}Coming back up from Caliche, N. asleep against the door. Three knocks on the roof of the car, slow, from above. Nothing on the road behind.\n\nI did not stop. I did not wake her.`,
