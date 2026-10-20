@@ -175,13 +175,16 @@ export function areaMap(v: MapView) {
   const hhmm = (c: number) => { const d = ((c % 86400) + 86400) % 86400; return `${String(Math.floor(d / 3600)).padStart(2, '0')}:${String(Math.floor(d % 3600 / 60)).padStart(2, '0')}`; };
   const inTown: string[] = [];
   let k = 0;
+  // (two at the same spot, the truck on B at the turn-off twice: the second's time under the first's)
+  const drawn: [number, number][] = [];
   for (const m of marks) {
     const [x, y] = m.at ? spotXY(m.at) : [HX - 4 + (k % 3) * 14, 640 + Math.floor(k / 3) * 14];
     if (!m.at) k++;
     g.lineWidth = 2; g.strokeStyle = PENCIL; g.beginPath(); g.arc(x, y, 6, 0, Math.PI * 2); g.stroke();
     // a time away: a ring round it
     if (m.kind === 'away') { g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.stroke(); }
-    if (m.at) text(hhmm(m.clock), x - 64, y + 6, 20); else inTown.push(hhmm(m.clock));
+    const under = drawn.filter(([dx, dy]) => Math.hypot(dx - x, dy - y) < 12).length;
+    if (m.at) { text(hhmm(m.clock), x - 64, y + 6 + under * 20, 20); drawn.push([x, y]); } else inTown.push(hhmm(m.clock));
   }
   // the times in town, in a row under its name
   if (inTown.length) text(inTown.join(', '), 226, 734, 20);
