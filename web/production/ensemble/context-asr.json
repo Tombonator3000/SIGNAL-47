@@ -1,0 +1,269 @@
+{
+  "model": "Systran/faster-whisper-small",
+  "human_listened": false,
+  "samples": {
+    "stanton-rig-context": {
+      "id": "stanton-rig-context",
+      "group": "existing_dialogue_context",
+      "expected": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer. Towed a rig in off it once. Last October. Left here a quarter to two. Got back twenty-five past four. It's a forty minute job.",
+      "recognized": "The old roads closed at the crossing. County says they'll grade it this summer. County says that every summer, tow to rig in off it once last October. Left here a quarter to two, got back 25 past four. It's a 40 minute job.",
+      "strict_word_edits": 6,
+      "expected_words": 45,
+      "normalized_word_edits": 2,
+      "required_negative_signs": 0,
+      "recognized_negative_signs": 0,
+      "audio_sha256": "d3e387e3ea53b61d2f927614d628c382185e57878e47cc4a80bb00a9dd276779",
+      "status": "REVIEWED_DIFFERENCE",
+      "note": "Short towed/article articulation remains ambiguous, with numeric spelling differences. Human word/pronunciation check is UNVERIFIED; see word-diagnostics.json.",
+      "response": {
+        "text": "The old roads closed at the crossing. County says they'll grade it this summer. County says that every summer, tow to rig in off it once last October. Left here a quarter to two, got back 25 past four. It's a 40 minute job.",
+        "segments": [
+          {
+            "start": 0.21,
+            "end": 2.37,
+            "text": "The old roads closed at the crossing."
+          },
+          {
+            "start": 2.95,
+            "end": 4.59,
+            "text": "County says they'll grade it this summer."
+          },
+          {
+            "start": 5.37,
+            "end": 6.97,
+            "text": "County says that every summer,"
+          },
+          {
+            "start": 7.77,
+            "end": 9.79,
+            "text": "tow to rig in off it once last October."
+          },
+          {
+            "start": 10.23,
+            "end": 13.45,
+            "text": "Left here a quarter to two, got back 25 past four."
+          },
+          {
+            "start": 14.33,
+            "end": 15.61,
+            "text": "It's a 40 minute job."
+          }
+        ],
+        "language": "en",
+        "duration_s": 15.61,
+        "transcription_time_s": 1.13,
+        "engine": "faster-whisper"
+      },
+      "source_clip_ids": [
+        "22010a044849c8f3",
+        "79a44e7e5fd1e5bf",
+        "d56bdd61a80ce2fb",
+        "080a38b87176fc6c"
+      ],
+      "source_audio_sha256": [
+        "0a216bee9a0948a6d54e4f625b67872ede440a61d4a6214e694f104384a86893",
+        "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74",
+        "f9fe44128ff2bd9ebdc6d4b4683954b91e8efcdc5835eeedb4f37145874b6b8b",
+        "035333f0890548dfda209d37f116bd9a35ea3a645f4b1e4e84858793cc45ba50"
+      ],
+      "unresolved_asr_ambiguity": true
+    },
+    "stanton-till-context": {
+      "id": "stanton-till-context",
+      "group": "existing_dialogue_context",
+      "expected": "That phone takes dimes. I can read it. Keep it. I write down what goes in the till. I want it to add up.",
+      "recognized": "That phone takes dimes, I can read it, keep it, I write down what goes in the till I want it to add up.",
+      "strict_word_edits": 0,
+      "expected_words": 24,
+      "normalized_word_edits": 0,
+      "required_negative_signs": 0,
+      "recognized_negative_signs": 0,
+      "audio_sha256": "cbda68ebb917b084bc7640b201e5c47da3227893b5913d1575a240a45d3965ca",
+      "status": "PASS",
+      "note": "",
+      "response": {
+        "text": "That phone takes dimes, I can read it, keep it, I write down what goes in the till I want it to add up.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 7.48,
+            "text": "That phone takes dimes, I can read it, keep it, I write down what goes in the till I want it to add up."
+          }
+        ],
+        "language": "en",
+        "duration_s": 7.48,
+        "transcription_time_s": 0.99,
+        "engine": "faster-whisper"
+      },
+      "source_clip_ids": [
+        "ea2ae90b1d91d117",
+        "625190e94de15be0",
+        "71fd7972fd78795e"
+      ],
+      "source_audio_sha256": [
+        "f1ca403228858ba200cb8da67b76da3cf54c5f640de4d6c0bfd7e5aa35e6ae7e",
+        "ad5d4ad12f38b8db3d313e18be488be9690c92db8aa6af3af91d26018857a86b",
+        "8e599050fa06081f7710695791e7f0b3b99c462c4ed9c3800d7da1b2302809cd"
+      ]
+    },
+    "stack-pin-context": {
+      "id": "stack-pin-context",
+      "group": "existing_dialogue_context",
+      "expected": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time. Most of them are all over. But you put enough pins in anything, and some of them start to line up. Don't go asking them about it. They don't know they've got a pin.",
+      "recognized": "Red is engines dying, blue is cattle, yellow is lights, green is people who lost track of the time. Most of them are all over, but you put enough pins in anything and some of them start to line up. Don't go asking them about it. They don't know they've got a pin.",
+      "strict_word_edits": 0,
+      "expected_words": 53,
+      "normalized_word_edits": 0,
+      "required_negative_signs": 0,
+      "recognized_negative_signs": 0,
+      "audio_sha256": "152d68e805e4486b86836402608e682148bad4a59473009d49081ad92f7070e3",
+      "status": "PASS",
+      "note": "",
+      "response": {
+        "text": "Red is engines dying, blue is cattle, yellow is lights, green is people who lost track of the time. Most of them are all over, but you put enough pins in anything and some of them start to line up. Don't go asking them about it. They don't know they've got a pin.",
+        "segments": [
+          {
+            "start": 0.34,
+            "end": 6.4,
+            "text": "Red is engines dying, blue is cattle, yellow is lights, green is people who lost track of the time."
+          },
+          {
+            "start": 7.02,
+            "end": 12.88,
+            "text": "Most of them are all over, but you put enough pins in anything and some of them start to line up."
+          },
+          {
+            "start": 13.8,
+            "end": 17.06,
+            "text": "Don't go asking them about it. They don't know they've got a pin."
+          }
+        ],
+        "language": "en",
+        "duration_s": 17.06,
+        "transcription_time_s": 1.16,
+        "engine": "faster-whisper"
+      },
+      "source_clip_ids": [
+        "bcd48344aa27b453",
+        "39891e2464e2e381",
+        "7f7d4cb8653d87ad"
+      ],
+      "source_audio_sha256": [
+        "5c4d9c1758163410e8c5005d26187fa6417347f3eac27d7bac24b75e87a73806",
+        "7aa55aa0c7b485b104d65d24a4194ecf57c35d057ec2dd5a0a649440dbdc13da",
+        "39c7cfe8d6e13539c73c528a7a55b94d6d632af4cc6bc89e6852e30bab226327"
+      ]
+    },
+    "stack-town-context": {
+      "id": "stack-town-context",
+      "group": "existing_dialogue_context",
+      "expected": "Three of them are right here in town. The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for. A man whose wife sits out at the laundromat nights. March of '83. And a kid who called the radio station in September of '81. Family moved away after.",
+      "recognized": "Three of them are right here in town The fellow at the gas station October 19th last year went out to tow a rig and lost two hours He can't account for a man whose wife sits out at the laundromat nights March of 83 and a kid who called the radio station in September of 81 Family moved away after.",
+      "strict_word_edits": 2,
+      "expected_words": 61,
+      "normalized_word_edits": 2,
+      "required_negative_signs": 0,
+      "recognized_negative_signs": 0,
+      "audio_sha256": "e7362269120a0cbbc154e66c02dce9ba57909305d43f3e60ba3f62f6e1ee1f86",
+      "status": "REVIEWED_DIFFERENCE",
+      "note": "All source clauses including tow and Family moved away after are recognized in context; remaining fellow/fella and ordinal spelling differences are recorded.",
+      "response": {
+        "text": "Three of them are right here in town The fellow at the gas station October 19th last year went out to tow a rig and lost two hours He can't account for a man whose wife sits out at the laundromat nights March of 83 and a kid who called the radio station in September of 81 Family moved away after.",
+        "segments": [
+          {
+            "start": 0.69,
+            "end": 2.33,
+            "text": "Three of them are right here in town"
+          },
+          {
+            "start": 3.25,
+            "end": 9.53,
+            "text": "The fellow at the gas station October 19th last year went out to tow a rig and lost two hours"
+          },
+          {
+            "start": 9.53,
+            "end": 13.29,
+            "text": "He can't account for a man whose wife sits out at the laundromat nights"
+          },
+          {
+            "start": 14.07,
+            "end": 19.21,
+            "text": "March of 83 and a kid who called the radio station in September of 81"
+          },
+          {
+            "start": 20.21,
+            "end": 21.63,
+            "text": "Family moved away after"
+          }
+        ],
+        "language": "en",
+        "duration_s": 21.63,
+        "transcription_time_s": 1.17,
+        "engine": "faster-whisper"
+      },
+      "source_clip_ids": [
+        "c2931e01331160a6",
+        "a3d657e1a59ed461",
+        "4080f29637b3f907",
+        "16d01f724af485f2"
+      ],
+      "source_audio_sha256": [
+        "38b37d86cf5d9443bb1db42d43c34e02f1bc4926f73ee021d6a26ea5db6f9330",
+        "a629a611a006c9980017070bf1b704cc738429b58daabc549efb6cbd15e8530b",
+        "bf74bf491ee103dad3e3ba111a00efe77e62f84754824cfcce3c8657d36564bc",
+        "c7ba9f84da43ff40f58bedd937357411c8dbc4a8f526ad1810cd8fddaf71e86b"
+      ]
+    },
+    "stack-calls-context": {
+      "id": "stack-calls-context",
+      "group": "existing_dialogue_context",
+      "expected": "Calls. Every call I get that I can't write up as anything. Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "recognized": "Calls. Every call I get that I can't write up is anything. Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "strict_word_edits": 1,
+      "expected_words": 31,
+      "normalized_word_edits": 1,
+      "required_negative_signs": 0,
+      "recognized_negative_signs": 0,
+      "audio_sha256": "bbc463f8aa4be90674e41c8ccd885751821363fe76eab2b9380b152d6a9b6046",
+      "status": "REVIEWED_DIFFERENCE",
+      "note": "The opening Calls and full clause are recognized. Reduced as/is remains a small-model spelling/pronunciation ambiguity; no human listening claim.",
+      "response": {
+        "text": "Calls. Every call I get that I can't write up is anything. Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 0.7,
+            "text": "Calls."
+          },
+          {
+            "start": 1.52,
+            "end": 3.48,
+            "text": "Every call I get that I can't write up is anything."
+          },
+          {
+            "start": 4.32,
+            "end": 7.82,
+            "text": "Red is engines dying. Blue is cattle. Yellow is lights."
+          },
+          {
+            "start": 8.5,
+            "end": 10.28,
+            "text": "Green is people who lost track of the time."
+          }
+        ],
+        "language": "en",
+        "duration_s": 10.28,
+        "transcription_time_s": 1.07,
+        "engine": "faster-whisper"
+      },
+      "source_clip_ids": [
+        "16b8aad01575b86b",
+        "bcd48344aa27b453"
+      ],
+      "source_audio_sha256": [
+        "6fd3ed27290686bcb3f82d19312611e6dd68419ffa1ff1e74445049028347bb4",
+        "5c4d9c1758163410e8c5005d26187fa6417347f3eac27d7bac24b75e87a73806"
+      ]
+    }
+  }
+}

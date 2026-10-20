@@ -60,3 +60,9 @@ Sluttkontroll: radiostemmer 70/70 Pages og 71/71 streng-CSP enkeltfil, motor 77/
 ### 8. [x] Art Bell også som Earl i byen, direkte bestilt av Tom (`codex/art-bell-town`)
 
 Base: main `210b52f`, der radiovert og de nye innringerne allerede er flettet inn. Tom ba om samme Art Bell-stemme i samtalen med Earl. Alle 16 eksisterende EARL-replikker får egne opptak fra samme lokale profil, uten å endre manus eller progresjonskrav. Samme lagrede Art Bell-valg styrer radio og Earl, uavhengig av Kinski. Automatisk stemme ved buzzer og nye svar, med replay/stopp og ryddig avbrudd. YOU, asider, andre personer og vitnepapirer beholdes som egne tekst-/fortellerroller. Tidligere 1698 MP3 og tre kataloger bevares. Produksjon og bevis i `production/artbell-town/`.
+
+### 9. [x] Seks stemmer og Serling-forteller, direkte bestilt av Tom (`codex/voice-ensemble`)
+
+Fra main `5c25e05`. Stanton som bensinstasjonsbetjenten, Bacall som N. Vega i rommet/telefon/CB, Stack som visesheriffen, Lynch som suvenirmannen, Price som eksisterende T. Vega-opptaksfrase og Serling som forteller for objektbeskrivelser og all skrevet tekst mellom kapitlene. Eksisterende manus, progresjon, Art Bell og Kinski bevares. Serling og nye karakterstemmer får egne lagrede valg, standard På. Tekstdekning, naturlige bufferender, avbrudd, Pages/offline og regresjoner er kontrollert i sluttkandidaten. Menneskelig prøvelytting og de dokumenterte ASR-/uttaleusikkerhetene gjenstår.
+
+Oppgave 9: 100 karakterklipp og 1402 Serling-klipp er ferdige. Alle fire funksjonskjøringer, 21 kompatibilitetskjøringer, 13 spillregresjoner, lydkostnad, privatbankfri reserve og 12 CPU-kommandoer består. Caliches 18 nærblikkvarianter er inkludert etter et reelt dekningsfunn. Se `production/ensemble/qa/validation.json`. Vanlig autorisert PR/merge og kontroll av faktisk publisering utføres fra denne verifiserte kandidaten; lokale tester påstår ikke fremtidig publisering eller menneskelig lytting.

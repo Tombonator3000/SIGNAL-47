@@ -1,0 +1,37 @@
+PASS the recorded Art Bell host is on by default
+PASS the original procedural radio mode remains available
+PASS at 2.27 h: 1420 on the air, Roswell off until five, the far one there (music, dead, music)
+PASS the radio is off, and no station makes a sound
+PASS the hint on getting in says R turns the radio on
+PASS R: on, AM 1420, the station plays ({'on': True, 'station': 'caliche', 'live': True, 'power': 1}, listeners 1)
+PASS the dial is said: AM 1420
+PASS the dash: the dial lit, the needle at 1420 (293:true)
+PASS stopped in the yard, still in the cab
+PASS looking at the radio in the cab, it says what it does ((-0.48, -0.5), 'EAM 1420: next station')
+PASS E on the radio turns it to the next station, and does not get out (roswell)
+PASS the Night Line is captioned (['RADIO, a caller: "Anybody else lose the TV a little after two? Just a hum, most of a minute. Then it came back."', 'RADIO: "We lost the transmitter about then. Needle went to nothing for most of a minute. Ray, if you are listening, that one is yours."'])
+PASS now and then the static comes up over the station, and goes again (deepest 0.61; not too often or too deep since 16 October)
+PASS R again: 1230, Roswell, off the air before five (static), and 1420 stops making sound
+PASS R again: 1090, the far one, coming and going (0.90)
+PASS R after the last: off, the dial dark, no station making sound
+PASS 04:00: the Night Line signs off (talk)
+PASS its words are captioned: "signing off until six"
+PASS then the national anthem (anthem)
+PASS the anthem file plays on the radio ({'time': 4.667165, 'paused': False, 'failed': False})
+PASS after the anthem, the bare carrier (carrier)
+PASS then nothing: 1420 is off the air (dead)
+PASS 05:00: Roswell's carrier comes up (carrier)
+PASS it signs on, "beginning our broadcast day", and plays the anthem
+PASS the anthem file plays again ({'time': 3.646122, 'paused': False, 'failed': False})
+PASS then the morning programme (music)
+PASS the engine dies and the starter turns: the radio drops out (0.04), and comes back
+PASS out of the truck at saro: the radio plays on from the dash ({'on': True, 'station': 'roswell', 'live': True, 'power': 1})
+PASS on foot the Radio button is gone
+PASS in the diner after five, the radio behind the counter plays Roswell ({'on': True, 'station': 'roswell', 'live': True})
+PASS and before four the town's own station ({'on': True, 'station': 'caliche', 'live': True})
+PASS on the old road the radio is chapter six's: R leaves it alone
+PASS the pause menu has a radio level, kept on this device ([0.25, 0.25, '0.25'])
+PASS the boy calls the Night Line once, after 02:26; then the host says the line was dead ([False, True, True, False, True])
+PASS no console errors or warnings
+PASS no missing files ([])
+36 of 36 PASS

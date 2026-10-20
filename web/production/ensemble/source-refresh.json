@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "scope": "Final source/line metadata refresh after stable runtime. No new script, ID, role or audio.",
+  "banks": [
+    {
+      "bank": "ensemble",
+      "clips": 100,
+      "ids_text_roles_unchanged": true,
+      "before_corpus_sha256": "d365056cbd5ad55ce886d341b5243bc8fe0b715dd41f95a6f8d67a1a3010ea07",
+      "final_corpus_sha256": "d365056cbd5ad55ce886d341b5243bc8fe0b715dd41f95a6f8d67a1a3010ea07"
+    },
+    {
+      "bank": "serling",
+      "clips": 1384,
+      "ids_text_roles_unchanged": true,
+      "before_corpus_sha256": "99ac7dc9c44c6d28b3e5f19a682283d27fcf0d3b8f724ee513d6cd0d26c29187",
+      "final_corpus_sha256": "53428856c77369cd9d393978c7877e9db8bc81947744c5f5e4fcd91c9f51ddee"
+    }
+  ],
+  "serling_scope_metadata_refresh": {
+    "before_corpus_sha256": "95c8acee2b819fca65a3278e662669b2cd59334520752924c57e1b5caf9fbaa0",
+    "final_corpus_sha256": "cc71c4300940168d489d76f65c2a68824144e72384eb0d0c6f015fffbce323cc",
+    "ids_and_text_unchanged": true,
+    "reason": "Replace inherited telephone/full-Kinski segmentation wording with the actual Serling narration and all chapter fields."
+  },
+  "excluded_non_prose": {
+    "id": "063c8cee24a6067c",
+    "final_clips": 1384,
+    "source_evidence": "serling/excluded-text.json"
+  }
+}

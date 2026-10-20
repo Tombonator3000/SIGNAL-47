@@ -38,8 +38,11 @@ function fixture({ remote = false, byteSize = 96000 } = {}) {
   };
   const audio = { ctx, master: {}, radioBus: {}, unlock() { ++f.unlocks; return Promise.resolve(); } };
   const output = {};
+  const playback = {};
+  vm.runInNewContext(base.compile(fs.readFileSync('src/core/recordedDialogue.ts', 'utf8')),
+    { exports: playback, AbortController });
   vm.runInNewContext(base.compile(fs.readFileSync('src/core/earlDialogue.ts', 'utf8')),
-    { exports: output, require: () => voice, AbortController });
+    { exports: output, require: name => name.includes('recordedDialogue') ? playback : voice, AbortController });
   f.reader = new output.EarlDialogue(audio); f.reader.enabled = true;
   f.ctx = ctx; f.audio = audio; f.latest = () => f.starts.at(-1);
   return f;

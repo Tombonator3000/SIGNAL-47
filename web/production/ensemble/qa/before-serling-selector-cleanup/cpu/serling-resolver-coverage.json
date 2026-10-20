@@ -1,0 +1,283 @@
+{
+  "evidence": "Text-only shared-resolver coverage using synthetic URLs; no real audio claim",
+  "corpusClips": 1385,
+  "passed": 26,
+  "total": 26,
+  "unknown": [],
+  "cases": [
+    {
+      "id": "examine-turning",
+      "text": "S-03. It is turning, the drive motors whining. Az 142, el 32.",
+      "expected": true,
+      "segments": [
+        "S",
+        "zero",
+        "three",
+        ". It is turning, the drive motors whining. Az",
+        "one",
+        "hundred",
+        "forty",
+        "two",
+        ", el",
+        "thirty",
+        "two"
+      ]
+    },
+    {
+      "id": "examine-aligned",
+      "text": "S-03. Az 026, el 32. Every dish in the array points the same way.",
+      "expected": true,
+      "segments": [
+        "S",
+        "zero",
+        "three",
+        ". Az 026, el",
+        "thirty",
+        "two",
+        ". Every dish in the array points the same way."
+      ]
+    },
+    {
+      "id": "examine-scenery",
+      "text": "S-01. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 142, el 48.",
+      "expected": true,
+      "segments": [
+        "S",
+        "zero",
+        "one",
+        ". A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az",
+        "one",
+        "hundred",
+        "forty",
+        "two",
+        ", el",
+        "forty",
+        "eight"
+      ]
+    },
+    {
+      "id": "examine-negative",
+      "text": "S-27. Az 026, el -10. Every dish in the array points the same way.",
+      "expected": true,
+      "segments": [
+        "S",
+        "twenty",
+        "seven",
+        ". Az 026, el",
+        "minus",
+        "ten",
+        ". Every dish in the array points the same way."
+      ]
+    },
+    {
+      "id": "note-clock",
+      "text": "03:14. A cardboard alien, standing where nobody would put one. Nobody was there.",
+      "expected": true,
+      "segments": [
+        "three",
+        "fourteen",
+        ". A cardboard alien, standing where nobody would put one. Nobody was there."
+      ]
+    },
+    {
+      "id": "note-without-clock",
+      "text": "Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.",
+      "expected": true,
+      "segments": [
+        ". Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing."
+      ]
+    },
+    {
+      "id": "note-line",
+      "text": "04:15. Three on one line. Drawn in on the map: across the highway just south of the motel, and on to the west-south-west, through STATION 01.",
+      "expected": true,
+      "segments": [
+        "four",
+        "fifteen",
+        ". Three on one line. Drawn in on the map: across the highway just south of the motel, and on to the west-south-west, through STATION 01."
+      ]
+    },
+    {
+      "id": "photo-clock",
+      "text": "Exposed from the S-03 apron at 02:47:11. The central antenna, and below it the B-12 reference vane in the lower foreground.",
+      "expected": true,
+      "segments": [
+        "Exposed from the S-03 apron at",
+        "two",
+        "forty",
+        "seven",
+        "eleven",
+        ". The central antenna, and below it the B-12 reference vane in the lower foreground."
+      ]
+    },
+    {
+      "id": "photo-control-clock",
+      "text": "Exposed from the B-12 sight line at 03:12:47, under the shielded, passive control.",
+      "expected": true,
+      "segments": [
+        "Exposed from the B-12 sight line at",
+        "three",
+        "twelve",
+        "forty",
+        "seven",
+        ", under the shielded, passive control."
+      ]
+    },
+    {
+      "id": "kit-name",
+      "text": "Field camera",
+      "expected": true,
+      "segments": [
+        "Field camera"
+      ]
+    },
+    {
+      "id": "kit-count",
+      "text": "6 case frames, 32 of 36 free frames left",
+      "expected": true,
+      "segments": [
+        "six",
+        "case frames,",
+        "thirty",
+        "two",
+        "of",
+        "thirty",
+        "six",
+        "free frames left"
+      ]
+    },
+    {
+      "id": "kit-note",
+      "text": "The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album.",
+      "expected": true,
+      "segments": [
+        "The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album."
+      ]
+    },
+    {
+      "id": "kit-truck",
+      "text": "Outside the gate at STATION 01",
+      "expected": true,
+      "segments": [
+        "Outside the gate at STATION 01"
+      ]
+    },
+    {
+      "id": "person-name",
+      "text": "Dr. Evelyn Ward",
+      "expected": true,
+      "segments": [
+        "Dr. Evelyn Ward"
+      ]
+    },
+    {
+      "id": "person-role",
+      "text": "SARO, duty officer",
+      "expected": true,
+      "segments": [
+        "SARO, duty officer"
+      ]
+    },
+    {
+      "id": "person-note",
+      "text": "On the line from the main site. Wants the run checked and logged by the book.",
+      "expected": true,
+      "segments": [
+        "On the line from the main site. Wants the run checked and logged by the book."
+      ]
+    },
+    {
+      "id": "album-one",
+      "text": "The phone.",
+      "expected": true,
+      "segments": [
+        "the phone"
+      ]
+    },
+    {
+      "id": "album-two",
+      "text": "The phone and my coffee.",
+      "expected": true,
+      "segments": [
+        "the phone",
+        "and",
+        "my coffee"
+      ]
+    },
+    {
+      "id": "album-ids",
+      "text": "B-12 and the S-03 motor cabinet.",
+      "expected": true,
+      "segments": [
+        "B-12",
+        "and",
+        "the S-03 motor cabinet"
+      ]
+    },
+    {
+      "id": "album-meta",
+      "text": "Control room, 03:14",
+      "expected": true,
+      "segments": [
+        "Control room",
+        "three",
+        "fourteen"
+      ]
+    },
+    {
+      "id": "album-meta-field",
+      "text": "STATION 01, field hut, 04:05",
+      "expected": true,
+      "segments": [
+        "STATION 01, field hut",
+        "four",
+        "zero",
+        "five"
+      ]
+    },
+    {
+      "id": "negative-distance",
+      "text": "SOURCE DISTANCE: -39 LY",
+      "expected": true,
+      "segments": [
+        "SOURCE DISTANCE: -39 LY"
+      ]
+    },
+    {
+      "id": "identifier-e09a",
+      "text": "E09A",
+      "expected": true,
+      "segments": [
+        "E",
+        "zero",
+        "nine",
+        "A"
+      ]
+    },
+    {
+      "id": "identifier-p13",
+      "text": "P13",
+      "expected": true,
+      "segments": [
+        "P",
+        "thirteen"
+      ]
+    },
+    {
+      "id": "identifier-frame",
+      "text": "frame01",
+      "expected": true,
+      "segments": [
+        "frame",
+        "zero",
+        "one"
+      ]
+    },
+    {
+      "id": "unknown-must-fail",
+      "text": "An invented unrecorded platypus description.",
+      "expected": false,
+      "segments": null
+    }
+  ]
+}

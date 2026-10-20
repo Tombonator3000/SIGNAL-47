@@ -1,0 +1,38 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+  "source_state": "uncommitted voice-ensemble runtime",
+  "scope": "CPU-controlled clock, loader and source-end fixtures; includes never-settling loader deadlines, text-only corpus resolution and real main/UI/story functions. Does not prove actual MP3 decode, audible quality or device performance.",
+  "results": [
+    {
+      "name": "readaloud-corpus",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/readaloud-core.cjs --corpus",
+      "log": "readaloud-corpus.log",
+      "exit_code": 0,
+      "seconds": 1.1312411050021183
+    },
+    {
+      "name": "saves",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/saves.cjs",
+      "log": "saves.log",
+      "exit_code": 0,
+      "seconds": 1.516968543000985
+    },
+    {
+      "name": "steercheck",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "npm run steercheck",
+      "log": "steercheck.log",
+      "exit_code": 0,
+      "seconds": 0.2726524469908327
+    }
+  ]
+}

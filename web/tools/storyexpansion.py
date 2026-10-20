@@ -22,6 +22,8 @@ async def main():
         pg.set_default_timeout(180000)
         errors = []
         pg.on('pageerror', lambda e: errors.append(str(e)))
+        # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+        await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
         await pg.add_init_script('HTMLElement.prototype.requestPointerLock = function() { return Promise.resolve(); };')
         await pg.goto(URL)
         await pg.evaluate('localStorage.clear()')

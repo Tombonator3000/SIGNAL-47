@@ -1,0 +1,355 @@
+{
+  "version": 1,
+  "reviewed_utc": "2026-10-20T01:03:13.773514+00:00",
+  "status": "REVIEWED_WITH_LIMITATIONS",
+  "method": "Ny visuell vurdering av de 16 aktuelle PNG-bildene med view_image. Ingen nettleser eller GPU startet for vurderingen.",
+  "candidate_identity": {
+    "single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+    "build_manifest_sha256": "802d582bb83c30933170d69cadce51c3d330447349008f4e80b03c7f2d6a3be1",
+    "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e"
+  },
+  "scope": "Bare de synlige utsnittene i de 16 navngitte Serling- og ensemblebildene fra Pages og enkeltfilen etter Kinski-redraw-rettingen.",
+  "images": [
+    {
+      "file": "production/ensemble/qa/serling-pages/serling-desktop.png",
+      "sha256": "b6332f583a95ab6d18533eb9193064e8a0e01b01a856a65e7bb782f991e10179",
+      "bytes": 1316873,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "Foto-labskiltet og den pågående beskrivelsen vises i samme 1280 ganger 800-scene.",
+        "Beskrivelsen og instruksen SHUT THE DOOR WHEN THE RED LIGHT IS ON får plass på to sentrerte linjer uten synlig horisontal klipping.",
+        "Stop reading [V] ligger øverst til høyre under klokken 23:41 uten synlig innbyrdes overlapp."
+      ],
+      "limitations": [
+        "Én nærblikkbeskrivelse og HUD-tilstand er vist; bildet beviser ikke knappens funksjon eller hele tekstbankens dekning."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/serling-pages/serling-mobile.png",
+      "sha256": "a1e3586cdd4241fad910bab5a54d63fc6124e497b2aaca303b7881cd271b45bf",
+      "bytes": 464795,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "Ved 844 ganger 390 er Pause, Notes, klokke og Stop reading [V] synlige som adskilte kontroller.",
+        "Stop reading-knappen ligger fritt fra de øvrige viste kontrollene.",
+        "Beskrivelsesteksten nederst er nedtonet i fangstøyeblikket. Zoom-flaten ligger i samme område som høyre del av første tekstlinje."
+      ],
+      "limitations": [
+        "Det ene stillbildet avgjør ikke om den svake tekstkontrasten bare er en uttoningsfase, eller om den oppleves vedvarende under bruk.",
+        "Mobilkontrollen er bare vurdert visuelt på den lagrede skjermstørrelsen."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/serling-pages/prologue-phase-A.png",
+      "sha256": "8a400d0cb018834360cb091cebf21395ad04a5dc6f64489efdb2b1c9fa0caee2",
+      "bytes": 20066,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "A-fasen viser NIGHT SHIFT // EVERY DISH AT AZ 026 og hele oppsummeringen sentrert på svart bakgrunn.",
+        "Overskrift og de to oppsummeringslinjene er fullt lesbare med god klaring til bildekantene.",
+        "B-tittel er ikke synlig samtidig; ingen synlig tekstklipping eller overlapp."
+      ],
+      "limitations": [
+        "Bildet viser én A-fase og beviser ikke alene lydsynkronisering eller holdetid."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/serling-pages/prologue-phase-B.png",
+      "sha256": "44ec780c54be9c8b747d52fdd517f2ce38db0298ef55f8334761a71e245520a0",
+      "bytes": 15703,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "B-fasen viser CHAPTER ONE, THE SECOND EXPOSURE og 02:16 på separate linjer.",
+        "Hele den store tittelen er synlig med god kontrast og klaring; A-oppsummeringen er ikke synlig samtidig."
+      ],
+      "limitations": [
+        "Bare prologens B-fase er inspisert. Bildet beviser ikke talens ord eller fasebyttets tidspunkt."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/serling-pages/mobile-prologue-phase-A.png",
+      "sha256": "a00ea0f989ebe7ecebe3895fed7c9553f4909ba4bd00f22a4a7f8e9eebd2f82c",
+      "bytes": 15370,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "A-fasens grønne overskrift og hele oppsummeringen får plass sentrert ved 844 ganger 390.",
+        "De to oppsummeringslinjene er lesbare og har fri plass rundt seg. Ingen B-tekst eller synlig klipping."
+      ],
+      "limitations": [
+        "Bildet beviser ikke alene lydens varighet eller synkronisering."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/serling-pages/mobile-prologue-phase-B.png",
+      "sha256": "4f5ec300150565e9f0c33b48c6181c8fb440b6b84c3a39773e5717aa523adfb8",
+      "bytes": 10499,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "CHAPTER ONE, hele THE SECOND EXPOSURE og klokken 02:16 passer innenfor 844 ganger 390.",
+        "Tittelen er lesbar uten synlig klipping, og A-oppsummeringen er ikke synlig samtidig."
+      ],
+      "limitations": [
+        "Dette er én mobiltittel; øvrige kapitteltitlers bildeutforming er ikke inspisert her."
+      ],
+      "variant": "pages"
+    },
+    {
+      "file": "production/ensemble/qa/ensemble-pages/ensemble-desktop.png",
+      "sha256": "d4f6ff2a52048f2685639be61d58e1a7d621c510f8e94fd3302c6740934757a2",
+      "bytes": 510875,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "variant": "pages",
+      "status": "REVIEWED",
+      "observations": [
+        "Hele samtalepanelet er synlig ved 1280 ganger 800.",
+        "Overskrift, portrett, YOU- og ATTENDANT-replikker, tre samtalevalg, Close og Replay voice er lesbare uten synlig overlapp eller klipping.",
+        "Synthetic Harry Dean Stanton parody er tydelig merket ved Replay-knappen."
+      ],
+      "limitations": [
+        "Bildet viser ett betjentsvar, ikke alle figurer eller samtalegrener."
+      ]
+    },
+    {
+      "file": "production/ensemble/qa/ensemble-pages/ensemble-mobile.png",
+      "sha256": "b96c2216d146cb567817f9c35164f2af3ba149a49755bab6ce870aa5600abe65",
+      "bytes": 80648,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "variant": "pages",
+      "status": "REVIEWED",
+      "observations": [
+        "Ved 844 ganger 390 vises det rullede nedre samtaleutsnittet etter Replay-tap.",
+        "Fire valg, Replay voice og den syntetiske stemmemerkingen passer horisontalt uten synlig overlapp.",
+        "De synlige valgene har tydelige knappeflater og lesbare etiketter."
+      ],
+      "limitations": [
+        "Overskrift, portrett og replikktekst ligger ovenfor det rullede utsnittet og er ikke visuelt kontrollert i dette mobilbildet.",
+        "Det rullbare utsnittet beviser ikke i seg selv en produktfeil eller lesbarheten til panelets toppdel."
+      ]
+    },
+    {
+      "file": "production/ensemble/qa/ensemble-single/ensemble-desktop.png",
+      "sha256": "e5a63784e51105ebaf7b0132a400b94c77129d1e9d0b34cd9e47af8aa7aca16e",
+      "bytes": 511121,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "variant": "strict-csp-single",
+      "status": "REVIEWED",
+      "observations": [
+        "Hele samtalepanelet er synlig ved 1280 ganger 800.",
+        "Overskrift, portrett, YOU- og ATTENDANT-replikker, tre samtalevalg, Close og Replay voice er lesbare uten synlig overlapp eller klipping.",
+        "Synthetic Harry Dean Stanton parody er tydelig merket ved Replay-knappen."
+      ],
+      "limitations": [
+        "Bildet viser ett betjentsvar, ikke alle figurer eller samtalegrener."
+      ]
+    },
+    {
+      "file": "production/ensemble/qa/ensemble-single/ensemble-mobile.png",
+      "sha256": "13457047fbe22edf19ed16a60bdd5feeed62fb78963cd28e99bf267bfb87d0dd",
+      "bytes": 80360,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "variant": "strict-csp-single",
+      "status": "REVIEWED",
+      "observations": [
+        "Ved 844 ganger 390 vises det rullede nedre samtaleutsnittet etter Replay-tap.",
+        "Fire valg, Replay voice og den syntetiske stemmemerkingen passer horisontalt uten synlig overlapp.",
+        "De synlige valgene har tydelige knappeflater og lesbare etiketter."
+      ],
+      "limitations": [
+        "Overskrift, portrett og replikktekst ligger ovenfor det rullede utsnittet og er ikke visuelt kontrollert i dette mobilbildet.",
+        "Det rullbare utsnittet beviser ikke i seg selv en produktfeil eller lesbarheten til panelets toppdel."
+      ]
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/serling-desktop.png",
+      "sha256": "705c4630409301b83f11f367a9f0125120e96e3160e9c067fead322cb970fb4f",
+      "bytes": 1316614,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "Foto-labskiltet og den pågående beskrivelsen vises i samme 1280 ganger 800-scene.",
+        "Beskrivelsen og instruksen SHUT THE DOOR WHEN THE RED LIGHT IS ON får plass på to sentrerte linjer uten synlig horisontal klipping.",
+        "Stop reading [V] ligger øverst til høyre under klokken 23:41 uten synlig innbyrdes overlapp."
+      ],
+      "limitations": [
+        "Én nærblikkbeskrivelse og HUD-tilstand er vist; bildet beviser ikke knappens funksjon eller hele tekstbankens dekning."
+      ],
+      "variant": "strict-csp-single"
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/serling-mobile.png",
+      "sha256": "e5dca9e347dea16b8d69c2f3f88a47c153626fe80dd1fd678dd52b7b9d07f8fd",
+      "bytes": 463895,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "Ved 844 ganger 390 er Pause, Notes, klokke og Stop reading [V] synlige som adskilte kontroller.",
+        "Stop reading-knappen ligger fritt fra de øvrige viste kontrollene.",
+        "Beskrivelsesteksten nederst er nedtonet i fangstøyeblikket. Zoom-flaten ligger i samme område som høyre del av første tekstlinje."
+      ],
+      "limitations": [
+        "Det ene stillbildet avgjør ikke om den svake tekstkontrasten bare er en uttoningsfase, eller om den oppleves vedvarende under bruk.",
+        "Mobilkontrollen er bare vurdert visuelt på den lagrede skjermstørrelsen."
+      ],
+      "variant": "strict-csp-single"
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/prologue-phase-A.png",
+      "sha256": "8a400d0cb018834360cb091cebf21395ad04a5dc6f64489efdb2b1c9fa0caee2",
+      "bytes": 20066,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "A-fasen viser NIGHT SHIFT // EVERY DISH AT AZ 026 og hele oppsummeringen sentrert på svart bakgrunn.",
+        "Overskrift og de to oppsummeringslinjene er fullt lesbare med god klaring til bildekantene.",
+        "B-tittel er ikke synlig samtidig; ingen synlig tekstklipping eller overlapp."
+      ],
+      "limitations": [
+        "Bildet viser én A-fase og beviser ikke alene lydsynkronisering eller holdetid."
+      ],
+      "variant": "strict-csp-single"
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/prologue-phase-B.png",
+      "sha256": "44ec780c54be9c8b747d52fdd517f2ce38db0298ef55f8334761a71e245520a0",
+      "bytes": 15703,
+      "dimensions": {
+        "width": 1280,
+        "height": 800
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "B-fasen viser CHAPTER ONE, THE SECOND EXPOSURE og 02:16 på separate linjer.",
+        "Hele den store tittelen er synlig med god kontrast og klaring; A-oppsummeringen er ikke synlig samtidig."
+      ],
+      "limitations": [
+        "Bare prologens B-fase er inspisert. Bildet beviser ikke talens ord eller fasebyttets tidspunkt."
+      ],
+      "variant": "strict-csp-single"
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/mobile-prologue-phase-A.png",
+      "sha256": "a00ea0f989ebe7ecebe3895fed7c9553f4909ba4bd00f22a4a7f8e9eebd2f82c",
+      "bytes": 15370,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "A-fasens grønne overskrift og hele oppsummeringen får plass sentrert ved 844 ganger 390.",
+        "De to oppsummeringslinjene er lesbare og har fri plass rundt seg. Ingen B-tekst eller synlig klipping."
+      ],
+      "limitations": [
+        "Bildet beviser ikke alene lydens varighet eller synkronisering."
+      ],
+      "variant": "strict-csp-single"
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/mobile-prologue-phase-B.png",
+      "sha256": "4f5ec300150565e9f0c33b48c6181c8fb440b6b84c3a39773e5717aa523adfb8",
+      "bytes": 10499,
+      "dimensions": {
+        "width": 844,
+        "height": 390
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "status": "REVIEWED",
+      "observations": [
+        "CHAPTER ONE, hele THE SECOND EXPOSURE og klokken 02:16 passer innenfor 844 ganger 390.",
+        "Tittelen er lesbar uten synlig klipping, og A-oppsummeringen er ikke synlig samtidig."
+      ],
+      "limitations": [
+        "Dette er én mobiltittel; øvrige kapitteltitlers bildeutforming er ikke inspisert her."
+      ],
+      "variant": "strict-csp-single"
+    }
+  ],
+  "blocking_visual_findings": [],
+  "nonblocking_visual_observations": [
+    {
+      "file": "production/ensemble/qa/serling-pages/serling-mobile.png",
+      "detail": "Beskrivelsen er nedtonet i fangstøyeblikket, og Zoom-flaten ligger i samme område som høyre del av første tekstlinje. Stillbildet avgjør ikke om dette er en vedvarende lesbarhetsfeil. Samme eksisterende HUD-observasjon er beholdt fra tidligere vurdering."
+    },
+    {
+      "file": "production/ensemble/qa/serling-single/serling-mobile.png",
+      "detail": "Også offline-bildet viser nedtonet beskrivelsestekst og Zoom-flaten i samme område som høyre del av første tekstlinje. Stillbildet avgjør ikke om dette er en vedvarende lesbarhetsfeil."
+    }
+  ],
+  "conclusion": "Ingen blokkerende visuelle feil funnet i de 16 aktuelle utsnittene. A/B-kortene er lesbare på desktop og mobil i begge byggvariantene. Mobilens tekst- og utsnittsbegrensninger er bevart.",
+  "historical_review": {
+    "archive_base": "outputs/ensemble/before-kinski-redraw-fix",
+    "file": "visual-review.json",
+    "sha256": "3380fcd77a2a5bea09fcecd236f8d8c6f60307e777e975ce8d9e11174665f21f",
+    "scope": "Tidligere kandidat med 16 inspiserte bilder. Historikken attesterer ikke den nåværende kandidaten."
+  },
+  "limitations": [
+    "Bare de 16 navngitte aktuelle bildene er inspisert for dette bygget. Andre figurer, samtalegrener og kapittelkort er ikke visuelt vurdert her.",
+    "Kortbildene viser prologen. Andre kapitteltitlers visuelle utforming er ikke inspisert her.",
+    "Stillbilder beviser ikke fasevarighet, naturlig taleavslutning, lydsynkronisering, stemmelikhet, rolleklang, uttale, fysisk lyd eller enhetsytelse."
+  ]
+}

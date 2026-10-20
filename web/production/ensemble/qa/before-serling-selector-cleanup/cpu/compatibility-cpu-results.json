@@ -1,0 +1,38 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc",
+  "source_state": "uncommitted voice-ensemble runtime",
+  "scope": "All 12 commands freshly rerun after the mixed Nora/Price parody-label correction and same-card narrator-Off text fallback. CPU-controlled clocks, loaders and source-end fixtures include never-settling deadlines, text-only corpus resolution, visible chapter phases and real main/UI/story functions. No previous command result is reused. Does not prove actual MP3 decode, audible quality or device performance.",
+  "results": [
+    {
+      "name": "readaloud-corpus",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/readaloud-core.cjs --corpus",
+      "log": "readaloud-corpus.log",
+      "exit_code": 0,
+      "seconds": 1.2899461020133458
+    },
+    {
+      "name": "saves",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/saves.cjs",
+      "log": "saves.log",
+      "exit_code": 0,
+      "seconds": 1.680287254974246
+    },
+    {
+      "name": "steercheck",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "npm run steercheck",
+      "log": "steercheck.log",
+      "exit_code": 0,
+      "seconds": 0.24820496499887668
+    }
+  ]
+}

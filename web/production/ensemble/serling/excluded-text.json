@@ -1,0 +1,27 @@
+{
+  "excluded": [
+    {
+      "corpus_row": {
+        "id": "063c8cee24a6067c",
+        "text": ".lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card span, figcaption",
+        "sources": [
+          {
+            "file": "src/ui/UI.ts",
+            "line": 328,
+            "kind": "description",
+            "trigger": "html-prose",
+            "fragment": false
+          }
+        ]
+      },
+      "runtime_catalog_row": {
+        "id": "063c8cee24a6067c",
+        "text": ".lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card span, figcaption",
+        "duration": 5.04,
+        "file": "063c8cee24a6067c.mp3"
+      },
+      "discarded_mp3_sha256": "c879e7adb00d9fa84a260296f44b873840fa5d1ebf9a2d864e2a1723ff6a1307",
+      "reason": "CSS selector argument from UI.bindDescription implementation, not rendered game prose. Excluded only from the new Serling bank; original Kinski artifacts are preserved."
+    }
+  ]
+}

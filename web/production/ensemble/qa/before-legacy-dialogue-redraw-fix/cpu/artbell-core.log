@@ -1,0 +1,9 @@
+base_commit: 5c25e05664e668b245d95c4a25d98be4e312a4d8
+runtime_source_sha256: f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc
+command: node tools/artbell-core.cjs
+tts_ready_sha256: 08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9
+serling_corpus_sha256: 771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74
+serling_clips: 1402
+ensemble_clips: 100
+
+artbell-core: 48/48 PASS

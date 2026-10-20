@@ -1,5 +1,7 @@
 # Kinski-opplesning
 
+Fra Toms bestilling 20. oktober tar Rod Serling over objektbeskrivelser og mellomkapitteltekst når **Rod Serling narrator** er På. Kinski-valget og alle tidligere opptak beholdes. Kinski leser fortsatt papirer og eldre telefonroller, og beskrivelser når Serling er Av. Nye karakterstemmer styres separat og har forrang for sine egne NPC-er og replikktekster. Se `production/ensemble/README.md` for gjeldende produksjon og prøver.
+
 Bestilt direkte av Tom 19. oktober 2026. Første arbeidsgren: `codex/kinski-read-aloud`, fra main `bada636`. Den tidligere telefonleveransen er flettet inn etter Toms beskjed. Beskrivelsesutvidelsen er bestilt direkte av Tom på `codex/kinski-descriptions`, fra main `95719a4`. GitHub Actions bygger og publiserer nettspillet ved push til main.
 
 ## Bruk

@@ -1,6 +1,7 @@
 import type { UI } from './UI';
 import { PRINT, PHOTO_W, PHOTO_H } from '../core/FieldCamera';
 import { portraitOf } from '../core/portraits';
+import { characterLines, type CharacterVoice } from '../core/npcDialogue';
 
 // Panels for chapter one: wet bench, contact print, reference file, B-12 control,
 // two exposures and the local report. Text inside the game is English (1986).
@@ -268,12 +269,14 @@ export function talk(ui: UI, o: {
   onLines?: (lines: TalkLine[]) => void;
   /** The studio-door conversation, with its own optional voice. */
   earl?: boolean;
+  character?: CharacterVoice;
   onClose?: () => void;
 }) {
   const el = shell(ui, o.title, '<p class="lp-sub" data-status></p><div class="talk" data-body></div><div data-reading></div>', o.onClose);
   const statusEl = el.querySelector('[data-status]') as HTMLElement;
   const body = el.querySelector('[data-body]') as HTMLElement;
   let shown = '';
+  let readingShown = '';
   const render = () => {
     if (!el.isConnected) return;
     const v = o.view();
@@ -281,17 +284,28 @@ export function talk(ui: UI, o: {
     // new lines come one after another; a redraw of the same lines does not repeat that
     const key = JSON.stringify(v.lines);
     const fresh = key !== shown;
+    const reply = o.character === 'bacall' && ui.npcDialogue?.enabled && v.reply ? /^N\. VEGA: "([\s\S]*)"$/.exec(v.reply.text) : null;
+    const currentSpeech = reply ? [{ who: 'N. VEGA', text: reply[1] }] : v.lines;
+    const readingKey = JSON.stringify([v.lines, reply?.[1] ?? null]);
     let playEarl: (() => void) | null = null;
-    if (fresh) {
-      ui.readAloud?.stop();
+    let playCharacter: (() => void) | null = null;
+    if (readingKey !== readingShown) {
+      ui.descriptionReader?.stop(); ui.readAloud?.stop();
       if (o.earl) ui.earlDialogue?.stop();
+      if (o.character) ui.npcDialogue?.stop();
       const reading = el.querySelector<HTMLElement>('[data-reading]')!;
       reading.replaceChildren();
       const earl = o.earl && ui.earlDialogue?.enabled;
-      const texts = v.lines.filter((line) => !earl || line.who !== 'EARL').map((line) => line.text);
+      const voiced = o.character && ui.npcDialogue?.enabled ? characterLines(o.character, v.lines) : [];
+      const texts = v.lines.filter((line) => (!earl || line.who !== 'EARL') && !voiced.includes(line)).map((line) => line.text);
       if (texts.length) ui.readingControls(reading, texts);
       if (earl) playEarl = ui.earlReadingControls(reading, v.lines);
+      if (o.character && ui.npcDialogue?.enabled) {
+        const play = ui.characterReadingControls(reading, o.character, currentSpeech);
+        if (fresh || reply) playCharacter = play;
+      }
     }
+    readingShown = readingKey;
     shown = key;
     // the face of whoever spoke last (core/portraits.ts), once there is a picture of them
     const last = [...v.lines].reverse().find((l) => l.who && l.who !== 'YOU');
@@ -305,17 +319,20 @@ export function talk(ui: UI, o: {
         <div class="lp-row"><button class="lp-btn primary" data-a="table">${esc(v.table.submit)}</button></div>` : ''}
       ${v.question ? `<p class="lp-q">${esc(v.question)}</p>` : ''}
       <div class="lp-col">${v.choices.map((c) => `<button class="lp-btn" data-c="${c.id}" ${c.disabled ? 'disabled' : ''}>${esc(c.label)}</button>`).join('')}</div>
-      ${v.reply ? `<p class="lp-text ${v.reply.ok ? 'good' : 'bad'}">${esc(v.reply.text)}</p>` : ''}
+      ${v.reply ? `<p ${reply && ui.npcDialogue?.enabled ? 'data-character-quote' : ''} class="lp-text ${v.reply.ok ? 'good' : 'bad'}">${esc(v.reply.text)}</p>` : ''}
       ${v.given?.length ? `<p class="lp-small">On the table</p><div class="lp-row">${v.given.map((g) => `<button class="lp-btn" data-read="${g.id}">${esc(g.label)}</button>`).join('')}</div>` : ''}`;
-    body.querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((b) => b.addEventListener('click', () => { o.onChip(b.dataset.chip!); render(); }));
-    body.querySelector('[data-a=table]')?.addEventListener('click', () => { o.onTable(); render(); });
+    const stopCharacter = () => { if (o.character) ui.npcDialogue?.stop(); };
+    body.querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((b) => b.addEventListener('click', () => { stopCharacter(); o.onChip(b.dataset.chip!); render(); }));
+    body.querySelector('[data-a=table]')?.addEventListener('click', () => { stopCharacter(); o.onTable(); render(); });
     body.querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) => b.addEventListener('click', () => {
       if (o.earl) ui.earlDialogue?.stop();
+      stopCharacter();
       o.onChoice(b.dataset.c!); render();
     }));
     body.querySelectorAll<HTMLButtonElement>('[data-read]').forEach((b) => b.addEventListener('click', () => o.onRead(b.dataset.read!)));
     if (fresh) o.onLines?.(v.lines);
     playEarl?.();
+    if (el.isConnected) playCharacter?.();
   };
   render();
   return { el, refresh: render };

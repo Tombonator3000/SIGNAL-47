@@ -30,6 +30,8 @@ async def main():
         errs = []
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
+        # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+        await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         if NO_IDB: await pg.add_init_script("Object.defineProperty(window, 'indexedDB', { value: undefined });")
         await pg.goto(URL)

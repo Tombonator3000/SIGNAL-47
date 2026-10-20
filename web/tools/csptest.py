@@ -21,6 +21,8 @@ async def main():
         errs = []
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error', 'warning') else None)
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
+        # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+        await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto('file://' + path)
         await pg.wait_for_selector('button[data-a=start]')
@@ -31,12 +33,13 @@ async def main():
         await pg.evaluate("S47.hold = true; S47.tick(1)")
         sound_keys = await pg.evaluate("Object.keys(S47.game.d.audio.buf || {})")
         sounds = len(sound_keys)
-        ordinary = len([key for key in sound_keys if not key.startswith(('phone:', 'lic:'))])
+        ordinary = len([key for key in sound_keys if not key.startswith(('phone:', 'lic:', 'character:'))])
         telephone = len([key for key in sound_keys if key.startswith('phone:')])
         licensed = len([key for key in sound_keys if key.startswith('lic:')])
+        characters = len([key for key in sound_keys if key.startswith('character:')])
         art = await pg.evaluate("S47.art()")
         print('fonts loaded:', len(fonts), fonts)
-        print('sounds decoded:', sounds, {'ordinary': ordinary, 'telephone': telephone, 'licensed': licensed})
+        print('sounds decoded:', sounds, {'ordinary': ordinary, 'telephone': telephone, 'character': characters, 'licensed': licensed})
         print('art images loaded:', len(art['loaded']), '/', art['expected'])
         print('\n'.join(errs[:15]) or 'no console errors or warnings')
         # the 28 start images, plus later images already asked for: the Halley poster loads
@@ -44,7 +47,7 @@ async def main():
         start = [i for i in art['loaded'] if i not in art['later']]
         early = sorted(i for i in art['loaded'] if i in art['later'])
         print('later images already loaded:', early)
-        passed = len(fonts) == 4 and ordinary == 47 and telephone == 24 and licensed in (0, 15) and len(start) == art['expected'] == 30 and 'halleyPoster' in early and not errs
+        passed = len(fonts) == 4 and ordinary == 47 and telephone == 24 and characters == 11 and licensed in (0, 15) and len(start) == art['expected'] == 30 and 'halleyPoster' in early and not errs
         print('PASS' if passed else 'FAIL')
         await b.close()
         if not passed:

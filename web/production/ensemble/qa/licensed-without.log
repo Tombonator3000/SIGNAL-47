@@ -1,0 +1,24 @@
+mode: without; decoded: []
+PASS no bought sounds in this build ([])
+PASS or() and lic() pick the old sounds (['doorMetal', '', 0])
+PASS opening and shutting the east and south doors: ['switch', 'doorCreak1', 'thudSoft', 'switch', 'doorCreak0', 'doorMetal', 'switch', 'doorCreak0', 'thudSoft', 'switch', 'doorCreak1', 'doorClose']
+PASS Audio.pour(): the synth, as before
+PASS in the truck and started: no keys (as before) ([''])
+PASS the dash radio's static: white noise (['white'])
+PASS switched on: no crack (0)
+PASS the interference comes (0.27) with the synth swell only (0 to 0)
+PASS the white-noise static is heard through the radio (-15.3 dB)
+PASS the filing-cabinet radio, the STATION 01 receiver and the cab radio have the same static (['white', 'white', 'white'])
+PASS the bare carrier on the set: the sawtooth (['carrier', 1])
+PASS the calls out in the dark: the five and the horn, as before (alienTemple)
+PASS the town is there, and the payphone with it
+PASS the open line after the engine: gust
+PASS far off on the line, the engine turns over twice and dies (['engineStart', 'engineStart', 'engineOff'])
+PASS the engine is small on the line: -45.7 dB at its loudest, +11.9 dB over the open line after it
+PASS the title credits do not name Ultimate SFX for Games
+PASS the warning: no bed, the synth tone later (as before) (['warning', None])
+PASS indoors before the light: it passes over and the pressure ebbs away
+PASS taken: the pressure is cut with the rest of the sound
+PASS awake again: no pressure left over
+PASS no console errors or warnings
+22 of 22 PASS (without)

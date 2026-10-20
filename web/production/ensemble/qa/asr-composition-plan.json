@@ -1,0 +1,331 @@
+{
+  "evidence": "CPU text-only plan from the actual ReadAloud parameter-bank resolver. Synthetic URLs provide no audio evidence; concatenate the listed actual MP3 files in order for ASR. Runtime currently plays consecutive source ends without an inserted fragment gap.",
+  "bank": "src/assets/audio/serling",
+  "samples": [
+    {
+      "id": "examine-aligned",
+      "text": "S-03. Az 026, el 32. Every dish in the array points the same way.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "8de0b3c47f112c59",
+          "text": "S",
+          "file": "8de0b3c47f112c59.mp3"
+        },
+        {
+          "id": "f9194e73f9e9459e",
+          "text": "zero",
+          "file": "f9194e73f9e9459e.mp3"
+        },
+        {
+          "id": "8b5b9db0c13db242",
+          "text": "three",
+          "file": "8b5b9db0c13db242.mp3"
+        },
+        {
+          "id": "65b990bbb87c9e4a",
+          "text": ". Az 026, el",
+          "file": "65b990bbb87c9e4a.mp3"
+        },
+        {
+          "id": "aca5fb59db69e5df",
+          "text": "thirty",
+          "file": "aca5fb59db69e5df.mp3"
+        },
+        {
+          "id": "3fc4ccfe745870e2",
+          "text": "two",
+          "file": "3fc4ccfe745870e2.mp3"
+        },
+        {
+          "id": "02400c24b962b69c",
+          "text": ". Every dish in the array points the same way.",
+          "file": "02400c24b962b69c.mp3"
+        }
+      ]
+    },
+    {
+      "id": "examine-negative",
+      "text": "S-27. Az 026, el -10. Every dish in the array points the same way.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "8de0b3c47f112c59",
+          "text": "S",
+          "file": "8de0b3c47f112c59.mp3"
+        },
+        {
+          "id": "7c2c4df740f720b0",
+          "text": "twenty",
+          "file": "7c2c4df740f720b0.mp3"
+        },
+        {
+          "id": "3ba8d02b16fd2a01",
+          "text": "seven",
+          "file": "3ba8d02b16fd2a01.mp3"
+        },
+        {
+          "id": "65b990bbb87c9e4a",
+          "text": ". Az 026, el",
+          "file": "65b990bbb87c9e4a.mp3"
+        },
+        {
+          "id": "129fa7713adba71e",
+          "text": "minus",
+          "file": "129fa7713adba71e.mp3"
+        },
+        {
+          "id": "e4432baa90819aae",
+          "text": "ten",
+          "file": "e4432baa90819aae.mp3"
+        },
+        {
+          "id": "02400c24b962b69c",
+          "text": ". Every dish in the array points the same way.",
+          "file": "02400c24b962b69c.mp3"
+        }
+      ]
+    },
+    {
+      "id": "examine-scenery",
+      "text": "S-01. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 142, el 48.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "8de0b3c47f112c59",
+          "text": "S",
+          "file": "8de0b3c47f112c59.mp3"
+        },
+        {
+          "id": "f9194e73f9e9459e",
+          "text": "zero",
+          "file": "f9194e73f9e9459e.mp3"
+        },
+        {
+          "id": "7692c3ad3540bb80",
+          "text": "one",
+          "file": "7692c3ad3540bb80.mp3"
+        },
+        {
+          "id": "a67febe4390aa166",
+          "text": ". A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az",
+          "file": "a67febe4390aa166.mp3"
+        },
+        {
+          "id": "7692c3ad3540bb80",
+          "text": "one",
+          "file": "7692c3ad3540bb80.mp3"
+        },
+        {
+          "id": "97fe8a3749069931",
+          "text": "hundred",
+          "file": "97fe8a3749069931.mp3"
+        },
+        {
+          "id": "9cee2304bd633d42",
+          "text": "forty",
+          "file": "9cee2304bd633d42.mp3"
+        },
+        {
+          "id": "3fc4ccfe745870e2",
+          "text": "two",
+          "file": "3fc4ccfe745870e2.mp3"
+        },
+        {
+          "id": "f6a4add9542c2105",
+          "text": ", el",
+          "file": "f6a4add9542c2105.mp3"
+        },
+        {
+          "id": "9cee2304bd633d42",
+          "text": "forty",
+          "file": "9cee2304bd633d42.mp3"
+        },
+        {
+          "id": "c195d2d875623436",
+          "text": "eight",
+          "file": "c195d2d875623436.mp3"
+        }
+      ]
+    },
+    {
+      "id": "note-clock",
+      "text": "03:14. A cardboard alien, standing where nobody would put one. Nobody was there.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "8b5b9db0c13db242",
+          "text": "three",
+          "file": "8b5b9db0c13db242.mp3"
+        },
+        {
+          "id": "fef8f41cdcd20386",
+          "text": "fourteen",
+          "file": "fef8f41cdcd20386.mp3"
+        },
+        {
+          "id": "50c96020ebf956bc",
+          "text": ". A cardboard alien, standing where nobody would put one. Nobody was there.",
+          "file": "50c96020ebf956bc.mp3"
+        }
+      ]
+    },
+    {
+      "id": "photo-clock",
+      "text": "Exposed from the S-03 apron at 02:47:11. The central antenna, and below it the B-12 reference vane in the lower foreground.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "c6f7ac125d741b15",
+          "text": "Exposed from the S-03 apron at",
+          "file": "c6f7ac125d741b15.mp3"
+        },
+        {
+          "id": "3fc4ccfe745870e2",
+          "text": "two",
+          "file": "3fc4ccfe745870e2.mp3"
+        },
+        {
+          "id": "9cee2304bd633d42",
+          "text": "forty",
+          "file": "9cee2304bd633d42.mp3"
+        },
+        {
+          "id": "3ba8d02b16fd2a01",
+          "text": "seven",
+          "file": "3ba8d02b16fd2a01.mp3"
+        },
+        {
+          "id": "e979074ebd5633a7",
+          "text": "eleven",
+          "file": "e979074ebd5633a7.mp3"
+        },
+        {
+          "id": "4d580588de66ca1e",
+          "text": ". The central antenna, and below it the B-12 reference vane in the lower foreground.",
+          "file": "4d580588de66ca1e.mp3"
+        }
+      ]
+    },
+    {
+      "id": "photo-control-clock",
+      "text": "Exposed from the B-12 sight line at 03:12:47, under the shielded, passive control.",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "5fceabaf23725f5a",
+          "text": "Exposed from the B-12 sight line at",
+          "file": "5fceabaf23725f5a.mp3"
+        },
+        {
+          "id": "8b5b9db0c13db242",
+          "text": "three",
+          "file": "8b5b9db0c13db242.mp3"
+        },
+        {
+          "id": "d1a749ad879b6c07",
+          "text": "twelve",
+          "file": "d1a749ad879b6c07.mp3"
+        },
+        {
+          "id": "9cee2304bd633d42",
+          "text": "forty",
+          "file": "9cee2304bd633d42.mp3"
+        },
+        {
+          "id": "3ba8d02b16fd2a01",
+          "text": "seven",
+          "file": "3ba8d02b16fd2a01.mp3"
+        },
+        {
+          "id": "6471329580aad1c4",
+          "text": ", under the shielded, passive control.",
+          "file": "6471329580aad1c4.mp3"
+        }
+      ]
+    },
+    {
+      "id": "album-meta-field",
+      "text": "STATION 01, field hut, 04:05",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "d05740e32bd80d1e",
+          "text": "STATION 01, field hut",
+          "file": "d05740e32bd80d1e.mp3"
+        },
+        {
+          "id": "04efaf080f5a3e74",
+          "text": "four",
+          "file": "04efaf080f5a3e74.mp3"
+        },
+        {
+          "id": "f9194e73f9e9459e",
+          "text": "zero",
+          "file": "f9194e73f9e9459e.mp3"
+        },
+        {
+          "id": "222b0bd51fcef7e6",
+          "text": "five",
+          "file": "222b0bd51fcef7e6.mp3"
+        }
+      ]
+    },
+    {
+      "id": "negative-distance",
+      "text": "SOURCE DISTANCE: -39 LY",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "45df02be36b1a2dd",
+          "text": "SOURCE DISTANCE: -39 LY",
+          "file": "45df02be36b1a2dd.mp3"
+        }
+      ]
+    },
+    {
+      "id": "identifier-e09a",
+      "text": "E09A",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "a9f51566bd6705f7",
+          "text": "E",
+          "file": "a9f51566bd6705f7.mp3"
+        },
+        {
+          "id": "f9194e73f9e9459e",
+          "text": "zero",
+          "file": "f9194e73f9e9459e.mp3"
+        },
+        {
+          "id": "edcd8e701a2df0cd",
+          "text": "nine",
+          "file": "edcd8e701a2df0cd.mp3"
+        },
+        {
+          "id": "559aead08264d579",
+          "text": "A",
+          "file": "559aead08264d579.mp3"
+        }
+      ]
+    },
+    {
+      "id": "identifier-p13",
+      "text": "P13",
+      "gapSeconds": 0,
+      "clips": [
+        {
+          "id": "5c62e091b8c0565f",
+          "text": "P",
+          "file": "5c62e091b8c0565f.mp3"
+        },
+        {
+          "id": "9ecc81f0a4b6dfb0",
+          "text": "thirteen",
+          "file": "9ecc81f0a4b6dfb0.mp3"
+        }
+      ]
+    }
+  ]
+}

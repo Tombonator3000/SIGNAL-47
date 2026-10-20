@@ -340,6 +340,8 @@ async def main():
             async def new_page(context):
                 page = await context.new_page()
                 page.set_default_timeout(120000)
+                # Legacy timing/voice baseline; new defaults are exercised in ensemble.py/serling.py.
+                await page.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
                 await page.add_init_script(REAL_AUDIO + "\n" + RADIO_GRAPH)
                 page.on("pageerror", lambda error: errors.append("PAGEERROR: " + str(error)))
                 page.on("console", lambda message: errors.append(message.type + ": " + message.text)

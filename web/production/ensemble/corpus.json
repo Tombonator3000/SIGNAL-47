@@ -1,0 +1,1348 @@
+{
+  "version": 1,
+  "scope": "Eksisterende A/DP/SM i Caliche, alle n()-linjer fra Nora i rom 6, Nora-telefonene og CB samt hennes ni sitat-/hintlinjer. Price bruker bare den eksisterende T. Vega-feltlinjen. Ingen nye replikker.",
+  "normalization": "Whitespace collapse and trim; ID = SHA-256(role + NUL + normalized UTF-8 text).slice(0,16).",
+  "sourceFiles": [
+    {
+      "file": "src/story/caliche.ts",
+      "sha256": "42eb09e9075bf827b9c89bffb0fc343f314e0dde59576f0d9dc61ba7cdad94eb"
+    },
+    {
+      "file": "src/story/Chapter4.ts",
+      "sha256": "0b181547cc1ee33e0b62761066976d8398f5a71cec7839da6950e0df9d8e4c90"
+    },
+    {
+      "file": "src/core/phoneScripts.ts",
+      "sha256": "cd8549257df65af633773519e0690f88a8226c130fd4ffb0f701c3e86e37c325"
+    },
+    {
+      "file": "src/story/Chapter3.ts",
+      "sha256": "b93a3b60b5286ad34b21e8590921ffd7782f547566c8e93db9353b5985f89ee4"
+    }
+  ],
+  "summary": {
+    "clips": 100,
+    "words": 1187,
+    "roles": {
+      "stanton": {
+        "clips": 18,
+        "words": 163
+      },
+      "bacall": {
+        "clips": 49,
+        "words": 656
+      },
+      "stack": {
+        "clips": 19,
+        "words": 219
+      },
+      "lynch": {
+        "clips": 13,
+        "words": 141
+      },
+      "price": {
+        "clips": 1,
+        "words": 8
+      }
+    }
+  },
+  "clips": [
+    {
+      "id": "ca2bcf4aea43640a",
+      "voice": "stanton",
+      "text": "Cold one tonight. Radio says it'll",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 218,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "26d248729e687aee",
+      "voice": "stanton",
+      "text": "warm up by Wednesday.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 218,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "84296ab6db5394ae",
+      "voice": "stanton",
+      "text": "Pumps are locked till six. You want something from in here, I can pass it through.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 226,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "7efc5b03b0dc7416",
+      "voice": "stanton",
+      "text": "Still out, huh.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 227,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "8a4ed39c42bfe191",
+      "voice": "stanton",
+      "text": "Highway north. There is no other way that goes anywhere.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 231,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "22010a044849c8f3",
+      "voice": "stanton",
+      "text": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 232,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "30178bdc0269961d",
+      "voice": "stanton",
+      "text": "Your people come down for gas on Fridays. Nice folks. Don't say much.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 233,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "42993f8b291e1a59",
+      "voice": "stanton",
+      "text": "Earl brings those. The radio fella, across the street.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 237,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "d19bade7874887fa",
+      "voice": "stanton",
+      "text": "I let him tape them up. He buys his gas here.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 238,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "454878a0f1f50e56",
+      "voice": "stanton",
+      "text": "People call him. I couldn't tell you why they'd want to.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 239,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "79a44e7e5fd1e5bf",
+      "voice": "stanton",
+      "text": "Towed a rig in off it once. Last October.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 243,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "d56bdd61a80ce2fb",
+      "voice": "stanton",
+      "text": "Left here a quarter to two. Got back twenty-five past four.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 244,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "080a38b87176fc6c",
+      "voice": "stanton",
+      "text": "It's a forty minute job.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 245,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "093d3f6ceb740aa7",
+      "voice": "stanton",
+      "text": "Anyway. Cold one tonight.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 247,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "1af93cf161994ee3",
+      "voice": "stanton",
+      "text": "Wasn't me, then. I've been here since ten.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 251,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "ea2ae90b1d91d117",
+      "voice": "stanton",
+      "text": "That phone takes dimes.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 257,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "625190e94de15be0",
+      "voice": "stanton",
+      "text": "I can read it.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 259,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "71fd7972fd78795e",
+      "voice": "stanton",
+      "text": "Keep it. I write down what goes in the till. I want it to add up.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 261,
+          "kind": "dialogue",
+          "helper": "A"
+        }
+      ]
+    },
+    {
+      "id": "427711e0ef49e13b",
+      "voice": "stack",
+      "text": "Quiet night. Drove the loop out to the county line and back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 272,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "bb25a63657a9b521",
+      "voice": "stack",
+      "text": "Help you?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 275,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "9e9f7acf824b7a81",
+      "voice": "stack",
+      "text": "SARO. Sure. You folks lose something?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 276,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "d3c6ddc2817816c2",
+      "voice": "stack",
+      "text": "Back again.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 277,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "16b8aad01575b86b",
+      "voice": "stack",
+      "text": "Calls. Every call I get that I can't write up as anything.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 281,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "bcd48344aa27b453",
+      "voice": "stack",
+      "text": "Red is engines dying. Blue is cattle. Yellow is lights. Green is people who lost track of the time.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 282,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "fac7ad64a3049092",
+      "voice": "stack",
+      "text": "I don't believe in little men. I believe in maps.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 283,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "39891e2464e2e381",
+      "voice": "stack",
+      "text": "Most of them are all over. But you put enough pins in anything, and some of them start to line up.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 284,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "2710dc407d1dd102",
+      "voice": "stack",
+      "text": "The old road. Red, mostly. Engines. Out past where the county stops grading.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 288,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "a5757a82a7e037fc",
+      "voice": "stack",
+      "text": "Every one of those is a car somebody had to tow back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 289,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "58b532bab9a7b9b7",
+      "voice": "stack",
+      "text": "You want to know where, drive it with your eyes open. I'm not putting it in writing.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 290,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "c2931e01331160a6",
+      "voice": "stack",
+      "text": "Three of them are right here in town.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 294,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "a3d657e1a59ed461",
+      "voice": "stack",
+      "text": "The fella at the gas station. October nineteenth, last year. Went out to tow a rig and lost two hours he can't account for.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 295,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "4080f29637b3f907",
+      "voice": "stack",
+      "text": "A man whose wife sits out at the laundromat nights. March of '83.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 296,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "16d01f724af485f2",
+      "voice": "stack",
+      "text": "And a kid who called the radio station in September of '81. Family moved away after.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 297,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "7f7d4cb8653d87ad",
+      "voice": "stack",
+      "text": "Don't go asking them about it. They don't know they've got a pin.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 298,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "b7e40d1580be6b24",
+      "voice": "stack",
+      "text": "I drove the loop. I came straight back.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 302,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "901352230f22a966",
+      "voice": "stack",
+      "text": "Write down where you saw it.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 305,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "98cd293a4f8783be",
+      "voice": "stack",
+      "text": "Here. In your own words.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 307,
+          "kind": "dialogue",
+          "helper": "DP"
+        }
+      ]
+    },
+    {
+      "id": "df7e6361795f2db1",
+      "voice": "lynch",
+      "text": "Shop's closed, friend. Open at ten. Tours on Saturdays.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 400,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "a4cd9f72f9dbbc66",
+      "voice": "lynch",
+      "text": "Still closed.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 401,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "4eeda12417ff0bb6",
+      "voice": "lynch",
+      "text": "Summer of '47. A rancher out north finds a pasture full of junk. Foil you can't crease. Little beams with writing on them.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 405,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "6aba5d47fd49f4de",
+      "voice": "lynch",
+      "text": "The Army says flying disc. Same day, they say weather balloon.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 406,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "def63b4b7af9de97",
+      "voice": "lynch",
+      "text": "Then nothing for thirty years, till the book.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 407,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "f1ff47f83555b48e",
+      "voice": "lynch",
+      "text": "The boys from '47. That's what I call them. The boys.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 408,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "7cb1d70b18a6c64d",
+      "voice": "lynch",
+      "text": "Me?",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 412,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "5245817fc464e752",
+      "voice": "lynch",
+      "text": "Forty years on this street. Everybody I sell to has a story. Lights. Cattle. The hum.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 414,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "180ca70eebd4666d",
+      "voice": "lynch",
+      "text": "I sit out here every night it's clear. Never seen a thing.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 415,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "12e727c4fca81298",
+      "voice": "lynch",
+      "text": "You'd think they'd come by the shop once. Out of courtesy.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 416,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "11324fdeba045345",
+      "voice": "lynch",
+      "text": "Had it made in Albuquerque. Kids take it about once a month. It always turns up.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 420,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "8bd5406fec860296",
+      "voice": "lynch",
+      "text": "Last time it was out on the highway north of town. Standing up, facing the traffic.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 421,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "ae5e57e8b83918fe",
+      "voice": "lynch",
+      "text": "Somebody's idea of a joke.",
+      "sources": [
+        {
+          "file": "src/story/caliche.ts",
+          "line": 422,
+          "kind": "dialogue",
+          "helper": "SM"
+        }
+      ]
+    },
+    {
+      "id": "8388b47761d38f43",
+      "voice": "bacall",
+      "text": "Leave it. The quiet is worse.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 427,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "faf124d4985a757f",
+      "voice": "bacall",
+      "text": "I took the battery out in 1947.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 483,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "afd0d210f97099da",
+      "voice": "bacall",
+      "text": "He pressed it too. Twice.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 499,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "82a279bb09d21f42",
+      "voice": "bacall",
+      "text": "Go if you need to. I will be here.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 520,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "9d66821ab435e199",
+      "voice": "bacall",
+      "text": "So you came down the road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 561,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "ca236ebd5ccf6d40",
+      "voice": "bacall",
+      "text": "Do not sit yet. Put them on the table first. The two prints from B-12, and the record from 1947. The one with my name on it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 562,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "f4dcafd4fb68524a",
+      "voice": "bacall",
+      "text": "Both prints from B-12. The first one, and the control.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 657,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "a661a1d7f76c195c",
+      "voice": "bacall",
+      "text": "And the original. The one from the field box, not the service copy.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 657,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "5c3d4ea31c185df1",
+      "voice": "bacall",
+      "text": "The amended copy you can keep. I know what it says. I wrote it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 666,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "3bc3e9e1c9293377",
+      "voice": "bacall",
+      "text": "I know that second line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 667,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "45b280586021faf4",
+      "voice": "bacall",
+      "text": "Tell me which source you took away before you made the control.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 668,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "f84b3f14afca6731",
+      "voice": "bacall",
+      "text": "The receiver has nothing to do with the film. Look at how you made the second print.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 699,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "8158a555371ce804",
+      "voice": "bacall",
+      "text": "That is not what your print says. The lamp was on when you took it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 701,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "3667d3f97769f675",
+      "voice": "bacall",
+      "text": "That is not what your print says. Your lamp was shielded.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 702,
+          "kind": "captioned-dialogue"
+        }
+      ]
+    },
+    {
+      "id": "ce995ae71d9e8d18",
+      "voice": "bacall",
+      "text": "The lamp. That is what I did in 1947. I opened the lamp circuit, and the mark stayed on the plate.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 709,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "207c2ae2a8a31a71",
+      "voice": "bacall",
+      "text": "You moved it, and the second line did not move with it. Then it was not the drive.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 709,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "74a2c89dd3ec206f",
+      "voice": "bacall",
+      "text": "Then you have what I had. A reference that stays on the film after its source is gone.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 710,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "5c3c8caf314dc788",
+      "voice": "bacall",
+      "text": "I thought leaving out one line would stop someone connecting it again. I was wrong about what a missing line could hide.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 727,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "35461dadbd30f0ea",
+      "voice": "bacall",
+      "text": "Yes. I changed it. I called it a development fault because I could not write what was left after the cable was cut.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 728,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "01b20196513bcb85",
+      "voice": "bacall",
+      "text": "I wrote that the lamp remained. It was easier than writing that he did.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 729,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "8d7fa89c7100b30e",
+      "voice": "bacall",
+      "text": "I typed this in the office tonight, before you came. I have not signed it yet.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 730,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "dcc580841dce7894",
+      "voice": "bacall",
+      "text": "Tomás. My brother. He was nineteen that summer, the field assistant, and very sure of himself.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 741,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "7e69bd76dd3ecf4f",
+      "voice": "bacall",
+      "text": "He has been nineteen for thirty-nine years.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 742,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "4b40492a2266bc74",
+      "voice": "bacall",
+      "text": "He read the last observation into the field line. You heard him tonight, on the receiver in the hut.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 743,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "606484b48432f654",
+      "voice": "bacall",
+      "text": "He wrote me this the day before. I have never shown it to anyone.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 744,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "23a18b69c2dd563d",
+      "voice": "bacall",
+      "text": "Yes. I cut it.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 755,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "7a1aa4c150a4b87a",
+      "voice": "bacall",
+      "text": "The lamp was off. The reference stayed anyway. Tomás was out on C with the last reading, and the arrangement was answering him.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 756,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "5d0c3638d1513fa8",
+      "voice": "bacall",
+      "text": "I thought if I broke the connection it would stop. It stopped. He was not there afterwards.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 757,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "d2144ce74927a006",
+      "voice": "bacall",
+      "text": "This was in his coat. He knew more than I did.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 758,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "9e8d7b1a73287e73",
+      "voice": "bacall",
+      "text": "Write it like that. Not cleaner than it was.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 785,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "dccecc142489647e",
+      "voice": "bacall",
+      "text": "To the office. At night the office line is patched through to this room, and the other end of it is the field hut. It has been since 1947.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 804,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "5a199f5b1f85fdad",
+      "voice": "bacall",
+      "text": "You left the receiver on out there. Listen.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 805,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "608946d9f2c0a181",
+      "voice": "bacall",
+      "text": "Tomás. Where did you leave the spare key?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 807,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "2ec6af00557caa0e",
+      "voice": "price",
+      "text": "Reference west. No. East. Hold the last reading.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 808,
+          "kind": "recorded-field-line"
+        },
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 47,
+          "kind": "recorded-field-line"
+        },
+        {
+          "file": "src/story/Chapter3.ts",
+          "line": 491,
+          "kind": "recorded-field-line"
+        }
+      ]
+    },
+    {
+      "id": "14abdf91d38d2dfe",
+      "voice": "bacall",
+      "text": "That is what he said then. Not an answer to what I asked now.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 809,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "c9cfa96198e3803f",
+      "voice": "bacall",
+      "text": "No. It is not him. It is what he left.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 836,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "3d59a04286f12ef5",
+      "voice": "bacall",
+      "text": "East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 852,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "5d136a44926a94d9",
+      "voice": "bacall",
+      "text": "Tomás walked out to the closing point with the last reading.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 853,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "724f654400170f6d",
+      "voice": "bacall",
+      "text": "If you want to know whether the line still holds, drive the road.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 854,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "472a9fdcabf516a3",
+      "voice": "bacall",
+      "text": "Do not stop on the line.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 855,
+          "kind": "dialogue",
+          "helper": "n"
+        }
+      ]
+    },
+    {
+      "id": "92bb6712734394f8",
+      "voice": "bacall",
+      "text": "SARO seven, this is Sierra. You hear me?",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 902,
+          "kind": "cb"
+        }
+      ]
+    },
+    {
+      "id": "5e8511505fa4a670",
+      "voice": "bacall",
+      "text": "Pull in at the north end, by the office. Not down past the rooms.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 903,
+          "kind": "cb"
+        }
+      ]
+    },
+    {
+      "id": "8c47f08abfb81ab6",
+      "voice": "bacall",
+      "text": "Room six. The door is open. Bring the prints.",
+      "sources": [
+        {
+          "file": "src/story/Chapter4.ts",
+          "line": 904,
+          "kind": "cb"
+        }
+      ]
+    },
+    {
+      "id": "340b583d2574915a",
+      "voice": "bacall",
+      "text": "Sierra Motor Court.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 17,
+          "kind": "phone",
+          "declaration": "nora"
+        }
+      ]
+    },
+    {
+      "id": "2dfe917e2ee127fe",
+      "voice": "bacall",
+      "text": "Station One. Nobody has asked me for that key in a long time.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 19,
+          "kind": "phone",
+          "declaration": "nora"
+        }
+      ]
+    },
+    {
+      "id": "438ee647319842e8",
+      "voice": "bacall",
+      "text": "Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 20,
+          "kind": "phone",
+          "declaration": "nora"
+        }
+      ]
+    },
+    {
+      "id": "99611d00f1377a31",
+      "voice": "bacall",
+      "text": "So you went out there.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 23,
+          "kind": "phone",
+          "declaration": "fieldNora"
+        }
+      ]
+    },
+    {
+      "id": "aa6fc98ee734307c",
+      "voice": "bacall",
+      "text": "This line still rings in the motel office. It has since 1947. Nobody ever took it down.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 24,
+          "kind": "phone",
+          "declaration": "fieldNora"
+        }
+      ]
+    },
+    {
+      "id": "8108de94d7f99846",
+      "voice": "bacall",
+      "text": "You have seen the cable now. It did not break by itself.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 25,
+          "kind": "phone",
+          "declaration": "fieldNora"
+        }
+      ]
+    },
+    {
+      "id": "c5487e62a7151d91",
+      "voice": "bacall",
+      "text": "Room 6. Bring the original record and your film, developed. Then I will tell you the rest.",
+      "sources": [
+        {
+          "file": "src/core/phoneScripts.ts",
+          "line": 26,
+          "kind": "phone",
+          "declaration": "fieldNora"
+        }
+      ]
+    }
+  ]
+}

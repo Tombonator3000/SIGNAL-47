@@ -12,7 +12,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
 let passed = 0;
 const check = (condition, message) => { assert.ok(condition, message); ++passed; };
 
-function fixture({ embedded = false, bytes = 4096, extras = [], inputCatalog } = {}) {
+function fixture({ embedded = false, bytes = 4096, extras = [], inputCatalog, timers } = {}) {
   const localCatalog = inputCatalog ?? { ...catalog, clips: [...catalog.clips, ...extras.map((text, i) => ({ id: `extra${i}`, text, duration: 1, file: `extra${i}.mp3` }))] };
   const urls = Object.fromEntries(localCatalog.clips.map((c) => [`../assets/audio/kinski/${c.file}`, embedded ? 'data:audio/mpeg;base64,a2luc2tp' : `https://test.invalid/${c.file}`]));
   const transformed = source.replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(urls)};`);
@@ -30,10 +30,11 @@ function fixture({ embedded = false, bytes = 4096, extras = [], inputCatalog } =
     },
   }, unlock() { ++f.unlocks; return Promise.resolve(); } };
   vm.runInNewContext(output, { exports, require: () => ({ default: JSON.stringify(localCatalog) }),
-    AbortController, Float32Array, Uint8Array, atob, console: { warn() {} },
+    AbortController, Float32Array, Uint8Array, atob, setTimeout: timers?.set ?? setTimeout, clearTimeout: timers?.clear ?? clearTimeout, console: { warn() {} },
     fetch: async (url, options) => { ++f.requests; return f.fetchHook ? f.fetchHook(url, options) : { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }; },
   });
   f.reader = new exports.ReadAloud(audio); f.reader.enabled = true;
+  f.audio = audio;
   f.latest = () => f.starts.at(-1);
   f.complete = async (text) => { const play = f.reader.play([text]); await flush(); check(f.reader.playing, `playing ${text}`); f.latest().end(); await play; };
   return f;
@@ -124,7 +125,54 @@ function fixture({ embedded = false, bytes = 4096, extras = [], inputCatalog } =
   f = fixture({ extras: ['. Outside line. No voice.', '-39 LY'] });
   check(f.reader.available(['Outside line. No voice.']), 'a clock-free observation reuses the same words behind leading sentence punctuation');
   check(!f.reader.available(['side line. No voice.']) && !f.reader.available(['39 LY']), 'punctuation aliases preserve whole words and a recorded minus');
+  // A chapter card waits for play(), so a loader that NEVER settles must be
+  // bounded independently of a recording's natural playback duration.
+  function deadlineClock() {
+    const pending = new Map(); let id = 0;
+    return { set(fn, ms) { const key = ++id; pending.set(key, { fn, ms }); return key; },
+      clear(key) { pending.delete(key); },
+      fire() { for (const [key, timer] of [...pending]) { pending.delete(key); timer.fn(); } }, pending };
+  }
+  for (const stage of ['fetch', 'decode']) {
+    let timers = deadlineClock(); f = fixture({ timers }); let signal;
+    if (stage === 'fetch') f.fetchHook = (_url, options) => { signal = options.signal; return new Promise(() => {}); };
+    else f.decodeHook = () => new Promise(() => {});
+    play = f.reader.play(['Line 0.']); await flush();
+    check(timers.pending.size === 1 && [...timers.pending.values()][0].ms === 15000, `${stage}: only buffer preparation receives the 15-second deadline`);
+    timers.fire(); await play;
+    check(f.reader.state === 'error' && !f.starts.length && !f.reader.pending, `${stage}: a never-settling loader times out and resolves play without partial audio`);
+    if (stage === 'fetch') check(signal.aborted, 'timed-out Pages fetch receives an abort signal');
+    timers = deadlineClock(); f = fixture({ timers });
+    if (stage === 'fetch') f.fetchHook = () => new Promise(() => {}); else f.decodeHook = () => new Promise(() => {});
+    play = f.reader.play(['Line 0.']); await flush(); f.reader.stop(); await play;
+    check(f.reader.state === 'idle' && !timers.pending.size && !f.starts.length, `${stage}: close resolves play immediately even when the loader never returns`);
+  }
+  const timers = deadlineClock(); f = fixture({ timers });
+  play = f.reader.play(['Line 0.']); await flush();
+  check(!timers.pending.size && f.reader.playing, 'a playing recording has no load deadline that could truncate a long sentence');
+  timers.fire(); check(f.reader.playing && !f.latest().stopped, 'firing every load timer cannot stop an already playing buffer');
+  f.latest().end(); await play;
+
+  for (const cancel of [false, true]) {
+    const timers = deadlineClock(); f = fixture({ timers });
+    f.audio.unlock = () => new Promise(() => {});
+    play = f.reader.play(['Line 0.']); await flush();
+    if (cancel) f.reader.stop(); else timers.fire();
+    await play;
+    check(f.reader.state === (cancel ? 'idle' : 'error') && !f.starts.length && !timers.pending.size,
+      `a never-settling unlock is ${cancel ? 'immediately cancellable' : 'bounded by the loading deadline'}`);
+  }
+  {
+    const timers = deadlineClock(); f = fixture({ timers }); let late;
+    f.decodeHook = () => new Promise(resolve => { late = resolve; });
+    play = f.reader.play(['Line 0.']); await flush(); timers.fire(); await play;
+    late({ duration: 1, length: 24000, numberOfChannels: 1 }); await flush();
+    check(f.reader.state === 'error' && !f.reader.buffers.size && !f.starts.length,
+      'a decode completing after its timeout cannot cache, revive narration or hide its error');
+  }
+
   console.log(`readaloud-core: ${passed}/${passed} PASS`);
+
   if (process.argv.includes('--corpus')) {
     // Text-only coverage: every corpus entry receives a synthetic URL. This
     // checks composition while the offline TTS batch is still producing files;

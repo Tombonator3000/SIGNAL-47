@@ -1,0 +1,102 @@
+PASS all 16 exact Earl manuscript hashes, topic counts and real MP3 files are present
+PASS Art Bell enables radio and Earl by default, independently of caller voices and Kinski, without preloading Earl
+PASS real aimed E opens Earl at the studio door
+PASS the first automatic reply works with Kinski Off and preserves the original topic gates
+PASS genuine Earl PCM reaches ordinary master while AM/radio and SFX buses are muted
+PASS an actual AudioContext suspension holds the same Earl source without wall-clock queue advance (API fixture)
+PASS First opening: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS First opening: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS First opening: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS Replay Earl starts the same exact recording through its real button
+PASS Calls topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS Calls topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS Calls topic: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS choosing Calls stops the replay before the fresh reply and unlocks only the proper next topic
+PASS Visitors topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS Visitors topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS Visitors topic: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS Tape topic: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS Tape topic: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS Tape topic: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS the boy follow-up still requires the observed radio broadcast
+PASS real aimed E opens Earl at the studio door
+PASS Repeat opening: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS Repeat opening: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS Repeat opening: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS the observed-boy fixture and prior tape conversation unlock Boy together
+PASS Boy follow-up: exact Earl MP3 IDs reach master at rate 1 without the AM/radio-volume route
+PASS Boy follow-up: every real buffer finishes naturally, with decoded durations and audio-clock gaps
+PASS Boy follow-up: spoken words match the actual Earl dialogue and Replay returns after completion
+PASS the existing boy witness paper and notebook note are filed once by the genuine topic button
+PASS all 16 Earl recordings actually start; player replies, asides and witness-paper prose never enter this bank
+PASS Stop Earl cancels the active reply and returns its control to Replay
+PASS real aimed E opens Earl at the studio door
+PASS the real Art Bell Off preference silences Earl and the radio host together
+PASS real aimed E opens Earl at the studio door
+PASS Art Bell Off retains genuine manual Kinski reading without automatic Earl or overlap
+PASS real aimed E opens Earl at the studio door
+PASS Art Bell On excludes Earl lines from the separate Kinski narration control
+PASS manual Kinski reading takes priority and stops Earl immediately
+PASS real aimed E opens Earl at the studio door
+PASS pending choice: genuine decoded data waits before any Earl source
+PASS pending choice: fresh reply cancels the previous opening without replaying it
+PASS real aimed E opens Earl at the studio door
+PASS pending Off (API): genuine decoded data waits before any Earl source
+PASS pending Off (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending close: genuine decoded data waits before any Earl source
+PASS pending close: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending Escape: genuine decoded data waits before any Earl source
+PASS pending Escape: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending UI replacement (API): genuine decoded data waits before any Earl source
+PASS pending UI replacement (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending phone (API): genuine decoded data waits before any Earl source
+PASS pending phone (API): old Earl audio cannot survive or revive
+PASS a genuine two-buffer Ward telephone fixture takes priority over Earl
+PASS real aimed E opens Earl at the studio door
+PASS pending reset (API): genuine decoded data waits before any Earl source
+PASS pending reset (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending jump (API): genuine decoded data waits before any Earl source
+PASS pending jump (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending load: genuine decoded data waits before any Earl source
+PASS pending load: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS pending title: genuine decoded data waits before any Earl source
+PASS pending title: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active choice: fresh reply cancels the previous opening without replaying it
+PASS real aimed E opens Earl at the studio door
+PASS active Off (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active close: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active Escape: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active UI replacement (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active phone (API): old Earl audio cannot survive or revive
+PASS a genuine two-buffer Ward telephone fixture takes priority over Earl
+PASS real aimed E opens Earl at the studio door
+PASS active reset (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active jump (API): old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active load: old Earl audio cannot survive or revive
+PASS real aimed E opens Earl at the studio door
+PASS active title: old Earl audio cannot survive or revive
+PASS Earl's lazy cache stays within its 24-buffer bound
+PASS real touch Use opens Earl at the studio door
+PASS 844x390 genuine touch Earl conversation fits the screen
+PASS a real mobile topic tap replaces the reply and Stop Earl cancels it
+PASS touch settings share one persisted Art Bell choice while caller and Kinski choices remain separate
+PASS reload retains the independent Art Bell Off, callers Off and Kinski On choices
+PASS real touch Use opens Earl at the studio door
+PASS the shared Art Bell choice re-enables actual touch dialogue without changing caller or Kinski preferences
+PASS recorded MP3 requests have no HTTP failures
+PASS no browser errors or warnings
+101 of 101 PASS

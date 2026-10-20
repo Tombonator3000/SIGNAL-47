@@ -1,0 +1,60 @@
+base_commit: 5c25e05664e668b245d95c4a25d98be4e312a4d8
+runtime_source_sha256: 90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e
+command: node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/ensemble-radioarchive.cjs --log-level=warning && node node_modules/.cache/ensemble-radioarchive.cjs
+tts_ready_sha256: 08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9
+serling_corpus_sha256: 771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74
+serling_clips: 1402
+ensemble_clips: 100
+
+PASS regression baseline: text alone lasts 37.12 s
+PASS the archive reports exactly 47 seconds
+PASS an interruption cannot replace one already playing
+PASS still the recorded bulletin at 46.99 seconds
+PASS all recorded lines are captioned once, in their fixed order
+PASS at 47 seconds the interrupted sentence resumes at its exact point
+PASS time-check wording and caption position are preserved
+PASS the original track offset and programme order are preserved
+PASS resuming inside a sentence does not repeat its caption
+PASS a late archive boundary frame preserves the exact held programme position
+PASS record-resume test starts within a record
+PASS a record resumes from the same source offset
+PASS resuming does not immediately permit a trip insertion, even after a single 47-second tick
+PASS one second of resumed programme is not enough breathing room
+PASS two seconds of resumed programme cannot be replaced by trip lines
+PASS the station still protects its own programme at 9.75 resumed seconds
+PASS the station becomes free after ten seconds of ordinary programme
+PASS trip lines can follow once both the calm period and any new record's minimum have elapsed
+PASS a late archive boundary frame cannot credit unheard ordinary airtime to the calm window
+PASS the boy and the host's response cannot be interrupted
+PASS a queued trip programme is kept intact
+PASS no archive starts in the final three minutes before sign-off
+PASS crossing sign-off discards the held programme and starts the fixed sequence
+PASS an old archive cannot restore the Night Line over the anthem
+PASS loading or resetting clears the interruption
+PASS off-air stations reject the archive
+PASS a declined bulletin returns false from the director
+PASS a declined bulletin leaves no pending event or announced start
+PASS a declined bulletin does not consume its once-only key or write a finding
+PASS an accepted bulletin occupies the director
+PASS hearing less than 47 seconds is not yet full evidence
+PASS the full finding is filed exactly at 47 seconds, without an extra half-second
+PASS switching off after 47 seconds preserves the completed finding
+PASS a completed bulletin cannot be consumed twice
+PASS tuned away at 46.9 seconds: no full finding or consumed event
+PASS tuned away: the unconsumed bulletin can be tried again
+PASS tuned away: hearing the retry through files exactly one finding
+PASS story blocked at 46.9 seconds: no full finding or consumed event
+PASS story blocked: the unconsumed bulletin can be tried again
+PASS story blocked: hearing the retry through files exactly one finding
+PASS a pending bulletin cannot be replaced or overlapped by another forced event
+PASS rejecting an overlap leaves the original completion intact
+PASS archive waits while the actual host bank decodes its current talk
+PASS recorded-host fixture uses decoded clip lengths rather than procedural timing
+PASS starting the archive stops all held host sources without changing the host preference
+PASS the historical newsreader remains procedural while the Art Bell option stays enabled
+PASS resume retains the held decoded plan, its natural duration and exact station position
+PASS recorded host resumes from its prior sample offset without another decode
+PASS restored host rebases its audio clock instead of advancing by the 47-second interruption
+PASS disabling the host during the archive resumes the same relative word position with the legacy voice
+PASS enabling the host during the archive loads the ordinary recording and preserves relative position
+51/51 PASS

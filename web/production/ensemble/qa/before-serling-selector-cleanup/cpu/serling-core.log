@@ -1,0 +1,5 @@
+base_commit: 5c25e05664e668b245d95c4a25d98be4e312a4d8
+runtime_source_sha256: f958516f40520b3de5cf0d4afd722b1a5b794d0c6a9081c2afe81e8da89cc8cc
+command: node tools/serling-core.cjs
+
+serling-core: 47/47 PASS; text-only descriptions 26/26
