@@ -1387,7 +1387,7 @@ async function boot() {
     // written down when it starts (where the player is not looking), looked at once the eyes are on
     // it; how it ended: walked up to ('near'), gone through ('done'), or left ('left')
     if (recWalk.phase !== was.walk) {
-      if (was.walk === 'idle' && recWalk.phase === 'walk') walkEntry = saw('scare', `walk ${recWalk.n}`, { at: recWalk.at, looking: false,
+      if (was.walk === 'idle' && recWalk.phase === 'walk') walkEntry = saw('scare', `walk ${recWalk.n}`, { at: recWalk.spot, looking: false,
         watch: { pos: () => recWalk.at, secs: 400, deg: 18, range: 320, until: () => !recWalk.busy } });
       if (recWalk.phase === 'idle' && walkEntry) { walkEntry.end = recWalk.ended ?? 'away'; walkEntry = null; }
       was.walk = recWalk.phase;

@@ -623,7 +623,7 @@ export class Abduction {
       // (back where it stands after it walked: only once that place has been out of the view)
       if (r.hide && (!far || !facing(this.d.player.camera, this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2), 1000, 50))) r.hide = false;
       r.g.visible = far && !r.hide;
-      if (r.g.visible) r.fig.shine(this.d.shine?.(this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2)) ?? 0);
+      if (r.g.visible) r.fig.shine(this.d.shine?.(this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2)) ?? 0, this.d.player.camera);
     }
   }
   private recHead = new THREE.Vector3();
@@ -632,7 +632,7 @@ export class Abduction {
     return this.records.flatMap((r, i) => {
       const sp = this.data.spots[i];
       return sp ? [{ n: i + 1, scene: r.scene, take: new THREE.Vector3(...sp.take), path: sp.path, walked: sp.walked, clock: sp.clock, fig: r.fig,
-        markWalked: (c: number) => { sp.walked = c; } }] : [];
+        markWalked: (c: number | undefined) => { if (c === undefined) delete sp.walked; else sp.walked = c; } }] : [];
     });
   }
   /** The walk has the one standing for time away n (held), or gives it back: to where it stands,

@@ -321,6 +321,26 @@ async def desktop(b):
     # the whole of it
     await R.station(3 * 3600 + 58 * 60)
     await ev("T.ab().data.station = undefined; delete T.ab().data.station; T.ab().data.count = 0; T.ab().data.last = -1e9; S47.curve.force('rest'); T.toasts.length = 0")
+    # her call as the game makes it, not only the flag: P09 recorded, the ring, the handset, her
+    # lines, the line quiet (the recorded call plays in real time; the ticks here run ahead of it)
+    await ev("S47.ch3.s.called = false; S47.ch3.s.stage = 'call'; S47.ch3.callT = S47.game.gt + 0.5")
+    for _ in range(20):
+        await R.tick(0.25)
+        if await ev("S47.ch3.ringing"): break
+    await ev("""(() => { const s = T.site(), p = S47.player, ph = s.proxies.fieldPhone.getWorldPosition(new S47.three.Vector3()), h = s.hutBounds;
+      const cx = (h.minX + h.maxX) / 2, cz = (h.minZ + h.maxZ) / 2, d = Math.hypot(cx - ph.x, cz - ph.z), x = ph.x + (cx - ph.x) / d * 1.1, z = ph.z + (cz - ph.z) / d * 1.1;
+      p.place(x, z, Math.atan2(-(ph.x - x), -(ph.z - z))); S47.tick(0.05); T.look([ph.x, ph.y, ph.z]); })()""")
+    rang = await ev("S47.ch3.ringing") and await ev("T.aimed()") == 's1phone'
+    await R.use('s1phone')
+    for _ in range(80):
+        await R.tick(0.5)
+        if await ev("S47.ch3.s.called"): break
+    await pg.wait_for_function("!S47.game.d.audio.phonePlaying", polling=200, timeout=60000)
+    await R.tick(0.2)
+    s = await R.st()
+    check(rang and await ev("S47.ch3.s.stage") == 'return' and s['stage'] == 'calm' and s['due'] == 'inside' and any('The line goes quiet' in t for t in await ev("T.toasts")),
+          f'N. Vega rings the field telephone and says her piece; in the hut after it, nothing yet ({s["due"]})')
+    await ev("const [x, z] = T.w(-11, 3.2); S47.player.place(x, z, Math.PI); S47.tick(0.1)")
     s = await forced_run(R, True, 'a')
     check(s['stage'] == 'calm' and s['count'] == 1, f'taken, and up again ({s})')
     sp = await ev("(() => { const s = T.ab().data.spots.at(-1); return { station: s.station, n: s.path ? s.path.length / 3 : 0, take: s.take, back: s.back, scene: s.scene, p0: s.path && s.path.slice(0, 3), pn: s.path && s.path.slice(-3) }; })()")
@@ -491,6 +511,31 @@ async def desktop(b):
     await ev("S47.flashlight.on = true; T.stand(0.2)")
     f = await ev("T.fig(2)"); hp = await ev("T.px(T.head(2))")
     check(f['vis'] and hp[2], f'down the shoulder: someone in a SARO jacket, walking ({hp[0]:.0f}, {hp[1]:.0f} on the screen)')
+    gl = await ev("T.rec(2).fig.glints.map((g) => g.visible)")
+    check(all(gl) and await ev("T.rec(2).fig.glintMat.opacity") > 0.5, f'in the beam the tape glints: across the chest and at the sleeves ({gl})')
+    # the flashlight off, out past 60 m: a dark shape on dark ground has not been seen, however the eyes are turned
+    await ev("S47.flashlight.on = false; T.stand(0.2)")
+    l0 = (await ev("T.walkSt()"))['looked']
+    for k in range(12):
+        await ev("(() => { const h = T.head(2); const p = S47.player, c = S47.camera.position; p.yaw = Math.atan2(-(h[0] - p.pos.x), -(h[2] - p.pos.z)); p.pitch = Math.atan2(h[1] - c.y, Math.hypot(h[0] - c.x, h[2] - c.z)); S47.tick(1 / 6); })()")
+    l1 = (await ev("T.walkSt()"))['looked']
+    dd = await ev("Math.hypot(S47.player.pos.x - T.fig(2).x, S47.player.pos.z - T.fig(2).z)")
+    check(dd > 60 and l1 - l0 < 0.05 and await ev("S47.recWalk.at === null") and not any(await ev("T.rec(2).fig.glints.map((g) => g.visible)")),
+          f'in the dark at {dd:.0f} m it is not counted as looked at, and nothing glints (+{l1 - l0:.2f} s)')
+    await ev("S47.flashlight.on = true; T.stand(0.2)")
+    # gone away from before it was ever made out: it walks another time the player is back (once more)
+    await ev("S47.recWalk.reset(); delete T.ab().data.spots[1].walked; S47.flashlight.on = false; S47.player.place(-28.5, 125.0, 0); S47.tick(0.1)")
+    await ev("S47.curve.force('peak'); T.stand(1)")
+    w1 = await ev("T.walkSt()")
+    await ev("S47.player.place(-28.5, 125.0 + 560, 0); T.stand(0.5)")
+    w2 = await ev("T.walkSt()"); k1 = await ev("T.ab().data.spots[1].walked")
+    await ev("S47.player.place(-28.5, 125.0, 0); S47.curve.force('peak'); T.stand(1)")
+    w3 = await ev("T.walkSt()")
+    await ev("S47.player.place(-28.5, 125.0 + 560, 0); T.stand(0.5)")
+    k2 = await ev("T.ab().data.spots[1].walked")
+    check(w1['phase'] == 'walk' and w2['ended'] == 'left' and k1 is None and w3['phase'] == 'walk' and isinstance(k2, (int, float)),
+          f'left before it was made out: it walks again when I am back, once ({w1["phase"]}, {w2["ended"]}, {k1}, {w3["phase"]}, {k2})')
+    await ev("S47.flashlight.on = true; S47.player.place(-28.5, 125.0, 0); S47.tick(0.1)")
 
     # ======================= C: the mark =======================
     # no time away: P10, and her table as it always was

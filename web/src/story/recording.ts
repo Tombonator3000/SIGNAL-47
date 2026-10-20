@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { facing } from './seen';
+import { glowSprite } from '../core/textures';
 
 // The recording (FORSLAG.md, 20 October, item 9 B; HENDELSER.md, section 8: "they take a recording
 // of you, and every recording stays"). Where the player was taken, someone in a SARO jacket stands
@@ -18,8 +19,14 @@ import { facing } from './seen';
 // starts while it walks. The night's curve (story/curve.ts) lets it come in a build from half way
 // or at a peak, never in a rest; where one waits for the player within sight, the curve hurries
 // for it the way it does for the motel's television. Written in the night's log (story/seen.ts)
-// as 'walk 1' (the first time away's), and it lands the peak once it is looked at. Kept with the
-// case (the spot's `walked`): it never walks again, after Continue either; the one standing stays.
+// as 'walk 1' (the first time away's), and it lands the peak once it is looked at: looked at when it
+// can be made out, its band lit by the flashlight or the headlights, or within 60 m (a dark shape on
+// dark ground at 150 m has not been seen, however the eyes are turned). Far off, what carries is the
+// tape: in a beam it gives the light back as a glint a few pixels across on any screen, which moves
+// as the one wearing it moves; zoomed, it is someone in a SARO jacket. Kept with the case (the spot's
+// `walked`): it never walks again, after Continue either; the one standing stays. Only a walk the
+// player went away from before ever making it out (drove on, say) comes again, once, another time
+// they are back within sight of the place.
 
 /** The path is sampled this often (seconds), x, z and the yaw of the view each time. */
 export const PATH_DT = 0.25;
@@ -28,10 +35,21 @@ export const PATH_DT = 0.25;
 export const NEAR = 45, FROM_D = 55, TO_D = 180, GIVE_UP = 450;
 /** At the end, standing still as long as the light took; then not there for a moment. */
 const STAND = 3, GONE = 1.6;
+/** It can be made out (counts as looked at): the band lit by a beam from near the eye this much,
+ *  or this near (metres), against whatever is behind it. */
+const CLEAR_LIT = 0.25, CLEAR_D = 60;
+/** A walk the player went away from before ever making it out comes again, this many times in all. */
+const TRIES = 2;
 /** Less than this much ground covered in the 47 s, and it would only stand: it does not walk. */
 const MOVED = 5;
 
-const _lit = new THREE.Color();
+const _lit = new THREE.Color(), _at = new THREE.Vector3(), _to = new THREE.Vector3(), _eye = new THREE.Vector3();
+let _glint: THREE.Texture | null = null;
+/** Far off, the band's glint keeps about the same few pixels on any screen, as tape in a beam does
+ *  (this much of its size per metre away and per unit of the view's half height; at the usual view
+ *  of 70 degrees, its own size at 28 m), and no less than its own size near. Zoomed, it stays the
+ *  size it was, and the one wearing it comes up round it. */
+const GLINT_FAR = 1 / (28 * Math.tan(THREE.MathUtils.degToRad(35)));
 /** Someone in a SARO jacket with the reflective band across it, jointed at the hips and shoulders
  *  so it can walk (the same boxes and colours as the one standing has always had). Built facing -z,
  *  the way the player faces at yaw 0, from the feet. */
@@ -44,7 +62,14 @@ export class Walker {
   private band: THREE.MeshBasicMaterial;
   private coat: THREE.MeshBasicMaterial;
   private dark: THREE.MeshBasicMaterial;
+  /** The glint of the tape in a light from near the eye: across the chest and round each sleeve. */
+  private glints: THREE.Sprite[] = [];
+  private glintMat: THREE.SpriteMaterial;
+  /** The band's boxes the glints sit on: the chest's, then the sleeves'. */
+  private tapes: THREE.Mesh[] = [];
   private lit = 0;
+  /** How much light from near the eye is on the band now (0 to 1). */
+  get shone() { return this.lit; }
   constructor(name: string) {
     const coat = this.coat = new THREE.MeshBasicMaterial({ color: 0x2a3036 }), dark = this.dark = new THREE.MeshBasicMaterial({ color: 0x15171a });
     const band = this.band = new THREE.MeshBasicMaterial({ color: 0xd8dccc }), skin = new THREE.MeshBasicMaterial({ color: 0x6e5a4c });
@@ -58,24 +83,49 @@ export class Walker {
       const sh = new THREE.Group(); sh.position.set(sd * 0.32, 1.42, 0); this.body.add(sh);
       box(sh, 0.12, 0.6, 0.14, coat, 0, -0.3, 0);
       // (and round each sleeve, as the field jackets have it: it swings with the arm)
-      box(sh, 0.13, 0.05, 0.15, band, 0, -0.24, 0);
+      this.tapes.push(box(sh, 0.13, 0.05, 0.15, band, 0, -0.24, 0));
       this.arms.push(sh);
     }
-    box(this.body, 0.5, 0.62, 0.28, coat, 0, 1.14, 0); box(this.body, 0.52, 0.08, 0.3, band, 0, 1.2, 0);
+    box(this.body, 0.5, 0.62, 0.28, coat, 0, 1.14, 0); this.tapes.unshift(box(this.body, 0.52, 0.08, 0.3, band, 0, 1.2, 0));
     this.head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), skin); this.head.position.y = 1.6; this.body.add(this.head);
+    // the tape gives a beam back as a glint that carries much further than the jacket can be made
+    // out: across the chest, and a small one at each sleeve that swings with the arm
+    this.glintMat = new THREE.SpriteMaterial({ map: _glint ??= glowSprite(), color: 0xfff1da, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, fog: false, opacity: 0 });
+    // (each is put on the side of its tape that faces the eye, so the jacket does not hide it)
+    for (let i = 0; i < 3; i++) { const s = new THREE.Sprite(this.glintMat); s.position.set(0, i ? 1.18 : 1.2, 0); s.visible = false; s.renderOrder = 3; this.group.add(s); this.glints.push(s); }
     this.group.add(this.body);
     this.group.name = name;
     this.group.traverse((x) => { x.frustumCulled = false; });
   }
   /** The reflective band in a light from near the eye (the flashlight, the headlights): it gives the
-   *  light back the way it came, as the tape does, 0 to 1. */
-  shine(k: number) {
-    if (Math.abs(k - this.lit) < 0.02) return;
-    this.lit = k;
-    this.band.color.setRGB(0.69 + 2.2 * k, 0.72 + 2.2 * k, 0.6 + 1.9 * k);
-    // (and the jacket and the jeans a little out of the dark in the beam, enough to be someone)
-    this.coat.color.setHex(0x2a3036).lerp(_lit.setHex(0x737a82), k);
-    this.dark.color.setHex(0x15171a).lerp(_lit.setHex(0x464a52), k);
+   *  light back the way it came, as the tape does, 0 to 1. `cam`: the eye the light is beside (the
+   *  glint keeps a few pixels across however far off it is). */
+  shine(k: number, cam?: THREE.Camera) {
+    if (Math.abs(k - this.lit) >= 0.02 || (k === 0 && this.lit !== 0)) {
+      this.lit = k;
+      this.band.color.setRGB(0.69 + 2.2 * k, 0.72 + 2.2 * k, 0.6 + 1.9 * k);
+      // (and the jacket and the jeans a little out of the dark in the beam, enough to be someone)
+      this.coat.color.setHex(0x2a3036).lerp(_lit.setHex(0x737a82), k);
+      this.dark.color.setHex(0x15171a).lerp(_lit.setHex(0x464a52), k);
+      this.glintMat.opacity = 0.9 * Math.min(1, 1.15 * k) ** 1.5;
+    }
+    const on = this.lit > 0.04;
+    for (const g of this.glints) g.visible = on;
+    if (!on) return;
+    const eye = cam ? cam.getWorldPosition(_eye) : null;
+    const half = cam && (cam as THREE.PerspectiveCamera).isPerspectiveCamera ? Math.tan(THREE.MathUtils.degToRad((cam as THREE.PerspectiveCamera).fov / 2)) : 0.7;
+    const s = Math.max(1, (eye ? eye.distanceTo(this.group.position) : 40) * half * GLINT_FAR);
+    this.glints[0].scale.set(0.7 * s, 0.16 * s, 1);
+    this.glints[1].scale.setScalar(0.18 * s); this.glints[2].scale.setScalar(0.18 * s);
+    if (!eye) return;
+    this.group.updateMatrixWorld(true);
+    this.tapes.forEach((t, i) => {
+      t.getWorldPosition(_at);
+      _to.copy(eye).sub(_at).setY(0).normalize();
+      this.group.worldToLocal(_at.addScaledVector(_to, 0.3));
+      this.glints[i].position.copy(_at);
+    });
   }
   /** Standing still, as it has always stood. */
   stand() { this.pose(0, 0, 0, 0, 0); }
@@ -120,8 +170,8 @@ export function pathMoved(p: Path) {
 
 /** One of the times away, as the walk sees it (story/abduction.ts, recording). */
 export interface Rec { n: number; scene: string; take: THREE.Vector3; path: Path | undefined; walked: number | undefined; clock: number; fig: Walker;
-  /** Kept with the case: it has walked (the night's clock then). */
-  markWalked: (clock: number) => void }
+  /** Kept with the case: it has walked (the night's clock then), or not after all (undefined). */
+  markWalked: (clock: number | undefined) => void }
 export interface RecordingDeps {
   /** The recordings there are (one for each time away). */
   recs: () => Rec[];
@@ -174,14 +224,22 @@ export class RecordingWalk {
   private v = new THREE.Vector3();
   private w = new THREE.Vector3();
   private head = new THREE.Vector3();
+  private eye = new THREE.Vector3();
   private noted = false;
   private sawRestart = false;
+  /** It can be made out from where the player is now (lit, or near enough). */
+  private clear = false;
+  /** How many times each time away has begun to walk tonight (n). */
+  private tries = new Map<number, number>();
 
   constructor(private d: RecordingDeps) {}
 
   get busy() { return this.phase !== 'idle'; }
-  /** Where it is now, at the head (null while it is not there): the log watches this. */
-  get at(): THREE.Vector3 | null { return this.rec && this.rec.fig.group.visible ? this.head : null; }
+  /** Where it is now, at the head, while it is there and can be made out (the log watches this:
+   *  a dark shape on dark ground at 150 m has not been seen, however the eyes are turned). */
+  get at(): THREE.Vector3 | null { return this.rec && this.rec.fig.group.visible && this.clear ? this.head : null; }
+  /** Where it is, at the head, whether or not it can be made out (null while it is not walking). */
+  get spot(): THREE.Vector3 | null { return this.rec ? this.head : null; }
   /** The one that would walk if it could, from where the player is now. */
   candidate(s: RecordingIn): Rec | null {
     for (const r of this.d.recs()) {
@@ -234,7 +292,7 @@ export class RecordingWalk {
     // walked up to: it was not there
     if (near && this.phase !== 'gone') { this.end('near'); return; }
     g.visible = this.phase !== 'gone';
-    if (g.visible && facing(this.d.camera, this.head, 320, 18)) this.looked += dt;
+    if (g.visible && this.clear && facing(this.d.camera, this.head, 320, 18)) this.looked += dt;
   }
 
   /** Where it is on the path and how it is carried there. */
@@ -268,7 +326,9 @@ export class RecordingWalk {
     g.rotation.set(0, this.yaw, 0);
     this.head.set(this.v.x, g.position.y + 1.45, this.v.z);
     this.w.set(this.v.x, g.position.y + 1.2, this.v.z);
-    r.fig.shine(this.d.shine?.(this.w) ?? 0);
+    const eye = this.d.camera.getWorldPosition(this.eye);
+    r.fig.shine(this.d.shine?.(this.w) ?? 0, this.d.camera);
+    this.clear = r.fig.shone >= CLEAR_LIT || Math.hypot(eye.x - this.v.x, eye.z - this.v.z) <= CLEAR_D;
   }
 
   /** It walks now (the curve and one-at-a-time have said so; the developer menu, the tests). */
@@ -278,6 +338,7 @@ export class RecordingWalk {
     pathAt(r.path!, 0, this.prev);
     this.yaw = r.path![2];
     this.d.hold(r.n, true);
+    this.tries.set(r.n, (this.tries.get(r.n) ?? 0) + 1);
     r.walked = Math.round(clock); r.markWalked(r.walked);
     this.place(0, r);
     r.fig.group.visible = true;
@@ -292,12 +353,16 @@ export class RecordingWalk {
     }
     r.fig.stand();
     this.d.hold(r.n, false);
-    this.phase = 'idle'; this.ended = why; this.rec = null; this.n = 0;
+    // the player went away before ever making it out (drove on, say): it was not seen, and it walks
+    // again another time they are back within sight of the place (once more)
+    if (why === 'left' && this.looked <= 0 && (this.tries.get(r.n) ?? 0) < TRIES) { r.walked = undefined; r.markWalked(undefined); }
+    this.phase = 'idle'; this.ended = why; this.rec = null; this.n = 0; this.clear = false;
     this.d.save();
   }
   /** A night put back or left (nothing of it walks on; the one standing stands). */
   reset() {
     if (this.rec) { this.rec.fig.stand(); this.d.hold(this.rec.n, false); }
-    this.phase = 'idle'; this.rec = null; this.n = 0; this.waiting = false; this.ended = null;
+    this.phase = 'idle'; this.rec = null; this.n = 0; this.waiting = false; this.ended = null; this.clear = false;
+    this.tries.clear();
   }
 }
