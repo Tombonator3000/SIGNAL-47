@@ -4,77 +4,129 @@
 // edge of the frame and a foot from the lens, out of focus, the side of a pale head and one
 // black eye with the flash in it. It is never in the scene, only on the print.
 //
-// It is drawn here, in two dimensions, on the frame as the renderer gave it and before the
-// film look (core/FieldCamera.ts), so the grain, the warm cast and the vignette go over it as
-// over everything else on the print. A thing that close to a lens focused on the night is a
-// soft shape: the head is drawn sharp on a layer of its own, then thrown out of focus with its
-// edges (a box blur three times over, which is near enough a gaussian and does not need the
-// canvas filter some phones lack). It is lit the way an on-camera flash lights what is nearest:
-// brightest where it faces the lens, falling off fast over the curve of the skull and towards
-// the back, the edges dark. What is blown out spills a little light over its own edge
-// (halation), and the flash shows in the eye as one soft hot disc, the way a highlight goes out
-// of focus. Its shape is the face in FLASH (story/flashFrames.ts and Codex's flash_face.jpg):
-// the big skull, the narrow chin, a black almond eye slanting up towards the temple. Only part
-// of it, turned towards the lens.
+// It is drawn here, on the frame as the renderer gave it and before the film look
+// (core/FieldCamera.ts), so the grain, the warm cast and the vignette go over it as over
+// everything else on the print. It is not painted as a picture of a face but lit as a thing a
+// foot from an on-camera flash: the head is a surface (two ellipsoids, the big skull and the
+// narrow face, with a socket for the eye, a brow over it and a cheekbone under it), and every
+// point of it gets the flash by how squarely it faces the lens and by the square of its
+// distance. So it is near white where it is nearest and turned to the lens, it falls off fast
+// over the curve of the skull, and its far edges are dark, a mass with no stars in it. A thing
+// that close to a lens focused on the night is a soft shape: the layer is thrown out of focus
+// (a box blur three times over, near enough a gaussian, without the canvas filter some phones
+// lack). What the flash blew out spills a little light over its edge, and the flash shows in
+// the eye as one soft disc, the way a highlight goes out of focus.
 //
-// Everything is laid out on a 640 x 400 frame and scaled to the print's own size (640, or 320
-// where the saves have no IndexedDB). The same seed always gives the same picture.
+// It is the face in FLASH (story/flashFrames.ts and Codex's flash_face.jpg), so the end can be
+// recognised: the big skull, the narrow chin, a black teardrop eye slanting up to the temple
+// with the light high on its inner side. Only part of it: the head is turned to the lens, its
+// middle is at the very edge of the print and the other eye is past it, the lower face goes
+// into the dark.
+//
+// Laid out on a 640 x 400 frame (the head at the right edge; -1 mirrors it to the left), worked
+// out on a layer of half that, and scaled to the print's own size (640, or 320 where the saves
+// have no IndexedDB). The same seed always gives the same picture.
 
 const DW = 640, DH = 400;
+/** The layer the head is worked out on: half the frame, which the blur hides. */
+const LW = 320, LH = 200, STEP = DW / LW;
 
 function lcg(seed: number) {
   let s = seed >>> 0 || 1;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-/** The head's outline in the 640 x 400 frame, the head at the right edge, turned towards the lens:
- *  the front of the face is the line nearest the middle of the frame, the skull runs off the top
- *  and the right, the chin off the bottom. */
-function headPath(g: CanvasRenderingContext2D) {
+/** Smooth value noise, 0 to 1, repeating every 64 units. */
+function noise(seed: number) {
+  const r = lcg(seed), t = new Float32Array(64 * 64);
+  for (let i = 0; i < t.length; i++) t[i] = r();
+  return (x: number, y: number) => {
+    const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+    const x0 = xi & 63, x1 = (xi + 1) & 63, y0 = (yi & 63) * 64, y1 = ((yi + 1) & 63) * 64;
+    const a = t[y0 + x0], b = t[y0 + x1], c = t[y1 + x0], d = t[y1 + x1];
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+}
+
+const clamp01 = (v: number) => v < 0 ? 0 : v > 1 ? 1 : v;
+const smooth = (a: number, b: number, v: number) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+// The head, upright in its own frame, at the right edge: its middle (MID) is just past the edge,
+// so what is on the print is the near side of the face, the temple and the skull. The skull is
+// big and the face under it narrow, running to a small chin; the lower face goes back from the
+// lens, so the flash leaves it.
+const MID = 684;
+const SKULL = { y: 70, rx: 206, ry: 214, rz: 190 };
+const FACE = { y: 236, rx: 156, ry: 172, rz: 150, z: -10, taper: 0.55 };
+/** Below the eye the face goes back from the lens, so much per unit down. */
+const RECEDE = { y: 200, k: 0.7 };
+// It leans in from the edge, the top of the head towards the middle of the frame, as if to see.
+const LEAN = { x: 620, y: 430, a: -0.13 };
+// The eye: its middle, its length and height, and its slant (the outer end, towards the temple
+// and the middle of the frame, up). The socket it sits in, the brow over it and the cheekbone under.
+const EYE = { x: 594, y: 182, L: 126, H: 58, tilt: 0.4 };
+const SOCKET = 12, BROW = 14, CHEEK = 14;
+/** The flash, a foot from the face, which is turned to it. */
+const CAM = { x: 640, y: 150, z: -320 };
+/** How much flash reaches the nearest skin, and the skin (a little cold before the print's warm cast). */
+const FLASH = 3.2, SKIN = [0.74, 0.81, 0.83];
+
+/** Upright-head coordinates of a point on the frame (undoes the lean). */
+function unlean(x: number, y: number): [number, number] {
+  const c = Math.cos(LEAN.a), s = Math.sin(LEAN.a), dx = x - LEAN.x, dy = y - LEAN.y;
+  return [LEAN.x + dx * c + dy * s, LEAN.y - dx * s + dy * c];
+}
+/** Where a point of the head (upright) is on the frame. */
+function lean(x: number, y: number): [number, number] {
+  const c = Math.cos(LEAN.a), s = Math.sin(LEAN.a), dx = x - LEAN.x, dy = y - LEAN.y;
+  return [LEAN.x + dx * c - dy * s, LEAN.y + dx * s + dy * c];
+}
+
+/** The head's depth at an upright point (further from the lens is larger), and how much of it is there. */
+function depth(hx: number, hy: number, wr: (x: number, y: number) => number): [number, number] {
+  const u1 = (hx - MID) / SKULL.rx, v1 = (hy - SKULL.y) / SKULL.ry, t1 = 1 - u1 * u1 - v1 * v1;
+  const k = clamp01((hy - FACE.y) / FACE.ry), rxf = FACE.rx * (1 - FACE.taper * k * k);
+  const u2 = (hx - MID) / rxf, v2 = (hy - FACE.y) / FACE.ry, t2 = 1 - u2 * u2 - v2 * v2;
+  const cov = smooth(0, 0.035, Math.max(t1, t2));
+  if (cov <= 0) return [0, 0];
+  const z1 = t1 > 0 ? SKULL.rz - SKULL.rz * Math.sqrt(t1) : 1e4;
+  const z2 = t2 > 0 ? FACE.rz + FACE.z - FACE.rz * Math.sqrt(t2) : 1e4;
+  // the skull and the face run into each other without a seam
+  const h = clamp01(0.5 + 0.5 * (z2 - z1) / 30);
+  let z = z2 + (z1 - z2) * h - 30 * h * (1 - h);
+  z += Math.max(0, hy - RECEDE.y) * RECEDE.k;
+  // the eye's socket, the brow over it, the cheekbone under it, a few soft folds round it
+  const c = Math.cos(EYE.tilt), s = Math.sin(EYE.tilt), ex = hx - EYE.x, ey = hy - EYE.y;
+  const lu = ex * c + ey * s, lv = -ex * s + ey * c;
+  const r = Math.hypot(lu / (EYE.L * 0.64), lv / (EYE.H * 1.2));
+  z += SOCKET * (1 - smooth(0.42, 1.3, r));
+  z -= BROW * Math.exp(-(((lv + EYE.H * 1.05) / (EYE.H * 0.5)) ** 2) - (lu / (EYE.L * 0.62)) ** 2);
+  z -= CHEEK * Math.exp(-(((lv - EYE.H * 1.25) / (EYE.H * 0.6)) ** 2) - ((lu + EYE.L * 0.08) / (EYE.L * 0.55)) ** 2);
+  if (r > 0.9 && r < 1.9) z += 1.6 * Math.sin((r - 0.9) * 19) * (1 - smooth(1.2, 1.9, r));
+  // and the skin is not quite smooth
+  z += (wr(hx / 38, hy / 38) - 0.5) * 5;
+  return [z, cov];
+}
+
+/** The eye in its own frame: the outer end (towards the temple) at -L/2 drawn out to a point, the
+ *  inner end at +L/2 full and round, y down. */
+function eyePath(g: CanvasRenderingContext2D, L: number, H: number) {
   g.beginPath();
-  g.moveTo(500, -80);
-  g.bezierCurveTo(452, -30, 424, 46, 428, 112);       // the dome of the skull, bulging forward
-  g.bezierCurveTo(430, 146, 444, 160, 452, 178);      // the brow
-  g.bezierCurveTo(458, 192, 452, 204, 456, 222);      // a dip where the eye sits in
-  g.bezierCurveTo(462, 250, 474, 262, 486, 290);      // the cheekbone
-  g.bezierCurveTo(500, 320, 520, 340, 546, 360);      // the cheek, falling away to the chin
-  g.bezierCurveTo(566, 377, 582, 390, 590, 396);      // the narrow chin
-  g.bezierCurveTo(616, 388, 656, 364, 688, 334);      // the jaw, back up towards where an ear would be
-  g.lineTo(780, 300); g.lineTo(780, -80);
+  g.moveTo(-L / 2, 0);
+  g.bezierCurveTo(-L * 0.22, -H * 0.64, L * 0.2, -H * 0.8, L * 0.42, -H * 0.4);
+  g.bezierCurveTo(L * 0.56, -H * 0.16, L * 0.55, H * 0.32, L * 0.33, H * 0.45);
+  g.bezierCurveTo(L * 0.06, H * 0.6, -L * 0.26, H * 0.34, -L / 2, 0);
   g.closePath();
 }
 
-/** The eye in its own frame: the inner corner at -L/2, the outer at +L/2, y down. The lower lid is
- *  fuller at the inner side; the outer corner is drawn out to a point. */
-function eyePath(g: CanvasRenderingContext2D, L: number, Hh: number) {
-  g.beginPath();
-  g.moveTo(-L / 2, Hh * 0.08);
-  g.bezierCurveTo(-L * 0.34, -Hh * 0.8, L * 0.2, -Hh * 0.7, L / 2, -Hh * 0.04);
-  g.bezierCurveTo(L * 0.28, Hh * 0.52, -L * 0.18, Hh * 0.9, -L / 2, Hh * 0.08);
-  g.closePath();
-}
-
-// where the eye is, its size and its slant, in the 640 x 400 frame
-const EYE = { x: 524, y: 174, L: 120, H: 48, tilt: -0.44 };
-// it leans in from the edge, the top of the head towards the middle of the frame
-const LEAN = { x: 640, y: 400, a: -0.1 };
-const lean = (g: CanvasRenderingContext2D) => { g.translate(LEAN.x, LEAN.y); g.rotate(LEAN.a); g.translate(-LEAN.x, -LEAN.y); };
-
-/** A soft oval of colour `rgb` fading out from `a` at its middle. */
-function blob(g: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, rot: number, rgb: string, a: number) {
-  g.save(); g.translate(x, y); g.rotate(rot); g.scale(1, ry / rx);
-  const d = g.createRadialGradient(0, 0, 0, 0, 0, rx);
-  d.addColorStop(0, `rgba(${rgb},${a})`); d.addColorStop(1, `rgba(${rgb},0)`);
-  g.fillStyle = d; g.beginPath(); g.arc(0, 0, rx, 0, 7); g.fill(); g.restore();
-}
-
-/** Three box blurs, rows then columns, on premultiplied RGBA inside [x0, x1) x [y0, y1). */
-function blur(img: ImageData, rad: number, x0: number, y0: number, x1: number, y1: number) {
-  const W = img.width, d = img.data, w = x1 - x0, h = y1 - y0;
+/** Three box blurs, rows then columns, on premultiplied RGBA inside [x0, x1) x [0, h). */
+function blur(img: ImageData, rad: number, x0: number, x1: number) {
+  const W = img.width, h = img.height, d = img.data, w = x1 - x0;
   if (rad < 1 || w <= 0 || h <= 0) return;
   const buf = new Float32Array(w * h * 4);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = ((y + y0) * W + x + x0) * 4, j = (y * w + x) * 4, a = d[i + 3] / 255;
+    const i = (y * W + x + x0) * 4, j = (y * w + x) * 4, a = d[i + 3] / 255;
     buf[j] = d[i] * a; buf[j + 1] = d[i + 1] * a; buf[j + 2] = d[i + 2] * a; buf[j + 3] = d[i + 3];
   }
   const tmp = new Float32Array(Math.max(w, h) * 4);
@@ -82,7 +134,7 @@ function blur(img: ImageData, rad: number, x0: number, y0: number, x1: number, y
     const r = Math.min(rad, len - 1), inv = 1 / (2 * r + 1);
     for (let n = 0; n < count; n++) {
       for (let c = 0; c < 4; c++) {
-        // edges clamped: the layer is transparent there anyway, or the head runs on off the frame
+        // edges clamped: the layer is empty there, or the head runs on off the frame
         let sum = buf[at(n, 0) + c] * (r + 1);
         for (let k = 1; k <= r; k++) sum += buf[at(n, Math.min(len - 1, k)) + c];
         for (let k = 0; k < len; k++) {
@@ -98,145 +150,114 @@ function blur(img: ImageData, rad: number, x0: number, y0: number, x1: number, y
     pass(h, w, (col, k) => (k * w + col) * 4);
   }
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = ((y + y0) * W + x + x0) * 4, j = (y * w + x) * 4, a = buf[j + 3];
+    const i = (y * W + x + x0) * 4, j = (y * w + x) * 4, a = buf[j + 3];
     const k = a > 0.5 ? 255 / a : 0;
     d[i] = Math.min(255, buf[j] * k); d[i + 1] = Math.min(255, buf[j + 1] * k); d[i + 2] = Math.min(255, buf[j + 2] * k); d[i + 3] = a;
   }
 }
 
-/** Puts the face on a free frame, in place: `raw` is the frame as rendered, before the film look.
- *  `side` 1 has it at the right edge, -1 at the left. */
-export function filmFace(raw: HTMLCanvasElement, seed: number, side: 1 | -1 = 1) {
-  const W = raw.width, H = raw.height, s = W / DW;
-  const r = lcg(seed * 2654435761);
-  const layer = document.createElement('canvas'); layer.width = W; layer.height = H;
-  const g = layer.getContext('2d', { willReadFrequently: true })!;
-  g.save();
-  if (side < 0) { g.translate(W, 0); g.scale(-1, 1); }
-  g.scale(s, H / DH);
-  lean(g);
+/** The layer's columns the head can reach, and how far out of focus it is (on the layer). */
+const X0 = Math.floor(380 / STEP), BLUR = 3;
 
-  // ---- the head, lit by the flash ----
-  g.save();
-  headPath(g); g.clip();
-  // at a grazing angle the flash hardly lights it: that is the colour of the skin in shadow
-  // (a little cold before the print's warm cast goes over it: on the print it comes out grey)
-  g.fillStyle = 'rgb(50,56,57)'; g.fillRect(400, -80, 400, 520);
-  // where it faces the lens it is nearly white: the temple and the dome over the eye
-  const hot = g.createRadialGradient(504, 134, 6, 514, 150, 200);
-  hot.addColorStop(0, 'rgb(234,246,246)'); hot.addColorStop(0.2, 'rgb(214,228,228)');
-  hot.addColorStop(0.46, 'rgb(158,170,170)'); hot.addColorStop(0.76, 'rgb(90,98,99)'); hot.addColorStop(1, 'rgb(50,56,57)');
-  g.fillStyle = hot; g.fillRect(400, -80, 400, 520);
-  // the cheekbone under the eye catches it too
-  const cheek = g.createRadialGradient(496, 258, 4, 496, 258, 66);
-  cheek.addColorStop(0, 'rgba(240,252,252,.26)'); cheek.addColorStop(1, 'rgba(240,252,252,0)');
-  g.fillStyle = cheek; g.fillRect(400, 180, 200, 170);
-  // further from the flash, darker: the back of the skull, and down towards the jaw
-  const back = g.createLinearGradient(590, 0, 700, 0);
-  back.addColorStop(0, 'rgba(8,10,10,0)'); back.addColorStop(1, 'rgba(8,10,10,.6)');
-  g.fillStyle = back; g.fillRect(400, -80, 400, 520);
-  const low = g.createLinearGradient(0, 214, 0, 384);
-  low.addColorStop(0, 'rgba(6,8,8,0)'); low.addColorStop(0.55, 'rgba(6,8,8,.5)'); low.addColorStop(1, 'rgba(6,8,8,.86)');
-  g.fillStyle = low; g.fillRect(400, -80, 400, 520);
-  // and the dome curving away over the top
-  const top = g.createLinearGradient(0, 70, 0, -60);
-  top.addColorStop(0, 'rgba(8,10,10,0)'); top.addColorStop(1, 'rgba(8,10,10,.58)');
-  g.fillStyle = top; g.fillRect(400, -80, 400, 520);
-  // the bone under the skin: the temple sunk in behind the eye, the hollow under the cheekbone
-  const dent = (x: number, y: number, rx: number, ry: number, a: number, rot = 0) => blob(g, x, y, rx, ry, rot, '14,16,16', a);
-  dent(604, 150, 46, 78, 0.3, -0.2);
-  dent(560, 318, 56, 30, 0.26, -0.6);
-  dent(EYE.x - 6, EYE.y - 34, 70, 22, 0.16, EYE.tilt);   // a soft fold over the eye
-  // the skin: a faint mottling, almost lost when it goes out of focus
-  for (let i = 0; i < 260; i++) {
-    const x = 420 + r() * 260, y = -20 + r() * 420, rr = 3 + r() * 14, v = r() < 0.5 ? 0 : 255;
-    g.fillStyle = `rgba(${v},${v},${v},${0.025 + r() * 0.04})`;
-    g.beginPath(); g.ellipse(x, y, rr, rr * (0.5 + r() * 0.5), r() * 3, 0, 7); g.fill();
+/** Puts the face on a free frame, in place: `raw` is the frame as rendered, before the film look.
+ *  `side` 1 has it at the right edge, -1 at the left (the same head in a mirror: the lens is in
+ *  the middle of the frame, so the flash falls on it the same way). */
+export function filmFace(raw: HTMLCanvasElement, seed: number, side: 1 | -1 = 1) {
+  const W = raw.width, H = raw.height;
+  const wr = noise(seed * 2654435761), mot = noise(seed * 40503 + 7);
+  const layer = document.createElement('canvas'); layer.width = LW; layer.height = LH;
+  const g = layer.getContext('2d', { willReadFrequently: true })!;
+
+  // ---- the head, as deep as it is, then lit by the flash ----
+  const zs = new Float32Array(LW * LH), cs = new Float32Array(LW * LH);
+  for (let ly = 0; ly < LH; ly++) for (let lx = X0; lx < LW; lx++) {
+    const [hx, hy] = unlean((lx + 0.5) * STEP, (ly + 0.5) * STEP);
+    const [z, c] = depth(hx, hy, wr);
+    zs[ly * LW + lx] = z; cs[ly * LW + lx] = c;
   }
-  // round the edge the surface turns away from the lens and the light goes off it
-  headPath(g);
-  for (let i = 0; i < 6; i++) { g.strokeStyle = 'rgba(14,16,16,.17)'; g.lineWidth = 10 + i * 14; g.stroke(); }
-  // skin, not plaster: a broad soft sheen of the flash along the brow and on the cheekbone
-  blob(g, EYE.x - 12, EYE.y - 52, 64, 13, EYE.tilt - 0.1, '255,255,255', 0.2);
-  blob(g, EYE.x - 30, EYE.y + 74, 30, 10, -0.5, '255,255,255', 0.16);
-  // a shallow hollow round the eye
-  g.save();
-  g.translate(EYE.x, EYE.y); g.rotate(EYE.tilt);
-  const hol = g.createRadialGradient(0, 4, EYE.L * 0.3, 0, 4, EYE.L * 0.82);
-  hol.addColorStop(0, 'rgba(30,32,32,.34)'); hol.addColorStop(1, 'rgba(30,32,32,0)');
-  g.fillStyle = hol; g.scale(1, 0.62); g.beginPath(); g.arc(0, 0, EYE.L * 0.82, 0, 7); g.fill();
-  g.restore();
-  g.restore();
-  // the thin neck, behind the jaw and out of the light
-  g.save();
-  g.beginPath(); g.moveTo(642, 352); g.bezierCurveTo(660, 376, 664, 396, 662, 440); g.lineTo(780, 440); g.lineTo(780, 300); g.lineTo(688, 334); g.closePath();
-  g.fillStyle = 'rgb(22,25,25)'; g.fill();
-  g.restore();
+  const img = g.createImageData(LW, LH), d = img.data;
+  for (let ly = 0; ly < LH; ly++) for (let lx = X0; lx < LW; lx++) {
+    const i = ly * LW + lx, c = cs[i];
+    if (c <= 0) continue;
+    // past its edge the surface is taken to go on falling away
+    const at = (x: number, y: number) => { const j = Math.min(LH - 1, Math.max(0, y)) * LW + Math.min(LW - 1, Math.max(X0, x)); return cs[j] > 0 ? zs[j] : zs[i] + 40; };
+    // the surface's slope, so which way it faces
+    const gx = (at(lx + 1, ly) - at(lx - 1, ly)) / (2 * STEP), gy = (at(lx, ly + 1) - at(lx, ly - 1)) / (2 * STEP);
+    const nl = 1 / Math.hypot(gx, gy, 1), nx = gx * nl, ny = gy * nl, nz = -nl;
+    const px = (lx + 0.5) * STEP, py = (ly + 0.5) * STEP, pz = zs[i];
+    let vx = CAM.x - px, vy = CAM.y - py, vz = CAM.z - pz;
+    const dist = Math.hypot(vx, vy, vz); vx /= dist; vy /= dist; vz /= dist;
+    const lam = Math.max(0, nx * vx + ny * vy + nz * vz);
+    const fall = (-CAM.z / dist) ** 3;
+    // skin, a little mottled, with a broad wet sheen where it faces the flash squarely
+    const m = 0.84 + 0.32 * mot(px / 30, py / 30) + 0.14 * (wr(px / 11, py / 11) - 0.5);
+    // (a hard terminator: the light goes off it quickly as it turns away)
+    const turn = lam ** 1.7, sheen = 0.2 * lam ** 26, lit = FLASH * fall;
+    for (let k = 0; k < 3; k++) d[i * 4 + k] = 255 * (1 - Math.exp(-lit * (turn * SKIN[k] * m + sheen) * 1.55));
+    d[i * 4 + 3] = 255 * c;
+  }
+  g.putImageData(img, 0, 0);
 
   // ---- the eye: black, wet, too big ----
+  const [ex, ey] = lean(EYE.x, EYE.y), tilt = EYE.tilt + LEAN.a;
   g.save();
-  g.translate(EYE.x, EYE.y); g.rotate(EYE.tilt);
-  // the lid's edge, darker where it folds in
-  eyePath(g, EYE.L + 10, EYE.H + 9); g.fillStyle = 'rgba(40,42,42,.7)'; g.fill();
-  eyePath(g, EYE.L, EYE.H); g.fillStyle = 'rgb(5,6,7)'; g.fill();
-  g.clip();
-  // the dull sheen of the night on its upper curve
-  const sheen = g.createRadialGradient(-EYE.L * 0.12, -EYE.H * 0.5, 2, -EYE.L * 0.05, -EYE.H * 0.3, EYE.L * 0.5);
-  sheen.addColorStop(0, 'rgba(120,130,134,.30)'); sheen.addColorStop(1, 'rgba(120,130,134,0)');
-  g.fillStyle = sheen; g.fillRect(-EYE.L, -EYE.H, EYE.L * 2, EYE.H * 2);
+  g.scale(1 / STEP, 1 / STEP);
+  g.translate(ex, ey); g.rotate(tilt);
+  // where the lids meet it, the skin folds in, dark
+  eyePath(g, EYE.L + 8, EYE.H + 8); g.fillStyle = 'rgba(16,18,18,.4)'; g.fill();
+  eyePath(g, EYE.L, EYE.H); g.fillStyle = 'rgb(4,5,6)'; g.fill();
+  g.save(); g.clip();
+  // the curve of it gives back a little of the flash, high on the inner side
+  const sh = g.createRadialGradient(EYE.L * 0.1, -EYE.H * 0.26, 2, EYE.L * 0.06, -EYE.H * 0.1, EYE.L * 0.46);
+  sh.addColorStop(0, 'rgba(150,160,164,.2)'); sh.addColorStop(0.5, 'rgba(90,98,102,.07)'); sh.addColorStop(1, 'rgba(90,98,102,0)');
+  g.fillStyle = sh; g.fillRect(-EYE.L, -EYE.H, EYE.L * 2, EYE.H * 2);
   g.restore();
-  g.save();
-  g.translate(EYE.x, EYE.y); g.rotate(EYE.tilt);
-  // and the wet line of the lower lid
-  g.beginPath(); g.moveTo(-EYE.L * 0.44, EYE.H * 0.22); g.bezierCurveTo(-EYE.L * 0.16, EYE.H * 0.76, EYE.L * 0.2, EYE.H * 0.46, EYE.L * 0.44, EYE.H * 0.06);
-  g.strokeStyle = 'rgba(214,220,214,.38)'; g.lineWidth = 2.4; g.stroke();
-  g.restore();
+  // the wet line of the lower lid
+  g.beginPath(); g.moveTo(-EYE.L * 0.4, EYE.H * 0.1); g.bezierCurveTo(-EYE.L * 0.16, EYE.H * 0.5, EYE.L * 0.12, EYE.H * 0.6, EYE.L * 0.36, EYE.H * 0.42);
+  g.strokeStyle = 'rgba(220,226,222,.42)'; g.lineWidth = 2.6; g.stroke();
   g.restore();
 
   // ---- out of focus: it is far too close for the lens ----
-  const x0 = side > 0 ? Math.floor(340 * s) : 0, x1 = side > 0 ? W : Math.ceil(W - 340 * s);
-  const img = g.getImageData(x0, 0, x1 - x0, H);
-  blur(img, Math.max(1, Math.round(6 * s)), 0, 0, x1 - x0, H);
-  g.putImageData(img, x0, 0);
+  const soft = g.getImageData(0, 0, LW, LH);
+  blur(soft, BLUR, X0 - 2 * BLUR, LW);
+  g.putImageData(soft, 0, 0);
 
   // ---- onto the print ----
   const p = raw.getContext('2d')!;
-  // a little smear down the frame: it was moving when the shutter went
-  p.globalAlpha = 0.2; p.drawImage(layer, 0, 4 * s);
-  p.globalAlpha = 1; p.drawImage(layer, 0, 0);
+  p.save();
+  if (side < 0) { p.translate(W, 0); p.scale(-1, 1); }
+  p.imageSmoothingEnabled = true; p.imageSmoothingQuality = 'high';
+  p.drawImage(layer, 0, 0, W, H);
   // what the flash blew out spills light over its own edge
-  const q = Math.max(1, Math.round(4 * s)), gw = Math.ceil(W / q), gh = Math.ceil(H / q);
+  const gw = LW / 2, gh = LH / 2;
   const glow = document.createElement('canvas'); glow.width = gw; glow.height = gh;
   const gg = glow.getContext('2d', { willReadFrequently: true })!;
   gg.drawImage(layer, 0, 0, gw, gh);
   const gi = gg.getImageData(0, 0, gw, gh), gd = gi.data;
   for (let i = 0; i < gd.length; i += 4) {
     const l = (gd[i] * 0.3 + gd[i + 1] * 0.59 + gd[i + 2] * 0.11) * gd[i + 3] / 255;
-    const k = Math.max(0, (l - 168) / 87);
-    gd[i] = 236; gd[i + 1] = 240; gd[i + 2] = 234; gd[i + 3] = Math.round(255 * k * k);
+    const k = Math.max(0, (l - 176) / 79);
+    gd[i] = 236; gd[i + 1] = 240; gd[i + 2] = 236; gd[i + 3] = Math.round(255 * k * k);
   }
-  blur(gi, 5, 0, 0, gw, gh);
+  blur(gi, 4, 0, gw);
   gg.putImageData(gi, 0, 0);
-  p.globalCompositeOperation = 'screen'; p.globalAlpha = 0.55;
+  p.globalCompositeOperation = 'screen'; p.globalAlpha = 0.5;
   p.drawImage(glow, 0, 0, W, H);
   p.globalCompositeOperation = 'source-over'; p.globalAlpha = 1;
 
-  // ---- the flash in the eye: one soft hot disc, the way a highlight goes out of focus ----
-  p.save();
-  if (side < 0) { p.translate(W, 0); p.scale(-1, 1); }
-  p.scale(s, H / DH);
-  lean(p);
-  const c = Math.cos(EYE.tilt), sn = Math.sin(EYE.tilt);
-  const at = (ex: number, ey: number) => [EYE.x + ex * c - ey * sn, EYE.y + ex * sn + ey * c] as const;
-  const [hx, hy] = at(-EYE.L * 0.2, -EYE.H * 0.22);
-  const hl = p.createRadialGradient(hx, hy, 0, hx, hy, 7);
-  hl.addColorStop(0, 'rgba(255,255,255,.95)'); hl.addColorStop(0.45, 'rgba(240,250,250,.7)'); hl.addColorStop(1, 'rgba(240,250,250,0)');
-  p.fillStyle = hl; p.beginPath(); p.arc(hx, hy, 7, 0, 7); p.fill();
+  // ---- the flash in the eye, high on the inner side: one soft spot, the way a highlight goes out of focus ----
+  p.scale(W / DW, H / DH);
+  const c = Math.cos(tilt), sn = Math.sin(tilt);
+  const hx = ex + EYE.L * 0.2 * c + EYE.H * 0.3 * sn, hy = ey + EYE.L * 0.2 * sn - EYE.H * 0.3 * c;
+  p.translate(hx, hy); p.rotate(tilt * 0.5); p.scale(1.5, 1);
+  const hl = p.createRadialGradient(0, 0, 0, 0, 0, 5);
+  hl.addColorStop(0, 'rgba(255,255,255,.86)'); hl.addColorStop(0.55, 'rgba(244,250,250,.64)'); hl.addColorStop(1, 'rgba(240,250,250,0)');
+  p.fillStyle = hl; p.beginPath(); p.arc(0, 0, 5, 0, 7); p.fill();
   p.restore();
 }
 
-/** Where on the frame the eye is (u, v from the top left), for the tests. */
+/** Where on the frame the eye is (u, v from the top left), for the tests (tools/horror_face.py). */
 export function filmFaceEye(side: 1 | -1 = 1) {
-  const u = EYE.x / DW;
-  return { u: side > 0 ? u : 1 - u, v: EYE.y / DH };
+  const [x, y] = lean(EYE.x, EYE.y);
+  return { u: side > 0 ? x / DW : 1 - x / DW, v: y / DH };
 }

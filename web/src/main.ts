@@ -55,7 +55,7 @@ import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
-import { Album, rollText } from './core/album';
+import { Album, rollText, FACE_LINE } from './core/album';
 import { albumSubjects } from './story/albumSubjects';
 import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
@@ -436,11 +436,12 @@ async function boot() {
     // chapter four (core/filmFace.ts). Only on the print; in the scene there is nothing.
     face: () => mode === 'play' && game.phase === 'ch4' && space === 'yard' && !world.driving && !game.cinematic,
     // the first close look at it, come up: the night goes quiet round the player while it is
-    // looked at, the music with it, and the notebook gets a line in the player's hand
+    // looked at, the music with it, and the notebook gets a line in the player's hand (in words
+    // both narrators have, so the notebook can still be read aloud; the print says the rest)
     faceSeen: (shot) => {
       audio.night?.hush(FACE_QUIET, 0.02);
       faceQuiet = FACE_QUIET;
-      game.note(`${clockText(shot.clock, false)}, ${shot.place.replace(/^The /, 'the ')}. A free frame. At its edge, a foot from the lens, the side of a pale head and one black eye, the flash in it. I was alone out there.`);
+      game.note(`${clockText(shot.clock, false)}, ${shot.place.replace(/^The /, 'the ')}. ${FACE_LINE}`);
       requestAutosave(false);
     },
   });

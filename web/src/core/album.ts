@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { PHOTO_W, PHOTO_H, PHOTO_FOV, type FieldCamera } from './FieldCamera';
 import { Silhouette } from './roadside';
 import { clockText } from '../story/time';
-import { filmFace } from './filmFace';
+import { filmFace, filmFaceEye } from './filmFace';
 
 // The free camera and the album (todo.md, after They Are Here; SPILLDESIGN.md, point 6). Once the
 // field camera is had, the shutter takes a picture of anything, anywhere, away from the case's
@@ -35,8 +35,10 @@ export const ROLL = 36;
 /** Seconds of the night for an instant print to come up in the album. */
 const DEVELOP = 90;
 export const NOBODY = 'Nobody was there when I took it.';
-/** The caption on the print with the face (core/filmFace.ts). */
-export const FACE_LINE = 'A foot from the lens. ' + NOBODY;
+/** The caption on the print with the face (core/filmFace.ts): the words under the figures far off,
+ *  now under a face at the lens. Nothing more is said; the print says the rest. (Both narrators
+ *  have it recorded, so Read description works on this print too.) */
+export const FACE_LINE = NOBODY;
 
 export interface AlbumShot { id: string; url: string; clock: number; place: string; text: string; odd?: boolean }
 /** The print with the face: which one, whether the game has said it has come up, and whether it
@@ -111,7 +113,7 @@ export class Album {
   /** The developer menu: the next free frame keeps the face, anywhere, even if one has already. */
   forceFace = false;
   /** Tests: what the last caption was made from, how bright the frame was, how long it took. */
-  last: { names: string[]; odd: string[]; mean: number; ms: number; lookMs: number; ghost: boolean; face: boolean } | null = null;
+  last: { names: string[]; odd: string[]; mean: number; ms: number; lookMs: number; ghost: boolean; face: boolean; eye?: { u: number; v: number } } | null = null;
   private sil: Silhouette;
   private ghost: THREE.Group;
   private halos: THREE.Mesh[] = [];
@@ -172,12 +174,12 @@ export class Album {
     if (!ghostAt) this.ghost.position.set(fcam.photoCam.position.x, -9000, fcam.photoCam.position.z);
     const glimpse = seen.some((x) => x.s.odd === NOBODY && x.s.name === 'someone') ? d.scene.getObjectByName('glimpse') : null;
     this.placeHalos([ghostAt, glimpse?.visible ? glimpse.position : null].filter((p): p is THREE.Vector3 => !!p));
-    const seed = Math.floor(clock * 1000) + n * 7919;
+    const seed = Math.floor(clock * 1000) + n * 7919, side: 1 | -1 = (seed >>> 4) & 1 ? 1 : -1;
     const { canvas, mean } = fcam.snap({
       before: () => { d.before(); this.ghost.visible = true; this.halos.forEach((h) => { h.visible = true; }); },
       after: () => { this.ghost.visible = false; this.halos.forEach((h) => { h.visible = false; }); },
       restore: d.view.restore, seed, w: small ? 320 : 640,
-      post: face ? (raw) => filmFace(raw, seed, (seed >>> 4) & 1 ? 1 : -1) : undefined,
+      post: face ? (raw) => filmFace(raw, seed, side) : undefined,
     });
     d.view.draw();
     const url = canvas.toDataURL('image/jpeg', small ? 0.62 : 0.74);
@@ -192,7 +194,7 @@ export class Album {
     if (odd.length || face) shot.odd = true;
     this.data.shots.push(shot);
     if (face) this.data.face = { id: shot.id };
-    this.last = { names, odd, mean, ms: performance.now() - t0, lookMs: t1 - t0, ghost: !!ghostAt, face };
+    this.last = { names, odd, mean, ms: performance.now() - t0, lookMs: t1 - t0, ghost: !!ghostAt, face, eye: face ? filmFaceEye(side) : undefined };
     d.done(shot, n === 0, this.left);
     return shot;
   }

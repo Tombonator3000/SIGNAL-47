@@ -23,8 +23,9 @@ export const albumArt = () => Object.fromEntries(Object.entries(ART).map(([k, v]
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 const TILT = [-1.4, 0.9, -0.5, 1.3, -1, 0.4, 1.1, -0.7];
-// a print still coming up: pale, flat and cold at first
-const developing = (k: number) => k >= 1 ? '' : `filter:brightness(${(1 + 0.9 * (1 - k)).toFixed(2)}) contrast(${(0.25 + 0.75 * k).toFixed(2)}) saturate(${k.toFixed(2)})`;
+// a print still coming up: pale, flat and cold at first, and soft, the shapes before the
+// detail (so what is at the edge of a frame comes up out of the murk; core/filmFace.ts)
+const developing = (k: number) => k >= 1 ? '' : `filter:brightness(${(1 + 0.9 * (1 - k)).toFixed(2)}) contrast(${(0.25 + 0.75 * k).toFixed(2)}) saturate(${k.toFixed(2)})${k < 0.85 ? ` blur(calc(var(--w, 300px) * ${(0.012 * (1 - k / 0.85) ** 1.5).toFixed(4)}));clip-path:inset(0)` : ''}`;
 const corners = '<i class="al-c tl"></i><i class="al-c tr"></i><i class="al-c bl"></i><i class="al-c br"></i>';
 
 /** The tab's page: the case prints and the free frames. `photos` are the photograph papers. */

@@ -8,17 +8,21 @@
 #
 # Checked: not in chapter two out of doors, not indoors in chapter four, not in chapter five; the
 # first outdoor frame in chapter four has it, the next does not; it is on the film and not in the
-# scene; still coming up, no caption and no note; come up, the toast once; looked at big: the
-# quiet, the note once; saved and back with Continue, and no second face after it; the same on a
-# phone with touch. Screenshots of the moment on desktop (1280x720) and phone (412x892).
+# scene, and what is on the print is a pale head with a black eye and the flash in it where
+# core/filmFace.ts put the eye; still coming up, no caption and no note; come up, the toast once;
+# looked at big: the quiet, the note once, and the narration can still read the print and the
+# whole notebook; saved and back with Continue, and no second face after it; the same on a phone
+# with touch. Screenshots of the moment on desktop (1280x720) and phone (412x892).
 # Usage: python3 tools/horror_face.py OUTDIR
-import asyncio, sys, json, os, math, base64
+import asyncio, sys, json, os, math, base64, re
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
-FACE_LINE = 'A foot from the lens. Nobody was there when I took it.'
-NOTE_BIT = 'a foot from the lens, the side of a pale head and one black eye'
+FACE_LINE = 'Nobody was there when I took it.'
+# the note: the time and the place of the frame, then the caption's words (both narrators have them)
+NOTE_RE = r'^\d\d:\d\d, the highway south\. Nobody was there when I took it\.$'
+NOTE_BIT = ', the highway south. ' + FACE_LINE
 LAUNCH = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required']
 checks = []
 def check(ok, what):
@@ -41,6 +45,8 @@ REGION = """(async ([url, u0, u1, v0, v1]) => { const i = new Image(); i.src = u
   const d = g.getImageData(x0, y0, x1 - x0, y1 - y0).data; let s = 0;
   for (let k = 0; k < d.length; k += 4) s += d[k] * 0.3 + d[k + 1] * 0.59 + d[k + 2] * 0.11;
   return s / (d.length / 4); })"""
+# the brightest pixel in that part, 0 to 255
+REGION_MAX = REGION.replace('let s = 0;', 'let s = 0, m = 0;').replace('s += d[k] * 0.3 + d[k + 1] * 0.59 + d[k + 2] * 0.11;', 'm = Math.max(m, d[k] * 0.3 + d[k + 1] * 0.59 + d[k + 2] * 0.11);').replace('return s / (d.length / 4);', 'return m;')
 
 async def main():
     os.makedirs(OUT, exist_ok=True)
@@ -72,6 +78,8 @@ async def main():
         toasts = lambda: ev("document.querySelector('.toasts').textContent")
         # no abduction or night event in the middle of the checks
         await ev("S47.hold = true; S47.setAbductions(false); S47.tick(0.3)")
+        # where the eye of the last face went (core/filmFace.ts), kept before the next frame clears it
+        await ev("""(() => { const a = S47.album, o = a.expose.bind(a); a.expose = (...x) => { const r = o(...x); if (a.last && a.last.eye) window.__faceEye = a.last.eye; return r; }; })()""")
 
         # ---------- chapter two, out of doors: no face ----------
         await ev("S47.jump('chapter2'); S47.tick(1.5); S47.album.restore(null)")
@@ -112,12 +120,26 @@ async def main():
         check(s2 is not None and not await last_face() and await ev("S47.album.data.face.id") == face_id, 'the next free frame from the same spot has no face, and the face stays on the first')
         # it comes at one edge or the other: the brighter difference is its edge
         diffs = []
-        for name, (u0, u1) in [('right', (0.70, 0.92)), ('left', (0.08, 0.30))]:
-            bf, bp = await ev(REGION, [s['url'], u0, u1, 0.28, 0.56]), await ev(REGION, [s2['url'], u0, u1, 0.28, 0.56])
+        # (the lit skull and brow over the eye, where the flash is strongest)
+        for name, (u0, u1) in [('right', (0.76, 0.96)), ('left', (0.04, 0.24))]:
+            bf, bp = await ev(REGION, [s['url'], u0, u1, 0.1, 0.38]), await ev(REGION, [s2['url'], u0, u1, 0.1, 0.38])
             diffs.append((bf - bp, name, bf, bp))
         d, edge, b_face, b_plain = max(diffs)
         other = min(diffs)
         check(d > 40 and abs(other[0]) < 12, f'on the print it is there, in the scene it is not: the {edge} edge {b_face:.0f} on the first print, {b_plain:.0f} on the second; the other edge the same on both ({other[2]:.0f} / {other[3]:.0f})')
+        # and what is there is a pale head with a black eye in it and the flash in the eye, where
+        # core/filmFace.ts says the eye is; on the second print there is only the night
+        eye = await ev("window.__faceEye || null")
+        if eye:
+            u, v = eye['u'], eye['v']
+            brow = [u - 0.06, u + 0.06, v - 0.2, v - 0.11]
+            e_win = [u - 0.025, u + 0.025, v - 0.02, v + 0.02]
+            b_f, b_p = await ev(REGION, [s['url'], *brow]), await ev(REGION, [s2['url'], *brow])
+            e_f = await ev(REGION, [s['url'], *e_win])
+            glint = await ev(REGION_MAX, [s['url'], u - 0.08, u + 0.08, v - 0.09, v + 0.05])
+            check(b_f - b_p > 45 and b_f - e_f > 45 and glint - e_f > 50,
+                  f'a pale head and a black eye with the flash in it (at u {u:.2f}, v {v:.2f}): the skin over the eye {b_f:.0f} (the night there {b_p:.0f}), the eye {e_f:.0f}, the flash in it {glint:.0f}')
+        else: check(False, 'the album says where the eye is')
         await lower_cam()
 
         # ---------- still coming up: no caption yet, no note ----------
@@ -152,7 +174,10 @@ async def main():
         q1 = await ev("S47.game.d.audio.night ? S47.game.d.audio.night.quiet.gain.value : -1")
         check(await ev("S47.album.data.face.seen") and await notes_with() == 1, 'looked at big, come up: seen, and one line in the notebook')
         note = await ev(f"S47.game.notes.find(n => n.includes({json.dumps(NOTE_BIT)}))")
-        print('   note:', note, flush=True)
+        check(note is not None and re.match(NOTE_RE, note), f'the line: "{note}"')
+        # the narration (Serling or Kinski, when it is on) has the words: on the print, and the whole notebook still reads
+        reads = await ev(f"""(() => {{ const r = S47.game.d.ui.readAloud; return r ? [r.available([{json.dumps(FACE_LINE)}]), r.available(S47.game.notes)] : null; }})()""")
+        check(reads is None or (reads[0] and reads[1]), f'the narration can read the caption and every line in the notebook ({reads})')
         check(q0 < 0 or (q1 < 0.5 and q1 < q0), f'the night goes quiet while it is looked at (the night\'s level {q0:.2f} before, {q1:.2f} after)')
         check(await ev("S47.faceQuiet()") > 20, f'and the music is held ({await ev("S47.faceQuiet()"):.1f} s left)')
         big_cap = await ev("document.querySelector('.al-view .al-big .al-cap b').textContent")
@@ -217,6 +242,7 @@ async def main():
         check(await ev("S47.album.shots.length") == 1 and await ev("!!S47.album.data.face && S47.album.last.face"), 'phone: a tap takes the free frame, and it keeps the face')
         ph = await ev("S47.album.shots[0]")
         open(f'{OUT}/face_print_phone.jpg', 'wb').write(base64.b64decode(ph['url'].split(',', 1)[1]))
+        await pg.wait_for_timeout(600); await ev("S47.tick(0.05)")   # past the shutter's flash
         await pg.screenshot(path=f'{OUT}/p01_viewfinder_after_shutter.png')
         await pg.tap('.touch .camera'); await ev("S47.tick(0.1)")
         await ev("S47.game.clock += 92; S47.tick(0.3)")
