@@ -60,6 +60,9 @@ import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { MotelTv } from './story/motelTv';
 import { FieldBook } from './story/fieldBook';
+import { LostNights } from './story/lostNights';
+import { BINDER } from './story/nightshift';
+import { ReelTape } from './core/reelTape';
 import { Album, rollText, FACE_LINE } from './core/album';
 import { albumSubjects } from './story/albumSubjects';
 import { albumArt } from './ui/album';
@@ -395,7 +398,9 @@ async function boot() {
   world.onTownLoaded = (t) => {
     bindTown(t, { inter, ui, toast: (text, secs) => ui.toast(text, secs), here: () => world.area === 'diner',
       secs: () => game.clock, clock: () => clockText(game.clock, false), note: (text) => game.note(text), seen: townSeen, file: fileSideDoc,
-      save: () => { if (mode === 'play') requestAutosave(false); } });
+      save: () => { if (mode === 'play') requestAutosave(false); },
+      // Earl's reel from 9/22/81, once the case board has the date (story/lostNights.ts)
+      reel: { ready: () => lostNights.reelReady(), play: (o) => lostNights.playReel(o), stop: () => lostNights.stopReel() } });
     townEvents.bind(t);
   };
   // HENDELSER.md, event 7: three lights keeping pace with the truck south of SARO (story/lineLights.ts)
@@ -474,7 +479,26 @@ async function boot() {
     // the book's own, fieldBook.update)
     foretell: () => { if (pasture.stage === 'graze') pasture.now(); lineLights.anyWay = true; },
   });
-  game.extraBooks = () => fieldBook.books();
+  // the nights SARO printed a negative range are the nights Caliche lost time (story/lostNights.ts;
+  // FORSLAG.md, 20 October, item 11 and small tweak 4): the binder and the deputy's green pins on
+  // Night Shift's cork from chapter two, Earl's reel from 1981 at the studio door, the tow ticket
+  // and the driver's watch
+  const reelTape = new ReelTape(audio, radio);
+  const lostNights = new LostNights({
+    seen: townSeen, links: () => (game.ns.ln ??= []),
+    open: () => game.at('ch2'), binder: () => game.docs.some((d) => d.id === 'binder'),
+    notes: () => game.notes, note: (s) => game.note(s), clock: () => game.clock, file: fileSideDoc,
+    save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh(),
+    tape: reelTape,
+    // one thing at a time: not while the night has something of its own going on
+    quiet: () => !abduction!.busy && townEvents.now === 'none' && !nightEvents.busy && !roofSteps.busy && !roadside.silent
+      && faceQuiet <= 0 && !cb.busy && !audio.phonePlaying && !motelTv.busy && lineLights.state === 'none',
+    hushVoices: () => { stopNarration(); audio.stopPhoneCalls(); cb.stop(); },
+    boyCalled: () => { radio.boyCalled = true; },
+  });
+  ch5.driverMore = { examine: () => lostNights.driverExamine(), open: () => lostNights.driverOpen(),
+    choices: (october) => lostNights.driverChoices(october), choose: (id) => lostNights.driverChoose(id) };
+  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books()];
   game.openDoc = (doc) => { if (doc.id !== 'fieldbook' || !fieldBook.read) return false; fieldBook.openBook(); return true; };
   if (world.motel.proxies.envelope) inter.add({ id: 'court:envelope', object: world.motel.proxies.envelope, range: 2.2,
     label: () => mode === 'play' && world.area === 'saro' && !world.driving && game.at('ch1') ? fieldBook.envelopeLabel() : null,
@@ -850,9 +874,10 @@ async function boot() {
     follow.restore();   // after the log is back (game.start): a save made while the dishes were out
     fieldBook.restore();   // after chapter three's state is back (game.start)
     for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
+    reelTape.stop(); lostNights.restore();
     motelTv.refile(o.state?.motelTv?.url);
     restoringNow = false; restoring = null;
-    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.boyCalled = townSeen.has('ev:boy'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
+    roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.boyCalled = townSeen.has('ev:boy') || townSeen.has('ln:reel'); radio.reset(game.clock);   // the radios off; each station where it is at this hour
     world.enter(area === 'station01' && world.site ? 'station01' : area === 'room6' && world.room6 ? 'room6' : area === 'diner' && world.diner ? 'diner' : 'saro');
     if (world.area === 'station01') world.placeAtStation();
     if (world.area === 'room6') world.placeAtRoom6();
@@ -879,7 +904,7 @@ async function boot() {
     motelTv.silence();
     follow.reset();
     world.stopDriving();
-    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); audio.stopPhoneCalls(); radio.reset(0);
     seenQuiet = true;
     game.reset();
     world.enter('saro');
@@ -1547,7 +1572,8 @@ async function boot() {
     lineHere: () => { const tr = truckNow(); return { player: lineHere(playerAt()), truck: tr ? lineHere(tr.group.position) : null }; } });
   Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
-  Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
+  Object.assign((window as any).S47, { fieldBook });
+  Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1631,6 +1657,16 @@ async function boot() {
       groups.push({ title: 'T. Vega\'s field book', note: 'In the drawer under the bench in the hut at STATION 01, from chapter three. What it has that you have not seen comes on the way back. The envelope for plate 4 is on the counter of the motel office.', items: [
         { label: fieldBook.read ? 'The field book (read)' : 'Read the field book here', run: () => fieldBook.openBook() },
         { label: 'The envelope for plate 4', run: () => fieldBook.useEnvelope() },
+      ] });
+      groups.push({ title: 'The lost nights', note: 'From chapter two, with the exceptions binder read: its three printouts and the deputy\'s green pins on Night Shift\'s cork. With the 1981 night tied, Earl plays the reel from 9/22/81 at the studio door before four. The tow ticket from the attendant; the driver\'s watch in the diner.', items: [
+        { label: 'The binder read, and the three in Caliche heard', run: () => {
+          if (!game.ns.papers.includes('binder')) { game.ns.papers.push('binder'); fileSideDoc(BINDER); }
+          for (const k of ['met:deputy', 'ask:deputy:map', 'ask:deputy:green', 'met:attendant', 'ask:attendant:old', 'met:radio_woman', 'ask:radio_woman:radio',
+            'ask:radio_woman:husband', 'met:host', 'ask:host:calls', 'ask:host:tape']) townSeen.add(k);
+          game.board.refresh(); ui.toast('The binder and the green pins are on the board (chapter two on).', 2.4);
+        } },
+        { label: `Earl's reel: ${reelTape.busy ? 'playing' : townSeen.has('ln:reel') ? 'heard' : townSeen.has('ln:81') ? 'the date is on the board' : 'no date yet'}`, run: () => {
+          if (!townSeen.has('ln:81')) ui.toast('Tie 09/22/81 on the board first', 2); } },
       ] });
       groups.push({ title: 'The records room', note: 'Once in chapter two, at a quiet moment in the records room: light steps on the roof, right over you.', items: [
         { label: `Steps on the roof: ${roofSteps.phase}`, run: () => { if (!roofSteps.now(roofIn(true))) ui.toast('Only from the records room, once', 2); } },
@@ -1803,7 +1839,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1883,7 +1919,7 @@ async function boot() {
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
-      const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy;
+      const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy && !reelTape.busy;
       if (mode === 'play') nightEvents.update(dt, nightIn(nightOk));
       // T. Vega's field book: what it has, seen after it was read; the knocks on the roof it has, on a
       // drive after it, when nothing else of the night's is going on (one thing at a time)
@@ -1913,7 +1949,7 @@ async function boot() {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy));
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy));
         // the eyes from where the player stands now (the waking puts them down in the grass this step)
         follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),

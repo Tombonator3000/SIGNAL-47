@@ -4,6 +4,7 @@ import type { UI, PersonCard, DocSpec } from '../ui/UI';
 import * as P from '../ui/Panels';
 import { portrait, type PersonId } from '../core/portraits';
 import { clockText } from './time';
+import { TOW_SLIP } from './lostNights';
 
 // What Caliche's street says when it is looked at or used (world/Town.ts; HENDELSER.md, section
 // 9). Step 1 of the town: the buildings, the windows and the signs, and three things the
@@ -29,6 +30,13 @@ export interface CalicheDeps {
   /** What the notebook already has from the town (saved with the game, main.ts). */
   seen: Set<string>;
   save: () => void;
+  /** Earl's reel from 9/22/81 (story/lostNights.ts): whether the date can be given to him now, and
+   *  the reel itself, as lines under the conversation while it plays. */
+  reel?: {
+    ready: () => boolean;
+    play: (o: { lines: (l: P.TalkLine[]) => void; done: (complete: boolean) => void }) => void;
+    stop: () => void;
+  };
 }
 
 export function bindTown(town: Town, d: CalicheDeps) {
@@ -131,8 +139,12 @@ export function bindTown(town: Town, d: CalicheDeps) {
   // selection, so an old panel cannot supply a topic before its witness has returned.
   const available = (w: Who, t: Topic) => !asked(w, t.id)
     && (!t.after || asked(w, t.after))
+    && (!t.reel || !!d.reel?.ready())
+    && (!t.unless || !d.seen.has(t.unless))
     && (!t.need || (Array.isArray(t.need) ? t.need : [t.need]).every((k) => d.seen.has(k)))
     && (t.notBefore === undefined || day() >= t.notBefore);
+  // the reel playing at the studio door: the conversation waits for it, and closing it stops it
+  let reeling = false;
   function talk(w: Who) {
     const p = PEOPLE[w], first = !d.seen.has('met:' + w);
     who = w;
@@ -141,29 +153,44 @@ export function bindTown(town: Town, d: CalicheDeps) {
     if (w === 'attendant') attendant(first);
     if (w === 'deputy' && day() >= 4 * 3600 + 30 * 60) once('deputyBack', DEPUTY_BACK);
     d.save();
-    P.talk(d.ui, {
+    const panel = P.talk(d.ui, {
       title: p.title,
       earl: w === 'host',
       character: w === 'attendant' ? 'stanton' : w === 'deputy' ? 'stack' : w === 'souvenir_man' ? 'lynch' : undefined,
       view: () => {
-        const v: P.TalkView = { status: p.status, lines, choices: [], reply: null };
-        for (const t of p.topics) if (available(w, t)) v.choices.push({ id: t.id, label: t.label });
-        v.choices.push({ id: 'bye', label: p.bye });
+        const v: P.TalkView = { status: reeling ? 'The reel turning on the second deck. The monitor up.' : p.status, lines, choices: [], reply: null };
+        if (!reeling) for (const t of p.topics) if (available(w, t)) v.choices.push({ id: t.id, label: t.label });
+        v.choices.push({ id: 'bye', label: reeling ? 'Walk away' : p.bye });
         return v;
       },
       onChip: () => {}, onTable: () => {}, onRead: () => {},
       onChoice: (id) => {
         if (id === 'bye') { d.ui.close(); return; }
         const t = p.topics.find((x) => x.id === id);
-        if (!t || who !== w || !available(w, t)) return;
-        d.seen.add(`ask:${w}:${id}`);
+        if (!t || who !== w || reeling || !available(w, t)) return;
+        // (the reel is asked once it has been heard to the end, so a save made while it plays has not)
+        if (!t.reel) d.seen.add(`ask:${w}:${id}`);
         lines = t.lines;
         if (t.note) once(`note:${w}:${id}`, t.note);
         const paper = t.paper && townWitnessDocs(d.seen).find((doc) => doc.id === t.paper!.id);
-        if (paper) { d.file(paper); d.toast('Witness note filed in Papers.', 3); }
+        if (paper) { d.file(paper); d.toast(t.filed ?? 'Witness note filed in Papers.', 3); }
         d.save();
+        // the reel: the tape's lines come in under these as it plays, then Earl's. Not heard to the
+        // end (walked away from), it is as if it had not been asked: it can be asked again
+        if (t.reel && d.reel) {
+          reeling = true;
+          d.reel.play({
+            lines: (l) => { if (who !== w) return; lines = l; panel.refresh(); },
+            done: (complete) => {
+              reeling = false;
+              if (complete) { d.seen.add(`ask:${w}:${id}`); d.toast('Witness note filed in Papers.', 3); }
+              d.save();
+              if (who === w) panel.refresh();
+            },
+          });
+        }
       },
-      onClose: () => { who = null; },
+      onClose: () => { who = null; if (reeling) d.reel?.stop(); },
     });
   }
   // event 5: the attendant. The first time is kept (with the second's clock, in the save); two
@@ -194,7 +221,13 @@ export function townWitnessDocs(seen: Set<string>): DocSpec[] {
 // ---------- the lines ----------
 type Line = P.TalkLine;
 type Who = Extract<PersonId, 'attendant' | 'deputy' | 'host' | 'radio_woman' | 'souvenir_man'>;
-interface Topic { id: string; label: string; lines: Line[]; note?: string; paper?: DocSpec; after?: string; need?: string | string[]; notBefore?: number }
+interface Topic { id: string; label: string; lines: Line[]; note?: string; paper?: DocSpec; after?: string; need?: string | string[]; notBefore?: number;
+  /** what the toast says when the paper is filed (a witness note by default) */
+  filed?: string;
+  /** Earl's reel from 1981: offered only while CalicheDeps.reel says it can be played */
+  reel?: boolean;
+  /** not once the case has this (Earl's "I haven't played that one" after he has played it) */
+  unless?: string }
 interface Person {
   title: string; status: string; bye: string;
   card: Omit<PersonCard, 'portrait'>;
@@ -246,6 +279,18 @@ const PEOPLE: Record<Who, Person> = {
         aside('He says it like a sum he has done a lot of times and cannot get to come out.'),
         A('Anyway. Cold one tonight.'),
       ], note: 'The attendant towed a rig in off the old road one night last October. He left at a quarter to two and was back at twenty-five past four, for a forty minute job.' },
+      // the carbon of the ticket for that tow (story/lostNights.ts): his own words again, the ones he
+      // has a voice for, and the hours on the ticket do not come out either
+      { id: 'tow', label: 'Ask if he wrote a ticket for that tow', after: 'old', lines: [
+        you('The rig you towed in off the old road last October. Did you write it up?'),
+        aside('He takes a spike of yellow carbons down off the nail by the register and works one loose from near the bottom.'),
+        A('Left here a quarter to two. Got back twenty-five past four.'),
+        A('It\'s a forty minute job.'),
+        aside('He pushes the carbon out under the window.'),
+        A('Keep it. I write down what goes in the till. I want it to add up.'),
+        aside('I keep the carbon.'),
+      ], note: 'The attendant gave me the carbon of the tow ticket from last October: out at 1:45, in at 4:25, 2.7 hours for a forty minute job. The line for who called it in is blank. Remarks: the driver in the cab said his engine quit at 11:58, and his watch said so too.',
+      paper: TOW_SLIP, filed: 'The tow ticket is in Papers.' },
       { id: 'earlier', label: 'Tell him you were here before', need: 'repeat', lines: [
         you('I was here before. You told me that.'),
         A('Wasn\'t me, then. I\'ve been here since ten.'),
@@ -338,7 +383,7 @@ const PEOPLE: Record<Who, Person> = {
         aside('He looks back at the studio, where the reels are turning.'),
         EA('Record\'s ending.'),
       ], note: 'Earl at 1420 AM keeps every call on reel. One he has never played: September 1981, a boy, on a night the station was off the air.' },
-      { id: 'boy', label: 'Ask about the boy you heard tonight', after: 'tape', need: 'ev:boy', lines: [
+      { id: 'boy', label: 'Ask about the boy you heard tonight', after: 'tape', need: 'ev:boy', unless: 'ln:reel', lines: [
         you('I heard the boy on your show tonight. The star with the little tail.'),
         EA('You heard him too.'),
         aside('He pulls a programme sheet from his pocket. A line in pencil reads BOY / COMET. The space for a caller\'s number is blank.'),
@@ -351,6 +396,12 @@ const PEOPLE: Record<Who, Person> = {
       ], note: 'Earl showed me tonight\'s programme sheet: BOY / COMET in pencil, no caller number. He checked the line afterwards and got an ordinary dial tone. He still has not played the 1981 reel.',
       paper: witnessPaper('boy', 'Witness / Earl\'s programme sheet',
         '1420 AM / NIGHT LINE\n\nI heard a boy call about a star with a little tail, low in the south.\n\nEARL\'S PROGRAMME SHEET, copied by hand:\nBOY / COMET\nCaller number: blank.\n\nEARL:\n"I put the receiver down and tried the line again. Dial tone. Just a phone."\n\nHe still has not played the reel from September 1981. I have not heard that reel.') },
+      // the date, from the case board's binder (story/lostNights.ts): he plays the reel from 1981
+      { id: 'reel', label: 'Tell him the date: September 22, 1981', after: 'tape', need: 'ln:81', reel: true, lines: [
+        you('September twenty-second, 1981. Eight minutes to two in the morning.'),
+        aside('He looks at you for a long moment. He does not ask how you know.'),
+        aside('He goes back in. Through the glass you watch him take a box down off the top shelf and thread the reel on the second deck. He turns the monitor up and leaves the door open.'),
+      ] },
     ],
   },
   radio_woman: {

@@ -114,7 +114,10 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
 
 // What Night Shift leaves behind besides the notes: which of the room's papers were read,
 // whether relay K3 is still open, and tonight's lines in the console log (story/nightshift.ts).
-export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean }
+export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean;
+  /** the threads on Night Shift's cork from the exceptions binder to the nights Caliche lost
+   *  (story/lostNights.ts; saves from before 20 October have none) */
+  ln?: string[] }
 export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ch5?: Ch5State; ns?: NightShiftState; notes: string[]; clock: number;
   /** where the cards lie on the case board (saves from before 18 October have none) */
   board?: BoardSave }
@@ -291,7 +294,7 @@ export class Prologue {
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
     return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, ch5: this.ch5?.started ? this.ch5.s : undefined,
-      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket }, notes: [...this.notes], clock: this.clock,
+      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket, ln: [...(this.ns.ln ?? [])] }, notes: [...this.notes], clock: this.clock,
       board: { pos: { ...this.boardSave?.pos } } };
   }
   private setPhase(p: Phase) { this.phase = p; }
@@ -1383,7 +1386,7 @@ export class Prologue {
     // (a save from before 4 October has none of it; then K3 was reset after the impact)
     const e = saved?.s?.eventClock ?? this.eventClock;
     this.ns = saved?.ns
-      ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket }
+      ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket, ln: [...(saved.ns.ln ?? [])] }
       : { papers: [], k3Open: false, solveAt: e - 60, log: [[23 * 3600 + 44 * 60, 'RX BANK 3  K3 CLOSED'], [e - 60, 'SOLVE  RANGE NEGATIVE'],
         [e - 47, 'STATION CLOCK  WWVB REFERENCE LOST'], [e - 7, 'RX BANK 3  K3 OPEN'], [e, 'LINE POWER  DIP 1.2 S'],
         [e, 'STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47'], [e + 3, 'ARRAY  S-01 TO S-27 MOTION  NO COMMAND'], [e + 70, 'RX BANK 3  K3 CLOSED']] };

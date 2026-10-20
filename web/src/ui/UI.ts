@@ -457,7 +457,8 @@ export class UI {
     };
     button.addEventListener('click', () => { if (active) reader.stop(); else play(); });
     update('idle'); parent.appendChild(box);
-    return play;
+    // a reply without a recording stays text, and says so (not a failed playback)
+    return button.disabled ? null : play;
   }
   /** Explicit playback only: opening a paper or refreshing a conversation stays quiet. */
   readingControls(parent: HTMLElement, texts: string[], label = 'Read aloud', kind = 'conversation') {
