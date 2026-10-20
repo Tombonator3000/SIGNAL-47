@@ -10,7 +10,8 @@ import { clockText } from './time';
 // 20 October, item 7). The oak wall set on the office's north wall is the far end of the old
 // field line from the hut at STATION 01; Nora said so on the hut's telephone in chapter three
 // ("This line still rings in the motel office"). In chapter four, before room 6 is over, the
-// first time the player comes to the office on foot (in it, or at its door), it rings: its own
+// first time the player comes to the office on foot (in it, onto the motel's court, which every way
+// to room 6 crosses, or within earshot of the office's open door), it rings: its own
 // bell, two small gongs and a clapper, in uneven bursts, the way a magneto rings when somebody
 // turns the handle at the other end. Nobody is at the other end.
 //
@@ -20,10 +21,11 @@ import { clockText } from './time';
 // them), the hut door on its hinges, the steps going out; then, not far off, a shutter, and another,
 // as far apart as FRAME 03 and FRAME 04 were taken (their real capture clocks, chapter three's
 // s.f3 and s.f4; a long wait is drawn in, see shutterGap); the hut's bell right at the mouthpiece,
-// in the empty hut (the same ring the player heard out there); the steps coming back in under it,
-// across the boards right up to the telephone; the handset lifted, very faint from its earpiece
-// Nora's first line ("So you went out there.", her recording, when the game has one for it), someone
-// listening, and the handset put down. An imprint, as R5 has it: it gives back what was registered
+// (the same ring the player heard out there); steps under it, across the boards right up to the
+// telephone; the handset lifted, very faint from its earpiece
+// Nora's first two lines ("So you went out there." "This line still rings in the motel office...",
+// her recordings when the game has both, else the captions), someone listening, and the handset put
+// down. An imprint, as R5 has it: it gives back what was registered
 // and answers nothing; only, now the player is on it, as T. Vega's correction is. It prepares P12
 // in room 6, and 05:29:47.
 //
@@ -33,9 +35,11 @@ import { clockText } from './time';
 // the hook, nor for a few seconds after. The night's curve does not gate it (it is the story's, like
 // the payphone's second call), but once it rings it lands the curve's peak (story/curve.ts, FELT). Kept
 // apart from the office's television (story/motelTv.ts): main.ts holds the set while this goes.
-// Blocked, missed or hung up on, it rings again the next time the player comes to the office before
-// room 6 is over. Heard to the end it is written down once, kept with the town's part of the case
-// ('ev:office', 'office@<clock>') and on the case board, with threads to the two frames.
+// Blocked as the player comes, it waits while the other thing goes and rings when nothing has gone
+// for a while (AFTER) if the player is still there; missed or hung up on, it rings again the next
+// time the player comes to the office before room 6 is over. Heard to the end it is written down
+// once, kept with the town's part of the case ('ev:office', 'office@<clock>') and on the case
+// board, with threads to the two frames.
 
 export type OfficePhoneState = 'idle' | 'ringing' | 'line';
 
@@ -44,7 +48,7 @@ export interface OfficePhoneIn {
   ok: boolean;
   /** Chapter four, before room 6 is over. */
   open: boolean;
-  /** On foot in the office, or near its door. */
+  /** On foot in the office, on the motel's court, or near the office's door. */
   near: boolean;
   /** On foot in SARO's area within earshot of the office (the bell rings on while they are). */
   here: boolean;
@@ -67,19 +71,25 @@ export interface OfficePhoneDeps {
   refresh: () => void;
 }
 
-/** Seconds after coming to the office before it rings. */
-const DELAY = 1.4;
-/** Seconds it rings for if nobody picks it up. */
-const RING_MAX = 28;
+/** Seconds after coming to the office before it rings; and, when something else of the night's was
+ *  going as the player came (or the case was just opened there), seconds of nothing going first. */
+const DELAY = 1.4, AFTER = 8;
+/** Seconds it rings for if nobody picks it up (five turns of the pattern: from the far side of the
+ *  lot to the telephone is some fifteen seconds' walk). */
+const RING_MAX = 36;
+/** Within this far of the telephone the player is in the office with it (the toast says which). */
+const BY_IT = 6;
 /** How far from the telephone the cord lets the handset go (metres, on the floor). */
 const CORD = 2.8;
 /** Seconds nothing else of the night's may start after it (one at a time). */
 const TAIL = 10;
 /** The gap between the two shutters: as it was up to REAL seconds; a longer one drawn in towards CAP. */
 const REAL = 8, CAP = 14, MIN_GAP = 0.7, DRAW = 90;
-/** Nora's first line on the hut's telephone, and how long it lasts without her recording. */
-const NORA_FIRST = PHONE_CALLS.fieldNora[0].text;
-const VOICE_SECS = 1.4;
+/** Nora's first two lines on the hut's telephone, and how long they last without her recording. The
+ *  second is about this very telephone ("This line still rings in the motel office."), heard in the
+ *  motel office, with its handset at the player's ear. */
+const NORA_FIRST = PHONE_CALLS.fieldNora[0].text, NORA_NEXT = PHONE_CALLS.fieldNora[1].text;
+const VOICE_SECS = 1.4, VOICE2_SECS = 4.4;
 /** The office's bell: one turn of the pattern, seconds, and the bursts in it (the handle turned). */
 const BELL_LOOP = 7.2;
 const BURSTS: [number, number][] = [[0, 1.4], [1.95, 2.6], [3.1, 4.4]];
@@ -95,7 +105,7 @@ export function shutterGap(dt: number): number {
   return REAL + (CAP - REAL) * (1 - Math.exp(-(d - REAL) / DRAW));
 }
 
-export type LineCueKind = 'open' | 'board' | 'creak' | 'door' | 'out' | 'shutter' | 'ring' | 'lift' | 'voice' | 'down' | 'end';
+export type LineCueKind = 'open' | 'board' | 'creak' | 'door' | 'out' | 'shutter' | 'ring' | 'lift' | 'voice' | 'voice2' | 'down' | 'end';
 export interface LineCue { at: number; kind: LineCueKind; gain?: number; dur?: number }
 export interface LineCap { at: number; text: string; secs: number }
 export interface LinePlan {
@@ -109,7 +119,7 @@ export interface LinePlan {
 
 const STEP = 0.56;
 /** What comes down the line, seconds from the pick-up. */
-export function planLine(f3?: number | null, f4?: number | null, voice = VOICE_SECS): LinePlan {
+export function planLine(f3?: number | null, f4?: number | null, voice = VOICE_SECS, voice2 = VOICE2_SECS): LinePlan {
   const cues: LineCue[] = [], caps: LineCap[] = [];
   const cue = (at: number, kind: LineCueKind, o: { gain?: number; dur?: number } = {}) => cues.push({ at, kind, ...o });
   const cap = (at: number, text: string, secs: number) => caps.push({ at, text, secs });
@@ -135,15 +145,16 @@ export function planLine(f3?: number | null, f4?: number | null, voice = VOICE_S
     cue(t + gap, 'shutter'); cap(t + gap, 'Another.', 2.4);
     t += gap + 1.8;
   } else t += 2.6;   // nothing out there but the carrier, a while
-  // the telephone in the hut rings, the hut empty; someone comes back in under the second ring,
-  // across the boards right up to it, and lifts it (the bell is cut short)
+  // the telephone in the hut rings; under the second ring steps cross the boards right up to it,
+  // and it is lifted (the bell is cut short). (Only the boards: the player may have been in the hut
+  // when it rang out there, at the receiver, or come in from the station; either way they crossed
+  // the boards to it.)
   const ring = t;
   cue(ring, 'ring', { dur: 1.75 });
-  cap(ring, 'A bell, right at the mouthpiece: the telephone in the hut is ringing. Nobody is in there.', 3.6);
-  cue(ring + 1.1, 'out', { gain: 0.26 }); cue(ring + 1.7, 'out', { gain: 0.36 });
+  cap(ring, 'A bell, right at the mouthpiece: the telephone in the hut is ringing.', 3.6);
   const ring2 = ring + 3.0, inAt = ring + 2.4;
   for (let i = 0; i < 4; i++) cue(inAt + i * STEP, 'board', { gain: 0.5 + i * 0.09 });
-  cap(ring2, 'It rings again. Someone comes in across the boards, right up to it.', 3.4);
+  cap(ring2, 'It rings again. Steps cross the boards, right up to it.', 3.4);
   const lift = inAt + 4 * STEP + 0.35;
   // (seconds of the recording: it is played at 0.82, as the hut's bell was)
   cue(ring2, 'ring', { dur: Math.min(1.75, (lift - ring2) * 0.82) });
@@ -151,7 +162,11 @@ export function planLine(f3?: number | null, f4?: number | null, voice = VOICE_S
   const v = lift + 0.9;
   cue(v, 'voice');
   cap(v, `Very faint, from the earpiece out there, a woman: "${NORA_FIRST}"`, Math.max(3, voice + 1.6));
-  const listen = v + voice + 0.8;
+  // her next line, fainter still: about this telephone, heard on it, in the motel office
+  const v2 = v + voice + 0.7;
+  cue(v2, 'voice2');
+  cap(v2, `She goes on: "${NORA_NEXT}"`, Math.max(3.6, voice2 + 1.2));
+  const listen = v2 + voice2 + 0.8;
   cap(listen, 'Nobody answers her. Someone is listening.', 3.2);
   const down = listen + 2.8;
   cue(down, 'down'); cap(down, 'The handset goes down out there. Only the carrier.', 3.2);
@@ -165,7 +180,7 @@ export function planLine(f3?: number | null, f4?: number | null, voice = VOICE_S
 const NOTES: Record<string, BookNote> = {
   'n.ol.frames': { text: 'The two shutters on the office line are my two frames at STATION 01, as far apart as I took them.' },
   'n.ol.rx': { text: 'The carrier under the steps is the receiver I left on in the hut.' },
-  'n.ol.room6': { text: 'Room 6 is on the same line. It gave back his correction from 1947, and it gave back me answering it tonight.' },
+  'n.ol.room6': { text: 'Room 6 is on the same line. Asked about the key, it gives back his correction from 1947. Nobody asked it about me, and it gave me back.' },
 };
 const RULES: BookRule[] = [
   { a: 'ol.shutters', b: 'frame03', note: 'n.ol.frames', text: NOTES['n.ol.frames'].text },
@@ -236,7 +251,14 @@ export class OfficePhone {
   readonly book: RuleBook;
   private t = 0;
   private was = false;
-  private due = -1;
+  /** Come to the office (and not rung since): it rings once nothing else has been going for DELAY,
+   *  or for AFTER when something was (`waited`); walked away, it waits for the next time. */
+  private armed = false;
+  private waited = false;
+  private calm = 0;
+  /** The first step after a night was opened (Continue in the office: not at once). */
+  private opened = true;
+  private pos: THREE.Vector3 | null = null;
   private ringT = 0;
   private tail = 0;
   private capAt = 0;
@@ -295,17 +317,23 @@ export class OfficePhone {
   // ---------- per frame ----------
   update(dt: number, s: OfficePhoneIn) {
     this.t += dt;
+    this.pos = s.pos;
     if (this.tail > 0) this.tail = Math.max(0, this.tail - dt);
     const entered = s.near && !this.was;
     this.was = s.near;
+    const opened = this.opened; this.opened = false;
     switch (this.state) {
       case 'idle':
-        if (!s.open || this.heard) { this.due = -1; break; }
+        if (!s.open || this.heard) { this.armed = false; break; }
         // the bell is made while the player is still on the way (a moment's work, not at the ring)
         if (s.here && !bellBuf && this.d.audio.ctx) bellBuf = crankBell(this.d.audio.ctx);
-        // (blocked as the player comes: the next time they come, not on top of what is going)
-        if (entered) this.due = s.ok ? this.t + DELAY : -1;
-        if (this.due >= 0 && this.t >= this.due) { this.due = -1; if (s.ok && s.near) this.ring(); }
+        if (entered) { this.armed = true; this.waited = opened; this.calm = 0; }
+        if (!s.near) { this.armed = false; break; }
+        if (!this.armed) break;
+        // never on top of something else of the night's: it waits while that goes, and a while after
+        if (!s.ok) { this.calm = 0; this.waited = true; break; }
+        this.calm += dt;
+        if (this.calm >= (this.waited ? AFTER : DELAY)) { this.armed = false; this.ring(); }
         break;
       case 'ringing': {
         this.ringT += dt;
@@ -330,17 +358,20 @@ export class OfficePhone {
     this.state = 'ringing'; this.ringT = 0; this.result = null; this.rings++;
     if (ctx) {
       bellBuf ??= crankBell(ctx);
-      // (from the two gongs over the mouthpiece)
+      // (from the two gongs over the mouthpiece; a magneto bell is loud, made to be heard out of
+      // doors: across the lot through the office's open door)
       const at = this.phoneAt().clone(); at.y += 0.2;
-      const dest = a.spatial(at, 1.0);
+      const dest = a.spatial(at, 2.5);
       if (dest) {
         const src = ctx.createBufferSource(); src.buffer = bellBuf; src.loop = true;
-        const gain = ctx.createGain(); gain.gain.value = 0.55; src.connect(gain); gain.connect(dest);
+        const gain = ctx.createGain(); gain.gain.value = 0.45; src.connect(gain); gain.connect(dest);
         src.start();
         this.bell = { src, gain };
       }
     }
-    this.d.toast('The crank telephone in the office is ringing. At the other end of the line, someone is turning the handle.', 4.6);
+    const p = this.phoneAt(), q = this.pos, by = !q || Math.hypot(q.x - p.x, q.z - p.z) <= BY_IT;
+    this.d.toast(by ? 'The crank telephone in the office is ringing. At the other end of the line, someone is turning the handle.'
+      : 'In the motel office, a telephone is ringing: a bell in bursts, the way a crank telephone rings when someone at the other end turns the handle.', 4.6);
   }
   private stopBell() {
     const b = this.bell, ctx = this.d.audio.ctx;
@@ -365,17 +396,19 @@ export class OfficePhone {
     a.play('click', { at, gain: 0.55 });
     a.play('thudSoft', { at, gain: 0.16, rate: 1.7, when: 0.05 });
     const fr = this.d.frames();
-    const voice = a.lineBuffer('N. VEGA', NORA_FIRST);
-    const plan = planLine(fr.f3?.clock, fr.f4?.clock, voice?.duration ?? VOICE_SECS);
+    // her recordings, both or neither (never half of what she said out there spoken)
+    let voice = a.lineBuffer('N. VEGA', NORA_FIRST), voice2 = a.lineBuffer('N. VEGA', NORA_NEXT);
+    if (!voice || !voice2) voice = voice2 = undefined;
+    const plan = planLine(fr.f3?.clock, fr.f4?.clock, voice?.duration ?? VOICE_SECS, voice2?.duration ?? VOICE2_SECS);
     this.plan = plan; this.shown = []; this.capAt = 0; this.voiced = false;
     this.state = 'line';
-    this.schedule(plan, voice);
+    this.schedule(plan, voice, voice2);
     this.startedAt = this.lineTime();
   }
 
   /** Every sound of the call put on the line's clock at once: a pause holds it all (the context is
    *  suspended), and a frame that comes late cannot pull the steps apart. */
-  private schedule(plan: LinePlan, voice: AudioBuffer | undefined) {
+  private schedule(plan: LinePlan, voice: AudioBuffer | undefined, voice2: AudioBuffer | undefined) {
     const a = this.d.audio, ctx = a.ctx;
     this.ctx = ctx && ctx.state === 'running' && a.noiseBuffer() ? ctx : null;
     if (!this.ctx) return;
@@ -426,17 +459,19 @@ export class OfficePhone {
           a.play('click', { gain: 0.6, when, dest: bus });
           a.play('thudSoft', { gain: 0.3, rate: 1.9, when: when + 0.05, dest: bus });
           break;
-        case 'voice':
-          if (voice) {
+        case 'voice': case 'voice2': {
+          const buf = q.kind === 'voice' ? voice : voice2;
+          if (buf) {
             // her voice in the earpiece out there, as the mouthpiece beside it heard it: small and thin
-            const s = c.createBufferSource(); s.buffer = voice;
+            const s = c.createBufferSource(); s.buffer = buf;
             const vb = c.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 1400; vb.Q.value = 0.9;
-            const vg = c.createGain(); vg.gain.value = 0.36;
+            const vg = c.createGain(); vg.gain.value = q.kind === 'voice' ? 0.36 : 0.3;
             s.connect(vb); vb.connect(vg); vg.connect(bus); s.start(t0 + when);
             this.loops.push(s); this.nodes.push(vb, vg);
             this.voiced = true;
           }
           break;
+        }
         case 'down':
           a.play(a.or('handset_down', 'thudSoft'), { gain: 0.42, rate: a.lic('handset_down') ? 1 : 1.5, when, dest: bus });
           a.play('click', { gain: 0.55, when: when + 0.07, dest: bus });
@@ -507,8 +542,10 @@ export class OfficePhone {
       n += ' I took two frames out there.';
     }
     const at = this.answeredAt();
-    n += ` Then the telephone in the hut rang, and someone picked it up and listened. That was me${at ? `, at ${at}` : ''}.`;
-    n += ' The line has kept his correction since 1947. Now it has me.';
+    n += ` Then the telephone in the hut rang, and someone picked it up and listened to N. Vega. That was me${at ? `, at ${at}` : ''}.`;
+    // (what Reyes knows by now: P09 has the hut's receiver giving back T. Vega's correction; that
+    // the line itself does, P12, is room 6's to show)
+    n += ' The receiver out there gives back T. Vega\'s correction from 1947. This line has kept me.';
     return n;
   }
 
@@ -557,9 +594,9 @@ export class OfficePhone {
   reset() {
     this.stopBell(); this.stopLine();
     const h = this.handset(); if (h) { h.visible = true; h.rotation.z = 0; }
-    this.state = 'idle'; this.result = null; this.plan = null; this.due = -1; this.tail = 0; this.was = false; this.rings = 0;
+    this.state = 'idle'; this.result = null; this.plan = null; this.armed = false; this.calm = 0; this.opened = true; this.tail = 0; this.was = false; this.rings = 0;
     this.links = [...this.d.seen].filter((k) => k.startsWith(LINK)).map((k) => k.slice(LINK.length)).filter((k) => RULES.some((r) => pair(r.a, r.b) === k));
   }
   /** It rings now (the developer menu, the tests), wherever the player is. */
-  ringNow() { if (this.state === 'idle') { this.due = -1; this.ring(); return true; } return false; }
+  ringNow() { if (this.state === 'idle') { this.armed = false; this.ring(); return true; } return false; }
 }

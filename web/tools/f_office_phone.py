@@ -3,25 +3,29 @@
 #   - nothing before chapter four, nor in chapter four once room 6 is over; the prop says what it
 #     always said
 #   - blocked: with the office television on its carrier (one thing at a time) the player walks in
-#     and nothing rings, also when the set is done and the player stays; walked out and in again (the
-#     next entry) it rings; while it rings the set does not start (one at a time, the curve free)
-#   - walked to for real from the lot: on the walk at the door it rings, its own bell (not the
-#     payphone's recording), the handset rattling, a toast; the seen log has it, the curve lands on it
+#     from off the court and nothing rings; the set done and the player still there, it waits 8 s of
+#     nothing and then rings, its own bell (not the payphone's recording), the handset rattling, a
+#     toast; while it rings the set does not start (one at a time, the curve free); the seen log has
+#     it, the curve lands on it
 #   - the frames 4.2 s apart; answered with E aimed at it: nobody speaks; the line in order: the
-#     carrier, the boards, the door, a shutter, "Another." exactly 4.2 s later, the steps back, the
-#     hut's bell, the lift, Nora's first line from the earpiece (her recording), someone listening,
-#     the handset down; measured on the sound: a click at each shutter, the gap between them quieter
+#     carrier, the boards, the door, a shutter, "Another." exactly 4.2 s later, the hut's bell, the
+#     steps across the boards to it, the lift, Nora's first two lines from the earpiece (her
+#     recordings; the second is "This line still rings in the motel office."), someone listening, the
+#     handset down; measured on the sound: a click at each shutter, the gap between them quieter
 #   - heard: one note ("as far apart as FRAME 03 and FRAME 04", "I took two frames out there",
-#     "That was me, at 03:58", "Now it has me."), kept ('ev:office'), the seen log says heard; on the
-#     board the line's card, its shutters tied to FRAME 04 hold, the thread is kept
+#     "That was me, at 03:58", "This line has kept me."), kept ('ev:office'), the seen log says heard;
+#     on the board the line's card, its shutters tied to FRAME 04 hold, the thread is kept
 #   - once: walked out and in again, it does not ring; lifted, the carrier and nothing else
 #   - Continue: kept, the thread kept, no ring, nothing written twice
 #   - a long wait between the frames is drawn in (20 s, 5 minutes); hung up on, or walked off the end
-#     of the cord: nothing written, it rings on the next entry
+#     of the cord: nothing written; out off the court and back up from the shoulder onto the lot well
+#     south of the office, straight for room 6 (never within 15 m of the office door), it rings, and
+#     the toast says it is in the office
 #   - without the frames (the developer menu's chapter four): the steps, the door and the call, no
 #     shutters, and a note without the frames
 #   - phone 412x892 with touch: it rings as the player comes in, the Use button answers it, the
-#     captions on the screen; no console errors or warnings
+#     captions on the screen (her two lines as captions without the character voices); no console
+#     errors or warnings
 # Usage: python3 tools/f_office_phone.py OUTDIR
 import asyncio, sys, json, os, math
 from playwright.async_api import async_playwright
@@ -54,10 +58,24 @@ HELPERS = """(() => {
       }
       return false;
     },
-    // out of the office through its door onto the lot, out of earshot (clear of the truck by the office);
-    // and back in (the door is the way)
-    out() { return T.walk(-42.6, 24.1) && T.walk(-39.6, 24.1) && T.walk(-30, 16); },
-    in() { return T.walk(-39.6, 24.1) && T.walk(-42.6, 24.1); },
+    // out of the office through its door, across the lot and down its ramp onto SARO's ground, off
+    // the court and out of earshot (clear of the truck by the office); and back in (the door is the way)
+    out() { return T.walk(-42.6, 24.1) && T.walk(-39.6, 24.1) && T.walk(-30, 16) && T.walk(-27, 6) && T.walk(-20, 6); },
+    in() { return T.walk(-27, 6) && T.walk(-30, 16) && T.walk(-39.6, 24.1) && T.walk(-42.6, 24.1); },
+    // from the shoulder, up onto the lot well south of the office and on to room 6, never within 15 m
+    // of the office's door (10 m round its door missed this way): until it rings; [seconds, metres
+    // from the door when it rang, nearest it came] or null
+    across() {
+      const p = S47.player, d = T.door(), r6 = S47.world.court.anchors.room6Outside;
+      const [x0, z0] = T.w(-15, 40); p.place(x0, z0, Math.PI / 2); S47.tick(0.05);
+      let t = 0, min = 1e9;
+      for (const [x, z] of [T.w(-36, 40), [r6.x, r6.z]]) for (let n = 0; n < 900 && Math.hypot(p.pos.x - x, p.pos.z - z) > 0.2; n++) {
+        p.yaw = Math.atan2(-(x - p.pos.x), -(z - p.pos.z)); p.update(1 / 30, 0, -1, false); S47.tick(1 / 30); t += 1 / 30;
+        const k = Math.hypot(p.pos.x - d[0], p.pos.z - d[1]); min = Math.min(min, k);
+        if (S47.officePhone.state === 'ringing') return [t, k, min];
+      }
+      return null;
+    },
     // in front of the telephone, looking at it
     face() {
       const p = S47.player, [x, z] = T.w(-43.05, 23.35), t = T.phone();
@@ -164,24 +182,25 @@ async def main():
         await ev("S47.ch4.s.stage = 'to-motel'")
 
         # ---------- blocked: the office television on its carrier ----------
-        await ev("const [x, z] = T.w(-30, 16); S47.player.place(x, z, 0); S47.tick(0.1); S47.motelTv.now(); S47.tick(0.1)")
+        await ev("const [x, z] = T.w(-20, 6); S47.player.place(x, z, 0); S47.tick(0.1)")
+        check(not await ev("S47.officeIn().near"), 'off the court, down its ramp on SARO\'s ground: out of earshot of the office')
+        await ev("S47.motelTv.now(); S47.tick(0.1)")
         check(await ev("S47.motelTv.busy") and await ev("S47.oneAtATime()"), 'the office television is on its carrier (one of the night\'s things is going)')
-        await ev("T.walk(-39.6, 24.1)"); await ev("T.walk(-42.6, 24.1)"); await tick(3.0)
+        await ev("T.in()"); await tick(3.0)
         st = await ph()
         check(st['state'] == 'idle' and st['rings'] == 0, f'walked in while the set is on its carrier: the telephone does not ring ({st["state"]})')
         await ev("S47.motelTv.reset(); S47.tick(0.1)")
         await tick(3.0)
-        check((await ph())['rings'] == 0, 'the set back on its test card, the player still in the office: it waits for the next time they come')
-        check(await ev("T.out()") and not await ev("S47.officeIn().near"), 'walked back out onto the lot, out of earshot of the door')
+        check((await ph())['rings'] == 0, 'the set back on its test card, the player still in the office: not straight on top of it')
+        waited, rang = 3.1, False
+        for _ in range(80):
+            await tick(0.1); waited += 0.1
+            if (await ph())['state'] == 'ringing': rang = True; break
+        st = await ph()
+        check(rang and 7.8 <= waited <= 9.0 and st['state'] == 'ringing', f'the player still there and nothing going for 8 s: then it rings ({waited:.1f} s after the set)')
         # the set may start on its own now (the curve free), but not while the telephone rings
         await ev("S47.curve.free = true")
-        rang = await ev("T.walk(-39.6, 24.1)") and False
-        for _ in range(40):
-            await tick(0.1)
-            if (await ph())['state'] == 'ringing': rang = True; break
         await ev("T.walk(-41.9, 24.1)")
-        st = await ph()
-        check(rang and st['state'] == 'ringing', 'the next time the player comes to the office door, walking: it rings')
         check(await ev("T.toasts.some((t) => t.includes('At the other end of the line, someone is turning the handle.'))"), 'the toast: "The crank telephone in the office is ringing. At the other end of the line, someone is turning the handle."')
         bell = await ev("(() => { const b = S47.officePhone.bell; return b ? { buf: b.src.buffer.duration, loop: b.src.loop, same: b.src.buffer === S47.audio.buf.phoneRing } : null; })()")
         check(bell and bell['loop'] and not bell['same'] and abs(bell['buf'] - 7.2) < 0.05, f'its own bell: the two gongs, made for it, looping, not the payphone\'s recording ({bell})')
@@ -223,11 +242,12 @@ async def main():
         check(ok and st['state'] == 'idle' and st['result'] == 'heard' and st['heard'], f'played to the end, heard ({st["result"]}, {st["plan"]["end"]:.1f} s)')
         shown = st['shown']
         want = ['Nobody on the line. A carrier, very weak', 'Boards creak out there', 'A door moves on its hinges', 'Outside, not far off: a shutter.', 'Another.',
-                'the telephone in the hut is ringing. Nobody is in there.', 'Someone comes in across the boards', 'Someone picks it up.', '"So you went out there."', 'Someone is listening.', 'The handset goes down out there.']
+                'the telephone in the hut is ringing.', 'Steps cross the boards, right up to it.', 'Someone picks it up.', '"So you went out there."',
+                'She goes on: "This line still rings in the motel office.', 'Someone is listening.', 'The handset goes down out there.']
         idx = [next((i for i, s in enumerate(shown) if w in s), -1) for w in want]
-        check(all(i >= 0 for i in idx) and idx == sorted(idx), f'the captions, in order: the carrier, the boards, the door, a shutter, "Another.", the bell in the empty hut, the steps back to it, the lift, her first line, listening, the handset down ({len(shown)})')
+        check(all(i >= 0 for i in idx) and idx == sorted(idx), f'the captions, in order: the carrier, the boards, the door, a shutter, "Another.", the bell in the hut, the steps across the boards to it, the lift, her first line, her second (this line rings in the motel office), listening, the handset down ({len(shown)})')
         check(not any(t.startswith(('N. VEGA:', 'THE LINE:')) for t in shown), 'nobody speaks on the line itself')
-        check(st['voiced'], 'her first line comes from her recording, small, from the earpiece out there')
+        check(st['voiced'] and 'voice2' in st['plan']['kinds'], 'her first two lines come from her recordings, small, from the earpiece out there')
         # on the sound: a click at each shutter, quieter between them
         s0, s1 = [st['startedAt'] + x for x in st['plan']['shutters']]
         pk = await ev(f"[T.peak({s0} - 0.03, {s0} + 0.12), T.peak({s1} - 0.03, {s1} + 0.12), T.mean({s0} + 1.2, {s1} - 1.2), T.peak({s0} + 1.2, {s1} - 1.2)]")
@@ -236,7 +256,7 @@ async def main():
               f'measured on the effects bus: a click at each shutter, louder than anything in the gap between ({pk[0]:.3f}, {pk[1]:.3f} against {pk[3]:.3f})')
         notes = (await ev("S47.game.notes.slice()"))[n0:]
         on = [n for n in notes if 'The crank telephone in the motel office' in n]
-        check(len(on) == 1 and 'as far apart as FRAME 03 and FRAME 04' in on[0] and 'I took two frames out there.' in on[0] and 'That was me, at 03:58.' in on[0] and on[0].endswith('Now it has me.'),
+        check(len(on) == 1 and 'as far apart as FRAME 03 and FRAME 04' in on[0] and 'I took two frames out there.' in on[0] and 'listened to N. Vega. That was me, at 03:58.' in on[0] and on[0].endswith('The receiver out there gives back T. Vega\'s correction from 1947. This line has kept me.'),
               f'one note: {on[:1]}')
         check(await ev("S47.townSeen.has('ev:office')") and await ev("[...S47.townSeen].some((k) => k.startsWith('office@'))"), 'kept with the town\'s part of the case')
         sn = await ev("T.seen()")
@@ -302,14 +322,15 @@ async def main():
         check([e['end'] for e in sn][-2:] == ['away', 'away'], f'the seen log: put down, twice ({[e["end"] for e in sn]})')
         await tick(11)
         walked = await ev("T.out()"); await tick(0.5)
-        walked = walked and await ev("T.walk(-39.6, 24.1)")
-        for _ in range(30):
-            await tick(0.1)
-            if (await ph())['state'] == 'ringing': break
-        check(walked and (await ph())['state'] == 'ringing', f'not heard: the next time the player comes to the office, it rings ({walked}, {(await ph())["state"]})')
+        check(walked and not await ev("S47.officeIn().near"), 'walked out, off the court')
+        acr = await ev("T.across()")
+        check(acr and acr[2] > 15 and acr[1] > 10 and (await ph())['state'] == 'ringing',
+              f'not heard: the next time the player comes, up from the shoulder onto the lot well south of the office, straight for room 6, it rings ({acr})')
+        check(await ev("T.toasts.slice(-3).some((t) => t.startsWith('In the motel office, a telephone is ringing'))"), 'from across the lot the toast says where: "In the motel office, a telephone is ringing ..."')
 
         # ---------- without the frames ----------
-        await ev("T.walk(-42.6, 24.1); T.frames(null); T.face()")
+        await ev("T.walk(-37.5, 26.0); T.walk(-39.6, 24.1); T.walk(-42.6, 24.1); T.frames(null); T.face()")
+        check((await ph())['state'] == 'ringing', 'walked back to it across the lot: still ringing')
         n0 = await ev("S47.game.notes.length")
         await pg.keyboard.press('KeyE'); await tick(0.1)
         st = await ph()
@@ -362,7 +383,7 @@ async def main():
             if e > 70: break
         st = await ph()
         check(cap_on, 'phone: the caption is on the screen')
-        check(st['result'] == 'heard' and not st['voiced'] and any('"So you went out there."' in s for s in st['shown']),
+        check(st['result'] == 'heard' and not st['voiced'] and any('"So you went out there."' in s for s in st['shown']) and any('"This line still rings in the motel office.' in s for s in st['shown']),
               'phone: heard to the end; without the character voices her line is the caption alone')
         check(len(await ev("T.office()")) == 1, 'phone: one note')
         await ev("S47.game.d.ui.clearToasts()"); await tick(0.5)

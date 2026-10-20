@@ -1972,13 +1972,16 @@ async function boot() {
   }
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy || officePhone.busy; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
-   *  the office or near its door, chapter four before room 6 is over, nothing else going. */
+   *  the office, on the motel's court or within earshot of the office's open door (22 m, the
+   *  shoulder beside it too), chapter four before room 6 is over, nothing else going. Every way to
+   *  room 6 crosses the court; only near the office door missed a player going straight across
+   *  the lot from the highway to room 6. */
   function officeIn(modalOpen = !!ui.modal) {
     const p = player.pos, foot = world.area === 'saro' && !world.driving, door = Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z);
-    const s = ch4.s.stage;
+    const s = ch4.s.stage, court = foot && world.crossing.atMotel(p);
     return { ok: !modalOpen && !game.cinematic && !oneAtATime() && !audio.phonePlaying && !cb.busy,
       open: game.phase === 'ch4' && ch4.active && (s === 'to-motel' || s === 'room'),
-      near: foot && (inside(motelOffice, p) || door < 10), here: foot && door < 45, pos: p, clock: game.clock };
+      near: foot && (inside(motelOffice, p) || door < 22 || court), here: foot && (door < 45 || court), pos: p, clock: game.clock };
   }
   const dbg = { hold: false };
   let inCab = false;
