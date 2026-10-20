@@ -90,6 +90,8 @@ En liten styring som bestemmer når ting skjer, i fire lag:
 
 **Det regissøren ser på:** klokka, kapitlet og trinnet, stedet og avstanden til nærmeste linje, om spilleren er inne, ute eller i bilen, om lommelykta er på, hva som allerede har skjedd, og hvor lenge siden forrige.
 
+**Kurven (bygget 20. oktober, PR #N, `story/curve.ts`).** Trykket er nå én kurve for kapittel 1 til 5, i spilletid: ti minutter ren natt fra 02:16, så oppbyggingen (tegnene fra punkt 5, en lyd i mørket og papp-romvesenet fra en tredjedel, én hendelse fra halvveis), så toppen, og så 8 til 12 minutter der ingenting kan starte. Glimt, varsel og 47-hendelser (stillheten, bulletinen, første samtale i telefonautomaten, motell-tv-en) kommer bare på toppen, høyst én 47-hendelse i hvert kapittel. Toppen teller når spilleren fikk den: et glimt bare når det ble sett. Hver syklus er kortere og tettere mot 05:29. Papp-romvesenet kommer bare i oppbyggingen (ingen tak, Tom 18. oktober), og én gang i natta står formen ved en refleksstolpe i frontlysene. Ikke styrt av kurven: ansiktet på filmen, telefonautomatens andre samtale etter rom 6 og det som bare blir funnet. Én ting om gangen står som før.
+
 ## 5. Tegnene
 
 Små, hyppige og lette å bortforklare. De er varsel, og de er det som lærer spilleren at noe er på vei.
