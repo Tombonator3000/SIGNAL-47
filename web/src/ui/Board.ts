@@ -69,6 +69,8 @@ const art = (name: string) => FILES[`../assets/art/board/${name}`] ?? null;
 export const boardArt = () => Object.keys(FILES).map((k) => k.split('/').pop()!);
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+/** A line that starts with "~ " is pencil, in the hand (as on the papers, UI.document). */
+const pencil = (t: string) => esc(t).replace(/^~ (.*)$/gm, '<span class="pencil">$1</span>').replace(/\n/g, '<br>');
 const paras = (t: string) => t.split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
 const small = () => innerHeight < 560 || innerWidth < 700;
 const coarse = () => matchMedia('(pointer: coarse)').matches;
@@ -169,7 +171,7 @@ export function board(ui: UI, o: BoardSpec) {
       ${q.done ? `<p class="bq-done">${esc(q.done)}</p>`
         : q.slots ? `<ol class="bq-slots">${slots}</ol>
           <div class="bq-row">${ready ? `<button class="lp-btn primary bq-record" data-record="${q.id}">RECORD</button>` : ''}<button class="lp-btn bq-hint" data-hint="${q.id}">Hint</button></div>`
-          : `<p class="bq-else">${esc(q.elsewhere ?? '')}</p><div class="bq-row"><button class="lp-btn bq-hint" data-hint="${q.id}">Hint</button></div>`}
+          : `<p class="bq-else">${pencil(q.elsewhere ?? '')}</p><div class="bq-row"><button class="lp-btn bq-hint" data-hint="${q.id}">Hint</button></div>`}
     </div>`;
   };
 

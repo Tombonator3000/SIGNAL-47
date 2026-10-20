@@ -141,7 +141,19 @@ const BOY_CALL: Seg[] = [
   talk(H('Folks, I want to say something. That line was dead when I picked it up. No dial tone, nothing at all.'),
     H('I don\'t know who I was talking to.')),
 ];
-const BOY_AT = 2 * 3600 + 26 * 60;
+export const BOY_AT = 2 * 3600 + 26 * 60;
+/** The boy's call as it went out tonight, line by line, with how long each took on the air: the
+ *  recorded voices' own lengths where the station had them, else the time the mumble took, and
+ *  the station's gap after each (story/lostNights.ts: Earl's reel from 1981 has the same words, and
+ *  nothing at all where the host answered him tonight). */
+export function boyCallTimes(radio: Radio): { text: string; boy: boolean; secs: number; gap: number }[] {
+  const call = BOY_CALL[0] as Extract<Seg, { kind: 'talk' }>;
+  return call.lines.map((line) => {
+    const text = lineText(line, 0), boy = line.who === 'boy';
+    const clips = boy ? (radio.callerVoice ? radio.callerBank.resolve(text, 0, 'boy') : null) : radio.hostVoice ? radio.hostBank.resolve(text, 0) : null;
+    return { text, boy, secs: clips ? clips.reduce((sum, clip) => sum + clip.duration, 0) + (clips.length - 1) * FRAGMENT_GAP : secsOf(text), gap: GAP };
+  });
+}
 const SIGN_OFF_SEQ: Seg[] = [
   talk(H('That\'s the Night Line. Thank you for staying up with us.'), H('This is fourteen-twenty, Caliche, New Mexico, signing off until six. Good night.')),
   { kind: 'anthem' },

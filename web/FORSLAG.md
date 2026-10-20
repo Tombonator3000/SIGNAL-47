@@ -6,7 +6,7 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
 
-Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121), punkt 3 med lite grep 3: Tomás' feltbok og konvolutten for plate 4 (bygget 20. oktober, PR #122), og punkt 1: ett trykk for hele natta og papp-romvesenet som blir en refleksstolpe (bygget 20. oktober, PR #123). Det som er bygget, er merket under; resten er ikke bygget.
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121), punkt 3 med lite grep 3: Tomás' feltbok og konvolutten for plate 4 (bygget 20. oktober, PR #122), punkt 1: ett trykk for hele natta og papp-romvesenet som blir en refleksstolpe (bygget 20. oktober, PR #123), og punkt 11 med lite grep 4: de negative nettene, Earls spole fra 1981 og sjåførens klokke (bygget 20. oktober, PR #124). Det som er bygget, er merket under; resten er ikke bygget.
 
 ### Det jeg ville bygget først
 
@@ -62,9 +62,10 @@ Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntake
     - Rettelser: `failFirst` gir høyst ett mislykket forsøk, og `wake()` går ut fra at spilleren er til fots, så bilen må flyttes.
     - Kap. 1 til 4. Bygger på `trouble.ts`, `World.keyStall`, `abduction.ts` og `abductIn` (krever i dag `!world.driving`). Stor.
 
-11. **De negative nettene er Caliches tapte netter.** På NIGHT SHIFT-korken holder en tråd fra permens -38 10/19/85 til nestlederens grønne nål: "The night SARO printed -38, the attendant lost two hours on the old road." Når 1983 og 1981 er fylt inn, kommer et spørsmål uten svar: "-39 tonight. Who loses time tonight?" Gir du Earl datoen før 04:00, spiller han spolen fra september 1981: gutten sier nattens setninger ord for ord, med tomrom der Earl svarte i natt. "I answered him tonight. He wasn't answering me."
+11. **Bygget 20. oktober, PR #124 (`story/lostNights.ts`, `core/reelTape.ts`; Earl i `story/caliche.ts`, sjåføren i `story/Chapter5.ts`). De negative nettene er Caliches tapte netter.** På NIGHT SHIFT-korken holder en tråd fra permens -38 10/19/85 til nestlederens grønne nål: "The night SARO printed -38, the attendant lost two hours on the old road." Når 1983 og 1981 er fylt inn, kommer et spørsmål uten svar: "-39 tonight. Who loses time tonight?" Gir du Earl datoen før 04:00, spiller han spolen fra september 1981: gutten sier nattens setninger ord for ord, med tomrom der Earl svarte i natt. "I answered him tonight. He wasn't answering me."
     - Hvorfor: det binder vitnene til forløperne og gjør vitnekortene til et resonnement; en levende mann svarte et opptak (R5). Allerede sådd i `caliche.ts:295-299` og `336-353`, og i permens 09/22/81 01:52:07.
     - Kap. 2 og senere. Bygger på en ny `ns`-regelbok i `boardRules.ts`, `BOY_CALL`, noen Earl-klipp og mørkeromsloggen fra `KAPITLER.md`. Middels.
+    - Endret ved byggingen: et nytt kort, «WHAT THEY TOLD ME», har det Earl, kvinnen på benken og betjenten selv sa, fordi nestlederen er ute fra 02:45 til 04:30 og spørsmålet ellers ikke kunne nås i kap. 2 og 3. «I answered him tonight» sies av Earl, ikke av spilleren. Hullene på båndet er like lange som Earls svar i natt (3,61 og 1,12 s), og natta utenfor blir stille i dem. Mørkeromsloggen finnes bare i `KAPITLER.md` og er ikke brukt. Earls nye replikker har ikke opptak («No recording for this reply»).
 
 12. **Sett arrayen tilbake. Den går tilbake.** Ward: "Put the array back on the schedule and tell me it stays there." Spilleren skriver ARRAY RESUME, og alle 27 svinger mot 042. Førtisju sekunder senere blinker de røde lampene fire og sju, og alle svinger tilbake til 026 med MOTION NO COMMAND i loggen. Hver gang.
     - Hvorfor: nattevakten mislykkes med den virkelige jobben, med egne hender (R1). Det bygger S-03-historikken, og Ward kan si i kap. 5: "You tried it three times. It went back three times."
@@ -88,7 +89,8 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 1. **Gården holder pusten.** 02:16, første gang ut: helt stille, så kommer sirissene én og én over 47 s. `Prologue.ts:998`, `Ambience.hush`.
 2. **Reléet går først.** 23:52 slår K3 ut før skippet, og 40 s senere dipper lyset. 40 s er servicekortets ("TRIPPED 40 SEC BEFORE OUTAGE"); i nedtellingen er det 7 s. Tom velger.
 3. **Bygget 20. oktober, PR #122 (med feltboka). Konvolutten mot lampa.** "Plate 4. 1 print. 35c." Mot lampa: tre små skikkelser. La "There were two of us" være Tomás' setning. Den forseglede konvolutten på motellkontorets disk er blitt fotobutikkonvolutten fra Roswell, og kan holdes mot lampa fra kapittel 1; en tråd går til bokas siste side.
-4. **Sjåførens klokke.** Den står på 11:58, mot permens 10/19/85 23:58:31. En slepelapp fra bensinstasjonen kan bære de tapte timene.
+4. **Bygget 20. oktober, PR #124 (med punkt 11). Sjåførens klokke.** Den står på 11:58, mot permens 10/19/85 23:58:31. En slepelapp fra bensinstasjonen kan bære de tapte timene.
+   - Endret ved byggingen: klokka er sjåførens i dineren, ikke betjentens; betjenten slepte bilen hans, og sjåføren husker ingen sleping («Nobody towed me. She came back on by herself.»). Gjennomslaget av slepelappen er datert 10-20-85 (utrykning 1:45, inn 4:25, 2,7 timer), og feltet for hvem som ringte er tomt.
 5. **Morgenen holder pusten.** 05:13 i dineren stopper fuglene og kjøleren. "There. Some mornings about now." ("Every morning" strider mot `Chapter5.ts:426`.)
 6. **Kortet ender på en ring.** Telefonen ringer under CHAPTER TWO. Oppsummeringene står, fordi stemmene er nøklet på teksten.
 7. **Linjene møtes.** Dra linjene videre på kartet. Notatet i `main.ts:1435` sier allerede "through STATION 01" og må skrives om. **Notatet og B-streken er rettet (bygget 20. oktober, PR #121):** "across the highway at the turn-off to SARO, and on to the south-west, through STATION 01", og streken går gjennom avkjøringen. Linjene er ikke dratt videre.
@@ -99,7 +101,7 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett. **Modulen og telleren er bygget 20. oktober, PR #121** (`story/lines.ts`, `story/seen.ts`), og punkt 1 er bygget 20. oktober, PR #123 (`story/curve.ts`); punkt 2 er ikke bygget.
 2. Små grep 1 og 2, Hondo (4) og arkivet (5, eller valg 1).
 3. Bilen: 8, så 10, så 6. Stigen lærer nøkkelen som 05:29 tar bort.
-4. Saken: 3 og 11, konvolutten og klokka. **3 og konvolutten er bygget 20. oktober, PR #122**; 11 og klokka er ikke bygget.
+4. Saken: 3 og 11, konvolutten og klokka. **3 og konvolutten er bygget 20. oktober, PR #122**; 11 og klokka er bygget 20. oktober, PR #124.
 5. 9, 7 og 12.
 6. Den niende kua, blodløs ved B-fløyen på STATION 01 (570 m fra beitet), passer når som helst i kap. 3, men er kroppsskrekk Tom bør se først.
 

@@ -93,6 +93,14 @@ export class Chapter5 {
   started = false;
   s: Ch5State = fresh();
   onEnd?: () => void;
+  /** More for the driver at the counter (story/lostNights.ts: his watch, and the tow ticket from
+   *  Caliche), set by main.ts; without it he is as he was. */
+  driverMore: {
+    examine(): string | null;
+    open(): Line[];
+    choices(october: boolean): { id: string; label: string }[];
+    choose(id: string): Line[] | null;
+  } | null = null;
   private lines: Line[] = [];
   private who: Who | null = null;
   private panel: { refresh: () => void } | null = null;
@@ -242,12 +250,14 @@ export class Chapter5 {
       const { inter, ui } = this.d;
       const px = diner.proxies;
       const here = () => this.inDiner();
-      const add = (id: string, label: () => string | null, use: () => void, range = 2.4) => {
-        if (px[id]) inter.add({ id: 'diner:' + id, object: px[id], range, label: () => here() ? label() : null, use });
+      const add = (id: string, label: () => string | null, use: () => void, range = 2.4, examine?: () => string | null) => {
+        if (px[id]) inter.add({ id: 'diner:' + id, object: px[id], range, label: () => here() ? label() : null, use,
+          examine: examine ? () => here() ? examine() : null : undefined });
       };
       const on = () => this.active && (this.s.stage === 'diner' || this.s.stage === 'road');
       add('waitress', () => on() ? 'Talk to the waitress' : 'The waitress', () => on() ? this.openTalk('waitress') : ui.toast('She is wiping the same stretch of counter.', 2.8), 2.8);
-      add('driver', () => on() ? 'Talk to the driver' : 'A driver at the counter', () => on() ? this.openTalk('driver') : ui.toast('He is eating eggs and not looking up.', 2.8), 2.6);
+      add('driver', () => on() ? 'Talk to the driver' : 'A driver at the counter', () => on() ? this.openTalk('driver') : ui.toast('He is eating eggs and not looking up.', 2.8), 2.6,
+        () => this.driverMore?.examine() ?? null);
       add('coffee', () => on() && !this.s.coffee ? 'Coffee' : 'The coffee pot', () => this.useCoffee());
       add('counter', () => 'The radio behind the counter', () => this.useRadio());
       add('clipping', () => 'The clipping by the door', () => this.readClipping());
@@ -355,7 +365,7 @@ export class Chapter5 {
       this.g.note(`${this.time()}. Coffee poured for an empty stool at the end of the counter. "He's a regular. Comes in when the lights are up."`);
       this.save();
     }
-    if (who === 'driver') this.lines = [D('Morning.'), aside('He does not look up from his eggs.')];
+    if (who === 'driver') this.lines = [D('Morning.'), aside('He does not look up from his eggs.'), ...(this.driverMore?.open() ?? [])];
     if (who === 'ward') {
       this.lines = [
         aside('A dime in the slot, and her number from the card in your wallet.'),
@@ -401,6 +411,7 @@ export class Chapter5 {
       if (!s.road) v.choices.push({ id: 'road', label: 'Ask about the old road' });
       if (!s.october) v.choices.push({ id: 'october', label: 'Ask if anything ever happens out there' });
       if (s.p13 && !s.confirmed) v.choices.push({ id: 'bolt', label: 'Ask about the survey bolt past the eight-mile post' });
+      v.choices.push(...(this.driverMore?.choices(s.october) ?? []));
       v.choices.push({ id: 'bye', label: 'Let him eat' });
     }
     if (this.who === 'ward' && !s.ward) {
@@ -440,6 +451,8 @@ export class Chapter5 {
       }
     }
     if (this.who === 'driver') {
+      const more = this.driverMore?.choose(id);
+      if (more) { this.lines = more; return; }
       if (id === 'road') {
         s.road = true;
         this.lines = [
