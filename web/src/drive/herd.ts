@@ -22,6 +22,10 @@ import { HERD } from './roadShape';
 // Draw calls: the bodies 1, the heads 1 (both instanced), the ring of frost 1 when it is there;
 // the eyes are points in the area's glow (no call of their own), the stock tank merges with the
 // area's statics.
+//
+// Each has a yellow tag in her left ear with the ranch's name and her number (TAGS), read with a
+// closer look on foot among them (lookAreas): the ninth, the one that goes, is found again at
+// STATION 01 with hers (story/ninthCow.ts, world/ninthCow.ts build her from the same pieces).
 
 /** Road-local (x, z) of each cow, and the way it grazes (radians from north, clockwise). */
 const COWS: [number, number, number][] = [
@@ -30,6 +34,10 @@ const COWS: [number, number, number][] = [
 ];
 /** The one that is not there the second time (near the fence, so its ring is in the headlights). */
 const MISSING = HERD.missing;
+/** The ranch whose herd it is (its mailbox is on the highway: roadTextures.ts), and the number on
+ *  each cow's ear tag, in the order of COWS. TAGS[HERD.missing] is the ninth's. */
+export const TAG_RANCH = 'ALDERETE';
+export const TAGS = ['11', '14', '18', '22', '25', '29', '31', '34', '38'];
 /** How near the truck can come to a cow (metres, from where it stands). */
 const COW_R = 1.15;
 /** Facing az 026: the direction on the ground (x east, z south) and the heading for rotation.y. */
@@ -37,11 +45,14 @@ const AZ = 26 * Math.PI / 180;
 const FACING = new THREE.Vector3(Math.sin(AZ), 0, -Math.cos(AZ));
 
 // colours (linear, as the other vertex colours of the road)
-const RED = [0.3, 0.11, 0.055], WHITE = [0.74, 0.7, 0.62], HOOF = [0.07, 0.06, 0.05], NOSE = [0.46, 0.33, 0.31];
+export const RED = [0.3, 0.11, 0.055], WHITE = [0.74, 0.7, 0.62], HOOF = [0.07, 0.06, 0.05], NOSE = [0.46, 0.33, 0.31];
+/** The ear tag's yellow plastic. */
+export const TAG = [0.62, 0.42, 0.02];
 /** Where the head turns on the body (the neck's root), and where the eyes are on the head. */
-const NECK = new THREE.Vector3(0, 1.12, -0.74), EYE = [new THREE.Vector3(-0.17, 0.11, -0.66), new THREE.Vector3(0.17, 0.11, -0.66)];
+export const NECK = new THREE.Vector3(0, 1.12, -0.74), EYE = [new THREE.Vector3(-0.17, 0.11, -0.66), new THREE.Vector3(0.17, 0.11, -0.66)];
 
-function bodyGeometry() {
+/** A cow's body, standing, facing -z (her left side is -x), the hooves at y 0. */
+export function bodyGeometry() {
   const B = (w: number, h: number, d: number, x: number, y: number, z: number, c: number[]) => colored(new THREE.BoxGeometry(w, h, d).translate(x, y, z), c);
   // the barrel along the cow, a little deeper at the chest; the white underline below it
   const barrel = colored(new THREE.CylinderGeometry(0.39, 0.44, 1.72, 7, 1).rotateX(Math.PI / 2).scale(1, 0.92, 1).translate(0, 1.04, 0.02), RED);
@@ -52,14 +63,20 @@ function bodyGeometry() {
     B(0.08, 0.16, 0.08, 0, 0.62, 0.95, WHITE));
   return mergeGeometries(parts)!;
 }
-function headGeometry() {
+/** The yellow tag hanging in the left ear (head terms, as headGeometry). */
+export function tagGeometry() {
+  return colored(new THREE.BoxGeometry(0.035, 0.075, 0.06).translate(-0.27, 0.075, -0.46), TAG);
+}
+/** A cow's head and neck from the neck's root (the origin), facing -z, with the tag in her left ear. */
+export function headGeometry() {
   const B = (w: number, h: number, d: number, x: number, y: number, z: number, c: number[]) => colored(new THREE.BoxGeometry(w, h, d).translate(x, y, z), c);
   // from the neck's root (the origin here) forward: the neck, the white crest on it, the white
-  // face, the muzzle, the ears
+  // face, the muzzle, the ears, the tag
   return mergeGeometries([
     B(0.34, 0.44, 0.52, 0, -0.04, -0.2, RED), B(0.1, 0.05, 0.48, 0, 0.19, -0.2, WHITE),
     B(0.32, 0.36, 0.44, 0, 0.02, -0.6, WHITE), B(0.25, 0.21, 0.17, 0, -0.08, -0.88, NOSE),
     B(0.16, 0.05, 0.08, -0.24, 0.12, -0.46, RED), B(0.16, 0.05, 0.08, 0.24, 0.12, -0.46, RED),
+    tagGeometry(),
   ])!;
 }
 
@@ -118,6 +135,9 @@ export class Herd {
   private ys: number[];
   private dirty = true;
   private lastT = 0;
+  /** An invisible hit area round each cow, for a closer look on foot (main.ts binds them): the
+   *  missing one's is hidden with her. */
+  readonly lookAreas: THREE.Mesh[] = [];
 
   /** area: the area whose builders made it (World.ts keeps one per area). */
   constructor(b: Build, set: FloodSet, readonly area: 'saro' | 'road') {
@@ -147,6 +167,13 @@ export class Herd {
       depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), set, this.beam, true));
     this.ring.position.set(mx, my, mz); this.ring.name = 'herd:frost'; this.ring.visible = false;
     this.group.add(this.bodies, this.heads, this.ring);
+    // the hit areas for a closer look, one round each cow wherever her head is (2.6 m across)
+    const hitMat = new THREE.MeshBasicMaterial({ visible: false }), hitGeo = new THREE.BoxGeometry(2.6, 1.6, 2.6);
+    COWS.forEach(([x, z], i) => {
+      const m = new THREE.Mesh(hitGeo, hitMat);
+      m.position.set(x, this.ys[i] + 0.8, z); m.name = `look:cow${i}`; m.userData.cow = i;
+      this.group.add(m); this.lookAreas.push(m);
+    });
     b.root.add(this.group);
     // off the survey track the truck can be driven into the pasture: the cows stop it, as the
     // posts and the rocks do; the one that will not be there only while it is (obstacle()). They
@@ -188,6 +215,8 @@ export class Herd {
   set(still: boolean, missing: number, ring: boolean) {
     if (still !== this.still || missing !== this.missing) { this.still = still; this.missing = missing; this.place(this.lastT); }
     this.ring.visible = ring;
+    // (hidden, a hit area is also out of the crosshair's way: layer 31, as the station's hidden things)
+    this.lookAreas.forEach((m, i) => { const on = i !== missing; m.visible = on; m.layers.set(on ? 0 : 31); });
     for (const o of this.gone) o.r = missing === MISSING ? 0 : COW_R;
   }
   /** The one that goes, in an area's own terms (origin: where the road's frame is in it), for

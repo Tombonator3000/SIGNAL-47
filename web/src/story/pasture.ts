@@ -22,6 +22,13 @@ import { clockText } from './time';
 // Kept with the town's part of the case (main.ts, `town`): 'cows:by' (been by them once),
 // 'cows:on', 'ev:cows1', 'cows:short', 'ev:cows', and a mark on the map at the pasture, on B;
 // none of it comes again after a load.
+//
+// Where the ninth went (FORSLAG.md, 20 October, the order's item 6; story/ninthCow.ts): she is
+// found at STATION 01, in the same pasture's west end, inside the station's fence. She is put down
+// there in chapter three while the player is at the station, and she goes from here at that moment
+// (takeNinth), out of sight of both: a herd that had not turned yet turns with it, so the next time
+// by there are eight facing 026 and the ring. Seen like that without the nine first, the eight
+// still get the map's mark at the pasture.
 
 export interface PastureIn {
   /** In play, no panel, not in a cinematic, at night, and the story allows it. */
@@ -41,6 +48,8 @@ export interface PastureDeps {
   note: (text: string) => void;
   toast: (text: string, secs?: number) => void;
   save: () => void;
+  /** The ninth has been found where she lies at STATION 01 (story/ninthCow.ts). */
+  ninthFound?: () => boolean;
 }
 
 type Stage = 'graze' | 'still' | 'short' | 'after';
@@ -56,6 +65,8 @@ export class Pasture {
   passes = 0;
   private near = false;
   private force = false;
+  /** At the last step the player was far enough off that a change could not be seen. */
+  away = true;
   private _v = new THREE.Vector3();
 
   constructor(private d: PastureDeps) {}
@@ -84,6 +95,7 @@ export class Pasture {
     const cam = s.cam.getWorldPosition(this._v.clone());
     const dist = h ? cam.distanceTo(h.middle(this._v)) : Infinity;
     const far = dist > FAR;
+    this.away = far;
     const day = ((s.clock % 86400) + 86400) % 86400;
     const seen = this.d.seen;
 
@@ -110,8 +122,12 @@ export class Pasture {
       this.d.save();
     } else if (this.stage === 'short' && !seen.has('ev:cows') && lit >= 3) {
       seen.add('ev:cows');
-      this.d.toast('The herd in the pasture, still facing the same way. Eight of them. There were nine. Where the ninth stood, the grass is flattened in a ring, white with frost.', 6.5);
-      this.d.note(`${t}. Pasture by the highway: the herd facing 026. One missing. A ring of frost in the grass.`);
+      // (eight seen without the nine first: the mark is this one; main.ts sawKey logs it once)
+      if (![...seen].some((k) => k.startsWith('mark:cows@'))) seen.add(`mark:cows@${Math.round(s.clock)}`);
+      const found = !!this.d.ninthFound?.();
+      this.d.toast(found ? 'The herd in the pasture, all facing the same way. Eight of them. Where the ninth stood, the grass is flattened in a ring, white with frost. She is lying inside the fence at STATION 01.'
+        : 'The herd in the pasture, still facing the same way. Eight of them. There were nine. Where the ninth stood, the grass is flattened in a ring, white with frost.', 6.5);
+      this.d.note(`${t}. Pasture by the highway: the herd facing 026. One missing. A ring of frost in the grass.${found ? ' The one missing is lying at STATION 01, on B.' : ''}`);
       this.d.save();
     }
   }
@@ -128,4 +144,17 @@ export class Pasture {
   }
   /** Turn them now, whatever the hour (the developer menu): as soon as the player is far off. */
   now() { if (this.stage === 'graze') this.force = true; }
+  /** The ninth goes from the pasture now (story/ninthCow.ts puts her down at STATION 01 in the same
+   *  step): only while the player is far off. A herd still grazing has turned by then too. */
+  takeNinth() {
+    if (this.stage === 'short' || this.stage === 'after') return true;
+    if (!this.away) return false;
+    const seen = this.d.seen;
+    seen.add('cows:on'); seen.add('cows:short');
+    this.stage = 'short'; this.force = false;
+    this.apply(); this.d.save();
+    return true;
+  }
+  /** She is gone from the pasture (the eight, or after). */
+  get ninthGone() { return this.stage === 'short' || this.stage === 'after'; }
 }

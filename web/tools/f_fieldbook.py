@@ -112,6 +112,8 @@ async def main():
         async def quiet(): await ev("S47.nightEvents['wait'] = 1e9")   # the night's other events out of the way
         # (the night's curve stands aside: the knocks come on the book's own terms here; story/curve.ts)
         await ev("S47.hold = true; S47.curve.free = true")
+        # (the herd's own order with the book: the ninth cow is not put down at STATION 01 here; tools/f_ninth_cow.py has her)
+        await ev("S47.ninth.off = true")
         await quiet()
 
         # ---------- not before chapter three ----------
@@ -283,7 +285,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev(HELPERS); await ev("T.hook()"); await ev("S47.hold = true; S47.tick(0.5)"); await quiet()
+        await ev(HELPERS); await ev("T.hook()"); await ev("S47.ninth.off = true; S47.hold = true; S47.tick(0.5)"); await quiet()
         await pg.add_style_tag(content='.lockhint{display:none !important}')
         f = await fb()
         check(f is not None and f['times'] == {'lights': lt} and sorted(f['told']) == ['cows', 'knocks'] and sorted(f['links']) == ['fb.car|tn.car', 'fb.lights|tn.lights'],
@@ -347,7 +349,7 @@ async def main():
         ctx, pg, errs = await page(b, 412, 892, True)
         ev = pg.evaluate
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')
-        await ev("S47.hold = true; S47.nightEvents['wait'] = 1e9")
+        await ev("S47.ninth.off = true; S47.hold = true; S47.nightEvents['wait'] = 1e9")
         await ev("S47.jump('chapter3'); S47.tick(1.0); S47.setAbductions(false); S47.nightEvents['wait'] = 1e9")
         # seen tonight before the station, through the hooks: the herd (nine) and the lamps in Caliche
         await ev("""(() => { const s = S47.townSeen, c1 = 3 * 3600 + 21 * 60 + 5, c2 = 3 * 3600 + 33 * 60 + 40;
@@ -412,7 +414,7 @@ async def main():
         # ======================= phone on its side =======================
         ctx, pg, errs = await page(b, 844, 390, True)
         ev = pg.evaluate
-        await ev("S47.hold = true; S47.jump('chapter3'); S47.tick(1.0); S47.setAbductions(false); S47.nightEvents['wait'] = 1e9")
+        await ev("S47.ninth.off = true; S47.hold = true; S47.jump('chapter3'); S47.tick(1.0); S47.setAbductions(false); S47.nightEvents['wait'] = 1e9")
         await ev("S47.fieldBook.openBook(0)"); await pg.wait_for_selector('.fbook'); await pg.wait_for_timeout(300)
         GEO = """(() => { const p = document.querySelector('.fbook [data-page]').getBoundingClientRect(), h = document.querySelector('.fbook [data-hand]').getBoundingClientRect();
           const n = document.querySelector('.fbook [data-a=next]').getBoundingClientRect(), t = document.querySelector('.fbook .text').getBoundingClientRect();

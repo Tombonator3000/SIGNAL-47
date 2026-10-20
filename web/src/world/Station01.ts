@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE, STATION_TRANSIT, STATION_SIGHT_A, STATION_VANE_B } from './stationLayout';
+import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE, STATION_TRANSIT, STATION_SIGHT_A, STATION_VANE_B, STATION_NINTH } from './stationLayout';
+import { buildNinthCow, type NinthCowBuilt } from './ninthCow';
 import { stationMesas, STATION_FAR_LIGHTS, hazed } from './horizon';
 import { stationToRoad, stationLand, outside, inRect, STATION_PATCH } from './geo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -715,6 +716,11 @@ export class Station01 {
   hutLightOn = true;
   /** The drawer under the bench (story/fieldBook.ts): out, or where it has stood since 1947. */
   drawerOpen = false;
+  /** The ninth cow from the pasture (story/ninthCow.ts, world/ninthCow.ts): built with the station,
+   *  hidden until she is put down; `ninthDown` once she lies there. */
+  ninth!: NinthCowBuilt;
+  ninthDown = false;
+  private ninthCol: Collider | null = null;
   private drawerK = 0;
   private drawerZ = 0;
   /** The bought models (world/licensedModels.ts): the chair in the hut, in the hut's floods, and
@@ -761,6 +767,7 @@ export class Station01 {
     this.markers();
     this.lamp();
     this.cable();
+    this.ninthCow();
     this.ground();
     this.scatter();
     this.fx();
@@ -1912,6 +1919,28 @@ export class Station01 {
     moon.intensity = a.moonI + (b.moonI - a.moonI) * w;
     moon.position.copy(a.moonAt).lerp(b.moonAt, w);
   }
+
+  // ---------- the ninth cow (story/ninthCow.ts) ----------
+  private ninthCow() {
+    const n = STATION_NINTH;
+    this.ninth = buildNinthCow({ x: n.x, z: n.z, y: this.y(n.x, n.z), head: n.head }, (o) => this.lit(o, 0.03));
+    for (const m of this.ninth.materials) this.track(m);
+    this.group.add(this.ninth.group);
+    this.proxies.ninthHead = this.ninth.hit.head; this.proxies.ninthBody = this.ninth.hit.body; this.proxies.ninthFrost = this.ninth.hit.frost;
+    this.setNinth(false);
+  }
+  /** She lies there (put down, or a case opened with her there), or not (a new night). Hidden, her
+   *  hit areas are out of the crosshair's way (layer 31) and she stops nobody. */
+  setNinth(on: boolean) {
+    this.ninthDown = on;
+    this.ninth.group.visible = on;
+    for (const h of Object.values(this.ninth.hit)) h.layers.set(on ? 0 : 31);
+    const b = this.ninth.box, i = this.ninthCol ? this.colliders.indexOf(this.ninthCol) : -1;
+    if (on && i < 0) { this.ninthCol = { minX: b.minX + this.o.x, maxX: b.maxX + this.o.x, minZ: b.minZ + this.o.z, maxZ: b.maxZ + this.o.z }; this.colliders.push(this.ninthCol); }
+    if (!on && i >= 0) this.colliders.splice(i, 1);
+  }
+  /** Where to look at her, world terms. */
+  ninthAt(part: 'head' | 'body' | 'middle') { return this.ninth.at[part].clone().add(this.o); }
 
   // ---------- switches ----------
   // P07: the tin hood over the field lamp. Covered, the lamp gives no light at all.
