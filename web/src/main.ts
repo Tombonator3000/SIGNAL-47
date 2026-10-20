@@ -2168,7 +2168,7 @@ async function boot() {
       // does, from the developer menu, the array leaves the schedule for it)
       if (mode === 'play') {
         const inSaro = world.area === 'saro', onFoot = inSaro && !world.driving;
-        arrayBack.update(modalOpen ? 0 : dt, { saro: inSaro, room: onFoot && inside(room.bounds, player.pos), outside: onFoot && space === 'yard',
+        arrayBack.update(modalOpen ? 0 : dt, { saro: inSaro, room: onFoot && inside(room.bounds, player.pos), outside: onFoot && space === 'yard', cab: inSaro && world.driving,
           cam: camera, eye: arrayEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), warning: abduction!.stage !== 'calm',
           taken: follow.mode === 'idle' ? null : new Set(follow.state.map((r) => r.id)), followIdle: follow.mode === 'idle', calm: calmFlash });
       }

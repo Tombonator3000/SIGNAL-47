@@ -81,7 +81,7 @@ const WARD_ARRAY = [
   { by: 'WARD', text: 'Put the array back on the schedule and tell me it stays there.' },
 ];
 /** How long the line rings for her before it stops, and how long after that it rings again (with the
- *  player back in the control room). */
+ *  player in the control room, or in the corridor just outside it). */
 const BACK_RING = 24, BACK_AGAIN = 40;
 
 const SUPPORTED_04 = 'SUPPORTED / E07 records A, B and C and a retained mark with the lamp isolated. E06 omits C, the closing sight line, and calls the mark a development fault. The report was changed; motive remains unknown.';
@@ -142,6 +142,11 @@ const WHERE: Record<P.SourceKey, string> = {
 
 
 const inRoom = (room: ControlRoom, p: THREE.Vector3) => { const b = room.bounds; return p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ; };
+/** Where Ward's call-back may begin besides the control room: its south door and the corridor
+ *  outside it, so that it reaches a player on the way to the records room where she said (it is
+ *  answered at the desk). Not the records room itself, where the steps on the roof want their quiet
+ *  (story/roofSteps.ts). */
+const EARSHOT = ['southDoor', 'corridor'];
 
 export class Chapter2 {
   active = false;
@@ -291,16 +296,16 @@ export class Chapter2 {
       this.s.stage = 'records';
       this.g.note(`${this.time()}. Dr. Ward read the B-12 report and is holding the morning series. Check the reference record: where did the B-12 reference come from?`);
       ui.toast('Ward hangs up. The records room is down the south corridor.', 3.6);
-      if (!this.s.arrayAsk) this.backT = 5;
+      if (!this.s.arrayAsk) this.backT = 3;
       this.save();
     });
   }
   // ---------- Ward again: the array (story/arrayBack.ts) ----------
-  private callBack() {
+  private callBack(here: boolean) {
     const { audio, room, ui } = this.d;
     this.ringing = true; this.ringBack = true; this.backRing = 0; this.backT = -1;
     audio.loop('ring2', 'phoneRing', { gain: 1.0, at: this.pos(room.objs.phone) });
-    ui.toast('The supervisor\'s line again.', 3);
+    ui.toast(here ? 'The supervisor\'s line again.' : 'In the control room, the supervisor\'s line is ringing again.', 3.4);
   }
   private answerBack() {
     const { audio, ui, room } = this.d;
@@ -482,6 +487,8 @@ export class Chapter2 {
       return;
     }
     this.g.cinematic = true;
+    // (Ward's call-back left ringing in the control room stops as the line here is picked up)
+    if (this.ringBack) { this.ringing = false; this.ringBack = false; this.backRing = 0; audio.stop('ring2', 0.3); }
     audio.play('click', { gain: 0.5, at: this.pos(annex.objs.recPhone) });
     ui.toast('(505) 555-0119.', 2.4);
     const dial = audio.dial(PHONE);
@@ -574,14 +581,16 @@ export class Chapter2 {
       this.save();
     }
     // Ward calls back about the array a few seconds after her first call, with the player in the
-    // control room and nothing else going; let ring, it stops, and she tries again later
+    // control room and nothing else going (or just outside it, in the corridor); let ring, it stops,
+    // and she tries again later
+    const here = inRoom(room, p), heard = here || EARSHOT.some((k) => { const e = annex.zone[k]; return !!e && p.x >= e.minX && p.x <= e.maxX && p.z >= e.minZ && p.z <= e.maxZ; });
     if (this.ringBack && this.ringing && (this.backRing += dt) > BACK_RING) {
       this.ringing = false; this.ringBack = false; this.backT = BACK_AGAIN;
       this.d.audio.stop('ring2', 0.3);
-      if (inRoom(room, p)) ui.toast('The ringing stops.', 2.4);
+      if (heard) ui.toast('The ringing stops.', 2.4);
     } else if (!this.ringing && this.backT >= 0 && !this.s.arrayAsk && !this.g.cinematic && this.s.stage !== 'complete') {
       if (this.backT > 0) this.backT = Math.max(0, this.backT - dt);
-      else if (inRoom(room, p) && (this.quiet?.() ?? true)) this.callBack();
+      else if (heard && (this.quiet?.() ?? true)) this.callBack(here);
     }
     ui.objective(this.objective());
   }

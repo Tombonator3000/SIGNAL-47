@@ -2,7 +2,8 @@
 #   - before 02:15 there is nothing to resume; in chapter one, and in chapter two before Ward has
 #     asked, the console says the array is held for the supervisor, and offers no button
 #   - chapter two: after Ward's first call the supervisor line rings again in the control room;
-#     let ring, it stops and rings again later; answered, her two lines as captions (no recording),
+#     let ring, it stops and rings again later (not for a player in the records room, but for one in
+#     the corridor outside, with a caption that says where); answered, her two lines as captions (no recording),
 #     a note, and the console offers ARRAY RESUME (a task in the chapter's list)
 #   - the terminal: the button, HELP, the answer; the night (and the array) waits while it is open
 #   - closed: the drives start up (the motor hum), all 27 to az 042 / el 48 exactly, ON SCHEDULE in
@@ -128,7 +129,15 @@ async def main():
         check(rang and any("supervisor's line again" in t for t in await ev("A.toasts")), 'a few seconds later, with the player in the control room, the line rings again')
         await ev("S47.tick(25)")
         check(not await ev("S47.ch2.ringing") and any('The ringing stops.' in t for t in await ev("A.toasts")), 'let ring, it stops')
-        check(await ev("A.until(() => S47.ch2.ringing && S47.ch2.ringBack, 44, 0.5)"), 'and rings again later')
+        # (gone on to the records room: not there, where the steps on the roof want their quiet; in the
+        # corridor outside the control room, yes, and the caption says where it rings)
+        # (the steps on the roof kept out of it: they may come in that quiet, and then nothing else would)
+        await ev("S47.roofSteps['phase'] = 'done'; S47.player.place(-3.6, 8.6, Math.PI); S47.tick(0.1)")
+        check(not await ev("A.until(() => S47.ch2.ringing, 46, 0.5)"), 'in the records room she does not call back')
+        await ev("A.toasts.length = 0; S47.player.place(-2.4, 5.6, 0); S47.tick(0.1)")
+        check(await ev("A.until(() => S47.ch2.ringing && S47.ch2.ringBack, 2, 0.25)") and any('In the control room, the supervisor' in t for t in await ev("A.toasts")),
+              'and rings again later, heard from the corridor outside the control room')
+        await ev("S47.player.place(3.35, 1.45, 2.75); S47.tick(0.1)")
         await ev("A.toasts.length = 0; S47.game.d.inter.get('phone').use()")
         await ev("S47.tick(1.0)")
         cap1 = [t for t in await ev("A.toasts") if t.startswith('WARD:')]

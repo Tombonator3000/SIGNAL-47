@@ -107,6 +107,8 @@ export interface ArrayIn {
   /** In the control room (the status console, the windows), and out of doors at SARO. */
   room: boolean;
   outside: boolean;
+  /** In the truck at SARO: the field through the windscreen (nothing heard of it over the engine). */
+  cab: boolean;
   cam: THREE.Camera;
   eye: THREE.Vector3;
   /** The warning of the time away has begun (story/abduction.ts): the array leaves the schedule. */
@@ -352,7 +354,7 @@ export class ArrayBack {
         this.d.array.beaconPhase(r.i, this.ph[r.i]);
       }
     }
-    if (!this.said.sync && this.t > 20 && this.t < HOLD - 6 && (s.outside || s.room) && this.inView(s.cam)) {
+    if (!this.said.sync && this.t > 20 && this.t < HOLD - 6 && this.sees(s)) {
       this.said.sync = true;
       if (this.count < 2) this.d.toast('The red lamps on the feeds are blinking together now. All of them.', 3.6);
     }
@@ -384,7 +386,7 @@ export class ArrayBack {
         else if (s.outside) this.thump(s.calm ? 0.12 : 0.26);
       }
     }
-    if ((s.outside || s.room) && this.inView(s.cam)) this.got.lamps = true;
+    if (this.sees(s)) this.got.lamps = true;
     if (this.t >= SIGNAL) this.turn(s);
   }
   /** After the seventh: back to 026, together and without a sound. */
@@ -411,11 +413,14 @@ export class ArrayBack {
       if (s.taken?.has(r.d.id)) { r.mine = false; r.d.back = false; r.d.spin = 0; continue; }
       if (!this.drive(r, HOME, dt)) all = false;
     }
-    if (this.t > 0.6 && (s.outside || s.room) && this.inView(s.cam)) this.got.back = true;
+    if (this.t > 0.6 && this.sees(s)) this.got.back = true;
     if (!this.said.turn && this.t > 1.6) {
       this.said.turn = true;
       if (this.cut) { /* the warning has the night: nothing said */ }
-      else if (s.outside && this.got.back) this.d.toast(this.count ? 'Back to 026. Not a sound.' : 'They are turning back. All twenty-seven at once, and not a sound.', 3.6);
+      // (watched from the control room's windows as well: the console's hum went with them out to
+      // the schedule, and there is none now)
+      // (from the truck nothing is heard of them over the engine either way)
+      else if (this.got.back) this.d.toast(this.count ? (s.cab ? 'Back to 026.' : 'Back to 026. Not a sound.') : `They are turning back. All twenty-seven at once${s.cab ? '' : ', and not a sound'}.`, 3.6);
       else if (s.room) this.d.toast(this.count ? 'On the status screen they are moving back. No command.' : 'On the status screen all twenty-seven are moving back. No command. No drive current.', 3.6);
     }
     if (all) this.home(s);
@@ -507,6 +512,9 @@ export class ArrayBack {
     });
     if (!left) this.drifting = false;
   }
+  /** Where the field can be seen from (out of doors, the control room's windows, the truck's
+   *  windscreen at SARO), and some of it on the screen. */
+  private sees(s: ArrayIn) { return (s.outside || s.room || s.cab) && this.inView(s.cam); }
   /** Some of the array's lamps on the screen, near enough. */
   private inView(cam: THREE.Camera) {
     if (facing(cam, this.centre, 700, 55)) return true;
