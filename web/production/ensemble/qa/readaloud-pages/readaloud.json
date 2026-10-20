@@ -1,0 +1,418 @@
+{
+  "url": "http://127.0.0.1:8502/SIGNAL-47/",
+  "pages": true,
+  "strict_csp": false,
+  "master_samples": {
+    "reading": {
+      "peakRms": 0.13036122558916022,
+      "levels": [
+        0.00017437768500151994,
+        0.0001787254237287711,
+        0.00024238573128458678,
+        0.005091393987480162,
+        0.04755812289686552,
+        0.09562178338220187,
+        0.1125662377372008,
+        0.0963291289944674,
+        0.11795527187184165,
+        0.0974331263195028,
+        0.05650478698624158,
+        0.05473830148259925,
+        0.13036122558916022,
+        0.12001524190590611
+      ]
+    },
+    "muted": {
+      "peakRms": 0,
+      "levels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "document": {
+    "id": "logbook",
+    "paragraphs": [
+      "23:20  handover",
+      "Kid,\n1. RX bank 3 tripped again. Big red lever on the rack by the printer.\n2. Calibrate on 1419.900 first. Card is taped to the console.\n3. Spike near 1420.1 is the highway relay. Notch it, log it, don't chase it.\n4. Then let the survey sweep run. Nothing scheduled till 06:00. Babysit it.",
+      "Coffee is fresh-ish.\nStorm out past the Magdalenas. Should stay there.",
+      "Don't break anything.\n        D."
+    ],
+    "sources": [
+      {
+        "at": 1.8346666666666667,
+        "duration": 2,
+        "expectedEnd": 3.8346666666666667,
+        "decoded": {
+          "bytes": 16748,
+          "head": [
+            73,
+            68,
+            51,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            34,
+            84,
+            83
+          ],
+          "duration": 2,
+          "rate": 48000,
+          "channels": 1
+        },
+        "endedAt": null,
+        "stoppedAt": null,
+        "master": true
+      }
+    ]
+  },
+  "queued_sources": [
+    {
+      "at": 1.9413333333333334,
+      "duration": 0.8,
+      "expectedEnd": 2.7413333333333334,
+      "decoded": {
+        "bytes": 7148,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.8,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": 2.752,
+      "stoppedAt": null,
+      "master": true
+    },
+    {
+      "at": 2.752,
+      "duration": 0.8,
+      "expectedEnd": 3.5519999999999996,
+      "decoded": {
+        "bytes": 7148,
+        "head": [
+          73,
+          68,
+          51,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          34,
+          84,
+          83
+        ],
+        "duration": 0.8,
+        "rate": 48000,
+        "channels": 1
+      },
+      "endedAt": null,
+      "stoppedAt": null,
+      "master": true
+    }
+  ],
+  "requests": [
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f969a2e396344db-DCiBfz02.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/092c02fd692aa756-BiRDMsEY.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/4ca99f9ad4e705f3-FAojNgs2.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/de5f08621099d0b6-ChPCPmpz.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d111f9a951311961-DT_7e34-.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a9f959af50674d22-CGxMg-J9.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/bd46454349806cd2-DcfUro--.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1234caee4f6cb643-DHhUoohR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1ec6b8f6fccfd3d6-DLa5XsY3.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d5ff2e5f8a59ea81-B9JZipbp.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0b6f1293215564ab-DoKzJ7HD.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a59f3517c67d3523-DIjVBj4K.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d347afd54b99643b-lHc134hS.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/ce17d6a45ae5e59f-q0SNbMRb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/3508c20fca942e50-D5sZJV8l.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/411ccd2aabf90365-BKOoINZx.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1e0e06da85e1e3f8-ajCCS8i1.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/55e04efecd88edfa-Dli5ciBu.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0f00c8288b54e9dc-BNNCdQaT.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/21df91635ff1db44-CNt85gZI.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/b7e24473f2824852-BEBiMFZV.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f69b3847d102724-CVq9I1Jh.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c13f56f927edc83e-Dl0jXIGO.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c88b297e80f976bd-DSRMwvRg.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f969a2e396344db-DCiBfz02.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/092c02fd692aa756-BiRDMsEY.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/4ca99f9ad4e705f3-FAojNgs2.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/de5f08621099d0b6-ChPCPmpz.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d111f9a951311961-DT_7e34-.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a9f959af50674d22-CGxMg-J9.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/bd46454349806cd2-DcfUro--.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1234caee4f6cb643-DHhUoohR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1ec6b8f6fccfd3d6-DLa5XsY3.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d5ff2e5f8a59ea81-B9JZipbp.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0b6f1293215564ab-DoKzJ7HD.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a59f3517c67d3523-DIjVBj4K.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d347afd54b99643b-lHc134hS.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/ce17d6a45ae5e59f-q0SNbMRb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/3508c20fca942e50-D5sZJV8l.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/411ccd2aabf90365-BKOoINZx.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1e0e06da85e1e3f8-ajCCS8i1.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/55e04efecd88edfa-Dli5ciBu.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0f00c8288b54e9dc-BNNCdQaT.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/21df91635ff1db44-CNt85gZI.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/b7e24473f2824852-BEBiMFZV.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f69b3847d102724-CVq9I1Jh.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c13f56f927edc83e-Dl0jXIGO.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c88b297e80f976bd-DSRMwvRg.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f969a2e396344db-DCiBfz02.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/092c02fd692aa756-BiRDMsEY.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/4ca99f9ad4e705f3-FAojNgs2.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/de5f08621099d0b6-ChPCPmpz.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d111f9a951311961-DT_7e34-.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a9f959af50674d22-CGxMg-J9.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/bd46454349806cd2-DcfUro--.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1234caee4f6cb643-DHhUoohR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1ec6b8f6fccfd3d6-DLa5XsY3.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d5ff2e5f8a59ea81-B9JZipbp.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0b6f1293215564ab-DoKzJ7HD.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a59f3517c67d3523-DIjVBj4K.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d347afd54b99643b-lHc134hS.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/ce17d6a45ae5e59f-q0SNbMRb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/3508c20fca942e50-D5sZJV8l.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/411ccd2aabf90365-BKOoINZx.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1e0e06da85e1e3f8-ajCCS8i1.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/55e04efecd88edfa-Dli5ciBu.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0f00c8288b54e9dc-BNNCdQaT.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/21df91635ff1db44-CNt85gZI.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/b7e24473f2824852-BEBiMFZV.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f69b3847d102724-CVq9I1Jh.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c13f56f927edc83e-Dl0jXIGO.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c88b297e80f976bd-DSRMwvRg.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/494cdc57072cce29-BSN5Gpol.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7ba700bad5a7ef43-Bjw9jfvb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/97c4d9f53eb77270-fbwWCqBR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c0d08d3d753bfd5e-B-SWsoXr.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f969a2e396344db-DCiBfz02.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/092c02fd692aa756-BiRDMsEY.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/4ca99f9ad4e705f3-FAojNgs2.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/de5f08621099d0b6-ChPCPmpz.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d111f9a951311961-DT_7e34-.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a9f959af50674d22-CGxMg-J9.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/bd46454349806cd2-DcfUro--.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1234caee4f6cb643-DHhUoohR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1ec6b8f6fccfd3d6-DLa5XsY3.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d5ff2e5f8a59ea81-B9JZipbp.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0b6f1293215564ab-DoKzJ7HD.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a59f3517c67d3523-DIjVBj4K.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d347afd54b99643b-lHc134hS.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/ce17d6a45ae5e59f-q0SNbMRb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/3508c20fca942e50-D5sZJV8l.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/411ccd2aabf90365-BKOoINZx.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1e0e06da85e1e3f8-ajCCS8i1.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/55e04efecd88edfa-Dli5ciBu.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0f00c8288b54e9dc-BNNCdQaT.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/21df91635ff1db44-CNt85gZI.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/b7e24473f2824852-BEBiMFZV.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f69b3847d102724-CVq9I1Jh.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c13f56f927edc83e-Dl0jXIGO.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c88b297e80f976bd-DSRMwvRg.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/97c4d9f53eb77270-fbwWCqBR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f969a2e396344db-DCiBfz02.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/092c02fd692aa756-BiRDMsEY.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/4ca99f9ad4e705f3-FAojNgs2.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/de5f08621099d0b6-ChPCPmpz.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d111f9a951311961-DT_7e34-.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a9f959af50674d22-CGxMg-J9.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/bd46454349806cd2-DcfUro--.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1234caee4f6cb643-DHhUoohR.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1ec6b8f6fccfd3d6-DLa5XsY3.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d5ff2e5f8a59ea81-B9JZipbp.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0b6f1293215564ab-DoKzJ7HD.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/a59f3517c67d3523-DIjVBj4K.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/d347afd54b99643b-lHc134hS.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/ce17d6a45ae5e59f-q0SNbMRb.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/3508c20fca942e50-D5sZJV8l.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/411ccd2aabf90365-BKOoINZx.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/1e0e06da85e1e3f8-ajCCS8i1.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/55e04efecd88edfa-Dli5ciBu.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/0f00c8288b54e9dc-BNNCdQaT.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/21df91635ff1db44-CNt85gZI.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/b7e24473f2824852-BEBiMFZV.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/7f69b3847d102724-CVq9I1Jh.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c13f56f927edc83e-Dl0jXIGO.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/c88b297e80f976bd-DSRMwvRg.mp3",
+    "http://127.0.0.1:8502/SIGNAL-47/assets/494cdc57072cce29-BSN5Gpol.mp3"
+  ],
+  "bad_responses": [],
+  "errors": [],
+  "checks": [
+    {
+      "pass": true,
+      "message": "Kinski reading is off on a fresh device"
+    },
+    {
+      "pass": true,
+      "message": "opening a document with reading off adds no playback controls"
+    },
+    {
+      "pass": true,
+      "message": "pause setting visibly defaults to Off"
+    },
+    {
+      "pass": true,
+      "message": "the Kinski setting switches on and is stored on this device"
+    },
+    {
+      "pass": true,
+      "message": "reading stays enabled after a full page reload"
+    },
+    {
+      "pass": true,
+      "message": "a real supported game document opens (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "desktop document and reading controls fit the viewport"
+    },
+    {
+      "pass": true,
+      "message": "description reading is explicitly labelled separately from the paper's actual text"
+    },
+    {
+      "pass": true,
+      "message": "Read decodes a real MP3 and starts its buffer through master (4.23s)"
+    },
+    {
+      "pass": true,
+      "message": "the live Read button becomes Stop reading"
+    },
+    {
+      "pass": true,
+      "message": "real narration samples reach master and obey master volume (0.13036, muted 0.00000)"
+    },
+    {
+      "pass": true,
+      "message": "Stop reading immediately cancels the current clip and queue"
+    },
+    {
+      "pass": true,
+      "message": "stopping restores the specific Read description label"
+    },
+    {
+      "pass": true,
+      "message": "document close still runs the game's original filing callback"
+    },
+    {
+      "pass": true,
+      "message": "Read document selects the actual clue on a real paper, separately from its description (logbook)"
+    },
+    {
+      "pass": true,
+      "message": "the paper's actual text also starts a genuinely decoded prerecorded clip"
+    },
+    {
+      "pass": true,
+      "message": "Stop on document reading clears playback and restores Read document"
+    },
+    {
+      "pass": true,
+      "message": "a two-line queue starts only its first recording"
+    },
+    {
+      "pass": true,
+      "message": "the second real recording starts after the first ends, with no overlap"
+    },
+    {
+      "pass": true,
+      "message": "repeating one recording reuses its decoded buffer"
+    },
+    {
+      "pass": true,
+      "message": "a missing recording has a disabled Read button and visible explanation"
+    },
+    {
+      "pass": true,
+      "message": "the real dialogue has one Read control matching its recording coverage"
+    },
+    {
+      "pass": true,
+      "message": "a dialogue redraw with unchanged lines does not restart or overlap narration"
+    },
+    {
+      "pass": true,
+      "message": "closing a dialogue cancels narration"
+    },
+    {
+      "pass": true,
+      "message": "the test night can be saved before exercising Load case"
+    },
+    {
+      "pass": true,
+      "message": "pausing cancels narration and suspends the shared AudioContext"
+    },
+    {
+      "pass": true,
+      "message": "loading a real save keeps the device preference but starts no stale narration"
+    },
+    {
+      "pass": true,
+      "message": "the pending real recording is visibly loading"
+    },
+    {
+      "pass": true,
+      "message": "closing during pending fetch/decode prevents any delayed audio start"
+    },
+    {
+      "pass": true,
+      "message": "the original close callback still runs exactly once during loading"
+    },
+    {
+      "pass": true,
+      "message": "mobile Settings can turn Kinski reading on"
+    },
+    {
+      "pass": true,
+      "message": "the mobile settings panel scrolls without horizontal overflow at 844x390"
+    },
+    {
+      "pass": true,
+      "message": "the mobile document exposes its reading control without horizontal overflow"
+    },
+    {
+      "pass": true,
+      "message": "a real touch on Read starts decoded audio on mobile Chromium"
+    },
+    {
+      "pass": true,
+      "message": "mobile Stop and close leave no narration playing"
+    },
+    {
+      "pass": true,
+      "message": "all requested prerecorded files load without HTTP errors (126 requests)"
+    },
+    {
+      "pass": true,
+      "message": "no browser errors or warnings"
+    }
+  ],
+  "physical_speakers": "UNVERIFIED: analyser samples are not a hardware listening test"
+}

@@ -1,0 +1,84 @@
+{
+  "status": "PASS_ON_UNCHANGED_RETRY",
+  "first_attempt": {
+    "passed": 16,
+    "total": 17,
+    "archive": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/first-cost-threshold",
+    "report_sha256": "4e7830f66025fe827a24e3a407083ef8ad3f6742d0a8533aaca9aab72693c04c",
+    "runs": [
+      {
+        "label": "On-1",
+        "active_begin": 31,
+        "active_end": 30,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 2,
+        "host_sources_end": 2,
+        "nodes_per_second": 0.0
+      },
+      {
+        "label": "Off",
+        "active_begin": 28,
+        "active_end": 33,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 0,
+        "host_sources_end": 0,
+        "nodes_per_second": 2.49762725410116
+      },
+      {
+        "label": "On-2",
+        "active_begin": 35,
+        "active_end": 32,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 2,
+        "host_sources_end": 2,
+        "nodes_per_second": 0.6654024021020118
+      }
+    ]
+  },
+  "retry": {
+    "passed": 17,
+    "total": 17,
+    "report": "audio-cost/artbell-cost.json",
+    "report_sha256": "76102d3901c00f3173d483ccdddd4a9d44a1b7e0d4865ba0385f5ee18656860e",
+    "runs": [
+      {
+        "label": "On-1",
+        "active_begin": 32,
+        "active_end": 32,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 2,
+        "host_sources_end": 2,
+        "nodes_per_second": 0.6654798941900167
+      },
+      {
+        "label": "Off",
+        "active_begin": 32,
+        "active_end": 34,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 0,
+        "host_sources_end": 0,
+        "nodes_per_second": 1.8302828618968388
+      },
+      {
+        "label": "On-2",
+        "active_begin": 36,
+        "active_end": 32,
+        "dropouts": 0,
+        "decodes_added": 0,
+        "host_sources_begin": 2,
+        "host_sources_end": 2,
+        "nodes_per_second": 0.3330336030902213
+      }
+    ]
+  },
+  "reason": "First Off snapshot ended with five additional active sources against the existing +4 bound; no dropout, added decode, station resync or host multiplication. This active-source snapshot limit did not recur in one unchanged retry. No claim is made about the individual source identities, which this probe did not capture.",
+  "unchanged_harness_sha256": "6709577c2a1c6a98617208a3002a517f2ba03cb0482f02dcccfd7d9d627b7c6f",
+  "thresholds_unchanged": true,
+  "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+  "limits": "Headless PCM/counters only; physical output and device FPS UNVERIFIED."
+}

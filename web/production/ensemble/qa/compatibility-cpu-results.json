@@ -1,0 +1,38 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+  "source_state": "uncommitted voice-ensemble runtime",
+  "scope": "All 12 commands freshly rerun after the legacy Kinski dialogue-redraw fix: Bacall reply tracking now requires Character voices On. The original browser redraw assertion is unchanged and browser playback proof is rerun separately. Frozen catalogs contain 1402 Serling and 100 ensemble clips; every actual Serling entry receives availability checking. TTS ready SHA256: 08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9. Serling corpus SHA256: 771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74. CPU-controlled clocks, loaders and source-end fixtures include never-settling deadlines, text-only corpus resolution, visible chapter phases and real main/UI/story functions. No previous command result is reused. Does not prove actual MP3 decode, audible quality or device performance.",
+  "results": [
+    {
+      "name": "readaloud-corpus",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/readaloud-core.cjs --corpus",
+      "log": "readaloud-corpus.log",
+      "exit_code": 0,
+      "seconds": 1.1413333870004863
+    },
+    {
+      "name": "saves",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/saves.cjs",
+      "log": "saves.log",
+      "exit_code": 0,
+      "seconds": 1.737084906984819
+    },
+    {
+      "name": "steercheck",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "npm run steercheck",
+      "log": "steercheck.log",
+      "exit_code": 0,
+      "seconds": 0.2642057350021787
+    }
+  ]
+}

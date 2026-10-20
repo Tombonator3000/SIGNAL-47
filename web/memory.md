@@ -5,6 +5,8 @@ Fast kunnskap og beslutninger for nettversjonen. Oppdateres når noe endres. Nye
 
 ## Beslutninger
 
+- 2026-10-20, direkte bestilling fra Tom: implementer alle seks foreslåtte stemmer. Harry Dean Stanton leser bensinstasjonsbetjenten, Lauren Bacall leser Nora/N. Vega, Robert Stack leser visesheriffen, David Lynch leser suvenirmannen, Vincent Price leser den eksisterende T. Vega-frasen på den beholdte linjen. Rod Serling leser objektbeskrivelser og skrevet tekst mellom kapitlene. Manus og gåter endres ikke. Art Bell på radio og ved studioet beholdes; Kinski beholdes som separat papir-/telefonvalg og fallback for beskrivelser med Serling Av. Nye `characterVoices` og `serlingNarrator` er egne lagrede valg, standard På. Arbeid på `codex/voice-ensemble` fra `5c25e05`.
+
 - 2026-10-19, direkte bestilling fra Tom: samme syntetiske Art Bell-stemme skal også være Earl i samtalen ved studioet i Caliche. Samme `artBellRadioHost` styrer begge, standard På og uavhengig av Kinski. Kun EARL-linjer får stemmen; 16 nye klipp holdes i egen bank, gamle radioklipp og progresjon bevares. Ferdig på `codex/art-bell-town` fra `210b52f`, med main `f1e4616` integrert. Pages 101/101 og streng-CSP enkeltfil 102/102; alle tidligere stemmefiler og 12 profiler er bevart.
 
 - 2026-10-19, direkte videreføring etter Toms kildesøk: innringere og 1947-nyhetene får ferdige syntetiske opptak. Nyeste manus på `b6483fe` har seks bulletinlinjer og 22 innringerlinjer. Eget lagret valg `radioCallerVoices`, på som standard og uavhengig av Art Bell/Kinski. 47-sekundersavbruddet og retur til samme punkt beholdes. Kilder, profiler og prøvegrenser føres i `production/radiocast/`; se `RADIO_CAST.md`.

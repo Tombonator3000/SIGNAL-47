@@ -2,38 +2,44 @@ import type { AudioSys } from './Audio';
 import catalogSource from '../assets/audio/kinski/catalog.json?raw';
 
 export type ReadingState = 'loading' | 'playing' | 'idle' | 'error';
-type Clip = { id: string; text: string; duration: number; file: string };
-type Catalog = { version: number; voice: string; clips: Clip[] };
+export type ReadingClip = { id: string; text: string; duration: number; file: string };
+type Catalog = { version: number; voice: string; clips: ReadingClip[] };
 
 // Imported URLs are relative in the Pages build and data URLs in the single HTML.
 // Only the recording being read is fetched and decoded, never the whole library.
 const FILES = import.meta.glob<string>('../assets/audio/kinski/*.mp3', { eager: true, query: '?url', import: 'default' });
 const catalog = JSON.parse(catalogSource) as Catalog;
-const clips = new Map(catalog.clips.map((clip) => [normalizeReadingText(clip.text), clip]));
+export interface ReadingBank { clips: ReadingClip[]; urls: Record<string, string>; label: string }
+const kinskiBank: ReadingBank = { clips: catalog.clips, label: 'Synthetic Kinski parody',
+  urls: Object.fromEntries(catalog.clips.map((clip) => [clip.file, FILES[`../assets/audio/kinski/${clip.file}`]])) };
 const MAX_BUFFERS = 4, MAX_BYTES = 32 * 1024 * 1024;
 const MAX_RESOLVED = 128;
+const LOAD_TIMEOUT_MS = 15000;
 function initialCaseAlternative(text: string) {
   const first = text[0] ?? '';
   return (first === first.toUpperCase() ? first.toLowerCase() : first.toUpperCase()) + text.slice(1);
 }
-const indexed = new Map<string, { text: string; clip: Clip }[]>();
-for (const [text, clip] of clips) {
-  if (!text || !FILES[`../assets/audio/kinski/${clip.file}`]) continue;
-  // A clock-prefixed observation can also be stored without its clock. The
-  // leading sentence punctuation in its recorded fragment carries no words.
-  // Keep signs and hyphens: a recorded minus must never disappear this way.
-  const bases = new Set([text, text.replace(/^[\s.,;:!?]+/, '')].filter(Boolean));
-  // Album captions capitalize the first letter of their stored description.
-  // Preserve every other letter: US/us and AM/am are not interchangeable.
-  for (const key of new Set([...bases].flatMap((base) => {
-    const alternative = initialCaseAlternative(base);
-    return [base, ...(alternative !== base && !clips.has(alternative) ? [alternative] : [])];
-  }))) {
-    const list = indexed.get(key[0]) ?? [];
-    list.push({ text: key, clip }); indexed.set(key[0], list);
+function readingIndex(clips: Map<string, ReadingClip>, urls: Record<string, string>) {
+  const indexed = new Map<string, { text: string; clip: ReadingClip }[]>();
+  for (const [text, clip] of clips) {
+    if (!text || !urls[clip.file]) continue;
+    // A clock-prefixed observation can also be stored without its clock. The
+    // leading sentence punctuation in its recorded fragment carries no words.
+    // Keep signs and hyphens: a recorded minus must never disappear this way.
+    const bases = new Set([text, text.replace(/^[\s.,;:!?]+/, '')].filter(Boolean));
+    // Album captions capitalize the first letter of their stored description.
+    // Preserve every other letter: US/us and AM/am are not interchangeable.
+    for (const key of new Set([...bases].flatMap((base) => {
+      const alternative = initialCaseAlternative(base);
+      return [base, ...(alternative !== base && !clips.has(alternative) ? [alternative] : [])];
+    }))) {
+      const list = indexed.get(key[0]) ?? [];
+      list.push({ text: key, clip }); indexed.set(key[0], list);
+    }
   }
+  for (const list of indexed.values()) list.sort((a, b) => b.text.length - a.text.length);
+  return indexed;
 }
-for (const list of indexed.values()) list.sort((a, b) => b.text.length - a.text.length);
 
 const SMALL = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
@@ -111,9 +117,16 @@ export class ReadAloud {
   private finishSource: (() => void) | null = null;
   private buffers = new Map<string, AudioBuffer>();
   private bufferBytes = 0;
-  private resolved = new Map<string, Clip[] | null>();
+  private resolved = new Map<string, ReadingClip[] | null>();
 
-  constructor(private audio: AudioSys) {}
+  private clips: Map<string, ReadingClip>;
+  private indexed: ReturnType<typeof readingIndex>;
+  constructor(private audio: AudioSys, private bank: ReadingBank = kinskiBank) {
+    this.clips = new Map(bank.clips.map((clip) => [normalizeReadingText(clip.text), clip]));
+    this.indexed = readingIndex(this.clips, bank.urls);
+  }
+  get label() { return this.bank.label; }
+  get runId() { return this.generation; }
 
   get enabled() { return this.on; }
   set enabled(value: boolean) { this.on = value; if (!value) this.stop(); }
@@ -125,9 +138,9 @@ export class ReadAloud {
   /** The actual recorded fragments, useful when checking a composed description. */
   segments(texts: string[]): string[] | null { return this.resolve(texts)?.map((clip) => clip.text) ?? null; }
 
-  private resolve(texts: string[]): Clip[] | null {
+  private resolve(texts: string[]): ReadingClip[] | null {
     if (!texts.length) return null;
-    const result: Clip[] = [];
+    const result: ReadingClip[] = [];
     for (const text of texts) {
       const sequence = this.resolveText(normalizeReadingText(text));
       // A changed or missing word must not silently vanish from a description.
@@ -137,19 +150,19 @@ export class ReadAloud {
     return result;
   }
 
-  private resolveText(text: string): Clip[] | null {
+  private resolveText(text: string): ReadingClip[] | null {
     if (!text) return null;
     if (this.resolved.has(text)) return this.resolved.get(text)!;
-    const whole = clips.get(text) ?? clips.get(initialCaseAlternative(text));
-    let result: Clip[] | null = null;
-    if (whole && FILES[`../assets/audio/kinski/${whole.file}`]) result = [whole];
+    const whole = this.clips.get(text) ?? this.clips.get(initialCaseAlternative(text));
+    let result: ReadingClip[] | null = null;
+    if (whole && this.bank.urls[whole.file]) result = [whole];
     else {
       // Work backwards so a long matching prefix cannot hide a shorter valid
       // route. Links avoid recursion and keep long notebooks cheap to resolve.
-      const paths: ({ clips: Clip[]; next: number } | undefined)[] = new Array(text.length + 1);
+      const paths: ({ clips: ReadingClip[]; next: number } | undefined)[] = new Array(text.length + 1);
       paths[text.length] = { clips: [], next: text.length };
       for (let at = text.length - 1; at >= 0; --at) {
-        for (const item of indexed.get(text[at]) ?? []) {
+        for (const item of this.indexed.get(text[at]) ?? []) {
           const end = at + item.text.length;
           if (!paths[end] || !text.startsWith(item.text, at)) continue;
           if (wordCharacter(item.text[0]) && insideWord(text, at)) continue;
@@ -161,9 +174,9 @@ export class ReadAloud {
           : /[A-Za-z]/.test(text[at]) ? identifierAt(text, at) : null;
         if (token) {
           if (paths[at + token.token.length]) {
-            const spoken = token.words.map((word) => clips.get(word) ?? clips.get(initialCaseAlternative(word)));
-            if (spoken.every((clip) => clip && FILES[`../assets/audio/kinski/${clip.file}`]))
-              paths[at] = { clips: spoken as Clip[], next: at + token.token.length };
+            const spoken = token.words.map((word) => this.clips.get(word) ?? this.clips.get(initialCaseAlternative(word)));
+            if (spoken.every((clip) => clip && this.bank.urls[clip.file]))
+              paths[at] = { clips: spoken as ReadingClip[], next: at + token.token.length };
           }
         }
         if (!paths[at] && silentCharacter(text[at]) && paths[at + 1]) paths[at] = { clips: [], next: at + 1 };
@@ -194,12 +207,41 @@ export class ReadAloud {
     this.stateTo('idle'); this.notify = undefined;
   }
 
-  async play(texts: string[], onState?: (state: ReadingState) => void): Promise<void> {
+  /** Cancellation must settle play() even when a browser decoder never returns.
+   *  The deadline applies only to preparing one buffer, never to spoken audio. */
+  private waitFor<T>(run: (signal: AbortSignal, active: () => boolean) => Promise<T>,
+    signal: AbortSignal, active: () => boolean, timeout: number | null): Promise<T | null> {
+    return new Promise((resolve, reject) => {
+      const local = new AbortController();
+      let done = false, timer: ReturnType<typeof setTimeout> | undefined;
+      const finish = (complete: () => void) => {
+        if (done) return;
+        done = true;
+        if (timer !== undefined) clearTimeout(timer);
+        signal.removeEventListener('abort', cancel); complete();
+      };
+      const cancel = () => { local.abort(); finish(() => resolve(null)); };
+      signal.addEventListener('abort', cancel, { once: true });
+      if (signal.aborted) { cancel(); return; }
+      if (timeout !== null) timer = setTimeout(() => {
+        local.abort(); finish(() => reject(new Error('Recording load timed out')));
+      }, timeout);
+      try {
+        void run(local.signal, () => active() && !local.signal.aborted)
+          .then((result) => finish(() => resolve(result)), (error) => finish(() => reject(error)));
+      } catch (error) { finish(() => reject(error)); }
+    });
+  }
+
+  async play(texts: string[], onState?: (state: ReadingState) => void, onText?: (index: number) => void): Promise<void> {
     this.stop();
     this.notify = onState;
     if (!this.enabled) { this.stateTo('idle'); this.notify = undefined; return; }
     const queue = this.resolve(texts);
     if (!queue) { this.stateTo('error'); this.notify = undefined; return; }
+    const textStarts = new Map<number, number>();
+    let ordinal = 0;
+    texts.forEach((text, i) => { textStarts.set(ordinal, i); ordinal += this.resolve([text])!.length; });
     const generation = this.generation;
     const pending = new AbortController(); this.pending = pending;
     const active = () => generation === this.generation && !pending.signal.aborted;
@@ -208,14 +250,15 @@ export class ReadAloud {
       // Call unlock synchronously from the Read button's gesture, before an await:
       // iOS must receive resume()/the initial silent blip inside that gesture.
       const unlocked = this.audio.unlock();
-      await unlocked;
+      await this.waitFor(() => unlocked, pending.signal, active, LOAD_TIMEOUT_MS);
       if (!active()) return;
       const ctx = this.audio.ctx;
       if (!ctx || ctx.state !== 'running') throw new Error('Audio could not start');
-      for (const clip of queue) {
+      for (const [i, clip] of queue.entries()) {
         if (!active()) return;
+        if (textStarts.has(i)) onText?.(textStarts.get(i)!);
         this.stateTo('loading');
-        const buffer = await this.load(clip, ctx, pending.signal, active);
+        const buffer = await this.waitFor((signal, current) => this.load(clip, ctx, signal, current), pending.signal, active, LOAD_TIMEOUT_MS);
         if (!active() || !buffer) return;
         await new Promise<void>((resolve) => {
           const source = ctx.createBufferSource(); source.buffer = buffer;
@@ -232,6 +275,7 @@ export class ReadAloud {
       if (active()) { this.pending = null; this.stateTo('idle'); this.notify = undefined; }
     } catch (error) {
       if (!active()) return;
+      pending.abort();
       this.pending = null;
       if (this.source) {
         this.source.onended = null;
@@ -244,13 +288,13 @@ export class ReadAloud {
     }
   }
 
-  private async load(clip: Clip, ctx: AudioContext, signal: AbortSignal, active: () => boolean): Promise<AudioBuffer | null> {
+  private async load(clip: ReadingClip, ctx: AudioContext, signal: AbortSignal, active: () => boolean): Promise<AudioBuffer | null> {
     const cached = this.buffers.get(clip.id);
     if (cached) {
       this.buffers.delete(clip.id); this.buffers.set(clip.id, cached);
       return cached;
     }
-    const url = FILES[`../assets/audio/kinski/${clip.file}`];
+    const url = this.bank.urls[clip.file];
     let encoded: ArrayBuffer;
     if (url.startsWith('data:')) {
       // The self-contained build can run from file: and under the existing CSP

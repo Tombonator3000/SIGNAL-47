@@ -4,6 +4,8 @@ import { UI } from './ui/UI';
 import { AudioSys, type Surface } from './core/Audio';
 import { ReadAloud } from './core/readAloud';
 import { EarlDialogue } from './core/earlDialogue';
+import { NPCDialogue } from './core/npcDialogue';
+import { serlingBank } from './core/narrationBanks';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
@@ -167,10 +169,21 @@ async function boot() {
   const earlDialogue = new EarlDialogue(audio);
   earlDialogue.enabled = store.get<boolean>('artBellRadioHost', true) === true;
   ui.earlDialogue = earlDialogue;
+  const narrator = new ReadAloud(audio, serlingBank);
+  narrator.enabled = store.get<boolean>('serlingNarrator', true) === true;
+  ui.narrator = narrator;
+  const npcDialogue = new NPCDialogue(audio);
+  npcDialogue.enabled = store.get<boolean>('characterVoices', true) === true;
+  ui.npcDialogue = npcDialogue;
+  audio.characterVoices = npcDialogue.enabled;
   audio.kinskiCalls = readAloud.enabled;
-  ui.onReadingStart = () => { earlDialogue.stop(); audio.stopPhoneCalls(); };
-  ui.onEarlStart = () => { readAloud.stop(); audio.stopPhoneCalls(); };
-  audio.onPhoneCall = () => { readAloud.stop(); earlDialogue.stop(); };
+  const stopNarration = (except?: object) => {
+    for (const player of [readAloud, narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop();
+  };
+  ui.onReadingStart = (reader = readAloud) => { stopNarration(reader); audio.stopPhoneCalls(); cb.stop(); };
+  ui.onEarlStart = () => { stopNarration(earlDialogue); audio.stopPhoneCalls(); cb.stop(); };
+  ui.onCharacterStart = () => { stopNarration(npcDialogue); audio.stopPhoneCalls(); cb.stop(); };
+  audio.onPhoneCall = () => { stopNarration(); cb.stop(); };
   audio.setVolume(store.get('vol', 0.8));
   audio.setMusic(store.get('music', 0.7));
   audio.setRadio(store.get('radioVol', 1));
@@ -290,7 +303,7 @@ async function boot() {
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
       driveTo: () => world.driveToMotel(() => {}),
       driven: () => world.tripSecs,
-      cb: (lines, onEnd) => cb.call(lines, null, (l) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, Math.min(8, 2.4 + l.text.length / 22)); }, onEnd) > 0,
+      cb: (lines, onEnd) => cb.call(lines, null, (l, duration) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, duration ?? Math.min(8, 2.4 + l.text.length / 22), () => audio.ctx!.currentTime); }, onEnd) > 0,
     },
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
@@ -444,7 +457,8 @@ async function boot() {
 
   type Mode = 'title' | 'play' | 'end';
   let mode: Mode = 'title';
-  ui.canDescribe = () => mode === 'play' && !game.cinematic && !audio.phonePlaying;
+  ui.canDescribe = () => mode === 'play' && !game.cinematic && !audio.phonePlaying && !cb.busy
+    && !npcDialogue.playing && !npcDialogue.loading && !earlDialogue.playing && !earlDialogue.loading;
   let titleEl: HTMLElement | null = null;
   let endEl: HTMLElement | null = null;
   let pausedByMenu = false;
@@ -488,6 +502,11 @@ async function boot() {
   let calmFlash = store.get('calmFlash', false);
   let stillShots = store.get('stillShots', (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })());
   const settings = () => ({
+    characters: npcDialogue.enabled, onCharacters: (v: boolean) => {
+      npcDialogue.enabled = v; audio.characterVoices = v; if (!v) { audio.stopPhoneCalls(); cb.stop(); }
+      store.set('characterVoices', v);
+    },
+    serling: narrator.enabled, onSerling: (v: boolean) => { narrator.enabled = v; store.set('serlingNarrator', v); },
     kinski: readAloud.enabled, onKinski: (v: boolean) => { readAloud.enabled = v; audio.kinskiCalls = v; if (!v) audio.stopPhoneCalls(); store.set('kinskiReadAloud', v); },
     artBell: radio.hostVoice, onArtBell: (v: boolean) => { radio.setHostVoice(v); earlDialogue.enabled = v; store.set('artBellRadioHost', v); },
     radioCast: radio.callerVoice, onRadioCast: (v: boolean) => { radio.setCallerVoice(v); store.set('radioCallerVoices', v); },
@@ -511,6 +530,7 @@ async function boot() {
     if (pausedByMenu) return;
     readAloud.stop();
     earlDialogue.stop();
+    narrator.stop(); npcDialogue.stop();
     pausedByMenu = true;
     audio.suspend(true); score?.pause(true);
     const resume = () => { pausedByMenu = false; audio.suspend(false); score?.pause(false); };
@@ -1048,14 +1068,23 @@ async function boot() {
       o.begin();
       game.cinematic = true;
       ui.fade(true, '');
-      ui.chapterCard({ closed: o.closed, recap: o.recap, next: o.next, title: o.title, clock: clockText(game.clock, false) });
-      game.after(6.4, () => {
+      let spoken = false;
+      let titleWaiting = false, titleReady = false;
+      void ui.chapterCard({ closed: o.closed, recap: o.recap, next: o.next, title: o.title, clock: clockText(game.clock, false) })
+        .then(() => { spoken = true; });
+      const finish = () => {
+        if (mode !== 'play' || !game.cinematic) return;
+        if ((ui.chapterStage === 'b' || ui.chapterStage === 'text-b' || ui.chapterStage === 'error-b') && !titleWaiting) {
+          titleWaiting = true; game.after(3.2, () => { titleReady = true; });
+        }
+        if (!spoken || titleWaiting && !titleReady) { game.after(0.1, finish); return; }
         ui.chapterCard(null);
         ui.fade(false);
         game.cinematic = false;
         input.enabled = true;
         ui.showHud(true, input.touchMode);
-      });
+      };
+      game.after(6.4, finish);
     });
   }
   // End of the prologue: the night is not over.
@@ -1130,10 +1159,11 @@ async function boot() {
     jump: (p: string) => {
       audio.stopPhoneCalls();
       earlDialogue.stop();
+      narrator.stop(); npcDialogue.stop(); ui.chapterCard(null);
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),

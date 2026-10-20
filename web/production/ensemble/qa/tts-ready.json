@@ -1,0 +1,16 @@
+{
+  "gpu_idle": true,
+  "verification": "PASS",
+  "clips": 1502,
+  "ensemble_clips": 100,
+  "serling_clips": 1402,
+  "corpus_sha256": {
+    "ensemble": "d365056cbd5ad55ce886d341b5243bc8fe0b715dd41f95a6f8d67a1a3010ea07",
+    "serling": "771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74"
+  },
+  "verification_sha256": "63a5cc8560fc51b07981f8494722b34fcd82c3e9aa0450e9e03a24c02aaedde2",
+  "preservation_sha256": "3ddf9deb0d7a4ffa2947c351ad8cbdfe180f01d1b618f93dc8ddb301b913a509",
+  "provenance_sha256": "d01e384d2d4db4279559b6e3cf0df3839d6a40f51f2ca4c484c4600da106cf84",
+  "bytes": 59492008,
+  "duration_seconds": 7308.0
+}

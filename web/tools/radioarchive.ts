@@ -21,8 +21,9 @@ const load = (source: string, requireModule: (name: string) => unknown) => {
 const bank = load(fs.readFileSync('src/core/radioVoice.ts', 'utf8')
   .replace(/const CALLER_FILES = import\.meta\.glob[^\n]+;/, 'const CALLER_FILES = {};')
   .replace(/const EARL_FILES = import\.meta\.glob[^\n]+;/, 'const EARL_FILES = {};')
+  .replace(/const ENSEMBLE_FILES = import\.meta\.glob[^\n]+;/, 'const ENSEMBLE_FILES = {};')
   .replace(/const FILES = import\.meta\.glob[^\n]+;/, `const FILES = ${JSON.stringify(files)};`),
-  (name) => ({ default: JSON.stringify(name.includes('/artbell-town/') ? { clips: [] } : catalog) }));
+  (name) => ({ default: JSON.stringify(name.includes('/artbell-town/') || name.includes('/ensemble/') ? { clips: [] } : catalog) }));
 const { Radio, ARCHIVE_SECS, SIGN_OFF, secsOf } = load(fs.readFileSync('src/core/radio.ts', 'utf8').replace("import.meta.env.MODE !== 'single'", 'false'),
   (name) => name === 'three' ? THREE : bank) as typeof import('../src/core/radio');
 const time = load(fs.readFileSync('src/story/time.ts', 'utf8'), () => undefined);

@@ -1,0 +1,404 @@
+{
+  "method": "Manual textual comparison of actual source/request and no-prompt Small recognition, with independent agent review. Not a human listening test. Material ID/time/word uncertainties are explicitly retained.",
+  "human_listened": false,
+  "rows": {
+    "9b0617f13405b9bb": {
+      "kind": "uncertain",
+      "note": "The AZ/azimuth label is not reliably recovered (ASR has with Euro); 026 is represented. No claim of verified azimuth-label pronunciation."
+    },
+    "3d8da3a0540e60f3": {
+      "kind": "minor",
+      "note": "S03 and B12 are present; ASR writes file rather than filed and omits display dividers. Tense articulation is not human-verified."
+    },
+    "fc9722d7745a8d17": {
+      "kind": "equivalent",
+      "note": "Eye/I is homophonic. Explicit minus39 and the light-years unit are present; LY is expanded in the actual request."
+    },
+    "417ebb663c541df3": {
+      "kind": "equivalent",
+      "note": "All prose is represented; minus39 and expanded light years replace the printed sign/abbreviation."
+    },
+    "4d6199adabf12146": {
+      "kind": "minor",
+      "note": "ASR adds of before the title. P04/P05 and recorded are present. This small added function word is not an exact-word PASS."
+    },
+    "af62fef189bda761": {
+      "kind": "equivalent",
+      "note": "C, B12 and station01 are now represented after the bounded explicit-ID request; punctuation and ID hyphens differ."
+    },
+    "7c8958b9c7fcd2c7": {
+      "kind": "minor",
+      "note": "ASR adds the and writes and for in the hut. The fixed point, cable, T.Vega, N.Vega and room6 information remains. Function-word articulation is not human-verified."
+    },
+    "3e021803b18dd217": {
+      "kind": "equivalent",
+      "note": "Room6 and P10 through P12 are represented; punctuation and ID hyphens are ASR formatting."
+    },
+    "e07df9fdd4d9c1a0": {
+      "kind": "uncertain",
+      "note": "C/sea is homophonic, but pad/path is a concrete unresolved final-word distinction. The source wording remains pad."
+    },
+    "4cba3502f2b25fbb": {
+      "kind": "equivalent",
+      "note": "Vane/vein is homophonic; A/B/C and every substantive clause are represented."
+    },
+    "91b0d17e581124cf": {
+      "kind": "minor",
+      "note": "Old survey station and B12 are recovered after the bounded request; outlined becomes outline in ASR. No confirmed destination-word loss remains."
+    },
+    "e10c9a2792f948c3": {
+      "kind": "uncertain",
+      "note": "The title Old Survey Station is still rendered Old Servi station by ASR. This proper destination label remains an ASR/articulation uncertainty."
+    },
+    "e594e72273074ab7": {
+      "kind": "equivalent",
+      "note": "Organised/organized is the same spoken word with spelling variation."
+    },
+    "f6b62203ff70227a": {
+      "kind": "equivalent",
+      "note": "P12, T.Vega,1947 and all sentences are represented; hyphens and quotation punctuation differ."
+    },
+    "da5b2fe00cedb5ec": {
+      "kind": "minor",
+      "note": "E09A is now represented as E09,A after explicit ID pronunciation. ASR adds a before P13 and renders N.Vega as in Vegas; initial/name word boundaries remain unverified."
+    },
+    "a0de331bfeff5539": {
+      "kind": "equivalent",
+      "note": "The full instruction is represented. Final E.W. is written EW and quotes are omitted by ASR."
+    },
+    "6de6ba3ad6b856de": {
+      "kind": "uncertain",
+      "note": "Clock23:58:31,1420.405,4/7,minus38 and reclassification are recovered. Date10/19/85 is compactly recognized as Update10,1985; day19/grouping remains uncertain rather than declared exact."
+    },
+    "2f8e9df6b19fa0a8": {
+      "kind": "minor",
+      "note": "ASR drops the initial a. The four ordinal days and the complete poster description remain."
+    },
+    "1b8220d06b4962b8": {
+      "kind": "equivalent",
+      "note": "The leading fragment punctuation is intentionally silent; all words and station01 are represented."
+    },
+    "cea88d6be62d0219": {
+      "kind": "equivalent",
+      "note": "B-12/B12 is ID punctuation; substantive words are represented."
+    },
+    "49da1cec88fcd798": {
+      "kind": "minor",
+      "note": "ASR adds the before the label. S03/B12, the negative39 value and the rest of the question are represented."
+    },
+    "c4ad17d0de665cdc": {
+      "kind": "minor",
+      "note": "ASR adds the at the fragment start. Sight/site is homophonic; P04,1947,C and the changed-report conclusion are represented."
+    },
+    "c7f7483048969920": {
+      "kind": "minor",
+      "note": "The leading period is silent and N.Vega is recognized as And Vega, an initial/name boundary uncertainty. The field,truck and keys sentences are complete."
+    },
+    "b8c9f0756d14d474": {
+      "kind": "uncertain",
+      "note": "Both02:17:00 and02:17:47 are represented after explicit clock request, but the E prefix in E10 is absent from ASR. The identifier letter remains unverified."
+    },
+    "6b51b52e57e0aa46": {
+      "kind": "minor",
+      "note": "N.Vega/Anne Vega and shoebox/shoe box are pronunciation/word-boundary forms; ASR also changes initial at/a words. No exact-word claim."
+    },
+    "b51f14f47607ecee": {
+      "kind": "minor",
+      "note": "Notch it,log it,dont chase it and frequency/clock values are now represented. ASR has numeric list-label word boundaries and small article differences."
+    },
+    "5ffad8d3e622bc9c": {
+      "kind": "minor",
+      "note": "Frequencies are represented in decimal form and06:00 as six oclock. ASR writes nothings rather than nothing; no material schedule-value loss is established."
+    },
+    "49842f5d4917236d": {
+      "kind": "minor",
+      "note": "Vane/vein is homophonic. Outlined/outline is a small ending difference; B12,station01 and all comparison instructions are present."
+    },
+    "4121ce0e5661e8e0": {
+      "kind": "minor",
+      "note": "ASR pluralizes survey to surveys in the short title. Title articulation is not human-verified."
+    },
+    "6d8f91e3c74b565c": {
+      "kind": "uncertain",
+      "note": "Tomas/Thomas spelling and C/sea are ASR forms, but E11 becomes the11, leaving the E prefix uncertain."
+    },
+    "da11bf8176f9b0c6": {
+      "kind": "minor",
+      "note": "N.Vega is recognized as And Vega and doors as the doors contraction. The CB message and room-six instructions are represented."
+    },
+    "0b3451282d2a3f2a": {
+      "kind": "equivalent",
+      "note": "Grey/gray is spelling variation; E14 and the full description are represented."
+    },
+    "1049d2104fa2b48a": {
+      "kind": "minor",
+      "note": "The bounded date request recovers October19th,1985; the other dates remain. Caliche/Calishe is unverified proper-name ASR spelling, with small article changes."
+    },
+    "4ce85c16fb5d17d7": {
+      "kind": "minor",
+      "note": "The bounded request now recovers cannot be generated,computed,unsigned,input error and reclassify/file. ASR adds up at the start and changes then/and at the question; no exact-word claim."
+    },
+    "990696665111bc07": {
+      "kind": "equivalent",
+      "note": "Then/than is a near-homophonic ASR form in the same instruction; no missing instruction is established."
+    },
+    "8c26116d4114baef": {
+      "kind": "uncertain",
+      "note": "The controls prose is otherwise represented, but WASD becomes WSD and the A key is not reliably recovered. The key sequence remains unverified."
+    },
+    "46f95b942a74a27a": {
+      "kind": "minor",
+      "note": "N.Vega/Envega and metres/meters are initial/spelling forms. All route values,location,truck and exit instructions remain."
+    },
+    "7ac3a059478b47a1": {
+      "kind": "minor",
+      "note": "C/sea is homophonic and Tomas omits the accent. ASR adds the before the initial C; road/station and warning clauses remain."
+    },
+    "b647ad19fd4434cc": {
+      "kind": "minor",
+      "note": "ASR adds the before P11; the source wording and all substantive clauses are otherwise represented."
+    },
+    "580c6291f2a0995a": {
+      "kind": "uncertain",
+      "note": "E15 becomes15, leaving E unresolved. Pecos is written Picos; the headline and complete scene description are represented."
+    },
+    "0aeafff9e9876c5c": {
+      "kind": "minor",
+      "note": "ASR has close instead of closest and Getaway/get away word-boundary formatting. Dates,hours and the comet instruction are represented."
+    },
+    "0f447952158b26ea": {
+      "kind": "equivalent",
+      "note": "Tomas omits the accent; the phone question,recorded correction and1947 reference are represented."
+    },
+    "ae15a3fae81d7aeb": {
+      "kind": "equivalent",
+      "note": "ASR compacts date/time separators but retains09/22/81,01:52:07,1420.405,4/7,minus34 and reclassified input error clock."
+    },
+    "965bb5c10466f121": {
+      "kind": "equivalent",
+      "note": "ASR compacts date/time separators but retains03/02/83,03:10:44,1420.405,4/7,minus36 and baseline-file reclassification."
+    },
+    "d2fae6a331c3bb17": {
+      "kind": "uncertain",
+      "note": "Frequency1420.405,group4/7 and explicit minus00 remain.02:17:00 becomes02700; seventeen is not securely recovered. The unknown-date dashes are also not spoken in ASR. Concrete clock/date-marker uncertainty remains."
+    },
+    "f7a6b7013a520ba7": {
+      "kind": "equivalent",
+      "note": "The bounded request now recovers Saro,installation sheet,11-86,local survey references; numeric separator formatting differs."
+    },
+    "3c6449c8c114a7eb": {
+      "kind": "minor",
+      "note": "Vane/vein is homophonic; ASR adds the before lamp. All shield/motor/observation controls remain."
+    },
+    "e0ccb159da38ea81": {
+      "kind": "uncertain",
+      "note": "The bounded request recovers local incident,S03,B12,operator Reyes and Doctor E.Ward. Saro is still Shiro in ASR; the organization-name pronunciation is unverified."
+    },
+    "3eaa1e2d122b075e": {
+      "kind": "minor",
+      "note": "E07/E06 are rendered EE07/EE06 and mark a becomes market, a word-boundary/homophone ambiguity. All retained-reference and changed-report conclusions are represented."
+    },
+    "bbc4f06a1e57982c": {
+      "kind": "uncertain",
+      "note": "Chained becomes changed. N.Vega/and Vega is an initial boundary form. The chain descriptor is a concrete unresolved word distinction."
+    },
+    "50d35fd842882132": {
+      "kind": "equivalent",
+      "note": "S03 retains its letter and zero; only printed ID hyphen is absent in ASR."
+    },
+    "89f35f4eebdf3c42": {
+      "kind": "equivalent",
+      "note": "S03 retains its letter and zero; only printed ID hyphen is absent in ASR."
+    },
+    "8984f7801ec6bfd5": {
+      "kind": "minor",
+      "note": "ASR adds the before detail marked. The manufactured-reference instruction remains complete."
+    },
+    "eba489f947dcf1bd": {
+      "kind": "equivalent",
+      "note": "Installation sheet,11-86 and local survey references are now recovered; only numeric separator formatting differs."
+    },
+    "7f4444caae644231": {
+      "kind": "equivalent",
+      "note": "Ward/Word is a name/homophone ASR distinction; the full quote remains."
+    },
+    "8d6db6caf7e84739": {
+      "kind": "uncertain",
+      "note": "ASR adds if its before made. This possible extra phrase is recorded rather than called exact speech; the null-test instruction remains."
+    },
+    "2e3fdc42dd2fbac9": {
+      "kind": "equivalent",
+      "note": "Sight/site is homophonic; the full description remains."
+    },
+    "7ce29bc6070f831c": {
+      "kind": "minor",
+      "note": "N.Vega/And Vega is an initial boundary ambiguity; the leave-it quote is represented."
+    },
+    "f2a49e15e6e9eb72": {
+      "kind": "equivalent",
+      "note": "Wall jack/walljack is word-spacing variation; all words remain."
+    },
+    "f0b90f53b88da551": {
+      "kind": "equivalent",
+      "note": "P13 and C/sea are represented; ID punctuation and homophonic C differ."
+    },
+    "3f58d648572b0a32": {
+      "kind": "uncertain",
+      "note": "Numeric values and plus/minus signs are represented, but GAIN/game and BW/B-label recognition are unclear. These technical labels remain unverified."
+    },
+    "5a976d0eb15a433c": {
+      "kind": "uncertain",
+      "note": "Caliche is uncertain ASR spelling and seen lights is rendered sea lights, potentially losing seen.1420 AM and midnight-to-four remain; headline pronunciation is unverified."
+    },
+    "0a2978eff78cf597": {
+      "kind": "minor",
+      "note": "ASR adds to before the walk gate. The entire chain/padlock/never-locked description remains."
+    },
+    "185bd8e9a2263670": {
+      "kind": "uncertain",
+      "note": "Pocked/parked is a concrete unresolved descriptor distinction; speed55 and birdshot content remain."
+    },
+    "fff5d8899372feef": {
+      "kind": "uncertain",
+      "note": "The bounded request recovers WX2250,dry lightning,2250,MST,13April86 and the ending NNNN. Some terse weather codes and the W/of/E word boundaries remain uncertain. No exact-code pronunciation claim."
+    },
+    "3f7640c0c72666ee": {
+      "kind": "equivalent",
+      "note": "Tracings/tracings apostrophe and C/sea are orthographic/homophonic; station01 and orientation remain."
+    },
+    "7a51f63b1a2ffbcd": {
+      "kind": "minor",
+      "note": "ASR adds lets before screen. All source-isolation and physical-reference/cable-finding clauses remain; not an exact-word PASS."
+    },
+    "455575dfe7242a94": {
+      "kind": "minor",
+      "note": "Round/around differs and Saro is written Sarrow. These are recorded word/name differences; no human pronunciation claim."
+    },
+    "11ea12de84e4fd97": {
+      "kind": "equivalent",
+      "note": "The22:50 and23:00 values are represented as22.50 and23oclock; this is clock-format recognition rather than an established missing value."
+    },
+    "40dccedd2dd548a9": {
+      "kind": "uncertain",
+      "note": "R07 and three bars are present, but horizontal becomes Havandal. The diagnostic shape descriptor remains a concrete ASR/articulation uncertainty in this newly sampled existing take; the earlier audio is preserved."
+    },
+    "d1beef8711b974ef": {
+      "kind": "equivalent",
+      "note": "Vane/vein is homophonic. B12 and all comparison/control clauses remain."
+    },
+    "d3f13d83f3b2d284": {
+      "kind": "minor",
+      "note": "ASR adds its and writes N.Vega as in Vegas. Station01,the cut-cable order and originals-not-copies are represented; no exact-word listening claim."
+    },
+    "6dc8eb82d2bc9d10": {
+      "kind": "uncertain",
+      "note": "Station01,P06/P09,frames03/04,room6 and1947 are represented. Field record filed has a garbled initial field descriptor and and/in differs. The label remains unverified; earlier audio is preserved."
+    },
+    "28039f1860741980": {
+      "kind": "equivalent",
+      "note": "P11 is ID punctuation and Tomas omits the accent. The full finding and uncertainty statement are represented."
+    },
+    "77cd1f6c9b09d683": {
+      "kind": "uncertain",
+      "note": "Out of room6 becomes at the room6. C/sea is homophonic and the rest of the route is present, but the opening movement phrase remains unverified."
+    },
+    "d58777cd97fa78bd": {
+      "kind": "uncertain",
+      "note": "Nicklaus is recognized Nicholas. The Masters/46/comet/weather content remains, but that proper name is not confirmed by ASR alone."
+    },
+    "60d149e7a070c904": {
+      "kind": "equivalent",
+      "note": "Grey/gray and east-north-east spacing differ. C and the eight-mile location are represented."
+    },
+    "282a25ef5a07e9cc": {
+      "kind": "uncertain",
+      "note": "Oil cans in rows is recognized the oil cairns in Rose. This may be accent/ASR, but the opening object-description words are not verified. The following calendar/man/clock sentences are represented."
+    },
+    "20e50dab3a1e3239": {
+      "kind": "equivalent",
+      "note": "Seen/scene is homophonic and nightline/night line is spacing.1420 AM,midnight-to-four and the copied-text sentence remain."
+    },
+    "6649d48b825b7812": {
+      "kind": "equivalent",
+      "note": "Payphone/pay phone is word-spacing variation. All words are represented."
+    },
+    "3739effdca1d83cc": {
+      "kind": "minor",
+      "note": "Nicklaus/Nicklas is an unverified proper-name transcription form;46,the Masters and the entire road-grading statement remain."
+    },
+    "984bf2ef0a881e73": {
+      "kind": "minor",
+      "note": "ASR omits initial a. The box office,blind and CLOSED card are represented."
+    },
+    "d88f4c6c3c0d9857": {
+      "kind": "uncertain",
+      "note": "The bounded request recovers CLOSED and31 years. Caliche becomes Kelly, and a/the letter differs. The town-name pronunciation remains unverified after this one retake."
+    },
+    "5e215c26e2988ed5": {
+      "kind": "minor",
+      "note": "Reels turning/reels turning with an apostrophe is a word-boundary form, and ASR adds the. Deck,pencils,phone and blinking line-light content remain."
+    },
+    "bce1bb860cba3eb9": {
+      "kind": "minor",
+      "note": "ASR pluralizes step to steps. The man,hat,smoking and watching-street description is represented."
+    }
+  },
+  "composition_rows": {
+    "examine-aligned": {
+      "kind": "minor",
+      "note": "S03,026 and32 are represented; azimuth/elevation labels are recognized as0/L and ASR adds and. Label boundaries are not human-verified."
+    },
+    "examine-negative": {
+      "kind": "minor",
+      "note": "S27,026 and explicit minus10 are represented. Az/el labels and numeric grouping are ASR boundaries; no missing negative sign."
+    },
+    "examine-scenery": {
+      "kind": "uncertain",
+      "note": "S01 and azimuth142 are represented with extra one, but the final eight of elevation48 is absent in this composition ASR. Eight is recognized in the complete zero-through-eight bank control. Actual context articulation remains unverified."
+    },
+    "note-clock": {
+      "kind": "minor",
+      "note": "The3:14 value and both sentences are represented; initial a is absent from ASR."
+    },
+    "photo-clock": {
+      "kind": "uncertain",
+      "note": "The2,40,7,11 time components and B12 are represented. S03 apron becomes S038 printed, so the prefix/word boundary is uncertain; vane/vein is homophonic."
+    },
+    "photo-control-clock": {
+      "kind": "uncertain",
+      "note": "B12 and03:12 are represented, but forty seven is compacted to407. The47 component remains a concrete clock ASR/articulation uncertainty."
+    },
+    "album-meta-field": {
+      "kind": "minor",
+      "note": "Station01,field hut and the4,0,5 time components remain. ASR adds hub before zero."
+    },
+    "negative-distance": {
+      "kind": "uncertain",
+      "note": "Explicit minus39 light years is represented. Source distance is recognized as Socks we distance; label articulation remains uncertain."
+    },
+    "identifier-e09a": {
+      "kind": "uncertain",
+      "note": "The actual selected carrier-free clips request Eee,zero,nine,Ay. ASR recovers only zero nine; E and A are not verified in this runtime context. One carrier method was rejected after added-token ambiguity."
+    },
+    "identifier-p13": {
+      "kind": "uncertain",
+      "note": "The actual selected carrier-free P/13 clips are recognized T13. P versus T remains unresolved; no claim of verified identifier pronunciation."
+    },
+    "numbers-27": {
+      "kind": "uncertain",
+      "note": "The bounded ninety retake now yields ninety rather than nine. Hundred,thousand,million,minus,point,percent are represented; plus is absent and ASR adds uh. The plus lexeme remains unverified in this context."
+    },
+    "identifiers-0": {
+      "kind": "uncertain",
+      "note": "A,B,C,D,F,G,H,I are represented. E is absent and an extra R appears. The short-letter bank is not claimed to be fully heard or exact."
+    },
+    "identifiers-9": {
+      "kind": "uncertain",
+      "note": "Only J,K,N,P are reliably recovered by Small. L,M,O,Q,R remain unverified in the carrier-free assembled bank. One carrier experiment was rejected without further TTS attempts."
+    },
+    "identifiers-18": {
+      "kind": "equivalent",
+      "note": "All S,T,U,V,W,X,Y,Z and frame values are represented. The expected phonetic names and ASR letter orthography differ."
+    }
+  }
+}

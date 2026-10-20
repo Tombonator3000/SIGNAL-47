@@ -1,0 +1,1898 @@
+{
+  "status": "PASS",
+  "images_moved": 314,
+  "bytes_moved": 306983455,
+  "feature_image_directories_kept": [
+    "ensemble-pages",
+    "ensemble-single",
+    "serling-pages",
+    "serling-single"
+  ],
+  "files": [
+    {
+      "original_qa_path": "artbell-pages/r01_desktop_settings.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-pages/r01_desktop_settings.png",
+      "bytes": 664576,
+      "sha256": "f2c802cd4c8717b35462bc902a5bfd897d75cb17c1a77149b39013eca529e156"
+    },
+    {
+      "original_qa_path": "artbell-pages/r02_mobile_settings_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-pages/r02_mobile_settings_on.png",
+      "bytes": 216299,
+      "sha256": "4a1248622e14659e2e05d967ae6d83115ff40fc09dbff81ac3080e418d2af7c8"
+    },
+    {
+      "original_qa_path": "artbell-pages/r03_mobile_independent_preferences.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-pages/r03_mobile_independent_preferences.png",
+      "bytes": 230687,
+      "sha256": "eea5f07c388acd226ad3e27de40838f59edd40f9ed18a1ec8ca9fb9d1e4a1315"
+    },
+    {
+      "original_qa_path": "artbell-single/r01_desktop_settings.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-single/r01_desktop_settings.png",
+      "bytes": 663948,
+      "sha256": "443762e35aa1452aa84345b52608b5b40e7f15f1b5ea07bb81a341d0e3cf97f0"
+    },
+    {
+      "original_qa_path": "artbell-single/r02_mobile_settings_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-single/r02_mobile_settings_on.png",
+      "bytes": 204337,
+      "sha256": "fa3f91f9afe9515418be0440ddcfa534a674a02fa1ace9e66574df776882523c"
+    },
+    {
+      "original_qa_path": "artbell-single/r03_mobile_independent_preferences.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/artbell-single/r03_mobile_independent_preferences.png",
+      "bytes": 223054,
+      "sha256": "9c412cd9b659d574323bfd3cd1fdf18e1e04a71ef8243229be6ab8f826600e1f"
+    },
+    {
+      "original_qa_path": "ch1/c01_start.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c01_start.png",
+      "bytes": 1209303,
+      "sha256": "57d6de2582b7eb22479ccf2c937bd7f0adac33456c2eb6d9e62a338dd18b5dd1"
+    },
+    {
+      "original_qa_path": "ch1/c02_yard.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c02_yard.png",
+      "bytes": 1410256,
+      "sha256": "63577e80f5157240292af268700524a14e3c956fa2e3cd8af0f258abf008e4c8"
+    },
+    {
+      "original_qa_path": "ch1/c03_s03_log.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c03_s03_log.png",
+      "bytes": 599375,
+      "sha256": "1bcd2476660e632b4321ec9baa692dd80d99f7829cdeee24714c51be20319112"
+    },
+    {
+      "original_qa_path": "ch1/c04_viewfinder.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c04_viewfinder.png",
+      "bytes": 4710,
+      "sha256": "658bf3e9ddc65742c6a9eb38880568a004a89c9a2b94ce4a5d40d2c1d8ce6587"
+    },
+    {
+      "original_qa_path": "ch1/c05_lab.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c05_lab.png",
+      "bytes": 1275247,
+      "sha256": "e5dbb1979f4c7f8c9b6453084c82c5114138fe76082a54572fd59f612402616e"
+    },
+    {
+      "original_qa_path": "ch1/c06_print01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c06_print01.png",
+      "bytes": 781957,
+      "sha256": "ce43c8b1b9a76d2882d91eb79f1c3340884bd8d8fe9271871aa89c8de1c132cb"
+    },
+    {
+      "original_qa_path": "ch1/c07_reference.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c07_reference.png",
+      "bytes": 1453798,
+      "sha256": "7893845f45a20de0af814b1254832786a5e8feab7b14bbe8624a49e315b7d5dd"
+    },
+    {
+      "original_qa_path": "ch1/c08_b12_panel.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c08_b12_panel.png",
+      "bytes": 755045,
+      "sha256": "a108cbb94950b394591ebe3c757202de95f9e4448908d95fd1f04b48a47f6e7b"
+    },
+    {
+      "original_qa_path": "ch1/c09_viewfinder2.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c09_viewfinder2.png",
+      "bytes": 4710,
+      "sha256": "658bf3e9ddc65742c6a9eb38880568a004a89c9a2b94ce4a5d40d2c1d8ce6587"
+    },
+    {
+      "original_qa_path": "ch1/c10_compare.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c10_compare.png",
+      "bytes": 827689,
+      "sha256": "36f9ac329a0eaf75fa209d648e9e9abcb7d2c3b036ad8dacd68f23fe815f2526"
+    },
+    {
+      "original_qa_path": "ch1/c10b_board_finding.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c10b_board_finding.png",
+      "bytes": 1211108,
+      "sha256": "02d523d12e3fd6a36f5921d142d011ef27924a00b01e2170bb4a280394259810"
+    },
+    {
+      "original_qa_path": "ch1/c11_report.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c11_report.png",
+      "bytes": 450597,
+      "sha256": "db20943e13317d9519ae24646d1cf470963bbb87e7d1de2802f445e49ae12726"
+    },
+    {
+      "original_qa_path": "ch1/c12_chapter_card.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c12_chapter_card.png",
+      "bytes": 14042,
+      "sha256": "d0ef4ac52d257ba1322319d9902137c9fccab8e72a772f2b26d9b15c360762ba"
+    },
+    {
+      "original_qa_path": "ch1/c13_casefile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch1/c13_casefile.png",
+      "bytes": 901792,
+      "sha256": "5bd3cbe5df20cda51befc7578fb3e2c687aca665043ef623cd1686d79afbd405"
+    },
+    {
+      "original_qa_path": "ch2/d01_desk.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d01_desk.png",
+      "bytes": 1334872,
+      "sha256": "e2faeb03de0e3374616c862a6c8cce5adc4aa0da5d0ebb794f4ace6a92d143f0"
+    },
+    {
+      "original_qa_path": "ch2/d02_corridor_door.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d02_corridor_door.png",
+      "bytes": 1219960,
+      "sha256": "132b8d53efa8b0865228390c17bdd86e6b3d934262c2db052169eae80a0ad102"
+    },
+    {
+      "original_qa_path": "ch2/d03_records.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d03_records.png",
+      "bytes": 1339332,
+      "sha256": "e3c7789ef8ae0a4eb730c01d235a2e28c3da201f82f724af343cc1d7015ecbef"
+    },
+    {
+      "original_qa_path": "ch2/d04_p04_feedback.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d04_p04_feedback.png",
+      "bytes": 1062894,
+      "sha256": "716622be05f37dbcd27170e7756bc099da13783d51b6a478418a2a9e57a67f2d"
+    },
+    {
+      "original_qa_path": "ch2/d05_p05_feedback.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d05_p05_feedback.png",
+      "bytes": 1073036,
+      "sha256": "ae0ce89ddfd8752cb8519568fe7b5d05f56365ddc2d739a53b2d61f021c9b6e8"
+    },
+    {
+      "original_qa_path": "ch2/d05b_phone_column.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d05b_phone_column.png",
+      "bytes": 235019,
+      "sha256": "dae421940697775c62698fa8087fd9ae4d6ae647ba555d0969ecd5949d3cf961"
+    },
+    {
+      "original_qa_path": "ch2/d06_chapter_card.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d06_chapter_card.png",
+      "bytes": 14449,
+      "sha256": "835c440e35585ad9b87bfdeffcdc94adcef7e4d8c7c371082f90147f49d2da18"
+    },
+    {
+      "original_qa_path": "ch2/d07_casefile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch2/d07_casefile.png",
+      "bytes": 546774,
+      "sha256": "fd3828602ad04617fded5d0754b85226528fc2562fbe43be459f0ce1b9eaad22"
+    },
+    {
+      "original_qa_path": "ch3/e01_landing_to_pad.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e01_landing_to_pad.png",
+      "bytes": 1324591,
+      "sha256": "59701206bec34fcf56733104447995185b1613bbe619bffcbd079367751a454f"
+    },
+    {
+      "original_qa_path": "ch3/e02_truck.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e02_truck.png",
+      "bytes": 1286328,
+      "sha256": "7839cdc9f73697b2f5c1b8e1e6c1ae59c3c8b8ffe934c3d32017fba0cd3dc237"
+    },
+    {
+      "original_qa_path": "ch3/e03_cab.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e03_cab.png",
+      "bytes": 925768,
+      "sha256": "24ac52df1ac8664ac37da48b39e7570084ca66ad3eb5624e4f42206b8fa0784c"
+    },
+    {
+      "original_qa_path": "ch3/e04_highway.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e04_highway.png",
+      "bytes": 1253641,
+      "sha256": "cbb3f86442c83a52459e5ac971ca1e21656d99fe840542843603b1320726c791"
+    },
+    {
+      "original_qa_path": "ch3/e04b_track.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e04b_track.png",
+      "bytes": 1261739,
+      "sha256": "b1622c9ce32bc08f69ea574895daa7946cba0dba034d9c053f8d702fbd77a934"
+    },
+    {
+      "original_qa_path": "ch3/e04c_gate.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e04c_gate.png",
+      "bytes": 1243392,
+      "sha256": "c584cc0bf03b2e5a0d4c8cad414118f5eaa8b3d6427315bbf2c0a9930263eadd"
+    },
+    {
+      "original_qa_path": "ch3/e05_arrival.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e05_arrival.png",
+      "bytes": 1295409,
+      "sha256": "579003e681bfb8cbd740154ce5eb5af2918288389c0a2edc59869296383875e3"
+    },
+    {
+      "original_qa_path": "ch3/e06_field_record.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e06_field_record.png",
+      "bytes": 1405770,
+      "sha256": "8264140ef6078196e4f62d9a263742a7e33fe6216ed1e47ca43cac138f71bbe7"
+    },
+    {
+      "original_qa_path": "ch3/e07_after_frame03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e07_after_frame03.png",
+      "bytes": 1247200,
+      "sha256": "128d451bc68308ef62fda009ebd3afe2fe617c64e56580c9f00aaf925d4c84f4"
+    },
+    {
+      "original_qa_path": "ch3/e08_lamp_covered.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e08_lamp_covered.png",
+      "bytes": 1228082,
+      "sha256": "3b29b40b67d754e654d6be25a1afbbc3d4acda1861ab207707851c74287b5322"
+    },
+    {
+      "original_qa_path": "ch3/e09_cable.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e09_cable.png",
+      "bytes": 1448010,
+      "sha256": "d5e9b388ec519bc4001df9f1f89befcf0b00eca15d7bc71fd1dcd5edc988d795"
+    },
+    {
+      "original_qa_path": "ch3/e10_hut.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e10_hut.png",
+      "bytes": 1346198,
+      "sha256": "ffe299e6858b5f9abb6f3f50eb127afe415a4b3ec5404cbfe3c5bf27745115b0"
+    },
+    {
+      "original_qa_path": "ch3/e11_p09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e11_p09.png",
+      "bytes": 1290285,
+      "sha256": "d8fb94d5543ec76e8da34f40cc2253b14f1532fd06ef99c897c174536cba4a78"
+    },
+    {
+      "original_qa_path": "ch3/e12_continue_station.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e12_continue_station.png",
+      "bytes": 1270553,
+      "sha256": "ea952f60541e9021164d52611fd5e6b03de0feea58adb20f199c0cc0da23e7c5"
+    },
+    {
+      "original_qa_path": "ch3/e13_back.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e13_back.png",
+      "bytes": 1385038,
+      "sha256": "1e055e79c78f2f9d1ad40c1205a12bf7a0a6197e3f984e993fa35d0ff5698975"
+    },
+    {
+      "original_qa_path": "ch3/e14_field_prints.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e14_field_prints.png",
+      "bytes": 849732,
+      "sha256": "d05b2c15b4213c51b93c04bcd0677e74baa189d7a313734403ca198a3b517856"
+    },
+    {
+      "original_qa_path": "ch3/e15_chapter_card.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e15_chapter_card.png",
+      "bytes": 11633,
+      "sha256": "4bfb89ff8ccf0c94154145ef3193961c60f179a25e1704d8ca929c38fa0ba25e"
+    },
+    {
+      "original_qa_path": "ch3/e16_casefile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch3/e16_casefile.png",
+      "bytes": 332586,
+      "sha256": "c2581cfdbbed46cb37b60e5c2ccad880bef211076372276415d8d39e4566896f"
+    },
+    {
+      "original_qa_path": "ch4/f01_fire_exit.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f01_fire_exit.png",
+      "bytes": 1233939,
+      "sha256": "2ed80481a208b3de3a71196f6bcba243c193e75647b4dc43e9e613869cbdf037"
+    },
+    {
+      "original_qa_path": "ch4/f02_step.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f02_step.png",
+      "bytes": 1322501,
+      "sha256": "4bcce7bfe389a31aa228b5cfacfe26ee529faed78426d0460efbb777b1373099"
+    },
+    {
+      "original_qa_path": "ch4/f03_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f03_road.png",
+      "bytes": 1282912,
+      "sha256": "1767c39ef35c6d060e4a7b45c86ce0260fb21d28497524bd0670f0a1ee95437f"
+    },
+    {
+      "original_qa_path": "ch4/f03b_office.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f03b_office.png",
+      "bytes": 1372760,
+      "sha256": "8425660ff3102b306d40aa0a2fa40291a8fdc79df5246c8edf06d4c8c78c437f"
+    },
+    {
+      "original_qa_path": "ch4/f04_room6_door.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f04_room6_door.png",
+      "bytes": 1336441,
+      "sha256": "f20f24fccb54caa3f7acad65d4e254d4395b2a728cc280834f1cd8b007c27188"
+    },
+    {
+      "original_qa_path": "ch4/f05_room6.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f05_room6.png",
+      "bytes": 1148154,
+      "sha256": "951e519e169428a98da73bad1e13eaa540aa3208a84460a3cfc13b91ea762029"
+    },
+    {
+      "original_qa_path": "ch4/f06_p10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f06_p10.png",
+      "bytes": 547182,
+      "sha256": "6b971bacdd526bd581a13f5858752be2118b39d46cbe3959ea04da3365f3cc5a"
+    },
+    {
+      "original_qa_path": "ch4/f07_where_c_goes.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f07_where_c_goes.png",
+      "bytes": 540791,
+      "sha256": "2c9dd80dd120c2b29ddf4b9bce99450db4c90d1de64ee583b165ccbf3959b8cc"
+    },
+    {
+      "original_qa_path": "ch4/f08_table.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f08_table.png",
+      "bytes": 1197881,
+      "sha256": "8f8b99a971c7ff5d6c9a5193c7401175c5f0d77e47fa3ee7639bcaadaaa10692"
+    },
+    {
+      "original_qa_path": "ch4/f09_continue.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f09_continue.png",
+      "bytes": 1182216,
+      "sha256": "711fb9fdfe89ef5f88437c600a657a40897a4ea4b1059a83cedcfc1835461b13"
+    },
+    {
+      "original_qa_path": "ch4/f10_ending.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f10_ending.png",
+      "bytes": 1291815,
+      "sha256": "f1b631bbe4926e75e7d9fab55c06c9963bee94e249937ef66862afd4e52a2029"
+    },
+    {
+      "original_qa_path": "ch4/f11_casefile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch4/f11_casefile.png",
+      "bytes": 341133,
+      "sha256": "4cb10aad82ab71d8d68ff74862640ded85328faa2931cfe7c633805cdbbc8077"
+    },
+    {
+      "original_qa_path": "ch5/h01_terminal.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h01_terminal.png",
+      "bytes": 338939,
+      "sha256": "eb106601c975630eaf337107df629837134d0d6ed6d218dba70f459e88610251"
+    },
+    {
+      "original_qa_path": "ch5/h01b_diner_ahead.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h01b_diner_ahead.png",
+      "bytes": 1248292,
+      "sha256": "1870838062bbd95a8bfdb09d16c3f10d109b5ade96e1133d371e37cf5f71848c"
+    },
+    {
+      "original_qa_path": "ch5/h02_diner_lot.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h02_diner_lot.png",
+      "bytes": 1220695,
+      "sha256": "84e0f7800d73fefd69e2a0b20c6162ae8ce8ed7f539d85bb02dc312ffc704e17"
+    },
+    {
+      "original_qa_path": "ch5/h03_waitress.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h03_waitress.png",
+      "bytes": 590085,
+      "sha256": "40aef94f29cd44b022bedeb89a5a8e84db69b75c5e75afb777e76ea36d38819e"
+    },
+    {
+      "original_qa_path": "ch5/h04_clipping.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h04_clipping.png",
+      "bytes": 780972,
+      "sha256": "9e8ba7c3fa9ab4447526e8d7c10f5faf0552e871fc2e95095b9d04768c39473a"
+    },
+    {
+      "original_qa_path": "ch5/h05_payphone.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h05_payphone.png",
+      "bytes": 572610,
+      "sha256": "7a4a2a35f60a1fef9ecd2c5ad558aba80ffeb0394c7f789e5712bfcb64b01e66"
+    },
+    {
+      "original_qa_path": "ch5/h06_map_unaligned.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h06_map_unaligned.png",
+      "bytes": 327512,
+      "sha256": "82f9d1afddc2cc41fc6ef24020c4229c4f450860f6cc601f53f036e74c31a28d"
+    },
+    {
+      "original_qa_path": "ch5/h07_map_aligned.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h07_map_aligned.png",
+      "bytes": 330624,
+      "sha256": "c31898398fcc53de09e7ed906c1695debeaad9d9684fa4797a947497484d9d4e"
+    },
+    {
+      "original_qa_path": "ch5/h08_continue.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h08_continue.png",
+      "bytes": 1368372,
+      "sha256": "9b95be1ee0415d13eb98cad95025b02c7c8054f29aa9c495ccb954f79c3eeba2"
+    },
+    {
+      "original_qa_path": "ch5/h09_old_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch5/h09_old_road.png",
+      "bytes": 1215257,
+      "sha256": "65e98f4c7e3e5b25a5890d722a5314d6a9d5a3610771a95cbe3aab388dfa587d"
+    },
+    {
+      "original_qa_path": "ch6/k00_title_warning.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k00_title_warning.png",
+      "bytes": 1229915,
+      "sha256": "bceb8041d37f0d94911b057811b1eb20fd1c41f260d2cdf8e4ac7113076e225d"
+    },
+    {
+      "original_qa_path": "ch6/k01_start.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k01_start.png",
+      "bytes": 1289270,
+      "sha256": "b6ea6f9d4932407acd65fff729e831432eb0ee5d81613c54fc2f957a25cb88c1"
+    },
+    {
+      "original_qa_path": "ch6/k01b_on_the_old_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k01b_on_the_old_road.png",
+      "bytes": 1259179,
+      "sha256": "44d86cf4d8da3d0cd85e5bc42168ed2e2f02fef392536e237455256c6e9f102b"
+    },
+    {
+      "original_qa_path": "ch6/k02_past_mile6.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k02_past_mile6.png",
+      "bytes": 1295807,
+      "sha256": "c898c79723bad8f2b6fca97f171983fdeabf40c0288fed1526c928983ad8ca4e"
+    },
+    {
+      "original_qa_path": "ch6/k03_before_the_line.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k03_before_the_line.png",
+      "bytes": 1298264,
+      "sha256": "9d5884b9be0626d71ad7200e054eaabcb39380eb162e7e3a112d51d41b3d87e5"
+    },
+    {
+      "original_qa_path": "ch6/k04_on_the_line.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k04_on_the_line.png",
+      "bytes": 1225554,
+      "sha256": "1028cd2cc65a03ea9cbf4b7d231f2cd733f04d7022c7498a43d52d9e2866a7e2"
+    },
+    {
+      "original_qa_path": "ch6/k05_blue.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k05_blue.png",
+      "bytes": 1225758,
+      "sha256": "08c205ec2f2a88846d90b249295fc5e4544f53b9841cc932e90f27539441a4b1"
+    },
+    {
+      "original_qa_path": "ch6/k06_red_radio.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k06_red_radio.png",
+      "bytes": 1239922,
+      "sha256": "38db0c334ae099877c742f3cb43fc26ccd3925dd164f0b4ed4b5ee23ab4fd015"
+    },
+    {
+      "original_qa_path": "ch6/k07_flash.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k07_flash.png",
+      "bytes": 1117330,
+      "sha256": "86493e09eb78fa97688b2c769336a283170f763d679c1dd73de5c592d7819156"
+    },
+    {
+      "original_qa_path": "ch6/k08_silence.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k08_silence.png",
+      "bytes": 1243916,
+      "sha256": "d308f583b3a5bc98d072e28365c1316124ace0b0ed5fae64522df6276abff1dd"
+    },
+    {
+      "original_qa_path": "ch6/k09_truck_alone.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k09_truck_alone.png",
+      "bytes": 1213686,
+      "sha256": "2597eff3f9b1838f84e62107f394855e308a0d98976575c1177acc0936c365a9"
+    },
+    {
+      "original_qa_path": "ch6/k10_high.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k10_high.png",
+      "bytes": 1171604,
+      "sha256": "facb3ce74b16d18374a17d1cdc46d1a6471991b6afd6b160475eab9480113c65"
+    },
+    {
+      "original_qa_path": "ch6/k11_sun.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k11_sun.png",
+      "bytes": 1155421,
+      "sha256": "9f8c53e1600a526acd47a4f8612aadd357ecf0ba665099b4d3a72009ce3312db"
+    },
+    {
+      "original_qa_path": "ch6/k12_stars.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k12_stars.png",
+      "bytes": 1289970,
+      "sha256": "f95684aa4d80eada6e5937e15c8e79d10a85befc06100cbe707f81fddaa5e4d7"
+    },
+    {
+      "original_qa_path": "ch6/k13_title.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k13_title.png",
+      "bytes": 10371,
+      "sha256": "976c2a34865ebfa1682c801fef5c43452eb9d534de3e5b9369a4562c59dd99ee"
+    },
+    {
+      "original_qa_path": "ch6/k14_credits.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k14_credits.png",
+      "bytes": 14555,
+      "sha256": "2c400b28cb73c3033a70d06df5dc2a99c1925a8254ee0746343075411cdbc01a"
+    },
+    {
+      "original_qa_path": "ch6/k15_photo.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k15_photo.png",
+      "bytes": 1111529,
+      "sha256": "4511318e16eb9deda7d86ecef9898f63e4c6389a5bd3329bc836b9eef46ceb10"
+    },
+    {
+      "original_qa_path": "ch6/k16_still.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/ch6/k16_still.png",
+      "bytes": 1171032,
+      "sha256": "5b503d10cf074ad0e173277a8af73904aa7c9b8a42c4eb4ba78a3651b27acbbf"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d01_map_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d01_map_desktop.png",
+      "bytes": 310490,
+      "sha256": "b3c243bc1c305d419c882e6a484bee6df989464d0685ec82deeeb7af61a0683a"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d02_kit_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d02_kit_mobile.png",
+      "bytes": 64189,
+      "sha256": "728ca0f52ca1d2820bf2f9ed279e435f00f18bf914e812e915ff56d36c877288"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d03_examine_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d03_examine_desktop.png",
+      "bytes": 1328421,
+      "sha256": "6cfd998207303fb4e9f02d7ecdf9edf9f9854540bfe6577da3b6b21c53431a0a"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d04_receiver_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d04_receiver_desktop.png",
+      "bytes": 369082,
+      "sha256": "d8026a13eb584673a8c436deafe2217b55790415c6b68485043d2cd69548de33"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d05_board_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d05_board_desktop.png",
+      "bytes": 1518937,
+      "sha256": "335dd8716a8f7fc076741f1e3e4d6899be09a2e692caa2c9fbf4b8b192d5bcc7"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d06_photo_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d06_photo_desktop.png",
+      "bytes": 375161,
+      "sha256": "6db91c45a992a89be5b15d24f68c6b3af5088b0bf9e888d6aa266350c0153e0f"
+    },
+    {
+      "original_qa_path": "descriptions-pages/d07_hud_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-pages/d07_hud_mobile.png",
+      "bytes": 472363,
+      "sha256": "d15067113013aeb777d50c6917f01bbba3f722eb1ea06b6d3165fd1218c08df4"
+    },
+    {
+      "original_qa_path": "descriptions-single/d01_map_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d01_map_desktop.png",
+      "bytes": 310634,
+      "sha256": "02ba72c8bfc60f9e11e1ca5d1eafbf76ada983911e94a9fe45c28e49a9082b1e"
+    },
+    {
+      "original_qa_path": "descriptions-single/d02_kit_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d02_kit_mobile.png",
+      "bytes": 64169,
+      "sha256": "66d7a6b3781bd8bc8ed8c2db470a1630085e5ce86344fe4d663286dc12b223a9"
+    },
+    {
+      "original_qa_path": "descriptions-single/d03_examine_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d03_examine_desktop.png",
+      "bytes": 1330617,
+      "sha256": "b9ef943af41abe87aed6b4304c82260fef531c734c559cfdfe387eb10d815e2f"
+    },
+    {
+      "original_qa_path": "descriptions-single/d04_receiver_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d04_receiver_desktop.png",
+      "bytes": 369237,
+      "sha256": "df7dafb4739b3ab2cdf046edaf75c7475f1ead8fc46bc7fe0330cbf6a12e1460"
+    },
+    {
+      "original_qa_path": "descriptions-single/d05_board_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d05_board_desktop.png",
+      "bytes": 1519344,
+      "sha256": "14365cca577bb30225bc2878d1a6d357c786dd84113937e5f8f065b840c4ce0f"
+    },
+    {
+      "original_qa_path": "descriptions-single/d06_photo_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d06_photo_desktop.png",
+      "bytes": 375187,
+      "sha256": "65252164693ca2ec3a84030ea541f77b1fa70e5ec3ef11b19fbb1d6af3dfa2e3"
+    },
+    {
+      "original_qa_path": "descriptions-single/d07_hud_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/descriptions-single/d07_hud_mobile.png",
+      "bytes": 466250,
+      "sha256": "7ae620f6a2e6a8bb5eda9b3186de152abe118e9c7c9297fb77020309e9846b1d"
+    },
+    {
+      "original_qa_path": "dev/d01_title_menu.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/dev/d01_title_menu.png",
+      "bytes": 623432,
+      "sha256": "db83d2a3dcfa67964f9849b0086ea94d6616d3fde205b9e92879b14540ce5c58"
+    },
+    {
+      "original_qa_path": "dev/d02_ch3.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/dev/d02_ch3.png",
+      "bytes": 1353739,
+      "sha256": "a53a974af0f7bf0983471424a86c03c1adf27895e344dcde16fcc8bb780ef59a"
+    },
+    {
+      "original_qa_path": "dev/d03_highway.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/dev/d03_highway.png",
+      "bytes": 1249324,
+      "sha256": "16852f164cae33c1d57df006e5a27daddab1fb2e626949bf77f2d0b9715becbd"
+    },
+    {
+      "original_qa_path": "dev/d04_oldroad_night.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/dev/d04_oldroad_night.png",
+      "bytes": 1233813,
+      "sha256": "31286026a9a8d667116137fb678ecd5dce91340491b8309c33637ecb9e25f4b1"
+    },
+    {
+      "original_qa_path": "diner/g01_arrival.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g01_arrival.png",
+      "bytes": 1270077,
+      "sha256": "7696a1d87b9fbbb1eee586ce498c55291a46671db7e7e1c414b359e18dae80a3"
+    },
+    {
+      "original_qa_path": "diner/g02_outside.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g02_outside.png",
+      "bytes": 1161127,
+      "sha256": "791727edceaced1d6d1e6a599188701441026a843646f7e63ec78a5509ecda32"
+    },
+    {
+      "original_qa_path": "diner/g03_inside.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g03_inside.png",
+      "bytes": 1387978,
+      "sha256": "532e26de1983258cb5341ba738b03c12686b64f71d4b8185dca228c98c94d1af"
+    },
+    {
+      "original_qa_path": "diner/g04_stool.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g04_stool.png",
+      "bytes": 1246299,
+      "sha256": "9fafb3b4bd65e2a94e658b5e8f25737b57ffafda8a9c6c5e56266e4ab297748d"
+    },
+    {
+      "original_qa_path": "diner/g05_menu.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g05_menu.png",
+      "bytes": 1274142,
+      "sha256": "2ace638dfd291a1ced55372a1e928f994dec8a011f2de80cb08ff40ce2df830d"
+    },
+    {
+      "original_qa_path": "diner/g06_phone.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g06_phone.png",
+      "bytes": 1224310,
+      "sha256": "fa13ca7d27e40e33fe776e956d746a1693afcad264e2fe768fe4b77198928fab"
+    },
+    {
+      "original_qa_path": "diner/g06b_phone_whole.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g06b_phone_whole.png",
+      "bytes": 1294017,
+      "sha256": "d47c08e597272a70fddf834c241e3a4f86c6c152be488f61552558a88729483a"
+    },
+    {
+      "original_qa_path": "diner/g07_clipping.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g07_clipping.png",
+      "bytes": 1277373,
+      "sha256": "514cb71acdb566628894bc6facc78fd17c33423dfd7881c8e2c0cf2e2370ac7e"
+    },
+    {
+      "original_qa_path": "diner/g08_sign.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g08_sign.png",
+      "bytes": 1243026,
+      "sha256": "d9dcd548466fafbc195c985d7775e1c014fa23c64f2ab9b69c8964f6a1fea392"
+    },
+    {
+      "original_qa_path": "diner/g09_dawn_unlit.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/diner/g09_dawn_unlit.png",
+      "bytes": 1216667,
+      "sha256": "43659864d47400cd68fbebc0af867b8f403a2a9a82dabbc01a87b593ea5e75e3"
+    },
+    {
+      "original_qa_path": "drives/back_00_start.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_00_start.png",
+      "bytes": 1025526,
+      "sha256": "aa5137af05e0bdca4c3ec260afe515720e1b888a80d5609d674c8dbde1c6993a"
+    },
+    {
+      "original_qa_path": "drives/back_020_station01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_020_station01.png",
+      "bytes": 1135233,
+      "sha256": "11755e011a300da14051104ff2c30df56ff8e96d776d6305e9fd4eb000216647"
+    },
+    {
+      "original_qa_path": "drives/back_040_station01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_040_station01.png",
+      "bytes": 1257897,
+      "sha256": "0693dbc253ef8b88f1599d027d938f5b3afdd616149a1e19217a287c92f900f5"
+    },
+    {
+      "original_qa_path": "drives/back_060_station01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_060_station01.png",
+      "bytes": 1211347,
+      "sha256": "e3376ae4aefee2da59a2c69dd6dbda5236a39213c7f5233838f6bfd1e3201c10"
+    },
+    {
+      "original_qa_path": "drives/back_080_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_080_road.png",
+      "bytes": 1184071,
+      "sha256": "58788838337e225adf09e40870e4336112414f009caf49ddfdf6152b133e7bbc"
+    },
+    {
+      "original_qa_path": "drives/back_100_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_100_road.png",
+      "bytes": 1333063,
+      "sha256": "06a60cd77ffa82bb59db01eff59d4dc9759bde8293f2a51bceaa61aa2ef97be1"
+    },
+    {
+      "original_qa_path": "drives/back_120_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_120_road.png",
+      "bytes": 1172780,
+      "sha256": "e6e334684020a4b2866dfaab4c1b5576549df8d0907a67b334257e1c775263e0"
+    },
+    {
+      "original_qa_path": "drives/back_140_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_140_road.png",
+      "bytes": 1284312,
+      "sha256": "44c6fd687f78c7647292ae8840435abfb08e0eb7b87c3ccd67ed30c5297d20a9"
+    },
+    {
+      "original_qa_path": "drives/back_160_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_160_saro.png",
+      "bytes": 1357353,
+      "sha256": "81ddbf2b28ed6efe9ba3ed726c91519e5e2a3d45bf0f2060ff419640e731fe0e"
+    },
+    {
+      "original_qa_path": "drives/back_180_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_180_saro.png",
+      "bytes": 1239326,
+      "sha256": "d78f3e0ddb1ddbe857a4e8c05796efbb8569527c56d591810f4a2f53fc6645d1"
+    },
+    {
+      "original_qa_path": "drives/back_200_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_200_saro.png",
+      "bytes": 1211466,
+      "sha256": "996eadf791811c4150796cc7229526d522d6f7e9bc4bac46fc330a5ed33795c1"
+    },
+    {
+      "original_qa_path": "drives/back_220_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_220_saro.png",
+      "bytes": 1165523,
+      "sha256": "ff3bd79b3f206983b379ddf4e74e90a11a4e59396c184702d1fc8b17576191e0"
+    },
+    {
+      "original_qa_path": "drives/back_240_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_240_saro.png",
+      "bytes": 1211642,
+      "sha256": "43d851dd3970eabc9ad0219c494cc838714b259ce25a7c6fd41b04a150334d47"
+    },
+    {
+      "original_qa_path": "drives/back_260_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_260_saro.png",
+      "bytes": 1176539,
+      "sha256": "4fa8b30e1239765825a2a83719b474fe78c16d7142909b595332b508da90dc55"
+    },
+    {
+      "original_qa_path": "drives/back_280_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_280_saro.png",
+      "bytes": 1329476,
+      "sha256": "b303a1b8aa71de37a938b30a7c52e677d99bd9ef368afa8af72467b1b5ce9c52"
+    },
+    {
+      "original_qa_path": "drives/back_300_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_300_saro.png",
+      "bytes": 1351457,
+      "sha256": "ec2242cc4cdf89071327423c4c5a2a9fa6096d52851be30fe6e55b3adce3309f"
+    },
+    {
+      "original_qa_path": "drives/back_99_arrived.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_99_arrived.png",
+      "bytes": 1536660,
+      "sha256": "88728774e9c77efa1784d6f460018bde1e4c6e41395ec45f3d4c29256bf929cf"
+    },
+    {
+      "original_qa_path": "drives/back_c1_00.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_00.png",
+      "bytes": 1096597,
+      "sha256": "41af3845498bc88c0f73c69b9a8d46f791313b58c74a74707f58f9344d1fd200"
+    },
+    {
+      "original_qa_path": "drives/back_c1_01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_01.png",
+      "bytes": 1321188,
+      "sha256": "a928f3001416400663027b0069b131dafdf0b5fb83596c2e1a2b2d77c7b1dc18"
+    },
+    {
+      "original_qa_path": "drives/back_c1_02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_02.png",
+      "bytes": 1275316,
+      "sha256": "5cbe11d8368a991d3d8097d18486941d2877084c4ded53f9ca4c89a82e738678"
+    },
+    {
+      "original_qa_path": "drives/back_c1_03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_03.png",
+      "bytes": 1274941,
+      "sha256": "9ad58fcf273e64004172b0839c34dc67bcf1326caa8c6c6aa8958b155d110e3d"
+    },
+    {
+      "original_qa_path": "drives/back_c1_04.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_04.png",
+      "bytes": 1365257,
+      "sha256": "54ab8358c6fc5dc2b5b33ed26f0a7f2010703df42ea72db9581a721ef4518552"
+    },
+    {
+      "original_qa_path": "drives/back_c1_05.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_05.png",
+      "bytes": 1096475,
+      "sha256": "6d1fdf4b05eee8268a789f17ba947f9dd06c9cd0525448ab556dc268e49a7f3f"
+    },
+    {
+      "original_qa_path": "drives/back_c1_06.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_06.png",
+      "bytes": 1184358,
+      "sha256": "8bd047600ae51495120d2754ee30e179f3a1a97833f22f26243bbef8000af50c"
+    },
+    {
+      "original_qa_path": "drives/back_c1_07.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_07.png",
+      "bytes": 1181652,
+      "sha256": "9285c18b0fd01d405acc24f661c7e48a80669c319040ec703adb8c17ffe775ae"
+    },
+    {
+      "original_qa_path": "drives/back_c1_08.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_08.png",
+      "bytes": 1203584,
+      "sha256": "e04ec095b8d12f38d37bd7e38f133a6185a26284c029b1e3f588bdf2d6087096"
+    },
+    {
+      "original_qa_path": "drives/back_c1_09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_09.png",
+      "bytes": 1351083,
+      "sha256": "8258ba78e7684fa19fd329cb059bb9aa726940d64a6de21014537e1d72da2606"
+    },
+    {
+      "original_qa_path": "drives/back_c1_10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_10.png",
+      "bytes": 1254675,
+      "sha256": "6a4297aabdeeba8d559ba9f8809f803c972332a42e01f7b7d1d4f5242405a0af"
+    },
+    {
+      "original_qa_path": "drives/back_c1_11.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c1_11.png",
+      "bytes": 1191157,
+      "sha256": "6bcbee5f1efd7a5b47ac42485b31356a7d2f9b58885977cc59de865c8daccb7f"
+    },
+    {
+      "original_qa_path": "drives/back_c2_00.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_00.png",
+      "bytes": 1339172,
+      "sha256": "f5a3d332a08c8eda0faa6dc67b375023bf400c721452c17b5037025bfdaa73eb"
+    },
+    {
+      "original_qa_path": "drives/back_c2_01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_01.png",
+      "bytes": 1027646,
+      "sha256": "4af08c83f7452499c936e48a32251b65d19cd5fb6efc60024717f4a3360e9f6d"
+    },
+    {
+      "original_qa_path": "drives/back_c2_02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_02.png",
+      "bytes": 1148877,
+      "sha256": "64684b704659b4f768ebc8cb7dbd97e7999efb9e537212262594b60bc165cf02"
+    },
+    {
+      "original_qa_path": "drives/back_c2_03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_03.png",
+      "bytes": 1217200,
+      "sha256": "01afb2e954087710017001791855689e6fec764419080fafb176ba13c5b4ac23"
+    },
+    {
+      "original_qa_path": "drives/back_c2_04.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_04.png",
+      "bytes": 1337991,
+      "sha256": "d8b3713b7993b82745bb2726e1b31cf346526b4469ad81029f77e8cd397bf48c"
+    },
+    {
+      "original_qa_path": "drives/back_c2_05.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_05.png",
+      "bytes": 1216934,
+      "sha256": "e65b772018d1af27368a11100cab857bcd6fe2b3c9f60ada46e789efdba4e94c"
+    },
+    {
+      "original_qa_path": "drives/back_c2_06.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_06.png",
+      "bytes": 1176020,
+      "sha256": "34c0123e88d8cf96dc74313c63fb38fa2d7612e41ea1f8026c25ac320eed0e74"
+    },
+    {
+      "original_qa_path": "drives/back_c2_07.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_07.png",
+      "bytes": 1151244,
+      "sha256": "4f2695d2df90fbaa7c0143b4cb67ab6d342363975b52daa8d7c5dc8794767ae0"
+    },
+    {
+      "original_qa_path": "drives/back_c2_08.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_08.png",
+      "bytes": 1056495,
+      "sha256": "0b5440819f5d052148b1aa0f7c712bc29571586b44d3a8edeb567aa2036a67a9"
+    },
+    {
+      "original_qa_path": "drives/back_c2_09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_09.png",
+      "bytes": 1292684,
+      "sha256": "9f85248e85607426b540262a103a1f9c5efe92387e88a4c3064acfda0fc8aba8"
+    },
+    {
+      "original_qa_path": "drives/back_c2_10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_10.png",
+      "bytes": 1247011,
+      "sha256": "ca9b8536190b98a916fd5c1ff17ee9b96ccf704044cada7ff3e62501fb5aa0f4"
+    },
+    {
+      "original_qa_path": "drives/back_c2_11.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_11.png",
+      "bytes": 1244547,
+      "sha256": "eacfac8cb8bf4d724cf00d0c514ee5dc2dcbdd9765e89228d927bb6e6282c461"
+    },
+    {
+      "original_qa_path": "drives/back_c2_12.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_12.png",
+      "bytes": 1338393,
+      "sha256": "a9ffaf17a5fcd9ca7a4ed0d939fc08ac3c53247af58dc79cd666bf375728fa7d"
+    },
+    {
+      "original_qa_path": "drives/back_c2_13.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_13.png",
+      "bytes": 1338812,
+      "sha256": "93c42926772d2f3e5bf7697c4bfa9c3d61a04f8a96139ce9936d0828b7b7af82"
+    },
+    {
+      "original_qa_path": "drives/back_c2_14.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_14.png",
+      "bytes": 1023257,
+      "sha256": "c38fdac714b69b0dc708d9af3fd23b4c73d7a40a1c56f98afcbfa1ccc488cfab"
+    },
+    {
+      "original_qa_path": "drives/back_c2_15.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/back_c2_15.png",
+      "bytes": 1339646,
+      "sha256": "53ca1bf2ebdf47546243012b11aeec59b24ec7f6510b0c97c0a39117ca5b34d1"
+    },
+    {
+      "original_qa_path": "drives/diner_00_start.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_00_start.png",
+      "bytes": 995825,
+      "sha256": "3b6ae71c4c06b38880fc34d9cc59ced421fe9973c62aed2c335f50c4a347b318"
+    },
+    {
+      "original_qa_path": "drives/diner_020_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_020_saro.png",
+      "bytes": 1065629,
+      "sha256": "258d08e66c6c67aae86c454c638efa3c90c9439c245148999c2220d8950931a4"
+    },
+    {
+      "original_qa_path": "drives/diner_040_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_040_saro.png",
+      "bytes": 1244421,
+      "sha256": "c611885a49fae8d44bb2f7709630a74a4a0d8abd68467d6676188b42c5641d0a"
+    },
+    {
+      "original_qa_path": "drives/diner_060_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_060_saro.png",
+      "bytes": 1176706,
+      "sha256": "cb0187f0c566686466b192510d5703ee008e1104d91bf53109356268edf80850"
+    },
+    {
+      "original_qa_path": "drives/diner_080_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_080_saro.png",
+      "bytes": 1343477,
+      "sha256": "0aa0f5af2e99fa472478588f14d5de9a21d7280e468e9508184bfe169ad222a8"
+    },
+    {
+      "original_qa_path": "drives/diner_100_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_100_saro.png",
+      "bytes": 1173928,
+      "sha256": "b80b3a9eb0bc6696ce58ebce0e36529a91f53044c44edb24e2ebb8fc2bc2b64e"
+    },
+    {
+      "original_qa_path": "drives/diner_120_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_120_saro.png",
+      "bytes": 1286522,
+      "sha256": "1846af51d3d570ae2e30a72e8a9ebad43db28c6431013c1eefc4ac383c064ef0"
+    },
+    {
+      "original_qa_path": "drives/diner_140_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_140_saro.png",
+      "bytes": 1237193,
+      "sha256": "3270f162d0e4b120344da64f8a40978413de7e0b9d8d30984f9caaa9a0041940"
+    },
+    {
+      "original_qa_path": "drives/diner_160_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_160_road.png",
+      "bytes": 1316854,
+      "sha256": "78c5585d4e3fca6f3948b006a46e7bd71a11359b31c334c087f8201b0c3326c7"
+    },
+    {
+      "original_qa_path": "drives/diner_180_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_180_road.png",
+      "bytes": 1230453,
+      "sha256": "b4aa6182c3fade7354603b7e9eade16a88ac07f27d994695823a4a131a5e33f9"
+    },
+    {
+      "original_qa_path": "drives/diner_200_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_200_road.png",
+      "bytes": 1317039,
+      "sha256": "f1e4bae811a1fe8a3a98586d9b70c1f4503ea01a5ff9a4694d800c191f62923b"
+    },
+    {
+      "original_qa_path": "drives/diner_220_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_220_road.png",
+      "bytes": 1192379,
+      "sha256": "4714e9b938508091e02efa89f249c1c1ecdae783eeebe50d3779674a6604302d"
+    },
+    {
+      "original_qa_path": "drives/diner_240_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_240_road.png",
+      "bytes": 1312914,
+      "sha256": "f55f52766e6b98c35767cadd6dcc53db42168b47f58fb231b9d904859ee09b9d"
+    },
+    {
+      "original_qa_path": "drives/diner_260_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_260_road.png",
+      "bytes": 1042479,
+      "sha256": "09160904c999a3510e1c8f40c0115000266a0534c5b78335a2968ad6729b86e3"
+    },
+    {
+      "original_qa_path": "drives/diner_280_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_280_road.png",
+      "bytes": 1133551,
+      "sha256": "122896fe848e1af6f616ea7f85586b06d5d49dbb57ab0c8cc95417c09e221b65"
+    },
+    {
+      "original_qa_path": "drives/diner_300_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_300_road.png",
+      "bytes": 1223928,
+      "sha256": "4a3bcfdf11d8113be731a8e9a45f631d40250994accaa9192f7a00b1ce62d0c3"
+    },
+    {
+      "original_qa_path": "drives/diner_320_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_320_road.png",
+      "bytes": 1318476,
+      "sha256": "5e35eddd7021f25357af41bfbc4a976bfea007b5bc9cf07393662a0d0d01ad25"
+    },
+    {
+      "original_qa_path": "drives/diner_340_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_340_road.png",
+      "bytes": 1035573,
+      "sha256": "32dd8820802afa828d0bbc0c150124072483ca7f33222733353b3b74ea728365"
+    },
+    {
+      "original_qa_path": "drives/diner_360_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_360_road.png",
+      "bytes": 1146900,
+      "sha256": "fa47d15f224af331293f4860b2667eb1f4fc87d49cb586ae1b13f08687615e88"
+    },
+    {
+      "original_qa_path": "drives/diner_380_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_380_road.png",
+      "bytes": 1253287,
+      "sha256": "470319d249b60f3a66c7947f2404459db379e1418cbd29dd489e6889cc8cc519"
+    },
+    {
+      "original_qa_path": "drives/diner_400_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_400_road.png",
+      "bytes": 1137088,
+      "sha256": "9e6f5d9ed5a5685276e2100b9b1fc6a40d07d77b70980da2f214d7ed8352c4cf"
+    },
+    {
+      "original_qa_path": "drives/diner_420_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_420_road.png",
+      "bytes": 1346966,
+      "sha256": "887bc0a4bcd63cdf7fc79ec4982c889c2cf93c80905ebdd48b735b232009be57"
+    },
+    {
+      "original_qa_path": "drives/diner_99_arrived.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_99_arrived.png",
+      "bytes": 1044803,
+      "sha256": "cc2f42cd5f488fe580c35aaad8b98bf10bf6bbc330c9e44e7a4b31902106c43e"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_00.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_00.png",
+      "bytes": 1220523,
+      "sha256": "e0164318fecb1ec5158e5bc46f0a6a569fa602b4de2bd83fb17209eed0649c43"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_01.png",
+      "bytes": 1148496,
+      "sha256": "dbe51315619c129346ee665d90337fce32af8eea0593c45ca00f272da3092bf6"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_02.png",
+      "bytes": 1032237,
+      "sha256": "d26ba496cf4766aaeeefdcaff773a19f4f841ae8a51cf80109c19239f4fa17bc"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_03.png",
+      "bytes": 1268365,
+      "sha256": "d25ebddbe75f0e106fa56beff6d0fb8ec41645f9bcdb71cdbdfb5a4ba2f77211"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_04.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_04.png",
+      "bytes": 1221915,
+      "sha256": "df2fde87001ad1d9ce54bb214a87e86e55419ffc647aab1f140096d3f0ca5635"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_05.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_05.png",
+      "bytes": 1224369,
+      "sha256": "4bea6d01ee2832bfa1322103d17d8b9e8a2490afddd88a72be838e2ed8701665"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_06.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_06.png",
+      "bytes": 1314905,
+      "sha256": "ad5ec3bd72a2c7c2aaf6d834e3233fbda8ee4be87663dbea58c98924ba598581"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_07.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_07.png",
+      "bytes": 1035693,
+      "sha256": "7e5064dcc60e29f4d58fcd0d97fd7029c7bfd9e40380a13fb78396b4e756d3c8"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_08.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_08.png",
+      "bytes": 1127505,
+      "sha256": "ab2b0fd60eb5f376ee24a358900eaaf8d827c4d95726c0b3c01347f4651c3ab5"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_09.png",
+      "bytes": 1128227,
+      "sha256": "0183a051f5f7d2e5be52c72ccce0f167cab30a7e5bdc2414f5598906a3ae574f"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_10.png",
+      "bytes": 1153148,
+      "sha256": "3fe10f60877fe2fcde2f3aec49369ba161bf976cd6bfc6f197119e322114c78d"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_11.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_11.png",
+      "bytes": 1316185,
+      "sha256": "6999fcc47d127c6b728d14f75582bd8eb800927173738740813f309a9e6a1798"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_12.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_12.png",
+      "bytes": 1227717,
+      "sha256": "e0fa8e7fe197db6fb21839c3354c75cb4c5eadcb72a7893f3fa5ab7141e0d90c"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_13.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_13.png",
+      "bytes": 1157891,
+      "sha256": "7a1b0997940dcf413828a6e59cdcb08b72666331ab69c90eb5e95631c619b522"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_14.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_14.png",
+      "bytes": 1226521,
+      "sha256": "c6c30bdfa416bdbc571f0ab32d88089a4148cf10c980adff9dc045b92241d32e"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_15.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_15.png",
+      "bytes": 1317768,
+      "sha256": "e29673e7eeade4a55e96f0c727a88d0ae9fff945fa7f3d12d03fe052ba430ecf"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_16.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_16.png",
+      "bytes": 1314905,
+      "sha256": "95342e7ca302d58277b8b3b75e7947e9dc627879c37ea5f85224dbff39eebb83"
+    },
+    {
+      "original_qa_path": "drives/diner_c1_17.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/diner_c1_17.png",
+      "bytes": 1162864,
+      "sha256": "b3a7d439a401547ae91c1b68ce3910a24841cd47af9f51046fe9edd84dbd8981"
+    },
+    {
+      "original_qa_path": "drives/out_00_start.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_00_start.png",
+      "bytes": 1312980,
+      "sha256": "458deab9966270f2b0d43e5045782b7bf651cd02e468c5f97ddcddeb107afab1"
+    },
+    {
+      "original_qa_path": "drives/out_020_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_020_saro.png",
+      "bytes": 1175380,
+      "sha256": "107510faaa6b277df4d2edb03f1554bea5e7a29688e6c08e8bd3c716527fb73a"
+    },
+    {
+      "original_qa_path": "drives/out_040_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_040_saro.png",
+      "bytes": 1260941,
+      "sha256": "4edab1701aa7e1cf243c51584d5aadaeda7fce293f9b6f450f672e3a2da49ffd"
+    },
+    {
+      "original_qa_path": "drives/out_060_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_060_saro.png",
+      "bytes": 1075842,
+      "sha256": "ae5b62b2faa0219a4b25808c4d8b4923c01ab7b46da3313cabaf2af89f9c83b7"
+    },
+    {
+      "original_qa_path": "drives/out_080_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_080_saro.png",
+      "bytes": 1266196,
+      "sha256": "67a5e99fb021c54f8c862155b284f25bef195e64ab0cc7179b2fa559e08c6120"
+    },
+    {
+      "original_qa_path": "drives/out_100_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_100_saro.png",
+      "bytes": 1306466,
+      "sha256": "4f7fe229b7322493eef010504341d9b3b2cf15ca551f5b72afed36d02c47e7cb"
+    },
+    {
+      "original_qa_path": "drives/out_120_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_120_saro.png",
+      "bytes": 1270885,
+      "sha256": "02853647a8139434748c2e3a98b4df7deabfc25ca8f4dd1f78e9360ec6c25875"
+    },
+    {
+      "original_qa_path": "drives/out_140_saro.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_140_saro.png",
+      "bytes": 1360835,
+      "sha256": "114c19cc861fab61fd689ba09e4af03291b517176cabd02e1f1ba75d5cc9d5e0"
+    },
+    {
+      "original_qa_path": "drives/out_160_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_160_road.png",
+      "bytes": 1043386,
+      "sha256": "7d1b8e32a009248645eaa85d138c64632f5128fd05a357abcbfd683defd433c5"
+    },
+    {
+      "original_qa_path": "drives/out_180_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_180_road.png",
+      "bytes": 1127392,
+      "sha256": "61f1d862219f9682fa635b94b69ae0add036a0448ad2f130f0023bbd2741f3a2"
+    },
+    {
+      "original_qa_path": "drives/out_200_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_200_road.png",
+      "bytes": 1314822,
+      "sha256": "c78f13af9d1301b8156703da51d1549e8255ee426e6cb709cd277603e8e6fbcf"
+    },
+    {
+      "original_qa_path": "drives/out_220_road.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_220_road.png",
+      "bytes": 1159878,
+      "sha256": "bb4994d4756ce786e6a165878d72f69d35a49961e38b8f0819c38e9ff6851c0a"
+    },
+    {
+      "original_qa_path": "drives/out_240_station01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_240_station01.png",
+      "bytes": 1192862,
+      "sha256": "7a372abad1294ad93572646b44acf44a4b8449ca3918aec1752ef50bd31ac247"
+    },
+    {
+      "original_qa_path": "drives/out_260_station01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_260_station01.png",
+      "bytes": 1283975,
+      "sha256": "be211823a426ff3f3a638196836c0191b4cd5d9827fb3920e450f5751bda8ebb"
+    },
+    {
+      "original_qa_path": "drives/out_99_arrived.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_99_arrived.png",
+      "bytes": 1401817,
+      "sha256": "61dc07ee42247b088d0ca35644442e0074239248ad8e92eb703157a1581bb6b0"
+    },
+    {
+      "original_qa_path": "drives/out_c1_00.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_00.png",
+      "bytes": 1344075,
+      "sha256": "abb55b62ec5ee8c82d54288e033c452c06c61de19dfdaa16881c283660914917"
+    },
+    {
+      "original_qa_path": "drives/out_c1_01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_01.png",
+      "bytes": 1344763,
+      "sha256": "7ae9e1b90d351f47b81823dbbcb1d91dcdec63e589c6f0da2e181cd030311602"
+    },
+    {
+      "original_qa_path": "drives/out_c1_02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_02.png",
+      "bytes": 1066251,
+      "sha256": "e8fe4724cf376a34ec40493ac6880a1fca70a7165fb2608be577cd807d6121ca"
+    },
+    {
+      "original_qa_path": "drives/out_c1_03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_03.png",
+      "bytes": 1347724,
+      "sha256": "b32e9f950ff4572263dcec0f7e2d9bc61902bf0434c022fc4633bcd702750d62"
+    },
+    {
+      "original_qa_path": "drives/out_c1_04.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_04.png",
+      "bytes": 1292286,
+      "sha256": "22c1cab8b202f53a186d23becf095d572e6bc6faf223891931b4b9df7b41bf09"
+    },
+    {
+      "original_qa_path": "drives/out_c1_05.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_05.png",
+      "bytes": 1054242,
+      "sha256": "c1a6421cefa40a443ba98facaf759512a96b988f36f3b2c39fe910540713331d"
+    },
+    {
+      "original_qa_path": "drives/out_c1_06.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_06.png",
+      "bytes": 1128111,
+      "sha256": "20fa48280ce20ea3dfc265edb936c1fb51a2993333200c5d561c41657e9ad857"
+    },
+    {
+      "original_qa_path": "drives/out_c1_07.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_07.png",
+      "bytes": 1225734,
+      "sha256": "14b854adaaacfbf6ff5be224e77a63c6c43031fac51f07410d864fe80e9edf14"
+    },
+    {
+      "original_qa_path": "drives/out_c1_08.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_08.png",
+      "bytes": 1151609,
+      "sha256": "4f349ed70c29fd08005807d3ce3b4327deb201b2bf1119c221d729e576bed86d"
+    },
+    {
+      "original_qa_path": "drives/out_c1_09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_09.png",
+      "bytes": 1038804,
+      "sha256": "eb9de45325486c942cd11390609a2c2e732b517ba20aceb71ffce32f8758512d"
+    },
+    {
+      "original_qa_path": "drives/out_c1_10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_10.png",
+      "bytes": 1227954,
+      "sha256": "2f49b35cad77ef835a7b6412d1e4e63cd20849ba1fc8a27927e2ced98ab3380c"
+    },
+    {
+      "original_qa_path": "drives/out_c1_11.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_11.png",
+      "bytes": 1154914,
+      "sha256": "7d31a244aa5b9bef03276eeaeeaf6671ab8a35277391a56c3d6b26a870771b71"
+    },
+    {
+      "original_qa_path": "drives/out_c1_12.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_12.png",
+      "bytes": 1226394,
+      "sha256": "81fce082e3c2df46adda7bf10607efaab39164067ea8bdce8ba4db9dd93bd1ba"
+    },
+    {
+      "original_qa_path": "drives/out_c1_13.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_13.png",
+      "bytes": 1317423,
+      "sha256": "69b22a62d9590d54f554dbdf4a8e4873afa70c6b9061a577844eb185b6c7a82d"
+    },
+    {
+      "original_qa_path": "drives/out_c1_14.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_14.png",
+      "bytes": 1317325,
+      "sha256": "c279102b20cc4ecfb8a74bbff08391f22f89df54d78c58db60040779becc6158"
+    },
+    {
+      "original_qa_path": "drives/out_c1_15.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_15.png",
+      "bytes": 1008319,
+      "sha256": "cee2e981c4bdf7e12251685c4eb9a87a5af49a6aacdec6729860810778a9ece3"
+    },
+    {
+      "original_qa_path": "drives/out_c1_16.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_16.png",
+      "bytes": 1316925,
+      "sha256": "2753049758115e0a8375a9d30ee315445677e0d3fdce2049ac3158e2b432b28d"
+    },
+    {
+      "original_qa_path": "drives/out_c1_17.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c1_17.png",
+      "bytes": 1047041,
+      "sha256": "89fbe121887f779b113b0724ff58c132751fb960e0671595da69c58a09dc5377"
+    },
+    {
+      "original_qa_path": "drives/out_c2_00.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_00.png",
+      "bytes": 1133363,
+      "sha256": "45f0295c6641164c3bdba1e4ac4132c53e493c0d28e40bfb4d34181b3ceb27a8"
+    },
+    {
+      "original_qa_path": "drives/out_c2_01.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_01.png",
+      "bytes": 1047601,
+      "sha256": "60a1bfb7ccf553d451a9797e2903f04d0bf4442392451161d9d169c885144c05"
+    },
+    {
+      "original_qa_path": "drives/out_c2_02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_02.png",
+      "bytes": 1314390,
+      "sha256": "f97cad5200e7f3e275c6bbc203769629263546bf13b4157fe96596ae5f84d4e6"
+    },
+    {
+      "original_qa_path": "drives/out_c2_03.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_03.png",
+      "bytes": 1044269,
+      "sha256": "9cb595bd776da4de4adbe1270a16443d35c4efc9737572d9dac0448e66acc034"
+    },
+    {
+      "original_qa_path": "drives/out_c2_04.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_04.png",
+      "bytes": 1314540,
+      "sha256": "ce231394571d6a6d463a2e1be63d7fe3d7b81da95238ab57768e3c25db6f970f"
+    },
+    {
+      "original_qa_path": "drives/out_c2_05.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_05.png",
+      "bytes": 1232698,
+      "sha256": "df86e274e05399df12b81363b20971c5bab6714723c44bfc9d9a59d762cf14f7"
+    },
+    {
+      "original_qa_path": "drives/out_c2_06.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_06.png",
+      "bytes": 1052074,
+      "sha256": "e6bc75e8b9435b78d2ae60624dce4898f9f56e01578bca45b92f3f0eea8a8caa"
+    },
+    {
+      "original_qa_path": "drives/out_c2_07.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_07.png",
+      "bytes": 1203513,
+      "sha256": "b8c19023346b9170b982bf58313ffb23aff21be559398b60b7872f0b1d9c15b7"
+    },
+    {
+      "original_qa_path": "drives/out_c2_08.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_08.png",
+      "bytes": 1165387,
+      "sha256": "eafe5b92611a5bbf06382ae58615acd446dcdcad8243b7079f233ce2a6c8d155"
+    },
+    {
+      "original_qa_path": "drives/out_c2_09.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_09.png",
+      "bytes": 1136722,
+      "sha256": "1a6266fae092edf69fd51ffb8e2d5a48e4746dad2586dea986f57cb6f92b5f2f"
+    },
+    {
+      "original_qa_path": "drives/out_c2_10.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_10.png",
+      "bytes": 1322159,
+      "sha256": "b04fb424a3032ac747619d2d71b173185bc5e5718e1083db5210d9932ec4b9aa"
+    },
+    {
+      "original_qa_path": "drives/out_c2_11.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_11.png",
+      "bytes": 1317712,
+      "sha256": "a3738b3d19a451b2bacd55f665cd897c6c1dbd0db727b1fb516b404a0bb54029"
+    },
+    {
+      "original_qa_path": "drives/out_c2_12.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_12.png",
+      "bytes": 1048091,
+      "sha256": "e6041d3868b917a1a826738807ea595b34539cc5ecb61ec423dc4136fd9a6c70"
+    },
+    {
+      "original_qa_path": "drives/out_c2_13.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_13.png",
+      "bytes": 1320379,
+      "sha256": "fd5041ed65ea9a175c7e88cd014ebf409cf9a3a37c9b9657b17503862abc525d"
+    },
+    {
+      "original_qa_path": "drives/out_c2_14.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_14.png",
+      "bytes": 1230018,
+      "sha256": "5bf300cb9a2301183278245b43b1dcc437193b0bf7c40ae0e88ada9a42ead20e"
+    },
+    {
+      "original_qa_path": "drives/out_c2_15.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_15.png",
+      "bytes": 1048994,
+      "sha256": "29a1385cf929b745889590a34e979b7ab844f1db2714b1a7ee866db6e73942b0"
+    },
+    {
+      "original_qa_path": "drives/out_c2_16.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_16.png",
+      "bytes": 1201875,
+      "sha256": "08434e7d9bb263caccd76f7dd1be106643e4edc94727a40e6f6eddc5aa953890"
+    },
+    {
+      "original_qa_path": "drives/out_c2_17.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/drives/out_c2_17.png",
+      "bytes": 1275609,
+      "sha256": "ef16bd361ff9cb9f58bb5a8d76cdce17652174ab209f0bd7fdc72e0809ed0803"
+    },
+    {
+      "original_qa_path": "earl-pages/e01_desktop_earl.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/earl-pages/e01_desktop_earl.png",
+      "bytes": 429212,
+      "sha256": "a06b665f86d52853d6c6c11f32bf7b65804e14c1f376a1760b50c7761f46a051"
+    },
+    {
+      "original_qa_path": "earl-pages/e02_mobile_earl.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/earl-pages/e02_mobile_earl.png",
+      "bytes": 92332,
+      "sha256": "d5cec115470bc6d36a045dd13043cc2d372346979a2b4b1043c6b84e3c115f27"
+    },
+    {
+      "original_qa_path": "earl-single/e01_desktop_earl.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/earl-single/e01_desktop_earl.png",
+      "bytes": 428862,
+      "sha256": "bb28afc49f64579a497142a7fc4da664cbd2ae3ec9b7ecd7473c25713625c290"
+    },
+    {
+      "original_qa_path": "earl-single/e02_mobile_earl.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/earl-single/e02_mobile_earl.png",
+      "bytes": 90923,
+      "sha256": "5f51b2d763871986642c4671ed7034c814ddc2a38d8a6273734b4908c113942c"
+    },
+    {
+      "original_qa_path": "getout/c01_cows_from_cab.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/c01_cows_from_cab.png",
+      "bytes": 1154931,
+      "sha256": "e3f3b7aa2564f95c120e54282ed8e1b93dca26b1c08d14a6489413f730e9621d"
+    },
+    {
+      "original_qa_path": "getout/c02_among_the_cows.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/c02_among_the_cows.png",
+      "bytes": 1336112,
+      "sha256": "e1348eb16939c3e434a0ba8f8b2df4a8f374dd450060ddfef89801444c2d6fd1"
+    },
+    {
+      "original_qa_path": "getout/d01_car_from_cab.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/d01_car_from_cab.png",
+      "bytes": 708999,
+      "sha256": "d50edd3708f52f9f5bc23051a487efbc40fd585c9c3fe09bd737763711cf12be"
+    },
+    {
+      "original_qa_path": "getout/d02_the_car.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/d02_the_car.png",
+      "bytes": 899150,
+      "sha256": "c547c2682d551170c63d62007a262dd59b68c6742800ce0e412ae0a8260b9bd6"
+    },
+    {
+      "original_qa_path": "getout/m01_masts_from_cab.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/m01_masts_from_cab.png",
+      "bytes": 949069,
+      "sha256": "59aab72a5c7fcba7b480c0a8ff54f31e427300d9fd493025e2136f1c52b2fc1d"
+    },
+    {
+      "original_qa_path": "getout/m02_cabinet_S-02.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/getout/m02_cabinet_S-02.png",
+      "bytes": 1398528,
+      "sha256": "db2324bcf81cf08f4c9d6890f1ae0b97383d48037d5c0c29fc686612750a15d9"
+    },
+    {
+      "original_qa_path": "phone-pages/p01_ward_paused.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/phone-pages/p01_ward_paused.png",
+      "bytes": 643756,
+      "sha256": "13552698c73a7430752befe176893ff2a9f6b683a5b68daa05aea6e9ffa6739c"
+    },
+    {
+      "original_qa_path": "phone-pages/p02_payphone.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/phone-pages/p02_payphone.png",
+      "bytes": 542338,
+      "sha256": "b78a77b70e76408faed0773bdcd7175d061d5b2aedb40cb6f39a1ee2bba40a11"
+    },
+    {
+      "original_qa_path": "phone-single/p01_ward_paused.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/phone-single/p01_ward_paused.png",
+      "bytes": 643450,
+      "sha256": "6ece8201d94640a4981d13c4f5056aba7c870c23d8b55e190712db447e032cfc"
+    },
+    {
+      "original_qa_path": "phone-single/p02_payphone.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/phone-single/p02_payphone.png",
+      "bytes": 541349,
+      "sha256": "ebb8f218622835a079edbe99776967a9c839fc832ba3555dd6fe7328f53666d2"
+    },
+    {
+      "original_qa_path": "radio-pages/radio_aim.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-pages/radio_aim.png",
+      "bytes": 1251094,
+      "sha256": "de5a7926ea17b1d34b7561198f8031a7cd89c269e380ca327287af40e382573e"
+    },
+    {
+      "original_qa_path": "radio-pages/radio_anthem.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-pages/radio_anthem.png",
+      "bytes": 1265293,
+      "sha256": "51a3f623bb8edc814c2f594bcb424bf8faed9082fac9fc22cf11c363007ab5db"
+    },
+    {
+      "original_qa_path": "radio-pages/radio_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-pages/radio_on.png",
+      "bytes": 1225924,
+      "sha256": "b0b0a556bfb181a1742ca317da338265a62001f6fc67183d6419fdeeaba8f6a6"
+    },
+    {
+      "original_qa_path": "radio-single/radio_aim.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-single/radio_aim.png",
+      "bytes": 1250839,
+      "sha256": "3cba71ba0e7b957500e9783c03e73cb0be699dae8c53931cd378aa59099de4ce"
+    },
+    {
+      "original_qa_path": "radio-single/radio_anthem.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-single/radio_anthem.png",
+      "bytes": 1291809,
+      "sha256": "2b15a93a29cebbad16811e05f6fa7d342df9241d8a8b4d732183820505a797f2"
+    },
+    {
+      "original_qa_path": "radio-single/radio_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radio-single/radio_on.png",
+      "bytes": 1262947,
+      "sha256": "3ba491be21fb61338b0f99aadfe04593f408ace1786838212725fe4bdb3e9748"
+    },
+    {
+      "original_qa_path": "radiocast-pages/c01_mobile_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-pages/c01_mobile_on.png",
+      "bytes": 214943,
+      "sha256": "e386c380784bd589b0328c67087379151c2c7be00793963ed75e03baf7ec3147"
+    },
+    {
+      "original_qa_path": "radiocast-pages/c02_mobile_independent.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-pages/c02_mobile_independent.png",
+      "bytes": 219937,
+      "sha256": "5433c3bedd6b779754d363e2f771e5490bff9147eb8afed4b6189a4233647f9c"
+    },
+    {
+      "original_qa_path": "radiocast-pages/c03_bulletin_caption.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-pages/c03_bulletin_caption.png",
+      "bytes": 1290325,
+      "sha256": "91fd5d0603d73b691e2c33a9a70f00484673d5d9772856cc186fd1e508b08f9e"
+    },
+    {
+      "original_qa_path": "radiocast-single/c01_mobile_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-single/c01_mobile_on.png",
+      "bytes": 227717,
+      "sha256": "0a96d2899a7c2e0498cf81446ad3d7340a3ce350725dffbe2e0f841b23116cc6"
+    },
+    {
+      "original_qa_path": "radiocast-single/c02_mobile_independent.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-single/c02_mobile_independent.png",
+      "bytes": 220927,
+      "sha256": "d6b75ceb9a4e778c995f4a906f4cb789c38072f9aea7f4f9baa1b9bbd0215ca6"
+    },
+    {
+      "original_qa_path": "radiocast-single/c03_bulletin_caption.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/radiocast-single/c03_bulletin_caption.png",
+      "bytes": 1292865,
+      "sha256": "11a84dccb896c199a645d179e7c4907c5ffa4b6868567cd48f955260901ba1f5"
+    },
+    {
+      "original_qa_path": "readaloud-pages/r01_document_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-pages/r01_document_desktop.png",
+      "bytes": 553685,
+      "sha256": "74df172822d539d1eb09564f32b75c97c4aabe2b42c39ba4f71a66f7fb953c86"
+    },
+    {
+      "original_qa_path": "readaloud-pages/r02_dialogue_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-pages/r02_dialogue_desktop.png",
+      "bytes": 508983,
+      "sha256": "aad9d2044725d55821543d28a43a9d7ae6bcdf29f353476acf0f4795846c25c7"
+    },
+    {
+      "original_qa_path": "readaloud-pages/r03_settings_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-pages/r03_settings_mobile.png",
+      "bytes": 207386,
+      "sha256": "d1a2c78a70b9b4232e181c316d7339750cae6c08c640f921e2a307c39af82850"
+    },
+    {
+      "original_qa_path": "readaloud-pages/r04_document_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-pages/r04_document_mobile.png",
+      "bytes": 215395,
+      "sha256": "c5941d7cd87d04a2a3923690b8a186306605ae7a7e4560e6e10a552e6934272e"
+    },
+    {
+      "original_qa_path": "readaloud-single/r01_document_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-single/r01_document_desktop.png",
+      "bytes": 546968,
+      "sha256": "70d6999dce6dddac3a0b2fdc92cae0d11270e502f1028e2935f121367a4ebb98"
+    },
+    {
+      "original_qa_path": "readaloud-single/r02_dialogue_desktop.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-single/r02_dialogue_desktop.png",
+      "bytes": 509087,
+      "sha256": "450fe1ced08eeafa6bc0652018c713b78e6bb5778e46fc9b084cc9ab2a4a926b"
+    },
+    {
+      "original_qa_path": "readaloud-single/r03_settings_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-single/r03_settings_mobile.png",
+      "bytes": 207673,
+      "sha256": "8d8fe246f1c2ddf54f6a2039fe66efb02cf54f102a021a07e2c1f1569979e6d6"
+    },
+    {
+      "original_qa_path": "readaloud-single/r04_document_mobile.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/readaloud-single/r04_document_mobile.png",
+      "bytes": 216136,
+      "sha256": "9c7925afaa933ac05f9b6ab9b5c9f375bbc3dab428006b67e5df7eecedd28d24"
+    },
+    {
+      "original_qa_path": "story-pages/attendant_followup.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-pages/attendant_followup.png",
+      "bytes": 391829,
+      "sha256": "1931aefac9ed70543c907b83b2a8ad72e85c275f44db6005ee697718fe6a2138"
+    },
+    {
+      "original_qa_path": "story-pages/phone_0503_ringing.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-pages/phone_0503_ringing.png",
+      "bytes": 1196725,
+      "sha256": "432649341608993f5e25cf3f58b3d032480c4dbafa91d37319f058538365da86"
+    },
+    {
+      "original_qa_path": "story-pages/witness_document.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-pages/witness_document.png",
+      "bytes": 476075,
+      "sha256": "f40239e52ad6faa6e1003779280e8ee81aa71d41c12bcb4beb176775694890a0"
+    },
+    {
+      "original_qa_path": "story-pages/witness_papers.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-pages/witness_papers.png",
+      "bytes": 473656,
+      "sha256": "a3d3d59f598bc2f281885a6f74e9f82e0f32fc1d89b8efbaad953d0d3cf1737a"
+    },
+    {
+      "original_qa_path": "story-pages/woman_followup.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-pages/woman_followup.png",
+      "bytes": 397090,
+      "sha256": "5428ebcf154da844794460a67d3b50dfa2feaefb03e32b50638ffdf9ee289623"
+    },
+    {
+      "original_qa_path": "story-single/attendant_followup.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-single/attendant_followup.png",
+      "bytes": 124628,
+      "sha256": "0db37dba10b6b05649b581c11a8e1d6c8479c335f8161df47a02579b93465b43"
+    },
+    {
+      "original_qa_path": "story-single/phone_0503_ringing.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-single/phone_0503_ringing.png",
+      "bytes": 449044,
+      "sha256": "21cae09ed9451e1673681fd7bd4b30dcc3271fbf58a0c0daec63fda469897f14"
+    },
+    {
+      "original_qa_path": "story-single/witness_document.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-single/witness_document.png",
+      "bytes": 194331,
+      "sha256": "4134ea974ef2506625176537728f75c76b65ec0d10d91c77b52394947f5048c5"
+    },
+    {
+      "original_qa_path": "story-single/witness_papers.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-single/witness_papers.png",
+      "bytes": 64839,
+      "sha256": "3bd30e386be007db9db5ff6db5ba303dccc8c6470d43109365fc729da89ec5bd"
+    },
+    {
+      "original_qa_path": "story-single/woman_followup.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/story-single/woman_followup.png",
+      "bytes": 127681,
+      "sha256": "b5ce20378153eabab835efb4a2d060dad288acd9b78ccbfca09b5b52997f68c0"
+    },
+    {
+      "original_qa_path": "tripradio/d1_saro_diner_caption.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/tripradio/d1_saro_diner_caption.png",
+      "bytes": 1205928,
+      "sha256": "b7f6079961ee1f4c6e852a8762078151c92fff96b9f96436d98d3941fea29f10"
+    },
+    {
+      "original_qa_path": "walkthrough/00_title.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/00_title.png",
+      "bytes": 438084,
+      "sha256": "498f0c0584c8e82a40e64390e745f3264bf6374d44a2c41fa7cb57e1acfb3294"
+    },
+    {
+      "original_qa_path": "walkthrough/01_spawn.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/01_spawn.png",
+      "bytes": 469673,
+      "sha256": "9748b99c67136fe2a300e8b93765c505373fcd99c5e8942e3bb3d09bdf7e141c"
+    },
+    {
+      "original_qa_path": "walkthrough/02_shiftlog.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/02_shiftlog.png",
+      "bytes": 229157,
+      "sha256": "415784161fe3ce6965524fc06520f80e3f2b7f47ce987f99c15b376d20343706"
+    },
+    {
+      "original_qa_path": "walkthrough/02b_binder.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/02b_binder.png",
+      "bytes": 381293,
+      "sha256": "2f3c4fca7176443ab2386b85da415d50797424826984457dbb9f11743e172e3a"
+    },
+    {
+      "original_qa_path": "walkthrough/02c_binder_sheets.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/02c_binder_sheets.png",
+      "bytes": 381477,
+      "sha256": "e372d629f4f0c5b0ef6ed54c83edfd7ccdef0c1bc2ed8c5f075a26b3cb3d3fe0"
+    },
+    {
+      "original_qa_path": "walkthrough/02c_terminal.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/02c_terminal.png",
+      "bytes": 127336,
+      "sha256": "ad7b3c5c442c52132fb47b835eeac5222f0b7f5627477038b6224daef5cdd8dc"
+    },
+    {
+      "original_qa_path": "walkthrough/02d_halley_poster.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/02d_halley_poster.png",
+      "bytes": 349439,
+      "sha256": "36008902051926b2fba36eaf9cefc54bd516da83cbbfb7f6d23c6bd84f24a69a"
+    },
+    {
+      "original_qa_path": "walkthrough/03_crts_on.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/03_crts_on.png",
+      "bytes": 502964,
+      "sha256": "f0a8b3cc17badb83de062c4fc1893983d0d0ffc22f63af0ca26b8284ebf9b1a5"
+    },
+    {
+      "original_qa_path": "walkthrough/04_console_cal.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/04_console_cal.png",
+      "bytes": 163618,
+      "sha256": "07374a3631dad18131b52dc7a18f399caf67061fd3b72c7d8ec58b9b077cb906"
+    },
+    {
+      "original_qa_path": "walkthrough/05_console_survey.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/05_console_survey.png",
+      "bytes": 149996,
+      "sha256": "8514173e84dc145e6e8ca3bba3da800fb465eb8ffcf9cbdcfdcb686ce0668daa"
+    },
+    {
+      "original_qa_path": "walkthrough/06_console_residual.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/06_console_residual.png",
+      "bytes": 132657,
+      "sha256": "967fbf40bf22536d62aa7b88755065027b4ffc47167fd439d3a217d079fb0bab"
+    },
+    {
+      "original_qa_path": "walkthrough/07_console_locked.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/07_console_locked.png",
+      "bytes": 142542,
+      "sha256": "287fadec418f42df9a199419ad34b0a319e849fc467c4ae7047a353a32ea0e1b"
+    },
+    {
+      "original_qa_path": "walkthrough/07b_signal_processor.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/07b_signal_processor.png",
+      "bytes": 98121,
+      "sha256": "df28e7b681d5f30b7315c668c857196efe7077a86188766265badda68ee032cb"
+    },
+    {
+      "original_qa_path": "walkthrough/08_printout.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/08_printout.png",
+      "bytes": 211458,
+      "sha256": "6df1f04e57b510a29a61105d1e11ed6069aaf137f426b3c88f7c671b36e32b79"
+    },
+    {
+      "original_qa_path": "walkthrough/09_mug_before.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/09_mug_before.png",
+      "bytes": 477079,
+      "sha256": "d6564cb80df9b1f1fb9e78b65f8ec4305aa030bd689e95e97d5a470521a499e5"
+    },
+    {
+      "original_qa_path": "walkthrough/10_mug_broken.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/10_mug_broken.png",
+      "bytes": 452453,
+      "sha256": "70744de75e056a48a0cc40f1f26f76757758f01a6e528a5b361b89e73b43f27d"
+    },
+    {
+      "original_qa_path": "walkthrough/11_dishes_turning.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/11_dishes_turning.png",
+      "bytes": 482086,
+      "sha256": "21756e9bf40f992cc1af337d71d4f628a00b4f37e4e066a99e1551ecee09a298"
+    },
+    {
+      "original_qa_path": "walkthrough/12_chapter_card.png",
+      "local_path": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/ensemble/integration-qa/walkthrough/12_chapter_card.png",
+      "bytes": 10407,
+      "sha256": "d722a5c4d1eee2a36101ff5dc2e11241c49a981d2c8be760eaa5894c6c7d369e"
+    }
+  ],
+  "note": "Bulk integration screenshots remain in local conversation outputs with exact hashes. Feature screenshots remain in this repository. Test logs and machine-readable assertions are unchanged."
+}

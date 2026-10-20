@@ -1,0 +1,98 @@
+{
+  "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+  "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+  "source_state": "uncommitted voice-ensemble runtime",
+  "scope": "CPU-controlled clock, loader and source-end fixtures; includes never-settling loader deadlines, text-only corpus resolution and real main/UI/story functions. Does not prove actual MP3 decode, audible quality or device performance.",
+  "results": [
+    {
+      "name": "ensemble-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/ensemble-core.cjs",
+      "log": "ensemble-core.log",
+      "exit_code": 0,
+      "seconds": 0.964879158011172
+    },
+    {
+      "name": "serling-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/serling-core.cjs",
+      "log": "serling-core.log",
+      "exit_code": 0,
+      "seconds": 0.8104802839807235
+    },
+    {
+      "name": "artbell-town-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/artbell-town-core.cjs",
+      "log": "artbell-town-core.log",
+      "exit_code": 0,
+      "seconds": 0.9829545860120561
+    },
+    {
+      "name": "artbell-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/artbell-core.cjs",
+      "log": "artbell-core.log",
+      "exit_code": 0,
+      "seconds": 0.8149790919851512
+    },
+    {
+      "name": "radiocast-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/radiocast-core.cjs",
+      "log": "radiocast-core.log",
+      "exit_code": 0,
+      "seconds": 2.4732320650073234
+    },
+    {
+      "name": "radioarchive",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/ensemble-radioarchive.cjs --log-level=warning && node node_modules/.cache/ensemble-radioarchive.cjs",
+      "log": "radioarchive.log",
+      "exit_code": 0,
+      "seconds": 0.8953897790051997
+    },
+    {
+      "name": "readaloud-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/readaloud-core.cjs",
+      "log": "readaloud-core.log",
+      "exit_code": 0,
+      "seconds": 1.0057519969996065
+    },
+    {
+      "name": "phonecalls-core",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "node tools/phonecalls-core.cjs",
+      "log": "phonecalls-core.log",
+      "exit_code": 0,
+      "seconds": 0.5165411399793811
+    },
+    {
+      "name": "typecheck",
+      "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+      "runtime_source_sha256": "3927fa74d4e54fc6da4cf510a9c4c26085062d39bc4e2e9f38628ed9a91674f3",
+      "source_state": "uncommitted voice-ensemble runtime",
+      "command": "npm run typecheck",
+      "log": "typecheck.log",
+      "exit_code": 0,
+      "seconds": 3.2415561499947216
+    }
+  ]
+}

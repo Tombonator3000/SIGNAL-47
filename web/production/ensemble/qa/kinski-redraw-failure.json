@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "documented_utc": "2026-10-20T00:45:51.110755+00:00",
+  "status": "FIXED_BOTH_BUILDS_VERIFIED",
+  "failed_test": {
+    "name": "readaloud-pages",
+    "passed": 36,
+    "checks": 37,
+    "assertion": "a dialogue redraw with unchanged lines does not restart or overlap narration",
+    "test_file": "tools/readaloud.py",
+    "test_file_sha256": "dc63358682af4be650021123a2e8e71ef33eb81cc4ac216b388e16698ddb7934",
+    "test_file_unchanged_since_failure": true
+  },
+  "cause": "Chapter4.showEvidence() ved tomt bord endrer bare Nora-hintet reply, mens v.lines er uendret. Panels.talk tok likevel hintet inn i readingKey med Character voices Av. Da ble pågående Kinski-lesing stoppet og kontrollen bygget om uten endrede samtalelinjer.",
+  "fix": {
+    "file": "src/ui/Panels.ts",
+    "line": 287,
+    "change": "Bacall-hintet tas bare inn i actor-readingKey når ui.npcDialogue.enabled er sann.",
+    "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+    "scope": "Ett vilkår i reply-gaten. Character voices På beholder separat hintopplesning; Character voices Av bevarer Kinski ved redraw med samme linjer."
+  },
+  "validation": {
+    "cpu_commands": 12,
+    "cpu_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "browser_after_fix": {
+      "status": "PASS",
+      "name": "readaloud-pages",
+      "passed": 37,
+      "checks": 37,
+      "exit_code": 0,
+      "seconds": 15.62,
+      "command": [
+        "bash",
+        "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+        "--alone",
+        "/home/tom/.venvs/signal47/bin/python",
+        "tools/readaloud.py",
+        "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/readaloud-pages"
+      ],
+      "url": "http://127.0.0.1:8502/SIGNAL-47/",
+      "report": {
+        "file": "production/ensemble/qa/readaloud-pages/readaloud.json",
+        "sha256": "56b5eb763b049026699b9c808acf8e72a9f5f68d5e9902cf8a880d08947a8aab"
+      },
+      "log": {
+        "file": "production/ensemble/qa/readaloud-pages.log",
+        "sha256": "ec9a6b10ed1ceebedf4a5cbd9aa59dcd2b73ddf2f389731687ef06739d248f8c"
+      },
+      "run_matrix": {
+        "file": "production/ensemble/qa/compatibility-readaloud-pages-results.json",
+        "sha256": "a5e6e5553bf646e6113df5691d0d00a8d37e29feda7107f20a9739fcca3009b7"
+      },
+      "build_manifest": {
+        "file": "production/ensemble/build-manifest.json",
+        "sha256": "802d582bb83c30933170d69cadce51c3d330447349008f4e80b03c7f2d6a3be1"
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "scope": "Den opprinnelige redraw-asserten består uendret i den faktiske Pages-kjøringen. Ingen FAIL er slettet fra arkivet."
+    },
+    "remaining_candidate_queue": "De 21 kompatibilitetskjøringene er fullført med exit 0. Denne diagnosen attesterer Pages- og enkeltfilrettingen; rot dokumenterer øvrig sluttkø separat.",
+    "single_browser_after_fix": {
+      "status": "PASS",
+      "name": "readaloud-single",
+      "passed": 38,
+      "checks": 38,
+      "seconds": 24.29,
+      "strict_csp": true,
+      "external_narration_requests": 0,
+      "result_row": {
+        "name": "readaloud-single",
+        "exit_code": 0,
+        "seconds": 24.29,
+        "url": null,
+        "command": [
+          "bash",
+          "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+          "--alone",
+          "/home/tom/.venvs/signal47/bin/python",
+          "tools/readaloud.py",
+          "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/readaloud-single"
+        ],
+        "log": "readaloud-single.log"
+      },
+      "report": {
+        "file": "production/ensemble/qa/readaloud-single/readaloud.json",
+        "sha256": "e1dbd0d4a4d4530ff742ac8c8838f29d5820e8daa43cd6a2d4f705cb3d5207c1"
+      },
+      "log": {
+        "file": "production/ensemble/qa/readaloud-single.log",
+        "sha256": "ecc7e3edc64dece02c5252fc7f869cebc98b6e63ce6eb46a80024642bea3c4ee"
+      },
+      "run_matrix": {
+        "file": "production/ensemble/qa/compatibility-results.json",
+        "sha256": "642a8c695d166b0d3aae3a46732bdb8f77d5d9cff3863d7fcf6181c87a8ef533",
+        "rows": 21,
+        "completed_exit_codes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "scope": "Fryst fullført kompatibilitetsmatrise. Den konkrete readaloud-single-raden er kopiert over."
+      },
+      "build_manifest": {
+        "file": "production/ensemble/build-manifest.json",
+        "sha256": "802d582bb83c30933170d69cadce51c3d330447349008f4e80b03c7f2d6a3be1"
+      },
+      "candidate_single_sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05",
+      "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+      "scope": "Den uendrede Kinski-prøven består i streng CSP-enkeltfil på samme aktuelle bygg som Pages. Opprinnelig feilbevis og immutable Pages-matrise er bevart."
+    }
+  },
+  "evidence": {
+    "archive_base": "outputs/ensemble/before-kinski-redraw-fix",
+    "failed_report": {
+      "file": "qa/readaloud-pages/readaloud.json",
+      "sha256": "993c88735445f24b4dac7545e9c93415b4a5cecfaee8a7c1657719d13fe595b4"
+    },
+    "failed_log": {
+      "file": "qa/readaloud-pages.log",
+      "sha256": "deb60a161d28241bbe82eb2b1dcf5bd85e56b0c29e40b976f5ef8020d9644a85"
+    },
+    "old_build_manifest": {
+      "file": "build-manifest.json",
+      "sha256": "750f704ec54f1e3e72b6ac318d4de66a0d50d641f17aa9d9595aa10b46ad269a"
+    },
+    "earlier_focused_copy": "outputs/ensemble/failed-readaloud-pages",
+    "note": "Det faktiske FAIL-resultatet er bevart. Tidligere kandidatbilder og nettleserresultater erstatter ikke ny kjøring."
+  },
+  "limits": [
+    "Rotårsak er bekreftet ved faktisk mislykket nettleserassert og kildegjennomgang. CPU-fixtures alene beviser ikke faktisk MP3-avspilling, menneskelig lytting eller enhetsytelse."
+  ],
+  "updated_utc": "2026-10-20T01:18:23.478824+00:00"
+}

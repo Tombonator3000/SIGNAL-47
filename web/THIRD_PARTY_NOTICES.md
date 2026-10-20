@@ -1,5 +1,13 @@
 # Tredjepartsinnhold i web/
 
+## Seks nye syntetiske stemmer, 20. oktober 2026
+
+`src/assets/audio/ensemble/` inneholder nye fremføringer av spillets eksisterende replikker: Harry Dean Stanton som bensinstasjonsbetjenten, Lauren Bacall som N. Vega, Robert Stack som visesheriffen, David Lynch som suvenirmannen og Vincent Price på den eksisterende T. Vega-opptaksfrasen. `src/assets/audio/serling/` inneholder Rod Serling-parodien for fortellerbeskrivelser og mellomkapitteltekst. Navnene beskriver syntetisk rollebesetning, ikke originale fremføringer av spillets manus eller støtte fra personene.
+
+Referanser er korte utsnitt av offentlige intervjuer og bevarte originalopptak. Stanton kommer fra [WNYC The Takeaway](https://www.wnycstudios.org/story/317438-harry-dean-stanton-singer-actor-partly-fiction/), Bacall fra [WHYY Fresh Air](https://freshairarchive.org/segments/actress-lauren-bacall) og Stack fra [Bob Barrys eget intervjuarkiv](https://bobbarry.libsyn.com/robert-stack). Lynch bruker en bevart [Daily Report fra hans egen nettside](https://archive.org/details/david-lynch-daily-report-2005-2010). Serling bruker [Mike Wallace-intervjuet fra 1959](https://archive.org/details/The_Mike_Wallace_Interview___Rod_Serling), med intervjukontekst fra Rod Serling Memorial Foundation. Price bruker [BBC Archives bevarte Parkinson-klipp fra 1976](https://archive.org/details/twitter-1322516170109558784). Offentlig tilgang er ikke dokumentasjon på en lisens for stemmekloning eller gjenbruk, og arkivuploaderes lisensmerker påstås ikke som verifiserte rettigheter.
+
+Originallyd, stemmereferanser, profilfiler og modellvekter følger ikke spillpakken eller det offentlige repoet. Samme eksisterende VoiceStudio 0.5.6 og festede OmniVoice-modell som under er brukt, med uendrede program-/modellvilkår. De nye filene merkes ikke som CC0. Profil- og kildehash, korte referansefraser, faktiske genereringer, filkontroll og ordprøver dokumenteres i `production/ensemble/`.
+
 ## Valgfri syntetisk Kinski-opplesning, 19. oktober 2026
 
 Lydfilene i `src/assets/audio/kinski/` er genererte engelske opplesninger av spillets eksisterende tekst, laget lokalt for Toms parodiversjon. Dette er en syntetisk stemmekopi, ikke originale Kinski-replikker. Den korte tyske stemmereferansen er hentet fra Fitzcarraldo-opptaket med Walter Saxer som er gjengitt i Werner Herzogs *Mein liebster Feind* (1999), via https://www.dailymotion.com/video/x2siao8. Kildelyd og referanseopptak følger ikke spillet.

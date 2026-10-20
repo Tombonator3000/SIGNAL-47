@@ -1,0 +1,52 @@
+{
+  "model": "existing faster-whisper-small",
+  "device": "cpu",
+  "compute_type": "int8",
+  "beam_size": 5,
+  "human_listened": false,
+  "initial_prompt": null,
+  "clips": [
+    {
+      "id": "9b0617f13405b9bb",
+      "text": "NIGHT SHIFT // EVERY DISH AT AZ 026",
+      "actual_request_text": "NIGHT SHIFT .  EVERY DISH AT AZ 026",
+      "recognized": "At night shift, every dish at AZ is 026.",
+      "audio_sha256": "b523b161e8b27562c12082dd25d3beee5c5a8aebd3e271c1d5e357158b2bff44"
+    },
+    {
+      "id": "3d8da3a0540e60f3",
+      "text": "LOCAL INCIDENT S-03 / B-12 // FILED",
+      "actual_request_text": "LOCAL INCIDENT Ess zero three / Bee twelve .  FILED",
+      "recognized": "Local Ascent S03B12 file D.",
+      "audio_sha256": "2d0929c7d069dcdc1eb1c604a776144a3c89d35c0f3ca2bc7f9c623483ab1cdc"
+    },
+    {
+      "id": "fc9722d7745a8d17",
+      "text": "The shielded lamp did not explain it. The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.",
+      "actual_request_text": "The shielded lamp did not explain it. The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: minus thirty nine light years.",
+      "recognized": "the shielded lamp did not explain it the I saw one reference the film kept to one line on the receiver print is still unexplained minus 39 light years",
+      "audio_sha256": "e9add6d807804de2165a9e7fc49dd2838d768a95f9c19a253cc7bc07f77a9a5b"
+    },
+    {
+      "id": "417ebb663c541df3",
+      "text": "Simple encoder drift did not explain it. The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.",
+      "actual_request_text": "Simple encoder drift did not explain it. The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: minus thirty nine light years.",
+      "recognized": "Simple encoder drift did not explain it The eye saw one reference the film kept two one line on the receiver print is still unexplained minus 39 light years",
+      "audio_sha256": "e168558ca6de3540f7e572e27789fce54db8518b4d8e0b5afe99e8f7ad5cc28a"
+    },
+    {
+      "id": "8bc304018480c893",
+      "text": "THE SURVEY STATION // P06 TO P09 RECORDED",
+      "actual_request_text": "THE SURVEY STATION .  Pee zero six TO Pee zero nine RECORDED",
+      "recognized": "to the service station. P06 to P09 recorded.",
+      "audio_sha256": "ba17cb596da2c8ceb73e127cc477ae54aae8b0ac2e9a7d0c6e2ef90fed77fc09"
+    },
+    {
+      "id": "3e021803b18dd217",
+      "text": "ROOM 6 // P10 TO P12 RECORDED",
+      "actual_request_text": "ROOM 6 .  Pee ten TO Pee twelve RECORDED",
+      "recognized": "Room 6P-10 to P-12, record dead.",
+      "audio_sha256": "b7075ebd962f31a745c797abd8a043213a3c07e115db638d7949ab8304f4d541"
+    }
+  ]
+}

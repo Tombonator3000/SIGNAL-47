@@ -1,0 +1,2699 @@
+{
+  "status": "PASS",
+  "checked_utc": "2026-10-20T01:29:08.523894+00:00",
+  "scope": "Local final candidate and completed test evidence only. No builds, GPU, browser, TTS, ASR, publication, or profile mutation is performed by this finalizer.",
+  "publication_status": "UNVERIFIED here; root records PR/main/live byte checks separately after actual publication.",
+  "limitations": [
+    "Human listening, voice identity/likeness, role timbre, pronunciation, acting and music-free references UNVERIFIED.",
+    "Physical PC/mobile speaker or headphone output and measured device performance UNVERIFIED.",
+    "Serling ASR is stratified plus composed numeric/identifier/runtime scenarios, not a transcript audit of every Serling clip.",
+    "CPU clock/decoder fixtures and headless Web Audio evidence do not establish human perception or real-device performance.",
+    "Known unresolved automatic word/pronunciation checks: clip/ensemble/79a44e7e5fd1e5bf, clip/serling/9b0617f13405b9bb, clip/serling/e07df9fdd4d9c1a0, clip/serling/e10c9a2792f948c3, clip/serling/6de6ba3ad6b856de, clip/serling/b8c9f0756d14d474, clip/serling/6d8f91e3c74b565c, clip/serling/8c26116d4114baef, clip/serling/580c6291f2a0995a, clip/serling/d2fae6a331c3bb17, clip/serling/e0ccb159da38ea81, clip/serling/bbc4f06a1e57982c, clip/serling/8d6db6caf7e84739, clip/serling/3f58d648572b0a32, clip/serling/5a976d0eb15a433c, clip/serling/185bd8e9a2263670, clip/serling/fff5d8899372feef, clip/serling/40dccedd2dd548a9, clip/serling/6dc8eb82d2bc9d10, clip/serling/77cd1f6c9b09d683, clip/serling/d58777cd97fa78bd, clip/serling/282a25ef5a07e9cc, clip/serling/d88f4c6c3c0d9857; compositions: serling/examine-scenery, serling/photo-clock, serling/photo-control-clock, serling/negative-distance, serling/identifier-e09a, serling/identifier-p13, serling/numbers-27, serling/identifiers-0, serling/identifiers-9; contexts: ensemble/stanton-rig-context. Actual expected/recognized text, review note, explicit human-word fields or their absence, and current source hashes are retained in the three audio.unresolved_*_ambiguities lists. These are automatic checks, not human verification."
+  ],
+  "build": {
+    "status": "PASS",
+    "manifest": "production/ensemble/build-manifest.json",
+    "manifest_sha256": "802d582bb83c30933170d69cadce51c3d330447349008f4e80b03c7f2d6a3be1",
+    "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+    "integrated_main": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+    "starting_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+    "candidate_identity": "Exact source, Pages and single-file hashes; the pre-change Git head is not asserted to contain this uncommitted payload.",
+    "source_files": 4179,
+    "pages_files": 3437,
+    "source_snapshot_sha256": "a9934062b3a85ec40c33ead3e55fec90f308da1e998929ac0271c113050231c3",
+    "licensed_assets_commit": "2be309ca3b410bac6d47767db5259c201db287a7",
+    "single": {
+      "path": "dist-single/index.html",
+      "bytes": 180160203,
+      "sha256": "87f5b7556636571d71d5ae0de087092bbf5105d8be97e0c11add4d162b865b05"
+    }
+  },
+  "cpu": {
+    "status": "PASS",
+    "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+    "source_files": 135,
+    "matrices": {
+      "engine-cpu-results.json": {
+        "status": "PASS",
+        "runs": 9,
+        "results_sha256": "944b540858b8788e0ed574e9b8dc757bcc261f7533a0116e3d4a6b144b762fb3",
+        "results": [
+          {
+            "name": "ensemble-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/ensemble-core.cjs",
+            "log": "ensemble-core.log",
+            "exit_code": 0,
+            "seconds": 1.0476740550075192,
+            "sha256": "ad8fc1ccb75cf81b9792b216b7c98010dbf760686a8f468393c78aa64c8c5fdb",
+            "assertion_groups": [
+              {
+                "passed": 61,
+                "total": 61,
+                "summary": "61/61 PASS"
+              }
+            ],
+            "assertions_passed": 61,
+            "assertions_total": 61
+          },
+          {
+            "name": "serling-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/serling-core.cjs",
+            "log": "serling-core.log",
+            "exit_code": 0,
+            "seconds": 1.0481468139914796,
+            "sha256": "b7c287cf3ce724ce718824fb3b26710214677c9e16f5ae17125157795178d372",
+            "assertion_groups": [
+              {
+                "passed": 47,
+                "total": 47,
+                "summary": "47/47 PASS"
+              }
+            ],
+            "assertions_passed": 47,
+            "assertions_total": 47
+          },
+          {
+            "name": "artbell-town-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/artbell-town-core.cjs",
+            "log": "artbell-town-core.log",
+            "exit_code": 0,
+            "seconds": 1.0398399170080665,
+            "sha256": "831a545f6cbdd13052f1576adc7ca3d059cdee6038ac3f51004437106197f447",
+            "assertion_groups": [
+              {
+                "passed": 38,
+                "total": 38,
+                "summary": "38/38 PASS"
+              }
+            ],
+            "assertions_passed": 38,
+            "assertions_total": 38
+          },
+          {
+            "name": "artbell-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/artbell-core.cjs",
+            "log": "artbell-core.log",
+            "exit_code": 0,
+            "seconds": 0.8029164779873099,
+            "sha256": "5dc1836b3ad0fba3fc434dd4f67cb8e3cb485c99055b3641232b4757bcab8080",
+            "assertion_groups": [
+              {
+                "passed": 48,
+                "total": 48,
+                "summary": "48/48 PASS"
+              }
+            ],
+            "assertions_passed": 48,
+            "assertions_total": 48
+          },
+          {
+            "name": "radiocast-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/radiocast-core.cjs",
+            "log": "radiocast-core.log",
+            "exit_code": 0,
+            "seconds": 2.71924413999659,
+            "sha256": "eedbfd14715e5a593d57c357dfc61b1d9ecc2df030c590c2435125b3fd9a7c06",
+            "assertion_groups": [
+              {
+                "passed": 77,
+                "total": 77,
+                "summary": "77/77 PASS"
+              }
+            ],
+            "assertions_passed": 77,
+            "assertions_total": 77
+          },
+          {
+            "name": "radioarchive",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node_modules/.bin/esbuild tools/radioarchive.ts --bundle --platform=node --format=cjs --packages=external --outfile=node_modules/.cache/ensemble-radioarchive.cjs --log-level=warning && node node_modules/.cache/ensemble-radioarchive.cjs",
+            "log": "radioarchive.log",
+            "exit_code": 0,
+            "seconds": 0.8478217119991314,
+            "sha256": "aa21bf8586362adbceceb23dd197385ec5998a56dbb8a347d2683ee73ef7a7e3",
+            "assertion_groups": [
+              {
+                "passed": 51,
+                "total": 51,
+                "summary": "51/51 PASS"
+              }
+            ],
+            "assertions_passed": 51,
+            "assertions_total": 51
+          },
+          {
+            "name": "readaloud-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/readaloud-core.cjs",
+            "log": "readaloud-core.log",
+            "exit_code": 0,
+            "seconds": 1.1645131459808908,
+            "sha256": "f9a89ae26e714b360e16a0c04c7f90f0b6653c132e376761e40c472514a59f32",
+            "assertion_groups": [
+              {
+                "passed": 67,
+                "total": 67,
+                "summary": "67/67 PASS"
+              }
+            ],
+            "assertions_passed": 67,
+            "assertions_total": 67
+          },
+          {
+            "name": "phonecalls-core",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/phonecalls-core.cjs",
+            "log": "phonecalls-core.log",
+            "exit_code": 0,
+            "seconds": 0.5961660640023183,
+            "sha256": "90b609df064fd89dd159379c5a96eee88bbd42cd8d4b63946a9286619b05fe06",
+            "assertion_groups": [
+              {
+                "passed": 28,
+                "total": 28,
+                "summary": "28/28 PASS"
+              }
+            ],
+            "assertions_passed": 28,
+            "assertions_total": 28
+          },
+          {
+            "name": "typecheck",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "npm run typecheck",
+            "log": "cpu-typecheck.log",
+            "exit_code": 0,
+            "seconds": 2.6168594410119113,
+            "sha256": "aedf4cf49310f357023c7727c3b1221b924824f83e324e4564b0e3a751364abe",
+            "assertion_groups": [],
+            "assertions_passed": null,
+            "assertions_total": null
+          }
+        ]
+      },
+      "compatibility-cpu-results.json": {
+        "status": "PASS",
+        "runs": 3,
+        "results_sha256": "61bd1ff7e99f6e7be5b1e5f91553ebbf4e89afc55812491ecbfb82bf692ffa7d",
+        "results": [
+          {
+            "name": "readaloud-corpus",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/readaloud-core.cjs --corpus",
+            "log": "readaloud-corpus.log",
+            "exit_code": 0,
+            "seconds": 1.1413333870004863,
+            "sha256": "2eb29c698337d7095cce11afcd394e6eafe7884502a2a60f96abb02b036f1c75",
+            "assertion_groups": [
+              {
+                "passed": 67,
+                "total": 67,
+                "summary": "67/67 PASS"
+              },
+              {
+                "passed": 26,
+                "total": 26,
+                "summary": "26/26 PASS"
+              }
+            ],
+            "assertions_passed": 93,
+            "assertions_total": 93
+          },
+          {
+            "name": "saves",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "node tools/saves.cjs",
+            "log": "saves.log",
+            "exit_code": 0,
+            "seconds": 1.737084906984819,
+            "sha256": "e76333bdb4972418521463af8675212cce1ef6a75776034b3bf910e79830fbb9",
+            "assertion_groups": [
+              {
+                "passed": 19,
+                "total": 19,
+                "summary": "19 of 19 PASS"
+              }
+            ],
+            "assertions_passed": 19,
+            "assertions_total": 19
+          },
+          {
+            "name": "steercheck",
+            "base_commit": "5c25e05664e668b245d95c4a25d98be4e312a4d8",
+            "runtime_source_sha256": "90d50f93ba593d8d3ebd78284a0e694ce41bf63dd5afb63a4fe81dc5a568425e",
+            "source_state": "uncommitted voice-ensemble runtime",
+            "command": "npm run steercheck",
+            "log": "steercheck.log",
+            "exit_code": 0,
+            "seconds": 0.2642057350021787,
+            "sha256": "bad3cc4561617d1953d677e8e4e168b2f3b2442e1b1362af85705cacfaabddde",
+            "assertion_groups": [
+              {
+                "passed": 5,
+                "total": 5,
+                "basis": "actual PASS lines; no numeric summary"
+              }
+            ],
+            "assertions_passed": 5,
+            "assertions_total": 5
+          }
+        ]
+      }
+    },
+    "scope": "CPU-controlled source/clock/loader fixtures and text resolver checks. These do not prove real MP3 decoding, actor similarity, or device performance."
+  },
+  "checks": {
+    "feature": {
+      "status": "PASS",
+      "runs": 4,
+      "results_sha256": "2b7c23481443f4b811b00423af33f9e46e34df49a10b0958abb5a11dafef391a",
+      "results": [
+        {
+          "name": "serling-pages",
+          "exit_code": 0,
+          "seconds": 219.48,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/serling.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/serling-pages"
+          ],
+          "log": "serling-pages.log",
+          "sha256": "db4a5eb0a6b8caf2b25a6918ee2bf63234ccc2f40207ea40fba5cde2d68dcaa4",
+          "assertion_groups": [
+            {
+              "passed": 107,
+              "total": 107,
+              "summary": "107 of 107 PASS"
+            }
+          ],
+          "assertions_passed": 107,
+          "assertions_total": 107
+        },
+        {
+          "name": "ensemble-pages",
+          "exit_code": 0,
+          "seconds": 224.21,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/ensemble.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ensemble-pages"
+          ],
+          "log": "ensemble-pages.log",
+          "sha256": "289005be3a819115067f2137ef377466f9e769197720c0f393f3668d57eae6f3",
+          "assertion_groups": [
+            {
+              "passed": 175,
+              "total": 175,
+              "summary": "175 of 175 PASS"
+            }
+          ],
+          "assertions_passed": 175,
+          "assertions_total": 175
+        },
+        {
+          "name": "ensemble-single",
+          "exit_code": 0,
+          "seconds": 232.78,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/ensemble.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ensemble-single"
+          ],
+          "log": "ensemble-single.log",
+          "sha256": "911e9e85084de38491151f4ed0cdbb7dcc8fc623bc8f944c9585e04dd27f806a",
+          "assertion_groups": [
+            {
+              "passed": 176,
+              "total": 176,
+              "summary": "176 of 176 PASS"
+            }
+          ],
+          "assertions_passed": 176,
+          "assertions_total": 176
+        },
+        {
+          "name": "serling-single",
+          "exit_code": 0,
+          "seconds": 231.9,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/serling.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/serling-single"
+          ],
+          "log": "serling-single.log",
+          "sha256": "b3a371f96e17518980ba9d9f5569a03104f54a630b33d0df66f4052693242e9b",
+          "assertion_groups": [
+            {
+              "passed": 108,
+              "total": 108,
+              "summary": "108 of 108 PASS"
+            }
+          ],
+          "assertions_passed": 108,
+          "assertions_total": 108
+        }
+      ]
+    },
+    "compatibility": {
+      "status": "PASS",
+      "runs": 21,
+      "results_sha256": "642a8c695d166b0d3aae3a46732bdb8f77d5d9cff3863d7fcf6181c87a8ef533",
+      "results": [
+        {
+          "name": "readaloud-pages",
+          "exit_code": 0,
+          "seconds": 15.62,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/readaloud.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/readaloud-pages"
+          ],
+          "log": "readaloud-pages.log",
+          "sha256": "ec9a6b10ed1ceebedf4a5cbd9aa59dcd2b73ddf2f389731687ef06739d248f8c",
+          "assertion_groups": [
+            {
+              "passed": 37,
+              "total": 37,
+              "summary": "37 of 37 PASS"
+            }
+          ],
+          "assertions_passed": 37,
+          "assertions_total": 37
+        },
+        {
+          "name": "earl-pages",
+          "exit_code": 0,
+          "seconds": 68.69,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/artbell-town.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/earl-pages"
+          ],
+          "log": "earl-pages.log",
+          "sha256": "d8083f5148b32989ff8d3b54a2f606e2d97871f1a7fcf9db98aadfbd15986633",
+          "assertion_groups": [
+            {
+              "passed": 101,
+              "total": 101,
+              "summary": "101 of 101 PASS"
+            }
+          ],
+          "assertions_passed": 101,
+          "assertions_total": 101
+        },
+        {
+          "name": "earl-single",
+          "exit_code": 0,
+          "seconds": 81.43,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/artbell-town.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/earl-single"
+          ],
+          "log": "earl-single.log",
+          "sha256": "6e1945f2eec9da14e1cac41088be93d69c6b296f7d17a21d33cc2db612db62e5",
+          "assertion_groups": [
+            {
+              "passed": 102,
+              "total": 102,
+              "summary": "102 of 102 PASS"
+            }
+          ],
+          "assertions_passed": 102,
+          "assertions_total": 102
+        },
+        {
+          "name": "radiocast-pages",
+          "exit_code": 0,
+          "seconds": 80.75,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/radiocast-radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/radiocast-pages"
+          ],
+          "log": "radiocast-pages.log",
+          "sha256": "b48610725aaf8cec5fbbe24e110842bfb862ffa1e6fb381bee33489a54866031",
+          "assertion_groups": [
+            {
+              "passed": 70,
+              "total": 70,
+              "summary": "70 of 70 PASS"
+            }
+          ],
+          "assertions_passed": 70,
+          "assertions_total": 70
+        },
+        {
+          "name": "radiocast-single",
+          "exit_code": 0,
+          "seconds": 93.31,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/radiocast-radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/radiocast-single"
+          ],
+          "log": "radiocast-single.log",
+          "sha256": "103b7736413baf1bbf3becd06b565782aceb74d7510cd952e9ccd5003069ff58",
+          "assertion_groups": [
+            {
+              "passed": 71,
+              "total": 71,
+              "summary": "71 of 71 PASS"
+            }
+          ],
+          "assertions_passed": 71,
+          "assertions_total": 71
+        },
+        {
+          "name": "artbell-pages",
+          "exit_code": 0,
+          "seconds": 26.42,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/artbell-radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/artbell-pages"
+          ],
+          "log": "artbell-pages.log",
+          "sha256": "64eafec5aa8b5200b0267023856d8df5b7780c6a5f22e15489fda4f8f27d080d",
+          "assertion_groups": [
+            {
+              "passed": 51,
+              "total": 51,
+              "summary": "51 of 51 PASS"
+            }
+          ],
+          "assertions_passed": 51,
+          "assertions_total": 51
+        },
+        {
+          "name": "artbell-single",
+          "exit_code": 0,
+          "seconds": 39.32,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/artbell-radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/artbell-single"
+          ],
+          "log": "artbell-single.log",
+          "sha256": "9277dde2b44fa643143f65f49e8d539fecfba47a2898ead29a49b7da34e5ace6",
+          "assertion_groups": [
+            {
+              "passed": 52,
+              "total": 52,
+              "summary": "52 of 52 PASS"
+            }
+          ],
+          "assertions_passed": 52,
+          "assertions_total": 52
+        },
+        {
+          "name": "getout",
+          "exit_code": 0,
+          "seconds": 36.55,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/getout.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/getout"
+          ],
+          "log": "getout.log",
+          "sha256": "6da6816a046c43f088d4d0033eb00f9bec9b990041ede216bf01d810291b6256",
+          "assertion_groups": [
+            {
+              "passed": 50,
+              "total": 50,
+              "summary": "50 of 50 PASS"
+            }
+          ],
+          "assertions_passed": 50,
+          "assertions_total": 50
+        },
+        {
+          "name": "storyexpansion-pages",
+          "exit_code": 0,
+          "seconds": 8.53,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/storyexpansion.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/story-pages"
+          ],
+          "log": "storyexpansion-pages.log",
+          "sha256": "7ff8c74392305a3fd6f0ecdd181881102ff9b0122a3df5ad4509af5691b3aac8",
+          "assertion_groups": [
+            {
+              "passed": 56,
+              "total": 56,
+              "summary": "56/56 PASS"
+            }
+          ],
+          "assertions_passed": 56,
+          "assertions_total": 56
+        },
+        {
+          "name": "storyexpansion-single",
+          "exit_code": 0,
+          "seconds": 14.39,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/storyexpansion.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/story-single",
+            "844x390"
+          ],
+          "log": "storyexpansion-single.log",
+          "sha256": "08342bdc8cdc625e5d76ef5cdca94ca448885c884ef552c63a5e3565fd18e713",
+          "assertion_groups": [
+            {
+              "passed": 56,
+              "total": 56,
+              "summary": "56/56 PASS"
+            }
+          ],
+          "assertions_passed": 56,
+          "assertions_total": 56
+        },
+        {
+          "name": "radio-pages",
+          "exit_code": 0,
+          "seconds": 17.2,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/radio-pages"
+          ],
+          "log": "radio-pages.log",
+          "sha256": "074ef0302997a5e9f67fbb3698bd9e32b5903223fbc7fccdcd779f19a4044f01",
+          "assertion_groups": [
+            {
+              "passed": 36,
+              "total": 36,
+              "summary": "36 of 36 PASS"
+            }
+          ],
+          "assertions_passed": 36,
+          "assertions_total": 36
+        },
+        {
+          "name": "radio-single",
+          "exit_code": 0,
+          "seconds": 14.93,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/radio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/radio-single"
+          ],
+          "log": "radio-single.log",
+          "sha256": "520de77f31cff07c06a498f04e9a19a2ef2d2f83c858b6d65f2e4558323e0977",
+          "assertion_groups": [
+            {
+              "passed": 34,
+              "total": 34,
+              "summary": "34 of 34 PASS"
+            }
+          ],
+          "assertions_passed": 34,
+          "assertions_total": 34
+        },
+        {
+          "name": "tripradio",
+          "exit_code": 0,
+          "seconds": 69.96,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/tripradio.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/tripradio"
+          ],
+          "log": "tripradio.log",
+          "sha256": "9efdfee0d57928fafb65633d9bf27590d8631beb6d9a361fc380547412ed9e73",
+          "assertion_groups": [
+            {
+              "passed": 35,
+              "total": 35,
+              "summary": "35 of 35 PASS"
+            }
+          ],
+          "assertions_passed": 35,
+          "assertions_total": 35
+        },
+        {
+          "name": "soundcheck",
+          "exit_code": 0,
+          "seconds": 175.21,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/soundcheck.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/soundcheck"
+          ],
+          "log": "soundcheck.log",
+          "sha256": "986798da27a6956621bf963c6995f8ce408dcbd0cb5a78186e56c672e607a123",
+          "assertion_groups": [
+            {
+              "passed": 4,
+              "total": 4,
+              "summary": "4 of 4 PASS"
+            }
+          ],
+          "assertions_passed": 4,
+          "assertions_total": 4
+        },
+        {
+          "name": "licensed-with",
+          "exit_code": 0,
+          "seconds": 64.84,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/licensed_sfx.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/licensed-with",
+            "with"
+          ],
+          "log": "licensed-with.log",
+          "sha256": "8e1ea6955b9e6fc2ccd6c332bc8d37cc0b8520e36055a5701a27d18e961d0549",
+          "assertion_groups": [
+            {
+              "passed": 38,
+              "total": 38,
+              "summary": "38 of 38 PASS"
+            }
+          ],
+          "assertions_passed": 38,
+          "assertions_total": 38
+        },
+        {
+          "name": "readaloud-single",
+          "exit_code": 0,
+          "seconds": 24.29,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/readaloud.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/readaloud-single"
+          ],
+          "log": "readaloud-single.log",
+          "sha256": "ecc7e3edc64dece02c5252fc7f869cebc98b6e63ce6eb46a80024642bea3c4ee",
+          "assertion_groups": [
+            {
+              "passed": 38,
+              "total": 38,
+              "summary": "38 of 38 PASS"
+            }
+          ],
+          "assertions_passed": 38,
+          "assertions_total": 38
+        },
+        {
+          "name": "phonevoices-pages",
+          "exit_code": 0,
+          "seconds": 29.92,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/phonevoices.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/phone-pages"
+          ],
+          "log": "phonevoices-pages.log",
+          "sha256": "a3edc76778dd7e9e17625b4c26f698d036ed3a12be263ae81bac0c1a4a001325",
+          "assertion_groups": [
+            {
+              "passed": 49,
+              "total": 49,
+              "summary": "49 of 49 PASS"
+            }
+          ],
+          "assertions_passed": 49,
+          "assertions_total": 49
+        },
+        {
+          "name": "phonevoices-single",
+          "exit_code": 0,
+          "seconds": 36.19,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/phonevoices.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/phone-single"
+          ],
+          "log": "phonevoices-single.log",
+          "sha256": "6e6e3b2cec0c2c53b500e2174690e839ed730bacd72de2fe93a7dc4475d80974",
+          "assertion_groups": [
+            {
+              "passed": 50,
+              "total": 50,
+              "summary": "50 of 50 PASS"
+            }
+          ],
+          "assertions_passed": 50,
+          "assertions_total": 50
+        },
+        {
+          "name": "descriptions-pages",
+          "exit_code": 0,
+          "seconds": 19.13,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/descriptions.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/descriptions-pages"
+          ],
+          "log": "descriptions-pages.log",
+          "sha256": "d242c16ff72ad770b491d7192be612ac5b22d03547f84a780fa181c9896fcdf0",
+          "assertion_groups": [
+            {
+              "passed": 115,
+              "total": 115,
+              "summary": "115 of 115 PASS"
+            }
+          ],
+          "assertions_passed": 115,
+          "assertions_total": 115
+        },
+        {
+          "name": "descriptions-single",
+          "exit_code": 0,
+          "seconds": 25.6,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/descriptions.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/descriptions-single"
+          ],
+          "log": "descriptions-single.log",
+          "sha256": "6f5343e94bdc826a91951c8de0bed79cd6627f983f5244deb484b90453758254",
+          "assertion_groups": [
+            {
+              "passed": 116,
+              "total": 116,
+              "summary": "116 of 116 PASS"
+            }
+          ],
+          "assertions_passed": 116,
+          "assertions_total": 116
+        },
+        {
+          "name": "csptest",
+          "exit_code": 0,
+          "seconds": 6.42,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/csptest.py"
+          ],
+          "log": "csptest.log",
+          "sha256": "9146e73d629244bf929a0ad38963cd0c8769c9a6761c348b040d72315db19022",
+          "assertion_groups": [
+            {
+              "passed": 1,
+              "total": 1,
+              "basis": "actual PASS lines; no numeric summary"
+            }
+          ],
+          "assertions_passed": 1,
+          "assertions_total": 1
+        }
+      ]
+    },
+    "regression": {
+      "status": "PASS",
+      "runs": 13,
+      "results_sha256": "2a58657afab196e8a5df4727ce2c464fa91ae8475d5de345290dd7fbd2074a56",
+      "results": [
+        {
+          "name": "walkthrough",
+          "exit_code": 0,
+          "seconds": 17.31,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/walkthrough.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/walkthrough",
+            "844x390",
+            "high"
+          ],
+          "log": "walkthrough.log",
+          "sha256": "a584068f4a78a064d25212d3275a052734abf1c551b231d79d493cda7212b766",
+          "assertion_groups": [
+            {
+              "passed": 57,
+              "total": 57,
+              "summary": "57 of 57 PASS"
+            }
+          ],
+          "assertions_passed": 57,
+          "assertions_total": 57
+        },
+        {
+          "name": "chapter1",
+          "exit_code": 0,
+          "seconds": 28.21,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter1.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch1",
+            "passive"
+          ],
+          "log": "chapter1.log",
+          "sha256": "adfaabfb120d62489d92bb15270b9bc10101f8e3f501b4744171d94b68cded7d",
+          "assertion_groups": [
+            {
+              "passed": 75,
+              "total": 75,
+              "summary": "75 of 75 PASS"
+            }
+          ],
+          "assertions_passed": 75,
+          "assertions_total": 75
+        },
+        {
+          "name": "chapter2",
+          "exit_code": 0,
+          "seconds": 24.39,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter2.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch2"
+          ],
+          "log": "chapter2.log",
+          "sha256": "2e29c7ab182d0549e7cbec06e4bb4ca2719d095eb00ad2ea6a91a105c2c90455",
+          "assertion_groups": [
+            {
+              "passed": 76,
+              "total": 76,
+              "summary": "76 of 76 PASS"
+            }
+          ],
+          "assertions_passed": 76,
+          "assertions_total": 76
+        },
+        {
+          "name": "chapter3",
+          "exit_code": 0,
+          "seconds": 31.2,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter3.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch3"
+          ],
+          "log": "chapter3.log",
+          "sha256": "451542a2705cd32ce7ea2f11996cfcdd78c9abf3956defca8ed8a6848107ee99",
+          "assertion_groups": [
+            {
+              "passed": 72,
+              "total": 72,
+              "summary": "72 of 72 PASS"
+            }
+          ],
+          "assertions_passed": 72,
+          "assertions_total": 72
+        },
+        {
+          "name": "chapter4",
+          "exit_code": 0,
+          "seconds": 24.82,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter4.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch4"
+          ],
+          "log": "chapter4.log",
+          "sha256": "8ea24374942db2d26d53f575398496cb088614edcc6d6478c91fc871df0704ba",
+          "assertion_groups": [
+            {
+              "passed": 69,
+              "total": 69,
+              "summary": "69 of 69 PASS"
+            }
+          ],
+          "assertions_passed": 69,
+          "assertions_total": 69
+        },
+        {
+          "name": "chapter5",
+          "exit_code": 0,
+          "seconds": 22.0,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter5.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch5"
+          ],
+          "log": "chapter5.log",
+          "sha256": "d46fa8670955d99d1dc8b3aabb17a4260e135ff0267882fc97a44cfe7bb50c18",
+          "assertion_groups": [
+            {
+              "passed": 55,
+              "total": 55,
+              "summary": "55 of 55 PASS"
+            }
+          ],
+          "assertions_passed": 55,
+          "assertions_total": 55
+        },
+        {
+          "name": "chapter6",
+          "exit_code": 0,
+          "seconds": 58.08,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/chapter6.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/ch6"
+          ],
+          "log": "chapter6.log",
+          "sha256": "8ff09e79370d7baf5f11c658f0e1e325db18ed75d7287052eca9d07889cd24bd",
+          "assertion_groups": [
+            {
+              "passed": 44,
+              "total": 44,
+              "summary": "44 of 44 PASS"
+            }
+          ],
+          "assertions_passed": 44,
+          "assertions_total": 44
+        },
+        {
+          "name": "devmenu",
+          "exit_code": 0,
+          "seconds": 18.53,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/devmenu.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/dev"
+          ],
+          "log": "devmenu.log",
+          "sha256": "2e1dd2c72799e668c27ae0cda00c5bd141c6aaa4d0cdf5f4bc437f91044438b1",
+          "assertion_groups": [
+            {
+              "passed": 14,
+              "total": 14,
+              "summary": "14 of 14 PASS"
+            }
+          ],
+          "assertions_passed": 14,
+          "assertions_total": 14
+        },
+        {
+          "name": "drives",
+          "exit_code": 0,
+          "seconds": 58.82,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/drives.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/drives"
+          ],
+          "log": "drives.log",
+          "sha256": "7f69ae25f65d33f0ac67290355d9eaba0a5af6a694bb0947818e355a8bbc2de6",
+          "assertion_groups": [
+            {
+              "passed": 23,
+              "total": 23,
+              "summary": "23 of 23 PASS"
+            }
+          ],
+          "assertions_passed": 23,
+          "assertions_total": 23
+        },
+        {
+          "name": "ambience",
+          "exit_code": 0,
+          "seconds": 16.49,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/ambience.py"
+          ],
+          "log": "ambience.log",
+          "sha256": "754cfee7b4029b17ac2125fedf99de022c6656e2cbb2fbfeeaa8dfa7a0965816",
+          "assertion_groups": [
+            {
+              "passed": 7,
+              "total": 7,
+              "summary": "7 of 7 PASS"
+            }
+          ],
+          "assertions_passed": 7,
+          "assertions_total": 7
+        },
+        {
+          "name": "diner",
+          "exit_code": 0,
+          "seconds": 15.47,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/diner.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/diner"
+          ],
+          "log": "diner.log",
+          "sha256": "509a3c97f71bdc7353fcc6ac7d80b753e5aa5b2265ae8dccaebed9d0662d5d11",
+          "assertion_groups": [
+            {
+              "passed": 15,
+              "total": 15,
+              "summary": "15 of 15 PASS"
+            }
+          ],
+          "assertions_passed": 15,
+          "assertions_total": 15
+        },
+        {
+          "name": "music-pages",
+          "exit_code": 0,
+          "seconds": 32.9,
+          "url": "http://127.0.0.1:8502/SIGNAL-47/",
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/music.py"
+          ],
+          "log": "music-pages.log",
+          "sha256": "a9cefb4a0131eb7069cb1d4f3196596bfd425b38ec3f8727e4d766c5e713dc16",
+          "assertion_groups": [
+            {
+              "passed": 12,
+              "total": 12,
+              "summary": "12 of 12 PASS"
+            }
+          ],
+          "assertions_passed": 12,
+          "assertions_total": 12
+        },
+        {
+          "name": "music-single",
+          "exit_code": 0,
+          "seconds": 10.95,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/music.py"
+          ],
+          "log": "music-single.log",
+          "sha256": "065287884aa82e077ccf6607f8ead016ca4a81551dacc202374ffef8f1747154",
+          "assertion_groups": [
+            {
+              "passed": 5,
+              "total": 5,
+              "summary": "5 of 5 PASS"
+            }
+          ],
+          "assertions_passed": 5,
+          "assertions_total": 5
+        }
+      ]
+    },
+    "cost": {
+      "status": "PASS",
+      "runs": 1,
+      "results_sha256": "88a904e70c7a5db9e64be5a1b6a12aadbb92c04e99615a612ee56aafbc772c96",
+      "results": [
+        {
+          "name": "audio-cost",
+          "exit_code": 0,
+          "seconds": 29.25,
+          "url": null,
+          "command": [
+            "bash",
+            "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+            "--alone",
+            "/home/tom/.venvs/signal47/bin/python",
+            "tools/artbell-cost.py",
+            "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/audio-cost",
+            "6"
+          ],
+          "log": "audio-cost.log",
+          "sha256": "bfa6ec5c0947dff4768adfe6f8b88e9ddfef2bfb3c19d183931eb398dac6a606",
+          "assertion_groups": [
+            {
+              "passed": 17,
+              "total": 17,
+              "summary": "17/17 PASS"
+            }
+          ],
+          "assertions_passed": 17,
+          "assertions_total": 17
+        }
+      ]
+    }
+  },
+  "browser_features": {
+    "ensemble-pages": {
+      "status": "PASS",
+      "checks": 175,
+      "report": "ensemble-pages/ensemble.json",
+      "sha256": "49a4a79082bf37a7bf76e8b96feabf4bb4556fe30039f0e9eaa06da0f1a743cd",
+      "strict_csp": false,
+      "limits": "Genuine decode/PCM/graph/source lifecycle and real input. Manuscript full-bank starts intentionally cancelled; selected authored exchanges complete naturally. Human listening, identity, pronunciation and physical-device output/performance UNVERIFIED."
+    },
+    "ensemble-single": {
+      "status": "PASS",
+      "checks": 176,
+      "report": "ensemble-single/ensemble.json",
+      "sha256": "fdfe859a06ab41612c6c841a1471599ee91d93ef6c63c3b157542edaa222a21a",
+      "strict_csp": true,
+      "limits": "Genuine decode/PCM/graph/source lifecycle and real input. Manuscript full-bank starts intentionally cancelled; selected authored exchanges complete naturally. Human listening, identity, pronunciation and physical-device output/performance UNVERIFIED."
+    },
+    "serling-pages": {
+      "status": "PASS",
+      "checks": 107,
+      "report": "serling-pages/serling.json",
+      "sha256": "293cb364ef1e03f957909870a801864ff71ac66a349e93e08933841f0bda0ee6",
+      "strict_csp": false,
+      "limits": "Full bank text-resolution and separate CPU PCM audit; representative genuine browser sources and all actual chapter-card variants. Human listening, resemblance, pronunciation, hardware output and device performance UNVERIFIED."
+    },
+    "serling-single": {
+      "status": "PASS",
+      "checks": 108,
+      "report": "serling-single/serling.json",
+      "sha256": "1131738f9156a0636522335c70d46b83f23a994fc627e4a7c7cad130a6bb9384",
+      "strict_csp": true,
+      "limits": "Full bank text-resolution and separate CPU PCM audit; representative genuine browser sources and all actual chapter-card variants. Human listening, resemblance, pronunciation, hardware output and device performance UNVERIFIED."
+    }
+  },
+  "private_bank_fallback": {
+    "status": "PASS",
+    "log": "licensed-without.log",
+    "sha256": "f2d486832b9ccba0fa968186aa3f1c1c5106db4a2e57831f54f3605c719068ea",
+    "assertion_groups": [
+      {
+        "passed": 22,
+        "total": 22,
+        "summary": "22 of 22 PASS"
+      }
+    ],
+    "assertions_passed": 22,
+    "assertions_total": 22,
+    "scope": "Separate build without the private bank; the tested primary payload uses the manifest-pinned private inputs."
+  },
+  "audio": {
+    "status": "PASS",
+    "verification_sha256": "63a5cc8560fc51b07981f8494722b34fcd82c3e9aa0450e9e03a24c02aaedde2",
+    "status_scope": "Technical file, PCM, corpus and recorded automatic-check requirements passed. This does not certify every spoken word or resolve the separately listed ASR ambiguities.",
+    "clips": 1502,
+    "bytes": 59492008,
+    "duration_seconds": 7308.0,
+    "word_check_status": "CHECKED_WITH_UNRESOLVED_ASR_AMBIGUITY",
+    "banks": {
+      "ensemble": {
+        "status": "PASS",
+        "clips": 100,
+        "bytes": 3224048,
+        "duration_seconds": 394.29,
+        "corpus_sha256": "d365056cbd5ad55ce886d341b5243bc8fe0b715dd41f95a6f8d67a1a3010ea07",
+        "catalog_sha256": "ba920e600f643255e35cc282914a4f15d26dd216de14cd787d0e838075d1812d",
+        "asr_file_sha256": "5df2c5665abe97c28e518943c98da5443bcdadd4e99b8f3c4c819944d8d52cba",
+        "asr": {
+          "checked": 100,
+          "strict_exact": 73,
+          "strict_differences": 27,
+          "strict_word_edits": 46,
+          "status_counts": {
+            "PASS": 72,
+            "REVIEWED_DIFFERENCE": 28
+          },
+          "coverage_denominator": 100,
+          "expected_selection_count": 100,
+          "additional_town_count": 0,
+          "selection": "all authored cast clips"
+        },
+        "technical_logs": [],
+        "town_examine_asr": [],
+        "asr_compositions": {
+          "checked": 0,
+          "strict_exact": 0,
+          "strict_differences": 0,
+          "strict_word_edits": 0,
+          "status_counts": {}
+        },
+        "word_check_status": "CHECKED_WITH_UNRESOLVED_ASR_AMBIGUITY",
+        "unresolved_asr_ambiguities": [
+          {
+            "bank": "ensemble",
+            "id": "79a44e7e5fd1e5bf",
+            "voice": "stanton",
+            "expected": "Towed a rig in off it once. Last October.",
+            "recognized": "Toe to rig in off it once last October.",
+            "note": "The intended Towed a rig phrase remains ambiguous as Toe to rig in Small ASR after four documented takes, standalone and context checks and unprompted CPU beam10. Remaining phrase is recognized. No further ASR chasing; human word/pronunciation check remains UNVERIFIED. See word-diagnostics.json and corrections.json.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74"
+          }
+        ],
+        "unresolved_composition_asr_ambiguities": [],
+        "context_asr": {
+          "checked": 5,
+          "file_sha256": "fbb825d22b635ca163d1a0ed0e37daea47c46e4965ee9e5f248877c0bb2f232f"
+        },
+        "unresolved_context_asr_ambiguities": [
+          {
+            "bank": "ensemble",
+            "id": "stanton-rig-context",
+            "expected": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer. Towed a rig in off it once. Last October. Left here a quarter to two. Got back twenty-five past four. It's a forty minute job.",
+            "recognized": "The old roads closed at the crossing. County says they'll grade it this summer. County says that every summer, tow to rig in off it once last October. Left here a quarter to two, got back 25 past four. It's a 40 minute job.",
+            "note": "Short towed/article articulation remains ambiguous, with numeric spelling differences. Human word/pronunciation check is UNVERIFIED; see word-diagnostics.json.",
+            "human_word_check": null,
+            "human_listened": false,
+            "human_word_check_field_present": false,
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "22010a044849c8f3",
+              "79a44e7e5fd1e5bf",
+              "d56bdd61a80ce2fb",
+              "080a38b87176fc6c"
+            ],
+            "source_audio_sha256": [
+              "0a216bee9a0948a6d54e4f625b67872ede440a61d4a6214e694f104384a86893",
+              "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74",
+              "f9fe44128ff2bd9ebdc6d4b4683954b91e8efcdc5835eeedb4f37145874b6b8b",
+              "035333f0890548dfda209d37f116bd9a35ea3a645f4b1e4e84858793cc45ba50"
+            ]
+          }
+        ],
+        "human_listened": "UNVERIFIED",
+        "speaker_similarity": "UNVERIFIED"
+      },
+      "serling": {
+        "status": "PASS",
+        "clips": 1402,
+        "bytes": 56267960,
+        "duration_seconds": 6913.71,
+        "corpus_sha256": "771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74",
+        "catalog_sha256": "d89c2f2377fd31107b5c03701e30c1ff78a49d3a32efe15f658ce09a51abb368",
+        "asr_file_sha256": "5f364b13b4cdd5f25ebe2ecd59442b5299bc05cfa27653907510a3bc87e0a7ab",
+        "asr": {
+          "checked": 137,
+          "strict_exact": 44,
+          "strict_differences": 93,
+          "strict_word_edits": 316,
+          "status_counts": {
+            "REVIEWED_DIFFERENCE": 93,
+            "PASS": 44
+          },
+          "coverage_denominator": 1402,
+          "expected_selection_count": 105,
+          "additional_town_count": 18,
+          "selection": "Recomputed exact corpus ID set: all card fields, all four DATE/FREQ logs, stratified long/source-trigger descriptions; not every Serling clip"
+        },
+        "technical_logs": [
+          {
+            "id": "6de6ba3ad6b856de",
+            "expected": "DATE 10/19/85 23:58:31 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -38 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR third time. Ask Systems.",
+            "recognized": "Update 10, 1985, 23, 58, 31, frequency 1,420.405 megahertz. Pattern pulse group 4 slash 7, source distance minus 38, light years. Check solve inputs, reclassified, input error third time. Ask systems.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Clock23:58:31,1420.405,4/7,minus38 and reclassification are recovered. Date10/19/85 is compactly recognized as Update10,1985; day19/grouping remains uncertain rather than declared exact.",
+            "audio_sha256": "3d882d8b839726bad54051799532fcbebd70d99746bc1cd49d77180bfeacd424"
+          },
+          {
+            "id": "965bb5c10466f121",
+            "expected": "DATE 03/02/83 03:10:44 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -36 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR baseline file reloaded",
+            "recognized": "Date 0302-8303-1044, frequency 1420.405 megahertz, pattern pulse group 4 slash 7, source distance minus 36 light years, check solve inputs, reclassified, input error baseline file reloaded.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "ASR compacts date/time separators but retains03/02/83,03:10:44,1420.405,4/7,minus36 and baseline-file reclassification.",
+            "audio_sha256": "0d2d5a4381059b89b2a7f436c3dc0089d45d1604e820b117e54f05e47f540c1f"
+          },
+          {
+            "id": "ae15a3fae81d7aeb",
+            "expected": "DATE 09/22/81 01:52:07 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -34 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR clock?",
+            "recognized": "Date 09-2281-01-5207, frequency 1420.405 megahertz, pattern pulse group 4 slash 7, source distance, minus 34 light years, check solve inputs. Reclassified input error clock.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "ASR compacts date/time separators but retains09/22/81,01:52:07,1420.405,4/7,minus34 and reclassified input error clock.",
+            "audio_sha256": "0ce1ffbb0969afad749d3b41a82c609357bf7120610e137e81419642c87e6d84"
+          },
+          {
+            "id": "d2fae6a331c3bb17",
+            "expected": "DATE 07/--/47 02:17:00 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -00 LY",
+            "recognized": "Update 07-47, 02700, frequency 1,420.405 megahertz, pattern pulse group 4 slash 7, source distance, minus 0,0 light years.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Frequency1420.405,group4/7 and explicit minus00 remain.02:17:00 becomes02700; seventeen is not securely recovered. The unknown-date dashes are also not spoken in ASR. Concrete clock/date-marker uncertainty remains.",
+            "audio_sha256": "8990191b3ba30618264bd68004fe91d89f79fd6d14347d31578367afae436353"
+          }
+        ],
+        "town_examine_asr": [
+          {
+            "id": "20e50dab3a1e3239",
+            "expected": "SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again.",
+            "recognized": "Scene lights, call the nightline. 1,420 a.m. midnight to four, typed, copied and copied again.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Seen/scene is homophonic and nightline/night line is spacing.1420 AM,midnight-to-four and the copied-text sentence remain.",
+            "audio_sha256": "f251b5ed64f9f4112b2968f1afbc4860e8be23ddfb9e74429281bc8736bc6377"
+          },
+          {
+            "id": "282a25ef5a07e9cc",
+            "expected": "Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.",
+            "recognized": "The oil cairns in Rose, a calendar still on April the register. Behind the counter, a man in a pressed shirt turns a page. He has not looked at the clock once.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Oil cans in rows is recognized the oil cairns in Rose. This may be accent/ASR, but the opening object-description words are not verified. The following calendar/man/clock sentences are represented.",
+            "audio_sha256": "9b11b00fafb06a750cecb881575938a0e326e21071b021c81765dc82147058e9"
+          },
+          {
+            "id": "3739effdca1d83cc",
+            "expected": "NICKLAUS, 46, WINS MASTERS. Under the fold, smaller: County to grade the old Roswell road this summer.",
+            "recognized": "Nicklas 46 wins Masters under the fold smaller County to grade the old Roswell Road this summer.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Nicklaus/Nicklas is an unverified proper-name transcription form;46,the Masters and the entire road-grading statement remain.",
+            "audio_sha256": "a21d1167919db87ff7c444dcf0c4e24fa8979cbf84a4e9c7725c8d023f0dee2f"
+          },
+          {
+            "id": "428564ad9f77f6c0",
+            "expected": "A woman in a winter coat with a transistor radio in her lap. No laundry with her.",
+            "recognized": "A woman in a winter coat with a transistor radio in her lap. No laundry with her.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "03ce6fb9e61578110a0286bde203ca31ba82e6e82645f2c8580e64fa2e0fa24b"
+          },
+          {
+            "id": "4292bb3974032ca9",
+            "expected": "His chair pushed back. The phone's line light still blinking.",
+            "recognized": "His chair pushed back, the phone's line light still blinking.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "d04c2dac1449c6e0606f5e89425164c4b876c0dcf3d94e408183e9c73d7d69b8"
+          },
+          {
+            "id": "5e215c26e2988ed5",
+            "expected": "Reels turning on the deck behind him. A coffee can of pencils, a phone with its line light blinking.",
+            "recognized": "The reel's turning on the deck behind him, a coffee can of pencils, a phone with its line light blinking.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Reels turning/reels turning with an apostrophe is a word-boundary form, and ASR adds the. Deck,pencils,phone and blinking line-light content remain.",
+            "audio_sha256": "3c6faef1bf1202fd8fe9a9737e072e8c63be43dbbd4aeb069de1a0e72b2e728d"
+          },
+          {
+            "id": "6394bec31e974ada",
+            "expected": "The foil has been crumpled by hand. There is a price sticker on the alien too.",
+            "recognized": "The foil has been crumpled by hand. There is a price sticker on the alien, too.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "6355416e92152b7d605fdf3b9499a3a98c2600202860d48b575c70b81382be89"
+          },
+          {
+            "id": "6649d48b825b7812",
+            "expected": "A payphone on a post, a phone book on a chain with half its pages gone.",
+            "recognized": "A pay phone on a post, a phone book on a chain with half its pages gone.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "Payphone/pay phone is word-spacing variation. All words are represented.",
+            "audio_sha256": "3d286ea7a16bc1de62658656380412a1045cad9d366f61732f633fe65ce4b251"
+          },
+          {
+            "id": "7b58b389900d9018",
+            "expected": "Two pumps on a concrete island. The counters stand at zero.",
+            "recognized": "Two pumps on a concrete island the counters stand at zero.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "025e551e284d73aca996481a588d0cc1427f6ba692069c965e522818f1e1caa5"
+          },
+          {
+            "id": "7cf4a8457955905b",
+            "expected": "The hood is still warm. Pins in a cigar box on the dash.",
+            "recognized": "The hood is still warm. Pins in a cigar box on the dash.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "762574e33dda1eb973d952c9c4507c2f9aeb4580f320df038cf4a56cb7c733f0"
+          },
+          {
+            "id": "984bf2ef0a881e73",
+            "expected": "A box office with its blind down, and a card: CLOSED.",
+            "recognized": "Box office with its blind down and a card closed.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "ASR omits initial a. The box office,blind and CLOSED card are represented.",
+            "audio_sha256": "c0f803436c9b8fb0747e679b95c5a16f057615f776c0076ba95783866b724a45"
+          },
+          {
+            "id": "9b457dec90a65c66",
+            "expected": "One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it.",
+            "recognized": "One row of pins runs out east along the old road, the other runs west off the highway into country with nothing drawn on it.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "b3cca44b372f19df9e40d3c253977205c56e4d8ce29d52096c112773025a2c80"
+          },
+          {
+            "id": "b557595611058d1d",
+            "expected": "The late movie, black and white, with the sound down.",
+            "recognized": "The late movie, black and white, with the sound down.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "846a77f2412553101c4a0089df90b621cec0aefbee3e4409ae445c9fe1d4379c"
+          },
+          {
+            "id": "bce1bb860cba3eb9",
+            "expected": "A man in a hat on his front step, smoking, watching the street.",
+            "recognized": "A man in a hat on his front steps, smoking, watching the street.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "ASR pluralizes step to steps. The man,hat,smoking and watching-street description is represented.",
+            "audio_sha256": "7e72467f8df2e488bb2e40dfb02353a6a2c5dfdce39cf2a9c51ece1a4aa6d911"
+          },
+          {
+            "id": "d1de9c870f595d86",
+            "expected": "No footprints going off the shoulder that you can see. The exhaust hangs in the cold, straight up.",
+            "recognized": "No footprints going off the shoulder that you can see the exhaust hangs in the cold straight up.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "4963876bd1d288e72f8a1ebc21d5a47801fe9cb531caaf5b5a537a14feba4f3d"
+          },
+          {
+            "id": "d88f4c6c3c0d9857",
+            "expected": "CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line.",
+            "recognized": "Closed. Thank you Kelly for 31 years. The letter has fallen out of the last line.",
+            "status": "REVIEWED_DIFFERENCE",
+            "note": "The bounded request recovers CLOSED and31 years. Caliche becomes Kelly, and a/the letter differs. The town-name pronunciation remains unverified after this one retake.",
+            "audio_sha256": "0b4e3b413a227db55d8c33aa45eb56a8c4cfc4b8b0bf261ba62c51514920d66d"
+          },
+          {
+            "id": "e108323cc7832fab",
+            "expected": "The one machine turns, stops, turns. There is no basket on the bench and no one waiting.",
+            "recognized": "The one machine turns, stops, turns. There is no basket on the bench and no one waiting.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "6d9faae16a847a34261347fb0147fe83f259fec20861d8c4d54078b1c86b1f15"
+          },
+          {
+            "id": "fa9fccd6e7c5b447",
+            "expected": "COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.",
+            "recognized": "County Sheriff, substation, a light under the door, and a radio turned low.",
+            "status": "PASS",
+            "note": "",
+            "audio_sha256": "03615649dafefbd3bec5c4fd352296a97bda992eb80e89137594fc43066d7e9f"
+          }
+        ],
+        "asr_compositions": {
+          "checked": 17,
+          "strict_exact": 1,
+          "strict_differences": 16,
+          "strict_word_edits": 105,
+          "status_counts": {
+            "REVIEWED_DIFFERENCE": 16,
+            "PASS": 1
+          }
+        },
+        "word_check_status": "CHECKED_WITH_UNRESOLVED_ASR_AMBIGUITY",
+        "unresolved_asr_ambiguities": [
+          {
+            "bank": "serling",
+            "id": "9b0617f13405b9bb",
+            "voice": "serling",
+            "expected": "NIGHT SHIFT // EVERY DISH AT AZ 026",
+            "recognized": "Night shift, every dish it has with Euro 26.",
+            "note": "The AZ/azimuth label is not reliably recovered (ASR has with Euro); 026 is represented. No claim of verified azimuth-label pronunciation.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "43050237b81514ad54d4121a3a94ecfcbdef5f60dd3b2b567cd9934a26504e7b"
+          },
+          {
+            "bank": "serling",
+            "id": "e07df9fdd4d9c1a0",
+            "voice": "serling",
+            "expected": "She cut the cable in 1947 with her brother standing on C, and he was not there afterwards. C crosses the old road to Roswell. The truck is on its pad.",
+            "recognized": "She cut the cable in 1947 with her brother standing on sea and he was not there afterwards Sea crosses the old road to Roswell The truck is on its path.",
+            "note": "C/sea is homophonic, but pad/path is a concrete unresolved final-word distinction. The source wording remains pad.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "a756e0d57d3206f33dd21d8d1a94b034aee1c66285558886bdc449733de8c861"
+          },
+          {
+            "bank": "serling",
+            "id": "e10c9a2792f948c3",
+            "voice": "serling",
+            "expected": "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+            "recognized": "The supported B-12 retains station 01. The archive sleeve matches its ID and triangle with bar fixed point mark. Old Servi station is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+            "note": "The title Old Survey Station is still rendered Old Servi station by ASR. This proper destination label remains an ASR/articulation uncertainty.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "5fd9301b75eac45daa3a7821540ded74a1c636844cd068d78a1b270c2b3bce90"
+          },
+          {
+            "bank": "serling",
+            "id": "6de6ba3ad6b856de",
+            "voice": "serling",
+            "expected": "DATE 10/19/85 23:58:31 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -38 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR third time. Ask Systems.",
+            "recognized": "Update 10, 1985, 23, 58, 31, frequency 1,420.405 megahertz. Pattern pulse group 4 slash 7, source distance minus 38, light years. Check solve inputs, reclassified, input error third time. Ask systems.",
+            "note": "Clock23:58:31,1420.405,4/7,minus38 and reclassification are recovered. Date10/19/85 is compactly recognized as Update10,1985; day19/grouping remains uncertain rather than declared exact.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "3d882d8b839726bad54051799532fcbebd70d99746bc1cd49d77180bfeacd424"
+          },
+          {
+            "bank": "serling",
+            "id": "b8c9f0756d14d474",
+            "voice": "serling",
+            "expected": "E10, the 1947 timing log: 02:17:00 carrier ceased, a recorded voice. 02:17:47 relay impact and reference motion. Final observation not entered.",
+            "recognized": "10, 1947, timing log, 02, 17, 00, carrier ceased, a recorded voice, 02, 1747, relay impact and reference motion. Final observation not entered.",
+            "note": "Both02:17:00 and02:17:47 are represented after explicit clock request, but the E prefix in E10 is absent from ASR. The identifier letter remains unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "61e726071d985d5aab653dd5b91ed644d77e0ff6ee6f9ba9e3866206ed8161f9"
+          },
+          {
+            "bank": "serling",
+            "id": "6d8f91e3c74b565c",
+            "voice": "serling",
+            "expected": "She cut the cable in 1947, with Tomás standing on C inside the active reference. Afterwards he was not there. She gave me his last field card (E11).",
+            "recognized": "She cut the cable in 1947 with Tomas standing on sea inside the active reference. Afterwards, he was not there. She gave me his last field card, the 11.",
+            "note": "Tomas/Thomas spelling and C/sea are ASR forms, but E11 becomes the11, leaving the E prefix uncertain.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "b4b7a99b22abcbfe850dd7e8242641540173582ed385ebf92b8b3c0749bad374"
+          },
+          {
+            "bank": "serling",
+            "id": "8c26116d4114baef",
+            "voice": "serling",
+            "expected": "The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, B for the case board, C for the camera, F for a flashlight once you have one, right mouse for a closer look, H for all of them. Phone: left thumb walks, right thumb looks, tap things to use them. The notebook has every control on its Controls page.",
+            "recognized": "The whole night from the control room at 2341 to the old Roswell Road at dawn, headphones help, desktop, WSD, mouse, E to use, tab for notes, B for the case board, C for the camera, F for a flashlight, once you have one, right mouse for a closer look, H for all of them. Phone, left thumb walks, right thumb looks, tap things to use them. The notebook has every control on its controls page.",
+            "note": "The controls prose is otherwise represented, but WASD becomes WSD and the A key is not reliably recovered. The key sequence remains unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "3fab2f79ba1d833a3f653f237b175cdcf4db3ead87c2e0118b8b216a561b50bb"
+          },
+          {
+            "bank": "serling",
+            "id": "580c6291f2a0995a",
+            "voice": "serling",
+            "expected": ". The clipping by the diner door (E15): the Pecos Valley Sentinel, July 1947. \"LIGHT HELD OVER MESA FOR AN HOUR.\" The mesa, a steady light high over it, two ranchers at a fence. Low to the right of the mesa, a smudge with a short tail.",
+            "recognized": "The clipping by the diner door, 15, the Pico's Valley Sentinel, July 1947, light held over Mesa for an hour. The Mesa, a steady light high over it, two ranchers at a fence, low to the right of the Mesa, a smudge with a short tail.",
+            "note": "E15 becomes15, leaving E unresolved. Pecos is written Picos; the headline and complete scene description are represented.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "2c110da75296aad6d067c3db737e6e01985bc24295f58dc3b66f91e215951aa9"
+          },
+          {
+            "bank": "serling",
+            "id": "d2fae6a331c3bb17",
+            "voice": "serling",
+            "expected": "DATE 07/--/47 02:17:00 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -00 LY",
+            "recognized": "Update 07-47, 02700, frequency 1,420.405 megahertz, pattern pulse group 4 slash 7, source distance, minus 0,0 light years.",
+            "note": "Frequency1420.405,group4/7 and explicit minus00 remain.02:17:00 becomes02700; seventeen is not securely recovered. The unknown-date dashes are also not spoken in ASR. Concrete clock/date-marker uncertainty remains.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "8990191b3ba30618264bd68004fe91d89f79fd6d14347d31578367afae436353"
+          },
+          {
+            "bank": "serling",
+            "id": "e0ccb159da38ea81",
+            "voice": "serling",
+            "expected": "SARO / LOCAL INCIDENT S-03 + B-12 OPERATOR: REYES FOR: DR. E. WARD",
+            "recognized": "Shiro, local incident, S03 plus B12. Operator Reyes for Dr. E Ward.",
+            "note": "The bounded request recovers local incident,S03,B12,operator Reyes and Doctor E.Ward. Saro is still Shiro in ASR; the organization-name pronunciation is unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "762e4395bd4063315448ba5d2f505c187a84bbb8c13f287e9ac0c14becfed3c6"
+          },
+          {
+            "bank": "serling",
+            "id": "bbc4f06a1e57982c",
+            "voice": "serling",
+            "expected": "Chained, with a padlock. N. Vega holds the keys out here.",
+            "recognized": "Changed with a padlock and Vega holds the keys out here.",
+            "note": "Chained becomes changed. N.Vega/and Vega is an initial boundary form. The chain descriptor is a concrete unresolved word distinction.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "e98dfb0c5be1db3019d7e571f9b69ad11c30468bd042b617ce1601a221bf034b"
+          },
+          {
+            "bank": "serling",
+            "id": "8d6db6caf7e84739",
+            "voice": "serling",
+            "expected": "Made at the field lamp, not here: cover it, then observe a null test.",
+            "recognized": "If it's made at the field lamp, not here, cover it, then observe a null test.",
+            "note": "ASR adds if its before made. This possible extra phrase is recorded rather than called exact speech; the null-test instruction remains.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "52cbe9273baa1d7f7345c855c316eead2783bc24555df483585ed29d0fac6340"
+          },
+          {
+            "bank": "serling",
+            "id": "3f58d648572b0a32",
+            "voice": "serling",
+            "expected": "TAPED REF CARD / CAL 1419.900 MHz / AZ 042 / GAIN 55 +-10 / BW 48 +-14",
+            "recognized": "Tap ref card, Cal, 1419.9 MHz, AZ-042, game 55, plus minus 10W48, plus minus 14.",
+            "note": "Numeric values and plus/minus signs are represented, but GAIN/game and BW/B-label recognition are unclear. These technical labels remain unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "4a5a21c78ecac71df516a856a29d133f3d8491449cf117ca03ccfff720248931"
+          },
+          {
+            "bank": "serling",
+            "id": "5a976d0eb15a433c",
+            "voice": "serling",
+            "expected": "Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.",
+            "recognized": "Kalishi, the gas station door, a flyer, sea lights, call the nightline, 1,420 a.m., midnight to four.",
+            "note": "Caliche is uncertain ASR spelling and seen lights is rendered sea lights, potentially losing seen.1420 AM and midnight-to-four remain; headline pronunciation is unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "73345db302a8e98f5a8f096e7c53fc4c223017ec08067b12d6cfbe677f0c7b0a"
+          },
+          {
+            "bank": "serling",
+            "id": "185bd8e9a2263670",
+            "voice": "serling",
+            "expected": "SPEED LIMIT 55. Pocked with birdshot along the bottom edge.",
+            "recognized": "Speed limit 55, parked with bird shot along the bottom edge.",
+            "note": "Pocked/parked is a concrete unresolved descriptor distinction; speed55 and birdshot content remain.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "c1bfc286385d2063ae15985e37869f7df6f9338c4a904ef1552631d4b785e512"
+          },
+          {
+            "bank": "serling",
+            "id": "fff5d8899372feef",
+            "voice": "serling",
+            "expected": "ZCZC WX2250 SARO OPS WX ADVISORY 2250 MST 13 APR 86 TSTMS W OF MAGDALENA MTNS MOVG NE 15 KT. DRY LIGHTNING. NO PRECIP E OF RIO GRANDE. NNNN",
+            "recognized": "ZCZC, WX2250, SeroOps, WX Advisory 2250, MST 13 April 86, TST MSW Magdalena MTS MOV GNE, 15KT dry lightning, no precipity of Rio Grande, NNNN.",
+            "note": "The bounded request recovers WX2250,dry lightning,2250,MST,13April86 and the ending NNNN. Some terse weather codes and the W/of/E word boundaries remain uncertain. No exact-code pronunciation claim.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "2a9d1a9dad9d0840619ded8838b9661c71a014a66df2084e946214dfb0973dfd"
+          },
+          {
+            "bank": "serling",
+            "id": "40dccedd2dd548a9",
+            "voice": "serling",
+            "expected": "R-07 has THREE HORIZONTAL BARS. Compare that silhouette with the vertical feature you marked. The sheet does not place R-07 on this sightline.",
+            "recognized": "R07 has three Havandal bars. Compare that silhouette with the vertical feature you marked. The sheet does not place R07 on the sight line.",
+            "note": "R07 and three bars are present, but horizontal becomes Havandal. The diagnostic shape descriptor remains a concrete ASR/articulation uncertainty in this newly sampled existing take; the earlier audio is preserved.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "2d7445dd05aa61f67010edf4ef94c0315d8e92c27df6284cbb73b7c0c61290b5"
+          },
+          {
+            "bank": "serling",
+            "id": "6dc8eb82d2bc9d10",
+            "voice": "serling",
+            "expected": "FIELD RECORD FILED: STATION 01, P06 to P09, with frames 03 and 04. Next: room 6 at Sierra Motor Court, with the original 1947 record and the prints.",
+            "recognized": "Inwif record filed, station 01, P06 to P09 with frame 03 and 04. Next, room 6 at Sierra Motor Court with the original 1947 record in the prints.",
+            "note": "Station01,P06/P09,frames03/04,room6 and1947 are represented. Field record filed has a garbled initial field descriptor and and/in differs. The label remains unverified; earlier audio is preserved.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "ec9ec09064ad1836f2d9bab1dda199a102b2b8bb6ad10abbf3428ee289737c32"
+          },
+          {
+            "bank": "serling",
+            "id": "77cd1f6c9b09d683",
+            "voice": "serling",
+            "expected": ". Out of room 6. The truck is on the motel's lot. C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night.",
+            "recognized": "At the room six, the truck is on the motel's lot. Sea crosses the old road to Roswell. The road leaves the highway at the diner south of here, the one that is open all night.",
+            "note": "Out of room6 becomes at the room6. C/sea is homophonic and the rest of the route is present, but the opening movement phrase remains unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "00a4f345ae2ea5ad2fc5c8e6bd2efc7fc11e342cc584537336cda7548e876f82"
+          },
+          {
+            "bank": "serling",
+            "id": "d58777cd97fa78bd",
+            "voice": "serling",
+            "expected": ". The radio behind the counter: the weather after last night's dry storms, Nicklaus won the Masters at forty-six, Halley's comet low in the south around midnight this week.",
+            "recognized": "The radio behind the counter, the weather after last night's dry storms, Nicholas won the Masters at 46, Halley's Comet low in the South around midnight this week.",
+            "note": "Nicklaus is recognized Nicholas. The Masters/46/comet/weather content remains, but that proper name is not confirmed by ASR alone.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "426d3fa4a5ac376634f979be8d826aacd681da53786237620852552bdddeacc8"
+          },
+          {
+            "bank": "serling",
+            "id": "282a25ef5a07e9cc",
+            "voice": "serling",
+            "expected": "Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.",
+            "recognized": "The oil cairns in Rose, a calendar still on April the register. Behind the counter, a man in a pressed shirt turns a page. He has not looked at the clock once.",
+            "note": "Oil cans in rows is recognized the oil cairns in Rose. This may be accent/ASR, but the opening object-description words are not verified. The following calendar/man/clock sentences are represented.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "9b11b00fafb06a750cecb881575938a0e326e21071b021c81765dc82147058e9"
+          },
+          {
+            "bank": "serling",
+            "id": "d88f4c6c3c0d9857",
+            "voice": "serling",
+            "expected": "CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line.",
+            "recognized": "Closed. Thank you Kelly for 31 years. The letter has fallen out of the last line.",
+            "note": "The bounded request recovers CLOSED and31 years. Caliche becomes Kelly, and a/the letter differs. The town-name pronunciation remains unverified after this one retake.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "audio_sha256": "0b4e3b413a227db55d8c33aa45eb56a8c4cfc4b8b0bf261ba62c51514920d66d"
+          }
+        ],
+        "unresolved_composition_asr_ambiguities": [
+          {
+            "bank": "serling",
+            "id": "examine-scenery",
+            "runtime_text": "S-01. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 142, el 48.",
+            "expected": "Ess. Zero. One. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az One. Hundred. Forty. Two. Elevation. Forty. Eight.",
+            "recognized": "S, 0, 1, a white dish on a concrete pedestal, the red lamp blinking on the feed legs as 1, 142, elevation 40.",
+            "note": "S01 and azimuth142 are represented with extra one, but the final eight of elevation48 is absent in this composition ASR. Eight is recognized in the complete zero-through-eight bank control. Actual context articulation remains unverified.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "8de0b3c47f112c59",
+              "f9194e73f9e9459e",
+              "7692c3ad3540bb80",
+              "a67febe4390aa166",
+              "7692c3ad3540bb80",
+              "97fe8a3749069931",
+              "9cee2304bd633d42",
+              "3fc4ccfe745870e2",
+              "f6a4add9542c2105",
+              "9cee2304bd633d42",
+              "c195d2d875623436"
+            ],
+            "source_audio_sha256": [
+              "65ba4d7839e22a77795efa60849f1ffeebb060176cfe655795aa60904fa4c4cb",
+              "c3ded471358e27ccb590801c6149629c461532f040a4b85c49c66d47bb0a04f2",
+              "b9c83517ae67620821aeeb0ebb8a9ec3a3fb942ad69c5a3964acd770dd7a8e50",
+              "a4e8364aed79c40d8230914bc677fd2b572f3a393b6f379fdb401ff4cc7fc5b3",
+              "b9c83517ae67620821aeeb0ebb8a9ec3a3fb942ad69c5a3964acd770dd7a8e50",
+              "46c8f88e23a51714601c01d416e44eb43ddde1c52cc248480ddd1de5e6c87290",
+              "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+              "8f6c347fc24dc0f2025692919aaea828560dc596e3d55264736c56ed7a6fd243",
+              "d51e6c2b693b5da01b1b403d983a52649a697bebbc7905597f9a5ff2a184b36a",
+              "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+              "be525f3d067e8df38bd1000a83e7ae56f6060ca527ee3932166e807538531b41"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "photo-clock",
+            "runtime_text": "Exposed from the S-03 apron at 02:47:11. The central antenna, and below it the B-12 reference vane in the lower foreground.",
+            "expected": "Exposed from the Ess zero three apron at Two. Forty. Seven. Eleven. The central antenna, and below it the Bee twelve reference vane in the lower foreground.",
+            "recognized": "Exposed from the S038 printed 2, 40, 7, 11, the central antenna, and below it the B12 reference vein in the lower foreground.",
+            "note": "The2,40,7,11 time components and B12 are represented. S03 apron becomes S038 printed, so the prefix/word boundary is uncertain; vane/vein is homophonic.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "c6f7ac125d741b15",
+              "3fc4ccfe745870e2",
+              "9cee2304bd633d42",
+              "3ba8d02b16fd2a01",
+              "e979074ebd5633a7",
+              "4d580588de66ca1e"
+            ],
+            "source_audio_sha256": [
+              "979cd0d0409a9f9488eb858957ad93b2592efe7018934060790ec23d6c569bad",
+              "8f6c347fc24dc0f2025692919aaea828560dc596e3d55264736c56ed7a6fd243",
+              "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+              "fb81d2d9abbac6a14883e8859e77066731b9ce3d687a14666d0c04493aa7a7a7",
+              "07573e60b45f9e7df223f778fe77988579202e750949674807960d62a3733ae3",
+              "734aaf5cb46df7d8f2ef911a75bcf959399f88f1035d887421fab2741e078fcf"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "photo-control-clock",
+            "runtime_text": "Exposed from the B-12 sight line at 03:12:47, under the shielded, passive control.",
+            "expected": "Exposed from the Bee twelve sight line at Three. Twelve. Forty. Seven. under the shielded, passive control.",
+            "recognized": "Exposed from the B-12 sight line at 312-407 under the shielded passive control.",
+            "note": "B12 and03:12 are represented, but forty seven is compacted to407. The47 component remains a concrete clock ASR/articulation uncertainty.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "5fceabaf23725f5a",
+              "8b5b9db0c13db242",
+              "d1a749ad879b6c07",
+              "9cee2304bd633d42",
+              "3ba8d02b16fd2a01",
+              "6471329580aad1c4"
+            ],
+            "source_audio_sha256": [
+              "dc07bc98c324a137a1e524abf3176fbe5a695abcef94b2200b3ab02d1d39de83",
+              "afa914f3abd1b9b86d742efa54eb6741088e77427c560cb494c46b1af210189e",
+              "a31c70d42eab847278d423b40ff1663898e4667f53e548301e01af40bc2c2fc7",
+              "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+              "fb81d2d9abbac6a14883e8859e77066731b9ce3d687a14666d0c04493aa7a7a7",
+              "aa758ec9d9be247b3addf2bb19811e4075844c2d4424bb5beccfb63e1502cce5"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "negative-distance",
+            "runtime_text": "SOURCE DISTANCE: -39 LY",
+            "expected": "SOURCE DISTANCE: minus thirty nine light years",
+            "recognized": "Socks we distance minus 39 light years.",
+            "note": "Explicit minus39 light years is represented. Source distance is recognized as Socks we distance; label articulation remains uncertain.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "45df02be36b1a2dd"
+            ],
+            "source_audio_sha256": [
+              "be5cb6a61447115e35bc31adb6818ca6f51dddd05b912c0e3c1843e95a9643b0"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "identifier-e09a",
+            "runtime_text": "E09A",
+            "expected": "Eee. Zero. Nine. Ay.",
+            "recognized": "Zero. Nine.",
+            "note": "The actual selected carrier-free clips request Eee,zero,nine,Ay. ASR recovers only zero nine; E and A are not verified in this runtime context. One carrier method was rejected after added-token ambiguity.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "a9f51566bd6705f7",
+              "f9194e73f9e9459e",
+              "edcd8e701a2df0cd",
+              "559aead08264d579"
+            ],
+            "source_audio_sha256": [
+              "9516684d1d65eeb6d93d341e6fc98936e4915fc83523cd15ee69f48c28f57123",
+              "c3ded471358e27ccb590801c6149629c461532f040a4b85c49c66d47bb0a04f2",
+              "9fc92fce15b7c6c48255723d81832bbec8dbf7eb8cbd20ee304168b5343c632e",
+              "631ef67b10c1b7a68eb339e468d27520e1e7efbdb3a90720fe7ca921335f932c"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "identifier-p13",
+            "runtime_text": "P13",
+            "expected": "Pee. Thirteen.",
+            "recognized": "T. 13.",
+            "note": "The actual selected carrier-free P/13 clips are recognized T13. P versus T remains unresolved; no claim of verified identifier pronunciation.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "5c62e091b8c0565f",
+              "9ecc81f0a4b6dfb0"
+            ],
+            "source_audio_sha256": [
+              "3fa48d0a71c815a220b1c62e0c9f476879e95cd6c38a2f34fc6de6656a092400",
+              "c6712ff0e7e4c998c02dd47aa4b0983f202cb630a4a7a481cc79ef268a3d088b"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "numbers-27",
+            "runtime_text": "ninety hundred thousand million minus plus point percent",
+            "expected": "Ninety! Hundred. Thousand. Million. Minus. Plus. Point. Percent.",
+            "recognized": "Uh... ninety hundred thousand million minus point percent.",
+            "note": "The bounded ninety retake now yields ninety rather than nine. Hundred,thousand,million,minus,point,percent are represented; plus is absent and ASR adds uh. The plus lexeme remains unverified in this context.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "521c74a4d5824aba",
+              "97fe8a3749069931",
+              "a0af3a48cfad1fc0",
+              "c8ce96a5ba0d15da",
+              "129fa7713adba71e",
+              "383ef36928344f56",
+              "251fecd592e56e6c",
+              "fd86717aca41c558"
+            ],
+            "source_audio_sha256": [
+              "ab6716a2ab90078f218f162f4702b1b0e35790886f403654e2e3b63d789de5b5",
+              "46c8f88e23a51714601c01d416e44eb43ddde1c52cc248480ddd1de5e6c87290",
+              "6d2b47127f9036ab0e769a723c97a166f0fbfae1aad596d29d7fa414d1ccc326",
+              "d9528935634f309159359c1fda09f453c237350e0250547f39a3c0d5a34b17be",
+              "8dfc02172cfefa17473393b0dcc0de1616fa0ce65abd822d80e1009744b2980d",
+              "452a00aca38ca199b806a79a879b8982340ea28070a2b8e4fcaa8ca64fa083bf",
+              "627bb8bb598f759d44224f0c8280b6fb38c0af759ce64501c77037b20484b5c7",
+              "5f049989a9bb6ec0a7b16bb583cb28c69bb21bf59c5ffd0d5f0641dccd86fb44"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "identifiers-0",
+            "runtime_text": "A B C D E F G H I",
+            "expected": "Ay. Bee. See. Dee. Eee. Eff. Gee. Aitch. Eye.",
+            "recognized": "A, B, C, D, F, G, H, R, I.",
+            "note": "A,B,C,D,F,G,H,I are represented. E is absent and an extra R appears. The short-letter bank is not claimed to be fully heard or exact.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "559aead08264d579",
+              "df7e70e5021544f4",
+              "6b23c0d5f35d1b11",
+              "3f39d5c348e5b79d",
+              "a9f51566bd6705f7",
+              "f67ab10ad4e4c531",
+              "333e0a1e27815d0c",
+              "44bd7ae60f478fae",
+              "a83dd0ccbffe39d0"
+            ],
+            "source_audio_sha256": [
+              "631ef67b10c1b7a68eb339e468d27520e1e7efbdb3a90720fe7ca921335f932c",
+              "62410f31fdd4f4ccab61b881b5d5fd642b34f1f3f21ca67b950c1f124e57f010",
+              "20e6ba5dfbde9a4816d81b8e91cd02e1398cf0ffa004882691d3a72fea335332",
+              "2e40cd350556d7354666bf16b56a898d9ae5159f92aa53836952ca076716f36c",
+              "9516684d1d65eeb6d93d341e6fc98936e4915fc83523cd15ee69f48c28f57123",
+              "584be9865fe0d44101d9694eaca1edd6de104bf687ff9c6fc6e08a18a3e82d93",
+              "855c454f0f9482e3147bc6baa363ecf8775005754c0f21922b70ece9316d3bae",
+              "c43942005bdfd16be4377f7a01a4023ae86c58b53e617c380b44dc45903690bc",
+              "7634f2d851eb6581f493e5452c930d0a698ecce9a648e571488651179308466d"
+            ]
+          },
+          {
+            "bank": "serling",
+            "id": "identifiers-9",
+            "runtime_text": "J K L M N O P Q R",
+            "expected": "Jay. Kay. Ell. Em. En. Oh. Pee. Cue. Ar.",
+            "recognized": "J. K. N. P.",
+            "note": "Only J,K,N,P are reliably recovered by Small. L,M,O,Q,R remain unverified in the carrier-free assembled bank. One carrier experiment was rejected without further TTS attempts.",
+            "human_word_check": "UNVERIFIED",
+            "status": "REVIEWED_DIFFERENCE",
+            "source_clip_ids": [
+              "6da43b944e494e88",
+              "86be9a55762d316a",
+              "72dfcfb0c470ac25",
+              "08f271887ce94707",
+              "8ce86a6ae65d3692",
+              "c4694f2e93d5c4e7",
+              "5c62e091b8c0565f",
+              "4ae81572f06e1b88",
+              "8c2574892063f995"
+            ],
+            "source_audio_sha256": [
+              "ea4df90c475cc9e102062daf59918ff3f8b10640aba4d2420be037f540b4cca5",
+              "bc9060c9ff3361f6107cee9e8da1c6188d5f317d1302da87e46cbfc5722d9b20",
+              "88e8ac02a7e5be02571e089aec40a3957f71ad7547353afdc2beb1d285528de5",
+              "4ebad4cdc15f47bb12b78fe22a0c241819fab45f3463466f07b00f29edd0a2c5",
+              "13037de1133ef3c296b4299db48e9e122b1db4d933e3492081baf3cd766402dd",
+              "8ac817f18d68d6ccd7bef0668fdc2e616ea5d5419cdc5aac2462e28d4fdff867",
+              "3fa48d0a71c815a220b1c62e0c9f476879e95cd6c38a2f34fc6de6656a092400",
+              "2c1686f6bdf884ae1b1e5db42ccc74ef99f07fc1104b9d3abffacf17f33a4c8d",
+              "c8f5fd6eaaf40df8e64515ca37d789a67560606fce0b9fb46794e9b495f8cd11"
+            ]
+          }
+        ],
+        "context_asr": {
+          "checked": 0,
+          "file_sha256": null
+        },
+        "unresolved_context_asr_ambiguities": [],
+        "human_listened": "UNVERIFIED",
+        "speaker_similarity": "UNVERIFIED"
+      }
+    },
+    "unresolved_asr_ambiguities": [
+      {
+        "bank": "ensemble",
+        "id": "79a44e7e5fd1e5bf",
+        "voice": "stanton",
+        "expected": "Towed a rig in off it once. Last October.",
+        "recognized": "Toe to rig in off it once last October.",
+        "note": "The intended Towed a rig phrase remains ambiguous as Toe to rig in Small ASR after four documented takes, standalone and context checks and unprompted CPU beam10. Remaining phrase is recognized. No further ASR chasing; human word/pronunciation check remains UNVERIFIED. See word-diagnostics.json and corrections.json.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74"
+      },
+      {
+        "bank": "serling",
+        "id": "9b0617f13405b9bb",
+        "voice": "serling",
+        "expected": "NIGHT SHIFT // EVERY DISH AT AZ 026",
+        "recognized": "Night shift, every dish it has with Euro 26.",
+        "note": "The AZ/azimuth label is not reliably recovered (ASR has with Euro); 026 is represented. No claim of verified azimuth-label pronunciation.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "43050237b81514ad54d4121a3a94ecfcbdef5f60dd3b2b567cd9934a26504e7b"
+      },
+      {
+        "bank": "serling",
+        "id": "e07df9fdd4d9c1a0",
+        "voice": "serling",
+        "expected": "She cut the cable in 1947 with her brother standing on C, and he was not there afterwards. C crosses the old road to Roswell. The truck is on its pad.",
+        "recognized": "She cut the cable in 1947 with her brother standing on sea and he was not there afterwards Sea crosses the old road to Roswell The truck is on its path.",
+        "note": "C/sea is homophonic, but pad/path is a concrete unresolved final-word distinction. The source wording remains pad.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "a756e0d57d3206f33dd21d8d1a94b034aee1c66285558886bdc449733de8c861"
+      },
+      {
+        "bank": "serling",
+        "id": "e10c9a2792f948c3",
+        "voice": "serling",
+        "expected": "SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+        "recognized": "The supported B-12 retains station 01. The archive sleeve matches its ID and triangle with bar fixed point mark. Old Servi station is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.",
+        "note": "The title Old Survey Station is still rendered Old Servi station by ASR. This proper destination label remains an ASR/articulation uncertainty.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "5fd9301b75eac45daa3a7821540ded74a1c636844cd068d78a1b270c2b3bce90"
+      },
+      {
+        "bank": "serling",
+        "id": "6de6ba3ad6b856de",
+        "voice": "serling",
+        "expected": "DATE 10/19/85 23:58:31 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -38 LY ** CHECK SOLVE INPUTS ** RECLASSIFIED: INPUT ERROR third time. Ask Systems.",
+        "recognized": "Update 10, 1985, 23, 58, 31, frequency 1,420.405 megahertz. Pattern pulse group 4 slash 7, source distance minus 38, light years. Check solve inputs, reclassified, input error third time. Ask systems.",
+        "note": "Clock23:58:31,1420.405,4/7,minus38 and reclassification are recovered. Date10/19/85 is compactly recognized as Update10,1985; day19/grouping remains uncertain rather than declared exact.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "3d882d8b839726bad54051799532fcbebd70d99746bc1cd49d77180bfeacd424"
+      },
+      {
+        "bank": "serling",
+        "id": "b8c9f0756d14d474",
+        "voice": "serling",
+        "expected": "E10, the 1947 timing log: 02:17:00 carrier ceased, a recorded voice. 02:17:47 relay impact and reference motion. Final observation not entered.",
+        "recognized": "10, 1947, timing log, 02, 17, 00, carrier ceased, a recorded voice, 02, 1747, relay impact and reference motion. Final observation not entered.",
+        "note": "Both02:17:00 and02:17:47 are represented after explicit clock request, but the E prefix in E10 is absent from ASR. The identifier letter remains unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "61e726071d985d5aab653dd5b91ed644d77e0ff6ee6f9ba9e3866206ed8161f9"
+      },
+      {
+        "bank": "serling",
+        "id": "6d8f91e3c74b565c",
+        "voice": "serling",
+        "expected": "She cut the cable in 1947, with Tomás standing on C inside the active reference. Afterwards he was not there. She gave me his last field card (E11).",
+        "recognized": "She cut the cable in 1947 with Tomas standing on sea inside the active reference. Afterwards, he was not there. She gave me his last field card, the 11.",
+        "note": "Tomas/Thomas spelling and C/sea are ASR forms, but E11 becomes the11, leaving the E prefix uncertain.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "b4b7a99b22abcbfe850dd7e8242641540173582ed385ebf92b8b3c0749bad374"
+      },
+      {
+        "bank": "serling",
+        "id": "8c26116d4114baef",
+        "voice": "serling",
+        "expected": "The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. Desktop: WASD, mouse, E to use, Tab for notes, B for the case board, C for the camera, F for a flashlight once you have one, right mouse for a closer look, H for all of them. Phone: left thumb walks, right thumb looks, tap things to use them. The notebook has every control on its Controls page.",
+        "recognized": "The whole night from the control room at 2341 to the old Roswell Road at dawn, headphones help, desktop, WSD, mouse, E to use, tab for notes, B for the case board, C for the camera, F for a flashlight, once you have one, right mouse for a closer look, H for all of them. Phone, left thumb walks, right thumb looks, tap things to use them. The notebook has every control on its controls page.",
+        "note": "The controls prose is otherwise represented, but WASD becomes WSD and the A key is not reliably recovered. The key sequence remains unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "3fab2f79ba1d833a3f653f237b175cdcf4db3ead87c2e0118b8b216a561b50bb"
+      },
+      {
+        "bank": "serling",
+        "id": "580c6291f2a0995a",
+        "voice": "serling",
+        "expected": ". The clipping by the diner door (E15): the Pecos Valley Sentinel, July 1947. \"LIGHT HELD OVER MESA FOR AN HOUR.\" The mesa, a steady light high over it, two ranchers at a fence. Low to the right of the mesa, a smudge with a short tail.",
+        "recognized": "The clipping by the diner door, 15, the Pico's Valley Sentinel, July 1947, light held over Mesa for an hour. The Mesa, a steady light high over it, two ranchers at a fence, low to the right of the Mesa, a smudge with a short tail.",
+        "note": "E15 becomes15, leaving E unresolved. Pecos is written Picos; the headline and complete scene description are represented.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "2c110da75296aad6d067c3db737e6e01985bc24295f58dc3b66f91e215951aa9"
+      },
+      {
+        "bank": "serling",
+        "id": "d2fae6a331c3bb17",
+        "voice": "serling",
+        "expected": "DATE 07/--/47 02:17:00 FREQ 1420.405 MHz PATTERN PULSE GROUP 4 / 7 SOURCE DISTANCE: -00 LY",
+        "recognized": "Update 07-47, 02700, frequency 1,420.405 megahertz, pattern pulse group 4 slash 7, source distance, minus 0,0 light years.",
+        "note": "Frequency1420.405,group4/7 and explicit minus00 remain.02:17:00 becomes02700; seventeen is not securely recovered. The unknown-date dashes are also not spoken in ASR. Concrete clock/date-marker uncertainty remains.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "8990191b3ba30618264bd68004fe91d89f79fd6d14347d31578367afae436353"
+      },
+      {
+        "bank": "serling",
+        "id": "e0ccb159da38ea81",
+        "voice": "serling",
+        "expected": "SARO / LOCAL INCIDENT S-03 + B-12 OPERATOR: REYES FOR: DR. E. WARD",
+        "recognized": "Shiro, local incident, S03 plus B12. Operator Reyes for Dr. E Ward.",
+        "note": "The bounded request recovers local incident,S03,B12,operator Reyes and Doctor E.Ward. Saro is still Shiro in ASR; the organization-name pronunciation is unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "762e4395bd4063315448ba5d2f505c187a84bbb8c13f287e9ac0c14becfed3c6"
+      },
+      {
+        "bank": "serling",
+        "id": "bbc4f06a1e57982c",
+        "voice": "serling",
+        "expected": "Chained, with a padlock. N. Vega holds the keys out here.",
+        "recognized": "Changed with a padlock and Vega holds the keys out here.",
+        "note": "Chained becomes changed. N.Vega/and Vega is an initial boundary form. The chain descriptor is a concrete unresolved word distinction.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "e98dfb0c5be1db3019d7e571f9b69ad11c30468bd042b617ce1601a221bf034b"
+      },
+      {
+        "bank": "serling",
+        "id": "8d6db6caf7e84739",
+        "voice": "serling",
+        "expected": "Made at the field lamp, not here: cover it, then observe a null test.",
+        "recognized": "If it's made at the field lamp, not here, cover it, then observe a null test.",
+        "note": "ASR adds if its before made. This possible extra phrase is recorded rather than called exact speech; the null-test instruction remains.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "52cbe9273baa1d7f7345c855c316eead2783bc24555df483585ed29d0fac6340"
+      },
+      {
+        "bank": "serling",
+        "id": "3f58d648572b0a32",
+        "voice": "serling",
+        "expected": "TAPED REF CARD / CAL 1419.900 MHz / AZ 042 / GAIN 55 +-10 / BW 48 +-14",
+        "recognized": "Tap ref card, Cal, 1419.9 MHz, AZ-042, game 55, plus minus 10W48, plus minus 14.",
+        "note": "Numeric values and plus/minus signs are represented, but GAIN/game and BW/B-label recognition are unclear. These technical labels remain unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "4a5a21c78ecac71df516a856a29d133f3d8491449cf117ca03ccfff720248931"
+      },
+      {
+        "bank": "serling",
+        "id": "5a976d0eb15a433c",
+        "voice": "serling",
+        "expected": "Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.",
+        "recognized": "Kalishi, the gas station door, a flyer, sea lights, call the nightline, 1,420 a.m., midnight to four.",
+        "note": "Caliche is uncertain ASR spelling and seen lights is rendered sea lights, potentially losing seen.1420 AM and midnight-to-four remain; headline pronunciation is unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "73345db302a8e98f5a8f096e7c53fc4c223017ec08067b12d6cfbe677f0c7b0a"
+      },
+      {
+        "bank": "serling",
+        "id": "185bd8e9a2263670",
+        "voice": "serling",
+        "expected": "SPEED LIMIT 55. Pocked with birdshot along the bottom edge.",
+        "recognized": "Speed limit 55, parked with bird shot along the bottom edge.",
+        "note": "Pocked/parked is a concrete unresolved descriptor distinction; speed55 and birdshot content remain.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "c1bfc286385d2063ae15985e37869f7df6f9338c4a904ef1552631d4b785e512"
+      },
+      {
+        "bank": "serling",
+        "id": "fff5d8899372feef",
+        "voice": "serling",
+        "expected": "ZCZC WX2250 SARO OPS WX ADVISORY 2250 MST 13 APR 86 TSTMS W OF MAGDALENA MTNS MOVG NE 15 KT. DRY LIGHTNING. NO PRECIP E OF RIO GRANDE. NNNN",
+        "recognized": "ZCZC, WX2250, SeroOps, WX Advisory 2250, MST 13 April 86, TST MSW Magdalena MTS MOV GNE, 15KT dry lightning, no precipity of Rio Grande, NNNN.",
+        "note": "The bounded request recovers WX2250,dry lightning,2250,MST,13April86 and the ending NNNN. Some terse weather codes and the W/of/E word boundaries remain uncertain. No exact-code pronunciation claim.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "2a9d1a9dad9d0840619ded8838b9661c71a014a66df2084e946214dfb0973dfd"
+      },
+      {
+        "bank": "serling",
+        "id": "40dccedd2dd548a9",
+        "voice": "serling",
+        "expected": "R-07 has THREE HORIZONTAL BARS. Compare that silhouette with the vertical feature you marked. The sheet does not place R-07 on this sightline.",
+        "recognized": "R07 has three Havandal bars. Compare that silhouette with the vertical feature you marked. The sheet does not place R07 on the sight line.",
+        "note": "R07 and three bars are present, but horizontal becomes Havandal. The diagnostic shape descriptor remains a concrete ASR/articulation uncertainty in this newly sampled existing take; the earlier audio is preserved.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "2d7445dd05aa61f67010edf4ef94c0315d8e92c27df6284cbb73b7c0c61290b5"
+      },
+      {
+        "bank": "serling",
+        "id": "6dc8eb82d2bc9d10",
+        "voice": "serling",
+        "expected": "FIELD RECORD FILED: STATION 01, P06 to P09, with frames 03 and 04. Next: room 6 at Sierra Motor Court, with the original 1947 record and the prints.",
+        "recognized": "Inwif record filed, station 01, P06 to P09 with frame 03 and 04. Next, room 6 at Sierra Motor Court with the original 1947 record in the prints.",
+        "note": "Station01,P06/P09,frames03/04,room6 and1947 are represented. Field record filed has a garbled initial field descriptor and and/in differs. The label remains unverified; earlier audio is preserved.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "ec9ec09064ad1836f2d9bab1dda199a102b2b8bb6ad10abbf3428ee289737c32"
+      },
+      {
+        "bank": "serling",
+        "id": "77cd1f6c9b09d683",
+        "voice": "serling",
+        "expected": ". Out of room 6. The truck is on the motel's lot. C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night.",
+        "recognized": "At the room six, the truck is on the motel's lot. Sea crosses the old road to Roswell. The road leaves the highway at the diner south of here, the one that is open all night.",
+        "note": "Out of room6 becomes at the room6. C/sea is homophonic and the rest of the route is present, but the opening movement phrase remains unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "00a4f345ae2ea5ad2fc5c8e6bd2efc7fc11e342cc584537336cda7548e876f82"
+      },
+      {
+        "bank": "serling",
+        "id": "d58777cd97fa78bd",
+        "voice": "serling",
+        "expected": ". The radio behind the counter: the weather after last night's dry storms, Nicklaus won the Masters at forty-six, Halley's comet low in the south around midnight this week.",
+        "recognized": "The radio behind the counter, the weather after last night's dry storms, Nicholas won the Masters at 46, Halley's Comet low in the South around midnight this week.",
+        "note": "Nicklaus is recognized Nicholas. The Masters/46/comet/weather content remains, but that proper name is not confirmed by ASR alone.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "426d3fa4a5ac376634f979be8d826aacd681da53786237620852552bdddeacc8"
+      },
+      {
+        "bank": "serling",
+        "id": "282a25ef5a07e9cc",
+        "voice": "serling",
+        "expected": "Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once.",
+        "recognized": "The oil cairns in Rose, a calendar still on April the register. Behind the counter, a man in a pressed shirt turns a page. He has not looked at the clock once.",
+        "note": "Oil cans in rows is recognized the oil cairns in Rose. This may be accent/ASR, but the opening object-description words are not verified. The following calendar/man/clock sentences are represented.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "9b11b00fafb06a750cecb881575938a0e326e21071b021c81765dc82147058e9"
+      },
+      {
+        "bank": "serling",
+        "id": "d88f4c6c3c0d9857",
+        "voice": "serling",
+        "expected": "CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line.",
+        "recognized": "Closed. Thank you Kelly for 31 years. The letter has fallen out of the last line.",
+        "note": "The bounded request recovers CLOSED and31 years. Caliche becomes Kelly, and a/the letter differs. The town-name pronunciation remains unverified after this one retake.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "audio_sha256": "0b4e3b413a227db55d8c33aa45eb56a8c4cfc4b8b0bf261ba62c51514920d66d"
+      }
+    ],
+    "unresolved_composition_asr_ambiguities": [
+      {
+        "bank": "serling",
+        "id": "examine-scenery",
+        "runtime_text": "S-01. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az 142, el 48.",
+        "expected": "Ess. Zero. One. A white dish on a concrete pedestal, the red lamp blinking on the feed legs. Az One. Hundred. Forty. Two. Elevation. Forty. Eight.",
+        "recognized": "S, 0, 1, a white dish on a concrete pedestal, the red lamp blinking on the feed legs as 1, 142, elevation 40.",
+        "note": "S01 and azimuth142 are represented with extra one, but the final eight of elevation48 is absent in this composition ASR. Eight is recognized in the complete zero-through-eight bank control. Actual context articulation remains unverified.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "8de0b3c47f112c59",
+          "f9194e73f9e9459e",
+          "7692c3ad3540bb80",
+          "a67febe4390aa166",
+          "7692c3ad3540bb80",
+          "97fe8a3749069931",
+          "9cee2304bd633d42",
+          "3fc4ccfe745870e2",
+          "f6a4add9542c2105",
+          "9cee2304bd633d42",
+          "c195d2d875623436"
+        ],
+        "source_audio_sha256": [
+          "65ba4d7839e22a77795efa60849f1ffeebb060176cfe655795aa60904fa4c4cb",
+          "c3ded471358e27ccb590801c6149629c461532f040a4b85c49c66d47bb0a04f2",
+          "b9c83517ae67620821aeeb0ebb8a9ec3a3fb942ad69c5a3964acd770dd7a8e50",
+          "a4e8364aed79c40d8230914bc677fd2b572f3a393b6f379fdb401ff4cc7fc5b3",
+          "b9c83517ae67620821aeeb0ebb8a9ec3a3fb942ad69c5a3964acd770dd7a8e50",
+          "46c8f88e23a51714601c01d416e44eb43ddde1c52cc248480ddd1de5e6c87290",
+          "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+          "8f6c347fc24dc0f2025692919aaea828560dc596e3d55264736c56ed7a6fd243",
+          "d51e6c2b693b5da01b1b403d983a52649a697bebbc7905597f9a5ff2a184b36a",
+          "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+          "be525f3d067e8df38bd1000a83e7ae56f6060ca527ee3932166e807538531b41"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "photo-clock",
+        "runtime_text": "Exposed from the S-03 apron at 02:47:11. The central antenna, and below it the B-12 reference vane in the lower foreground.",
+        "expected": "Exposed from the Ess zero three apron at Two. Forty. Seven. Eleven. The central antenna, and below it the Bee twelve reference vane in the lower foreground.",
+        "recognized": "Exposed from the S038 printed 2, 40, 7, 11, the central antenna, and below it the B12 reference vein in the lower foreground.",
+        "note": "The2,40,7,11 time components and B12 are represented. S03 apron becomes S038 printed, so the prefix/word boundary is uncertain; vane/vein is homophonic.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "c6f7ac125d741b15",
+          "3fc4ccfe745870e2",
+          "9cee2304bd633d42",
+          "3ba8d02b16fd2a01",
+          "e979074ebd5633a7",
+          "4d580588de66ca1e"
+        ],
+        "source_audio_sha256": [
+          "979cd0d0409a9f9488eb858957ad93b2592efe7018934060790ec23d6c569bad",
+          "8f6c347fc24dc0f2025692919aaea828560dc596e3d55264736c56ed7a6fd243",
+          "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+          "fb81d2d9abbac6a14883e8859e77066731b9ce3d687a14666d0c04493aa7a7a7",
+          "07573e60b45f9e7df223f778fe77988579202e750949674807960d62a3733ae3",
+          "734aaf5cb46df7d8f2ef911a75bcf959399f88f1035d887421fab2741e078fcf"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "photo-control-clock",
+        "runtime_text": "Exposed from the B-12 sight line at 03:12:47, under the shielded, passive control.",
+        "expected": "Exposed from the Bee twelve sight line at Three. Twelve. Forty. Seven. under the shielded, passive control.",
+        "recognized": "Exposed from the B-12 sight line at 312-407 under the shielded passive control.",
+        "note": "B12 and03:12 are represented, but forty seven is compacted to407. The47 component remains a concrete clock ASR/articulation uncertainty.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "5fceabaf23725f5a",
+          "8b5b9db0c13db242",
+          "d1a749ad879b6c07",
+          "9cee2304bd633d42",
+          "3ba8d02b16fd2a01",
+          "6471329580aad1c4"
+        ],
+        "source_audio_sha256": [
+          "dc07bc98c324a137a1e524abf3176fbe5a695abcef94b2200b3ab02d1d39de83",
+          "afa914f3abd1b9b86d742efa54eb6741088e77427c560cb494c46b1af210189e",
+          "a31c70d42eab847278d423b40ff1663898e4667f53e548301e01af40bc2c2fc7",
+          "0717f65ff1ceca2008a249b03c70d293676cccf99b50635e3c1ff39e8f022bab",
+          "fb81d2d9abbac6a14883e8859e77066731b9ce3d687a14666d0c04493aa7a7a7",
+          "aa758ec9d9be247b3addf2bb19811e4075844c2d4424bb5beccfb63e1502cce5"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "negative-distance",
+        "runtime_text": "SOURCE DISTANCE: -39 LY",
+        "expected": "SOURCE DISTANCE: minus thirty nine light years",
+        "recognized": "Socks we distance minus 39 light years.",
+        "note": "Explicit minus39 light years is represented. Source distance is recognized as Socks we distance; label articulation remains uncertain.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "45df02be36b1a2dd"
+        ],
+        "source_audio_sha256": [
+          "be5cb6a61447115e35bc31adb6818ca6f51dddd05b912c0e3c1843e95a9643b0"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "identifier-e09a",
+        "runtime_text": "E09A",
+        "expected": "Eee. Zero. Nine. Ay.",
+        "recognized": "Zero. Nine.",
+        "note": "The actual selected carrier-free clips request Eee,zero,nine,Ay. ASR recovers only zero nine; E and A are not verified in this runtime context. One carrier method was rejected after added-token ambiguity.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "a9f51566bd6705f7",
+          "f9194e73f9e9459e",
+          "edcd8e701a2df0cd",
+          "559aead08264d579"
+        ],
+        "source_audio_sha256": [
+          "9516684d1d65eeb6d93d341e6fc98936e4915fc83523cd15ee69f48c28f57123",
+          "c3ded471358e27ccb590801c6149629c461532f040a4b85c49c66d47bb0a04f2",
+          "9fc92fce15b7c6c48255723d81832bbec8dbf7eb8cbd20ee304168b5343c632e",
+          "631ef67b10c1b7a68eb339e468d27520e1e7efbdb3a90720fe7ca921335f932c"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "identifier-p13",
+        "runtime_text": "P13",
+        "expected": "Pee. Thirteen.",
+        "recognized": "T. 13.",
+        "note": "The actual selected carrier-free P/13 clips are recognized T13. P versus T remains unresolved; no claim of verified identifier pronunciation.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "5c62e091b8c0565f",
+          "9ecc81f0a4b6dfb0"
+        ],
+        "source_audio_sha256": [
+          "3fa48d0a71c815a220b1c62e0c9f476879e95cd6c38a2f34fc6de6656a092400",
+          "c6712ff0e7e4c998c02dd47aa4b0983f202cb630a4a7a481cc79ef268a3d088b"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "numbers-27",
+        "runtime_text": "ninety hundred thousand million minus plus point percent",
+        "expected": "Ninety! Hundred. Thousand. Million. Minus. Plus. Point. Percent.",
+        "recognized": "Uh... ninety hundred thousand million minus point percent.",
+        "note": "The bounded ninety retake now yields ninety rather than nine. Hundred,thousand,million,minus,point,percent are represented; plus is absent and ASR adds uh. The plus lexeme remains unverified in this context.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "521c74a4d5824aba",
+          "97fe8a3749069931",
+          "a0af3a48cfad1fc0",
+          "c8ce96a5ba0d15da",
+          "129fa7713adba71e",
+          "383ef36928344f56",
+          "251fecd592e56e6c",
+          "fd86717aca41c558"
+        ],
+        "source_audio_sha256": [
+          "ab6716a2ab90078f218f162f4702b1b0e35790886f403654e2e3b63d789de5b5",
+          "46c8f88e23a51714601c01d416e44eb43ddde1c52cc248480ddd1de5e6c87290",
+          "6d2b47127f9036ab0e769a723c97a166f0fbfae1aad596d29d7fa414d1ccc326",
+          "d9528935634f309159359c1fda09f453c237350e0250547f39a3c0d5a34b17be",
+          "8dfc02172cfefa17473393b0dcc0de1616fa0ce65abd822d80e1009744b2980d",
+          "452a00aca38ca199b806a79a879b8982340ea28070a2b8e4fcaa8ca64fa083bf",
+          "627bb8bb598f759d44224f0c8280b6fb38c0af759ce64501c77037b20484b5c7",
+          "5f049989a9bb6ec0a7b16bb583cb28c69bb21bf59c5ffd0d5f0641dccd86fb44"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "identifiers-0",
+        "runtime_text": "A B C D E F G H I",
+        "expected": "Ay. Bee. See. Dee. Eee. Eff. Gee. Aitch. Eye.",
+        "recognized": "A, B, C, D, F, G, H, R, I.",
+        "note": "A,B,C,D,F,G,H,I are represented. E is absent and an extra R appears. The short-letter bank is not claimed to be fully heard or exact.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "559aead08264d579",
+          "df7e70e5021544f4",
+          "6b23c0d5f35d1b11",
+          "3f39d5c348e5b79d",
+          "a9f51566bd6705f7",
+          "f67ab10ad4e4c531",
+          "333e0a1e27815d0c",
+          "44bd7ae60f478fae",
+          "a83dd0ccbffe39d0"
+        ],
+        "source_audio_sha256": [
+          "631ef67b10c1b7a68eb339e468d27520e1e7efbdb3a90720fe7ca921335f932c",
+          "62410f31fdd4f4ccab61b881b5d5fd642b34f1f3f21ca67b950c1f124e57f010",
+          "20e6ba5dfbde9a4816d81b8e91cd02e1398cf0ffa004882691d3a72fea335332",
+          "2e40cd350556d7354666bf16b56a898d9ae5159f92aa53836952ca076716f36c",
+          "9516684d1d65eeb6d93d341e6fc98936e4915fc83523cd15ee69f48c28f57123",
+          "584be9865fe0d44101d9694eaca1edd6de104bf687ff9c6fc6e08a18a3e82d93",
+          "855c454f0f9482e3147bc6baa363ecf8775005754c0f21922b70ece9316d3bae",
+          "c43942005bdfd16be4377f7a01a4023ae86c58b53e617c380b44dc45903690bc",
+          "7634f2d851eb6581f493e5452c930d0a698ecce9a648e571488651179308466d"
+        ]
+      },
+      {
+        "bank": "serling",
+        "id": "identifiers-9",
+        "runtime_text": "J K L M N O P Q R",
+        "expected": "Jay. Kay. Ell. Em. En. Oh. Pee. Cue. Ar.",
+        "recognized": "J. K. N. P.",
+        "note": "Only J,K,N,P are reliably recovered by Small. L,M,O,Q,R remain unverified in the carrier-free assembled bank. One carrier experiment was rejected without further TTS attempts.",
+        "human_word_check": "UNVERIFIED",
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "6da43b944e494e88",
+          "86be9a55762d316a",
+          "72dfcfb0c470ac25",
+          "08f271887ce94707",
+          "8ce86a6ae65d3692",
+          "c4694f2e93d5c4e7",
+          "5c62e091b8c0565f",
+          "4ae81572f06e1b88",
+          "8c2574892063f995"
+        ],
+        "source_audio_sha256": [
+          "ea4df90c475cc9e102062daf59918ff3f8b10640aba4d2420be037f540b4cca5",
+          "bc9060c9ff3361f6107cee9e8da1c6188d5f317d1302da87e46cbfc5722d9b20",
+          "88e8ac02a7e5be02571e089aec40a3957f71ad7547353afdc2beb1d285528de5",
+          "4ebad4cdc15f47bb12b78fe22a0c241819fab45f3463466f07b00f29edd0a2c5",
+          "13037de1133ef3c296b4299db48e9e122b1db4d933e3492081baf3cd766402dd",
+          "8ac817f18d68d6ccd7bef0668fdc2e616ea5d5419cdc5aac2462e28d4fdff867",
+          "3fa48d0a71c815a220b1c62e0c9f476879e95cd6c38a2f34fc6de6656a092400",
+          "2c1686f6bdf884ae1b1e5db42ccc74ef99f07fc1104b9d3abffacf17f33a4c8d",
+          "c8f5fd6eaaf40df8e64515ca37d789a67560606fce0b9fb46794e9b495f8cd11"
+        ]
+      }
+    ],
+    "unresolved_context_asr_ambiguities": [
+      {
+        "bank": "ensemble",
+        "id": "stanton-rig-context",
+        "expected": "The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer. Towed a rig in off it once. Last October. Left here a quarter to two. Got back twenty-five past four. It's a forty minute job.",
+        "recognized": "The old roads closed at the crossing. County says they'll grade it this summer. County says that every summer, tow to rig in off it once last October. Left here a quarter to two, got back 25 past four. It's a 40 minute job.",
+        "note": "Short towed/article articulation remains ambiguous, with numeric spelling differences. Human word/pronunciation check is UNVERIFIED; see word-diagnostics.json.",
+        "human_word_check": null,
+        "human_listened": false,
+        "human_word_check_field_present": false,
+        "status": "REVIEWED_DIFFERENCE",
+        "source_clip_ids": [
+          "22010a044849c8f3",
+          "79a44e7e5fd1e5bf",
+          "d56bdd61a80ce2fb",
+          "080a38b87176fc6c"
+        ],
+        "source_audio_sha256": [
+          "0a216bee9a0948a6d54e4f625b67872ede440a61d4a6214e694f104384a86893",
+          "836285ea07caa478631a7dcedc807ff53e82883bd5d84fa967e78a70bec8ea74",
+          "f9fe44128ff2bd9ebdc6d4b4683954b91e8efcdc5835eeedb4f37145874b6b8b",
+          "035333f0890548dfda209d37f116bd9a35ea3a645f4b1e4e84858793cc45ba50"
+        ]
+      }
+    ],
+    "asr_uncertainty_counts": {
+      "clips": 23,
+      "compositions": 9,
+      "contexts": 1
+    },
+    "audio_asset_manifest": {
+      "file": "audio-asset-manifest.json",
+      "sha256": "20792e0fb8c24b63b6c5497ecf8d64021f9b77377ff76e34d633050ad395c0c8",
+      "provenance_sha256": "d01e384d2d4db4279559b6e3cf0df3839d6a40f51f2ca4c484c4600da106cf84",
+      "scope": "Separate audio-only source/catalog/MP3 manifest; the build manifest independently pins the complete source and built payload."
+    },
+    "tts_ready_sha256": "08d5f7ab9a11ebdaf9aee7cef5672a51c9e325b6ab95e558711ca37ccde52eb9",
+    "ready_scope": "The speech worker declared production idle before the later browser queue; this is not a claim of current GPU utilization.",
+    "automatic_word_checks_are_not_human_listening": true
+  },
+  "preservation": {
+    "status": "PASS",
+    "old_mp3_unchanged": 1714,
+    "old_catalogs_unchanged": 4,
+    "asset_checksums_verified": 1718,
+    "old_profile_metadata_unchanged": 12,
+    "new_clone_profiles_verified": 6,
+    "profile_ids_by_role": {
+      "serling": "13c0a7b8",
+      "stanton": "21cc4af1",
+      "stack": "5af36427",
+      "bacall": "c5964307",
+      "price": "ee2d0eb3",
+      "lynch": "49934b6f"
+    },
+    "unrelated_extra_profile_ids": [],
+    "current_api_profile_count": 18,
+    "new_reference_bytes_verified": true,
+    "serling_kinski_byte_identical_ids": [],
+    "audit_sha256": "3ddf9deb0d7a4ffa2947c351ad8cbdfe180f01d1b618f93dc8ddb301b913a509",
+    "profiles_sha256": "9ac77c023c93b25b06107168fb90935b5fb4eed6f56d40d4b4bafac3a18e9100",
+    "rights": "Public source access does not establish cloning/reuse consent, licence, endorsement, or human-verified identity."
+  }
+}

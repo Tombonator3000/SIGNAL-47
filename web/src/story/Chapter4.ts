@@ -424,7 +424,7 @@ export class Chapter4 {
     this.d.audio.play(this.d.audio.or('small_switch', 'switch'), { gain: 0.35, rate: 0.8 });
     this.tvSound();
     if (room.tvOn && !this.tvSeen) { this.tvSeen = true; this.d.ui.toast('Snow on every channel. The stations signed off at one.', 3.2); }
-    else if (!room.tvOn) this.d.ui.toast('N. VEGA: "Leave it. The quiet is worse."', 3);
+    else if (!room.tvOn) this.noraToast('N. VEGA: "Leave it. The quiet is worse."', 3);
   }
   private tvSound() {
     const room = this.d.motel.room();
@@ -480,7 +480,7 @@ export class Chapter4 {
       this.walkieState = 'on';
       if (!this.walkieHeard) {
         this.walkieHeard = true;
-        ui.toast('N. VEGA: "I took the battery out in 1947."', 3.4);
+        this.noraToast('N. VEGA: "I took the battery out in 1947."', 3.4);
         this.g.note('Tomás\' field radio, on her table. No battery. An engine far off, coughing, then stopping. Silence. Clicks, four and seven. Someone breathing.');
       }
     });
@@ -496,7 +496,7 @@ export class Chapter4 {
       this.walkieState = 'on';
       if (!this.walkieSent) {
         this.walkieSent = true;
-        ui.toast('N. VEGA: "He pressed it too. Twice."', 3.2);
+        this.noraToast('N. VEGA: "He pressed it too. Twice."', 3.2);
         this.g.note('I pressed to talk once. Four clicks and seven came back.');
       }
     });
@@ -517,7 +517,7 @@ export class Chapter4 {
 
   private useDoor() {
     const s = this.s;
-    if (s.stage !== 'leave' && s.arrived && !s.told) this.d.ui.toast('N. VEGA: "Go if you need to. I will be here."', 3.2);
+    if (s.stage !== 'leave' && s.arrived && !s.told) this.noraToast('N. VEGA: "Go if you need to. I will be here."', 3.2);
     this.d.motel.goOut();
   }
 
@@ -547,6 +547,10 @@ export class Chapter4 {
   }
 
   // ---------- the conversation ----------
+  private noraToast(text: string, seconds: number) {
+    this.d.ui.toast(text, seconds); this.d.ui.speakNora(text);
+  }
+
   private openTalk() {
     const s = this.s;
     if (this.walkieState !== 'off') this.walkieOff();   // it keeps quiet while she talks
@@ -564,6 +568,7 @@ export class Chapter4 {
     this.reply = null;
     this.panel = P.talk(this.d.ui, {
       title: 'ROOM 6 / N. VEGA',
+      character: 'bacall',
       view: () => this.view(),
       onChip: (id) => this.toggleChip(id),
       onTable: () => this.showEvidence(),
@@ -667,6 +672,7 @@ export class Chapter4 {
 
   choose(id: string) {
     this.d.audio.stopPhoneCalls();
+    this.d.ui.npcDialogue?.stop();
     this.reply = null;
     switch (this.mode) {
       case 'control': return this.answerControl(id);
@@ -805,8 +811,10 @@ export class Chapter4 {
     ];
     s.line = true;
     this.mode = 'menu';
-    const spoken = audio.phoneCall(this.lines.filter((l) => l.who).map((l) => ({ by: l.who, text: l.text })));
-    if (!spoken && at) {
+    // Character mode plays Nora and the recorded Price line through the panel's
+    // single actor-aware queue. The legacy whole-exchange phone voice remains optional.
+    const spoken = audio.characterVoices ? null : audio.phoneCall(this.lines.filter((l) => l.who).map((l) => ({ by: l.who, text: l.text })));
+    if (!audio.characterVoices && !spoken && at) {
       audio.play('click', { gain: 0.5, at });
       audio.radio(at, 0.08);
       audio.radioVoice(4.4, 3.6);

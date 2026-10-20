@@ -670,6 +670,10 @@ html.text-large .prompt { font-size: 28px; }
 .chapter-card .cc-a, .chapter-card .cc-b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; opacity: 0; }
 .chapter-card .cc-a { animation: ccIn .9s ease .3s forwards, ccOut .7s ease 3.2s forwards; }
 .chapter-card .cc-b { animation: ccIn 1.1s ease 3.8s forwards; }
+.chapter-card.voiced .cc-a, .chapter-card.voiced .cc-b { animation: none; }
+.chapter-card.voiced .cc-a { opacity: 1; }
+.chapter-card.voiced[data-voice-phase=b] .cc-a { opacity: 0; }
+.chapter-card.voiced[data-voice-phase=b] .cc-b { opacity: 1; }
 .chapter-card .cc-closed { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .12em; color: var(--phosphor); }
 .chapter-card .cc-recap { font-family: var(--type); font-size: clamp(15px, 1.9vw, 19px); line-height: 1.5; max-width: 52ch; color: #cfc8b5; margin: 10px 0 0; }
 .chapter-card .cc-next { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .3em; color: var(--amber); }

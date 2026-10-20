@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "roles": {
+    "serling": {
+      "actor": "Rod Serling",
+      "profile_id": "13c0a7b8",
+      "profile_name": "Rod Serling / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "conditioning_text": "Uh, not immediately. We stayed on six months, I guess, in Ohio and came to New York.",
+      "reference_pcm": {
+        "duration_seconds": 5.2,
+        "peak_dbfs": -2.4881783057717914,
+        "rms_dbfs": -18.25906046079027,
+        "nonsilent_rms_dbfs": -18.25906046079027,
+        "nonsilent_seconds": 5.2,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "serling",
+        "source_page": "https://archive.org/details/The_Mike_Wallace_Interview___Rod_Serling",
+        "primary_context": "https://rodserling.com/roasting-rod-serling/",
+        "original_file": "serling-interview.mp4",
+        "artifact": "The Mike Wallace Interview featuring Rod Serling, 1959",
+        "rights": "Archive uploader marks public domain, but this has not been independently established and is not asserted as permission. Original/reference not bundled.",
+        "original_bytes": 125743363,
+        "original_sha256": "c207a64146aa907dba6e3fc7cc7f1c4a4ca4566677bc1b6d7d434a067bf8d80f",
+        "selected_reference_file": "serling-reference-final.wav",
+        "selected_interval_seconds": [
+          138.0,
+          143.2
+        ],
+        "selection_note": "The initial crop cut the reply onset and included the next utterance. The adjusted interval retains a complete reply after the interviewer question. Context and crop ASR broadly agree, with a small conjunction difference; no human listening."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    },
+    "stanton": {
+      "actor": "Harry Dean Stanton",
+      "profile_id": "21cc4af1",
+      "profile_name": "Harry Dean Stanton / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "2ca754077f028b41bca9a42fcf8371b7f3445329acf1a742d8123a33c7cc99ca",
+      "conditioning_text": "I have nothing to do with it. Everything evolves the way it evolves and it's just what is.",
+      "reference_pcm": {
+        "duration_seconds": 5.78,
+        "peak_dbfs": -12.34107778059418,
+        "rms_dbfs": -27.353072156555456,
+        "nonsilent_rms_dbfs": -27.1221327206188,
+        "nonsilent_seconds": 5.48,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "stanton",
+        "source_page": "https://www.wnycstudios.org/story/317438-harry-dean-stanton-singer-actor-partly-fiction/",
+        "source_url": "https://pdst.fm/e/dts.podtrac.com/pts/redirect.mp3/waaa.wnyc.org/takeaway/takeaway091113-stanton.mp3",
+        "original_file": "harry-dean-stanton/wnyc-takeaway-20130911.mp3",
+        "artifact": "Harry Dean Stanton: Singer, Actor, Partly Fiction",
+        "rights": "Publicly accessible source recording; no licence or consent for voice cloning, redistribution, or in-game derivative voice is established. Do not infer rights from access.",
+        "original_bytes": 3412519,
+        "original_sha256": "149e014d9d584c8711811ca8437be635bf4458ee2ae45905e4fa66d757e9d2b1",
+        "publisher": "The Takeaway / WNYC Studios / PRI",
+        "date": "2013-09-11",
+        "selected_reference_file": "stanton-reference-final.wav",
+        "selected_interval_seconds": [
+          252.72,
+          258.5
+        ],
+        "selection_note": "Word-bounded excerpt within the actor's answer or solo report, selected with existing small-model ASR timing. Original context and full ASR stay outside the repository. Background music, likeness and delivery have not been human-listened.",
+        "speaker_attribution": "The WNYC source names Stanton and director Sophie Huber as guests. This is a first-person reply to the host's question about the actor's career, success and Jack Nicholson, followed by a new question about his philosophical explanation. Source Q/A context and actor-specific subject matter support attribution; no human listening claim."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    },
+    "stack": {
+      "actor": "Robert Stack",
+      "profile_id": "5af36427",
+      "profile_name": "Robert Stack / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "c6e5bbcc4927f5f07405ffdcd87dffdd5f4f09dcb27fd9eb2092a9bef959894a",
+      "conditioning_text": "It's just, I look upon the thing as part of TV history and as long as you don't call me Al Capone, I'm alright.",
+      "reference_pcm": {
+        "duration_seconds": 6.96,
+        "peak_dbfs": -6.204369922794298,
+        "rms_dbfs": -20.331932491333966,
+        "nonsilent_rms_dbfs": -20.319434799776893,
+        "nonsilent_seconds": 6.94,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "stack",
+        "source_page": "https://bobbarry.libsyn.com/robert-stack",
+        "source_url": "https://traffic.libsyn.com/secure/bobbarry/137_-_Robert_Stack.mp3",
+        "original_file": "robert-stack/bob-barry-interview.mp3",
+        "artifact": "Robert Stack — Bob Barry’s Unearthed Interviews",
+        "rights": "Publicly accessible source recording; no licence or consent for voice cloning, redistribution, or in-game derivative voice is established. Do not infer rights from access.",
+        "original_bytes": 9816139,
+        "original_sha256": "1af9a7e2bef5adad2d4fbfb88bac07ceca5eec9b59caadaf8477ceddf11f212f",
+        "publisher": "Bob Barry / Wisconsin Broadcasting Museum",
+        "date": "2022-05-25 publication (archival interview date not stated)",
+        "selected_reference_file": "stack-reference-final.wav",
+        "selected_interval_seconds": [
+          76.46,
+          83.42
+        ],
+        "selection_note": "Word-bounded excerpt within the actor's answer or solo report, selected with existing small-model ASR timing. Original context and full ASR stay outside the repository. Background music, likeness and delivery have not been human-listened.",
+        "speaker_attribution": "The producer introduces Robert Stack and asks directly about his famous federal-agent role. The selected reply reflects on the programme and contrasts that character with its gangster adversary; the interviewer responds after the chosen interval. Q/A context supports attribution, without human listening."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    },
+    "bacall": {
+      "actor": "Lauren Bacall",
+      "profile_id": "c5964307",
+      "profile_name": "Lauren Bacall / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "3efce287fca82bfae9f2b0c7dbe3ccb971f04cf7e2368d1a287438d19efa1161",
+      "conditioning_text": "Whether it is a consummated relationship or not. I think if there is chemistry between two people, you feel it.",
+      "reference_pcm": {
+        "duration_seconds": 6.35,
+        "peak_dbfs": -2.890598855775969,
+        "rms_dbfs": -19.660021328609403,
+        "nonsilent_rms_dbfs": -19.206347192447495,
+        "nonsilent_seconds": 5.72,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "bacall",
+        "source_page": "https://freshairarchive.org/segments/actress-lauren-bacall",
+        "source_url": "https://whyy-upload.streamguys1.com/fa_archive/2001/FA20010601-segment-02.mp3",
+        "original_file": "lauren-bacall/freshair-20010601.mp3",
+        "artifact": "Actress Lauren Bacall",
+        "rights": "Publicly accessible source recording; no licence or consent for voice cloning, redistribution, or in-game derivative voice is established. Do not infer rights from access.",
+        "original_bytes": 10407843,
+        "original_sha256": "0976719c8c565e55bba88edad6615fe31ab2b4d85108e822772b7858a4b63409",
+        "publisher": "Fresh Air / WHYY; Terry Gross",
+        "date": "2001-06-01 (rebroadcast of 1994 interview)",
+        "selected_reference_file": "bacall-reference-final.wav",
+        "selected_interval_seconds": [
+          169.95,
+          176.3
+        ],
+        "selection_note": "Word-bounded excerpt within the actor's answer or solo report, selected with existing small-model ASR timing. Original context and full ASR stay outside the repository. Background music, likeness and delivery have not been human-listened.",
+        "speaker_attribution": "WHYY's speaker-labelled transcript places this complete relationship/chemistry answer under Ms. BACALL; compare the interview section, not the Martin Amis section of the full episode transcript."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    },
+    "price": {
+      "actor": "Vincent Price",
+      "profile_id": "ee2d0eb3",
+      "profile_name": "Vincent Price / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "3b1da495e096a0dc163881ef0f663ee6d65f3b81a13d38757a9dbf275e8e60b7",
+      "conditioning_text": "You know you're up early in the morning you get home late at night and you really work awfully hard in them.",
+      "reference_pcm": {
+        "duration_seconds": 5.38,
+        "peak_dbfs": -9.401756646127401,
+        "rms_dbfs": -26.79877037436842,
+        "nonsilent_rms_dbfs": -26.73391648792056,
+        "nonsilent_seconds": 5.3,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "price",
+        "source_page": "https://archive.org/details/twitter-1322516170109558784",
+        "primary_context": "https://twitter.com/BBCArchive/status/1322516170109558784",
+        "original_file": "price-1976-parkinson.mp4",
+        "artifact": "BBC Archive, 31 October 2020 post of Vincent Price on Parkinson, 1976",
+        "rights": "Publicly preserved BBC Archive post; no licence grant or endorsement established. Original/reference not bundled.",
+        "original_bytes": 6824600,
+        "original_sha256": "dd6bf7613c19c0b530ec560116ee576f4c50e4b2322e1864054f48f6f7b8324f",
+        "selected_reference_file": "price-reference-final.wav",
+        "selected_interval_seconds": [
+          41.48,
+          46.86
+        ],
+        "selection_note": "Word-bounded excerpt within the actor's answer or solo report, selected with existing small-model ASR timing. Original context and full ASR stay outside the repository. Background music, likeness and delivery have not been human-listened.",
+        "speaker_attribution": "The preserved BBC Archive Parkinson clip presents Vincent Price. Selected speech is inside his uninterrupted response about actors and enjoying movie work, after the interviewer describes working with him; the later question explicitly addresses his horror-film reputation. Full Q/A context is saved outside the repo. No human listening."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    },
+    "lynch": {
+      "actor": "David Lynch",
+      "profile_id": "49934b6f",
+      "profile_name": "David Lynch / synthetic parody / SIGNAL 47",
+      "kind": "clone",
+      "profile_reference_sha256": "db56be3135aa11c749c7fdb89ee732e543d54a8d0c44ac72c00c868c8df793d4",
+      "conditioning_text": "It's incredibly beautiful this morning here in LA. It's very beautiful sunlight, but big storms are coming in, so stay tuned.",
+      "reference_pcm": {
+        "duration_seconds": 10.4,
+        "peak_dbfs": -1.0823302695724326,
+        "rms_dbfs": -14.466309627481566,
+        "nonsilent_rms_dbfs": -14.415918595149586,
+        "nonsilent_seconds": 10.28,
+        "samples_at_or_above_full_scale": 0
+      },
+      "source": {
+        "voice": "lynch",
+        "source_page": "https://archive.org/details/david-lynch-daily-report-2005-2010",
+        "primary_context": "Original davidlynch.com Daily Report; preserved file 2005.01.06",
+        "original_file": "lynch-20050106.mp4",
+        "artifact": "David Lynch Daily Report, 6 January 2005",
+        "rights": "Public archival availability; no licence grant or endorsement established. Original/reference not bundled.",
+        "original_bytes": 1847834,
+        "original_sha256": "7fa7a94266156c20dfcbb06a903a76025056851756de508c2b5dead246d7b0eb",
+        "selected_reference_file": "lynch-reference-final.wav",
+        "selected_interval_seconds": [
+          41.6,
+          52.0
+        ],
+        "selection_note": "Word-bounded excerpt within the actor's answer or solo report, selected with existing small-model ASR timing. Original context and full ASR stay outside the repository. Background music, likeness and delivery have not been human-listened.",
+        "speaker_attribution": "The source is an original Daily Report from the filmmaker website, preserved in the archive. It is a continuous solo address to website members. The selected interval contains a complete weather observation and closing warning; no interviewer."
+      },
+      "reference_transcription": "Existing faster-whisper-small; not human-listened.",
+      "human_listened": false,
+      "speaker_similarity": "UNVERIFIED"
+    }
+  }
+}

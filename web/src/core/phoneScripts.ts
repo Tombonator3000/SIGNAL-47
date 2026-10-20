@@ -1,6 +1,13 @@
 /** Exact authored speech; actor labels are captions, never spoken into the clone. */
 export interface PhoneCue { text: string; by?: string; aside?: boolean; pause?: number }
 
+/** These existing CB words share Nora's character voice and small channel preload. */
+export const NORA_CB_TEXTS = [
+  'SARO seven, this is Sierra. You hear me?',
+  'Pull in at the north end, by the office. Not down past the rooms.',
+  'Room six. The door is open. Bring the prints.',
+];
+
 export const PHONE_CALLS: Record<'ward' | 'nora' | 'fieldNora', PhoneCue[]> = {
   ward: [
     { by: 'WARD', text: 'That is enough to hold the morning series. It is not enough to tell us why it happened.' },

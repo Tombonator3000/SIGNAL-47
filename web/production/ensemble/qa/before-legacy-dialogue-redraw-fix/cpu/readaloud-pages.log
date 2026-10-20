@@ -1,0 +1,38 @@
+PASS Kinski reading is off on a fresh device
+PASS opening a document with reading off adds no playback controls
+PASS pause setting visibly defaults to Off
+PASS the Kinski setting switches on and is stored on this device
+PASS reading stays enabled after a full page reload
+PASS a real supported game document opens (logbook)
+PASS desktop document and reading controls fit the viewport
+PASS description reading is explicitly labelled separately from the paper's actual text
+PASS Read decodes a real MP3 and starts its buffer through master (4.23s)
+PASS the live Read button becomes Stop reading
+PASS real narration samples reach master and obey master volume (0.13036, muted 0.00000)
+PASS Stop reading immediately cancels the current clip and queue
+PASS stopping restores the specific Read description label
+PASS document close still runs the game's original filing callback
+PASS Read document selects the actual clue on a real paper, separately from its description (logbook)
+PASS the paper's actual text also starts a genuinely decoded prerecorded clip
+PASS Stop on document reading clears playback and restores Read document
+PASS a two-line queue starts only its first recording
+PASS the second real recording starts after the first ends, with no overlap
+PASS repeating one recording reuses its decoded buffer
+PASS a missing recording has a disabled Read button and visible explanation
+PASS the real dialogue has one Read control matching its recording coverage
+FAIL a dialogue redraw with unchanged lines does not restart or overlap narration
+PASS closing a dialogue cancels narration
+PASS the test night can be saved before exercising Load case
+PASS pausing cancels narration and suspends the shared AudioContext
+PASS loading a real save keeps the device preference but starts no stale narration
+PASS the pending real recording is visibly loading
+PASS closing during pending fetch/decode prevents any delayed audio start
+PASS the original close callback still runs exactly once during loading
+PASS mobile Settings can turn Kinski reading on
+PASS the mobile settings panel scrolls without horizontal overflow at 844x390
+PASS the mobile document exposes its reading control without horizontal overflow
+PASS a real touch on Read starts decoded audio on mobile Chromium
+PASS mobile Stop and close leave no narration playing
+PASS all requested prerecorded files load without HTTP errors (126 requests)
+PASS no browser errors or warnings
+36 of 37 PASS

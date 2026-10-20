@@ -21,10 +21,14 @@ export class CB {
   /** Plays a call from the truck at `at`, or in the cab with the player (null). onLine is
    *  called as each line begins (for the caption), onEnd when the squelch has closed. Returns
    *  how long it takes, in seconds (0 if there is no sound yet or a call is going on). */
-  call(lines: CBLine[], at: THREE.Vector3 | null, onLine: (l: CBLine) => void, onEnd?: () => void) {
+  call(lines: CBLine[], at: THREE.Vector3 | null, onLine: (l: CBLine, duration?: number) => void, onEnd?: () => void) {
     const a = this.audio, ctx = a.ctx, noise = a.noiseBuffer();
     if (!ctx || !noise || this.busy || !lines.length) return 0;
+    a.stopPhoneCalls(); a.onPhoneCall?.();
     this.busy = true;
+    const selected = lines.map((line) => line.by === 'N. VEGA' && line.who === 'woman' ? a.characterBuffer('bacall', line.text) : undefined);
+    const recorded = selected.every((buffer) => buffer && Number.isFinite(buffer.duration) && buffer.duration > 0);
+    const sources: AudioBufferSourceNode[] = [];
     const t0 = ctx.currentTime + 0.05;
     // the speaker: narrow, overdriven, from the dash
     const out = ctx.createGain(); out.gain.value = 0.85;
@@ -52,9 +56,15 @@ export class CB {
     const fq = horn.frequency, mf = mute.frequency, g = voice.gain;
     let at0 = LEAD;
     const starts: number[] = [];
-    for (const l of lines) {
-      const secs = secsOf(l.text), base = PITCH[l.who];
+    const durations: number[] = [];
+    for (const [i, l] of lines.entries()) {
+      const secs = recorded ? selected[i]!.duration : secsOf(l.text), base = PITCH[l.who];
+      durations.push(secs);
       starts.push(at0);
+      if (recorded) {
+        const source = ctx.createBufferSource(); source.buffer = selected[i]!; source.connect(out);
+        source.start(t0 + at0); sources.push(source); at0 += secs + GAP; continue;
+      }
       fq.setValueAtTime(base, t0 + at0);
       for (const y of syllables(l.text, secs)) {
         const ts = t0 + at0 + y.at, f = base * y.f;
@@ -69,16 +79,22 @@ export class CB {
     s.setValueAtTime(0, t0); s.linearRampToValueAtTime(0.55, t0 + 0.02); s.setTargetAtTime(0.035, t0 + 0.16, 0.06);
     s.setValueAtTime(0.035, t0 + end); s.linearRampToValueAtTime(0.5, t0 + end + 0.03); s.setTargetAtTime(0, t0 + end + 0.2, 0.03);
     horn.start(t0); vib.start(t0); n.start(t0);
-    const timers: number[] = [];
-    lines.forEach((l, i) => timers.push(window.setTimeout(() => onLine(l), (starts[i] + 0.05) * 1000)));
+    // Silent source-end markers use the same pausable clock as the speaker.
+    // No wall timer can caption the next sentence or finish the call during Pause.
+    const marker = (seconds: number, callback: () => void) => {
+      const source = ctx.createBufferSource(); source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      source.connect(out); source.onended = () => { source.disconnect(); callback(); };
+      sources.push(source); source.start(t0 + seconds);
+    };
+    lines.forEach((l, i) => marker(starts[i], () => onLine(l, durations[i])));
     const stop = () => {
+      for (const source of sources) { source.onended = null; try { source.stop(); } catch { /* stopped */ } source.disconnect(); }
       for (const x of [horn, vib, n]) { try { x.stop(); } catch { /* stopped */ } }
       out.disconnect(); if (pan !== a.radioBus) pan.disconnect();
-      for (const id of timers) clearTimeout(id);
       this.busy = false; this.stopAll = null;
     };
     this.stopAll = stop;
-    timers.push(window.setTimeout(() => { stop(); onEnd?.(); }, (end + 0.8) * 1000));
+    marker(end + 0.8, () => { stop(); onEnd?.(); });
     return end + 0.5;
   }
 

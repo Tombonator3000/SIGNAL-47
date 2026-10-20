@@ -490,7 +490,7 @@ export class Chapter3 {
     cap(0.4, 'The dial warms to amber. A carrier comes up out of the static, very weak.', 3.4);
     const recorded = audio.phoneCall([{ by: 'THE LINE', text: 'Reference west. No. East. Hold the last reading.' }], { lead: 4.0 });
     if (!recorded) this.g.after(4.0, () => audio.radioVoice(4.6));
-    cap(4.0, 'Under the carrier, a man\'s voice, far away: "Reference west. No. East. Hold the last reading."', 5.2);
+    cap(4.0, 'Under the carrier, a man\'s voice, far away: "Reference west. No. East. Hold the last reading."', recorded?.cues[0].duration ?? 5.2);
     this.g.after(Math.max(9.4, recorded?.duration ?? 0), () => {
       this.g.cinematic = false;
       this.s.heard = true;

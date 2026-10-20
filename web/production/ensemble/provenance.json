@@ -1,0 +1,182 @@
+{
+  "synthetic": true,
+  "label": "Synthetic actor parody ensemble and Rod Serling narration",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "language": "en",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "library_reference": "prosjektbibliotek/OFFENTLIG_INVENTAR.md entry for debpalash/VoiceStudio. Existing VoiceStudio 0.5.6 and already installed OmniVoice/faster-whisper-small reused. No new model or service installed.",
+  "profiles_file": "profiles.json",
+  "profile_ids": {
+    "serling": "13c0a7b8",
+    "stanton": "21cc4af1",
+    "stack": "5af36427",
+    "bacall": "c5964307",
+    "price": "ee2d0eb3",
+    "lynch": "49934b6f"
+  },
+  "reference_hashes_distinct": true,
+  "source_excerpt_policy": "One conditioning_text per actor, at most 25 source words, only in profiles.json. Full original source ASR and recordings remain outside Git.",
+  "rights": "Public source access does not establish permission to clone or distribute the voice. No consent, endorsement or independently verified source licence is asserted. The Serling archive uploader public-domain label is unverified.",
+  "request_settings": {
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast"
+  },
+  "postprocessing": {
+    "codec": "MP3",
+    "channels": 1,
+    "sample_rate": 24000,
+    "bit_rate": 64000,
+    "gain": "One constant gain per clip seeks -20 dBFS nonsilent RMS and caps decoded peak at -2 dBFS. No time stretching or pitch shift.",
+    "natural_speed": 1
+  },
+  "scope": {
+    "ensemble": "100 existing actor speech clips: Stanton18, Bacall49 including phone/CB/replies, Stack19, Lynch13, Price1 reused at two tape sites. Player lines/asides excluded.",
+    "serling": "1402 existing prose/chapter-field/fragment clips including complete number and identifier banks. Every closed/recap/next/title branch is included; clocks use the shared complete numeric resolver. Existing Kinski corpus remains untouched."
+  },
+  "segmentation": "Exact normalized text first, then complete static fragments, number/clock and strict identifier composition. Runtime wording and IDs are unchanged by explicit pronunciation requests. Unknown tokens fail availability rather than skip words.",
+  "pronunciation_overrides": "generate.py documents same-value letter names, initials, elevation, pauses, strict IDs and signed values. Targeted corrections are pinned by request-overrides.json with separate cache identities and corrections.json evidence.",
+  "counts": {
+    "ensemble": {
+      "corpus_clips": 100,
+      "generated_clips": 100,
+      "bytes": 3224048,
+      "duration_seconds": 394.29
+    },
+    "serling": {
+      "corpus_clips": 1402,
+      "generated_clips": 1402,
+      "bytes": 56267960,
+      "duration_seconds": 6913.71
+    }
+  },
+  "verification": {
+    "file": "verification.json",
+    "status": "PASS",
+    "word_check_status": "CHECKED_WITH_UNRESOLVED_ASR_AMBIGUITY",
+    "asr_ensemble": "asr.json: every one of 100 actor clips; context-asr.json and word-diagnostics.json preserve ambiguous short-line checks",
+    "asr_serling": "serling/asr.json: all chapter fields plus stratified long/prose sources and actual no-gap runtime compositions covering clock/negative numbers/identifiers and every number/identifier lexeme",
+    "asr_model": "Systran/faster-whisper-small, already installed, accurate mode, refine false; automatic word check is not human listening",
+    "preservation_file": "preservation.json",
+    "preservation_status": "PASS",
+    "asr_summary": {
+      "ensemble": {
+        "selected_clips": 100,
+        "checked_clips": 100,
+        "additional_town_clips": 0,
+        "compositions": 0,
+        "strict_clip_pass": 72,
+        "reviewed_clip_differences": 28,
+        "unresolved_clip_ids": [
+          "79a44e7e5fd1e5bf"
+        ],
+        "unresolved_composition_ids": [],
+        "human_word_check": "UNVERIFIED"
+      },
+      "serling": {
+        "selected_clips": 105,
+        "checked_clips": 137,
+        "additional_town_clips": 18,
+        "compositions": 17,
+        "strict_clip_pass": 44,
+        "reviewed_clip_differences": 93,
+        "unresolved_clip_ids": [
+          "9b0617f13405b9bb",
+          "e07df9fdd4d9c1a0",
+          "e10c9a2792f948c3",
+          "6de6ba3ad6b856de",
+          "b8c9f0756d14d474",
+          "6d8f91e3c74b565c",
+          "8c26116d4114baef",
+          "580c6291f2a0995a",
+          "d2fae6a331c3bb17",
+          "e0ccb159da38ea81",
+          "bbc4f06a1e57982c",
+          "8d6db6caf7e84739",
+          "3f58d648572b0a32",
+          "5a976d0eb15a433c",
+          "185bd8e9a2263670",
+          "fff5d8899372feef",
+          "40dccedd2dd548a9",
+          "6dc8eb82d2bc9d10",
+          "77cd1f6c9b09d683",
+          "d58777cd97fa78bd",
+          "282a25ef5a07e9cc",
+          "d88f4c6c3c0d9857"
+        ],
+        "unresolved_composition_ids": [
+          "examine-scenery",
+          "photo-clock",
+          "photo-control-clock",
+          "negative-distance",
+          "identifier-e09a",
+          "identifier-p13",
+          "numbers-27",
+          "identifiers-0",
+          "identifiers-9"
+        ],
+        "human_word_check": "UNVERIFIED"
+      }
+    },
+    "interpretation": "PASS is the technical file/PCM/hash/provenance check with all automatic word results reviewed. It is not exact-word listening approval. Listed unresolved word, identifier and clock ambiguities remain."
+  },
+  "corpus_sha256": {
+    "ensemble": "d365056cbd5ad55ce886d341b5243bc8fe0b715dd41f95a6f8d67a1a3010ea07",
+    "serling": "771b5fbdc550993479403846589f57984669cfd788546a4f75edab095fda7f74"
+  },
+  "runtime_excludes": [
+    "original source recordings",
+    "reference WAV files",
+    "full original source ASR",
+    "model weights",
+    "VoiceStudio API dependency",
+    "local cache paths"
+  ],
+  "audio_asset_manifest_file": "audio-asset-manifest.json",
+  "audio_asset_manifest_sha256": "20792e0fb8c24b63b6c5497ecf8d64021f9b77377ff76e34d633050ad395c0c8",
+  "rejected_carrier_trial": {
+    "file": "serling/carrier-word-controls.json",
+    "selected_for_runtime": false,
+    "selected_trimmed_clips": 0,
+    "decision": "A bounded carrier-word method did not establish sufficiently clean final lexemes. Carrier-free selected takes remain; no carrier words or trims are in runtime."
+  },
+  "coverage_addendum": {
+    "file": "serling/town-addendum.json",
+    "sha256": "8cfbd34327972002805c7ddb98f803ea7d376d8ddbdc8d4af3cca72d1bf50671",
+    "added_clips": 18,
+    "source": "src/story/caliche.ts add(...,examine) argument four, all finite branches",
+    "previously_selected_mp3": 1484,
+    "preservation": {
+      "checked": 1484,
+      "changed": [],
+      "status": "PASS"
+    },
+    "word_check": "Every added town-examine clip is checked, in addition to the recomputed current stratified set and preserved valid ASR history."
+  }
+}

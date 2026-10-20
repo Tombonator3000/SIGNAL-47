@@ -1,0 +1,17 @@
+[
+  {
+    "name": "serling-pages",
+    "exit_code": 0,
+    "seconds": 219.48,
+    "url": "http://127.0.0.1:8502/SIGNAL-47/",
+    "command": [
+      "bash",
+      "/tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/slot.sh",
+      "--alone",
+      "/home/tom/.venvs/signal47/bin/python",
+      "tools/serling.py",
+      "/home/tom/SIGNAL-47/.claude/worktrees/codex-voice-ensemble/web/production/ensemble/qa/serling-pages"
+    ],
+    "log": "serling-pages.log"
+  }
+]

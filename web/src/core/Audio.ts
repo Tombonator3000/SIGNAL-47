@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { SignalVoice } from './signalVoice';
 import { Ambience } from './ambience';
-import { PHONE_TEXTS, type PhoneCue } from './phoneScripts';
+import { PHONE_TEXTS, PHONE_CALLS, NORA_CB_TEXTS, type PhoneCue } from './phoneScripts';
 import { normalizeReadingText } from './readAloud';
 import voiceCatalogSource from '../assets/audio/kinski/catalog.json?raw';
+import ensembleCatalogSource from '../assets/audio/ensemble/catalog.json?raw';
 import phoneRing from '../assets/audio/phone_ring.mp3';
 import printer from '../assets/audio/printer.mp3';
 import ceramic from '../assets/audio/ceramic.mp3';
@@ -58,6 +59,20 @@ for (const clip of voiceCatalog.clips) {
   const key = `phone:${clip.id}`;
   phoneKeys.set(text, key); phoneSources[key] = url;
 }
+const CHARACTER_FILES = import.meta.glob<string>('../assets/audio/ensemble/*.mp3', { eager: true, query: '?url', import: 'default' });
+const ensembleCatalog = JSON.parse(ensembleCatalogSource) as { clips: { id: string; voice: string; text: string; file: string }[] };
+const channelTexts = new Set([...PHONE_CALLS.nora, ...PHONE_CALLS.fieldNora].filter((cue) => !cue.aside)
+  .map((cue) => normalizeReadingText(cue.text)).concat(NORA_CB_TEXTS.map(normalizeReadingText)));
+const characterKeys = new Map<string, string>(), characterSources: Record<string, string> = {};
+for (const clip of ensembleCatalog.clips) {
+  const text = normalizeReadingText(clip.text);
+  if (!(clip.voice === 'bacall' && channelTexts.has(text)
+    || clip.voice === 'price' && text === 'Reference west. No. East. Hold the last reading.')) continue;
+  const url = CHARACTER_FILES[`../assets/audio/ensemble/${clip.file}`];
+  if (!url) continue;
+  const key = `character:${clip.id}`;
+  characterKeys.set(`${clip.voice}\0${text}`, key); characterSources[key] = url;
+}
 
 // Bought sounds (Ultimate SFX for Games, Function Loops), cut and levelled from the packs. Their
 // licence does not allow the files in this public repo, so they live in the private repo
@@ -79,7 +94,7 @@ const SOURCES: Record<string, string> = {
   phoneRing, printer, ceramic, wind, titleMusic, click, switch: sw, thudSoft,
   crickets, owl, dog0, dog1, gust, ...stepSources, ...alienSources,
   doorCreak0, doorCreak1, doorMetal, doorClose, paper0, paper1, engineStart, engineOff,
-  ...phoneSources, ...licSources,
+  ...phoneSources, ...characterSources, ...licSources,
 };
 
 export interface PhoneCallTimeline {
@@ -126,6 +141,12 @@ export class AudioSys {
 
   private loading: Promise<void> | null = null;
   kinskiCalls = false;
+  characterVoices = false;
+  characterBuffer(voice: 'bacall' | 'price', text: string) {
+    if (!this.characterVoices) return undefined;
+    const key = characterKeys.get(`${voice}\0${normalizeReadingText(text)}`);
+    return key ? this.buf[key] : undefined;
+  }
   onPhoneCall?: () => void;
   get phonePlaying() { return this.phoneSession !== null; }
   private phoneSession: { sources: AudioBufferSourceNode[]; nodes: AudioNode[] } | null = null;
@@ -518,8 +539,12 @@ export class AudioSys {
   phoneCall(lines: PhoneCue[], options: { lead?: number; gap?: number } = {}): PhoneCallTimeline | null {
     this.stopPhoneCalls();
     const ctx = this.ctx;
-    if (!this.kinskiCalls || !ctx || ctx.state === 'closed' || !this.noise || !lines.length || !lines.some((l) => !l.aside)) return null;
+    if ((!this.kinskiCalls && !this.characterVoices) || !ctx || ctx.state === 'closed' || !this.noise || !lines.length || !lines.some((l) => !l.aside)) return null;
     const buffers = lines.map((line) => {
+      const actor = line.by === 'N. VEGA' ? this.characterBuffer('bacall', line.text)
+        : line.by === 'THE LINE' ? this.characterBuffer('price', line.text) : undefined;
+      if (actor) return actor;
+      if (!this.kinskiCalls) return undefined;
       const key = phoneKeys.get(normalizeReadingText(line.text));
       return key ? this.buf[key] : undefined;
     });
