@@ -73,6 +73,7 @@ import { NinthCow } from './story/ninthCow';
 import { TAG_RANCH, TAGS } from './drive/herd';
 import { MotelTv } from './story/motelTv';
 import { OfficePhone } from './story/officePhone';
+import { TruckOnB, type TruckOnBIn } from './story/truckOnB';
 import { FieldBook } from './story/fieldBook';
 import { LostNights } from './story/lostNights';
 import { BINDER } from './story/nightshift';
@@ -601,6 +602,14 @@ async function boot() {
     toast: (text, secs, clock) => ui.toast(text, secs, clock), frames: () => ({ f3: ch3.s.f3, f4: ch3.s.f4 }),
     save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
   ch4.officePhone = { label: () => officePhone.label(), use: () => officePhone.use() };
+  // four, and not yet seven: the truck on B (story/truckOnB.ts; FORSLAG.md, 20 October, item 8): at
+  // SARO's turn-off from chapter two the lights go out four times, after room 6 the engine dies and
+  // they go out seven; the compass on the dash reads 026 over B. Kept with the town's part of the case
+  const truckB = new TruckOnB({ trouble: world.trouble, radio: carRadio, seen: townSeen, note: (text) => game.note(text),
+    toast: (text, secs) => ui.toast(text, secs),
+    // a relay in the dash with each blink: a smaller K3
+    tick: () => { audio.play(audio.or('rack_switch', 'switch'), { gain: 0.22, rate: 1.3, lp: 2400 }); },
+    save: () => { if (mode === 'play') requestAutosave(false); } });
   // T. Vega's field book in the drawer in the hut at STATION 01, and the envelope for plate 4 on
   // the motel office's counter (story/fieldBook.ts; FORSLAG.md, 20 October, item 3 and small
   // tweak 3): the book is chapter three's (Ch3State.fb), the envelope the town's ('env:lamp')
@@ -818,7 +827,8 @@ async function boot() {
     if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) {
       if (world.trouble.turnKey()) return;
       if (radioAimed()) { turnRadio(); return; }
-      world.getOutHere();
+      // (not out in the middle of the truck's count on B: story/truckOnB.ts)
+      if (!truckB.racing) world.getOutHere();
       return;
     }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
@@ -1009,7 +1019,7 @@ async function boot() {
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     recWalk.reset(); stationTaken.reset();
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); ninth.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     saroDark.halt();
     game.start(o.state?.checkpoint ?? o.jump);
@@ -1054,7 +1064,7 @@ async function boot() {
     follow.reset(); arrayBack.reset(); recWalk.reset(); stationTaken.reset();
     archive.halt(); arrayTip.reset();
     world.stopDriving();
-    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); truckB.reset(); audio.stopPhoneCalls(); radio.reset(0);
     seenQuiet = true;
     curve.restore(null, false);
     game.reset();
@@ -1075,6 +1085,8 @@ async function boot() {
     if (saroDark.busy) return 'Not right now. Let the moment finish first.';
     // (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
     if (archive.racing) return 'Not right now. Let the moment finish first.';
+    // (nor while the truck is in its count on B: story/truckOnB.ts)
+    if (truckB.racing) return 'Not right now. Let the moment finish first.';
     return game.saveBlock();
   }
   // ---------- the notebook's map and kit (Tom, 16 October) ----------
@@ -1220,7 +1232,7 @@ async function boot() {
   function mapMarks(): NonNullable<MapView['marks']> {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: lines.mSouth(roadZ) });
     const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: lines.lineOfMark(m.kind),
-      at: m.kind === 'tv' ? { spot: 'office' } : m.kind === 'ninth' ? { spot: 'station01' } : ['cutout', 'car', 'lights', 'cows'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
+      at: m.kind === 'tv' ? { spot: 'office' } : m.kind === 'ninth' ? { spot: 'station01' } : ['cutout', 'car', 'lights', 'cows', 'truck4', 'truck7', 'truck7m'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
     for (const sp of abduction!.data.spots) {
       const area = sp.scene === 'road' ? 'diner' : sp.scene, take = new THREE.Vector3(...sp.take);
       out.push({ kind: 'away', clock: sp.clock, line: lineHere(take, area)?.line ?? (sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C'),
@@ -1659,6 +1671,8 @@ async function boot() {
       || arrayBack.busy
       // (the shape at the end of the headlights, until the lights have reached it)
       || cutouts.up === 'post'
+      // (the truck on B, its count and a few seconds after: story/truckOnB.ts)
+      || truckB.busy
       // (the recording walking where the player was taken: story/recording.ts)
       || recWalk.busy;
   }
@@ -1673,7 +1687,7 @@ async function boot() {
       held: modalOpen || game.cinematic || audio.phonePlaying || world.area === 'room6' || (game.phase === 'ch5' && inDiner),
       exposed: world.driving || space === 'yard',
       busy: oneAtATime(),
-      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.state !== 'idle' || archive.peaking || arrayBack.busy || recWalk.busy,
+      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.state !== 'idle' || archive.peaking || arrayBack.busy || truckB.peaking || recWalk.busy,
       // a 47 that belongs to a place waits there for the player: the curve hurries for it (as of the
       // last step: they are looked at after the curve)
       waiting: motelTv.waiting || townEvents.waiting,
@@ -2052,6 +2066,7 @@ async function boot() {
   Object.assign((window as any).S47, { ninth, musicHeld: () => musicHeld() });   // the ninth cow at STATION 01 (tools/f_ninth_cow.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
+  Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
   // the archive's phone, the dishes it tips and reel 047 (tools/f_archive.py)
   Object.assign((window as any).S47, { archive, arrayTip, reel047, arcIn: () => arcIn(), arcWhere: () => arcWhere() });
   Object.assign((window as any).S47, { arrayBack, arrayGate: () => arrayGate() });   // the array put back (tools/f_array_back.py)
@@ -2116,6 +2131,8 @@ async function boot() {
           { label: 'Engine dies, you turn the key', run: () => world.trouble.start('stall', { key: true }) },
           { label: 'Lights flicker', run: () => world.trouble.start('flicker') },
           { label: 'Dash goes dark', run: () => world.trouble.start('dashOut') },
+          { label: 'Every light out, four times', run: () => world.trouble.start('blink', { count: 4 }) },
+          { label: 'Engine dies, it catches on the second turn of the key', run: () => world.trouble.start('stall', { key: true, tries: 2 }) },
           { label: world.trouble.random ? 'Random trouble: on' : 'Random trouble: off', run: () => { world.trouble.random = !world.trouble.random; }, on: world.trouble.random },
         ],
       });
@@ -2145,6 +2162,10 @@ async function boot() {
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
         { label: `The ninth at STATION 01: ${ninth.state}`, run: () => { ninth.now(); ui.toast(ninth.down ? 'She is lying there already' : 'At STATION 01, the next moment her place is out of sight', 2.4); } },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
+      groups.push({ title: 'The truck on B', note: 'B crosses the highway at the turn-off to SARO. From chapter two, the first time the truck goes over it: carrier, a misfire, every light out four times. After room 6, the next time: the engine dies, the key twice, seven. The compass on the dash reads 026 over B.', items: [
+        { label: `The truck on B: ${truckB.phase}${truckB.four ? ', four had' : ''}${truckB.seven ? ', seven had' : ''}`, run: () => { if (!world.driving) ui.toast('Drive over B at the turn-off to SARO', 2.4); } },
+        { label: 'Not had tonight (again)', run: () => { for (const k of [...townSeen]) if (k.startsWith('truckB:') || k.startsWith('mark:truck')) townSeen.delete(k); } },
       ] });
       groups.push({ title: 'The array', note: 'From chapter two, once Ward has called back: ARRAY RESUME at the operations terminal puts all 27 on the schedule. 47 seconds later they go back to 026, every time.', items: [
         { label: `The array: ${arrayBack.stage}${arrayBack.count ? ` (${arrayBack.count} tonight)` : ''}`, run: () => { if (!game.at('ch1')) ui.toast('Only after 02:15', 2); else if (arrayBack.busy) ui.toast('It is going already', 2); else arrayBack.command('ARRAY RESUME', null); } },
@@ -2298,7 +2319,7 @@ async function boot() {
     carRadio.pos = tr ? radioAt : null;
     carRadio.power = (world.driving ? world.trouble.radioLevel : 1) * (!world.driving && space === 'room' ? 0.3 : 1);
     carRadio.muffle = world.driving ? 0 : 1;   // out of the truck it is only just heard, through the closed cab
-    tr?.setRadio(dialX(FREQ[carRadio.station]), carRadio.on);
+    tr?.setRadio(dialX(FREQ[carRadio.station]), carRadio.on || carRadio.carrying);
     carNear = !!tr && (world.driving || player.pos.distanceTo(radioAt) < 7);
     const counter = world.diner?.proxies.counter;
     let dinerOn = false;
@@ -2318,7 +2339,8 @@ async function boot() {
   }
   // A station's line is captioned once while the truck or counter radio can be heard.
   radio.onLine = (id, text, by, duration) => {
-    const car = carRadio.live && carRadio.station === id && carNear;
+    // (not while the truck's radio gives only a bare carrier: the station is gone from under it, story/truckOnB.ts)
+    const car = carRadio.live && !carRadio.carrying && carRadio.station === id && carNear;
     const diner = dinerRadio.live && dinerRadio.station === id && !world.driving && player.pos.distanceTo(counterAt) < 12;
     if (mode !== 'play' || game.cinematic || !(car || diner)) return;
     if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
@@ -2354,7 +2376,7 @@ async function boot() {
   }
   // (and while the yard holds its breath, and SARO is dark: core/ambience.ts, story/saroDark.ts)
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || recWalk.busy || faceQuiet > 0 || ninth.quiet > 0 || roofSteps.busy || reelTape.busy
-    || saroDark.busy || officePhone.busy || archive.busy || arrayBack.busy || !!audio.night?.breathing; }
+    || saroDark.busy || officePhone.busy || archive.busy || arrayBack.busy || truckB.racing || !!audio.night?.breathing; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
    *  the office, on the motel's court or within earshot of the office's open door (22 m, the
    *  shoulder beside it too), chapter four before room 6 is over, nothing else going. Every way to
@@ -2366,6 +2388,24 @@ async function boot() {
     return { ok: !modalOpen && !game.cinematic && !oneAtATime() && !audio.phonePlaying && !cb.busy,
       open: game.phase === 'ch4' && ch4.active && (s === 'to-motel' || s === 'room'),
       near: foot && (inside(motelOffice, p) || door < 22 || court), here: foot && (door < 45 || court), pos: p, clock: game.clock };
+  }
+  /** What the truck on B needs to know (story/truckOnB.ts): the driven truck on the map and its speed,
+   *  on a trip (not a free drive, not chapter six's road) and where it began, chapters two to five,
+   *  room 6 over, and nothing else of the night's going; on the old road before the line, the miles;
+   *  slow fades. */
+  function truckBIn(modalOpen = !!ui.modal): TruckOnBIn {
+    const tr = world.driving ? truckNow() : null, s4 = ch4.s.stage;
+    const old = world.area === 'roswell' && game.ch6.active && game.ch6.stage !== 'end' && tr && world.oldRoad ? world.oldRoad.where(tr.group.position.x, tr.group.position.z).mi : null;
+    return {
+      ok: !modalOpen && !game.cinematic && !oneAtATime() && !audio.phonePlaying && !cb.busy,
+      trip: world.tripSecs !== null,
+      at: tr && world.area !== 'roswell' ? mapOf(tr.group.position) : null,
+      speed: world.driving ? world.drivingSpeed : 0,
+      open: game.at('ch2') && game.phase !== 'ch6',
+      after6: game.at('ch5') || (game.phase === 'ch4' && ch4.active && ch4.s.p12 && (s4 === 'leave' || s4 === 'complete')),
+      clock: game.clock, oldMi: old,
+      from: world.tripNow?.from ?? null, metres: world.tripNow?.metres ?? 0, calm: calmFlash,
+    };
   }
   const dbg = { hold: false };
   let inCab = false;
@@ -2508,6 +2548,12 @@ async function boot() {
           driving: world.driving, inHut: world.area === 'station01' && world.indoors(player.pos), cam: camera, light: flashlight.on });
       }
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));
+      // the truck on B (story/truckOnB.ts), and the compass on the dash of the truck being driven
+      if (mode === 'play') {
+        truckB.update(modalOpen ? 0 : dt, truckBIn(modalOpen));
+        const ct = world.driving ? truckNow() : null;
+        if (ct) { ct.compassNorth = world.skyYaw; ct.compassPull = truckB.pull; }
+      }
       // the array put back on the schedule (story/arrayBack.ts): its time stops while a panel is open,
       // as the night's does; before the time away, which may not begin while it runs (and if it
       // does, from the developer menu, the array leaves the schedule for it)
@@ -2563,7 +2609,7 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey, aimR = live && !key && radioAimed(), out = live && !key && !aimR && world.canGetOut();
+        const key = live && world.driving && world.trouble.wantsKey, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && world.canGetOut();
         if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
         ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
         ui.hint(false);
@@ -2608,7 +2654,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + curve.text() + '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + curve.text() + '\n' + truckB.text() + '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
   let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);

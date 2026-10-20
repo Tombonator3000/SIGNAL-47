@@ -229,6 +229,8 @@ export class World {
   private trip: { from: LegId; to: LegId | null; perMetre: number; onArrive?: () => void; still: number; home: LegId | null; hint?: string;
     free: boolean; start: THREE.Vector3; left: boolean; secs: number; metres: number; n: number } | null = null;
   private tripNo = 0;
+  /** The speed of the truck being driven (m/s, negative backing up); 0 when nobody drives. */
+  get drivingSpeed() { const L = this.driving && this.leg ? this.legs[this.leg] : null; return L ? L.drive.speed : 0; }
   /** Seconds the truck has been driven on this trip (the story's or the player's own), or null. */
   get tripSecs() { return this.driving && this.trip && !this.trip.free ? this.trip.secs : null; }
   /** The trip being driven, for the radio's programme on the way (story/tripRadio.ts): which

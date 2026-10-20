@@ -877,9 +877,11 @@ export class Receiver {
   private dial = false;
   /** How far under the static the station is now, 0..1 (the tests). */
   interference = 0;
+  /** Seconds left of a bare carrier (carrier()): the station gone from under it, on or off. */
+  private carry = 0;
   /** The bought crackles played so far (the tests). */
   cracks = 0;
-  private n: { sig: GainNode; stat: GainNode; mix: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
+  private n: { sig: GainNode; stat: GainNode; mix: GainNode; car: GainNode; out: GainNode; cab: BiquadFilterNode; pan: PannerNode; bus: GainNode | null; stop: () => void } | null = null;
   private listening: StationId | null = null;
 
   constructor(private radio: Radio, private o: ReceiverOpts) {}
@@ -899,6 +901,13 @@ export class Receiver {
   }
   /** Playing and somewhere it can be heard. */
   get live() { return this.on && !!this.pos; }
+  /** Giving a bare carrier now (carrier()), somewhere it can be heard: the dial lamp is lit for it
+   *  even with the set switched off. */
+  get carrying() { return this.carry > 0 && !!this.pos; }
+  /** The station drops out from under a bare carrier for `secs` (story/truckOnB.ts: the truck on B,
+   *  as 05:29 has it, story/Chapter6.ts), whatever it was playing; switched off, the speaker gives
+   *  the carrier all the same. carrier(0) lets the station come back now. */
+  carrier(secs: number) { this.carry = secs > 0 ? Math.max(this.carry, secs) : 0; }
 
   private build() {
     const a = this.radio.audio, ctx = a.ctx, n = a.staticSrc();
@@ -912,19 +921,23 @@ export class Receiver {
     const sh = ctx.createWaveShaper();
     const curve = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 127.5 - 1; curve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6); }
     sh.curve = curve;
+    // the bare carrier (carrier()): the 760 Hz the game's other radios have for it, into the same speaker
+    const osc = ctx.createOscillator(); osc.frequency.value = 760;
+    const car = ctx.createGain(); car.gain.value = 0; osc.connect(car); car.connect(mix); osc.start();
     const out = ctx.createGain(); out.gain.value = 0;
     // the cab's doors and glass between the speaker and whoever stands outside
     const cab = ctx.createBiquadFilter(); cab.type = 'lowpass'; cab.frequency.value = 20000; cab.Q.value = 0.5;
     mix.connect(bp); bp.connect(lp); lp.connect(sh); sh.connect(cab); cab.connect(out);
     const pan = a.spatial(new THREE.Vector3(), this.o.ref ?? 1.2, a.radioBus) as PannerNode;
     out.connect(pan);
-    return { sig, stat, mix, out, cab, pan, bus: null, stop: () => { try { n.src.stop(); } catch { /* stopped */ } out.disconnect(); } };
+    return { sig, stat, mix, car, out, cab, pan, bus: null, stop: () => { for (const x of [n.src, osc]) { try { x.stop(); } catch { /* stopped */ } } out.disconnect(); } };
   }
 
   update(dt: number) {
     const ctx = this.radio.audio.ctx;
     if (!ctx) return;
-    if (!this.n) { if (!this.on) return; this.n = this.build(); if (!this.n) return; }
+    this.carry = Math.max(0, this.carry - dt);
+    if (!this.n) { if (!this.on && !this.carrying) return; this.n = this.build(); if (!this.n) return; }
     const n = this.n, now = ctx.currentTime;
     // listen to the station it is tuned to, while it plays
     const want = this.live ? this.station : null;
@@ -956,10 +969,13 @@ export class Receiver {
     const k = z.left > 0 ? z.depth * Math.sqrt(Math.sin(Math.PI * (1 - z.left / z.len))) : 0;
     this.interference = k;
     const crackle = k > 0 ? 0.5 + Math.random() * 1.1 : 1;
-    n.sig.gain.setTargetAtTime(this.live ? s * (1 - tuning) * (1 - 0.5 * k) * this.power : 0, now, 0.05);
-    n.stat.gain.setTargetAtTime(this.live ? (0.03 + (carrier ? 0.02 : 0.36 * (1 - s)) + tuning * 0.45 + 0.42 * k * crackle) * this.power : 0, now, k > 0 ? 0.015 : 0.04);
+    // a bare carrier: the station gone at once, a steady tone and a breath of static under it
+    const bare = this.carrying, sounds = this.live || bare;
+    n.sig.gain.setTargetAtTime(this.live && !bare ? s * (1 - tuning) * (1 - 0.5 * k) * this.power : 0, now, bare ? 0.008 : 0.05);
+    n.stat.gain.setTargetAtTime(bare ? 0.035 * this.power : this.live ? (0.03 + (carrier ? 0.02 : 0.36 * (1 - s)) + tuning * 0.45 + 0.42 * k * crackle) * this.power : 0, now, bare ? 0.008 : k > 0 ? 0.015 : 0.04);
+    n.car.gain.setTargetAtTime(bare ? 0.11 * this.power : 0, now, 0.008);
     const m = THREE.MathUtils.clamp(this.muffle, 0, 1);
-    n.out.gain.setTargetAtTime(this.live ? this.o.vol * (1 - 0.82 * m) : 0, now, this.live ? 0.08 : 0.15);
+    n.out.gain.setTargetAtTime(sounds ? this.o.vol * (1 - 0.82 * m) : 0, now, sounds ? (bare ? 0.01 : 0.08) : 0.15);
     n.cab.frequency.setTargetAtTime(20000 * Math.pow(420 / 20000, m), now, 0.1);
     if (this.pos && Number.isFinite(this.pos.x + this.pos.y + this.pos.z)) {
       const p = n.pan as PannerNode & { positionX?: AudioParam };
@@ -987,7 +1003,7 @@ export class Receiver {
   }
   /** Off, and let the station go (a new night). */
   reset() {
-    this.on = false; this.sweep = 0; this.dial = false;
+    this.on = false; this.sweep = 0; this.dial = false; this.carry = 0;
     if (this.listening) { this.radio.stations[this.listening].listen(false); this.listening = null; }
     if (this.n) { if (this.n.bus) { try { this.n.bus.disconnect(this.n.sig); } catch { /* not connected */ } } this.n.stop(); this.n = null; }
   }

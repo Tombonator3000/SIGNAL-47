@@ -12,24 +12,42 @@ import type { EngineSound } from './engineSound';
 //   stall    the engine dies: the truck coasts, OIL and VOLTS light up, the headlights sag on
 //            the battery. Then the key: the starter turns it over (the lights dip with it), it
 //            may take two tries, and it catches. hold: it stays dead until release(); key: the
-//            player turns the key (Use, World.useKey) instead of the driver doing it.
+//            player turns the key (Use, main.ts useCurrent: turnKey) instead of the driver doing
+//            it; tries: the turn it catches on (2: the first turn fails; Infinity: it never
+//            catches, the starter only turns it over).
 //   flicker  a bad contact: dash and headlights stutter for a moment.
 //   blink    the same contact, once: the lights all but out for a blink, and a stutter as they
 //            come back (story/curve.ts: a sign in its build; the shape at the end of the
-//            headlights that is a post, core/cutouts.ts).
+//            headlights that is a post, core/cutouts.ts). count: not a bad contact but a count,
+//            every light out and back evenly that many times, a blink every `per` seconds (0.5,
+//            as the dash blinks four and seven at 05:29, story/Chapter6.ts); the truck on B,
+//            story/truckOnB.ts.
 //   dashOut  the instrument lights go dark; the fuel and temperature needles fall back (they
 //            are electric), the speedometer goes on (it runs off a cable).
 //
 // Random trouble is off until the story turns it on (`random`); the developer menu can too.
 
 export type TroubleKind = 'sputter' | 'stall' | 'flicker' | 'blink' | 'dashOut';
-export interface TroubleOpts { len?: number; hold?: boolean; key?: boolean }
+export interface TroubleOpts {
+  len?: number; hold?: boolean; key?: boolean;
+  /** stall: the turn of the key it catches on (1 or 2 at random by default; Infinity: never). */
+  tries?: number;
+  /** blink: this many even blinks, every light out and back (a count, not a bad contact). */
+  count?: number;
+  /** blink with a count: seconds from one blink to the next (half of it dark). */
+  per?: number;
+  /** blink with a count: soft, the lights dip and come back smoothly instead of going out (Settings,
+   *  Flashing images: slow fades). */
+  soft?: boolean;
+}
 
 type Stage = 'dying' | 'dead' | 'pause' | 'cranking' | 'catching';
 interface Active {
   kind: TroubleKind; t: number; len: number;
   // the stall
-  stage?: Stage; st: number; hold: boolean; key: boolean; tries: number; failFirst: boolean;
+  stage?: Stage; st: number; hold: boolean; key: boolean; tries: number; need: number;
+  /** a counted blink: how many, and the time from one to the next */
+  count: number; per: number; soft: boolean;
   /** The stage whose sound has been started (once per stage). */
   heard?: Stage;
   // the patterns: misfires and flickers, a value held until its time runs out
@@ -47,6 +65,8 @@ export class TruckTrouble {
   onTrouble?: (kind: TroubleKind) => void;
   /** How many troubles have started (tests). */
   count = 0;
+  /** How many times the key has been turned in this stall (the story, tests). */
+  turns = 0;
   private a: Active | null = null;
   private next = rnd(0.5, 1.5);
   private touched = false;   // the truck has been changed and must be given back
@@ -61,14 +81,22 @@ export class TruckTrouble {
   get radioLevel() { return this.power; }
   /** The engine is dead (or being started). */
   get dead() { const a = this.a; return !!a && a.kind === 'stall' && a.stage !== 'catching'; }
+  /** What a stall is doing now (dying, dead, pause after a turn that failed, cranking, catching), or null. */
+  get stage() { const a = this.a; return a && a.kind === 'stall' ? a.stage ?? null : null; }
+  /** A counted blink: how many of its blinks have begun so far (0 before the first, or no count). */
+  get blinks() { const a = this.a; return a && a.kind === 'blink' && a.count ? Math.min(a.count, Math.floor(a.t / a.per) + 1) : 0; }
+  /** A counted blink: every light is out right now (the dark half of one of its blinks). */
+  get blinkDark() { const a = this.a; return !!a && a.kind === 'blink' && a.count > 0 && a.t < a.count * a.per && (a.t % a.per) < a.per / 2; }
 
   /** Start a trouble now (the story, the developer menu, tests). A running one is replaced,
    *  except a stall, which only release() or the key ends. */
   start(kind: TroubleKind, o: TroubleOpts = {}) {
     if (this.a?.kind === 'stall' && kind !== 'stall') return false;
-    const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'blink' ? 0.55 : kind === 'dashOut' ? rnd(2.5, 6) : 0);
-    this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, failFirst: Math.random() < 0.55, beat: 0, v: 1 };
-    if (kind === 'stall') this.a.stage = 'dying';
+    const count = kind === 'blink' ? Math.max(0, Math.round(o.count ?? 0)) : 0, per = o.per ?? 0.5;
+    const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'blink' ? (count ? count * per + 0.05 : 0.55) : kind === 'dashOut' ? rnd(2.5, 6) : 0);
+    const need = o.tries === undefined ? (Math.random() < 0.55 ? 2 : 1) : Math.max(1, o.tries);
+    this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, need, count, per, soft: !!o.soft, beat: 0, v: 1 };
+    if (kind === 'stall') { this.a.stage = 'dying'; this.turns = 0; }
     this.count++;
     this.onTrouble?.(kind);
     return true;
@@ -76,7 +104,7 @@ export class TruckTrouble {
   /** A held stall may be started again (the story lets go of it). */
   release() { if (this.a?.kind === 'stall') { this.a.hold = false; if (this.a.stage === 'dead') this.a.st = 0; } }
   /** The player turns the key (when wantsKey). */
-  turnKey() { const a = this.a; if (!this.wantsKey || !a) return false; a.stage = 'cranking'; a.st = 0; return true; }
+  turnKey() { const a = this.a; if (!this.wantsKey || !a) return false; a.stage = 'cranking'; a.st = 0; this.turns++; return true; }
   /** Everything as it was: the engine runs, the lights and the instruments are the truck's own. */
   reset(truck?: Truck | null, drive?: DriveController | null) {
     this.a = null; this.power = 1;
@@ -116,8 +144,9 @@ export class TruckTrouble {
 
     if (a.kind === 'sputter') {
       // misfires: the pull drops out in bursts, each with a cough
+      // (it begins with a miss: a misfire that never missed would be nothing)
       const was = a.v;
-      const p = beat(0.07, 0.24, () => (Math.random() < 0.55 ? rnd(0.05, 0.3) : 1));
+      const p = beat(0.07, 0.24, () => (a.t <= dt + 1e-6 || Math.random() < 0.55 ? rnd(0.05, 0.3) : 1));
       drive.power = p;
       if (p < 0.5 && was >= 0.5) sound?.cough(0.6 + Math.random() * 0.4);
       dash = p < 0.5 ? 0.85 : 1;
@@ -126,6 +155,13 @@ export class TruckTrouble {
     } else if (a.kind === 'flicker') {
       const k = beat(0.03, 0.16, () => (Math.random() < 0.5 ? rnd(0, 0.25) : rnd(0.7, 1)));
       light = k; dash = k;
+      if (a.t > a.len) this.a = null;
+    } else if (a.kind === 'blink' && a.count) {
+      // counted: every light out for the dark half of each, evenly, and on again; no stutter (soft:
+      // a smooth dip to under half, each the same, for slow fades)
+      const ph = a.t < a.count * a.per ? (a.t % a.per) / a.per : 1;
+      light = a.soft ? 1 - 0.58 * Math.sin(Math.PI * Math.min(1, ph * 1.6)) ** 2 : this.blinkDark ? 0.02 : 1;
+      dash = light;
       if (a.t > a.len) this.a = null;
     } else if (a.kind === 'blink') {
       light = a.t < 0.14 ? 0.03 : a.t < 0.42 ? beat(0.03, 0.07, () => (Math.random() < 0.45 ? rnd(0.15, 0.5) : 1)) : 1;
@@ -174,7 +210,7 @@ export class TruckTrouble {
         out(0.28 + 0.12 * k, 0.4 + 0.15 * k, ign);
         if (a.st > 1.15) {
           a.tries++;
-          if (a.hold || (a.failFirst && a.tries === 1)) { a.stage = 'pause'; a.st = 0; a.heard = 'pause'; }
+          if (a.hold || a.tries < a.need) { a.stage = 'pause'; a.st = 0; a.heard = 'pause'; }
           else { a.stage = 'catching'; a.st = 0; drive.engine = true; drive.power = 0.3; sound?.restart(); }
         }
         break;

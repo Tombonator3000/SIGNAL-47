@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { box, cyl, rod, plane, noMerge, floodlit, floodSet, headSlots, type FloodSet } from '../world/kit';
 import { GlowPoints } from '../world/glow';
 import {
-  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, type Rect,
+  DASH, DIALS, DECAL, CAB, WARN, WARN_AT, dashAtlas, warnAtlas, paintTex, decalAtlas, dashGrainTex, vinylTex, linerTex, matTex, cabAtlas, windshieldTex, compassCardTex, type Rect,
 } from './truckTextures';
 
 // SARO 07, the observatory's service truck: a full-size single-cab pickup of the early
@@ -44,6 +44,10 @@ const HEAD = new THREE.Color(1.0, 0.9, 0.72), TAIL = new THREE.Color(1, 0.05, 0.
 const _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4(), _p = new THREE.Vector3();
 const _s = new THREE.Vector3(), _z = new THREE.Vector3(0, 0, 1), _c = new THREE.Color();
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3();
+/** Degrees -180..180. */
+const wrap180 = (d: number) => ((((d + 180) % 360) + 360) % 360) - 180;
+/** The compass ball on the instrument hood (buildCab): where it sits, truck-local, and how big. */
+const COMPASS = { x: -0.28, y: 1.343, z: -0.5, r: 0.047, card: 0.0395, h: 0.034 };
 
 /** What the Blender pilot loads for the truck (world/blenderModels.ts): shared by every copy of
  *  the truck, each of which makes its own materials from the game's (its flood set). */
@@ -250,6 +254,14 @@ export class Truck {
   private modelMats: THREE.MeshStandardMaterial[] = [];
   /** The Blender model is in the picture (setModel). */
   modelled = false;
+  /** Where north is for the compass on the dash: the sky's turn in this area (World.skyYaw; the
+   *  station's area is a quarter turn round on the map). */
+  compassNorth = 0;
+  /** Something pulls the compass card off north (story/truckOnB.ts): towards `deg`, by k (0..1);
+   *  null: it reads the truck's heading. */
+  compassPull: { deg: number; k: number } | null = null;
+  /** The compass card: the heading under its lubber line (degrees), and how fast it swings. */
+  private compass = { card: null as THREE.Mesh | null, a: 0, v: 0, set: false };
 
   /** flood: light the exterior with a set of fake floods (leave out the headlight slots). */
   constructor(o: { flood?: FloodSet } = {}) {
@@ -315,6 +327,8 @@ export class Truck {
       needle: new THREE.MeshBasicMaterial({ color: 0xff6a30, toneMapped: false }),
       // the warning lamps lit (setWarnings)
       warn: new THREE.MeshBasicMaterial({ map: warnAtlas(), toneMapped: false }),
+      // the compass card, lit from inside the ball by a little bulb on the instrument lights
+      compass: new THREE.MeshBasicMaterial({ map: compassCardTex(), toneMapped: false }),
     };
   }
 
@@ -509,7 +523,8 @@ export class Truck {
     decal(cluster, 0.56, 0.175, m.gauge, DASH.cluster, 0, 0, 0);
     C.add(cluster);
     const ng = new THREE.BoxGeometry(0.0035, 1, 0.002).translate(0, 0.42, 0);
-    this.needles = new THREE.InstancedMesh(ng, m.needle, 3);
+    // (a fourth for the compass's lubber line, buildCompass: the same lit orange, no draw of its own)
+    this.needles = new THREE.InstancedMesh(ng, m.needle, 4);
     this.needles.frustumCulled = false;
     noMerge(this.needles); cluster.add(this.needles);
     // the warning lamps, lit over their dark places on the cluster when something is wrong
@@ -519,6 +534,7 @@ export class Truck {
       lamp.visible = false; noMerge(lamp);
       this.lamps[name] = lamp;
     });
+    this.buildCompass();
     // the radio in its bezel, two knobs; the heater panel, the ashtray, the glovebox, the vents
     box(C, 0.4, 0.1, 0.03, m.cabTrim, 0.14, 1.06, -0.41).rotation.x = 0.2;
     decal(C, 0.34, 0.064, m.gauge, DASH.stack, 0.14, 1.06, -0.393, 0, 0.2);
@@ -643,6 +659,60 @@ export class Truck {
     this.cabFlood.pos[0].set(0, -999, 0, 0); this.cabFlood.pos[1].set(0, -999, 0, 0); this.cabFlood.count = 2;
   }
 
+  // A compass ball of the kind sold at every gas station in 1986, stuck on top of the instrument
+  // hood a hand's width right of the wheel, its window turned to the driver: a black ball with a
+  // window in front, the card floating inside on its drum, a lubber line on the glass. Read from
+  // the seat it shows the truck's heading (update(): the card swings after it, liquid-damped).
+  private buildCompass() {
+    const C = this.cab, m = this.m, k = COMPASS;
+    const g = new THREE.Group();
+    g.position.set(k.x, k.y, k.z);
+    // turned to the driver's eye, level
+    g.rotation.y = Math.atan2(this.driverEye.x - k.x, this.driverEye.z - k.z);
+    C.add(g);
+    const W = 0.95, V = 0.5;   // the window: half its width round the ball, half its height (radians)
+    const shell = new THREE.SphereGeometry(k.r, 24, 12, Math.PI / 2 + W, Math.PI * 2 - 2 * W);
+    const top = new THREE.SphereGeometry(k.r, 24, 6, 0, Math.PI * 2, 0, Math.PI / 2 - V);
+    const bottom = new THREE.SphereGeometry(k.r, 24, 6, 0, Math.PI * 2, Math.PI / 2 + V, Math.PI / 2 - V);
+    for (const geo of [shell, top, bottom]) mesh(g, geo, m.cabTrim);
+    // the foot it stands on, on the hood
+    box(g, 0.05, 0.018, 0.05, m.cabTrim, 0, -k.r - 0.004, 0);
+    // the glass in the window, a faint sheen
+    mesh(g, new THREE.SphereGeometry(k.r * 1.002, 16, 6, Math.PI / 2 - W, 2 * W, Math.PI / 2 - V, 2 * V), m.cabGlass);
+    // the card: a drum, its band printed; it turns about the ball's upright. Its ends are dark discs
+    // that stand still (round, they look the same turned), so the drum is one draw
+    for (const y of [-k.h / 2, k.h / 2]) cyl(g, k.card + 0.001, k.card + 0.001, 0.0015, m.cabTrim, 0, y, 0, 24);
+    const card = new THREE.Mesh(new THREE.CylinderGeometry(k.card, k.card, k.h, 48, 1, true), m.compass);
+    noMerge(card); g.add(card);
+    this.compass.card = card;
+    // the lubber line on the glass in front of the card: the needles' fourth, in the cluster's terms
+    g.updateMatrix(); C.updateMatrixWorld(true);
+    const cl = this.needles.parent!;
+    // (a needle runs from 0.08 below its foot to 0.92 above, times its length: centred on the card)
+    const len = k.h * 1.25, lub = new THREE.Matrix4().compose(new THREE.Vector3(0, -0.42 * len, k.card + 0.0035), new THREE.Quaternion(), new THREE.Vector3(0.7, len, 0.6));
+    this.needles.setMatrixAt(3, new THREE.Matrix4().copy(cl.matrixWorld).invert().multiply(g.matrixWorld).multiply(lub));
+  }
+  /** The heading the compass on the dash shows now, under its lubber line (0 to 360, the tests). */
+  get compassReads() { return ((Math.round(this.compass.a) % 360) + 360) % 360; }
+  /** Where the compass ball is, in the world (the tests, the log of what was seen). */
+  compassAt(out = new THREE.Vector3()) { this.group.updateWorldMatrix(true, false); return out.set(COMPASS.x, COMPASS.y, COMPASS.z).applyMatrix4(this.group.matrixWorld); }
+  /** The truck's heading on the map, degrees from north, clockwise (the sky's north: compassNorth). */
+  get bearing() { return ((wrap180((this.compassNorth - this.group.rotation.y) * 180 / Math.PI) % 360) + 360) % 360; }
+  private compassStep(dt: number) {
+    const c = this.compass, p = this.compassPull;
+    let target = this.bearing;
+    if (p && p.k > 0) target += wrap180(p.deg - target) * Math.min(1, p.k);
+    if (!c.set || dt <= 0) { if (!c.set) { c.a = target; c.v = 0; c.set = true; } }
+    else {
+      // a ball compass: the card swings after the heading through its liquid and settles, all but
+      // without overshooting
+      const w = 4.2, z = 0.8, err = wrap180(target - c.a);
+      c.v += (w * w * err - 2 * z * w * c.v) * Math.min(dt, 0.05);
+      c.a += c.v * Math.min(dt, 0.05);
+    }
+    if (c.card) c.card.rotation.y = c.a * Math.PI / 180;
+  }
+
   /** The Blender pilot: the modelled body, shell and wheel in place of the code-built ones
    *  (null: the code's again). Its meshes take no rays: what the rays hit stays the code's. */
   setModel(model: TruckModel | null) {
@@ -696,6 +766,8 @@ export class Truck {
 
   /** Interior on, view-blocking shell off. DriveController calls this while it drives. */
   setDriving(on: boolean) {
+    // (parked, the card stands where the heading is: it is found there the next time, not swinging)
+    if (!on) { this.compass.set = false; this.compassPull = null; }
     this.driving = on;
     this.cab.visible = on;
     this.shell.visible = !on;
@@ -718,6 +790,9 @@ export class Truck {
   copyCab(o: Truck) {
     Object.assign(this.gauge, o.gauge);
     Object.assign(this.swing, o.swing);
+    // (the card goes on swinging where it was: the heading is the map's in every area)
+    this.compass.a = o.compass.a; this.compass.v = o.compass.v; this.compass.set = o.compass.set;
+    this.compassPull = o.compassPull ? { ...o.compassPull } : null;
     this.keys.rotation.copy(o.keys.rotation);
     this.update(0, 0, o.wheelAngle);   // the needles drawn where they are now, in this frame
   }
@@ -786,6 +861,7 @@ export class Truck {
     lens(m.tail, 0x420a08, TAIL, tail);
     m.gauge.color.setScalar(0.03 + 0.85 * D);
     m.needle.color.setRGB(1, 0.42, 0.19).multiplyScalar(0.04 + 0.96 * D);
+    m.compass.color.setRGB(1, 0.9, 0.7).multiplyScalar(0.03 + 0.82 * D);
     const col = this.glow.points.geometry.getAttribute('aCol') as THREE.BufferAttribute;
     const put = (ids: number[], c: THREE.Color, k: number) => ids.forEach((i) => col.setXYZ(i, c.r * k, c.g * k, c.b * k));
     put(this.gi.head, this.headColor, 0.75 * head); put(this.gi.park, AMBER, 0.3 * head); put(this.gi.tail, TAIL, 0.4 * tail);
@@ -839,6 +915,7 @@ export class Truck {
     };
     needle(0, DIALS.speed, g.speed, 0.068); needle(1, DIALS.fuel, g.fuel, 0.038); needle(2, DIALS.temp, g.temp, 0.038);
     this.needles.instanceMatrix.needsUpdate = true;
+    this.compassStep(dt);
     // the keys swing on their ring: pushed by the turns and the road
     if (dt > 0) {
       const sw = this.swing, push = speed * wheelAngle * 0.35 + (speed - sw.last) / dt * 0.004;
