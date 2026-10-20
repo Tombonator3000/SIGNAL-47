@@ -789,6 +789,7 @@ html.text-large .prompt { font-size: 28px; }
 .bq-slots li.on { color: #1e2430; background: rgba(241,220,124,.55); padding: 1px 3px; }
 .bq-done { margin: 6px 10px 0; font-size: 12.5px; color: #2c4a30; }
 .bq-else { margin: 4px 10px 6px; font-size: 12.5px; color: #5d564a; font-style: italic; }
+.bq-else .pencil { font-family: var(--hand); font-style: normal; font-size: 2em; line-height: 1.05; color: #3f3e47; display: inline-block; transform: rotate(-1.6deg); margin: 2px 0 0 6px; }
 .bq.done { border-top-color: #2f6a3c; }
 .bq-row { display: flex; gap: 8px; margin: 0 10px; }
 .bq-hint { font-size: 16px; min-height: 36px; padding: 2px 12px; color: #233a7a; border-color: rgba(35,58,122,.4); }

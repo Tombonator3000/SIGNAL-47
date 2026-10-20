@@ -15,7 +15,9 @@ import type { SeenEntry, SeenLog } from './seen';
 //   peak    one of the big ones: a glimpse at the edge of the view, the warning (the time away, the
 //           dishes in the field), the steps on the archive roof, or a 47-second event (the silence,
 //           the 1947 bulletin, the payphone, the motel's television), at most one of those extra
-//           ones in a chapter. What the player actually got moves the curve (story/seen.ts): a
+//           ones in a chapter. Earl's reel from 1981 (core/reelTape.ts) is the player's own choice
+//           and not the curve's, but once heard it lands the peak like the others: the rest follows.
+//           What the player actually got moves the curve (story/seen.ts): a
 //           glimpse counts once it was looked at; one that stood there unseen does not, and the peak
 //           goes on. Out where nothing can reach the player (indoors) the peak waits for them.
 //   rest    8 to 12 minutes in which nothing can happen: no calls, no cutout, no glimpses, no events.
@@ -92,7 +94,7 @@ const FROM: Record<CurveKind, number> = { sign: 0.12, call: 0.3, cutout: 0.12, p
 const CUTOUT_UNTIL = 0.78;
 /** The peaks that are heard or felt (they count when they come), and those that count only once
  *  they were seen (story/seen.ts, looking). */
-const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps'] };
+const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel'] };
 const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 'on film', face: () => true, event: (w) => w === 'lights' };
 /** The 47-second ones (the per-chapter limit). */
 const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv']);

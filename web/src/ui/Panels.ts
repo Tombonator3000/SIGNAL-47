@@ -276,14 +276,19 @@ export function talk(ui: UI, o: {
   const statusEl = el.querySelector('[data-status]') as HTMLElement;
   const body = el.querySelector('[data-body]') as HTMLElement;
   let shown = '';
+  let shownLines: TalkLine[] = [];
   let readingShown = '';
   const render = () => {
     if (!el.isConnected) return;
     const v = o.view();
     statusEl.textContent = v.status;
-    // new lines come one after another; a redraw of the same lines does not repeat that
+    // new lines come one after another; a redraw of the same lines does not repeat that, and lines
+    // added under the ones already there (a recording as it plays) come in alone
     const key = JSON.stringify(v.lines);
     const fresh = key !== shown;
+    const kept = fresh && shownLines.length && shownLines.length < v.lines.length
+      && shownLines.every((l, i) => l.who === v.lines[i].who && l.text === v.lines[i].text) ? shownLines.length : 0;
+    shownLines = v.lines.slice();
     const reply = o.character === 'bacall' && ui.npcDialogue?.enabled && v.reply ? /^N\. VEGA: "([\s\S]*)"$/.exec(v.reply.text) : null;
     const currentSpeech = reply ? [{ who: 'N. VEGA', text: reply[1] }] : v.lines;
     const readingKey = JSON.stringify([v.lines, reply?.[1] ?? null]);
@@ -295,7 +300,7 @@ export function talk(ui: UI, o: {
       if (o.character) ui.npcDialogue?.stop();
       const reading = el.querySelector<HTMLElement>('[data-reading]')!;
       reading.replaceChildren();
-      const earl = o.earl && ui.earlDialogue?.enabled;
+      const earl = o.earl && ui.earlDialogue?.enabled && v.lines.some((line) => line.who === 'EARL');
       const voiced = o.character && ui.npcDialogue?.enabled ? characterLines(o.character, v.lines) : [];
       const texts = v.lines.filter((line) => (!earl || line.who !== 'EARL') && !voiced.includes(line)).map((line) => line.text);
       if (texts.length) ui.readingControls(reading, texts);
@@ -310,7 +315,7 @@ export function talk(ui: UI, o: {
     // the face of whoever spoke last (core/portraits.ts), once there is a picture of them
     const last = [...v.lines].reverse().find((l) => l.who && l.who !== 'YOU');
     const face = last ? portraitOf(last.who) : null;
-    const line = (l: TalkLine, i: number) => `<p data-reading-text class="talk-line${l.who ? '' : ' aside'}${fresh ? ' fresh' : ''}" style="animation-delay:${fresh ? i * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
+    const line = (l: TalkLine, i: number) => `<p data-reading-text class="talk-line${l.who ? '' : ' aside'}${fresh && i >= kept ? ' fresh' : ''}" style="animation-delay:${fresh && i >= kept ? (i - kept) * 0.55 : 0}s">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${esc(l.text)}</p>`;
     const chip = (c: TalkChip) => `<button class="lp-choice talk-chip" data-chip="${c.id}" aria-pressed="${c.on}" ${c.have ? '' : 'disabled'}>${c.image ? `<img alt="" src="${c.image}">` : ''}<span>${esc(c.label)}${c.have ? '' : ' / not in the case'}</span></button>`;
     body.innerHTML = `
       ${face ? `<img class="talk-portrait" alt="${esc(last!.who)}" src="${face}">` : ''}
@@ -331,6 +336,8 @@ export function talk(ui: UI, o: {
     }));
     body.querySelectorAll<HTMLButtonElement>('[data-read]').forEach((b) => b.addEventListener('click', () => o.onRead(b.dataset.read!)));
     if (fresh) o.onLines?.(v.lines);
+    // a line added under the others is brought into view (a phone has room for a few)
+    if (kept) body.querySelector('.talk-line:last-child')?.scrollIntoView({ block: 'nearest' });
     playEarl?.();
     if (el.isConnected) playCharacter?.();
   };
