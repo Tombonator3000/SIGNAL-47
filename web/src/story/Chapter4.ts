@@ -171,6 +171,9 @@ export class Chapter4 {
   private headYaw = 0;
   /** P10 to P12 on the case board: her papers, the return line, the questions and the rules. */
   readonly book: RuleBook;
+  /** The crank telephone in the office (story/officePhone.ts, set by main.ts): its label and its use
+   *  while it has something of its own (ringing, off the hook); use() false leaves it the prop. */
+  officePhone?: { label: () => string | null; use: () => boolean };
 
   constructor(private g: Chapter4Host, private d: Chapter4Deps) {
     const s = () => this.s;
@@ -371,7 +374,10 @@ export class Chapter4 {
     extra('officeDoor', 'Motel office', 'The office of Sierra Motor Court. The night bell is on the counter.');
     extra('register', 'Guest register', 'A register in her handwriting. Room 6: N. Vega, every night since the spring.');
     extra('keyBoard', 'Key board', 'Ten hooks with brass tags. The hook for 6 is empty.');
-    extra('officePhone', 'Field telephone', 'An oak wall telephone with a crank. The cable runs out through the back wall and on to STATION 01.');
+    // the crank telephone: while it rings or is off the hook it is story/officePhone.ts's (main.ts)
+    if (px.officePhone) inter.add({ id: 'court:officePhone', object: px.officePhone,
+      label: () => on() ? this.officePhone?.label() ?? 'Field telephone' : null,
+      use: () => { if (this.officePhone?.use()) return; ui.toast('An oak wall telephone with a crank. The cable runs out through the back wall and on to STATION 01.', 3.6); } });
     // (the envelope on the counter is the field book's, any time of the night: story/fieldBook.ts)
     if (px.message) inter.add({ id: 'court:message', object: px.message, label: () => on() ? 'A note on the counter' : null,
       use: () => {

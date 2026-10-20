@@ -6,6 +6,8 @@ import asyncio, math, sys, json, time, os
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in sys.argv[2].split('x')); Q = sys.argv[3] if len(sys.argv) > 3 else 'high'
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
+# the bought sounds in the private folder (src/assets/licensed/sfx; core/Audio.ts takes mp3, wav and ogg)
+LICENSED = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'assets', 'licensed', 'sfx')
 checks = []
 def check(ok, what): checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)
 
@@ -47,9 +49,12 @@ async def main():
         licensed = [key for key in sounds if key.startswith('lic:')]
         characters = [key for key in sounds if key.startswith('character:')]
         # engineStart/engineOff join the old 45 sounds. The private bank adds
-        # its own namespace and remains optional for builds without the folder.
-        check(len(ordinary) == 47 and len(telephone) == 24 and len(characters) == 11 and len(licensed) in (0, 15),
-              f'all 47 ordinary sounds, 24 telephone recordings, 11 character call recordings and {len(licensed)} optional licensed sounds decoded')
+        # its own namespace and remains optional for builds without the folder:
+        # none, or every sound file that is in it (counted, so a new one does not break this)
+        bought = len([f for f in os.listdir(LICENSED)
+                      if f.rsplit('.', 1)[-1] in ('mp3', 'wav', 'ogg')]) if os.path.isdir(LICENSED) else 0
+        check(len(ordinary) == 47 and len(telephone) == 24 and len(characters) == 11 and len(licensed) in (0, bought),
+              f'all 47 ordinary sounds, 24 telephone recordings, 11 character call recordings and {len(licensed)} of {bought} optional licensed sounds decoded')
         check(await ev("(()=>{ const a=S47.game.d.audio; ['tile','concrete','dirt','wood','carpet'].forEach(s=>a.step(s)); a.thunder(0.4); a.far('owl', S47.player.pos, 0.3); return true; })()"), 'steps on every surface, far thunder and a far owl play')
         dup = await ev("(()=>{ const ids = S47.game.d.inter.items.map(i => i.id); return ids.filter((x, i) => ids.indexOf(x) !== i); })()")
         check(not dup, f'every interactable has its own id ({dup})')

@@ -109,6 +109,11 @@ html.text-large .examine { font-size: 27px; }
 .prompt kbd { font-family: var(--term); border: 1px solid rgba(240,234,216,.6); border-radius: 3px; padding: 0 6px; margin-right: 8px; color: var(--amber); }
 .toasts { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 9vh); transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(92vw, 640px); }
+/* On a phone the captions keep clear of the buttons at the bottom right (Zoom, Use, Camera): held
+   sideways they are narrower, held upright they sit above them. A long line heard on a telephone was
+   half under Zoom and Use. */
+@media (pointer: coarse) and (orientation: landscape) { .toasts { width: max(48vw, min(calc(100vw - 472px), 640px)); } }
+@media (pointer: coarse) and (orientation: portrait) { .toasts { bottom: calc(env(safe-area-inset-bottom, 0px) + 196px); } }
 .toast { font-family: var(--type); font-size: 18px; line-height: 1.35; color: #eee7d4; text-align: center; text-shadow: 0 1px 4px #000, 0 0 18px rgba(0,0,0,.9);
   animation: toastIn .35s ease-out both; }
 .toast.out { animation: toastOut .6s ease-in both; }
