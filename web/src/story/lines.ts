@@ -1,7 +1,7 @@
 import { stationToRoad, roadToStation, SARO_IN_ROAD, MOTEL_AT } from '../world/geo';
 import { HERD, DINER, TOWN, CROSS_MI } from '../drive/roadShape';
 import { DEPUTY_CAR } from '../drive/roadTerrain';
-import { STATION_TRANSIT, STATION_STAKES_C } from '../world/stationLayout';
+import { STATION_TRANSIT, STATION_STAKES_C, STATION_NINTH } from '../world/stationLayout';
 import { YARD } from '../world/ServiceYard';
 import { DISH_LAYOUT, DISH_LAYOUT_FAR, FENCE_Z } from '../world/arrayLayout';
 
@@ -68,7 +68,8 @@ export const B12: MapPt = site(YARD.vane.x, YARD.vane.z);
  *    truck4, truck7 the truck on B, where B crosses the highway at SARO's turn-off (story/truckOnB.ts;
  *                   set below, once B is known)
  *    truck7m        the truck's seven on the highway in front of Sierra Motor Court's lot, pulling out
- *                   of it after room 6 (story/truckOnB.ts; the motel is B's ground, 400 m off it) */
+ *                   of it after room 6 (story/truckOnB.ts; the motel is B's ground, 400 m off it)
+ *    ninth          the ninth of the herd, where she lies at STATION 01 (story/ninthCow.ts), on B */
 export const PLACES: Record<string, MapPt> = {
   phone: [-15.5, 2064.6], phone2: [-15.5, 2064.6], repeat: [-13.8, 2071],
   lamps: [-7, 2146], boy: [32, 2036], regular: [DINER.x - 4.8, DINER.z],
@@ -76,6 +77,7 @@ export const PLACES: Record<string, MapPt> = {
   lights: [-210, 30], cows: [HERD.x, HERD.z], cows2: [HERD.x, HERD.z],
   tv: site(-41.1 + MOTEL_AT.x, 24.1 + MOTEL_AT.z),
   truck7m: [0, site(0, 11.25 + MOTEL_AT.z)[1]],
+  ninth: stationToRoad(STATION_NINTH.x, STATION_NINTH.z),
 };
 
 interface Straight {

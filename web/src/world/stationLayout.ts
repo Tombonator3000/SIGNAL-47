@@ -31,3 +31,8 @@ export const STATION_TRANSIT = { x: 3, z: -4 };
 export const STATION_SIGHT_A = { x: 1, z: -1 };
 export const STATION_VANE_B = { x: -7.4, z: -10.0 };
 export const STATION_STAKES_C = { x: 1, z: 0 };
+/** Where the ninth cow from the pasture lies once she is put down (story/ninthCow.ts, world/ninthCow.ts):
+ *  the middle of her, on the footpath from the transit out to B's vane, on the sight line the vane
+ *  marks (0.4 m off it), her hindquarters 1.4 m from the vane; and the way her head points, az 026
+ *  on the map (the station is turned a quarter round onto it: world/geo.ts, story/lines.ts dirIn). */
+export const STATION_NINTH = { x: -5.6, z: -8.55, head: { x: Math.cos(26 * Math.PI / 180), z: Math.sin(26 * Math.PI / 180) } };
