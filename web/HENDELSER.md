@@ -8,7 +8,7 @@ Bygget på `codex/story-events-20261019`, fra main `d1bfbc0`, med nyere main `c0
 | --- | --- | --- |
 | Femcenten i telefonautomaten | Vis mynten til betjenten etter samtalen om den gamle veien | Han sier automaten tar ti cent. Han skyver mynten tilbake; den blir i Kit. En avskrift av samtalen går i Papers. |
 | Den tomme patruljebilen | Spør nestlederen etter at han er tilbake, etter samtalen om de grønne nålene | Han fastholder at han kjørte runden. Når hatten på setet nevnes, ser han på hatten ved døra. Observasjonen og svaret står ved siden av hverandre, uten en fasit. |
-| Gutten på Night Line | Snakk med Earl etter at du faktisk har hørt gutten og spurt om 1981-båndet | Programarket har BOY / COMET, uten telefonnummer. Det gamle båndet er fortsatt uspilt. |
+| Gutten på Night Line | Snakk med Earl etter at du faktisk har hørt gutten og spurt om 1981-båndet | Programarket har BOY / COMET, uten telefonnummer. Det gamle båndet er fortsatt uspilt. (Fra 20. oktober, PR #NNN: med datoen 9/22/81 fra bevisbordet spiller Earl det før 04:00; se punkt 12.) |
 | Kua som mangler | Fortell kvinnen på benken om funnet etter samtalen om mannen hennes | Hun ber deg skrive begge opptellingene før du antar at du telte feil. Mannens opplevelse forblir ufortalt. |
 | 1947 på 1420 | Hør hele sendingen i bilen | Seks skrevne, oppdiktede bulletinlinjer i 47 sekunder. Deretter fortsetter den avbrutte setningen eller platen på samme sted. |
 | TV-en på motellkontoret | Se skjermen når oversiktsbildet kommer | Et faktisk bilde av spillscenen med bilen der og slik den står. Bildet kan gjenåpnes på TV-en eller i Photos, også etter Continue. |
@@ -39,7 +39,7 @@ Skrevet 16. oktober 2026 etter Toms svar på forslaget om et knutepunkt (`FORSLA
 | THE EVENT: ingen tapt tid og ingen oppvåkning. | Står for THE EVENT. Bortføringene underveis har tapt tid, og man kommer tilbake. Det er hele poenget: de andre gangene slipper de deg. Klokka 05:29 gjør de ikke det. |
 | Retning B (kvelden før) som mål. | A er retningen. B står som en mulighet senere, ikke som mål. |
 
-R5 står for avtrykkene: et avtrykk gjentar det som ble registrert og kan ikke svare. At ingenting i verden gjør noe fordi spilleren er der, bøyes fra 20. oktober to steder, hver én gang i natta: antennene som kommer ned og følger deg under et varsel i feltet, og skrittene over arkivtaket som stopper rett over deg (punkt 12). Tom: «Spenning og skummelt slår faste regler».
+R5 står for avtrykkene: et avtrykk gjentar det som ble registrert og kan ikke svare. At ingenting i verden gjør noe fordi spilleren er der, bøyes fra 20. oktober to steder, hver én gang i natta: antennene som kommer ned og følger deg under et varsel i feltet, og skrittene over arkivtaket som stopper rett over deg (punkt 12). At et avtrykk ikke kan svare, strekkes ett sted: Earls spole fra 9/22/81 har hull der Earl svarte gutten i natt, like lange som svarene (punkt 12). Tom: «Spenning og skummelt slår faste regler».
 
 ## 2. Kjernen
 
@@ -329,7 +329,7 @@ Tom 16. oktober: finnes det romvesenlyder i lenkene i rulleteksten til They Are 
 3. **Ansiktet:** spares det til THE EVENT, med bare silhuetter i bortføringene og glimtene? Jeg anbefaler det, så slutten beholder kraften.
 4. **Av-bryter:** skal bortføringer kunne slås av i innstillingene? Jeg anbefaler ja, på som standard.
 
-**Tom 20. oktober: «Spenning og skummelt slår faste regler».** Han valgte fire av de dristige ideene i `FORSLAG.md` (20. oktober, Valg for Tom 2, 3 og 5 og skrittene på taket), og de er bygget samme dag. Det løfter fire regler, hver bare på ett sted:
+**Tom 20. oktober: «Spenning og skummelt slår faste regler».** Han valgte fire av de dristige ideene i `FORSLAG.md` (20. oktober, Valg for Tom 2, 3 og 5 og skrittene på taket), og de er bygget samme dag. Det løfter fire regler, hver bare på ett sted. Den siste raden er ikke et av valgene, men punkt 11 i samme forslag, som strekker R5 på samme vis:
 
 | Regel før | Nå | Hvor |
 | --- | --- | --- |
@@ -337,6 +337,7 @@ Tom 16. oktober: finnes det romvesenlyder i lenkene i rulleteksten til They Are 
 | Romvesenene kommer aldri nærmere enn rundt 40 m (punkt 4). | Når du våkner etter en bortføring, står en av dem 2 til 3 m fra deg med hodet bøyd ned mot deg, i høyst halvannet sekund. | `story/abduction.ts` |
 | De lager ingen lyd, ikke engang skritt (punkt 4 og 7). | Én gang i kapittel 2 går lette, for tette skritt over arkivtaket, følger deg og stopper rett over deg. 10 s stillhet, noen skritt til ut mot kanten, og rim på takaggregatet etterpå. | `story/roofSteps.ts`, `world/roofFrost.ts` |
 | Ansiktet spares til THE EVENT (spørsmål 3). | Ett ansikt før 05:29: siden av et blekt hode og ett svart øye i blitsen, på det første frie bildet ute i kapittel 4. FLASH blir dermed gjenkjennelse. | `core/filmFace.ts`, `core/album.ts` |
+| R5: et avtrykk gjentar det som ble registrert og kan ikke svare. (Bygget 20. oktober, PR #NNN, `FORSLAG.md` punkt 11.) | Gutten på Earls spole fra 9/22/81 sier ordrett det han sa på Night Line i natt, og der Earl svarte ham i natt, er det ingenting på båndet, ikke engang sus, i nøyaktig like lang tid. Avtrykket svarer ikke; det lot plass. Earl: «He wasn't answering me.» / «He left room for me anyway.» Én gang i natta, bare når spilleren gir ham datoen før 04:00. | `story/lostNights.ts`, `core/reelTape.ts` |
 
 Det som står: én slutt (THE EVENT 05:29, der de ikke slipper deg), 026 og el 32 (antennene ender alltid der igjen), 1420 og 47 (ingen ny 47 er lagt til: stillheten etter ansiktet er 34 s, pausen på taket 10,5 s), 1947-sporet, navnene, at ingenting jager eller angriper, at de aldri beveger seg mens du ser på dem, og at glimtene ellers holder 40 m. Antennene, skrittene og ansiktet kommer én gang i natta og ikke igjen etter Continue; skikkelsen over deg kommer ved hver bortføring (høyst tre). Missing time av slår av skikkelsen over deg og antennene (de hører til bortføringen), men ikke skrittene eller ansiktet.
 
