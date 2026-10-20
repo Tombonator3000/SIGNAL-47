@@ -14,12 +14,15 @@ import type { EngineSound } from './engineSound';
 //            may take two tries, and it catches. hold: it stays dead until release(); key: the
 //            player turns the key (Use, World.useKey) instead of the driver doing it.
 //   flicker  a bad contact: dash and headlights stutter for a moment.
+//   blink    the same contact, once: the lights all but out for a blink, and a stutter as they
+//            come back (story/curve.ts: a sign in its build; the shape at the end of the
+//            headlights that is a post, core/cutouts.ts).
 //   dashOut  the instrument lights go dark; the fuel and temperature needles fall back (they
 //            are electric), the speedometer goes on (it runs off a cable).
 //
 // Random trouble is off until the story turns it on (`random`); the developer menu can too.
 
-export type TroubleKind = 'sputter' | 'stall' | 'flicker' | 'dashOut';
+export type TroubleKind = 'sputter' | 'stall' | 'flicker' | 'blink' | 'dashOut';
 export interface TroubleOpts { len?: number; hold?: boolean; key?: boolean }
 
 type Stage = 'dying' | 'dead' | 'pause' | 'cranking' | 'catching';
@@ -63,7 +66,7 @@ export class TruckTrouble {
    *  except a stall, which only release() or the key ends. */
   start(kind: TroubleKind, o: TroubleOpts = {}) {
     if (this.a?.kind === 'stall' && kind !== 'stall') return false;
-    const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'dashOut' ? rnd(2.5, 6) : 0);
+    const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'blink' ? 0.55 : kind === 'dashOut' ? rnd(2.5, 6) : 0);
     this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, failFirst: Math.random() < 0.55, beat: 0, v: 1 };
     if (kind === 'stall') this.a.stage = 'dying';
     this.count++;
@@ -124,6 +127,10 @@ export class TruckTrouble {
       const k = beat(0.03, 0.16, () => (Math.random() < 0.5 ? rnd(0, 0.25) : rnd(0.7, 1)));
       light = k; dash = k;
       if (a.t > a.len) this.a = null;
+    } else if (a.kind === 'blink') {
+      light = a.t < 0.14 ? 0.03 : a.t < 0.42 ? beat(0.03, 0.07, () => (Math.random() < 0.45 ? rnd(0.15, 0.5) : 1)) : 1;
+      dash = light;
+      if (a.t > a.len) this.a = null;
     } else if (a.kind === 'dashOut') {
       // out at once with a stutter at both ends
       const edge = Math.min(a.t, a.len - a.t);
@@ -132,7 +139,7 @@ export class TruckTrouble {
       if (a.t > a.len) this.a = null;
     } else this.stall(dt, a, drive, sound, (l, d, w) => { light = l; dash = d; Object.assign(warn, w); });
 
-    this.power = this.a?.kind === 'stall' && this.a.stage === 'cranking' ? 0.04 : this.a?.kind === 'flicker' ? light : 1;
+    this.power = this.a?.kind === 'stall' && this.a.stage === 'cranking' ? 0.04 : this.a?.kind === 'flicker' || this.a?.kind === 'blink' ? light : 1;
     truck.setLightLevel(light);
     truck.setDashLevel(dash);
     truck.setGaugePower(gauges);

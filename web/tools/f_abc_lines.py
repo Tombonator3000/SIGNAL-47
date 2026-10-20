@@ -85,7 +85,8 @@ async def main():
         of = lambda kind, what=None: ev(f"T.of({json.dumps(kind)}{', ' + json.dumps(what) if what else ''})")
 
         # ---------- the prologue: nothing ----------
-        await ev("S47.hold = true"); await tick(1, 5)
+        # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
+        await ev("S47.hold = true; S47.curve.free = true"); await tick(1, 5)
         ph = await ev("S47.game.phase")
         check(await ev("S47.seen.length") == 0 and await ev("Array.isArray(S47.seen)"), f'nothing in the log in the prologue, five seconds in ({ph})')
 
@@ -328,7 +329,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev(HELPERS); await ev("S47.hold = true; S47.tick(0.5)")
+        await ev(HELPERS); await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)")
         after = await log()
         check(after == before and len(after) > 10, f'after Continue the log is the one saved, and nothing was written down as the night was put back ({len(before)} and {len(after)} entries)')
         # the lights do not come again, and nothing new is written down for them
@@ -341,7 +342,7 @@ async def main():
         # ======================= phone =======================
         ctx2, pp = await page(b, 412, 892, True, errs)
         e2 = pp.evaluate
-        await e2("S47.hold = true; S47.jump('chapter2'); S47.tick(1.5); S47.nightEvents['wait'] = 1e9; S47.game.d.ui.close()")
+        await e2("S47.hold = true; S47.curve.free = true; S47.jump('chapter2'); S47.tick(1.5); S47.nightEvents['wait'] = 1e9; S47.game.d.ui.close()")
         await e2("S47.game.clock = 2 * 3600 + 58 * 60; S47.setAbductions(false); S47.world.enter('saro'); S47.flashlight.have = true; S47.flashlight.on = true; S47.tick(0.2)")
         await e2("T.aim(-1, -62, -1, 4, -300)")
         # on a phone held upright the sides are hardly there: the edge of the view is above or below

@@ -39,6 +39,9 @@ export interface MotelTvIn {
   cam: THREE.Camera;
   /** The game's clock, seconds since midnight. */
   clock: number;
+  /** The night's curve (story/curve.ts) lets the carrier come now (47 s: a peak, one extra in a
+   *  chapter); left out, it may. */
+  may?: boolean;
 }
 export interface MotelTvDeps {
   motel: MotelFront;
@@ -137,7 +140,7 @@ export class MotelTv {
     this.dwell = s.ok && s.here ? this.dwell + dt : 0;
     switch (this.mode) {
       case 'card':
-        if (s.ok && s.saro && !this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
+        if (s.ok && s.saro && s.may !== false && !this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
           && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60) {
           this.carrier();
           this.d.toast('On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it.', 5.5);

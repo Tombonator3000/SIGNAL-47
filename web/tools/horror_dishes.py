@@ -58,7 +58,8 @@ async def page(b, w, h, touch, errs):
     except Exception: pass
     await pg.evaluate("localStorage.clear()"); await pg.reload()
     await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
-    await pg.evaluate("S47.hold = true; S47.jump('chapter3'); S47.tick(1.0)")
+    # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
+    await pg.evaluate("S47.hold = true; S47.curve.free = true; S47.jump('chapter3'); S47.tick(1.0)")
     await pg.evaluate("S47.game.d.ui.close(); S47.tick(0.2)")
     await pg.evaluate(HELPERS)
     return pg
@@ -222,7 +223,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)"); await ev(HELPERS)
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)"); await ev(HELPERS)
         kept = await ev(f"[{A}.data.dishes, S47.game.ops.run('SHOW LOG').includes('DRIVE S-02  MOTION  NO COMMAND'), __home()]")
         check(kept[0] and kept[0]['back'] and kept[1] and kept[2], f'after Continue: kept, the log with it, the array at 026')
         await ev(f"S47.world.enter('saro'); S47.player.place({X}, {Z}, 0); S47.tick(0.3)")
@@ -236,7 +237,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)"); await ev(HELPERS)
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)"); await ev(HELPERS)
         kept = await ev(f"[{A}.data.dishes, S47.game.ops.run('SHOW LOG').split('\\n').filter((r) => r.includes('ARRAY  2 DRIVES  AZ 026 EL 32')).length, __home()]")
         check(kept[0]['back'] and kept[1] == 1 and kept[2], f'a save made while they were out: home after Continue, and the line that says so ({kept})')
         # saved as it began, before any drive was in the log (begin saves at once)
@@ -245,7 +246,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)"); await ev(HELPERS)
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)"); await ev(HELPERS)
         rows = (await ev("S47.game.ops.run('SHOW LOG')")).split('\n')
         mv = [i for i, r in enumerate(rows) if r.endswith('ARRAY  MOTION  NO COMMAND')]
         hm = [i for i, r in enumerate(rows) if r.endswith('ARRAY  AZ 026 EL 32  NO COMMAND')]

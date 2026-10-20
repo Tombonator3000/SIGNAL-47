@@ -39,7 +39,7 @@ import { saveMenu, played } from './ui/SaveMenu';
 import { type GameState, migrateOldSave } from './story/state';
 import { clockText } from './story/time';
 import { loadArt, artStatus, artImage } from './core/art';
-import { initArtMaterials, floodSets, headCookie } from './world/kit';
+import { initArtMaterials, floodSets, headCookie, flood as siteFlood } from './world/kit';
 import { windowLights, setWindowCookies } from './world/windowLight';
 import { FLASH_DECAY } from './core/cookies';
 import { World, STATION_ORIGIN as STATION_AT, ROAD_ORIGIN } from './world/World';
@@ -50,6 +50,8 @@ import { bindField } from './story/field';
 import { TownEvents, townMarks } from './story/townEvents';
 import * as lines from './story/lines';
 import { SeenLog, facing, type SeenEntry, type SeenKind, type SeenWatch } from './story/seen';
+import { NightCurve } from './story/curve';
+import { delineatorSpots, roadFlood } from './drive/roadProps';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
@@ -210,6 +212,13 @@ async function boot() {
   // the souvenir shop's cardboard alien, turning up anywhere (core/cutouts.ts; Tom, 18 October)
   const cutouts = new Cutouts(scene, (first) => {
     if (first) game.note(`${clockText(game.clock, false)}. A cardboard alien, standing where nobody would put one. Nobody was there.`);
+  }, (looked) => {
+    // once in the night (story/curve.ts, its build): the same shape at the end of the headlights,
+    // and when the lights got to it, a reflector post (FORSLAG.md, 20 October, item 1)
+    townSeen.add('cut:post');
+    game.note(`${clockText(game.clock, false)}. ${placeName(playerAt())}. The same shape. There was nothing there when I got to it.`);
+    seenSafe(() => saw('scare', 'cutout, post', { at: cutouts.position.clone().setY(cutouts.position.y + 0.8), looking: looked, watch: null }));
+    requestAutosave(false);
   });
   // the time away (story/abduction.ts), on by default; the setting turns it off
   let abductOn = store.get('abductions', true);
@@ -373,6 +382,9 @@ async function boot() {
   // what the night did and whether it was seen (story/seen.ts): the events that leave a mark on the
   // map or a night event's key here are written down as the key is added (not as a save puts it back)
   const seenLog = new SeenLog();
+  // one pressure for the whole night (story/curve.ts): it reads what was seen, and the night's
+  // things ask it before they start
+  const curve = new NightCurve(seenLog);
   const seenV = new THREE.Vector3();
   /** Nothing is written down while no night runs, or while a save puts one back (startGame). */
   let seenQuiet = true;
@@ -547,7 +559,8 @@ async function boot() {
   // the life in the night (world/nightlife.ts): dust in the flashlight's beam; no far car and no
   // tumbleweed behind the title, in a cinematic, or while one of the night's strange things is on
   world.lifeBeam = () => flashlight.light;
-  world.lifeQuiet = () => mode !== 'play' || game.cinematic || roadside.silent || !!glimpses.up || townEvents.now !== 'none';
+  // (and at the night's peak, which holds its breath: story/curve.ts)
+  world.lifeQuiet = () => mode !== 'play' || game.cinematic || roadside.silent || !!glimpses.up || townEvents.now !== 'none' || (curve.phase === 'peak' && !curve.free);
 
   sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
 
@@ -840,6 +853,9 @@ async function boot() {
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     // what was seen in that night, and nothing written down while it is put back (story/seen.ts)
     seenQuiet = true; seenLog.restore(o.state?.seen);
+    // where the night's curve was (a case without one goes on after a short quiet; a save from the
+    // prologue, which keeps no case yet, gets the plain ten minutes when chapter one begins)
+    curve.restore(o.state?.curve, !!o.state?.case);
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     pasture.reset(); motelTv.reset(); roofSteps.reset();
@@ -881,6 +897,7 @@ async function boot() {
     world.stopDriving();
     roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     seenQuiet = true;
+    curve.restore(null, false);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -1260,6 +1277,80 @@ async function boot() {
       drive: tr && ground ? { pos: tr.group.position, dir: camera.getWorldDirection(new THREE.Vector3()), ground: g.ground } : null,
     };
   }
+  // ---------- the night's one curve (story/curve.ts; FORSLAG.md, 20 October, item 1) ----------
+  /** One of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
+   *  also waits for the others itself, as before). */
+  function oneAtATime() {
+    return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
+      || lineLights.state !== 'none' || faceQuiet > 0
+      // (the shape at the end of the headlights, until the lights have reached it)
+      || cutouts.up === 'post';
+  }
+  /** The small signs the curve has given (the tests): which, and at what clock. */
+  const curveSigns: { what: string; clock: number }[] = [];
+  let signFlick = 0, postFlick = 0;
+  function curveStep(dt: number, modalOpen: boolean) {
+    const inDiner = world.area === 'diner' && world.indoors(player.pos);
+    curve.update(dt, {
+      chapter: game.phase, clock: game.clock,
+      // nothing during a cinematic, a panel, a call, Nora's room, or the diner and its map in chapter five
+      held: modalOpen || game.cinematic || audio.phonePlaying || world.area === 'room6' || (game.phase === 'ch5' && inDiner),
+      exposed: world.driving || space === 'yard',
+      busy: oneAtATime(),
+      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0,
+    });
+    if (audio.night) audio.night.thin = curve.thin;
+    if (curve.sign) curveSign();
+    signFlick = Math.max(0, signFlick - dt); postFlick = Math.max(0, postFlick - dt);
+    flashlight.flicker(signFlick > 0 ? 0.85 : 0, 'curve');
+    flashlight.flicker(postFlick > 0 ? 0.95 : 0, 'post');
+    if (cutouts.placed !== cutPlaced) { if (cutouts.placed > cutPlaced && cutouts.up !== 'post') curve.started('cutout'); cutPlaced = cutouts.placed; }
+    postStep(dt);
+  }
+  let cutPlaced = 0;
+  /** A sign where one can be had: driving, the radio slides under its static or the lights blink;
+   *  on foot outdoors with the flashlight on, it stutters. */
+  function curveSign() {
+    let what: string | null = null;
+    if (world.driving) {
+      if (carRadio.live && Math.random() < 0.65 && carRadio.drift(2.5 + Math.random() * 2.5)) what = 'radio';
+      else if (!world.trouble.kind && world.trouble.start('blink')) what = 'dash';
+    } else if (space === 'yard' && flashlight.have && flashlight.on) { signFlick = 0.7 + Math.random() * 0.7; what = 'flashlight'; }
+    if (what) { curveSigns.push({ what, clock: Math.round(game.clock) }); if (curveSigns.length > 40) curveSigns.shift(); }
+  }
+  /** The shape at the end of the headlights, once in the night (core/cutouts.ts, placePost): in a
+   *  build, driving down the highway at speed, when the cutout has been met twice already. It stands
+   *  in front of a delineator post 150 to 210 m ahead on the shoulder, out beyond the lights. */
+  let postBuild = -1;
+  const postLast = new THREE.Vector3(), postAt = new THREE.Vector3();
+  let postSpeed = 0;
+  const POSTS = delineatorSpots();
+  function postStep(dt: number) {
+    const tr = world.driving ? truckNow() : null;
+    if (tr) { const d = Math.hypot(tr.group.position.x - postLast.x, tr.group.position.z - postLast.z); postSpeed = dt > 0 && d < 60 ? THREE.MathUtils.lerp(postSpeed, d / dt, 0.2) : 0; postLast.copy(tr.group.position); }
+    else postSpeed = 0;
+    if (!tr || cutouts.up || postSpeed < 7 || (world.area !== 'road' && world.area !== 'saro') || postBuild === curve.builds || !curve.may('post') || townSeen.has('cut:post')
+      || sky.uniforms.uDawn.value >= 0.3) return;
+    // in the road's terms: on the highway (not the survey track), heading along it
+    const o = world.area === 'road' ? { x: ROAD_ORIGIN.x, y: ROAD_ORIGIN.y, z: ROAD_ORIGIN.z } : { x: -SARO_IN_ROAD.x, y: 0, z: -SARO_IN_ROAD.z };
+    const lx = tr.group.position.x - o.x, lz = tr.group.position.z - o.z;
+    const f = camera.getWorldDirection(seenV).setY(0).normalize();
+    if (Math.abs(lx) > 5.5 || Math.abs(f.z) < 0.92) return;
+    // met twice already, as the log has it (the wandering one, and the one of event 6 north of Caliche)
+    let met = 0;
+    for (const e of seenLog.entries) if ((e.kind === 'scare' && (e.what === 'cutout' || e.what === 'cutout, road')) || (e.kind === 'event' && e.what === 'cutout')) met++;
+    if (met < 2) return;
+    const dir = Math.sign(f.z);
+    // (SARO draws the road's posts only along its own stretch, drive/corridors.ts)
+    const spots = POSTS.filter(([x, z]) => { const a = (z - lz) * dir; return a > 150 && a < 210 && (world.area === 'road' || (z > -225 && z < 600)); });
+    if (!spots.length) return;
+    // the near shoulder first (the right-hand one, the way the truck is going)
+    spots.sort((p, q) => (Math.sign(q[0]) === -dir ? 1 : 0) - (Math.sign(p[0]) === -dir ? 1 : 0));
+    postBuild = curve.builds;
+    const [x, z] = spots[0];
+    postAt.set(x + o.x, surfaceY(x, z) + o.y, z + o.z);
+    cutouts.placePost(postAt, tr.group.position);
+  }
   function placeName(p: THREE.Vector3 = player.pos) {
     if (world.area === 'station01') return world.indoors(p) ? 'STATION 01, field hut' : 'STATION 01';
     if (world.area === 'road') return 'Highway south';
@@ -1301,7 +1392,7 @@ async function boot() {
     const tvFrame = game.docs.find((d) => d.id === 'motel-tv-frame')?.image;
     const state: GameState = {
       v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
-      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data, seen: seenLog.data,
+      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data, seen: seenLog.data, curve: curve.data,
       album: album.data,
       motelTv: tvFrame ? { id: 'motel-tv-frame', url: tvFrame } : undefined,
       // on your back after the time away, Continue stands you up looking ahead
@@ -1363,6 +1454,7 @@ async function boot() {
     follow.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
+    curve.restore(null, false);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -1546,6 +1638,9 @@ async function boot() {
   Object.assign((window as any).S47, { lines, seen: seenLog.entries, seenLog,
     lineHere: () => { const tr = truckNow(); return { player: lineHere(playerAt()), truck: tr ? lineHere(tr.group.position) : null }; } });
   Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
+  // the night's one curve (story/curve.ts; tools/f_curve.py): its phase, level and cycle, the signs it
+  // gave, and whether one of the night's things is going
+  Object.assign((window as any).S47, { curve, curveSigns, oneAtATime: () => oneAtATime() });
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
@@ -1619,6 +1714,13 @@ async function boot() {
         { label: carRadio.on ? `Truck radio: AM ${FREQ[carRadio.station]}` : 'Truck radio: off', run: () => { if (!carRadio.on) carRadio.set(true, 'caliche'); else carRadio.next(); }, on: carRadio.on },
         { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
         { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
+      ] });
+      // the night's one curve (story/curve.ts): plain night, the build, the peak, the rest
+      groups.push({ title: 'The night\'s curve', note: 'Ten minutes of plain night after the prologue; then the signs pile up, a peak, and 8 to 12 minutes of nothing. Free: everything on its own timer, as before the curve.', items: [
+        { label: `Now: ${curve.text()}`, run: () => { const next = { off: 'plain', plain: 'build', build: 'peak', peak: 'rest', rest: 'build' } as const; if (!curve.force(next[curve.phase])) ui.toast('Only from chapter one to five', 2); } },
+        { label: 'The build, half way', run: () => { curve.force('build', 0.5); } },
+        { label: curve.free ? 'Free: on (no curve)' : 'Free: off', run: () => { curve.free = !curve.free; }, on: curve.free },
+        { label: townSeen.has('cut:post') ? 'The shape at the end of the headlights: had tonight (again)' : 'The shape at the end of the headlights: in the next build, driving', run: () => { townSeen.delete('cut:post'); postBuild = -1; } },
       ] });
       groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then. The face on the film comes once, on the first free frame out of doors in chapter four.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
@@ -1793,7 +1895,7 @@ async function boot() {
     pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' || world.area === 'diner' ? 'road' : null, cam: camera, clock: game.clock,
       driving: world.driving });
     motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
-      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock });
+      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock, may: curve.may('long') });
     if ((lineBCheck += dt) > 1 && !townSeen.has('lineB')) {
       lineBCheck = 0;
       if (mapMarks().filter((m) => m.line === 'B').length >= 3) {
@@ -1859,6 +1961,8 @@ async function boot() {
       // what the night did, before it moves on (story/seen.ts): what came in the last step, and the
       // camera on what is still there
       if (mode === 'play') seenSafe(() => seenStep(dt));
+      // the night's one curve, before the night's things ask it (story/curve.ts)
+      if (mode === 'play') curveStep(dt, modalOpen);
       if (mode === 'play') roadside.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && world.area === 'saro' && world.crossing.onHighway(player.pos) && game.at('ch1') && game.phase !== 'ch6'
           && sky.uniforms.uDawn.value < 0.3,
@@ -1866,10 +1970,12 @@ async function boot() {
         silenceDone: game.notes.some((n) => n.includes('No sound for 47 s')),
         hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence'),
         silenceOver: () => { game.note(`${clockText(game.clock, false)}. ${silencePlace ?? 'The highway shoulder between SARO and the motel'}. No sound for 47 s. Not my footsteps either.`); silencePlace = null; requestAutosave(false); },
+        may: (w) => curve.may(w === 'car' ? 'event' : w === 'silence' ? 'long' : 'glimpse'),
       });
       if (mode === 'play') calls.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent,
         cam: camera, flicker: (k) => flashlight.flicker(k), hush: (secs) => audio.night?.hush(secs),
+        may: curve.may('call'), pace: curve.pace('call'),
       });
       if (mode === 'play') {
         const cp = camera.getWorldPosition(townAt);
@@ -1880,18 +1986,31 @@ async function boot() {
             && (sky.uniforms.uDawn.value < 0.3 || game.phase === 'ch5') && !abduction!.busy && !nightEvents.busy,
           inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
+          may: curve.may('event'), mayLong: curve.may('long'),
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
       const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy;
-      if (mode === 'play') nightEvents.update(dt, nightIn(nightOk));
+      if (mode === 'play') nightEvents.update(dt, { ...nightIn(nightOk), may: curve.may('event'), mayLong: curve.may('long'), pace: curve.pace('event') });
       // T. Vega's field book: what it has, seen after it was read; the knocks on the roof it has, on a
-      // drive after it, when nothing else of the night's is going on (one thing at a time)
+      // drive after it, when nothing else of the night's is going on (one thing at a time), and when
+      // the night's curve lets an event come (its build from half way, or its peak; never in a rest)
       if (mode === 'play') fieldBook.update(dt, { ok: nightOk && !nightEvents.busy && lineLights.state === 'none' && !motelTv.busy && !cb.busy && !audio.phonePlaying
-        && faceQuiet <= 0 && !world.trouble.kind, driving: world.driving,
+        && faceQuiet <= 0 && !world.trouble.kind && curve.may('event'), driving: world.driving,
         knock: () => nightEvents.now('knocks', nightIn(true)) });
-      if (mode === 'play') roofSteps.update(dt, roofIn(true));
-      if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
+      if (mode === 'play') {
+        // the steps on the roof are chapter two's peak (the curve's build or peak); the room's last
+        // quiet moment, before the call to the key holder, is theirs whatever the curve says
+        const ri = roofIn(true);
+        if (!curve.may('scare') && !ri.lastQuiet) ri.ok = false;
+        roofSteps.update(dt, ri);
+      }
+      if (mode === 'play') cutouts.update(dt, { ...cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy),
+        // (in the night's builds, and not once the sky greys: FORSLAG.md, 20 October, item 1)
+        may: curve.may('cutout') && sky.uniforms.uDawn.value < 0.3, keep: curve.cutoutKeep, pace: curve.pace('cutout'),
+        flood: world.driving ? (world.area === 'saro' ? siteFlood : world.area === 'road' || world.area === 'diner' ? roadFlood : null) : null,
+        // the lights stutter when they reach the shape at the end of them (driving, the headlights)
+        blink: () => { if (world.driving) world.trouble.start('blink'); else postFlick = 0.3; } });
       if (mode === 'play') {
         // the flashlight flickers near the strange events (todo.md): through the silence on the
         // shoulder, while a figure stands at the edge of the view, while the town's lamps go out or
@@ -1900,11 +2019,12 @@ async function boot() {
         flashlight.flicker(glimpses.up ? 0.3 : 0, 'glimpse');
         flashlight.flicker(townEvents.now !== 'none' && world.area === 'diner' ? 0.35 : 0, 'town');
       }
-      if (mode === 'play') glimpses.update(dt, glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy));
+      if (mode === 'play') glimpses.update(dt, { ...glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy),
+        may: curve.may('glimpse'), pace: curve.pace('glimpse') });
       if (mode === 'play') lineLights.update(dt, {
         ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
         truck: world.driving && world.area === 'saro' ? world.truckHere()?.group.position ?? null : null,
-        clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
+        clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z), may: curve.may('event'),
       });
       if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy);
       // the notebook or a paper open holds the warning where it is, as it holds the clock: it is not
@@ -1912,8 +2032,8 @@ async function boot() {
       if (mode === 'play' && !(modalOpen && abduction!.stage === 'warning')) {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
-        ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy));
+        ab.update(dt, { ...abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy), may: curve.may('abduct') });
         // the eyes from where the player stands now (the waking puts them down in the grass this step)
         follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
@@ -1983,7 +2103,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + curve.text() + '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
   let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);

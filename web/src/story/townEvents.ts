@@ -39,6 +39,10 @@ export interface TownEventsIn {
   clock: number;
   /** Seconds running, the same as the town's (Town.update): the lamp wave is timed by it. */
   t: number;
+  /** The night's curve (story/curve.ts) lets the lamps go now (an event) and the payphone ring the
+   *  first time (47 s on the line); left out, they may. The second call, after room 6, is the story's. */
+  may?: boolean;
+  mayLong?: boolean;
 }
 export interface TownEventsDeps {
   audio: AudioSys;
@@ -166,7 +170,7 @@ export class TownEvents {
     // The return call follows Room 6, at about 05:00. The original 04:45 cutoff made it
     // unreachable in the real chapter journey. Leave enough room before the 05:20 departure.
     const phoneUntil = call === 2 ? 5 * 3600 + 19 * 60 : 4 * 3600 + 45 * 60;
-    if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock)) {
+    if (call && this.near > 20 && s.clock >= this.notBefore && day >= 2 * 3600 + 40 * 60 && day < phoneUntil && this.free(s.clock) && (call === 2 || s.mayLong !== false)) {
       this.call = call; this.now = 'ringing'; this.ringT = 0; town.ringing = true;
       this.d.audio.loop('town-ring', 'phoneRing', { at: phone, gain: 0.8 });
     }
@@ -188,7 +192,7 @@ export class TownEvents {
         this.d.note(`${clockText(s.clock, false)}. Main Street, Caliche: the street lights out one by one, south to north, and the dogs barking in the same order. Back on in the same order.`);
         this.d.save();
       }
-    } else if (!this.d.seen.has('ev:lamps') && this.street > 40 && day >= 3 * 3600 + 5 * 60 && day < 4 * 3600 + 55 * 60 && this.free(s.clock)) {
+    } else if (!this.d.seen.has('ev:lamps') && this.street > 40 && day >= 3 * 3600 + 5 * 60 && day < 4 * 3600 + 55 * 60 && this.free(s.clock) && s.may !== false) {
       this.now = 'lamps'; this.waveT = this.t; this.dogs = [];
       town.lampWave(this.t);
     }

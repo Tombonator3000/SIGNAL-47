@@ -964,6 +964,15 @@ export class Receiver {
     a.play(name, { dest: this.n.mix, gain: k * this.power, rate: len ? THREE.MathUtils.clamp(b.duration / len, 0.75, 1.5) : 1 });
     this.cracks++;
   }
+  /** The station slides away under its own static for a few seconds and comes back (story/curve.ts:
+   *  one of the signs in its build), as if the set had been knocked off the station. */
+  drift(secs = 3.5, depth = 1) {
+    if (!this.live) return false;
+    const z = this.fuzz;
+    z.len = z.left = secs; z.depth = depth; z.next = Math.max(z.next, 20);
+    this.crack(secs, depth);
+    return true;
+  }
   /** Off, and let the station go (a new night). */
   reset() {
     this.on = false; this.sweep = 0; this.dial = false;

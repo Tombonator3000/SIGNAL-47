@@ -70,7 +70,8 @@ async def new_page(b, w, h, touch, errs):
     except Exception: pass
     await pg.evaluate("localStorage.clear()"); await pg.reload()
     await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
-    await pg.evaluate("S47.hold = true; S47.jump('chapter2'); S47.tick(1.0)")
+    # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
+    await pg.evaluate("S47.hold = true; S47.curve.free = true; S47.jump('chapter2'); S47.tick(1.0)")
     await pg.evaluate("S47.game.d.ui.close(); S47.flashlight.have = true; S47.tick(0.2)")
     return pg
 
@@ -256,7 +257,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)")
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)")
         kept = await ev(f"{A}.data.spots.map((s) => s.over ?? null)")
         seen = False
         for _ in range(12):
